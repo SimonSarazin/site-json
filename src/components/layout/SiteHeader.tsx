@@ -207,7 +207,7 @@ export function SiteHeader() {
 
             {/* Mobile Menu */}
             {/* Auth Button */}
-            {header.utilities.auth && (
+            {header.utilities.auth && !loading && (
               <div className="hidden md:flex items-center">
                 {me?.isConnected ? (
                   <DropdownMenu>
