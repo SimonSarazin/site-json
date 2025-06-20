@@ -28,6 +28,17 @@ export function SectionRenderer({ section }: SectionRendererProps) {
     case 'faq':
       return <FAQSection id={section.id} props={section.props} />;
     
+    case 'loginForm':
+      return (
+        <section id={section.id} className="py-16 bg-background">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-md mx-auto">
+              <LoginForm />
+            </div>
+          </div>
+        </section>
+      );
+    
     case 'markdown':
       return (
         <section id={section.id} className="py-16 bg-background text-foreground">
@@ -94,11 +105,7 @@ export function SectionRenderer({ section }: SectionRendererProps) {
     case 'html':
       return (
         <section id={section.id}>
-          {section.props.html === '<div id="login-form-container"></div>' ? (
-            <LoginForm />
-          ) : (
-            <div dangerouslySetInnerHTML={{ __html: section.props.html }} />
-          )}
+          <div dangerouslySetInnerHTML={{ __html: section.props.html }} />
         </section>
       );
     

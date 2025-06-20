@@ -488,15 +488,11 @@ export const demoSiteConfig: SiteConfig = {
         description: { fr: "Connectez-vous à votre compte SiteForge", en: "Login to your SiteForge account" },
       },
       layout: "default",
-      hideHeader: true,
-      hideFooter: true,
       sections: [
         {
-          type: "html",
+          type: "loginForm",
           id: "login-form",
-          props: {
-            html: '<div id="login-form-container"></div>'
-          }
+          props: {}
         }
       ],
     },

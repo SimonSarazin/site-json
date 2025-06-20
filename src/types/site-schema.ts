@@ -252,6 +252,13 @@ const NewsletterSection = z.object({
   }),
 });
 
+//──────────────── Login Form
+const LoginFormSection = z.object({
+  type: z.literal("loginForm"),
+  id: z.string().optional(),
+  props: z.object({}),
+});
+
 //──────────────── HTML libre
 const HTMLSection = z.object({
   type: z.literal("html"),
@@ -278,6 +285,7 @@ export const Section = z.union([
   MapSection,
   BannerSection,
   NewsletterSection,
+  LoginFormSection,
   HTMLSection,
 ]);
 export type Section = z.infer<typeof Section>;

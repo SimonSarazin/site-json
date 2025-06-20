@@ -51,57 +51,55 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="flex h-screen items-center justify-center bg-background">
-      <div className="w-full max-w-md space-y-6 p-8 rounded-lg bg-card shadow-lg border">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-foreground mb-2">Se connecter</h2>
-          <p className="text-muted-foreground">Accédez à votre compte SiteForge</p>
+    <div className="w-full space-y-6 p-8 rounded-lg bg-card shadow-lg border">
+      <div className="text-center">
+        <h2 className="text-3xl font-bold text-foreground mb-2">Se connecter</h2>
+        <p className="text-muted-foreground">Accédez à votre compte SiteForge</p>
+      </div>
+
+      <div className="space-y-4">
+        <Input
+          type="email"
+          placeholder="Adresse e-mail"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="h-12"
+        />
+        <PasswordToggleTextInput
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="h-12"
+        />
+
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="remember"
+            checked={remember}
+            onCheckedChange={(checked) => setRemember(Boolean(checked))}
+          />
+          <label htmlFor="remember" className="text-sm text-muted-foreground">
+            Se souvenir de moi
+          </label>
         </div>
 
-        <div className="space-y-4">
-          <Input
-            type="email"
-            placeholder="Adresse e-mail"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="h-12"
-          />
-          <PasswordToggleTextInput
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="h-12"
-          />
-
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="remember"
-              checked={remember}
-              onCheckedChange={(checked) => setRemember(Boolean(checked))}
-            />
-            <label htmlFor="remember" className="text-sm text-muted-foreground">
-              Se souvenir de moi
-            </label>
-          </div>
-
+        <Button
+          className="w-full"
+          onClick={handleLogin}
+          disabled={loadingLogin}
+          variant="default"
+          size="lg"
+        >
+          {loadingLogin ? "Connexion..." : "Se connecter"}
+        </Button>
+        
+        <div className="text-center">
           <Button
-            className="w-full"
-            onClick={handleLogin}
-            disabled={loadingLogin}
-            variant="default"
-            size="lg"
+            variant="ghost"
+            onClick={() => navigate('/')}
+            className="text-sm text-muted-foreground hover:text-foreground"
           >
-            {loadingLogin ? "Connexion..." : "Se connecter"}
+            Retour à l'accueil
           </Button>
-          
-          <div className="text-center">
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/')}
-              className="text-sm text-muted-foreground hover:text-foreground"
-            >
-              Retour à l'accueil
-            </Button>
-          </div>
         </div>
       </div>
     </div>
