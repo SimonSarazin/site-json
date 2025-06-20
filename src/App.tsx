@@ -13,7 +13,7 @@ import './App.css';
 function App() {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <CocolightProvider clientOptions={{ baseURL: getBaseUrl(), debug: true }>
+      <CocolightProvider clientOptions={{ baseURL: getBaseUrl(), debug: true }}>
         <RouterProvider>
           <SiteProvider config={demoSiteConfig}>
             <LocalizationProvider 
