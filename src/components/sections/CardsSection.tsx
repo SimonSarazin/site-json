@@ -59,7 +59,7 @@ export function CardsSection({ id, props }: CardsSectionProps) {
   };
 
   return (
-    <section id={id} className="py-16 bg-background">
+    <section id={id} className="py-16 bg-background text-foreground">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className={cn(
           "grid gap-6",
@@ -91,13 +91,13 @@ export function CardsSection({ id, props }: CardsSectionProps) {
                     </div>
                   )}
                   
-                  <CardTitle className="text-xl mb-2">
+                  <CardTitle className="text-xl mb-2 text-foreground">
                     {t(item.title)}
                   </CardTitle>
                 </CardHeader>
                 
                 <CardContent>
-                  <CardDescription className="text-base leading-relaxed">
+                  <CardDescription className="text-base leading-relaxed text-muted-foreground">
                     {t(item.text)}
                   </CardDescription>
                 </CardContent>

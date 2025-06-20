@@ -48,7 +48,7 @@ export function TestimonialsSection({ id, props }: TestimonialsSectionProps) {
       <CardContent className="p-6">
         <div className="flex flex-col h-full">
           <Quote className="w-8 h-8 text-primary mb-4" />
-          <blockquote className="text-lg leading-relaxed mb-6 flex-1">
+          <blockquote className="text-lg leading-relaxed mb-6 flex-1 text-foreground">
             "{t(item.quote)}"
           </blockquote>
           <div className="flex items-center gap-4">
@@ -59,7 +59,7 @@ export function TestimonialsSection({ id, props }: TestimonialsSectionProps) {
               </AvatarFallback>
             </Avatar>
             <div>
-              <div className="font-semibold">{t(item.author)}</div>
+              <div className="font-semibold text-foreground">{t(item.author)}</div>
               {item.role && (
                 <div className="text-sm text-muted-foreground">{t(item.role)}</div>
               )}
@@ -71,7 +71,7 @@ export function TestimonialsSection({ id, props }: TestimonialsSectionProps) {
   );
 
   return (
-    <section id={id} className="py-16 bg-muted/30">
+    <section id={id} className="py-16 bg-muted/30 text-foreground">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {style === 'grid' && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

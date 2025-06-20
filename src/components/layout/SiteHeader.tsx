@@ -142,7 +142,7 @@ export function SiteHeader() {
               <img 
                 src={header.logo} 
                 alt={header.logoAlt ? t(header.logoAlt) : 'Logo'} 
-                className="h-8 w-auto"
+                className="h-8 w-auto rounded"
               />
             </button>
           </div>

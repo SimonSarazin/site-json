@@ -29,7 +29,7 @@ export function SectionRenderer({ section }: SectionRendererProps) {
     
     case 'markdown':
       return (
-        <section id={section.id} className="py-16 bg-background">
+        <section id={section.id} className="py-16 bg-background text-foreground">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto prose prose-gray dark:prose-invert">
               {section.props.sourceType === 'inline' ? (
@@ -44,7 +44,7 @@ export function SectionRenderer({ section }: SectionRendererProps) {
     
     case 'gallery':
       return (
-        <section id={section.id} className="py-16 bg-background">
+        <section id={section.id} className="py-16 bg-background text-foreground">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className={`grid grid-cols-1 md:grid-cols-${section.props.columns} gap-4`}>
               {section.props.images.map((image, index) => (
@@ -63,7 +63,7 @@ export function SectionRenderer({ section }: SectionRendererProps) {
     
     case 'video':
       return (
-        <section id={section.id} className="py-16 bg-background">
+        <section id={section.id} className="py-16 bg-background text-foreground">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
               <div className={`aspect-video rounded-lg overflow-hidden`}>
@@ -99,7 +99,7 @@ export function SectionRenderer({ section }: SectionRendererProps) {
     
     default:
       return (
-        <section id={section.id} className="py-16 bg-muted/30">
+        <section id={section.id} className="py-16 bg-muted/30 text-foreground">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <p className="text-muted-foreground">

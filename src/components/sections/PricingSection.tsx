@@ -31,7 +31,7 @@ export function PricingSection({ id, props }: PricingSectionProps) {
   const { currency = '€', plans, highlight } = props;
 
   return (
-    <section id={id} className="py-16 bg-background">
+    <section id={id} className="py-16 bg-background text-foreground">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
           {plans.map((plan, index) => (
@@ -51,11 +51,11 @@ export function PricingSection({ id, props }: PricingSectionProps) {
               )}
               
               <CardHeader className="text-center pb-8">
-                <CardTitle className="text-2xl font-bold">
+                <CardTitle className="text-2xl font-bold text-foreground">
                   {t(plan.name)}
                 </CardTitle>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold">
+                  <span className="text-4xl font-bold text-foreground">
                     {currency}{plan.price}
                   </span>
                   {plan.period && (
@@ -70,7 +70,7 @@ export function PricingSection({ id, props }: PricingSectionProps) {
                 {plan.features.map((feature, featureIndex) => (
                   <div key={featureIndex} className="flex items-center gap-3">
                     <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
-                    <span className="text-sm">{t(feature)}</span>
+                    <span className="text-sm text-foreground">{t(feature)}</span>
                   </div>
                 ))}
               </CardContent>

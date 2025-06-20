@@ -48,8 +48,7 @@ export function HeroSection({ id, props }: HeroSectionProps) {
     <section 
       id={id}
       className={cn(
-        "relative min-h-[70vh] flex items-center justify-center overflow-hidden",
-        backgroundImage || videoBg ? "text-white" : ""
+        "relative min-h-[70vh] flex items-center justify-center overflow-hidden"
       )}
     >
       {/* Background */}
@@ -78,7 +77,10 @@ export function HeroSection({ id, props }: HeroSectionProps) {
       )}
 
       {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
+      <div className={cn(
+        "relative z-10 container mx-auto px-4 sm:px-6 lg:px-8",
+        (backgroundImage || videoBg) && "text-white"
+      )}>
         <div className={cn(
           "max-w-4xl mx-auto",
           align === 'left' && "text-left",
@@ -116,7 +118,9 @@ export function HeroSection({ id, props }: HeroSectionProps) {
               <Button
                 variant="ghost"
                 onClick={() => handleScrollTo(scrollTo)}
-                className="text-current"
+                className={cn(
+                  (backgroundImage || videoBg) ? "text-white hover:text-white/80" : "text-foreground hover:text-foreground/80"
+                )}
               >
                 Scroll Down
               </Button>

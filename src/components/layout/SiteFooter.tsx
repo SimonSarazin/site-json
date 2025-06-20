@@ -20,13 +20,13 @@ export function SiteFooter() {
   const { footer } = config;
 
   return (
-    <footer className="border-t bg-background">
+    <footer className="border-t bg-background text-foreground">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Newsletter Section */}
         {footer.newsletter && (
           <div className="mb-12 p-8 rounded-lg bg-gradient-to-r from-primary/5 to-secondary/5 border">
             <div className="max-w-2xl mx-auto text-center">
-              <h3 className="text-2xl font-bold mb-2">
+              <h3 className="text-2xl font-bold mb-2 text-foreground">
                 {t(footer.newsletter.props.headline)}
               </h3>
               {footer.newsletter.props.subhead && (
@@ -62,7 +62,7 @@ export function SiteFooter() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           {footer.columns.map((column, index) => (
             <div key={index}>
-              <h4 className="font-semibold mb-4">{t(column.title)}</h4>
+              <h4 className="font-semibold mb-4 text-foreground">{t(column.title)}</h4>
               <ul className="space-y-2">
                 {column.links.map((link, linkIndex) => (
                   <li key={linkIndex}>
