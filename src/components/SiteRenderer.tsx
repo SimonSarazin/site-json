@@ -1,10 +1,12 @@
 import React, { useEffect } from 'react';
+import { createRoot } from 'react-dom/client';
 import { SiteHeader } from './layout/SiteHeader';
 import { SiteFooter } from './layout/SiteFooter';
 import { SectionRenderer } from './sections/SectionRenderer';
 import { useLocalization } from '@/contexts/LocalizationContext';
 import { useSite } from '@/contexts/SiteContext';
 import { useRouterContext } from '@/contexts/RouterContext';
+import LoginForm from './auth/LoginForm';
 
 export function SiteRenderer() {
   const { config } = useSite();
@@ -44,6 +46,17 @@ export function SiteRenderer() {
       }
     }
   }, [currentPage, t]);
+
+  // Handle special login page rendering
+  useEffect(() => {
+    if (currentPage?.path === '/login') {
+      const container = document.getElementById('login-form-container');
+      if (container && !container.hasChildNodes()) {
+        const root = createRoot(container);
+        root.render(<LoginForm />);
+      }
+    }
+  }, [currentPage]);
 
   if (!currentPage) {
     return (

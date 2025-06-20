@@ -2,10 +2,9 @@
 import Cocolight from "@communecter/cocolight-api-client";
 import React, { useEffect, useState } from "react";
 
-
-import { initApiClient } from "./apiClient";
-import { getSlug } from "./constant/common";
-import { CocolightContext } from "./context/CocolightContext";
+import { initApiClient } from "../lib/apiClient";
+import { getSlug } from "../lib/constant/common";
+import { CocolightContext } from "./CocolightContext";
 
 export function CocolightProvider({ children, clientOptions = {}, initialOrganization  }) {
   const [apiClient, setApiClient] = useState(null);

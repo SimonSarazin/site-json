@@ -8,6 +8,7 @@ import { useTheme } from 'next-themes';
 import { useLocalization } from '@/contexts/LocalizationContext';
 import { useSite } from '@/contexts/SiteContext';
 import { useRouterContext } from '@/contexts/RouterContext';
+import { useCocolight } from '@/hooks/useCocolight';
 import { NavItem as NavItemType } from '@/types/site';
 import { cn } from '@/lib/utils';
 
@@ -120,6 +121,7 @@ export function SiteHeader() {
   const { t, currentLocale, setLocale, availableLocales } = useLocalization();
   const { setTheme, theme } = useTheme();
   const { navigate } = useRouterContext();
+  const { me, userApi, loading } = useCocolight();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const { header } = config;
@@ -127,6 +129,15 @@ export function SiteHeader() {
   const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault();
     navigate('/');
+  };
+
+  const handleLogout = async () => {
+    try {
+      await userApi.logout();
+      navigate('/');
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion:', error);
+    }
   };
 
   return (
@@ -193,6 +204,37 @@ export function SiteHeader() {
             )}
 
             {/* Mobile Menu */}
+            {/* Auth Button */}
+            {header.utilities.auth && !loading && (
+              <div className="hidden md:flex items-center">
+                {me?.isConnected ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="gap-2">
+                        <span>{me.name || 'Mon compte'}</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onClick={() => navigate('/profile')}>
+                        Profil
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleLogout}>
+                        Se déconnecter
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigate('/login')}
+                  >
+                    Se connecter
+                  </Button>
+                )}
+              </div>
+            )}
+
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="sm" className="md:hidden">
@@ -211,6 +253,47 @@ export function SiteHeader() {
                       onNavigate={() => setMobileMenuOpen(false)}
                     />
                   ))}
+                  
+                  {/* Auth in mobile menu */}
+                  {header.utilities.auth && !loading && (
+                    <div className="pt-4 border-t">
+                      {me?.isConnected ? (
+                        <div className="space-y-2">
+                          <Button
+                            variant="ghost"
+                            className="w-full justify-start"
+                            onClick={() => {
+                              navigate('/profile');
+                              setMobileMenuOpen(false);
+                            }}
+                          >
+                            Profil
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            className="w-full justify-start"
+                            onClick={() => {
+                              handleLogout();
+                              setMobileMenuOpen(false);
+                            }}
+                          >
+                            Se déconnecter
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start"
+                          onClick={() => {
+                            navigate('/login');
+                            setMobileMenuOpen(false);
+                          }}
+                        >
+                          Se connecter
+                        </Button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </SheetContent>
             </Sheet>

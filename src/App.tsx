@@ -1,6 +1,7 @@
 import React from 'react';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/sonner';
+import { CocolightProvider } from '@/contexts/CocolightProvider';
 import { SiteProvider } from '@/contexts/SiteContext';
 import { LocalizationProvider } from '@/contexts/LocalizationContext';
 import { RouterProvider } from '@/contexts/RouterContext';
@@ -11,17 +12,19 @@ import './App.css';
 function App() {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <RouterProvider>
-        <SiteProvider config={demoSiteConfig}>
-          <LocalizationProvider 
-            defaultLocale={demoSiteConfig.meta.defaultLang}
-            availableLocales={demoSiteConfig.meta.languages}
-          >
-            <SiteRenderer />
-            <Toaster />
-          </LocalizationProvider>
-        </SiteProvider>
-      </RouterProvider>
+      <CocolightProvider>
+        <RouterProvider>
+          <SiteProvider config={demoSiteConfig}>
+            <LocalizationProvider 
+              defaultLocale={demoSiteConfig.meta.defaultLang}
+              availableLocales={demoSiteConfig.meta.languages}
+            >
+              <SiteRenderer />
+              <Toaster />
+            </LocalizationProvider>
+          </SiteProvider>
+        </RouterProvider>
+      </CocolightProvider>
     </ThemeProvider>
   );
 }

@@ -67,8 +67,8 @@ export const demoSiteConfig: SiteConfig = {
     utilities: {
       themeSwitch: true,
       langSwitch: true,
-      search: false,
-      auth: false,
+      search: true,
+      auth: true,
     },
   },
   pages: [
@@ -476,6 +476,51 @@ export const demoSiteConfig: SiteConfig = {
                 text: { fr: "Chat en direct disponible\n24h/24 7j/7", en: "Live chat available\n24/7" },
               },
             ],
+          },
+        },
+      ],
+    },
+    {
+      path: "/login",
+      title: { fr: "Connexion - SiteForge", en: "Login - SiteForge" },
+      seo: {
+        title: { fr: "Connexion - SiteForge", en: "Login - SiteForge" },
+        description: { fr: "Connectez-vous à votre compte SiteForge", en: "Login to your SiteForge account" },
+      },
+      layout: "default",
+      hideHeader: true,
+      hideFooter: true,
+      sections: [
+        {
+          type: "html",
+          props: {
+            html: '<div id="login-form-container"></div>'
+          }
+        }
+      ],
+    },
+    {
+      path: "/profile",
+      title: { fr: "Profil - SiteForge", en: "Profile - SiteForge" },
+      seo: {
+        title: { fr: "Profil - SiteForge", en: "Profile - SiteForge" },
+        description: { fr: "Gérez votre profil SiteForge", en: "Manage your SiteForge profile" },
+      },
+      layout: "default",
+      sections: [
+        {
+          type: "hero",
+          id: "profile-hero",
+          props: {
+            headline: { 
+              fr: "Mon Profil", 
+              en: "My Profile" 
+            },
+            subhead: { 
+              fr: "Gérez vos informations personnelles", 
+              en: "Manage your personal information" 
+            },
+            align: "center",
           },
         },
       ],
