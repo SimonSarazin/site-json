@@ -126,6 +126,8 @@ export function SiteHeader() {
 
   const { header } = config;
 
+  console.log('me', me?.isConnected);
+  
   const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault();
     navigate('/');
