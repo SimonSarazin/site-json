@@ -7,12 +7,13 @@ import { LocalizationProvider } from '@/contexts/LocalizationContext';
 import { RouterProvider } from '@/contexts/RouterContext';
 import { SiteRenderer } from '@/components/SiteRenderer';
 import { demoSiteConfig } from '@/data/demo-site';
+import { getBaseUrl } from '@lib/constant/common';
 import './App.css';
 
 function App() {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <CocolightProvider>
+      <CocolightProvider clientOptions={{ baseURL: getBaseUrl(), debug: true }>
         <RouterProvider>
           <SiteProvider config={demoSiteConfig}>
             <LocalizationProvider 
