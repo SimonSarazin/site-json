@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import { Menu, Moon, Sun, Globe, ChevronDown } from 'lucide-react';
+import { Menu, Moon, Sun, Globe, ChevronDown, User, LogOut } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useLocalization } from '@/contexts/LocalizationContext';
 import { useSite } from '@/contexts/SiteContext';
@@ -211,14 +211,18 @@ export function SiteHeader() {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm" className="gap-2">
-                        <span>{me.name || 'Mon compte'}</span>
+                        <User className="h-4 w-4" />
+                        <span>{me.name || me.email || 'Mon compte'}</span>
+                        <ChevronDown className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent>
+                    <DropdownMenuContent align="end" className="w-56">
                       <DropdownMenuItem onClick={() => navigate('/profile')}>
+                        <User className="mr-2 h-4 w-4" />
                         Profil
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={handleLogout}>
+                        <LogOut className="mr-2 h-4 w-4" />
                         Se déconnecter
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -267,6 +271,7 @@ export function SiteHeader() {
                               setMobileMenuOpen(false);
                             }}
                           >
+                            <User className="mr-2 h-4 w-4" />
                             Profil
                           </Button>
                           <Button
@@ -277,6 +282,7 @@ export function SiteHeader() {
                               setMobileMenuOpen(false);
                             }}
                           >
+                            <LogOut className="mr-2 h-4 w-4" />
                             Se déconnecter
                           </Button>
                         </div>

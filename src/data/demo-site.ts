@@ -67,7 +67,7 @@ export const demoSiteConfig: SiteConfig = {
     utilities: {
       themeSwitch: true,
       langSwitch: true,
-      search: true,
+      search: false,
       auth: true,
     },
   },
