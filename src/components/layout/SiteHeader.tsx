@@ -214,7 +214,7 @@ export function SiteHeader() {
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm" className="gap-2">
                         <User className="h-4 w-4" />
-                        <span>{me?serverData?.name || me?.serverData?.email || 'Mon compte'}</span>
+                        <span>{me?.serverData?.name || me?.serverData?.email || 'Mon compte'}</span>
                         <ChevronDown className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
