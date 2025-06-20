@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useLocalization } from '@/contexts/LocalizationContext';
+import { useRouterContext } from '@/contexts/RouterContext';
 import { cn } from '@/lib/utils';
 
 interface HeroSectionProps {
@@ -23,12 +24,23 @@ interface HeroSectionProps {
 
 export function HeroSection({ id, props }: HeroSectionProps) {
   const { t } = useLocalization();
+  const { navigate } = useRouterContext();
   const { headline, subhead, backgroundImage, videoBg, align = 'center', overlay = false, cta, scrollTo } = props;
 
   const handleScrollTo = (target: string) => {
     const element = document.querySelector(target);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleCTAClick = (href: string) => {
+    if (href.startsWith('#')) {
+      handleScrollTo(href);
+    } else if (href.startsWith('http') || href.startsWith('//')) {
+      window.open(href, '_blank', 'noopener,noreferrer');
+    } else {
+      navigate(href);
     }
   };
 
@@ -91,13 +103,7 @@ export function HeroSection({ id, props }: HeroSectionProps) {
                   variant={button.variant === 'secondary' ? 'secondary' : 'default'}
                   size="lg"
                   className="text-lg px-8 py-6"
-                  onClick={() => {
-                    if (button.href.startsWith('#')) {
-                      handleScrollTo(button.href);
-                    } else {
-                      window.location.href = button.href;
-                    }
-                  }}
+                  onClick={() => handleCTAClick(button.href)}
                 >
                   {t(button.label)}
                 </Button>

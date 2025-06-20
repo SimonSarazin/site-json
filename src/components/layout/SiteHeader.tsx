@@ -7,6 +7,7 @@ import { Menu, Moon, Sun, Globe, ChevronDown } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useLocalization } from '@/contexts/LocalizationContext';
 import { useSite } from '@/contexts/SiteContext';
+import { useRouterContext } from '@/contexts/RouterContext';
 import { NavItem as NavItemType } from '@/types/site';
 import { cn } from '@/lib/utils';
 
@@ -18,10 +19,21 @@ interface NavItemProps {
 
 function NavItem({ item, mobile = false, onNavigate }: NavItemProps) {
   const { t } = useLocalization();
+  const { navigate } = useRouterContext();
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleClick = () => {
-    if (item.path || item.href) {
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    
+    if (item.path) {
+      navigate(item.path);
+      onNavigate?.();
+    } else if (item.href) {
+      if (item.href.startsWith('http') || item.href.startsWith('//')) {
+        window.open(item.href, '_blank', 'noopener,noreferrer');
+      } else {
+        window.location.href = item.href;
+      }
       onNavigate?.();
     }
   };
@@ -52,10 +64,21 @@ function NavItem({ item, mobile = false, onNavigate }: NavItemProps) {
         <DropdownMenuContent align="start" className="w-56">
           {item.children.map((child, index) => (
             <DropdownMenuItem key={index} asChild>
-              <a
-                href={child.path || child.href}
-                className="flex items-center gap-2 w-full"
-                onClick={handleClick}
+              <button
+                className="flex items-center gap-2 w-full text-left"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (child.path) {
+                    navigate(child.path);
+                  } else if (child.href) {
+                    if (child.href.startsWith('http') || child.href.startsWith('//')) {
+                      window.open(child.href, '_blank', 'noopener,noreferrer');
+                    } else {
+                      window.location.href = child.href;
+                    }
+                  }
+                  onNavigate?.();
+                }}
               >
                 {child.icon && <span className="w-4 h-4" />}
                 {t(child.label)}
@@ -64,7 +87,7 @@ function NavItem({ item, mobile = false, onNavigate }: NavItemProps) {
                     {t(child.badge.text)}
                   </Badge>
                 )}
-              </a>
+              </button>
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>
@@ -75,21 +98,19 @@ function NavItem({ item, mobile = false, onNavigate }: NavItemProps) {
   return (
     <Button
       variant="ghost"
-      asChild
       className={cn(
         "flex items-center gap-2",
         mobile && "w-full justify-start"
       )}
+      onClick={handleClick}
     >
-      <a href={item.path || item.href} onClick={handleClick}>
-        {item.icon && <span className="w-4 h-4" />}
-        {t(item.label)}
-        {item.badge && (
-          <Badge variant="secondary" className="text-xs">
-            {t(item.badge.text)}
-          </Badge>
-        )}
-      </a>
+      {item.icon && <span className="w-4 h-4" />}
+      {t(item.label)}
+      {item.badge && (
+        <Badge variant="secondary" className="text-xs">
+          {t(item.badge.text)}
+        </Badge>
+      )}
     </Button>
   );
 }
@@ -98,9 +119,15 @@ export function SiteHeader() {
   const { config } = useSite();
   const { t, currentLocale, setLocale, availableLocales } = useLocalization();
   const { setTheme, theme } = useTheme();
+  const { navigate } = useRouterContext();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const { header } = config;
+
+  const handleLogoClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    navigate('/');
+  };
 
   return (
     <header className={cn(
@@ -111,13 +138,13 @@ export function SiteHeader() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-2">
-            <a href="/" className="flex items-center gap-2">
+            <button onClick={handleLogoClick} className="flex items-center gap-2">
               <img 
                 src={header.logo} 
                 alt={header.logoAlt ? t(header.logoAlt) : 'Logo'} 
                 className="h-8 w-auto"
               />
-            </a>
+            </button>
           </div>
 
           {/* Desktop Navigation */}

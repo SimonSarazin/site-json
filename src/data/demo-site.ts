@@ -274,6 +274,212 @@ export const demoSiteConfig: SiteConfig = {
         },
       ],
     },
+    {
+      path: "/features",
+      title: { fr: "Fonctionnalités - SiteForge", en: "Features - SiteForge" },
+      seo: {
+        title: { fr: "Fonctionnalités - SiteForge", en: "Features - SiteForge" },
+        description: { fr: "Découvrez toutes les fonctionnalités puissantes de SiteForge pour créer des sites web exceptionnels.", en: "Discover all the powerful features of SiteForge to create exceptional websites." },
+      },
+      layout: "default",
+      sections: [
+        {
+          type: "hero",
+          id: "features-hero",
+          props: {
+            headline: { 
+              fr: "Fonctionnalités Puissantes", 
+              en: "Powerful Features" 
+            },
+            subhead: { 
+              fr: "Tout ce dont vous avez besoin pour créer des sites web professionnels", 
+              en: "Everything you need to create professional websites" 
+            },
+            align: "center",
+          },
+        },
+        {
+          type: "cards",
+          id: "features-grid",
+          props: {
+            columns: 2,
+            layout: "grid",
+            items: [
+              {
+                icon: "code",
+                title: { fr: "Configuration JSON", en: "JSON Configuration" },
+                text: { fr: "Définissez votre site entier avec un simple fichier JSON. Aucun code HTML/CSS requis.", en: "Define your entire site with a simple JSON file. No HTML/CSS code required." },
+              },
+              {
+                icon: "palette",
+                title: { fr: "Thèmes Personnalisables", en: "Customizable Themes" },
+                text: { fr: "Choisissez parmi de nombreux thèmes ou créez le vôtre avec notre système de design tokens.", en: "Choose from many themes or create your own with our design token system." },
+              },
+              {
+                icon: "smartphone",
+                title: { fr: "Design Responsive", en: "Responsive Design" },
+                text: { fr: "Tous les sites sont automatiquement optimisés pour mobile, tablette et desktop.", en: "All sites are automatically optimized for mobile, tablet and desktop." },
+              },
+              {
+                icon: "zap",
+                title: { fr: "Performance Optimale", en: "Optimal Performance" },
+                text: { fr: "Sites ultra-rapides avec lazy loading, optimisation d'images et code splitting.", en: "Ultra-fast sites with lazy loading, image optimization and code splitting." },
+              },
+              {
+                icon: "globe",
+                title: { fr: "Internationalisation", en: "Internationalization" },
+                text: { fr: "Support natif pour plusieurs langues avec détection automatique de la locale.", en: "Native support for multiple languages with automatic locale detection." },
+              },
+              {
+                icon: "shield",
+                title: { fr: "Sécurité Avancée", en: "Advanced Security" },
+                text: { fr: "Protection CSRF, validation de schéma et sanitisation automatique du contenu.", en: "CSRF protection, schema validation and automatic content sanitization." },
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      path: "/pricing",
+      title: { fr: "Tarifs - SiteForge", en: "Pricing - SiteForge" },
+      seo: {
+        title: { fr: "Tarifs - SiteForge", en: "Pricing - SiteForge" },
+        description: { fr: "Choisissez le plan qui vous convient. Commencez gratuitement ou optez pour nos plans premium.", en: "Choose the plan that suits you. Start for free or opt for our premium plans." },
+      },
+      layout: "default",
+      sections: [
+        {
+          type: "hero",
+          id: "pricing-hero",
+          props: {
+            headline: { 
+              fr: "Tarifs Simples et Transparents", 
+              en: "Simple and Transparent Pricing" 
+            },
+            subhead: { 
+              fr: "Commencez gratuitement, évoluez selon vos besoins", 
+              en: "Start free, scale as you grow" 
+            },
+            align: "center",
+          },
+        },
+        {
+          type: "pricing",
+          id: "pricing-plans",
+          props: {
+            currency: "€",
+            highlight: 1,
+            plans: [
+              {
+                name: { fr: "Gratuit", en: "Free" },
+                price: "0",
+                period: "mois",
+                features: [
+                  { fr: "1 site web", en: "1 website" },
+                  { fr: "Templates de base", en: "Basic templates" },
+                  { fr: "Support communautaire", en: "Community support" },
+                  { fr: "Hébergement gratuit", en: "Free hosting" },
+                  { fr: "SSL inclus", en: "SSL included" },
+                ],
+                cta: {
+                  label: { fr: "Commencer", en: "Get Started" },
+                  href: "/signup",
+                },
+              },
+              {
+                name: { fr: "Pro", en: "Pro" },
+                price: "29",
+                period: "mois",
+                badge: { fr: "Populaire", en: "Popular" },
+                features: [
+                  { fr: "Sites illimités", en: "Unlimited websites" },
+                  { fr: "Templates premium", en: "Premium templates" },
+                  { fr: "Support prioritaire", en: "Priority support" },
+                  { fr: "Domaine personnalisé", en: "Custom domain" },
+                  { fr: "Analytics avancées", en: "Advanced analytics" },
+                  { fr: "Intégrations API", en: "API integrations" },
+                  { fr: "Sauvegarde automatique", en: "Automatic backup" },
+                ],
+                cta: {
+                  label: { fr: "Choisir Pro", en: "Choose Pro" },
+                  href: "/signup?plan=pro",
+                },
+              },
+              {
+                name: { fr: "Entreprise", en: "Enterprise" },
+                price: "99",
+                period: "mois",
+                features: [
+                  { fr: "Tout du plan Pro", en: "Everything in Pro" },
+                  { fr: "Support dédié", en: "Dedicated support" },
+                  { fr: "Intégrations personnalisées", en: "Custom integrations" },
+                  { fr: "SLA garantie", en: "SLA guarantee" },
+                  { fr: "Formation équipe", en: "Team training" },
+                  { fr: "Audit de sécurité", en: "Security audit" },
+                  { fr: "Déploiement on-premise", en: "On-premise deployment" },
+                ],
+                cta: {
+                  label: { fr: "Nous Contacter", en: "Contact Us" },
+                  href: "/contact",
+                },
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      path: "/contact",
+      title: { fr: "Contact - SiteForge", en: "Contact - SiteForge" },
+      seo: {
+        title: { fr: "Contact - SiteForge", en: "Contact - SiteForge" },
+        description: { fr: "Contactez notre équipe pour toute question ou demande de support.", en: "Contact our team for any questions or support requests." },
+      },
+      layout: "default",
+      sections: [
+        {
+          type: "hero",
+          id: "contact-hero",
+          props: {
+            headline: { 
+              fr: "Contactez-Nous", 
+              en: "Contact Us" 
+            },
+            subhead: { 
+              fr: "Notre équipe est là pour vous aider", 
+              en: "Our team is here to help you" 
+            },
+            align: "center",
+          },
+        },
+        {
+          type: "cards",
+          id: "contact-info",
+          props: {
+            columns: 3,
+            layout: "grid",
+            items: [
+              {
+                icon: "mail",
+                title: { fr: "Email", en: "Email" },
+                text: { fr: "support@siteforge.com\nRéponse sous 24h", en: "support@siteforge.com\nResponse within 24h" },
+              },
+              {
+                icon: "phone",
+                title: { fr: "Téléphone", en: "Phone" },
+                text: { fr: "+33 1 23 45 67 89\nLun-Ven 9h-18h", en: "+33 1 23 45 67 89\nMon-Fri 9am-6pm" },
+              },
+              {
+                icon: "messageCircle",
+                title: { fr: "Chat", en: "Chat" },
+                text: { fr: "Chat en direct disponible\n24h/24 7j/7", en: "Live chat available\n24/7" },
+              },
+            ],
+          },
+        },
+      ],
+    },
   ],
   footer: {
     columns: [

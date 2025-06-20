@@ -4,15 +4,12 @@ import { SiteFooter } from './layout/SiteFooter';
 import { SectionRenderer } from './sections/SectionRenderer';
 import { useLocalization } from '@/contexts/LocalizationContext';
 import { useSite } from '@/contexts/SiteContext';
-import { Page } from '@/types/site';
+import { useRouterContext } from '@/contexts/RouterContext';
 
-interface SiteRendererProps {
-  currentPath: string;
-}
-
-export function SiteRenderer({ currentPath }: SiteRendererProps) {
+export function SiteRenderer() {
   const { config } = useSite();
   const { t } = useLocalization();
+  const { currentPath } = useRouterContext();
 
   // Find the current page
   const currentPage = config.pages.find(page => page.path === currentPath) || config.pages[0];
@@ -54,6 +51,9 @@ export function SiteRenderer({ currentPath }: SiteRendererProps) {
         <div className="text-center">
           <h1 className="text-4xl font-bold mb-4">404</h1>
           <p className="text-muted-foreground">Page not found</p>
+          <p className="text-sm text-muted-foreground mt-2">
+            Path: {currentPath}
+          </p>
         </div>
       </div>
     );
