@@ -493,6 +493,7 @@ export const demoSiteConfig: SiteConfig = {
       sections: [
         {
           type: "html",
+          id: "login-form",
           props: {
             html: '<div id="login-form-container"></div>'
           }

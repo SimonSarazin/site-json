@@ -5,6 +5,7 @@ import { CardsSection } from './CardsSection';
 import { TestimonialsSection } from './TestimonialsSection';
 import { PricingSection } from './PricingSection';
 import { FAQSection } from './FAQSection';
+import LoginForm from '../auth/LoginForm';
 
 interface SectionRendererProps {
   section: Section;
@@ -93,7 +94,11 @@ export function SectionRenderer({ section }: SectionRendererProps) {
     case 'html':
       return (
         <section id={section.id}>
-          <div dangerouslySetInnerHTML={{ __html: section.props.html }} />
+          {section.props.html === '<div id="login-form-container"></div>' ? (
+            <LoginForm />
+          ) : (
+            <div dangerouslySetInnerHTML={{ __html: section.props.html }} />
+          )}
         </section>
       );
     

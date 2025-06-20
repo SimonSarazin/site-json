@@ -3,7 +3,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
-export default function PasswordToggleTextInput({ value, onChange, placeholder = "Mot de passe", ...props }) {
+export default function PasswordToggleTextInput({ value, onChange, placeholder = "Mot de passe", className, ...props }) {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
@@ -13,7 +13,7 @@ export default function PasswordToggleTextInput({ value, onChange, placeholder =
         placeholder={placeholder}
         value={value}
         onChange={onChange}
-        className="pr-10"
+        className={`pr-10 ${className || ''}`}
         {...props}
       />
       <Button
