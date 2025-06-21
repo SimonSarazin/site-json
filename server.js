@@ -80,9 +80,19 @@ app.use('*', async (req, res) => {
       helmet.script?.toString() || ''
     ].join('\n') : '';
     
+    // Serialize initial state for client-side hydration
+    const initialState = {
+      siteConfig,
+      url,
+      initialMe,
+      initialOrganization
+    };
+    
+    const initialStateScript = `<script>window.__APP_INITIAL_STATE__ = ${JSON.stringify(initialState).replace(/</g, '\\u003c')};</script>`;
+    
     const html = template
       .replace(`<!--app-html-->`, rendered)
-      .replace(`<!--app-head-->`, metaTags);
+      .replace(`<!--app-head-->`, metaTags + '\n' + initialStateScript);
 
     res.status(200).set({ 'Content-Type': 'text/html' }).send(html);
   } catch (e) {
