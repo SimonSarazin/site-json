@@ -2,15 +2,17 @@ import React, { useEffect } from 'react';
 import { SiteHeader } from './layout/SiteHeader';
 import { SiteFooter } from './layout/SiteFooter';
 import { SectionRenderer } from './sections/SectionRenderer';
+import { SEOHead } from './SEOHead';
 import { useLocalization } from '@/contexts/LocalizationContext';
 import { useSite } from '@/contexts/SiteContext';
 import { useRouterContext } from '@/contexts/RouterContext';
 import { useCocolight } from '@/hooks/useCocolight';
 import { useMiddleware } from '@/hooks/useMiddleware';
+import { generateSEOData } from '@/lib/seo';
 
 export function SiteRenderer() {
   const { config } = useSite();
-  const { t } = useLocalization();
+  const { t, currentLocale } = useLocalization();
   const { currentPath } = useRouterContext();
   const { me, loading } = useCocolight();
 
@@ -19,6 +21,9 @@ export function SiteRenderer() {
 
   // Run middleware if defined
   useMiddleware(currentPage?.middleware || []);
+
+  // Generate SEO data
+  const seoData = generateSEOData(config, currentPage, currentLocale);
 
   // Check authentication requirements
   useEffect(() => {
@@ -40,138 +45,37 @@ export function SiteRenderer() {
       }
     }
   }, [currentPage, me, loading]);
-  // Update document title and meta tags
+
+  // Handle custom CSS and JS injection
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    
-    if (currentPage) {
-      document.title = currentPage.seo?.title 
-        ? t(currentPage.seo.title)
-        : t(currentPage.title);
-      
-      // Update meta description
-      if (currentPage.seo?.description) {
-        let metaDescription = document.querySelector('meta[name="description"]');
-        if (!metaDescription) {
-          metaDescription = document.createElement('meta');
-          metaDescription.setAttribute('name', 'description');
-          document.head.appendChild(metaDescription);
-        }
-        metaDescription.setAttribute('content', t(currentPage.seo.description));
-      }
 
-      // Update meta keywords
-      if (currentPage.seo?.keywords) {
-        let metaKeywords = document.querySelector('meta[name="keywords"]');
-        if (!metaKeywords) {
-          metaKeywords = document.createElement('meta');
-          metaKeywords.setAttribute('name', 'keywords');
-          document.head.appendChild(metaKeywords);
-        }
-        metaKeywords.setAttribute('content', currentPage.seo.keywords.join(', '));
+    // Inject custom CSS
+    if (currentPage?.customCSS) {
+      let customStyle = document.querySelector('#custom-page-css');
+      if (!customStyle) {
+        customStyle = document.createElement('style');
+        customStyle.id = 'custom-page-css';
+        document.head.appendChild(customStyle);
       }
-
-      // Update OG image
-      if (currentPage.seo?.ogImage) {
-        let ogImage = document.querySelector('meta[property="og:image"]');
-        if (!ogImage) {
-          ogImage = document.createElement('meta');
-          ogImage.setAttribute('property', 'og:image');
-          document.head.appendChild(ogImage);
-        }
-        ogImage.setAttribute('content', currentPage.seo.ogImage);
-      }
-
-      // Update OG type
-      if (currentPage.seo?.ogType) {
-        let ogType = document.querySelector('meta[property="og:type"]');
-        if (!ogType) {
-          ogType = document.createElement('meta');
-          ogType.setAttribute('property', 'og:type');
-          document.head.appendChild(ogType);
-        }
-        ogType.setAttribute('content', currentPage.seo.ogType);
-      }
-
-      // Update Twitter Card
-      if (currentPage.seo?.twitterCard) {
-        let twitterCard = document.querySelector('meta[name="twitter:card"]');
-        if (!twitterCard) {
-          twitterCard = document.createElement('meta');
-          twitterCard.setAttribute('name', 'twitter:card');
-          document.head.appendChild(twitterCard);
-        }
-        twitterCard.setAttribute('content', currentPage.seo.twitterCard);
-      }
-
-      // Update canonical URL
-      if (currentPage.seo?.canonical) {
-        let canonical = document.querySelector('link[rel="canonical"]');
-        if (!canonical) {
-          canonical = document.createElement('link');
-          canonical.setAttribute('rel', 'canonical');
-          document.head.appendChild(canonical);
-        }
-        canonical.setAttribute('href', currentPage.seo.canonical);
-      }
-
-      // Update robots meta
-      if (currentPage.seo?.noIndex || currentPage.seo?.noFollow) {
-        let robots = document.querySelector('meta[name="robots"]');
-        if (!robots) {
-          robots = document.createElement('meta');
-          robots.setAttribute('name', 'robots');
-          document.head.appendChild(robots);
-        }
-        
-        const robotsContent = [];
-        if (currentPage.seo.noIndex) robotsContent.push('noindex');
-        if (currentPage.seo.noFollow) robotsContent.push('nofollow');
-        robots.setAttribute('content', robotsContent.join(', '));
-      }
-
-      // Add structured data (JSON-LD)
-      if (currentPage.seo?.structuredData) {
-        // Remove existing structured data
-        const existingScript = document.querySelector('script[type="application/ld+json"]');
-        if (existingScript) {
-          existingScript.remove();
-        }
-        
-        // Add new structured data
-        const script = document.createElement('script');
-        script.type = 'application/ld+json';
-        script.textContent = JSON.stringify(currentPage.seo.structuredData);
-        document.head.appendChild(script);
-      }
-
-      // Inject custom CSS
-      if (currentPage.customCSS) {
-        let customStyle = document.querySelector('#custom-page-css');
-        if (!customStyle) {
-          customStyle = document.createElement('style');
-          customStyle.id = 'custom-page-css';
-          document.head.appendChild(customStyle);
-        }
-        customStyle.textContent = currentPage.customCSS;
-      }
-
-      // Inject custom JS
-      if (currentPage.customJS) {
-        // Remove existing custom script
-        const existingScript = document.querySelector('#custom-page-js');
-        if (existingScript) {
-          existingScript.remove();
-        }
-        
-        // Add new custom script
-        const script = document.createElement('script');
-        script.id = 'custom-page-js';
-        script.textContent = currentPage.customJS;
-        document.body.appendChild(script);
-      }
+      customStyle.textContent = currentPage.customCSS;
     }
-  }, [currentPage, t]);
+
+    // Inject custom JS
+    if (currentPage?.customJS) {
+      // Remove existing custom script
+      const existingScript = document.querySelector('#custom-page-js');
+      if (existingScript) {
+        existingScript.remove();
+      }
+      
+      // Add new custom script
+      const script = document.createElement('script');
+      script.id = 'custom-page-js';
+      script.textContent = currentPage.customJS;
+      document.body.appendChild(script);
+    }
+  }, [currentPage]);
 
   // Show loading state during authentication check
   if (loading && currentPage?.auth?.required) {
@@ -269,6 +173,7 @@ export function SiteRenderer() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead seoData={seoData} />
       {!currentPage.hideHeader && <SiteHeader />}
       
       <main className={`flex-1 ${currentPage.layout === 'fullwidth' || currentPage.layout === 'landing' ? '' : 'py-8'}`}>

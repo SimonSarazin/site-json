@@ -56,13 +56,18 @@ app.use('*', async (req, res) => {
     // Load site configuration (you might want to load this from a database or file)
     const siteConfig = await loadSiteConfig();
     
-    const rendered = await render(siteConfig, url);
+    const { html: rendered, helmet } = await render(siteConfig, url);
     
-    // Generate meta tags for SEO
-    const metaTags = generateMetaTags(siteConfig, url);
+    // Extract helmet data for SEO
+    const metaTags = helmet ? [
+      helmet.title?.toString() || '',
+      helmet.meta?.toString() || '',
+      helmet.link?.toString() || '',
+      helmet.script?.toString() || ''
+    ].join('\n') : '';
     
     const html = template
-      .replace(`<!--app-html-->`, rendered.html)
+      .replace(`<!--app-html-->`, rendered)
       .replace(`<!--app-head-->`, metaTags);
 
     res.status(200).set({ 'Content-Type': 'text/html' }).send(html);
@@ -78,57 +83,6 @@ async function loadSiteConfig() {
   // In a real application, you might load this from a database or API
   const { demoSiteConfig } = await import('./src/data/demo-site.js');
   return demoSiteConfig;
-}
-
-// Function to generate meta tags for SEO
-function generateMetaTags(config, url) {
-  const currentPage = config.pages.find(page => page.path === url) || config.pages[0];
-  
-  const title = currentPage?.seo?.title 
-    ? Object.values(currentPage.seo.title)[0]
-    : Object.values(currentPage?.title || config.meta.title)[0];
-    
-  const description = currentPage?.seo?.description
-    ? Object.values(currentPage.seo.description)[0]
-    : Object.values(config.meta.description || {})[0];
-    
-  const ogImage = currentPage?.seo?.ogImage || '';
-  const canonical = currentPage?.seo?.canonical || `${process.env.SITE_URL || 'http://localhost:5173'}${url}`;
-  
-  let metaTags = `
-    <title>${title}</title>
-    <meta name="description" content="${description || ''}" />
-    <meta property="og:title" content="${title}" />
-    <meta property="og:description" content="${description || ''}" />
-    <meta property="og:url" content="${canonical}" />
-    <meta property="og:type" content="${currentPage?.seo?.ogType || 'website'}" />
-    <link rel="canonical" href="${canonical}" />
-  `;
-  
-  if (ogImage) {
-    metaTags += `<meta property="og:image" content="${ogImage}" />`;
-  }
-  
-  if (currentPage?.seo?.twitterCard) {
-    metaTags += `<meta name="twitter:card" content="${currentPage.seo.twitterCard}" />`;
-  }
-  
-  if (currentPage?.seo?.keywords) {
-    metaTags += `<meta name="keywords" content="${currentPage.seo.keywords.join(', ')}" />`;
-  }
-  
-  if (currentPage?.seo?.noIndex || currentPage?.seo?.noFollow) {
-    const robotsContent = [];
-    if (currentPage.seo.noIndex) robotsContent.push('noindex');
-    if (currentPage.seo.noFollow) robotsContent.push('nofollow');
-    metaTags += `<meta name="robots" content="${robotsContent.join(', ')}" />`;
-  }
-  
-  if (currentPage?.seo?.structuredData) {
-    metaTags += `<script type="application/ld+json">${JSON.stringify(currentPage.seo.structuredData)}</script>`;
-  }
-  
-  return metaTags;
 }
 
 app.listen(port, () => {

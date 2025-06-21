@@ -3,62 +3,56 @@ import { Helmet } from 'react-helmet-async';
 import { SEOData } from '@/lib/seo';
 
 interface SEOHeadProps {
-  seo: SEOData;
+  seoData: SEOData;
 }
 
-export function SEOHead({ seo }: SEOHeadProps) {
+export function SEOHead({ seoData }: SEOHeadProps) {
+  const robotsContent = [];
+  if (seoData.noIndex) robotsContent.push('noindex');
+  if (seoData.noFollow) robotsContent.push('nofollow');
+
   return (
     <Helmet>
-      <title>{seo.title}</title>
+      <title>{seoData.title}</title>
       
-      {seo.description && (
-        <meta name="description" content={seo.description} />
+      {seoData.description && (
+        <meta name="description" content={seoData.description} />
       )}
       
-      {seo.keywords && (
-        <meta name="keywords" content={seo.keywords.join(', ')} />
+      {seoData.keywords && seoData.keywords.length > 0 && (
+        <meta name="keywords" content={seoData.keywords.join(', ')} />
+      )}
+      
+      {seoData.canonical && (
+        <link rel="canonical" href={seoData.canonical} />
+      )}
+      
+      {robotsContent.length > 0 && (
+        <meta name="robots" content={robotsContent.join(', ')} />
       )}
       
       {/* Open Graph */}
-      <meta property="og:title" content={seo.title} />
-      {seo.description && (
-        <meta property="og:description" content={seo.description} />
+      <meta property="og:title" content={seoData.title} />
+      {seoData.description && (
+        <meta property="og:description" content={seoData.description} />
       )}
-      {seo.ogImage && (
-        <meta property="og:image" content={seo.ogImage} />
+      {seoData.canonical && (
+        <meta property="og:url" content={seoData.canonical} />
       )}
-      <meta property="og:type" content={seo.ogType || 'website'} />
+      <meta property="og:type" content={seoData.ogType || 'website'} />
+      {seoData.ogImage && (
+        <meta property="og:image" content={seoData.ogImage} />
+      )}
       
       {/* Twitter Card */}
-      <meta name="twitter:card" content={seo.twitterCard || 'summary_large_image'} />
-      <meta name="twitter:title" content={seo.title} />
-      {seo.description && (
-        <meta name="twitter:description" content={seo.description} />
-      )}
-      {seo.ogImage && (
-        <meta name="twitter:image" content={seo.ogImage} />
-      )}
-      
-      {/* Canonical URL */}
-      {seo.canonical && (
-        <link rel="canonical" href={seo.canonical} />
-      )}
-      
-      {/* Robots */}
-      {(seo.noIndex || seo.noFollow) && (
-        <meta 
-          name="robots" 
-          content={[
-            seo.noIndex ? 'noindex' : '',
-            seo.noFollow ? 'nofollow' : ''
-          ].filter(Boolean).join(', ')} 
-        />
+      {seoData.twitterCard && (
+        <meta name="twitter:card" content={seoData.twitterCard} />
       )}
       
       {/* Structured Data */}
-      {seo.structuredData && (
+      {seoData.structuredData && (
         <script type="application/ld+json">
-          {JSON.stringify(seo.structuredData)}
+          {JSON.stringify(seoData.structuredData)}
         </script>
       )}
     </Helmet>

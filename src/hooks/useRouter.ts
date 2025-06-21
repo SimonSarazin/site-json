@@ -7,12 +7,17 @@ export interface RouterState {
   goForward: () => void;
 }
 
-export function useRouter(): RouterState {
+export function useRouter(initialPath?: string): RouterState {
   const [currentPath, setCurrentPath] = useState(() => {
-    // SSR-safe initialization
+    // Prioritize initialPath for SSR consistency
+    if (initialPath) {
+      return initialPath;
+    }
+    // Fallback to window location for client-side
     if (typeof window !== 'undefined') {
       return window.location.pathname;
     }
+    // Default for SSR
     return '/';
   });
 
@@ -44,13 +49,6 @@ export function useRouter(): RouterState {
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
-
-  // Handle initial load and route changes
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setCurrentPath(window.location.pathname);
-    }
   }, []);
 
   return {

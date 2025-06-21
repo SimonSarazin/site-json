@@ -5,10 +5,11 @@ const RouterContext = createContext<RouterState | null>(null);
 
 interface RouterProviderProps {
   children: React.ReactNode;
+  initialPath?: string;
 }
 
-export function RouterProvider({ children }: RouterProviderProps) {
-  const router = useRouter();
+export function RouterProvider({ children, initialPath }: RouterProviderProps) {
+  const router = useRouter(initialPath);
 
   return (
     <RouterContext.Provider value={router}>

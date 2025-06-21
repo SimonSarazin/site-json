@@ -1,21 +1,20 @@
 import React from 'react';
 import { renderToString } from 'react-dom/server';
+import { HelmetProvider } from 'react-helmet-async';
 import App from './App';
 import { SiteConfig } from './types/site';
 
 export function render(config: SiteConfig, url: string) {
-  // Create a mock router context for SSR
-  const mockRouterContext = {
-    currentPath: url,
-    navigate: () => {},
-    goBack: () => {},
-    goForward: () => {}
-  };
+  const helmetContext = {};
 
-  // Create providers with SSR-safe defaults
   const html = renderToString(
-    <App />
+    <HelmetProvider context={helmetContext}>
+      <App initialConfig={config} initialPath={url} />
+    </HelmetProvider>
   );
 
-  return { html };
+  return { 
+    html,
+    helmet: helmetContext.helmet
+  };
 }
