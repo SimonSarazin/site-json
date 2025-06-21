@@ -5,6 +5,18 @@ import { CardsSection } from './CardsSection';
 import { TestimonialsSection } from './TestimonialsSection';
 import { PricingSection } from './PricingSection';
 import { FAQSection } from './FAQSection';
+import { BlogPostSection } from './BlogPostSection';
+import { BlogListSection } from './BlogListSection';
+import { TeamSection } from './TeamSection';
+import { StatsSection } from './StatsSection';
+import { CTASection } from './CTASection';
+import { LogoCloudSection } from './LogoCloudSection';
+import { AccordionSection } from './AccordionSection';
+import { TabsSection } from './TabsSection';
+import { StepsSection } from './StepsSection';
+import { TimelineSection } from './TimelineSection';
+import { BannerSection } from './BannerSection';
+import { ContactFormSection } from './ContactFormSection';
 import LoginForm from '../auth/LoginForm';
 import RegisterForm from '../auth/RegisterForm';
 import RecoverPasswordForm from '../auth/RecoverPasswordForm';
@@ -29,6 +41,42 @@ export function SectionRenderer({ section }: SectionRendererProps) {
     
     case 'faq':
       return <FAQSection id={section.id} props={section.props} />;
+    
+    case 'blogPost':
+      return <BlogPostSection id={section.id} props={section.props} />;
+    
+    case 'blogList':
+      return <BlogListSection id={section.id} props={section.props} />;
+    
+    case 'team':
+      return <TeamSection id={section.id} props={section.props} />;
+    
+    case 'stats':
+      return <StatsSection id={section.id} props={section.props} />;
+    
+    case 'cta':
+      return <CTASection id={section.id} props={section.props} />;
+    
+    case 'logoCloud':
+      return <LogoCloudSection id={section.id} props={section.props} />;
+    
+    case 'accordion':
+      return <AccordionSection id={section.id} props={section.props} />;
+    
+    case 'tabs':
+      return <TabsSection id={section.id} props={section.props} />;
+    
+    case 'steps':
+      return <StepsSection id={section.id} props={section.props} />;
+    
+    case 'timeline':
+      return <TimelineSection id={section.id} props={section.props} />;
+    
+    case 'banner':
+      return <BannerSection id={section.id} props={section.props} />;
+    
+    case 'contactForm':
+      return <ContactFormSection id={section.id} props={section.props} />;
     
     case 'loginForm':
       return (
