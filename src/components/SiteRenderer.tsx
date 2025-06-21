@@ -254,6 +254,7 @@ export function SiteRenderer() {
           </div>
         </div>
       );
+    }
     // Default, fullwidth, and landing layouts
     return (
       <div className={currentPage.layout === 'fullwidth' || currentPage.layout === 'landing' ? 'w-full' : ''}>
@@ -261,8 +262,9 @@ export function SiteRenderer() {
           <SectionRenderer key={index} section={section} />
         ))}
       </div>
+    );
+  };
 
-    }
   return (
     <div className="min-h-screen flex flex-col">
       {!currentPage.hideHeader && <SiteHeader />}
