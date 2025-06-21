@@ -2,7 +2,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import express from 'express';
-import { initApiClient } from './src/lib/apiClient.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isProduction = process.env.NODE_ENV === 'production';
@@ -13,9 +12,6 @@ const base = process.env.BASE || '/';
 const templateHtml = isProduction
   ? fs.readFileSync('./dist/client/index.html', 'utf-8')
   : '';
-const ssrManifest = isProduction
-  ? fs.readFileSync('./dist/client/.vite/ssr-manifest.json', 'utf-8')
-  : undefined;
 
 // Create http server
 const app = express();
@@ -54,31 +50,14 @@ app.use('*', async (req, res) => {
       render = (await import('./dist/server/entry-server.js')).render;
     }
 
-    // Load site configuration (you might want to load this from a database or file)
+    // Load site configuration
     const siteConfig = await loadSiteConfig();
     
-    // Initialize API client to get user and organization data
-    let initialMe = null;
-    let initialOrganization = null;
+    // For now, we'll use null values for user data to avoid API issues during development
+    const initialMe = null;
+    const initialOrganization = null;
     
-    try {
-      const { me, organization } = await initApiClient();
-      initialMe = me;
-      initialOrganization = organization;
-    } catch (error) {
-      console.log('Failed to initialize API client on server:', error.message);
-      // Continue with null values - this is expected when not authenticated
-    }
-    
-    const { html: rendered, helmet } = await render(siteConfig, url, initialMe, initialOrganization);
-    
-    // Extract helmet data for SEO
-    const metaTags = helmet ? [
-      helmet.title?.toString() || '',
-      helmet.meta?.toString() || '',
-      helmet.link?.toString() || '',
-      helmet.script?.toString() || ''
-    ].join('\n') : '';
+    const { html: rendered } = await render(siteConfig, url, initialMe, initialOrganization);
     
     // Serialize initial state for client-side hydration
     const initialState = {
@@ -92,11 +71,13 @@ app.use('*', async (req, res) => {
     
     const html = template
       .replace(`<!--app-html-->`, rendered)
-      .replace(`<!--app-head-->`, metaTags + '\n' + initialStateScript);
+      .replace(`<!--app-head-->`, initialStateScript);
 
     res.status(200).set({ 'Content-Type': 'text/html' }).send(html);
   } catch (e) {
-    vite?.ssrFixStacktrace(e);
+    if (vite) {
+      vite.ssrFixStacktrace(e);
+    }
     console.log(e.stack);
     res.status(500).end(e.stack);
   }
