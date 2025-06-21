@@ -17,6 +17,22 @@ import { StepsSection } from './StepsSection';
 import { TimelineSection } from './TimelineSection';
 import { BannerSection } from './BannerSection';
 import { ContactFormSection } from './ContactFormSection';
+import { MarkdownSection } from './MarkdownSection';
+import { GallerySection } from './GallerySection';
+import { VideoSection } from './VideoSection';
+import { TableSection } from './TableSection';
+import { ChartSection } from './ChartSection';
+import { MapSection } from './MapSection';
+import { NewsletterSection } from './NewsletterSection';
+import { ComparisonSection } from './ComparisonSection';
+import { FeatureComparisonSection } from './FeatureComparisonSection';
+import { SocialFeedSection } from './SocialFeedSection';
+import { SearchSection } from './SearchSection';
+import { EventListSection } from './EventListSection';
+import { ProductShowcaseSection } from './ProductShowcaseSection';
+import { BreadcrumbSection } from './BreadcrumbSection';
+import { CookieConsentSection } from './CookieConsentSection';
+import { HTMLSection } from './HTMLSection';
 import LoginForm from '../auth/LoginForm';
 import RegisterForm from '../auth/RegisterForm';
 import RecoverPasswordForm from '../auth/RecoverPasswordForm';
@@ -30,8 +46,17 @@ export function SectionRenderer({ section }: SectionRendererProps) {
     case 'hero':
       return <HeroSection id={section.id} props={section.props} />;
     
+    case 'markdown':
+      return <MarkdownSection id={section.id} props={section.props} />;
+    
     case 'cards':
       return <CardsSection id={section.id} props={section.props} />;
+    
+    case 'gallery':
+      return <GallerySection id={section.id} props={section.props} />;
+    
+    case 'video':
+      return <VideoSection id={section.id} props={section.props} />;
     
     case 'testimonials':
       return <TestimonialsSection id={section.id} props={section.props} />;
@@ -41,6 +66,9 @@ export function SectionRenderer({ section }: SectionRendererProps) {
     
     case 'faq':
       return <FAQSection id={section.id} props={section.props} />;
+    
+    case 'table':
+      return <TableSection id={section.id} props={section.props} />;
     
     case 'blogPost':
       return <BlogPostSection id={section.id} props={section.props} />;
@@ -60,6 +88,9 @@ export function SectionRenderer({ section }: SectionRendererProps) {
     case 'logoCloud':
       return <LogoCloudSection id={section.id} props={section.props} />;
     
+    case 'chart':
+      return <ChartSection id={section.id} props={section.props} />;
+    
     case 'accordion':
       return <AccordionSection id={section.id} props={section.props} />;
     
@@ -75,8 +106,41 @@ export function SectionRenderer({ section }: SectionRendererProps) {
     case 'banner':
       return <BannerSection id={section.id} props={section.props} />;
     
+    case 'map':
+      return <MapSection id={section.id} props={section.props} />;
+    
+    case 'newsletter':
+      return <NewsletterSection id={section.id} props={section.props} />;
+    
     case 'contactForm':
       return <ContactFormSection id={section.id} props={section.props} />;
+    
+    case 'comparison':
+      return <ComparisonSection id={section.id} props={section.props} />;
+    
+    case 'featureComparison':
+      return <FeatureComparisonSection id={section.id} props={section.props} />;
+    
+    case 'socialFeed':
+      return <SocialFeedSection id={section.id} props={section.props} />;
+    
+    case 'search':
+      return <SearchSection id={section.id} props={section.props} />;
+    
+    case 'eventList':
+      return <EventListSection id={section.id} props={section.props} />;
+    
+    case 'productShowcase':
+      return <ProductShowcaseSection id={section.id} props={section.props} />;
+    
+    case 'breadcrumb':
+      return <BreadcrumbSection id={section.id} props={section.props} />;
+    
+    case 'cookieConsent':
+      return <CookieConsentSection id={section.id} props={section.props} />;
+    
+    case 'html':
+      return <HTMLSection id={section.id} props={section.props} />;
     
     case 'loginForm':
       return (
@@ -108,76 +172,6 @@ export function SectionRenderer({ section }: SectionRendererProps) {
               <RecoverPasswordForm />
             </div>
           </div>
-        </section>
-      );
-    
-    case 'markdown':
-      return (
-        <section id={section.id} className="py-16 bg-background text-foreground">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="max-w-4xl mx-auto prose prose-gray dark:prose-invert">
-              {section.props.sourceType === 'inline' ? (
-                <div dangerouslySetInnerHTML={{ __html: section.props.md }} />
-              ) : (
-                <div>Content from: {section.props.md}</div>
-              )}
-            </div>
-          </div>
-        </section>
-      );
-    
-    case 'gallery':
-      return (
-        <section id={section.id} className="py-16 bg-background text-foreground">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className={`grid grid-cols-1 md:grid-cols-${section.props.columns} gap-4`}>
-              {section.props.images.map((image, index) => (
-                <div key={index} className="aspect-square overflow-hidden rounded-lg">
-                  <img
-                    src={image.src}
-                    alt={image.alt ? Object.values(image.alt)[0] : `Gallery image ${index + 1}`}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      );
-    
-    case 'video':
-      return (
-        <section id={section.id} className="py-16 bg-background text-foreground">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="max-w-4xl mx-auto">
-              <div className={`aspect-video rounded-lg overflow-hidden`}>
-                {section.props.provider === 'youtube' && (
-                  <iframe
-                    src={`https://www.youtube.com/embed/${section.props.src}`}
-                    className="w-full h-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                )}
-                {section.props.provider === 'local' && (
-                  <video
-                    src={section.props.src}
-                    controls={section.props.controls}
-                    autoPlay={section.props.autoplay}
-                    loop={section.props.loop}
-                    className="w-full h-full"
-                  />
-                )}
-              </div>
-            </div>
-          </div>
-        </section>
-      );
-    
-    case 'html':
-      return (
-        <section id={section.id}>
-          <div dangerouslySetInnerHTML={{ __html: section.props.html }} />
         </section>
       );
     
