@@ -4,12 +4,17 @@ import { HelmetProvider } from 'react-helmet-async';
 import App from './App';
 import { SiteConfig } from './types/site';
 
-export function render(config: SiteConfig, url: string) {
+export function render(config: SiteConfig, url: string, initialMe: any = null, initialOrganization: any = null) {
   const helmetContext = {};
 
   const html = renderToString(
     <HelmetProvider context={helmetContext}>
-      <App initialConfig={config} initialPath={url} />
+      <App 
+        initialConfig={config} 
+        initialPath={url}
+        initialMe={initialMe}
+        initialOrganization={initialOrganization}
+      />
     </HelmetProvider>
   );
 

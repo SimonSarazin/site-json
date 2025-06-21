@@ -15,15 +15,21 @@ import './App.css';
 interface AppProps {
   initialConfig?: SiteConfig;
   initialPath?: string;
+  initialMe?: any;
+  initialOrganization?: any;
 }
 
-function App({ initialConfig, initialPath }: AppProps = {}) {
+function App({ initialConfig, initialPath, initialMe, initialOrganization }: AppProps = {}) {
   const config = initialConfig || demoSiteConfig;
   
   return (
     <HelmetProvider>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-        <CocolightProvider clientOptions={{ baseURL: getBaseUrl(), debug: true }}>
+        <CocolightProvider 
+          clientOptions={{ baseURL: getBaseUrl(), debug: true }}
+          initialMe={initialMe}
+          initialOrganization={initialOrganization}
+        >
           <RouterProvider initialPath={initialPath}>
             <SiteProvider config={config}>
               <LocalizationProvider 

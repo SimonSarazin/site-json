@@ -6,27 +6,33 @@ import { initApiClient } from "../lib/apiClient";
 import { getSlug } from "../lib/constant/common";
 import { CocolightContext } from "./CocolightContext";
 
-export function CocolightProvider({ children, clientOptions = {}, initialOrganization  }) {
+export function CocolightProvider({ children, clientOptions = {}, initialMe = null, initialOrganization = null }) {
   const [apiClient, setApiClient] = useState(null);
   const [userApi, setUserApi] = useState(null);
   const [api, setApi] = useState(null);
-  const [me, setMe] = useState(null);
-  const [organization, setOrganization] = useState(initialOrganization ?? null);
-  const [loading, setLoading] = useState(initialOrganization ? false : true);
+  const [me, setMe] = useState(initialMe);
+  const [organization, setOrganization] = useState(initialOrganization);
+  const [loading, setLoading] = useState(false); // Always start with false since server has determined initial state
 
   useEffect(() => {
     async function init() {
-      const { client, userApiInstance, me, api, organization } = await initApiClient(clientOptions);
+      const { client, userApiInstance, me: fetchedMe, api, organization: fetchedOrganization } = await initApiClient(clientOptions);
       setApiClient(client);
       setUserApi(userApiInstance);
-      setMe(me);
-      setOrganization(organization);
+      
+      // Only update state if we don't have initial values from server
+      if (initialMe === undefined) {
+        setMe(fetchedMe);
+      }
+      if (initialOrganization === undefined) {
+        setOrganization(fetchedOrganization);
+      }
+      
       setApi(api);
-      setLoading(false);
     }
 
     init();
-  }, [clientOptions]);
+  }, [clientOptions, initialMe, initialOrganization]);
 
   // 🛠 écoute des événements du client
   useEffect(() => {

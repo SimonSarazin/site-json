@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import express from 'express';
+import { initApiClient } from './src/lib/apiClient.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isProduction = process.env.NODE_ENV === 'production';
@@ -56,7 +57,20 @@ app.use('*', async (req, res) => {
     // Load site configuration (you might want to load this from a database or file)
     const siteConfig = await loadSiteConfig();
     
-    const { html: rendered, helmet } = await render(siteConfig, url);
+    // Initialize API client to get user and organization data
+    let initialMe = null;
+    let initialOrganization = null;
+    
+    try {
+      const { me, organization } = await initApiClient();
+      initialMe = me;
+      initialOrganization = organization;
+    } catch (error) {
+      console.log('Failed to initialize API client on server:', error.message);
+      // Continue with null values - this is expected when not authenticated
+    }
+    
+    const { html: rendered, helmet } = await render(siteConfig, url, initialMe, initialOrganization);
     
     // Extract helmet data for SEO
     const metaTags = helmet ? [
