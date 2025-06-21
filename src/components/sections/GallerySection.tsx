@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useLocalization } from '@/contexts/LocalizationContext';
@@ -88,6 +88,9 @@ export function GallerySection({ id, props }: GallerySectionProps) {
         {lightbox && selectedImage !== null && (
           <Dialog open={selectedImage !== null} onOpenChange={() => setSelectedImage(null)}>
             <DialogContent className="max-w-4xl w-full h-full max-h-[90vh] p-0">
+              <DialogHeader>
+                <DialogTitle className="sr-only">Image Gallery</DialogTitle>
+              </DialogHeader>
               <div className="relative w-full h-full flex items-center justify-center bg-black">
                 <Button
                   variant="ghost"
