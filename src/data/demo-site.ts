@@ -85,6 +85,16 @@ export const demoSiteConfig: SiteConfig = {
         title: { fr: "SiteForge - Générateur de Sites JSON", en: "SiteForge - JSON Site Generator" },
         description: { fr: "Créez des sites web magnifiques à partir de simple configurations JSON. Rapide, moderne et entièrement personnalisable.", en: "Create beautiful websites from simple JSON configurations. Fast, modern and fully customizable." },
         ogImage: "https://images.pexels.com/photos/17171481/pexels-photo-17171481/free-photo-of-abstract-blue-and-purple-gradient-background.jpeg?auto=compress&cs=tinysrgb&w=1200&h=630&dpr=2",
+        ogType: "website",
+        twitterCard: "summary_large_image",
+        keywords: ["site web", "JSON", "générateur", "no-code"],
+        structuredData: {
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          "name": "SiteForge",
+          "description": "Générateur de sites web JSON",
+          "url": "https://siteforge.com"
+        }
       },
       layout: "default",
       sections: [
@@ -1249,8 +1259,10 @@ export const demoSiteConfig: SiteConfig = {
       seo: {
         title: { fr: "Connexion - SiteForge", en: "Login - SiteForge" },
         description: { fr: "Connectez-vous à votre compte SiteForge", en: "Login to your SiteForge account" },
+        noIndex: true, // Don't index login pages
       },
       layout: "default",
+      middleware: ["redirect-if-authenticated"], // Redirect if already logged in
       sections: [
         {
           type: "loginForm",
@@ -1265,8 +1277,10 @@ export const demoSiteConfig: SiteConfig = {
       seo: {
         title: { fr: "Inscription - SiteForge", en: "Register - SiteForge" },
         description: { fr: "Créez votre compte SiteForge gratuitement", en: "Create your free SiteForge account" },
+        noIndex: true, // Don't index registration pages
       },
       layout: "default",
+      middleware: ["redirect-if-authenticated"], // Redirect if already logged in
       sections: [
         {
           type: "registerForm",
@@ -1281,8 +1295,10 @@ export const demoSiteConfig: SiteConfig = {
       seo: {
         title: { fr: "Récupération de mot de passe - SiteForge", en: "Password Recovery - SiteForge" },
         description: { fr: "Récupérez l'accès à votre compte SiteForge", en: "Recover access to your SiteForge account" },
+        noIndex: true, // Don't index password recovery pages
       },
       layout: "default",
+      middleware: ["redirect-if-authenticated"], // Redirect if already logged in
       sections: [
         {
           type: "recoverPasswordForm",
@@ -1297,8 +1313,11 @@ export const demoSiteConfig: SiteConfig = {
       seo: {
         title: { fr: "Profil - SiteForge", en: "Profile - SiteForge" },
         description: { fr: "Gérez votre profil SiteForge", en: "Manage your SiteForge profile" },
+        noIndex: true, // Don't index profile pages
       },
       layout: "default",
+      auth: { required: true }, // Require authentication
+      middleware: ["auth-required"], // Check authentication
       sections: [
         {
           type: "hero",
@@ -1315,6 +1334,228 @@ export const demoSiteConfig: SiteConfig = {
             align: "center",
           },
         },
+      ],
+    },
+    {
+      path: "/admin",
+      title: { fr: "Administration - SiteForge", en: "Administration - SiteForge" },
+      seo: {
+        title: { fr: "Administration - SiteForge", en: "Administration - SiteForge" },
+        description: { fr: "Panneau d'administration SiteForge", en: "SiteForge administration panel" },
+        noIndex: true,
+        noFollow: true,
+      },
+      layout: "sidebar-left",
+      auth: { required: true, roles: ["admin"] },
+      middleware: ["auth-required", "admin-only"],
+      sections: [
+        {
+          type: "hero",
+          id: "admin-hero",
+          props: {
+            headline: { 
+              fr: "Panneau d'Administration", 
+              en: "Administration Panel" 
+            },
+            subhead: { 
+              fr: "Gérez votre site et vos utilisateurs", 
+              en: "Manage your site and users" 
+            },
+            align: "center",
+          },
+        },
+        {
+          type: "cards",
+          id: "admin-tools",
+          props: {
+            columns: 2,
+            layout: "grid",
+            items: [
+              {
+                icon: "users",
+                title: { fr: "Gestion des utilisateurs", en: "User Management" },
+                text: { fr: "Gérez les comptes utilisateurs et leurs permissions", en: "Manage user accounts and their permissions" },
+                href: "/admin/users",
+              },
+              {
+                icon: "settings",
+                title: { fr: "Configuration du site", en: "Site Configuration" },
+                text: { fr: "Modifiez les paramètres généraux du site", en: "Modify general site settings" },
+                href: "/admin/settings",
+              },
+              {
+                icon: "barChart",
+                title: { fr: "Statistiques", en: "Analytics" },
+                text: { fr: "Consultez les statistiques de votre site", en: "View your site analytics" },
+                href: "/admin/analytics",
+              },
+              {
+                icon: "shield",
+                title: { fr: "Sécurité", en: "Security" },
+                text: { fr: "Gérez la sécurité et les accès", en: "Manage security and access" },
+                href: "/admin/security",
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      path: "/showcase",
+      title: { fr: "Vitrine - SiteForge", en: "Showcase - SiteForge" },
+      seo: {
+        title: { fr: "Vitrine des fonctionnalités - SiteForge", en: "Feature Showcase - SiteForge" },
+        description: { fr: "Découvrez toutes les sections et fonctionnalités disponibles", en: "Discover all available sections and features" },
+      },
+      layout: "fullwidth",
+      customCSS: `
+        .showcase-section {
+          border: 2px dashed hsl(var(--border));
+          margin: 1rem 0;
+          position: relative;
+        }
+        .showcase-section::before {
+          content: attr(data-section-type);
+          position: absolute;
+          top: -1px;
+          left: 1rem;
+          background: hsl(var(--background));
+          padding: 0.25rem 0.5rem;
+          font-size: 0.75rem;
+          color: hsl(var(--muted-foreground));
+          border: 1px solid hsl(var(--border));
+          border-bottom: none;
+        }
+      `,
+      sections: [
+        {
+          type: "hero",
+          id: "showcase-hero",
+          props: {
+            headline: { 
+              fr: "Vitrine des Sections", 
+              en: "Section Showcase" 
+            },
+            subhead: { 
+              fr: "Découvrez toutes les sections disponibles dans SiteForge", 
+              en: "Discover all available sections in SiteForge" 
+            },
+            align: "center",
+          },
+        },
+        // Add examples of all section types here...
+        {
+          type: "markdown",
+          id: "showcase-markdown",
+          props: {
+            md: "<h2>Section Markdown</h2><p>Cette section permet d'afficher du contenu <strong>Markdown</strong> ou <em>HTML</em> directement.</p><ul><li>Support du HTML</li><li>Contenu riche</li><li>Flexible</li></ul>",
+            sourceType: "inline"
+          }
+        },
+        {
+          type: "gallery",
+          id: "showcase-gallery",
+          props: {
+            images: [
+              {
+                src: "https://images.pexels.com/photos/196644/pexels-photo-196644.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&dpr=2",
+                alt: { fr: "Image 1", en: "Image 1" },
+                caption: { fr: "Légende de l'image 1", en: "Caption for image 1" }
+              },
+              {
+                src: "https://images.pexels.com/photos/270348/pexels-photo-270348.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&dpr=2",
+                alt: { fr: "Image 2", en: "Image 2" }
+              },
+              {
+                src: "https://images.pexels.com/photos/267350/pexels-photo-267350.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&dpr=2",
+                alt: { fr: "Image 3", en: "Image 3" }
+              }
+            ],
+            columns: 3,
+            lightbox: true
+          }
+        },
+        {
+          type: "video",
+          id: "showcase-video",
+          props: {
+            src: "dQw4w9WgXcQ", // Rick Roll video ID for demo
+            provider: "youtube",
+            ratio: "16/9"
+          }
+        },
+        {
+          type: "table",
+          id: "showcase-table",
+          props: {
+            headers: [
+              { fr: "Nom", en: "Name" },
+              { fr: "Age", en: "Age" },
+              { fr: "Ville", en: "City" }
+            ],
+            rows: [
+              [
+                { fr: "Alice", en: "Alice" },
+                { fr: "25", en: "25" },
+                { fr: "Paris", en: "Paris" }
+              ],
+              [
+                { fr: "Bob", en: "Bob" },
+                { fr: "30", en: "30" },
+                { fr: "Lyon", en: "Lyon" }
+              ],
+              [
+                { fr: "Charlie", en: "Charlie" },
+                { fr: "35", en: "35" },
+                { fr: "Marseille", en: "Marseille" }
+              ]
+            ],
+            sortable: true,
+            pagination: false
+          }
+        },
+        {
+          type: "chart",
+          id: "showcase-chart",
+          props: {
+            kind: "bar",
+            data: [
+              { month: "Jan", sales: 400, revenue: 2400 },
+              { month: "Feb", sales: 300, revenue: 1398 },
+              { month: "Mar", sales: 200, revenue: 9800 },
+              { month: "Apr", sales: 278, revenue: 3908 },
+              { month: "May", sales: 189, revenue: 4800 }
+            ],
+            xKey: "month",
+            yKeys: ["sales", "revenue"],
+            legend: true
+          }
+        },
+        {
+          type: "map",
+          id: "showcase-map",
+          props: {
+            center: [48.8566, 2.3522], // Paris coordinates
+            zoom: 13,
+            markers: [
+              {
+                position: [48.8566, 2.3522],
+                label: { fr: "Paris", en: "Paris" },
+                popup: { fr: "Capitale de la France", en: "Capital of France" }
+              }
+            ]
+          }
+        },
+        {
+          type: "newsletter",
+          id: "showcase-newsletter",
+          props: {
+            headline: { fr: "Newsletter de démonstration", en: "Demo Newsletter" },
+            subhead: { fr: "Inscrivez-vous pour recevoir nos actualités", en: "Subscribe to receive our news" },
+            formAction: "/api/newsletter",
+            submitLabel: { fr: "S'abonner", en: "Subscribe" }
+          }
+        }
       ],
     },
   ],
