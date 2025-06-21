@@ -261,8 +261,6 @@ export function SiteRenderer() {
           <SectionRenderer key={index} section={section} />
         ))}
       </div>
-    );
-  };
 
     }
   return (
