@@ -24,6 +24,7 @@ export function StatsSection({ id, props }: StatsSectionProps) {
 
   useEffect(() => {
     if (!animated) return;
+    if (typeof window === 'undefined') return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {

@@ -41,7 +41,7 @@ export function LocalizationProvider({
 
   const setLocale = (locale: Locale) => {
     setCurrentLocale(locale);
-    if (isClient) {
+    if (typeof window !== 'undefined') {
       localStorage.setItem('preferred-locale', locale);
     }
   };

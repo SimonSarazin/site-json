@@ -1,0 +1,10 @@
+import React from 'react';
+import { renderToString } from 'react-dom/server';
+import App from './App';
+
+export function render(url: string, context: any = {}) {
+  // Set up any server-side context here
+  const html = renderToString(<App />);
+  
+  return { html, context };
+}

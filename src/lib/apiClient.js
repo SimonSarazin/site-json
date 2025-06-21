@@ -21,7 +21,9 @@ export async function initApiClient(options = {}) {
   initPromise = (async () => {
     const isServer = typeof window === "undefined";
 
-    const tokenStorageStrategy = isServer ? await Cocolight.tokenStorageStrategy.createDefaultMultiServerTokenStorageStrategy("memory") : await Cocolight.tokenStorageStrategy.createDefaultMultiServerTokenStorageStrategy("localStorage");
+    const tokenStorageStrategy = isServer 
+      ? await Cocolight.tokenStorageStrategy.createDefaultMultiServerTokenStorageStrategy("memory") 
+      : await Cocolight.tokenStorageStrategy.createDefaultMultiServerTokenStorageStrategy("localStorage");
 
     client = new Cocolight.ApiClient({
       baseURL: options.baseURL ?? getBaseUrl(),
@@ -36,14 +38,20 @@ export async function initApiClient(options = {}) {
     let organization = null;
 
     const slug = getSlug();
-    if(userApiInstance.client.isConnected) {
-      const loggedUser = await userApiInstance.meIsconnected();
-      api = new Cocolight.Api(loggedUser, userApiInstance.client);
-      me = await api.me();
-      organization = await me.organization({ slug: slug });
-    } else {
+    
+    try {
+      if(userApiInstance.client.isConnected) {
+        const loggedUser = await userApiInstance.meIsconnected();
+        api = new Cocolight.Api(loggedUser, userApiInstance.client);
+        me = await api.me();
+        organization = await me.organization({ slug: slug });
+      } else {
+        api = new Cocolight.Api(null, userApiInstance.client);
+        organization = await api.organization({ slug: slug });
+      }
+    } catch (error) {
+      console.error('Error initializing API:', error);
       api = new Cocolight.Api(null, userApiInstance.client);
-      organization = await api.organization({ slug: slug });
     }
 
     return { client, userApiInstance, api, me, organization };

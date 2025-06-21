@@ -22,7 +22,7 @@ export function SiteRenderer() {
 
   // Update document title and meta tags only on client
   useEffect(() => {
-    if (!isClient || !currentPage) return;
+    if (typeof window === 'undefined' || !currentPage) return;
     
     document.title = currentPage.seo?.title 
       ? t(currentPage.seo.title)
@@ -49,7 +49,7 @@ export function SiteRenderer() {
       }
       ogImage.setAttribute('content', currentPage.seo.ogImage);
     }
-  }, [currentPage, t, isClient]);
+  }, [currentPage, t]);
 
   if (!currentPage) {
     return (

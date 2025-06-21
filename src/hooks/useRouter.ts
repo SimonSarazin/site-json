@@ -12,7 +12,7 @@ export function useRouter(): RouterState {
     if (typeof window !== 'undefined') {
       return window.location.pathname;
     }
-    return '/';
+    return '/'; // Default path for SSR
   });
 
   const navigate = (path: string) => {
@@ -36,6 +36,9 @@ export function useRouter(): RouterState {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    
+    // Set initial path on client hydration
+    setCurrentPath(window.location.pathname);
     
     const handlePopState = () => {
       setCurrentPath(window.location.pathname);
