@@ -259,6 +259,20 @@ const LoginFormSection = z.object({
   props: z.object({}),
 });
 
+//──────────────── Register Form
+const RegisterFormSection = z.object({
+  type: z.literal("registerForm"),
+  id: z.string().optional(),
+  props: z.object({}),
+});
+
+//──────────────── Recover Password Form
+const RecoverPasswordFormSection = z.object({
+  type: z.literal("recoverPasswordForm"),
+  id: z.string().optional(),
+  props: z.object({}),
+});
+
 //──────────────── HTML libre
 const HTMLSection = z.object({
   type: z.literal("html"),
@@ -286,6 +300,8 @@ export const Section = z.union([
   BannerSection,
   NewsletterSection,
   LoginFormSection,
+  RegisterFormSection,
+  RecoverPasswordFormSection,
   HTMLSection,
 ]);
 export type Section = z.infer<typeof Section>;

@@ -6,6 +6,8 @@ import { TestimonialsSection } from './TestimonialsSection';
 import { PricingSection } from './PricingSection';
 import { FAQSection } from './FAQSection';
 import LoginForm from '../auth/LoginForm';
+import RegisterForm from '../auth/RegisterForm';
+import RecoverPasswordForm from '../auth/RecoverPasswordForm';
 
 interface SectionRendererProps {
   section: Section;
@@ -34,6 +36,28 @@ export function SectionRenderer({ section }: SectionRendererProps) {
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-md mx-auto">
               <LoginForm />
+            </div>
+          </div>
+        </section>
+      );
+    
+    case 'registerForm':
+      return (
+        <section id={section.id} className="py-16 bg-background">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-md mx-auto">
+              <RegisterForm />
+            </div>
+          </div>
+        </section>
+      );
+    
+    case 'recoverPasswordForm':
+      return (
+        <section id={section.id} className="py-16 bg-background">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-md mx-auto">
+              <RecoverPasswordForm />
             </div>
           </div>
         </section>

@@ -92,7 +92,26 @@ export default function LoginForm() {
           {loadingLogin ? "Connexion..." : "Se connecter"}
         </Button>
         
-        <div className="text-center">
+        <div className="text-center space-y-2">
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/recover-password')}
+            className="text-sm text-primary hover:text-primary/80"
+          >
+            Mot de passe oublié ?
+          </Button>
+          
+          <div className="text-sm text-muted-foreground">
+            Pas encore de compte ?{" "}
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/register')}
+              className="text-primary hover:text-primary/80 p-0 h-auto font-normal"
+            >
+              S'inscrire
+            </Button>
+          </div>
+          
           <Button
             variant="ghost"
             onClick={() => navigate('/')}

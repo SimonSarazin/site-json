@@ -497,6 +497,38 @@ export const demoSiteConfig: SiteConfig = {
       ],
     },
     {
+      path: "/register",
+      title: { fr: "Inscription - SiteForge", en: "Register - SiteForge" },
+      seo: {
+        title: { fr: "Inscription - SiteForge", en: "Register - SiteForge" },
+        description: { fr: "Créez votre compte SiteForge gratuitement", en: "Create your free SiteForge account" },
+      },
+      layout: "default",
+      sections: [
+        {
+          type: "registerForm",
+          id: "register-form",
+          props: {}
+        }
+      ],
+    },
+    {
+      path: "/recover-password",
+      title: { fr: "Récupération de mot de passe - SiteForge", en: "Password Recovery - SiteForge" },
+      seo: {
+        title: { fr: "Récupération de mot de passe - SiteForge", en: "Password Recovery - SiteForge" },
+        description: { fr: "Récupérez l'accès à votre compte SiteForge", en: "Recover access to your SiteForge account" },
+      },
+      layout: "default",
+      sections: [
+        {
+          type: "recoverPasswordForm",
+          id: "recover-password-form",
+          props: {}
+        }
+      ],
+    },
+    {
       path: "/profile",
       title: { fr: "Profil - SiteForge", en: "Profile - SiteForge" },
       seo: {
