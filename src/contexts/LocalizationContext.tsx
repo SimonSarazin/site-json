@@ -22,20 +22,26 @@ export function LocalizationProvider({
   availableLocales = LOCALES 
 }: LocalizationProviderProps) {
   const [currentLocale, setCurrentLocale] = useState<Locale>(defaultLocale);
+  const [isClient, setIsClient] = useState(false);
 
-  // Persist locale to localStorage
+  // Mark when we're on the client
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    setIsClient(true);
+  }, []);
+
+  // Only access localStorage on the client
+  useEffect(() => {
+    if (!isClient) return;
     
     const savedLocale = localStorage.getItem('preferred-locale') as Locale;
     if (savedLocale && availableLocales.includes(savedLocale)) {
       setCurrentLocale(savedLocale);
     }
-  }, [availableLocales]);
+  }, [isClient, availableLocales]);
 
   const setLocale = (locale: Locale) => {
     setCurrentLocale(locale);
-    if (typeof window !== 'undefined') {
+    if (isClient) {
       localStorage.setItem('preferred-locale', locale);
     }
   };

@@ -7,25 +7,19 @@ export interface RouterState {
   goForward: () => void;
 }
 
-export function useRouter(initialPath?: string): RouterState {
+export function useRouter(): RouterState {
   const [currentPath, setCurrentPath] = useState(() => {
-    // Prioritize initialPath for SSR consistency
-    if (initialPath) {
-      return initialPath;
-    }
-    // Fallback to window location for client-side
     if (typeof window !== 'undefined') {
       return window.location.pathname;
     }
-    // Default for SSR
     return '/';
   });
 
   const navigate = (path: string) => {
     if (typeof window !== 'undefined') {
       window.history.pushState({}, '', path);
+      setCurrentPath(path);
     }
-    setCurrentPath(path);
   };
 
   const goBack = () => {

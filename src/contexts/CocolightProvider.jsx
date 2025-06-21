@@ -6,33 +6,36 @@ import { initApiClient } from "../lib/apiClient";
 import { getSlug } from "../lib/constant/common";
 import { CocolightContext } from "./CocolightContext";
 
-export function CocolightProvider({ children, clientOptions = {}, initialMe = null, initialOrganization = null }) {
+export function CocolightProvider({ children, clientOptions = {} }) {
   const [apiClient, setApiClient] = useState(null);
   const [userApi, setUserApi] = useState(null);
   const [api, setApi] = useState(null);
-  const [me, setMe] = useState(initialMe);
-  const [organization, setOrganization] = useState(initialOrganization);
-  const [loading, setLoading] = useState(false); // Always start with false since server has determined initial state
+  const [me, setMe] = useState(null);
+  const [organization, setOrganization] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function init() {
-      const { client, userApiInstance, me: fetchedMe, api, organization: fetchedOrganization } = await initApiClient(clientOptions);
-      setApiClient(client);
-      setUserApi(userApiInstance);
-      
-      // Only update state if we don't have initial values from server
-      if (initialMe === undefined) {
-        setMe(fetchedMe);
+      try {
+        const { client, userApiInstance, me, api, organization } = await initApiClient(clientOptions);
+        setApiClient(client);
+        setUserApi(userApiInstance);
+        setMe(me);
+        setOrganization(organization);
+        setApi(api);
+      } catch (error) {
+        console.error('Error initializing Cocolight:', error);
+        // Set default values on error
+        setMe(null);
+        setOrganization(null);
+        setApi(null);
+      } finally {
+        setLoading(false);
       }
-      if (initialOrganization === undefined) {
-        setOrganization(fetchedOrganization);
-      }
-      
-      setApi(api);
     }
 
     init();
-  }, [clientOptions, initialMe, initialOrganization]);
+  }, []);
 
   // 🛠 écoute des événements du client
   useEffect(() => {
@@ -55,7 +58,9 @@ export function CocolightProvider({ children, clientOptions = {}, initialMe = nu
 
     const handleSessionReset = async () => {
       setMe(null);
-      setApi(new Cocolight.Api(null, userApi.client));
+      if (userApi?.client) {
+        setApi(new Cocolight.Api(null, userApi.client));
+      }
     };
 
     userApi.client.on("userLoggedIn", handleUserLoggedIn);
@@ -77,7 +82,7 @@ export function CocolightProvider({ children, clientOptions = {}, initialMe = nu
       me, 
       api, 
       organization, 
-      helper: Cocolight.helper, 
+      helper: Cocolight?.helper, 
       dataToProfile,
       setDataToProfile 
     }}>
