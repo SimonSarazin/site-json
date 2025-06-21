@@ -153,6 +153,67 @@ export const demoSiteConfig: SiteConfig = {
           },
         },
         {
+          type: "stats",
+          id: "stats",
+          props: {
+            items: [
+              {
+                value: "10,000+",
+                label: { fr: "Sites créés", en: "Sites created" },
+                description: { fr: "Sites web générés avec succès", en: "Websites successfully generated" },
+                icon: "globe"
+              },
+              {
+                value: "99.9%",
+                label: { fr: "Disponibilité", en: "Uptime" },
+                description: { fr: "Garantie de service", en: "Service guarantee" },
+                icon: "shield"
+              },
+              {
+                value: "50ms",
+                label: { fr: "Temps de réponse", en: "Response time" },
+                description: { fr: "Performance ultra-rapide", en: "Ultra-fast performance" },
+                icon: "zap"
+              },
+              {
+                value: "24/7",
+                label: { fr: "Support", en: "Support" },
+                description: { fr: "Assistance disponible", en: "Available assistance" },
+                icon: "headphones"
+              }
+            ],
+            layout: "horizontal",
+            animated: true
+          }
+        },
+        {
+          type: "logoCloud",
+          id: "partners",
+          props: {
+            title: { fr: "Ils nous font confiance", en: "They trust us" },
+            logos: [
+              {
+                src: "https://images.pexels.com/photos/267350/pexels-photo-267350.jpeg?auto=compress&cs=tinysrgb&w=120&h=60&dpr=2",
+                alt: { fr: "Partenaire 1", en: "Partner 1" }
+              },
+              {
+                src: "https://images.pexels.com/photos/267350/pexels-photo-267350.jpeg?auto=compress&cs=tinysrgb&w=120&h=60&dpr=2",
+                alt: { fr: "Partenaire 2", en: "Partner 2" }
+              },
+              {
+                src: "https://images.pexels.com/photos/267350/pexels-photo-267350.jpeg?auto=compress&cs=tinysrgb&w=120&h=60&dpr=2",
+                alt: { fr: "Partenaire 3", en: "Partner 3" }
+              },
+              {
+                src: "https://images.pexels.com/photos/267350/pexels-photo-267350.jpeg?auto=compress&cs=tinysrgb&w=120&h=60&dpr=2",
+                alt: { fr: "Partenaire 4", en: "Partner 4" }
+              }
+            ],
+            grayscale: true,
+            animated: false
+          }
+        },
+        {
           type: "testimonials",
           id: "testimonials",
           props: {
@@ -271,6 +332,28 @@ export const demoSiteConfig: SiteConfig = {
               },
             ],
           },
+        },
+        {
+          type: "cta",
+          id: "cta-bottom",
+          props: {
+            headline: { fr: "Prêt à commencer ?", en: "Ready to get started?" },
+            subhead: { fr: "Créez votre premier site en quelques minutes", en: "Create your first site in minutes" },
+            backgroundImage: "https://images.pexels.com/photos/17171481/pexels-photo-17171481/free-photo-of-abstract-blue-and-purple-gradient-background.jpeg?auto=compress&cs=tinysrgb&w=1920&h=600&dpr=2",
+            buttons: [
+              {
+                label: { fr: "Commencer gratuitement", en: "Start for free" },
+                href: "/register",
+                variant: "default"
+              },
+              {
+                label: { fr: "Voir les tarifs", en: "View pricing" },
+                href: "/pricing",
+                variant: "outline"
+              }
+            ],
+            align: "center"
+          }
         },
       ],
     },
@@ -427,6 +510,27 @@ export const demoSiteConfig: SiteConfig = {
             ],
           },
         },
+        {
+          type: "faq",
+          id: "pricing-faq",
+          props: {
+            accordion: true,
+            items: [
+              {
+                q: { fr: "Puis-je changer de plan à tout moment ?", en: "Can I change plans anytime?" },
+                a: { fr: "Oui, vous pouvez upgrader ou downgrader votre plan à tout moment. Les changements prennent effet immédiatement.", en: "Yes, you can upgrade or downgrade your plan anytime. Changes take effect immediately." },
+              },
+              {
+                q: { fr: "Y a-t-il des frais cachés ?", en: "Are there any hidden fees?" },
+                a: { fr: "Non, nos tarifs sont transparents. Le prix affiché est le prix que vous payez, sans frais cachés.", en: "No, our pricing is transparent. The displayed price is what you pay, with no hidden fees." },
+              },
+              {
+                q: { fr: "Puis-je annuler à tout moment ?", en: "Can I cancel anytime?" },
+                a: { fr: "Oui, vous pouvez annuler votre abonnement à tout moment. Aucun engagement à long terme.", en: "Yes, you can cancel your subscription anytime. No long-term commitment." },
+              },
+            ],
+          },
+        },
       ],
     },
     {
@@ -454,6 +558,58 @@ export const demoSiteConfig: SiteConfig = {
           },
         },
         {
+          type: "contactForm",
+          id: "contact-form",
+          props: {
+            fields: [
+              {
+                name: "name",
+                label: { fr: "Nom complet", en: "Full name" },
+                type: "text",
+                required: true,
+                placeholder: { fr: "Votre nom", en: "Your name" }
+              },
+              {
+                name: "email",
+                label: { fr: "Adresse e-mail", en: "Email address" },
+                type: "email",
+                required: true,
+                placeholder: { fr: "votre@email.com", en: "your@email.com" },
+                validation: "email"
+              },
+              {
+                name: "subject",
+                label: { fr: "Sujet", en: "Subject" },
+                type: "select",
+                required: true,
+                options: [
+                  { fr: "Question générale", en: "General question" },
+                  { fr: "Support technique", en: "Technical support" },
+                  { fr: "Demande commerciale", en: "Sales inquiry" },
+                  { fr: "Partenariat", en: "Partnership" }
+                ]
+              },
+              {
+                name: "message",
+                label: { fr: "Message", en: "Message" },
+                type: "textarea",
+                required: true,
+                placeholder: { fr: "Décrivez votre demande...", en: "Describe your request..." }
+              },
+              {
+                name: "newsletter",
+                label: { fr: "Je souhaite recevoir la newsletter", en: "I want to receive the newsletter" },
+                type: "checkbox"
+              }
+            ],
+            submitLabel: { fr: "Envoyer le message", en: "Send message" },
+            action: "/api/contact",
+            method: "POST",
+            successMessage: { fr: "Votre message a été envoyé avec succès !", en: "Your message has been sent successfully!" },
+            errorMessage: { fr: "Une erreur est survenue lors de l'envoi", en: "An error occurred while sending" }
+          }
+        },
+        {
           type: "cards",
           id: "contact-info",
           props: {
@@ -478,6 +634,195 @@ export const demoSiteConfig: SiteConfig = {
             ],
           },
         },
+      ],
+    },
+    {
+      path: "/blog",
+      title: { fr: "Blog - SiteForge", en: "Blog - SiteForge" },
+      seo: {
+        title: { fr: "Blog - SiteForge", en: "Blog - SiteForge" },
+        description: { fr: "Découvrez nos derniers articles et conseils", en: "Discover our latest articles and tips" },
+      },
+      layout: "default",
+      sections: [
+        {
+          type: "hero",
+          id: "blog-hero",
+          props: {
+            headline: { 
+              fr: "Notre Blog", 
+              en: "Our Blog" 
+            },
+            subhead: { 
+              fr: "Conseils, actualités et guides pour créer des sites exceptionnels", 
+              en: "Tips, news and guides to create exceptional websites" 
+            },
+            align: "center",
+          },
+        },
+        {
+          type: "blogList",
+          id: "blog-posts",
+          props: {
+            posts: [
+              {
+                id: "1",
+                title: { fr: "Comment créer un site web moderne en 2025", en: "How to create a modern website in 2025" },
+                excerpt: { fr: "Découvrez les dernières tendances et meilleures pratiques pour créer des sites web qui se démarquent.", en: "Discover the latest trends and best practices for creating websites that stand out." },
+                slug: "site-web-moderne-2025",
+                publishedAt: "2025-01-15",
+                author: {
+                  name: { fr: "Marie Dubois", en: "Marie Dubois" },
+                  avatar: "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2"
+                },
+                featuredImage: "https://images.pexels.com/photos/196644/pexels-photo-196644.jpeg?auto=compress&cs=tinysrgb&w=600&h=300&dpr=2",
+                tags: [
+                  { fr: "Web Design", en: "Web Design" },
+                  { fr: "Tendances", en: "Trends" }
+                ],
+                readTime: 8
+              },
+              {
+                id: "2",
+                title: { fr: "Optimiser les performances de votre site", en: "Optimize your website performance" },
+                excerpt: { fr: "Techniques avancées pour améliorer la vitesse et l'expérience utilisateur de votre site web.", en: "Advanced techniques to improve the speed and user experience of your website." },
+                slug: "optimiser-performances-site",
+                publishedAt: "2025-01-10",
+                author: {
+                  name: { fr: "Thomas Martin", en: "Thomas Martin" },
+                  avatar: "https://images.pexels.com/photos/1300402/pexels-photo-1300402.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2"
+                },
+                featuredImage: "https://images.pexels.com/photos/270348/pexels-photo-270348.jpeg?auto=compress&cs=tinysrgb&w=600&h=300&dpr=2",
+                tags: [
+                  { fr: "Performance", en: "Performance" },
+                  { fr: "SEO", en: "SEO" }
+                ],
+                readTime: 12
+              },
+              {
+                id: "3",
+                title: { fr: "Guide complet du responsive design", en: "Complete guide to responsive design" },
+                excerpt: { fr: "Tout ce que vous devez savoir pour créer des sites qui s'adaptent parfaitement à tous les écrans.", en: "Everything you need to know to create sites that adapt perfectly to all screens." },
+                slug: "guide-responsive-design",
+                publishedAt: "2025-01-05",
+                author: {
+                  name: { fr: "Sarah Johnson", en: "Sarah Johnson" },
+                  avatar: "https://images.pexels.com/photos/1065084/pexels-photo-1065084.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2"
+                },
+                featuredImage: "https://images.pexels.com/photos/196644/pexels-photo-196644.jpeg?auto=compress&cs=tinysrgb&w=600&h=300&dpr=2",
+                tags: [
+                  { fr: "Responsive", en: "Responsive" },
+                  { fr: "CSS", en: "CSS" }
+                ],
+                readTime: 15
+              }
+            ],
+            layout: "grid",
+            columns: 3,
+            pagination: true,
+            postsPerPage: 6
+          }
+        }
+      ],
+    },
+    {
+      path: "/about",
+      title: { fr: "À propos - SiteForge", en: "About - SiteForge" },
+      seo: {
+        title: { fr: "À propos - SiteForge", en: "About - SiteForge" },
+        description: { fr: "Découvrez l'équipe et la mission de SiteForge", en: "Discover the team and mission of SiteForge" },
+      },
+      layout: "default",
+      sections: [
+        {
+          type: "hero",
+          id: "about-hero",
+          props: {
+            headline: { 
+              fr: "Notre Mission", 
+              en: "Our Mission" 
+            },
+            subhead: { 
+              fr: "Démocratiser la création de sites web pour tous", 
+              en: "Democratize website creation for everyone" 
+            },
+            align: "center",
+          },
+        },
+        {
+          type: "team",
+          id: "team",
+          props: {
+            members: [
+              {
+                name: { fr: "Marie Dubois", en: "Marie Dubois" },
+                role: { fr: "CEO & Fondatrice", en: "CEO & Founder" },
+                bio: { fr: "Passionnée de technologie et d'innovation, Marie a créé SiteForge pour rendre la création web accessible à tous.", en: "Passionate about technology and innovation, Marie created SiteForge to make web creation accessible to everyone." },
+                avatar: "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&dpr=2",
+                socials: [
+                  { platform: "linkedin", url: "https://linkedin.com" },
+                  { platform: "twitter", url: "https://twitter.com" }
+                ]
+              },
+              {
+                name: { fr: "Thomas Martin", en: "Thomas Martin" },
+                role: { fr: "CTO", en: "CTO" },
+                bio: { fr: "Expert en développement web avec plus de 10 ans d'expérience dans les technologies modernes.", en: "Web development expert with over 10 years of experience in modern technologies." },
+                avatar: "https://images.pexels.com/photos/1300402/pexels-photo-1300402.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&dpr=2",
+                socials: [
+                  { platform: "github", url: "https://github.com" },
+                  { platform: "linkedin", url: "https://linkedin.com" }
+                ]
+              },
+              {
+                name: { fr: "Sarah Johnson", en: "Sarah Johnson" },
+                role: { fr: "Head of Design", en: "Head of Design" },
+                bio: { fr: "Designer UX/UI créative, Sarah s'assure que chaque site créé avec SiteForge offre une expérience exceptionnelle.", en: "Creative UX/UI designer, Sarah ensures that every site created with SiteForge offers an exceptional experience." },
+                avatar: "https://images.pexels.com/photos/1065084/pexels-photo-1065084.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&dpr=2",
+                socials: [
+                  { platform: "instagram", url: "https://instagram.com" },
+                  { platform: "linkedin", url: "https://linkedin.com" }
+                ]
+              }
+            ],
+            layout: "grid",
+            columns: 3
+          }
+        },
+        {
+          type: "timeline",
+          id: "timeline",
+          props: {
+            events: [
+              {
+                date: "2023-01-01",
+                title: { fr: "Création de SiteForge", en: "SiteForge Creation" },
+                text: { fr: "Lancement de l'idée et début du développement de la plateforme.", en: "Launch of the idea and start of platform development." }
+              },
+              {
+                date: "2023-06-01",
+                title: { fr: "Version Beta", en: "Beta Version" },
+                text: { fr: "Sortie de la première version beta avec les fonctionnalités de base.", en: "Release of the first beta version with basic features." }
+              },
+              {
+                date: "2024-01-01",
+                title: { fr: "Lancement Public", en: "Public Launch" },
+                text: { fr: "Ouverture officielle de SiteForge au grand public.", en: "Official opening of SiteForge to the general public." }
+              },
+              {
+                date: "2024-06-01",
+                title: { fr: "10,000 Sites Créés", en: "10,000 Sites Created" },
+                text: { fr: "Franchissement du cap des 10,000 sites web créés sur la plateforme.", en: "Milestone of 10,000 websites created on the platform." }
+              },
+              {
+                date: "2025-01-01",
+                title: { fr: "Nouvelles Fonctionnalités", en: "New Features" },
+                text: { fr: "Ajout de fonctionnalités avancées et amélioration de l'expérience utilisateur.", en: "Addition of advanced features and improvement of user experience." }
+              }
+            ],
+            alternating: true
+          }
+        }
       ],
     },
     {
