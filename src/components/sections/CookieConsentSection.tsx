@@ -43,6 +43,8 @@ export function CookieConsentSection({ id, props }: CookieConsentSectionProps) {
   const [preferences, setPreferences] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     // Check if user has already made a choice
     const consent = localStorage.getItem('cookie-consent');
     if (!consent) {

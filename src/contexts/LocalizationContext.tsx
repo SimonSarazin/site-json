@@ -25,6 +25,8 @@ export function LocalizationProvider({
 
   // Persist locale to localStorage
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const savedLocale = localStorage.getItem('preferred-locale') as Locale;
     if (savedLocale && availableLocales.includes(savedLocale)) {
       setCurrentLocale(savedLocale);
@@ -33,7 +35,9 @@ export function LocalizationProvider({
 
   const setLocale = (locale: Locale) => {
     setCurrentLocale(locale);
-    localStorage.setItem('preferred-locale', locale);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('preferred-locale', locale);
+    }
   };
 
   const t = (text: LocalizedString, fallback = 'Missing translation'): string => {

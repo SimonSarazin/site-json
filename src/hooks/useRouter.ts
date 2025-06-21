@@ -9,23 +9,35 @@ export interface RouterState {
 
 export function useRouter(): RouterState {
   const [currentPath, setCurrentPath] = useState(() => {
-    return window.location.pathname;
+    // SSR-safe initialization
+    if (typeof window !== 'undefined') {
+      return window.location.pathname;
+    }
+    return '/';
   });
 
   const navigate = (path: string) => {
-    window.history.pushState({}, '', path);
+    if (typeof window !== 'undefined') {
+      window.history.pushState({}, '', path);
+    }
     setCurrentPath(path);
   };
 
   const goBack = () => {
-    window.history.back();
+    if (typeof window !== 'undefined') {
+      window.history.back();
+    }
   };
 
   const goForward = () => {
-    window.history.forward();
+    if (typeof window !== 'undefined') {
+      window.history.forward();
+    }
   };
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const handlePopState = () => {
       setCurrentPath(window.location.pathname);
     };
@@ -36,7 +48,9 @@ export function useRouter(): RouterState {
 
   // Handle initial load and route changes
   useEffect(() => {
-    setCurrentPath(window.location.pathname);
+    if (typeof window !== 'undefined') {
+      setCurrentPath(window.location.pathname);
+    }
   }, []);
 
   return {

@@ -42,6 +42,8 @@ export function SiteRenderer() {
   }, [currentPage, me, loading]);
   // Update document title and meta tags
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     if (currentPage) {
       document.title = currentPage.seo?.title 
         ? t(currentPage.seo.title)
