@@ -62,6 +62,12 @@ export const demoSiteConfig: SiteConfig = {
         label: { fr: "Contact", en: "Contact" },
         icon: "mail"
       },
+      { 
+        path: "/showcase", 
+        label: { fr: "Showcase", en: "Showcase" },
+        icon: "eye",
+        badge: { text: { fr: "Nouveau", en: "New" }, color: "primary" }
+      },
     ],
     sticky: true,
     utilities: {
@@ -821,6 +827,418 @@ export const demoSiteConfig: SiteConfig = {
               }
             ],
             alternating: true
+          }
+        }
+      ],
+    },
+    {
+      path: "/showcase",
+      title: { fr: "Showcase - SiteForge", en: "Showcase - SiteForge" },
+      seo: {
+        title: { fr: "Showcase des Sections - SiteForge", en: "Section Showcase - SiteForge" },
+        description: { fr: "Découvrez toutes les sections disponibles dans SiteForge", en: "Discover all available sections in SiteForge" },
+      },
+      layout: "default",
+      sections: [
+        {
+          type: "hero",
+          id: "showcase-hero",
+          props: {
+            headline: { 
+              fr: "Showcase de Toutes les Sections", 
+              en: "All Sections Showcase" 
+            },
+            subhead: { 
+              fr: "Découvrez la puissance complète de SiteForge avec tous les types de sections disponibles", 
+              en: "Discover the full power of SiteForge with all available section types" 
+            },
+            align: "center",
+          },
+        },
+        {
+          type: "breadcrumb",
+          id: "showcase-breadcrumb",
+          props: {
+            items: [
+              { label: { fr: "Accueil", en: "Home" }, href: "/" },
+              { label: { fr: "Showcase", en: "Showcase" } }
+            ]
+          }
+        },
+        {
+          type: "banner",
+          id: "showcase-banner",
+          props: {
+            text: { fr: "🎉 Bienvenue dans le showcase complet de SiteForge !", en: "🎉 Welcome to the complete SiteForge showcase!" },
+            variant: "info",
+            dismissible: true
+          }
+        },
+        {
+          type: "markdown",
+          id: "showcase-markdown",
+          props: {
+            md: `
+              <h2>Section Markdown</h2>
+              <p>Cette section permet d'afficher du contenu <strong>Markdown</strong> ou <em>HTML</em> directement.</p>
+              <ul>
+                <li>Support du HTML</li>
+                <li>Styles automatiques</li>
+                <li>Responsive design</li>
+              </ul>
+              <blockquote>
+                <p>Parfait pour du contenu riche et formaté !</p>
+              </blockquote>
+            `,
+            sourceType: "inline"
+          }
+        },
+        {
+          type: "gallery",
+          id: "showcase-gallery",
+          props: {
+            images: [
+              {
+                src: "https://images.pexels.com/photos/196644/pexels-photo-196644.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&dpr=2",
+                alt: { fr: "Image 1", en: "Image 1" },
+                caption: { fr: "Première image de la galerie", en: "First gallery image" }
+              },
+              {
+                src: "https://images.pexels.com/photos/270348/pexels-photo-270348.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&dpr=2",
+                alt: { fr: "Image 2", en: "Image 2" },
+                caption: { fr: "Deuxième image de la galerie", en: "Second gallery image" }
+              },
+              {
+                src: "https://images.pexels.com/photos/267350/pexels-photo-267350.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&dpr=2",
+                alt: { fr: "Image 3", en: "Image 3" },
+                caption: { fr: "Troisième image de la galerie", en: "Third gallery image" }
+              },
+              {
+                src: "https://images.pexels.com/photos/574071/pexels-photo-574071.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&dpr=2",
+                alt: { fr: "Image 4", en: "Image 4" },
+                caption: { fr: "Quatrième image de la galerie", en: "Fourth gallery image" }
+              }
+            ],
+            columns: 2,
+            lightbox: true
+          }
+        },
+        {
+          type: "video",
+          id: "showcase-video",
+          props: {
+            src: "dQw4w9WgXcQ",
+            provider: "youtube",
+            ratio: "16/9"
+          }
+        },
+        {
+          type: "table",
+          id: "showcase-table",
+          props: {
+            headers: [
+              { fr: "Nom", en: "Name" },
+              { fr: "Age", en: "Age" },
+              { fr: "Ville", en: "City" },
+              { fr: "Profession", en: "Job" }
+            ],
+            rows: [
+              [
+                { fr: "Marie Dubois", en: "Marie Dubois" },
+                { fr: "28", en: "28" },
+                { fr: "Paris", en: "Paris" },
+                { fr: "Développeuse", en: "Developer" }
+              ],
+              [
+                { fr: "Thomas Martin", en: "Thomas Martin" },
+                { fr: "35", en: "35" },
+                { fr: "Lyon", en: "Lyon" },
+                { fr: "Designer", en: "Designer" }
+              ],
+              [
+                { fr: "Sarah Johnson", en: "Sarah Johnson" },
+                { fr: "31", en: "31" },
+                { fr: "Marseille", en: "Marseille" },
+                { fr: "Chef de projet", en: "Project Manager" }
+              ]
+            ],
+            sortable: true,
+            pagination: false
+          }
+        },
+        {
+          type: "chart",
+          id: "showcase-chart",
+          props: {
+            kind: "bar",
+            data: [
+              { month: "Jan", sales: 4000, visitors: 2400 },
+              { month: "Feb", sales: 3000, visitors: 1398 },
+              { month: "Mar", sales: 2000, visitors: 9800 },
+              { month: "Apr", sales: 2780, visitors: 3908 },
+              { month: "May", sales: 1890, visitors: 4800 },
+              { month: "Jun", sales: 2390, visitors: 3800 }
+            ],
+            xKey: "month",
+            yKeys: ["sales", "visitors"],
+            legend: true
+          }
+        },
+        {
+          type: "map",
+          id: "showcase-map",
+          props: {
+            center: [48.8566, 2.3522],
+            zoom: 13,
+            markers: [
+              {
+                position: [48.8566, 2.3522],
+                label: { fr: "Paris", en: "Paris" },
+                popup: { fr: "Capitale de la France", en: "Capital of France" }
+              },
+              {
+                position: [48.8606, 2.3376],
+                label: { fr: "Tour Eiffel", en: "Eiffel Tower" },
+                popup: { fr: "Monument emblématique", en: "Iconic monument" }
+              }
+            ]
+          }
+        },
+        {
+          type: "newsletter",
+          id: "showcase-newsletter",
+          props: {
+            headline: { fr: "Restez Informé", en: "Stay Updated" },
+            subhead: { fr: "Recevez nos dernières actualités directement dans votre boîte mail", en: "Get our latest news directly in your inbox" },
+            formAction: "/api/newsletter",
+            emailPlaceholder: { fr: "votre@email.com", en: "your@email.com" },
+            submitLabel: { fr: "S'abonner", en: "Subscribe" },
+            successMessage: { fr: "Merci pour votre inscription !", en: "Thank you for subscribing!" }
+          }
+        },
+        {
+          type: "comparison",
+          id: "showcase-comparison",
+          props: {
+            beforeImage: "https://images.pexels.com/photos/196644/pexels-photo-196644.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&dpr=2",
+            afterImage: "https://images.pexels.com/photos/270348/pexels-photo-270348.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&dpr=2",
+            beforeLabel: { fr: "Avant", en: "Before" },
+            afterLabel: { fr: "Après", en: "After" },
+            orientation: "horizontal"
+          }
+        },
+        {
+          type: "featureComparison",
+          id: "showcase-feature-comparison",
+          props: {
+            features: [
+              {
+                name: { fr: "Sites illimités", en: "Unlimited sites" },
+                description: { fr: "Créez autant de sites que vous voulez", en: "Create as many sites as you want" }
+              },
+              {
+                name: { fr: "Support 24/7", en: "24/7 Support" },
+                description: { fr: "Assistance disponible à tout moment", en: "Assistance available anytime" }
+              },
+              {
+                name: { fr: "Templates premium", en: "Premium templates" },
+                description: { fr: "Accès aux templates exclusifs", en: "Access to exclusive templates" }
+              }
+            ],
+            plans: [
+              {
+                name: { fr: "Gratuit", en: "Free" },
+                features: [false, false, false],
+                highlighted: false
+              },
+              {
+                name: { fr: "Pro", en: "Pro" },
+                features: [true, "Email uniquement", true],
+                highlighted: true
+              },
+              {
+                name: { fr: "Entreprise", en: "Enterprise" },
+                features: [true, true, true],
+                highlighted: false
+              }
+            ]
+          }
+        },
+        {
+          type: "socialFeed",
+          id: "showcase-social-feed",
+          props: {
+            platform: "twitter",
+            feedId: "siteforge",
+            limit: 6,
+            layout: "grid"
+          }
+        },
+        {
+          type: "search",
+          id: "showcase-search",
+          props: {
+            placeholder: { fr: "Rechercher...", en: "Search..." },
+            searchEndpoint: "/api/search",
+            categories: [
+              { id: "docs", label: { fr: "Documentation", en: "Documentation" } },
+              { id: "tutorials", label: { fr: "Tutoriels", en: "Tutorials" } },
+              { id: "examples", label: { fr: "Exemples", en: "Examples" } }
+            ],
+            filters: [
+              {
+                id: "difficulty",
+                label: { fr: "Difficulté", en: "Difficulty" },
+                type: "radio",
+                options: [
+                  { value: "beginner", label: { fr: "Débutant", en: "Beginner" } },
+                  { value: "intermediate", label: { fr: "Intermédiaire", en: "Intermediate" } },
+                  { value: "advanced", label: { fr: "Avancé", en: "Advanced" } }
+                ]
+              },
+              {
+                id: "topics",
+                label: { fr: "Sujets", en: "Topics" },
+                type: "checkbox",
+                options: [
+                  { value: "react", label: { fr: "React", en: "React" } },
+                  { value: "typescript", label: { fr: "TypeScript", en: "TypeScript" } },
+                  { value: "css", label: { fr: "CSS", en: "CSS" } }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          type: "eventList",
+          id: "showcase-events",
+          props: {
+            events: [
+              {
+                id: "1",
+                title: { fr: "Conférence SiteForge 2025", en: "SiteForge Conference 2025" },
+                description: { fr: "Découvrez les dernières nouveautés et rencontrez la communauté", en: "Discover the latest features and meet the community" },
+                startDate: "2025-03-15T09:00:00Z",
+                endDate: "2025-03-15T17:00:00Z",
+                location: { fr: "Paris, France", en: "Paris, France" },
+                image: "https://images.pexels.com/photos/196644/pexels-photo-196644.jpeg?auto=compress&cs=tinysrgb&w=600&h=300&dpr=2",
+                registrationUrl: "https://example.com/register",
+                price: "Gratuit",
+                tags: [
+                  { fr: "Conférence", en: "Conference" },
+                  { fr: "Gratuit", en: "Free" }
+                ]
+              },
+              {
+                id: "2",
+                title: { fr: "Workshop Avancé", en: "Advanced Workshop" },
+                description: { fr: "Atelier pratique pour maîtriser les fonctionnalités avancées", en: "Hands-on workshop to master advanced features" },
+                startDate: "2025-04-20T14:00:00Z",
+                endDate: "2025-04-20T18:00:00Z",
+                location: { fr: "En ligne", en: "Online" },
+                registrationUrl: "https://example.com/workshop",
+                price: "29€",
+                tags: [
+                  { fr: "Workshop", en: "Workshop" },
+                  { fr: "Payant", en: "Paid" }
+                ]
+              }
+            ],
+            layout: "grid",
+            showPastEvents: false
+          }
+        },
+        {
+          type: "productShowcase",
+          id: "showcase-products",
+          props: {
+            products: [
+              {
+                id: "1",
+                name: { fr: "Template Business", en: "Business Template" },
+                description: { fr: "Template professionnel pour entreprises avec toutes les sections essentielles", en: "Professional template for businesses with all essential sections" },
+                price: "49€",
+                images: [
+                  "https://images.pexels.com/photos/196644/pexels-photo-196644.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&dpr=2",
+                  "https://images.pexels.com/photos/270348/pexels-photo-270348.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&dpr=2"
+                ],
+                features: [
+                  { fr: "Design responsive", en: "Responsive design" },
+                  { fr: "SEO optimisé", en: "SEO optimized" },
+                  { fr: "Support inclus", en: "Support included" }
+                ],
+                cta: {
+                  label: { fr: "Acheter", en: "Buy Now" },
+                  href: "/buy/business-template"
+                }
+              },
+              {
+                id: "2",
+                name: { fr: "Template Portfolio", en: "Portfolio Template" },
+                description: { fr: "Parfait pour présenter vos créations et projets", en: "Perfect for showcasing your creations and projects" },
+                price: "29€",
+                images: [
+                  "https://images.pexels.com/photos/267350/pexels-photo-267350.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&dpr=2"
+                ],
+                features: [
+                  { fr: "Galerie intégrée", en: "Built-in gallery" },
+                  { fr: "Animations fluides", en: "Smooth animations" }
+                ],
+                cta: {
+                  label: { fr: "Acheter", en: "Buy Now" },
+                  href: "/buy/portfolio-template"
+                }
+              }
+            ],
+            layout: "grid",
+            showPrices: true
+          }
+        },
+        {
+          type: "cookieConsent",
+          id: "showcase-cookies",
+          props: {
+            message: { fr: "Nous utilisons des cookies pour améliorer votre expérience sur notre site.", en: "We use cookies to improve your experience on our site." },
+            acceptLabel: { fr: "Accepter tout", en: "Accept all" },
+            declineLabel: { fr: "Refuser", en: "Decline" },
+            settingsLabel: { fr: "Paramètres", en: "Settings" },
+            policyUrl: "/privacy",
+            position: "bottom",
+            categories: [
+              {
+                id: "necessary",
+                label: { fr: "Nécessaires", en: "Necessary" },
+                description: { fr: "Ces cookies sont essentiels au fonctionnement du site", en: "These cookies are essential for the site to function" },
+                required: true
+              },
+              {
+                id: "analytics",
+                label: { fr: "Analytiques", en: "Analytics" },
+                description: { fr: "Nous aident à comprendre comment vous utilisez notre site", en: "Help us understand how you use our site" },
+                required: false
+              },
+              {
+                id: "marketing",
+                label: { fr: "Marketing", en: "Marketing" },
+                description: { fr: "Utilisés pour vous proposer des publicités pertinentes", en: "Used to show you relevant advertisements" },
+                required: false
+              }
+            ]
+          }
+        },
+        {
+          type: "html",
+          id: "showcase-html",
+          props: {
+            html: `
+              <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 3rem; border-radius: 1rem; text-align: center; color: white; margin: 2rem 0;">
+                <h2 style="margin: 0 0 1rem 0; font-size: 2rem;">Section HTML Personnalisée</h2>
+                <p style="margin: 0; opacity: 0.9;">Cette section permet d'insérer du HTML personnalisé pour des besoins spécifiques.</p>
+                <button style="margin-top: 1rem; padding: 0.5rem 1rem; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: 0.5rem; color: white; cursor: pointer;">
+                  Bouton personnalisé
+                </button>
+              </div>
+            `
           }
         }
       ],
