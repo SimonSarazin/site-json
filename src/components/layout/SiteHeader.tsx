@@ -121,7 +121,7 @@ export function SiteHeader() {
   const { t, currentLocale, setLocale, availableLocales } = useLocalization();
   const { setTheme, theme } = useTheme();
   const { navigate } = useRouterContext();
-  const { me, userApi, loading } = useCocolight();
+  const { me, api, loading } = useCocolight();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const { header } = config;
@@ -135,7 +135,7 @@ export function SiteHeader() {
 
   const handleLogout = async () => {
     try {
-      await userApi.logout();
+      api.logout();
       navigate('/');
     } catch (error) {
       console.error('Erreur lors de la déconnexion:', error);
