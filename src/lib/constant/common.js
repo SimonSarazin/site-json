@@ -12,7 +12,11 @@ export function getBaseUrl() {
   if (typeof process !== "undefined" && process.env?.VITE_BASE_URL_BACKEND) {
     return process.env.VITE_BASE_URL_BACKEND;
   }
-  return import.meta.env.VITE_BASE_URL_BACKEND; // fallback build time
+  // Fallback for SSR
+  if (typeof import.meta !== "undefined" && import.meta.env?.VITE_BASE_URL_BACKEND) {
+    return import.meta.env.VITE_BASE_URL_BACKEND;
+  }
+  return "http://localhost:3000"; // Default fallback
 }
 
 export function getSlug() {
@@ -22,7 +26,10 @@ export function getSlug() {
   if (typeof process !== "undefined" && process.env?.VITE_SLUG) {
     return process.env.VITE_SLUG;
   }
-  return import.meta.env.VITE_SLUG; // fallback build time
+  if (typeof import.meta !== "undefined" && import.meta.env?.VITE_SLUG) {
+    return import.meta.env.VITE_SLUG;
+  }
+  return "default"; // Default fallback
 }
 
 export function getServerUrl() {
@@ -32,5 +39,8 @@ export function getServerUrl() {
   if (typeof process !== "undefined" && process.env?.VITE_SERVER_URL) {
     return process.env.VITE_SERVER_URL;
   }
-  return import.meta.env.VITE_SERVER_URL; // fallback build time
+  if (typeof import.meta !== "undefined" && import.meta.env?.VITE_SERVER_URL) {
+    return import.meta.env.VITE_SERVER_URL;
+  }
+  return "http://localhost:3000"; // Default fallback
 }

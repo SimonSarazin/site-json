@@ -2,7 +2,7 @@ import path from 'path';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
-export default defineConfig(({ command, ssrBuild }) => ({
+export default defineConfig(({ command, mode, ssrBuild }) => ({
   plugins: [react()],
   resolve: {
     alias: {
@@ -12,21 +12,19 @@ export default defineConfig(({ command, ssrBuild }) => ({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  define: {
+    'process.env.NODE_ENV': JSON.stringify(mode),
+  },
   build: {
     rollupOptions: ssrBuild ? {
       input: 'src/entry-server.tsx',
       output: {
         format: 'es'
       }
-    } : {
-      rollupOptions: {
-        input: {
-          main: path.resolve(__dirname, 'index.html')
-        }
-      }
-    }
+    } : undefined
   },
   ssr: {
-    noExternal: ['@radix-ui/*', 'lucide-react']
+    noExternal: ['@radix-ui/*', 'lucide-react', '@communecter/cocolight-api-client'],
+    external: ['express', 'compression', 'serve-static']
   }
 }));
