@@ -19,7 +19,7 @@ async function createServer() {
   });
 
   // Use vite's connect instance as middleware
-  app.use(vite.ssrLoadModule);
+  app.use(vite.middlewares);
 
   app.use('*', async (req, res, next) => {
     const url = req.originalUrl;
