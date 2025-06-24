@@ -7,12 +7,12 @@ export interface RouterState {
   goForward: () => void;
 }
 
-export function useRouter(): RouterState {
+export function useRouter(initialPath = "/"): RouterState {
   const [currentPath, setCurrentPath] = useState(() => {
     if (typeof window !== 'undefined') {
       return window.location.pathname;
     }
-    return '/'; // Default path for SSR
+    return initialPath; // Default path for SSR
   });
 
   const navigate = (path: string) => {

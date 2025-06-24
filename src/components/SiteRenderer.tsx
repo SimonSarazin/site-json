@@ -2,55 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { SiteHeader } from './layout/SiteHeader';
 import { SiteFooter } from './layout/SiteFooter';
 import { SectionRenderer } from './sections/SectionRenderer';
-import { useLocalization } from '@/contexts/LocalizationContext';
 import { useSite } from '@/contexts/SiteContext';
 import { useRouterContext } from '@/contexts/RouterContext';
-import { Helmet } from '@dr.pogodin/react-helmet';
+import { Seo } from './layout/Seo';
 
 export function SiteRenderer() {
   const { config } = useSite();
-  const { t } = useLocalization();
   const { currentPath } = useRouterContext();
-  const [isClient, setIsClient] = useState(false);
-
-  // Mark when we're on the client
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   // Find the current page
   const currentPage = config.pages.find(page => page.path === currentPath) || config.pages[0];
-
-  // Update document title and meta tags only on client
-  useEffect(() => {
-    if (typeof window === 'undefined' || !currentPage) return;
-    
-    document.title = currentPage.seo?.title 
-      ? t(currentPage.seo.title)
-      : t(currentPage.title);
-    
-    // Update meta description
-    if (currentPage.seo?.description) {
-      let metaDescription = document.querySelector('meta[name="description"]');
-      if (!metaDescription) {
-        metaDescription = document.createElement('meta');
-        metaDescription.setAttribute('name', 'description');
-        document.head.appendChild(metaDescription);
-      }
-      metaDescription.setAttribute('content', t(currentPage.seo.description));
-    }
-
-    // Update OG image
-    if (currentPage.seo?.ogImage) {
-      let ogImage = document.querySelector('meta[property="og:image"]');
-      if (!ogImage) {
-        ogImage = document.createElement('meta');
-        ogImage.setAttribute('property', 'og:image');
-        document.head.appendChild(ogImage);
-      }
-      ogImage.setAttribute('content', currentPage.seo.ogImage);
-    }
-  }, [currentPage, t]);
 
   if (!currentPage) {
     return (
@@ -68,11 +29,7 @@ export function SiteRenderer() {
 
   return (
     <>
-    <Helmet>
-      <title>{currentPage.seo?.title ? t(currentPage.seo.title) : t(currentPage.title)}</title>
-      <meta name="description" content={currentPage.seo?.description ? t(currentPage.seo.description) : ''} />
-      {currentPage.seo?.ogImage && <meta property="og:image" content={currentPage.seo.ogImage} />}
-    </Helmet>
+    <Seo page={currentPage} /> 
     <div className="min-h-screen flex flex-col">
       {!currentPage.hideHeader && <SiteHeader />}
       

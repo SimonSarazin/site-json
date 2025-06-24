@@ -2,6 +2,7 @@ import React from 'react';
 import { renderToString } from 'react-dom/server';
 import { HelmetProvider } from "@dr.pogodin/react-helmet";
 import App from './App';
+import { RouterProvider } from './contexts/RouterContext';
 
 export async function render(url: string, context: any = {}) {
   try {
@@ -10,7 +11,9 @@ export async function render(url: string, context: any = {}) {
 
   const html = renderToString(
     <HelmetProvider context={helmetContext}>
-      <App />
+        <RouterProvider initialPath={new URL(url, "http://dummy").pathname}>
+          <App />
+        </RouterProvider>
     </HelmetProvider>
   );
     

@@ -12,7 +12,7 @@ export const demoSiteConfig: SiteConfig = {
       fr: "Créez des sites web magnifiques à partir de simple configurations JSON", 
       en: "Create beautiful websites from simple JSON configurations" 
     },
-    defaultLang: "en",
+    defaultLang: "fr",
     languages: ["fr", "en"],
     favicon: "/favicon.ico",
     themeColor: "#3b82f6",

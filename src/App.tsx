@@ -4,7 +4,6 @@ import { Toaster } from '@/components/ui/sonner';
 import { CocolightProvider } from '@/contexts/CocolightProvider';
 import { SiteProvider } from '@/contexts/SiteContext';
 import { LocalizationProvider } from '@/contexts/LocalizationContext';
-import { RouterProvider } from '@/contexts/RouterContext';
 import { SiteRenderer } from '@/components/SiteRenderer';
 import { demoSiteConfig } from '@/data/demo-site';
 import { getBaseUrl } from '@/lib/constant/common';
@@ -21,7 +20,6 @@ function App() {
       enableSystem
     >
       <CocolightProvider clientOptions={{ baseURL: getBaseUrl(), debug: true }}>
-        <RouterProvider>
           <SiteProvider config={demoSiteConfig}>
             <LocalizationProvider 
               defaultLocale={demoSiteConfig.meta.defaultLang}
@@ -31,7 +29,6 @@ function App() {
               <Toaster />
             </LocalizationProvider>
           </SiteProvider>
-        </RouterProvider>
       </CocolightProvider>
     </ThemeProvider>
   );
