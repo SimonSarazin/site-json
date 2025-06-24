@@ -38,10 +38,11 @@ async function createServer() {
       const { render } = await vite.ssrLoadModule('/src/entry-server.tsx');
 
       // 4. Render the app HTML
-      const { html: appHtml, context } = await render(url);
+      const { html: appHtml, context, head } = await render(url);
 
       // 5. Inject the app-rendered HTML into the template
-      const html = template.replace('<!--app-html-->', appHtml);
+      const html = template.replace("<!--app-head-->", `${head ?? ""}`)
+      .replace('<!--app-html-->', appHtml);
 
       // 6. Send the rendered HTML back
       res.status(200).set({ 'Content-Type': 'text/html' }).end(html);

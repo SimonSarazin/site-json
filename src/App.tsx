@@ -8,20 +8,19 @@ import { RouterProvider } from '@/contexts/RouterContext';
 import { SiteRenderer } from '@/components/SiteRenderer';
 import { demoSiteConfig } from '@/data/demo-site';
 import { getBaseUrl } from '@/lib/constant/common';
-import './App.css';
+
 
 function App() {
   // Provide default values for SSR
-  const baseUrl = typeof window !== 'undefined' ? getBaseUrl() : 'http://localhost:3000';
-  
+  // const baseUrl = typeof window !== 'undefined' ? getBaseUrl() : 'http://localhost:3000';
+
   return (
     <ThemeProvider 
       attribute="class" 
       defaultTheme="system" 
       enableSystem
-      disableTransitionOnChange
     >
-      <CocolightProvider clientOptions={{ baseURL: baseUrl, debug: true }}>
+      <CocolightProvider clientOptions={{ baseURL: getBaseUrl(), debug: true }}>
         <RouterProvider>
           <SiteProvider config={demoSiteConfig}>
             <LocalizationProvider 

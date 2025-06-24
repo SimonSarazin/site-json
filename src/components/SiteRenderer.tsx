@@ -5,6 +5,7 @@ import { SectionRenderer } from './sections/SectionRenderer';
 import { useLocalization } from '@/contexts/LocalizationContext';
 import { useSite } from '@/contexts/SiteContext';
 import { useRouterContext } from '@/contexts/RouterContext';
+import { Helmet } from '@dr.pogodin/react-helmet';
 
 export function SiteRenderer() {
   const { config } = useSite();
@@ -66,6 +67,12 @@ export function SiteRenderer() {
   }
 
   return (
+    <>
+    <Helmet>
+      <title>{currentPage.seo?.title ? t(currentPage.seo.title) : t(currentPage.title)}</title>
+      <meta name="description" content={currentPage.seo?.description ? t(currentPage.seo.description) : ''} />
+      {currentPage.seo?.ogImage && <meta property="og:image" content={currentPage.seo.ogImage} />}
+    </Helmet>
     <div className="min-h-screen flex flex-col">
       {!currentPage.hideHeader && <SiteHeader />}
       
@@ -77,5 +84,6 @@ export function SiteRenderer() {
       
       {!currentPage.hideFooter && <SiteFooter />}
     </div>
+    </>
   );
 }

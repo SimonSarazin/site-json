@@ -3,14 +3,14 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import { Menu, Moon, Sun, Globe, ChevronDown, User, LogOut } from 'lucide-react';
-import { useTheme } from 'next-themes';
+import { Menu, Globe, ChevronDown, User, LogOut } from 'lucide-react';
 import { useLocalization } from '@/contexts/LocalizationContext';
 import { useSite } from '@/contexts/SiteContext';
 import { useRouterContext } from '@/contexts/RouterContext';
 import { useCocolight } from '@/hooks/useCocolight';
 import { NavItem as NavItemType } from '@/types/site';
 import { cn } from '@/lib/utils';
+import ToggleButtonTheme from './ToggleButtonTheme';
 
 interface NavItemProps {
   item: NavItemType;
@@ -119,7 +119,6 @@ function NavItem({ item, mobile = false, onNavigate }: NavItemProps) {
 export function SiteHeader() {
   const { config } = useSite();
   const { t, currentLocale, setLocale, availableLocales } = useLocalization();
-  const { setTheme, theme } = useTheme();
   const { navigate } = useRouterContext();
   const { me, api, loading } = useCocolight();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -171,15 +170,7 @@ export function SiteHeader() {
           <div className="flex items-center gap-2">
             {/* Theme Switch */}
             {header.utilities.themeSwitch && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              >
-                <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                <span className="sr-only">Toggle theme</span>
-              </Button>
+              <ToggleButtonTheme />
             )}
 
             {/* Language Switch */}

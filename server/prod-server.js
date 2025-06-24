@@ -32,10 +32,11 @@ app.use('*', async (req, res, next) => {
     const { render } = await import('../dist/server/entry-server.js');
 
     // Render the app
-    const { html: appHtml, context } = render(url);
+    const { html: appHtml, context, head } = render(url);
 
     // Replace the placeholder with the rendered HTML
-    const html = template.replace('<!--app-html-->', appHtml);
+    const html = template.replace("<!--app-head-->", `${head ?? ""}`)
+      .replace('<!--app-html-->', appHtml);
 
     res.status(200).set({ 'Content-Type': 'text/html' }).end(html);
   } catch (e) {
