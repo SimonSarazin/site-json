@@ -1,105 +1,94 @@
 import { renderToPipeableStream } from "react-dom/server";
-import { HelmetProvider } from "@dr.pogodin/react-helmet";
 import express from "express";
-import App from "./App";
-import { RouterProvider } from "./contexts/RouterContext";
+import { HelmetProvider } from "@dr.pogodin/react-helmet";
+import {
+  createStaticHandler,
+  createStaticRouter,
+  StaticRouterProvider,
+} from "react-router"; // v7: les APIs serveur viennent du paquet central
+import { buildRoutes } from "@/lib/buildRoutes";
+// import { demoSiteConfig } from "@/data/demo-site";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import type { SiteConfig } from "@/types/site";
 
-/**
- * Durée maximale (ms) avant d'abandonner un rendu SSR bloqué (Suspense / fetch).
- */
+/** Durée max (ms) avant d’abandonner une Suspense bloquée */
 const STREAM_TIMEOUT_MS = 10_000;
 
-/**
- * Retourne le chemin public du bundle client à inclure dans bootstrapScripts / bootstrapModules.
- * ↪︎ En dev : on pointe directement sur /src/entry-client.tsx (servi par Vite).
- * ↪︎ En prod : on lit .vite/manifest.json pour trouver le nom hashé.
- */
+/* -------------------------------------------------------------------------- */
+/* Util pour retrouver le bundle client                                       */
+/* -------------------------------------------------------------------------- */
 function resolveClientBundle(): string {
   const isProd = process.env.NODE_ENV === "production";
   if (!isProd) return "/src/entry-client.tsx";
 
   try {
-    const __dirname = path.dirname(fileURLToPath(import.meta.url)); // dist/server
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
     const manifestPath = path.resolve(__dirname, "../client/.vite/manifest.json");
     const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
     const entry =
       manifest["src/entry-client.tsx"] ||
       Object.values(manifest).find((m: any) => m && m.isEntry);
     if (entry && (entry as any).file) return "/" + (entry as any).file;
-  } catch (err) {
-    console.warn("manifest.json introuvable — fallback /assets/entry-client.js", err);
+  } catch {
+    /* empty */
   }
-  return "/assets/entry-client.js"; // worst‑case
+  return "/assets/entry-client.js";
 }
 
-/**
- * Stream le HTML rendu par React puis écrit `htmlEnd` pour fermer le document.
- * La fonction renvoie une *promesse* qui se résout une fois la réponse terminée,
- * afin que le serveur (dev / prod) puisse `await` et NE PAS appeler res.end()
- * prématurément — évitant ainsi l'erreur "destination stream closed early".
- */
+/* -------------------------------------------------------------------------- */
+/* Fonction de rendu SSR streaming                                             */
+/* -------------------------------------------------------------------------- */
 export function render(
   req: express.Request,
   res: express.Response,
-  htmlEnd = "</body></html>"
+  demoSiteConfig: SiteConfig,
+  htmlEnd = "</body></html>",
 ): Promise<void> {
-  return new Promise<void>((resolve, reject) => {
-    const isProd = process.env.NODE_ENV === "production";
-    const clientBundlePath = resolveClientBundle();
+  return new Promise<void>(async (resolve, reject) => {
     const helmetContext: Record<string, any> = {};
+    const clientBundle = resolveClientBundle();
 
-    console.log("SSR request for URL path:", req.originalUrl);
+    /* 1. Créer le handler + router static à partir des routes dynamiques */
+    const handler = createStaticHandler(buildRoutes(demoSiteConfig));
+ 
+    const absUrl   = "http://localhost" + (req.originalUrl || req.url || "/");
 
+    const fetchRequest = new Request(absUrl, {
+      method: req.method,
+      headers: req.headers as any,
+      body:   req.method === "GET" || req.method === "HEAD" ? null : req.body,
+    });
+
+    const context = await handler.query(fetchRequest);
+
+    // Rediriger immédiatement si le loader retourne une Response
+    if (context instanceof Response) {
+      res.status(context.status).set(Object.fromEntries(context.headers));
+      res.end(await context.text());
+      return resolve();
+    }
+
+    const router = createStaticRouter(handler.dataRoutes, context);
+
+    /* 2. Streaming React 19 */
     const { pipe, abort } = renderToPipeableStream(
       <HelmetProvider context={helmetContext}>
-        <RouterProvider initialPath={req.originalUrl}>
-          <App />
-        </RouterProvider>
+        <StaticRouterProvider router={router} context={context} />
       </HelmetProvider>,
       {
-        ...(isProd
-          ? { bootstrapScripts: [clientBundlePath] }
-          : { bootstrapModules: [clientBundlePath] }),
-
-        onShellReady() {
-          pipe(res); // démarre le flux dès que possible
-        },
-
-        onAllReady() {
-          res.write(htmlEnd);
-          res.end();
-          resolve();
-        },
-
-        onShellError(err) {
-          console.error("Shell error:", err);
-          if (!res.headersSent) {
-            res.statusCode = 500;
-            res.setHeader("Content-Type", "text/html");
-          }
-          res.end("<!doctype html><h1>Erreur serveur</h1>");
-          reject(err);
-        },
-
-        onError(err) {
-          console.error("Streaming error:", err);
-        },
+        bootstrapModules: process.env.NODE_ENV === "production" ? undefined : [clientBundle],
+        bootstrapScripts:  process.env.NODE_ENV === "production" ? [clientBundle] : undefined,
+        onShellReady() { pipe(res); },
+        onAllReady()   { res.write(htmlEnd); res.end(); resolve(); },
+        onShellError(err) { console.error(err); res.status(500).end("Erreur serveur"); reject(err); },
+        onError(err)   { console.error("Streaming error", err); },
       }
     );
 
-    // Abandonne si Suspense ne se résout pas ou si le client ferme la connexion
-    const timeout = setTimeout(() => {
-      abort();
-      resolve();
-    }, STREAM_TIMEOUT_MS);
-
-    res.on("close", () => {
-      clearTimeout(timeout);
-      abort();
-      resolve();
-    });
+    /* Timeout / connexion fermée */
+    const t = setTimeout(() => { abort(); resolve(); }, STREAM_TIMEOUT_MS);
+    res.on("close", () => { clearTimeout(t); abort(); resolve(); });
   });
 }

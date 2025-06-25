@@ -5,14 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { isValidEmail } from "@/helpers/isValidEmail";
 import { useToast } from "@/hooks/use-toast";
-import { useRouterContext } from "@/contexts/RouterContext";
+import { useNavigate } from "react-router";
 import { CheckCircle, ArrowLeft } from "lucide-react";
 
 export default function RecoverPasswordForm() {
   const [email, setEmail] = useState("");
   const [loadingRecover, setLoadingRecover] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
-  const { navigate } = useRouterContext();
+  const navigate = useNavigate();
   const { userApi, loading, me } = useCocolight();
   const { toast } = useToast();
 

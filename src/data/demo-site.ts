@@ -34,7 +34,7 @@ export const demoSiteConfig: SiteConfig = {
       {
         path: "/pricing",
         label: { fr: "Tarifs", en: "Pricing" },
-        icon: "creditCard"
+        icon: "credit-card"
       },
       {
         label: { fr: "Ressources", en: "Resources" },
@@ -43,7 +43,7 @@ export const demoSiteConfig: SiteConfig = {
           {
             path: "/docs",
             label: { fr: "Documentation", en: "Documentation" },
-            icon: "fileText"
+            icon: "file-text"
           },
           {
             path: "/examples",

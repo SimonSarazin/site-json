@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Calendar, Clock, User, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLocalization } from '@/contexts/LocalizationContext';
-import { useRouterContext } from '@/contexts/RouterContext';
+import { useNavigate } from "react-router";
 import { cn } from '@/lib/utils';
 
 interface BlogListSectionProps {
@@ -34,7 +34,7 @@ interface BlogListSectionProps {
 
 export function BlogListSection({ id, props }: BlogListSectionProps) {
   const { t } = useLocalization();
-  const { navigate } = useRouterContext();
+const navigate = useNavigate();
   const { posts, layout = 'grid', columns = 3, pagination = true, postsPerPage = 9 } = props;
   
   const [currentPage, setCurrentPage] = useState(1);

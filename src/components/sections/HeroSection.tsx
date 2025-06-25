@@ -1,7 +1,6 @@
-import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useLocalization } from '@/contexts/LocalizationContext';
-import { useRouterContext } from '@/contexts/RouterContext';
+import { useNavigate } from "react-router";
 import { cn } from '@/lib/utils';
 
 interface HeroSectionProps {
@@ -24,7 +23,7 @@ interface HeroSectionProps {
 
 export function HeroSection({ id, props }: HeroSectionProps) {
   const { t } = useLocalization();
-  const { navigate } = useRouterContext();
+  const navigate = useNavigate();
   const { headline, subhead, backgroundImage, videoBg, align = 'center', overlay = false, cta, scrollTo } = props;
 
   const handleScrollTo = (target: string) => {

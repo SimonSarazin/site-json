@@ -3,6 +3,7 @@ import { createServer as createViteServer } from "vite";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import serialize from "serialize-javascript";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -29,6 +30,15 @@ async function createServer() {
       let template = fs.readFileSync(path.resolve(__dirname, "../index.html"), "utf-8");
       template = await vite.transformIndexHtml(url, template);
 
+      // --- Injection de la config -------------------------------------------------
+      const { demoSiteConfig } = await vite.ssrLoadModule("/src/data/demo-site.ts");
+      const configScript =
+        `<script>window.__CONFIG__=${serialize(demoSiteConfig, { isJSON: true })}</script>`;
+
+      // Insère juste avant </head> (ou un marqueur <!--app-head--> si tu en as un)
+      template = template.replace("<!--app-head-->", `${configScript}`);
+      // ---------------------------------------------------------------------------
+
       // 2. Découpe autour du placeholder <!--app-html-->
       const [htmlStart, htmlEnd] = template.split("<!--app-html-->");
 
@@ -39,7 +49,7 @@ async function createServer() {
 
       // 4. Import du module SSR en streaming
       const { render } = await vite.ssrLoadModule("/src/entry-server.tsx");
-      await render(req, res);          // React stream ici
+      await render(req, res, demoSiteConfig);
 
       // 5. Fin du document
       res.write(htmlEnd);

@@ -1,7 +1,7 @@
-import React from 'react';
+import { Fragment } from 'react';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { useLocalization } from '@/contexts/LocalizationContext';
-import { useRouterContext } from '@/contexts/RouterContext';
+import { useNavigate } from "react-router";
 
 interface BreadcrumbSectionProps {
   id?: string;
@@ -16,7 +16,7 @@ interface BreadcrumbSectionProps {
 
 export function BreadcrumbSection({ id, props }: BreadcrumbSectionProps) {
   const { t } = useLocalization();
-  const { navigate } = useRouterContext();
+  const navigate = useNavigate();
   const { items, separator = "/" } = props;
 
   return (
@@ -25,7 +25,7 @@ export function BreadcrumbSection({ id, props }: BreadcrumbSectionProps) {
         <Breadcrumb>
           <BreadcrumbList>
             {items.map((item, index) => (
-              <React.Fragment key={index}>
+              <Fragment key={index}>
                 <BreadcrumbItem>
                   {index === items.length - 1 ? (
                     <BreadcrumbPage>{t(item.label)}</BreadcrumbPage>
@@ -41,7 +41,7 @@ export function BreadcrumbSection({ id, props }: BreadcrumbSectionProps) {
                 {index < items.length - 1 && (
                   <BreadcrumbSeparator>{separator}</BreadcrumbSeparator>
                 )}
-              </React.Fragment>
+              </Fragment>
             ))}
           </BreadcrumbList>
         </Breadcrumb>

@@ -1,9 +1,8 @@
-import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import * as Icons from 'lucide-react';
 import { useLocalization } from '@/contexts/LocalizationContext';
 import { cn } from '@/lib/utils';
+import { DynamicIcon, IconName } from 'lucide-react/dynamic';
 
 interface CardsSectionProps {
   id?: string;
@@ -35,11 +34,6 @@ export function CardsSection({ id, props }: CardsSectionProps) {
       6: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6',
     };
     return colsMap[cols];
-  };
-
-  const renderIcon = (iconName: string) => {
-    const IconComponent = (Icons as any)[iconName];
-    return IconComponent ? <IconComponent className="w-6 h-6" /> : null;
   };
 
   const CardWrapper = ({ children, href, target }: { children: React.ReactNode; href?: string; target?: string }) => {
@@ -87,7 +81,7 @@ export function CardsSection({ id, props }: CardsSectionProps) {
                   
                   {item.icon && (
                     <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 text-primary">
-                      {renderIcon(item.icon)}
+                      <DynamicIcon name={item.icon as IconName} className="w-6 h-6" />
                     </div>
                   )}
                   

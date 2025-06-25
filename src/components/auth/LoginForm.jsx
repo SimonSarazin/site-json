@@ -7,14 +7,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { isValidEmail } from "@/helpers/isValidEmail";
 import { useToast } from "@/hooks/use-toast";
-import { useRouterContext } from "@/contexts/RouterContext";
+import { useNavigate } from "react-router";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
   const [loadingLogin, setLoadingLogin] = useState(false);
-  const { navigate } = useRouterContext();
+  const navigate = useNavigate();
   const { userApi, loading, me } = useCocolight();
   const { toast } = useToast();
 

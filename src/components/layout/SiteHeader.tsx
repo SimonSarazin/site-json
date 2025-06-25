@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
+import { DynamicIcon, IconName } from "lucide-react/dynamic";
 import { Menu, Globe, ChevronDown, User, LogOut } from 'lucide-react';
 import { useLocalization } from '@/contexts/LocalizationContext';
 import { useSite } from '@/contexts/SiteContext';
-import { useRouterContext } from '@/contexts/RouterContext';
+import { useNavigate } from "react-router";
 import { useCocolight } from '@/hooks/useCocolight';
 import { NavItem as NavItemType } from '@/types/site';
 import { cn } from '@/lib/utils';
@@ -20,8 +21,9 @@ interface NavItemProps {
 
 function NavItem({ item, mobile = false, onNavigate }: NavItemProps) {
   const { t } = useLocalization();
-  const { navigate } = useRouterContext();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -52,7 +54,13 @@ function NavItem({ item, mobile = false, onNavigate }: NavItemProps) {
               mobile && "w-full justify-start"
             )}
           >
-            {item.icon && <span className="w-4 h-4" />}
+          {/* Icône dynamique */}
+          {item.icon && (
+              <DynamicIcon
+                name={item.icon as IconName}
+                className="w-4 h-4"
+              />
+          )}
             {t(item.label)}
             <ChevronDown className="w-4 h-4" />
             {item.badge && (
@@ -81,7 +89,12 @@ function NavItem({ item, mobile = false, onNavigate }: NavItemProps) {
                   onNavigate?.();
                 }}
               >
-                {child.icon && <span className="w-4 h-4" />}
+                {child.icon && (
+                    <DynamicIcon
+                      name={child.icon as IconName}
+                      className="w-4 h-4"
+                    />
+                )}
                 {t(child.label)}
                 {child.badge && (
                   <Badge variant="secondary" className="text-xs ml-auto">
@@ -105,7 +118,13 @@ function NavItem({ item, mobile = false, onNavigate }: NavItemProps) {
       )}
       onClick={handleClick}
     >
-      {item.icon && <span className="w-4 h-4" />}
+
+      {item.icon && (
+        <DynamicIcon
+         name={item.icon as IconName}
+        className="w-4 h-4"
+          />
+      )}
       {t(item.label)}
       {item.badge && (
         <Badge variant="secondary" className="text-xs">
@@ -119,7 +138,7 @@ function NavItem({ item, mobile = false, onNavigate }: NavItemProps) {
 export function SiteHeader() {
   const { config } = useSite();
   const { t, currentLocale, setLocale, availableLocales } = useLocalization();
-  const { navigate } = useRouterContext();
+  const navigate = useNavigate();
   const { me, api, loading } = useCocolight();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 

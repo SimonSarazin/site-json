@@ -4,6 +4,7 @@ import serveStatic from "serve-static";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import serialize from "serialize-javascript";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -23,6 +24,16 @@ app.use(['/{*all}'], async (req, res) => {
       path.resolve(__dirname, "../dist/client/index.html"),
       "utf-8"
     );
+
+      // --- Injection de la config -------------------------------------------------
+      const { demoSiteConfig } = await import("../dist/server/data/demo-site.js");
+      const configScript =
+        `<script>window.__CONFIG__=${serialize(demoSiteConfig, { isJSON: true })}</script>`;
+
+      // Insère juste avant </head> (ou un marqueur <!--app-head--> si tu en as un)
+      template = template.replace("<!--app-head-->", `${configScript}`);
+      // ---------------------------------------------------------------------------
+
     const [htmlStart, htmlEnd] = template.split("<!--app-html-->");
 
     // 2. Envoi immédiat <head>
@@ -32,7 +43,7 @@ app.use(['/{*all}'], async (req, res) => {
 
     // 3. Import du bundle serveur + streaming
     const { render } = await import("../dist/server/entry-server.js");
-    await render(req, res);
+    await render(req, res, demoSiteConfig);
 
     // 4. Footer et fermeture
     res.write(htmlEnd);

@@ -1,7 +1,6 @@
-import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useLocalization } from '@/contexts/LocalizationContext';
-import { useRouterContext } from '@/contexts/RouterContext';
+import { useNavigate } from "react-router";
 import { cn } from '@/lib/utils';
 
 interface CTASectionProps {
@@ -22,7 +21,7 @@ interface CTASectionProps {
 
 export function CTASection({ id, props }: CTASectionProps) {
   const { t } = useLocalization();
-  const { navigate } = useRouterContext();
+  const navigate = useNavigate();
   const { headline, subhead, backgroundImage, backgroundColor, buttons, align = 'center' } = props;
 
   const handleButtonClick = (href: string) => {

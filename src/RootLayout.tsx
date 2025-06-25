@@ -1,15 +1,17 @@
-import React from 'react';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/sonner';
 import { CocolightProvider } from '@/contexts/CocolightProvider';
 import { SiteProvider } from '@/contexts/SiteContext';
 import { LocalizationProvider } from '@/contexts/LocalizationContext';
-import { SiteRenderer } from '@/components/SiteRenderer';
-import { demoSiteConfig } from '@/data/demo-site';
 import { getBaseUrl } from '@/lib/constant/common';
+import { Outlet } from 'react-router';
+import type { SiteConfig } from "@/types/site";
 
+interface Props {
+  config: SiteConfig;        // 👈 nouvelle prop
+}
 
-function App() {
+function RootLayout({ config }: Props) {
   // Provide default values for SSR
   // const baseUrl = typeof window !== 'undefined' ? getBaseUrl() : 'http://localhost:3000';
 
@@ -20,12 +22,12 @@ function App() {
       enableSystem
     >
       <CocolightProvider clientOptions={{ baseURL: getBaseUrl(), debug: true }}>
-          <SiteProvider config={demoSiteConfig}>
+          <SiteProvider config={config}>
             <LocalizationProvider 
-              defaultLocale={demoSiteConfig.meta.defaultLang}
-              availableLocales={demoSiteConfig.meta.languages}
+              defaultLocale={config.meta.defaultLang}
+              availableLocales={config.meta.languages}
             >
-              <SiteRenderer />
+              <Outlet />
               <Toaster />
             </LocalizationProvider>
           </SiteProvider>
@@ -34,4 +36,4 @@ function App() {
   );
 }
 
-export default App;
+export default RootLayout;
