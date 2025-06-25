@@ -21,7 +21,8 @@ async function createServer() {
   // Use vite's connect instance as middleware
   app.use(vite.middlewares);
 
-  app.use('*', async (req, res, next) => {
+  // FIX: /{*all} ne fonctionne pas avec la version 5.1 bug il faudra mettre à jour pour corriger
+  app.use(['/', '/*all'], async (req, res, next) => {
     const url = req.originalUrl;
 
     try {

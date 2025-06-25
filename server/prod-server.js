@@ -18,7 +18,7 @@ app.use(serveStatic(path.resolve(__dirname, '../dist/client'), {
 }));
 
 // SSR handler
-app.use('*', async (req, res, next) => {
+app.use(['/', '/*all'], async (req, res, next) => {
   const url = req.originalUrl;
 
   try {
