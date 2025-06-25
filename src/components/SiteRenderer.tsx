@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from 'react';
 import { SiteHeader } from './layout/SiteHeader';
 import { SiteFooter } from './layout/SiteFooter';
 import { SectionRenderer } from './sections/SectionRenderer';

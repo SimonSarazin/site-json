@@ -1,58 +1,53 @@
-import express from 'express';
-import { createServer as createViteServer } from 'vite';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import express from "express";
+import { createServer as createViteServer } from "vite";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 async function createServer() {
   const app = express();
 
-  // Create Vite server in middleware mode
+  // Vite en middleware
   const vite = await createViteServer({
     server: { middlewareMode: true },
-    appType: 'custom',
+    appType: "custom",
     ssr: {
-      noExternal: ['@radix-ui/*', 'lucide-react', '@communecter/cocolight-api-client']
-    }
+      noExternal: ["@radix-ui/*", "lucide-react", "@communecter/cocolight-api-client"],
+    },
   });
 
-  // Use vite's connect instance as middleware
   app.use(vite.middlewares);
 
-  // FIX: /{*all} ne fonctionne pas avec la version 5.1 bug il faudra mettre à jour pour corriger
-  app.use(['/', '/*all'], async (req, res, next) => {
-    const url = req.originalUrl;
-
+  // SSR universel
+  app.use(['/{*all}'], async (req, res) => {
     try {
-      // 1. Read index.html
-      let template = fs.readFileSync(
-        path.resolve(__dirname, '../index.html'),
-        'utf-8'
-      );
+      const url = req.originalUrl;
 
-      // 2. Apply Vite HTML transforms
+      // 1. HTML de base (transformé par Vite pour injecter scripts / HMR)
+      let template = fs.readFileSync(path.resolve(__dirname, "../index.html"), "utf-8");
       template = await vite.transformIndexHtml(url, template);
 
-      // 3. Load the server entry
-      const { render } = await vite.ssrLoadModule('/src/entry-server.tsx');
+      // 2. Découpe autour du placeholder <!--app-html-->
+      const [htmlStart, htmlEnd] = template.split("<!--app-html-->");
 
-      // 4. Render the app HTML
-      const { html: appHtml, context, head } = await render(url);
+      // 3. Envoi immédiat du DOCTYPE + <head>
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      res.write(htmlStart);
 
-      // 5. Inject the app-rendered HTML into the template
-      const html = template.replace("<!--app-head-->", `${head ?? ""}`)
-      .replace('<!--app-html-->', appHtml);
+      // 4. Import du module SSR en streaming
+      const { render } = await vite.ssrLoadModule("/src/entry-server.tsx");
+      await render(req, res);          // React stream ici
 
-      // 6. Send the rendered HTML back
-      res.status(200).set({ 'Content-Type': 'text/html' }).end(html);
+      // 5. Fin du document
+      res.write(htmlEnd);
+      res.end();
     } catch (e) {
-      // If an error is caught, let Vite fix the stack trace so it maps back to
-      // your actual source code.
       vite.ssrFixStacktrace(e);
-      console.error('SSR Error:', e);
-      res.status(500).end('Internal Server Error');
+      console.error("SSR Error:", e);
+      res.status(500).end("Internal Server Error");
     }
   });
 

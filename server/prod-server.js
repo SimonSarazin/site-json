@@ -1,47 +1,45 @@
-import express from 'express';
-import compression from 'compression';
-import serveStatic from 'serve-static';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import express from "express";
+import compression from "compression";
+import serveStatic from "serve-static";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
 const app = express();
 
-// Enable gzip compression
-app.use(compression());
+app.use(compression());   // gzip
+app.use(
+  serveStatic(path.resolve(__dirname, "../dist/client"), { index: false })
+);
 
-// Serve static files
-app.use(serveStatic(path.resolve(__dirname, '../dist/client'), {
-  index: false
-}));
-
-// SSR handler
-app.use(['/', '/*all'], async (req, res, next) => {
-  const url = req.originalUrl;
-
+// SSR universel
+app.use(['/{*all}'], async (req, res) => {
   try {
-    // Read the built template
+    const url = req.originalUrl;
+
+    // 1. Template pré-buildé
     const template = fs.readFileSync(
-      path.resolve(__dirname, '../dist/client/index.html'),
-      'utf-8'
+      path.resolve(__dirname, "../dist/client/index.html"),
+      "utf-8"
     );
+    const [htmlStart, htmlEnd] = template.split("<!--app-html-->");
 
-    // Import the server entry
-    const { render } = await import('../dist/server/entry-server.js');
+    // 2. Envoi immédiat <head>
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.write(htmlStart);
 
-    // Render the app
-    const { html: appHtml, context, head } = render(url);
+    // 3. Import du bundle serveur + streaming
+    const { render } = await import("../dist/server/entry-server.js");
+    await render(req, res);
 
-    // Replace the placeholder with the rendered HTML
-    const html = template.replace("<!--app-head-->", `${head ?? ""}`)
-      .replace('<!--app-html-->', appHtml);
-
-    res.status(200).set({ 'Content-Type': 'text/html' }).end(html);
+    // 4. Footer et fermeture
+    res.write(htmlEnd);
+    res.end();
   } catch (e) {
-    console.error(e);
-    res.status(500).end(e.message);
+    console.error("SSR Error:", e);
+    res.status(500).end("Internal Server Error");
   }
 });
 
