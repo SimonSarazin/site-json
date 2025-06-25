@@ -703,11 +703,11 @@ export const Header = z.object({
   height: z.enum(["sm", "md", "lg"]).default("md"),
   utilities: z.object({
     themeSwitch: z.boolean().default(true),
-    langSwitch: z.boolean().default(true),
-    search: z.boolean().default(false),
-    auth: z.boolean().default(false),
-    cart: z.boolean().default(false),
-    notifications: z.boolean().default(false),
+    langSwitch : z.boolean().default(true),
+    search     : z.boolean().default(false),
+    auth       : z.boolean().default(false),
+    cart       : z.boolean().default(false),
+    notifications: z.boolean().default(false),    
   }).default({}),
   announcement: z.object({
     text: LocalizedString,

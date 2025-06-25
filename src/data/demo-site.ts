@@ -21,18 +21,18 @@ export const demoSiteConfig: SiteConfig = {
     logo: "https://images.pexels.com/photos/17171481/pexels-photo-17171481/free-photo-of-abstract-blue-and-purple-gradient-background.jpeg?auto=compress&cs=tinysrgb&w=60&h=60&dpr=2",
     logoAlt: { fr: "Logo SiteForge", en: "SiteForge Logo" },
     nav: [
-      { 
-        path: "/", 
+      {
+        path: "/",
         label: { fr: "Accueil", en: "Home" },
         icon: "home"
       },
-      { 
-        path: "/features", 
+      {
+        path: "/features",
         label: { fr: "Fonctionnalités", en: "Features" },
         icon: "zap"
       },
-      { 
-        path: "/pricing", 
+      {
+        path: "/pricing",
         label: { fr: "Tarifs", en: "Pricing" },
         icon: "creditCard"
       },
@@ -40,30 +40,30 @@ export const demoSiteConfig: SiteConfig = {
         label: { fr: "Ressources", en: "Resources" },
         icon: "book",
         children: [
-          { 
-            path: "/docs", 
+          {
+            path: "/docs",
             label: { fr: "Documentation", en: "Documentation" },
             icon: "fileText"
           },
-          { 
-            path: "/examples", 
+          {
+            path: "/examples",
             label: { fr: "Exemples", en: "Examples" },
             icon: "code"
           },
-          { 
-            href: "https://github.com", 
+          {
+            href: "https://github.com",
             label: { fr: "GitHub", en: "GitHub" },
             icon: "github"
           },
         ],
       },
-      { 
-        path: "/contact", 
+      {
+        path: "/contact",
         label: { fr: "Contact", en: "Contact" },
         icon: "mail"
       },
-      { 
-        path: "/showcase", 
+      {
+        path: "/showcase",
         label: { fr: "Showcase", en: "Showcase" },
         icon: "eye",
         badge: { text: { fr: "Nouveau", en: "New" }, color: "primary" }
@@ -75,7 +75,11 @@ export const demoSiteConfig: SiteConfig = {
       langSwitch: true,
       search: false,
       auth: true,
+      cart: false,
+      notifications: false
     },
+    transparent: false,
+    height: 'sm'
   },
   pages: [
     {
@@ -395,6 +399,7 @@ export const demoSiteConfig: SiteConfig = {
               en: "Everything you need to create professional websites" 
             },
             align: "center",
+            overlay: false,
           },
         },
         {
@@ -461,6 +466,7 @@ export const demoSiteConfig: SiteConfig = {
               en: "Start free, scale as you grow" 
             },
             align: "center",
+            overlay: false,
           },
         },
         {
@@ -571,6 +577,7 @@ export const demoSiteConfig: SiteConfig = {
               en: "Our team is here to help you" 
             },
             align: "center",
+            overlay: false,
           },
         },
         {
@@ -615,7 +622,8 @@ export const demoSiteConfig: SiteConfig = {
               {
                 name: "newsletter",
                 label: { fr: "Je souhaite recevoir la newsletter", en: "I want to receive the newsletter" },
-                type: "checkbox"
+                type: "checkbox",
+                required: false,
               }
             ],
             submitLabel: { fr: "Envoyer le message", en: "Send message" },
@@ -674,6 +682,7 @@ export const demoSiteConfig: SiteConfig = {
               en: "Tips, news and guides to create exceptional websites" 
             },
             align: "center",
+            overlay: false,
           },
         },
         {
@@ -763,6 +772,7 @@ export const demoSiteConfig: SiteConfig = {
               en: "Democratize website creation for everyone" 
             },
             align: "center",
+            overlay: false,
           },
         },
         {
@@ -863,6 +873,7 @@ export const demoSiteConfig: SiteConfig = {
               en: "Discover the full power of SiteForge with all available section types" 
             },
             align: "center",
+            overlay: false,
           },
         },
         {
@@ -872,7 +883,8 @@ export const demoSiteConfig: SiteConfig = {
             items: [
               { label: { fr: "Accueil", en: "Home" }, href: "/" },
               { label: { fr: "Showcase", en: "Showcase" } }
-            ]
+            ],
+            separator: "/",
           }
         },
         {
