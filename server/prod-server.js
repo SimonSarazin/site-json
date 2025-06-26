@@ -31,22 +31,28 @@ app.use(['/{*all}'], async (req, res) => {
         `<script>window.__CONFIG__=${serialize(demoSiteConfig, { isJSON: true })}</script>`;
 
       // Insère juste avant </head> (ou un marqueur <!--app-head--> si tu en as un)
-      template = template.replace("<!--app-head-->", `${configScript}`);
-      // ---------------------------------------------------------------------------
+    const [headStart, rest]   = template.split("<!--app-head-->");
+    const [beforeRoot, tail]  = rest.split("<!--app-html-->");
 
-    const [htmlStart, htmlEnd] = template.split("<!--app-html-->");
-
-    // 2. Envoi immédiat <head>
-    res.statusCode = 200;
-    res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.write(htmlStart);
+    res.status(200).setHeader("Content-Type", "text/html; charset=utf-8");
+    res.write(headStart);           // <!doctype… <head>
+    res.write(configScript);           // <script>window.__CONFIG__ = …
 
     // 3. Import du bundle serveur + streaming
     const { render } = await import("../dist/server/entry-server.js");
-    await render(req, res, demoSiteConfig);
+    await render(
+      req,
+      res,
+      demoSiteConfig,
+      // callback onHead : reçoit les balises Helmet
+      (helmetHead) => {
+        res.write(helmetHead);      // <title> / <meta> / <link>…
+        res.write(beforeRoot);      // </head><body><div id="root">
+      },
+    );
 
     // 4. Footer et fermeture
-    res.write(htmlEnd);
+    res.write(tail);                // </div></body></html>
     res.end();
   } catch (e) {
     console.error("SSR Error:", e);

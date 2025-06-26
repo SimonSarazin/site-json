@@ -8,63 +8,57 @@ import serialize from "serialize-javascript";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 async function createServer() {
-  const app = express();
-
-  // Vite en middleware
+  const app  = express();
   const vite = await createViteServer({
     server: { middlewareMode: true },
     appType: "custom",
-    ssr: {
-      noExternal: ["@radix-ui/*", "lucide-react", "@communecter/cocolight-api-client"],
-    },
+    ssr: { noExternal: ["@radix-ui/*", "lucide-react", "@communecter/cocolight-api-client"] },
   });
-
   app.use(vite.middlewares);
 
-  // SSR universel
-  app.use(['/{*all}'], async (req, res) => {
+  /* ------------------------------------------------------------------ */
+  app.use(["/{*all}"], async (req, res) => {
     try {
-      const url = req.originalUrl;
+      const url      = req.originalUrl;
+      let template   = fs.readFileSync(path.resolve(__dirname, "../index.html"), "utf-8");
+      template       = await vite.transformIndexHtml(url, template);
 
-      // 1. HTML de base (transformé par Vite pour injecter scripts / HMR)
-      let template = fs.readFileSync(path.resolve(__dirname, "../index.html"), "utf-8");
-      template = await vite.transformIndexHtml(url, template);
-
-      // --- Injection de la config -------------------------------------------------
+      /* ---- 1. Config JSON dans <head> -------------------------------- */
       const { demoSiteConfig } = await vite.ssrLoadModule("/src/data/demo-site.ts");
-      const configScript =
-        `<script>window.__CONFIG__=${serialize(demoSiteConfig, { isJSON: true })}</script>`;
+      const cfgScript = `<script>window.__CONFIG__=${serialize(demoSiteConfig, { isJSON:true })}</script>`;
 
-      // Insère juste avant </head> (ou un marqueur <!--app-head--> si tu en as un)
-      template = template.replace("<!--app-head-->", `${configScript}`);
-      // ---------------------------------------------------------------------------
+      /* ---- 2. On découpe le template --------------------------------- */
+      const [headStart, rest] = template.split("<!--app-head-->");
+      const [beforeBody, tail] = rest.split("<!--app-html-->");
 
-      // 2. Découpe autour du placeholder <!--app-html-->
-      const [htmlStart, htmlEnd] = template.split("<!--app-html-->");
+      /* ---- 3. Envoie du <head> ouvert + config ----------------------- */
+      res.status(200).setHeader("Content-Type", "text/html; charset=utf-8");
+      res.write(headStart);             // <!doctype … <head>
+      res.write(cfgScript);             // script de config — UNIQUEMENT ici
 
-      // 3. Envoi immédiat du DOCTYPE + <head>
-      res.statusCode = 200;
-      res.setHeader("Content-Type", "text/html; charset=utf-8");
-      res.write(htmlStart);
-
-      // 4. Import du module SSR en streaming
+      /* ---- 4. Lance le rendu React ----------------------------------- */
       const { render } = await vite.ssrLoadModule("/src/entry-server.tsx");
-      await render(req, res, demoSiteConfig);
 
-      // 5. Fin du document
-      res.write(htmlEnd);
+      await render(req, res, demoSiteConfig, (helmetHead) => {
+        /* callback appelé par entry-server quand Helmet est prêt */
+        res.write(helmetHead);          // balises <title>, <meta>, …
+        res.write(beforeBody);          // </head><body><div id="root">
+      });
+
+      /* ---- 5. Fin de document ---------------------------------------- */
+      res.write(tail);                  // </div></body></html>
       res.end();
+
     } catch (e) {
       vite.ssrFixStacktrace(e);
       console.error("SSR Error:", e);
       res.status(500).end("Internal Server Error");
     }
   });
+  /* ------------------------------------------------------------------ */
 
   const port = process.env.PORT || 5173;
-  app.listen(port, () => {
-    console.log(`SSR Dev server running at http://localhost:${port}`);
-  });
+  app.listen(port, () => console.log(`SSR Dev server running at http://localhost:${port}`));
 }
 
 createServer().catch(console.error);
