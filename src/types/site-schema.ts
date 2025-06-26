@@ -22,7 +22,18 @@ export type LocalizedString = z.infer<typeof LocalizedString>;
 /*───────────────────────────────────────────────────────────────*/
 const NavBadge = z.object({ text: LocalizedString, color: z.string() }).optional();
 
-export const NavItem: z.ZodType<any> = z.lazy(() =>
+// Define interface for the NavItem type
+interface NavItemType {
+  label: LocalizedString;
+  path?: string;
+  href?: string;
+  icon?: string;
+  badge?: z.infer<typeof NavBadge>;
+  roles?: string[];
+  children?: NavItemType[];
+}
+
+export const NavItem: z.ZodType<NavItemType> = z.lazy(() =>
   z.object({
     label: LocalizedString,
     path: z.string().min(1).optional(),   // route interne
@@ -678,7 +689,23 @@ const MegaMenu = z.object({
 });
 
 // Enhanced NavItem with mega menu support
-const EnhancedNavItem: z.ZodType<any> = z.lazy(() =>
+// Define interface for EnhancedNavItem to avoid 'any'
+interface EnhancedNavItemType {
+  label: LocalizedString;
+  path?: string;
+  href?: string;
+  icon?: string;
+  badge?: z.infer<typeof NavBadge>;
+  roles?: string[];
+  children?: EnhancedNavItemType[];
+  megaMenu?: {
+    columns: z.infer<typeof MegaMenuColumn>[];
+    width?: "sm" | "md" | "lg" | "xl" | "full";  // Make width optional to match the schema
+  };
+  description?: LocalizedString;
+}
+
+const EnhancedNavItem: z.ZodType<EnhancedNavItemType> = z.lazy(() =>
   z.object({
     label: LocalizedString,
     path: z.string().min(1).optional(),
@@ -891,7 +918,7 @@ export const SiteConfig = z.object({
     title: LocalizedString,
     description: LocalizedString.optional(),
     defaultLang: z.enum(LOCALES).default("fr"),
-    languages: z.array(z.enum(LOCALES)).default(LOCALES),
+    languages: z.array(z.enum(LOCALES)).default([...LOCALES]),
     favicon: z.string().optional(),
     themeColor: z.string().optional(),
     author: LocalizedString.optional(),
@@ -943,7 +970,14 @@ export function getDefaultSiteConfig(): Partial<SiteConfig> {
       utilities: {
         themeSwitch: true,
         langSwitch: true,
+        search: false,
+        auth: false,
+        cart: false,
+        notifications: false
       },
+      sticky: false,
+      transparent: false,
+      height: "sm"
     },
     pages: [],
     footer: {
@@ -960,6 +994,7 @@ export const example: SiteConfig = {
   meta: {
     title: { fr: "Mon Site", en: "My Site" },
     defaultLang: "fr",
+    languages: []
   },
   header: {
     logo: "/logo.svg",
@@ -973,17 +1008,31 @@ export const example: SiteConfig = {
         ],
       },
     ],
+    sticky: false,
+    transparent: false,
+    height: "sm",
+    utilities: {
+      themeSwitch: true,
+      langSwitch: true,
+      search: false,
+      auth: false,
+      cart: false,
+      notifications: false
+    }
   },
   pages: [
     {
       path: "/",
       title: { fr: "Bienvenue", en: "Welcome" },
+      layout: "default",
       sections: [
         {
           type: "hero",
           props: {
             headline: { fr: "Site JSON", en: "JSON‑Driven" },
             subhead: { fr: "Tout vient du fichier", en: "Everything from JSON" },
+            align: "center",
+            overlay: false,
             cta: [
               { label: { fr: "Commencer", en: "Start" }, href: "#features" },
               { label: { fr: "Tarifs", en: "Pricing" }, href: "/pricing" },
@@ -1006,6 +1055,7 @@ export const example: SiteConfig = {
                 text: { fr: "Clair / Sombre", en: "Light / Dark" },
               },
             ],
+            columns: 3,
           },
         },
       ],
@@ -1030,6 +1080,9 @@ export const example: SiteConfig = {
     analytics: { provider: "ga4", id: "G-XXXXXXX" },
   },
   features: [
-    { key: "newNavbar", enabled: false },
+    {
+      key: "newNavbar", enabled: false,
+      rolloutPercentage: 0
+    },
   ],
 };
