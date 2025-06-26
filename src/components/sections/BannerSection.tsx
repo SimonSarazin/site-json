@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { X, Info, CheckCircle, AlertTriangle, AlertCircle } from 'lucide-react';
-import { useLocalization } from '@/contexts/LocalizationContext';
+import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from '@/lib/utils';
 
 interface BannerSectionProps {

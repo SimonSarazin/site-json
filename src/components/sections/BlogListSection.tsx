@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Calendar, Clock, User, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useLocalization } from '@/contexts/LocalizationContext';
+import { useLocalization } from "@/hooks/useLocalization";
 import { useNavigate } from "react-router";
 import { cn } from '@/lib/utils';
 

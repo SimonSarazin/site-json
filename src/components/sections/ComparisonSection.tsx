@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Slider } from '@/components/ui/slider';
-import { useLocalization } from '@/contexts/LocalizationContext';
+import { useLocalization } from "@/hooks/useLocalization";
 
 interface ComparisonSectionProps {
   id?: string;

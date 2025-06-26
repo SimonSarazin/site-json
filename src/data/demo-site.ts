@@ -1,6 +1,6 @@
 import { SiteConfig } from '@/types/site';
 
-export const demoSiteConfig: SiteConfig = {
+export const demoSiteConfig = {
   version: "1.0.0",
   generated: new Date().toISOString(),
   meta: {
@@ -951,7 +951,9 @@ export const demoSiteConfig: SiteConfig = {
           props: {
             src: "dQw4w9WgXcQ",
             provider: "youtube",
-            ratio: "16/9"
+            ratio: "16/9",
+            controls: true,
+            loop    : false 
           }
         },
         {
@@ -985,7 +987,8 @@ export const demoSiteConfig: SiteConfig = {
               ]
             ],
             sortable: true,
-            pagination: false
+            pagination: false,
+            perPage: 10
           }
         },
         {
@@ -1023,7 +1026,8 @@ export const demoSiteConfig: SiteConfig = {
                 label: { fr: "Tour Eiffel", en: "Eiffel Tower" },
                 popup: { fr: "Monument emblématique", en: "Iconic monument" }
               }
-            ]
+            ],
+            provider: "leaflet",
           }
         },
         {
@@ -1344,6 +1348,7 @@ export const demoSiteConfig: SiteConfig = {
               en: "Manage your personal information" 
             },
             align: "center",
+            overlay: false,
           },
         },
       ],
@@ -1374,6 +1379,7 @@ export const demoSiteConfig: SiteConfig = {
               en: "Manage your site and users" 
             },
             align: "center",
+            overlay: false,
           },
         },
         {
@@ -1453,6 +1459,7 @@ export const demoSiteConfig: SiteConfig = {
               en: "Discover all available sections in SiteForge" 
             },
             align: "center",
+            overlay: false,
           },
         },
         // Add examples of all section types here...
@@ -1493,7 +1500,9 @@ export const demoSiteConfig: SiteConfig = {
           props: {
             src: "dQw4w9WgXcQ", // Rick Roll video ID for demo
             provider: "youtube",
-            ratio: "16/9"
+            ratio: "16/9",
+            controls: true,
+            loop: false // Don't loop the video
           }
         },
         {
@@ -1523,7 +1532,8 @@ export const demoSiteConfig: SiteConfig = {
               ]
             ],
             sortable: true,
-            pagination: false
+            pagination: false,
+            perPage: 10
           }
         },
         {
@@ -1555,7 +1565,8 @@ export const demoSiteConfig: SiteConfig = {
                 label: { fr: "Paris", en: "Paris" },
                 popup: { fr: "Capitale de la France", en: "Capital of France" }
               }
-            ]
+            ],
+            provider: "leaflet", // Use Leaflet for maps
           }
         },
         {
@@ -1632,7 +1643,7 @@ export const demoSiteConfig: SiteConfig = {
     analytics: { provider: "ga4", id: "G-XXXXXXX" },
   },
   features: [
-    { key: "betaFeatures", enabled: false },
-    { key: "darkMode", enabled: true },
+    { key: "betaFeatures", enabled: false, rolloutPercentage: 0  },
+    { key: "darkMode", enabled: true, rolloutPercentage: 100 },
   ],
-};
+} satisfies SiteConfig;

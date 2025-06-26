@@ -1,8 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useLocalization } from '@/contexts/LocalizationContext';
+import { useLocalization } from "@/hooks/useLocalization";
 
 interface TableSectionProps {
   id?: string;

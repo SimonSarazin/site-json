@@ -1,16 +1,14 @@
-import React from 'react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, AreaChart, Area, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
-import { useLocalization } from '@/contexts/LocalizationContext';
 
 interface ChartSectionProps {
   id?: string;
   props: {
-    kind: 'line' | 'bar' | 'pie' | 'area' | 'radar';
-    data: Array<Record<string, number>>;
-    xKey: string;
-    yKeys: string[];
+    kind   : 'line' | 'bar' | 'pie' | 'area' | 'radar';
+    data   : Array<Record<string, number | string>>;   // ← string OU number
+    xKey   : string;
+    yKeys  : string[];
     stacked?: boolean;
-    legend?: boolean;
+    legend ?: boolean;
   };
 }
 
@@ -83,9 +81,9 @@ export function ChartSection({ id, props }: ChartSectionProps) {
         );
 
       case 'pie':
-        const pieData = data.map((item, index) => ({
+        { const pieData = data.map((item, index) => ({
           name: item[xKey],
-          value: yKeys.reduce((sum, key) => sum + (item[key] || 0), 0),
+          value: yKeys.reduce((sum, key) => sum + (typeof item[key] === 'string' ? parseFloat(item[key] as string) || 0 : (item[key] as number || 0)), 0),
           fill: COLORS[index % COLORS.length]
         }));
         
@@ -106,7 +104,7 @@ export function ChartSection({ id, props }: ChartSectionProps) {
             <Tooltip />
             {legend && <Legend />}
           </PieChart>
-        );
+        ); }
 
       case 'radar':
         return (

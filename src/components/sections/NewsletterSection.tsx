@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { useLocalization } from '@/contexts/LocalizationContext';
+import { useLocalization } from "@/hooks/useLocalization";
 import { Mail, CheckCircle } from 'lucide-react';
 
 interface NewsletterSectionProps {

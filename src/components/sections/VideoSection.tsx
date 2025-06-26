@@ -1,5 +1,3 @@
-import React from 'react';
-import { useLocalization } from '@/contexts/LocalizationContext';
 import { cn } from '@/lib/utils';
 
 interface VideoSectionProps {
@@ -33,17 +31,17 @@ export function VideoSection({ id, props }: VideoSectionProps) {
   const getEmbedUrl = (provider: string, src: string) => {
     switch (provider) {
       case 'youtube':
-        const youtubeParams = new URLSearchParams();
+        { const youtubeParams = new URLSearchParams();
         if (autoplay) youtubeParams.set('autoplay', '1');
         if (!controls) youtubeParams.set('controls', '0');
         if (loop) youtubeParams.set('loop', '1');
-        return `https://www.youtube.com/embed/${src}?${youtubeParams.toString()}`;
+        return `https://www.youtube.com/embed/${src}?${youtubeParams.toString()}`; }
       
       case 'vimeo':
-        const vimeoParams = new URLSearchParams();
+        { const vimeoParams = new URLSearchParams();
         if (autoplay) vimeoParams.set('autoplay', '1');
         if (loop) vimeoParams.set('loop', '1');
-        return `https://player.vimeo.com/video/${src}?${vimeoParams.toString()}`;
+        return `https://player.vimeo.com/video/${src}?${vimeoParams.toString()}`; }
       
       case 'loom':
         return `https://www.loom.com/embed/${src}`;

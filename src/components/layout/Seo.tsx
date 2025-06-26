@@ -1,11 +1,25 @@
 // components/Seo.tsx
-import React from "react";
 import { Helmet } from "@dr.pogodin/react-helmet";
-import { useLocalization } from "@/contexts/LocalizationContext";
+import { useLocalization } from "@/hooks/useLocalization";
 
 interface SeoProps {
-  page: any;                    // <-- Page issue de config
+  page: {
+    seo?: {
+      title?: LocalizedString;
+      description?: LocalizedString;
+      keywords?: string[];
+      ogImage?: string;
+      ogType?: string;
+      twitterCard?: string;
+      noIndex?: boolean;
+      noFollow?: boolean;
+      structuredData?: Record<string, unknown>;
+    };
+    title: LocalizedString;
+  };                    // <-- Page issue de config
 }
+
+import { LocalizedString } from "@/types/site";
 
 export function Seo({ page }: SeoProps) {
   const { t, currentLocale } = useLocalization();

@@ -1,8 +1,7 @@
-import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Github, Twitter, Linkedin, Facebook, Instagram, Youtube } from 'lucide-react';
-import { useLocalization } from '@/contexts/LocalizationContext';
+import { useLocalization } from "@/hooks/useLocalization";
 import { useSite } from '@/contexts/SiteContext';
 
 const SocialIcons: Record<string, React.ComponentType<{ className?: string }>> = {

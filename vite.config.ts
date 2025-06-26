@@ -2,7 +2,7 @@ import path from 'path';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
-export default defineConfig(({ command, mode, ssrBuild }) => ({
+export default defineConfig(({ mode, isSsrBuild }) => ({
   plugins: [react()],
   resolve: {
     alias: {
@@ -16,7 +16,7 @@ export default defineConfig(({ command, mode, ssrBuild }) => ({
     'process.env.NODE_ENV': JSON.stringify(mode),
   },
   build: {
-    rollupOptions: ssrBuild ? {
+    rollupOptions: isSsrBuild ? {
       input: 'src/entry-server.tsx',
       output: {
         format: 'es'

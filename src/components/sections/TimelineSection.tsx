@@ -1,6 +1,5 @@
-import React from 'react';
 import { Calendar } from 'lucide-react';
-import { useLocalization } from '@/contexts/LocalizationContext';
+import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from '@/lib/utils';
 
 interface TimelineSectionProps {

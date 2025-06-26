@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { useLocalization } from '@/contexts/LocalizationContext';
+import { useLocalization } from "@/hooks/useLocalization";
 import { useNavigate } from "react-router";
 import { cn } from '@/lib/utils';
 

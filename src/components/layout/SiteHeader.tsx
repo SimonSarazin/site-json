@@ -5,7 +5,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Badge } from '@/components/ui/badge';
 import { DynamicIcon, IconName } from "lucide-react/dynamic";
 import { Menu, Globe, ChevronDown, User, LogOut } from 'lucide-react';
-import { useLocalization } from '@/contexts/LocalizationContext';
+import { useLocalization } from "@/hooks/useLocalization";
 import { useSite } from '@/contexts/SiteContext';
 import { useNavigate } from "react-router";
 import { useCocolight } from '@/hooks/useCocolight';
@@ -71,7 +71,7 @@ function NavItem({ item, mobile = false, onNavigate }: NavItemProps) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-56">
-          {item.children.map((child, index) => (
+          {item.children?.map((child, index) => (
             <DropdownMenuItem key={index} asChild>
               <button
                 className="flex items-center gap-2 w-full text-left"

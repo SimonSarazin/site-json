@@ -1,6 +1,5 @@
-import React from 'react';
 import { MapPin } from 'lucide-react';
-import { useLocalization } from '@/contexts/LocalizationContext';
+import { useLocalization } from "@/hooks/useLocalization";
 
 interface MapSectionProps {
   id?: string;

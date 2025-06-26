@@ -2,7 +2,7 @@ import { ThemeProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/sonner';
 import { CocolightProvider } from '@/contexts/CocolightProvider';
 import { SiteProvider } from '@/contexts/SiteContext';
-import { LocalizationProvider } from '@/contexts/LocalizationContext';
+import { LocalizationProvider } from '@/contexts/LocalizationProvider';
 import { getBaseUrl } from '@/lib/constant/common';
 import { Outlet } from 'react-router';
 import type { SiteConfig } from "@/types/site";

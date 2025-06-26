@@ -1,8 +1,7 @@
-import React from 'react';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, Circle } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 import * as Icons from 'lucide-react';
-import { useLocalization } from '@/contexts/LocalizationContext';
+import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from '@/lib/utils';
 
 interface StepsSectionProps {

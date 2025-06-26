@@ -1,5 +1,3 @@
-import React from 'react';
-
 interface HTMLSectionProps {
   id?: string;
   props: {

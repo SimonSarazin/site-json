@@ -511,12 +511,14 @@ const ChartSection = z.object({
   type: z.literal("chart"),
   id: z.string().optional(),
   props: z.object({
-    kind: z.enum(["line", "bar", "pie", "area", "radar"]),
-    data: z.array(z.record(z.string(), z.number())),
-    xKey: z.string(),
-    yKeys: z.array(z.string()),
+    kind : z.enum(["line", "bar", "pie", "area", "radar"]),
+    data : z.array(
+      z.record(z.string(), z.union([z.number(), z.string()]))
+    ),
+    xKey  : z.string(),
+    yKeys : z.array(z.string()),
     stacked: z.boolean().optional(),
-    legend: z.boolean().default(true),
+    legend : z.boolean().default(true),
   }),
 });
 
