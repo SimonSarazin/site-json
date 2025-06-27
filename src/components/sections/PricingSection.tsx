@@ -77,7 +77,7 @@ export function PricingSection({ id, props }: PricingSectionProps) {
               <CardFooter>
                 <Button 
                   className="w-full" 
-                  variant={highlight === index ? "default" : "outline-solid"}
+                  variant={highlight === index ? "default" : "outline"}
                   size="lg"
                   asChild
                 >

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Key, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -53,7 +53,7 @@ const navigate = useNavigate();
   };
 
   const getGridCols = (cols: number) => {
-    const colsMap = {
+    const colsMap: Record<number, string> = {
       1: 'grid-cols-1',
       2: 'grid-cols-1 md:grid-cols-2',
       3: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
@@ -120,7 +120,7 @@ const navigate = useNavigate();
         {/* Tags */}
         {post.tags && post.tags.length > 0 && (
           <div className="flex flex-wrap gap-2">
-            {post.tags.slice(0, 3).map((tag, index) => (
+            {post.tags.slice(0, 3).map((tag: Partial<Record<"fr" | "en" | "es" | "de", string>>, index: Key | null | undefined) => (
               <Badge key={index} variant="secondary" className="text-xs">
                 {t(tag)}
               </Badge>
@@ -166,7 +166,7 @@ const navigate = useNavigate();
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                 <Button
                   key={page}
-                  variant={page === currentPage ? "default" : "outline-solid"}
+                  variant={page === currentPage ? "default" : "outline"}
                   size="sm"
                   onClick={() => setCurrentPage(page)}
                   className="w-10 h-10 p-0"

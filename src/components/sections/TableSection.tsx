@@ -125,7 +125,7 @@ export function TableSection({ id, props }: TableSectionProps) {
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                   <Button
                     key={page}
-                    variant={page === currentPage ? "default" : "outline-solid"}
+                    variant={page === currentPage ? "default" : "outline"}
                     size="sm"
                     onClick={() => setCurrentPage(page)}
                     className="w-10 h-10 p-0"

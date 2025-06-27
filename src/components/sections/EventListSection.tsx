@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Key, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -121,7 +121,7 @@ export function EventListSection({ id, props }: EventListSectionProps) {
         {/* Tags */}
         {event.tags && event.tags.length > 0 && (
           <div className="flex flex-wrap gap-2">
-            {event.tags.map((tag, index) => (
+            {event.tags.map((tag: Partial<Record<"fr" | "en" | "es" | "de", string>>, index: Key | null | undefined) => (
               <Badge key={index} variant="outline" className="text-xs">
                 {t(tag)}
               </Badge>
@@ -156,20 +156,20 @@ export function EventListSection({ id, props }: EventListSectionProps) {
           {/* Filter Buttons */}
           <div className="flex justify-center gap-2 mb-8">
             <Button
-              variant={filter === 'all' ? 'default' : 'outline-solid'}
+              variant={filter === 'all' ? 'default' : 'outline'}
               onClick={() => setFilter('all')}
             >
               Tous les événements
             </Button>
             <Button
-              variant={filter === 'upcoming' ? 'default' : 'outline-solid'}
+              variant={filter === 'upcoming' ? 'default' : 'outline'}
               onClick={() => setFilter('upcoming')}
             >
               À venir
             </Button>
             {showPastEvents && (
               <Button
-                variant={filter === 'past' ? 'default' : 'outline-solid'}
+                variant={filter === 'past' ? 'default' : 'outline'}
                 onClick={() => setFilter('past')}
               >
                 Passés

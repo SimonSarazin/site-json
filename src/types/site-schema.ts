@@ -283,7 +283,7 @@ const CTASection = z.object({
     buttons: z.array(z.object({
       label: LocalizedString,
       href: z.string(),
-      variant: z.enum(["default", "secondary", "outline-solid", "ghost"]).default("default"),
+      variant: z.enum(["default", "secondary", "outline", "ghost"]).default("default"),
     })),
     align: Alignment.default("center"),
   }),
