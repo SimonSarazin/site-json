@@ -651,7 +651,7 @@ export const demoSiteConfig = {
                 text: { fr: "+33 1 23 45 67 89\nLun-Ven 9h-18h", en: "+33 1 23 45 67 89\nMon-Fri 9am-6pm" },
               },
               {
-                icon: "messageCircle",
+                icon: "message-circle",
                 title: { fr: "Chat", en: "Chat" },
                 text: { fr: "Chat en direct disponible\n24h/24 7j/7", en: "Live chat available\n24/7" },
               },
