@@ -17,7 +17,7 @@ interface MapSectionProps {
 
 export function MapSection({ id, props }: MapSectionProps) {
   const { t } = useLocalization();
-  const { provider = 'leaflet', center, zoom = 13, markers = [] } = props;
+  const { provider = 'leaflet', center, markers = [] } = props;
 
   // For now, we'll show a placeholder since implementing full map functionality
   // would require additional dependencies

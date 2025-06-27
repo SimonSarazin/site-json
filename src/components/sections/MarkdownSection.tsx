@@ -1,4 +1,3 @@
-import { useLocalization } from "@/hooks/useLocalization";
 
 interface MarkdownSectionProps {
   id?: string;
@@ -10,8 +9,8 @@ interface MarkdownSectionProps {
 }
 
 export function MarkdownSection({ id, props }: MarkdownSectionProps) {
-  const { t } = useLocalization();
-  const { md, sourceType = 'inline', animation } = props;
+
+  const { md, sourceType = 'inline' } = props;
 
   return (
     <section id={id} className="py-16 bg-background text-foreground">

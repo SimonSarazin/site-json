@@ -54,6 +54,9 @@ declare module "@communecter/cocolight-api-client" {
   export interface User {
     id: string;
     name?: string;
+
+    organization(params: { slug: string }): Promise<Organization>;
+
     [key: string]: unknown;
   }
 

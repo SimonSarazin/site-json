@@ -26,7 +26,7 @@ interface CookieConsentSectionProps {
   };
 }
 
-export function CookieConsentSection({ id, props }: CookieConsentSectionProps) {
+export function CookieConsentSection({ props }: CookieConsentSectionProps) {
   const { t } = useLocalization();
   const { 
     message, 

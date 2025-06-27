@@ -9,15 +9,17 @@ import { cn } from '@/lib/utils';
 interface TestimonialsSectionProps {
   id?: string;
   props: {
-    items: Array<{
-      quote: Record<string, string>;
-      author: Record<string, string>;
-      role?: Record<string, string>;
-      avatar?: string;
-    }>;
+    items: Array<Testimonial>;
     style?: 'grid' | 'carousel' | 'ticker';
     autoplay?: boolean;
   };
+}
+
+interface Testimonial {
+  quote: Record<string, string>;
+  author: Record<string, string>;
+  role?: Record<string, string>;
+  avatar?: string;
 }
 
 export function TestimonialsSection({ id, props }: TestimonialsSectionProps) {
@@ -43,7 +45,7 @@ export function TestimonialsSection({ id, props }: TestimonialsSectionProps) {
     setCurrentIndex((prev) => (prev - 1 + items.length) % items.length);
   };
 
-  const TestimonialCard = ({ item, index }: { item: any; index: number }) => (
+  const TestimonialCard = ({ item }: { item: Testimonial; }) => (
     <Card className="h-full">
       <CardContent className="p-6">
         <div className="flex flex-col h-full">
@@ -76,7 +78,7 @@ export function TestimonialsSection({ id, props }: TestimonialsSectionProps) {
         {style === 'grid' && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {items.map((item, index) => (
-              <TestimonialCard key={index} item={item} index={index} />
+              <TestimonialCard key={index} item={item} />
             ))}
           </div>
         )}
@@ -84,8 +86,8 @@ export function TestimonialsSection({ id, props }: TestimonialsSectionProps) {
         {style === 'carousel' && (
           <div className="max-w-4xl mx-auto">
             <div className="relative">
-              <TestimonialCard item={items[currentIndex]} index={currentIndex} />
-              
+              <TestimonialCard item={items[currentIndex]} />
+
               {items.length > 1 && (
                 <div className="flex justify-center items-center gap-4 mt-8">
                   <Button
@@ -129,7 +131,7 @@ export function TestimonialsSection({ id, props }: TestimonialsSectionProps) {
             <div className="flex animate-marquee gap-6">
               {[...items, ...items].map((item, index) => (
                 <div key={index} className="shrink-0 w-80">
-                  <TestimonialCard item={item} index={index} />
+                  <TestimonialCard item={item} />
                 </div>
               ))}
             </div>

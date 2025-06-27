@@ -15,7 +15,7 @@ interface SocialFeedSectionProps {
 }
 
 export function SocialFeedSection({ id, props }: SocialFeedSectionProps) {
-  const { platform, feedId, limit = 6, layout = 'grid' } = props;
+  const { platform, limit = 6, layout = 'grid' } = props;
 
   const getPlatformIcon = () => {
     switch (platform) {
