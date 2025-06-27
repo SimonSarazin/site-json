@@ -4,7 +4,6 @@ import { HelmetProvider } from "@dr.pogodin/react-helmet";
 import { buildRoutes } from "@/lib/buildRoutes";
 import { type SiteConfig } from '@/types/site';
 import "./index.css";
-import "./App.css";
 
 // La config JSON sérialisée par le serveur est injectée dans le global
 declare global {
