@@ -68,7 +68,7 @@ export function SectionRenderer({ section }: SectionRendererProps) {
       <section id={section.id} className="py-16 bg-muted/30 text-foreground">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-muted-foreground">
-            Section type "{(section as Section).type}" not implemented yet
+            Section type "{(section as any).type}" not implemented yet
           </p>
         </div>
       </section>
@@ -79,7 +79,7 @@ export function SectionRenderer({ section }: SectionRendererProps) {
   // `id` est utilisé comme ancres / scroll.
   return (
     <Suspense fallback={null}>
-      <C {...(section as Section).props} id={section.id} />
+      <C id={section.id} props={(section as any).props} />
     </Suspense>
   );
 }

@@ -31,6 +31,8 @@ async function createServer() {
       const [headStart, rest] = template.split("<!--app-head-->");
       const [beforeBody, tail] = rest.split("<!--app-html-->");
 
+      
+
       /* ---- 3. Envoie du <head> ouvert + config ----------------------- */
       res.status(200).setHeader("Content-Type", "text/html; charset=utf-8");
       res.write(headStart);             // <!doctype … <head>
@@ -44,10 +46,6 @@ async function createServer() {
         res.write(helmetHead);          // balises <title>, <meta>, …
         res.write(beforeBody);          // </head><body><div id="root">
       });
-
-      /* ---- 5. Fin de document ---------------------------------------- */
-      res.write(tail);                  // </div></body></html>
-      res.end();
 
     } catch (e) {
       vite.ssrFixStacktrace(e);
