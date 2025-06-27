@@ -8,14 +8,16 @@ import { cn } from '@/lib/utils';
 interface GallerySectionProps {
   id?: string;
   props: {
-    images: Array<{
-      src: string;
-      alt?: Record<string, string>;
-      caption?: Record<string, string>;
-    }>;
+    images: Array<GalleryImage>;
     columns?: 1 | 2 | 3 | 4 | 5 | 6;
     lightbox?: boolean;
   };
+}
+
+interface GalleryImage {
+  src: string;
+  alt?: Record<string, string>;
+  caption?: Record<string, string>;
 }
 
 export function GallerySection({ id, props }: GallerySectionProps) {
@@ -24,7 +26,7 @@ export function GallerySection({ id, props }: GallerySectionProps) {
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
 
   const getGridCols = (cols: number) => {
-    const colsMap = {
+    const colsMap: Record<number, string> = {
       1: 'grid-cols-1',
       2: 'grid-cols-1 md:grid-cols-2',
       3: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
@@ -32,7 +34,7 @@ export function GallerySection({ id, props }: GallerySectionProps) {
       5: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5',
       6: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6',
     };
-    return colsMap[cols];
+    return colsMap[cols as 1|2|3|4|5|6];
   };
 
   const nextImage = () => {
@@ -47,7 +49,7 @@ export function GallerySection({ id, props }: GallerySectionProps) {
     );
   };
 
-  const ImageItem = ({ image, index }: { image: any; index: number }) => {
+  const ImageItem = ({ image, index }: { image: GalleryImage; index: number }) => {
     const content = (
       <div className="group relative aspect-square overflow-hidden rounded-lg bg-muted cursor-pointer">
         <img

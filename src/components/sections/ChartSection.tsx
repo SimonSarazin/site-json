@@ -138,7 +138,7 @@ export function ChartSection({ id, props }: ChartSectionProps) {
         <div className="max-w-4xl mx-auto">
           <div className="bg-card rounded-lg border p-6">
             <ResponsiveContainer width="100%" height={400}>
-              {renderChart()}
+              {renderChart() || <div>No chart data available</div>}
             </ResponsiveContainer>
           </div>
         </div>

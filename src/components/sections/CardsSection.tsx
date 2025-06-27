@@ -1,13 +1,13 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from '@/lib/utils';
-import { DynamicIcon, IconName } from 'lucide-react/dynamic';
+import { DynamicIcon, type IconName } from 'lucide-react/dynamic';
 
 interface CardsSectionProps {
   id?: string;
   props: {
     items: Array<{
-      icon?: string;
+      icon?: IconName;
       image?: string;
       title: Record<string, string>;
       text: Record<string, string>;
@@ -80,7 +80,7 @@ export function CardsSection({ id, props }: CardsSectionProps) {
                   
                   {item.icon && (
                     <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 text-primary">
-                      <DynamicIcon name={item.icon as IconName} className="w-6 h-6" />
+                      <DynamicIcon name={item.icon} className="w-6 h-6" />
                     </div>
                   )}
                   

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import * as Icons from 'lucide-react';
 import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from '@/lib/utils';
+import { DynamicIcon, type IconName } from 'lucide-react/dynamic';
 
 interface StatsSectionProps {
   id?: string;
@@ -10,7 +10,7 @@ interface StatsSectionProps {
       value: string;
       label: Record<string, string>;
       description?: Record<string, string>;
-      icon?: string;
+      icon?: IconName;
     }>;
     layout?: 'horizontal' | 'vertical';
     animated?: boolean;
@@ -47,11 +47,6 @@ export function StatsSection({ id, props }: StatsSectionProps) {
     };
   }, [id, animated]);
 
-  const renderIcon = (iconName: string) => {
-    const IconComponent = (Icons as any)[iconName];
-    return IconComponent ? <IconComponent className="w-8 h-8" /> : null;
-  };
-
   const AnimatedNumber = ({ value, isVisible }: { value: string; isVisible: boolean }) => {
     const [displayValue, setDisplayValue] = useState('0');
 
@@ -84,7 +79,7 @@ export function StatsSection({ id, props }: StatsSectionProps) {
       }, duration / steps);
 
       return () => clearInterval(timer);
-    }, [value, isVisible, animated]);
+    }, [value, isVisible]);
 
     return <span>{displayValue}</span>;
   };
@@ -110,7 +105,10 @@ export function StatsSection({ id, props }: StatsSectionProps) {
                   "text-primary mb-4 flex justify-center",
                   layout === 'vertical' && "mb-0 shrink-0"
                 )}>
-                  {renderIcon(item.icon)}
+                  <DynamicIcon
+                name={item.icon}
+                className="w-8 h-8"
+              />
                 </div>
               )}
               

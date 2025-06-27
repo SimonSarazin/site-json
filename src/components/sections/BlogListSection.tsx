@@ -11,25 +11,27 @@ import { cn } from '@/lib/utils';
 interface BlogListSectionProps {
   id?: string;
   props: {
-    posts: Array<{
-      id: string;
-      title: Record<string, string>;
-      excerpt: Record<string, string>;
-      slug: string;
-      publishedAt: string;
-      author?: {
-        name: Record<string, string>;
-        avatar?: string;
-      };
-      featuredImage?: string;
-      tags?: Array<Record<string, string>>;
-      readTime?: number;
-    }>;
+    posts: Array<BlogPost>;
     layout?: 'grid' | 'list' | 'masonry';
     columns?: 1 | 2 | 3 | 4 | 5 | 6;
     pagination?: boolean;
     postsPerPage?: number;
   };
+}
+
+interface BlogPost {
+  id: string;
+  title: Record<string, string>;
+  excerpt: Record<string, string>;
+  slug: string;
+  publishedAt: string;
+  author?: {
+    name: Record<string, string>;
+    avatar?: string;
+  };
+  featuredImage?: string;
+  tags?: Array<Record<string, string>>;
+  readTime?: number;
 }
 
 export function BlogListSection({ id, props }: BlogListSectionProps) {
@@ -64,7 +66,7 @@ const navigate = useNavigate();
     return colsMap[cols];
   };
 
-  const PostCard = ({ post }: { post: any }) => (
+  const PostCard = ({ post }: { post: BlogPost }) => (
     <Card 
       className={cn(
         "h-full transition-all duration-200 hover:shadow-lg hover:-translate-y-1 cursor-pointer",

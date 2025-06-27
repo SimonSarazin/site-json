@@ -12,21 +12,23 @@ import { useLocalization } from "@/hooks/useLocalization";
 interface ContactFormSectionProps {
   id?: string;
   props: {
-    fields: Array<{
-      name: string;
-      label: Record<string, string>;
-      type?: 'text' | 'email' | 'tel' | 'number' | 'textarea' | 'select' | 'checkbox' | 'radio' | 'file';
-      required?: boolean;
-      placeholder?: Record<string, string>;
-      options?: Array<Record<string, string>>;
-      validation?: string;
-    }>;
+    fields: Array<Field>;
     submitLabel: Record<string, string>;
     action: string;
     method?: 'GET' | 'POST';
     successMessage?: Record<string, string>;
     errorMessage?: Record<string, string>;
   };
+}
+
+interface Field {
+  name: string;
+  label: Record<string, string>;
+  type?: 'text' | 'email' | 'tel' | 'number' | 'textarea' | 'select' | 'checkbox' | 'radio' | 'file';
+  required?: boolean;
+  placeholder?: Record<string, string>;
+  options?: Array<Record<string, string>>;
+  validation?: string;
 }
 
 export function ContactFormSection({ id, props }: ContactFormSectionProps) {
@@ -44,7 +46,7 @@ export function ContactFormSection({ id, props }: ContactFormSectionProps) {
     }));
   };
 
-  const validateField = (field: any, value: any) => {
+  const validateField = (field: Field, value: any) => {
     if (field.required && (!value || value === '')) {
       return `${t(field.label)} est requis`;
     }
@@ -52,17 +54,17 @@ export function ContactFormSection({ id, props }: ContactFormSectionProps) {
     if (field.validation && value) {
       switch (field.validation) {
         case 'email':
-          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          { const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
           if (!emailRegex.test(value)) {
             return 'Adresse e-mail invalide';
           }
-          break;
+          break; }
         case 'tel':
-          const phoneRegex = /^[\d\s\-\+\(\)]+$/;
+          { const phoneRegex = /^[\d\s\-\+\(\)]+$/;
           if (!phoneRegex.test(value)) {
             return 'Numéro de téléphone invalide';
           }
-          break;
+          break; }
         default:
           // Custom regex validation
           try {
@@ -70,6 +72,7 @@ export function ContactFormSection({ id, props }: ContactFormSectionProps) {
             if (!regex.test(value)) {
               return `Format invalide pour ${t(field.label)}`;
             }
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           } catch (e) {
             console.warn('Invalid regex pattern:', field.validation);
           }
@@ -120,6 +123,7 @@ export function ContactFormSection({ id, props }: ContactFormSectionProps) {
       } else {
         throw new Error('Erreur lors de l\'envoi');
       }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       toast({
         variant: "destructive",
@@ -131,7 +135,7 @@ export function ContactFormSection({ id, props }: ContactFormSectionProps) {
     }
   };
 
-  const renderField = (field: any) => {
+  const renderField = (field: Field) => {
     const value = formData[field.name] || '';
 
     switch (field.type) {

@@ -10,13 +10,15 @@ import { type AccordionMultipleProps, type AccordionSingleProps } from "@radix-u
 interface AccordionSectionProps {
   id?: string;
   props: {
-    items: Array<{
-      title: Record<string, string>;
-      content: Record<string, string>;
-      defaultOpen?: boolean;
-    }>;
+    items: Array<AccordionItem>;
     allowMultiple?: boolean;
   };
+}
+
+interface AccordionItem {
+  title: Record<string, string>;
+  content: Record<string, string>;
+  defaultOpen?: boolean;
 }
 
 export function AccordionSection({ id, props }: AccordionSectionProps): JSX.Element {

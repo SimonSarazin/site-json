@@ -5,21 +5,23 @@ interface LogoCloudSectionProps {
   id?: string;
   props: {
     title?: Record<string, string>;
-    logos: Array<{
-      src: string;
-      alt: Record<string, string>;
-      href?: string;
-    }>;
+    logos: Array<Logo>;
     grayscale?: boolean;
     animated?: boolean;
   };
+}
+
+interface Logo {
+  src: string;
+  alt: Record<string, string>;
+  href?: string;
 }
 
 export function LogoCloudSection({ id, props }: LogoCloudSectionProps) {
   const { t } = useLocalization();
   const { title, logos, grayscale = true, animated = false } = props;
 
-  const LogoItem = ({ logo, index }: { logo: any; index: number }) => {
+  const LogoItem = ({ logo, index }: { logo: Logo; index: number }) => {
     const content = (
       <div className={cn(
         "flex items-center justify-center p-4 transition-all duration-200",

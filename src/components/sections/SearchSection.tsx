@@ -30,6 +30,8 @@ interface SearchSectionProps {
   };
 }
 
+
+
 export function SearchSection({ id, props }: SearchSectionProps) {
   const { t } = useLocalization();
   const { placeholder, searchEndpoint, categories = [], filters = [] } = props;

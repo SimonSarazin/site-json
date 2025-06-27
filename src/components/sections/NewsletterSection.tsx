@@ -68,6 +68,7 @@ export function NewsletterSection({ id, props }: NewsletterSectionProps) {
       } else {
         throw new Error('Erreur lors de l\'inscription');
       }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       toast({
         variant: "destructive",

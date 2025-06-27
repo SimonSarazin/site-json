@@ -9,21 +9,23 @@ import { cn } from '@/lib/utils';
 interface EventListSectionProps {
   id?: string;
   props: {
-    events: Array<{
-      id: string;
-      title: Record<string, string>;
-      description: Record<string, string>;
-      startDate: string;
-      endDate?: string;
-      location?: Record<string, string>;
-      image?: string;
-      registrationUrl?: string;
-      price?: string;
-      tags?: Array<Record<string, string>>;
-    }>;
+    events: Array<Event>;
     layout?: 'list' | 'grid' | 'calendar';
     showPastEvents?: boolean;
   };
+};
+
+interface Event {
+  id: string;
+  title: Record<string, string>;
+  description: Record<string, string>;
+  startDate: string;
+  endDate?: string;
+  location?: Record<string, string>;
+  image?: string;
+  registrationUrl?: string;
+  price?: string;
+  tags?: Array<Record<string, string>>;
 }
 
 export function EventListSection({ id, props }: EventListSectionProps) {
@@ -62,7 +64,7 @@ export function EventListSection({ id, props }: EventListSectionProps) {
     return new Date(dateString) < now;
   };
 
-  const EventCard = ({ event }: { event: any }) => (
+  const EventCard = ({ event }: { event: Event }) => (
     <Card className={cn(
       "transition-all duration-200 hover:shadow-lg",
       isEventPast(event.startDate) && "opacity-75"

@@ -6,18 +6,18 @@ import type { Section } from "@/types/site";
  * React.lazy attend un export **par défaut**.
  * On transforme donc le module importé pour fournir `{ default: NamedExport }`.
  */
-function lazyNamed<T extends { [K in keyof T]: React.ComponentType<any> }>(
+function lazyNamed<T extends { [K in keyof T]: React.ComponentType<any> }, K extends keyof T>(
   loader: () => Promise<T>,
-  exportName: keyof T
+  exportName: K
 ) {
-  return lazy(() => loader().then((m) => ({ default: m[exportName] as any })));
+  return lazy(() => loader().then((m) => ({ default: m[exportName] })));
 }
 
 // -----------------------------------------------------------------------------
 // Mapping « type » → Composant paresseux
 // Chaque entrée crée un CHUNK séparé (code‑splitting).
 // -----------------------------------------------------------------------------
-const LazySections: Record<string, React.LazyExoticComponent<any>> = {
+const LazySections: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {
   hero: lazyNamed(() => import("./HeroSection"), "HeroSection"),
   markdown: lazyNamed(() => import("./MarkdownSection"), "MarkdownSection"),
   cards: lazyNamed(() => import("./CardsSection"), "CardsSection"),
@@ -68,7 +68,7 @@ export function SectionRenderer({ section }: SectionRendererProps) {
       <section id={section.id} className="py-16 bg-muted/30 text-foreground">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-muted-foreground">
-            Section type "{(section as any).type}" not implemented yet
+            Section type "{(section as Section).type}" not implemented yet
           </p>
         </div>
       </section>
@@ -79,7 +79,7 @@ export function SectionRenderer({ section }: SectionRendererProps) {
   // `id` est utilisé comme ancres / scroll.
   return (
     <Suspense fallback={null}>
-      <C id={section.id} props={(section as any).props} />
+      <C {...(section as Section).props} id={section.id} />
     </Suspense>
   );
 }

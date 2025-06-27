@@ -1,21 +1,29 @@
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle } from 'lucide-react';
-import * as Icons from 'lucide-react';
 import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from '@/lib/utils';
+import { DynamicIcon, type IconName } from 'lucide-react/dynamic';
 
 interface StepsSectionProps {
   id?: string;
   props: {
-    steps: Array<{
-      title: Record<string, string>;
-      description: Record<string, string>;
-      icon?: string;
-      completed?: boolean;
-    }>;
+    steps: Array<Step>;
     orientation?: 'horizontal' | 'vertical';
     showProgress?: boolean;
   };
+}
+
+interface StepIndicatorProps {
+  step: Step;
+  index: number;
+  isLast: boolean;
+}
+
+interface Step {
+  title: Record<string, string>;
+  description: Record<string, string>;
+  icon?: IconName;
+  completed?: boolean;
 }
 
 export function StepsSection({ id, props }: StepsSectionProps) {
@@ -25,12 +33,7 @@ export function StepsSection({ id, props }: StepsSectionProps) {
   const completedSteps = steps.filter(step => step.completed).length;
   const progressPercentage = (completedSteps / steps.length) * 100;
 
-  const renderIcon = (iconName: string) => {
-    const IconComponent = (Icons as any)[iconName];
-    return IconComponent ? <IconComponent className="w-6 h-6" /> : null;
-  };
-
-  const StepIndicator = ({ step, index, isLast }: { step: any; index: number; isLast: boolean }) => (
+  const StepIndicator = ({ step, index, isLast }: StepIndicatorProps) => (
     <div className={cn(
       "flex items-center",
       orientation === 'vertical' ? "flex-col" : "flex-row"
@@ -45,7 +48,10 @@ export function StepsSection({ id, props }: StepsSectionProps) {
         {step.completed ? (
           <CheckCircle className="w-6 h-6" />
         ) : step.icon ? (
-          renderIcon(step.icon)
+          <DynamicIcon
+            name={step.icon}
+            className="w-6 h-6"
+          />
         ) : (
           <span className="font-semibold">{index + 1}</span>
         )}

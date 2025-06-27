@@ -9,20 +9,22 @@ import { cn } from '@/lib/utils';
 interface ProductShowcaseSectionProps {
   id?: string;
   props: {
-    products: Array<{
-      id: string;
-      name: Record<string, string>;
-      description: Record<string, string>;
-      price?: string;
-      images: string[];
-      features?: Array<Record<string, string>>;
-      cta?: {
-        label: Record<string, string>;
-        href: string;
-      };
-    }>;
+    products: Array<Product>;
     layout?: 'grid' | 'carousel' | 'featured';
     showPrices?: boolean;
+  };
+}
+
+interface Product {
+  id: string;
+  name: Record<string, string>;
+  description: Record<string, string>;
+  price?: string;
+  images: string[];
+  features?: Array<Record<string, string>>;
+  cta?: {
+    label: Record<string, string>;
+    href: string;
   };
 }
 
@@ -45,7 +47,7 @@ export function ProductShowcaseSection({ id, props }: ProductShowcaseSectionProp
     }));
   };
 
-  const ProductCard = ({ product, featured = false }: { product: any; featured?: boolean }) => {
+  const ProductCard = ({ product, featured = false }: { product: Product; featured?: boolean }) => {
     const currentIndex = currentImageIndex[product.id] || 0;
     
     return (
