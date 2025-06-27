@@ -23,7 +23,7 @@ export function SiteFooter() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Newsletter Section */}
         {footer.newsletter && (
-          <div className="mb-12 p-8 rounded-lg bg-gradient-to-r from-primary/5 to-secondary/5 border">
+          <div className="mb-12 p-8 rounded-lg bg-linear-to-r from-primary/5 to-secondary/5 border">
             <div className="max-w-2xl mx-auto text-center">
               <h3 className="text-2xl font-bold mb-2 text-foreground">
                 {t(footer.newsletter.props.headline)}

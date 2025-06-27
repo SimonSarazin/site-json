@@ -128,7 +128,7 @@ export function TestimonialsSection({ id, props }: TestimonialsSectionProps) {
           <div className="overflow-hidden">
             <div className="flex animate-marquee gap-6">
               {[...items, ...items].map((item, index) => (
-                <div key={index} className="flex-shrink-0 w-80">
+                <div key={index} className="shrink-0 w-80">
                   <TestimonialCard item={item} index={index} />
                 </div>
               ))}

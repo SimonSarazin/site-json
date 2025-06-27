@@ -66,7 +66,7 @@ export function LogoCloudSection({ id, props }: LogoCloudSectionProps) {
           <div className="overflow-hidden">
             <div className="flex animate-marquee gap-8">
               {[...logos, ...logos].map((logo, index) => (
-                <div key={index} className="flex-shrink-0">
+                <div key={index} className="shrink-0">
                   <LogoItem logo={logo} index={index} />
                 </div>
               ))}

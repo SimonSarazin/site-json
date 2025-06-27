@@ -1,9 +1,10 @@
 import path from 'path';
+import tailwindcss from "@tailwindcss/vite"
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
 export default defineConfig(({ mode, isSsrBuild }) => ({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -24,7 +25,7 @@ export default defineConfig(({ mode, isSsrBuild }) => ({
     } : undefined
   },
   ssr: {
-    noExternal: ['@radix-ui/*', 'lucide-react', '@communecter/cocolight-api-client'],
+    noExternal: ['@radix-ui/', 'lucide-react', '@communecter/cocolight-api-client'],
     external: ['express', 'compression', 'serve-static']
   }
 }));

@@ -13,7 +13,7 @@ interface CTASectionProps {
     buttons: Array<{
       label: Record<string, string>;
       href: string;
-      variant?: 'default' | 'secondary' | 'outline' | 'ghost';
+      variant?: 'default' | 'secondary' | 'outline-solid' | 'ghost';
     }>;
     align?: 'left' | 'center' | 'right';
   };
@@ -92,7 +92,7 @@ export function CTASection({ id, props }: CTASectionProps) {
                 className={cn(
                   "text-lg px-8 py-6",
                   backgroundImage && button.variant === 'default' && "bg-white text-black hover:bg-white/90",
-                  backgroundImage && button.variant === 'outline' && "border-white text-white hover:bg-white hover:text-black"
+                  backgroundImage && button.variant === 'outline-solid' && "border-white text-white hover:bg-white hover:text-black"
                 )}
                 onClick={() => handleButtonClick(button.href)}
               >

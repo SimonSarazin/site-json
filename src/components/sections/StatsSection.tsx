@@ -108,7 +108,7 @@ export function StatsSection({ id, props }: StatsSectionProps) {
               {item.icon && (
                 <div className={cn(
                   "text-primary mb-4 flex justify-center",
-                  layout === 'vertical' && "mb-0 flex-shrink-0"
+                  layout === 'vertical' && "mb-0 shrink-0"
                 )}>
                   {renderIcon(item.icon)}
                 </div>

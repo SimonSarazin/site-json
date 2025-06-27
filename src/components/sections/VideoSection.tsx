@@ -18,11 +18,11 @@ export function VideoSection({ id, props }: VideoSectionProps) {
   const getAspectRatio = (ratio: string) => {
     switch (ratio) {
       case '4/3':
-        return 'aspect-[4/3]';
+        return 'aspect-4/3';
       case '1/1':
         return 'aspect-square';
       case '9/16':
-        return 'aspect-[9/16]';
+        return 'aspect-9/16';
       default:
         return 'aspect-video';
     }

@@ -44,7 +44,7 @@ export function TimelineSection({ id, props }: TimelineSectionProps) {
               >
                 {/* Content */}
                 <div className={cn(
-                  "w-5/12 p-6 bg-card rounded-lg border shadow-sm",
+                  "w-5/12 p-6 bg-card rounded-lg border shadow-xs",
                   alternating && index % 2 === 0 ? "mr-auto" : "ml-auto"
                 )}>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">

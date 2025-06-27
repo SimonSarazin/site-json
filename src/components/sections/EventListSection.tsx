@@ -156,20 +156,20 @@ export function EventListSection({ id, props }: EventListSectionProps) {
           {/* Filter Buttons */}
           <div className="flex justify-center gap-2 mb-8">
             <Button
-              variant={filter === 'all' ? 'default' : 'outline'}
+              variant={filter === 'all' ? 'default' : 'outline-solid'}
               onClick={() => setFilter('all')}
             >
               Tous les événements
             </Button>
             <Button
-              variant={filter === 'upcoming' ? 'default' : 'outline'}
+              variant={filter === 'upcoming' ? 'default' : 'outline-solid'}
               onClick={() => setFilter('upcoming')}
             >
               À venir
             </Button>
             {showPastEvents && (
               <Button
-                variant={filter === 'past' ? 'default' : 'outline'}
+                variant={filter === 'past' ? 'default' : 'outline-solid'}
                 onClick={() => setFilter('past')}
               >
                 Passés

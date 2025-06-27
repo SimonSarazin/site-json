@@ -369,7 +369,7 @@ export const demoSiteConfig = {
               {
                 label: { fr: "Voir les tarifs", en: "View pricing" },
                 href: "/pricing",
-                variant: "outline"
+                variant: "outline-solid"
               }
             ],
             align: "center"

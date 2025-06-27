@@ -177,7 +177,7 @@ export function SearchSection({ id, props }: SearchSectionProps) {
             {categories.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 <Button
-                  variant={selectedCategory === '' ? 'default' : 'outline'}
+                  variant={selectedCategory === '' ? 'default' : 'outline-solid'}
                   size="sm"
                   onClick={() => setSelectedCategory('')}
                 >
@@ -186,7 +186,7 @@ export function SearchSection({ id, props }: SearchSectionProps) {
                 {categories.map((category) => (
                   <Button
                     key={category.id}
-                    variant={selectedCategory === category.id ? 'default' : 'outline'}
+                    variant={selectedCategory === category.id ? 'default' : 'outline-solid'}
                     size="sm"
                     onClick={() => setSelectedCategory(category.id)}
                   >
