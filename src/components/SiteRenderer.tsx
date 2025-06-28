@@ -27,7 +27,7 @@ export function SiteRenderer() {
       <div className="min-h-screen flex flex-col">
         {!currentPage.hideHeader && <SiteHeader />}
 
-        <main className="flex-1">
+        <main id="main" role="main" className="flex-1">
           {currentPage.sections.map((s, i) => (
             <SectionRenderer key={i} section={s} />
           ))}

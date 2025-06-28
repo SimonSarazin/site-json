@@ -221,6 +221,7 @@ export function CookieConsentSection({ props }: CookieConsentSectionProps) {
             <Button
               variant="ghost"
               size="sm"
+              aria-label="Fermer"
               onClick={() => setIsVisible(false)}
               className="shrink-0 p-1"
             >

@@ -97,6 +97,7 @@ export function GallerySection({ id, props }: GallerySectionProps) {
                 <Button
                   variant="ghost"
                   size="sm"
+                  aria-label="Fermer la galerie"
                   className="absolute top-4 right-4 z-10 text-white hover:bg-white/20"
                   onClick={() => setSelectedImage(null)}
                 >
@@ -106,6 +107,7 @@ export function GallerySection({ id, props }: GallerySectionProps) {
                 <Button
                   variant="ghost"
                   size="sm"
+                  aria-label="Image précédente"
                   className="absolute left-4 top-1/2 -translate-y-1/2 z-10 text-white hover:bg-white/20"
                   onClick={prevImage}
                 >
@@ -115,6 +117,7 @@ export function GallerySection({ id, props }: GallerySectionProps) {
                 <Button
                   variant="ghost"
                   size="sm"
+                  aria-label="Image suivante"
                   className="absolute right-4 top-1/2 -translate-y-1/2 z-10 text-white hover:bg-white/20"
                   onClick={nextImage}
                 >
