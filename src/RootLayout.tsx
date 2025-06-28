@@ -5,6 +5,7 @@ import { SiteProvider } from '@/contexts/SiteContext';
 import { LocalizationProvider } from '@/contexts/LocalizationProvider';
 import { getBaseUrl } from '@/lib/constant/common';
 import { Outlet } from 'react-router';
+import { SiteTheme } from '@/components/layout/SiteTheme';
 import type { SiteConfig } from "@/types/site";
 
 interface Props {
@@ -23,10 +24,11 @@ function RootLayout({ config }: Props) {
     >
       <CocolightProvider clientOptions={{ baseURL: getBaseUrl(), debug: true }}>
           <SiteProvider config={config}>
-            <LocalizationProvider 
+            <LocalizationProvider
               defaultLocale={config.meta.defaultLang}
               availableLocales={config.meta.languages}
             >
+              <SiteTheme />
               <Outlet />
               <Toaster />
             </LocalizationProvider>
