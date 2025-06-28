@@ -11,12 +11,13 @@ interface SeoProps {
       ogImage?: string;
       ogType?: string;
       twitterCard?: string;
+      canonical?: string;
       noIndex?: boolean;
       noFollow?: boolean;
       structuredData?: Record<string, unknown>;
     };
     title: LocalizedString;
-  };                    // <-- Page issue de config
+  }; // <-- Page issue de config
 }
 
 import { LocalizedString } from "@/types/site";
@@ -25,16 +26,14 @@ export function Seo({ page }: SeoProps) {
   const { t, currentLocale } = useLocalization();
   const seo = page.seo ?? {};
 
-  const title       = seo.title       ? t(seo.title)       : t(page.title);
+  const title = seo.title ? t(seo.title) : t(page.title);
   const description = seo.description ? t(seo.description) : "";
 
   return (
     <Helmet htmlAttributes={{ lang: currentLocale }}>
       {/* Basiques */}
       <title>{title}</title>
-      {description && (
-        <meta name="description" content={description} />
-      )}
+      {description && <meta name="description" content={description} />}
 
       {/* Mots-clés */}
       {seo.keywords?.length && (
@@ -43,17 +42,18 @@ export function Seo({ page }: SeoProps) {
 
       {/* OG / Twitter */}
       {seo.ogImage && <meta property="og:image" content={seo.ogImage} />}
-      {seo.ogType  && <meta property="og:type"  content={seo.ogType}  />}
+      {seo.ogType && <meta property="og:type" content={seo.ogType} />}
       {seo.twitterCard && (
         <meta name="twitter:card" content={seo.twitterCard} />
       )}
+      {seo.canonical && <link rel="canonical" href={seo.canonical} />}
 
       {/* Robots */}
       {(seo.noIndex || seo.noFollow) && (
         <meta
           name="robots"
           content={[
-            seo.noIndex  ? "noindex"  : "index",
+            seo.noIndex ? "noindex" : "index",
             seo.noFollow ? "nofollow" : "follow",
           ].join(",")}
         />
