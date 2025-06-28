@@ -93,6 +93,7 @@ export function TestimonialsSection({ id, props }: TestimonialsSectionProps) {
                   <Button
                     variant="outline"
                     size="sm"
+                    aria-label="Témoignage précédent"
                     onClick={prevTestimonial}
                     className="w-10 h-10 p-0"
                   >
@@ -103,6 +104,7 @@ export function TestimonialsSection({ id, props }: TestimonialsSectionProps) {
                     {items.map((_, index) => (
                       <button
                         key={index}
+                        aria-label={`Témoignage ${index + 1}`}
                         onClick={() => setCurrentIndex(index)}
                         className={cn(
                           "w-2 h-2 rounded-full transition-colors",
@@ -115,6 +117,7 @@ export function TestimonialsSection({ id, props }: TestimonialsSectionProps) {
                   <Button
                     variant="outline"
                     size="sm"
+                    aria-label="Témoignage suivant"
                     onClick={nextTestimonial}
                     className="w-10 h-10 p-0"
                   >

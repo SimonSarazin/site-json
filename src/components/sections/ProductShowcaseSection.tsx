@@ -71,6 +71,7 @@ export function ProductShowcaseSection({ id, props }: ProductShowcaseSectionProp
               <Button
                 variant="ghost"
                 size="sm"
+                aria-label="Image précédente"
                 className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white"
                 onClick={() => prevImage(product.id, product.images.length)}
               >
@@ -80,6 +81,7 @@ export function ProductShowcaseSection({ id, props }: ProductShowcaseSectionProp
               <Button
                 variant="ghost"
                 size="sm"
+                aria-label="Image suivante"
                 className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white"
                 onClick={() => nextImage(product.id, product.images.length)}
               >
@@ -91,11 +93,14 @@ export function ProductShowcaseSection({ id, props }: ProductShowcaseSectionProp
                 {product.images.map((_, index) => (
                   <button
                     key={index}
+                    aria-label={`Afficher l'image ${index + 1}`}
                     className={cn(
                       "w-2 h-2 rounded-full transition-colors",
                       index === currentIndex ? "bg-white" : "bg-white/50"
                     )}
-                    onClick={() => setCurrentImageIndex(prev => ({ ...prev, [product.id]: index }))}
+                    onClick={() =>
+                      setCurrentImageIndex(prev => ({ ...prev, [product.id]: index }))
+                    }
                   />
                 ))}
               </div>
