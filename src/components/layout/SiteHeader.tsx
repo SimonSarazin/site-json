@@ -1,17 +1,37 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
 import { DynamicIcon, IconName } from "lucide-react/dynamic";
-import { Menu, Globe, ChevronDown, User, LogOut } from 'lucide-react';
+import {
+  Menu,
+  Globe,
+  ChevronDown,
+  User,
+  LogOut,
+  Search,
+  ShoppingCart,
+  Bell,
+} from "lucide-react";
 import { useLocalization } from "@/hooks/useLocalization";
-import { useSite } from '@/contexts/SiteContext';
+import { useSite } from "@/contexts/SiteContext";
 import { useNavigate } from "react-router";
-import { useCocolight } from '@/hooks/useCocolight';
-import { NavItem as NavItemType } from '@/types/site';
-import { cn } from '@/lib/utils';
-import ToggleButtonTheme from './ToggleButtonTheme';
+import { useCocolight } from "@/hooks/useCocolight";
+import { AnnouncementBanner } from "./AnnouncementBanner";
+import { NavItem as NavItemType } from "@/types/site";
+import { cn } from "@/lib/utils";
+import ToggleButtonTheme from "./ToggleButtonTheme";
 
 interface NavItemProps {
   item: NavItemType;
@@ -22,18 +42,24 @@ interface NavItemProps {
 function NavItem({ item, mobile = false, onNavigate }: NavItemProps) {
   const { t } = useLocalization();
   const navigate = useNavigate();
+  const { me } = useCocolight();
   const [isOpen, setIsOpen] = useState(false);
-  
+
+  if (item.roles && item.roles.length > 0) {
+    const userRoles: string[] = me?.serverData?.roles || [];
+    const hasRole = item.roles.some((r) => userRoles.includes(r));
+    if (!hasRole) return null;
+  }
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    
+
     if (item.path) {
       navigate(item.path);
       onNavigate?.();
     } else if (item.href) {
-      if (item.href.startsWith('http') || item.href.startsWith('//')) {
-        window.open(item.href, '_blank', 'noopener,noreferrer');
+      if (item.href.startsWith("http") || item.href.startsWith("//")) {
+        window.open(item.href, "_blank", "noopener,noreferrer");
       } else {
         window.location.href = item.href;
       }
@@ -47,20 +73,17 @@ function NavItem({ item, mobile = false, onNavigate }: NavItemProps) {
     return (
       <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
         <DropdownMenuTrigger asChild>
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             className={cn(
               "flex items-center gap-2",
-              mobile && "w-full justify-start"
+              mobile && "w-full justify-start",
             )}
           >
-          {/* Icône dynamique */}
-          {item.icon && (
-              <DynamicIcon
-                name={item.icon as IconName}
-                className="w-4 h-4"
-              />
-          )}
+            {/* Icône dynamique */}
+            {item.icon && (
+              <DynamicIcon name={item.icon as IconName} className="w-4 h-4" />
+            )}
             {t(item.label)}
             <ChevronDown className="w-4 h-4" />
             {item.badge && (
@@ -80,8 +103,11 @@ function NavItem({ item, mobile = false, onNavigate }: NavItemProps) {
                   if (child.path) {
                     navigate(child.path);
                   } else if (child.href) {
-                    if (child.href.startsWith('http') || child.href.startsWith('//')) {
-                      window.open(child.href, '_blank', 'noopener,noreferrer');
+                    if (
+                      child.href.startsWith("http") ||
+                      child.href.startsWith("//")
+                    ) {
+                      window.open(child.href, "_blank", "noopener,noreferrer");
                     } else {
                       window.location.href = child.href;
                     }
@@ -90,10 +116,10 @@ function NavItem({ item, mobile = false, onNavigate }: NavItemProps) {
                 }}
               >
                 {child.icon && (
-                    <DynamicIcon
-                      name={child.icon as IconName}
-                      className="w-4 h-4"
-                    />
+                  <DynamicIcon
+                    name={child.icon as IconName}
+                    className="w-4 h-4"
+                  />
                 )}
                 {t(child.label)}
                 {child.badge && (
@@ -114,16 +140,12 @@ function NavItem({ item, mobile = false, onNavigate }: NavItemProps) {
       variant="ghost"
       className={cn(
         "flex items-center gap-2",
-        mobile && "w-full justify-start"
+        mobile && "w-full justify-start",
       )}
       onClick={handleClick}
     >
-
       {item.icon && (
-        <DynamicIcon
-         name={item.icon as IconName}
-        className="w-4 h-4"
-          />
+        <DynamicIcon name={item.icon as IconName} className="w-4 h-4" />
       )}
       {t(item.label)}
       {item.badge && (
@@ -146,15 +168,15 @@ export function SiteHeader() {
 
   const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    navigate('/');
+    navigate("/");
   };
 
   const handleLogout = async () => {
     try {
       api.logout();
-      navigate('/');
+      navigate("/");
     } catch (error) {
-      console.error('Erreur lors de la déconnexion:', error);
+      console.error("Erreur lors de la déconnexion:", error);
     }
   };
 
@@ -163,16 +185,21 @@ export function SiteHeader() {
       role="navigation"
       className={cn(
         "border-b bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60",
-        header.sticky && "sticky top-0 z-50"
-      )}>
+        header.sticky && "sticky top-0 z-50",
+      )}
+    >
+      <AnnouncementBanner />
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-2">
-            <button onClick={handleLogoClick} className="flex items-center gap-2">
-              <img 
-                src={header.logo} 
-                alt={header.logoAlt ? t(header.logoAlt) : 'Logo'} 
+            <button
+              onClick={handleLogoClick}
+              className="flex items-center gap-2"
+            >
+              <img
+                src={header.logo}
+                alt={header.logoAlt ? t(header.logoAlt) : "Logo"}
                 className="h-8 w-auto rounded"
               />
             </button>
@@ -188,9 +215,7 @@ export function SiteHeader() {
           {/* Utilities */}
           <div className="flex items-center gap-2">
             {/* Theme Switch */}
-            {header.utilities.themeSwitch && (
-              <ToggleButtonTheme />
-            )}
+            {header.utilities.themeSwitch && <ToggleButtonTheme />}
 
             {/* Language Switch */}
             {header.utilities.langSwitch && availableLocales.length > 1 && (
@@ -206,13 +231,31 @@ export function SiteHeader() {
                     <DropdownMenuItem
                       key={locale}
                       onClick={() => setLocale(locale)}
-                      className={locale === currentLocale ? 'bg-accent' : ''}
+                      className={locale === currentLocale ? "bg-accent" : ""}
                     >
                       {locale.toUpperCase()}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
+            )}
+
+            {header.utilities.search && (
+              <Button variant="ghost" size="sm">
+                <Search className="h-4 w-4" />
+              </Button>
+            )}
+
+            {header.utilities.cart && (
+              <Button variant="ghost" size="sm">
+                <ShoppingCart className="h-4 w-4" />
+              </Button>
+            )}
+
+            {header.utilities.notifications && (
+              <Button variant="ghost" size="sm">
+                <Bell className="h-4 w-4" />
+              </Button>
             )}
 
             {/* Mobile Menu */}
@@ -224,12 +267,16 @@ export function SiteHeader() {
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm" className="gap-2">
                         <User className="h-4 w-4" />
-                        <span>{me?.serverData?.name || me?.serverData?.email || 'Mon compte'}</span>
+                        <span>
+                          {me?.serverData?.name ||
+                            me?.serverData?.email ||
+                            "Mon compte"}
+                        </span>
                         <ChevronDown className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">
-                      <DropdownMenuItem onClick={() => navigate('/profile')}>
+                      <DropdownMenuItem onClick={() => navigate("/profile")}>
                         <User className="mr-2 h-4 w-4" />
                         Profil
                       </DropdownMenuItem>
@@ -243,7 +290,7 @@ export function SiteHeader() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => navigate('/login')}
+                    onClick={() => navigate("/login")}
                   >
                     Se connecter
                   </Button>
@@ -262,14 +309,14 @@ export function SiteHeader() {
                 <SheetTitle className="sr-only">Mobile Menu</SheetTitle>
                 <div className="flex flex-col gap-4 py-4">
                   {header.nav.map((item, index) => (
-                    <NavItem 
-                      key={index} 
-                      item={item} 
-                      mobile 
+                    <NavItem
+                      key={index}
+                      item={item}
+                      mobile
                       onNavigate={() => setMobileMenuOpen(false)}
                     />
                   ))}
-                  
+
                   {/* Auth in mobile menu */}
                   {header.utilities.auth && !loading && (
                     <div className="pt-4 border-t">
@@ -279,7 +326,7 @@ export function SiteHeader() {
                             variant="ghost"
                             className="w-full justify-start"
                             onClick={() => {
-                              navigate('/profile');
+                              navigate("/profile");
                               setMobileMenuOpen(false);
                             }}
                           >
@@ -303,7 +350,7 @@ export function SiteHeader() {
                           variant="ghost"
                           className="w-full justify-start"
                           onClick={() => {
-                            navigate('/login');
+                            navigate("/login");
                             setMobileMenuOpen(false);
                           }}
                         >
