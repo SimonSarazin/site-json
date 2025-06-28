@@ -1,141 +1,167 @@
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useLocalization } from "@/hooks/useLocalization";
-import { cn } from '@/lib/utils';
 
-interface GallerySectionProps {
-  id?: string;
-  props: {
-    images: Array<GalleryImage>;
-    columns?: 1 | 2 | 3 | 4 | 5 | 6;
-    lightbox?: boolean;
-  };
-}
-
+/* ---------- Types ---------- */
 interface GalleryImage {
   src: string;
   alt?: Record<string, string>;
   caption?: Record<string, string>;
 }
 
+interface GallerySectionProps {
+  id?: string;
+  props: {
+    images: GalleryImage[];
+    columns?: 1 | 2 | 3 | 4 | 5 | 6;
+    lightbox?: boolean;
+  };
+}
+
+/* ---------- Composant ---------- */
 export function GallerySection({ id, props }: GallerySectionProps) {
-  const { t } = useLocalization();
   const { images, columns = 3, lightbox = true } = props;
-  const [selectedImage, setSelectedImage] = useState<number | null>(null);
+  const { t } = useLocalization();
+  const [selected, setSelected] = useState<number | null>(null);
 
-  const getGridCols = (cols: number) => {
-    const colsMap: Record<number, string> = {
-      1: 'grid-cols-1',
-      2: 'grid-cols-1 md:grid-cols-2',
-      3: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
-      4: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
-      5: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5',
-      6: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6',
-    };
-    return colsMap[cols as 1|2|3|4|5|6];
-  };
+  /* --- helper : cols → classes --- */
+  const gridCols = (c: number) =>
+    (
+      {
+        1: "grid-cols-1",
+        2: "grid-cols-1 md:grid-cols-2",
+        3: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
+        4: "grid-cols-1 md:grid-cols-2 lg:grid-cols-4",
+        5: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5",
+        6: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6",
+      } as const
+    )[c] ?? "grid-cols-1";
 
-  const nextImage = () => {
-    setSelectedImage((prev) => 
-      prev !== null ? (prev + 1) % images.length : 0
-    );
-  };
+  /* --- navigation --- */
+  const next = () =>
+    setSelected((i) => (i !== null ? (i + 1) % images.length : 0));
+  const prev = () =>
+    setSelected((i) => (i !== null ? (i - 1 + images.length) % images.length : 0));
 
-  const prevImage = () => {
-    setSelectedImage((prev) => 
-      prev !== null ? (prev - 1 + images.length) % images.length : 0
-    );
-  };
+  /* --- carte image --- */
+  const ImageCard = ({
+    image,
+    index,
+  }: {
+    image: GalleryImage;
+    index: number;
+  }) => {
+    const alt = image.alt
+      ? t(image.alt)
+      : t({ fr: `Image ${index + 1}`, en: `Image ${index + 1}` });
 
-  const ImageItem = ({ image, index }: { image: GalleryImage; index: number }) => {
-    const content = (
-      <div className="group relative aspect-square overflow-hidden rounded-lg bg-muted cursor-pointer">
-        <img
-          src={image.src}
-          alt={image.alt ? t(image.alt) : `Gallery image ${index + 1}`}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-        />
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+    const card = (
+      <div className="group relative overflow-hidden rounded-lg cursor-pointer">
+        <AspectRatio ratio={1}>
+          <img
+            src={image.src}
+            alt={alt}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        </AspectRatio>
+
+        {/* overlay au survol */}
+        <div className="absolute inset-0 bg-muted/0 transition-colors duration-300 group-hover:bg-muted/20" />
+
+        {/* légende */}
         {image.caption && (
-          <div className="absolute bottom-0 left-0 right-0 p-4 bg-linear-to-t from-black/60 to-transparent">
-            <p className="text-white text-sm">{t(image.caption)}</p>
-          </div>
+          <p className="absolute bottom-0 w-full bg-background/70 px-4 py-2 text-sm text-muted-foreground backdrop-blur-sm">
+            {t(image.caption)}
+          </p>
         )}
       </div>
     );
 
-    if (lightbox) {
-      return (
-        <div key={index} onClick={() => setSelectedImage(index)}>
-          {content}
-        </div>
-      );
-    }
-
-    return <div key={index}>{content}</div>;
+    return lightbox ? (
+      <button
+        key={index}
+        type="button"
+        className="focus-visible:outline-none"
+        onClick={() => setSelected(index)}
+      >
+        {card}
+      </button>
+    ) : (
+      <div key={index}>{card}</div>
+    );
   };
 
+  const current = selected !== null ? images[selected] : null;
+
+  /* ---------- render ---------- */
   return (
     <section id={id} className="py-16 bg-background text-foreground">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className={cn("grid gap-4", getGridCols(columns))}>
-          {images.map((image, index) => (
-            <ImageItem key={index} image={image} index={index} />
+        {/* Grille */}
+        <div className={cn("grid gap-4", gridCols(columns))}>
+          {images.map((img, i) => (
+            <ImageCard key={i} image={img} index={i} />
           ))}
         </div>
 
         {/* Lightbox */}
-        {lightbox && selectedImage !== null && (
-          <Dialog open={selectedImage !== null} onOpenChange={() => setSelectedImage(null)}>
-            <DialogContent className="max-w-4xl w-full h-full max-h-[90vh] p-0">
-              <DialogHeader>
-                <DialogTitle className="sr-only">Image Gallery</DialogTitle>
-              </DialogHeader>
-              <div className="relative w-full h-full flex items-center justify-center bg-black">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  aria-label="Fermer la galerie"
-                  className="absolute top-4 right-4 z-10 text-white hover:bg-white/20"
-                  onClick={() => setSelectedImage(null)}
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-                
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  aria-label="Image précédente"
-                  className="absolute left-4 top-1/2 -translate-y-1/2 z-10 text-white hover:bg-white/20"
-                  onClick={prevImage}
-                >
-                  <ChevronLeft className="w-6 h-6" />
-                </Button>
-                
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  aria-label="Image suivante"
-                  className="absolute right-4 top-1/2 -translate-y-1/2 z-10 text-white hover:bg-white/20"
-                  onClick={nextImage}
-                >
-                  <ChevronRight className="w-6 h-6" />
-                </Button>
+        {lightbox && current && (
+          <Dialog
+            open={selected !== null}
+            onOpenChange={(open) => !open && setSelected(null)}
+          >
+            <DialogContent className="w-auto p-0 max-h-[90vh] sm:max-w-[90vw] sm:max-h-[90vh]">
+                <DialogTitle className="sr-only">
+                  {t({ fr: "Galerie d’images", en: "Image gallery" })}
+                </DialogTitle>
 
+
+              <div className="relative flex w-full items-center justify-center bg-background">
+                {/* Précédent / suivant */}
+                {images.length > 1 && (
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={t({ fr: "Image précédente", en: "Previous image" })}
+                      className="absolute left-4 top-1/2 -translate-y-1/2"
+                      onClick={prev}
+                    >
+                      <ChevronLeft className="size-6" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={t({ fr: "Image suivante", en: "Next image" })}
+                      className="absolute right-4 top-1/2 -translate-y-1/2"
+                      onClick={next}
+                    >
+                      <ChevronRight className="size-6" />
+                    </Button>
+                  </>
+                )}
+
+                {/* Image */}
                 <img
-                  src={images[selectedImage].src}
-                  alt={images[selectedImage].alt ? t(images[selectedImage].alt!) : `Gallery image ${selectedImage + 1}`}
-                  className="max-w-full max-h-full object-contain"
+                  src={current.src}
+                  alt={current.alt ? t(current.alt) : ""}
+                  className="h-auto w-auto max-h-[90vh] max-w-full object-contain"
                 />
-                
-                {images[selectedImage].caption && (
-                  <div className="absolute bottom-4 left-4 right-4 text-center">
-                    <p className="text-white bg-black/50 px-4 py-2 rounded">
-                      {t(images[selectedImage].caption!)}
-                    </p>
-                  </div>
+
+                {/* Légende */}
+                {current.caption && (
+                  <p className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-md bg-background/70 px-4 py-2 text-sm text-muted-foreground backdrop-blur-sm">
+                    {t(current.caption)}
+                  </p>
                 )}
               </div>
             </DialogContent>
