@@ -1,5 +1,5 @@
 import { type ReactNode, useState, useEffect } from 'react';
-import { Locale, LOCALES, LocalizedString } from '@/types/site';
+import { Locale, LOCALES, LocalizedString } from '@/types/locale-schema';
 import { LocalizationContext } from './LocalizationContext';
 
 
@@ -11,7 +11,7 @@ interface LocalizationProviderProps {
 
 export function LocalizationProvider({ 
   children, 
-  defaultLocale = 'en',
+  defaultLocale = 'fr',
   availableLocales = LOCALES 
 }: LocalizationProviderProps) {
   const [currentLocale, setCurrentLocale] = useState<Locale>(defaultLocale);

@@ -1,6 +1,7 @@
 // components/Seo.tsx
 import { Helmet } from "@dr.pogodin/react-helmet";
 import { useLocalization } from "@/hooks/useLocalization";
+import { LocalizedString } from "@/types/locale-schema";
 
 interface SeoProps {
   page: {
@@ -19,8 +20,6 @@ interface SeoProps {
     title: LocalizedString;
   }; // <-- Page issue de config
 }
-
-import { LocalizedString } from "@/types/site";
 
 export function Seo({ page }: SeoProps) {
   const { t, currentLocale } = useLocalization();

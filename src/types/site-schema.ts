@@ -6,16 +6,9 @@
 // Validation : Zod 3.x – le schéma sert à la fois de typings, de runtime‑guard,
 //               et d'autocomplétion dans VS Code.
 // ------------------------------------------------------------
+import { SearchProSection } from "@/modules/search/schema";
 import { z } from "zod";
-
-/*───────────────────────────────────────────────────────────────*/
-/* 1. Locales & textes                                           */
-/*───────────────────────────────────────────────────────────────*/
-export const LOCALES = ["fr", "en", "es", "de"] as const; // extensible
-export type Locale = (typeof LOCALES)[number];
-
-export const LocalizedString = z.record(z.enum(LOCALES), z.string().min(1));
-export type LocalizedString = z.infer<typeof LocalizedString>;
+import { LocalizedString, LOCALES } from "./locale-schema";
 
 /*───────────────────────────────────────────────────────────────*/
 /* 2. Navigation                                                 */
@@ -416,6 +409,7 @@ const SearchSection = z.object({
   }),
 });
 
+
 //──────────────── Event List
 const EventListSection = z.object({
   type: z.literal("eventList"),
@@ -637,6 +631,7 @@ export const Section = z.union([
   BreadcrumbSection,
   CookieConsentSection,
   HTMLSection,
+  SearchProSection,
 ]);
 export type Section = z.infer<typeof Section>;
 

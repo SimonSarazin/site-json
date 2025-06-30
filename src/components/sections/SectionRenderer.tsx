@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import type { Section } from "@/types/site";
+import { ErrorBoundary } from "../layout/ErrorBoundary";
 
 /**
  * Certains fichiers de section exportent un composant NOMMÉ (ex. `export const HeroSection = …`).
@@ -54,6 +55,9 @@ const LazySections: Record<string, React.LazyExoticComponent<React.ComponentType
   loginForm: lazyNamed(() => import("./LoginFormSection"), "LoginFormSection"),
   registerForm: lazyNamed(() => import("./RegisterFormSection"), "RegisterFormSection"),
   recoverPasswordForm: lazyNamed(() => import("./RecoverPasswordFormSection"), "RecoverPasswordFormSection"),
+  searchPro: lazy(() =>
+    import("@/modules/search").then(m => ({ default: m.SearchSection }))
+  ),
 };
 
 interface SectionRendererProps {
@@ -79,7 +83,9 @@ export function SectionRenderer({ section }: SectionRendererProps) {
   // `id` est utilisé comme ancres / scroll.
   return (
     <Suspense fallback={null}>
-      <C id={section.id} props={(section as any).props} />
+      <ErrorBoundary fallback={<section>⚠️ Section failed to load.</section>}>
+        <C id={section.id} props={(section as any).props} />
+      </ErrorBoundary>
     </Suspense>
   );
 }

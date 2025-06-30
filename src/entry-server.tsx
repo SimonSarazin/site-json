@@ -9,6 +9,7 @@ import {
 import { type SiteConfig }                      from '@/types/site';
 import { buildRoutes }                          from '@/lib/buildRoutes';
 import { Writable }                             from 'node:stream';
+import { dehydrate, HydrationBoundary, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const STREAM_TIMEOUT_MS = 10_000;
 
@@ -42,9 +43,18 @@ export async function render(
   /*  Streaming React 19                                       */
   /* --------------------------------------------------------- */
   await new Promise<void>((resolve, reject) => {
+
+    const queryClient = new QueryClient();
+
+    const dehydratedState = dehydrate(queryClient);
+
     const { pipe, abort } = renderToPipeableStream(
       <HelmetProvider context={helmetCtx}>
-        <StaticRouterProvider router={router} context={context} />
+        <QueryClientProvider client={queryClient}>
+          <HydrationBoundary state={dehydratedState}>
+            <StaticRouterProvider router={router} context={context} />
+          </HydrationBoundary>
+        </QueryClientProvider>
       </HelmetProvider>,
       {
         /* Module ESM en dev, script classique en prod */

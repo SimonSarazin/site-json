@@ -1,5 +1,5 @@
+import { Locale, LocalizedString } from '@/types/locale-schema';
 import {  createContext } from 'react';
-import { Locale, LocalizedString } from '@/types/site';
 
 interface LocalizationContextType {
   currentLocale: Locale;

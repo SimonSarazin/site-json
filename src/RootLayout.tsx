@@ -8,6 +8,7 @@ import { Outlet } from "react-router";
 import { SiteTheme } from "@/components/layout/SiteTheme";
 import { IntegrationsLoader } from "@/components/layout/IntegrationsLoader";
 import type { SiteConfig } from "@/types/site";
+import { I18nBridge } from "./contexts/I18nBridge";
 
 interface Props {
   config: SiteConfig; // 👈 nouvelle prop
@@ -25,10 +26,12 @@ function RootLayout({ config }: Props) {
             defaultLocale={config.meta.defaultLang}
             availableLocales={config.meta.languages}
           >
+            <I18nBridge>
             <SiteTheme />
             <IntegrationsLoader />
             <Outlet />
             <Toaster />
+            </I18nBridge>
           </LocalizationProvider>
         </SiteProvider>
       </CocolightProvider>

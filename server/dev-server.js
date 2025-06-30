@@ -16,6 +16,18 @@ async function createServer() {
   });
   app.use(vite.middlewares);
 
+  app.use((req, res, next) => {
+  if (
+    req.url.startsWith("/favicon") ||
+    req.url.startsWith("/sw") ||
+    req.url.startsWith("/manifest") ||
+    req.url.match(/\.(png|jpg|jpeg|gif|svg|css|js|json|ico|webp|mp4|woff2|woff|env|php|txt|py|properties|bak)$/)
+  ) {
+    return res.status(404).end();
+  }
+  next();
+});
+
   /* ------------------------------------------------------------------ */
   app.use(["/{*all}"], async (req, res) => {
     try {

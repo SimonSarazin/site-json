@@ -37,6 +37,11 @@ export const demoSiteConfig = {
         icon: "credit-card"
       },
       {
+        path: "/searchPro",
+        label: { fr: "Recherche Pro", en: "Pro Search" },
+        icon: "search"
+      },
+      {
         label: { fr: "Ressources", en: "Resources" },
         icon: "book",
         children: [
@@ -1581,6 +1586,76 @@ export const demoSiteConfig = {
         }
       ],
     },
+    {
+      path: "/searchPro",
+      title: { fr: "Recherche Pro", en: "Pro Search" },
+      seo: {
+        description: { fr: "Trouvez des tiers-lieux pour vos projets professionnels", en: "Find third places for your professional projects" },
+      },
+      layout: "default",
+      sections:[
+        {
+          "type": "searchPro",
+          "id": "tier-lieux-finder",
+          "props": {
+            "placeholder": { "fr": "Rechercher un tiers-lieu…", "en": "Search a third-place…" },
+            "showMap": true,
+            "useFilter": true,
+
+            "filters": {
+              "typePlace": {
+                "type": "tags",
+                "name": { "fr": "Famille de tiers-lieux", "en": "Third-place family" },
+                "list": {
+                  "Ateliers artisanaux partagés": { "fr": "Ateliers artisanaux partagés",             "en": "Shared craft workshops" },
+                  "Bureaux partagés / Coworking":{ "fr": "Bureaux partagés / Coworking",             "en": "Coworking" },
+                  "Cuisine partagée / Foodlab":  { "fr": "Cuisine partagée / Foodlab",               "en": "Shared kitchen / Foodlab" },
+                  "Fablab / Makerspace / Hackerspace":   { "fr": "Fablab / Makerspace / Hackerspace",        "en": "FabLab / Makerspace" },
+                  "LivingLab / Innovation sociale":{ "fr": "LivingLab / Innovation sociale",           "en": "Living Lab" },
+                  "Tiers-lieu nourricier":{ "fr": "Tiers-lieu nourricier",                   "en": "Food-oriented third place" },
+                  "Tiers-lieu culturel / Lieu intermédiaire": { "fr": "Tiers-lieu culturel / Lieu intermédiaire", "en": "Cultural third place" }
+                }
+              },
+
+              "manageModel": {
+                "type": "tags",
+                "name": { "fr": "Mode de gestion", "en": "Management model" },
+                "list": {
+                  "Association":  { "fr": "Association",               "en": "Association" },
+                  "Collectif citoyen":    { "fr": "Collectif citoyen",          "en": "Citizen collective" },
+                  "Université / École / EPST":   { "fr": "Université / École / EPST",  "en": "University / School" },
+                  "Établissement scolaire":     { "fr": "Établissement scolaire",     "en": "School" },
+                  "Collectivité territoriale": { "fr": "Collectivité territoriale",  "en": "Local authority" },
+                  "SARL-SA-SAS":         { "fr": "SARL-SA-SAS",                "en": "Ltd / Corp" },
+                  "SCIC":         { "fr": "SCIC",                       "en": "CICS" },
+                  "SCOP":         { "fr": "SCOP",                       "en": "Worker co-op" }
+                }
+              },
+              "role": {
+                "type": "tags",
+                "name": {
+                  "fr": "Rôle",
+                  "en": "Role",
+                },
+                "list": {
+                  "Tiers-Lieux":   { "fr": "Tiers-Lieux",   "en": "Third-Place" },
+                  "Bureau":       { "fr": "Bureau",        "en": "Office" },
+                  "Partenaire":   { "fr": "Partenaire",    "en": "Partner" },
+                  "Accompagnateur": { "fr": "Accompagnateur", "en": "Mentor" },
+                },
+              },
+            },
+
+
+
+            "baseParams": {
+              "indexStepList": 20,
+              "defaultTypes": ["organizations"]
+            }
+          }
+        }
+      ]
+    }
   ],
   footer: {
     columns: [
