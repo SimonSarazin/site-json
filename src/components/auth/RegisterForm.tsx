@@ -4,6 +4,10 @@ import {
   type ChangeEvent,
 } from "react";
 
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { useT } from "@/hooks/useT";
+import "@/components/auth/i18n";
+
 import { useCocolight } from "@/hooks/useCocolight";
 import PasswordToggleTextInput from "@/components/input/PasswordToggleTextInput";
 import { Button } from "@/components/ui/button";
@@ -35,6 +39,8 @@ export default function RegisterForm(): JSX.Element {
   const navigate                     = useNavigate();
   const { userApi, loading, me }     = useCocolight();
   const { toast }                    = useToast();
+  const { loaded }                   = useLoadNamespace("components/auth");
+  const t                            = useT("components/auth");
 
   /* Redirige l’utilisateur déjà connecté ------------------------------- */
   useEffect(() => {
@@ -56,41 +62,40 @@ export default function RegisterForm(): JSX.Element {
     if (!name.trim()) {
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Le nom est requis",
+        title: t("Erreur"),
+        description: t("Le nom est requis"),
       });
       return false;
     }
     if (!username.trim()) {
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Le nom d'utilisateur est requis",
+        title: t("Erreur"),
+        description: t("Le nom d'utilisateur est requis"),
       });
       return false;
     }
     if (!email || !isValidEmail(email)) {
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "L'adresse e-mail n'est pas valide",
+        title: t("Erreur"),
+        description: t("L'adresse e-mail n'est pas valide"),
       });
       return false;
     }
     if (!pwd || pwd.length < 6) {
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description:
-          "Le mot de passe doit contenir au moins 6 caractères",
+        title: t("Erreur"),
+        description: t("Le mot de passe doit contenir au moins 6 caractères"),
       });
       return false;
     }
     if (pwd !== confirmPassword) {
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Les mots de passe ne correspondent pas",
+        title: t("Erreur"),
+        description: t("Les mots de passe ne correspondent pas"),
       });
       return false;
     }
@@ -115,54 +120,62 @@ export default function RegisterForm(): JSX.Element {
 
       if (response.result) {
         toast({
-          title: "Succès",
-          description:
-            "Votre compte a été créé avec succès ! Vous pouvez maintenant vous connecter.",
+          title: t("Succès"),
+          description: t(
+            "Votre compte a été créé avec succès ! Vous pouvez maintenant vous connecter."
+          ),
         });
         navigate("/login");
       } else {
         toast({
           variant: "destructive",
-          title: "Erreur",
+          title: t("Erreur"),
           description:
             response.msg ||
-            "Une erreur est survenue lors de la création du compte",
+            t("Une erreur est survenue lors de la création du compte"),
         });
       }
     } catch (err: unknown) {
       /* Extraction du message ------------------------------------------ */
       const msg =
-        (err as { response?: { data?: { msg?: string } } }).response
-          ?.data?.msg ||
+        (err as { response?: { data?: { msg?: string } } }).response?.data?.msg ||
         (err as Error).message ||
-        "Une erreur est survenue lors de la création du compte";
+        t("Une erreur est survenue lors de la création du compte");
 
       toast({
         variant: "destructive",
-        title: "Erreur",
+        title: t("Erreur"),
         description: msg,
       });
     } finally {
       setLoading(false);
     }
-  };
+  }; 
 
   /* ------------------------------------------------------------------- */
+  if (!loaded) {
+    return (
+      <div className="flex items-center justify-center py-10 text-muted-foreground">
+        Loading…
+      </div>
+    );
+  }
+
   return (
     <div className="w-full space-y-6 p-8 rounded-lg bg-card shadow-lg border">
       <div className="text-center">
         <h2 className="text-3xl font-bold text-foreground mb-2">
-          Créer un compte
+          {t("Créer un compte")}
         </h2>
         <p className="text-muted-foreground">
-          Rejoignez SiteForge dès aujourd'hui
+          {t("Rejoignez SiteForge dès aujourd'hui")}
         </p>
       </div>
 
       <div className="space-y-4">
         <Input
           type="text"
-          placeholder="Nom complet"
+          placeholder={t("Nom complet")}
           value={formData.name}
           onChange={(e: ChangeEvent<HTMLInputElement>) =>
             handleInputChange("name", e.target.value)
@@ -172,7 +185,7 @@ export default function RegisterForm(): JSX.Element {
 
         <Input
           type="text"
-          placeholder="Nom d'utilisateur"
+          placeholder={t("Nom d'utilisateur")}
           value={formData.username}
           onChange={(e: ChangeEvent<HTMLInputElement>) =>
             handleInputChange("username", e.target.value)
@@ -182,7 +195,7 @@ export default function RegisterForm(): JSX.Element {
 
         <Input
           type="email"
-          placeholder="Adresse e-mail"
+          placeholder={t("Adresse e-mail")}
           value={formData.email}
           onChange={(e: ChangeEvent<HTMLInputElement>) =>
             handleInputChange("email", e.target.value)
@@ -191,7 +204,7 @@ export default function RegisterForm(): JSX.Element {
         />
 
         <PasswordToggleTextInput
-          placeholder="Mot de passe"
+          placeholder={t("Mot de passe")}
           value={formData.pwd}
           onChange={(e: ChangeEvent<HTMLInputElement>) =>
             handleInputChange("pwd", e.target.value)
@@ -200,7 +213,7 @@ export default function RegisterForm(): JSX.Element {
         />
 
         <PasswordToggleTextInput
-          placeholder="Confirmer le mot de passe"
+          placeholder={t("Confirmer le mot de passe")}
           value={formData.confirmPassword}
           onChange={(e: ChangeEvent<HTMLInputElement>) =>
             handleInputChange("confirmPassword", e.target.value)
@@ -216,8 +229,8 @@ export default function RegisterForm(): JSX.Element {
           size="lg"
         >
           {loadingRegister
-            ? "Création du compte..."
-            : "Créer mon compte"}
+            ? t("Création du compte...")
+            : t("Créer mon compte")}
         </Button>
 
         <div className="text-center space-y-2">
@@ -226,7 +239,7 @@ export default function RegisterForm(): JSX.Element {
             onClick={() => navigate("/login")}
             className="text-sm text-muted-foreground hover:text-foreground"
           >
-            Déjà un compte ? Se connecter
+            {t("Déjà un compte ? Se connecter")}
           </Button>
 
           <Button
@@ -234,7 +247,7 @@ export default function RegisterForm(): JSX.Element {
             onClick={() => navigate("/")}
             className="text-sm text-muted-foreground hover:text-foreground"
           >
-            Retour à l'accueil
+            {t("Retour à l'accueil")}
           </Button>
         </div>
       </div>

@@ -5,6 +5,10 @@ import {
   type KeyboardEvent,
 } from "react";
 
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { useT } from "@/hooks/useT";
+import "@/components/auth/i18n";
+
 import { useCocolight } from "@/hooks/useCocolight";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +26,8 @@ export default function RecoverPasswordForm(): JSX.Element {
   const navigate                     = useNavigate();
   const { userApi, loading, me }     = useCocolight();
   const { toast }                    = useToast();
+  const { loaded }                   = useLoadNamespace("components/auth");
+  const t                            = useT("components/auth");
 
   /* Redirige si l’utilisateur est déjà connecté ------------------------ */
   useEffect(() => {
@@ -33,8 +39,8 @@ export default function RecoverPasswordForm(): JSX.Element {
     if (!email) {
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Veuillez saisir votre adresse e-mail",
+        title: t("Erreur"),
+        description: t("Veuillez saisir votre adresse e-mail"),
       });
       return;
     }
@@ -42,8 +48,8 @@ export default function RecoverPasswordForm(): JSX.Element {
     if (!isValidEmail(email)) {
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "L'adresse e-mail n'est pas valide",
+        title: t("Erreur"),
+        description: t("L'adresse e-mail n'est pas valide"),
       });
       return;
     }
@@ -56,37 +62,36 @@ export default function RecoverPasswordForm(): JSX.Element {
       if (response.result) {
         setEmailSent(true);
         toast({
-          title: "E-mail envoyé",
-          description:
-            "Un e-mail de récupération a été envoyé à votre adresse.",
+          title: t("E-mail envoyé"),
+          description: t(
+            "Un e-mail de récupération a été envoyé à votre adresse."
+          ),
         });
       } else if (response.errId === "UNKNOWN_ACCOUNT_ID") {
         toast({
           variant: "destructive",
-          title: "Compte introuvable",
-          description:
-            "Aucun compte n'est associé à cette adresse e-mail.",
+          title: t("Compte introuvable"),
+          description: t("Aucun compte n'est associé à cette adresse e-mail."),
         });
       } else {
         toast({
           variant: "destructive",
-          title: "Erreur",
+          title: t("Erreur"),
           description:
             response.msg ||
-            "Une erreur est survenue lors de l'envoi de l'e-mail",
+            t("Une erreur est survenue lors de l'envoi de l'e-mail"),
         });
       }
     } catch (err: unknown) {
       /* Extraction facultative du message d’erreur --------------------- */
       const msg =
-        (err as { response?: { data?: { msg?: string } } }).response
-          ?.data?.msg ||
+        (err as { response?: { data?: { msg?: string } } }).response?.data?.msg ||
         (err as Error).message ||
-        "Une erreur est survenue lors de l'envoi de l'e-mail";
+        t("Une erreur est survenue lors de l'envoi de l'e-mail");
 
       toast({
         variant: "destructive",
-        title: "Erreur",
+        title: t("Erreur"),
         description: msg,
       });
     } finally {
@@ -95,6 +100,14 @@ export default function RecoverPasswordForm(): JSX.Element {
   };
 
   /* ------------------------------------------------------------------- */
+  if (!loaded) {
+    return (
+      <div className="flex items-center justify-center py-10 text-muted-foreground">
+        Loading…
+      </div>
+    );
+  }
+
   if (emailSent) {
     return (
       <div className="w-full space-y-6 p-8 rounded-lg bg-card shadow-lg border">
@@ -103,15 +116,14 @@ export default function RecoverPasswordForm(): JSX.Element {
             <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
           </div>
           <h2 className="text-3xl font-bold text-foreground mb-2">
-            E-mail envoyé
+            {t("E-mail envoyé")}
           </h2>
           <p className="text-muted-foreground mb-4">
-            Un e-mail de récupération a été envoyé à&nbsp;
+            {t("Un e-mail de récupération a été envoyé à votre adresse.")}  
             <strong>{email}</strong>
           </p>
           <p className="text-sm text-muted-foreground">
-            Vérifiez votre boîte de réception et suivez les instructions
-            pour réinitialiser votre mot de passe.
+            {t("Vérifiez votre boîte de réception et suivez les instructions pour réinitialiser votre mot de passe.")}
           </p>
         </div>
 
@@ -123,7 +135,7 @@ export default function RecoverPasswordForm(): JSX.Element {
             size="lg"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Retour à la connexion
+            {t("Retour à la connexion")}
           </Button>
 
           <Button
@@ -134,7 +146,7 @@ export default function RecoverPasswordForm(): JSX.Element {
             }}
             className="w-full text-sm text-muted-foreground hover:text-foreground"
           >
-            Renvoyer l'e-mail
+            {t("Renvoyer l'e-mail")}
           </Button>
         </div>
       </div>
@@ -146,18 +158,17 @@ export default function RecoverPasswordForm(): JSX.Element {
     <div className="w-full space-y-6 p-8 rounded-lg bg-card shadow-lg border">
       <div className="text-center">
         <h2 className="text-3xl font-bold text-foreground mb-2">
-          Mot de passe oublié
+          {t("Mot de passe oublié")}
         </h2>
         <p className="text-muted-foreground">
-          Saisissez votre adresse e-mail pour recevoir un lien
-          de réinitialisation
+          {t("Saisissez votre adresse e-mail pour recevoir un lien de réinitialisation")}
         </p>
       </div>
 
       <div className="space-y-4">
         <Input
           type="email"
-          placeholder="Adresse e-mail"
+          placeholder={t("Adresse e-mail")}
           value={email}
           onChange={(e: ChangeEvent<HTMLInputElement>) =>
             setEmail(e.target.value)
@@ -176,8 +187,8 @@ export default function RecoverPasswordForm(): JSX.Element {
           size="lg"
         >
           {loadingRecover
-            ? "Envoi en cours..."
-            : "Envoyer le lien de récupération"}
+            ? t("Envoi en cours...")
+            : t("Envoyer le lien de récupération")}
         </Button>
 
         <div className="text-center space-y-2">
@@ -187,7 +198,7 @@ export default function RecoverPasswordForm(): JSX.Element {
             className="text-sm text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Retour à la connexion
+            {t("Retour à la connexion")}
           </Button>
 
           <Button
@@ -195,7 +206,7 @@ export default function RecoverPasswordForm(): JSX.Element {
             onClick={() => navigate("/")}
             className="text-sm text-muted-foreground hover:text-foreground"
           >
-            Retour à l'accueil
+            {t("Retour à l'accueil")}
           </Button>
         </div>
       </div>
