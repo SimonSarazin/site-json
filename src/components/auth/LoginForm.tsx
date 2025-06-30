@@ -4,6 +4,10 @@ import {
   type ChangeEvent,
 } from "react";
 
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { useT } from "@/hooks/useT";
+import "@/components/auth/i18n";
+
 import { useCocolight } from "@/hooks/useCocolight";
 import PasswordToggleTextInput from "@/components/input/PasswordToggleTextInput";
 import { Button } from "@/components/ui/button";
@@ -24,6 +28,8 @@ export default function LoginForm(): JSX.Element {
   const navigate                     = useNavigate();
   const { userApi, loading, me }     = useCocolight();
   const { toast }                    = useToast();
+  const { loaded }                   = useLoadNamespace("components/auth");
+  const t                            = useT("components/auth");
 
   /* Redirige l’utilisateur déjà connecté -------------------------------- */
   useEffect(() => {
@@ -38,8 +44,8 @@ export default function LoginForm(): JSX.Element {
     if (!email || !password) {
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Veuillez remplir l'email et le mot de passe",
+        title: t("Erreur"),
+        description: t("Veuillez remplir l'email et le mot de passe"),
       });
       setLoading(false);
       return;
@@ -47,8 +53,8 @@ export default function LoginForm(): JSX.Element {
     if (!isValidEmail(email)) {
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "L'adresse e-mail n'est pas valide",
+        title: t("Erreur"),
+        description: t("L'adresse e-mail n'est pas valide"),
       });
       setLoading(false);
       return;
@@ -65,12 +71,12 @@ export default function LoginForm(): JSX.Element {
 
       const msg =
         status === 401 || status === 404
-          ? "Email ou mot de passe incorrect"
+          ? t("Email ou mot de passe incorrect")
           : (err as Error).message;
 
       toast({
         variant: "destructive",
-        title: "Erreur",
+        title: t("Erreur"),
         description: msg,
       });
     } finally {
@@ -79,21 +85,29 @@ export default function LoginForm(): JSX.Element {
   };
 
   /* --------------------------------------------------------------------- */
+  if (!loaded) {
+    return (
+      <div className="flex items-center justify-center py-10 text-muted-foreground">
+        Loading…
+      </div>
+    );
+  }
+
   return (
     <div className="w-full space-y-6 p-8 rounded-lg bg-card shadow-lg border">
       <div className="text-center">
         <h2 className="text-3xl font-bold text-foreground mb-2">
-          Se connecter
+          {t("Se connecter")}
         </h2>
         <p className="text-muted-foreground">
-          Accédez à votre compte SiteForge
+          {t("Accédez à votre compte SiteForge")}
         </p>
       </div>
 
       <div className="space-y-4">
         <Input
           type="email"
-          placeholder="Adresse e-mail"
+          placeholder={t("Adresse e-mail")}
           value={email}
           onChange={(e: ChangeEvent<HTMLInputElement>) =>
             setEmail(e.target.value)
@@ -122,7 +136,7 @@ export default function LoginForm(): JSX.Element {
             htmlFor="remember"
             className="text-sm text-muted-foreground"
           >
-            Se souvenir de moi
+            {t("Se souvenir de moi")}
           </label>
         </div>
 
@@ -133,7 +147,7 @@ export default function LoginForm(): JSX.Element {
           variant="default"
           size="lg"
         >
-          {loadingLogin ? "Connexion..." : "Se connecter"}
+          {loadingLogin ? t("Connexion...") : t("Se connecter")}
         </Button>
 
         <div className="text-center space-y-2">
@@ -142,17 +156,17 @@ export default function LoginForm(): JSX.Element {
             onClick={() => navigate("/recover-password")}
             className="text-sm text-primary hover:text-primary/80"
           >
-            Mot de passe oublié&nbsp;?
+            {t("Mot de passe oublié ?")}
           </Button>
 
           <div className="text-sm text-muted-foreground">
-            Pas encore de compte ?{" "}
+            {t("Pas encore de compte ?")} {" "}
             <Button
               variant="ghost"
               onClick={() => navigate("/register")}
               className="text-primary hover:text-primary/80 p-0 h-auto font-normal"
             >
-              S'inscrire
+              {t("S'inscrire")}
             </Button>
           </div>
 
@@ -161,7 +175,7 @@ export default function LoginForm(): JSX.Element {
             onClick={() => navigate("/")}
             className="text-sm text-muted-foreground hover:text-foreground"
           >
-            Retour à l'accueil
+            {t("Retour à l'accueil")}
           </Button>
         </div>
       </div>
