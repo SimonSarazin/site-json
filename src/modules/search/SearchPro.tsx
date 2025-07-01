@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button";
 import ActiveFiltersBar from "./components/ActiveFiltersBar";
 import SearchFilters from "./components/SearchFilters";
 import SearchListView from "./components/SearchListView";
+import SearchListSkeleton from "./components/SearchListSkeleton";
 import SearchMapWrapper from "./components/SearchMapWrapper";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import { useCocolight } from "@/hooks/useCocolight";
 import { useInfiniteQueryScrollNext } from "@/hooks/useInfiniteQueryScroll";
@@ -261,7 +263,7 @@ if (!loaded) {
               <ClientOnly
                 fallback={
                   <div className="absolute inset-0 z-10 bg-white/80 flex flex-col items-center justify-center">
-                    <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary" />
+                    <Skeleton className="w-3/4 h-1/2" />
                     <p className="text-sm text-secondary-foreground mt-2">{t("Chargement de la carte…")}</p>
                   </div>
                 }
@@ -278,9 +280,7 @@ if (!loaded) {
               </Button>
             </div>
 
-            {loadingMap && (
-              <div className="flex justify-center text-secondary-foreground py-8">{t("Chargement…")}</div>
-            )}
+            {loadingMap && <SearchListSkeleton />}
 
             {!loadingMap && transformedResults.length === 0 && (
               <div className="text-center text-secondary-foreground py-8">{t("Aucun résultat trouvé.")}</div>
