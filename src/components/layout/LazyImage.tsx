@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 interface LazyImageProps {
-  src: string | null;
+  src?: string;
   alt: string;
   className?: string;
   placeholder?: React.ReactNode;
@@ -17,8 +17,8 @@ interface LazyImageProps {
  * @param {React.ReactNode} placeholder - Élément affiché en attendant (facultatif)
  * @param {object} imgProps - Autres props à passer à la balise <img>
  */
-export default function LazyImage({ 
-  src = null, 
+export default function LazyImage({
+  src,
   alt, 
   className = "", 
   placeholder = null, 

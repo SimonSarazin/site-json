@@ -9,11 +9,10 @@ export default function SearchListView({ results }: SearchListViewProps) {
    
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {results.map((item, i) => {
+      {results.map((item) => {
         const serverDataSafe = item?.serverData;
         return (
           <SearchCard
-            id={serverDataSafe.id}
             key={serverDataSafe.id}
             name={serverDataSafe.name}
             type={serverDataSafe?.type || null}

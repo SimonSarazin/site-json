@@ -1,5 +1,4 @@
 import { useSite } from "@/contexts/SiteContext";
-import React from "react";
 
 function toVars(obj: Record<string, string>): string {
   return Object.entries(obj)
