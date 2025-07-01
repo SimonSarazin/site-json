@@ -41,6 +41,7 @@ const SearchPro: React.FC<{ props: SearchProProps }> = ({ props }) => {
     showMap = false,
     filters = {},
     baseParams = {},
+    list,
   } = props;
 
   /* ------------------------------------------------------------------ */
@@ -285,7 +286,7 @@ if (!loaded) {
               <div className="text-center text-secondary-foreground py-8">{t("Aucun résultat trouvé.")}</div>
             )}
 
-            <SearchListView results={transformedResults} />
+            <SearchListView results={transformedResults} columns={list?.columns} />
 
             <div ref={lastItemRef} className="h-12" />
 

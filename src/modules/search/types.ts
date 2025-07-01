@@ -40,7 +40,13 @@ export interface SearchProProps {
     defaultTags?: string[];
   };
 
-  /** Configuration de la vue liste (optionnelle) */
+  /**
+   * Configuration de la vue liste (optionnelle)
+   *
+   *  - `columns` définit le nombre de colonnes par breakpoint.
+   *    Les clés correspondent aux tailles Tailwind (`sm`, `md`, `lg`) et
+   *    génèrent automatiquement les classes `sm:grid-cols-x`, `md:grid-cols-y`, …
+   */
   list?: {
     columns?: {
       lg?: number;
