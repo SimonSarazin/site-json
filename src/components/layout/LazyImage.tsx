@@ -46,7 +46,7 @@ export default function LazyImage({
   return (
     <div ref={containerRef} className="w-full h-full">
       {visible ? (
-        <img src={src} alt={alt} className={className} {...imgProps} />
+        <img src={src || undefined} alt={alt} className={className} {...imgProps} />
       ) : (
         placeholder || <div className={`w-full h-full bg-gray-100 animate-pulse ${className}`} />
       )}

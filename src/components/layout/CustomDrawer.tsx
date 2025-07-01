@@ -35,7 +35,7 @@ export interface CustomDrawerProps {
   /** Titre du lien d'ouverture d'une page externe (optionnel) */
   openPageTitle?: string;
 
-  /** Sens d'ouverture du drawer (top, right, bottom, left) – défaut: "right" */
+  /** Sens d'ouverture du drawer (top, right, bottom, left) – défaut: "right" */
   direction?: Direction;
 
   /** Contenu affiché dans le drawer */
@@ -44,10 +44,10 @@ export interface CustomDrawerProps {
   /** Affiche l'icône "arrow-up-right-from-square" à côté du bouton d'action */
   iconActionPage?: boolean;
 
-  /** Gestion du débordement ("auto" ou classe utilitaire) – défaut: "auto" */
+  /** Gestion du débordement ("auto" ou classe utilitaire) – défaut: "auto" */
   overflowType?: OverflowType;
 
-  /** Lien du bouton d'action (si fourni) */
+  /** Lien du bouton d'action (si fourni) */
   link?: string;
 }
 

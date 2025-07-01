@@ -13,7 +13,7 @@ export default function SearchTextInput({ placeholder, value, className, onChang
   return (
     <div className="relative">
       <Input
-        className="peer ps-9"
+        className={`peer ps-9 ${className}`}
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}

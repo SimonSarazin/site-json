@@ -1593,6 +1593,7 @@ export const demoSiteConfig = {
         description: { fr: "Trouvez des tiers-lieux pour vos projets professionnels", en: "Find third places for your professional projects" },
       },
       layout: "default",
+      hideFooter: true,
       sections:[
         {
           "type": "searchPro",

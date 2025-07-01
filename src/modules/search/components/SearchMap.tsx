@@ -193,7 +193,7 @@ export default function SearchMap({ results }: SearchMapProps) {
   return (
     <>
       <div className="relative w-full h-full rounded shadow">
-        <div ref={mapRef} className="w-full h-full z-50" />
+        <div ref={mapRef} className="w-full min-h-screen z-49" />
       </div>
       {
         openDetailsDrawer &&

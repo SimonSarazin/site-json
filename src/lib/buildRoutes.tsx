@@ -4,7 +4,7 @@ import type { SiteConfig } from "@/types/site";
 import RootLayout from "@/RootLayout";
 
 /**
- * Construit l'arborescence de routes pour React Router v7 à partir
+ * Construit l'arborescence de routes pour React Router v7 à partir
  * de la configuration JSON ‹pages›. Le layout racine (<RootLayout/>)
  * entoure toutes les pages et fournit les providers globaux.
  */

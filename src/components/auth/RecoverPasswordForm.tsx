@@ -119,7 +119,7 @@ export default function RecoverPasswordForm(): JSX.Element {
             {t("E-mail envoyé")}
           </h2>
           <p className="text-muted-foreground mb-4">
-            {t("Un e-mail de récupération a été envoyé à votre adresse.")}  
+            {t("Un e-mail de récupération a été envoyé à votre adresse.")}
             <strong>{email}</strong>
           </p>
           <p className="text-sm text-muted-foreground">

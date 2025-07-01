@@ -167,8 +167,6 @@ const SearchPro: React.FC<{ props: SearchProProps; query?: Record<string, any> }
   /* Render                                                              */
   /* ------------------------------------------------------------------ */
 
-  console.log("Loaded namespace:", loaded);
-
 if (!loaded) {
   return (
     <div className="flex-1 flex items-center justify-center py-10 text-muted-foreground">
@@ -179,7 +177,7 @@ if (!loaded) {
 }
 
   return (
-    <div className="pageContent flex flex-col h-screen" data-co="page-search">
+    <div className="pageContent flex flex-col min-h-screen" data-co="page-search">
       {/* Error banner */}
       {error && (
         <div className="p-4 bg-red-100 text-red-800 border border-red-300 rounded mb-4">
@@ -257,7 +255,7 @@ if (!loaded) {
             <Button
               variant="secondary"
               size="icon"
-              className="absolute top-2 right-2 z-[50]"
+              className="absolute top-2 right-2 z-50"
               onClick={() => setMapUsed(false)}
               title="Voir en liste"
             >
@@ -281,7 +279,7 @@ if (!loaded) {
           <div className="p-4 overflow-y-auto">
             <div className="flex justify-end mb-4">
               <Button variant="outline" size="sm" onClick={() => setMapUsed(true)} className="flex items-center">
-                <Map className="mr-2 h-4 w-4 text-primary" /> Carte
+                <Map className="mr-2 h-4 w-4 text-primary" /> {t("Carte")}
               </Button>
             </div>
 
@@ -306,9 +304,9 @@ if (!loaded) {
 
       {/* Mobile filters modal */}
       {showFiltersModal && (
-        <div className="fixed inset-0 z-[50] bg-background flex flex-col sm:items-center sm:justify-center">
+        <div className="fixed inset-0 z-50 bg-background flex flex-col sm:items-center sm:justify-center">
           <div className="flex justify-between items-center p-4 border-b">
-            <h2 className="text-lg font-semibold">Filtres</h2>
+            <h2 className="text-lg font-semibold">{t("Filtres")}</h2>
             <Button variant="ghost" size="icon" onClick={() => setShowFiltersModal(false)}>
               <X className="h-5 w-5" />
             </Button>
