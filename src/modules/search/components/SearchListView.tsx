@@ -2,13 +2,28 @@ import SearchCard from "./SearchCard";
 
 interface SearchListViewProps {
   results: any[];
+  columns?: {
+    lg?: number;
+    md?: number;
+    sm?: number;
+  };
 }
 
-export default function SearchListView({ results }: SearchListViewProps) {
+export default function SearchListView({ results, columns }: SearchListViewProps) {
 //   const { results, hasNext, next, count } = data || {};
    
+  const gridClasses = [
+    "grid",
+    "gap-4",
+    columns?.sm ? `sm:grid-cols-${columns.sm}` : null,
+    columns?.md ? `md:grid-cols-${columns.md}` : null,
+    columns?.lg ? `lg:grid-cols-${columns.lg}` : null,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className={gridClasses}>
       {results.map((item) => {
         const serverDataSafe = item?.serverData;
         return (
