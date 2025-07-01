@@ -24,11 +24,7 @@ import "@/modules/search/styles.css";
  * Full‑featured search section driven entirely by props.
  * Keeps organisation.searchCostum + infinite scrolling logic.
  */
-const SearchPro: React.FC<{ props: SearchProProps; query?: Record<string, any> }> = ({
-  props,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  query: initialQuery = {},
-}) => {
+const SearchPro: React.FC<{ props: SearchProProps }> = ({ props }) => {
   /* ------------------------------------------------------------------ */
   /* i18n + Cocolight context                                            */
   /* ------------------------------------------------------------------ */
@@ -61,8 +57,6 @@ const SearchPro: React.FC<{ props: SearchProProps; query?: Record<string, any> }
     tags: searchTags,
     setTags: setSearchTags,
     type: searchType,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    setType: setSearchType,
     map: mapUsed,
     setMap: setMapUsed,
   } = useSearchFilters({

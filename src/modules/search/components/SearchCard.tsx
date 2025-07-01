@@ -21,6 +21,7 @@ interface SearchCardProps {
   description?: string;
   tags?: string[];
   image?: string;
+  onClick?: () => void;
 }
 
 export default function SearchCard({
@@ -30,6 +31,7 @@ export default function SearchCard({
   description,
   tags = [],
   image,
+  onClick,
 }: SearchCardProps) {
   const t = useT("modules/search");
   const [expanded, setExpanded] = useState(false);
@@ -37,7 +39,10 @@ export default function SearchCard({
   return (
     <Card
       className="relative aspect-[4/3] rounded-lg shadow overflow-hidden border group cursor-pointer"
-      onClick={() => setExpanded((e) => !e)}
+      onClick={() => {
+        onClick?.();
+        setExpanded((e) => !e);
+      }}
       onMouseEnter={() => setExpanded(true)}
       onMouseLeave={() => setExpanded(false)}
     >
