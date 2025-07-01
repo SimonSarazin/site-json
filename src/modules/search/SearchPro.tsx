@@ -17,6 +17,7 @@ import { type SearchProProps } from "./types";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import "@/modules/search/i18n"; 
+import "@/modules/search/styles.css";
 
 
 /**

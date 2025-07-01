@@ -53,9 +53,7 @@ const t = useT("modules/search");
 
   // ------------------------------------------------------ Address
   const displayAddress = address
-    ? `${address.streetAddress ?? ""}$
-        {address.streetAddress ? ", " : ""}${address.postalCode ?? ""}$
-        {address.postalCode ? ", " : ""}${address.addressLocality ?? ""}`.replace(/,\s*$/, "") ||
+    ? `${address.streetAddress ?? ""}${address.streetAddress ? ", " : ""}${address.postalCode ?? ""}${address.postalCode ? ", " : ""}${address.addressLocality ?? ""}`.replace(/,\s*$/, "") ||
       t("Adresse non disponible")
     : t("Adresse non disponible");
 
