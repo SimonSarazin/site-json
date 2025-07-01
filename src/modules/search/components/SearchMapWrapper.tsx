@@ -1,6 +1,7 @@
 
 import { useClientModule } from "@/hooks/useClientModule";
 import { useT } from "@/hooks/useT";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface SearchMapWrapperProps {
   results: any[];
@@ -12,8 +13,8 @@ export default function SearchMapWrapper({ results }: SearchMapWrapperProps) {
 
   if (!mounted || !MapModule) {
     return (
-      <div className="flex flex-col items-center justify-center gap-2">
-        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary" />
+      <div className="flex flex-col items-center justify-center gap-2 w-full h-full">
+        <Skeleton className="w-full h-full" />
         <p className="text-sm text-muted-foreground">
           {t("Chargement de la carte…")}
         </p>
