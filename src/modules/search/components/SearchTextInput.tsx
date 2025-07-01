@@ -1,6 +1,7 @@
 import { SearchIcon } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 interface SearchTextInputProps {
   placeholder?: string;
@@ -13,7 +14,7 @@ export default function SearchTextInput({ placeholder, value, className, onChang
   return (
     <div className="relative">
       <Input
-        className={`peer ps-9 ${className}`}
+        className={cn("peer ps-9", className)}
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}

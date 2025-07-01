@@ -14,11 +14,11 @@ interface SearchMapProps {
 }
 
 export default function SearchMap({ results }: SearchMapProps) {
-  const mapRef = useRef(null);
-  const mapInstanceRef = useRef(null);
-  const markersRef = useRef(null);
-  const lightLayerRef = useRef(null);
-  const darkLayerRef = useRef(null);
+  const mapRef = useRef<HTMLDivElement | null>(null);
+  const mapInstanceRef = useRef<import('leaflet').Map | null>(null);
+  const markersRef = useRef<import('leaflet').MarkerClusterGroup | null>(null);
+  const lightLayerRef = useRef<import('leaflet').TileLayer | null>(null);
+  const darkLayerRef = useRef<import('leaflet').TileLayer | null>(null);
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [openDetailsDrawer, setOpenDetailsDrawer] = useState(false);
@@ -32,7 +32,7 @@ export default function SearchMap({ results }: SearchMapProps) {
   }, []);
 
 
-  function isValidGeoPoint(coords) {
+  function isValidGeoPoint(coords: unknown): coords is [number, number] {
     if (!Array.isArray(coords) || coords.length !== 2) return false;
     const [lng, lat] = coords;
     return (
@@ -53,7 +53,7 @@ export default function SearchMap({ results }: SearchMapProps) {
       const L = await loadLeaflet();
 
       if (!map) {
-        map = L.map(mapRef.current, {
+        map = L.map(mapRef.current!, {
           center: [44.5, 4.5],
           zoom: 7,
           scrollWheelZoom: true,
@@ -91,7 +91,7 @@ export default function SearchMap({ results }: SearchMapProps) {
         
       }
 
-      if (markersRef.current && map.hasLayer(markersRef.current)) {
+      if (markersRef.current && map && map.hasLayer(markersRef.current)) {
         map.removeLayer(markersRef.current);
       }
 
@@ -105,7 +105,7 @@ export default function SearchMap({ results }: SearchMapProps) {
         const coords = serverDataSafe.geoPosition?.coordinates;
         if (!isValidGeoPoint(coords)) return;
         const [lng, lat] = coords;
-        const marker = L.marker([lat, lng]);
+        const marker = L.marker([lat, lng]) as import('leaflet').Marker & { _customData?: unknown };
 
         const popupHtml = renderMapPopup({
           name: serverDataSafe.name,
@@ -123,8 +123,7 @@ export default function SearchMap({ results }: SearchMapProps) {
 
         marker._customData = item;
 
-        // eslint-disable-next-line no-unused-vars
-        marker.on("popupopen", (e) => {
+        marker.on("popupopen", () => {
           const popupEl = document.getElementById(markerId);
           if (!popupEl) return;
           const button = popupEl.querySelector("button[data-id]");
@@ -140,24 +139,29 @@ export default function SearchMap({ results }: SearchMapProps) {
         markers.addLayer(marker);
       });
 
-      map.addLayer(markers);
-
-      const bounds = markers.getBounds();
-      if (markers.getLayers().length > 0 && bounds.isValid()) {
-        map.fitBounds(bounds, { padding: [30, 30] });
-      } else {
-        map.setView([44.5, 4.5], 6);
+      if (map) {
+        map.addLayer(markers);
       }
 
-      map.whenReady(() => {
-        map.invalidateSize();
-        map.options.zoomAnimation = true;
-        map.options.markerZoomAnimation = true;
-      });
+      if (map) {
+        const bounds = markers.getBounds();
+        if (markers.getLayers().length > 0 && bounds.isValid()) {
+          map.fitBounds(bounds, { padding: [30, 30] });
+        } else {
+          map.setView([44.5, 4.5], 6);
+        }
+
+        map!.whenReady(() => {
+          map!.invalidateSize();
+          map!.options.zoomAnimation = true;
+          map!.options.markerZoomAnimation = true;
+        });
+      }
+
     };
   
-    const handleOpenDetails = (e) => {
-      const data = e.detail;
+    const handleOpenDetails = (e: CustomEvent) => {
+      const data = e.detail as any;
       const detailsData = data.serverData;
       setDataToProfile(detailsData);
       setContextDataToProfiles(data);
@@ -166,9 +170,9 @@ export default function SearchMap({ results }: SearchMapProps) {
 
     initMap();
 
-    window.addEventListener("openDetails", handleOpenDetails);
+      window.addEventListener("openDetails", handleOpenDetails as EventListener);
     return () => {
-      window.removeEventListener("openDetails", handleOpenDetails);
+      window.removeEventListener("openDetails", handleOpenDetails as EventListener);
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
@@ -180,11 +184,11 @@ export default function SearchMap({ results }: SearchMapProps) {
     if (!mapInstanceRef.current) return;
     const map = mapInstanceRef.current;
     if (resolvedTheme === "dark") {
-      map.removeLayer(lightLayerRef.current);
-      darkLayerRef.current.addTo(map);
+      if (lightLayerRef.current) map.removeLayer(lightLayerRef.current);
+      if (darkLayerRef.current) darkLayerRef.current.addTo(map);
     } else {
-      map.removeLayer(darkLayerRef.current);
-      lightLayerRef.current.addTo(map);
+      if (darkLayerRef.current) map.removeLayer(darkLayerRef.current);
+      if (lightLayerRef.current) lightLayerRef.current.addTo(map);
     }
   }, [resolvedTheme]);
 
@@ -203,13 +207,9 @@ export default function SearchMap({ results }: SearchMapProps) {
           direction={"right"}
           openPageTitle={t("Aller sur la page")}
           overflowType="overflow-hidden"
-          link={{
-            pathname: `/@${dataToProfile?.slug}`,
-          }}
+          link={`/@${(dataToProfile as any)?.slug}`}
         >
-          <Preview
-            data={dataToProfile}
-          />
+          {dataToProfile && <Preview data={dataToProfile as any} />}
         </CustomDrawer>
       }
     </>
