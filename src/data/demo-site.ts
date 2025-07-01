@@ -1652,6 +1652,11 @@ export const demoSiteConfig = {
             "baseParams": {
               "indexStepList": 20,
               "defaultTypes": ["organizations"]
+            },
+            "list": {
+              "columns": {
+                "sm": 3
+              }
             }
           }
         }
