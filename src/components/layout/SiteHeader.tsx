@@ -24,7 +24,10 @@ import {
   ShoppingCart,
   Bell,
 } from "lucide-react";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
+import "@/components/layout/i18n";
 import { useSite } from "@/contexts/SiteContext";
 import { useNavigate } from "react-router";
 import { useCocolight } from "@/hooks/useCocolight";
@@ -40,7 +43,8 @@ interface NavItemProps {
 }
 
 function NavItem({ item, mobile = false, onNavigate }: NavItemProps) {
-  const { t } = useLocalization();
+  useLoadNamespace("components/layout");
+  const t = useT("components/layout");
   const navigate = useNavigate();
   const { me } = useCocolight();
   const [isOpen, setIsOpen] = useState(false);
@@ -159,7 +163,9 @@ function NavItem({ item, mobile = false, onNavigate }: NavItemProps) {
 
 export function SiteHeader() {
   const { config } = useSite();
-  const { t, currentLocale, setLocale, availableLocales } = useLocalization();
+  useLoadNamespace("components/layout");
+  const t = useT("components/layout");
+  const { currentLocale, setLocale, availableLocales } = useLocalization();
   const navigate = useNavigate();
   const { me, api, loading } = useCocolight();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -270,7 +276,7 @@ export function SiteHeader() {
                         <span>
                           {me?.serverData?.name ||
                             me?.serverData?.email ||
-                            "Mon compte"}
+                            t("Mon compte")}
                         </span>
                         <ChevronDown className="h-4 w-4" />
                       </Button>
@@ -278,11 +284,11 @@ export function SiteHeader() {
                     <DropdownMenuContent align="end" className="w-56">
                       <DropdownMenuItem onClick={() => navigate("/profile")}>
                         <User className="mr-2 h-4 w-4" />
-                        Profil
+                        {t("Profil")}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={handleLogout}>
                         <LogOut className="mr-2 h-4 w-4" />
-                        Se déconnecter
+                        {t("Se déconnecter")}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -292,7 +298,7 @@ export function SiteHeader() {
                     size="sm"
                     onClick={() => navigate("/login")}
                   >
-                    Se connecter
+                    {t("Se connecter")}
                   </Button>
                 )}
               </div>
@@ -302,11 +308,11 @@ export function SiteHeader() {
               <SheetTrigger asChild>
                 <Button variant="ghost" size="sm" className="md:hidden">
                   <Menu className="h-4 w-4" />
-                  <span className="sr-only">Toggle menu</span>
+                  <span className="sr-only">{t("Toggle menu")}</span>
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-72">
-                <SheetTitle className="sr-only">Mobile Menu</SheetTitle>
+                <SheetTitle className="sr-only">{t("Mobile Menu")}</SheetTitle>
                 <div className="flex flex-col gap-4 py-4">
                   {header.nav.map((item, index) => (
                     <NavItem
@@ -331,7 +337,7 @@ export function SiteHeader() {
                             }}
                           >
                             <User className="mr-2 h-4 w-4" />
-                            Profil
+                            {t("Profil")}
                           </Button>
                           <Button
                             variant="ghost"
@@ -342,7 +348,7 @@ export function SiteHeader() {
                             }}
                           >
                             <LogOut className="mr-2 h-4 w-4" />
-                            Se déconnecter
+                            {t("Se déconnecter")}
                           </Button>
                         </div>
                       ) : (
@@ -354,7 +360,7 @@ export function SiteHeader() {
                             setMobileMenuOpen(false);
                           }}
                         >
-                          Se connecter
+                          {t("Se connecter")}
                         </Button>
                       )}
                     </div>

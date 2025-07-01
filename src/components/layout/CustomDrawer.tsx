@@ -10,7 +10,9 @@ import {
   DrawerDescription,
 } from "@/components/ui/drawer";
 import { cn } from "@/lib/utils";
-import { useLocalization } from "@/hooks/useLocalization";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { useT } from "@/hooks/useT";
+import "@/components/layout/i18n";
 
 // ------------------------------------------------------------------
 // Types
@@ -78,7 +80,8 @@ export default function CustomDrawer({
 }: CustomDrawerProps) {
   const lastFocusRef = React.useRef<HTMLButtonElement | null>(null);
   const contentRef = React.useRef<HTMLDivElement | null>(null);
-  const { t } = useLocalization();
+  useLoadNamespace("components/layout");
+  const t = useT("components/layout");
 
   // ----------------------------------------------------------------
   // Effets
@@ -135,7 +138,7 @@ export default function CustomDrawer({
         <DrawerHeader className="flex items-center justify-between mb-2 px-4 pt-4">
           <DrawerClose asChild>
             <button
-              aria-label="Fermer"
+              aria-label={t("Fermer")}
               className="inline-flex items-center justify-center p-2 rounded-lg hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             >
               <i className="fa fa-close" />
