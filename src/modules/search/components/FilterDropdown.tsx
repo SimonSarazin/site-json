@@ -6,13 +6,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/hooks/useT";
+import { type LocalizedString } from "@/types/locale-schema";
 
 interface FilterDropdownProps {
-  name: string;              // libellé du bouton
-  list: (string | Record<string, string>)[]; // accepte aussi LocalizedString
+  name: string; // libellé du bouton
+  list:
+    | (string | LocalizedString | Record<string, LocalizedString>)[]
+    | Record<string, LocalizedString | string>;
   selected?: string[];
   onChange: (selected: string[]) => void;
 }
+
+type Item = { value: string; label: string | LocalizedString };
 
 export default function FilterDropdown({
   name,
@@ -20,43 +25,59 @@ export default function FilterDropdown({
   selected = [],
   onChange,
 }: FilterDropdownProps) {
-  const t = useT("modules/search");  
+  const t = useT("modules/search");
 
-  /**  Renvoie la traduction OU la valeur brute si manquante */
-  const label = (value: string | Record<string, string>) => {
-    // LocalizedString → on le passe directement à t()
-    if (typeof value === "object") return t(value);
+  /* ------------------------------------------------------------------ */
+  /*  Normalisation : tableau [{ value, label }]                        */
+  /* ------------------------------------------------------------------ */
+  const items: Item[] = Array.isArray(list)
+    ? list.map((it) => {
+        /* Cas tableau : value = chaîne brute (ou première value d’un objet) */
+        const value =
+          typeof it === "string" ? it : (Object.values(it)[0] as string);
+        return { value, label: it };
+      })
+    : Object.entries(list).map(([key, label]) => ({
+        /* Cas objet : value = clé (🆕)                                    */
+        value: key,
+        label,
+      }));
 
-    const translated = t(value);
-    return translated.startsWith("missing") ? value : translated;
+  /* ------------------------------------------------------------------ */
+  /*  Renvoie la traduction OU la valeur brute si manquante             */
+  /* ------------------------------------------------------------------ */
+  const tr = (val: string | LocalizedString) => {
+    if (typeof val === "object") return t(val);
+    const translated = t(val);
+    return translated.startsWith("missing") ? val : translated;
   };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline">
-          {label(name)} ▾
+          {tr(name)} ▾
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="start" className="w-auto max-h-72 overflow-y-auto">
-        {list.map((item) => {
-          const value = typeof item === "string" ? item : (Object.values(item)[0] as string);
-          return (
-            <DropdownMenuItem
-              key={value}
-              onClick={() => {
-                const next = selected.includes(value)
-                  ? selected.filter((i) => i !== value)
-                  : [...selected, value];
-                onChange(next);
-              }}
-              className={selected.includes(value) ? "bg-primary/10" : ""}
-            >
-              {label(item)}
-            </DropdownMenuItem>
-          );
-        })}
+      <DropdownMenuContent
+        align="start"
+        className="w-auto max-h-72 overflow-y-auto"
+      >
+        {items.map(({ value, label }) => (
+          <DropdownMenuItem
+            key={value}
+            onClick={() => {
+              const next = selected.includes(value)
+                ? selected.filter((v) => v !== value)
+                : [...selected, value];
+              onChange(next);
+            }}
+            className={selected.includes(value) ? "bg-primary/10" : ""}
+          >
+            {tr(label)}
+          </DropdownMenuItem>
+        ))}
       </DropdownMenuContent>
     </DropdownMenu>
   );

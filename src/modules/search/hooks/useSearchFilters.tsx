@@ -10,7 +10,13 @@ const useSearchFilters = createSearchParamsSync({
     },
     serialize: (v) => JSON.stringify(v)
   },
-  type: { defaultValue: null },
+  type: {     
+    defaultValue: {},
+    parse: (v) => {
+      try { return JSON.parse(v); } catch { return {}; }
+    },
+    serialize: (v) => JSON.stringify(v) 
+  },
   map: {
     defaultValue: true,
     parse: v => v !== "false",

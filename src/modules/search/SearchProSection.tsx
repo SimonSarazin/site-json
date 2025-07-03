@@ -1,3 +1,4 @@
+import { SearchPropsProvider } from "./contexts/SearchPropsContext";
 import SearchPro from "./SearchPro";
 import { SearchProProps } from "./types";
 
@@ -9,7 +10,9 @@ export interface SearchSectionWrapperProps {
 export default function SearchProSection({ id, props }: SearchSectionWrapperProps) {
   return (
     <section id={id} className="relative min-h-[80vh]">
-      <SearchPro props={props} />
+      <SearchPropsProvider props={props}>
+        <SearchPro props={props} />
+      </SearchPropsProvider>
     </section>
   );
 }

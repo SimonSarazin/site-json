@@ -9,12 +9,14 @@ export interface SearchFiltersProps {
   filters: Record<string, TagsFilter>;
   searchText: string;
   searchTags: Record<string, string[]>;
+  searchType: Record<string, string[]>;
   onTextChange: (text: string) => void;
   onTagChange: (nextTags: Record<string, string[]>) => void;
+  onTypeChange: (nextTypes: Record<string, string[]>) => void;
   minimal?: boolean;
 }
 
-export default function SearchFilters({ placeholder, filters, searchText, searchTags, onTextChange, onTagChange, minimal = false }: SearchFiltersProps) {
+export default function SearchFilters({ placeholder, filters, searchText, searchTags, searchType, onTextChange, onTagChange, onTypeChange, minimal = false }: SearchFiltersProps) {
 
   const { t } = useLocalization();
 
@@ -45,22 +47,32 @@ export default function SearchFilters({ placeholder, filters, searchText, search
         />
       )}
       {Object.entries(filters)
-        .filter(([key]) => key !== "text")
         .map(([key, config]) => {
-          if (config.type === "tags") {
-            const list = Array.isArray(config.list)
-              ? config.list
-              : Object.values(config.list);
+          if (config.type === "tags" && config.active !== false) {
+
+            return (
+              <FilterDropdown
+              key={key}
+              name={config.name as string}
+              list={config.list}
+              selected={searchTags[key] || []}
+              onChange={(values: string[]) => {
+                const updatedTags = { ...searchTags, [key]: values };
+                onTagChange(updatedTags);
+              }}
+              />
+            );
+          } else if( config.type === "type" && config.active) {
             
             return (
               <FilterDropdown
               key={key}
               name={config.name as string}
-              list={list as string[]}
-              selected={searchTags[key] || []}
+              list={config.list}
+              selected={searchType[key] || []}
               onChange={(values: string[]) => {
-                const updatedTags = { ...searchTags, [key]: values };
-                onTagChange(updatedTags);
+                const updatedTypes = { ...searchType, [key]: values };
+                onTypeChange(updatedTypes);
               }}
               />
             );

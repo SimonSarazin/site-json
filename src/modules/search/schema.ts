@@ -4,10 +4,13 @@ import { z } from "zod";
 
 //──────────────── Search Pro Section
 const TagsFilter = z.object({
-  type: z.literal("tags"),
+  type: z.union([z.literal("tags"), z.literal("type")]),
   name: LocalizedString.or(z.string()),
   list: z.array(LocalizedString.or(z.string()))
          .or(z.record(LocalizedString.or(z.string()))),
+  active: z.boolean().optional(),
+  previewVisible: z.boolean().optional(),
+  previewIcon: z.string().optional(),
 });
 
 const ListConf = z.object({

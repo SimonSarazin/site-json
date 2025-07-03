@@ -2,9 +2,11 @@ import { XIcon } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { useT } from "@/hooks/useT";
+import { TagsFilter } from "../types";
 
 interface ActiveFiltersBarProps {
-  filters: Record<string, string[]>;
+  filters: Record<string, TagsFilter>;
+  filtersSearchTags: Record<string, string[]>;
   onRemove: (key: string, value: string) => void;
 }
 
@@ -12,10 +14,26 @@ interface ActiveFiltersBarProps {
  * @param {Object} filters - ex: { typePlace: ['Bureaux'], role: ['Partenaire'] }
  * @param {Function} onRemove - ex: (key, value) => {}
  */
-export default function ActiveFiltersBar({ filters, onRemove }: ActiveFiltersBarProps) {
-  const t = useT("modules/search");  
+export default function ActiveFiltersBar({ filters, filtersSearchTags, onRemove }: ActiveFiltersBarProps) {
+  const t = useT("modules/search");
 
-  const activeEntries = Object.entries(filters).filter(([_, values]) => values?.length);
+  const activeEntries = Object.entries(filtersSearchTags).filter(([_, values]) => values?.length);
+
+
+  const label = (key: string, value: string | Record<string, string>) => {
+    // LocalizedString → on le passe directement à t()
+    
+    let label = value;
+    if (key && value && typeof value === 'string' && filters?.[key]?.list && 
+        typeof filters[key].list === 'object' && value in (filters[key].list as Record<string, any>)) {
+      label = (filters[key].list as Record<string, any>)[value];
+    }
+
+    if (typeof label === "object") return t(label);
+
+    const translated = t(label);
+    return translated.startsWith("missing") ? label : translated;
+  };
 
   if (activeEntries.length === 0) return null;
 
@@ -29,7 +47,7 @@ export default function ActiveFiltersBar({ filters, onRemove }: ActiveFiltersBar
               key={`${key}-${value}`}
               className="gap-0"
             >
-              {value}
+              {label(key, value)}
               <button
                 className="focus-visible:border-ring focus-visible:ring-ring/50 text-primary-foreground/60 hover:text-primary-foreground -my-px -ms-px -me-1.5 inline-flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-[inherit] p-0 transition-[color,box-shadow] outline-none focus-visible:ring-[3px]"
                 onClick={() => onRemove(key, value)}

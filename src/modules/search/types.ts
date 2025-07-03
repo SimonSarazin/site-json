@@ -5,7 +5,7 @@ import { LocalizedString } from "@/types/locale-schema";
  * Filter definitions ------------------------------------------------
  * -----------------------------------------------------------------*/
 export interface TagsFilter {
-  type: "tags";
+  type: "tags" | "type";
   /** Libellé du filtre (bouton) */
   name: string | LocalizedString;
   /**
@@ -15,6 +15,9 @@ export interface TagsFilter {
    *  - dictionnaire key → LocalizedString  → { association: { fr:"…" } }
    */
   list: (string | LocalizedString | Record<string, LocalizedString>)[] | Record<string, LocalizedString | string>;
+  active?: boolean;
+  previewVisible?: boolean;
+  previewIcon?: string;
 }
 
 /* ------------------------------------------------------------------

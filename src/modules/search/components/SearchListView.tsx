@@ -1,4 +1,9 @@
+import { useState } from "react";
 import SearchCard from "./SearchCard";
+import { useCocolight } from "@/hooks/useCocolight";
+import CustomDrawer from "@/components/layout/CustomDrawer";
+import Preview from "./Preview";
+import { useT } from "@/hooks/useT";
 
 interface SearchListViewProps {
   results: any[];
@@ -7,11 +12,28 @@ interface SearchListViewProps {
     md?: number;
     sm?: number;
   };
+  card?: {
+      tagLimit?: number;
+      showDescription?: boolean;
+      shareButton?: boolean;
+  };
 }
 
-export default function SearchListView({ results, columns }: SearchListViewProps) {
+export default function SearchListView({ results, columns, card }: SearchListViewProps) {
 //   const { results, hasNext, next, count } = data || {};
-   
+  const t = useT("modules/search");
+  const [openDetailsDrawer, setOpenDetailsDrawer] = useState(false);
+  const [dataToProfile, setDataToProfile] = useState(null);
+  const { setDataToProfile: setContextDataToProfiles } = useCocolight();
+
+
+  const handleOpenDetails = (data: any) => {
+      const detailsData = data.serverData;
+      setDataToProfile(detailsData);
+      setContextDataToProfiles(data);
+      setOpenDetailsDrawer(true);
+  };
+
   const gridClasses = [
     "grid",
     "gap-4",
@@ -23,6 +45,7 @@ export default function SearchListView({ results, columns }: SearchListViewProps
     .join(" ");
 
   return (
+    <>
     <div className={gridClasses}>
       {results.map((item) => {
         const serverDataSafe = item?.serverData;
@@ -35,12 +58,27 @@ export default function SearchListView({ results, columns }: SearchListViewProps
             description={serverDataSafe.shortDescription}
             tags={serverDataSafe.tags || []}
             image={serverDataSafe?.profilMediumImageUrl}
-            onClick={() => window.location.hash = "#page.type.organizations.id.641c175068d23c7b6d76969c"}
+            onClick={() => handleOpenDetails(item)}
+            card={card} // Pass card config if needed
           />
         );
       }
       )
       }
     </div>
+      {
+        openDetailsDrawer &&
+        <CustomDrawer
+          isOpenDrawer={openDetailsDrawer}
+          openAndCloseDrawer={() => setOpenDetailsDrawer(false)}
+          direction={"right"}
+          openPageTitle={t("Aller sur la page")}
+          overflowType="overflow-hidden"
+          link={`/@${(dataToProfile as any)?.slug}`}
+        >
+          {dataToProfile && <Preview data={dataToProfile as any} />}
+        </CustomDrawer>
+      }
+      </>
   );
 }

@@ -22,6 +22,11 @@ interface SearchCardProps {
   tags?: string[];
   image?: string;
   onClick?: () => void;
+  card?: {
+    tagLimit?: number;
+    showDescription?: boolean;
+    shareButton?: boolean;
+  };
 }
 
 export default function SearchCard({
@@ -32,6 +37,11 @@ export default function SearchCard({
   tags = [],
   image,
   onClick,
+  card = {
+    tagLimit: 5,
+    showDescription: true,
+    shareButton: true,
+  },
 }: SearchCardProps) {
   const t = useT("modules/search");
   const [expanded, setExpanded] = useState(false);
@@ -71,7 +81,7 @@ export default function SearchCard({
       <CardHeader className="absolute bottom-0 left-0 w-full bg-primary/90 p-3">
         <CardTitle className="text-base truncate text-primary-foreground">{name}</CardTitle>
         {address && (
-          <div className="flex items-center text-sm text-secondary-foreground gap-1">
+          <div className="flex items-center text-sm text-primary-foreground/70 gap-1">
             <MapPin className="h-4 w-4 text-primary-foreground" />
             <span className="truncate">{address}</span>
           </div>
@@ -89,14 +99,14 @@ export default function SearchCard({
         <div className="overflow-y-auto pr-1 h-full space-y-2">
           <div>
             <h3 className="font-semibold text-lg leading-tight text-primary-foreground">{name}</h3>
-            {type && <p className="text-sm text-secondary-foreground">{type}</p>}
+            {type && <p className="text-sm text-primary-foreground/70">{type}</p>}
             {address && (
-              <div className="flex items-center text-sm text-secondary-foreground gap-1 mt-1">
+              <div className="flex items-center text-sm text-primary-foreground/70 gap-1 mt-1">
                 <MapPin className="h-4 w-4 text-primary-foreground" />
                 <span>{address}</span>
               </div>
             )}
-            {description && (
+            {card?.showDescription && description && (
               <p className="text-sm text-primary-foreground mt-2">{description}</p>
             )}
           </div>
@@ -108,8 +118,8 @@ export default function SearchCard({
                   #{tag}
                 </Badge>
               ))}
-              {tags.length > 5 && (
-                <Badge variant="outline">+{tags.length - 5}</Badge>
+              {tags.length > (card.tagLimit ?? 5) && (
+                <Badge variant="secondary">+{tags.length - (card.tagLimit ?? 5)}</Badge>
               )}
             </div>
           )}
@@ -117,10 +127,12 @@ export default function SearchCard({
 
         {/* Partager */}
         <CardFooter className="pt-2">
+          {card?.shareButton && (
           <Button variant="link" size="sm" className="flex items-center gap-1 text-primary-foreground">
             <Share2 className="h-4 w-4" />
             {t("Partager")}
           </Button>
+          )}
         </CardFooter>
       </div>
     </Card>

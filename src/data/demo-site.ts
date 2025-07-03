@@ -1604,7 +1604,17 @@ export const demoSiteConfig = {
             "useFilter": true,
 
             "filters": {
+              // "types": {
+              //   "type": "type",
+              //   "name": { "fr": "Type", "en": "Type" },
+              //   "list": {
+              //     "organizations": { "fr": "Organisations", "en": "Organizations" }
+              //   }
+              // },
               "typePlace": {
+                // "active": true,
+                // "previewVisible": true,
+                "previewIcon": "briefcase",
                 "type": "tags",
                 "name": { "fr": "Famille de tiers-lieux", "en": "Third-place family" },
                 "list": {
@@ -1619,6 +1629,9 @@ export const demoSiteConfig = {
               },
 
               "manageModel": {
+                // "active": true,
+                // "previewVisible": true,
+                "previewIcon": "sliders-horizontal",
                 "type": "tags",
                 "name": { "fr": "Mode de gestion", "en": "Management model" },
                 "list": {
@@ -1633,6 +1646,9 @@ export const demoSiteConfig = {
                 }
               },
               "role": {
+                // "active": true,
+                // "previewVisible": true,
+                "previewIcon": "tag",
                 "type": "tags",
                 "name": {
                   "fr": "Rôle",
@@ -1645,8 +1661,19 @@ export const demoSiteConfig = {
                   "Accompagnateur": { "fr": "Accompagnateur", "en": "Mentor" },
                 },
               },
+              "taille":{
+                "active": false,
+                // "previewVisible": true,
+                "previewIcon": "ruler-dimension-line",
+                "type": "tags",
+                "name": { "fr": "Taille", "en": "Size" },
+                "list": {
+                  "Moins de 60m²": { "fr": "Moins de 60m²", "en": "Less than 60m²" },
+                  "Entre 60 et 200m²": { "fr": "Entre 60 et 200m²", "en": "Between 60 and 200m²" },
+                  "Plus de 200m²": { "fr": "Plus de 200m²", "en": "More than 200m²" },
+                }
+              }
             },
-
 
 
             "baseParams": {

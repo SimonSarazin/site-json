@@ -60,15 +60,11 @@ const SearchPro: React.FC<{ props: SearchProProps }> = ({ props }) => {
     tags: searchTags,
     setTags: setSearchTags,
     type: searchType,
+    setType: setSearchType,
     map: mapUsed,
     setMap: setMapUsed,
   } = useSearchFilters({
-    type:
-      useFilter && filters?.types
-        ? Array.isArray(filters.types)
-          ? filters.types.filter(Boolean)
-          : [filters.types]
-        : null,
+    type: useFilter && baseParams?.defaultTypes ? baseParams.defaultTypes : null,
     map: !!showMap,
   });
 
@@ -87,12 +83,14 @@ const SearchPro: React.FC<{ props: SearchProProps }> = ({ props }) => {
       "searchCostum",
       searchText,
       searchTags,
-      searchType && Array.isArray(searchType) ? searchType : [searchType],
+      searchType,
       mapUsed,
       baseParams,
     ],
     queryFn: async ({ pageParam } = { pageParam: undefined }) => {
       const tags = Object.values(searchTags).flat();
+      const type = Array.isArray(searchType) ? searchType : Object.values(searchType).flat();
+
       const {
         fediverse = false,
         indexStepList = 10,
@@ -114,8 +112,8 @@ const SearchPro: React.FC<{ props: SearchProProps }> = ({ props }) => {
       };
 
       // merge explicit type filter or defaults
-      if (searchType && searchType.length > 0) param.searchType = searchType;
-      if (!searchType && defaultTypes) param.searchType = defaultTypes;
+      if (type && type.length > 0) param.searchType = type;
+      if (!type && defaultTypes) param.searchType = defaultTypes;
       if (defaultTags && defaultTags.length > 0) {
         param.defaultTags = defaultTags;
       }
@@ -211,8 +209,10 @@ if (!loaded) {
             filters={filters}
             searchText={searchText}
             searchTags={searchTags}
+            searchType={searchType}
             onTextChange={setSearchText}
             onTagChange={setSearchTags}
+            onTypeChange={setSearchType}
           />
         </div>
 
@@ -224,11 +224,14 @@ if (!loaded) {
               filters={filters}
               searchText={searchText}
               searchTags={searchTags}
+              searchType={searchType}
               onTextChange={setSearchText}
               onTagChange={setSearchTags}
+              onTypeChange={setSearchType}
             />
             <ActiveFiltersBar
-              filters={searchTags}
+              filters={filters}
+              filtersSearchTags={searchTags}
               onRemove={(key, value) => {
                 setSearchTags((prev: any) => ({
                   ...prev,
@@ -286,7 +289,7 @@ if (!loaded) {
               <div className="text-center text-secondary-foreground py-8">{t("Aucun résultat trouvé.")}</div>
             )}
 
-            <SearchListView results={transformedResults} columns={list?.columns} />
+            <SearchListView results={transformedResults} columns={list?.columns} card={list?.card}  />
 
             <div ref={lastItemRef} className="h-12" />
 
@@ -313,11 +316,14 @@ if (!loaded) {
               filters={filters}
               searchText={searchText}
               searchTags={searchTags}
+              searchType={searchType}
               onTextChange={setSearchText}
               onTagChange={setSearchTags}
+              onTypeChange={setSearchType}
             />
             <ActiveFiltersBar
-              filters={searchTags}
+              filters={filters}
+              filtersSearchTags={searchTags}
               onRemove={(key, value) => {
                 setSearchTags((prev: any) => ({
                   ...prev,
