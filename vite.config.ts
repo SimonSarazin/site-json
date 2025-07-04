@@ -25,7 +25,7 @@ export default defineConfig(({ mode, isSsrBuild }) => ({
     } : undefined
   },
   ssr: {
-    noExternal: ['@radix-ui/', 'lucide-react', '@communecter/cocolight-api-client'],
-    external: ['express', 'compression', 'serve-static']
+    noExternal: ['@radix-ui/', 'lucide-react'],
+    external: ['express', 'compression', 'serve-static', '@communecter/cocolight-api-client']
   }
 }));

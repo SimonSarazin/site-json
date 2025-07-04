@@ -30,13 +30,12 @@ function readEnv<K extends keyof RuntimeEnv>(
   key: K,
   fallback: string,
 ): string {
-  //   navigateur                Node (CLI / SSR)            Vite (build)
   const value =
-    (typeof window      !== "undefined" && window.__ENV__?.[key]) ??
-    (typeof process     !== "undefined" && process.env?.[key])    ??
-    (typeof import.meta !== "undefined" && (import.meta.env as RuntimeEnv)?.[key]);
+    (typeof window      !== "undefined" ? window.__ENV__?.[key]              : undefined) ??
+    (typeof process     !== "undefined" ? process.env?.[key]                 : undefined) ??
+    (typeof import.meta !== "undefined" ? (import.meta.env as RuntimeEnv)?.[key] : undefined);
 
-  return (typeof value === "string" && value.length) ? value : fallback;
+  return typeof value === "string" && value.length ? value : fallback;
 }
 
 /* -------------------------------------------------------------------------- */

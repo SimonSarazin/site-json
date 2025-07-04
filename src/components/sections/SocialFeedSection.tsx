@@ -48,15 +48,20 @@ export function SocialFeedSection({ id, props }: SocialFeedSectionProps) {
   };
 
   // Mock data for demonstration
-  const mockPosts = Array.from({ length: limit }, (_, i) => ({
-    id: i + 1,
-    content: `Contenu du post ${i + 1} depuis ${platform}. Ceci est un exemple de contenu qui pourrait être affiché dans un feed social.`,
-    author: `Utilisateur ${i + 1}`,
-    avatar: `https://images.pexels.com/photos/${1000000 + i}/pexels-photo-${1000000 + i}.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2`,
-    date: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toLocaleDateString(),
-    likes: Math.floor(Math.random() * 100),
-    shares: Math.floor(Math.random() * 50),
-  }));
+const referenceNow = new Date('2025-01-01T00:00:00Z').valueOf();
+
+const mockPosts = Array.from({ length: limit }, (_, i) => {
+  const seed = i + 1;                       // ← identifiant stable
+  return {
+    id: seed,
+    content: `Contenu du post ${seed} depuis ${platform}. …`,
+    author: `Utilisateur ${seed}`,
+    avatar: `https://images.pexels.com/photos/${1_000_000 + seed}/pexels-photo-${1_000_000 + seed}.jpeg?…`,
+    date  : new Date(referenceNow - seed * 864e5).toLocaleDateString(), // stable
+    likes : (seed * 37) % 100,               // pseudo-aléatoire mais déterministe
+    shares: (seed * 19) % 50,
+  };
+});
 
   return (
     <section id={id} className="py-16 bg-background text-foreground">

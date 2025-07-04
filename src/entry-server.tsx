@@ -9,9 +9,11 @@ import {
 import { type SiteConfig }                      from '@/types/site';
 import { buildRoutes }                          from '@/lib/buildRoutes';
 import { Writable }                             from 'node:stream';
-import { dehydrate, HydrationBoundary, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { dehydrate, type DehydratedState, HydrationBoundary, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { getBaseUrl } from './lib/constant/common';
+import { initApi } from './lib/apiClient';
 
-const STREAM_TIMEOUT_MS = 10_000;
+const STREAM_TIMEOUT_MS = 30_000;
 
 /* --------------------------------------------------------- */
 /*  Fonction principale – aucune logique de substitution ici */
@@ -20,7 +22,7 @@ export async function render(
   req: Request,
   res: Response,
   cfg: SiteConfig,
-  onHead: (headHtml: string) => Promise<void>,
+  onHead: (headHtml: string, dehydratedState: DehydratedState) => Promise<void>,
 ): Promise<void> {
   /* Remplira title/meta/link dans onShellReady */
   const helmetCtx: HelmetDataContext = {};
@@ -39,14 +41,25 @@ export async function render(
 
   const router = createStaticRouter(handler.dataRoutes, context);
 
+    /* 2.  Pré-hydratation React-Query ------------------------------------ */
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { staleTime: 60_000, refetchOnWindowFocus:false } }
+  });
+
+  // ⬇️  on exécute la requête “cocolight-init” AVANT le rendu
+  await queryClient.ensureQueryData({
+    queryKey: ["cocolight-init"],
+    queryFn: () => initApi({ baseURL: getBaseUrl(), debug: true })
+  });
+
+  const dehydratedState = dehydrate(queryClient, {
+  shouldDehydrateQuery: q => q.queryKey[0] !== "cocolight-init",
+});
+
   /* --------------------------------------------------------- */
   /*  Streaming React 19                                       */
   /* --------------------------------------------------------- */
   await new Promise<void>((resolve, reject) => {
-
-    const queryClient = new QueryClient();
-
-    const dehydratedState = dehydrate(queryClient);
 
     const { pipe, abort } = renderToPipeableStream(
       <HelmetProvider context={helmetCtx}>
@@ -64,7 +77,8 @@ export async function render(
           onHead(
             `${helmetCtx.helmet?.title ?? ''}
              ${helmetCtx.helmet?.meta ?? ''}
-             ${helmetCtx.helmet?.link ?? ''}`
+             ${helmetCtx.helmet?.link ?? ''}`,
+             dehydratedState
           );
 
           /* Express.Response est bien un Writable (cast pour TS)         */

@@ -35,6 +35,7 @@ import { AnnouncementBanner } from "./AnnouncementBanner";
 import { NavItem as NavItemType } from "@/types/site";
 import { cn } from "@/lib/utils";
 import ToggleButtonTheme from "./ToggleButtonTheme";
+import { ClientOnly } from "./ClientOnly";
 
 interface NavItemProps {
   item: NavItemType;
@@ -265,43 +266,56 @@ export function SiteHeader() {
             )}
 
             {/* Mobile Menu */}
-            {/* Auth Button */}
-            {header.utilities.auth && !loading && (
-              <div className="hidden md:flex items-center">
-                {me?.isConnected ? (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="gap-2">
-                        <User className="h-4 w-4" />
-                        <span>
-                          {me?.serverData?.name ||
-                            me?.serverData?.email ||
-                            t("Mon compte")}
-                        </span>
-                        <ChevronDown className="h-4 w-4" />
+            {/* Auth Button (desktop) */}
+            {header.utilities.auth && (
+              <ClientOnly
+                /* petit fallback qui évite le “flash” pendant l’hydratation */
+                fallback={
+                  <div className="hidden md:flex items-center">
+                    <Button variant="ghost" size="sm" disabled>
+                      {t("…")}
+                    </Button>
+                  </div>
+                }
+              >
+                {() => (
+                  <div className="hidden md:flex items-center">
+                    {me?.isConnected ? (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="gap-2">
+                            <User className="h-4 w-4" />
+                            <span>
+                              {me.serverData?.name ||
+                                me.serverData?.email ||
+                                t("Mon compte")}
+                            </span>
+                            <ChevronDown className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-56">
+                          <DropdownMenuItem onClick={() => navigate("/profile")}>
+                            <User className="mr-2 h-4 w-4" />
+                            {t("Profil")}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={handleLogout}>
+                            <LogOut className="mr-2 h-4 w-4" />
+                            {t("Se déconnecter")}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => navigate("/login")}
+                      >
+                        {t("Se connecter")}
                       </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56">
-                      <DropdownMenuItem onClick={() => navigate("/profile")}>
-                        <User className="mr-2 h-4 w-4" />
-                        {t("Profil")}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={handleLogout}>
-                        <LogOut className="mr-2 h-4 w-4" />
-                        {t("Se déconnecter")}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                ) : (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => navigate("/login")}
-                  >
-                    {t("Se connecter")}
-                  </Button>
+                    )}
+                  </div>
                 )}
-              </div>
+              </ClientOnly>
             )}
 
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
@@ -324,46 +338,50 @@ export function SiteHeader() {
                   ))}
 
                   {/* Auth in mobile menu */}
-                  {header.utilities.auth && !loading && (
-                    <div className="pt-4 border-t">
-                      {me?.isConnected ? (
-                        <div className="space-y-2">
-                          <Button
-                            variant="ghost"
-                            className="w-full justify-start"
-                            onClick={() => {
-                              navigate("/profile");
-                              setMobileMenuOpen(false);
-                            }}
-                          >
-                            <User className="mr-2 h-4 w-4" />
-                            {t("Profil")}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            className="w-full justify-start"
-                            onClick={() => {
-                              handleLogout();
-                              setMobileMenuOpen(false);
-                            }}
-                          >
-                            <LogOut className="mr-2 h-4 w-4" />
-                            {t("Se déconnecter")}
-                          </Button>
+                  {header.utilities.auth && (
+                    <ClientOnly>
+                      {() => (
+                        <div className="pt-4 border-t">
+                          {me?.isConnected ? (
+                            <div className="space-y-2">
+                              <Button
+                                variant="ghost"
+                                className="w-full justify-start"
+                                onClick={() => {
+                                  navigate("/profile");
+                                  setMobileMenuOpen(false);
+                                }}
+                              >
+                                <User className="mr-2 h-4 w-4" />
+                                {t("Profil")}
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                className="w-full justify-start"
+                                onClick={() => {
+                                  handleLogout();
+                                  setMobileMenuOpen(false);
+                                }}
+                              >
+                                <LogOut className="mr-2 h-4 w-4" />
+                                {t("Se déconnecter")}
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button
+                              variant="ghost"
+                              className="w-full justify-start"
+                              onClick={() => {
+                                navigate("/login");
+                                setMobileMenuOpen(false);
+                              }}
+                            >
+                              {t("Se connecter")}
+                            </Button>
+                          )}
                         </div>
-                      ) : (
-                        <Button
-                          variant="ghost"
-                          className="w-full justify-start"
-                          onClick={() => {
-                            navigate("/login");
-                            setMobileMenuOpen(false);
-                          }}
-                        >
-                          {t("Se connecter")}
-                        </Button>
                       )}
-                    </div>
+                    </ClientOnly>
                   )}
                 </div>
               </SheetContent>

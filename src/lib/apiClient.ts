@@ -135,3 +135,8 @@ export async function getApi(): Promise<Api> {
   if (!initialized) await initApiClient();
   return api!;
 }
+
+export function initApi(options: InitApiOptions = {}) {
+  // 👉 retourne directement la promesse, sans la cacher dans un singleton
+  return initApiClient(options);
+}

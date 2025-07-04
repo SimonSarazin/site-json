@@ -4,6 +4,9 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import serialize from "serialize-javascript";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -38,6 +41,7 @@ async function createServer() {
       /* ---- 1. Config JSON dans <head> -------------------------------- */
       const { demoSiteConfig } = await vite.ssrLoadModule("/src/data/demo-site.ts");
       const cfgScript = `<script>window.__CONFIG__=${serialize(demoSiteConfig, { isJSON:true })}</script>`;
+      
 
       /* ---- 2. On découpe le template --------------------------------- */
       const [headStart, rest] = template.split("<!--app-head-->");
@@ -53,9 +57,12 @@ async function createServer() {
       /* ---- 4. Lance le rendu React ----------------------------------- */
       const { render } = await vite.ssrLoadModule("/src/entry-server.tsx");
 
-      await render(req, res, demoSiteConfig, (helmetHead) => {
+      await render(req, res, demoSiteConfig, (helmetHead, dehydratedState) => {
         /* callback appelé par entry-server quand Helmet est prêt */
         res.write(helmetHead);          // balises <title>, <meta>, …
+        res.write(`<script>window.__REACT_QUERY_STATE__=${serialize(
+                    dehydratedState, { isJSON: true }
+                  )}</script>`);
         res.write(beforeBody);          // </head><body><div id="root">
       });
 

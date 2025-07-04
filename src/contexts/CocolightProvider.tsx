@@ -1,14 +1,13 @@
 import Cocolight from "@communecter/cocolight-api-client";
-import { useEffect, useState, ReactNode } from "react";
+import { useEffect, useState, ReactNode, useMemo } from "react";
 
-import { initApiClient, InitApiOptions, InitApiResult } from "../lib/apiClient";
+import { InitApiOptions } from "../lib/apiClient";
 import { getSlug } from "../lib/constant/common";
 import { CocolightContext } from "./CocolightContext";
+import { useCocolightInit } from "@/hooks/useCocolightInit";
 
 // --- Types dérivés du SDK (grâce à nos déclarations d.ts) ------------------
 
-type ApiClient = InstanceType<typeof Cocolight.ApiClient>;
-type UserApi   = ReturnType<typeof Cocolight.Api.userApi>;
 type Api       = InstanceType<typeof Cocolight.Api>;
 
 export interface CocolightProviderProps {
@@ -16,51 +15,41 @@ export interface CocolightProviderProps {
   clientOptions?: InitApiOptions;
 }
 
-export function CocolightProvider({ children, clientOptions = {} }: CocolightProviderProps) {
-  // ----------------------------- state ------------------------------------
-  const [apiClient,    setApiClient]    = useState<ApiClient | null>(null);
-  const [userApi,      setUserApi]      = useState<UserApi   | null>(null);
-  const [api,          setApi]          = useState<Api       | null>(null);
-  const [me,           setMe]           = useState<any>(null);
-  const [organization, setOrganization] = useState<any>(null);
-  const [loading,      setLoading]      = useState<boolean>(true);
+const DEFAULT_CLIENT_OPTIONS: InitApiOptions = Object.freeze({});
 
-  // ------------------------- initialisation ------------------------------
+export function CocolightProvider({ children, clientOptions = DEFAULT_CLIENT_OPTIONS }: CocolightProviderProps) {
+
+
+    /* 1️⃣ — données initiales, déjà prêtes grâce à Suspense ---------------- */
+  const {
+    client,             // ApiClient           (stable)
+    userApiInstance,    // UserApi             (stable)
+    api:   initialApi,  // Api                 (mutable : login/logout)
+    me:    initialMe,
+    organization: initialOrg,
+  } = useCocolightInit(clientOptions);
+
+ 
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const { client, userApiInstance, me, api, organization }: InitApiResult = await initApiClient(clientOptions);
-        if (cancelled) return;
-        setApiClient(client);
-        setUserApi(userApiInstance);
-        setMe(me);
-        setOrganization(organization);
-        setApi(api);
-      } catch (error) {
-        console.error("Error initializing Cocolight:", error);
-        if (cancelled) return;
-        setMe(null);
-        setOrganization(null);
-        setApi(null);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
+    // 🟢 Compte uniquement les commits RÉELS
+    console.count('CocolightProvider commit');
+  }, []);
 
-    return () => {
-      cancelled = true;
-    };
-  }, [clientOptions]);
+  // ----------------------------- state ------------------------------------
+  const [api,          setApi]          = useState<Api>(initialApi);
+  const [me,           setMe]           = useState<any>(initialMe);
+  const [organization, setOrganization] = useState<any>(initialOrg);
+  // ------------------------- auxiliaires ----------------------------------
+  const [dataToProfile, setDataToProfile] = useState<any>(null);
 
   // ------------------- listeners (login / session) ------------------------
   useEffect(() => {
-    if (!userApi || loading) return;
+    if (!userApiInstance?.client) return;
 
     const handleUserLoggedIn = async () => {
       try {
-        const loggedUser = await userApi.meIsconnected();
-        const refreshedApi = new Cocolight.Api(loggedUser, userApi.client);
+        const loggedUser = await userApiInstance.meIsconnected();
+        const refreshedApi = new Cocolight.Api(loggedUser, userApiInstance.client);
         const me = await refreshedApi.me();
         const slug = getSlug();
         const organization = await me.organization({ slug });
@@ -74,36 +63,36 @@ export function CocolightProvider({ children, clientOptions = {} }: CocolightPro
 
     const handleSessionReset = async () => {
       setMe(null);
-      if (userApi?.client) {
-        setApi(new Cocolight.Api(null, userApi.client));
+      if (userApiInstance?.client) {
+        setApi(new Cocolight.Api(null, userApiInstance.client));
       }
     };
 
-    userApi.client.on("userLoggedIn", handleUserLoggedIn);
-    userApi.client.on("sessionReset", handleSessionReset);
+    userApiInstance.client.on("userLoggedIn", handleUserLoggedIn);
+    userApiInstance.client.on("sessionReset", handleSessionReset);
 
     return () => {
-      userApi.client.off("userLoggedIn", handleUserLoggedIn);
-      userApi.client.off("sessionReset", handleSessionReset);
+      userApiInstance.client.off("userLoggedIn", handleUserLoggedIn);
+      userApiInstance.client.off("sessionReset", handleSessionReset);
     };
-  }, [userApi, loading]);
+  }, [userApiInstance?.client]);
 
-  // ------------------------- auxiliaires ----------------------------------
-  const [dataToProfile, setDataToProfile] = useState<any>(null);
+  const contextValue = useMemo(
+  () => ({
+    apiClient : client,
+    userApi   : userApiInstance,
+    api, me, organization,
+    helper    : (Cocolight as any).helper,
+    dataToProfile,
+    setDataToProfile,
+    loading : false,
+  }),
+  [client, userApiInstance, api, me, organization, dataToProfile]
+);
 
   return (
     <CocolightContext.Provider
-      value={{
-        apiClient,
-        userApi,
-        loading,
-        me,
-        api,
-        organization,
-        helper: (Cocolight as any).helper, // taper finement dans le .d.ts si besoin
-        dataToProfile,
-        setDataToProfile,
-      }}
+      value={contextValue}
     >
       {children}
     </CocolightContext.Provider>

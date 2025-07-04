@@ -111,8 +111,11 @@ app.use(['/{*all}'], async (req, res) => {
       res,
       siteConfig,
       // callback onHead : reçoit les balises Helmet
-      (helmetHead) => {
+      (helmetHead, dehydratedState) => {
         res.write(helmetHead);      // <title> / <meta> / <link>…
+        res.write(`<script>window.__REACT_QUERY_STATE__=${serialize(
+                            dehydratedState, { isJSON: true }
+                          )}</script>`);
         res.write(beforeRoot);      // </head><body><div id="root">
       },
     );
