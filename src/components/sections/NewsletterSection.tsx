@@ -4,20 +4,9 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useLocalization } from "@/hooks/useLocalization";
 import { Mail, CheckCircle } from 'lucide-react';
+import { NewsletterSectionProps } from '@/types/site-schema';
 
-interface NewsletterSectionProps {
-  id?: string;
-  props: {
-    headline: Record<string, string>;
-    subhead?: Record<string, string>;
-    formAction: string;
-    emailPlaceholder?: Record<string, string>;
-    submitLabel: Record<string, string>;
-    successMessage?: Record<string, string>;
-  };
-}
-
-export function NewsletterSection({ id, props }: NewsletterSectionProps) {
+export function NewsletterSection({ id, props }: { id?: string; props: NewsletterSectionProps }) {
   const { t } = useLocalization();
   const { toast } = useToast();
   const { headline, subhead, formAction, emailPlaceholder, submitLabel, successMessage } = props;

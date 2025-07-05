@@ -1,20 +1,9 @@
+import { ChartSectionProps } from '@/types/site-schema';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, AreaChart, Area, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
-
-interface ChartSectionProps {
-  id?: string;
-  props: {
-    kind   : 'line' | 'bar' | 'pie' | 'area' | 'radar';
-    data   : Array<Record<string, number | string>>;   // ← string OU number
-    xKey   : string;
-    yKeys  : string[];
-    stacked?: boolean;
-    legend ?: boolean;
-  };
-}
 
 const COLORS = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#84cc16', '#f97316'];
 
-export function ChartSection({ id, props }: ChartSectionProps) {
+export function ChartSection({ id, props }: { id?: string; props: ChartSectionProps }) {
   const { kind, data, xKey, yKeys, stacked = false, legend = true } = props;
 
   const renderChart = () => {

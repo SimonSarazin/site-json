@@ -2,26 +2,9 @@ import { Button } from '@/components/ui/button';
 import { useLocalization } from "@/hooks/useLocalization";
 import { useNavigate } from "react-router";
 import { cn } from '@/lib/utils';
+import { type HeroSectionProps } from '@/types/site-schema';
 
-interface HeroSectionProps {
-  id?: string;
-  props: {
-    headline: Record<string, string>;
-    subhead?: Record<string, string>;
-    backgroundImage?: string;
-    videoBg?: string;
-    align?: 'left' | 'center' | 'right';
-    overlay?: boolean;
-    cta?: Array<{
-      label: Record<string, string>;
-      href: string;
-      variant?: string;
-    }>;
-    scrollTo?: string;
-  };
-}
-
-export function HeroSection({ id, props }: HeroSectionProps) {
+export function HeroSection({ id, props }: { id?: string; props: HeroSectionProps }) {
   const { t } = useLocalization();
   const navigate = useNavigate();
   const { headline, subhead, backgroundImage, videoBg, align = 'center', overlay = false, cta, scrollTo } = props;

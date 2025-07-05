@@ -1,29 +1,13 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import * as Icons from 'lucide-react';
+import { Globe, Mail, Linkedin }from 'lucide-react';
+import { SiX, SiInstagram, SiFacebook, SiGithub, SiYoutube } from '@icons-pack/react-simple-icons';
 import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from '@/lib/utils';
+import { TeamSectionProps } from '@/types/site-schema';
 
-interface TeamSectionProps {
-  id?: string;
-  props: {
-    members: Array<{
-      name: Record<string, string>;
-      role: Record<string, string>;
-      bio?: Record<string, string>;
-      avatar: string;
-      socials?: Array<{
-        platform: string;
-        url: string;
-      }>;
-    }>;
-    layout?: 'grid' | 'carousel';
-    columns?: 1 | 2 | 3 | 4 | 5 | 6;
-  };
-}
-
-export function TeamSection({ id, props }: TeamSectionProps) {
+export function TeamSection({ id, props }: { id?: string; props: TeamSectionProps }) {
   const { t } = useLocalization();
   const { members, layout = 'grid', columns = 3 } = props;
 
@@ -40,18 +24,18 @@ export function TeamSection({ id, props }: TeamSectionProps) {
   };
 
   const getSocialIcon = (platform: string) => {
-    const iconMap: Record<string, any> = {
-      twitter: Icons.Twitter,
-      linkedin: Icons.Linkedin,
-      github: Icons.Github,
-      facebook: Icons.Facebook,
-      instagram: Icons.Instagram,
-      youtube: Icons.Youtube,
-      globe: Icons.Globe,
-      mail: Icons.Mail,
+    const iconMap: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
+      twitter: SiX,
+      linkedin: Linkedin,
+      github: SiGithub,
+      facebook: SiFacebook,
+      instagram: SiInstagram,
+      youtube: SiYoutube,
+      globe: Globe,
+      mail: Mail,
     };
-    
-    const IconComponent = iconMap[platform.toLowerCase()] || Icons.Globe;
+
+    const IconComponent = iconMap[platform.toLowerCase()] || Globe;
     return <IconComponent className="w-4 h-4" />;
   };
 

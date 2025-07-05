@@ -7,34 +7,9 @@ import { Calendar, Clock, User, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLocalization } from "@/hooks/useLocalization";
 import { useNavigate } from "react-router";
 import { cn } from '@/lib/utils';
+import { BlogListSectionProps } from '@/types/site-schema';
 
-interface BlogListSectionProps {
-  id?: string;
-  props: {
-    posts: Array<BlogPost>;
-    layout?: 'grid' | 'list' | 'masonry';
-    columns?: 1 | 2 | 3 | 4 | 5 | 6;
-    pagination?: boolean;
-    postsPerPage?: number;
-  };
-}
-
-interface BlogPost {
-  id: string;
-  title: Record<string, string>;
-  excerpt: Record<string, string>;
-  slug: string;
-  publishedAt: string;
-  author?: {
-    name: Record<string, string>;
-    avatar?: string;
-  };
-  featuredImage?: string;
-  tags?: Array<Record<string, string>>;
-  readTime?: number;
-}
-
-export function BlogListSection({ id, props }: BlogListSectionProps) {
+export function BlogListSection({ id, props }: { id?: string; props: BlogListSectionProps }) {
   const { t } = useLocalization();
 const navigate = useNavigate();
   const { posts, layout = 'grid', columns = 3, pagination = true, postsPerPage = 9 } = props;
@@ -66,7 +41,7 @@ const navigate = useNavigate();
     return colsMap[cols];
   };
 
-  const PostCard = ({ post }: { post: BlogPost }) => (
+  const PostCard = ({ post }: { post: BlogListSectionProps['posts'][number] }) => (
     <Card 
       className={cn(
         "h-full transition-all duration-200 hover:shadow-lg hover:-translate-y-1 cursor-pointer",

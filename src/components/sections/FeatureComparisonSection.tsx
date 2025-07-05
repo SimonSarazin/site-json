@@ -3,23 +3,9 @@ import { Badge } from '@/components/ui/badge';
 import { Check, X } from 'lucide-react';
 import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from '@/lib/utils';
+import { FeatureComparisonSectionProps } from '@/types/site-schema';
 
-interface FeatureComparisonSectionProps {
-  id?: string;
-  props: {
-    features: Array<{
-      name: Record<string, string>;
-      description?: Record<string, string>;
-    }>;
-    plans: Array<{
-      name: Record<string, string>;
-      features: Array<boolean | string>;
-      highlighted?: boolean;
-    }>;
-  };
-}
-
-export function FeatureComparisonSection({ id, props }: FeatureComparisonSectionProps) {
+export function FeatureComparisonSection({ id, props }: { id?: string; props: FeatureComparisonSectionProps }) {
   const { t } = useLocalization();
   const { features, plans } = props;
 

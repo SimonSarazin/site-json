@@ -5,24 +5,9 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Quote } from 'lucide-react';
 import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from '@/lib/utils';
+import { TestimonialsSectionProps } from '@/types/site-schema';
 
-interface TestimonialsSectionProps {
-  id?: string;
-  props: {
-    items: Array<Testimonial>;
-    style?: 'grid' | 'carousel' | 'ticker';
-    autoplay?: boolean;
-  };
-}
-
-interface Testimonial {
-  quote: Record<string, string>;
-  author: Record<string, string>;
-  role?: Record<string, string>;
-  avatar?: string;
-}
-
-export function TestimonialsSection({ id, props }: TestimonialsSectionProps) {
+export function TestimonialsSection({ id, props }: { id?: string; props: TestimonialsSectionProps }) {
   const { t } = useLocalization();
   const { items, style = 'carousel', autoplay = true } = props;
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -45,7 +30,7 @@ export function TestimonialsSection({ id, props }: TestimonialsSectionProps) {
     setCurrentIndex((prev) => (prev - 1 + items.length) % items.length);
   };
 
-  const TestimonialCard = ({ item }: { item: Testimonial; }) => (
+  const TestimonialCard = ({ item }: { item: TestimonialsSectionProps['items'][number]; }) => (
     <Card className="h-full">
       <CardContent className="p-6">
         <div className="flex flex-col h-full">

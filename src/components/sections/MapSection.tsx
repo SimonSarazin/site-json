@@ -1,21 +1,8 @@
 import { MapPin } from 'lucide-react';
 import { useLocalization } from "@/hooks/useLocalization";
+import { MapSectionProps } from '@/types/site-schema';
 
-interface MapSectionProps {
-  id?: string;
-  props: {
-    provider?: 'leaflet' | 'google' | 'mapbox';
-    center: [number, number];
-    zoom?: number;
-    markers?: Array<{
-      position: [number, number];
-      label?: Record<string, string>;
-      popup?: Record<string, string>;
-    }>;
-  };
-}
-
-export function MapSection({ id, props }: MapSectionProps) {
+export function MapSection({ id, props }: { id?: string; props: MapSectionProps }) {
   const { t } = useLocalization();
   const { provider = 'leaflet', center, markers = [] } = props;
 

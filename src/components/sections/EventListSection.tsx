@@ -5,30 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Calendar, MapPin, Clock, Users, ExternalLink } from 'lucide-react';
 import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from '@/lib/utils';
+import { EventListSectionProps } from '@/types/site-schema';
 
-interface EventListSectionProps {
-  id?: string;
-  props: {
-    events: Array<Event>;
-    layout?: 'list' | 'grid' | 'calendar';
-    showPastEvents?: boolean;
-  };
-};
-
-interface Event {
-  id: string;
-  title: Record<string, string>;
-  description: Record<string, string>;
-  startDate: string;
-  endDate?: string;
-  location?: Record<string, string>;
-  image?: string;
-  registrationUrl?: string;
-  price?: string;
-  tags?: Array<Record<string, string>>;
-}
-
-export function EventListSection({ id, props }: EventListSectionProps) {
+export function EventListSection({ id, props }: { id?: string; props: EventListSectionProps }) {
   const { t } = useLocalization();
   const { events, layout = 'list', showPastEvents = false } = props;
   const [filter, setFilter] = useState<'all' | 'upcoming' | 'past'>('upcoming');
@@ -64,7 +43,7 @@ export function EventListSection({ id, props }: EventListSectionProps) {
     return new Date(dateString) < now;
   };
 
-  const EventCard = ({ event }: { event: Event }) => (
+  const EventCard = ({ event }: { event: EventListSectionProps['events'][number] }) => (
     <Card className={cn(
       "transition-all duration-200 hover:shadow-lg",
       isEventPast(event.startDate) && "opacity-75"

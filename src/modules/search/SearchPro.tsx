@@ -15,18 +15,18 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { useInfiniteQueryScrollNext } from "@/hooks/useInfiniteQueryScroll";
 import useSearchFilters from "@/modules/search/hooks/useSearchFilters";
 import { ClientOnly } from "@/components/layout/ClientOnly";
-import { type SearchProProps } from "./types";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import "@/modules/search/i18n"; 
 import "@/modules/search/styles.css";
+import { SearchProSectionProps } from "./schema";
 
 
 /**
  * Full‑featured search section driven entirely by props.
  * Keeps organisation.searchCostum + infinite scrolling logic.
  */
-const SearchPro: React.FC<{ props: SearchProProps }> = ({ props }) => {
+const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
   /* ------------------------------------------------------------------ */
   /* i18n + Cocolight context                                            */
   /* ------------------------------------------------------------------ */

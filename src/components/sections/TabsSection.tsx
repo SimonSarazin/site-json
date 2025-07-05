@@ -1,23 +1,10 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from '@/lib/utils';
+import { TabsSectionProps } from '@/types/site-schema';
 import { DynamicIcon, type IconName } from 'lucide-react/dynamic';
 
-interface TabsSectionProps {
-  id?: string;
-  props: {
-    tabs: Array<{
-      id: string;
-      label: Record<string, string>;
-      content: Record<string, string>;
-      icon?: IconName;
-    }>;
-    defaultTab?: string;
-    orientation?: 'horizontal' | 'vertical';
-  };
-}
-
-export function TabsSection({ id, props }: TabsSectionProps) {
+export function TabsSection({ id, props }: { id?: string; props: TabsSectionProps }) {
   const { t } = useLocalization();
   const { tabs, defaultTab, orientation = 'horizontal' } = props;
 
@@ -49,7 +36,7 @@ export function TabsSection({ id, props }: TabsSectionProps) {
                 >
                   {tab.icon && 
                   <DynamicIcon
-                    name={tab.icon}
+                    name={tab.icon as IconName}
                     className="w-4 h-4"
                   />
                   }

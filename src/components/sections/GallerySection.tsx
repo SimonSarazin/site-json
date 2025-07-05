@@ -9,25 +9,10 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLocalization } from "@/hooks/useLocalization";
-
-/* ---------- Types ---------- */
-interface GalleryImage {
-  src: string;
-  alt?: Record<string, string>;
-  caption?: Record<string, string>;
-}
-
-interface GallerySectionProps {
-  id?: string;
-  props: {
-    images: GalleryImage[];
-    columns?: 1 | 2 | 3 | 4 | 5 | 6;
-    lightbox?: boolean;
-  };
-}
+import { GallerySectionProps } from "@/types/site-schema";
 
 /* ---------- Composant ---------- */
-export function GallerySection({ id, props }: GallerySectionProps) {
+export function GallerySection({ id, props }: { id?: string; props: GallerySectionProps }) {
   const { images, columns = 3, lightbox = true } = props;
   const { t } = useLocalization();
   const [selected, setSelected] = useState<number | null>(null);
@@ -56,7 +41,7 @@ export function GallerySection({ id, props }: GallerySectionProps) {
     image,
     index,
   }: {
-    image: GalleryImage;
+    image: GallerySectionProps["images"][number];
     index: number;
   }) => {
     const alt = image.alt

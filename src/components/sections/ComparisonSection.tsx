@@ -1,19 +1,9 @@
 import { useState } from 'react';
 import { Slider } from '@/components/ui/slider';
 import { useLocalization } from "@/hooks/useLocalization";
+import { ComparisonSectionProps } from '@/types/site-schema';
 
-interface ComparisonSectionProps {
-  id?: string;
-  props: {
-    beforeImage: string;
-    afterImage: string;
-    beforeLabel?: Record<string, string>;
-    afterLabel?: Record<string, string>;
-    orientation?: 'horizontal' | 'vertical';
-  };
-}
-
-export function ComparisonSection({ id, props }: ComparisonSectionProps) {
+export function ComparisonSection({ id, props }: { id?: string; props: ComparisonSectionProps }) {
   const { t } = useLocalization();
   const { beforeImage, afterImage, beforeLabel, afterLabel, orientation = 'horizontal' } = props;
   const [position, setPosition] = useState([50]);

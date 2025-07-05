@@ -3,7 +3,7 @@ import { LocalizedString } from "@/types/locale-schema";
 import { z } from "zod";
 
 //──────────────── Search Pro Section
-const TagsFilter = z.object({
+const TagsFilterSchema = z.object({
   type: z.union([z.literal("tags"), z.literal("type")]),
   name: LocalizedString.or(z.string()),
   list: z.array(LocalizedString.or(z.string()))
@@ -13,7 +13,9 @@ const TagsFilter = z.object({
   previewIcon: z.string().optional(),
 });
 
-const ListConf = z.object({
+export type TagsFilter = z.infer<typeof TagsFilterSchema>;
+
+const ListConfSchema = z.object({
   columns: z.object({
     lg: z.number().int().min(1).max(6).optional(),
     md: z.number().int().min(1).max(6).optional(),
@@ -26,12 +28,18 @@ const ListConf = z.object({
   }).partial().optional(),
 }).partial();
 
-const MapConf = z.object({
+export type ListConf = z.infer<typeof ListConfSchema>;
+
+
+const MapConfSchema = z.object({
   initialZoom: z.number().min(1).max(20).optional(),
   cluster:     z.boolean().optional(),
 }).partial();
 
-export const SearchProSection = z.object({
+export type MapConf = z.infer<typeof MapConfSchema>;
+
+
+export const SearchProSectionSchema = z.object({
   type: z.literal("searchPro"),
   id:   z.string().optional(),
 
@@ -40,7 +48,7 @@ export const SearchProSection = z.object({
     useFilter:   z.boolean().default(true),
     showMap:     z.boolean().default(false),
 
-    filters: z.record(TagsFilter).optional(),
+    filters: z.record(TagsFilterSchema).optional(),
 
     baseParams: z.object({
       fediverse:     z.boolean().optional(),
@@ -50,7 +58,10 @@ export const SearchProSection = z.object({
       defaultTags:   z.array(z.string()).optional(),
     }).optional(),
 
-    list: ListConf.optional(),
-    map:  MapConf.optional(),
+    list: ListConfSchema.optional(),
+    map:  MapConfSchema.optional(),
   }),
 });
+
+export type SearchProSection = z.infer<typeof SearchProSectionSchema>;
+export type SearchProSectionProps = z.infer<typeof SearchProSectionSchema>["props"]

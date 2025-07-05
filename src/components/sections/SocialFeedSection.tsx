@@ -1,32 +1,24 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Twitter, Instagram, Linkedin, Facebook, ExternalLink } from 'lucide-react';
+import { Linkedin, ExternalLink } from 'lucide-react';
+import { SiX, SiInstagram, SiFacebook } from '@icons-pack/react-simple-icons';
 import { cn } from '@/lib/utils';
+import { SocialFeedSectionProps } from '@/types/site-schema';
 
-interface SocialFeedSectionProps {
-  id?: string;
-  props: {
-    platform: 'twitter' | 'instagram' | 'linkedin' | 'facebook';
-    feedId: string;
-    limit?: number;
-    layout?: 'grid' | 'carousel' | 'masonry';
-  };
-}
-
-export function SocialFeedSection({ id, props }: SocialFeedSectionProps) {
+export function SocialFeedSection({ id, props }: { id?: string; props: SocialFeedSectionProps }) {
   const { platform, limit = 6, layout = 'grid' } = props;
 
   const getPlatformIcon = () => {
     switch (platform) {
       case 'twitter':
-        return <Twitter className="w-5 h-5" />;
+        return <SiX className="w-5 h-5" />;
       case 'instagram':
-        return <Instagram className="w-5 h-5" />;
+        return <SiInstagram className="w-5 h-5" />;
       case 'linkedin':
         return <Linkedin className="w-5 h-5" />;
       case 'facebook':
-        return <Facebook className="w-5 h-5" />;
+        return <SiFacebook className="w-5 h-5" />;
       default:
         return <ExternalLink className="w-5 h-5" />;
     }

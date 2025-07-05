@@ -1,18 +1,8 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useLocalization } from "@/hooks/useLocalization";
+import { FAQSectionProps } from '@/types/site-schema';
 
-interface FAQSectionProps {
-  id?: string;
-  props: {
-    items: Array<{
-      q: Record<string, string>;
-      a: Record<string, string>;
-    }>;
-    accordion?: boolean;
-  };
-}
-
-export function FAQSection({ id, props }: FAQSectionProps) {
+export function FAQSection({ id, props }: { id?: string; props: FAQSectionProps }) {
   const { t } = useLocalization();
   const { items, accordion = true } = props;
 

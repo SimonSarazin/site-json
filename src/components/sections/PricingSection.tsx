@@ -4,28 +4,9 @@ import { Badge } from '@/components/ui/badge';
 import { Check } from 'lucide-react';
 import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from '@/lib/utils';
+import { PricingSectionProps } from '@/types/site-schema';
 
-interface PricingSectionProps {
-  id?: string;
-  props: {
-    currency?: string;
-    plans: Array<{
-      sku?: string;
-      name: Record<string, string>;
-      price: string;
-      period?: string;
-      features: Array<Record<string, string>>;
-      badge?: Record<string, string>;
-      cta: {
-        label: Record<string, string>;
-        href: string;
-      };
-    }>;
-    highlight?: number;
-  };
-}
-
-export function PricingSection({ id, props }: PricingSectionProps) {
+export function PricingSection({ id, props }: { id?: string; props: PricingSectionProps }) {
   const { t } = useLocalization();
   const { currency = '€', plans, highlight } = props;
 

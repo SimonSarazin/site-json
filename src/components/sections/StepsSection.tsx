@@ -3,37 +3,16 @@ import { CheckCircle } from 'lucide-react';
 import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from '@/lib/utils';
 import { DynamicIcon, type IconName } from 'lucide-react/dynamic';
+import { StepsSectionProps } from '@/types/site-schema';
 
-interface StepsSectionProps {
-  id?: string;
-  props: {
-    steps: Array<Step>;
-    orientation?: 'horizontal' | 'vertical';
-    showProgress?: boolean;
-  };
-}
-
-interface StepIndicatorProps {
-  step: Step;
-  index: number;
-  isLast: boolean;
-}
-
-interface Step {
-  title: Record<string, string>;
-  description: Record<string, string>;
-  icon?: IconName;
-  completed?: boolean;
-}
-
-export function StepsSection({ id, props }: StepsSectionProps) {
+export function StepsSection({ id, props }: { id?: string; props: StepsSectionProps }) {
   const { t } = useLocalization();
   const { steps, orientation = 'horizontal', showProgress = true } = props;
 
   const completedSteps = steps.filter(step => step.completed).length;
   const progressPercentage = (completedSteps / steps.length) * 100;
 
-  const StepIndicator = ({ step, index, isLast }: StepIndicatorProps) => (
+  const StepIndicator = ({ step, index, isLast }: { step: StepsSectionProps['steps'][number]; index: number; isLast: boolean }) => (
     <div className={cn(
       "flex items-center",
       orientation === 'vertical' ? "flex-col" : "flex-row"
@@ -49,7 +28,7 @@ export function StepsSection({ id, props }: StepsSectionProps) {
           <CheckCircle className="w-6 h-6" />
         ) : step.icon ? (
           <DynamicIcon
-            name={step.icon}
+            name={step.icon as IconName}
             className="w-6 h-6"
           />
         ) : (

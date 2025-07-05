@@ -2,26 +2,9 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Calendar, Clock, User } from 'lucide-react';
 import { useLocalization } from "@/hooks/useLocalization";
+import { BlogPostSectionProps } from '@/types/site-schema';
 
-interface BlogPostSectionProps {
-  id?: string;
-  props: {
-    title: Record<string, string>;
-    excerpt?: Record<string, string>;
-    content: Record<string, string>;
-    author?: {
-      name: Record<string, string>;
-      avatar?: string;
-      bio?: Record<string, string>;
-    };
-    publishedAt?: string;
-    tags?: Array<Record<string, string>>;
-    featuredImage?: string;
-    readTime?: number;
-  };
-}
-
-export function BlogPostSection({ id, props }: BlogPostSectionProps) {
+export function BlogPostSection({ id, props }: { id?: string; props: BlogPostSectionProps }) {
   const { t } = useLocalization();
   const { title, excerpt, content, author, publishedAt, tags, featuredImage, readTime } = props;
 

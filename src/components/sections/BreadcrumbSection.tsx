@@ -2,19 +2,9 @@ import { Fragment } from 'react';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { useLocalization } from "@/hooks/useLocalization";
 import { useNavigate } from "react-router";
+import { BreadcrumbSectionProps } from '@/types/site-schema';
 
-interface BreadcrumbSectionProps {
-  id?: string;
-  props: {
-    items: Array<{
-      label: Record<string, string>;
-      href?: string;
-    }>;
-    separator?: string;
-  };
-}
-
-export function BreadcrumbSection({ id, props }: BreadcrumbSectionProps) {
+export function BreadcrumbSection({ id, props }: { id?: string; props: BreadcrumbSectionProps }) {
   const { t } = useLocalization();
   const navigate = useNavigate();
   const { items, separator = "/" } = props;

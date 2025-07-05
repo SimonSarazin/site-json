@@ -1,20 +1,9 @@
 import { Calendar } from 'lucide-react';
 import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from '@/lib/utils';
+import { TimelineSectionProps } from '@/types/site-schema';
 
-interface TimelineSectionProps {
-  id?: string;
-  props: {
-    events: Array<{
-      date: string;
-      title: Record<string, string>;
-      text: Record<string, string>;
-    }>;
-    alternating?: boolean;
-  };
-}
-
-export function TimelineSection({ id, props }: TimelineSectionProps) {
+export function TimelineSection({ id, props }: { id?: string; props: TimelineSectionProps }) {
   const { t } = useLocalization();
   const { events, alternating = true } = props;
 

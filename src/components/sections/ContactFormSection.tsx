@@ -8,72 +8,56 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useLocalization } from "@/hooks/useLocalization";
+import { ContactFormSectionProps } from '@/types/site-schema';
 
-interface ContactFormSectionProps {
-  id?: string;
-  props: {
-    fields: Array<Field>;
-    submitLabel: Record<string, string>;
-    action: string;
-    method?: 'GET' | 'POST';
-    successMessage?: Record<string, string>;
-    errorMessage?: Record<string, string>;
-  };
-}
+/** Valeur manipulée pour chaque champ du formulaire */
+type FieldValue = string | boolean | number | File | undefined | null;
+type FormState = Record<string, FieldValue>;
 
-interface Field {
-  name: string;
-  label: Record<string, string>;
-  type?: 'text' | 'email' | 'tel' | 'number' | 'textarea' | 'select' | 'checkbox' | 'radio' | 'file';
-  required?: boolean;
-  placeholder?: Record<string, string>;
-  options?: Array<Record<string, string>>;
-  validation?: string;
-}
-
-export function ContactFormSection({ id, props }: ContactFormSectionProps) {
+export function ContactFormSection({ id, props }: { id?: string; props: ContactFormSectionProps }) {
   const { t } = useLocalization();
   const { toast } = useToast();
   const { fields, submitLabel, action, method = 'POST', successMessage, errorMessage } = props;
-  
-  const [formData, setFormData] = useState<Record<string, any>>({});
+
+  const [formData, setFormData] = useState<FormState>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleInputChange = (name: string, value: any) => {
+  const handleInputChange = (name: string, value: FieldValue) => {
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
   };
 
-  const validateField = (field: Field, value: any) => {
-    if (field.required && (!value || value === '')) {
+  const validateField = (field: ContactFormSectionProps['fields'][number], value: FieldValue) => {
+    if (field.required && (value === undefined || value === null || value === '')) {
       return `${t(field.label)} est requis`;
     }
 
     if (field.validation && value) {
       switch (field.validation) {
-        case 'email':
-          { const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          if (!emailRegex.test(value)) {
+        case 'email': {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (typeof value !== 'string' || !emailRegex.test(value)) {
             return 'Adresse e-mail invalide';
           }
-          break; }
-        case 'tel':
-          { const phoneRegex = /^[\d\s\-\+\(\)]+$/;
-          if (!phoneRegex.test(value)) {
+          break;
+        }
+        case 'tel': {
+          const phoneRegex = /^[\d\s()+-]+$/; // chiffres, espaces, + ( ) -
+          if (typeof value !== 'string' || !phoneRegex.test(value)) {
             return 'Numéro de téléphone invalide';
           }
-          break; }
+          break;
+        }
         default:
-          // Custom regex validation
+          // Validation regex custom
           try {
             const regex = new RegExp(field.validation);
-            if (!regex.test(value)) {
+            if (typeof value !== 'string' || !regex.test(value)) {
               return `Format invalide pour ${t(field.label)}`;
             }
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          } catch (e) {
+          } catch {
             console.warn('Invalid regex pattern:', field.validation);
           }
       }
@@ -90,9 +74,7 @@ export function ContactFormSection({ id, props }: ContactFormSectionProps) {
     const errors: string[] = [];
     fields.forEach(field => {
       const error = validateField(field, formData[field.name]);
-      if (error) {
-        errors.push(error);
-      }
+      if (error) errors.push(error);
     });
 
     if (errors.length > 0) {
@@ -121,10 +103,10 @@ export function ContactFormSection({ id, props }: ContactFormSectionProps) {
         });
         setFormData({});
       } else {
-        throw new Error('Erreur lors de l\'envoi');
+        throw new Error('Erreur lors de l’envoi');
       }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
+    } catch (err: unknown) {
       toast({
         variant: "destructive",
         title: "Erreur",
@@ -135,8 +117,8 @@ export function ContactFormSection({ id, props }: ContactFormSectionProps) {
     }
   };
 
-  const renderField = (field: Field) => {
-    const value = formData[field.name] || '';
+  const renderField = (field: ContactFormSectionProps['fields'][number]) => {
+    const value = formData[field.name] as FieldValue ?? '';
 
     switch (field.type) {
       case 'textarea':
@@ -145,7 +127,7 @@ export function ContactFormSection({ id, props }: ContactFormSectionProps) {
             id={field.name}
             name={field.name}
             placeholder={field.placeholder ? t(field.placeholder) : ''}
-            value={value}
+            value={value as string}
             onChange={(e) => handleInputChange(field.name, e.target.value)}
             required={field.required}
             className="min-h-[120px]"
@@ -155,7 +137,7 @@ export function ContactFormSection({ id, props }: ContactFormSectionProps) {
       case 'select':
         return (
           <Select
-            value={value}
+            value={value as string}
             onValueChange={(val) => handleInputChange(field.name, val)}
             required={field.required}
           >
@@ -177,8 +159,8 @@ export function ContactFormSection({ id, props }: ContactFormSectionProps) {
           <div className="flex items-center space-x-2">
             <Checkbox
               id={field.name}
-              checked={value}
-              onCheckedChange={(checked) => handleInputChange(field.name, checked)}
+              checked={Boolean(value)}
+              onCheckedChange={(checked) => handleInputChange(field.name, Boolean(checked))}
               required={field.required}
             />
             <Label htmlFor={field.name} className="text-sm">
@@ -190,7 +172,7 @@ export function ContactFormSection({ id, props }: ContactFormSectionProps) {
       case 'radio':
         return (
           <RadioGroup
-            value={value}
+            value={value as string}
             onValueChange={(val) => handleInputChange(field.name, val)}
             required={field.required}
           >
@@ -211,7 +193,7 @@ export function ContactFormSection({ id, props }: ContactFormSectionProps) {
             id={field.name}
             name={field.name}
             type="file"
-            onChange={(e) => handleInputChange(field.name, e.target.files?.[0])}
+            onChange={(e) => handleInputChange(field.name, e.target.files?.[0] ?? null)}
             required={field.required}
           />
         );
@@ -223,7 +205,7 @@ export function ContactFormSection({ id, props }: ContactFormSectionProps) {
             name={field.name}
             type={field.type || 'text'}
             placeholder={field.placeholder ? t(field.placeholder) : ''}
-            value={value}
+            value={value as string}
             onChange={(e) => handleInputChange(field.name, e.target.value)}
             required={field.required}
           />

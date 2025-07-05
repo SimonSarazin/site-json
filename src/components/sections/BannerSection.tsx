@@ -3,17 +3,9 @@ import { Button } from '@/components/ui/button';
 import { X, Info, CheckCircle, AlertTriangle, AlertCircle } from 'lucide-react';
 import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from '@/lib/utils';
+import { BannerSectionProps } from '@/types/site-schema';
 
-interface BannerSectionProps {
-  id?: string;
-  props: {
-    text: Record<string, string>;
-    variant?: 'info' | 'success' | 'warning' | 'error';
-    dismissible?: boolean;
-  };
-}
-
-export function BannerSection({ id, props }: BannerSectionProps) {
+export function BannerSection({ id, props }: { id?: string; props: BannerSectionProps }) {
   const { t } = useLocalization();
   const { text, variant = 'info', dismissible = false } = props;
   const [isVisible, setIsVisible] = useState(true);

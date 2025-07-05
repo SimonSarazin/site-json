@@ -4,19 +4,12 @@ import { useCocolight } from "@/hooks/useCocolight";
 import CustomDrawer from "@/components/layout/CustomDrawer";
 import Preview from "./Preview";
 import { useT } from "@/hooks/useT";
+import { ListConf } from "../schema";
 
 interface SearchListViewProps {
   results: any[];
-  columns?: {
-    lg?: number;
-    md?: number;
-    sm?: number;
-  };
-  card?: {
-      tagLimit?: number;
-      showDescription?: boolean;
-      shareButton?: boolean;
-  };
+  columns?: ListConf["columns"];
+  card?: ListConf["card"];
 }
 
 export default function SearchListView({ results, columns, card }: SearchListViewProps) {

@@ -2,22 +2,9 @@ import { useEffect, useState } from 'react';
 import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from '@/lib/utils';
 import { DynamicIcon, type IconName } from 'lucide-react/dynamic';
+import { StatsSectionProps } from '@/types/site-schema';
 
-interface StatsSectionProps {
-  id?: string;
-  props: {
-    items: Array<{
-      value: string;
-      label: Record<string, string>;
-      description?: Record<string, string>;
-      icon?: IconName;
-    }>;
-    layout?: 'horizontal' | 'vertical';
-    animated?: boolean;
-  };
-}
-
-export function StatsSection({ id, props }: StatsSectionProps) {
+export function StatsSection({ id, props }: { id?: string; props: StatsSectionProps }) {
   const { t } = useLocalization();
   const { items, layout = 'horizontal', animated = true } = props;
   const [isVisible, setIsVisible] = useState(false);
@@ -106,7 +93,7 @@ export function StatsSection({ id, props }: StatsSectionProps) {
                   layout === 'vertical' && "mb-0 shrink-0"
                 )}>
                   <DynamicIcon
-                name={item.icon}
+                name={item.icon as IconName}
                 className="w-8 h-8"
               />
                 </div>

@@ -36,12 +36,8 @@ declare module "@communecter/cocolight-api-client" {
 
   /** Client HTTP bas niveau partagé par toutes les API */
   export class ApiClient {
-    // on(arg0: string, handleUserLoggedIn: () => Promise<void>) {
-    //   throw new Error("Method not implemented.");
-    // }
-    // off(arg0: string, handleUserLoggedIn: () => Promise<void>) {
-    //   throw new Error("Method not implemented.");
-    // }
+  on (event: string, listener: (...args: unknown[]) => void): void;
+  off(event: string, listener: (...args: unknown[]) => void): void;
     constructor(options?: ApiClientOptions);
 
     readonly baseURL: string;

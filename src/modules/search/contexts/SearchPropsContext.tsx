@@ -1,15 +1,16 @@
 import React, { createContext, useContext } from 'react';
-import { type SearchProProps } from '../types';
+import { SearchProSectionProps } from '../schema';
+
 
 interface SearchPropsContextType {
-  props: SearchProProps;
+  props: SearchProSectionProps;
 }
 
 const SearchPropsContext = createContext<SearchPropsContextType | null>(null);
 
 interface SearchPropsProviderProps {
   children: React.ReactNode;
-  props: SearchProProps;
+  props: SearchProSectionProps;
 }
 
 export function SearchPropsProvider({ children, props }: SearchPropsProviderProps) {

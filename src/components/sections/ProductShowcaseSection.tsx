@@ -5,30 +5,9 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, ShoppingCart, Eye } from 'lucide-react';
 import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from '@/lib/utils';
+import { ProductShowcaseSectionProps } from '@/types/site-schema';
 
-interface ProductShowcaseSectionProps {
-  id?: string;
-  props: {
-    products: Array<Product>;
-    layout?: 'grid' | 'carousel' | 'featured';
-    showPrices?: boolean;
-  };
-}
-
-interface Product {
-  id: string;
-  name: Record<string, string>;
-  description: Record<string, string>;
-  price?: string;
-  images: string[];
-  features?: Array<Record<string, string>>;
-  cta?: {
-    label: Record<string, string>;
-    href: string;
-  };
-}
-
-export function ProductShowcaseSection({ id, props }: ProductShowcaseSectionProps) {
+export function ProductShowcaseSection({ id, props }: { id?: string; props: ProductShowcaseSectionProps }) {
   const { t } = useLocalization();
   const { products, layout = 'grid', showPrices = true } = props;
   const [currentImageIndex, setCurrentImageIndex] = useState<Record<string, number>>({});
@@ -47,7 +26,7 @@ export function ProductShowcaseSection({ id, props }: ProductShowcaseSectionProp
     }));
   };
 
-  const ProductCard = ({ product, featured = false }: { product: Product; featured?: boolean }) => {
+  const ProductCard = ({ product, featured = false }: { product: ProductShowcaseSectionProps['products'][number]; featured?: boolean }) => {
     const currentIndex = currentImageIndex[product.id] || 0;
     
     return (

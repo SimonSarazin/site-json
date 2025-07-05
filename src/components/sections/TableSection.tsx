@@ -3,19 +3,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLocalization } from "@/hooks/useLocalization";
+import { TableSectionProps } from '@/types/site-schema';
 
-interface TableSectionProps {
-  id?: string;
-  props: {
-    headers: Array<Record<string, string>>;
-    rows: Array<Array<Record<string, string>>>;
-    sortable?: boolean;
-    pagination?: boolean;
-    perPage?: number;
-  };
-}
-
-export function TableSection({ id, props }: TableSectionProps) {
+export function TableSection({ id, props }: { id?: string; props: TableSectionProps }) {
   const { t } = useLocalization();
   const { headers, rows, sortable = true, pagination = false, perPage = 10 } = props;
   

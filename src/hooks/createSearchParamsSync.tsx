@@ -1,62 +1,117 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router";
 
-interface ParamConfig<T> {
-  parse?: (val: string) => T;
-  serialize?: (value: T) => string | undefined;
+/* --------------------------------------------------------------------------
+ * Types utilitaires ---------------------------------------------------------
+ * ------------------------------------------------------------------------ */
+
+/** Fonction qui convertit un string issu de l'URL vers le type T */
+export type Parser<T> = (value: string) => T;
+/** Fonction qui convertit une valeur T vers un string sérialisable dans l'URL */
+export type Serializer<T> = (value: T) => string | undefined;
+
+export interface ParamConfig<T> {
+  parse?: Parser<T>;
+  serialize?: Serializer<T>;
   defaultValue?: T | (() => T);
 }
 
-type ConfigType = Record<string, ParamConfig<any>>;
+/** Infère le type de valeur porté par un ParamConfig */
+type ValueOfConfig<P> = P extends ParamConfig<infer T> ? T : never;
 
+/** Collection de paramètres supportés par le hook */
+export type ConfigType = Record<string, ParamConfig<unknown>>;
+
+/** Nom du setter généré pour une clé `K` (ex: foo → setFoo) */
 type SetterName<K extends string> = `set${Capitalize<K>}`;
 
-type States<C extends ConfigType> = {
-  [K in keyof C]: ReturnType<C[K]['parse'] extends Function ? C[K]['parse'] : (v: string) => any>
+/** États calculés à partir d'une configuration */
+export type States<C extends ConfigType> = {
+  [K in keyof C]: ValueOfConfig<C[K]>;
 };
 
-type Setters<C extends ConfigType> = {
-  [K in keyof C as SetterName<K extends string ? K : never>]: (value: States<C>[K]) => void
+/** Setters correspondants */
+export type Setters<C extends ConfigType> = {
+  [K in keyof C as SetterName<string & K>]: (value: States<C>[K]) => void;
 };
+
+/** Fusionne States + Setters */
+type HookReturn<C extends ConfigType> = States<C> & Setters<C>;
+
+/* --------------------------------------------------------------------------
+ * Hook factory --------------------------------------------------------------
+ * ------------------------------------------------------------------------ */
 
 export function createSearchParamsSync<C extends ConfigType>(config: C) {
-  return function useSyncedParams(deferredDefaults: Partial<States<C>> = {}): States<C> & Setters<C> {
+  const keys = Object.keys(config) as (keyof C & string)[];
+
+  return function useSyncedParams(
+    deferredDefaults: Partial<States<C>> = {},
+  ): HookReturn<C> {
     const [searchParams, setSearchParams] = useSearchParams();
 
-    const states: Partial<States<C>> = {};
-    const setters: Partial<Setters<C>> = {};
+    /* ------------------------ Initialisation des états ------------------- */
+    const computeInitialStates = useCallback((): States<C> => {
+      const initial = {} as States<C>;
 
-    for (const [key, { parse = (v: string) => v as any, defaultValue }] of Object.entries(config) as [keyof C & string, ParamConfig<any>][]) {
-      const raw = searchParams.get(key);
+      keys.forEach((key) => {
+        const cfg = config[key];
+        const parse = (cfg.parse as Parser<States<C>[typeof key]>) ??
+          ((v: string) => v as unknown as States<C>[typeof key]);
 
-      const fallback =
-        key in deferredDefaults
-          ? deferredDefaults[key as keyof typeof deferredDefaults]
-          : typeof defaultValue === "function"
-            ? defaultValue()
-            : defaultValue;
+        const raw = searchParams.get(key);
 
-      const initialValue = raw != null ? parse(raw) : fallback;
+        const fallback =
+          key in deferredDefaults
+            ?  
+              (deferredDefaults as Record<string, unknown>)[key] as States<C>[typeof key]
+            : typeof cfg.defaultValue === "function"
+              ?  
+                (cfg.defaultValue as () => States<C>[typeof key])()
+              : (cfg.defaultValue as States<C>[typeof key] | undefined);
 
-      const [state, setState] = useState(initialValue);
-      states[key] = state;
-      
-      const capitalizedKey = key.charAt(0).toUpperCase() + key.slice(1);
-      setters[`set${capitalizedKey}` as SetterName<typeof key>] = setState as any;
-    }
+        initial[key] = raw != null ? parse(raw) : fallback!;
+      });
 
+      return initial;
+    }, [searchParams, deferredDefaults]);
+
+    const [states, setStates] = useState<States<C>>(computeInitialStates);
+
+    /* --------------------------- Setters dynamiques ---------------------- */
+    const setters = useMemo(() => {
+      const s = {} as Partial<Setters<C>>;
+
+      keys.forEach((key) => {
+        const capitalizedKey = (key.charAt(0).toUpperCase() + key.slice(1)) as Capitalize<typeof key>;
+        const setterName = `set${capitalizedKey}` as SetterName<typeof key>;
+
+         
+        (s as Record<string, unknown>)[setterName] = (value: States<C>[typeof key]) =>
+          setStates((prev) => ({ ...prev, [key]: value }));
+      });
+
+      return s as unknown as Setters<C>;
+       
+    }, [setStates]);
+
+    /* ------------------------- Sync → URL -------------------------------- */
     useEffect(() => {
       const params: Record<string, string> = {};
-      for (const [key, { serialize }] of Object.entries(config) as [keyof C & string, ParamConfig<any>][]) {
-        const val = states[key];
-        const serialized = serialize ? serialize(val) : val;
+
+      keys.forEach((key) => {
+        const { serialize } = config[key];
+        const value = states[key];
+        const serialized = serialize ? serialize(value) : (value as unknown as string);
         if (serialized !== undefined && serialized !== null) {
           params[key] = serialized;
         }
-      }
-      setSearchParams(params, { replace: true });
-    }, Object.values(states));
+      });
 
-    return { ...states, ...setters } as States<C> & Setters<C>;
+      setSearchParams(params, { replace: true });
+    }, [states, setSearchParams]);
+
+    /* ------------------------- Valeur retournée -------------------------- */
+    return { ...states, ...setters } as HookReturn<C>;
   };
 }

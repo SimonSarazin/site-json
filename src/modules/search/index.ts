@@ -1,2 +1,2 @@
 export { default as SearchSection } from "./SearchProSection";
-export type { SearchProProps } from "./types";
+export { type SearchProSectionProps, type SearchProSection, SearchProSectionSchema } from "./schema";

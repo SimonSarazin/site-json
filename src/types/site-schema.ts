@@ -6,7 +6,7 @@
 // Validation : Zod 3.x – le schéma sert à la fois de typings, de runtime‑guard,
 //               et d'autocomplétion dans VS Code.
 // ------------------------------------------------------------
-import { SearchProSection } from "@/modules/search/schema";
+import { SearchProSectionSchema } from "@/modules/search/schema";
 import { z } from "zod";
 import { LocalizedString, LOCALES } from "./locale-schema";
 
@@ -47,7 +47,7 @@ const Alignment = z.enum(["left", "center", "right"]);
 const Columns   = z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5), z.literal(6)]);
 
 //──────────────── Hero
-const HeroSection = z.object({
+const HeroSectionSchema = z.object({
   type: z.literal("hero"),
   id: z.string().optional(),
   props: z.object({
@@ -64,8 +64,12 @@ const HeroSection = z.object({
   }),
 });
 
+export type HeroSection = z.infer<typeof HeroSectionSchema>;
+
+export type HeroSectionProps = z.infer<typeof HeroSectionSchema>["props"];
+
 //──────────────── Markdown / MDX
-const MarkdownSection = z.object({
+const MarkdownSectionSchema  = z.object({
   type: z.literal("markdown"),
   id: z.string().optional(),
   props: z.object({
@@ -75,8 +79,12 @@ const MarkdownSection = z.object({
   }),
 });
 
+export type MarkdownSection = z.infer<typeof MarkdownSectionSchema>;
+
+export type MarkdownSectionProps = z.infer<typeof MarkdownSectionSchema>["props"];
+
 //──────────────── Cards / Features
-const CardsSection = z.object({
+const CardsSectionSchema = z.object({
   type: z.literal("cards"),
   id: z.string().optional(),
   props: z.object({
@@ -95,8 +103,12 @@ const CardsSection = z.object({
   }),
 });
 
+export type CardsSection = z.infer<typeof CardsSectionSchema>;
+
+export type CardsSectionProps = z.infer<typeof CardsSectionSchema>["props"];
+
 //──────────────── Gallery
-const GallerySection = z.object({
+const GallerySectionSchema = z.object({
   type: z.literal("gallery"),
   id: z.string().optional(),
   props: z.object({
@@ -106,8 +118,12 @@ const GallerySection = z.object({
   }),
 });
 
+export type GallerySection = z.infer<typeof GallerySectionSchema>;
+
+export type GallerySectionProps = z.infer<typeof GallerySectionSchema>["props"];
+
 //──────────────── Video
-const VideoSection = z.object({
+const VideoSectionSchema = z.object({
   type: z.literal("video"),
   id: z.string().optional(),
   props: z.object({
@@ -120,8 +136,12 @@ const VideoSection = z.object({
   }),
 });
 
+export type VideoSection = z.infer<typeof VideoSectionSchema>;
+
+export type VideoSectionProps = z.infer<typeof VideoSectionSchema>["props"];
+
 //──────────────── FAQ
-const FAQSection = z.object({
+const FAQSectionSchema = z.object({
   type: z.literal("faq"),
   id: z.string().optional(),
   props: z.object({
@@ -130,8 +150,12 @@ const FAQSection = z.object({
   }),
 });
 
+export type FAQSection = z.infer<typeof FAQSectionSchema>;
+
+export type FAQSectionProps = z.infer<typeof FAQSectionSchema>["props"];
+
 //──────────────── Testimonials
-const TestimonialsSection = z.object({
+const TestimonialsSectionSchema = z.object({
   type: z.literal("testimonials"),
   id: z.string().optional(),
   props: z.object({
@@ -141,8 +165,12 @@ const TestimonialsSection = z.object({
   }),
 });
 
+export type TestimonialsSection = z.infer<typeof TestimonialsSectionSchema>;
+
+export type TestimonialsSectionProps = z.infer<typeof TestimonialsSectionSchema>["props"];
+
 //──────────────── Pricing
-const PricingSection = z.object({
+const PricingSectionSchema = z.object({
   type: z.literal("pricing"),
   id: z.string().optional(),
   props: z.object({
@@ -160,8 +188,12 @@ const PricingSection = z.object({
   }),
 });
 
+export type PricingSection = z.infer<typeof PricingSectionSchema>;
+
+export type PricingSectionProps = z.infer<typeof PricingSectionSchema>["props"];
+
 //──────────────── Contact Form
-const ContactFormSection = z.object({
+const ContactFormSectionSchema = z.object({
   type: z.literal("contactForm"),
   id: z.string().optional(),
   props: z.object({
@@ -182,8 +214,12 @@ const ContactFormSection = z.object({
   }),
 });
 
+export type ContactFormSection = z.infer<typeof ContactFormSectionSchema>;
+
+export type ContactFormSectionProps = z.infer<typeof ContactFormSectionSchema>["props"];
+
 //──────────────── Blog Post
-const BlogPostSection = z.object({
+const BlogPostSectionSchema = z.object({
   type: z.literal("blogPost"),
   id: z.string().optional(),
   props: z.object({
@@ -202,8 +238,12 @@ const BlogPostSection = z.object({
   }),
 });
 
+export type BlogPostSection = z.infer<typeof BlogPostSectionSchema>;
+
+export type BlogPostSectionProps = z.infer<typeof BlogPostSectionSchema>["props"];
+
 //──────────────── Blog List
-const BlogListSection = z.object({
+const BlogListSectionSchema = z.object({
   type: z.literal("blogList"),
   id: z.string().optional(),
   props: z.object({
@@ -228,8 +268,12 @@ const BlogListSection = z.object({
   }),
 });
 
+export type BlogListSection = z.infer<typeof BlogListSectionSchema>;
+
+export type BlogListSectionProps = z.infer<typeof BlogListSectionSchema>["props"];
+
 //──────────────── Team Section
-const TeamSection = z.object({
+const TeamSectionSchema = z.object({
   type: z.literal("team"),
   id: z.string().optional(),
   props: z.object({
@@ -248,8 +292,12 @@ const TeamSection = z.object({
   }),
 });
 
+export type TeamSection = z.infer<typeof TeamSectionSchema>;
+
+export type TeamSectionProps = z.infer<typeof TeamSectionSchema>["props"];
+
 //──────────────── Stats/Metrics Section
-const StatsSection = z.object({
+const StatsSectionSchema = z.object({
   type: z.literal("stats"),
   id: z.string().optional(),
   props: z.object({
@@ -264,8 +312,12 @@ const StatsSection = z.object({
   }),
 });
 
+export type StatsSection = z.infer<typeof StatsSectionSchema>;
+
+export type StatsSectionProps = z.infer<typeof StatsSectionSchema>["props"];
+
 //──────────────── CTA (Call to Action) Section
-const CTASection = z.object({
+const CTASectionSchema = z.object({
   type: z.literal("cta"),
   id: z.string().optional(),
   props: z.object({
@@ -282,8 +334,12 @@ const CTASection = z.object({
   }),
 });
 
+export type CTASection = z.infer<typeof CTASectionSchema>;
+
+export type CTASectionProps = z.infer<typeof CTASectionSchema>["props"];
+
 //──────────────── Logo Cloud/Partners
-const LogoCloudSection = z.object({
+const LogoCloudSectionSchema = z.object({
   type: z.literal("logoCloud"),
   id: z.string().optional(),
   props: z.object({
@@ -298,8 +354,12 @@ const LogoCloudSection = z.object({
   }),
 });
 
+export type LogoCloudSection = z.infer<typeof LogoCloudSectionSchema>;
+
+export type LogoCloudSectionProps = z.infer<typeof LogoCloudSectionSchema>["props"];
+
 //──────────────── Accordion Section
-const AccordionSection = z.object({
+const AccordionSectionSchema = z.object({
   type: z.literal("accordion"),
   id: z.string().optional(),
   props: z.object({
@@ -312,8 +372,12 @@ const AccordionSection = z.object({
   }),
 });
 
+export type AccordionSection = z.infer<typeof AccordionSectionSchema>;
+
+export type AccordionSectionProps = z.infer<typeof AccordionSectionSchema>["props"];
+
 //──────────────── Tabs Section
-const TabsSection = z.object({
+const TabsSectionSchema = z.object({
   type: z.literal("tabs"),
   id: z.string().optional(),
   props: z.object({
@@ -328,8 +392,12 @@ const TabsSection = z.object({
   }),
 });
 
+export type TabsSection = z.infer<typeof TabsSectionSchema>;
+
+export type TabsSectionProps = z.infer<typeof TabsSectionSchema>["props"];
+
 //──────────────── Progress/Steps Section
-const StepsSection = z.object({
+const StepsSectionSchema = z.object({
   type: z.literal("steps"),
   id: z.string().optional(),
   props: z.object({
@@ -344,8 +412,12 @@ const StepsSection = z.object({
   }),
 });
 
+export type StepsSection = z.infer<typeof StepsSectionSchema>;
+
+export type StepsSectionProps = z.infer<typeof StepsSectionSchema>["props"];
+
 //──────────────── Before/After Comparison
-const ComparisonSection = z.object({
+const ComparisonSectionSchema = z.object({
   type: z.literal("comparison"),
   id: z.string().optional(),
   props: z.object({
@@ -357,8 +429,12 @@ const ComparisonSection = z.object({
   }),
 });
 
+export type ComparisonSection = z.infer<typeof ComparisonSectionSchema>;
+
+export type ComparisonSectionProps = z.infer<typeof ComparisonSectionSchema>["props"];
+
 //──────────────── Feature Comparison Table
-const FeatureComparisonSection = z.object({
+const FeatureComparisonSectionSchema = z.object({
   type: z.literal("featureComparison"),
   id: z.string().optional(),
   props: z.object({
@@ -374,8 +450,12 @@ const FeatureComparisonSection = z.object({
   }),
 });
 
+export type FeatureComparisonSection = z.infer<typeof FeatureComparisonSectionSchema>;
+
+export type FeatureComparisonSectionProps = z.infer<typeof FeatureComparisonSectionSchema>["props"];
+
 //──────────────── Social Feed
-const SocialFeedSection = z.object({
+const SocialFeedSectionSchema = z.object({
   type: z.literal("socialFeed"),
   id: z.string().optional(),
   props: z.object({
@@ -386,32 +466,13 @@ const SocialFeedSection = z.object({
   }),
 });
 
-//──────────────── Search Section
-const SearchSection = z.object({
-  type: z.literal("search"),
-  id: z.string().optional(),
-  props: z.object({
-    placeholder: LocalizedString,
-    searchEndpoint: z.string(),
-    categories: z.array(z.object({
-      id: z.string(),
-      label: LocalizedString,
-    })).optional(),
-    filters: z.array(z.object({
-      id: z.string(),
-      label: LocalizedString,
-      type: z.enum(["checkbox", "radio", "range"]),
-      options: z.array(z.object({
-        value: z.string(),
-        label: LocalizedString,
-      })).optional(),
-    })).optional(),
-  }),
-});
+export type SocialFeedSection = z.infer<typeof SocialFeedSectionSchema>;
+
+export type SocialFeedSectionProps = z.infer<typeof SocialFeedSectionSchema>["props"];
 
 
 //──────────────── Event List
-const EventListSection = z.object({
+const EventListSectionSchema = z.object({
   type: z.literal("eventList"),
   id: z.string().optional(),
   props: z.object({
@@ -432,8 +493,12 @@ const EventListSection = z.object({
   }),
 });
 
+export type EventListSection = z.infer<typeof EventListSectionSchema>;
+
+export type EventListSectionProps = z.infer<typeof EventListSectionSchema>["props"];
+
 //──────────────── Product Showcase
-const ProductShowcaseSection = z.object({
+const ProductShowcaseSectionSchema = z.object({
   type: z.literal("productShowcase"),
   id: z.string().optional(),
   props: z.object({
@@ -454,8 +519,12 @@ const ProductShowcaseSection = z.object({
   }),
 });
 
+export type ProductShowcaseSection = z.infer<typeof ProductShowcaseSectionSchema>;
+
+export type ProductShowcaseSectionProps = z.infer<typeof ProductShowcaseSectionSchema>["props"];
+
 //──────────────── Breadcrumb
-const BreadcrumbSection = z.object({
+const BreadcrumbSectionSchema = z.object({
   type: z.literal("breadcrumb"),
   id: z.string().optional(),
   props: z.object({
@@ -467,8 +536,12 @@ const BreadcrumbSection = z.object({
   }),
 });
 
+export type BreadcrumbSection = z.infer<typeof BreadcrumbSectionSchema>;
+
+export type BreadcrumbSectionProps = z.infer<typeof BreadcrumbSectionSchema>["props"];
+
 //──────────────── Cookie Consent
-const CookieConsentSection = z.object({
+const CookieConsentSectionSchema = z.object({
   type: z.literal("cookieConsent"),
   id: z.string().optional(),
   props: z.object({
@@ -487,8 +560,12 @@ const CookieConsentSection = z.object({
   }),
 });
 
+export type CookieConsentSection = z.infer<typeof CookieConsentSectionSchema>;
+
+export type CookieConsentSectionProps = z.infer<typeof CookieConsentSectionSchema>["props"];
+
 //──────────────── Table (sortable / paginée)
-const TableSection = z.object({
+const TableSectionSchema = z.object({
   type: z.literal("table"),
   id: z.string().optional(),
   props: z.object({
@@ -500,8 +577,12 @@ const TableSection = z.object({
   }),
 });
 
+export type TableSection = z.infer<typeof TableSectionSchema>;
+
+export type TableSectionProps = z.infer<typeof TableSectionSchema>["props"];
+
 //──────────────── Chart (via recharts)
-const ChartSection = z.object({
+const ChartSectionSchema = z.object({
   type: z.literal("chart"),
   id: z.string().optional(),
   props: z.object({
@@ -516,8 +597,12 @@ const ChartSection = z.object({
   }),
 });
 
+export type ChartSection = z.infer<typeof ChartSectionSchema>;
+
+export type ChartSectionProps = z.infer<typeof ChartSectionSchema>["props"];
+
 //──────────────── Timeline
-const TimelineSection = z.object({
+const TimelineSectionSchema = z.object({
   type: z.literal("timeline"),
   id: z.string().optional(),
   props: z.object({
@@ -526,8 +611,12 @@ const TimelineSection = z.object({
   }),
 });
 
+export type TimelineSection = z.infer<typeof TimelineSectionSchema>;
+
+export type TimelineSectionProps = z.infer<typeof TimelineSectionSchema>["props"];
+
 //──────────────── Map (leaflet / google…)
-const MapSection = z.object({
+const MapSectionSchema = z.object({
   type: z.literal("map"),
   id: z.string().optional(),
   props: z.object({
@@ -538,8 +627,12 @@ const MapSection = z.object({
   }),
 });
 
+export type MapSection = z.infer<typeof MapSectionSchema>;
+
+export type MapSectionProps = z.infer<typeof MapSectionSchema>["props"];
+
 //──────────────── Alert / Banner
-const BannerSection = z.object({
+const BannerSectionSchema = z.object({
   type: z.literal("banner"),
   id: z.string().optional(),
   props: z.object({
@@ -549,8 +642,12 @@ const BannerSection = z.object({
   }),
 });
 
+export type BannerSection = z.infer<typeof BannerSectionSchema>;
+
+export type BannerSectionProps = z.infer<typeof BannerSectionSchema>["props"];
+
 //──────────────── Newsletter signup
-const NewsletterSection = z.object({
+const NewsletterSectionSchema = z.object({
   type: z.literal("newsletter"),
   id: z.string().optional(),
   props: z.object({
@@ -563,77 +660,100 @@ const NewsletterSection = z.object({
   }),
 });
 
+export type NewsletterSection = z.infer<typeof NewsletterSectionSchema>;
+
+export type NewsletterSectionProps = z.infer<typeof NewsletterSectionSchema>["props"];
+
 //──────────────── Login Form
-const LoginFormSection = z.object({
+const LoginFormSectionSchema = z.object({
   type: z.literal("loginForm"),
   id: z.string().optional(),
   props: z.object({}),
 });
 
+export type LoginFormSection = z.infer<typeof LoginFormSectionSchema>;
+
+export type LoginFormSectionProps = z.infer<typeof LoginFormSectionSchema>["props"];
+
 //──────────────── Register Form
-const RegisterFormSection = z.object({
+const RegisterFormSectionSchema = z.object({
   type: z.literal("registerForm"),
   id: z.string().optional(),
   props: z.object({}),
 });
 
+export type RegisterFormSection = z.infer<typeof RegisterFormSectionSchema>;
+
+export type RegisterFormSectionProps = z.infer<typeof RegisterFormSectionSchema>["props"];
+
 //──────────────── Recover Password Form
-const RecoverPasswordFormSection = z.object({
+const RecoverPasswordFormSectionSchema = z.object({
   type: z.literal("recoverPasswordForm"),
   id: z.string().optional(),
   props: z.object({}),
 });
 
+export type RecoverPasswordFormSection = z.infer<typeof RecoverPasswordFormSectionSchema>;
+
+export type RecoverPasswordFormSectionProps = z.infer<typeof RecoverPasswordFormSectionSchema>["props"];
+
 //──────────────── HTML libre
-const HTMLSection = z.object({
+const HTMLSectionSchema = z.object({
   type: z.literal("html"),
   id: z.string().optional(),
   props: z.object({ html: z.string() }),
 });
 
+export type HTMLSection = z.infer<typeof HTMLSectionSchema>;
+
+export type HTMLSectionProps = z.infer<typeof HTMLSectionSchema>["props"];
+
 //───────────────────────────────────────────────────────────────
 // Union de toutes les sections
 //───────────────────────────────────────────────────────────────
 export const Section = z.union([
-  HeroSection,
-  MarkdownSection,
-  CardsSection,
-  GallerySection,
-  VideoSection,
-  FAQSection,
-  TestimonialsSection,
-  PricingSection,
-  ContactFormSection,
-  TableSection,
-  ChartSection,
-  TimelineSection,
-  MapSection,
-  BannerSection,
-  NewsletterSection,
-  LoginFormSection,
-  RegisterFormSection,
-  RecoverPasswordFormSection,
-  BlogPostSection,
-  BlogListSection,
-  TeamSection,
-  StatsSection,
-  CTASection,
-  LogoCloudSection,
-  AccordionSection,
-  TabsSection,
-  StepsSection,
-  ComparisonSection,
-  FeatureComparisonSection,
-  SocialFeedSection,
-  SearchSection,
-  EventListSection,
-  ProductShowcaseSection,
-  BreadcrumbSection,
-  CookieConsentSection,
-  HTMLSection,
-  SearchProSection,
+  HeroSectionSchema,
+  MarkdownSectionSchema,
+  CardsSectionSchema,
+  GallerySectionSchema,
+  VideoSectionSchema,
+  FAQSectionSchema,
+  TestimonialsSectionSchema,
+  PricingSectionSchema,
+  ContactFormSectionSchema,
+  TableSectionSchema,
+  ChartSectionSchema,
+  TimelineSectionSchema,
+  MapSectionSchema,
+  BannerSectionSchema,
+  NewsletterSectionSchema,
+  LoginFormSectionSchema,
+  RegisterFormSectionSchema,
+  RecoverPasswordFormSectionSchema,
+  BlogPostSectionSchema,
+  BlogListSectionSchema,
+  TeamSectionSchema,
+  StatsSectionSchema,
+  CTASectionSchema,
+  LogoCloudSectionSchema,
+  AccordionSectionSchema,
+  TabsSectionSchema,
+  StepsSectionSchema,
+  ComparisonSectionSchema,
+  FeatureComparisonSectionSchema,
+  SocialFeedSectionSchema,
+  EventListSectionSchema,
+  ProductShowcaseSectionSchema,
+  BreadcrumbSectionSchema,
+  CookieConsentSectionSchema,
+  HTMLSectionSchema,
+  SearchProSectionSchema,
 ]);
 export type Section = z.infer<typeof Section>;
+
+export type SectionPropsMap = {
+  [K in Section['type']]: Extract<Section, { type: K }>['props'];
+};
 
 /*───────────────────────────────────────────────────────────────*/
 /* 4. Page                                                       */
@@ -756,7 +876,7 @@ export const Footer = z.object({
   columns: z.array(FooterColumn),
   socials: z.array(z.object({ platform: z.string(), url: z.string() })).optional(),
   extra: z.string().optional(),
-  newsletter: NewsletterSection.optional(),
+  newsletter: NewsletterSectionSchema.optional(),
   copyright: LocalizedString,
   logo: z.string().optional(),
   description: LocalizedString.optional(),

@@ -2,7 +2,8 @@ import { XIcon } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { useT } from "@/hooks/useT";
-import { TagsFilter } from "../types";
+import { TagsFilter } from "../schema";
+
 
 interface ActiveFiltersBarProps {
   filters: Record<string, TagsFilter>;

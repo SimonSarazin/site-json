@@ -1,27 +1,12 @@
 import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from '@/lib/utils';
+import { LogoCloudSectionProps } from "@/types/site-schema";
 
-interface LogoCloudSectionProps {
-  id?: string;
-  props: {
-    title?: Record<string, string>;
-    logos: Array<Logo>;
-    grayscale?: boolean;
-    animated?: boolean;
-  };
-}
-
-interface Logo {
-  src: string;
-  alt: Record<string, string>;
-  href?: string;
-}
-
-export function LogoCloudSection({ id, props }: LogoCloudSectionProps) {
+export function LogoCloudSection({ id, props }: { id?: string; props: LogoCloudSectionProps }) {
   const { t } = useLocalization();
   const { title, logos, grayscale = true, animated = false } = props;
 
-  const LogoItem = ({ logo, index }: { logo: Logo; index: number }) => {
+  const LogoItem = ({ logo, index }: { logo: LogoCloudSectionProps["logos"][number]; index: number }) => {
     const content = (
       <div className={cn(
         "flex items-center justify-center p-4 transition-all duration-200",

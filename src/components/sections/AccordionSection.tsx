@@ -5,24 +5,11 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { useLocalization } from "@/hooks/useLocalization";
+import { AccordionSectionProps } from "@/types/site-schema";
 import { type AccordionMultipleProps, type AccordionSingleProps } from "@radix-ui/react-accordion";
 
-interface AccordionSectionProps {
-  id?: string;
-  props: {
-    items: Array<AccordionItem>;
-    allowMultiple?: boolean;
-  };
-}
-
-interface AccordionItem {
-  title: Record<string, string>;
-  content: Record<string, string>;
-  defaultOpen?: boolean;
-}
-
-export function AccordionSection({ id, props }: AccordionSectionProps): JSX.Element {
-  const { t }               = useLocalization();
+export function AccordionSection({ id, props }: { id?: string; props: AccordionSectionProps }): JSX.Element {
+  const { t } = useLocalization();
   const { items, allowMultiple = false } = props;
 
   /* ------------------------------------------------------------------ */

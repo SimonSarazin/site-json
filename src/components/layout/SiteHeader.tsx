@@ -168,7 +168,7 @@ export function SiteHeader() {
   const t = useT("components/layout");
   const { currentLocale, setLocale, availableLocales } = useLocalization();
   const navigate = useNavigate();
-  const { me, api, loading } = useCocolight();
+  const { me, api } = useCocolight();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const { header } = config;

@@ -2,24 +2,9 @@ import { Button } from '@/components/ui/button';
 import { useLocalization } from "@/hooks/useLocalization";
 import { useNavigate } from "react-router";
 import { cn } from '@/lib/utils';
+import { CTASectionProps } from '@/types/site-schema';
 
-interface CTASectionProps {
-  id?: string;
-  props: {
-    headline: Record<string, string>;
-    subhead?: Record<string, string>;
-    backgroundImage?: string;
-    backgroundColor?: string;
-    buttons: Array<{
-      label: Record<string, string>;
-      href: string;
-      variant?: 'default' | 'secondary' | 'outline' | 'ghost';
-    }>;
-    align?: 'left' | 'center' | 'right';
-  };
-}
-
-export function CTASection({ id, props }: CTASectionProps) {
+export function CTASection({ id, props }: { id?: string; props: CTASectionProps }) {
   const { t } = useLocalization();
   const navigate = useNavigate();
   const { headline, subhead, backgroundImage, backgroundColor, buttons, align = 'center' } = props;

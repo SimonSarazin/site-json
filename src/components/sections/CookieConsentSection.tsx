@@ -7,26 +7,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Cookie, Settings, X } from 'lucide-react';
 import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from '@/lib/utils';
+import { CookieConsentSectionProps } from '@/types/site-schema';
 
-interface CookieConsentSectionProps {
-  id?: string;
-  props: {
-    message: Record<string, string>;
-    acceptLabel: Record<string, string>;
-    declineLabel?: Record<string, string>;
-    settingsLabel?: Record<string, string>;
-    policyUrl?: string;
-    position?: 'bottom' | 'top' | 'bottom-left' | 'bottom-right';
-    categories?: Array<{
-      id: string;
-      label: Record<string, string>;
-      description: Record<string, string>;
-      required?: boolean;
-    }>;
-  };
-}
-
-export function CookieConsentSection({ props }: CookieConsentSectionProps) {
+export function CookieConsentSection({ props }: { id?: string; props: CookieConsentSectionProps }) {
   const { t } = useLocalization();
   const { 
     message, 

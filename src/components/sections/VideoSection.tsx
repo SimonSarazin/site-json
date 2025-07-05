@@ -1,18 +1,7 @@
 import { cn } from '@/lib/utils';
+import { VideoSectionProps } from '@/types/site-schema';
 
-interface VideoSectionProps {
-  id?: string;
-  props: {
-    src: string;
-    provider?: 'youtube' | 'vimeo' | 'local' | 'loom';
-    ratio?: '16/9' | '4/3' | '1/1' | '9/16';
-    autoplay?: boolean;
-    controls?: boolean;
-    loop?: boolean;
-  };
-}
-
-export function VideoSection({ id, props }: VideoSectionProps) {
+export function VideoSection({ id, props }: { id?: string; props: VideoSectionProps }) {
   const { provider = 'youtube', ratio = '16/9', autoplay, controls = true, loop = false, src } = props;
 
   const getAspectRatio = (ratio: string) => {

@@ -1,16 +1,8 @@
 import { sanitize } from "@/lib/sanitize";
 import { cn } from "@/lib/utils";
+import { MarkdownSectionProps } from "@/types/site-schema";
 
-interface MarkdownSectionProps {
-  id?: string;
-  props: {
-    md: string;
-    sourceType?: "file" | "inline";
-    animation?: string;
-  };
-}
-
-export function MarkdownSection({ id, props }: MarkdownSectionProps) {
+export function MarkdownSection({ id, props }: { id?: string; props: MarkdownSectionProps }) {
   const { md, sourceType = "inline", animation } = props;
   const safeHtml = sanitize(md);
 

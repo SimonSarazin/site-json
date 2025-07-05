@@ -1,10 +1,8 @@
+import { RecoverPasswordFormSectionProps } from "@/types/site-schema";
 import RecoverPasswordForm from "../auth/RecoverPasswordForm";
 
-interface RecoverPasswordFormSectionProps {
-  id?: string;
-}
-
-export function RecoverPasswordFormSection({ id }: RecoverPasswordFormSectionProps) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function RecoverPasswordFormSection({ id, props }: { id?: string; props: RecoverPasswordFormSectionProps }) {
 
   return (
         <section id={id} className="py-16 bg-background">

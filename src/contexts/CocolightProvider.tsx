@@ -1,4 +1,4 @@
-import Cocolight from "@communecter/cocolight-api-client";
+import Cocolight, { User, Organization } from "@communecter/cocolight-api-client";
 import { useEffect, useState, ReactNode, useMemo } from "react";
 
 import { InitApiOptions } from "../lib/apiClient";
@@ -6,9 +6,16 @@ import { getSlug } from "../lib/constant/common";
 import { CocolightContext } from "./CocolightContext";
 import { useCocolightInit } from "@/hooks/useCocolightInit";
 
-// --- Types dérivés du SDK (grâce à nos déclarations d.ts) ------------------
+// ---------------------------------------------------------------------------
+// Types dérivés du SDK -------------------------------------------------------
+// ---------------------------------------------------------------------------
 
-type Api       = InstanceType<typeof Cocolight.Api>;
+type Api = InstanceType<typeof Cocolight.Api>;
+/** Ajout des méthodes EventEmitter manquantes au typage */
+interface ApiClientWithEvents extends InstanceType<typeof Cocolight.ApiClient> {
+  on(event: string, listener: (...args: unknown[]) => void): void;
+  off(event: string, listener: (...args: unknown[]) => void): void;
+}
 
 export interface CocolightProviderProps {
   children: ReactNode;
@@ -17,30 +24,32 @@ export interface CocolightProviderProps {
 
 const DEFAULT_CLIENT_OPTIONS: InitApiOptions = Object.freeze({});
 
-export function CocolightProvider({ children, clientOptions = DEFAULT_CLIENT_OPTIONS }: CocolightProviderProps) {
-
-
-    /* 1️⃣ — données initiales, déjà prêtes grâce à Suspense ---------------- */
+export function CocolightProvider({
+  children,
+  clientOptions = DEFAULT_CLIENT_OPTIONS,
+}: CocolightProviderProps) {
+  /* 1️⃣ — données initiales, déjà prêtes grâce à Suspense ---------------- */
   const {
-    client,             // ApiClient           (stable)
-    userApiInstance,    // UserApi             (stable)
-    api:   initialApi,  // Api                 (mutable : login/logout)
-    me:    initialMe,
+    client, // ApiClient           (stable)
+    userApiInstance, // UserApi             (stable)
+    api: initialApi, // Api                 (mutable : login/logout)
+    me: initialMe,
     organization: initialOrg,
   } = useCocolightInit(clientOptions);
 
- 
   useEffect(() => {
     // 🟢 Compte uniquement les commits RÉELS
-    console.count('CocolightProvider commit');
+    console.count("CocolightProvider commit");
   }, []);
 
   // ----------------------------- state ------------------------------------
-  const [api,          setApi]          = useState<Api>(initialApi);
-  const [me,           setMe]           = useState<any>(initialMe);
-  const [organization, setOrganization] = useState<any>(initialOrg);
+  const [api, setApi] = useState<Api>(initialApi);
+  const [me, setMe] = useState<User | null>(initialMe as User | null);
+  const [organization, setOrganization] = useState<Organization | null>(
+    initialOrg as Organization | null,
+  );
   // ------------------------- auxiliaires ----------------------------------
-  const [dataToProfile, setDataToProfile] = useState<any>(null);
+  const [dataToProfile, setDataToProfile] = useState<unknown>(null);
 
   // ------------------- listeners (login / session) ------------------------
   useEffect(() => {
@@ -68,32 +77,36 @@ export function CocolightProvider({ children, clientOptions = DEFAULT_CLIENT_OPT
       }
     };
 
-    userApiInstance.client.on("userLoggedIn", handleUserLoggedIn);
-    userApiInstance.client.on("sessionReset", handleSessionReset);
+    // Le client implémente en runtime EventEmitter, mais pas dans les d.ts
+    const eventfulClient = userApiInstance.client as ApiClientWithEvents;
+
+    eventfulClient.on("userLoggedIn", handleUserLoggedIn);
+    eventfulClient.on("sessionReset", handleSessionReset);
 
     return () => {
-      userApiInstance.client.off("userLoggedIn", handleUserLoggedIn);
-      userApiInstance.client.off("sessionReset", handleSessionReset);
+      eventfulClient.off("userLoggedIn", handleUserLoggedIn);
+      eventfulClient.off("sessionReset", handleSessionReset);
     };
-  }, [userApiInstance?.client]);
+  }, [userApiInstance]);
 
+  // ------------------------- Memo du contexte -----------------------------
   const contextValue = useMemo(
-  () => ({
-    apiClient : client,
-    userApi   : userApiInstance,
-    api, me, organization,
-    helper    : (Cocolight as any).helper,
-    dataToProfile,
-    setDataToProfile,
-    loading : false,
-  }),
-  [client, userApiInstance, api, me, organization, dataToProfile]
-);
+    () => ({
+      apiClient: client,
+      userApi: userApiInstance,
+      api,
+      me,
+      organization,
+      helper: (Cocolight as unknown as { helper: unknown }).helper,
+      dataToProfile,
+      setDataToProfile,
+      loading: false,
+    }),
+    [client, userApiInstance, api, me, organization, dataToProfile],
+  );
 
   return (
-    <CocolightContext.Provider
-      value={contextValue}
-    >
+    <CocolightContext.Provider value={contextValue}>
       {children}
     </CocolightContext.Provider>
   );

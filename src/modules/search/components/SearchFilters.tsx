@@ -2,7 +2,7 @@ import { useLocalization } from "@/hooks/useLocalization";
 import FilterDropdown from "./FilterDropdown";
 import SearchTextInput from "./SearchTextInput";
 import {type LocalizedString } from "@/types/locale-schema";
-import { TagsFilter } from "../types";
+import { TagsFilter } from "../schema";
 
 export interface SearchFiltersProps {
   placeholder: LocalizedString;
