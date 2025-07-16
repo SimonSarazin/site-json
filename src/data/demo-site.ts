@@ -1106,41 +1106,6 @@ export const demoSiteConfig = {
           }
         },
         {
-          type: "search",
-          id: "showcase-search",
-          props: {
-            placeholder: { fr: "Rechercher...", en: "Search..." },
-            searchEndpoint: "/api/search",
-            categories: [
-              { id: "docs", label: { fr: "Documentation", en: "Documentation" } },
-              { id: "tutorials", label: { fr: "Tutoriels", en: "Tutorials" } },
-              { id: "examples", label: { fr: "Exemples", en: "Examples" } }
-            ],
-            filters: [
-              {
-                id: "difficulty",
-                label: { fr: "Difficulté", en: "Difficulty" },
-                type: "radio",
-                options: [
-                  { value: "beginner", label: { fr: "Débutant", en: "Beginner" } },
-                  { value: "intermediate", label: { fr: "Intermédiaire", en: "Intermediate" } },
-                  { value: "advanced", label: { fr: "Avancé", en: "Advanced" } }
-                ]
-              },
-              {
-                id: "topics",
-                label: { fr: "Sujets", en: "Topics" },
-                type: "checkbox",
-                options: [
-                  { value: "react", label: { fr: "React", en: "React" } },
-                  { value: "typescript", label: { fr: "TypeScript", en: "TypeScript" } },
-                  { value: "css", label: { fr: "CSS", en: "CSS" } }
-                ]
-              }
-            ]
-          }
-        },
-        {
           type: "eventList",
           id: "showcase-events",
           props: {
