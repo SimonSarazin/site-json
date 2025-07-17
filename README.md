@@ -32,6 +32,27 @@ src/                  # Source de l'application
   RootLayout.tsx      # Composant racine
 ```
 
+## 📖 Documentation
+
+Pour une documentation complète (installation, configuration, schémas JSON, SSR, modules, i18n, etc.), consultez :
+[doc/DOC.md](./doc/DOC.md)
+
+---
+
+## 🛠️ Installation
+
+```bash
+# cloner le dépôt
+
+# installer les dépendances
+yarn install
+# ou npm install
+
+# démarrer en mode développement
+yarn dev
+# ou npm run dev
+```
+
 ## Commandes principales
 
 * **Développement local :**
@@ -71,3 +92,4 @@ Nous accueillons volontiers vos contributions ! Veuillez créer une pull request
 ## Licence
 
 Ce projet est sous licence MIT. Consultez le fichier [LICENSE](LICENSE) pour plus de détails.
+
