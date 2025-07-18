@@ -143,7 +143,6 @@ SiteForge est un générateur de sites web piloté par un simple fichier JSON. S
 
 ```
 .
-├── .bolt/                 # Outils et scripts internes (alertes, ignore, prompts)
 ├── scripts/               # Génération de fichiers de config automatisée
 ├── server/                # Serveurs Express pour dev (middleware Vite) et prod (SSR)
 │   ├── dev-server.js      # Serveur de développement avec Vite en middleware
