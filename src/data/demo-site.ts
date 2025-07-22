@@ -1,6 +1,6 @@
-import { SiteConfig } from '@/types/site';
+import { SiteConfig, validateSiteConfig } from '@/types/site';
 
-export const demoSiteConfig = {
+export const demoSiteConfig = validateSiteConfig({
   version: "1.0.0",
   generated: new Date().toISOString(),
   meta: {
@@ -1719,4 +1719,4 @@ export const demoSiteConfig = {
     { key: "betaFeatures", enabled: false, rolloutPercentage: 0  },
     { key: "darkMode", enabled: true, rolloutPercentage: 100 },
   ],
-} satisfies SiteConfig;
+}) satisfies SiteConfig;

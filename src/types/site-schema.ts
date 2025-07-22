@@ -711,7 +711,7 @@ export type HTMLSectionProps = z.infer<typeof HTMLSectionSchema>["props"];
 //───────────────────────────────────────────────────────────────
 // Union de toutes les sections
 //───────────────────────────────────────────────────────────────
-export const Section = z.union([
+export const Section = z.discriminatedUnion("type", [
   HeroSectionSchema,
   MarkdownSectionSchema,
   CardsSectionSchema,
@@ -768,7 +768,7 @@ const PageMeta = z.object({
   canonical: z.string().optional(),
   noIndex: z.boolean().optional(),
   noFollow: z.boolean().optional(),
-  structuredData: z.record(z.any()).optional(), // JSON-LD
+  structuredData: z.record(z.string(), z.any()).optional(), // JSON-LD
 });
 
 export const Page = z.object({
@@ -852,7 +852,7 @@ export const Header = z.object({
     auth       : z.boolean().default(false),
     cart       : z.boolean().default(false),
     notifications: z.boolean().default(false),    
-  }).default({}),
+  }),
   announcement: z.object({
     text: LocalizedString,
     href: z.string().optional(),
@@ -894,13 +894,13 @@ export type Footer = z.infer<typeof Footer>;
 const AnalyticsIntegration = z.object({ 
   provider: z.enum(["ga4", "matomo", "plausible", "posthog", "mixpanel", "amplitude"]), 
   id: z.string(),
-  config: z.record(z.any()).optional(),
+  config: z.record(z.string(), z.any()).optional(),
 });
 
 const ChatIntegration = z.object({ 
   provider: z.enum(["intercom", "crisp", "hubspot", "zendesk", "freshchat"]), 
   id: z.string(),
-  config: z.record(z.any()).optional(),
+  config: z.record(z.string(), z.any()).optional(),
 });
 
 const ScriptTag = z.object({ 
@@ -921,17 +921,17 @@ const SEOIntegration = z.object({
 
 const EcommerceIntegration = z.object({
   provider: z.enum(["stripe", "paypal", "shopify", "woocommerce"]),
-  config: z.record(z.any()),
+  config: z.record(z.string(), z.any()),
 });
 
 const EmailIntegration = z.object({
   provider: z.enum(["mailchimp", "sendgrid", "mailgun", "postmark"]),
-  config: z.record(z.any()),
+  config: z.record(z.string(), z.any()),
 });
 
 const CRMIntegration = z.object({
   provider: z.enum(["hubspot", "salesforce", "pipedrive", "airtable"]),
-  config: z.record(z.any()),
+  config: z.record(z.string(), z.any()),
 });
 
 export const Integrations = z.object({ 
@@ -954,7 +954,7 @@ export const FeatureFlag = z.object({
   variant: z.string().optional(),
   description: z.string().optional(),
   rolloutPercentage: z.number().min(0).max(100).default(100),
-  conditions: z.record(z.any()).optional(), // User segments, geo, etc.
+  conditions: z.record(z.string(), z.any()).optional(), // User segments, geo, etc.
 });
 
 /*───────────────────────────────────────────────────────────────*/
@@ -979,19 +979,19 @@ const Typography = z.object({
     serif: z.array(z.string()).optional(),
     mono: z.array(z.string()).optional(),
   }),
-  fontSize: z.record(z.string()).optional(),
-  fontWeight: z.record(z.number()).optional(),
-  lineHeight: z.record(z.string()).optional(),
+  fontSize: z.record(z.string(), z.string()).optional(),
+  fontWeight: z.record(z.string(), z.number()).optional(),
+  lineHeight: z.record(z.string(), z.string()).optional(),
 });
 
 const Spacing = z.object({
   scale: z.enum(["tight", "normal", "relaxed"]).default("normal"),
-  custom: z.record(z.string()).optional(),
+  custom: z.record(z.string(), z.string()).optional(),
 });
 
 const BorderRadius = z.object({
   scale: z.enum(["none", "sm", "md", "lg", "xl"]).default("md"),
-  custom: z.record(z.string()).optional(),
+  custom: z.record(z.string(),z.string()).optional(),
 });
 
 const ThemeConfig = z.object({
@@ -1043,7 +1043,20 @@ export const SiteConfig = z.object({
     robots: z.string().optional(),
   }),
   header: Header,
-  pages: z.array(Page),
+    pages: z
+    .array(Page)
+    .check((ctx) => {
+      // On extrait tous les chemins
+      const paths = ctx.value.map((p) => p.path);
+      // Si doublon, on pousse une issue
+      if (new Set(paths).size !== paths.length) {
+        ctx.issues.push({
+          code: "custom",           // code littéral, comme préconisé
+          message: "Chaque page doit avoir un path unique.",
+          input: ctx.value,         // l’entrée invalidée (le tableau complet)
+        });
+      }
+  }),
   footer: Footer,
   integrations: Integrations.optional(),
   features: z.array(FeatureFlag).optional(),

@@ -7,7 +7,7 @@ const TagsFilterSchema = z.object({
   type: z.union([z.literal("tags"), z.literal("type")]),
   name: LocalizedString.or(z.string()),
   list: z.array(LocalizedString.or(z.string()))
-         .or(z.record(LocalizedString.or(z.string()))),
+         .or(z.record(z.string(), LocalizedString.or(z.string()))),
   active: z.boolean().optional(),
   previewVisible: z.boolean().optional(),
   previewIcon: z.string().optional(),
@@ -48,7 +48,7 @@ export const SearchProSectionSchema = z.object({
     useFilter:   z.boolean().default(true),
     showMap:     z.boolean().default(false),
 
-    filters: z.record(TagsFilterSchema).optional(),
+    filters: z.record(z.string(), TagsFilterSchema).optional(),
 
     baseParams: z.object({
       fediverse:     z.boolean().optional(),
