@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  cocostum:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      VITE_BASE_URL_BACKEND: "https://www.communecter.org"
+      VITE_SERVER_URL: "https://www.communecter.org"
+      VITE_SLUG: "laRosee"
+      SITE_CONFIG_PATH: "./config.prod.json"
+    volumes:
+      - ./config.prod.json:/app/config.prod.json
