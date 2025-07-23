@@ -18,7 +18,8 @@
   "resolutions": {
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "@types/react": "19.1.2"
+    "@types/react": "19.1.2",
+    "@types/react-dom": "19.1.2"
   },
   "dependencies": {
     "@communecter/cocolight-api-client": "^1.0.0",
