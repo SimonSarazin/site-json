@@ -1389,7 +1389,7 @@ export const demoSiteConfig = validateSiteConfig({
       ],
     },
     {
-      path: "/showcase",
+      path: "/showcase-other",
       title: { fr: "Vitrine - SiteForge", en: "Showcase - SiteForge" },
       seo: {
         title: { fr: "Vitrine des fonctionnalités - SiteForge", en: "Feature Showcase - SiteForge" },
