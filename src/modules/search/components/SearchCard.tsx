@@ -61,7 +61,7 @@ export default function SearchCard({
         {image ? (
           <LazyImage
             src={image}
-            onError={(e) => (e.target.src = "/images/defaultImage.png")}
+            onError={(e) => (e.currentTarget.src = "/images/defaultImage.png")}
             alt={name}
             className="object-contain w-full h-full"
             placeholder={

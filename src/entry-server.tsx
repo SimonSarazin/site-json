@@ -71,7 +71,10 @@ export async function render(
       </HelmetProvider>,
       {
         /* Module ESM en dev, script classique en prod */
-        bootstrapModules:['/src/entry-client.tsx'],
+        bootstrapModules:
+          process.env.NODE_ENV === 'development'
+            ? ['/src/entry-client.tsx']
+            : [],
         onShellReady() {
           /* ⬇️  head prêt : on délègue son injection au serveur HTTP      */
           onHead(

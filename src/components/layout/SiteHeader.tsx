@@ -178,7 +178,8 @@ export function SiteHeader() {
     navigate("/");
   };
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
+    if (!api) return;
     try {
       api.logout();
       navigate("/");

@@ -4,7 +4,7 @@ import { useLocalization } from "@/hooks/useLocalization";
 import { LocalizedString } from "@/types/locale-schema";
 
 export function useT(namespace?: string) {
-  const { t: tNs, i18n } = useTranslation(namespace);
+  const { t: tNs } = useTranslation(namespace);
   const { t: tData } = useLocalization();
 
   return (key: string | LocalizedString, fallback?: string) => {

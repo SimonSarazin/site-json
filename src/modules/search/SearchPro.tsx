@@ -20,6 +20,7 @@ import { useT } from "@/hooks/useT";
 import "@/modules/search/i18n"; 
 import "@/modules/search/styles.css";
 import { SearchProSectionProps } from "./schema";
+import { SearchResultPage } from "@communecter/cocolight-api-client";
 
 
 /**
@@ -78,7 +79,7 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
     isFetchingNextPage,
     isLoading: loadingMap,
     refetch,
-  } = useInfiniteQueryScrollNext<unknown, Error>({
+  } = useInfiniteQueryScrollNext({
     queryKey: [
       "searchCostum",
       searchText,
@@ -88,8 +89,14 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
       baseParams,
     ],
     queryFn: async ({ pageParam } = { pageParam: undefined }) => {
+
+      if (!organization) {
+        throw new Error("API non initialisée");
+      }
+      
       const tags = Object.values(searchTags).flat();
       const type = Array.isArray(searchType) ? searchType : Object.values(searchType).flat();
+      const page = pageParam as SearchResultPage<unknown> | undefined;
 
       const {
         fediverse = false,
@@ -121,7 +128,7 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
       try {
         const result = await organization.searchCostum(param);
         // pagination
-        if (pageParam?.pageNumber > 1 && typeof pageParam?.next !== "function") {
+        if (page && page?.pageNumber > 1 && typeof page?.next !== "function") {
           return result.next();
         }
         return result;
@@ -173,21 +180,23 @@ if (!loaded) {
 
   return (
     <div className="pageContent flex flex-col min-h-screen" data-co="page-search">
-      {/* Error banner */}
-      {error && (
-        <div className="p-4 bg-red-100 text-red-800 border border-red-300 rounded mb-4">
-          <p>❌ Une erreur est survenue lors du chargement des résultats.</p>
-          <pre className="mt-2 text-sm whitespace-pre-wrap break-words">
-            {error instanceof Error ? error.message : String(error)}
-          </pre>
-          <button
-            onClick={() => refetch()}
-            className="mt-2 px-3 py-1 text-sm bg-red-50 border border-red-400 text-red-700 rounded hover:bg-red-200"
-          >
-            Réessayer
-          </button>
-        </div>
-      )}
+
+    {error ? (
+      <div className="p-4 bg-red-100 text-red-800 border border-red-300 rounded mb-4">
+        <p>❌ Une erreur est survenue lors du chargement des résultats.</p>
+        <pre className="mt-2 text-sm whitespace-pre-wrap break-words">
+        {error instanceof Error
+        ? error.message
+        : String(error)}
+        </pre>
+        <button
+          onClick={() => refetch()}
+          className="mt-2 px-3 py-1 text-sm bg-red-50 border border-red-400 text-red-700 rounded hover:bg-red-200"
+        >
+          Réessayer
+        </button>
+      </div>
+    ) : null}
 
       <div className="flex flex-col flex-1 overflow-hidden">
         {/* Mobile filters bar */}

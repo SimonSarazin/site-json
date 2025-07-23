@@ -40,6 +40,17 @@ export default function LoginForm(): JSX.Element {
   const handleLogin = async (): Promise<void> => {
     setLoading(true);
 
+    // Si userApi n'est pas encore prêt, on arrête
+    if (!userApi) {
+      toast({
+        variant: "destructive",
+        title: t("Erreur"),
+        description: t("Impossible de se connecter pour le moment"),
+      });
+      setLoading(false);
+      return;
+    }
+    
     /* Validation rapide -------------------------------------------------- */
     if (!email || !password) {
       toast({

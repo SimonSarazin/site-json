@@ -46,11 +46,38 @@ declare module "@communecter/cocolight-api-client" {
     isConnected: boolean;
   }
 
+  export interface SearchResultPage<T = unknown> {
+    /** Le tableau brut de résultats JSON */
+    results: T;
+    /** Numéro de la page */
+    pageNumber: number;
+    /** Indique s’il reste une page suivante */
+    hasNext: boolean;
+    /** Récupère la page suivante si hasNext = true */
+    next: () => Promise<SearchResultPage<T>>;
+  }
+
+  export interface CocolightHelper {
+  /**
+   * Transforme une entité brute (JSON) en entité riche Cocolight.
+   * T est souvent un type dérivé de User | Organization | etc.
+   */
+  fromEntityJSON: <T = unknown>(raw: any, org: Organization) => T;
+  // …vous pourrez ajouter d’autres helpers ici…
+}
+
   /** Modèle utilisateur extrêmement simplifié */
   export interface User {
     id: string;
     name?: string;
+    email?: string;
 
+    serverData?: {
+      roles?: string[];
+      name?: string;
+      email?: string;
+      [key: string]: unknown;
+    };
     organization(params: { slug: string }): Promise<Organization>;
 
     [key: string]: unknown;
@@ -62,6 +89,12 @@ declare module "@communecter/cocolight-api-client" {
     slug: string;
     name?: string;
     [key: string]: unknown;
+
+    /** Recherche «costum» paginée */
+    searchCostum<T = unknown>(params: Record<string, any>): Promise<SearchResultPage<T>>;
+
+    /** Récupère une entité par slug */
+    entityBySlug<T = unknown>(slug: string): Promise<T>;
   }
 
   /** API de plus haut niveau : appels REST typiques */
@@ -70,6 +103,10 @@ declare module "@communecter/cocolight-api-client" {
 
     me(): Promise<User>;
     organization(params: { slug: string }): Promise<Organization>;
+
+
+    /** Déconnexion */
+    logout(): void;
   }
 
   /** API centrée sur l'utilisateur connecté */
@@ -78,6 +115,39 @@ declare module "@communecter/cocolight-api-client" {
 
     readonly client: ApiClient;
     /** Retourne l'utilisateur actuellement connecté (ou erreur) */
+    readonly isConnected: boolean;
+
+        /** Authentification : renvoie l’utilisateur connecté */
+    login(
+      email: string,
+      password: string,
+      options?: { remember?: boolean }
+    ): Promise<User>;
+
+    /**
+     * Inscription : renvoie un objet de forme
+     * { result: boolean; errId?: string; msg?: string }
+     */
+    register(params: {
+      name: string;
+      username: string;
+      email: string;
+      pwd: string;
+      [key: string]: unknown;
+    }): Promise<{
+      result: boolean;
+      errId?: string;
+      msg?: string;
+    }>;
+
+    /** Demande de réinitialisation de mot de passe */
+    recoverPassword(email: string): Promise<{
+      result: boolean;
+      errId?: string;
+      msg?: string;
+    }>;
+
+    /** Ancienne méthode existante */
     meIsconnected(): Promise<User>;
   }
 
@@ -93,6 +163,7 @@ declare module "@communecter/cocolight-api-client" {
     ApiClient: typeof ApiClient;
     Api: typeof Api & typeof ApiNamespace;
     tokenStorageStrategy: typeof tokenStorageStrategy;
+    helper: CocolightHelper;
   };
 
   export default Cocolight;

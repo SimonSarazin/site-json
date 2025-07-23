@@ -1,11 +1,25 @@
-import { useInfiniteQuery, type UseInfiniteQueryOptions, type InfiniteData, type QueryKey } from "@tanstack/react-query";
-import { useCallback, useRef, RefCallback } from "react";
+import {
+  useInfiniteQuery,
+  type UseInfiniteQueryOptions,
+  type InfiniteData,
+  type QueryKey,
+} from "@tanstack/react-query";
+import { useCallback, useRef, type RefCallback } from "react";
 
-interface InfiniteQueryScrollProps<TData, TError> {
+interface InfiniteQueryScrollProps<TData, TError = unknown> {
   queryKey: QueryKey;
-  queryFn: (context: { pageParam: any }) => Promise<TData>;
-  getNextPageParam: (lastPage: TData, allPages: TData[]) => any | undefined;
-  options?: Omit<UseInfiniteQueryOptions<TData, TError, TData, TData, QueryKey>, 'queryKey' | 'queryFn' | 'getNextPageParam'>;
+  queryFn: (context: { pageParam?: unknown }) => Promise<TData>;
+  getNextPageParam: (lastPage: TData, allPages: TData[]) => unknown;
+  options?: Omit<
+    UseInfiniteQueryOptions<
+      TData,                  // TQueryFnData
+      TError,                 // TError
+      InfiniteData<TData>,  // TData   // TData (la valeur retournée par le hook)
+      QueryKey,               // TQueryKey
+      unknown                 // TPageParam
+    >,
+    "queryKey" | "queryFn" | "getNextPageParam"
+  >;
 }
 
 interface InfiniteQueryScrollResult<TData, TError> {
@@ -19,12 +33,15 @@ interface InfiniteQueryScrollResult<TData, TError> {
   lastItemRef: RefCallback<HTMLElement>;
 }
 
-export const useInfiniteQueryScroll = <TData, TError = unknown>({
+export function useInfiniteQueryScroll<TData, TError = unknown>({
   queryKey,
   queryFn,
   getNextPageParam,
-  options = {}
-}: InfiniteQueryScrollProps<TData, TError>): InfiniteQueryScrollResult<TData, TError> => {
+  options = { initialPageParam: undefined },
+}: InfiniteQueryScrollProps<TData, TError>): InfiniteQueryScrollResult<
+  TData,
+  TError
+> {
 
   const {
     data,
@@ -38,15 +55,14 @@ export const useInfiniteQueryScroll = <TData, TError = unknown>({
     queryKey,
     queryFn,
     getNextPageParam,
-    ...options
+    ...options,
   });
 
   const observerRef = useRef<IntersectionObserver>();
-  
-  const lastItemRef = useCallback<RefCallback<HTMLElement>>(
+  const lastItemRef: RefCallback<HTMLElement> = useCallback(
     (node) => {
       if (isLoading || isFetchingNextPage) return;
-      if (observerRef.current) observerRef.current.disconnect();
+      observerRef.current?.disconnect();
       observerRef.current = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting && hasNextPage) {
           fetchNextPage();
@@ -59,49 +75,58 @@ export const useInfiniteQueryScroll = <TData, TError = unknown>({
 
   return {
     data,
-    error,
+    error: error ?? null,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
     isLoading,
     refetch,
-    lastItemRef
+    lastItemRef,
   };
-};
+}
 
-interface PageData<TData> extends TData {
+
+// Si vous avez besoin d’un hook “Next” spécialisé
+export interface PageData<T> {
+  results: T;
   hasNext: boolean;
   pageNumber: number;
-  next?: () => Promise<PageData<TData>>;
+  next?: () => Promise<PageData<T>>;
 }
 
-interface InfiniteQueryScrollNextProps<TData, TError> {
+interface InfiniteQueryScrollNextProps<TData, TError = unknown> {
   queryKey: QueryKey;
-  queryFn: (context: { pageParam: any }) => Promise<PageData<TData>>;
-  options?: Omit<UseInfiniteQueryOptions<PageData<TData>, TError, PageData<TData>, PageData<TData>, QueryKey>, 'queryKey' | 'queryFn' | 'getNextPageParam'>;
+  queryFn: (context: { pageParam?: unknown }) => Promise<PageData<TData>>;
+  options?: Omit<
+    UseInfiniteQueryOptions<
+      PageData<TData>,        // TQueryFnData
+      TError,                 // TError
+      InfiniteData<PageData<TData>>,  // TData
+      QueryKey,               // TQueryKey
+      unknown                 // TPageParam
+    >,
+    "queryKey" | "queryFn" | "getNextPageParam"
+  >;
 }
 
-export const useInfiniteQueryScrollNext = <TData, TError = unknown>({
+export function useInfiniteQueryScrollNext<TData, TError = unknown>({
   queryKey,
   queryFn,
-  options = {}
-}: InfiniteQueryScrollNextProps<TData, TError>): InfiniteQueryScrollResult<PageData<TData>, TError> => {
-
+  options = { initialPageParam: undefined },
+}: InfiniteQueryScrollNextProps<TData, TError>): InfiniteQueryScrollResult<
+  PageData<TData>,
+  TError
+> {
   return useInfiniteQueryScroll<PageData<TData>, TError>({
     queryKey,
-    queryFn: ({ pageParam = 0 }) => {
-      if (typeof pageParam?.next === "function") {
-        return pageParam.next();
-      } else {
-        return queryFn({ pageParam });
-      }
-    },
-    getNextPageParam: (lastPage) => {
-      if (lastPage?.hasNext === true) {
-        return { pageNumber: lastPage?.pageNumber + 1, next: lastPage?.next };
-      }
-      return undefined;
-    },
+    queryFn: ({ pageParam }) =>
+      pageParam != null && typeof pageParam === "object" && "next" in pageParam
+        ? (pageParam as PageData<TData>).next!()
+        : queryFn({ pageParam }),
+    getNextPageParam: (lastPage) =>
+      lastPage.hasNext
+        ? { pageNumber: lastPage.pageNumber + 1, next: lastPage.next }
+        : undefined,
     options
   });
-};
+}

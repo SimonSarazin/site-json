@@ -1,4 +1,4 @@
-import Cocolight, { Organization, User } from "@communecter/cocolight-api-client";
+import Cocolight, { CocolightHelper, Organization, User } from "@communecter/cocolight-api-client";
 import { createContext, Dispatch, SetStateAction } from "react";
 
 type ApiClient = InstanceType<typeof Cocolight.ApiClient>
@@ -20,7 +20,7 @@ export interface CocolightContextType {
   /** Organisation courante, déduite du slug */
   organization: Organization | null
   /** Helpers divers exposés par le SDK (pas encore typés) */
-  helper: unknown
+  helper: CocolightHelper
   /** Données temporaires transmises au profil */
   dataToProfile: unknown
   setDataToProfile: Dispatch<SetStateAction<unknown>>

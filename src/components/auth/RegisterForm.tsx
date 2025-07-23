@@ -104,6 +104,18 @@ export default function RegisterForm(): JSX.Element {
 
   /* ------------------------------------------------------------------- */
   const handleRegister = async (): Promise<void> => {
+
+        // Si userApi n'est pas encore prêt, on arrête
+    if (!userApi) {
+      toast({
+        variant: "destructive",
+        title: t("Erreur"),
+        description: t("Impossible de se connecter pour le moment"),
+      });
+      setLoading(false);
+      return;
+    }
+    
     if (!validateForm()) return;
 
     setLoading(true);

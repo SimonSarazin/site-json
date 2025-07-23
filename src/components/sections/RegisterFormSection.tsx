@@ -1,8 +1,8 @@
 import { RegisterFormSectionProps } from "@/types/site-schema";
 import RegisterForm from "../auth/RegisterForm";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function RegisterFormSection({ id, props }: { id?: string; props: RegisterFormSectionProps }) {
+ 
+export function RegisterFormSection({ id }: { id?: string; props: RegisterFormSectionProps }) {
 
   return (
         <section id={id} className="py-16 bg-background">

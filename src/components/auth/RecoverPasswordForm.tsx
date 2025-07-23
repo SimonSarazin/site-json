@@ -36,6 +36,17 @@ export default function RecoverPasswordForm(): JSX.Element {
 
   /* ------------------------------------------------------------------- */
   const handleRecoverPassword = async (): Promise<void> => {
+
+    // Si userApi n'est pas encore prêt, on arrête
+    if (!userApi) {
+      toast({
+        variant: "destructive",
+        title: t("Erreur"),
+        description: t("Impossible de se connecter pour le moment"),
+      });
+      return;
+    }
+
     if (!email) {
       toast({
         variant: "destructive",

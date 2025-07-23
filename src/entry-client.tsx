@@ -1,7 +1,7 @@
 import "@/i18n";
 
 import { hydrateRoot } from "react-dom/client";
-import { createBrowserRouter, RouterProvider } from "react-router";
+import { createBrowserRouter, RouterProvider, type RouterState } from "react-router";
 import { HelmetProvider } from "@dr.pogodin/react-helmet";
 import { buildRoutes } from "@/lib/buildRoutes";
 import { type SiteConfig } from '@/types/site';
@@ -15,7 +15,9 @@ declare global {
   interface Window {
     __CONFIG__: SiteConfig;
     __REACT_QUERY_STATE__: unknown;
-    __staticRouterHydrationData?: unknown; 
+    __staticRouterHydrationData?: Partial<
+      Pick<RouterState, "errors" | "loaderData" | "actionData">
+    >;
   }
 }
 

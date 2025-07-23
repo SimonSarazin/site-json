@@ -1,8 +1,8 @@
 import { LoginFormSectionProps } from "@/types/site-schema";
 import LoginForm from "../auth/LoginForm";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function LoginFormSection({ id, props }: { id?: string; props: LoginFormSectionProps }) {
+ 
+export function LoginFormSection({ id }: { id?: string; props: LoginFormSectionProps }) {
 
   return (
         <section id={id} className="py-16 bg-background">

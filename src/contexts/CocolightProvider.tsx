@@ -97,7 +97,7 @@ export function CocolightProvider({
       api,
       me,
       organization,
-      helper: (Cocolight as unknown as { helper: unknown }).helper,
+      helper: Cocolight.helper,
       dataToProfile,
       setDataToProfile,
       loading: false,
