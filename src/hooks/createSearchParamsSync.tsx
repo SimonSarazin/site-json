@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { useSearchParams } from "react-router";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useSearchParams, useLocation } from "react-router";
 
 /* --------------------------------------------------------------------------
  * Types utilitaires ---------------------------------------------------------
@@ -49,6 +49,12 @@ export function createSearchParamsSync<C extends ConfigType>(config: C) {
     deferredDefaults: Partial<States<C>> = {},
   ): HookReturn<C> {
     const [searchParams, setSearchParams] = useSearchParams();
+    const location = useLocation();
+
+    
+    // ① on stocke la route au montage
+    const initialPathRef = useRef(location.pathname);
+
 
     /* ------------------------ Initialisation des états ------------------- */
     const computeInitialStates = useCallback((): States<C> => {
@@ -78,6 +84,19 @@ export function createSearchParamsSync<C extends ConfigType>(config: C) {
 
     const [states, setStates] = useState<States<C>>(computeInitialStates);
 
+
+    // ② si on change de route, on efface tout
+    // reset URL + reset states
+    useEffect(() => {
+      if (location.pathname !== initialPathRef.current) {
+        // vide l'URL
+        setSearchParams(new URLSearchParams(), { replace: true });
+        // remet les states à leurs valeurs par défaut
+        setStates(computeInitialStates());
+        initialPathRef.current = location.pathname;
+      }
+    }, [location.pathname, setSearchParams, computeInitialStates]);
+
     /* --------------------------- Setters dynamiques ---------------------- */
     const setters = useMemo(() => {
       const s = {} as Partial<Setters<C>>;
@@ -97,6 +116,7 @@ export function createSearchParamsSync<C extends ConfigType>(config: C) {
 
     /* ------------------------- Sync → URL -------------------------------- */
     useEffect(() => {
+      if (location.pathname === initialPathRef.current) {
       const params: Record<string, string> = {};
 
       keys.forEach((key) => {
@@ -109,7 +129,8 @@ export function createSearchParamsSync<C extends ConfigType>(config: C) {
       });
 
       setSearchParams(params, { replace: true });
-    }, [states, setSearchParams]);
+    }
+    }, [states, setSearchParams, location.pathname]);
 
     /* ------------------------- Valeur retournée -------------------------- */
     return { ...states, ...setters } as HookReturn<C>;
