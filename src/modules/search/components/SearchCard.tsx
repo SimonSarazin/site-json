@@ -39,8 +39,8 @@ export default function SearchCard({
   onClick,
   card = {
     tagLimit: 5,
-    showDescription: true,
-    shareButton: true,
+    showDescription: false,
+    shareButton: false,
   },
 }: SearchCardProps) {
   const t = useT("modules/search");
