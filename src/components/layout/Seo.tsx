@@ -30,25 +30,19 @@ export function Seo({ page }: SeoProps) {
 
   return (
     <Helmet htmlAttributes={{ lang: currentLocale }}>
-      {/* Basiques */}
-      <title>{title}</title>
-      {description && <meta name="description" content={description} />}
-
-      {/* Mots-clés */}
-      {seo.keywords?.length && (
+      {[
+      <title>{title}</title>,
+      description && <meta name="description" content={description} />,
+      seo.keywords && seo.keywords.length > 0 && (
         <meta name="keywords" content={seo.keywords.join(", ")} />
-      )}
-
-      {/* OG / Twitter */}
-      {seo.ogImage && <meta property="og:image" content={seo.ogImage} />}
-      {seo.ogType && <meta property="og:type" content={seo.ogType} />}
-      {seo.twitterCard && (
+      ),
+      seo.ogImage && seo.ogImage!=="" && <meta property="og:image" content={seo.ogImage} />,
+      seo.ogType && seo.ogType!=="" && <meta property="og:type" content={seo.ogType} />,
+      seo.twitterCard && seo.twitterCard !== "" && (
         <meta name="twitter:card" content={seo.twitterCard} />
-      )}
-      {seo.canonical && <link rel="canonical" href={seo.canonical} />}
-
-      {/* Robots */}
-      {(seo.noIndex || seo.noFollow) && (
+      ),
+      seo.canonical && seo.canonical !== "" && <link rel="canonical" href={seo.canonical} />,
+      (seo.noIndex || seo.noFollow) && (
         <meta
           name="robots"
           content={[
@@ -56,14 +50,13 @@ export function Seo({ page }: SeoProps) {
             seo.noFollow ? "nofollow" : "follow",
           ].join(",")}
         />
-      )}
-
-      {/* Structured data (JSON-LD) */}
-      {seo.structuredData && (
+      ),
+      seo.structuredData && (
         <script type="application/ld+json">
           {JSON.stringify(seo.structuredData)}
         </script>
-      )}
+      )
+      ].filter(Boolean)}
     </Helmet>
   );
 }
