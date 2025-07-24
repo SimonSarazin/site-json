@@ -10,6 +10,36 @@ dotenv.config();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+async function loadSiteConfig() {
+  // 1. JSON inline (variable d’environnement complète)
+  if (process.env.SITE_CONFIG_JSON) {
+    try {
+      return JSON.parse(process.env.SITE_CONFIG_JSON);
+    } catch (e) {
+      throw new Error(`SITE_CONFIG_JSON invalide : ${e.message}`);
+    }
+  }
+
+  // 2. Chemin vers un fichier JSON
+  if (process.env.SITE_CONFIG_PATH) {
+    try {
+      const envPath   = process.env.SITE_CONFIG_PATH;
+      const filePath  = path.isAbsolute(envPath)
+        ? envPath
+        : path.resolve(process.cwd(), envPath);
+      const raw      = fs.readFileSync(filePath, "utf-8");
+      return JSON.parse(raw);
+    } catch (e) {
+      throw new Error(`Impossible de lire SITE_CONFIG_PATH : ${e.message}`);
+    }
+  }
+
+  // Si nous sommes en production et rien n’a été fourni :
+  throw new Error(
+    "🛑  Aucune configuration trouvée : définissez SITE_CONFIG_JSON ou SITE_CONFIG_PATH (obligatoire en production)"
+  );
+}
+
 async function createServer() {
   const app  = express();
   const vite = await createViteServer({
@@ -39,8 +69,10 @@ async function createServer() {
       template       = await vite.transformIndexHtml(url, template);
 
       /* ---- 1. Config JSON dans <head> -------------------------------- */
+      const siteConfig = await loadSiteConfig();
       const { demoSiteConfig } = await vite.ssrLoadModule("/src/data/demo-site.ts");
-      const cfgScript = `<script>window.__CONFIG__=${serialize(demoSiteConfig, { isJSON:true })}</script>`;
+      const config = siteConfig || demoSiteConfig;
+      const cfgScript = `<script>window.__CONFIG__=${serialize(config, { isJSON:true })}</script>`;
       
 
       /* ---- 2. On découpe le template --------------------------------- */
@@ -57,7 +89,7 @@ async function createServer() {
       /* ---- 4. Lance le rendu React ----------------------------------- */
       const { render } = await vite.ssrLoadModule("/src/entry-server.tsx");
 
-      await render(req, res, demoSiteConfig, (helmetHead, dehydratedState) => {
+      await render(req, res, config, (helmetHead, dehydratedState) => {
         /* callback appelé par entry-server quand Helmet est prêt */
         res.write(helmetHead);          // balises <title>, <meta>, …
         res.write(`<script>window.__REACT_QUERY_STATE__=${serialize(
