@@ -32,13 +32,13 @@ import { useSite } from "@/contexts/SiteContext";
 import { useNavigate } from "react-router";
 import { useCocolight } from "@/hooks/useCocolight";
 import { AnnouncementBanner } from "./AnnouncementBanner";
-import { NavItem as NavItemType } from "@/types/site";
+import { EnhancedNavItemType } from "@/types/site";
 import { cn } from "@/lib/utils";
 import ToggleButtonTheme from "./ToggleButtonTheme";
 import { ClientOnly } from "./ClientOnly";
 
 interface NavItemProps {
-  item: NavItemType;
+  item: EnhancedNavItemType;
   mobile?: boolean;
   onNavigate?: () => void;
 }

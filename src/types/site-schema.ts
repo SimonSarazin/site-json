@@ -807,7 +807,7 @@ const MegaMenu = z.object({
 
 // Enhanced NavItem with mega menu support
 // Define interface for EnhancedNavItem to avoid 'any'
-interface EnhancedNavItemType {
+export interface EnhancedNavItemType {
   label: LocalizedString;
   path?: string;
   href?: string;
