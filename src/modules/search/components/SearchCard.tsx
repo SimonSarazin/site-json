@@ -25,6 +25,7 @@ interface SearchCardProps {
   card?: {
     tagLimit?: number;
     showDescription?: boolean;
+    showAddress?: boolean;
     shareButton?: boolean;
   };
 }
@@ -40,6 +41,7 @@ export default function SearchCard({
   card = {
     tagLimit: 5,
     showDescription: false,
+    showAddress: true,
     shareButton: false,
   },
 }: SearchCardProps) {
@@ -80,7 +82,7 @@ export default function SearchCard({
       {/* Infos de base */}
       <CardHeader className="absolute bottom-0 left-0 w-full bg-primary/90 p-3">
         <CardTitle className="text-base truncate text-primary-foreground">{name}</CardTitle>
-        {address && (
+        {card?.showAddress && address && address.trim() !== "" && (
           <div className="flex items-center text-sm text-primary-foreground/70 gap-1">
             <MapPin className="h-4 w-4 text-primary-foreground" />
             <span className="truncate">{address}</span>
@@ -100,7 +102,7 @@ export default function SearchCard({
           <div>
             <h3 className="font-semibold text-lg leading-tight text-primary-foreground">{name}</h3>
             {type && <p className="text-sm text-primary-foreground/70">{type}</p>}
-            {address && (
+            {card?.showAddress && address && address.trim() !== "" && (
               <div className="flex items-center text-sm text-primary-foreground/70 gap-1 mt-1">
                 <MapPin className="h-4 w-4 text-primary-foreground" />
                 <span>{address}</span>

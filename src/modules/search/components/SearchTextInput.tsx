@@ -12,9 +12,9 @@ interface SearchTextInputProps {
 
 export default function SearchTextInput({ placeholder, value, className, onChange }: SearchTextInputProps) {
   return (
-    <div className="relative">
+    <div className={cn("relative w-full", className)}>
       <Input
-        className={cn("peer ps-9", className)}
+        className="peer ps-9 w-full"
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}

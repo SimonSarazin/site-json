@@ -43,7 +43,7 @@ export default function SearchFilters({ placeholder, filters, searchText, search
           placeholder={t(placeholder)}
           value={searchText}
           onChange={onTextChange}
-          className="w-full sm:w-auto"
+          className={Object.keys(filters).length === 0 ? "sm:flex-1" : "sm:w-auto"}
         />
       )}
       {Object.entries(filters)
@@ -62,7 +62,7 @@ export default function SearchFilters({ placeholder, filters, searchText, search
               }}
               />
             );
-          } else if( config.type === "type" && config.active) {
+          } else if( config.type === "type" && config.active !== false) {
             
             return (
               <FilterDropdown

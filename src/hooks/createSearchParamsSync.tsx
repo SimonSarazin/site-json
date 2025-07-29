@@ -106,8 +106,15 @@ export function createSearchParamsSync<C extends ConfigType>(config: C) {
         const setterName = `set${capitalizedKey}` as SetterName<typeof key>;
 
          
-        (s as Record<string, unknown>)[setterName] = (value: States<C>[typeof key]) =>
-          setStates((prev) => ({ ...prev, [key]: value }));
+        (s as Record<string, unknown>)[setterName] = (value: States<C>[typeof key]) => {
+  // Protection : si on reçoit une fonction par erreur, on ignore
+  if (typeof value === "function") {
+    console.warn(`🛑 Ignored setter for ${key} because a function was passed instead of a value`, value);
+    return;
+  }
+
+  setStates((prev) => ({ ...prev, [key]: value }));
+};
       });
 
       return s as unknown as Setters<C>;

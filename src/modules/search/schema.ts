@@ -24,6 +24,7 @@ const ListConfSchema = z.object({
   card: z.object({
     tagLimit:        z.number().int().min(1).max(50).optional(),
     showDescription: z.boolean().optional(),
+    showAddress:     z.boolean().optional(),
     shareButton:     z.boolean().optional(),
   }).partial().optional(),
 }).partial();
@@ -38,6 +39,20 @@ const MapConfSchema = z.object({
 
 export type MapConf = z.infer<typeof MapConfSchema>;
 
+const SearchTypeSchema = z.enum([
+  "NGO",
+  "LocalBusiness",
+  "Group",
+  "GovernmentOrganization",
+  "Cooperative",
+  "organizations",
+  "projects",
+  "events",
+  "citoyens",
+  "poi",
+]);
+
+export type SearchType = z.infer<typeof SearchTypeSchema>;
 
 export const SearchProSectionSchema = z.object({
   type: z.literal("searchPro"),
@@ -47,6 +62,9 @@ export const SearchProSectionSchema = z.object({
     placeholder: LocalizedString,
     useFilter:   z.boolean().default(true),
     showMap:     z.boolean().default(false),
+    enableMap: z.boolean().default(true),
+    showActiveFiltersTypes: z.boolean().default(true),
+    showActiveFiltersTags: z.boolean().default(true),
 
     filters: z.record(z.string(), TagsFilterSchema).optional(),
 
@@ -54,8 +72,11 @@ export const SearchProSectionSchema = z.object({
       fediverse:     z.boolean().optional(),
       indexStepList: z.number().optional(),
       indexStepMap:  z.number().optional(),
-      defaultTypes:  z.array(z.string()).optional(),
+      defaultTypes: z.array(SearchTypeSchema).optional(),
       defaultTags:   z.array(z.string()).optional(),
+      defaultFilters: z.record(z.string(), z.unknown()).optional(),
+      defaultFields: z.array(z.string()).optional(),
+      defaultSortBy: z.record(z.string(), z.union([z.literal(1), z.literal(-1)])).optional(),
     }).optional(),
 
     list: ListConfSchema.optional(),

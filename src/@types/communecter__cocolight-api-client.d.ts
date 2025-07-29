@@ -83,6 +83,170 @@ declare module "@communecter/cocolight-api-client" {
     [key: string]: unknown;
   }
 
+  export interface GlobalAutocompleteCostumData {
+  /**
+   * Nom ou mot-clé de la recherche
+   */
+  name?: string;
+  /**
+   * Liste des localités ciblées avec leur identifiant et leur type (city ou level1)
+   */
+  locality?: {
+    /**
+     * This interface was referenced by `undefined`'s JSON-Schema definition
+     * via the `patternProperty` "^[^\s]+$".
+     */
+    [k: string]: {
+      /**
+       * Identifiant de la localité
+       */
+      id: string;
+      /**
+       * Type de la localité : 'cities' pour une ville ou 'level1' pour une région
+       */
+      type: "cities" | "level1";
+    };
+  };
+  /**
+   * Types d'entités à inclure dans la recherche
+   */
+  searchType: (
+    | "NGO"
+    | "LocalBusiness"
+    | "Group"
+    | "GovernmentOrganization"
+    | "Cooperative"
+    | "organizations"
+    | "projects"
+    | "events"
+    | "citoyens"
+    | "poi"
+  )[];
+  /**
+   * Balises (tags) à utiliser pour filtrer la recherche
+   */
+  searchTags?: string[];
+  /**
+   * Liste fixe des types à compter dans les résultats
+   */
+  countType: (
+    | "NGO"
+    | "LocalBusiness"
+    | "Group"
+    | "GovernmentOrganization"
+    | "Cooperative"
+    | "organizations"
+    | "projects"
+    | "events"
+    | "citoyens"
+    | "poi"
+  )[];
+  /**
+   * Critère de recherche (actuellement vide)
+   */
+  searchBy?: "ALL";
+  /**
+   * Index de départ global pour la pagination
+   */
+  indexMin: number;
+  /**
+   * Index de fin global pour la pagination
+   */
+  indexMax?: number;
+  /**
+   * Nombre d’éléments à récupérer (limite de pagination)
+   */
+  indexStep: number;
+  /**
+   * Configuration des plages de résultats pour chaque type de recherche
+   */
+  ranges?: {
+    /**
+     * This interface was referenced by `undefined`'s JSON-Schema definition
+     * via the `patternProperty` "^[^\s]+$".
+     */
+    [k: string]: {
+      /**
+       * Index de départ pour la pagination
+       */
+      indexMin: number;
+      /**
+       * Index de fin pour la pagination
+       */
+      indexMax: number;
+    };
+  };
+  /**
+   * Type initial de la recherche, vide par défaut
+   */
+  initType: "";
+  /**
+   * Indique si les types doivent être comptés dans les résultats
+   */
+  count: true;
+  /**
+   * Filtres additionnels appliqués à la recherche (objet ou chaîne vide)
+   */
+  filters?:
+    | {
+        [k: string]: unknown;
+      }
+    | "";
+  /**
+   * Liste des champs à retourner
+   */
+  fields?: string[];
+  /**
+   * Champ de tri (clé = champ, valeur = 1 ou -1)
+   */
+  sortBy?: {
+    [k: string]: 1 | -1;
+  };
+  /**
+   * Indique si la recherche doit s'étendre au Fediverse (toujours désactivé)
+   */
+  fediverse: boolean;
+  /**
+   * Indique si la recherche est effectuée à partir d'une carte (toujours désactivé)
+   */
+  mapUsed?: true;
+  /**
+   * Indique si on doit exclure les éléments avec une source
+   */
+  notSourceKey?: true;
+  /**
+   * ID du contexte de recherche (actuellement vide)
+   */
+  contextId?: string;
+  /**
+   * Type de contexte de recherche (actuellement vide)
+   */
+  contextType?: "projects" | "organizations";
+  /**
+   * Slug du costume utilisé pour la recherche
+   */
+  costumSlug: string;
+  /**
+   * Clés de source pour la recherche
+   */
+  sourceKey?: string[];
+  /**
+   * Indique si le mode d'édition du costume est activé (toujours désactivé)
+   */
+  costumEditMode: boolean;
+  options?: {
+    tags?: {
+      /**
+       * Verbe d'action pour le filtre de recherche
+       */
+      verb?: string;
+      [k: string]: unknown;
+    };
+    [k: string]: unknown;
+  };
+  [k: string]: unknown;
+}
+
   /** Modèle organisation extrêmement simplifié */
   export interface Organization {
     id: string;

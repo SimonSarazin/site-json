@@ -19,9 +19,29 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import "@/modules/search/i18n"; 
 import "@/modules/search/styles.css";
-import { SearchProSectionProps } from "./schema";
+import { SearchProSectionProps, TagsFilter } from "./schema";
 import { SearchResultPage } from "@communecter/cocolight-api-client";
 
+
+function normalizeDefaultTypes(
+  filters: Record<string, TagsFilter>,
+  defaultTypes: string[] | undefined,
+  fallbackKey = "type"
+): Record<string, string[]> | undefined {
+  console.log("normalizeDefaultTypes called with filters:", filters, "and defaultTypes:", defaultTypes);
+
+  if (!defaultTypes || !Array.isArray(defaultTypes)) return undefined;
+
+  const typeFilterEntry = Object.entries(filters).find(
+    ([_, config]) => config.type === "type"
+  );
+
+  const key = typeFilterEntry?.[0] ?? fallbackKey;
+
+  return {
+    [key]: defaultTypes,
+  };
+}
 
 /**
  * Full‑featured search section driven entirely by props.
@@ -42,6 +62,9 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
     placeholder,
     useFilter = true,
     showMap = false,
+    enableMap = true,
+    showActiveFiltersTypes = true,
+    showActiveFiltersTags = true,
     filters = {},
     baseParams = {},
     list,
@@ -62,12 +85,16 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
     setTags: setSearchTags,
     type: searchType,
     setType: setSearchType,
-    map: mapUsed,
-    setMap: setMapUsed,
+    map: rawMapUsed,
+    setMap: rawSetMapUsed,
   } = useSearchFilters({
-    type: useFilter && baseParams?.defaultTypes ? baseParams.defaultTypes : null,
-    map: !!showMap,
+    type: useFilter ? normalizeDefaultTypes(filters, baseParams?.defaultTypes) : null,
+    map: !!enableMap && !!showMap,
   });
+
+
+  const mapUsed = enableMap ? rawMapUsed : false;
+  const setMapUsed = enableMap ? rawSetMapUsed : () => {};
 
   /* ------------------------------------------------------------------ */
   /* Infinite query using Communecter searchCostum                       */
@@ -83,10 +110,10 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
     queryKey: [
       "searchCostum",
       searchText,
-      searchTags,
-      searchType,
+      JSON.stringify(searchTags),
+      JSON.stringify(searchType), 
       mapUsed,
-      baseParams,
+      JSON.stringify(baseParams),
     ],
     queryFn: async ({ pageParam } = { pageParam: undefined }) => {
 
@@ -104,6 +131,9 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
         indexStepMap = 0,
         defaultTypes,
         defaultTags,
+        defaultFilters,
+        defaultFields,
+        defaultSortBy,
       } = baseParams;
 
       const param: Record<string, any> = {
@@ -116,6 +146,15 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
           searchTags: tags,
           options: { tags: { verb: "$all" } },
         }),
+        ...(defaultFilters && Object.keys(defaultFilters).length > 0 && {
+          filters: defaultFilters,
+        }),
+        ...(defaultFields && defaultFields.length > 0 && {
+          fields: defaultFields,
+        }),
+        ...(defaultSortBy && Object.keys(defaultSortBy).length > 0 && {
+          sortBy: defaultSortBy,
+        }),
       };
 
       // merge explicit type filter or defaults
@@ -123,6 +162,10 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
       if (!type && defaultTypes) param.searchType = defaultTypes;
       if (defaultTags && defaultTags.length > 0) {
         param.defaultTags = defaultTags;
+      }
+
+      if(!param.searchType) {
+        return {"results":[], "count":{}, "hasNext": false, "pageNumber": 1};
       }
 
       try {
@@ -238,21 +281,50 @@ if (!loaded) {
               onTagChange={setSearchTags}
               onTypeChange={setSearchType}
             />
+            {(showActiveFiltersTypes || showActiveFiltersTags) && filters && Object.keys(filters).length > 0 && (
             <ActiveFiltersBar
               filters={filters}
+              showActiveFiltersTypes={showActiveFiltersTypes}
+              showActiveFiltersTags={showActiveFiltersTags}
               filtersSearchTags={searchTags}
+              filtersSearchType={searchType}
               onRemove={(key, value) => {
-                setSearchTags((prev: any) => ({
-                  ...prev,
-                  [key]: prev[key].filter((v: string) => v !== value),
-                }));
+                const current = searchTags?.[key] ?? [];
+                if (!Array.isArray(current)) return;
+
+                const updatedValues = current.filter((v) => v !== value);
+                const next = { ...searchTags };
+
+                if (updatedValues.length === 0) {
+                  delete next[key];
+                } else {
+                  next[key] = updatedValues;
+                }
+
+                setSearchTags(next);
+              }}
+              onRemoveType={(key, value) => {
+                const current = searchType?.[key] ?? [];
+                if (!Array.isArray(current)) return;
+
+                const updatedValues = current.filter((v) => v !== value);
+                const next = { ...searchType };
+
+                if (updatedValues.length === 0) {
+                  delete next[key];
+                } else {
+                  next[key] = updatedValues;
+                }
+
+                setSearchType(next); // ✅ on envoie un objet directement
               }}
             />
+            )}
           </div>
         )}
 
         {/* Map or list */}
-        {mapUsed ? (
+        {enableMap && mapUsed ? (
           <div className="relative flex-1 overflow-hidden">
             {loadingMap && (
               <div className="absolute inset-0 z-10 bg-background/80 flex flex-col items-center justify-center">
@@ -286,11 +358,13 @@ if (!loaded) {
           </div>
         ) : (
           <div className="p-4 overflow-y-auto">
+          {enableMap && (
             <div className="flex justify-end mb-4">
               <Button variant="outline" size="sm" onClick={() => setMapUsed(true)} className="flex items-center">
                 <Map className="mr-2 h-4 w-4 text-primary" /> {t("Carte")}
               </Button>
             </div>
+          )}
 
             {loadingMap && <SearchListSkeleton />}
 
@@ -330,16 +404,43 @@ if (!loaded) {
               onTagChange={setSearchTags}
               onTypeChange={setSearchType}
             />
-            <ActiveFiltersBar
-              filters={filters}
-              filtersSearchTags={searchTags}
-              onRemove={(key, value) => {
-                setSearchTags((prev: any) => ({
-                  ...prev,
-                  [key]: prev[key].filter((v: string) => v !== value),
-                }));
-              }}
+            { (showActiveFiltersTypes || showActiveFiltersTags) && (
+              <ActiveFiltersBar
+                filters={filters}
+                filtersSearchTags={searchTags}
+                filtersSearchType={searchType}
+                onRemove={(key, value) => {
+                  const current = searchTags?.[key] ?? [];
+                  if (!Array.isArray(current)) return;
+
+                  const updatedValues = current.filter((v) => v !== value);
+                  const next = { ...searchTags };
+
+                  if (updatedValues.length === 0) {
+                    delete next[key];
+                  } else {
+                    next[key] = updatedValues;
+                  }
+
+                  setSearchTags(next);
+                }}
+                onRemoveType={(key, value) => {
+                  const current = searchType?.[key] ?? [];
+                  if (!Array.isArray(current)) return;
+
+                  const updatedValues = current.filter((v) => v !== value);
+                  const next = { ...searchType };
+
+                  if (updatedValues.length === 0) {
+                    delete next[key];
+                  } else {
+                    next[key] = updatedValues;
+                  }
+
+                  setSearchType(next); // ✅ on envoie un objet directement
+                }}
             />
+            )}
           </div>
         </div>
       )}

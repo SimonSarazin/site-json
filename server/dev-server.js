@@ -34,10 +34,7 @@ async function loadSiteConfig() {
     }
   }
 
-  // Si nous sommes en production et rien n’a été fourni :
-  throw new Error(
-    "🛑  Aucune configuration trouvée : définissez SITE_CONFIG_JSON ou SITE_CONFIG_PATH (obligatoire en production)"
-  );
+  return null; // Pas d'erreur, mais pas de config non plus
 }
 
 async function createServer() {
