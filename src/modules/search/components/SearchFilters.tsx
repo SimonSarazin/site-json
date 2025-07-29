@@ -14,9 +14,10 @@ export interface SearchFiltersProps {
   onTagChange: (nextTags: Record<string, string[]>) => void;
   onTypeChange: (nextTypes: Record<string, string[]>) => void;
   minimal?: boolean;
+  countTypes?: Record<string, number>;
 }
 
-export default function SearchFilters({ placeholder, filters, searchText, searchTags, searchType, onTextChange, onTagChange, onTypeChange, minimal = false }: SearchFiltersProps) {
+export default function SearchFilters({ placeholder, filters, searchText, searchTags, searchType, onTextChange, onTagChange, onTypeChange, minimal = false, countTypes }: SearchFiltersProps) {
 
   const { t } = useLocalization();
 
@@ -74,6 +75,7 @@ export default function SearchFilters({ placeholder, filters, searchText, search
                 const updatedTypes = { ...searchType, [key]: values };
                 onTypeChange(updatedTypes);
               }}
+              count={countTypes ?? {}}
               />
             );
           }

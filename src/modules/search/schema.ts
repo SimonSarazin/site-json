@@ -73,6 +73,8 @@ export const SearchProSectionSchema = z.object({
   id:   z.string().optional(),
 
   props: z.object({
+    title: LocalizedString.optional(),
+    description: LocalizedString.optional(),
     placeholder: LocalizedString,
     useFilter:   z.boolean().default(true),
     showMap:     z.boolean().default(false),
@@ -91,6 +93,7 @@ export const SearchProSectionSchema = z.object({
       defaultFilters: z.record(z.string(), z.unknown()).optional(),
       defaultFields: z.array(z.string()).optional(),
       defaultSortBy: z.record(z.string(), z.union([z.literal(1), z.literal(-1)])).optional(),
+      notSourceKey: z.boolean().optional(),
     }).optional(),
 
     list: ListConfSchema.optional(),

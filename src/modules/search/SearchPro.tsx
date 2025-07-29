@@ -59,6 +59,8 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
   /* Destructure props with sensible defaults                            */
   /* ------------------------------------------------------------------ */
   const {
+    title,
+    description,
     placeholder,
     useFilter = true,
     showMap = false,
@@ -134,6 +136,7 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
         defaultFilters,
         defaultFields,
         defaultSortBy,
+        notSourceKey
       } = baseParams;
 
       const param: Record<string, any> = {
@@ -155,6 +158,7 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
         ...(defaultSortBy && Object.keys(defaultSortBy).length > 0 && {
           sortBy: defaultSortBy,
         }),
+        ...(notSourceKey ? { notSourceKey: true } : {}),
       };
 
       // merge explicit type filter or defaults
@@ -200,6 +204,11 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
     });
   }, [data, organization, helper]);
 
+
+  const hasCount = data?.pages?.[0]?.count && typeof data?.pages?.[0]?.count === "object";
+
+  const totalCount = hasCount && data?.pages?.[0]?.count?.["total"] ? data?.pages?.[0]?.count?.["total"] : undefined;
+
   /* ------------------------------------------------------------------ */
   /* Helper counts                                                       */
   /* ------------------------------------------------------------------ */
@@ -242,6 +251,15 @@ if (!loaded) {
     ) : null}
 
       <div className="flex flex-col flex-1 overflow-hidden">
+        {/* Header with title and description */}
+        {(title || description) && (
+          <div className="p-4 bg-background text-primary-foreground flex items-center justify-center">
+            <div className="flex flex-col items-center text-center space-y-1">
+            {title && <h1 className="text-2xl font-bold">{t(title)} {totalCount ? <span className="text-sm font-normal">({totalCount})</span> : null}</h1>}
+            {description && <p className="text-sm">{t(description)}</p>}
+            </div>
+          </div>
+        )}
         {/* Mobile filters bar */}
         <div className="sm:hidden p-2 flex items-center gap-2">
           <Button variant="ghost" size="icon" onClick={() => setShowFiltersModal(true)} className="relative bg-muted">
@@ -265,6 +283,7 @@ if (!loaded) {
             onTextChange={setSearchText}
             onTagChange={setSearchTags}
             onTypeChange={setSearchType}
+            countTypes={hasCount && data?.pages?.[0]?.count ? data?.pages?.[0]?.count : {}}
           />
         </div>
 
@@ -280,6 +299,7 @@ if (!loaded) {
               onTextChange={setSearchText}
               onTagChange={setSearchTags}
               onTypeChange={setSearchType}
+              countTypes={hasCount && data?.pages?.[0]?.count ? data?.pages?.[0]?.count : {}}
             />
             {(showActiveFiltersTypes || showActiveFiltersTags) && filters && Object.keys(filters).length > 0 && (
             <ActiveFiltersBar

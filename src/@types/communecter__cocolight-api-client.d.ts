@@ -47,6 +47,7 @@ declare module "@communecter/cocolight-api-client" {
   }
 
   export interface SearchResultPage<T = unknown> {
+    count?: Record<string, number>;
     /** Le tableau brut de résultats JSON */
     results: T;
     /** Numéro de la page */

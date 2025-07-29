@@ -15,6 +15,7 @@ interface FilterDropdownProps {
     | Record<string, LocalizedString | string>;
   selected?: string[];
   onChange: (selected: string[]) => void;
+  count?: Record<string, number>;
 }
 
 type Item = { value: string; label: string | LocalizedString };
@@ -24,6 +25,7 @@ export default function FilterDropdown({
   list,
   selected = [],
   onChange,
+  count,
 }: FilterDropdownProps) {
   const t = useT("modules/search");
 
@@ -75,7 +77,7 @@ export default function FilterDropdown({
             }}
             className={selected.includes(value) ? "bg-primary/10" : ""}
           >
-            {tr(label)}
+            {tr(label)} {count?.[value] ? `(${count[value]})` : null}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
