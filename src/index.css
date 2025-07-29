@@ -36,6 +36,18 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  --info: oklch(0.941 0.065 260); /* Bleu clair */
+  --info-foreground: oklch(0.200 0.030 260);
+
+  --success: oklch(0.830 0.180 135); /* Vert doux */
+  --success-foreground: oklch(0.150 0.030 135);
+
+  --warning: oklch(0.950 0.160 85); /* Orange clair */
+  --warning-foreground: oklch(0.200 0.060 85);
+
+  --error: oklch(0.680 0.250 30); /* Rouge vif */
+  --error-foreground: oklch(1 0 0); /* Blanc pur */
 }
 
 .dark {
@@ -70,6 +82,18 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  --info: oklch(0.600 0.140 260); /* Bleu foncé */
+  --info-foreground: oklch(0.950 0.040 260);
+
+  --success: oklch(0.600 0.180 135); /* Vert foncé */
+  --success-foreground: oklch(0.950 0.040 135);
+
+  --warning: oklch(0.750 0.180 85); /* Orange foncé */
+  --warning-foreground: oklch(0.950 0.040 85);
+
+  --error: oklch(0.680 0.250 30); /* Rouge sombre */
+  --error-foreground: oklch(0.990 0.030 100); /* Presque blanc, légèrement chaud */
 }
 
 @theme inline {
@@ -113,6 +137,15 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-error: var(--error);
+  --color-error-foreground: var(--error-foreground);
 
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;

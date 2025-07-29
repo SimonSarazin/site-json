@@ -1,8 +1,9 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from '@/lib/utils';
-import { TabsSectionProps } from '@/types/site-schema';
+import type { Section, TabsSectionProps } from '@/types/site-schema';
 import { DynamicIcon, type IconName } from 'lucide-react/dynamic';
+import { SectionRenderer } from './SectionRenderer';
 
 export function TabsSection({ id, props }: { id?: string; props: TabsSectionProps }) {
   const { t } = useLocalization();
@@ -54,10 +55,16 @@ export function TabsSection({ id, props }: { id?: string; props: TabsSectionProp
                   value={tab.id}
                   className="mt-6 p-6 bg-card rounded-lg border"
                 >
+                {Array.isArray(tab.content) ? (
+                  (tab.content as Section[]).map((section, idx) => (
+                    <SectionRenderer key={idx} section={section} />
+                  ))
+                ) : (
                   <div 
                     className="prose prose-gray dark:prose-invert max-w-none"
                     dangerouslySetInnerHTML={{ __html: t(tab.content) }} 
                   />
+                )}
                 </TabsContent>
               ))}
             </div>

@@ -46,6 +46,9 @@ export type NavItem = z.infer<typeof NavItem>;
 const Alignment = z.enum(["left", "center", "right"]);
 const Columns   = z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5), z.literal(6)]);
 
+let SectionSchemaLazy: z.ZodTypeAny;
+
+
 //──────────────── Hero
 const HeroSectionSchema = z.object({
   type: z.literal("hero"),
@@ -384,7 +387,10 @@ const TabsSectionSchema = z.object({
     tabs: z.array(z.object({
       id: z.string(),
       label: LocalizedString,
-      content: LocalizedString,
+      content: z.union([
+        LocalizedString,
+        z.array(z.lazy(() => SectionSchemaLazy)), // plusieurs sections
+      ]),
       icon: z.string().optional(),
     })),
     defaultTab: z.string().optional(),
@@ -754,6 +760,8 @@ export type Section = z.infer<typeof Section>;
 export type SectionPropsMap = {
   [K in Section['type']]: Extract<Section, { type: K }>['props'];
 };
+
+SectionSchemaLazy = Section;
 
 /*───────────────────────────────────────────────────────────────*/
 /* 4. Page                                                       */

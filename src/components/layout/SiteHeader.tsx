@@ -88,7 +88,7 @@ function MegaMenuContent({ megaMenu, onNavigate }: { megaMenu: EnhancedNavItemTy
                 <CardDescription>{t(col.featured.description)}</CardDescription>
                 <Button
                   size="sm"
-                  onClick={() => window.open(col.featured.href, '_blank')}
+                  onClick={() => col.featured?.href && window.open(col.featured.href, '_blank')}
                 >
                   {t('En savoir plus')}
                 </Button>
@@ -146,7 +146,7 @@ function NavItem({ item, mobile = false, onNavigate }: NavItemProps) {
               {item.description && <span className="text-xs text-muted-foreground">{t(item.description)}</span>}
             </div>
             <ChevronDown className="w-4 h-4" />
-            {item.badge && <Badge size="sm">{t(item.badge.text)}</Badge>}
+            {item.badge && <Badge className="text-xs px-2 py-0.5">{t(item.badge.text)}</Badge>}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-56">
@@ -165,7 +165,7 @@ function NavItem({ item, mobile = false, onNavigate }: NavItemProps) {
                   <span>{t(child.label)}</span>
                   {child.description && <span className="text-xs text-muted-foreground">{t(child.description)}</span>}
                 </div>
-                {child.badge && <Badge size="sm" className="ml-auto">{t(child.badge.text)}</Badge>}
+                {child.badge && <Badge className="text-xs px-2 py-0.5 ml-auto">{t(child.badge.text)}</Badge>}
               </button>
             </DropdownMenuItem>
           ))}
@@ -188,7 +188,7 @@ function NavItem({ item, mobile = false, onNavigate }: NavItemProps) {
     >
       {item.icon && <DynamicIcon name={item.icon as IconName} className="w-4 h-4" />}
       {t(item.label)}
-      {item.badge && <Badge size="sm">{t(item.badge.text)}</Badge>}
+      {item.badge && <Badge className="text-xs px-2 py-0.5">{t(item.badge.text)}</Badge>}
     </Button>
   );
 }
