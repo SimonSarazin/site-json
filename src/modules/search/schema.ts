@@ -1,5 +1,6 @@
 
 import { LocalizedString } from "@/types/locale-schema";
+import { IconName } from "lucide-react/dynamic";
 import { z } from "zod";
 
 //──────────────── Search Pro Section
@@ -53,6 +54,19 @@ const SearchTypeSchema = z.enum([
 ]);
 
 export type SearchType = z.infer<typeof SearchTypeSchema>;
+
+export const SEARCH_TYPE_ICON_NAMES: Record<SearchType, IconName> = {
+  NGO: "hand-heart",
+  LocalBusiness: "store",
+  Group: "users",
+  GovernmentOrganization: "land-plot",
+  Cooperative: "handshake",
+  organizations: "building-2",
+  projects: "layout-dashboard",
+  events: "calendar-days",
+  citoyens: "user",
+  poi: "map-pin",
+};
 
 export const SearchProSectionSchema = z.object({
   type: z.literal("searchPro"),

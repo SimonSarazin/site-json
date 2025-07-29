@@ -13,6 +13,8 @@ import {
 
 import LazyImage from "@/components/layout/LazyImage";
 import { useT } from "@/hooks/useT";
+import { DynamicIcon, IconName } from "lucide-react/dynamic";
+import { SEARCH_TYPE_ICON_NAMES } from "../schema";
 
 interface SearchCardProps {
   name: string;
@@ -101,7 +103,12 @@ export default function SearchCard({
         <div className="overflow-y-auto pr-1 h-full space-y-2">
           <div>
             <h3 className="font-semibold text-lg leading-tight text-primary-foreground">{name}</h3>
-            {type && <p className="text-sm text-primary-foreground/70">{type}</p>}
+            {type && <div className="flex items-center text-sm text-primary-foreground/70 gap-1 mt-1">
+            <DynamicIcon
+              name={SEARCH_TYPE_ICON_NAMES[type as keyof typeof SEARCH_TYPE_ICON_NAMES] as IconName}
+              className="w-4 h-4 text-primary-foreground"
+            />
+            {t(`type.${type}`)}</div>}
             {card?.showAddress && address && address.trim() !== "" && (
               <div className="flex items-center text-sm text-primary-foreground/70 gap-1 mt-1">
                 <MapPin className="h-4 w-4 text-primary-foreground" />

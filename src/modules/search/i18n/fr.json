@@ -15,5 +15,15 @@
     "Mode de gestion": "Mode de gestion",
     "Non précisé": "Non précisé",
     "Filtres": "Filtres",
-    "Carte": "Carte"
+    "Carte": "Carte",
+    "type.NGO": "ONG",
+    "type.LocalBusiness": "Entreprise locale",
+    "type.Group": "Groupe",
+    "type.GovernmentOrganization": "Organisation gouvernementale",
+    "type.Cooperative": "Coopérative",
+    "type.organizations": "Organisation",
+    "type.projects": "Projet",
+    "type.events": "Événement",
+    "type.citoyens": "Citoyen",
+    "type.poi": "Point d'intérêt"
 }
