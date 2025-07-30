@@ -27,6 +27,7 @@ const ListConfSchema = z.object({
     showDescription: z.boolean().optional(),
     showAddress:     z.boolean().optional(),
     shareButton:     z.boolean().optional(),
+    detailsMode: z.enum(["drawer", "dialog"]).default("drawer"),
   }).partial().optional(),
 }).partial();
 

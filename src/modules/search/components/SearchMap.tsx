@@ -8,12 +8,15 @@ import { renderMapPopup } from "./MapPopup";
 import { loadLeaflet } from "@/modules/search/hooks/loadLeaflet";
 import CustomDrawer from "@/components/layout/CustomDrawer";
 import { useT } from "@/hooks/useT";
+import { ListConf } from "../schema";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface SearchMapProps {
   results: any[];
+  card?: ListConf["card"];
 }
 
-export default function SearchMap({ results }: SearchMapProps) {
+export default function SearchMap({ results, card }: SearchMapProps) {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<import('leaflet').Map | null>(null);
   const markersRef = useRef<import('leaflet').MarkerClusterGroup | null>(null);
@@ -21,8 +24,8 @@ export default function SearchMap({ results }: SearchMapProps) {
   const darkLayerRef = useRef<import('leaflet').TileLayer | null>(null);
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const [openDetailsDrawer, setOpenDetailsDrawer] = useState(false);
-  const [dataToProfile, setDataToProfile] = useState(null);
+  const [openDetails, setOpenDetails] = useState(false);
+  const [dataToProfile, setDataToProfile] = useState<any>(null);
   const { setDataToProfile: setContextDataToProfiles } = useCocolight();
   const t = useT("modules/search");
 
@@ -165,7 +168,7 @@ export default function SearchMap({ results }: SearchMapProps) {
       const detailsData = data.serverData;
       setDataToProfile(detailsData);
       setContextDataToProfiles(data);
-      setOpenDetailsDrawer(true);
+      setOpenDetails(true);
     };
 
     initMap();
@@ -199,19 +202,33 @@ export default function SearchMap({ results }: SearchMapProps) {
       <div className="relative w-full h-full rounded shadow">
         <div ref={mapRef} className="w-full min-h-screen z-49" />
       </div>
-      {
-        openDetailsDrawer &&
+      {/* Affichage conditionnel des détails */}
+      {card?.detailsMode === "drawer" ? (
         <CustomDrawer
-          isOpenDrawer={openDetailsDrawer}
-          openAndCloseDrawer={() => setOpenDetailsDrawer(false)}
-          direction={"right"}
+          isOpenDrawer={openDetails}
+          openAndCloseDrawer={() => setOpenDetails(false)}
+          direction="right"
           openPageTitle={t("Aller sur la page")}
           overflowType="overflow-hidden"
-          link={`/@${(dataToProfile as any)?.slug}`}
+          link={`/@${dataToProfile?.slug}`}
         >
           {dataToProfile && <Preview data={dataToProfile as any} />}
         </CustomDrawer>
-      }
+      ) : (
+        <Dialog open={openDetails} onOpenChange={setOpenDetails}>
+          <DialogContent className="p-4 min-w-[320px] max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle>
+                {t("Aperçu")}
+              </DialogTitle>
+              <DialogDescription>
+                {t("Aperçu du contenu")}
+              </DialogDescription>
+            </DialogHeader>
+            {dataToProfile && <Preview data={dataToProfile as any} />}
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   );
 }

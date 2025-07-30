@@ -371,7 +371,7 @@ if (!loaded) {
                   </div>
                 }
               >
-                {() => <SearchMapWrapper results={transformedResults} />}
+                {() => <SearchMapWrapper results={transformedResults} card={list?.card} />}
               </ClientOnly>
             )}
           </div>
