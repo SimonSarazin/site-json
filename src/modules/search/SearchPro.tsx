@@ -28,7 +28,6 @@ function normalizeDefaultTypes(
   defaultTypes: string[] | undefined,
   fallbackKey = "type"
 ): Record<string, string[]> | undefined {
-  console.log("normalizeDefaultTypes called with filters:", filters, "and defaultTypes:", defaultTypes);
 
   if (!defaultTypes || !Array.isArray(defaultTypes)) return undefined;
 
@@ -253,7 +252,7 @@ if (!loaded) {
       <div className="flex flex-col flex-1 overflow-hidden">
         {/* Header with title and description */}
         {(title || description) && (
-          <div className="p-4 bg-background text-primary-foreground flex items-center justify-center">
+          <div className="p-4 flex items-center justify-center">
             <div className="flex flex-col items-center text-center space-y-1">
             {title && <h1 className="text-2xl font-bold">{t(title)} {totalCount ? <span className="text-sm font-normal">({totalCount})</span> : null}</h1>}
             {description && <p className="text-sm">{t(description)}</p>}

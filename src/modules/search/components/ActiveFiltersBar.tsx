@@ -3,8 +3,6 @@ import { XIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useT } from "@/hooks/useT";
 import { TagsFilter } from "../schema";
-import { useEffect } from "react";
-
 
 interface ActiveFiltersBarProps {
   filters: Record<string, TagsFilter>;
@@ -26,10 +24,6 @@ export default function ActiveFiltersBar({ filters, showActiveFiltersTypes, show
 
   const activeEntries = showActiveFiltersTags && filtersSearchTags ? Object.entries(filtersSearchTags).filter(([_, values]) => values?.length) : [];
   const activeTypeEntries = showActiveFiltersTypes && filtersSearchType ? Object.entries(filtersSearchType).filter(([_, values]) => values?.length) : [];
-
-  useEffect(() => {
-  console.log("🔁 filtersSearchType changed", filtersSearchType);
-}, [filtersSearchType]);
 
   const label = (key: string, value: string | Record<string, string>) => {
     // LocalizedString → on le passe directement à t()

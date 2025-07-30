@@ -12,7 +12,7 @@ export function TabsSection({ id, props }: { id?: string; props: TabsSectionProp
   return (
     <section id={id} className="py-16 bg-background text-foreground">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
+        <div className="mx-auto">
           <Tabs 
             defaultValue={defaultTab || tabs[0]?.id} 
             orientation={orientation}

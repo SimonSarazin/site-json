@@ -11,6 +11,7 @@ import { ErrorBoundary } from "./components/layout/ErrorBoundary";
 import { Suspense } from "react";
 import { CocolightProvider } from "./contexts/CocolightProvider";
 import { getBaseUrl } from "./lib/constant/common";
+import { GoogleFontsLoader } from "./components/layout/GoogleFontsLoader";
 
 interface Props {
   config: SiteConfig; // 👈 nouvelle prop
@@ -33,6 +34,7 @@ function RootLayout({ config }: Props) {
           >
             <I18nBridge>
             <SiteTheme />
+            <GoogleFontsLoader />
             
             <Outlet />
             <IntegrationsLoader />

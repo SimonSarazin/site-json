@@ -970,15 +970,49 @@ export const FeatureFlag = z.object({
 /*───────────────────────────────────────────────────────────────*/
 const ColorPalette = z.object({
   primary: z.string(),
+  primaryForeground: z.string().optional(),
   secondary: z.string(),
+  secondaryForeground: z.string().optional(),
   accent: z.string(),
+  accentForeground: z.string().optional(),
   background: z.string(),
   foreground: z.string(),
   muted: z.string(),
+  mutedForeground: z.string().optional(),
+  destructive: z.string().optional(),
+  destructiveForeground: z.string().optional(),
   border: z.string(),
+  input: z.string().optional(),
+  ring: z.string().optional(),
+
   success: z.string().optional(),
+  successForeground: z.string().optional(),
   warning: z.string().optional(),
+  warningForeground: z.string().optional(),
   error: z.string().optional(),
+  errorForeground: z.string().optional(),
+  info: z.string().optional(),
+  infoForeground: z.string().optional(),
+
+  card: z.string().optional(),
+  cardForeground: z.string().optional(),
+  popover: z.string().optional(),
+  popoverForeground: z.string().optional(),
+
+  sidebar: z.string().optional(),
+  sidebarForeground: z.string().optional(),
+  sidebarPrimary: z.string().optional(),
+  sidebarPrimaryForeground: z.string().optional(),
+  sidebarAccent: z.string().optional(),
+  sidebarAccentForeground: z.string().optional(),
+  sidebarBorder: z.string().optional(),
+  sidebarRing: z.string().optional(),
+
+  chart1: z.string().optional(),
+  chart2: z.string().optional(),
+  chart3: z.string().optional(),
+  chart4: z.string().optional(),
+  chart5: z.string().optional(),
 });
 
 const Typography = z.object({
@@ -986,23 +1020,29 @@ const Typography = z.object({
     sans: z.array(z.string()),
     serif: z.array(z.string()).optional(),
     mono: z.array(z.string()).optional(),
-  }),
-  fontSize: z.record(z.string(), z.string()).optional(),
-  fontWeight: z.record(z.string(), z.number()).optional(),
-  lineHeight: z.record(z.string(), z.string()).optional(),
+  })
 });
 
 const Spacing = z.object({
-  scale: z.enum(["tight", "normal", "relaxed"]).default("normal"),
-  custom: z.record(z.string(), z.string()).optional(),
+  base: z.string().optional(),
 });
 
 const BorderRadius = z.object({
-  scale: z.enum(["none", "sm", "md", "lg", "xl"]).default("md"),
-  custom: z.record(z.string(),z.string()).optional(),
+  base: z.string().optional(),
 });
 
-const ThemeConfig = z.object({
+const Shadows = z.object({
+  shadow2xs: z.string().optional(),
+  shadowXs: z.string().optional(),
+  shadowSm: z.string().optional(),
+  shadow: z.string().optional(),
+  shadowMd: z.string().optional(),
+  shadowLg: z.string().optional(),
+  shadowXl: z.string().optional(),
+  shadow2xl: z.string().optional(),
+});
+
+export const ThemeConfig = z.object({
   colors: z.object({
     light: ColorPalette,
     dark: ColorPalette,
@@ -1010,13 +1050,11 @@ const ThemeConfig = z.object({
   typography: Typography,
   spacing: Spacing,
   borderRadius: BorderRadius,
-  animations: z.object({
-    enabled: z.boolean().default(true),
-    duration: z.enum(["fast", "normal", "slow"]).default("normal"),
-  }),
+  shadows: Shadows.optional(),
   customCSS: z.string().optional(),
 });
 
+export type ThemeConfig = z.infer<typeof ThemeConfig>;
 /*───────────────────────────────────────────────────────────────*/
 /* 9. Performance & Optimization                                 */
 /*───────────────────────────────────────────────────────────────*/

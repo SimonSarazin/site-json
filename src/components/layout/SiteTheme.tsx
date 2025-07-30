@@ -1,8 +1,12 @@
 import { useSite } from "@/contexts/SiteContext";
 
-function toVars(obj: Record<string, string>): string {
+function toVarsExact(obj?: Record<string, string | number | string[]>) {
+  if (!obj) return "";
   return Object.entries(obj)
-    .map(([k, v]) => `--${k}: ${v};`)
+    .map(([key, value]) => {
+      const val = Array.isArray(value) ? value.join(", ") : value;
+      return `--${key}: ${val};`;
+    })
     .join("\n");
 }
 
@@ -11,23 +15,46 @@ export function SiteTheme() {
   const theme = config.theme;
   if (!theme) return null;
 
-  let css = "";
-  if (theme.colors) {
-    if (theme.colors.light) {
-      css += `:root {\n${toVars(theme.colors.light)}\n}`;
-    }
-    if (theme.colors.dark) {
-      css += `\n.dark {\n${toVars(theme.colors.dark)}\n}`;
-    }
+  let lightVars = "";
+  let darkVars = "";
+
+  if (theme.colors?.light) {
+    lightVars += toVarsExact(theme.colors.light);
   }
 
-  if (theme.typography?.fontFamily?.sans) {
-    css += `\nbody { font-family: ${theme.typography.fontFamily.sans.join(", ")}; }`;
+  if (theme.colors?.dark) {
+    darkVars += toVarsExact(theme.colors.dark);
   }
 
-  if (theme.customCSS) {
-    css += `\n${theme.customCSS}`;
+  if (theme.typography?.fontFamily) {
+    lightVars += "\n" + toVarsExact(
+      Object.fromEntries(
+        Object.entries(theme.typography.fontFamily).map(([k, v]) => [`font-${k}`, v])
+      )
+    );
+    darkVars += "\n" + toVarsExact(
+      Object.fromEntries(
+        Object.entries(theme.typography.fontFamily).map(([k, v]) => [`font-${k}`, v])
+      )
+    );
   }
+
+  if (theme.spacing?.base) {
+      lightVars += `\n--spacing: ${theme.spacing.base};`;
+  }
+
+
+  if (theme.borderRadius?.base) {
+    lightVars += `\n--radius: ${theme.borderRadius.base};`;
+  }
+
+  if (theme.shadows) {
+    lightVars += "\n" + toVarsExact(theme.shadows);
+  }
+
+  let css = `:root {\n${lightVars}\n}`;
+  if (darkVars.trim()) css += `\n.dark {\n${darkVars}\n}`;
+  if (theme.customCSS) css += `\n${theme.customCSS}`;
 
   return <style id="site-theme" dangerouslySetInnerHTML={{ __html: css }} />;
 }
