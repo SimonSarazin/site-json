@@ -1,11 +1,23 @@
 import { useSite } from "@/contexts/SiteContext";
 
+// ------------------------------------------
+// Utils : camelCase / digits  →  kebab-case
+// ------------------------------------------
+function toKebab(key: string) {
+  return key
+    // camelCase → kebab-case (primaryForeground → primary-foreground)
+    .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+    // lettres + chiffres  (shadow2xs → shadow-2xs, chart1 → chart-1)
+    .replace(/([a-zA-Z])([0-9])/g, "$1-$2")
+    .toLowerCase();
+}
+
 function toVarsExact(obj?: Record<string, string | number | string[]>) {
   if (!obj) return "";
   return Object.entries(obj)
     .map(([key, value]) => {
       const val = Array.isArray(value) ? value.join(", ") : value;
-      return `--${key}: ${val};`;
+      return `--${toKebab(key)}: ${val};`;
     })
     .join("\n");
 }
@@ -48,8 +60,11 @@ export function SiteTheme() {
     lightVars += `\n--radius: ${theme.borderRadius.base};`;
   }
 
-  if (theme.shadows) {
-    lightVars += "\n" + toVarsExact(theme.shadows);
+  if (theme.shadows?.light) {
+    lightVars += "\n" + toVarsExact(theme.shadows.light);
+  }
+  if (theme.shadows?.dark) {
+    darkVars += "\n" + toVarsExact(theme.shadows.dark);
   }
 
   let css = `:root {\n${lightVars}\n}`;

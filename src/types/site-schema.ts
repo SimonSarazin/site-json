@@ -1050,7 +1050,10 @@ export const ThemeConfig = z.object({
   typography: Typography,
   spacing: Spacing,
   borderRadius: BorderRadius,
-  shadows: Shadows.optional(),
+  shadows:  z.object({
+    light: Shadows,
+    dark: Shadows,
+  }),
   customCSS: z.string().optional(),
 });
 
