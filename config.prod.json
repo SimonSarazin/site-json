@@ -109,8 +109,7 @@
           "text": {
             "fr": "Nouveau",
             "en": "New"
-          },
-          "color": "primary"
+          }
         }
       }
     ],
@@ -2633,6 +2632,7 @@
             },
             "useFilter": true,
             "showMap": true,
+            "showActiveFiltersTypes": false,
             "filters": {
               "typePlace": {
                 "type": "tags",
@@ -2768,7 +2768,10 @@
               "indexStepList": 20,
               "defaultTypes": [
                 "organizations"
-              ]
+              ],
+              "defaultSortBy": {
+                "updated": -1
+              }
             },
             "list": {
               "columns": {

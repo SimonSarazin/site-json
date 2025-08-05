@@ -71,7 +71,7 @@ export const demoSiteConfig = validateSiteConfig({
         path: "/showcase",
         label: { fr: "Showcase", en: "Showcase" },
         icon: "eye",
-        badge: { text: { fr: "Nouveau", en: "New" }, color: "primary" }
+        badge: { text: { fr: "Nouveau", en: "New" }}
       },
     ],
     sticky: true,

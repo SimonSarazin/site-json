@@ -10,10 +10,22 @@ import { SearchProSectionSchema } from "@/modules/search/schema";
 import { z } from "zod";
 import { LocalizedString, LOCALES } from "./locale-schema";
 
+// export const CocolightConfig = z.object({
+//   baseUrl: z.string().url().default("http://localhost:5080"),
+//   debug: z.boolean().default(false),
+//   context: z.object({
+//     type: z.enum(["organizations", "projects"]).optional(),
+//     slug: z.string().optional(), // slug du site, utilisé pour l'API et les URLs
+//     id: z.string().optional(), // ID de l'organisation ou du projet
+//   })
+// });
+
+// export type CocolightConfig = z.infer<typeof CocolightConfig>;
+
 /*───────────────────────────────────────────────────────────────*/
 /* 2. Navigation                                                 */
 /*───────────────────────────────────────────────────────────────*/
-const NavBadge = z.object({ text: LocalizedString, color: z.string() }).optional();
+const NavBadge = z.object({ text: LocalizedString }).optional();
 
 // Define interface for the NavItem type
 interface NavItemType {
@@ -1020,7 +1032,8 @@ const Typography = z.object({
     sans: z.array(z.string()),
     serif: z.array(z.string()).optional(),
     mono: z.array(z.string()).optional(),
-  })
+  }),
+  letterSpacing: z.string().optional(),
 });
 
 const Spacing = z.object({

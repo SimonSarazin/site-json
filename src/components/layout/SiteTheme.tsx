@@ -51,6 +51,11 @@ export function SiteTheme() {
     );
   }
 
+  if (theme.typography?.letterSpacing) {
+    lightVars += `\n--tracking-normal: ${theme.typography.letterSpacing};`;
+    darkVars += `\n--tracking-normal: ${theme.typography.letterSpacing};`;
+  }
+
   if (theme.spacing?.base) {
       lightVars += `\n--spacing: ${theme.spacing.base};`;
   }
