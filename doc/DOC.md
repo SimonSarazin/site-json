@@ -48,7 +48,7 @@
     - [5.5.19 `comparison`](#5519-comparison)
     - [5.5.20 `featureComparison`](#5520-featurecomparison)
     - [5.5.21 `socialFeed`](#5521-socialfeed)
-    - [5.5.22 `search`](#5522-search)
+    - [5.5.22 `search` (déprécié)](#5522-search)
     - [5.5.23 `eventList`](#5523-eventlist)
     - [5.5.24 `productShowcase`](#5524-productshowcase)
     - [5.5.25 `cookieConsent`](#5525-cookieconsent)
@@ -1022,31 +1022,10 @@ export const SocialFeedSectionSchema = z.object({
 });
 ```
 
-#### 5.5.22 `search`
+#### 5.5.22 `search` (déprécié)
 
-```ts
-export const SearchSectionSchema = z.object({
-  type: z.literal("search"),
-  id: z.string().optional(),
-  props: z.object({
-    placeholder: LocalizedString,
-    searchEndpoint: z.string(),
-    categories: z.array(z.object({
-      id: z.string(),
-      label: LocalizedString
-    })),
-    filters: z.array(z.object({
-      id: z.string(),
-      label: LocalizedString,
-      type: z.enum(["radio","checkbox"]),
-      options: z.array(z.object({
-        value: z.string(),
-        label: LocalizedString
-      }))
-    }))
-  })
-});
-```
+> Cette section de recherche a été retirée du schéma.
+> Utilisez désormais [`searchPro`](#5534-searchpro) pour les fonctionnalités de recherche avancée.
 
 #### 5.5.23 `eventList`
 
@@ -1292,20 +1271,30 @@ import { SearchProSectionSchema } from "@/modules/search/schema";
 ```ts
 export const SearchProSectionSchema = z.object({
   type: z.literal("searchPro"),
-  id: z.string().optional(),
+  id:   z.string().optional(),
+
   props: z.object({
+    title: LocalizedString.optional(),
+    description: LocalizedString.optional(),
     placeholder: LocalizedString,
     useFilter:   z.boolean().default(true),
     showMap:     z.boolean().default(false),
+    enableMap: z.boolean().default(true),
+    showActiveFiltersTypes: z.boolean().default(true),
+    showActiveFiltersTags: z.boolean().default(true),
 
-    filters: z.record(TagsFilterSchema).optional(),
+    filters: z.record(z.string(), TagsFilterSchema).optional(),
 
     baseParams: z.object({
       fediverse:     z.boolean().optional(),
       indexStepList: z.number().optional(),
       indexStepMap:  z.number().optional(),
-      defaultTypes:  z.array(z.string()).optional(),
+      defaultTypes:  z.array(SearchTypeSchema).optional(),
       defaultTags:   z.array(z.string()).optional(),
+      defaultFilters: z.record(z.string(), z.unknown()).optional(),
+      defaultFields:  z.array(z.string()).optional(),
+      defaultSortBy: z.record(z.string(), z.union([z.literal(1), z.literal(-1)])).optional(),
+      notSourceKey: z.boolean().optional(),
     }).optional(),
 
     list: ListConfSchema.optional(),
@@ -1314,15 +1303,20 @@ export const SearchProSectionSchema = z.object({
 });
 ```
 
-| Propriété     | Type                   | Description                                        |
-| ------------- | ---------------------- | -------------------------------------------------- |
-| `placeholder` | `LocalizedString`      | Texte du champ de recherche                        |
-| `useFilter`   | `boolean`              | Afficher/masquer les filtres                       |
-| `showMap`     | `boolean`              | Afficher/masquer la carte                          |
-| `filters`     | `Record<string, TagsFilterSchema>?` | Filtres personnalisés (tags, catégories) |
-| `baseParams`  | `object?`              | Paramètres de base pour la recherche avancée |
-| `list`        | `ListConfSchema?`      | Configuration de l’affichage en liste |
-| `map`         | `MapConfSchema?`       | Configuration de l’affichage sur la carte |
+| Propriété | Type | Description |
+| --------- | ---- | ----------- |
+| `title` | `LocalizedString?` | Titre affiché au-dessus de la recherche |
+| `description` | `LocalizedString?` | Texte introductif optionnel |
+| `placeholder` | `LocalizedString` | Texte du champ de recherche |
+| `useFilter` | `boolean` | Afficher/masquer les filtres |
+| `showMap` | `boolean` | Afficher/masquer la carte |
+| `enableMap` | `boolean` | Charger les ressources cartographiques |
+| `showActiveFiltersTypes` | `boolean` | Afficher les types actifs |
+| `showActiveFiltersTags` | `boolean` | Afficher les tags actifs |
+| `filters` | `Record<string, TagsFilterSchema>?` | Filtres personnalisés (tags, catégories) |
+| `baseParams` | `object?` | Paramètres de base pour la recherche avancée |
+| `list` | `ListConfSchema?` | Configuration de l’affichage en liste |
+| `map` | `MapConfSchema?` | Configuration de l’affichage sur la carte |
 
 ---
 
@@ -1667,10 +1661,12 @@ src/modules/search/
 
 #### 7.1.2 Schéma de configuration (`schema.ts`)
 
-Le schéma `SearchProSectionSchema` (voir section 5.5.5) définit toutes les props configurables :
+Le schéma `SearchProSectionSchema` (voir section 5.5.34) définit toutes les props configurables :
 
+* `title`, `description`: textes d'en-tête
 * `placeholder`: texte du champ
-* `useFilter`, `showMap`: booléens d’activation
+* `useFilter`, `showMap`, `enableMap`: booléens d’activation
+* `showActiveFiltersTypes`, `showActiveFiltersTags`: affichage des filtres actifs
 * `filters`: structure des filtres (tags, type)
 * `baseParams`: paramètres initiaux (API)
 * `list`: configuration liste (colonnes, carte, boutons)
@@ -1699,9 +1695,14 @@ Le schéma `SearchProSectionSchema` (voir section 5.5.5) définit toutes les pro
 {
   "type": "searchPro",
   "props": {
+    "title": { "fr": "Recherche", "en": "Search" },
+    "description": { "fr": "Trouvez des ressources", "en": "Find resources" },
     "placeholder": { "fr": "Rechercher...", "en": "Search..." },
     "useFilter": true,
     "showMap": true,
+    "enableMap": true,
+    "showActiveFiltersTypes": true,
+    "showActiveFiltersTags": true,
     "filters": {
       "tags": {
         "type": "tags",
