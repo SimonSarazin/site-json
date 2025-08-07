@@ -8,7 +8,7 @@ export default function DetailsModeDialog({ openDetails, setOpenDetails, item, p
 
     return (
         <Dialog open={openDetails} onOpenChange={setOpenDetails}>
-          <DialogContent className="p-4 min-w-[320px] max-w-[600px]">
+          <DialogContent className="p-4 sm:max-w-2xl">
             <DialogHeader>
               <DialogTitle>
                 {t("Aperçu")}

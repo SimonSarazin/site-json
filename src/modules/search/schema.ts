@@ -145,6 +145,12 @@ export interface PreviewProps {
   preview?: ListConf["preview"];
 }
 
+export interface SearchMapWrapperProps {
+  results: any[];
+  card?: ListConf["card"];
+  preview?: ListConf["preview"];
+}
+
 export interface SearchMapProps {
   results: any[];
   card?: ListConf["card"];

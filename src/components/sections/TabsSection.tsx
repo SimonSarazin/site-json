@@ -10,7 +10,7 @@ export function TabsSection({ id, props }: { id?: string; props: TabsSectionProp
   const { tabs, defaultTab, orientation = 'horizontal' } = props;
 
   return (
-    <section id={id} className="py-16 bg-background text-foreground">
+    <section id={id} className="py-4 sm:py-16 bg-background text-foreground">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mx-auto">
           <Tabs 
@@ -53,7 +53,7 @@ export function TabsSection({ id, props }: { id?: string; props: TabsSectionProp
                 <TabsContent 
                   key={tab.id} 
                   value={tab.id}
-                  className="mt-6 p-6 bg-card rounded-lg border"
+                  className="mt-2 sm:mt-6 p-0 sm:p-6 bg-card rounded-lg border"
                 >
                 {Array.isArray(tab.content) ? (
                   (tab.content as Section[]).map((section, idx) => (

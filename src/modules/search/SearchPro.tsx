@@ -260,7 +260,7 @@ if (!loaded) {
           </div>
         )}
         {/* Mobile filters bar */}
-        <div className="sm:hidden p-2 flex items-center gap-2">
+        <div className="sm:hidden px-4 py-2 flex items-center gap-2">
           <Button variant="ghost" size="icon" onClick={() => setShowFiltersModal(true)} className="relative bg-muted">
             <svg className="w-5 h-5 text-muted-foreground" viewBox="0 0 20 20" fill="currentColor">
               <path d="M3 5h14M5 10h10M7 15h6" stroke="currentColor" strokeWidth="2" />
@@ -391,7 +391,7 @@ if (!loaded) {
               <div className="text-center text-secondary-foreground py-8">{t("Aucun résultat trouvé.")}</div>
             )}
 
-            <SearchListView results={transformedResults} columns={list?.columns} card={list?.card}  />
+            <SearchListView results={transformedResults} columns={list?.columns} card={list?.card} preview={list?.preview} />
 
             <div ref={lastItemRef} className="h-12" />
 

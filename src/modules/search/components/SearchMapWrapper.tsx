@@ -2,14 +2,10 @@
 import { useClientModule } from "@/hooks/useClientModule";
 import { useT } from "@/hooks/useT";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ListConf } from "../schema";
+import { SearchMapWrapperProps } from "../schema";
 
-interface SearchMapWrapperProps {
-  results: any[];
-  card?: ListConf["card"];
-}
 
-export default function SearchMapWrapper({ results, card }: SearchMapWrapperProps) {
+export default function SearchMapWrapper({ results, card, preview }: SearchMapWrapperProps) {
   const [mounted, MapModule] = useClientModule(() => import("./SearchMap"));
   const t = useT("modules/search");
 
@@ -25,5 +21,5 @@ export default function SearchMapWrapper({ results, card }: SearchMapWrapperProp
   }
 
   const SearchMap = MapModule.default;
-  return <SearchMap results={results} card={card} />;
+  return <SearchMap results={results} card={card} preview={preview} />;
 }

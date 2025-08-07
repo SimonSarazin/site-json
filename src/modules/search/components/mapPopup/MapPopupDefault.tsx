@@ -21,9 +21,9 @@ export function MapPopupDefault({ item, id, t }: MapPopupProps) {
   const remaining = tags.length - visibleTags.length;
 
   return (
-    <Card className="w-64 bg-background hover:shadow-xl" id={id}>
+    <Card className="max-w-64 sm:max-w-2xl bg-background hover:shadow-xl" id={id}>
       <CardHeader className="bg-primary text-primary-foreground rounded-t-xl">
-        <CardTitle className="text-lg">{name}</CardTitle>
+        <CardTitle className="text-xs sm:text-sm lg:text-lg">{name}</CardTitle>
       </CardHeader>
       <CardContent className="p-2">
         {/* Tags */}
