@@ -1,0 +1,96 @@
+import { useMemo } from "react";
+
+/**
+ * Convertit une valeur de type `Date | string | null | undefined` en `Date | null`.
+ * – Si la valeur est déjà un objet `Date`, on la renvoie telle quelle.
+ * – Si c'est une chaîne ISO‑8601 valide, on crée un `Date`.
+ * – Dans tous les autres cas, on renvoie `null`.
+ */
+function toDate(value: unknown): Date | null {
+  if (value instanceof Date) return value;
+  if (typeof value === "string" && value.trim() !== "") {
+    const d = new Date(value);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  return null;
+}
+
+const useItem = (item: any) => {
+  /**
+   * Fusionne les données provenant du serveur avec des valeurs par défaut.
+   * Cet objet est mémoïsé pour éviter les recalculs inutiles.
+   */
+  const data = useMemo(() => {
+    /** Valeurs par défaut */
+    const defaults = {
+      name: "Nom inconnu",
+      type: null as string | null,
+      address: {
+        streetAddress: "",
+        postalCode: "",
+        addressLocality: "",
+      } as Record<string, string>,
+      description: "",
+      shortDescription: "",
+      tags: [] as string[],
+      image: "",
+      profilImageUrl: "",
+      profilMediumImageUrl: "",
+      profilThumbImageUrl: "",
+      created: null as Date | null,
+      updated: null as Date | null,
+      links: {} as Record<string, unknown>,
+      collection: null as string | null,
+      slug: null as string | null
+    };
+
+    /** Données brutes sécurisées */
+    const raw = item?.serverData ?? {};
+
+    /** Priorité : raw -> defaults */
+    const merged = { ...defaults, ...raw } as typeof defaults & { [k: string]: any };
+
+    // Normalisation des dates
+    merged.created = toDate(raw.created);
+    merged.updated = toDate(raw.updated);
+
+    // Composition de l'adresse sous forme de chaîne unique
+    const { streetAddress = "", postalCode = "", addressLocality = "" } =
+      merged.address ?? {};
+    merged.addressString = `${streetAddress} ${postalCode} ${addressLocality}`.trim();
+
+   
+    if (!merged.shortDescription && merged.description) {
+      // todo: en fonction de la taille faire une version courte
+      merged.shortDescription = merged.description;
+    }
+
+    if (!merged.description && merged.shortDescription) {
+      // todo: en fonction de la taille faire une version courte
+      merged.description = merged.shortDescription;
+    }
+
+    // Comptages dynamiques
+    const countLinks = (section: string) =>
+      merged.links?.[section] && typeof merged.links[section] === "object"
+        ? Object.keys(merged.links[section]).length
+        : 0;
+
+    merged.countProjects = countLinks("projects");
+    merged.countMembers = countLinks("members");
+    merged.countContributors = countLinks("contributors");
+
+    // Sélection de l'image
+    if (merged.profilMediumImageUrl) {
+      merged.image = merged.profilMediumImageUrl;
+    } else if (merged.profilThumbImageUrl) {
+      merged.image = merged.profilThumbImageUrl;
+    }
+
+    return merged;
+  }, [item]);
+
+  return data;
+};
+
+export default useItem;

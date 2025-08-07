@@ -28,6 +28,10 @@ const ListConfSchema = z.object({
     showAddress:     z.boolean().optional(),
     shareButton:     z.boolean().optional(),
     detailsMode: z.enum(["drawer", "dialog"]).default("drawer"),
+    type: z.enum(["overlay", "default"]).default("default"),
+  }).partial().optional(),
+  preview: z.object({
+    type: z.enum(["default"]).default("default"),
   }).partial().optional(),
 }).partial();
 
@@ -37,6 +41,9 @@ export type ListConf = z.infer<typeof ListConfSchema>;
 const MapConfSchema = z.object({
   initialZoom: z.number().min(1).max(20).optional(),
   cluster:     z.boolean().optional(),
+  popup: z.object({
+    type: z.enum(["default"]).default("default"),
+  }).partial().optional(),
 }).partial();
 
 export type MapConf = z.infer<typeof MapConfSchema>;
@@ -104,3 +111,49 @@ export const SearchProSectionSchema = z.object({
 
 export type SearchProSection = z.infer<typeof SearchProSectionSchema>;
 export type SearchProSectionProps = z.infer<typeof SearchProSectionSchema>["props"]
+
+export interface SearchListViewProps {
+  results: any[];
+  columns?: ListConf["columns"];
+  card?: ListConf["card"];
+  preview?: ListConf["preview"];
+}
+
+export interface SwitchDetailsModeProps {
+  openDetails: boolean;
+  setOpenDetails: (open: boolean) => void;
+  item: any;
+  card?: ListConf["card"];
+  preview?: ListConf["preview"];
+}
+
+export interface DetailsModeProps {
+  openDetails: boolean;
+  setOpenDetails: (open: boolean) => void;
+  preview?: ListConf["preview"];
+  item: any; // Assuming item is the data structure you are passing
+}
+
+export interface SearchCardProps {
+  item: any;
+  onClick?: () => void;
+  card?: ListConf["card"]
+}
+
+export interface PreviewProps {
+  item: any;
+  preview?: ListConf["preview"];
+}
+
+export interface SearchMapProps {
+  results: any[];
+  card?: ListConf["card"];
+  preview?: ListConf["preview"];
+}
+
+export interface MapPopupProps {
+  item: any,
+  popup?: MapConf["popup"],
+  id: string;
+  t: (key: string) => string;
+}

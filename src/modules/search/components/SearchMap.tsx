@@ -1,22 +1,15 @@
 import { useTheme } from "next-themes";
 import { useEffect, useRef, useState } from "react";
 
-import { useCocolight } from "@/hooks/useCocolight";
-import Preview from "@/modules/search/components/Preview";
-
-import { renderMapPopup } from "./MapPopup";
+import { renderMapPopup } from "./renderMapPopup";
 import { loadLeaflet } from "@/modules/search/hooks/loadLeaflet";
-import CustomDrawer from "@/components/layout/CustomDrawer";
 import { useT } from "@/hooks/useT";
-import { ListConf } from "../schema";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { SearchMapProps } from "../schema";
+import { SwitchDetailsMode } from "./SwitchDetailsMode";
 
-interface SearchMapProps {
-  results: any[];
-  card?: ListConf["card"];
-}
 
-export default function SearchMap({ results, card }: SearchMapProps) {
+
+export default function SearchMap({ results, card, preview }: SearchMapProps) {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<import('leaflet').Map | null>(null);
   const markersRef = useRef<import('leaflet').MarkerClusterGroup | null>(null);
@@ -25,8 +18,7 @@ export default function SearchMap({ results, card }: SearchMapProps) {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [openDetails, setOpenDetails] = useState(false);
-  const [dataToProfile, setDataToProfile] = useState<any>(null);
-  const { setDataToProfile: setContextDataToProfiles } = useCocolight();
+  const [item, setItem] = useState<any>(null);
   const t = useT("modules/search");
 
 
@@ -111,10 +103,7 @@ export default function SearchMap({ results, card }: SearchMapProps) {
         const marker = L.marker([lat, lng]) as import('leaflet').Marker & { _customData?: unknown };
 
         const popupHtml = renderMapPopup({
-          name: serverDataSafe.name,
-          tags: serverDataSafe.tags,
-          address: serverDataSafe.address,
-          shortDescription: serverDataSafe.shortDescription,
+          item,
           id: markerId,
           t
         });
@@ -165,9 +154,7 @@ export default function SearchMap({ results, card }: SearchMapProps) {
   
     const handleOpenDetails = (e: CustomEvent) => {
       const data = e.detail as any;
-      const detailsData = data.serverData;
-      setDataToProfile(detailsData);
-      setContextDataToProfiles(data);
+      setItem(data);
       setOpenDetails(true);
     };
 
@@ -202,33 +189,8 @@ export default function SearchMap({ results, card }: SearchMapProps) {
       <div className="relative w-full h-full rounded shadow">
         <div ref={mapRef} className="w-full min-h-screen z-49" />
       </div>
-      {/* Affichage conditionnel des détails */}
-      {card?.detailsMode === "drawer" ? (
-        <CustomDrawer
-          isOpenDrawer={openDetails}
-          openAndCloseDrawer={() => setOpenDetails(false)}
-          direction="right"
-          openPageTitle={t("Aller sur la page")}
-          overflowType="overflow-hidden"
-          link={`/@${dataToProfile?.slug}`}
-        >
-          {dataToProfile && <Preview data={dataToProfile as any} />}
-        </CustomDrawer>
-      ) : (
-        <Dialog open={openDetails} onOpenChange={setOpenDetails}>
-          <DialogContent className="p-4 min-w-[320px] max-w-[600px]">
-            <DialogHeader>
-              <DialogTitle>
-                {t("Aperçu")}
-              </DialogTitle>
-              <DialogDescription>
-                {t("Aperçu du contenu")}
-              </DialogDescription>
-            </DialogHeader>
-            {dataToProfile && <Preview data={dataToProfile as any} />}
-          </DialogContent>
-        </Dialog>
-      )}
+
+      <SwitchDetailsMode openDetails={openDetails} setOpenDetails={setOpenDetails} item={item} card={card} preview={preview} />
     </>
   );
 }

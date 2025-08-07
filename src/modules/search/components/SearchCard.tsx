@@ -1,149 +1,26 @@
-import { MapPin, Share2 } from "lucide-react";
-import { useState } from "react";
-
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from "@/components/ui/card";
-
-import LazyImage from "@/components/layout/LazyImage";
-import { useT } from "@/hooks/useT";
-import { DynamicIcon, IconName } from "lucide-react/dynamic";
-import { SEARCH_TYPE_ICON_NAMES } from "../schema";
-
-interface SearchCardProps {
-  name: string;
-  type?: string;
-  address?: string;
-  description?: string;
-  tags?: string[];
-  image?: string;
-  onClick?: () => void;
-  card?: {
-    tagLimit?: number;
-    showDescription?: boolean;
-    showAddress?: boolean;
-    shareButton?: boolean;
-  };
-}
+import { SearchCardProps } from "../schema";
+import CardDefault from "./card/CardDefault";
+import CardOverlay from "./card/CardOverlay";
 
 export default function SearchCard({
-  name,
-  type,
-  address,
-  description,
-  tags = [],
-  image,
+  item,
   onClick,
   card = {
     tagLimit: 5,
     showDescription: false,
     showAddress: true,
     shareButton: false,
+    type: "overlay"
   },
 }: SearchCardProps) {
-  const t = useT("modules/search");
-  const [expanded, setExpanded] = useState(false);
 
-  return (
-    <Card
-      className="relative aspect-[4/3] rounded-lg shadow overflow-hidden border group cursor-pointer"
-      onClick={() => {
-        onClick?.();
-        setExpanded((e) => !e);
-      }}
-      onMouseEnter={() => setExpanded(true)}
-      onMouseLeave={() => setExpanded(false)}
-    >
-      {/* Image de fond */}
-      <CardContent className="p-0 bg-muted">
-        {image ? (
-          <LazyImage
-            src={image}
-            onError={(e) => (e.currentTarget.src = "/images/defaultImage.png")}
-            alt={name}
-            className="object-contain w-full h-full"
-            placeholder={
-              <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
-                {t("Chargement…")}
-              </div>
-            }
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
-            {t("Aucune image")}
-          </div>
-        )}
-      </CardContent>
-
-      {/* Infos de base */}
-      <CardHeader className="absolute bottom-0 left-0 w-full bg-primary/90 p-3">
-        <CardTitle className="text-base truncate text-primary-foreground">{name}</CardTitle>
-        {card?.showAddress && address && address.trim() !== "" && (
-          <div className="flex items-center text-sm text-primary-foreground/70 gap-1">
-            <MapPin className="h-4 w-4 text-primary-foreground" />
-            <span className="truncate">{address}</span>
-          </div>
-        )}
-      </CardHeader>
-
-      {/* Overlay au survol / clic */}
-      <div
-        className={`absolute inset-0 bg-primary/90 p-4 flex flex-col justify-between transition-all duration-300 ${
-          expanded
-            ? "translate-y-0 opacity-100"
-            : "translate-y-full opacity-0 pointer-events-none"
-        }`}
-      >
-        <div className="overflow-y-auto pr-1 h-full space-y-2">
-          <div>
-            <h3 className="font-semibold text-lg leading-tight text-primary-foreground">{name}</h3>
-            {type && <div className="flex items-center text-sm text-primary-foreground/70 gap-1 mt-1">
-            <DynamicIcon
-              name={SEARCH_TYPE_ICON_NAMES[type as keyof typeof SEARCH_TYPE_ICON_NAMES] as IconName}
-              className="w-4 h-4 text-primary-foreground"
-            />
-            {t(`type.${type}`)}</div>}
-            {card?.showAddress && address && address.trim() !== "" && (
-              <div className="flex items-center text-sm text-primary-foreground/70 gap-1 mt-1">
-                <MapPin className="h-4 w-4 text-primary-foreground" />
-                <span>{address}</span>
-              </div>
-            )}
-            {card?.showDescription && description && (
-              <p className="text-sm text-primary-foreground mt-2">{description}</p>
-            )}
-          </div>
-
-          {tags.length > 0 && (
-            <div className="flex flex-wrap gap-1 pt-2">
-              {tags.slice(0, 5).map((tag, i) => (
-                <Badge key={i} variant="secondary" className="truncate">
-                  #{tag}
-                </Badge>
-              ))}
-              {tags.length > (card.tagLimit ?? 5) && (
-                <Badge variant="secondary">+{tags.length - (card.tagLimit ?? 5)}</Badge>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Partager */}
-        <CardFooter className="pt-2">
-          {card?.shareButton && (
-          <Button variant="link" size="sm" className="flex items-center gap-1 text-primary-foreground">
-            <Share2 className="h-4 w-4" />
-            {t("Partager")}
-          </Button>
-          )}
-        </CardFooter>
-      </div>
-    </Card>
-  );
+  // faire un switch sur le type de carte
+  switch (card.type) {
+    case "overlay":
+      return <CardOverlay item={item} onClick={onClick} card={card} />;
+    case "default":
+      return <CardDefault item={item} onClick={onClick} card={card} />;
+    default:
+      return <CardDefault item={item} onClick={onClick} card={card} />;
+  }
 }

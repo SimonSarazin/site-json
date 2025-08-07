@@ -1,0 +1,153 @@
+import { MapPin, Share2 } from "lucide-react";
+import { useState } from "react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
+
+import LazyImage from "@/components/layout/LazyImage";
+import { useT } from "@/hooks/useT";
+import { DynamicIcon, IconName } from "lucide-react/dynamic";
+import { SEARCH_TYPE_ICON_NAMES, SearchCardProps } from "../../schema";
+import useItem from "../../hooks/useItem";
+
+export default function CardOverlay({
+  item,
+  onClick,
+  card = {
+    tagLimit: 5,
+    showDescription: false,
+    showAddress: true,
+    shareButton: false,
+    type: "overlay"
+  },
+}: SearchCardProps) {
+  const t = useT("modules/search");
+  const [expanded, setExpanded] = useState(false);
+  const data = useItem(item);
+
+  const {
+    name,
+    type,
+    addressString,
+    shortDescription,
+    tags,
+    image,
+    collection
+  } = data;
+  
+  return (
+    <Card
+      className="relative aspect-[4/3] rounded-lg shadow overflow-hidden border group cursor-pointer"
+      onClick={() => {
+        onClick?.();
+        setExpanded((e) => !e);
+      }}
+      onMouseEnter={() => setExpanded(true)}
+      onMouseLeave={() => setExpanded(false)}
+    >
+      {/* Image de fond */}
+      <CardContent className="p-0 bg-muted">
+        {image ? (
+          <LazyImage
+            src={image}
+            onError={(e) => (e.currentTarget.src = "/images/defaultImage.png")}
+            alt={name}
+            className="object-contain w-full h-full"
+            placeholder={
+              <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
+                {t("Chargement…")}
+              </div>
+            }
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
+            {t("Aucune image")}
+          </div>
+        )}
+      </CardContent>
+
+      {/* Infos de base */}
+      <CardHeader className="absolute bottom-0 left-0 w-full bg-primary/90 p-3">
+        <CardTitle className="text-base truncate text-primary-foreground">{name}</CardTitle>
+        {card?.showAddress && addressString && addressString.trim() !== "" && (
+          <div className="flex items-center text-sm text-primary-foreground/70 gap-1">
+            <MapPin className="h-4 w-4 text-primary-foreground" />
+            <span className="truncate">{addressString}</span>
+          </div>
+        )}
+      </CardHeader>
+
+      {/* Overlay au survol / clic */}
+      <div
+        className={`absolute inset-0 bg-primary/90 p-4 flex flex-col justify-between transition-all duration-300 ${
+          expanded
+            ? "translate-y-0 opacity-100"
+            : "translate-y-full opacity-0 pointer-events-none"
+        }`}
+      >
+        <div className="overflow-y-auto pr-1 h-full space-y-2">
+          <div>
+            <h3 className="font-semibold text-lg leading-tight text-primary-foreground">{name}</h3>
+            {collection === "organizations" && type && <div className="flex items-center text-sm text-primary-foreground/70 gap-1 mt-1">
+            <DynamicIcon
+              name={SEARCH_TYPE_ICON_NAMES[type as keyof typeof SEARCH_TYPE_ICON_NAMES] as IconName}
+              className="w-4 h-4 text-primary-foreground"
+            />
+            {t(`type.${type}`)}</div>}
+            {collection === "citoyens" && <div className="flex items-center text-sm text-primary-foreground/70 gap-1 mt-1">
+            <DynamicIcon
+              name={"user" as IconName}
+              className="w-4 h-4 text-primary-foreground"
+            />
+            {t(`type.${collection}`)}</div>}
+            {collection === "projects" && <div className="flex items-center text-sm text-primary-foreground/70 gap-1 mt-1">
+            <DynamicIcon
+              name={"lightbulb" as IconName}
+              className="w-4 h-4 text-primary-foreground"
+            />
+            {t(`type.${collection}`)}</div>}
+            {card?.showAddress && addressString && addressString.trim() !== "" && (
+              <div className="flex items-center text-sm text-primary-foreground/70 gap-1 mt-1">
+                <MapPin className="h-4 w-4 text-primary-foreground" />
+                <span>{addressString}</span>
+              </div>
+            )}
+            {card?.showDescription && shortDescription && (
+              <p className="text-sm text-primary-foreground mt-2">{shortDescription}</p>
+            )}
+          </div>
+
+          {tags.length > 0 && (
+            <div className="flex flex-wrap gap-1 pt-2">
+              {tags.slice(0, 5).map((tag, i) => (
+                <Badge key={i} variant="secondary" className="truncate">
+                  #{tag}
+                </Badge>
+              ))}
+              {tags.length > (card.tagLimit ?? 5) && (
+                <Badge variant="secondary">+{tags.length - (card.tagLimit ?? 5)}</Badge>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Partager */}
+        <CardFooter className="pt-2">
+          {card?.shareButton && (
+          <Button variant="link" size="sm" className="flex items-center gap-1 text-primary-foreground">
+            <Share2 className="h-4 w-4" />
+            {t("Partager")}
+          </Button>
+          )}
+        </CardFooter>
+      </div>
+    </Card>
+  );
+}
