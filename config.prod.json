@@ -1539,7 +1539,7 @@
           "type": "markdown",
           "id": "showcase-markdown",
           "props": {
-            "md": "\n              <h2>Section Markdown</h2>\n              <p>Cette section permet d'afficher du contenu <strong>Markdown</strong> ou <em>HTML</em> directement.</p>\n              <ul>\n                <li>Support du HTML</li>\n                <li>Styles automatiques</li>\n                <li>Responsive design</li>\n              </ul>\n              <blockquote>\n                <p>Parfait pour du contenu riche et formaté !</p>\n              </blockquote>\n            ",
+            "md": "## Section Markdown\n\nCette section permet d'afficher **Markdown** ou _HTML_ directement.\n\n- Support du **Markdown**\n- Styles automatiques\n- Responsive design\n\n> Parfait pour du contenu riche et formaté !",
             "sourceType": "inline"
           }
         },
