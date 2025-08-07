@@ -21,6 +21,7 @@ import "@/modules/search/i18n";
 import "@/modules/search/styles.css";
 import { SearchProSectionProps, TagsFilter } from "./schema";
 import { SearchResultPage } from "@communecter/cocolight-api-client";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 
 function normalizeDefaultTypes(
@@ -352,15 +353,24 @@ if (!loaded) {
               </div>
             )}
 
-            <Button
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
               variant="secondary"
               size="icon"
               className="absolute top-2 right-2 z-50"
               onClick={() => setMapUsed(false)}
-              title="Voir en liste"
+              aria-label="Voir en liste"
             >
               <ClipboardList className="h-5 w-5 text-primary" />
             </Button>
+            </TooltipTrigger>
+            <TooltipContent>{t("Voir en liste")}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
+
 
             {Array.isArray(transformedResults) && transformedResults.length > 0 && (
               <ClientOnly
