@@ -361,7 +361,7 @@ if (!loaded) {
               size="icon"
               className="absolute top-2 right-2 z-50"
               onClick={() => setMapUsed(false)}
-              aria-label="Voir en liste"
+              aria-label={t("Voir en liste")}
             >
               <ClipboardList className="h-5 w-5 text-primary" />
             </Button>
