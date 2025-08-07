@@ -2632,7 +2632,9 @@
             },
             "useFilter": true,
             "showMap": true,
+            "enableMap": true,
             "showActiveFiltersTypes": false,
+            "showActiveFiltersTags": true,
             "filters": {
               "typePlace": {
                 "type": "tags",
@@ -2993,5 +2995,118 @@
       "enabled": true,
       "rolloutPercentage": 100
     }
-  ]
+  ],
+  "theme": {
+    "colors": {
+      "light": {
+        "background": "oklch(0.9900 0.0000 0.0000)",
+        "foreground": "oklch(0.0000 0.0000 0.0000)",
+        "card": "oklch(1.0000 0.0000 0.0000)",
+        "cardForeground": "oklch(0.0000 0.0000 0.0000)",
+        "popover": "oklch(0.9900 0.0000 0.0000)",
+        "popoverForeground": "oklch(0.0000 0.0000 0.0000)",
+        "primary": "oklch(0.0000 0.0000 0.0000)",
+        "primaryForeground": "oklch(1.0000 0.0000 0.0000)",
+        "secondary": "oklch(0.9400 0.0000 0.0000)",
+        "secondaryForeground": "oklch(0.0000 0.0000 0.0000)",
+        "muted": "oklch(0.9700 0.0000 0.0000)",
+        "mutedForeground": "oklch(0.4400 0.0000 0.0000)",
+        "accent": "oklch(0.9400 0.0000 0.0000)",
+        "accentForeground": "oklch(0.0000 0.0000 0.0000)",
+        "destructive": "oklch(0.6300 0.1900 23.0300)",
+        "destructiveForeground": "oklch(1.0000 0.0000 0.0000)",
+        "border": "oklch(0.9200 0.0000 0.0000)",
+        "input": "oklch(0.9400 0.0000 0.0000)",
+        "ring": "oklch(0.0000 0.0000 0.0000)",
+        "chart1": "oklch(0.8097 0.1698 75.4578)",
+        "chart2": "oklch(0.5500 0.2200 264.5300)",
+        "chart3": "oklch(0.7200 0.0000 0.0000)",
+        "chart4": "oklch(0.9200 0.0000 0.0000)",
+        "chart5": "oklch(0.5600 0.0000 0.0000)",
+        "sidebar": "oklch(0.9900 0.0000 0.0000)",
+        "sidebarForeground": "oklch(0.0000 0.0000 0.0000)",
+        "sidebarPrimary": "oklch(0.0000 0.0000 0.0000)",
+        "sidebarPrimaryForeground": "oklch(1.0000 0.0000 0.0000)",
+        "sidebarAccent": "oklch(0.9400 0.0000 0.0000)",
+        "sidebarAccentForeground": "oklch(0.0000 0.0000 0.0000)",
+        "sidebarBorder": "oklch(0.9400 0.0000 0.0000)",
+        "sidebarRing": "oklch(0.0000 0.0000 0.0000)"
+      },
+      "dark": {
+        "background": "oklch(0.0000 0.0000 0.0000)",
+        "foreground": "oklch(1.0000 0.0000 0.0000)",
+        "card": "oklch(0.1400 0.0000 0.0000)",
+        "cardForeground": "oklch(1.0000 0.0000 0.0000)",
+        "popover": "oklch(0.1800 0.0000 0.0000)",
+        "popoverForeground": "oklch(1.0000 0.0000 0.0000)",
+        "primary": "oklch(1.0000 0.0000 0.0000)",
+        "primaryForeground": "oklch(0.0000 0.0000 0.0000)",
+        "secondary": "oklch(0.2500 0.0000 0.0000)",
+        "secondaryForeground": "oklch(1.0000 0.0000 0.0000)",
+        "muted": "oklch(0.2300 0.0000 0.0000)",
+        "mutedForeground": "oklch(0.7200 0.0000 0.0000)",
+        "accent": "oklch(0.3200 0.0000 0.0000)",
+        "accentForeground": "oklch(1.0000 0.0000 0.0000)",
+        "destructive": "oklch(0.6897 0.1998 23.9040)",
+        "destructiveForeground": "oklch(0.0000 0.0000 0.0000)",
+        "border": "oklch(0.2600 0.0000 0.0000)",
+        "input": "oklch(0.3200 0.0000 0.0000)",
+        "ring": "oklch(0.7200 0.0000 0.0000)",
+        "chart1": "oklch(0.8097 0.1698 75.4578)",
+        "chart2": "oklch(0.5800 0.2100 260.8400)",
+        "chart3": "oklch(0.5600 0.0000 0.0000)",
+        "chart4": "oklch(0.4400 0.0000 0.0000)",
+        "chart5": "oklch(0.9200 0.0000 0.0000)",
+        "sidebar": "oklch(0.1800 0.0000 0.0000)",
+        "sidebarForeground": "oklch(1.0000 0.0000 0.0000)",
+        "sidebarPrimary": "oklch(1.0000 0.0000 0.0000)",
+        "sidebarPrimaryForeground": "oklch(0.0000 0.0000 0.0000)",
+        "sidebarAccent": "oklch(0.3200 0.0000 0.0000)",
+        "sidebarAccentForeground": "oklch(1.0000 0.0000 0.0000)",
+        "sidebarBorder": "oklch(0.3200 0.0000 0.0000)",
+        "sidebarRing": "oklch(0.7200 0.0000 0.0000)"
+      }
+    },
+    "typography": {
+      "fontFamily": {
+        "sans": [
+          "Geist"
+        ],
+        "serif": [
+          "Georgia"
+        ],
+        "mono": [
+          "Geist Mono"
+        ]
+      }
+    },
+    "spacing": {
+      "base": "0.25rem"
+    },
+    "borderRadius": {
+      "base": "0.5rem"
+    },
+    "shadows": {
+      "light": {
+        "shadow2xs": "0px 1px 2px 0px hsl(0.00 0.00% 0.00% / 0.09)",
+        "shadowXs": "0px 1px 2px 0px hsl(0.00 0.00% 0.00% / 0.09)",
+        "shadowSm": "0px 1px 2px 0px hsl(0.00 0.00% 0.00% / 0.18), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.18)",
+        "shadow": "0px 1px 2px 0px hsl(0.00 0.00% 0.00% / 0.18), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.18)",
+        "shadowMd": "0px 1px 2px 0px hsl(0.00 0.00% 0.00% / 0.18), 0px 2px 4px -1px hsl(0.00 0.00% 0.00% / 0.18)",
+        "shadowLg": "0px 1px 2px 0px hsl(0.00 0.00% 0.00% / 0.18), 0px 4px 6px -1px hsl(0.00 0.00% 0.00% / 0.18)",
+        "shadowXl": "0px 1px 2px 0px hsl(0.00 0.00% 0.00% / 0.18), 0px 8px 10px -1px hsl(0.00 0.00% 0.00% / 0.18)",
+        "shadow2xl": "0px 1px 2px 0px hsl(0.00 0.00% 0.00% / 0.45)"
+      },
+      "dark": {
+        "shadow2xs": "0px 0px 0px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowXs": "0px 0px 0px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowSm": "0px 0px 0px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow": "0px 0px 0px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowMd": "0px 0px 0px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 2px 4px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowLg": "0px 0px 0px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 4px 6px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowXl": "0px 0px 0px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 8px 10px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow2xl": "0px 0px 0px 0px hsl(0.00 0.00% 0.00% / 0.63)"
+      }
+    }
+  }
 }
