@@ -1318,6 +1318,47 @@ export const SearchProSectionSchema = z.object({
 | `list` | `ListConfSchema?` | Configuration de l’affichage en liste |
 | `map` | `MapConfSchema?` | Configuration de l’affichage sur la carte |
 
+#### Détails de `ListConfSchema`
+
+```ts
+const ListConfSchema = z.object({
+  columns: z.object({
+    lg: z.number().int().min(1).max(6).optional(),
+    md: z.number().int().min(1).max(6).optional(),
+    sm: z.number().int().min(1).max(6).optional(),
+  }).partial().optional(),
+  card: z.object({
+    tagLimit:        z.number().int().min(1).max(50).optional(),
+    showDescription: z.boolean().optional(),
+    showAddress:     z.boolean().optional(),
+    shareButton:     z.boolean().optional(),
+    detailsMode:     z.enum(["drawer", "dialog"]).default("drawer"),
+    type:            z.enum(["overlay", "default"]).default("default"),
+  }).partial().optional(),
+  preview: z.object({
+    type: z.enum(["default"]).default("default"),
+  }).partial().optional(),
+}).partial();
+```
+
+* **`card.type`** : `overlay` (texte sur l’image) ou `default`.
+* **`card.detailsMode`** : affichage des détails dans un `drawer` ou un `dialog`.
+* **`preview.type`** : type de prévisualisation (actuellement `default`).
+
+#### Détails de `MapConfSchema`
+
+```ts
+const MapConfSchema = z.object({
+  initialZoom: z.number().min(1).max(20).optional(),
+  cluster:     z.boolean().optional(),
+  popup: z.object({
+    type: z.enum(["default"]).default("default"),
+  }).partial().optional(),
+}).partial();
+```
+
+* **`popup.type`** : type de popup sur la carte (actuellement `default`).
+
 ---
 
 ### 5.6 `FooterSchema`
@@ -1636,8 +1677,6 @@ src/modules/search/
 ├── components/
 │   ├── ActiveFiltersBar.tsx
 │   ├── FilterDropdown.tsx
-│   ├── MapPopup.tsx
-│   ├── Preview.tsx
 │   ├── SearchCard.tsx
 │   ├── SearchCardSkeleton.tsx
 │   ├── SearchFilters.tsx
@@ -1645,11 +1684,24 @@ src/modules/search/
 │   ├── SearchListSkeleton.tsx
 │   ├── SearchMap.tsx
 │   ├── SearchMapWrapper.tsx
-│   └── SearchProSection.tsx
+│   ├── SearchProSection.tsx
+│   ├── SwitchDetailsMode.tsx
+│   ├── card/
+│   │   ├── CardDefault.tsx
+│   │   └── CardOverlay.tsx
+│   ├── detailsMode/
+│   │   ├── DetailsModeDialog.tsx
+│   │   └── DetailsModeDrawer.tsx
+│   ├── mapPopup/
+│   │   └── MapPopupDefault.tsx
+│   ├── preview/
+│   │   └── PreviewDefault.tsx
+│   └── renderMapPopup.tsx
 ├── contexts/
 │   └── SearchPropsContext.tsx
 ├── hooks/
 │   ├── loadLeaflet.ts         // Chargement dynamique de Leaflet
+│   ├── useItem.tsx            // Fusion données serveur/valeurs par défaut
 │   └── useSearchFilters.ts    // Gestion des états de filtres
 ├── i18n/
 │   ├── en.json
@@ -1669,14 +1721,15 @@ Le schéma `SearchProSectionSchema` (voir section 5.5.34) définit toutes les pr
 * `showActiveFiltersTypes`, `showActiveFiltersTags`: affichage des filtres actifs
 * `filters`: structure des filtres (tags, type)
 * `baseParams`: paramètres initiaux (API)
-* `list`: configuration liste (colonnes, carte, boutons)
-* `map`: configuration carte (zoom, cluster)
+ * `list`: configuration liste (colonnes, type de carte, mode de détails, prévisualisation)
+ * `map`: configuration carte (zoom, cluster, type de popup)
 
 #### 7.1.3 Context et hooks
 
 * **`SearchPropsContext`** expose les props validées à tous les composants enfants (filtres, liste, carte).
 * **`useSearchFilters`** gère l’état local des filtres (sélection, reset).
 * **`loadLeaflet`** importe dynamiquement le bundle Leaflet uniquement si `showMap` est à `true` (optimisation du bundle).
+* **`useItem`** fusionne les données serveur avec des valeurs par défaut et normalise la structure.
 
 #### 7.1.4 Composants clés
 
@@ -1685,9 +1738,12 @@ Le schéma `SearchProSectionSchema` (voir section 5.5.34) définit toutes les pr
 | `SearchProSection` | Point d’entrée : assemble filtres, liste, carte.     |
 | `ActiveFiltersBar` | Affiche les filtres actifs et permet de les retirer. |
 | `FilterDropdown`   | Dropdown pour sélectionner filtres.                  |
-| `SearchListView`   | Affiche la liste des résultats (cards).              |
-| `SearchMapWrapper` | Conteneur Leaflet avec `MapPopup`.                   |
-| `SearchCard`       | Carte individuelle d’un résultat.                    |
+| `SearchListView`   | Affiche la liste des résultats et gère `SwitchDetailsMode`. |
+| `SearchMapWrapper` | Conteneur Leaflet avec `renderMapPopup`.                   |
+| `SearchCard`       | Carte individuelle (`CardDefault` ou `CardOverlay`).        |
+| `SwitchDetailsMode`| Ouvre les détails en `drawer` ou `dialog`.                 |
+| `PreviewDefault`   | Prévisualisation standard des informations.               |
+| `MapPopupDefault`  | Popup par défaut pour les marqueurs de carte.             |
 
 #### 7.1.5 Exemple de configuration JSON
 
@@ -1711,8 +1767,12 @@ Le schéma `SearchProSectionSchema` (voir section 5.5.34) définit toutes les pr
       }
     },
     "baseParams": { "indexStepList": 12, "defaultTypes": ["event","project"] },
-    "list": { "columns": { "lg": 3 } },
-    "map": { "initialZoom": 10 }
+    "list": {
+      "columns": { "lg": 3 },
+      "card": { "type": "overlay", "detailsMode": "drawer" },
+      "preview": { "type": "default" }
+    },
+    "map": { "initialZoom": 10, "popup": { "type": "default" } }
   }
 }
 ```
