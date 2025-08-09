@@ -73,7 +73,7 @@ export default function LoginForm(): JSX.Element {
 
     /* Appel API ---------------------------------------------------------- */
     try {
-      await userApi.login(email, password, { remember });     // ← optionnel
+      await userApi.login(email, password);     // ← optionnel
       if (userApi.isConnected) navigate("/");
     } catch (err: unknown) {
       /* On extrait le status si présent, sinon on retombe sur le message  */

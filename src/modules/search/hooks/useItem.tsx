@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import type { Organization, Poi, Project, User, Event as EventType} from "@communecter/cocolight-api-client";
 
 /**
  * Convertit une valeur de type `Date | string | null | undefined` en `Date | null`.
@@ -15,7 +16,7 @@ function toDate(value: unknown): Date | null {
   return null;
 }
 
-const useItem = (item: any) => {
+const useItem = (item: User | Organization | Project | Poi | EventType) => {
   /**
    * Fusionne les données provenant du serveur avec des valeurs par défaut.
    * Cet objet est mémoïsé pour éviter les recalculs inutiles.

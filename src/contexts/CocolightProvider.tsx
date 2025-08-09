@@ -1,4 +1,4 @@
-import Cocolight, { User, Organization } from "@communecter/cocolight-api-client";
+import Cocolight, { type Api, type Organization, type User } from "@communecter/cocolight-api-client";
 import { useEffect, useState, ReactNode, useMemo } from "react";
 
 import { InitApiOptions } from "../lib/apiClient";
@@ -9,13 +9,6 @@ import { useCocolightInit } from "@/hooks/useCocolightInit";
 // ---------------------------------------------------------------------------
 // Types dérivés du SDK -------------------------------------------------------
 // ---------------------------------------------------------------------------
-
-type Api = InstanceType<typeof Cocolight.Api>;
-/** Ajout des méthodes EventEmitter manquantes au typage */
-interface ApiClientWithEvents extends InstanceType<typeof Cocolight.ApiClient> {
-  on(event: string, listener: (...args: unknown[]) => void): void;
-  off(event: string, listener: (...args: unknown[]) => void): void;
-}
 
 export interface CocolightProviderProps {
   children: ReactNode;
@@ -78,7 +71,7 @@ export function CocolightProvider({
     };
 
     // Le client implémente en runtime EventEmitter, mais pas dans les d.ts
-    const eventfulClient = userApiInstance.client as ApiClientWithEvents;
+    const eventfulClient = userApiInstance.client;
 
     eventfulClient.on("userLoggedIn", handleUserLoggedIn);
     eventfulClient.on("sessionReset", handleSessionReset);

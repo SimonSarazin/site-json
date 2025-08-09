@@ -1,6 +1,6 @@
 import { useState } from "react";
 import SearchCard from "./SearchCard";
-import { SearchListViewProps } from "../schema";
+import { SearchListViewProps, type SearchEntity } from "../schema";
 import { SwitchDetailsMode } from "./SwitchDetailsMode";
 
 export default function SearchListView({
@@ -10,9 +10,9 @@ export default function SearchListView({
   preview,
 }: SearchListViewProps) {
   const [openDetails, setOpenDetails] = useState(false);
-  const [item, setItem] = useState<any>(null);
+  const [item, setItem] = useState<SearchEntity | null>(null);
 
-  const handleOpenDetails = (item: any) => {
+  const handleOpenDetails = (item: SearchEntity) => {
     setItem(item);
     setOpenDetails(true);
   };
@@ -45,7 +45,7 @@ export default function SearchListView({
       </div>
 
       {/* faire switch sur card?.detailsMode */}
-      <SwitchDetailsMode openDetails={openDetails} setOpenDetails={setOpenDetails} item={item} card={card} preview={preview} />
+      {item && <SwitchDetailsMode openDetails={openDetails} setOpenDetails={setOpenDetails} item={item} card={card} preview={preview} />}
     </>
   );
 }

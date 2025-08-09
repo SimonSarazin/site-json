@@ -1,6 +1,7 @@
-import { SearchPropsProvider } from "./contexts/SearchPropsContext";
+import { SearchPropsProvider } from "./contexts/SearchPropsProvider";
 import { SearchProSectionProps } from "./schema";
 import SearchPro from "./SearchPro";
+import useInSections from "../../hooks/useInSection";
 
 export interface SearchSectionWrapperProps {
   id?: string;
@@ -8,9 +9,10 @@ export interface SearchSectionWrapperProps {
 }
 
 export default function SearchProSection({ id, props }: SearchSectionWrapperProps) {
+  const inSection = useInSections(id || "");
   return (
-    <section id={id} className="relative min-h-[80vh]">
-      <SearchPropsProvider props={props}>
+    <section id={id} className="relative flex-1">
+      <SearchPropsProvider props={props} inSection={inSection}>
         <SearchPro props={props} />
       </SearchPropsProvider>
     </section>

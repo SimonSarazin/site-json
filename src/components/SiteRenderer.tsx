@@ -1,16 +1,17 @@
 // src/SiteRenderer.tsx
-import { useLocation } from "react-router"; // ✅
+import { useLocation } from "react-router";
 import { SiteHeader } from "./layout/SiteHeader";
 import { SiteFooter } from "./layout/SiteFooter";
 import { SectionRenderer } from "./sections/SectionRenderer";
-import { useSite } from "@/contexts/SiteContext";
+import { useSite } from "@/hooks/useSite";
 import { Seo } from "./layout/Seo";
 import { usePageGuards } from "@/hooks/usePageGuards";
+import { PageProvider } from "@/contexts/PageProvider";
 // import { SiteHeader2 } from "./layout/SiteHeader2";
 
 export function SiteRenderer() {
   const { config } = useSite();
-  const { pathname } = useLocation(); // 🔄 remplace currentPath
+  const { pathname } = useLocation();
 
   const currentPage =
     config.pages.find((p) => p.path === pathname) || config.pages[0];
@@ -37,7 +38,7 @@ function getLayoutClasses(layout: string) {
     //   return "grid grid-cols-12 gap-8 px-4";
     case "default":
     default:
-      return "max-w-7xl mx-auto";
+      return "w-full sm:max-w-7xl mx-auto";
   }
 }
 
@@ -48,9 +49,11 @@ function getLayoutClasses(layout: string) {
         {!currentPage.hideHeader && <SiteHeader />}
 
          <main id="main" role="main" className="flex-1">
+          <PageProvider page={currentPage}>
           {currentPage.sections.map((s, i) => (
             <SectionRenderer key={i} section={s} />
           ))}
+          </PageProvider>
         </main>
 
         {!currentPage.hideFooter && <SiteFooter />}

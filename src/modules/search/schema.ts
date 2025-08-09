@@ -1,5 +1,6 @@
 
 import { LocalizedString } from "@/types/locale-schema";
+import type { Organization, Poi, Project, User, Event as EventType } from "@communecter/cocolight-api-client";
 import { IconName } from "lucide-react/dynamic";
 import { z } from "zod";
 
@@ -112,54 +113,66 @@ export const SearchProSectionSchema = z.object({
 export type SearchProSection = z.infer<typeof SearchProSectionSchema>;
 export type SearchProSectionProps = z.infer<typeof SearchProSectionSchema>["props"]
 
-export interface SearchListViewProps {
-  results: any[];
+export type SearchEntity = User | Organization | Project | EventType | Poi;
+
+export interface SearchResultPage<T extends SearchEntity = SearchEntity> {
+  count?: Record<string, number>;
+  /** Tableau de résultats (mélange possible) */
+  results: T[];
+  pageNumber: number;
+  hasNext: boolean;
+  next: () => Promise<SearchResultPage<T>>;
+}
+
+
+export interface SearchListViewProps<T extends SearchEntity = SearchEntity> {
+  results: T[];
   columns?: ListConf["columns"];
   card?: ListConf["card"];
   preview?: ListConf["preview"];
 }
 
-export interface SwitchDetailsModeProps {
+export interface SwitchDetailsModeProps<T extends SearchEntity = SearchEntity> {
   openDetails: boolean;
   setOpenDetails: (open: boolean) => void;
-  item: any;
+  item: T;
   card?: ListConf["card"];
   preview?: ListConf["preview"];
 }
 
-export interface DetailsModeProps {
+export interface DetailsModeProps<T extends SearchEntity = SearchEntity> {
   openDetails: boolean;
   setOpenDetails: (open: boolean) => void;
   preview?: ListConf["preview"];
-  item: any; // Assuming item is the data structure you are passing
+  item: T;
 }
 
-export interface SearchCardProps {
-  item: any;
+export interface SearchCardProps<T extends SearchEntity = SearchEntity> {
+  item: T;
   onClick?: () => void;
-  card?: ListConf["card"]
+  card?: ListConf["card"];
 }
 
-export interface PreviewProps {
-  item: any;
+export interface PreviewProps<T extends SearchEntity = SearchEntity> {
+  item: T;
   preview?: ListConf["preview"];
 }
 
-export interface SearchMapWrapperProps {
-  results: any[];
+export interface SearchMapWrapperProps<T extends SearchEntity = SearchEntity> {
+  results: T[];
   card?: ListConf["card"];
   preview?: ListConf["preview"];
 }
 
-export interface SearchMapProps {
-  results: any[];
+export interface SearchMapProps<T extends SearchEntity = SearchEntity> {
+  results: T[];
   card?: ListConf["card"];
   preview?: ListConf["preview"];
 }
 
-export interface MapPopupProps {
-  item: any,
-  popup?: MapConf["popup"],
+export interface MapPopupProps<T extends SearchEntity = SearchEntity> {
+  item: T;
+  popup?: MapConf["popup"];
   id: string;
   t: (key: string) => string;
 }

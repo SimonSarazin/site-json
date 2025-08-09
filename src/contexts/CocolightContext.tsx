@@ -1,10 +1,7 @@
-import Cocolight, { CocolightHelper, Organization, User } from "@communecter/cocolight-api-client";
+import Cocolight, { type Api, type ApiClient, type UserApi, type Organization, type User, } from "@communecter/cocolight-api-client";
 import { createContext, Dispatch, SetStateAction } from "react";
 
-type ApiClient = InstanceType<typeof Cocolight.ApiClient>
-/** Facade dédiée aux opérations utilisateur / auth */
-type UserApi = ReturnType<typeof Cocolight.Api.userApi>
-type Api = InstanceType<typeof Cocolight.Api>
+type CocolightHelper = typeof Cocolight.helper;
 
 export interface CocolightContextType {
   /** Client HTTP bas niveau partagé par toutes les API */

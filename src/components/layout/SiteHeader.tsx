@@ -29,7 +29,7 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
 import "@/components/layout/i18n";
-import { useSite } from "@/contexts/SiteContext";
+import { useSite } from "@/hooks/useSite";
 import { useNavigate } from "react-router";
 import { useCocolight } from "@/hooks/useCocolight";
 import { AnnouncementBanner } from "./AnnouncementBanner";

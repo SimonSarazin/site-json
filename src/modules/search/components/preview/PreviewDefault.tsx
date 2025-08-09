@@ -9,7 +9,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import LazyImage from "@/components/layout/LazyImage";
 import { useT } from "@/hooks/useT";
-import { useSearchProps } from "@/modules/search/contexts/SearchPropsContext";
+import { useSearchProps } from "@/modules/search/hooks/useSearchProps";
 import { DynamicIcon, IconName } from "lucide-react/dynamic";
 import useItem from "@/modules/search/hooks/useItem";
 import { PreviewProps } from "@/modules/search/schema";

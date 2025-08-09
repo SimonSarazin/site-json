@@ -19,10 +19,8 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import "@/modules/search/i18n"; 
 import "@/modules/search/styles.css";
-import { SearchProSectionProps, TagsFilter } from "./schema";
-import { SearchResultPage } from "@communecter/cocolight-api-client";
+import { SearchProSectionProps, SearchResultPage, TagsFilter } from "./schema";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-
 
 function normalizeDefaultTypes(
   filters: Record<string, TagsFilter>,
@@ -125,7 +123,7 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
       
       const tags = Object.values(searchTags).flat();
       const type = Array.isArray(searchType) ? searchType : Object.values(searchType).flat();
-      const page = pageParam as SearchResultPage<unknown> | undefined;
+      const page = pageParam as SearchResultPage | undefined;
 
       const {
         fediverse = false,
@@ -196,7 +194,7 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
   /* ------------------------------------------------------------------ */
 
   const transformedResults = useMemo(() => {
-      const results = data?.pages?.flatMap((p: any) => p?.results) ?? [];
+      const results = data?.pages?.flatMap((p) => p?.results) ?? [];
     if (!organization || !results.length) return results || [];
     return results.flatMap((d: any) => {
       if (d?.getEntityType) return d;
@@ -231,7 +229,7 @@ if (!loaded) {
 }
 
   return (
-    <div className="pageContent flex flex-col min-h-screen" data-co="page-search">
+    <div className="pageContent flex-1 w-full h-full overflow-hidden" data-co="page-search">
 
     {error ? (
       <div className="p-4 bg-red-100 text-red-800 border border-red-300 rounded mb-4">
@@ -250,7 +248,7 @@ if (!loaded) {
       </div>
     ) : null}
 
-      <div className="flex flex-col flex-1 overflow-hidden">
+      <div className="flex flex-col flex-1 w-full h-full overflow-hidden">
         {/* Header with title and description */}
         {(title || description) && (
           <div className="p-4 flex items-center justify-center">
@@ -345,7 +343,7 @@ if (!loaded) {
 
         {/* Map or list */}
         {enableMap && mapUsed ? (
-          <div className="relative flex-1 overflow-hidden">
+          <div className="relative flex-1 h-full w-full overflow-hidden">
             {loadingMap && (
               <div className="absolute inset-0 z-10 bg-background/80 flex flex-col items-center justify-center">
                 <Loader2 className="animate-spin h-10 w-10 text-primary-foreground" />

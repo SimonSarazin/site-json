@@ -1,5 +1,5 @@
 
-import { useSite } from "@/contexts/SiteContext";
+import { useSite } from "@/hooks/useSite";
 import { useEffect, useMemo } from "react";
 
 function extractFontFamilies(families?: string[]): string[] {

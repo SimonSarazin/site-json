@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useSite } from "@/contexts/SiteContext";
+import { useSite } from "@/hooks/useSite";
 
 export function IntegrationsLoader() {
   const { config } = useSite();

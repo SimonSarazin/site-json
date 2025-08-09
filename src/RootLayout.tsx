@@ -1,17 +1,17 @@
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
-import { SiteProvider } from "@/contexts/SiteContext";
 import { LocalizationProvider } from "@/contexts/LocalizationProvider";
 import { Outlet } from "react-router";
 import { SiteTheme } from "@/components/layout/SiteTheme";
 import { IntegrationsLoader } from "@/components/layout/IntegrationsLoader";
 import type { SiteConfig } from "@/types/site";
-import { I18nBridge } from "./contexts/I18nBridge";
-import { ErrorBoundary } from "./components/layout/ErrorBoundary";
+import { I18nBridge } from "@/contexts/I18nBridge";
+import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
 import { Suspense } from "react";
-import { CocolightProvider } from "./contexts/CocolightProvider";
-import { getBaseUrl } from "./lib/constant/common";
-import { GoogleFontsLoader } from "./components/layout/GoogleFontsLoader";
+import { CocolightProvider } from "@/contexts/CocolightProvider";
+import { getBaseUrl } from "@/lib/constant/common";
+import { GoogleFontsLoader } from "@/components/layout/GoogleFontsLoader";
+import { SiteProvider } from "@/contexts/SiteProvider";
 
 interface Props {
   config: SiteConfig; // 👈 nouvelle prop

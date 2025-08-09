@@ -1,4 +1,4 @@
-import { useSite } from "@/contexts/SiteContext";
+import { useSite } from "@/hooks/useSite";
 
 export function useFeatureFlag(key: string): boolean {
   const { config } = useSite();

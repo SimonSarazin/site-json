@@ -1,4 +1,4 @@
-import { useSite } from "@/contexts/SiteContext";
+import { useSite } from "@/hooks/useSite";
 
 // ------------------------------------------
 // Utils : camelCase / digits  →  kebab-case

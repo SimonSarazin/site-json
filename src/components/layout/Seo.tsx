@@ -2,7 +2,7 @@
 import { Helmet } from "@dr.pogodin/react-helmet";
 import { useLocalization } from "@/hooks/useLocalization";
 import { LocalizedString } from "@/types/locale-schema";
-import { useSite } from "@/contexts/SiteContext";
+import { useSite } from "@/hooks/useSite";
 
 interface SeoProps {
   page: {

@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Github, Twitter, Linkedin, Facebook, Instagram, Youtube } from 'lucide-react';
 import { useLocalization } from "@/hooks/useLocalization";
-import { useSite } from '@/contexts/SiteContext';
+import { useSite } from '@/hooks/useSite';
 
 const SocialIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   github: Github,

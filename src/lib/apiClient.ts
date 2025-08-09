@@ -8,16 +8,12 @@
  * appelles pourra être renseignée petit à petit dans ce fichier .d.ts.
  */
 
-import Cocolight from "@communecter/cocolight-api-client";
+import Cocolight, { type Api, type ApiClient, type Organization, type User, type UserApi } from "@communecter/cocolight-api-client";
 import { getBaseUrl, getSlug } from "./constant/common";
 
 // ————————————————————————————————————————————————————————————
 // Types utilitaires — dérivés automatiquement depuis la lib JS
 // ————————————————————————————————————————————————————————————
-
-type ApiClient = InstanceType<typeof Cocolight.ApiClient>;
-type UserApi   = ReturnType<typeof Cocolight.Api.userApi>;
-type Api       = InstanceType<typeof Cocolight.Api>;
 
 export interface InitApiOptions {
   baseURL?: string;
@@ -31,8 +27,8 @@ export interface InitApiResult {
   client: ApiClient;
   userApiInstance: UserApi;
   api: Api;
-  me: unknown | null;
-  organization: unknown | null;
+  me: User | null;
+  organization: Organization | null;
 }
 
 // ————————————————————————————————————————————————————————————
@@ -84,12 +80,12 @@ export async function initApiClient(
       tokenStorageStrategy,
     });
 
-    // Facade UserApi
+      // Facade UserApi
     userApiInstance = Cocolight.Api.userApi(client);
     initialized = true;
 
-    let me: unknown | null           = null;
-    let organization: unknown | null = null;
+    let me: User | null           = null;
+    let organization: Organization | null = null;
     const slug = getSlug();
 
     try {
@@ -100,8 +96,7 @@ export async function initApiClient(
         me = await api.me();
         // Certaines versions renvoient une fonction, d’autres une propriété :
         // on caste en any pour ne pas bloquer.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        organization = await (me as any).organization({ slug });
+        organization = await me.organization({ slug });
       } else {
         api = new Cocolight.Api(null, userApiInstance.client);
         organization = await api.organization({ slug });

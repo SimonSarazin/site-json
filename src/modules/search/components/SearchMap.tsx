@@ -4,9 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { renderMapPopup } from "./renderMapPopup";
 import { loadLeaflet } from "@/modules/search/hooks/loadLeaflet";
 import { useT } from "@/hooks/useT";
-import { SearchMapProps } from "../schema";
+import { SearchEntity, SearchMapProps } from "../schema";
 import { SwitchDetailsMode } from "./SwitchDetailsMode";
-
+import { useSearchProps } from "../hooks/useSearchProps";
+import { cn } from "@/lib/utils";
+import { usePage } from "@/hooks/usePage";
 
 
 export default function SearchMap({ results, card, preview }: SearchMapProps) {
@@ -18,9 +20,10 @@ export default function SearchMap({ results, card, preview }: SearchMapProps) {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [openDetails, setOpenDetails] = useState(false);
-  const [item, setItem] = useState<any>(null);
+  const [item, setItem] = useState<SearchEntity | null>(null);
   const t = useT("modules/search");
-
+  const { inSection } = useSearchProps();
+  const { page } = usePage();
 
   useEffect(() => {
     setMounted(true);
@@ -153,7 +156,7 @@ export default function SearchMap({ results, card, preview }: SearchMapProps) {
     };
   
     const handleOpenDetails = (e: CustomEvent) => {
-      const data = e.detail as any;
+      const data = e.detail as SearchEntity;
       setItem(data);
       setOpenDetails(true);
     };
@@ -182,15 +185,28 @@ export default function SearchMap({ results, card, preview }: SearchMapProps) {
     }
   }, [resolvedTheme]);
 
+    /**
+   * Gestion des dimensions du conteneur de carte:
+   * - Plein écran (absolute) si le footer est masqué et que l’on n’est pas déjà dans une section.
+   * - Hauteur mini de l’écran (min-h-screen) sinon – cela couvre les deux autres cas :
+   *   • Footer visible.
+   *   • Carte affichée dans une section.
+   */
+  const mapContainerClass = cn("z-10 rounded shadow", {
+    "absolute inset-0": page.hideFooter && !inSection,
+    "min-h-screen": !page.hideFooter || inSection,
+  });
+
+
   if (!mounted) return <div>{t("Chargement de la carte…")}</div>;
 
   return (
     <>
       <div className="relative w-full h-full rounded shadow">
-        <div ref={mapRef} className="w-full min-h-screen z-49" />
+        <div ref={mapRef} className={mapContainerClass} />
       </div>
 
-      <SwitchDetailsMode openDetails={openDetails} setOpenDetails={setOpenDetails} item={item} card={card} preview={preview} />
+      {item && <SwitchDetailsMode openDetails={openDetails} setOpenDetails={setOpenDetails} item={item} card={card} preview={preview} />}
     </>
   );
 }
