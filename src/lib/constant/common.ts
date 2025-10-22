@@ -6,6 +6,8 @@ export interface RuntimeEnv {
   VITE_BASE_URL_BACKEND?: string;
   VITE_SLUG?:             string;
   VITE_SERVER_URL?:       string;
+  VITE_MON_API_KEY?:      string;
+  VITE_MON_DOMAIN?:       string;
 }
 
 /** Déclare window.__ENV__ pour le compilateur */
@@ -44,3 +46,5 @@ function readEnv<K extends keyof RuntimeEnv>(
 export const getBaseUrl  = () => readEnv("VITE_BASE_URL_BACKEND", "http://localhost:3000");
 export const getSlug      = () => readEnv("VITE_SLUG",              "default");
 export const getServerUrl = () => readEnv("VITE_SERVER_URL",        "http://localhost:3000");
+export const getMonApiKey = () => readEnv("VITE_MON_API_KEY",       "default-api-key");
+export const getMonDomain = () => readEnv("VITE_MON_DOMAIN",        "default-domain.com");

@@ -18,6 +18,7 @@ export const demoSiteConfig = validateSiteConfig({
     themeColor: "#3b82f6",
   },
   header: {
+    type:"default",
     logo: "https://images.pexels.com/photos/17171481/pexels-photo-17171481/free-photo-of-abstract-blue-and-purple-gradient-background.jpeg?auto=compress&cs=tinysrgb&w=60&h=60&dpr=2",
     logoAlt: { fr: "Logo SiteForge", en: "SiteForge Logo" },
     nav: [

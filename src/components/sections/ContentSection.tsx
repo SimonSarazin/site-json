@@ -1,0 +1,144 @@
+import { useLocalization } from "@/hooks/useLocalization";
+import { cn } from "@/lib/utils";
+import type { SectionPropsMap } from "@/types/site";
+
+export function ContentSection({ 
+  id, 
+  props 
+}: { 
+  id?: string; 
+  props: SectionPropsMap["content"] 
+}) {
+  const { t } = useLocalization();
+  const { 
+    category, 
+    title, 
+    description, 
+    tags, 
+    image, 
+    imagePosition = "right",
+    links,
+    iconCard,
+    infoText,
+    decorativeElements,
+    className 
+  } = props;
+
+  const isImageLeft = imagePosition === "left";
+
+  return (
+    <section id={id} className={cn("py-16", className)}>
+      <div className="container mx-auto px-6">
+        {category && !isImageLeft && (
+          <p className="text-gray-600 text-sm font-medium mb-2">{t(category)}</p>
+        )}
+        
+        <div className={cn(
+          "grid lg:grid-cols-2 gap-16 items-center",
+          isImageLeft && "direction-rtl"
+        )}>
+          {/* Content Column */}
+          <div className={cn(isImageLeft && "lg:order-2")}>
+            {category && isImageLeft && (
+              <p className="text-gray-600 text-sm font-medium mb-4">{t(category)}</p>
+            )}
+            
+            <h2 className="text-4xl font-bold text-teal-500 mb-6 leading-tight">
+              {t(title)}
+            </h2>
+            
+            <p className="text-gray-600 mb-8 leading-relaxed">
+              {t(description)}
+            </p>
+
+            {/* Tags */}
+            {tags && tags.length > 0 && (
+              <div className="flex flex-wrap gap-3 mb-8">
+                {tags.map((tag, idx) => (
+                  <span 
+                    key={idx}
+                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm cursor-pointer transition"
+                  >
+                    {t(tag)}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Icon Card with Links */}
+            {iconCard && links && links.length > 0 && (
+              <div className="flex items-start gap-4 mb-6">
+                {/* Icon */}
+                <div className="w-20 h-28 bg-white rounded-2xl border border-gray-100 flex items-center justify-center text-3xl shadow-lg flex-shrink-0">
+                  <div dangerouslySetInnerHTML={{ __html: iconCard.svg }} />
+                </div>
+                
+                {/* Links Card */}
+                <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 flex-1">
+                  <div className="space-y-4">
+                    {links.map((link, idx) => (
+                      <div key={idx} className="flex items-center space-x-3">
+                        <svg className="w-3 h-3 text-gray-900" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                        </svg>
+                        <a 
+                          href={link.href} 
+                          className="font-semibold text-gray-900 hover:text-teal-500 transition"
+                        >
+                          {t(link.label)}
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Info Text */}
+            {infoText && (
+              <div className="flex items-center space-x-2 text-sm text-gray-700">
+                <svg className="w-5 h-5 text-gray-900" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+                <span className="mt-1" dangerouslySetInnerHTML={{ __html: t(infoText) }} />
+              </div>
+            )}
+          </div>
+
+          {/* Image Column */}
+          <div className={cn("relative h-full", isImageLeft && "lg:order-1")}>
+            <div className="h-full rounded-2xl overflow-hidden">
+              {image && (
+                <img 
+                  src={image} 
+                  className="w-full h-full object-cover rounded-xl" 
+                  alt={t(title)}
+                />
+              )}
+            </div>
+
+            {/* Decorative Elements */}
+            {decorativeElements && decorativeElements.type === "corner-icon" && (
+              <div className="absolute bottom-0 right-0 w-32 h-32 bg-teal-400 rounded-tl-full flex items-center justify-center shadow-2xl">
+                <div className="text-white text-4xl mb-4 ml-4">
+                  <div className="flex space-x-2 mb-1">
+                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                  </div>
+                  <div className="w-8 h-1 bg-white rounded-full"></div>
+                </div>
+              </div>
+            )}
+
+            {decorativeElements && decorativeElements.type === "colored-squares" && (
+              <div className="absolute bottom-8 left-8 flex gap-4">
+                <div className="w-24 h-24 bg-blue-500 transform -rotate-12 shadow-2xl rounded-lg"></div>
+                <div className="w-24 h-24 bg-yellow-400 transform rotate-12 shadow-2xl rounded-lg"></div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

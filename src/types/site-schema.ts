@@ -56,7 +56,7 @@ export type NavItem = z.infer<typeof NavItem>;
 /*───────────────────────────────────────────────────────────────*/
 // Helpers génériques
 const Alignment = z.enum(["left", "center", "right"]);
-const Columns   = z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5), z.literal(6)]);
+const Columns = z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5), z.literal(6)]);
 
 let SectionSchemaLazy: z.ZodTypeAny;
 
@@ -67,7 +67,7 @@ const HeroSectionSchema = z.object({
   id: z.string().optional(),
   props: z.object({
     headline: LocalizedString,
-    subhead:  LocalizedString.optional(),
+    subhead: LocalizedString.optional(),
     backgroundImage: z.string().optional(),
     videoBg: z.string().optional(),
     align: Alignment.default("center"),
@@ -83,8 +83,33 @@ export type HeroSection = z.infer<typeof HeroSectionSchema>;
 
 export type HeroSectionProps = z.infer<typeof HeroSectionSchema>["props"];
 
+//──────────────── Hero Tiers-Lieux
+export const HeroTiersLieuxSchema = z.object({
+  type: z.literal("hero-tiers-lieux"),
+  id: z.string().optional(),
+  props: z.object({
+    headline: LocalizedString,
+    subhead: LocalizedString.optional(),
+    backgroundImage: z.string().optional(),
+    ctaButtons: z
+      .array(
+        z.object({
+          label: LocalizedString,
+          variant: z.enum(["default", "secondary"]).optional(),
+        })
+      )
+      .optional(),
+    placeholder: LocalizedString.optional(),
+    searchButtonText: LocalizedString.optional(),
+  }),
+});
+
+export type HeroTiersLieux = z.infer<typeof HeroTiersLieuxSchema>;
+
+export type HeroTiersLieuxProps = z.infer<typeof HeroTiersLieuxSchema>["props"];
+
 //──────────────── Markdown / MDX
-const MarkdownSectionSchema  = z.object({
+const MarkdownSectionSchema = z.object({
   type: z.literal("markdown"),
   id: z.string().optional(),
   props: z.object({
@@ -111,10 +136,22 @@ const CardsSectionSchema = z.object({
         text: LocalizedString,
         href: z.string().optional(),
         target: z.enum(["_self", "_blank"]).optional(),
+        location: LocalizedString.optional(),
+        badges: z.array(z.object({
+          icon: z.string(),
+          label: z.string().optional()
+        })).optional(),
+        avatarIcon: z.string().optional(),
+        avatarColor: z.string().optional(),
+        date: z.string().optional(),
+        eventTitle: LocalizedString.optional(),
+        organizerName: LocalizedString.optional(),
       })
     ),
     columns: Columns.default(3),
     layout: z.enum(["grid", "masonry", "carousel"]).default("grid"),
+    variant: z.enum(["default", "tiers-lieux", "event"]).default("default"),
+    className: z.string().optional(),
   }),
 });
 
@@ -604,14 +641,14 @@ const ChartSectionSchema = z.object({
   type: z.literal("chart"),
   id: z.string().optional(),
   props: z.object({
-    kind : z.enum(["line", "bar", "pie", "area", "radar"]),
-    data : z.array(
+    kind: z.enum(["line", "bar", "pie", "area", "radar"]),
+    data: z.array(
       z.record(z.string(), z.union([z.number(), z.string()]))
     ),
-    xKey  : z.string(),
-    yKeys : z.array(z.string()),
+    xKey: z.string(),
+    yKeys: z.array(z.string()),
     stacked: z.boolean().optional(),
-    legend : z.boolean().default(true),
+    legend: z.boolean().default(true),
   }),
 });
 
@@ -715,7 +752,6 @@ export type RecoverPasswordFormSection = z.infer<typeof RecoverPasswordFormSecti
 
 export type RecoverPasswordFormSectionProps = z.infer<typeof RecoverPasswordFormSectionSchema>["props"];
 
-//──────────────── HTML libre
 const HTMLSectionSchema = z.object({
   type: z.literal("html"),
   id: z.string().optional(),
@@ -726,11 +762,62 @@ export type HTMLSection = z.infer<typeof HTMLSectionSchema>;
 
 export type HTMLSectionProps = z.infer<typeof HTMLSectionSchema>["props"];
 
+//──────────────── title center
+const TitleSectionSchema = z.object({
+  type: z.literal("title"),
+  id: z.string().optional(),
+  props: z.object({
+    title: LocalizedString,
+    subtitle: LocalizedString.optional(),
+    className: z.string().optional(),
+    align: z.enum(["left", "center", "right"]).default("center"),
+    size: z.enum(["sm", "md", "lg", "xl"]).default("lg"),
+  }),
+});
+
+export type TitleSection = z.infer<typeof TitleSectionSchema>;
+
+export type TitleSectionProps = z.infer<typeof TitleSectionSchema>["props"];
+
+const ContentSectionSchema = z.object({
+  type: z.literal("content"),
+  id: z.string().optional(),
+  props: z.object({
+    category: LocalizedString.optional(),
+    title: LocalizedString,
+    description: LocalizedString,
+    tags: z.array(LocalizedString).optional(),
+    image: z.string().optional(),
+    imagePosition: z.enum(["left", "right"]).default("right"),
+    links: z.array(z.object({
+      label: LocalizedString,
+      href: z.string(),
+    })).optional(),
+    iconCard: z.object({
+      svg: z.string(),
+    }).optional(),
+    infoText: LocalizedString.optional(),
+    decorativeElements: z.object({
+      type: z.enum(["corner-icon", "colored-squares", "none"]),
+    }).optional(),
+    className: z.string().optional(),
+    stats: z.array(z.object({
+      value: z.string(),
+      label: LocalizedString
+    })).optional(),
+  }),
+});
+
+export type ContentSection = z.infer<typeof ContentSectionSchema>;
+
+export type ContentSectionProps = z.infer<typeof ContentSectionSchema>["props"];
+
 //───────────────────────────────────────────────────────────────
 // Union de toutes les sections
 //───────────────────────────────────────────────────────────────
 export const Section = z.discriminatedUnion("type", [
   HeroSectionSchema,
+  HeroTiersLieuxSchema,
   MarkdownSectionSchema,
   CardsSectionSchema,
   GallerySectionSchema,
@@ -765,6 +852,8 @@ export const Section = z.discriminatedUnion("type", [
   BreadcrumbSectionSchema,
   CookieConsentSectionSchema,
   HTMLSectionSchema,
+  TitleSectionSchema,
+  ContentSectionSchema,
   SearchProSectionSchema,
 ]);
 export type Section = z.infer<typeof Section>;
@@ -853,12 +942,13 @@ const EnhancedNavItem: z.ZodType<EnhancedNavItemType> = z.lazy(() =>
     children: z.array(EnhancedNavItem).optional(),
     megaMenu: MegaMenu.optional(),
     description: LocalizedString.optional(),
-  }).refine(d => d.path || d.href || d.children || d.megaMenu, { 
-    message: "NavItem : path, href, children ou megaMenu obligatoire" 
+  }).refine(d => d.path || d.href || d.children || d.megaMenu, {
+    message: "NavItem : path, href, children ou megaMenu obligatoire"
   })
 );
 
 export const Header = z.object({
+  type: z.string(),
   logo: z.string(),
   logoAlt: LocalizedString.optional(),
   nav: z.array(EnhancedNavItem),
@@ -867,11 +957,11 @@ export const Header = z.object({
   height: z.enum(["sm", "md", "lg"]).default("md"),
   utilities: z.object({
     themeSwitch: z.boolean().default(true),
-    langSwitch : z.boolean().default(true),
-    search     : z.boolean().default(false),
-    auth       : z.boolean().default(false),
-    cart       : z.boolean().default(false),
-    notifications: z.boolean().default(false),    
+    langSwitch: z.boolean().default(true),
+    search: z.boolean().default(false),
+    auth: z.boolean().default(false),
+    cart: z.boolean().default(false),
+    notifications: z.boolean().default(false),
   }),
   announcement: z.object({
     text: LocalizedString,
@@ -893,6 +983,7 @@ const FooterColumn = z.object({
 });
 
 export const Footer = z.object({
+  type: z.string().optional(),
   columns: z.array(FooterColumn),
   socials: z.array(z.object({ platform: z.string(), url: z.string() })).optional(),
   extra: z.string().optional(),
@@ -911,21 +1002,21 @@ export type Footer = z.infer<typeof Footer>;
 /*───────────────────────────────────────────────────────────────*/
 /* 6. Intégrations externes & features                           */
 /*───────────────────────────────────────────────────────────────*/
-const AnalyticsIntegration = z.object({ 
-  provider: z.enum(["ga4", "matomo", "plausible", "posthog", "mixpanel", "amplitude"]), 
+const AnalyticsIntegration = z.object({
+  provider: z.enum(["ga4", "matomo", "plausible", "posthog", "mixpanel", "amplitude"]),
   id: z.string(),
   config: z.record(z.string(), z.any()).optional(),
 });
 
-const ChatIntegration = z.object({ 
-  provider: z.enum(["intercom", "crisp", "hubspot", "zendesk", "freshchat"]), 
+const ChatIntegration = z.object({
+  provider: z.enum(["intercom", "crisp", "hubspot", "zendesk", "freshchat"]),
   id: z.string(),
   config: z.record(z.string(), z.any()).optional(),
 });
 
-const ScriptTag = z.object({ 
-  src: z.string(), 
-  async: z.boolean().default(true), 
+const ScriptTag = z.object({
+  src: z.string(),
+  async: z.boolean().default(true),
   defer: z.boolean().default(true),
   position: z.enum(["head", "body"]).default("head"),
   condition: z.string().optional(), // Conditional loading
@@ -954,9 +1045,9 @@ const CRMIntegration = z.object({
   config: z.record(z.string(), z.any()),
 });
 
-export const Integrations = z.object({ 
-  analytics: AnalyticsIntegration.optional(), 
-  chat: ChatIntegration.optional(), 
+export const Integrations = z.object({
+  analytics: AnalyticsIntegration.optional(),
+  chat: ChatIntegration.optional(),
   scripts: z.array(ScriptTag).optional(),
   seo: SEOIntegration.optional(),
   ecommerce: EcommerceIntegration.optional(),
@@ -968,9 +1059,9 @@ export type Integrations = z.infer<typeof Integrations>;
 /*───────────────────────────────────────────────────────────────*/
 /* 7. Feature flags / A‑B tests                                  */
 /*───────────────────────────────────────────────────────────────*/
-export const FeatureFlag = z.object({ 
-  key: z.string(), 
-  enabled: z.boolean().default(false), 
+export const FeatureFlag = z.object({
+  key: z.string(),
+  enabled: z.boolean().default(false),
   variant: z.string().optional(),
   description: z.string().optional(),
   rolloutPercentage: z.number().min(0).max(100).default(100),
@@ -1063,7 +1154,7 @@ export const ThemeConfig = z.object({
   typography: Typography,
   spacing: Spacing,
   borderRadius: BorderRadius,
-  shadows:  z.object({
+  shadows: z.object({
     light: Shadows,
     dark: Shadows,
   }),
@@ -1105,7 +1196,7 @@ export const SiteConfig = z.object({
     robots: z.string().optional(),
   }),
   header: Header,
-    pages: z
+  pages: z
     .array(Page)
     .check((ctx) => {
       // On extrait tous les chemins
@@ -1118,7 +1209,7 @@ export const SiteConfig = z.object({
           input: ctx.value,         // l’entrée invalidée (le tableau complet)
         });
       }
-  }),
+    }),
   footer: Footer,
   integrations: Integrations.optional(),
   features: z.array(FeatureFlag).optional(),
@@ -1157,6 +1248,7 @@ export function getDefaultSiteConfig(): Partial<SiteConfig> {
       languages: ["en", "fr"],
     },
     header: {
+      type: "tiers-lieux",
       logo: "/logo.svg",
       nav: [],
       utilities: {
@@ -1189,6 +1281,7 @@ export const example: SiteConfig = {
     languages: []
   },
   header: {
+    type: "tiers-lieux",
     logo: "/logo.svg",
     nav: [
       { path: "/", label: { fr: "Accueil", en: "Home" } },
@@ -1234,6 +1327,7 @@ export const example: SiteConfig = {
         {
           type: "cards",
           props: {
+            variant: "default",
             layout: "masonry",
             items: [
               {
