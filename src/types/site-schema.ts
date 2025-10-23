@@ -146,11 +146,14 @@ const CardsSectionSchema = z.object({
         date: z.string().optional(),
         eventTitle: LocalizedString.optional(),
         organizerName: LocalizedString.optional(),
+
+        iconSvg: z.string().optional(),
+        iconColor: z.string().optional(),
       })
     ),
     columns: Columns.default(3),
     layout: z.enum(["grid", "masonry", "carousel"]).default("grid"),
-    variant: z.enum(["default", "tiers-lieux", "event"]).default("default"),
+    variant: z.enum(["default", "tiers-lieux", "event", "icon-card"]).default("default"),
     className: z.string().optional(),
   }),
 });
@@ -779,6 +782,28 @@ export type TitleSection = z.infer<typeof TitleSectionSchema>;
 
 export type TitleSectionProps = z.infer<typeof TitleSectionSchema>["props"];
 
+const FiltersSectionSchema = z.object({
+  type: z.literal("filters"),
+  id: z.string().optional(),
+  props: z.object({
+    title: LocalizedString.optional(),
+    filterGroups: z.array(z.object({
+      id: z.string(),
+      label: LocalizedString,
+      options: z.array(z.object({
+        id: z.string(),
+        label: LocalizedString,
+      })),
+    })),
+    defaultOpenGroups: z.array(z.string()).optional(),
+    className: z.string().optional(),
+  }),
+});
+
+export type FiltersSection = z.infer<typeof FiltersSectionSchema>;
+
+export type FiltersSectionProps = z.infer<typeof FiltersSectionSchema>["props"];
+
 const ContentSectionSchema = z.object({
   type: z.literal("content"),
   id: z.string().optional(),
@@ -853,6 +878,7 @@ export const Section = z.discriminatedUnion("type", [
   CookieConsentSectionSchema,
   HTMLSectionSchema,
   TitleSectionSchema,
+  FiltersSectionSchema,
   ContentSectionSchema,
   SearchProSectionSchema,
 ]);

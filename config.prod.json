@@ -48,7 +48,7 @@
               "fr": "Découvrez tous les lieux disponibles pour coworking, événements et plus.",
               "en": "Discover all places available for coworking, events, and more."
             },
-            "path": "#",
+            "path": "/lieux",
             "icon": "arrow-right"
           },
           {
@@ -285,7 +285,7 @@
       "sections": [
         {
           "type": "hero-tiers-lieux",
-          "id": "hero-tiers-lieux",
+          "id": "hero-complet",
           "props": {
             "headline": {
               "fr": "Le réseau social des tiers-lieux",
@@ -357,13 +357,20 @@
           }
         },
         {
+          "type": "html",
+          "id": "events-header",
+          "props": {
+            "html": "<div class=\"container mx-auto px-4 sm:px-6 lg:px-8\"><div class=\"flex justify-between items-center\"><h2 class=\"text-2xl font-extrabold\">Découvrir les lieux</h2><a href=\"#\" class=\"text-gray-700 hover:text-teal-500 transition flex items-center gap-2\">Cartographie des lieux <span>→</span></a></div></div>"
+          }
+        },
+        {
           "type": "cards",
           "id": "tiers-lieux",
           "props": {
             "variant": "tiers-lieux",
             "columns": 5,
             "layout": "grid",
-            "className": "-mt-10",
+            "className": "mt-2",
             "items": [
               {
                 "image": "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop",
@@ -494,10 +501,108 @@
           }
         },
         {
+          "type": "cards",
+          "id": "actions-principales",
+          "props": {
+            "variant": "icon-card",
+            "columns": 6,
+            "layout": "grid",
+            "className": "pb-5 pt-5",
+            "items": [
+              {
+                "iconSvg": "<svg width=\"72\" height=\"72\" viewBox=\"0 0 72 72\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M62.3297 8.86933C50.5191 -2.94123 31.372 -2.94123 19.5614 8.86933C8.66082 19.7699 7.84564 36.9265 17.078 48.794L13.8552 52.0167L12.9452 51.1068L1.51382 62.5382C-0.457771 64.5098 -0.457771 67.7136 1.51382 69.6852C3.4854 71.6568 6.68923 71.6568 8.66081 69.6852L20.0922 58.2538L19.1823 57.3438L22.405 54.121C34.2725 63.3534 51.4291 62.5571 62.3297 51.6376C74.1402 39.827 74.1402 20.6799 62.3297 8.86933Z\" fill=\"#FFD836\"></path></svg>",
+                "iconColor": "text-yellow-500",
+                "title": {
+                  "fr": "Explorer",
+                  "en": "Explore"
+                },
+                "text": {
+                  "fr": "La cartographie des lieux",
+                  "en": "The map of places"
+                },
+                "href": "/explorer"
+              },
+              {
+                "iconImage": "./TL_Icones.png",
+                "iconClipPath": "polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)",
+                "iconColor": "text-yellow-500",
+                "title": {
+                  "fr": "Se réunir",
+                  "en": "Meet"
+                },
+                "text": {
+                  "fr": "Trouver une salle de réunion",
+                  "en": "Find a meeting room"
+                },
+                "href": "/se-reunir"
+              },
+              {
+                "iconSvg": "<svg width=\"80\" height=\"66\" viewBox=\"0 0 80 66\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M51.9856 22.8031L55.7558 0.376221H11.5726C8.66415 0.376221 6.18658 2.48211 5.70184 5.34397L0.603088 35.6544H11.3572L10.1184 43.088L22.4882 35.6544H28.4847L24.7683 57.9913H52.0933L63.2424 65.4249L64.4991 57.9913H68.9695C71.8779 57.9913 74.3555 55.8854 74.8402 53.0235L79.8851 22.8031H51.9856Z\" fill=\"#FFD836\"></path></svg>",
+                "iconColor": "text-yellow-500",
+                "title": {
+                  "fr": "Discuter",
+                  "en": "Discuss"
+                },
+                "text": {
+                  "fr": "Sur le Forum des Tiers-lieux",
+                  "en": "On the Third Places Forum"
+                },
+                "href": "/forum"
+              },
+              {
+                "iconSvg": "<svg width=\"72\" height=\"72\" viewBox=\"0 0 72 72\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M59.5288 10.6815V3.20389C54.6098 3.75926 50.7421 5.46504 47.6875 7.74602V0.189026C40.2099 2.31133 37.0165 8.06338 35.7868 13.3196C34.557 8.08321 31.3636 2.31133 23.886 0.189026V7.74602C20.8314 5.46504 16.9637 3.75926 12.0447 3.20389V10.6815C6.51084 8.14271 2.10755 7.25016 0.183594 7.07164V55.6268C14.4844 59.6334 25.2942 65.8813 31.2645 69.9474C32.5934 70.8598 34.1603 71.3557 35.7669 71.3557C37.3735 71.3557 38.9405 70.8598 40.2694 69.9474C46.2396 65.8615 57.0693 59.6334 71.3503 55.6268V7.07164C69.4263 7.25016 65.023 8.14271 59.4892 10.6815H59.5288Z\" fill=\"#FFD836\"></path></svg>",
+                "iconColor": "text-yellow-500",
+                "title": {
+                  "fr": "Se documenter",
+                  "en": "Get documentation"
+                },
+                "text": {
+                  "fr": "Via le Wiki Movilab",
+                  "en": "Via the Movilab Wiki"
+                },
+                "href": "/wiki"
+              },
+              {
+                "iconSvg": "<svg width=\"83\" height=\"66\" viewBox=\"0 0 83 66\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M31.0566 56.2516L82.2582 56.1904L68.1168 0.24408L2.97698 35.6441C1.41249 36.501 0.599767 38.317 1.04676 40.0512L4.39925 53.3135C4.84625 55.0478 6.41074 56.272 8.19873 56.272H17.7279L16.265 65.3311L31.0566 56.2516Z\" fill=\"#FFD836\"></path></svg>",
+                "iconColor": "text-yellow-500",
+                "title": {
+                  "fr": "Cofinancer",
+                  "en": "Co-finance"
+                },
+                "text": {
+                  "fr": "Via l'appel à commun",
+                  "en": "Via the common call"
+                },
+                "href": "/cofinancement"
+              },
+              {
+                "iconSvg": "<svg width=\"81\" height=\"55\" viewBox=\"0 0 81 55\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M79.3151 15.4503C57.5928 -4.43436 23.9883 -4.43436 2.26601 15.4503C1.20775 16.4243 0.632202 17.821 0.632202 19.2545V35.3901C9.09831 27.0098 19.551 21.8457 30.505 19.8609C24.7123 23.5732 21.0734 30.3178 21.9274 37.8343C22.9114 46.4167 29.948 53.3818 38.6183 54.3191C50.0735 55.5687 59.7836 46.7291 59.7836 35.6473C59.7836 29.0314 56.3117 23.2057 51.0947 19.8609C62.0301 21.8457 72.5013 27.0098 80.9674 35.3901V19.2545C80.9674 17.821 80.3919 16.4243 79.3336 15.4503H79.3151Z\" fill=\"#FFD836\"></path></svg>",
+                "iconColor": "text-yellow-500",
+                "title": {
+                  "fr": "Observer",
+                  "en": "Observe"
+                },
+                "text": {
+                  "fr": "Les données des lieux et leurs réseaux",
+                  "en": "Data on places and their networks"
+                },
+                "href": "/observatoire"
+              }
+            ]
+          }
+        },
+        {
+          "type": "html",
+          "id": "show-more-button",
+          "props": {
+            "html": "<div class=\"container pb-5 mx-auto px-6\"><div class=\"text-center\"><button class=\"text-gray-700 font-light hover:text-teal-500 transition\">Afficher plus +</button></div></div>"
+          }
+        },
+        {
           "type": "html",
           "id": "events-header",
           "props": {
-            "html": "<div class=\"container -mb-5 mx-auto px-4 sm:px-6 lg:px-8\"><div class=\"flex justify-between items-center mb-8\"><h2 class=\"text-2xl font-extrabold\">Les événements à venir</h2><a href=\"#\" class=\"text-gray-700 hover:text-teal-500 transition flex items-center gap-2\">Tous les événements <span>→</span></a></div></div>"
+            "html": "<div class=\"container font-sm -mb-5 mx-auto px-4 sm:px-6 lg:px-8\"><div class=\"flex justify-between items-center mb-8\"><h2 class=\"text-2xl font-extrabold\">Les événements à venir</h2><a href=\"#\" class=\"text-gray-700 hover:text-teal-500 transition flex items-center gap-2\">Tous les événements <span>→</span></a></div></div>"
           }
         },
         {
@@ -838,12 +943,289 @@
             "iconCard": {
               "svg": "<svg width=\"52\" height=\"35\" viewBox=\"0 0 52 35\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M50.0147 10.2046C36.3404 -2.31298 15.186 -2.31298 1.51168 10.2046C0.845496 10.8177 0.483185 11.697 0.483185 12.5993V22.7568C5.81267 17.4814 12.3927 14.2305 19.2883 12.9811C15.6418 15.318 13.3511 19.5638 13.8887 24.2955C14.5082 29.6982 18.9377 34.0828 24.3958 34.6728C31.6069 35.4595 37.7195 29.8948 37.7195 22.9188C37.7195 18.754 35.5339 15.0866 32.2497 12.9811C39.1337 14.2305 45.7254 17.4814 51.0549 22.7568V12.5993C51.0549 11.697 50.6926 10.8177 50.0264 10.2046H50.0147Z\" fill=\"#FFD836\"></path></svg>"
             },
-             "image": "images/tiersLieux/forum.png",
+            "image": "images/tiersLieux/forum.png",
             "imagePosition": "right",
             "className": "",
             "decorativeElements": {
               "type": "none"
             }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/lieux",
+      "title": {
+        "fr": "Accueil - Le réseau social des tiers-lieux",
+        "en": "Home - Le réseau social des tiers-lieux"
+      },
+      "layout": "default",
+      "sections": [
+        {
+          "type": "hero-tiers-lieux",
+          "id": "hero-tiers-lieux",
+          "props": {
+            "headline": {
+              "fr": "Le réseau social des tiers-lieux",
+              "en": "The third places social network"
+            },
+            "placeholder": {
+              "fr": "Ville, département, code postal ...",
+              "en": "City, ZIP code ..."
+            },
+            "searchButtonText": {
+              "fr": "Rechercher",
+              "en": "Search"
+            },
+            "backgroundImage": "images/tiersLieux/calc1.svg"
+          }
+        },
+        {
+          "type": "filters",
+          "id": "lieux-filters",
+          "props": {
+            "title": {
+              "fr": "Filtres",
+              "en": "Filters"
+            },
+            "defaultOpenGroups": [
+              "typologies",
+              "reseaux"
+            ],
+            "filterGroups": [
+              {
+                "id": "typologies",
+                "label": {
+                  "fr": "Typologies",
+                  "en": "Types"
+                },
+                "options": [
+                  {
+                    "id": "tous",
+                    "label": {
+                      "fr": "Tous les lieux",
+                      "en": "All places"
+                    }
+                  },
+                  {
+                    "id": "coworking",
+                    "label": {
+                      "fr": "Coworking",
+                      "en": "Coworking"
+                    }
+                  },
+                  {
+                    "id": "reunion",
+                    "label": {
+                      "fr": "Salles de réunion",
+                      "en": "Meeting rooms"
+                    }
+                  },
+                  {
+                    "id": "bureaux",
+                    "label": {
+                      "fr": "Bureaux privatifs",
+                      "en": "Private offices"
+                    }
+                  },
+                  {
+                    "id": "fablab",
+                    "label": {
+                      "fr": "FabLab",
+                      "en": "FabLab"
+                    }
+                  },
+                  {
+                    "id": "restaurant",
+                    "label": {
+                      "fr": "Restaurant",
+                      "en": "Restaurant"
+                    }
+                  },
+                  {
+                    "id": "bar",
+                    "label": {
+                      "fr": "Bar",
+                      "en": "Bar"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "reseaux",
+                "label": {
+                  "fr": "Réseaux thématiques",
+                  "en": "Thematic networks"
+                },
+                "options": [
+                  {
+                    "id": "basqinterlieux",
+                    "label": {
+                      "fr": "Le BâL (Basq inter-lieux)",
+                      "en": "Le BâL (Basq inter-lieux)"
+                    }
+                  },
+                  {
+                    "id": "cerclelittoral",
+                    "label": {
+                      "fr": "Cercle littoral des Hauts-de-Fr...",
+                      "en": "Hauts-de-France coastal circle"
+                    }
+                  },
+                  {
+                    "id": "rflabs",
+                    "label": {
+                      "fr": "RFFLabs",
+                      "en": "RFFLabs"
+                    }
+                  },
+                  {
+                    "id": "lieux-intermediaires",
+                    "label": {
+                      "fr": "Lieux intermédiaires et indépen...",
+                      "en": "Intermediate and independent..."
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "regions",
+                "label": {
+                  "fr": "Régions",
+                  "en": "Regions"
+                },
+                "options": [
+                  {
+                    "id": "idf",
+                    "label": {
+                      "fr": "Île-de-France",
+                      "en": "Île-de-France"
+                    }
+                  },
+                  {
+                    "id": "aura",
+                    "label": {
+                      "fr": "Auvergne-Rhône-Alpes",
+                      "en": "Auvergne-Rhône-Alpes"
+                    }
+                  },
+                  {
+                    "id": "occitanie",
+                    "label": {
+                      "fr": "Occitanie",
+                      "en": "Occitanie"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "equipement",
+                "label": {
+                  "fr": "Équipement",
+                  "en": "Equipment"
+                },
+                "options": [
+                  {
+                    "id": "wifi",
+                    "label": {
+                      "fr": "WiFi",
+                      "en": "WiFi"
+                    }
+                  },
+                  {
+                    "id": "imprimante",
+                    "label": {
+                      "fr": "Imprimante 3D",
+                      "en": "3D Printer"
+                    }
+                  },
+                  {
+                    "id": "cuisine",
+                    "label": {
+                      "fr": "Cuisine équipée",
+                      "en": "Equipped kitchen"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "activites",
+                "label": {
+                  "fr": "Activités",
+                  "en": "Activities"
+                },
+                "options": [
+                  {
+                    "id": "ateliers",
+                    "label": {
+                      "fr": "Ateliers",
+                      "en": "Workshops"
+                    }
+                  },
+                  {
+                    "id": "conferences",
+                    "label": {
+                      "fr": "Conférences",
+                      "en": "Conferences"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "partage",
+                "label": {
+                  "fr": "Partage",
+                  "en": "Sharing"
+                },
+                "options": [
+                  {
+                    "id": "openspace",
+                    "label": {
+                      "fr": "Open space",
+                      "en": "Open space"
+                    }
+                  },
+                  {
+                    "id": "prive",
+                    "label": {
+                      "fr": "Espace privé",
+                      "en": "Private space"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "taille",
+                "label": {
+                  "fr": "Taille",
+                  "en": "Size"
+                },
+                "options": [
+                  {
+                    "id": "petit",
+                    "label": {
+                      "fr": "< 100m²",
+                      "en": "< 100m²"
+                    }
+                  },
+                  {
+                    "id": "moyen",
+                    "label": {
+                      "fr": "100-500m²",
+                      "en": "100-500m²"
+                    }
+                  },
+                  {
+                    "id": "grand",
+                    "label": {
+                      "fr": "> 500m²",
+                      "en": "> 500m²"
+                    }
+                  }
+                ]
+              }
+            ],
+            "className": "sticky top-20"
           }
         }
       ]

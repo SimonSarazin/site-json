@@ -172,6 +172,41 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
     );
   }
 
+  if (variant === 'icon-card') {
+    return (
+      <section id={id} className={cn("py-16 bg-background", className)}>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className={cn("grid gap-6", getGridCols(columns))}>
+            {items.map((item, index) => (
+              <CardWrapper key={index} href={item.href} target={item.target}>
+                <div className="group cursor-pointer bg-white rounded-2xl shadow-md hover:shadow-xl transition p-6 border border-gray-100 hover:border-yellow-300">
+                  <div className={cn(
+                    "w-24 h-24 mx-auto mb-4 flex items-center justify-center text-6xl group-hover:scale-110 transition-transform duration-300",
+                    item.iconColor || "text-yellow-500"
+                  )}>
+                    {item.iconSvg ? (
+                      <div dangerouslySetInnerHTML={{ __html: item.iconSvg }} />
+                    ) : item.icon ? (
+                      <DynamicIcon name={item.icon as IconName} className="w-16 h-16" />
+                    ) : null}
+                  </div>
+
+                  <h4 className="font-bold mb-2 text-gray-900 text-sm group-hover:text-yellow-600 transition-colors">
+                    {t(item.title)}
+                  </h4>
+
+                  <p className="text-xs text-gray-600 line-clamp-1">
+                    {t(item.text)}
+                  </p>
+                </div>
+              </CardWrapper>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   // Variante par défaut
   return (
     <section id={id} className={cn("bg-background text-foreground", className)}>
