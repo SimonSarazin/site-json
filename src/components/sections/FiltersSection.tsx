@@ -2,7 +2,7 @@ import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from "@/lib/utils";
 import type { SectionPropsMap } from "@/types/site";
 import { useState } from "react";
-import { ChevronDown, SlidersHorizontal, X } from "lucide-react";
+import { ChevronDown, SlidersHorizontal} from "lucide-react";
 
 export function FiltersSection({ 
   id, 

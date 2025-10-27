@@ -70,7 +70,8 @@ const LazySections: {
   searchPro: lazy(() =>
     import("@/modules/search").then(m => ({ default: m.SearchSection }))
   ),
-  filters: lazyNamed(() => import("./FiltersSection"), "FiltersSection")
+  filters: lazyNamed(() => import("./FiltersSection"), "FiltersSection"),
+  gridLayout: lazyNamed(() => import("./GridLayoutSection"), "GridLayoutSection"),
 };
 
 export function SectionRenderer({ section }: { section: Section }) {

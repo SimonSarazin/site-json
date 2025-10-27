@@ -31,6 +31,7 @@
       "fr": "Tiers Lieux",
       "en": "Tiers Lieux"
     },
+    "path": "/",
     "nav": [
       {
         "label": {
@@ -981,251 +982,473 @@
           }
         },
         {
-          "type": "filters",
-          "id": "lieux-filters",
+          "type": "gridLayout",
+          "id": "lieux-grid",
           "props": {
-            "title": {
-              "fr": "Filtres",
-              "en": "Filters"
+            "leftColumns": 1,
+            "rightColumns": 3,
+            "gap": 4,
+            "leftSection": {
+              "type": "filters",
+              "id": "lieux-filters",
+              "props": {
+                "title": {
+                  "fr": "Filtres",
+                  "en": "Filters"
+                },
+                "defaultOpenGroups": [
+                  "typologies",
+                  "reseaux"
+                ],
+                "filterGroups": [
+                  {
+                    "id": "typologies",
+                    "label": {
+                      "fr": "Typologies",
+                      "en": "Types"
+                    },
+                    "options": [
+                      {
+                        "id": "tous",
+                        "label": {
+                          "fr": "Tous les lieux",
+                          "en": "All places"
+                        }
+                      },
+                      {
+                        "id": "coworking",
+                        "label": {
+                          "fr": "Coworking",
+                          "en": "Coworking"
+                        }
+                      },
+                      {
+                        "id": "reunion",
+                        "label": {
+                          "fr": "Salles de réunion",
+                          "en": "Meeting rooms"
+                        }
+                      },
+                      {
+                        "id": "bureaux",
+                        "label": {
+                          "fr": "Bureaux privatifs",
+                          "en": "Private offices"
+                        }
+                      },
+                      {
+                        "id": "fablab",
+                        "label": {
+                          "fr": "FabLab",
+                          "en": "FabLab"
+                        }
+                      },
+                      {
+                        "id": "restaurant",
+                        "label": {
+                          "fr": "Restaurant",
+                          "en": "Restaurant"
+                        }
+                      },
+                      {
+                        "id": "bar",
+                        "label": {
+                          "fr": "Bar",
+                          "en": "Bar"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "reseaux",
+                    "label": {
+                      "fr": "Réseaux thématiques",
+                      "en": "Thematic networks"
+                    },
+                    "options": [
+                      {
+                        "id": "basqinterlieux",
+                        "label": {
+                          "fr": "Le BâL (Basq inter-lieux)",
+                          "en": "Le BâL (Basq inter-lieux)"
+                        }
+                      },
+                      {
+                        "id": "cerclelittoral",
+                        "label": {
+                          "fr": "Cercle littoral des Hauts-de-Fr...",
+                          "en": "Hauts-de-France coastal circle"
+                        }
+                      },
+                      {
+                        "id": "rflabs",
+                        "label": {
+                          "fr": "RFFLabs",
+                          "en": "RFFLabs"
+                        }
+                      },
+                      {
+                        "id": "lieux-intermediaires",
+                        "label": {
+                          "fr": "Lieux intermédiaires et indépen...",
+                          "en": "Intermediate and independent..."
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "regions",
+                    "label": {
+                      "fr": "Régions",
+                      "en": "Regions"
+                    },
+                    "options": [
+                      {
+                        "id": "idf",
+                        "label": {
+                          "fr": "Île-de-France",
+                          "en": "Île-de-France"
+                        }
+                      },
+                      {
+                        "id": "aura",
+                        "label": {
+                          "fr": "Auvergne-Rhône-Alpes",
+                          "en": "Auvergne-Rhône-Alpes"
+                        }
+                      },
+                      {
+                        "id": "occitanie",
+                        "label": {
+                          "fr": "Occitanie",
+                          "en": "Occitanie"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "equipement",
+                    "label": {
+                      "fr": "Équipement",
+                      "en": "Equipment"
+                    },
+                    "options": [
+                      {
+                        "id": "wifi",
+                        "label": {
+                          "fr": "WiFi",
+                          "en": "WiFi"
+                        }
+                      },
+                      {
+                        "id": "imprimante",
+                        "label": {
+                          "fr": "Imprimante 3D",
+                          "en": "3D Printer"
+                        }
+                      },
+                      {
+                        "id": "cuisine",
+                        "label": {
+                          "fr": "Cuisine équipée",
+                          "en": "Equipped kitchen"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "activites",
+                    "label": {
+                      "fr": "Activités",
+                      "en": "Activities"
+                    },
+                    "options": [
+                      {
+                        "id": "ateliers",
+                        "label": {
+                          "fr": "Ateliers",
+                          "en": "Workshops"
+                        }
+                      },
+                      {
+                        "id": "conferences",
+                        "label": {
+                          "fr": "Conférences",
+                          "en": "Conferences"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "partage",
+                    "label": {
+                      "fr": "Partage",
+                      "en": "Sharing"
+                    },
+                    "options": [
+                      {
+                        "id": "openspace",
+                        "label": {
+                          "fr": "Open space",
+                          "en": "Open space"
+                        }
+                      },
+                      {
+                        "id": "prive",
+                        "label": {
+                          "fr": "Espace privé",
+                          "en": "Private space"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "taille",
+                    "label": {
+                      "fr": "Taille",
+                      "en": "Size"
+                    },
+                    "options": [
+                      {
+                        "id": "petit",
+                        "label": {
+                          "fr": "< 100m²",
+                          "en": "< 100m²"
+                        }
+                      },
+                      {
+                        "id": "moyen",
+                        "label": {
+                          "fr": "100-500m²",
+                          "en": "100-500m²"
+                        }
+                      },
+                      {
+                        "id": "grand",
+                        "label": {
+                          "fr": "> 500m²",
+                          "en": "> 500m²"
+                        }
+                      }
+                    ]
+                  }
+                ],
+                "className": "sticky top-20"
+              }
             },
-            "defaultOpenGroups": [
-              "typologies",
-              "reseaux"
-            ],
-            "filterGroups": [
-              {
-                "id": "typologies",
-                "label": {
-                  "fr": "Typologies",
-                  "en": "Types"
-                },
-                "options": [
+            "rightSection": {
+              "type": "cards",
+              "id": "tiers-lieux-results",
+              "props": {
+                "showHeader": true,
+                
+                "showResultCount": true,
+                "showViewToggle": true,
+                "variant": "tiers-lieux",
+                "columns": 3,
+                "layout": "grid",
+                "items": [
                   {
-                    "id": "tous",
-                    "label": {
-                      "fr": "Tous les lieux",
-                      "en": "All places"
-                    }
+                    "image": "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop",
+                    "title": {
+                      "fr": "Nom du lieu",
+                      "en": "Place name"
+                    },
+                    "location": {
+                      "fr": "Ville, région",
+                      "en": "City, region"
+                    },
+                    "avatarIcon": "lightbulb",
+                    "avatarColor": "orange",
+                    "badges": [
+                      {
+                        "icon": "heart"
+                      },
+                      {
+                        "icon": "share-2"
+                      }
+                    ],
+                    "href": "/lieux/lieu-1"
                   },
                   {
-                    "id": "coworking",
-                    "label": {
-                      "fr": "Coworking",
-                      "en": "Coworking"
-                    }
+                    "image": "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=400&h=300&fit=crop",
+                    "title": {
+                      "fr": "Nom du lieu",
+                      "en": "Place name"
+                    },
+                    "location": {
+                      "fr": "Ville, région",
+                      "en": "City, region"
+                    },
+                    "avatarIcon": "lightbulb",
+                    "avatarColor": "blue",
+                    "badges": [
+                      {
+                        "icon": "heart"
+                      },
+                      {
+                        "icon": "share-2"
+                      }
+                    ],
+                    "href": "/lieux/lieu-2"
                   },
                   {
-                    "id": "reunion",
-                    "label": {
-                      "fr": "Salles de réunion",
-                      "en": "Meeting rooms"
-                    }
+                    "image": "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=400&h=300&fit=crop",
+                    "title": {
+                      "fr": "Nom du lieu",
+                      "en": "Place name"
+                    },
+                    "location": {
+                      "fr": "Ville, région",
+                      "en": "City, region"
+                    },
+                    "avatarIcon": "lightbulb",
+                    "avatarColor": "orange",
+                    "badges": [
+                      {
+                        "icon": "heart"
+                      },
+                      {
+                        "icon": "share-2"
+                      }
+                    ],
+                    "href": "/lieux/lieu-3"
                   },
                   {
-                    "id": "bureaux",
-                    "label": {
-                      "fr": "Bureaux privatifs",
-                      "en": "Private offices"
-                    }
+                    "image": "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=400&h=300&fit=crop",
+                    "title": {
+                      "fr": "Nom du lieu",
+                      "en": "Place name"
+                    },
+                    "location": {
+                      "fr": "Ville, région",
+                      "en": "City, region"
+                    },
+                    "avatarIcon": "lightbulb",
+                    "avatarColor": "green",
+                    "badges": [
+                      {
+                        "icon": "heart"
+                      },
+                      {
+                        "icon": "share-2"
+                      }
+                    ],
+                    "href": "/lieux/lieu-4"
                   },
                   {
-                    "id": "fablab",
-                    "label": {
-                      "fr": "FabLab",
-                      "en": "FabLab"
-                    }
+                    "image": "https://images.unsplash.com/photo-1497366412874-3415097a27e7?w=400&h=300&fit=crop",
+                    "title": {
+                      "fr": "Nom du lieu",
+                      "en": "Place name"
+                    },
+                    "location": {
+                      "fr": "Ville, région",
+                      "en": "City, region"
+                    },
+                    "avatarIcon": "lightbulb",
+                    "avatarColor": "purple",
+                    "badges": [
+                      {
+                        "icon": "heart"
+                      },
+                      {
+                        "icon": "share-2"
+                      }
+                    ],
+                    "href": "/lieux/lieu-5"
                   },
                   {
-                    "id": "restaurant",
-                    "label": {
-                      "fr": "Restaurant",
-                      "en": "Restaurant"
-                    }
+                    "image": "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop",
+                    "title": {
+                      "fr": "Nom du lieu",
+                      "en": "Place name"
+                    },
+                    "location": {
+                      "fr": "Ville, région",
+                      "en": "City, region"
+                    },
+                    "avatarIcon": "lightbulb",
+                    "avatarColor": "orange",
+                    "badges": [
+                      {
+                        "icon": "heart"
+                      },
+                      {
+                        "icon": "share-2"
+                      }
+                    ],
+                    "href": "/lieux/lieu-6"
                   },
                   {
-                    "id": "bar",
-                    "label": {
-                      "fr": "Bar",
-                      "en": "Bar"
-                    }
-                  }
-                ]
-              },
-              {
-                "id": "reseaux",
-                "label": {
-                  "fr": "Réseaux thématiques",
-                  "en": "Thematic networks"
-                },
-                "options": [
-                  {
-                    "id": "basqinterlieux",
-                    "label": {
-                      "fr": "Le BâL (Basq inter-lieux)",
-                      "en": "Le BâL (Basq inter-lieux)"
-                    }
+                    "image": "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=400&h=300&fit=crop",
+                    "title": {
+                      "fr": "Nom du lieu",
+                      "en": "Place name"
+                    },
+                    "location": {
+                      "fr": "Ville, région",
+                      "en": "City, region"
+                    },
+                    "avatarIcon": "lightbulb",
+                    "avatarColor": "blue",
+                    "badges": [
+                      {
+                        "icon": "heart"
+                      },
+                      {
+                        "icon": "share-2"
+                      }
+                    ],
+                    "href": "/lieux/lieu-7"
                   },
                   {
-                    "id": "cerclelittoral",
-                    "label": {
-                      "fr": "Cercle littoral des Hauts-de-Fr...",
-                      "en": "Hauts-de-France coastal circle"
-                    }
+                    "image": "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=400&h=300&fit=crop",
+                    "title": {
+                      "fr": "Nom du lieu",
+                      "en": "Place name"
+                    },
+                    "location": {
+                      "fr": "Ville, région",
+                      "en": "City, region"
+                    },
+                    "avatarIcon": "lightbulb",
+                    "avatarColor": "orange",
+                    "badges": [
+                      {
+                        "icon": "heart"
+                      },
+                      {
+                        "icon": "share-2"
+                      }
+                    ],
+                    "href": "/lieux/lieu-8"
                   },
                   {
-                    "id": "rflabs",
-                    "label": {
-                      "fr": "RFFLabs",
-                      "en": "RFFLabs"
-                    }
-                  },
-                  {
-                    "id": "lieux-intermediaires",
-                    "label": {
-                      "fr": "Lieux intermédiaires et indépen...",
-                      "en": "Intermediate and independent..."
-                    }
-                  }
-                ]
-              },
-              {
-                "id": "regions",
-                "label": {
-                  "fr": "Régions",
-                  "en": "Regions"
-                },
-                "options": [
-                  {
-                    "id": "idf",
-                    "label": {
-                      "fr": "Île-de-France",
-                      "en": "Île-de-France"
-                    }
-                  },
-                  {
-                    "id": "aura",
-                    "label": {
-                      "fr": "Auvergne-Rhône-Alpes",
-                      "en": "Auvergne-Rhône-Alpes"
-                    }
-                  },
-                  {
-                    "id": "occitanie",
-                    "label": {
-                      "fr": "Occitanie",
-                      "en": "Occitanie"
-                    }
-                  }
-                ]
-              },
-              {
-                "id": "equipement",
-                "label": {
-                  "fr": "Équipement",
-                  "en": "Equipment"
-                },
-                "options": [
-                  {
-                    "id": "wifi",
-                    "label": {
-                      "fr": "WiFi",
-                      "en": "WiFi"
-                    }
-                  },
-                  {
-                    "id": "imprimante",
-                    "label": {
-                      "fr": "Imprimante 3D",
-                      "en": "3D Printer"
-                    }
-                  },
-                  {
-                    "id": "cuisine",
-                    "label": {
-                      "fr": "Cuisine équipée",
-                      "en": "Equipped kitchen"
-                    }
-                  }
-                ]
-              },
-              {
-                "id": "activites",
-                "label": {
-                  "fr": "Activités",
-                  "en": "Activities"
-                },
-                "options": [
-                  {
-                    "id": "ateliers",
-                    "label": {
-                      "fr": "Ateliers",
-                      "en": "Workshops"
-                    }
-                  },
-                  {
-                    "id": "conferences",
-                    "label": {
-                      "fr": "Conférences",
-                      "en": "Conferences"
-                    }
-                  }
-                ]
-              },
-              {
-                "id": "partage",
-                "label": {
-                  "fr": "Partage",
-                  "en": "Sharing"
-                },
-                "options": [
-                  {
-                    "id": "openspace",
-                    "label": {
-                      "fr": "Open space",
-                      "en": "Open space"
-                    }
-                  },
-                  {
-                    "id": "prive",
-                    "label": {
-                      "fr": "Espace privé",
-                      "en": "Private space"
-                    }
-                  }
-                ]
-              },
-              {
-                "id": "taille",
-                "label": {
-                  "fr": "Taille",
-                  "en": "Size"
-                },
-                "options": [
-                  {
-                    "id": "petit",
-                    "label": {
-                      "fr": "< 100m²",
-                      "en": "< 100m²"
-                    }
-                  },
-                  {
-                    "id": "moyen",
-                    "label": {
-                      "fr": "100-500m²",
-                      "en": "100-500m²"
-                    }
-                  },
-                  {
-                    "id": "grand",
-                    "label": {
-                      "fr": "> 500m²",
-                      "en": "> 500m²"
-                    }
+                    "image": "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=400&h=300&fit=crop",
+                    "title": {
+                      "fr": "Nom du lieu",
+                      "en": "Place name"
+                    },
+                    "location": {
+                      "fr": "Ville, région",
+                      "en": "City, region"
+                    },
+                    "avatarIcon": "lightbulb",
+                    "avatarColor": "green",
+                    "badges": [
+                      {
+                        "icon": "heart"
+                      },
+                      {
+                        "icon": "share-2"
+                      }
+                    ],
+                    "href": "/lieux/lieu-9"
                   }
                 ]
               }
-            ],
-            "className": "sticky top-20"
+            }
           }
         }
       ]

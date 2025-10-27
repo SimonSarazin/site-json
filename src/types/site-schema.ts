@@ -146,15 +146,21 @@ const CardsSectionSchema = z.object({
         date: z.string().optional(),
         eventTitle: LocalizedString.optional(),
         organizerName: LocalizedString.optional(),
-
         iconSvg: z.string().optional(),
         iconColor: z.string().optional(),
+        iconImage: z.string().optional(),
+        iconClipPath: z.string().optional(),
       })
     ),
     columns: Columns.default(3),
-    layout: z.enum(["grid", "masonry", "carousel"]).default("grid"),
+    layout: z.enum(["grid", "masonry", "carousel", "list"]).default("grid"),
     variant: z.enum(["default", "tiers-lieux", "event", "icon-card"]).default("default"),
     className: z.string().optional(),
+
+    showHeader: z.boolean().default(false),
+    headerTitle: LocalizedString.optional(),
+    showResultCount: z.boolean().default(false),
+    showViewToggle: z.boolean().default(false),
   }),
 });
 
@@ -804,6 +810,24 @@ export type FiltersSection = z.infer<typeof FiltersSectionSchema>;
 
 export type FiltersSectionProps = z.infer<typeof FiltersSectionSchema>["props"];
 
+const GridLayoutSectionPropsSchema = z.object({
+  leftSection: z.any(),
+  rightSection: z.any(),
+  leftColumns: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]).optional(),
+  rightColumns: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]).optional(),
+  gap: z.number().optional(),
+  className: z.string().optional(),
+});
+
+const GridLayoutSectionSchema = z.object({
+  type: z.literal("gridLayout"),
+  id: z.string().optional(),
+  props: GridLayoutSectionPropsSchema,
+});
+
+export type GridLayoutSection = z.infer<typeof GridLayoutSectionSchema>;
+export type GridLayoutSectionProps = z.infer<typeof GridLayoutSectionSchema>["props"];
+
 const ContentSectionSchema = z.object({
   type: z.literal("content"),
   id: z.string().optional(),
@@ -881,6 +905,7 @@ export const Section = z.discriminatedUnion("type", [
   FiltersSectionSchema,
   ContentSectionSchema,
   SearchProSectionSchema,
+  GridLayoutSectionSchema
 ]);
 export type Section = z.infer<typeof Section>;
 
@@ -1353,6 +1378,9 @@ export const example: SiteConfig = {
         {
           type: "cards",
           props: {
+            showHeader: false,
+            showResultCount: false,
+            showViewToggle: false, 
             variant: "default",
             layout: "masonry",
             items: [

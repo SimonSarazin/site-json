@@ -1,4 +1,5 @@
 import { ChevronDown } from "lucide-react";
+import { Link } from "react-router";
 
 interface HeaderTiersLieuxProps {
     header: any;
@@ -11,15 +12,14 @@ export default function HeaderTiersLieux({ header, locale = "fr" }: HeaderTiersL
         <header className={`${header.transparent ? "bg-transparent" : "bg-white"} border-b ${header.sticky ? "sticky top-0 z-30" : ""}`}>
             <nav className="container mx-auto py-4">
                 <div className="flex items-center justify-between">
-                    {/* LOGO */}
-                    <div className="flex items-center space-x-2">
+                    <Link to={header.path} className="flex items-center space-x-2">
                         {header.logo && (
                             <img
                                 src={`/${header.logo}`}
                                 alt={header.logoAlt?.[locale] || "Tiers Lieux"}
                             />
                         )}
-                    </div>
+                    </Link>
 
                     {/* Menu desktop */}
                     <div className="hidden md:flex items-center space-x-8 text-sm font-medium">
@@ -28,10 +28,10 @@ export default function HeaderTiersLieux({ header, locale = "fr" }: HeaderTiersL
 
                             return (
                                 <div key={idx} className="relative group">
-                                    <a href="#" className="hover:text-teal-500 text-gray-800 transition flex items-center gap-1">
+                                    <Link to="#" className="hover:text-teal-500 text-gray-800 transition flex items-center gap-1">
                                         {item.label?.[locale]}
                                         {hasChildren && <ChevronDown className="w-3 h-3" />}
-                                    </a>
+                                    </Link>
 
                                     {hasChildren && (
                                         <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-screen max-w-2xl bg-white rounded-xl shadow-2xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-8 z-50">
@@ -46,11 +46,11 @@ export default function HeaderTiersLieux({ header, locale = "fr" }: HeaderTiersL
                                                         <h3 className="font-bold text-gray-900 text-center mb-2">
                                                             {item.children[0].label?.[locale]}
                                                         </h3>
-                                                        <a href="#" className="text-teal-500 font-semibold flex items-center gap-2">
+                                                        <Link to="/lieux" className="text-teal-500 font-semibold flex items-center gap-2">
                                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                                                             </svg>
-                                                        </a>
+                                                        </Link>
                                                     </div>
 
                                                     <div className="col-span-2 grid grid-cols-2 gap-6">
@@ -94,7 +94,6 @@ export default function HeaderTiersLieux({ header, locale = "fr" }: HeaderTiersL
                         })}
                     </div>
 
-                    {/* Actions utilisateur (desktop) */}
                     {header.utilities?.auth && (
                         <div className="hidden md:flex items-center space-x-4 text-sm">
                             <div className="bg-gray-100 rounded-full px-4 py-1.5 flex items-center gap-2">
