@@ -110,8 +110,8 @@ function NavItem({ item, mobile = false, onNavigate }: NavItemProps) {
 
   // role-based filtering
   if (item.roles && item.roles.length) {
-    const roles: string[] = me?.serverData?.roles || [];
-    if (!item.roles.some(r => roles.includes(r))) return null;
+    const userRoles = me?.serverData?.roles || {};
+    if (!item.roles.some(r => userRoles[r] === true)) return null;
   }
 
   const handleNavigate = () => {

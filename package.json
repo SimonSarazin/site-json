@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "node server/dev-server.js",
+    "typecheck": "tsc -b --noEmit",
     "build:client": "tsc -b && vite build --outDir dist/client",
     "build:server": "vite build --ssr src/entry-server.tsx --outDir dist/server",
     "build:config": "tsx scripts/generate-config.ts",
@@ -22,7 +23,7 @@
     "@types/react-dom": "19.1.2"
   },
   "dependencies": {
-    "@communecter/cocolight-api-client": "^1.0.54",
+    "@communecter/cocolight-api-client": "^1.0.55",
     "@dr.pogodin/react-helmet": "^3.0.2",
     "@hookform/resolvers": "^3.10.0",
     "@icons-pack/react-simple-icons": "^13.3.0",

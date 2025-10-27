@@ -28,8 +28,7 @@ export async function loadLeaflet(): Promise<typeof import("leaflet")> {
 
       // 2. Expose Leaflet globally for plugins that expect window.L
       //    (MarkerCluster still relies on a global reference)
-      //    We cast window to any to avoid global augmentation boilerplate.
-      (window as any).L = L;
+      window.L = L;
 
       // 3. Load MarkerCluster JS + CSS once Leaflet is on window
       await import("leaflet.markercluster");
@@ -43,10 +42,9 @@ export async function loadLeaflet(): Promise<typeof import("leaflet")> {
   return leafletPromise;
 }
 
-// If you want to use `window.L` with proper typing elsewhere, you can augment
-// the global Window interface like so (uncomment if needed):
-// declare global {
-//   interface Window {
-//     L: typeof import("leaflet");
-//   }
-// }
+// Augment the global Window interface to include Leaflet
+declare global {
+  interface Window {
+    L: typeof import("leaflet");
+  }
+}
