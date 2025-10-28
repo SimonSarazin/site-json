@@ -1,4 +1,3 @@
-
 import { LocalizedString } from "@/types/locale-schema";
 import type { Organization, Poi, Project, User, Event as EventType } from "@communecter/cocolight-api-client";
 import { IconName } from "lucide-react/dynamic";
@@ -22,6 +21,7 @@ const ListConfSchema = z.object({
     lg: z.number().int().min(1).max(6).optional(),
     md: z.number().int().min(1).max(6).optional(),
     sm: z.number().int().min(1).max(6).optional(),
+    xl: z.number().int().min(1).max(6).optional(),
   }).partial().optional(),
   card: z.object({
     tagLimit:        z.number().int().min(1).max(50).optional(),
@@ -29,7 +29,8 @@ const ListConfSchema = z.object({
     showAddress:     z.boolean().optional(),
     shareButton:     z.boolean().optional(),
     detailsMode: z.enum(["drawer", "dialog"]).default("drawer"),
-    type: z.enum(["overlay", "default"]).default("default"),
+    type: z.enum(["overlay", "default", "tiers-lieux", "event"]).default("default"),
+    variant: z.enum(["default", "tiers-lieux", "event"]).optional(),
   }).partial().optional(),
   preview: z.object({
     type: z.enum(["default"]).default("default"),
@@ -90,6 +91,12 @@ export const SearchProSectionSchema = z.object({
     enableMap: z.boolean().default(true),
     showActiveFiltersTypes: z.boolean().default(true),
     showActiveFiltersTags: z.boolean().default(true),
+    customHeader: z.object({
+      title: LocalizedString.optional(),
+      linkText: LocalizedString.optional(),
+      linkHref: z.string().optional(),
+      showMapButton: z.boolean().default(true),
+    }).optional(),
 
     filters: z.record(z.string(), TagsFilterSchema).optional(),
 
@@ -103,6 +110,7 @@ export const SearchProSectionSchema = z.object({
       defaultFields: z.array(z.string()).optional(),
       defaultSortBy: z.record(z.string(), z.union([z.literal(1), z.literal(-1)])).optional(),
       notSourceKey: z.boolean().optional(),
+      disableInfiniteScroll: z.boolean().optional(),
     }).optional(),
 
     list: ListConfSchema.optional(),
