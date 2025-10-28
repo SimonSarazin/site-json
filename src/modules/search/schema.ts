@@ -121,6 +121,50 @@ export const SearchProSectionSchema = z.object({
 export type SearchProSection = z.infer<typeof SearchProSectionSchema>;
 export type SearchProSectionProps = z.infer<typeof SearchProSectionSchema>["props"]
 
+// SearchProStatic: Version sans synchronisation URL pour affichage multiple par page
+export const SearchProStaticSectionSchema = z.object({
+  type: z.literal("searchProStatic"),
+  id:   z.string().optional(),
+
+  props: z.object({
+    title: LocalizedString.optional(),
+    description: LocalizedString.optional(),
+    placeholder: LocalizedString.optional(),
+    useFilter:   z.boolean().default(false),
+    showMap:     z.boolean().default(false),
+    enableMap: z.boolean().default(true),
+    showActiveFiltersTypes: z.boolean().default(false),
+    showActiveFiltersTags: z.boolean().default(false),
+    disableInfiniteScroll: z.boolean().optional(),
+    customHeader: z.object({
+      title: LocalizedString.optional(),
+      linkText: LocalizedString.optional(),
+      linkHref: z.string().optional(),
+      showMapButton: z.boolean().default(true),
+    }).optional(),
+
+    filters: z.record(z.string(), TagsFilterSchema).optional(),
+
+    baseParams: z.object({
+      fediverse:     z.boolean().optional(),
+      indexStepList: z.number().optional(),
+      indexStepMap:  z.number().optional(),
+      defaultTypes: z.array(SearchTypeSchema).optional(),
+      defaultTags:   z.array(z.string()).optional(),
+      defaultFilters: z.record(z.string(), z.unknown()).optional(),
+      defaultFields: z.array(z.string()).optional(),
+      defaultSortBy: z.record(z.string(), z.union([z.literal(1), z.literal(-1)])).optional(),
+      notSourceKey: z.boolean().optional()
+    }).optional(),
+
+    list: ListConfSchema.optional(),
+    map:  MapConfSchema.optional(),
+  }),
+});
+
+export type SearchProStaticSection = z.infer<typeof SearchProStaticSectionSchema>;
+export type SearchProStaticSectionProps = z.infer<typeof SearchProStaticSectionSchema>["props"]
+
 export type SearchEntity = User | Organization | Project | EventType | Poi;
 
 export interface SearchResultPage<T extends SearchEntity = SearchEntity> {

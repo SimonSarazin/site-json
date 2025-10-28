@@ -358,7 +358,7 @@
           }
         },
         {
-          "type": "searchPro",
+          "type": "searchProStatic",
           "id": "section-events-futur",
           "props": {
             "customHeader": {
@@ -511,7 +511,7 @@
           }
         },
         {
-          "type": "searchPro",
+          "type": "searchProStatic",
           "id": "section-events",
           "props": {
             "customHeader": {
