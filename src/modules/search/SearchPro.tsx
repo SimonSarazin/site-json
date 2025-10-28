@@ -140,6 +140,7 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
     lastItemRef,
     isFetchingNextPage,
     isLoading: loadingMap,
+    isPending,
     refetch,
   } = useInfiniteQueryScrollNext({
     queryKey: [
@@ -461,9 +462,11 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
               )
             )}
 
-            {loadingMap && <SearchListSkeleton />}
+            {/* Afficher le skeleton uniquement lors du premier chargement (isPending) */}
+            {isPending && <SearchListSkeleton />}
 
-            {!loadingMap && transformedResults.length === 0 && (
+            {/* Afficher "Aucun résultat" seulement si pas en chargement ET pas de résultats */}
+            {!isPending && !loadingMap && transformedResults.length === 0 && (
               <div className="text-center text-secondary-foreground py-8">{t("Aucun résultat trouvé.")}</div>
             )}
 
