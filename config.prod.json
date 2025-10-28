@@ -375,12 +375,12 @@
             "enableMap": true,
             "showActiveFiltersTypes": true,
             "showActiveFiltersTags": true,
+            "disableInfiniteScroll": true,
             "baseParams": {
               "defaultTypes": [
                 "events"
               ],
-              "indexStepList": 5,
-              "disableInfiniteScroll": true
+              "indexStepList": 5
             },
             "list": {
               "columns": {
@@ -528,13 +528,13 @@
             "enableMap": true,
             "showActiveFiltersTypes": true,
             "showActiveFiltersTags": true,
+            "disableInfiniteScroll": true,
             "baseParams": {
               "defaultTypes": [
                 "events"
               ],
               "indexStepList": 4,
-              "startDateUTC": 1761598800,
-              "disableInfiniteScroll": true
+              "startDateUTC": 1761598800
             },
             "list": {
               "columns": {

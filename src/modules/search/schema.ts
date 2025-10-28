@@ -91,6 +91,7 @@ export const SearchProSectionSchema = z.object({
     enableMap: z.boolean().default(true),
     showActiveFiltersTypes: z.boolean().default(true),
     showActiveFiltersTags: z.boolean().default(true),
+    disableInfiniteScroll: z.boolean().optional(),
     customHeader: z.object({
       title: LocalizedString.optional(),
       linkText: LocalizedString.optional(),
@@ -109,8 +110,7 @@ export const SearchProSectionSchema = z.object({
       defaultFilters: z.record(z.string(), z.unknown()).optional(),
       defaultFields: z.array(z.string()).optional(),
       defaultSortBy: z.record(z.string(), z.union([z.literal(1), z.literal(-1)])).optional(),
-      notSourceKey: z.boolean().optional(),
-      disableInfiniteScroll: z.boolean().optional(),
+      notSourceKey: z.boolean().optional()
     }).optional(),
 
     list: ListConfSchema.optional(),

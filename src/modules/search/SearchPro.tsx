@@ -67,12 +67,11 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
     enableMap = true,
     showActiveFiltersTypes = true,
     showActiveFiltersTags = true,
+    disableInfiniteScroll = false,
     filters = {},
     baseParams = {},
     list,
   } = props;
-
-  const disableInfiniteScroll = baseParams?.disableInfiniteScroll || false;
 
   const customHeader = props.customHeader;
   /* ------------------------------------------------------------------ */
