@@ -1067,7 +1067,6 @@
               "id": "tiers-lieux-results",
               "props": {
                 "showHeader": true,
-                
                 "showResultCount": true,
                 "showViewToggle": true,
                 "variant": "tiers-lieux",
@@ -1397,8 +1396,8 @@
         "foreground": "#000000"
       },
       "dark": {
-        "background": "#000000",
-        "foreground": "#ffffff"
+         "background": "#ffffff",
+        "foreground": "#000000"
       }
     }
   }
