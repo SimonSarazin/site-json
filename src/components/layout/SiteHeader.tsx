@@ -6,11 +6,11 @@ export function SiteHeader() {
   const { config } = useSite();
   const header = config.header;
 
-  switch (header.type) {
+  switch (header?.type) {
     case "tiers-lieux":
       return <HeaderTiersLieux header={header} />;
     case "default":
     default:
-      return <DefaultHeader header={header} />;
+      return <DefaultHeader />;
   }
 }

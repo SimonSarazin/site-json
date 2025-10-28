@@ -1,22 +1,26 @@
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { useT } from "@/hooks/useT";
+import { Header } from "@/types/site-schema";
 import { ChevronDown } from "lucide-react";
 import { Link } from "react-router";
 
 interface HeaderTiersLieuxProps {
-    header: any;
-    locale?: "fr" | "en";
+    header: Header;
 }
 
-export default function HeaderTiersLieux({ header, locale = "fr" }: HeaderTiersLieuxProps) {
-
+export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
+  useLoadNamespace("components/layout");
+  const t = useT("components/layout");
+  
     return (
         <header className={`${header.transparent ? "bg-transparent" : "bg-white"} border-b ${header.sticky ? "sticky top-0 z-30" : ""}`}>
             <nav className="container mx-auto py-4">
                 <div className="flex items-center justify-between">
-                    <Link to={header.path} className="flex items-center space-x-2">
+                    <Link to={header.path || "/"} className="flex items-center space-x-2">
                         {header.logo && (
                             <img
                                 src={`/${header.logo}`}
-                                alt={header.logoAlt?.[locale] || "Tiers Lieux"}
+                                alt={header.logoAlt ? t(header.logoAlt) : ""}
                             />
                         )}
                     </Link>
@@ -29,13 +33,13 @@ export default function HeaderTiersLieux({ header, locale = "fr" }: HeaderTiersL
                             return (
                                 <div key={idx} className="relative group">
                                     <Link to="#" className="hover:text-teal-500 text-gray-800 transition flex items-center gap-1">
-                                        {item.label?.[locale]}
+                                        {t(item.label)}
                                         {hasChildren && <ChevronDown className="w-3 h-3" />}
                                     </Link>
 
-                                    {hasChildren && (
+                                    {hasChildren && item.children && (
                                         <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-screen max-w-2xl bg-white rounded-xl shadow-2xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-8 z-50">
-                                            {item.label?.[locale] === "Les lieux" ? (
+                                            {t(item.label) === "Les lieux" ? (
                                                 <div className="grid grid-cols-3 gap-8">
                                                     <div className="flex flex-col items-center justify-center border-r border-gray-200 pr-6">
                                                         <div className="w-20 h-20 bg-yellow-400 rounded-full flex items-center justify-center mb-4">
@@ -44,7 +48,7 @@ export default function HeaderTiersLieux({ header, locale = "fr" }: HeaderTiersL
                                                             </svg>
                                                         </div>
                                                         <h3 className="font-bold text-gray-900 text-center mb-2">
-                                                            {item.children[0].label?.[locale]}
+                                                            {item.children[0] && t(item.children[0].label)}
                                                         </h3>
                                                         <Link to="/lieux" className="text-teal-500 font-semibold flex items-center gap-2">
                                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -56,9 +60,9 @@ export default function HeaderTiersLieux({ header, locale = "fr" }: HeaderTiersL
                                                     <div className="col-span-2 grid grid-cols-2 gap-6">
                                                         {item.children.slice(1).map((sub, i) => (
                                                             <div key={i}>
-                                                                <h4 className="font-bold text-gray-900 mb-2">{sub.label?.[locale]}</h4>
+                                                                <h4 className="font-bold text-gray-900 mb-2">{t(sub.label)}</h4>
                                                                 <p className="text-gray-600 text-xs leading-relaxed">
-                                                                    {sub.description?.[locale] || ""}
+                                                                    {sub.description ? t(sub.description) : ""}
                                                                 </p>
                                                             </div>
                                                         ))}
@@ -68,9 +72,9 @@ export default function HeaderTiersLieux({ header, locale = "fr" }: HeaderTiersL
                                                 <div className="grid grid-cols-2 gap-6">
                                                     {item.children.map((sub, i) => (
                                                         <div key={i}>
-                                                            <h4 className="font-bold text-gray-900 mb-2">{sub.label?.[locale]}</h4>
+                                                            <h4 className="font-bold text-gray-900 mb-2">{t(sub.label)}</h4>
                                                             <p className="text-gray-600 text-xs leading-relaxed">
-                                                                {sub.description?.[locale] || ""}
+                                                                {sub.description ? t(sub.description) : ""}
                                                             </p>
                                                         </div>
                                                     ))}
@@ -79,9 +83,9 @@ export default function HeaderTiersLieux({ header, locale = "fr" }: HeaderTiersL
                                                 <div className="space-y-4">
                                                     {item.children.map((sub, i) => (
                                                         <div key={i}>
-                                                            <h4 className="font-bold text-gray-900 mb-2">{sub.label?.[locale]}</h4>
+                                                            <h4 className="font-bold text-gray-900 mb-2">{t(sub.label)}</h4>
                                                             <p className="text-gray-600 text-xs leading-relaxed">
-                                                                {sub.description?.[locale] || ""}
+                                                                {sub.description ? t(sub.description) : ""}
                                                             </p>
                                                         </div>
                                                     ))}

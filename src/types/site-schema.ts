@@ -1000,9 +1000,10 @@ const EnhancedNavItem: z.ZodType<EnhancedNavItemType> = z.lazy(() =>
 );
 
 export const Header = z.object({
-  type: z.string(),
+  type: z.enum(["tiers-lieux", "default"]).default("default"),
   logo: z.string(),
   logoAlt: LocalizedString.optional(),
+  path: z.string().min(1).optional(),
   nav: z.array(EnhancedNavItem),
   sticky: z.boolean().default(true),
   transparent: z.boolean().default(false),
@@ -1035,13 +1036,14 @@ const FooterColumn = z.object({
 });
 
 export const Footer = z.object({
-  type: z.string().optional(),
+  type: z.enum(["tiers-lieux", "default"]).default("default"),
   columns: z.array(FooterColumn),
   socials: z.array(z.object({ platform: z.string(), url: z.string() })).optional(),
   extra: z.string().optional(),
   newsletter: NewsletterSectionSchema.optional(),
   copyright: LocalizedString,
   logo: z.string().optional(),
+  logoAlt: LocalizedString.optional(),
   description: LocalizedString.optional(),
   legalLinks: z.array(z.object({
     href: z.string(),
@@ -1317,6 +1319,7 @@ export function getDefaultSiteConfig(): Partial<SiteConfig> {
     },
     pages: [],
     footer: {
+      type: "default",
       columns: [],
       copyright: { en: "© 2025 My Company", fr: "© 2025 Ma Société" },
     },
@@ -1403,6 +1406,7 @@ export const example: SiteConfig = {
     },
   ],
   footer: {
+    type: "default",
     columns: [
       {
         title: { fr: "Liens", en: "Links" },

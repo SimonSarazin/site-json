@@ -110,8 +110,8 @@ function NavItem({ item, mobile = false, onNavigate }: NavItemProps) {
 
   // role-based filtering
   if (item.roles && item.roles.length) {
-    const roles: string[] = me?.serverData?.roles || [];
-    if (!item.roles.some(r => roles.includes(r))) return null;
+    const userRoles = me?.serverData?.roles || {};
+    if (!item.roles.some(r => userRoles[r] === true)) return null;
   }
 
   const handleNavigate = () => {
@@ -193,13 +193,9 @@ function NavItem({ item, mobile = false, onNavigate }: NavItemProps) {
   );
 }
 
-interface DefaultHeaderTiersLieuxProps {
-  header: any;
-}
 
-export function DefaultHeader({
-  header
-}: DefaultHeaderTiersLieuxProps) {
+export function DefaultHeader() {
+  const { config } = useSite();
   useLoadNamespace("components/layout");
   const t = useT("components/layout");
   const { currentLocale, setLocale, availableLocales } = useLocalization();
@@ -207,6 +203,7 @@ export function DefaultHeader({
   const { me, api } = useCocolight();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const { header } = config;
 
   const headerBg = header.transparent ? 'bg-transparent' : 'bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60';
   const headerHeight = {

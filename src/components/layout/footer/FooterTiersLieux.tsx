@@ -1,7 +1,8 @@
 import { useLocalization } from "@/hooks/useLocalization";
+import { Footer } from "@/types/site-schema";
 
 interface FooterTiersLieuxProps {
-  footer: any;
+  footer: Footer;
 }
 
 export default function FooterTiersLieux({ footer }: FooterTiersLieuxProps) {
@@ -15,13 +16,13 @@ export default function FooterTiersLieux({ footer }: FooterTiersLieuxProps) {
         <div className="flex justify-center mb-8">
           <img
             src={footer.logo || '/images/default-logo.png'}
-            alt={t(footer.logoAlt)}
+            alt={footer.logoAlt ? t(footer.logoAlt) : ""}
             className="h-12"
           />
         </div>
 
         <nav className="flex flex-wrap justify-center gap-x-8 gap-y-4 text-sm text-gray-600 mb-12">
-          {footer.columns?.[0]?.links?.map((link: any, idx: number) => (
+          {footer.columns?.[0]?.links?.map((link, idx: number) => (
             <a
               key={idx}
               href={link.href}
@@ -36,7 +37,7 @@ export default function FooterTiersLieux({ footer }: FooterTiersLieuxProps) {
         <div className="flex flex-wrap justify-between items-center text-xs text-gray-500 border-t pt-8">
           <p className="text-gray-500">{t(footer.copyright)}</p>
           <div className="flex gap-6 flex-wrap">
-            {footer.bottomLinks?.map((link: any, idx: number) => (
+            {footer.legalLinks?.map((link, idx: number) => (
               <a
                 key={idx}
                 href={link.href}

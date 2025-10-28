@@ -6,6 +6,7 @@ import { HeroTiersLieuxProps as SchemaHeroTiersLieuxProps } from "@/types/site-s
 import { useAutocomplete } from "@/hooks/useAutocomplete";
 import { SearchEntity } from "@/modules/search/schema";
 import { cn } from "@/lib/utils";
+import { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
 
 const getEntityIcon = (entity: SearchEntity) => {
   const type = entity?.getEntityType?.() || "";
@@ -100,7 +101,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const autocompleteOptions = useMemo(() => ({
-    searchTypes: ["organizations", "events", "citoyens", "projects"],
+    searchTypes: ["NGO", "LocalBusiness", "citoyens", "projects", "poi"] as GlobalAutocompleteCostumData["searchType"],
     indexMax: 30,
   }), []);
 

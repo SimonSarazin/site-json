@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { useCocolight } from "@/hooks/useCocolight";
 import { SearchEntity } from "@/modules/search/schema";
+import { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
 
 interface UseAutocompleteOptions {
-  searchTypes?: string[];
+  searchTypes?: GlobalAutocompleteCostumData["searchType"];
   indexMax?: number;
   debounceMs?: number;
   minChars?: number;
@@ -20,7 +21,7 @@ export function useAutocomplete(
   options: UseAutocompleteOptions = {}
 ): UseAutocompleteResult {
   const {
-    searchTypes = ["organizations", "events", "citoyens", "projects"],
+    searchTypes = ["NGO", "LocalBusiness", "citoyens", "projects", "poi"] as GlobalAutocompleteCostumData["searchType"],
     indexMax = 30,
     debounceMs = 300,
     minChars = 2,
@@ -42,13 +43,14 @@ export function useAutocomplete(
       setError(null);
 
       try {
-        // Utilisation de organization.searchCostum avec paramètres minimaux
-        const result = await organization.searchCostum({
+        const param: Partial<GlobalAutocompleteCostumData> = {
           name: searchQuery,
           searchType: searchTypes,
           indexMin: 0,
           indexStep: indexMax,
-        });
+        }
+        // Utilisation de organization.searchCostum avec paramètres minimaux
+        const result = await organization.searchCostum(param);
 
         // Les results sont un objet avec des IDs comme clés, pas un tableau
         const resultsObj = result?.results || {};
