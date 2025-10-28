@@ -71,6 +71,9 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
     list,
   } = props;
 
+  const disableInfiniteScroll = baseParams?.disableInfiniteScroll || false;
+
+  const customHeader = props.customHeader;
   /* ------------------------------------------------------------------ */
   /* UI state                                                            */
   /* ------------------------------------------------------------------ */
@@ -125,7 +128,7 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
 
 
   const mapUsed = enableMap ? rawMapUsed : false;
-  const setMapUsed = enableMap ? rawSetMapUsed : () => {};
+  const setMapUsed = enableMap ? rawSetMapUsed : () => { };
 
   /* ------------------------------------------------------------------ */
   /* Infinite query using Communecter searchCostum                       */
@@ -151,9 +154,9 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
       if (!organization) {
         throw new Error("API non initialisée");
       }
-      
-      const tags = Object.values(searchTags).flat();
-      const type = Array.isArray(searchType) ? searchType : Object.values(searchType).flat();
+
+      const tags = searchTags ? Object.values(searchTags).flat() : [];
+      const type = Array.isArray(searchType) ? searchType : (searchType ? Object.values(searchType).flat() : []);
       const page = pageParam as SearchResultPage | undefined;
 
       const {
@@ -197,8 +200,8 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
         param.defaultTags = defaultTags;
       }
 
-      if(!param.searchType) {
-        return {"results":[], "count":{}, "hasNext": false, "pageNumber": 1};
+      if (!param.searchType) {
+        return { "results": [], "count": {}, "hasNext": false, "pageNumber": 1 };
       }
 
       try {
@@ -434,13 +437,28 @@ if (!loaded) {
           </div>
         ) : (
           <div className="p-4 overflow-y-auto">
-          {enableMap && (
-            <div className="flex justify-end mb-4">
-              <Button variant="outline" size="sm" onClick={() => setMapUsed(true)} className="flex items-center">
-                <Map className="mr-2 h-4 w-4 text-primary" /> {t("Carte")}
-              </Button>
-            </div>
-          )}
+            {customHeader ? (
+              <div className="container flex justify-between mx-auto px-4 sm:px-6 lg:px-8 mb-6">
+                <div className="flex justify-between items-center">
+                  {customHeader.title && (
+                    <h2 className="text-2xl font-extrabold text-gray-900">
+                      {typeof customHeader.title === 'string' ? customHeader.title : t(customHeader.title)}
+                    </h2>
+                  )}
+                </div>
+                <Button variant="outline" size="sm" onClick={() => setMapUsed(true)}>
+                  <Map className="mr-2 h-4 w-4 text-primary" /> {t("Carte")}
+                </Button>
+              </div>
+            ) : (
+              enableMap && (
+                <div className="flex justify-end mb-4">
+                  <Button variant="outline" size="sm" onClick={() => setMapUsed(true)}>
+                    <Map className="mr-2 h-4 w-4 text-primary" /> {t("Carte")}
+                  </Button>
+                </div>
+              )
+            )}
 
             {loadingMap && <SearchListSkeleton />}
 
@@ -450,7 +468,7 @@ if (!loaded) {
 
             <SearchListView results={transformedResults} columns={list?.columns} card={list?.card} preview={list?.preview} />
 
-            <div ref={lastItemRef} className="h-12" />
+            {!disableInfiniteScroll && <div ref={lastItemRef} className="h-12" />}
 
             {isFetchingNextPage && (
               <div className="flex justify-center py-4 text-secondary-foreground">{t("Chargement plus de résultats…")}</div>
