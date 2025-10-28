@@ -160,27 +160,27 @@ function getLocation(item: SearchEntity): string | null {
 
 function getAvatarIcon(item: SearchEntity): string | null {
   const serverData = item?.serverData;
-  
+
   if (serverData?.avatarIcon) return serverData.avatarIcon;
-  
+
   // Icône par défaut pour les événements
   if (serverData?.tags && Array.isArray(serverData.tags)) {
-    // Mapper certains tags à des icônes
+    // Mapper certains tags à des icônes (kebab-case pour lucide-react/dynamic)
     const tagIconMap: Record<string, string> = {
-      'workshop': 'Wrench',
-      'conference': 'Presentation',
-      'hackathon': 'Zap',
-      'meetup': 'Users',
-      'formation': 'GraduationCap',
+      'workshop': 'wrench',
+      'conference': 'presentation',
+      'hackathon': 'zap',
+      'meetup': 'users',
+      'formation': 'graduation-cap',
     };
-    
+
     for (const tag of serverData.tags) {
       const icon = tagIconMap[tag.toLowerCase()];
       if (icon) return icon;
     }
   }
-  
-  return "Calendar"; // Icône par défaut
+
+  return "calendar"; // Icône par défaut (kebab-case)
 }
 
 function getAvatarColor(item: SearchEntity): string {

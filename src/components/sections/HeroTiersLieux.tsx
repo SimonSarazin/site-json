@@ -28,46 +28,29 @@ const getEntityIcon = (entity: SearchEntity) => {
 };
 
 const getEntityTitle = (entity: SearchEntity): string => {
-  if (typeof (entity as any).getName === 'function') {
-    const name = (entity as any).getName();
-    if (name) return String(name);
+
+  if (entity.serverData?.name) {
+    return String(entity.serverData.name);
   }
 
-  if ('serverData' in entity && (entity as any).serverData?.name) {
-    return String((entity as any).serverData.name);
+  if (entity.serverData?.title) {
+    return String(entity.serverData.title);
   }
-
-  if ('name' in entity && entity.name) return String(entity.name);
-  if ('title' in entity && entity.title) return String(entity.title);
 
   return "Sans titre";
 };
 
 const getEntityAddress = (entity: SearchEntity): string | null => {
-  if ('address' in entity && entity.address) {
-    const addr = entity.address as any;
+
+  if (entity.serverData?.address) {
+    const addr = entity.serverData.address;
     if (typeof addr === 'string') return addr;
-    if (addr?.addressLocality) {
+    if (typeof addr === 'object' && 'addressLocality' in addr) {
       const parts = [
-        addr.postalCode,
+        'postalCode' in addr ? addr.postalCode : undefined,
         addr.addressLocality,
       ].filter(Boolean);
       return parts.join(" ");
-    }
-  }
-
-  if ('serverData' in entity) {
-    const serverData = (entity as any).serverData;
-    if (serverData?.address) {
-      const addr = serverData.address;
-      if (typeof addr === 'string') return addr;
-      if (addr?.addressLocality) {
-        const parts = [
-          addr.postalCode,
-          addr.addressLocality,
-        ].filter(Boolean);
-        return parts.join(" ");
-      }
     }
   }
 
@@ -75,13 +58,10 @@ const getEntityAddress = (entity: SearchEntity): string | null => {
 };
 
 const getEntityId = (entity: SearchEntity, index: number): string => {
-  if (typeof (entity as any).getId === 'function') {
-    return (entity as any).getId();
+  if (entity?.id) {
+    return String(entity.id);
   }
-  if (typeof (entity as any).get === 'function') {
-    const id = (entity as any).get('id');
-    if (id) return String(id);
-  }
+
   return `entity-${index}`;
 };
 

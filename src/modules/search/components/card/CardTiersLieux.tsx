@@ -107,18 +107,18 @@ function getLocation(item: SearchEntity): string | null {
 
 function getAvatarIcon(item: SearchEntity): string | null {
   const serverData = item?.serverData;
-  
+
   // Vous pouvez personnaliser selon le type d'entité
   if (serverData?.avatarIcon) return serverData.avatarIcon;
-  
-  // Icône par défaut selon le type
+
+  // Icône par défaut selon le type (kebab-case pour lucide-react/dynamic)
   const type = serverData?.type;
-  if (type === "organizations") return "Building2";
-  if (type === "projects") return "Lightbulb";
-  if (type === "events") return "Calendar";
-  if (type === "poi") return "MapPin";
-  
-  return "Lightbulb"; // Icône par défaut
+  if (type === "organizations") return "building-2";
+  if (type === "projects") return "lightbulb";
+  if (type === "events") return "calendar";
+  if (type === "poi") return "map-pin";
+
+  return "lightbulb"; // Icône par défaut (kebab-case)
 }
 
 function getAvatarColor(item: SearchEntity): string {
@@ -138,29 +138,29 @@ function getAvatarColor(item: SearchEntity): string {
 
 function getBadges(item: SearchEntity): Array<{ icon: string; label?: string }> {
   const serverData = item?.serverData;
-  
+
   if (serverData?.badges && Array.isArray(serverData.badges)) {
     return serverData.badges;
   }
-  
+
   // Générer des badges automatiques selon les tags ou catégories
   const badges: Array<{ icon: string; label?: string }> = [];
-  
+
   if (serverData?.tags && Array.isArray(serverData.tags)) {
-    // Mapper certains tags à des icônes
+    // Mapper certains tags à des icônes (kebab-case pour lucide-react/dynamic)
     const tagIconMap: Record<string, string> = {
-      'coworking': 'Laptop',
-      'fablab': 'Factory',
-      'makerspace': 'Wrench',
-      'café': 'Coffee',
-      'restaurant': 'UtensilsCrossed',
+      'coworking': 'laptop',
+      'fablab': 'factory',
+      'makerspace': 'wrench',
+      'café': 'coffee',
+      'restaurant': 'utensils-crossed',
     };
-    
+
     serverData.tags.slice(0, 2).forEach((tag: string) => {
-      const icon = tagIconMap[tag.toLowerCase()] || 'Tag';
+      const icon = tagIconMap[tag.toLowerCase()] || 'tag';
       badges.push({ icon, label: tag });
     });
   }
-  
+
   return badges;
 }
