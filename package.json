@@ -23,7 +23,7 @@
     "@types/react-dom": "19.1.2"
   },
   "dependencies": {
-    "@communecter/cocolight-api-client": "^1.0.55",
+    "@communecter/cocolight-api-client": "^1.0.56",
     "@dr.pogodin/react-helmet": "^3.0.2",
     "@hookform/resolvers": "^3.10.0",
     "@icons-pack/react-simple-icons": "^13.3.0",
@@ -111,6 +111,7 @@
     "globals": "^15.9.0",
     "postcss": "^8.4.47",
     "rimraf": "^6.0.1",
+    "rollup-plugin-visualizer": "^6.0.5",
     "tailwindcss": "^4.1.11",
     "tsx": "^4.20.3",
     "tw-animate-css": "^1.3.4",
