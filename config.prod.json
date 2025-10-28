@@ -358,132 +358,43 @@
           }
         },
         {
-          "type": "html",
-          "id": "events-header",
+          "type": "searchPro",
+          "id": "section-events-futur",
           "props": {
-            "html": "<div class=\"container mx-auto px-4 sm:px-6 lg:px-8\"><div class=\"flex justify-between items-center\"><h2 class=\"text-2xl font-extrabold\">Découvrir les lieux</h2><a href=\"#\" class=\"text-gray-700 hover:text-teal-500 transition flex items-center gap-2\">Cartographie des lieux <span>→</span></a></div></div>"
-          }
-        },
-        {
-          "type": "cards",
-          "id": "tiers-lieux",
-          "props": {
-            "variant": "tiers-lieux",
-            "columns": 5,
-            "layout": "grid",
-            "className": "mt-2",
-            "items": [
-              {
-                "image": "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop",
-                "title": {
-                  "fr": "La Dynamo",
-                  "en": "La Dynamo"
-                },
-                "location": {
-                  "fr": "Paris, Île-de-France",
-                  "en": "Paris, Île-de-France"
-                },
-                "avatarIcon": "lightbulb",
-                "avatarColor": "orange",
-                "badges": [
-                  {
-                    "icon": "laptop"
-                  },
-                  {
-                    "icon": "factory"
-                  }
-                ],
-                "href": "/lieux/la-dynamo"
+            "customHeader": {
+              "title": {
+                "fr": "Découvrir les événements"
               },
-              {
-                "image": "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=400&h=300&fit=crop",
-                "title": {
-                  "fr": "Le Lieu Dit",
-                  "en": "Le Lieu Dit"
-                },
-                "location": {
-                  "fr": "Lyon, Auvergne",
-                  "en": "Lyon, Auvergne"
-                },
-                "avatarIcon": "lightbulb",
-                "avatarColor": "blue",
-                "badges": [
-                  {
-                    "icon": "laptop"
-                  },
-                  {
-                    "icon": "factory"
-                  }
-                ],
-                "href": "/lieux/le-lieu-dit"
+              "linkText": {
+                "fr": "Cartographie des événements"
               },
-              {
-                "image": "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=400&h=300&fit=crop",
-                "title": {
-                  "fr": "Le Shadok",
-                  "en": "Le Shadok"
-                },
-                "location": {
-                  "fr": "Strasbourg, Grand Est",
-                  "en": "Strasbourg, Grand Est"
-                },
-                "avatarIcon": "lightbulb",
-                "avatarColor": "orange",
-                "badges": [
-                  {
-                    "icon": "laptop"
-                  },
-                  {
-                    "icon": "factory"
-                  }
-                ],
-                "href": "/lieux/le-shadok"
+              "showMapButton": true
+            },
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": true,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "baseParams": {
+              "defaultTypes": [
+                "events"
+              ],
+              "indexStepList": 5,
+              "disableInfiniteScroll": true
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 5,
+                "xl": 5
               },
-              {
-                "image": "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=400&h=300&fit=crop",
-                "title": {
-                  "fr": "La Paillasse",
-                  "en": "La Paillasse"
-                },
-                "location": {
-                  "fr": "Marseille, PACA",
-                  "en": "Marseille, PACA"
-                },
-                "avatarIcon": "lightbulb",
-                "avatarColor": "green",
-                "badges": [
-                  {
-                    "icon": "laptop"
-                  },
-                  {
-                    "icon": "factory"
-                  }
-                ],
-                "href": "/lieux/la-paillasse"
-              },
-              {
-                "image": "https://images.unsplash.com/photo-1497366412874-3415097a27e7?w=400&h=300&fit=crop",
-                "title": {
-                  "fr": "Darwin",
-                  "en": "Darwin"
-                },
-                "location": {
-                  "fr": "Bordeaux, Nouvelle",
-                  "en": "Bordeaux, Nouvelle"
-                },
-                "avatarIcon": "lightbulb",
-                "avatarColor": "purple",
-                "badges": [
-                  {
-                    "icon": "laptop"
-                  },
-                  {
-                    "icon": "factory"
-                  }
-                ],
-                "href": "/lieux/darwin-ecosystem"
+              "card": {
+                "type": "event",
+                "variant": "event",
+                "detailsMode": "drawer"
               }
-            ]
+            }
           }
         },
         {
@@ -600,129 +511,44 @@
           }
         },
         {
-          "type": "html",
-          "id": "events-header",
+          "type": "searchPro",
+          "id": "section-events",
           "props": {
-            "html": "<div class=\"container font-sm -mb-5 mx-auto px-4 sm:px-6 lg:px-8\"><div class=\"flex justify-between items-center mb-8\"><h2 class=\"text-2xl font-extrabold\">Les événements à venir</h2><a href=\"#\" class=\"text-gray-700 hover:text-teal-500 transition flex items-center gap-2\">Tous les événements <span>→</span></a></div></div>"
-          }
-        },
-        {
-          "type": "cards",
-          "id": "events",
-          "props": {
-            "variant": "event",
-            "columns": 4,
-            "layout": "grid",
-            "items": [
-              {
-                "image": "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop",
-                "date": "12.12.2025",
-                "eventTitle": {
-                  "fr": "Atelier de fabrication numérique",
-                  "en": "Digital manufacturing workshop"
-                },
-                "organizerName": {
-                  "fr": "La Dynamo",
-                  "en": "La Dynamo"
-                },
-                "title": {
-                  "fr": "La Dynamo",
-                  "en": "La Dynamo"
-                },
-                "text": {
-                  "fr": "Événement",
-                  "en": "Event"
-                },
-                "location": {
-                  "fr": "Paris, Île-de-France",
-                  "en": "Paris, Île-de-France"
-                },
-                "avatarIcon": "seedling",
-                "avatarColor": "teal",
-                "href": "/events/atelier-fabrication"
+            "customHeader": {
+              "title": {
+                "fr": "Tous les événements"
               },
-              {
-                "image": "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=400&h=300&fit=crop",
-                "date": "15.12.2025",
-                "eventTitle": {
-                  "fr": "Rencontre des makers lyonnais",
-                  "en": "Lyon makers meetup"
-                },
-                "organizerName": {
-                  "fr": "Le Lieu Dit",
-                  "en": "Le Lieu Dit"
-                },
-                "title": {
-                  "fr": "Le Lieu Dit",
-                  "en": "Le Lieu Dit"
-                },
-                "text": {
-                  "fr": "Événement",
-                  "en": "Event"
-                },
-                "location": {
-                  "fr": "Lyon, Auvergne",
-                  "en": "Lyon, Auvergne"
-                },
-                "avatarIcon": "lightbulb",
-                "avatarColor": "orange",
-                "href": "/events/rencontre-makers"
+              "linkText": {
+                "fr": "Cartographie des événements"
               },
-              {
-                "image": "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=400&h=300&fit=crop",
-                "date": "18.12.2025",
-                "eventTitle": {
-                  "fr": "Hackathon innovation sociale",
-                  "en": "Social innovation hackathon"
-                },
-                "organizerName": {
-                  "fr": "Le Shadok",
-                  "en": "Le Shadok"
-                },
-                "title": {
-                  "fr": "Le Shadok",
-                  "en": "Le Shadok"
-                },
-                "text": {
-                  "fr": "Événement",
-                  "en": "Event"
-                },
-                "location": {
-                  "fr": "Strasbourg, Grand Est",
-                  "en": "Strasbourg, Grand Est"
-                },
-                "avatarIcon": "zap",
-                "avatarColor": "purple",
-                "href": "/events/hackathon"
+              "showMapButton": true
+            },
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": true,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "baseParams": {
+              "defaultTypes": [
+                "events"
+              ],
+              "indexStepList": 4,
+              "startDateUTC": 1761598800,
+              "disableInfiniteScroll": true
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 4,
+                "xl": 4
               },
-              {
-                "image": "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=400&h=300&fit=crop",
-                "date": "20.12.2025",
-                "eventTitle": {
-                  "fr": "Biohacking et sciences participatives",
-                  "en": "Biohacking and citizen science"
-                },
-                "organizerName": {
-                  "fr": "La Paillasse",
-                  "en": "La Paillasse"
-                },
-                "title": {
-                  "fr": "La Paillasse",
-                  "en": "La Paillasse"
-                },
-                "text": {
-                  "fr": "Événement",
-                  "en": "Event"
-                },
-                "location": {
-                  "fr": "Marseille, PACA",
-                  "en": "Marseille, PACA"
-                },
-                "avatarIcon": "flask",
-                "avatarColor": "green",
-                "href": "/events/biohacking"
+              "card": {
+                "type": "event",
+                "variant": "event",
+                "detailsMode": "drawer"
               }
-            ]
+            }
           }
         },
         {
@@ -1241,7 +1067,6 @@
               "id": "tiers-lieux-results",
               "props": {
                 "showHeader": true,
-                
                 "showResultCount": true,
                 "showViewToggle": true,
                 "variant": "tiers-lieux",
@@ -1571,8 +1396,8 @@
         "foreground": "#000000"
       },
       "dark": {
-        "background": "#000000",
-        "foreground": "#ffffff"
+         "background": "#ffffff",
+        "foreground": "#000000"
       }
     }
   }
