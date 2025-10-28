@@ -30,7 +30,7 @@ export function usePageGuards(page: Page) {
     }
     if (
       page.auth?.roles &&
-      !page.auth.roles.some((r) => me?.serverData?.roles?.includes(r))
+      !page.auth.roles.some((r) => me?.serverData?.roles?.[r] === true)
     ) {
       navigate("/");
       return;

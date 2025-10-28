@@ -58,6 +58,7 @@ export type NavItem = z.infer<typeof NavItem>;
 const Alignment = z.enum(["left", "center", "right"]);
 const Columns = z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5), z.literal(6)]);
 
+// eslint-disable-next-line prefer-const
 let SectionSchemaLazy: z.ZodTypeAny;
 
 

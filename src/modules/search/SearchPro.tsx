@@ -22,6 +22,7 @@ import "@/modules/search/i18n";
 import "@/modules/search/styles.css";
 import { SearchProSectionProps, SearchResultPage, TagsFilter } from "./schema";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import type { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
 
 function normalizeDefaultTypes(
   filters: Record<string, TagsFilter>,
@@ -155,8 +156,8 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
         throw new Error("API non initialisée");
       }
 
-      const tags = searchTags ? Object.values(searchTags).flat() : [];
       const type = Array.isArray(searchType) ? searchType : (searchType ? Object.values(searchType).flat() : []);
+      const tags = Object.values(searchTags).flat() as string[];
       const page = pageParam as SearchResultPage | undefined;
 
       const {
@@ -171,7 +172,7 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
         notSourceKey
       } = baseParams;
 
-      const param: Record<string, any> = {
+      const param: Partial<GlobalAutocompleteCostumData> = {
         name: searchText,
         fediverse,
         ...(mapUsed
@@ -207,7 +208,7 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
       try {
         const result = await organization.searchCostum(param);
         // pagination
-        if (page && page?.pageNumber > 1 && typeof page?.next !== "function") {
+        if (page && page?.pageNumber > 1 && typeof page?.next !== "function" && result.next) {
           return result.next();
         }
         return result;
