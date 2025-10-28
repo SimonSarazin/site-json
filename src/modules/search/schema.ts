@@ -110,7 +110,7 @@ export const SearchProSectionSchema = z.object({
       defaultFilters: z.record(z.string(), z.unknown()).optional(),
       defaultFields: z.array(z.string()).optional(),
       defaultSortBy: z.record(z.string(), z.union([z.literal(1), z.literal(-1)])).optional(),
-      notSourceKey: z.boolean().optional()
+      notSourceKey: z.boolean().optional(),
     }).optional(),
 
     list: ListConfSchema.optional(),
@@ -154,7 +154,7 @@ export const SearchProStaticSectionSchema = z.object({
       defaultFilters: z.record(z.string(), z.unknown()).optional(),
       defaultFields: z.array(z.string()).optional(),
       defaultSortBy: z.record(z.string(), z.union([z.literal(1), z.literal(-1)])).optional(),
-      notSourceKey: z.boolean().optional()
+      notSourceKey: z.boolean().optional(),
     }).optional(),
 
     list: ListConfSchema.optional(),

@@ -1,5 +1,5 @@
 import { Loader2, Map } from "lucide-react";
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import SearchListView from "./components/SearchListView";
@@ -7,15 +7,13 @@ import SearchListSkeleton from "./components/SearchListSkeleton";
 import SearchMapWrapper from "./components/SearchMapWrapper";
 import { Skeleton } from "@/components/ui/skeleton";
 
-import { useCocolight } from "@/hooks/useCocolight";
-import { useInfiniteQueryScrollNext } from "@/hooks/useInfiniteQueryScroll";
 import { ClientOnly } from "@/components/layout/ClientOnly";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import "@/modules/search/i18n";
 import "@/modules/search/styles.css";
-import { SearchProStaticSectionProps, SearchResultPage } from "./schema";
-import type { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
+import { SearchProStaticSectionProps } from "./schema";
+import { useSearchQuery } from "./hooks/useSearchQuery";
 
 /**
  * SearchProStatic: Version statique sans synchronisation URL
@@ -25,7 +23,6 @@ import type { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-cl
 const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ props }) => {
   const { loaded } = useLoadNamespace("modules/search");
   const t = useT("modules/search");
-  const { organization, helper } = useCocolight();
 
   // Extraction des props
   const {
@@ -48,120 +45,24 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     baseParams?.defaultTypes ? { type: baseParams.defaultTypes } : null
   );
 
-  // Infinite query
+  // Utilisation du hook de recherche partagé
   const {
-    data,
     error,
     lastItemRef,
     isFetchingNextPage,
     isLoading: loadingMap,
     isPending,
     refetch,
-  } = useInfiniteQueryScrollNext({
-    queryKey: [
-      "searchCostumStatic",
-      searchText,
-      JSON.stringify(searchTags),
-      JSON.stringify(searchType),
-      mapUsed,
-      JSON.stringify(baseParams),
-    ],
-    queryFn: async ({ pageParam } = { pageParam: undefined }) => {
-      if (!organization) {
-        throw new Error("API non initialisée");
-      }
-
-      const type = Array.isArray(searchType)
-        ? searchType
-        : searchType
-          ? Object.values(searchType).flat()
-          : [];
-      const tags = Object.values(searchTags).flat() as string[];
-      const page = pageParam as SearchResultPage | undefined;
-
-      const {
-        fediverse = false,
-        indexStepList = 10,
-        indexStepMap = 0,
-        defaultTypes,
-        defaultTags,
-        defaultFilters,
-        defaultFields,
-        defaultSortBy,
-        notSourceKey,
-      } = baseParams;
-
-      const param: Partial<GlobalAutocompleteCostumData> = {
-        name: searchText,
-        fediverse,
-        ...(mapUsed
-          ? { mapUsed: true, indexMin: 0, indexStep: indexStepMap }
-          : { indexMin: 0, indexStep: indexStepList }),
-        ...(tags.length > 0 && {
-          searchTags: tags,
-          options: { tags: { verb: "$all" } },
-        }),
-        ...(defaultFilters && Object.keys(defaultFilters).length > 0 && {
-          filters: defaultFilters,
-        }),
-        ...(defaultFields && defaultFields.length > 0 && {
-          fields: defaultFields,
-        }),
-        ...(defaultSortBy && Object.keys(defaultSortBy).length > 0 && {
-          sortBy: defaultSortBy,
-        }),
-        ...(notSourceKey ? { notSourceKey: true } : {}),
-      };
-
-      if (type && type.length > 0) param.searchType = type as GlobalAutocompleteCostumData["searchType"];
-      if (!type && defaultTypes) param.searchType = defaultTypes;
-      if (defaultTags && defaultTags.length > 0) {
-        param.defaultTags = defaultTags;
-      }
-
-      if (!param.searchType) {
-        return { results: [], count: {}, hasNext: false, pageNumber: 1 };
-      }
-
-      try {
-        const result = await organization.searchCostum(param);
-        if (
-          page &&
-          page?.pageNumber > 1 &&
-          typeof page?.next !== "function" &&
-          result.next
-        ) {
-          return result.next();
-        }
-        return result;
-      } catch (err) {
-        console.error("Error fetching search results:", err);
-        throw err;
-      }
-    },
-    options: {
-      enabled: !!organization,
-      staleTime: 60 * 1000,
-      initialPageParam: [],
-    },
+    transformedResults,
+    totalCount,
+  } = useSearchQuery({
+    queryKeyPrefix: "searchCostumStatic",
+    searchText,
+    searchTags,
+    searchType,
+    mapUsed,
+    baseParams,
   });
-
-  // Transformation des résultats
-  const transformedResults = useMemo(() => {
-    const results = data?.pages?.flatMap((p) => p?.results) ?? [];
-    if (!organization || !results.length) return results || [];
-    return results.flatMap((d: any) => {
-      if (d?.getEntityType) return d;
-      return helper.fromEntityJSON(d, organization);
-    });
-  }, [data, organization, helper]);
-
-  const hasCount =
-    data?.pages?.[0]?.count && typeof data?.pages?.[0]?.count === "object";
-  const totalCount =
-    hasCount && data?.pages?.[0]?.count?.["total"]
-      ? data?.pages?.[0]?.count?.["total"]
-      : undefined;
 
   if (!loaded) {
     return (

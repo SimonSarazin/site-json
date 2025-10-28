@@ -1,5 +1,5 @@
 import { ClipboardList, Loader2, Map, X, Plus } from "lucide-react";
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,16 +13,15 @@ import DynamicFormModal from "./components/DynamicFormModal";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { useCocolight } from "@/hooks/useCocolight";
-import { useInfiniteQueryScrollNext } from "@/hooks/useInfiniteQueryScroll";
 import useSearchFilters from "@/modules/search/hooks/useSearchFilters";
+import { useSearchQuery } from "@/modules/search/hooks/useSearchQuery";
 import { ClientOnly } from "@/components/layout/ClientOnly";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import "@/modules/search/i18n";
 import "@/modules/search/styles.css";
-import { SearchProSectionProps, SearchResultPage, TagsFilter } from "./schema";
+import { SearchProSectionProps, TagsFilter } from "./schema";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import type { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
 
 function normalizeDefaultTypes(
   filters: Record<string, TagsFilter>,
@@ -53,7 +52,7 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
   /* ------------------------------------------------------------------ */
   const { loaded } = useLoadNamespace("modules/search");
   const t = useT("modules/search");
-  const { organization, helper, me } = useCocolight();
+  const { me } = useCocolight();
 
   /* ------------------------------------------------------------------ */
   /* Destructure props with sensible defaults                            */
@@ -131,7 +130,7 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
   const setMapUsed = enableMap ? rawSetMapUsed : () => { };
 
   /* ------------------------------------------------------------------ */
-  /* Infinite query using Communecter searchCostum                       */
+  /* Infinite query using Communecter searchCostum via shared hook       */
   /* ------------------------------------------------------------------ */
   const {
     data,
@@ -141,106 +140,17 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
     isLoading: loadingMap,
     isPending,
     refetch,
-  } = useInfiniteQueryScrollNext({
-    queryKey: [
-      "searchCostum",
-      searchText,
-      JSON.stringify(searchTags),
-      JSON.stringify(searchType),
-      mapUsed,
-      JSON.stringify(baseParams),
-    ],
-    queryFn: async ({ pageParam } = { pageParam: undefined }) => {
-
-      if (!organization) {
-        throw new Error("API non initialisée");
-      }
-
-      const type = Array.isArray(searchType) ? searchType : (searchType ? Object.values(searchType).flat() : []);
-      const tags = Object.values(searchTags).flat() as string[];
-      const page = pageParam as SearchResultPage | undefined;
-
-      const {
-        fediverse = false,
-        indexStepList = 10,
-        indexStepMap = 0,
-        defaultTypes,
-        defaultTags,
-        defaultFilters,
-        defaultFields,
-        defaultSortBy,
-        notSourceKey
-      } = baseParams;
-
-      const param: Partial<GlobalAutocompleteCostumData> = {
-        name: searchText,
-        fediverse,
-        ...(mapUsed
-          ? { mapUsed: true, indexMin: 0, indexStep: indexStepMap }
-          : { indexMin: 0, indexStep: indexStepList }),
-        ...(tags.length > 0 && {
-          searchTags: tags,
-          options: { tags: { verb: "$all" } },
-        }),
-        ...(defaultFilters && Object.keys(defaultFilters).length > 0 && {
-          filters: defaultFilters,
-        }),
-        ...(defaultFields && defaultFields.length > 0 && {
-          fields: defaultFields,
-        }),
-        ...(defaultSortBy && Object.keys(defaultSortBy).length > 0 && {
-          sortBy: defaultSortBy,
-        }),
-        ...(notSourceKey ? { notSourceKey: true } : {}),
-      };
-
-      // merge explicit type filter or defaults
-      if (type && type.length > 0) param.searchType = type;
-      if (!type && defaultTypes) param.searchType = defaultTypes;
-      if (defaultTags && defaultTags.length > 0) {
-        param.defaultTags = defaultTags;
-      }
-
-      if (!param.searchType) {
-        return { "results": [], "count": {}, "hasNext": false, "pageNumber": 1 };
-      }
-
-      try {
-        const result = await organization.searchCostum(param);
-        // pagination
-        if (page && page?.pageNumber > 1 && typeof page?.next !== "function" && result.next) {
-          return result.next();
-        }
-        return result;
-      } catch (err) {
-        console.error("Error fetching search results:", err);
-        throw err;
-      }
-    },
-    options: {
-      enabled: !!organization,
-      staleTime: 60 * 1000,
-      initialPageParam: []
-    },
+    transformedResults,
+    totalCount,
+    hasCount,
+  } = useSearchQuery({
+    queryKeyPrefix: "searchCostum",
+    searchText,
+    searchTags,
+    searchType,
+    mapUsed,
+    baseParams,
   });
-
-  /* ------------------------------------------------------------------ */
-  /* Transform raw JSON entities into Cocolight entities if needed        */
-  /* ------------------------------------------------------------------ */
-
-  const transformedResults = useMemo(() => {
-    const results = data?.pages?.flatMap((p) => p?.results) ?? [];
-    if (!organization || !results.length) return results || [];
-    return results.flatMap((d: any) => {
-      if (d?.getEntityType) return d;
-      return helper.fromEntityJSON(d, organization);
-    });
-  }, [data, organization, helper]);
-
-
-  const hasCount = data?.pages?.[0]?.count && typeof data?.pages?.[0]?.count === "object";
-
-  const totalCount = hasCount && data?.pages?.[0]?.count?.["total"] ? data?.pages?.[0]?.count?.["total"] : undefined;
 
   /* ------------------------------------------------------------------ */
   /* Helper counts                                                       */
@@ -442,7 +352,7 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
               <div className="container flex justify-between mx-auto px-4 sm:px-6 lg:px-8 mb-6">
                 <div className="flex justify-between items-center">
                   {customHeader.title && (
-                    <h2 className="text-2xl font-extrabold text-gray-900">
+                    <h2 className="text-2xl font-extrabold text-secondary-foreground">
                       {typeof customHeader.title === 'string' ? customHeader.title : t(customHeader.title)}
                     </h2>
                   )}
