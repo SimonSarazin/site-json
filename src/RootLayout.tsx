@@ -22,31 +22,31 @@ function RootLayout({ config }: Props) {
   // const baseUrl = typeof window !== 'undefined' ? getBaseUrl() : 'http://localhost:3000';
 
   return (
-              <ErrorBoundary fallback={<p>Une erreur est survenue 😢.</p>}>
-                {/* Suspense : spinner si les promises (React Query, lazy, etc.) sont en vol */}
-                <Suspense fallback={<p>loading</p>}>
-                  <CocolightProvider clientOptions={{ baseURL: getBaseUrl(), debug: true }}>
-                        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-        <SiteProvider config={config}>
-          <LocalizationProvider
-            defaultLocale={config.meta.defaultLang}
-            availableLocales={config.meta.languages}
-          >
-            <I18nBridge>
-            <SiteTheme />
-            <GoogleFontsLoader />
-            
-            <Outlet />
-            <IntegrationsLoader />
-            <Toaster />
-            </I18nBridge>
-          </LocalizationProvider>
-        </SiteProvider>
-    </ThemeProvider>
-                  </CocolightProvider>
-                </Suspense>
-    
-              </ErrorBoundary>
+    <ErrorBoundary fallback={<p>Une erreur est survenue 😢.</p>}>
+      {/* Suspense : spinner si les promises (React Query, lazy, etc.) sont en vol */}
+      <Suspense fallback={<p>loading</p>}>
+        <CocolightProvider clientOptions={{ baseURL: getBaseUrl(), debug: true }}>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <SiteProvider config={config}>
+              <LocalizationProvider
+                defaultLocale={config.meta.defaultLang}
+                availableLocales={config.meta.languages}
+              >
+                <I18nBridge>
+                  <SiteTheme />
+                  <GoogleFontsLoader />
+
+                  <Outlet />
+                  <IntegrationsLoader />
+                  <Toaster />
+                </I18nBridge>
+              </LocalizationProvider>
+            </SiteProvider>
+          </ThemeProvider>
+        </CocolightProvider>
+      </Suspense>
+
+    </ErrorBoundary>
 
   );
 }

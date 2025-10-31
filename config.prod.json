@@ -1063,215 +1063,43 @@
               }
             },
             "rightSection": {
-              "type": "cards",
-              "id": "tiers-lieux-results",
+              "type": "searchProStatic",
+              "id": "section-events",
               "props": {
-                "showHeader": true,
-                "showResultCount": true,
-                "showViewToggle": true,
-                "variant": "tiers-lieux",
-                "columns": 3,
-                "layout": "grid",
-                "items": [
-                  {
-                    "image": "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop",
-                    "title": {
-                      "fr": "Nom du lieu",
-                      "en": "Place name"
-                    },
-                    "location": {
-                      "fr": "Ville, région",
-                      "en": "City, region"
-                    },
-                    "avatarIcon": "lightbulb",
-                    "avatarColor": "orange",
-                    "badges": [
-                      {
-                        "icon": "heart"
-                      },
-                      {
-                        "icon": "share-2"
-                      }
-                    ],
-                    "href": "/lieux/lieu-1"
+                "customHeader": {
+                  "title": {
+                    "fr": "Tous les événements"
                   },
-                  {
-                    "image": "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=400&h=300&fit=crop",
-                    "title": {
-                      "fr": "Nom du lieu",
-                      "en": "Place name"
-                    },
-                    "location": {
-                      "fr": "Ville, région",
-                      "en": "City, region"
-                    },
-                    "avatarIcon": "lightbulb",
-                    "avatarColor": "blue",
-                    "badges": [
-                      {
-                        "icon": "heart"
-                      },
-                      {
-                        "icon": "share-2"
-                      }
-                    ],
-                    "href": "/lieux/lieu-2"
+                  "linkText": {
+                    "fr": "Cartographie des événements"
                   },
-                  {
-                    "image": "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=400&h=300&fit=crop",
-                    "title": {
-                      "fr": "Nom du lieu",
-                      "en": "Place name"
-                    },
-                    "location": {
-                      "fr": "Ville, région",
-                      "en": "City, region"
-                    },
-                    "avatarIcon": "lightbulb",
-                    "avatarColor": "orange",
-                    "badges": [
-                      {
-                        "icon": "heart"
-                      },
-                      {
-                        "icon": "share-2"
-                      }
-                    ],
-                    "href": "/lieux/lieu-3"
+                  "showMapButton": true
+                },
+                "useFilter": true,
+                "showMap": false,
+                "enableMap": true,
+                "showActiveFiltersTypes": true,
+                "showActiveFiltersTags": true,
+                "disableInfiniteScroll": false,
+                "baseParams": {
+                  "defaultTypes": [
+                    "events"
+                  ],
+                  "indexStepList": 20
+                },
+                "list": {
+                  "columns": {
+                    "sm": 1,
+                    "md": 2,
+                    "lg": 4,
+                    "xl": 4
                   },
-                  {
-                    "image": "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=400&h=300&fit=crop",
-                    "title": {
-                      "fr": "Nom du lieu",
-                      "en": "Place name"
-                    },
-                    "location": {
-                      "fr": "Ville, région",
-                      "en": "City, region"
-                    },
-                    "avatarIcon": "lightbulb",
-                    "avatarColor": "green",
-                    "badges": [
-                      {
-                        "icon": "heart"
-                      },
-                      {
-                        "icon": "share-2"
-                      }
-                    ],
-                    "href": "/lieux/lieu-4"
-                  },
-                  {
-                    "image": "https://images.unsplash.com/photo-1497366412874-3415097a27e7?w=400&h=300&fit=crop",
-                    "title": {
-                      "fr": "Nom du lieu",
-                      "en": "Place name"
-                    },
-                    "location": {
-                      "fr": "Ville, région",
-                      "en": "City, region"
-                    },
-                    "avatarIcon": "lightbulb",
-                    "avatarColor": "purple",
-                    "badges": [
-                      {
-                        "icon": "heart"
-                      },
-                      {
-                        "icon": "share-2"
-                      }
-                    ],
-                    "href": "/lieux/lieu-5"
-                  },
-                  {
-                    "image": "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop",
-                    "title": {
-                      "fr": "Nom du lieu",
-                      "en": "Place name"
-                    },
-                    "location": {
-                      "fr": "Ville, région",
-                      "en": "City, region"
-                    },
-                    "avatarIcon": "lightbulb",
-                    "avatarColor": "orange",
-                    "badges": [
-                      {
-                        "icon": "heart"
-                      },
-                      {
-                        "icon": "share-2"
-                      }
-                    ],
-                    "href": "/lieux/lieu-6"
-                  },
-                  {
-                    "image": "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=400&h=300&fit=crop",
-                    "title": {
-                      "fr": "Nom du lieu",
-                      "en": "Place name"
-                    },
-                    "location": {
-                      "fr": "Ville, région",
-                      "en": "City, region"
-                    },
-                    "avatarIcon": "lightbulb",
-                    "avatarColor": "blue",
-                    "badges": [
-                      {
-                        "icon": "heart"
-                      },
-                      {
-                        "icon": "share-2"
-                      }
-                    ],
-                    "href": "/lieux/lieu-7"
-                  },
-                  {
-                    "image": "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=400&h=300&fit=crop",
-                    "title": {
-                      "fr": "Nom du lieu",
-                      "en": "Place name"
-                    },
-                    "location": {
-                      "fr": "Ville, région",
-                      "en": "City, region"
-                    },
-                    "avatarIcon": "lightbulb",
-                    "avatarColor": "orange",
-                    "badges": [
-                      {
-                        "icon": "heart"
-                      },
-                      {
-                        "icon": "share-2"
-                      }
-                    ],
-                    "href": "/lieux/lieu-8"
-                  },
-                  {
-                    "image": "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=400&h=300&fit=crop",
-                    "title": {
-                      "fr": "Nom du lieu",
-                      "en": "Place name"
-                    },
-                    "location": {
-                      "fr": "Ville, région",
-                      "en": "City, region"
-                    },
-                    "avatarIcon": "lightbulb",
-                    "avatarColor": "green",
-                    "badges": [
-                      {
-                        "icon": "heart"
-                      },
-                      {
-                        "icon": "share-2"
-                      }
-                    ],
-                    "href": "/lieux/lieu-9"
+                  "card": {
+                    "type": "event",
+                    "variant": "event",
+                    "detailsMode": "drawer"
                   }
-                ]
+                }
               }
             }
           }
@@ -1396,9 +1224,148 @@
         "foreground": "#000000"
       },
       "dark": {
-         "background": "#ffffff",
+        "background": "#ffffff",
         "foreground": "#000000"
       }
+    }
+  },
+  "profiles": {
+    "events": {
+      "layout": "modern",
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "hero",
+          "showBackButton": true,
+          "showShareButton": true,
+          "showEditButton": false
+        },
+        {
+          "type": "profile-info",
+          "variant": "sidebar",
+          "showAddress": true,
+          "showDates": true,
+          "showOrganizer": true,
+          "showAttendees": true
+        },
+        {
+          "type": "profile-about",
+          "showDescription": true,
+          "showShortDescription": true,
+          "markdownEnabled": true
+        },
+        {
+          "type": "cards",
+          "id": "event-highlights",
+          "props": {
+            "variant": "default",
+            "columns": 3,
+            "layout": "grid",
+            "showHeader": true,
+            "headerTitle": {
+              "fr": "Points clés de l'événement",
+              "en": "Event Highlights"
+            },
+            "items": [
+              {
+                "icon": "users",
+                "title": {
+                  "fr": "Networking",
+                  "en": "Networking"
+                },
+                "text": {
+                  "fr": "Rencontrez des professionnels de votre secteur",
+                  "en": "Meet professionals in your field"
+                }
+              },
+              {
+                "icon": "presentation",
+                "title": {
+                  "fr": "Conférences",
+                  "en": "Conferences"
+                },
+                "text": {
+                  "fr": "Participez à des talks inspirants",
+                  "en": "Attend inspiring talks"
+                }
+              },
+              {
+                "icon": "coffee",
+                "title": {
+                  "fr": "Ateliers",
+                  "en": "Workshops"
+                },
+                "text": {
+                  "fr": "Développez vos compétences",
+                  "en": "Develop your skills"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "profile-organizer",
+          "title": {
+            "fr": "Organisé par",
+            "en": "Organized by"
+          },
+          "showLogo": true,
+          "showDescription": true,
+          "showLink": true
+        },
+        {
+          "type": "profile-map",
+          "height": "400px",
+          "zoom": 15,
+          "showMarker": true
+        }
+      ]
+    },
+    "organizations": {
+      "layout": "modern",
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "cover",
+          "showBackButton": true,
+          "showShareButton": true
+        },
+        {
+          "type": "profile-about",
+          "showDescription": true,
+          "markdownEnabled": true
+        },
+        {
+          "type": "profile-info",
+          "variant": "inline",
+          "showAddress": true
+        },
+        {
+          "type": "profile-map",
+          "height": "350px",
+          "zoom": 14
+        }
+      ]
+    },
+    "projects": {
+      "layout": "full-width",
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "hero",
+          "showBackButton": true,
+          "showShareButton": true
+        },
+        {
+          "type": "profile-about",
+          "showDescription": true,
+          "markdownEnabled": true
+        },
+        {
+          "type": "profile-info",
+          "variant": "tabs"
+        }
+      ]
     }
   }
 }

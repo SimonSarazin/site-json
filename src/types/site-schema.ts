@@ -9,6 +9,7 @@
 import { SearchProSectionSchema, SearchProStaticSectionSchema } from "@/modules/search/schema";
 import { z } from "zod";
 import { LocalizedString, LOCALES } from "./locale-schema";
+import { ProfilesConfigSchema } from "./profile-schema";
 
 // export const CocolightConfig = z.object({
 //   baseUrl: z.string().url().default("http://localhost:5080"),
@@ -1281,6 +1282,7 @@ export const SiteConfig = z.object({
     message: LocalizedString.optional(),
     allowedIPs: z.array(z.string()).optional(),
   }).optional(),
+  profiles: ProfilesConfigSchema,
 });
 export type SiteConfig = z.infer<typeof SiteConfig>;
 
