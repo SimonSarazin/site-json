@@ -49,8 +49,8 @@ export function SiteHeader2() {
   // Filtrer selon les rôles de l'utilisateur
   const filteredNav = header.nav.filter((item) => {
     if (!item.roles || item.roles.length === 0) return true;
-    const roles = me?.serverData?.roles || [];
-    return item.roles.some((r) => roles.includes(r));
+    const userRoles = me?.serverData?.roles || {};
+    return item.roles.some((r) => userRoles[r] === true);
   });
 
   const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => {

@@ -2,6 +2,7 @@ import type { RouteObject } from "react-router";
 import { SiteRenderer } from '@/components/SiteRenderer';
 import type { SiteConfig } from "@/types/site";
 import RootLayout from "@/RootLayout";
+import ProfilePage from "@/pages/ProfilePage";
 
 /**
  * Construit l'arborescence de routes pour React Router v7 à partir
@@ -15,6 +16,10 @@ export function buildRoutes(cfg: SiteConfig): RouteObject[] {
     element: <SiteRenderer />,            // le rendu piloté par JSON
     // loader: () => p,                  // ← active si besoin des données coté client
   }));
+  children.push({
+    path: ":slug",
+    element: <ProfilePage />
+  });
 
   // route 404 interne (dernier recours)
   children.push({ path: "*", element: <SiteRenderer /> });

@@ -1,9 +1,9 @@
-import { SearchProSectionProps } from "../schema";
+import { SearchProSectionProps, SearchProStaticSectionProps } from "../schema";
 import { SearchPropsContext } from "./SearchPropsContext";
 
 interface SearchPropsProviderProps {
   children: React.ReactNode;
-  props: SearchProSectionProps;
+  props: SearchProSectionProps | SearchProStaticSectionProps;
   inSection: boolean;
 }
 

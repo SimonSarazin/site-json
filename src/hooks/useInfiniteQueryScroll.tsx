@@ -29,6 +29,7 @@ interface InfiniteQueryScrollResult<TData, TError> {
   hasNextPage: boolean | undefined;
   isFetchingNextPage: boolean;
   isLoading: boolean;
+  isPending: boolean;
   refetch: () => Promise<unknown>;
   lastItemRef: RefCallback<HTMLElement>;
 }
@@ -50,6 +51,7 @@ export function useInfiniteQueryScroll<TData, TError = unknown>({
     hasNextPage,
     isFetchingNextPage,
     isLoading,
+    isPending,
     refetch,
   } = useInfiniteQuery({
     queryKey,
@@ -80,6 +82,7 @@ export function useInfiniteQueryScroll<TData, TError = unknown>({
     hasNextPage,
     isFetchingNextPage,
     isLoading,
+    isPending,
     refetch,
     lastItemRef,
   };

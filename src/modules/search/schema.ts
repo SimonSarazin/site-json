@@ -1,4 +1,3 @@
-
 import { LocalizedString } from "@/types/locale-schema";
 import type { Organization, Poi, Project, User, Event as EventType } from "@communecter/cocolight-api-client";
 import { IconName } from "lucide-react/dynamic";
@@ -22,6 +21,7 @@ const ListConfSchema = z.object({
     lg: z.number().int().min(1).max(6).optional(),
     md: z.number().int().min(1).max(6).optional(),
     sm: z.number().int().min(1).max(6).optional(),
+    xl: z.number().int().min(1).max(6).optional(),
   }).partial().optional(),
   card: z.object({
     tagLimit:        z.number().int().min(1).max(50).optional(),
@@ -29,7 +29,8 @@ const ListConfSchema = z.object({
     showAddress:     z.boolean().optional(),
     shareButton:     z.boolean().optional(),
     detailsMode: z.enum(["drawer", "dialog"]).default("drawer"),
-    type: z.enum(["overlay", "default"]).default("default"),
+    type: z.enum(["overlay", "default", "tiers-lieux", "event"]).default("default"),
+    variant: z.enum(["default", "tiers-lieux", "event"]).optional(),
   }).partial().optional(),
   preview: z.object({
     type: z.enum(["default"]).default("default"),
@@ -90,6 +91,13 @@ export const SearchProSectionSchema = z.object({
     enableMap: z.boolean().default(true),
     showActiveFiltersTypes: z.boolean().default(true),
     showActiveFiltersTags: z.boolean().default(true),
+    disableInfiniteScroll: z.boolean().optional(),
+    customHeader: z.object({
+      title: LocalizedString.optional(),
+      linkText: LocalizedString.optional(),
+      linkHref: z.string().optional(),
+      showMapButton: z.boolean().default(true),
+    }).optional(),
 
     filters: z.record(z.string(), TagsFilterSchema).optional(),
 
@@ -112,6 +120,50 @@ export const SearchProSectionSchema = z.object({
 
 export type SearchProSection = z.infer<typeof SearchProSectionSchema>;
 export type SearchProSectionProps = z.infer<typeof SearchProSectionSchema>["props"]
+
+// SearchProStatic: Version sans synchronisation URL pour affichage multiple par page
+export const SearchProStaticSectionSchema = z.object({
+  type: z.literal("searchProStatic"),
+  id:   z.string().optional(),
+
+  props: z.object({
+    title: LocalizedString.optional(),
+    description: LocalizedString.optional(),
+    placeholder: LocalizedString.optional(),
+    useFilter:   z.boolean().default(false),
+    showMap:     z.boolean().default(false),
+    enableMap: z.boolean().default(true),
+    showActiveFiltersTypes: z.boolean().default(false),
+    showActiveFiltersTags: z.boolean().default(false),
+    disableInfiniteScroll: z.boolean().optional(),
+    customHeader: z.object({
+      title: LocalizedString.optional(),
+      linkText: LocalizedString.optional(),
+      linkHref: z.string().optional(),
+      showMapButton: z.boolean().default(true),
+    }).optional(),
+
+    filters: z.record(z.string(), TagsFilterSchema).optional(),
+
+    baseParams: z.object({
+      fediverse:     z.boolean().optional(),
+      indexStepList: z.number().optional(),
+      indexStepMap:  z.number().optional(),
+      defaultTypes: z.array(SearchTypeSchema).optional(),
+      defaultTags:   z.array(z.string()).optional(),
+      defaultFilters: z.record(z.string(), z.unknown()).optional(),
+      defaultFields: z.array(z.string()).optional(),
+      defaultSortBy: z.record(z.string(), z.union([z.literal(1), z.literal(-1)])).optional(),
+      notSourceKey: z.boolean().optional(),
+    }).optional(),
+
+    list: ListConfSchema.optional(),
+    map:  MapConfSchema.optional(),
+  }),
+});
+
+export type SearchProStaticSection = z.infer<typeof SearchProStaticSectionSchema>;
+export type SearchProStaticSectionProps = z.infer<typeof SearchProStaticSectionSchema>["props"]
 
 export type SearchEntity = User | Organization | Project | EventType | Poi;
 

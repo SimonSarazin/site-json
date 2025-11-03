@@ -31,6 +31,7 @@ const LazySections: {
 } = {
   hero: lazyNamed(() => import("./HeroSection"), "HeroSection"),
   heroWithIcon: lazyNamed(() => import("./HeroWithIconSection"), "HeroWithIconSection"),
+  "hero-tiers-lieux": lazyNamed(() => import("./HeroTiersLieux"), "HeroTiersLieux"),
   markdown: lazyNamed(() => import("./MarkdownSection"), "MarkdownSection"),
   cards: lazyNamed(() => import("./CardsSection"), "CardsSection"),
   gallery: lazyNamed(() => import("./GallerySection"), "GallerySection"),
@@ -62,12 +63,17 @@ const LazySections: {
   breadcrumb: lazyNamed(() => import("./BreadcrumbSection"), "BreadcrumbSection"),
   cookieConsent: lazyNamed(() => import("./CookieConsentSection"), "CookieConsentSection"),
   html: lazyNamed(() => import("./HTMLSection"), "HTMLSection"),
+  title: lazyNamed(() => import("./TitleSection"), "TitleSection"),
+  content: lazyNamed(() => import("./ContentSection"), "ContentSection"),
   loginForm: lazyNamed(() => import("./LoginFormSection"), "LoginFormSection"),
   registerForm: lazyNamed(() => import("./RegisterFormSection"), "RegisterFormSection"),
   recoverPasswordForm: lazyNamed(() => import("./RecoverPasswordFormSection"), "RecoverPasswordFormSection"),
   searchPro: lazy(() =>
     import("@/modules/search").then(m => ({ default: m.SearchSection }))
   ),
+  searchProStatic: lazyNamed(() => import("@/modules/search/SearchProStaticSection"), "SearchProStaticSection"),
+  filters: lazyNamed(() => import("./FiltersSection"), "FiltersSection"),
+  gridLayout: lazyNamed(() => import("./GridLayoutSection"), "GridLayoutSection"),
 };
 
 export function SectionRenderer({ section }: { section: Section }) {

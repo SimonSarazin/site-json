@@ -1,8 +1,8 @@
 import { createContext } from 'react';
-import { SearchProSectionProps } from '../schema';
+import { SearchProSectionProps, SearchProStaticSectionProps } from '../schema';
 
 interface SearchPropsContextType {
-  props: SearchProSectionProps;
+  props: SearchProSectionProps | SearchProStaticSectionProps;
   inSection: boolean;
 }
 
