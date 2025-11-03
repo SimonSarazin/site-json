@@ -7,6 +7,7 @@ import { useAutocomplete } from "@/hooks/useAutocomplete";
 import { SearchEntity } from "@/modules/search/schema";
 import { cn } from "@/lib/utils";
 import { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
+import { Link } from "react-router";
 
 const getEntityIcon = (entity: SearchEntity) => {
   const type = entity?.getEntityType?.() || "";
@@ -156,7 +157,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
         <div className="relative z-10 flex-1 flex items-center justify-center">
           <div className="container mx-auto px-6">
             <div className="max-w-3xl mx-auto">
-              <div 
+              <div
                 className="bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl p-8 border border-white/20"
                 style={{
                   backdropFilter: 'blur(10px)',
@@ -231,7 +232,6 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                     </button>
                   </div>
 
-                  {/* Autocomplete dropdown */}
                   {isAutocompleteOpen && suggestions.length > 0 && (
                     <div
                       ref={dropdownRef}
@@ -253,16 +253,18 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                             )}
                           >
                             <div className="mt-1">{getEntityIcon(item)}</div>
-                            <div className="flex-1 min-w-0">
-                              <div className="font-medium text-gray-900 truncate">
-                                {title}
-                              </div>
-                              {address && (
-                                <div className="text-sm text-gray-500 truncate">
-                                  {address}
+                            <Link to={`/@${item.slug}`}>
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium text-gray-900 truncate">
+                                  {title}
                                 </div>
-                              )}
-                            </div>
+                                {address && (
+                                  <div className="text-sm text-gray-500 truncate">
+                                    {address}
+                                  </div>
+                                )}
+                              </div>
+                            </Link>
                           </button>
                         );
                       })}
@@ -304,11 +306,10 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
           {props.ctaButtons?.map((btn, idx) => (
             <button
               key={idx}
-              className={`px-6 py-3 font-semibold ${
-                idx === 0
-                  ? "border-b-4 border-teal-500 text-teal-500 bg-gray-50"
-                  : "hover:bg-gray-50 transition"
-              }`}
+              className={`px-6 py-3 font-semibold ${idx === 0
+                ? "border-b-4 border-teal-500 text-teal-500 bg-gray-50"
+                : "hover:bg-gray-50 transition"
+                }`}
             >
               {t(btn.label)}
             </button>
@@ -358,7 +359,6 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
             </button>
           </div>
 
-          {/* Autocomplete dropdown */}
           {isAutocompleteOpen && suggestions.length > 0 && (
             <div
               ref={dropdownRef}
@@ -380,16 +380,18 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                     )}
                   >
                     <div className="mt-1">{getEntityIcon(item)}</div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-gray-900 truncate">
-                        {title}
-                      </div>
-                      {address && (
-                        <div className="text-sm text-gray-500 truncate">
-                          {address}
+                    <Link to={`/@${item.slug}`}>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-gray-900 truncate">
+                          {title}
                         </div>
-                      )}
-                    </div>
+                        {address && (
+                          <div className="text-sm text-gray-500 truncate">
+                            {address}
+                          </div>
+                        )}
+                      </div>
+                    </Link>
                   </button>
                 );
               })}
@@ -407,6 +409,6 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
           </div>
         )}
       </div>
-    </section>
+    </section >
   );
 }

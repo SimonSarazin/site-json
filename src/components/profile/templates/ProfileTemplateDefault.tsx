@@ -83,7 +83,7 @@ export default function ProfileTemplateDefault({
   return (
     <div className="bg-gray-100 -m-4 md:-m-8">
       <div className="w-full mx-auto bg-white shadow-lg">
-        <div className="relative h-96 bg-cover bg-center rounded-md" style={{ backgroundImage: `url('${imageUrl}')` }}>
+        <div className="relative h-96 bg-cover bg-center rounded-md border-lime-700 border" style={{ backgroundImage: `url('${imageUrl}')` }}>
           <div className="absolute bottom-6 right-6 z-20">
             <button className="bg-white text-gray-800 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 flex items-center gap-2 shadow-md">
               <ImageIcon className="w-4 h-4" />
