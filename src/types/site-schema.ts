@@ -83,6 +83,42 @@ export type HeroSection = z.infer<typeof HeroSectionSchema>;
 
 export type HeroSectionProps = z.infer<typeof HeroSectionSchema>["props"];
 
+//──────────────── Hero With Icon
+const HeroWithIconSectionSchema = z.object({
+  type: z.literal("heroWithIcon"),
+  id: z.string().optional(),
+  props: z.object({
+    headline: LocalizedString,
+    subhead: LocalizedString.optional(),
+    icon: z.object({
+      show: z.boolean().default(true),
+      name: z.string(),
+      size: z.number().default(64),
+      backdrop: z.boolean().default(false),
+    }),
+    backgroundImage: z.string().optional(),
+    videoBg: z.string().optional(),
+    align: Alignment.default("center"),
+    overlay: z.boolean().default(false),
+    cta: z.array(
+      z.object({ label: LocalizedString, icon: z.string().optional(), href: z.string(), variant: z.string().optional() })
+    ).optional(),
+    listContent: z.object({
+      items: z.array(z.object({
+        title: LocalizedString,
+        icon: z.string().optional(),
+        iconPosition: z.enum(["left", "right", "top", "bottom"]).default("left"),
+      })),
+      layout: z.enum(["rows", "columns"]).default("columns"),
+    }).optional(),
+    scrollTo: z.string().optional(),
+  })
+})
+
+export type HeroWithIconSection = z.infer<typeof HeroWithIconSectionSchema>;
+export type HeroWithIconSectionProps = z.infer<typeof HeroWithIconSectionSchema>["props"];
+
+
 //──────────────── Markdown / MDX
 const MarkdownSectionSchema  = z.object({
   type: z.literal("markdown"),
@@ -731,6 +767,7 @@ export type HTMLSectionProps = z.infer<typeof HTMLSectionSchema>["props"];
 //───────────────────────────────────────────────────────────────
 export const Section = z.discriminatedUnion("type", [
   HeroSectionSchema,
+  HeroWithIconSectionSchema,
   MarkdownSectionSchema,
   CardsSectionSchema,
   GallerySectionSchema,

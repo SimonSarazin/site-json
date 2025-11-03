@@ -1,0 +1,257 @@
+{
+    "version": "1.0.0-dev",
+    "generated": "2025-10-24T07:00:00Z",
+    "meta": {
+        "title": {
+            "fr": "CoFormSocket - Plateforme de co-construction",
+            "en": "CoFormSocket - Co-construction Platform"
+        },
+        "description": {
+            "fr": "CoFormSocket est une plateforme dédiée à la co-construction de projets collaboratifs.",
+            "en": "CoFormSocket is a platform dedicated to the co-construction of collaborative projects."
+        },
+        "defaultLanguage": "fr",
+        "languages": [
+            "fr",
+            "en"
+        ],
+        "themeColor": "#3b82f6"
+    },
+    "header": {
+        "logo": "https://www.communecter.org/assets/7b795b51/images/logos/logo-full.png",
+        "logoAlt": {
+            "fr": "Logo SiteForge",
+            "en": "SiteForge Logo"
+        },
+        "nav": [
+            {
+                "label": {
+                    "fr": "Accueil",
+                    "en": "Home"
+                },
+                "path": "/",
+                "icon": "home"
+            }
+        ],
+        "sticky": true,
+        "transparent": false,
+        "height": "sm",
+        "utilities": {
+            "themeSwitch": true,
+            "langSwitch": true,
+            "search": false,
+            "auth": true,
+            "cart": false,
+            "notifications": false
+        }
+    },
+    "pages": [
+        {
+            "path": "/",
+            "title": {
+                "fr": "Accueil - Meeteem",
+                "en": "Home - Meeteem"
+            },
+            "seo": {
+                "title": {
+                    "fr": "Accueil - Meeteem"
+                },
+                "description": {
+                    "fr": "Bienvenue sur la page d'accueil de Meeteem, votre plateforme de co-construction."
+                },
+                "keywords": [],
+                "ogImage": "",
+                "noIndex": false,
+                "noFollow": false
+            },
+            "layout": "fullwidth",
+            "sections": [
+                {
+                    "type": "heroWithIcon",
+                    "id": "hero-meeteem",
+                    "props": {
+                        "headline": {
+                            "fr": "Amplifions le Sens Commun",
+                            "en": "Let's amplify common sense"
+                        },
+                        "subhead": {
+                            "fr": "Une armée d'humains au service du bien commun.Un réseau de confiance pair-à-pair qui amplifie vos idées vers le monde entier.",
+                            "en": "An army of humans working for the common good. A peer-to-peer trust network that amplifies your ideas to the whole world."
+                        },
+                        "icon": {
+                            "show": true,
+                            "name": "megaphone",
+                            "size": 50,
+                            "backdrop" : true
+                        },
+                        "backgroundImage": "http://communecter74-dev/images/ampli/background.jpg",
+                        "align": "center",
+                        "overlay": false,
+                        "cta": [
+                            {
+                                "label": {
+                                    "fr": "Proposer une idée",
+                                    "en": "Propose an idea"
+                                },
+                                "icon": "message-square-text",
+                                "href": "/get-started",
+                                "variant": "secondary"
+                            },
+                            {
+                                "label": {
+                                    "fr": "Rejoindre la communauté",
+                                    "en": "Join the community"
+                                },
+                                "icon": "user-round-plus",
+                                "href": "/get-started",
+                                "variant": "secondary"
+                            }
+                        ],
+                        "listContent": {
+                            "layout": "rows",
+                            "items": [
+                                {
+                                    "title": {
+                                        "fr": "Pulsation médiatique",
+                                        "en": "Media buzz"
+                                    },
+                                    "icon": "megaphone"
+                                },
+                                {
+                                    "title": {
+                                        "fr": "Amplification mondiale",
+                                        "en": "Global amplification"
+                                    },
+                                    "icon": "zap"
+                                },
+                                {
+                                    "title": {
+                                        "fr": "Réseau de confiance",
+                                        "en": "Trusted network"
+                                    },
+                                    "icon": "user-round"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "type": "html",
+                    "id": "intro-meeteem",
+                    "props": {
+                        "html": "<div class=\"text-center mt-16\"><h2 class=\"text-4xl md:text-5xl font-bold text-foreground mb-6\">Comment ça fonctionne ?</h2><p class=\"text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed\">Une plateforme collaborative qui transforme les bonnes idées en actions concrètes grâce à la force du collectif.</p></div>"
+                    }
+                },
+                {
+                    "type": "cards",
+                    "id": "how-it-works",
+                    "props": {
+                        "items": [
+                            {
+                                "icon": "users",
+                                "title": {
+                                    "fr": "Réseau de Confiance",
+                                    "en": "Trusted Network"
+                                },
+                                "text": {
+                                    "fr": "Un écosystème pair-à-pair où chaque membre est validé par la communauté",
+                                    "en": "A peer-to-peer ecosystem where each member is validated by the community"
+                                }
+                            },
+                            {
+                                "icon": "vote",
+                                "title": {
+                                    "fr": "Validation Collective",
+                                    "en": "Collective Validation"
+                                },
+                                "text": {
+                                    "fr": "Vos idées sont évaluées par des pairs partageant vos valeurs",
+                                    "en": "Your ideas are evaluated by peers who share your values"
+                                }
+                            },
+                            {
+                                "icon": "megaphone",
+                                "title": {
+                                    "fr": "Amplification Mondiale",
+                                    "en": "Global Amplification"
+                                },
+                                "text": {
+                                    "fr": "Les meilleures propositions sont diffusées massivement en dehors du réseau",
+                                    "en": "The best proposals are widely disseminated outside the network"
+                                }
+                            },
+                            {
+                                "icon": "zap",
+                                "title": {
+                                    "fr": "Pulsation Médiatique",
+                                    "en": "Media Pulse"
+                                },
+                                "text": {
+                                    "fr": "Création d'un rythme régulier pour maintenir l'attention du public",
+                                    "en": "Creation of a regular rhythm to maintain public attention"
+                                }
+                            },
+                            {
+                                "icon": "network",
+                                "title": {
+                                    "fr": "Effet Réseau",
+                                    "en": "Network Effect"
+                                },
+                                "text": {
+                                    "fr": "Plus nous sommes nombreux, plus notre impact grandit exponentiellement",
+                                    "en": "The more we are, the greater our impact grows exponentially"
+                                }
+                            },
+                            {
+                                "icon": "heart",
+                                "title": {
+                                    "fr": "Bien Commun",
+                                    "en": "Common Good"
+                                },
+                                "text": {
+                                    "fr": "Chaque action vise à améliorer la société dans son ensemble",
+                                    "en": "Every action aims to improve society as a whole"
+                                }
+                            }
+                        ],
+                        "columns": 3,
+                        "layout": "grid"
+                    }
+
+                },
+                {
+                    "type": "html",
+                    "id": "submit-idea",
+                    "props": {
+                        "html": "<section id=\"messages\" class=\"py-20 bg-background\"><div class=\"container mx-auto px-4\"><div class=\"max-w-4xl mx-auto\"><div class=\"text-center mb-12\"><h2 class=\"text-4xl md:text-5xl font-bold text-foreground mb-6\">Proposez votre idée</h2><p class=\"text-xl text-muted-foreground\">Partagez vos idées pour le bien commun avec notre communauté</p></div><div class=\"grid grid-cols-1 lg:grid-cols-2 gap-12 items-start\"><div class=\"p-8 shadow-elegant\"><form class=\"space-y-6\"><div><label for=\"title\" class=\"block text-sm font-medium text-foreground mb-2\">Titre de votre idée</label><input type=\"text\" id=\"title\" placeholder=\"Une idée qui change tout...\" class=\"text-lg\" /></div><div><label for=\"category\" class=\"block text-sm font-medium text-foreground mb-2\">Catégorie (optionnel)</label><div class=\"flex flex-wrap gap-2 mb-3\"><div class=\"cursor-pointer hover:bg-primary/10 transition-colors\">Environnement</div><div class=\"cursor-pointer hover:bg-primary/10 transition-colors\">Education</div><div class=\"cursor-pointer hover:bg-primary/10 transition-colors\">Santé</div><div class=\"cursor-pointer hover:bg-primary/10 transition-colors\">Economie</div><div class=\"cursor-pointer hover:bg-primary/10 transition-colors\">Societé</div><div class=\"cursor-pointer hover:bg-primary/10 transition-colors\">Innovation</div></div></div><div><label for=\"message\" class=\"block text-sm font-medium text-foreground mb-2\">Décrivez votre idée</label><textarea class=\"flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50\" id=\"message\" placeholder=\"Expliquez votre idée, son impact potentiel, pourquoi elle mérite d'être amplifiée...\"></textarea></div><button type=\"submit\" class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 w-full bg-gradient-primary hover:opacity-90 transition-opacity px-6 py-3 bg-primary\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5 mr-2\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-send-icon lucide-send\"><path d=\"M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z\"/><path d=\"m21.854 2.147-10.94 10.939\"/></svg>Soumettre à la communauté</button></form></div><div class=\"space-y-6\"><div class=\"p-6 bg-gradient-card border-primary/20\"><div class=\"flex items-center mb-4\"><div class=\"icon-lightbulb h-6 w-6 text-primary mr-3\"></div><h3 class=\"font-semibold text-foreground\">Comment ça marche ?</h3></div><ol class=\"space-y-3 text-muted-foreground\"><li class=\"flex items-start\"><span class=\"bg-primary text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3 mt-0.5 flex-shrink-0\">1</span>Vous soumettez votre idée</li><li class=\"flex items-start\"><span class=\"bg-primary text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3 mt-0.5 flex-shrink-0\">2</span>La communauté l'évalue et vote</li><li class=\"flex items-start\"><span class=\"bg-primary text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3 mt-0.5 flex-shrink-0\">3</span>Les meilleures sont amplifiées massivement</li></ol></div><div class=\"p-6\"><div class=\"flex items-center justify-between mb-4\"><h3 class=\"font-semibold text-foreground flex items-center\"><div class=\"icon-trending-up h-5 w-5 text-secondary mr-2\"></div>Statistiques du réseau</h3></div><div class=\"space-y-3\"><div class=\"flex justify-between\"><span class=\"text-muted-foreground\">Idées soumises</span><span class=\"font-semibold text-foreground\">2,847</span></div><div class=\"flex justify-between\"><span class=\"text-muted-foreground\">Membres actifs</span><span class=\"font-semibold text-foreground\">15,623</span></div><div class=\"flex justify-between\"><span class=\"text-muted-foreground\">Idées amplifiées</span><span class=\"font-semibold text-secondary\">142</span></div></div></div></div></div></div></div></div></section>"
+                    }
+                }
+            ]
+        }
+    ],
+    "footer": {
+        "columns": [],
+        "copyright": {
+            "fr": "© 2025 CoFormSocket. Tous droits réservés.",
+            "en": "© 2025 CoFormSocket. All rights reserved."
+        }
+    },
+    "theme": {
+        "colors": {
+            "light" : {
+                "background": "#ffffff",
+                "foreground": "#000000",
+                "border": "#e0e0e0",
+                "primary": "#3b82f6",
+                "secondary": "#10b981"
+            },
+            "dark" : {
+                "background": "#000000",
+                "foreground": "#ffffff",
+                "border": "#444444",
+                "primary": "#3b82f6",
+                "secondary": "#10b981"
+            }
+        }
+    }
+}

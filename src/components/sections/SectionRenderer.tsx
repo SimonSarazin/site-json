@@ -30,6 +30,7 @@ const LazySections: {
   [K in keyof SectionPropsMap]: LazySectionComponent<K>;
 } = {
   hero: lazyNamed(() => import("./HeroSection"), "HeroSection"),
+  heroWithIcon: lazyNamed(() => import("./HeroWithIconSection"), "HeroWithIconSection"),
   markdown: lazyNamed(() => import("./MarkdownSection"), "MarkdownSection"),
   cards: lazyNamed(() => import("./CardsSection"), "CardsSection"),
   gallery: lazyNamed(() => import("./GallerySection"), "GallerySection"),
