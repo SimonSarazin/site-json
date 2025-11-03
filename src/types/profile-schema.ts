@@ -78,6 +78,15 @@ export const ProfileRelatedSectionSchema = z.object({
   limit: z.number().optional().default(4),
 });
 
+export const ProfileTemplateDefaultSchema = z.object({
+  type: z.literal("profile-template-default"),
+  showBackButton: z.boolean().optional().default(true),
+  showShareButton: z.boolean().optional().default(true),
+  showAddress: z.boolean().optional().default(true),
+  showMap: z.boolean().optional().default(true),
+  markdownEnabled: z.boolean().optional().default(true),
+});
+
 // Profile-specific sections union
 const ProfileOnlySectionSchema = z.discriminatedUnion("type", [
   ProfileHeaderSectionSchema,
@@ -88,6 +97,7 @@ const ProfileOnlySectionSchema = z.discriminatedUnion("type", [
   ProfileMembersSectionSchema,
   ProfileGallerySectionSchema,
   ProfileRelatedSectionSchema,
+  ProfileTemplateDefaultSchema, 
 ]);
 
 // Union of profile sections + any site section (to avoid circular dependency)
@@ -107,6 +117,8 @@ export type ProfileSection = z.infer<typeof ProfileSectionSchema>;
 export const ProfileConfigSchema = z.object({
   layout: ProfileLayoutVariantSchema.optional().default("default"),
   sections: z.array(ProfileSectionSchema),
+  hideHeader: z.boolean().optional().default(false), // Option pour cacher le header principal
+  hideFooter: z.boolean().optional().default(false), // Option pour cacher le footer principal
   seo: z.object({
     titleTemplate: z.string().optional(),
     descriptionTemplate: z.string().optional(),
@@ -116,9 +128,13 @@ export const ProfileConfigSchema = z.object({
 export type ProfileConfig = z.infer<typeof ProfileConfigSchema>;
 
 // Configuration de tous les profils
-export const ProfilesConfigSchema = z.record(
-  ProfileTypeSchema,
-  ProfileConfigSchema
-).optional();
+export const ProfilesConfigSchema = z.object({
+  default: ProfileConfigSchema.optional(), // Configuration par défaut pour tous les types
+  events: ProfileConfigSchema.optional(),
+  organizations: ProfileConfigSchema.optional(),
+  projects: ProfileConfigSchema.optional(),
+  citoyens: ProfileConfigSchema.optional(),
+  poi: ProfileConfigSchema.optional(),
+}).optional();
 
 export type ProfilesConfig = z.infer<typeof ProfilesConfigSchema>;

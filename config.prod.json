@@ -1230,140 +1230,18 @@
     }
   },
   "profiles": {
-    "events": {
-      "layout": "modern",
+    "default": {
+      "layout": "full-width",
+      "hideHeader": false,
+      "hideFooter": false,
       "sections": [
         {
-          "type": "profile-header",
-          "variant": "hero",
+          "type": "profile-template-default",
           "showBackButton": true,
           "showShareButton": true,
-          "showEditButton": false
-        },
-        {
-          "type": "profile-info",
-          "variant": "sidebar",
           "showAddress": true,
-          "showDates": true,
-          "showOrganizer": true,
-          "showAttendees": true
-        },
-        {
-          "type": "profile-about",
-          "showDescription": true,
-          "showShortDescription": true,
+          "showMap": true,
           "markdownEnabled": true
-        },
-        {
-          "type": "cards",
-          "id": "event-highlights",
-          "props": {
-            "variant": "default",
-            "columns": 3,
-            "layout": "grid",
-            "showHeader": true,
-            "headerTitle": {
-              "fr": "Points clés de l'événement",
-              "en": "Event Highlights"
-            },
-            "items": [
-              {
-                "icon": "users",
-                "title": {
-                  "fr": "Networking",
-                  "en": "Networking"
-                },
-                "text": {
-                  "fr": "Rencontrez des professionnels de votre secteur",
-                  "en": "Meet professionals in your field"
-                }
-              },
-              {
-                "icon": "presentation",
-                "title": {
-                  "fr": "Conférences",
-                  "en": "Conferences"
-                },
-                "text": {
-                  "fr": "Participez à des talks inspirants",
-                  "en": "Attend inspiring talks"
-                }
-              },
-              {
-                "icon": "coffee",
-                "title": {
-                  "fr": "Ateliers",
-                  "en": "Workshops"
-                },
-                "text": {
-                  "fr": "Développez vos compétences",
-                  "en": "Develop your skills"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "profile-organizer",
-          "title": {
-            "fr": "Organisé par",
-            "en": "Organized by"
-          },
-          "showLogo": true,
-          "showDescription": true,
-          "showLink": true
-        },
-        {
-          "type": "profile-map",
-          "height": "400px",
-          "zoom": 15,
-          "showMarker": true
-        }
-      ]
-    },
-    "organizations": {
-      "layout": "modern",
-      "sections": [
-        {
-          "type": "profile-header",
-          "variant": "cover",
-          "showBackButton": true,
-          "showShareButton": true
-        },
-        {
-          "type": "profile-about",
-          "showDescription": true,
-          "markdownEnabled": true
-        },
-        {
-          "type": "profile-info",
-          "variant": "inline",
-          "showAddress": true
-        },
-        {
-          "type": "profile-map",
-          "height": "350px",
-          "zoom": 14
-        }
-      ]
-    },
-    "projects": {
-      "layout": "full-width",
-      "sections": [
-        {
-          "type": "profile-header",
-          "variant": "hero",
-          "showBackButton": true,
-          "showShareButton": true
-        },
-        {
-          "type": "profile-about",
-          "showDescription": true,
-          "markdownEnabled": true
-        },
-        {
-          "type": "profile-info",
-          "variant": "tabs"
         }
       ]
     }

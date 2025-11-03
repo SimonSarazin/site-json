@@ -18,34 +18,53 @@ export default function ProfileHeader({ section, entity }: ProfileHeaderProps) {
   const navigate = useNavigate();
   const variant = section.variant || "hero";
 
+  const hasProperty = <K extends string>(
+    obj: any,
+    key: K
+  ): obj is Record<K, unknown> => {
+    return key in obj;
+  };
+
   const getImageUrl = () => {
-    if ("profilMediumImageUrl" in entity && entity.profilMediumImageUrl) {
+    if (hasProperty(entity, "profilMediumImageUrl") && entity.profilMediumImageUrl) {
       return entity.profilMediumImageUrl as string;
     }
-    if ("profilImageUrl" in entity && entity.profilImageUrl) {
+    if (hasProperty(entity, "profilImageUrl") && entity.profilImageUrl) {
       return entity.profilImageUrl as string;
     }
     return null;
   };
 
+  const getName = () => {
+    return hasProperty(entity, "name") && typeof entity.name === "string" 
+      ? entity.name 
+      : "Sans nom";
+  };
+
+  const getShortDescription = () => {
+    return hasProperty(entity, "shortDescription") && typeof entity.shortDescription === "string"
+      ? entity.shortDescription
+      : null;
+  };
+
   const imageUrl = getImageUrl();
+  const entityName = getName();
+  const shortDescription = getShortDescription();
 
   if (variant === "hero") {
     return (
       <div className="relative w-full">
-        {/* Image de couverture */}
         {imageUrl && (
           <div className="relative h-64 md:h-96 w-full overflow-hidden">
             <img
               src={imageUrl}
-              alt={entity.name}
+              alt={entityName}
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            <div className="absolute inset-0 from-black/60 to-transparent" />
           </div>
         )}
 
-        {/* Boutons d'action */}
         <div className="absolute top-4 left-4 right-4 flex justify-between">
           {section.showBackButton !== false && (
             <Button
@@ -67,7 +86,7 @@ export default function ProfileHeader({ section, entity }: ProfileHeaderProps) {
                 className="backdrop-blur-sm bg-white/90"
                 onClick={() => {
                   navigator.share?.({
-                    title: entity.name,
+                    title: entityName,
                     url: window.location.href,
                   });
                 }}
@@ -88,14 +107,13 @@ export default function ProfileHeader({ section, entity }: ProfileHeaderProps) {
           </div>
         </div>
 
-        {/* Titre */}
         <div className={`${imageUrl ? "absolute bottom-0 left-0 right-0" : ""} p-6 md:p-8`}>
           <h1 className={`text-3xl md:text-4xl font-bold ${imageUrl ? "text-white" : "text-gray-900"}`}>
-            {entity.name}
+            {entityName}
           </h1>
-          {"shortDescription" in entity && entity.shortDescription && (
+          {shortDescription && (
             <p className={`mt-2 text-lg ${imageUrl ? "text-white/90" : "text-gray-600"}`}>
-              {entity.shortDescription as string}
+              {shortDescription}
             </p>
           )}
         </div>
@@ -121,7 +139,7 @@ export default function ProfileHeader({ section, entity }: ProfileHeaderProps) {
               size="sm"
               onClick={() => {
                 navigator.share?.({
-                  title: entity.name,
+                  title: entityName,
                   url: window.location.href,
                 });
               }}
@@ -137,14 +155,14 @@ export default function ProfileHeader({ section, entity }: ProfileHeaderProps) {
         {imageUrl && (
           <img
             src={imageUrl}
-            alt={entity.name}
+            alt={entityName}
             className="w-24 h-24 rounded-lg object-cover"
           />
         )}
         <div className="flex-1">
-          <h1 className="text-3xl font-bold text-gray-900">{entity.name}</h1>
-          {"shortDescription" in entity && entity.shortDescription && (
-            <p className="mt-2 text-gray-600">{entity.shortDescription as string}</p>
+          <h1 className="text-3xl font-bold text-gray-900">{entityName}</h1>
+          {shortDescription && (
+            <p className="mt-2 text-gray-600">{shortDescription}</p>
           )}
         </div>
       </div>

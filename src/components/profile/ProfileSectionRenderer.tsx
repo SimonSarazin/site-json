@@ -14,6 +14,9 @@ const ProfileMembers = lazy(() => import("./sections/ProfileMembers"));
 const ProfileGallery = lazy(() => import("./sections/ProfileGallery"));
 const ProfileRelated = lazy(() => import("./sections/ProfileRelated"));
 
+// Lazy load des templates
+const ProfileTemplateDefault = lazy(() => import("./templates/ProfileTemplateDefault"));
+
 interface ProfileSectionRendererProps {
   section: ProfileSection;
   entity: SearchEntity;
@@ -30,6 +33,7 @@ const PROFILE_SECTION_TYPES = [
   "profile-members",
   "profile-gallery",
   "profile-related",
+  "profile-template-default",
 ] as const;
 
 export function ProfileSectionRenderer({
@@ -70,6 +74,9 @@ export function ProfileSectionRenderer({
 
     case "profile-related":
       return <ProfileRelated section={section} entity={entity} entityType={entityType} />;
+
+    case "profile-template-default":
+      return <ProfileTemplateDefault entity={entity} config={section} />;
 
     default:
       console.warn(`Unknown profile section type: ${(section as any).type}`);
