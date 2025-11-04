@@ -378,7 +378,7 @@
             "disableInfiniteScroll": true,
             "baseParams": {
               "defaultTypes": [
-                "events"
+                "organizations"
               ],
               "indexStepList": 5
             },
