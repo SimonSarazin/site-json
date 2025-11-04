@@ -35,7 +35,9 @@ export function useSearchQuery({
   mapUsed,
   baseParams = {},
 }: UseSearchQueryParams) {
-  const { organization, helper } = useCocolight();
+  const { organization, entity, helper } = useCocolight();
+
+  const searchContext = organization || entity;
 
   const {
     data,
@@ -55,8 +57,8 @@ export function useSearchQuery({
       JSON.stringify(baseParams),
     ],
     queryFn: async ({ pageParam } = { pageParam: undefined }) => {
-      if (!organization) {
-        throw new Error("API non initialisée");
+      if (!searchContext) {
+        throw new Error("API non initialisée - ni organization ni entity disponible");
       }
 
       const type = Array.isArray(searchType)
@@ -112,7 +114,7 @@ export function useSearchQuery({
       }
 
       try {
-        const result = await organization.searchCostum(param);
+        const result = await searchContext.searchCostum(param);
         if (
           page &&
           page?.pageNumber > 1 &&
@@ -128,7 +130,7 @@ export function useSearchQuery({
       }
     },
     options: {
-      enabled: !!organization,
+      enabled: !!searchContext,
       staleTime: 60 * 1000,
       initialPageParam: [],
     },
@@ -137,12 +139,12 @@ export function useSearchQuery({
   // Transformation des résultats
   const transformedResults = useMemo(() => {
     const results = data?.pages?.flatMap((p) => p?.results) ?? [];
-    if (!organization || !results.length) return results || [];
+    if (!searchContext || !results.length) return results || [];
     return results.flatMap((d: any) => {
       if (d?.getEntityType) return d;
-      return helper.fromEntityJSON(d, organization);
+      return helper.fromEntityJSON(d, organization || searchContext);
     });
-  }, [data, organization, helper]);
+  }, [data, organization, searchContext, helper]);
 
   const hasCount =
     data?.pages?.[0]?.count && typeof data?.pages?.[0]?.count === "object";

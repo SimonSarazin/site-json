@@ -363,10 +363,10 @@
           "props": {
             "customHeader": {
               "title": {
-                "fr": "Découvrir les événements"
+                "fr": "Découvrir les lieux"
               },
               "linkText": {
-                "fr": "Cartographie des événements"
+                "fr": "Cartographie des lieux"
               },
               "showMapButton": true
             },

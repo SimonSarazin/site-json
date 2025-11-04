@@ -28,6 +28,9 @@ export function CocolightProvider({
     api: initialApi, // Api                 (mutable : login/logout)
     me: initialMe,
     organization: initialOrg,
+    contextType: initialContextType,
+    contextId: initialContextId,
+    entity: initialEntity,
   } = useCocolightInit(clientOptions);
 
   useEffect(() => {
@@ -54,10 +57,15 @@ export function CocolightProvider({
         const refreshedApi = new Cocolight.Api(loggedUser, userApiInstance.client);
         const me = await refreshedApi.me();
         const slug = getSlug();
-        const organization = await me.organization({ slug });
+
+        // Vérifier le contextType avant de charger l'organization
+        if (slug && initialContextType === "organizations") {
+          const organization = await me.organization({ slug });
+          setOrganization(organization);
+        }
+
         setMe(me);
         setApi(refreshedApi);
-        setOrganization(organization);
       } catch (error) {
         console.error("Erreur après login :", error);
       }
@@ -90,12 +98,15 @@ export function CocolightProvider({
       api,
       me,
       organization,
+      contextType: initialContextType,
+      contextId: initialContextId,
+      entity: initialEntity,
       helper: Cocolight.helper,
       dataToProfile,
       setDataToProfile,
       loading: false,
     }),
-    [client, userApiInstance, api, me, organization, dataToProfile],
+    [client, userApiInstance, api, me, organization, initialContextType, initialContextId, initialEntity, dataToProfile],
   );
 
   return (

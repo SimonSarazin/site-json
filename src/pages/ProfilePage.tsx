@@ -114,7 +114,7 @@ function ProfileSkeleton() {
 export default function ProfilePage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const { organization, helper } = useCocolight();
+  const { organization, entity: cachedEntity, contextType, contextId, helper } = useCocolight();
 
   React.useEffect(() => {
     if (slug && !slug.startsWith('@')) {
@@ -151,10 +151,17 @@ export default function ProfilePage() {
     staleTime: 60 * 1000,
   });
 
+  // Utiliser l'entité depuis le contexte si disponible (déjà chargée dans apiClient)
+  // Sinon, charger à la demande pour les pages de profil utilisateur spécifiques
   const { data: entity, isLoading: isLoadingEntity, error } = useQuery<SearchEntity | null>({
     queryKey: ["entity-about", slugInfo?.contextType, slugInfo?.contextId],
     queryFn: async () => {
-      if (!organization || !slugInfo) {
+      // Si l'entité est déjà en cache depuis apiClient, l'utiliser
+      if (cachedEntity && contextType === slugInfo?.contextType && contextId === slugInfo?.contextId) {
+        return cachedEntity as SearchEntity;
+      }
+
+      if (!slugInfo) {
         return null;
       }
 
@@ -182,8 +189,12 @@ export default function ProfilePage() {
         throw err;
       }
     },
-    enabled: !!organization && !!slugInfo?.contextType && !!slugInfo?.contextId,
+    enabled: !!slugInfo?.contextType && !!slugInfo?.contextId,
     staleTime: 60 * 1000,
+    // Initialiser avec l'entité en cache si disponible
+    initialData: cachedEntity && contextType === slugInfo?.contextType && contextId === slugInfo?.contextId
+      ? cachedEntity as SearchEntity
+      : undefined,
   });
 
   const isLoading = isLoadingSlugInfo || isLoadingEntity;

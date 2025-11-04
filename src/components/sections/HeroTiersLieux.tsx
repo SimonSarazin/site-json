@@ -82,7 +82,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const autocompleteOptions = useMemo(() => ({
-    searchTypes: ["NGO", "LocalBusiness", "citoyens", "projects", "poi"] as GlobalAutocompleteCostumData["searchType"],
+    searchTypes: ["NGO", "LocalBusiness", "Group", "GovernmentOrganization", "Cooperative", "organizations", "projects", "events", "citoyens", "poi"] as GlobalAutocompleteCostumData["searchType"],
     indexMax: 30,
   }), []);
 
