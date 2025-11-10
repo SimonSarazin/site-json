@@ -6,9 +6,9 @@ export default function CardEvent({
   item,
   onClick,
 }: SearchCardProps) {
-  
+
   const serverData = item?.serverData;
-  
+
   // Extraction des données
   const image = serverData?.image || serverData?.profilImageUrl;
   const title = serverData?.name || serverData?.title || "";
@@ -18,7 +18,7 @@ export default function CardEvent({
   const location = getLocation(item);
   const avatarIcon = getAvatarIcon(item);
   const avatarColor = getAvatarColor(item);
-  
+
   const getAvatarColorClasses = (color?: string) => {
     const colorMap: Record<string, string> = {
       orange: 'bg-orange-50 text-orange-500',
@@ -33,16 +33,16 @@ export default function CardEvent({
   };
 
   return (
-    <div 
+    <div
       onClick={onClick}
-      className="relative w-full h-96 rounded-xl overflow-hidden shadow-lg group cursor-pointer"
+      className="relative border border-gray-300 w-full h-96 rounded-xl overflow-hidden shadow-lg group cursor-pointer"
     >
       {/* Image de fond */}
       {image && (
         <img
           src={image}
-          alt={eventTitle || title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          alt={title}
+          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
         />
       )}
 
@@ -93,68 +93,68 @@ export default function CardEvent({
 // Fonctions utilitaires pour extraire les données
 function getEventTitle(item: SearchEntity): string | null {
   const serverData = item?.serverData;
-  
+
   if (serverData?.eventTitle) return serverData.eventTitle;
   if (serverData?.name) return serverData.name;
   if (serverData?.title) return serverData.title;
-  
+
   return null;
 }
 
 function getEventDate(item: SearchEntity): string | null {
   const serverData = item?.serverData;
-  
+
   // Si on a déjà une date formatée, on la retourne directement
   if (serverData?.date && typeof serverData.date === 'string') {
     return serverData.date;
   }
-  
+
   // Format de date depuis startDate
   if (serverData?.startDate) {
     try {
       // Convertir en string d'abord pour éviter les problèmes de Proxy
       const dateStr = String(serverData.startDate);
       const date = new Date(dateStr);
-      
+
       // Vérifier que la date est valide
       if (!isNaN(date.getTime())) {
-        return date.toLocaleDateString('fr-FR', { 
-          day: '2-digit', 
-          month: '2-digit', 
-          year: 'numeric' 
+        return date.toLocaleDateString('fr-FR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
         }).replace(/\//g, '.');
       }
     } catch (error) {
       console.warn('Erreur lors du formatage de la date:', error);
     }
   }
-  
+
   return null;
 }
 
 function getOrganizerName(item: SearchEntity): string | null {
   const serverData = item?.serverData;
-  
+
   if (serverData?.organizerName) return serverData.organizerName;
   if (serverData?.organizer?.name) return serverData.organizer.name;
-  
+
   return null;
 }
 
 function getLocation(item: SearchEntity): string | null {
   const serverData = item?.serverData;
-  
+
   // Essayer différentes sources pour la localisation
   if (serverData?.address?.addressLocality) {
     const locality = serverData.address.addressLocality;
     const region = serverData.address?.addressRegion;
     return region ? `${locality}, ${region}` : locality;
   }
-  
+
   if (serverData?.location) {
     return serverData.location;
   }
-  
+
   return null;
 }
 
@@ -185,8 +185,8 @@ function getAvatarIcon(item: SearchEntity): string | null {
 
 function getAvatarColor(item: SearchEntity): string {
   const serverData = item?.serverData;
-  
+
   if (serverData?.avatarColor) return serverData.avatarColor;
-  
+
   return "purple"; // Couleur par défaut pour les événements
 }

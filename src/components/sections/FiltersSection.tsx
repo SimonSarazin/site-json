@@ -1,49 +1,71 @@
 import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from "@/lib/utils";
 import type { SectionPropsMap } from "@/types/site";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronDown, SlidersHorizontal} from "lucide-react";
+import { usePageFilters } from "@/contexts/PageFiltersContext";
 
-export function FiltersSection({ 
-  id, 
-  props 
-}: { 
-  id?: string; 
-  props: SectionPropsMap["filters"] 
+export function FiltersSection({
+  id,
+  props
+}: {
+  id?: string;
+  props: SectionPropsMap["filters"]
 }) {
   const { t } = useLocalization();
   const { title, filterGroups, defaultOpenGroups = [], className } = props;
-  
+
   const [openGroups, setOpenGroups] = useState<string[]>(defaultOpenGroups);
-  const [selectedFilters, setSelectedFilters] = useState<Record<string, string[]>>({});
+
+  // Utiliser le context partagé
+  const { selectedFilters, setSelectedFilters, searchQuery, setSearchQuery, clearFilters: clearFiltersContext } = usePageFilters();
+
+  // Initialiser les filtres par défaut (defaultChecked)
+  useEffect(() => {
+    const initialFilters: Record<string, string[]> = {};
+
+    filterGroups?.forEach(group => {
+      const defaultCheckedIds = group.options
+        .filter(option => option.defaultChecked)
+        .map(option => option.name || option.id);
+
+      if (defaultCheckedIds.length > 0) {
+        initialFilters[group.id] = defaultCheckedIds;
+      }
+    });
+
+    if (Object.keys(initialFilters).length > 0) {
+      setSelectedFilters(initialFilters);
+    }
+  }, [filterGroups, setSelectedFilters]);
 
   const toggleGroup = (groupId: string) => {
-    setOpenGroups(prev => 
-      prev.includes(groupId) 
+    setOpenGroups(prev =>
+      prev.includes(groupId)
         ? prev.filter(id => id !== groupId)
         : [...prev, groupId]
     );
   };
 
-  const toggleFilter = (groupId: string, filterId: string) => {
+  const toggleFilter = (groupId: string, filterName: string) => {
     setSelectedFilters(prev => {
       const current = prev[groupId] || [];
-      const updated = current.includes(filterId)
-        ? current.filter(id => id !== filterId)
-        : [...current, filterId];
+      const updated = current.includes(filterName)
+        ? current.filter(name => name !== filterName)
+        : [...current, filterName];
       return { ...prev, [groupId]: updated };
     });
   };
 
   const clearFilters = () => {
-    setSelectedFilters({});
+    clearFiltersContext();
   };
 
   const isGroupOpen = (groupId: string) => openGroups.includes(groupId);
-  const isFilterSelected = (groupId: string, filterId: string) => 
-    (selectedFilters[groupId] || []).includes(filterId);
+  const isFilterSelected = (groupId: string, filterName: string) =>
+    (selectedFilters[groupId] || []).includes(filterName);
 
-  const hasActiveFilters = Object.values(selectedFilters).some(arr => arr.length > 0);
+  const hasActiveFilters = Object.values(selectedFilters).some(arr => arr.length > 0) || searchQuery.length > 0;
 
   return (
     <aside id={id} className={cn("bg-white border border-gray-200 rounded-lg p-4", className)}>
@@ -71,6 +93,26 @@ export function FiltersSection({
         </button>
       </div>
 
+      <div className="pb-4 border-b border-gray-200">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder={t({ fr: "Rechercher par nom...", en: "Search by name..." })}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"
+          />
+          <svg
+            className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+      </div>
+
       {/* Filter Groups */}
       <div className="space-y-1">
         {filterGroups?.map((group) => (
@@ -94,36 +136,39 @@ export function FiltersSection({
             {/* Group Content */}
             {isGroupOpen(group.id) && (
               <div className="pb-3 px-2 space-y-2">
-                {group.options.map((option) => (
-                  <label
-                    key={option.id}
-                    className="flex items-start gap-2 cursor-pointer group"
-                  >
-                    {/* Checkbox */}
-                    <div className="relative flex items-center justify-center mt-0.5">
-                      <input
-                        type="checkbox"
-                        checked={isFilterSelected(group.id, option.id)}
-                        onChange={() => toggleFilter(group.id, option.id)}
-                        className="w-4 h-4 border-2 border-gray-300 rounded cursor-pointer appearance-none checked:bg-teal-500 checked:border-teal-500 transition"
-                      />
-                      {isFilterSelected(group.id, option.id) && (
-                        <svg 
-                          className="w-3 h-3 text-white absolute pointer-events-none"
-                          fill="none" 
-                          stroke="currentColor" 
-                          viewBox="0 0 24 24"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                        </svg>
-                      )}
-                    </div>
+                {group.options.map((option) => {
+                  const filterName = option.name || option.id;
+                  return (
+                    <label
+                      key={option.id}
+                      className="flex items-start gap-2 cursor-pointer group"
+                    >
+                      {/* Checkbox */}
+                      <div className="relative flex items-center justify-center mt-0.5">
+                        <input
+                          type="checkbox"
+                          checked={isFilterSelected(group.id, filterName)}
+                          onChange={() => toggleFilter(group.id, filterName)}
+                          className="w-4 h-4 border-2 border-gray-300 rounded cursor-pointer appearance-none checked:bg-teal-500 checked:border-teal-500 transition"
+                        />
+                        {isFilterSelected(group.id, filterName) && (
+                          <svg
+                            className="w-3 h-3 text-white absolute pointer-events-none"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </div>
 
-                    <span className="text-sm text-gray-700 group-hover:text-gray-900 flex-1">
-                      {t(option.label)}
-                    </span>
-                  </label>
-                ))}
+                      <span className="text-sm text-gray-700 group-hover:text-gray-900 flex-1">
+                        {t(option.label)}
+                      </span>
+                    </label>
+                  );
+                })}
               </div>
             )}
           </div>

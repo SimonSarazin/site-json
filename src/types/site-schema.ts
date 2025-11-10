@@ -801,6 +801,8 @@ const FiltersSectionSchema = z.object({
       options: z.array(z.object({
         id: z.string(),
         label: LocalizedString,
+        name: z.string().optional(),
+        defaultChecked: z.boolean().optional(),
       })),
     })),
     defaultOpenGroups: z.array(z.string()).optional(),
@@ -1281,6 +1283,12 @@ export const SiteConfig = z.object({
     enabled: z.boolean().default(false),
     message: LocalizedString.optional(),
     allowedIPs: z.array(z.string()).optional(),
+  }).optional(),
+  auth: z.object({
+    login: z.object({
+      title: LocalizedString.optional(),
+      subtitle: LocalizedString.optional(),
+    }).optional(),
   }).optional(),
   profiles: ProfilesConfigSchema,
 });

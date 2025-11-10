@@ -1,5 +1,5 @@
 import { Loader2, Map } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
 import SearchListView from "./components/SearchListView";
@@ -14,6 +14,7 @@ import "@/modules/search/i18n";
 import "@/modules/search/styles.css";
 import { SearchProStaticSectionProps } from "./schema";
 import { useSearchQuery } from "./hooks/useSearchQuery";
+import { usePageFiltersOptional } from "@/contexts/PageFiltersContext";
 
 /**
  * SearchProStatic: Version statique sans synchronisation URL
@@ -37,10 +38,24 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
 
   const customHeader = props.customHeader;
 
+  const contextFilters = usePageFiltersOptional();
+
   // État local (pas de sync URL)
   const [mapUsed, setMapUsed] = useState(showMap);
-  const [searchText] = useState("");
-  const [searchTags] = useState<Record<string, string[]>>({});
+
+  const searchText = useMemo(
+    () => contextFilters?.searchQuery || "",
+    [contextFilters?.searchQuery]
+  );
+
+  const searchTags = useMemo<Record<string, string[]>>(
+    () =>
+      contextFilters?.filterNames && contextFilters.filterNames.length > 0
+        ? { tags: contextFilters.filterNames }
+        : {} as Record<string, string[]>,
+    [contextFilters?.filterNames]
+  );
+
   const [searchType] = useState<Record<string, string[]> | null>(
     baseParams?.defaultTypes ? { type: baseParams.defaultTypes } : null
   );

@@ -5,6 +5,7 @@ import type { SectionPropsMap } from '@/types/site';
 import { DynamicIcon, type IconName } from 'lucide-react/dynamic';
 import { Grid, List } from 'lucide-react';
 import { useState } from 'react';
+import { Link } from 'react-router';
 
 export function CardsSection({ id, props }: { id?: string; props: SectionPropsMap["cards"] }) {
   const { t } = useLocalization();
@@ -49,14 +50,14 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
   const CardWrapper = ({ children, href, target }: { children: React.ReactNode; href?: string; target?: string }) => {
     if (href) {
       return (
-        <a
-          href={href}
+        <Link
+          to={href}
           target={target || '_self'}
           rel={target === '_blank' ? 'noopener noreferrer' : undefined}
           className="block"
         >
           {children}
-        </a>
+        </Link>
       );
     }
     return <>{children}</>;

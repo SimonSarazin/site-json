@@ -1,12 +1,13 @@
 import { SectionRenderer } from "./SectionRenderer";
 import type { Section } from "@/types/site";
 import { cn } from "@/lib/utils";
+import { PageFiltersProvider } from "@/contexts/PageFiltersContext";
 
-export function GridLayoutSection({ 
-  id, 
-  props 
-}: { 
-  id?: string; 
+export function GridLayoutSection({
+  id,
+  props
+}: {
+  id?: string;
   props: {
     leftSection: Section;
     rightSection: Section;
@@ -29,20 +30,22 @@ export function GridLayoutSection({
   };
 
   return (
-    <section id={id} className={cn("py-4", className)}>
-      <div className="container mx-auto px-6">
-        <div 
-          className={cn("grid grid-cols-1 lg:grid-cols-4")}
-          style={{ gap: `${gap * 0.25}rem` }}
-        >
-          <div className={getColSpan(leftColumns)}>
-            <SectionRenderer section={leftSection} />
-          </div>
-          <div className={getColSpan(rightColumns)}>
-            <SectionRenderer section={rightSection} />
+    <PageFiltersProvider>
+      <section id={id} className={cn("py-4", className)}>
+        <div className="container mx-auto px-6">
+          <div
+            className={cn("grid grid-cols-1 lg:grid-cols-4")}
+            style={{ gap: `${gap * 0.25}rem` }}
+          >
+            <div className={`${getColSpan(leftColumns)}`}>
+              <SectionRenderer section={leftSection} />
+            </div>
+            <div className={getColSpan(rightColumns)}>
+              <SectionRenderer section={rightSection} />
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </PageFiltersProvider>
   );
 }
