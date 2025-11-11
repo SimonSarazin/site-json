@@ -1,4 +1,4 @@
-import { Loader2, Map } from "lucide-react";
+import { Loader2, Map, List, LayoutGrid } from "lucide-react";
 import React, { useState, useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -37,11 +37,13 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   } = props;
 
   const customHeader = props.customHeader;
+  const showDetailedViewToggle = props.showDetailedViewToggle ?? false;
 
   const contextFilters = usePageFiltersOptional();
 
   // État local (pas de sync URL)
   const [mapUsed, setMapUsed] = useState(showMap);
+  const [isDetailedView, setIsDetailedView] = useState(false);
 
   const searchText = useMemo(
     () => contextFilters?.searchQuery || "",
@@ -181,6 +183,46 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                     </h2>
                   )}
                 </div>
+                <div className="flex gap-2">
+                  {showDetailedViewToggle && (
+                    <Button
+                      variant={isDetailedView ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setIsDetailedView(!isDetailedView)}
+                    >
+                      {isDetailedView ? (
+                        <><LayoutGrid className="mr-2 h-4 w-4" /> Grille</>
+                      ) : (
+                        <><List className="mr-2 h-4 w-4" /> Détails</>
+                      )}
+                    </Button>
+                  )}
+                  {enableMap && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setMapUsed(true)}
+                    >
+                      <Map className="mr-2 h-4 w-4 text-primary" /> {t("Carte")}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="flex justify-end mb-4 gap-2">
+                {showDetailedViewToggle && (
+                  <Button
+                    variant={isDetailedView ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setIsDetailedView(!isDetailedView)}
+                  >
+                    {isDetailedView ? (
+                      <><LayoutGrid className="mr-2 h-4 w-4" /> Grille</>
+                    ) : (
+                      <><List className="mr-2 h-4 w-4" /> Détails</>
+                    )}
+                  </Button>
+                )}
                 {enableMap && (
                   <Button
                     variant="outline"
@@ -191,18 +233,6 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                   </Button>
                 )}
               </div>
-            ) : (
-              enableMap && (
-                <div className="flex justify-end mb-4">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setMapUsed(true)}
-                  >
-                    <Map className="mr-2 h-4 w-4 text-primary" /> {t("Carte")}
-                  </Button>
-                </div>
-              )
             )}
 
             {/* Afficher le skeleton uniquement lors du premier chargement (isPending) */}
@@ -220,6 +250,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
               columns={list?.columns}
               card={list?.card}
               preview={list?.preview}
+              isDetailedView={isDetailedView}
             />
 
             {!disableInfiniteScroll && <div ref={lastItemRef} className="h-12" />}

@@ -516,7 +516,7 @@
           "props": {
             "customHeader": {
               "title": {
-                "fr": "Evenement a venir"
+                "fr": "Événements à venir"
               },
               "linkText": {
                 "fr": "Cartographie des tiers-lieux"
@@ -533,8 +533,7 @@
               "defaultTypes": [
                 "events"
               ],
-              "indexStepList": 4,
-              "startDateUTC": 1761598800
+              "indexStepList": 4
             },
             "list": {
               "columns": {
@@ -1076,7 +1075,7 @@
               "props": {
                 "customHeader": {
                   "title": {
-                    "fr": "Tous les événements"
+                    "fr": "Tous les tiers-lieux"
                   },
                   "linkText": {
                     "fr": "Cartographie des événements"
@@ -1089,6 +1088,7 @@
                 "showActiveFiltersTypes": true,
                 "showActiveFiltersTags": true,
                 "disableInfiniteScroll": false,
+                "showDetailedViewToggle": true,
                 "baseParams": {
                   "defaultTypes": [
                     "organizations"
@@ -1226,6 +1226,7 @@
     }
   ],
   "theme": {
+    "defaultMode": "light",
     "colors": {
       "light": {
         "background": "#ffffff",

@@ -1205,17 +1205,18 @@ const Shadows = z.object({
 });
 
 export const ThemeConfig = z.object({
+  defaultMode: z.enum(["light", "dark", "system"]).optional().default("light"),
   colors: z.object({
     light: ColorPalette,
     dark: ColorPalette,
-  }),
-  typography: Typography,
-  spacing: Spacing,
-  borderRadius: BorderRadius,
+  }).optional(),
+  typography: Typography.optional(),
+  spacing: Spacing.optional(),
+  borderRadius: BorderRadius.optional(),
   shadows: z.object({
     light: Shadows,
     dark: Shadows,
-  }),
+  }).optional(),
   customCSS: z.string().optional(),
 });
 

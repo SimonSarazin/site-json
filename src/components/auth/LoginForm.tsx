@@ -119,9 +119,9 @@ export default function LoginForm({ onSuccess, hideBackButton = false }: LoginFo
   }
 
   return (
-    <div className="w-full space-y-6 p-8 rounded-lg bg-card shadow-lg border">
+    <div className="w-full space-y-6 p-8 rounded-lg bg-card shadow-lg">
       <div className="text-center">
-        <h2 className="text-3xl text-gray-200 font-bold mb-2">
+        <h2 className="text-3xl text-gray-800 dark:text-gray-300 font-bold mb-2">
           {t(loginTitle)}
         </h2>
         <p className="text-gray-600">

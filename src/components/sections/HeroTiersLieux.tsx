@@ -8,6 +8,7 @@ import { SearchEntity } from "@/modules/search/schema";
 import { cn } from "@/lib/utils";
 import { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
 import { Link } from "react-router";
+import { usePageFiltersOptional } from "@/contexts/PageFiltersContext";
 
 const getEntityIcon = (entity: SearchEntity) => {
   const type = entity?.getEntityType?.() || "";
@@ -71,15 +72,29 @@ interface HeroTiersLieuxProps {
   props: SchemaHeroTiersLieuxProps;
 }
 
+// Mapping des catégories du select vers les tags
+const CATEGORY_TO_TAGS: Record<string, string[]> = {
+  all: [],
+  coworking: ["Bureaux partagés / Coworking"],
+  fablab: ["Fablab / Makerspace / Hackerspace"],
+  meeting: ["Salle de réunion"],
+  food: ["Restaurant", "Bar"],
+  learn: [],
+  stay: [],
+};
+
 export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
   const { t } = useLocalization();
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
+  const [activeTabIndex, setActiveTabIndex] = useState(0);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const pageFilters = usePageFiltersOptional();
 
   const autocompleteOptions = useMemo(() => ({
     searchTypes: ["NGO", "LocalBusiness", "Group", "GovernmentOrganization", "Cooperative", "organizations", "projects", "events", "citoyens", "poi"] as GlobalAutocompleteCostumData["searchType"],
@@ -114,6 +129,19 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
       setIsAutocompleteOpen(false);
     }
   }, [suggestions, search]);
+
+  // Synchroniser la catégorie sélectionnée avec les filtres de page
+  useEffect(() => {
+    if (pageFilters?.setSelectedFilters) {
+      const tags = CATEGORY_TO_TAGS[selectedCategory] || [];
+      if (tags.length > 0) {
+        pageFilters.setSelectedFilters({ tags });
+      } else {
+        pageFilters.setSelectedFilters({});
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategory]); // Ne dépendre que de selectedCategory, pas de pageFilters
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!isAutocompleteOpen) return;
@@ -306,10 +334,12 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
           {props.ctaButtons?.map((btn, idx) => (
             <button
               key={idx}
-              className={`px-6 py-3 font-semibold ${idx === 0
-                ? "border-b-4 border-teal-500 text-teal-500 bg-gray-50"
-                : "hover:bg-gray-50 transition"
-                }`}
+              onClick={() => setActiveTabIndex(idx)}
+              className={`px-6 py-3 font-semibold transition ${
+                activeTabIndex === idx
+                  ? "border-b-4 border-teal-500 text-teal-500 bg-gray-50"
+                  : "hover:bg-gray-50"
+              }`}
             >
               {t(btn.label)}
             </button>

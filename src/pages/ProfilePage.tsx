@@ -115,6 +115,7 @@ export default function ProfilePage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { organization, entity: cachedEntity, contextType, contextId, helper } = useCocolight();
+  const { config: siteConfig } = useSite();
 
   React.useEffect(() => {
     if (slug && !slug.startsWith('@')) {
@@ -250,8 +251,6 @@ export default function ProfilePage() {
       </div>
     );
   }
-
-  const { config: siteConfig } = useSite();
 
   const entityType = slugInfo?.contextType || ("collection" in entity ? entity.collection as string : "");
 

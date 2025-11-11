@@ -35,7 +35,7 @@ export default function CardEvent({
   return (
     <div
       onClick={onClick}
-      className="relative border border-gray-300 w-full h-96 rounded-xl overflow-hidden shadow-lg group cursor-pointer"
+      className="relative border border-gray-300 w-full h-72 rounded-xl overflow-hidden shadow-lg group cursor-pointer"
     >
       {/* Image de fond */}
       {image && (

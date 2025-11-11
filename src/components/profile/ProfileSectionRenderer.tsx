@@ -76,7 +76,7 @@ export function ProfileSectionRenderer({
       return <ProfileRelated section={section} entity={entity} entityType={entityType} />;
 
     case "profile-template-default":
-      return <ProfileTemplateDefault entity={entity} config={section} />;
+      return <ProfileTemplateDefault entity={entity} entityType={entityType} config={section} />;
 
     default:
       console.warn(`Unknown profile section type: ${(section as any).type}`);
