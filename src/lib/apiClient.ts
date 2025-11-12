@@ -115,7 +115,7 @@ export async function initApiClient(
 
       if (slug) {
         try {
-          const entity = await api.entitySlug(slug);
+          const entity = cachedMe ?  await cachedMe.entityBySlug(slug) : await api.entitySlug(slug);
 
           if (entity) {
             cachedEntity = entity;
