@@ -10,7 +10,7 @@ interface ProfileGalleryProps {
   entity: SearchEntity;
 }
 
-export default function ProfileGallery({ section, entity }: ProfileGalleryProps) {
+export default function ProfileGallery({ section: _section, entity: _entity }: ProfileGalleryProps) {
   // TODO
   return null;
 }

@@ -10,7 +10,7 @@ interface ProfileMembersProps {
   entity: SearchEntity;
 }
 
-export default function ProfileMembers({ section, entity }: ProfileMembersProps) {
+export default function ProfileMembers({ section: _section, entity: _entity }: ProfileMembersProps) {
   // À implémenter selon vos besoins
   return null;
 }

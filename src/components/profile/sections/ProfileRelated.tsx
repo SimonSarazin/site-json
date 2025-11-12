@@ -11,7 +11,7 @@ interface ProfileRelatedProps {
   entityType: string;
 }
 
-export default function ProfileRelated({ section, entity, entityType }: ProfileRelatedProps) {
+export default function ProfileRelated({ section: _section, entity: _entity, entityType: _entityType }: ProfileRelatedProps) {
   // À implémenter selon vos besoins
   return null;
 }
