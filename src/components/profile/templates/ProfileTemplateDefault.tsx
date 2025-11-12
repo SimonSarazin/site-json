@@ -3,7 +3,11 @@ import { Link } from "react-router";
 import { Mail, ChevronRight, Image as ImageIcon, Phone, Globe, Calendar, MapPin, Users, Briefcase, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getBaseUrl } from "@/lib/constant/common";
+import { formatDate } from "@/helpers/formatDate";
+import { useEntityProfile } from "../hooks/useEntityProfile";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { useT } from "@/hooks/useT";
+import "@/components/profile/i18n";
 
 interface ProfileTemplateDefaultProps {
   entity: SearchEntity;
@@ -21,125 +25,23 @@ export default function ProfileTemplateDefault({
   entity,
   entityType: _entityType,
 }: ProfileTemplateDefaultProps) {
+  useLoadNamespace("components/profile");
+  const t = useT("components/profile");
 
-  const hasProperty = <K extends string>(
-    obj: any,
-    key: K
-  ): obj is Record<K, unknown> => {
-    return key in obj;
-  };
+  const {
+    logoUrl,
+    address,
+    organizer,
+    name: entityName,
+    bannerUrl,
+    tags,
+    badges,
+    membersCount,
+    projectsCount,
+    openingHours,
+  } = useEntityProfile(entity);
 
-  const getLogoUrl = () => {
-
-    if (hasProperty(entity, "profilThumbImageUrl") && hasProperty(entity, "profilImageUrl") && entity.profilImageUrl) {
-      return `${entity.profilImageUrl}`;
-    }
-    return null;
-  };
-
-  const formatDate = (dateString: string) => {
-    try {
-      return new Date(dateString).toLocaleDateString("fr-FR", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    } catch {
-      return dateString;
-    }
-  };
-
-  const getAddress = () => {
-    if (hasProperty(entity, "address") && entity.address && typeof entity.address === "object") {
-      const addr = entity.address as any;
-      return {
-        streetAddress: addr.streetAddress,
-        postalCode: addr.postalCode,
-        addressLocality: addr.addressLocality
-      };
-    }
-    return null;
-  };
-
-  const getOrganizer = () => {
-    if (hasProperty(entity, "organizer") && entity.organizer && typeof entity.organizer === "object") {
-      const organizerId = Object.keys(entity.organizer)[0];
-      return (entity.organizer as any)[organizerId];
-    }
-    return null;
-  };
-
-  const getName = () => {
-    return hasProperty(entity, "name") && typeof entity.name === "string" ? entity.name : "Sans nom";
-  };
-
-  const getBannerUrl = () => {
-    if (hasProperty(entity, "profilBannerUrl") && entity.profilBannerUrl) {
-      return `${entity.profilBannerUrl}`;
-    }
-    if (hasProperty(entity, "profilRealBannerUrl") && entity.profilRealBannerUrl) {
-      return `${entity.profilRealBannerUrl}`;
-    }
-    return null;
-  };
-
-  const getTags = (): string[] => {
-    if (hasProperty(entity, "tags") && Array.isArray(entity.tags)) {
-      return entity.tags.filter((tag): tag is string => typeof tag === "string");
-    }
-    return [];
-  };
-
-  const getBadges = () => {
-    if (hasProperty(entity, "badges") && entity.badges && typeof entity.badges === "object") {
-      return Object.values(entity.badges).filter((badge: any) =>
-        badge && typeof badge === "object" && badge.show !== "false"
-      );
-    }
-    return [];
-  };
-
-  const getMembers = () => {
-    if (hasProperty(entity, "links") && entity.links && typeof entity.links === "object") {
-      const links = entity.links as any;
-      if (links.members && typeof links.members === "object") {
-        return Object.keys(links.members).length;
-      }
-    }
-    return null;
-  };
-
-  const getProjects = () => {
-    if (hasProperty(entity, "links") && entity.links && typeof entity.links === "object") {
-      const links = entity.links as any;
-      if (links.projects && typeof links.projects === "object") {
-        return Object.keys(links.projects).length;
-      }
-    }
-    return null;
-  };
-
-  const getOpeningHours = () => {
-    if (hasProperty(entity, "openingHours") && Array.isArray(entity.openingHours)) {
-      return entity.openingHours;
-    }
-    return null;
-  };
-
-  const imageUrl = getLogoUrl();
-  const logoUrl = getLogoUrl();
-  const bannerUrl = getBannerUrl();
-  const address = getAddress();
-  const organizer = getOrganizer();
-  const entityName = getName();
-  const tags = getTags();
-  const badges = getBadges();
-  const membersCount = getMembers();
-  const projectsCount = getProjects();
-  const openingHours = getOpeningHours();
-  console.log(imageUrl)
+  const imageUrl = logoUrl;
 
   return (
     <div className="bg-white -m-4 md:-m-8">
@@ -148,7 +50,7 @@ export default function ProfileTemplateDefault({
           <div className="absolute bottom-6 right-6 z-20">
             <button className="bg-white text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center gap-2 shadow-md border border-gray-200">
               <ImageIcon className="w-4 h-4" />
-              Afficher toutes les photos
+              {t("ProfileTemplateDefault.showAllPhotos")}
             </button>
           </div>
         </div>
@@ -186,19 +88,19 @@ export default function ProfileTemplateDefault({
               {
                 _entityType != "citoyens" && (
                   <div className="flex gap-3 flex-wrap">
-                    {hasProperty(entity, "email") && typeof entity.email === "string" && entity.email && (
+                    {entity.serverData?.email && typeof entity.serverData.email === "string" && (
                       <button
-                        onClick={() => window.location.href = `mailto:${entity.email}`}
+                        onClick={() => window.location.href = `mailto:${entity.serverData.email}`}
                         className="px-5 py-2.5 border border-gray-300 rounded-lg text-gray-700 bg-white text-sm font-medium hover:bg-gray-50 flex items-center gap-2 shadow-sm"
                       >
                         <Mail className="w-4 h-4" />
-                        Envoyer un email
+                        {t("ProfileTemplateDefault.sendEmail")}
                       </button>
                     )}
                     <button
                       className="px-5 py-2.5 bg-teal-500 text-white rounded-lg text-sm font-medium hover:bg-teal-600 flex items-center gap-2 shadow-sm"
                     >
-                      Espace Réservation
+                      {t("ProfileTemplateDefault.reservationSpace")}
                       <ChevronRight className="w-4 h-4" />
                     </button>
                   </div>
@@ -217,90 +119,90 @@ export default function ProfileTemplateDefault({
                 value="about"
                 className="data-[state=active]:bg-white data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-gray-700 hover:text-gray-900"
               >
-                À propos
+                {t("ProfileTemplateDefault.tabs.about")}
               </TabsTrigger>
               <TabsTrigger
                 value="news"
                 className="data-[state=active]:bg-white data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-gray-700 hover:text-gray-900"
               >
-                Actualités
+                {t("ProfileTemplateDefault.tabs.news")}
               </TabsTrigger>
               <TabsTrigger
                 value="coworking"
                 className="data-[state=active]:bg-white data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-gray-700 hover:text-gray-900"
               >
-                Coworking
+                {t("ProfileTemplateDefault.tabs.coworking")}
               </TabsTrigger>
               <TabsTrigger
                 value="rooms"
                 className="data-[state=active]:bg-white data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-gray-700 hover:text-gray-900"
               >
-                Salles de réunions
+                {t("ProfileTemplateDefault.tabs.meetingRooms")}
               </TabsTrigger>
               <TabsTrigger
                 value="infos"
                 className="data-[state=active]:bg-white data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-gray-700 hover:text-gray-900"
               >
-                Infos pratiques
+                {t("ProfileTemplateDefault.tabs.practicalInfo")}
               </TabsTrigger>
               <TabsTrigger
                 value="communities"
                 className="data-[state=active]:bg-white data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-gray-700 hover:text-gray-900"
               >
-                Communautés
+                {t("ProfileTemplateDefault.tabs.communities")}
               </TabsTrigger>
               <TabsTrigger
                 value="observatory"
                 className="data-[state=active]:bg-white data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-gray-700 hover:text-gray-900"
               >
-                Observatoires
+                {t("ProfileTemplateDefault.tabs.observatories")}
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="about">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2">
-              {hasProperty(entity, "startDate") && typeof entity.startDate === "string" && entity.startDate && (
+              {entity.serverData?.startDate && (
                 <div className="mb-8">
                   <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
                     <span className="inline-block w-2 h-2 bg-teal-500 rounded-full"></span>
-                    {hasProperty(entity, "type") && typeof entity.type === "string" && entity.type && (
-                      <span className="capitalize">{entity.type}</span>
+                    {entity.serverData?.type && typeof entity.serverData.type === "string" && (
+                      <span className="capitalize">{entity.serverData.type}</span>
                     )}
                   </div>
                   <div className="text-gray-900">
-                    <strong>Date:</strong> {formatDate(entity.startDate)}
-                    {hasProperty(entity, "endDate") && typeof entity.endDate === "string" && entity.endDate && (
-                      <> - {formatDate(entity.endDate)}</>
+                    <strong>{t("common.date")}:</strong> {formatDate(entity.serverData.startDate)}
+                    {entity.serverData?.endDate && (
+                      <> - {formatDate(entity.serverData.endDate)}</>
                     )}
                   </div>
                 </div>
               )}
 
-              {hasProperty(entity, "shortDescription") && typeof entity.shortDescription === "string" && entity.shortDescription && (
+              {entity.serverData?.shortDescription && typeof entity.serverData.shortDescription === "string" && (
                 <div className="mb-8">
                   <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                    {entity.shortDescription}
+                    {entity.serverData.shortDescription}
                   </h3>
                 </div>
               )}
 
-              {hasProperty(entity, "description") && typeof entity.description === "string" && entity.description && (
+              {entity.serverData?.description && typeof entity.serverData.description === "string" && (
                 <div className="mb-12">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Description</h2>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6">{t("ProfileTemplateDefault.description")}</h2>
                   <div className="text-gray-800 leading-relaxed whitespace-pre-wrap bg-gray-50 p-6 rounded-lg border border-gray-200">
-                    {entity.description}
+                    {entity.serverData.description}
                   </div>
                 </div>
               )}
 
               {organizer && (
                 <div className="mb-8">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Organisé par</h2>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">{t("common.organizedBy")}</h2>
                   <div className="flex items-center gap-4 bg-white p-5 rounded-lg border border-gray-300 shadow-sm hover:border-teal-400 transition-colors">
                     {organizer.profilThumbImageUrl && (
                       <img
-                        src={`${getBaseUrl()}${organizer.profilThumbImageUrl}`}
+                        src={organizer.profilThumbImageUrl}
                         alt={organizer.name || "Organisateur"}
                         className="w-16 h-16 rounded-lg object-cover border border-gray-200"
                       />
@@ -312,7 +214,7 @@ export default function ProfileTemplateDefault({
                           to={`/@${organizer.slug}`}
                           className="text-teal-600 hover:text-teal-700 text-sm font-medium"
                         >
-                          Voir le profil →
+                          {t("common.viewProfile")} →
                         </Link>
                       )}
                     </div>
@@ -324,10 +226,10 @@ export default function ProfileTemplateDefault({
                 <div className="mb-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <Award className="w-6 h-6 text-teal-600" />
-                    Badges
+                    {t("ProfileTemplateDefault.badges")}
                   </h2>
                   <div className="flex flex-wrap gap-3">
-                    {badges.map((badge: any, index) => (
+                    {badges.map((badge, index) => (
                       <div key={index} className="bg-white border border-teal-300 rounded-lg px-4 py-2 flex items-center gap-2 shadow-sm hover:shadow-md transition-shadow">
                         <Award className="w-4 h-4 text-teal-600" />
                         <span className="text-gray-900 font-medium">{badge.name || 'Badge'}</span>
@@ -339,7 +241,7 @@ export default function ProfileTemplateDefault({
 
               {tags.length > 0 && (
                 <div className="mb-8">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Tags</h2>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">{t("ProfileTemplateDefault.tags")}</h2>
                   <div className="flex flex-wrap gap-2">
                     {tags.slice(0, 20).map((tag, index) => (
                       <span
@@ -355,16 +257,16 @@ export default function ProfileTemplateDefault({
 
               {openingHours && openingHours.length > 0 && (
                 <div className="mb-8">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Horaires d'ouverture</h2>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">{t("ProfileTemplateDefault.openingHours")}</h2>
                   <div className="bg-white p-5 rounded-lg border border-gray-300 shadow-sm">
-                    {openingHours.map((schedule: any, index) => (
+                    {openingHours.map((schedule, index) => (
                       <div key={index} className="flex justify-between items-center py-3 border-b border-gray-200 last:border-b-0">
                         <span className="font-semibold text-gray-800">
                           {schedule.dayOfWeek}
                         </span>
                         <div className="text-gray-900 font-medium">
                           {schedule.hours && schedule.hours.length > 0 && (
-                            schedule.hours.map((hour: any, hIndex: number) => (
+                            schedule.hours.map((hour, hIndex) => (
                               <span key={hIndex}>
                                 {hour.opens} - {hour.closes}
                                 {hIndex < schedule.hours.length - 1 && ', '}
@@ -381,7 +283,7 @@ export default function ProfileTemplateDefault({
 
             <div className="lg:col-span-1">
               <div className="bg-white rounded-lg border border-gray-300 p-6 sticky top-4 shadow-sm">
-                <h3 className="text-xl font-bold text-gray-900 mb-6">Informations</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-6">{t("ProfileTemplateDefault.information")}</h3>
 
                 {(membersCount !== null || projectsCount !== null) && (
                   <div className="space-y-4 mb-6 pb-6 border-b border-gray-300">
@@ -389,7 +291,7 @@ export default function ProfileTemplateDefault({
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
                           <Users className="w-5 h-5 text-teal-600" />
-                          <span className="text-gray-700 font-medium">Membres</span>
+                          <span className="text-gray-700 font-medium">{t("ProfileTemplateDefault.members")}</span>
                         </div>
                         <span className="font-bold text-gray-900 text-lg">{membersCount}</span>
                       </div>
@@ -398,7 +300,7 @@ export default function ProfileTemplateDefault({
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
                           <Briefcase className="w-5 h-5 text-teal-600" />
-                          <span className="text-gray-700 font-medium">Projets</span>
+                          <span className="text-gray-700 font-medium">{t("ProfileTemplateDefault.projects")}</span>
                         </div>
                         <span className="font-bold text-gray-900 text-lg">{projectsCount}</span>
                       </div>
@@ -407,31 +309,31 @@ export default function ProfileTemplateDefault({
                 )}
 
                 <div className="space-y-4">
-                  {hasProperty(entity, "username") && typeof entity.username === "string" && entity.username && (
+                  {entity.serverData?.username && typeof entity.serverData.username === "string" && (
                     <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-lg">
-                      <span className="text-teal-600 font-semibold">@{entity.username}</span>
+                      <span className="text-teal-600 font-semibold">@{entity.serverData.username}</span>
                     </div>
                   )}
 
-                  {hasProperty(entity, "email") && typeof entity.email === "string" && entity.email && (
+                  {entity.serverData?.email && typeof entity.serverData.email === "string" && (
                     <div className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
                       <Mail className="w-5 h-5 text-teal-600 shrink-0" />
-                      <span className="text-gray-800 break-all text-sm">{entity.email}</span>
+                      <span className="text-gray-800 break-all text-sm">{entity.serverData.email}</span>
                     </div>
                   )}
 
-                  {hasProperty(entity, "mobile") && typeof entity.mobile === "string" && entity.mobile && (
+                  {entity.serverData?.mobile && typeof entity.serverData.mobile === "string" && (
                     <div className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
                       <Phone className="w-5 h-5 text-teal-600 shrink-0" />
-                      <a href={`tel:${entity.mobile}`} className="text-gray-800 font-medium text-sm hover:text-teal-600">{entity.mobile}</a>
+                      <a href={`tel:${entity.serverData.mobile}`} className="text-gray-800 font-medium text-sm hover:text-teal-600">{entity.serverData.mobile}</a>
                     </div>
                   )}
 
-                  {hasProperty(entity, "url") && typeof entity.url === "string" && entity.url && (
+                  {entity.serverData?.url && typeof entity.serverData.url === "string" && (
                     <div className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
                       <Globe className="w-5 h-5 text-teal-600 shrink-0" />
-                      <a href={entity.url} target="_blank" rel="noopener noreferrer" className="text-teal-600 hover:text-teal-700 break-all text-sm font-medium">
-                        {entity.url.replace(/^https?:\/\//, '')}
+                      <a href={entity.serverData.url} target="_blank" rel="noopener noreferrer" className="text-teal-600 hover:text-teal-700 break-all text-sm font-medium">
+                        {entity.serverData.url.replace(/^https?:\/\//, '')}
                       </a>
                     </div>
                   )}
@@ -448,20 +350,20 @@ export default function ProfileTemplateDefault({
                     </div>
                   )}
 
-                  {hasProperty(entity, "openingDate") && typeof entity.openingDate === "string" && entity.openingDate && (
+                  {entity.serverData?.openingDate && (
                     <div className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
                       <Calendar className="w-5 h-5 text-teal-600 shrink-0" />
-                      <span className="text-gray-800 text-sm font-medium">Ouvert depuis {entity.openingDate}</span>
+                      <span className="text-gray-800 text-sm font-medium">{t("ProfileTemplateDefault.openSince")} {formatDate(entity.serverData.openingDate)}</span>
                     </div>
                   )}
 
-                  {hasProperty(entity, "externalLinkRegistration") && typeof entity.externalLinkRegistration === "string" && entity.externalLinkRegistration && (
+                  {entity.serverData?.externalLinkRegistration && typeof entity.serverData.externalLinkRegistration === "string" && (
                     <div className="mt-6 pt-6 border-t border-gray-300">
                       <Button
                         className="w-full bg-teal-500 hover:bg-teal-600"
-                        onClick={() => window.open(entity.externalLinkRegistration as string, "_blank")}
+                        onClick={() => window.open(entity.serverData.externalLinkRegistration as string, "_blank")}
                       >
-                        Inscription
+                        {t("ProfileTemplateDefault.register")}
                         <ChevronRight className="w-4 h-4 ml-2" />
                       </Button>
                     </div>
@@ -478,8 +380,8 @@ export default function ProfileTemplateDefault({
                   <div className="text-gray-400 mb-4">
                     <Calendar className="w-16 h-16 mx-auto" />
                   </div>
-                  <p className="text-xl font-semibold text-gray-700 mb-2">Section Actualités</p>
-                  <p className="text-gray-500">En construction</p>
+                  <p className="text-xl font-semibold text-gray-700 mb-2">{t("ProfileTemplateDefault.sectionLabel", undefined, { name: t("ProfileTemplateDefault.tabs.news") })}</p>
+                  <p className="text-gray-500">{t("ProfileTemplateDefault.comingSoon")}</p>
                 </div>
               </div>
             </TabsContent>
@@ -490,8 +392,8 @@ export default function ProfileTemplateDefault({
                   <div className="text-gray-400 mb-4">
                     <Briefcase className="w-16 h-16 mx-auto" />
                   </div>
-                  <p className="text-xl font-semibold text-gray-700 mb-2">Section Coworking</p>
-                  <p className="text-gray-500">En construction</p>
+                  <p className="text-xl font-semibold text-gray-700 mb-2">{t("ProfileTemplateDefault.sectionLabel", undefined, { name: t("ProfileTemplateDefault.tabs.coworking") })}</p>
+                  <p className="text-gray-500">{t("ProfileTemplateDefault.comingSoon")}</p>
                 </div>
               </div>
             </TabsContent>
@@ -502,8 +404,8 @@ export default function ProfileTemplateDefault({
                   <div className="text-gray-400 mb-4">
                     <Users className="w-16 h-16 mx-auto" />
                   </div>
-                  <p className="text-xl font-semibold text-gray-700 mb-2">Section Salles de réunions</p>
-                  <p className="text-gray-500">En construction</p>
+                  <p className="text-xl font-semibold text-gray-700 mb-2">{t("ProfileTemplateDefault.sectionLabel", undefined, { name: t("ProfileTemplateDefault.tabs.meetingRooms") })}</p>
+                  <p className="text-gray-500">{t("ProfileTemplateDefault.comingSoon")}</p>
                 </div>
               </div>
             </TabsContent>
@@ -514,8 +416,8 @@ export default function ProfileTemplateDefault({
                   <div className="text-gray-400 mb-4">
                     <MapPin className="w-16 h-16 mx-auto" />
                   </div>
-                  <p className="text-xl font-semibold text-gray-700 mb-2">Section Infos pratiques</p>
-                  <p className="text-gray-500">En construction</p>
+                  <p className="text-xl font-semibold text-gray-700 mb-2">{t("ProfileTemplateDefault.sectionLabel", undefined, { name: t("ProfileTemplateDefault.tabs.practicalInfo") })}</p>
+                  <p className="text-gray-500">{t("ProfileTemplateDefault.comingSoon")}</p>
                 </div>
               </div>
             </TabsContent>
@@ -526,8 +428,8 @@ export default function ProfileTemplateDefault({
                   <div className="text-gray-400 mb-4">
                     <Users className="w-16 h-16 mx-auto" />
                   </div>
-                  <p className="text-xl font-semibold text-gray-700 mb-2">Section Communautés</p>
-                  <p className="text-gray-500">En construction</p>
+                  <p className="text-xl font-semibold text-gray-700 mb-2">{t("ProfileTemplateDefault.sectionLabel", undefined, { name: t("ProfileTemplateDefault.tabs.communities") })}</p>
+                  <p className="text-gray-500">{t("ProfileTemplateDefault.comingSoon")}</p>
                 </div>
               </div>
             </TabsContent>
@@ -538,8 +440,8 @@ export default function ProfileTemplateDefault({
                   <div className="text-gray-400 mb-4">
                     <Globe className="w-16 h-16 mx-auto" />
                   </div>
-                  <p className="text-xl font-semibold text-gray-700 mb-2">Section Observatoires</p>
-                  <p className="text-gray-500">En construction</p>
+                  <p className="text-xl font-semibold text-gray-700 mb-2">{t("ProfileTemplateDefault.sectionLabel", undefined, { name: t("ProfileTemplateDefault.tabs.observatories") })}</p>
+                  <p className="text-gray-500">{t("ProfileTemplateDefault.comingSoon")}</p>
                 </div>
               </div>
             </TabsContent>

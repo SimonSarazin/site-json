@@ -6,7 +6,7 @@ import { HelmetProvider } from "@dr.pogodin/react-helmet";
 import { buildRoutes } from "@/lib/buildRoutes";
 import { type SiteConfig } from '@/types/site';
 import "./index.css";
-import { HydrationBoundary, QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { HydrationBoundary, QueryClient, QueryClientProvider, type DehydratedState } from "@tanstack/react-query";
 import { useState } from "react";
 
 
@@ -14,7 +14,7 @@ import { useState } from "react";
 declare global {
   interface Window {
     __CONFIG__: SiteConfig;
-    __REACT_QUERY_STATE__: unknown;
+    __REACT_QUERY_STATE__: DehydratedState | undefined;
     __staticRouterHydrationData?: Partial<
       Pick<RouterState, "errors" | "loaderData" | "actionData">
     >;
@@ -29,7 +29,7 @@ const router = createBrowserRouter(
   { hydrationData: window.__staticRouterHydrationData }
 );
 
-const dehydratedState = window.__REACT_QUERY_STATE__ ? window.__REACT_QUERY_STATE__ : null;
+const dehydratedState = window.__REACT_QUERY_STATE__ ?? null;
 
 
 

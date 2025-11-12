@@ -7,9 +7,13 @@ export function useT(namespace?: string) {
   const { t: tNs } = useTranslation(namespace);
   const { t: tData } = useLocalization();
 
-  return (key: string | LocalizedString, fallback?: string) => {
+  return (key: string | LocalizedString, fallback?: string, interpolationParams?: Record<string, unknown>) => {
     if (typeof key === "string") {
-      const k = tNs(key, { defaultValue: key });
+      const options = {
+        defaultValue: fallback || key,
+        ...(interpolationParams || {})
+      };
+      const k = tNs(key, options);
       return k === key && fallback ? fallback : k;
     }
     return tData(key, fallback);

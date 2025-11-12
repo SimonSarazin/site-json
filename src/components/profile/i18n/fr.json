@@ -1,0 +1,53 @@
+{
+  "common": {
+    "organizedBy": "Organisé par",
+    "viewProfile": "Voir le profil",
+    "date": "Date"
+  },
+  "ProfileHeader": {
+    "back": "Retour",
+    "share": "Partager"
+  },
+  "ProfileInfo": {
+    "title": "Informations",
+    "from": "Du",
+    "to": "au",
+    "place": "Lieu",
+    "website": "Site web",
+    "visitWebsite": "Voir le site",
+    "registerEvent": "S'inscrire à l'événement"
+  },
+  "ProfileAbout": {
+    "title": "À propos"
+  },
+  "ProfileMap": {
+    "title": "Localisation",
+    "mapPlaceholder": "Carte à implémenter",
+    "coordinates": "Coordonnées"
+  },
+  "ProfileTemplateDefault": {
+    "showAllPhotos": "Afficher toutes les photos",
+    "sendEmail": "Envoyer un email",
+    "reservationSpace": "Espace Réservation",
+    "tabs": {
+      "about": "À propos",
+      "news": "Actualités",
+      "coworking": "Coworking",
+      "meetingRooms": "Salles de réunions",
+      "practicalInfo": "Infos pratiques",
+      "communities": "Communautés",
+      "observatories": "Observatoires"
+    },
+    "description": "Description",
+    "badges": "Badges",
+    "tags": "Tags",
+    "openingHours": "Horaires d'ouverture",
+    "information": "Informations",
+    "members": "Membres",
+    "projects": "Projets",
+    "openSince": "Ouvert depuis",
+    "register": "Inscription",
+    "comingSoon": "En construction",
+    "sectionLabel": "Section {{name}}"
+  }
+}

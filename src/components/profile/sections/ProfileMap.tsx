@@ -1,5 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { SearchEntity } from "@/modules/search/schema";
+import { useEntityProfile } from "../hooks/useEntityProfile";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { useT } from "@/hooks/useT";
+import "@/components/profile/i18n";
 
 interface ProfileMapProps {
   section: {
@@ -12,17 +16,22 @@ interface ProfileMapProps {
 }
 
 export default function ProfileMap({ section, entity }: ProfileMapProps) {
-  // Vérifier si l'entité a des coordonnées géographiques
-  const hasGeo = "geo" in entity && entity.geo &&
-    "latitude" in (entity.geo as any) && "longitude" in (entity.geo as any);
+  useLoadNamespace("components/profile");
+  const t = useT("components/profile");
+  
+  const { geo } = useEntityProfile(entity);
 
-  if (!hasGeo) {
+  if (!geo || !geo.latitude || !geo.longitude) {
     return null;
   }
 
-  const geo = entity.geo as any;
-  const lat = parseFloat(geo.latitude);
-  const lon = parseFloat(geo.longitude);
+  const lat = parseFloat(String(geo.latitude));
+  const lon = parseFloat(String(geo.longitude));
+
+  if (isNaN(lat) || isNaN(lon)) {
+    return null;
+  }
+
   const height = section.height || "400px";
 
   // Note: Pour une vraie carte, utilisez Leaflet ou Google Maps
@@ -30,7 +39,7 @@ export default function ProfileMap({ section, entity }: ProfileMapProps) {
   return (
     <Card className="mb-6">
       <CardHeader>
-        <CardTitle>Localisation</CardTitle>
+        <CardTitle>{t("ProfileMap.title")}</CardTitle>
       </CardHeader>
       <CardContent>
         <div
@@ -38,9 +47,9 @@ export default function ProfileMap({ section, entity }: ProfileMapProps) {
           style={{ height }}
         >
           <div className="text-center text-gray-600">
-            <p>Carte à implémenter</p>
+            <p>{t("ProfileMap.mapPlaceholder")}</p>
             <p className="text-sm mt-2">
-              Coordonnées: {lat.toFixed(6)}, {lon.toFixed(6)}
+              {t("ProfileMap.coordinates")}: {lat.toFixed(6)}, {lon.toFixed(6)}
             </p>
           </div>
         </div>

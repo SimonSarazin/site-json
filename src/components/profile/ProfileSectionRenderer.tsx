@@ -1,5 +1,5 @@
 import { lazy } from "react";
-import type { ProfileSection } from "@/types/profile-schema";
+import type { ProfileAboutSection, ProfileGallerySection, ProfileHeaderSection, ProfileInfoSection, ProfileMapSection, ProfileMembersSection, ProfileOrganizerSection, ProfileRelatedSection, ProfileSection, ProfileTemplateDefaultSection } from "@/types/profile-schema";
 import type { SearchEntity } from "@/modules/search/schema";
 import type { Section } from "@/types/site-schema";
 import { SectionRenderer } from "@/components/sections/SectionRenderer";
@@ -42,7 +42,7 @@ export function ProfileSectionRenderer({
   entityType,
 }: ProfileSectionRendererProps) {
   // Check if it's a profile-specific section
-  const isProfileSection = PROFILE_SECTION_TYPES.includes(section.type as any);
+  const isProfileSection = PROFILE_SECTION_TYPES.includes(section.type as typeof PROFILE_SECTION_TYPES[number]);
 
   if (!isProfileSection) {
     // It's a site section - use the SectionRenderer
@@ -52,34 +52,38 @@ export function ProfileSectionRenderer({
   // Handle profile-specific sections
   switch (section.type) {
     case "profile-header":
-      return <ProfileHeader section={section} entity={entity} />;
+      return <ProfileHeader section={section as ProfileHeaderSection} entity={entity} />;
 
     case "profile-info":
-      return <ProfileInfo section={section} entity={entity} />;
+      return <ProfileInfo section={section as ProfileInfoSection} entity={entity} />;
 
     case "profile-about":
-      return <ProfileAbout section={section} entity={entity} />;
+      return <ProfileAbout section={section as ProfileAboutSection} entity={entity} />;
 
     case "profile-map":
-      return <ProfileMap section={section} entity={entity} />;
+      return <ProfileMap section={section as ProfileMapSection} entity={entity} />;
 
     case "profile-organizer":
-      return <ProfileOrganizer section={section} entity={entity} />;
+      return <ProfileOrganizer section={section as ProfileOrganizerSection} entity={entity} />;
 
     case "profile-members":
-      return <ProfileMembers section={section} entity={entity} />;
+      return <ProfileMembers section={section as ProfileMembersSection} entity={entity} />;
 
     case "profile-gallery":
-      return <ProfileGallery section={section} entity={entity} />;
+      return <ProfileGallery section={section as ProfileGallerySection} entity={entity} />;
 
     case "profile-related":
-      return <ProfileRelated section={section} entity={entity} entityType={entityType} />;
+      return <ProfileRelated section={section as ProfileRelatedSection} entity={entity} entityType={entityType} />;
 
-    case "profile-template-default":
-      return <ProfileTemplateDefault entity={entity} entityType={entityType} config={section} />;
+    case "profile-template-default": {
+      const templateSection = section as ProfileTemplateDefaultSection;
+      return <ProfileTemplateDefault entity={entity} entityType={entityType} config={templateSection} />;
+    }
 
-    default:
-      console.warn(`Unknown profile section type: ${(section as any).type}`);
+    default: {
+      const unknownSection = section as { type: string };
+      console.warn(`Unknown profile section type: ${unknownSection.type}`);
       return null;
+    }
   }
 }

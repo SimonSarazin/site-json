@@ -1,6 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useT } from "@/hooks/useT";
 import type { SearchEntity } from "@/modules/search/schema";
+import { useEntityProfile } from "../hooks/useEntityProfile";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { useT } from "@/hooks/useT";
+import "@/components/profile/i18n";
 
 interface ProfileOrganizerProps {
   section: {
@@ -14,19 +17,17 @@ interface ProfileOrganizerProps {
 }
 
 export default function ProfileOrganizer({ section, entity }: ProfileOrganizerProps) {
-  const t = useT();
+  useLoadNamespace("components/profile");
+  const t = useT("components/profile");
+  const { organizers } = useEntityProfile(entity);
 
-  if (!("organizer" in entity) || !entity.organizer) {
+  const organizersList = Object.entries(organizers);
+
+  if (organizersList.length === 0) {
     return null;
   }
 
-  const organizers = Object.entries(entity.organizer as Record<string, any>);
-
-  if (organizers.length === 0) {
-    return null;
-  }
-
-  const title = section.title ? t(section.title) : "Organisé par";
+  const title = section.title ? t(section.title) : t("common.organizedBy");
 
   return (
     <Card className="mb-6">
@@ -35,7 +36,7 @@ export default function ProfileOrganizer({ section, entity }: ProfileOrganizerPr
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {organizers.map(([id, org]) => (
+          {organizersList.map(([id, org]) => (
             <div key={id} className="flex items-start gap-4">
               {section.showLogo !== false && org.profilThumbImageUrl && (
                 <img
@@ -51,7 +52,7 @@ export default function ProfileOrganizer({ section, entity }: ProfileOrganizerPr
                     href={`/@${org.slug}`}
                     className="text-sm text-blue-600 hover:underline"
                   >
-                    Voir le profil
+                    {t("common.viewProfile")}
                   </a>
                 )}
               </div>

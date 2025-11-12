@@ -1,17 +1,22 @@
 import * as React from "react";
 import { useParams } from "react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useCocolight } from "@/hooks/useCocolight";
-import type { SearchEntity } from "@/modules/search/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
 import { ArrowLeft } from "lucide-react";
 import { ProfileRenderer } from "@/components/profile/ProfileRenderer";
 import { useSite } from "@/hooks/useSite";
-import type { ProfileConfig } from "@/types/profile-schema";
+import type { ProfileConfig, ProfileType } from "@/types/profile-schema";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
+import { useQueryEntityBySlug } from "@/hooks/useQueryEntityBySlug";
+
+/**
+ * Type guard pour vérifier si entityType est une clé valide de ProfilesConfig
+ */
+function isValidProfileKey(key: string): key is ProfileType | "default" {
+  return ["events", "organizations", "projects", "citoyens", "poi", "default"].includes(key);
+}
 
 function ProfileSkeleton() {
   return (
@@ -113,7 +118,8 @@ function ProfileSkeleton() {
 export default function ProfilePage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const { organization, entity: cachedEntity, contextType, contextId, helper } = useCocolight();
+  const cleanSlug = slug?.startsWith('@') ? slug.slice(1) : slug;
+  const { data: entity, isLoading, isError } = useQueryEntityBySlug({ slug: cleanSlug });
   const { config: siteConfig } = useSite();
 
   React.useEffect(() => {
@@ -121,76 +127,6 @@ export default function ProfilePage() {
       navigate('/', { replace: true });
     }
   }, [slug, navigate]);
-
-  const cleanSlug = slug?.startsWith('@') ? slug.slice(1) : slug;
-
-  const { api } = useCocolight();
-
-  const { data: slugInfo, isLoading: isLoadingSlugInfo } = useQuery({
-    queryKey: ["slug-info", cleanSlug],
-    queryFn: async () => {
-      if (!cleanSlug) {
-        throw new Error("Slug manquant");
-      }
-
-      try {
-        const data = await api.endpointApi.getElementsKey({
-          pathParams: {
-            slug: cleanSlug
-          }
-        });
-        return data;
-      } catch (err) {
-        console.error("Erreur lors de la récupération des infos du slug:", err);
-        throw err;
-      }
-    },
-    enabled: !!cleanSlug,
-    staleTime: 60 * 1000,
-  });
-
-  const { data: entity, isLoading: isLoadingEntity, error } = useQuery<SearchEntity | null>({
-    queryKey: ["entity-about", slugInfo?.contextType, slugInfo?.contextId],
-    queryFn: async () => {
-      if (cachedEntity && contextType === slugInfo?.contextType && contextId === slugInfo?.contextId) {
-        return cachedEntity as SearchEntity;
-      }
-
-      if (!slugInfo) {
-        return null;
-      }
-
-      try {
-        const { contextType, contextId } = slugInfo;
-
-        const rawEntity = await api.endpointApi.getElementsAbout({
-          tpl: "ficheInfoElement",
-          pathParams: {
-            type: contextType,
-            id: contextId
-          }
-        });
-
-        try {
-          const convertedEntity = helper.fromEntityJSON(rawEntity, organization);
-          return convertedEntity as SearchEntity;
-        } catch (conversionError) {
-          return rawEntity as SearchEntity;
-        }
-      } catch (err) {
-        console.error("Erreur lors de la récupération de l'entité:", err);
-        throw err;
-      }
-    },
-    enabled: !!slugInfo?.contextType && !!slugInfo?.contextId,
-    staleTime: 60 * 1000,
-    // Initialiser avec l'entité en cache si disponible
-    initialData: cachedEntity && contextType === slugInfo?.contextType && contextId === slugInfo?.contextId
-      ? cachedEntity as SearchEntity
-      : undefined,
-  });
-
-  const isLoading = isLoadingSlugInfo || isLoadingEntity;
 
   if (isLoading) {
     return (
@@ -206,7 +142,7 @@ export default function ProfilePage() {
     );
   }
 
-  if (error) {
+  if (isError) {
     return (
       <div className="container mx-auto px-4 py-8">
         <Card className="border-destructive">
@@ -244,10 +180,13 @@ export default function ProfilePage() {
     );
   }
 
-  const entityType = slugInfo?.contextType || ("collection" in entity ? entity.collection as string : "");
+  // Déterminer le type d'entité (entity est toujours une instance grâce à useQueryEntityBySlug)
+  const rawEntityType = entity?.getEntityType?.() || "";
+  const entityType = isValidProfileKey(rawEntityType) ? rawEntityType : "default";
 
+  // Récupérer la config de profil pour ce type d'entité
   const profileConfig: ProfileConfig =
-    siteConfig?.profiles?.[entityType as keyof typeof siteConfig.profiles] ||
+    (entityType !== "default" && siteConfig?.profiles?.[entityType]) ||
     siteConfig?.profiles?.default ||
     {
       layout: "default",

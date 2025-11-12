@@ -1,9 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { SearchEntity } from "@/modules/search/schema";
-import MarkdownIt from "markdown-it";
-import DOMPurify from "dompurify";
-
-const md = new MarkdownIt();
+import { useEntityProfile } from "../hooks/useEntityProfile";
+import { renderMarkdown } from "@/helpers/renderMarkdown";
+import { useT } from "@/hooks/useT";
+import "@/components/profile/i18n";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 
 interface ProfileAboutProps {
   section: {
@@ -16,17 +17,14 @@ interface ProfileAboutProps {
 }
 
 export default function ProfileAbout({ section, entity }: ProfileAboutProps) {
-  const renderMarkdown = (text: string) => {
-    if (section.markdownEnabled !== false) {
-      const html = md.render(text);
-      return DOMPurify.sanitize(html);
-    }
-    return text;
-  };
+  useLoadNamespace("components/profile");
+  const t = useT("components/profile");
+
+  const { shortDescription, description } = useEntityProfile(entity);
 
   const hasContent =
-    (section.showShortDescription !== false && "shortDescription" in entity && entity.shortDescription) ||
-    (section.showDescription !== false && "description" in entity && entity.description);
+    (section.showShortDescription !== false && shortDescription) ||
+    (section.showDescription !== false && description);
 
   if (!hasContent) {
     return null;
@@ -35,20 +33,20 @@ export default function ProfileAbout({ section, entity }: ProfileAboutProps) {
   return (
     <Card className="mb-6">
       <CardHeader>
-        <CardTitle>À propos</CardTitle>
+        <CardTitle>{t("ProfileAbout.title")}</CardTitle>
       </CardHeader>
       <CardContent>
-        {section.showShortDescription !== false && "shortDescription" in entity && entity.shortDescription && (
+        {section.showShortDescription !== false && shortDescription && (
           <div className="mb-4">
-            <p className="text-lg font-medium text-gray-900">{entity.shortDescription as string}</p>
+            <p className="text-lg font-medium text-gray-900">{shortDescription}</p>
           </div>
         )}
 
-        {section.showDescription !== false && "description" in entity && entity.description && (
+        {section.showDescription !== false && description && (
           <div
             className="prose prose-sm max-w-none"
             dangerouslySetInnerHTML={{
-              __html: renderMarkdown(entity.description as string),
+              __html: renderMarkdown(description, section),
             }}
           />
         )}
