@@ -10,6 +10,7 @@ import type { ProfileConfig, ProfileType } from "@/types/profile-schema";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { useQueryEntityBySlug } from "@/hooks/useQueryEntityBySlug";
+import { ProfileSeo } from "@/components/profile/ProfileSeo";
 
 /**
  * Type guard pour vérifier si entityType est une clé valide de ProfilesConfig
@@ -131,6 +132,7 @@ export default function ProfilePage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col">
+        <ProfileSeo entity={null} isLoading={true} entityType="default" />
         <SiteHeader />
         <main className="flex-1">
           <div className="container mx-auto px-4 py-8">
@@ -144,39 +146,45 @@ export default function ProfilePage() {
 
   if (isError) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <Card className="border-destructive">
-          <CardHeader>
-            <CardTitle className="text-destructive">Erreur</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="mb-4">Une erreur est survenue lors du chargement du profil.</p>
-            <Button onClick={() => navigate(-1)} variant="outline">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      <>
+        <ProfileSeo entity={null} isLoading={false} entityType="default" />
+        <div className="container mx-auto px-4 py-8">
+          <Card className="border-destructive">
+            <CardHeader>
+              <CardTitle className="text-destructive">Erreur</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="mb-4">Une erreur est survenue lors du chargement du profil.</p>
+              <Button onClick={() => navigate(-1)} variant="outline">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Retour
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </>
     );
   }
 
   if (!entity) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Profil introuvable</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="mb-4">Aucun profil trouvé pour le slug: <strong>{slug}</strong></p>
-            <Button onClick={() => navigate(-1)} variant="outline">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      <>
+        <ProfileSeo entity={null} isLoading={false} entityType="default" />
+        <div className="container mx-auto px-4 py-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Profil introuvable</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="mb-4">Aucun profil trouvé pour le slug: <strong>{slug}</strong></p>
+              <Button onClick={() => navigate(-1)} variant="outline">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Retour
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </>
     );
   }
 
@@ -202,6 +210,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <ProfileSeo entity={entity} isLoading={false} entityType={entityType} />
       {!profileConfig.hideHeader && <SiteHeader />}
 
       <main className="flex-1">

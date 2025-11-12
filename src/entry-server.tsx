@@ -27,8 +27,13 @@ export async function render(
   /* Remplira title/meta/link dans onShellReady */
   const helmetCtx: HelmetDataContext = {};
 
-  /* Préparation du routeur statique */
-  const handler  = createStaticHandler(buildRoutes(cfg));
+  /* 1.  Création du QueryClient AVANT buildRoutes ---------------------- */
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { staleTime: 60_000, refetchOnWindowFocus:false } }
+  });
+
+  /* 2.  Préparation du routeur statique avec queryClient --------------- */
+  const handler  = createStaticHandler(buildRoutes(cfg, queryClient));
   const absUrl   = `http://localhost${req.originalUrl ?? req.url ?? '/'}`;
   const context  = await handler.query(new Request(absUrl));
 
@@ -41,20 +46,16 @@ export async function render(
 
   const router = createStaticRouter(handler.dataRoutes, context);
 
-    /* 2.  Pré-hydratation React-Query ------------------------------------ */
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { staleTime: 60_000, refetchOnWindowFocus:false } }
-  });
-
-  // ⬇️  on exécute la requête “cocolight-init” AVANT le rendu
+  /* 3.  Pré-hydratation React-Query ------------------------------------ */
+  // ⬇️  on exécute la requête "cocolight-init" AVANT le rendu
   await queryClient.ensureQueryData({
     queryKey: ["cocolight-init"],
     queryFn: () => initApi({ baseURL: getBaseUrl(), debug: true })
   });
 
   const dehydratedState = dehydrate(queryClient, {
-  shouldDehydrateQuery: q => q.queryKey[0] !== "cocolight-init",
-});
+    shouldDehydrateQuery: q => q.queryKey[0] !== "cocolight-init",
+  });
 
   /* --------------------------------------------------------- */
   /*  Streaming React 19                                       */
