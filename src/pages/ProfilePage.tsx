@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
 import { ArrowLeft } from "lucide-react";
-import { getBaseUrl } from "@/lib/constant/common";
 import { ProfileRenderer } from "@/components/profile/ProfileRenderer";
 import { useSite } from "@/hooks/useSite";
 import type { ProfileConfig } from "@/types/profile-schema";
@@ -125,6 +124,8 @@ export default function ProfilePage() {
 
   const cleanSlug = slug?.startsWith('@') ? slug.slice(1) : slug;
 
+  const { api } = useCocolight();
+
   const { data: slugInfo, isLoading: isLoadingSlugInfo } = useQuery({
     queryKey: ["slug-info", cleanSlug],
     queryFn: async () => {
@@ -133,15 +134,11 @@ export default function ProfilePage() {
       }
 
       try {
-        const baseURL = getBaseUrl();
-        const url = `${baseURL}/co2/slug/getinfo/key/${cleanSlug}`;
-        const response = await fetch(url);
-
-        if (!response.ok) {
-          throw new Error(`Erreur HTTP: ${response.status}`);
-        }
-
-        const data = await response.json();
+        const data = await api.endpointApi.getElementsKey({
+          pathParams: {
+            slug: cleanSlug
+          }
+        });
         return data;
       } catch (err) {
         console.error("Erreur lors de la récupération des infos du slug:", err);
@@ -152,12 +149,9 @@ export default function ProfilePage() {
     staleTime: 60 * 1000,
   });
 
-  // Utiliser l'entité depuis le contexte si disponible (déjà chargée dans apiClient)
-  // Sinon, charger à la demande pour les pages de profil utilisateur spécifiques
   const { data: entity, isLoading: isLoadingEntity, error } = useQuery<SearchEntity | null>({
     queryKey: ["entity-about", slugInfo?.contextType, slugInfo?.contextId],
     queryFn: async () => {
-      // Si l'entité est déjà en cache depuis apiClient, l'utiliser
       if (cachedEntity && contextType === slugInfo?.contextType && contextId === slugInfo?.contextId) {
         return cachedEntity as SearchEntity;
       }
@@ -167,17 +161,15 @@ export default function ProfilePage() {
       }
 
       try {
-        const baseURL = getBaseUrl();
         const { contextType, contextId } = slugInfo;
-        const url = `${baseURL}/co2/element/about/type/${contextType}/id/${contextId}/json/true`;
 
-        const response = await fetch(url);
-
-        if (!response.ok) {
-          throw new Error(`Erreur HTTP: ${response.status}`);
-        }
-
-        const rawEntity = await response.json();
+        const rawEntity = await api.endpointApi.getElementsAbout({
+          tpl: "ficheInfoElement",
+          pathParams: {
+            type: contextType,
+            id: contextId
+          }
+        });
 
         try {
           const convertedEntity = helper.fromEntityJSON(rawEntity, organization);

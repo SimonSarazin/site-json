@@ -115,39 +115,16 @@ export async function initApiClient(
 
       if (slug) {
         try {
-          const baseURL = options.baseURL ?? getBaseUrl();
-          const slugInfoUrl = `${baseURL}/co2/slug/getinfo/key/${slug}`;
-          const slugResponse = await fetch(slugInfoUrl);
+          const entity = await api.entitySlug(slug);
 
-          if (slugResponse.ok) {
-            const slugInfo = await slugResponse.json();
-            cachedContextType = slugInfo.contextType;
-            cachedContextId = slugInfo.contextId;
+          if (entity) {
+            cachedEntity = entity;
 
-            if (cachedContextType && cachedContextId) {
-              const entityUrl = `${baseURL}/co2/element/about/type/${cachedContextType}/id/${cachedContextId}/json/true`;
-              const entityResponse = await fetch(entityUrl);
+            cachedContextType = entity.getEntityType();
+            cachedContextId = entity.id || undefined;
 
-              if (entityResponse.ok) {
-                const rawEntity = await entityResponse.json();
-
-                if (cachedContextType === "organizations") {
-                  cachedOrganization = cachedMe
-                    ? await cachedMe.organization({ slug })
-                    : await api.organization({ slug });
-                }
-
-                try {
-                  if (cachedOrganization) {
-                    cachedEntity = Cocolight.helper.fromEntityJSON(rawEntity, cachedOrganization);
-                  } else {
-                    cachedEntity = Cocolight.helper.fromEntityJSON(rawEntity, null);
-                  }
-                } catch (conversionError) {
-                  console.warn("[Api.init] Impossible de convertir l'entité, utilisation des données brutes:", conversionError);
-                  cachedEntity = rawEntity;
-                }
-              }
+            if (cachedContextType === "organizations") {
+              cachedOrganization = entity as Organization;
             }
           }
         } catch (slugErr) {
