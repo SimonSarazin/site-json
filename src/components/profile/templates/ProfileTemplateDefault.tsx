@@ -30,10 +30,9 @@ export default function ProfileTemplateDefault({
   };
 
   const getLogoUrl = () => {
-    const baseUrl = getBaseUrl();
 
     if (hasProperty(entity, "profilThumbImageUrl") && hasProperty(entity, "profilImageUrl") && entity.profilImageUrl) {
-      return `${baseUrl}${entity.profilImageUrl}`;
+      return `${entity.profilImageUrl}`;
     }
     return null;
   };
@@ -77,12 +76,11 @@ export default function ProfileTemplateDefault({
   };
 
   const getBannerUrl = () => {
-    const baseUrl = getBaseUrl();
     if (hasProperty(entity, "profilBannerUrl") && entity.profilBannerUrl) {
-      return `${baseUrl}${entity.profilBannerUrl}`;
+      return `${entity.profilBannerUrl}`;
     }
     if (hasProperty(entity, "profilRealBannerUrl") && entity.profilRealBannerUrl) {
-      return `${baseUrl}${entity.profilRealBannerUrl}`;
+      return `${entity.profilRealBannerUrl}`;
     }
     return null;
   };
@@ -141,6 +139,7 @@ export default function ProfileTemplateDefault({
   const membersCount = getMembers();
   const projectsCount = getProjects();
   const openingHours = getOpeningHours();
+  console.log(imageUrl)
 
   return (
     <div className="bg-white -m-4 md:-m-8">
