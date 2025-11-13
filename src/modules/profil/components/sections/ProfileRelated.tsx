@@ -1,5 +1,3 @@
-import type { SearchEntity } from "@/modules/search/schema";
-
 interface ProfileRelatedProps {
   section: {
     type: "profile-related";
@@ -7,11 +5,10 @@ interface ProfileRelatedProps {
     relationType?: "parent" | "children" | "projects" | "events";
     limit?: number;
   };
-  entity: SearchEntity;
-  entityType: string;
 }
 
-export default function ProfileRelated({ section, entity, entityType }: ProfileRelatedProps) {
+export default function ProfileRelated({ section: _section }: ProfileRelatedProps) {
   // À implémenter selon vos besoins
+  // Si besoin: const { entity, entityType } = useProfileEntity();
   return null;
 }

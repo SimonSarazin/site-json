@@ -1,18 +1,27 @@
 import * as React from "react";
 import { useParams } from "react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useCocolight } from "@/hooks/useCocolight";
-import type { SearchEntity } from "@/modules/search/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
 import { ArrowLeft } from "lucide-react";
-import { getBaseUrl } from "@/lib/constant/common";
-import { ProfileRenderer } from "@/components/profile/ProfileRenderer";
+import { ProfileRenderer } from "@/modules/profil/ProfileRenderer";
 import { useSite } from "@/hooks/useSite";
-import type { ProfileConfig } from "@/types/profile-schema";
+import type { ProfileConfig, ProfileType } from "@/modules/profil/schema";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
+import { useQueryEntityBySlug } from "@/hooks/useQueryEntityBySlug";
+import { ProfileSeo } from "@/modules/profil/ProfileSeo";
+import { ProfileEntityProvider } from "../contexts/ProfileEntityProvider";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { useT } from "@/hooks/useT";
+import "@/modules/profil/i18n";
+
+/**
+ * Type guard pour vérifier si entityType est une clé valide de ProfilesConfig
+ */
+function isValidProfileKey(key: string): key is ProfileType | "default" {
+  return ["events", "organizations", "projects", "citoyens", "poi", "default"].includes(key);
+}
 
 function ProfileSkeleton() {
   return (
@@ -112,9 +121,13 @@ function ProfileSkeleton() {
 }
 
 export default function ProfilePage() {
+  useLoadNamespace("modules/profil");
+  const t = useT("modules/profil");
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const { organization, helper } = useCocolight();
+  const cleanSlug = slug?.startsWith('@') ? slug.slice(1) : slug;
+  const { data: entity, isLoading, isError } = useQueryEntityBySlug({ slug: cleanSlug });
+  const { config: siteConfig } = useSite();
 
   React.useEffect(() => {
     if (slug && !slug.startsWith('@')) {
@@ -122,75 +135,10 @@ export default function ProfilePage() {
     }
   }, [slug, navigate]);
 
-  const cleanSlug = slug?.startsWith('@') ? slug.slice(1) : slug;
-
-  const { data: slugInfo, isLoading: isLoadingSlugInfo } = useQuery({
-    queryKey: ["slug-info", cleanSlug],
-    queryFn: async () => {
-      if (!cleanSlug) {
-        throw new Error("Slug manquant");
-      }
-
-      try {
-        const baseURL = getBaseUrl();
-        const url = `${baseURL}/co2/slug/getinfo/key/${cleanSlug}`;
-        const response = await fetch(url);
-
-        if (!response.ok) {
-          throw new Error(`Erreur HTTP: ${response.status}`);
-        }
-
-        const data = await response.json();
-        return data;
-      } catch (err) {
-        console.error("Erreur lors de la récupération des infos du slug:", err);
-        throw err;
-      }
-    },
-    enabled: !!cleanSlug,
-    staleTime: 60 * 1000,
-  });
-
-  const { data: entity, isLoading: isLoadingEntity, error } = useQuery<SearchEntity | null>({
-    queryKey: ["entity-about", slugInfo?.contextType, slugInfo?.contextId],
-    queryFn: async () => {
-      if (!organization || !slugInfo) {
-        return null;
-      }
-
-      try {
-        const baseURL = getBaseUrl();
-        const { contextType, contextId } = slugInfo;
-        const url = `${baseURL}/co2/element/about/type/${contextType}/id/${contextId}/json/true`;
-
-        const response = await fetch(url);
-
-        if (!response.ok) {
-          throw new Error(`Erreur HTTP: ${response.status}`);
-        }
-
-        const rawEntity = await response.json();
-
-        try {
-          const convertedEntity = helper.fromEntityJSON(rawEntity, organization);
-          return convertedEntity as SearchEntity;
-        } catch (conversionError) {
-          return rawEntity as SearchEntity;
-        }
-      } catch (err) {
-        console.error("Erreur lors de la récupération de l'entité:", err);
-        throw err;
-      }
-    },
-    enabled: !!organization && !!slugInfo?.contextType && !!slugInfo?.contextId,
-    staleTime: 60 * 1000,
-  });
-
-  const isLoading = isLoadingSlugInfo || isLoadingEntity;
-
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col">
+        <ProfileSeo entity={null} isLoading={true} entityType="default" />
         <SiteHeader />
         <main className="flex-1">
           <div className="container mx-auto px-4 py-8">
@@ -202,50 +150,57 @@ export default function ProfilePage() {
     );
   }
 
-  if (error) {
+  if (isError) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <Card className="border-destructive">
-          <CardHeader>
-            <CardTitle className="text-destructive">Erreur</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="mb-4">Une erreur est survenue lors du chargement du profil.</p>
-            <Button onClick={() => navigate(-1)} variant="outline">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      <>
+        <ProfileSeo entity={null} isLoading={false} entityType="default" />
+        <div className="container mx-auto px-4 py-8">
+          <Card className="border-destructive">
+            <CardHeader>
+              <CardTitle className="text-destructive">{t("ProfilePage.error.title")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="mb-4">{t("ProfilePage.error.message")}</p>
+              <Button onClick={() => navigate(-1)} variant="outline">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                {t("common.back")}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </>
     );
   }
 
   if (!entity) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Profil introuvable</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="mb-4">Aucun profil trouvé pour le slug: <strong>{slug}</strong></p>
-            <Button onClick={() => navigate(-1)} variant="outline">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      <>
+        <ProfileSeo entity={null} isLoading={false} entityType="default" />
+        <div className="container mx-auto px-4 py-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>{t("ProfilePage.notFound.title")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="mb-4">{t("ProfilePage.notFound.message")} <strong>{slug}</strong></p>
+              <Button onClick={() => navigate(-1)} variant="outline">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                {t("common.back")}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </>
     );
   }
 
-  const { config: siteConfig } = useSite();
+  // Déterminer le type d'entité (entity est toujours une instance grâce à useQueryEntityBySlug)
+  const rawEntityType = entity?.getEntityType?.() || "";
+  const entityType = isValidProfileKey(rawEntityType) ? rawEntityType : "default";
 
-  const entityType = slugInfo?.contextType || ("collection" in entity ? entity.collection as string : "");
-
+  // Récupérer la config de profil pour ce type d'entité
   const profileConfig: ProfileConfig =
-    siteConfig?.profiles?.[entityType as keyof typeof siteConfig.profiles] ||
+    (entityType !== "default" && siteConfig?.profiles?.[entityType]) ||
     siteConfig?.profiles?.default ||
     {
       layout: "default",
@@ -261,11 +216,14 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <ProfileSeo entity={entity} isLoading={false} entityType={entityType} />
       {!profileConfig.hideHeader && <SiteHeader />}
 
       <main className="flex-1">
         <div className="container mx-auto px-4 py-8">
-          <ProfileRenderer entity={entity} config={profileConfig} entityType={entityType} />
+          <ProfileEntityProvider entity={entity} config={profileConfig} entityType={entityType}>
+            <ProfileRenderer />
+          </ProfileEntityProvider>
         </div>
       </main>
 

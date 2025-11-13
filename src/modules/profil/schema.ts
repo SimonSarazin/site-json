@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { LocalizedString } from "./locale-schema";
+import { LocalizedString } from "../../types/locale-schema";
 
 // Types d'entités supportés
 export const ProfileTypeSchema = z.enum([
@@ -138,3 +138,14 @@ export const ProfilesConfigSchema = z.object({
 }).optional();
 
 export type ProfilesConfig = z.infer<typeof ProfilesConfigSchema>;
+
+// Types inférés depuis les schémas Zod
+export type ProfileHeaderSection = z.infer<typeof ProfileHeaderSectionSchema>;
+export type ProfileInfoSection = z.infer<typeof ProfileInfoSectionSchema>;
+export type ProfileAboutSection = z.infer<typeof ProfileAboutSectionSchema>;
+export type ProfileMapSection = z.infer<typeof ProfileMapSectionSchema>;
+export type ProfileOrganizerSection = z.infer<typeof ProfileOrganizerSectionSchema>;
+export type ProfileMembersSection = z.infer<typeof ProfileMembersSectionSchema>;
+export type ProfileGallerySection = z.infer<typeof ProfileGallerySectionSchema>;
+export type ProfileRelatedSection = z.infer<typeof ProfileRelatedSectionSchema>;
+export type ProfileTemplateDefaultSection = z.infer<typeof ProfileTemplateDefaultSchema>;

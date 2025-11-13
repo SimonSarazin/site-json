@@ -20,13 +20,14 @@ interface Props {
 function RootLayout({ config }: Props) {
   // Provide default values for SSR
   // const baseUrl = typeof window !== 'undefined' ? getBaseUrl() : 'http://localhost:3000';
+  const defaultTheme = config.theme?.defaultMode || "light";
 
   return (
     <ErrorBoundary fallback={<p>Une erreur est survenue 😢.</p>}>
       {/* Suspense : spinner si les promises (React Query, lazy, etc.) sont en vol */}
       <Suspense fallback={<p>loading</p>}>
         <CocolightProvider clientOptions={{ baseURL: getBaseUrl(), debug: true }}>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <ThemeProvider attribute="class" defaultTheme={defaultTheme} enableSystem>
             <SiteProvider config={config}>
               <LocalizationProvider
                 defaultLocale={config.meta.defaultLang}

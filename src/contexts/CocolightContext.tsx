@@ -16,6 +16,13 @@ export interface CocolightContextType {
   api: Api | null
   /** Organisation courante, déduite du slug */
   organization: Organization | null
+  /** Type de contexte résolu depuis le slug (organizations, projects, etc.) */
+  contextType?: string
+  /** ID du contexte résolu depuis le slug */
+  contextId?: string
+  /** Entité complète (organization, project, event, etc.) */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  entity?: any
   /** Helpers divers exposés par le SDK (pas encore typés) */
   helper: CocolightHelper
   /** Données temporaires transmises au profil */

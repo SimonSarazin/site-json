@@ -1,0 +1,64 @@
+{
+  "common": {
+    "organizedBy": "Organized by",
+    "viewProfile": "View profile",
+    "date": "Date",
+    "back": "Back"
+  },
+  "ProfilePage": {
+    "error": {
+      "title": "Error",
+      "message": "An error occurred while loading the profile."
+    },
+    "notFound": {
+      "title": "Profile not found",
+      "message": "No profile found for slug:"
+    }
+  },
+  "ProfileHeader": {
+    "back": "Back",
+    "share": "Share"
+  },
+  "ProfileInfo": {
+    "title": "Information",
+    "from": "From",
+    "to": "to",
+    "place": "Location",
+    "website": "Website",
+    "visitWebsite": "Visit website",
+    "registerEvent": "Register for event"
+  },
+  "ProfileAbout": {
+    "title": "About"
+  },
+  "ProfileMap": {
+    "title": "Location",
+    "mapPlaceholder": "Map to be implemented",
+    "coordinates": "Coordinates"
+  },
+  "ProfileTemplateDefault": {
+    "showAllPhotos": "Show all photos",
+    "sendEmail": "Send email",
+    "reservationSpace": "Reservation Space",
+    "tabs": {
+      "about": "About",
+      "news": "News",
+      "coworking": "Coworking",
+      "meetingRooms": "Meeting rooms",
+      "practicalInfo": "Practical info",
+      "communities": "Communities",
+      "observatories": "Observatories"
+    },
+    "description": "Description",
+    "badges": "Badges",
+    "tags": "Tags",
+    "openingHours": "Opening hours",
+    "information": "Information",
+    "members": "Members",
+    "projects": "Projects",
+    "openSince": "Open since",
+    "register": "Register",
+    "comingSoon": "Coming soon",
+    "sectionLabel": "{{name}} Section"
+  }
+}

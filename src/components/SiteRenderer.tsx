@@ -7,6 +7,7 @@ import { useSite } from "@/hooks/useSite";
 import { Seo } from "./layout/Seo";
 import { usePageGuards } from "@/hooks/usePageGuards";
 import { PageProvider } from "@/contexts/PageProvider";
+import { PageFiltersProvider } from "@/contexts/PageFiltersContext";
 // import { SiteHeader2 } from "./layout/SiteHeader2";
 
 export function SiteRenderer() {
@@ -49,11 +50,13 @@ function getLayoutClasses(layout: string) {
         {!currentPage.hideHeader && <SiteHeader />}
 
          <main id="main" role="main" className="flex-1">
-          <PageProvider page={currentPage}>
-          {currentPage.sections.map((s, i) => (
-            <SectionRenderer key={i} section={s} />
-          ))}
-          </PageProvider>
+          <PageFiltersProvider>
+            <PageProvider page={currentPage}>
+              {currentPage.sections.map((s, i) => (
+                <SectionRenderer key={i} section={s} />
+              ))}
+            </PageProvider>
+          </PageFiltersProvider>
         </main>
 
         {!currentPage.hideFooter && <SiteFooter />}

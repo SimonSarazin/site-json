@@ -9,6 +9,7 @@ import { useT } from "@/hooks/useT";
 import "@/components/auth/i18n";
 
 import { useCocolight } from "@/hooks/useCocolight";
+import { useSite } from "@/hooks/useSite";
 import PasswordToggleTextInput from "@/components/input/PasswordToggleTextInput";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -19,7 +20,12 @@ import { useNavigate } from "react-router";
 
 type RadixCheckboxState = boolean | "indeterminate";
 
-export default function LoginForm(): JSX.Element {
+interface LoginFormProps {
+  onSuccess?: () => void;
+  hideBackButton?: boolean;
+}
+
+export default function LoginForm({ onSuccess, hideBackButton = false }: LoginFormProps = {}): JSX.Element {
   const [email, setEmail]           = useState<string>("");
   const [password, setPassword]     = useState<string>("");
   const [remember, setRemember]     = useState<boolean>(false);
@@ -27,9 +33,14 @@ export default function LoginForm(): JSX.Element {
 
   const navigate                     = useNavigate();
   const { userApi, loading, me }     = useCocolight();
+  const { config }                   = useSite();
   const { toast }                    = useToast();
   const { loaded }                   = useLoadNamespace("components/auth");
   const t                            = useT("components/auth");
+
+  // Récupérer les textes personnalisés depuis config.prod.json
+  const loginTitle = config.auth?.login?.title || { fr: "Se connecter", en: "Sign in" };
+  const loginSubtitle = config.auth?.login?.subtitle || { fr: "Accédez à votre compte SiteForge", en: "Access your SiteForge account" };
 
   /* Redirige l’utilisateur déjà connecté -------------------------------- */
   useEffect(() => {
@@ -74,7 +85,10 @@ export default function LoginForm(): JSX.Element {
     /* Appel API ---------------------------------------------------------- */
     try {
       await userApi.login(email, password);     // ← optionnel
-      if (userApi.isConnected) navigate("/");
+      if (userApi.isConnected) {
+        onSuccess?.();
+        if (!hideBackButton) navigate("/");
+      }
     } catch (err: unknown) {
       /* On extrait le status si présent, sinon on retombe sur le message  */
       const status =
@@ -105,13 +119,13 @@ export default function LoginForm(): JSX.Element {
   }
 
   return (
-    <div className="w-full space-y-6 p-8 rounded-lg bg-card shadow-lg border">
+    <div className="w-full space-y-6 p-8 rounded-lg bg-card shadow-lg">
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-foreground mb-2">
-          {t("Se connecter")}
+        <h2 className="text-3xl text-gray-800 dark:text-gray-300 font-bold mb-2">
+          {t(loginTitle)}
         </h2>
-        <p className="text-muted-foreground">
-          {t("Accédez à votre compte SiteForge")}
+        <p className="text-gray-600">
+          {t(loginSubtitle)}
         </p>
       </div>
 
@@ -181,13 +195,15 @@ export default function LoginForm(): JSX.Element {
             </Button>
           </div>
 
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/")}
-            className="text-sm text-muted-foreground hover:text-foreground"
-          >
-            {t("Retour à l'accueil")}
-          </Button>
+          {!hideBackButton && (
+            <Button
+              variant="ghost"
+              onClick={() => navigate("/")}
+              className="text-sm text-muted-foreground hover:text-foreground"
+            >
+              {t("Retour à l'accueil")}
+            </Button>
+          )}
         </div>
       </div>
     </div>

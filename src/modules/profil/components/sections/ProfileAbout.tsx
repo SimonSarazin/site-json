@@ -1,0 +1,56 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useFormatProfileEntity } from "../../hooks/useFormatProfileEntity";
+import { renderMarkdown } from "@/helpers/renderMarkdown";
+import { useT } from "@/hooks/useT";
+import { useProfileEntity } from "../../hooks/useProfileEntity";
+import "@/modules/profil/i18n";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+
+interface ProfileAboutProps {
+  section: {
+    type: "profile-about";
+    showDescription?: boolean;
+    showShortDescription?: boolean;
+    markdownEnabled?: boolean;
+  };
+}
+
+export default function ProfileAbout({ section }: ProfileAboutProps) {
+  const { entity } = useProfileEntity();
+  useLoadNamespace("modules/profil");
+  const t = useT("modules/profil");
+
+  const { shortDescription, description } = useFormatProfileEntity(entity);
+
+  const hasContent =
+    (section.showShortDescription !== false && shortDescription) ||
+    (section.showDescription !== false && description);
+
+  if (!hasContent) {
+    return null;
+  }
+
+  return (
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle>{t("ProfileAbout.title")}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {section.showShortDescription !== false && shortDescription && (
+          <div className="mb-4">
+            <p className="text-lg font-medium text-gray-900">{shortDescription}</p>
+          </div>
+        )}
+
+        {section.showDescription !== false && description && (
+          <div
+            className="prose prose-sm max-w-none"
+            dangerouslySetInnerHTML={{
+              __html: renderMarkdown(description, section),
+            }}
+          />
+        )}
+      </CardContent>
+    </Card>
+  );
+}

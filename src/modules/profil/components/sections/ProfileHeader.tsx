@@ -1,7 +1,11 @@
 import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Share2, Edit } from "lucide-react";
-import type { SearchEntity } from "@/modules/search/schema";
+import { useFormatProfileEntity } from "../../hooks/useFormatProfileEntity";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { useT } from "@/hooks/useT";
+import { useProfileEntity } from "../../hooks/useProfileEntity";
+import "@/modules/profil/i18n";
 
 interface ProfileHeaderProps {
   section: {
@@ -11,45 +15,15 @@ interface ProfileHeaderProps {
     showShareButton?: boolean;
     showEditButton?: boolean;
   };
-  entity: SearchEntity;
 }
 
-export default function ProfileHeader({ section, entity }: ProfileHeaderProps) {
+export default function ProfileHeader({ section }: ProfileHeaderProps) {
+  const { entity } = useProfileEntity();
+  useLoadNamespace("modules/profil");
+    const t = useT("modules/profil");
   const navigate = useNavigate();
   const variant = section.variant || "hero";
-
-  const hasProperty = <K extends string>(
-    obj: any,
-    key: K
-  ): obj is Record<K, unknown> => {
-    return key in obj;
-  };
-
-  const getImageUrl = () => {
-    if (hasProperty(entity, "profilMediumImageUrl") && entity.profilMediumImageUrl) {
-      return entity.profilMediumImageUrl as string;
-    }
-    if (hasProperty(entity, "profilImageUrl") && entity.profilImageUrl) {
-      return entity.profilImageUrl as string;
-    }
-    return null;
-  };
-
-  const getName = () => {
-    return hasProperty(entity, "name") && typeof entity.name === "string" 
-      ? entity.name 
-      : "Sans nom";
-  };
-
-  const getShortDescription = () => {
-    return hasProperty(entity, "shortDescription") && typeof entity.shortDescription === "string"
-      ? entity.shortDescription
-      : null;
-  };
-
-  const imageUrl = getImageUrl();
-  const entityName = getName();
-  const shortDescription = getShortDescription();
+  const { imageUrl, name: entityName, shortDescription } = useFormatProfileEntity(entity);
 
   if (variant === "hero") {
     return (
@@ -74,7 +48,7 @@ export default function ProfileHeader({ section, entity }: ProfileHeaderProps) {
               className="backdrop-blur-sm bg-white/90"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour
+              {t("ProfileHeader.back")}
             </Button>
           )}
 
@@ -128,7 +102,7 @@ export default function ProfileHeader({ section, entity }: ProfileHeaderProps) {
         {section.showBackButton !== false && (
           <Button onClick={() => navigate(-1)} variant="ghost" size="sm">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Retour
+            {t("ProfileHeader.back")}
           </Button>
         )}
 
@@ -145,7 +119,7 @@ export default function ProfileHeader({ section, entity }: ProfileHeaderProps) {
               }}
             >
               <Share2 className="mr-2 h-4 w-4" />
-              Partager
+              {t("ProfileHeader.share")}
             </Button>
           )}
         </div>

@@ -9,7 +9,7 @@
 import { SearchProSectionSchema, SearchProStaticSectionSchema } from "@/modules/search/schema";
 import { z } from "zod";
 import { LocalizedString, LOCALES } from "./locale-schema";
-import { ProfilesConfigSchema } from "./profile-schema";
+import { ProfilesConfigSchema } from "../modules/profil/schema";
 
 // export const CocolightConfig = z.object({
 //   baseUrl: z.string().url().default("http://localhost:5080"),
@@ -837,6 +837,8 @@ const FiltersSectionSchema = z.object({
       options: z.array(z.object({
         id: z.string(),
         label: LocalizedString,
+        name: z.string().optional(),
+        defaultChecked: z.boolean().optional(),
       })),
     })),
     defaultOpenGroups: z.array(z.string()).optional(),
@@ -1240,17 +1242,18 @@ const Shadows = z.object({
 });
 
 export const ThemeConfig = z.object({
+  defaultMode: z.enum(["light", "dark", "system"]).optional().default("light"),
   colors: z.object({
     light: ColorPalette,
     dark: ColorPalette,
-  }),
-  typography: Typography,
-  spacing: Spacing,
-  borderRadius: BorderRadius,
+  }).optional(),
+  typography: Typography.optional(),
+  spacing: Spacing.optional(),
+  borderRadius: BorderRadius.optional(),
   shadows: z.object({
     light: Shadows,
     dark: Shadows,
-  }),
+  }).optional(),
   customCSS: z.string().optional(),
 });
 
@@ -1318,6 +1321,12 @@ export const SiteConfig = z.object({
     enabled: z.boolean().default(false),
     message: LocalizedString.optional(),
     allowedIPs: z.array(z.string()).optional(),
+  }).optional(),
+  auth: z.object({
+    login: z.object({
+      title: LocalizedString.optional(),
+      subtitle: LocalizedString.optional(),
+    }).optional(),
   }).optional(),
   profiles: ProfilesConfigSchema,
 });

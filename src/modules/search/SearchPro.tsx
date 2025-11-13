@@ -1,4 +1,4 @@
-import { ClipboardList, Loader2, Map, X, Plus } from "lucide-react";
+import { ClipboardList, Loader2, Map, X, Plus, List, LayoutGrid } from "lucide-react";
 import React, { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -73,11 +73,14 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
   } = props;
 
   const customHeader = props.customHeader;
+  const showDetailedViewToggle = props.showDetailedViewToggle ?? false;
+
   /* ------------------------------------------------------------------ */
   /* UI state                                                            */
   /* ------------------------------------------------------------------ */
   const [showFiltersModal, setShowFiltersModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [isDetailedView, setIsDetailedView] = useState(false);
 
   /* ------------------------------------------------------------------ */
   /* Gestionnaire pour le bouton Ajouter                                */
@@ -357,18 +360,46 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
                     </h2>
                   )}
                 </div>
-                <Button variant="outline" size="sm" onClick={() => setMapUsed(true)}>
-                  <Map className="mr-2 h-4 w-4 text-primary" /> {t("Carte")}
-                </Button>
-              </div>
-            ) : (
-              enableMap && (
-                <div className="flex justify-end mb-4">
+                <div className="flex gap-2">
+                  {showDetailedViewToggle && (
+                    <Button
+                      variant={isDetailedView ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setIsDetailedView(!isDetailedView)}
+                    >
+                      {isDetailedView ? (
+                        <><LayoutGrid className="mr-2 h-4 w-4" /> Grille</>
+                      ) : (
+                        <><List className="mr-2 h-4 w-4" /> Détails</>
+                      )}
+                    </Button>
+                  )}
                   <Button variant="outline" size="sm" onClick={() => setMapUsed(true)}>
                     <Map className="mr-2 h-4 w-4 text-primary" /> {t("Carte")}
                   </Button>
                 </div>
-              )
+              </div>
+            ) : (
+              <div className="flex justify-end mb-4 gap-2">
+                {showDetailedViewToggle && (
+                  <Button
+                    variant={isDetailedView ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setIsDetailedView(!isDetailedView)}
+                  >
+                    {isDetailedView ? (
+                      <><LayoutGrid className="mr-2 h-4 w-4" /> Grille</>
+                    ) : (
+                      <><List className="mr-2 h-4 w-4" /> Détails</>
+                    )}
+                  </Button>
+                )}
+                {enableMap && (
+                  <Button variant="outline" size="sm" onClick={() => setMapUsed(true)}>
+                    <Map className="mr-2 h-4 w-4 text-primary" /> {t("Carte")}
+                  </Button>
+                )}
+              </div>
             )}
 
             {/* Afficher le skeleton uniquement lors du premier chargement (isPending) */}
@@ -379,7 +410,13 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
               <div className="text-center text-secondary-foreground py-8">{t("Aucun résultat trouvé.")}</div>
             )}
 
-            <SearchListView results={transformedResults} columns={list?.columns} card={list?.card} preview={list?.preview} />
+            <SearchListView
+              results={transformedResults}
+              columns={list?.columns}
+              card={list?.card}
+              preview={list?.preview}
+              isDetailedView={isDetailedView}
+            />
 
             {!disableInfiniteScroll && <div ref={lastItemRef} className="h-12" />}
 

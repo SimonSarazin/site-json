@@ -29,6 +29,10 @@ export interface InitApiResult {
   api: Api;
   me: User | null;
   organization: Organization | null;
+  contextType?: string;
+  contextId?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  entity?: any; // L'entité complète (organization, project, event, etc.)
 }
 
 // ————————————————————————————————————————————————————————————
@@ -38,6 +42,12 @@ export interface InitApiResult {
 let client: ApiClient | null             = null;
 let userApiInstance: UserApi | null      = null;
 let api: Api | null                      = null;
+let cachedMe: User | null                = null;
+let cachedOrganization: Organization | null = null;
+let cachedContextType: string | undefined = undefined;
+let cachedContextId: string | undefined = undefined;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let cachedEntity: any                    = null;
 let initialized = false;
 let initPromise: Promise<InitApiResult> | null = null;
 
@@ -54,8 +64,11 @@ export async function initApiClient(
       client: client!,
       userApiInstance: userApiInstance!,
       api: api!,
-      me: null,
-      organization: null,
+      me: cachedMe,
+      organization: cachedOrganization,
+      contextType: cachedContextType,
+      contextId: cachedContextId,
+      entity: cachedEntity,
     };
   }
   if (initPromise) return initPromise;
@@ -84,29 +97,57 @@ export async function initApiClient(
     userApiInstance = Cocolight.Api.userApi(client);
     initialized = true;
 
-    let me: User | null           = null;
-    let organization: Organization | null = null;
+    cachedMe = null;
+    cachedOrganization = null;
+    cachedContextType = undefined;
+    cachedContextId = undefined;
+    cachedEntity = null;
     const slug = getSlug();
 
     try {
       if (userApiInstance.client.isConnected) {
         const loggedUser = await userApiInstance.meIsconnected();
         api = new Cocolight.Api(loggedUser, userApiInstance.client);
-
-        me = await api.me();
-        // Certaines versions renvoient une fonction, d’autres une propriété :
-        // on caste en any pour ne pas bloquer.
-        organization = await me.organization({ slug });
+        cachedMe = await api.me();
       } else {
         api = new Cocolight.Api(null, userApiInstance.client);
-        organization = await api.organization({ slug });
+      }
+
+      if (slug) {
+        try {
+          const entity = cachedMe ?  await cachedMe.entityBySlug(slug) : await api.entitySlug(slug);
+
+          if (entity) {
+            cachedEntity = entity;
+
+            cachedContextType = entity.getEntityType();
+            cachedContextId = entity.id || undefined;
+
+            if (cachedContextType === "organizations") {
+              cachedOrganization = entity as Organization;
+            }
+          }
+        } catch (slugErr) {
+          console.error("[Api.init] Erreur lors de la résolution du slug:", slugErr);
+        }
       }
     } catch (err) {
-      console.error("Error initializing API:", err);
-      api = new Cocolight.Api(null, userApiInstance.client);
+      console.error("[Api.init] Erreur lors de l'initialisation de l'API:", err);
+      if (!api) {
+        api = new Cocolight.Api(null, userApiInstance.client);
+      }
     }
 
-    return { client, userApiInstance, api, me, organization } as InitApiResult;
+    return {
+      client,
+      userApiInstance,
+      api,
+      me: cachedMe,
+      organization: cachedOrganization,
+      contextType: cachedContextType,
+      contextId: cachedContextId,
+      entity: cachedEntity,
+    } as InitApiResult;
   })();
 
   return initPromise;

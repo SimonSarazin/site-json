@@ -92,6 +92,7 @@ export const SearchProSectionSchema = z.object({
     showActiveFiltersTypes: z.boolean().default(true),
     showActiveFiltersTags: z.boolean().default(true),
     disableInfiniteScroll: z.boolean().optional(),
+    showDetailedViewToggle: z.boolean().optional(),
     customHeader: z.object({
       title: LocalizedString.optional(),
       linkText: LocalizedString.optional(),
@@ -136,6 +137,7 @@ export const SearchProStaticSectionSchema = z.object({
     showActiveFiltersTypes: z.boolean().default(false),
     showActiveFiltersTags: z.boolean().default(false),
     disableInfiniteScroll: z.boolean().optional(),
+    showDetailedViewToggle: z.boolean().optional(),
     customHeader: z.object({
       title: LocalizedString.optional(),
       linkText: LocalizedString.optional(),
@@ -182,6 +184,7 @@ export interface SearchListViewProps<T extends SearchEntity = SearchEntity> {
   columns?: ListConf["columns"];
   card?: ListConf["card"];
   preview?: ListConf["preview"];
+  isDetailedView?: boolean;
 }
 
 export interface SwitchDetailsModeProps<T extends SearchEntity = SearchEntity> {

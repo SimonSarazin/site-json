@@ -363,10 +363,10 @@
           "props": {
             "customHeader": {
               "title": {
-                "fr": "Découvrir les événements"
+                "fr": "Découvrir les lieux"
               },
               "linkText": {
-                "fr": "Cartographie des événements"
+                "fr": "Cartographie des lieux"
               },
               "showMapButton": true
             },
@@ -378,7 +378,7 @@
             "disableInfiniteScroll": true,
             "baseParams": {
               "defaultTypes": [
-                "events"
+                "organizations"
               ],
               "indexStepList": 5
             },
@@ -432,7 +432,7 @@
                   "fr": "La cartographie des lieux",
                   "en": "The map of places"
                 },
-                "href": "/explorer"
+                "href": "/lieux"
               },
               {
                 "iconImage": "./TL_Icones.png",
@@ -516,10 +516,10 @@
           "props": {
             "customHeader": {
               "title": {
-                "fr": "Tous les événements"
+                "fr": "Événements à venir"
               },
               "linkText": {
-                "fr": "Cartographie des événements"
+                "fr": "Cartographie des tiers-lieux"
               },
               "showMapButton": true
             },
@@ -533,8 +533,7 @@
               "defaultTypes": [
                 "events"
               ],
-              "indexStepList": 4,
-              "startDateUTC": 1761598800
+              "indexStepList": 4
             },
             "list": {
               "columns": {
@@ -839,49 +838,57 @@
                         "label": {
                           "fr": "Tous les lieux",
                           "en": "All places"
-                        }
+                        },
+                        "name": "",
+                        "defaultChecked": false
                       },
                       {
                         "id": "coworking",
                         "label": {
                           "fr": "Coworking",
                           "en": "Coworking"
-                        }
+                        },
+                        "name": "Bureaux partagés / Coworking"
                       },
                       {
                         "id": "reunion",
                         "label": {
                           "fr": "Salles de réunion",
                           "en": "Meeting rooms"
-                        }
+                        },
+                        "name": "Salle de réunion"
                       },
                       {
                         "id": "bureaux",
                         "label": {
                           "fr": "Bureaux privatifs",
                           "en": "Private offices"
-                        }
+                        },
+                        "name": "Bureau privatif"
                       },
                       {
                         "id": "fablab",
                         "label": {
                           "fr": "FabLab",
                           "en": "FabLab"
-                        }
+                        },
+                        "name": "Fablab / Makerspace / Hackerspace"
                       },
                       {
                         "id": "restaurant",
                         "label": {
                           "fr": "Restaurant",
                           "en": "Restaurant"
-                        }
+                        },
+                        "name": "Restaurant"
                       },
                       {
                         "id": "bar",
                         "label": {
                           "fr": "Bar",
                           "en": "Bar"
-                        }
+                        },
+                        "name": "Bar"
                       }
                     ]
                   },
@@ -1068,7 +1075,7 @@
               "props": {
                 "customHeader": {
                   "title": {
-                    "fr": "Tous les événements"
+                    "fr": "Tous les tiers-lieux"
                   },
                   "linkText": {
                     "fr": "Cartographie des événements"
@@ -1081,9 +1088,10 @@
                 "showActiveFiltersTypes": true,
                 "showActiveFiltersTags": true,
                 "disableInfiniteScroll": false,
+                "showDetailedViewToggle": true,
                 "baseParams": {
                   "defaultTypes": [
-                    "events"
+                    "organizations"
                   ],
                   "indexStepList": 20
                 },
@@ -1218,6 +1226,7 @@
     }
   ],
   "theme": {
+    "defaultMode": "light",
     "colors": {
       "light": {
         "background": "#ffffff",
@@ -1226,6 +1235,18 @@
       "dark": {
         "background": "#ffffff",
         "foreground": "#000000"
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "title": {
+        "fr": "Se connecter",
+        "en": "Sign in"
+      },
+      "subtitle": {
+        "fr": "Accédez à votre réseau des tiers-lieux",
+        "en": "Access your third places network"
       }
     }
   },
