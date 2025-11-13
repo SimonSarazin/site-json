@@ -1,9 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { SearchEntity } from "@/modules/search/schema";
-import { useEntityProfile } from "../hooks/useEntityProfile";
+import { useFormatProfileEntity } from "../../hooks/useFormatProfileEntity";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
-import "@/components/profile/i18n";
+import { useProfileEntity } from "../../hooks/useProfileEntity";
+import "@/modules/profil/i18n";
 
 interface ProfileMapProps {
   section: {
@@ -12,14 +12,14 @@ interface ProfileMapProps {
     zoom?: number;
     showMarker?: boolean;
   };
-  entity: SearchEntity;
 }
 
-export default function ProfileMap({ section, entity }: ProfileMapProps) {
-  useLoadNamespace("components/profile");
-  const t = useT("components/profile");
+export default function ProfileMap({ section }: ProfileMapProps) {
+  const { entity } = useProfileEntity();
+  useLoadNamespace("modules/profil");
+  const t = useT("modules/profil");
   
-  const { geo } = useEntityProfile(entity);
+  const { geo } = useFormatProfileEntity(entity);
 
   if (!geo || !geo.latitude || !geo.longitude) {
     return null;

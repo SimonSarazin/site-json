@@ -1,11 +1,11 @@
 import { Calendar, MapPin, Users, ExternalLink } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { SearchEntity } from "@/modules/search/schema";
 import { formatDate } from "@/helpers/formatDate";
-import { useEntityProfile } from "../hooks/useEntityProfile";
+import { useFormatProfileEntity } from "../../hooks/useFormatProfileEntity";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
-import "@/components/profile/i18n";
+import { useProfileEntity } from "../../hooks/useProfileEntity";
+import "@/modules/profil/i18n";
 
 interface ProfileInfoProps {
   section: {
@@ -16,14 +16,14 @@ interface ProfileInfoProps {
     showOrganizer?: boolean;
     showAttendees?: boolean;
   };
-  entity: SearchEntity;
 }
 
-export default function ProfileInfo({ section, entity }: ProfileInfoProps) {
-  useLoadNamespace("components/profile");
-  const t = useT("components/profile");
+export default function ProfileInfo({ section }: ProfileInfoProps) {
+  const { entity } = useProfileEntity();
+  useLoadNamespace("modules/profil");
+  const t = useT("modules/profil");
   
-  const { address, startDate, endDate, organizers, url, externalLinkRegistration } = useEntityProfile(entity);
+  const { address, startDate, endDate, organizers, url, externalLinkRegistration } = useFormatProfileEntity(entity);
 
   const addressString = address
     ? [address.streetAddress, address.postalCode, address.addressLocality]

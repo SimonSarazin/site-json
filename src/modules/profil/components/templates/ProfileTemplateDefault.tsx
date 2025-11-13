@@ -1,32 +1,18 @@
-import type { SearchEntity } from "@/modules/search/schema";
 import { Link } from "react-router";
 import { Mail, ChevronRight, Image as ImageIcon, Phone, Globe, Calendar, MapPin, Users, Briefcase, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatDate } from "@/helpers/formatDate";
-import { useEntityProfile } from "../hooks/useEntityProfile";
+import { useFormatProfileEntity } from "../../hooks/useFormatProfileEntity";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
-import "@/components/profile/i18n";
+import { useProfileEntity } from "../../hooks/useProfileEntity";
+import "@/modules/profil/i18n";
 
-interface ProfileTemplateDefaultProps {
-  entity: SearchEntity;
-  entityType?: string;
-  config?: {
-    showBackButton?: boolean;
-    showShareButton?: boolean;
-    showAddress?: boolean;
-    showMap?: boolean;
-    markdownEnabled?: boolean;
-  };
-}
-
-export default function ProfileTemplateDefault({
-  entity,
-  entityType: _entityType,
-}: ProfileTemplateDefaultProps) {
-  useLoadNamespace("components/profile");
-  const t = useT("components/profile");
+export default function ProfileTemplateDefault() {
+  const { entity, entityType: _entityType } = useProfileEntity();
+  useLoadNamespace("modules/profil");
+  const t = useT("modules/profil");
 
   const {
     logoUrl,
@@ -39,7 +25,7 @@ export default function ProfileTemplateDefault({
     membersCount,
     projectsCount,
     openingHours,
-  } = useEntityProfile(entity);
+  } = useFormatProfileEntity(entity);
 
   const imageUrl = logoUrl;
 

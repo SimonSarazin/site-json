@@ -4,13 +4,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
 import { ArrowLeft } from "lucide-react";
-import { ProfileRenderer } from "@/components/profile/ProfileRenderer";
+import { ProfileRenderer } from "@/modules/profil/ProfileRenderer";
 import { useSite } from "@/hooks/useSite";
-import type { ProfileConfig, ProfileType } from "@/types/profile-schema";
+import type { ProfileConfig, ProfileType } from "@/modules/profil/schema";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { useQueryEntityBySlug } from "@/hooks/useQueryEntityBySlug";
-import { ProfileSeo } from "@/components/profile/ProfileSeo";
+import { ProfileSeo } from "@/modules/profil/ProfileSeo";
+import { ProfileEntityProvider } from "../contexts/ProfileEntityProvider";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { useT } from "@/hooks/useT";
+import "@/modules/profil/i18n";
 
 /**
  * Type guard pour vérifier si entityType est une clé valide de ProfilesConfig
@@ -117,6 +121,8 @@ function ProfileSkeleton() {
 }
 
 export default function ProfilePage() {
+  useLoadNamespace("modules/profil");
+  const t = useT("modules/profil");
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const cleanSlug = slug?.startsWith('@') ? slug.slice(1) : slug;
@@ -151,13 +157,13 @@ export default function ProfilePage() {
         <div className="container mx-auto px-4 py-8">
           <Card className="border-destructive">
             <CardHeader>
-              <CardTitle className="text-destructive">Erreur</CardTitle>
+              <CardTitle className="text-destructive">{t("ProfilePage.error.title")}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="mb-4">Une erreur est survenue lors du chargement du profil.</p>
+              <p className="mb-4">{t("ProfilePage.error.message")}</p>
               <Button onClick={() => navigate(-1)} variant="outline">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Retour
+                {t("common.back")}
               </Button>
             </CardContent>
           </Card>
@@ -173,13 +179,13 @@ export default function ProfilePage() {
         <div className="container mx-auto px-4 py-8">
           <Card>
             <CardHeader>
-              <CardTitle>Profil introuvable</CardTitle>
+              <CardTitle>{t("ProfilePage.notFound.title")}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="mb-4">Aucun profil trouvé pour le slug: <strong>{slug}</strong></p>
+              <p className="mb-4">{t("ProfilePage.notFound.message")} <strong>{slug}</strong></p>
               <Button onClick={() => navigate(-1)} variant="outline">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Retour
+                {t("common.back")}
               </Button>
             </CardContent>
           </Card>
@@ -215,7 +221,9 @@ export default function ProfilePage() {
 
       <main className="flex-1">
         <div className="container mx-auto px-4 py-8">
-          <ProfileRenderer entity={entity} config={profileConfig} entityType={entityType} />
+          <ProfileEntityProvider entity={entity} config={profileConfig} entityType={entityType}>
+            <ProfileRenderer />
+          </ProfileEntityProvider>
         </div>
       </main>
 

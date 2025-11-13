@@ -1,16 +1,11 @@
 import { Suspense } from "react";
-import type { ProfileConfig } from "@/types/profile-schema";
-import type { SearchEntity } from "@/modules/search/schema";
 import { ProfileSectionRenderer } from "./ProfileSectionRenderer";
 import { Loader2 } from "lucide-react";
+import { useProfileEntity } from "./hooks/useProfileEntity";
 
-interface ProfileRendererProps {
-  entity: SearchEntity;
-  config: ProfileConfig;
-  entityType: string;
-}
+export function ProfileRenderer() {
+  const { config } = useProfileEntity();
 
-export function ProfileRenderer({ entity, config, entityType }: ProfileRendererProps) {
   const layoutClass = {
     "default": "max-w-4xl mx-auto",
     "modern": "max-w-6xl mx-auto",
@@ -31,8 +26,6 @@ export function ProfileRenderer({ entity, config, entityType }: ProfileRendererP
           <ProfileSectionRenderer
             key={`${section.type}-${index}`}
             section={section}
-            entity={entity}
-            entityType={entityType}
           />
         ))}
       </Suspense>

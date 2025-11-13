@@ -2,7 +2,18 @@
   "common": {
     "organizedBy": "Organisé par",
     "viewProfile": "Voir le profil",
-    "date": "Date"
+    "date": "Date",
+    "back": "Retour"
+  },
+  "ProfilePage": {
+    "error": {
+      "title": "Erreur",
+      "message": "Une erreur est survenue lors du chargement du profil."
+    },
+    "notFound": {
+      "title": "Profil introuvable",
+      "message": "Aucun profil trouvé pour le slug :"
+    }
   },
   "ProfileHeader": {
     "back": "Retour",

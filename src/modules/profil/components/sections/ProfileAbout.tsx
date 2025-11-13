@@ -1,9 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { SearchEntity } from "@/modules/search/schema";
-import { useEntityProfile } from "../hooks/useEntityProfile";
+import { useFormatProfileEntity } from "../../hooks/useFormatProfileEntity";
 import { renderMarkdown } from "@/helpers/renderMarkdown";
 import { useT } from "@/hooks/useT";
-import "@/components/profile/i18n";
+import { useProfileEntity } from "../../hooks/useProfileEntity";
+import "@/modules/profil/i18n";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 
 interface ProfileAboutProps {
@@ -13,14 +13,14 @@ interface ProfileAboutProps {
     showShortDescription?: boolean;
     markdownEnabled?: boolean;
   };
-  entity: SearchEntity;
 }
 
-export default function ProfileAbout({ section, entity }: ProfileAboutProps) {
-  useLoadNamespace("components/profile");
-  const t = useT("components/profile");
+export default function ProfileAbout({ section }: ProfileAboutProps) {
+  const { entity } = useProfileEntity();
+  useLoadNamespace("modules/profil");
+  const t = useT("modules/profil");
 
-  const { shortDescription, description } = useEntityProfile(entity);
+  const { shortDescription, description } = useFormatProfileEntity(entity);
 
   const hasContent =
     (section.showShortDescription !== false && shortDescription) ||

@@ -21,7 +21,7 @@ interface Organizer {
  * @param entity - L'entité SearchEntity provenant de l'API
  * @returns Objet contenant toutes les données formatées du profil
  */
-export function useEntityProfile(entity: SearchEntity) {
+export function useFormatProfileEntity(entity: SearchEntity) {
   // Images
   const logoUrl = useMemo((): string | null => {
     return entity.serverData?.profilImageUrl ?? null;

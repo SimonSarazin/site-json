@@ -1,11 +1,11 @@
 import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Share2, Edit } from "lucide-react";
-import type { SearchEntity } from "@/modules/search/schema";
-import { useEntityProfile } from "../hooks/useEntityProfile";
+import { useFormatProfileEntity } from "../../hooks/useFormatProfileEntity";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
-import "@/components/profile/i18n";
+import { useProfileEntity } from "../../hooks/useProfileEntity";
+import "@/modules/profil/i18n";
 
 interface ProfileHeaderProps {
   section: {
@@ -15,15 +15,15 @@ interface ProfileHeaderProps {
     showShareButton?: boolean;
     showEditButton?: boolean;
   };
-  entity: SearchEntity;
 }
 
-export default function ProfileHeader({ section, entity }: ProfileHeaderProps) {
-  useLoadNamespace("components/profile");
-    const t = useT("components/profile");
+export default function ProfileHeader({ section }: ProfileHeaderProps) {
+  const { entity } = useProfileEntity();
+  useLoadNamespace("modules/profil");
+    const t = useT("modules/profil");
   const navigate = useNavigate();
   const variant = section.variant || "hero";
-  const { imageUrl, name: entityName, shortDescription } = useEntityProfile(entity);
+  const { imageUrl, name: entityName, shortDescription } = useFormatProfileEntity(entity);
 
   if (variant === "hero") {
     return (

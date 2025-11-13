@@ -1,5 +1,3 @@
-import type { SearchEntity } from "@/modules/search/schema";
-
 interface ProfileMembersProps {
   section: {
     type: "profile-members";
@@ -7,10 +5,10 @@ interface ProfileMembersProps {
     limit?: number;
     showRole?: boolean;
   };
-  entity: SearchEntity;
 }
 
-export default function ProfileMembers({ section: _section, entity: _entity }: ProfileMembersProps) {
+export default function ProfileMembers({ section: _section }: ProfileMembersProps) {
   // À implémenter selon vos besoins
+  // Si besoin d'entity: const { entity } = useProfileEntity();
   return null;
 }

@@ -1,9 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { SearchEntity } from "@/modules/search/schema";
-import { useEntityProfile } from "../hooks/useEntityProfile";
+import { useFormatProfileEntity } from "../../hooks/useFormatProfileEntity";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
-import "@/components/profile/i18n";
+import { useProfileEntity } from "../../hooks/useProfileEntity";
+import "@/modules/profil/i18n";
 
 interface ProfileOrganizerProps {
   section: {
@@ -13,13 +13,13 @@ interface ProfileOrganizerProps {
     showDescription?: boolean;
     showLink?: boolean;
   };
-  entity: SearchEntity;
 }
 
-export default function ProfileOrganizer({ section, entity }: ProfileOrganizerProps) {
-  useLoadNamespace("components/profile");
-  const t = useT("components/profile");
-  const { organizers } = useEntityProfile(entity);
+export default function ProfileOrganizer({ section }: ProfileOrganizerProps) {
+  const { entity } = useProfileEntity();
+  useLoadNamespace("modules/profil");
+  const t = useT("modules/profil");
+  const { organizers } = useFormatProfileEntity(entity);
 
   const organizersList = Object.entries(organizers);
 

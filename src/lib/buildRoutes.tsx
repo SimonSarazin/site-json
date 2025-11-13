@@ -2,11 +2,12 @@ import type { RouteObject } from "react-router";
 import { SiteRenderer } from '@/components/SiteRenderer';
 import type { SiteConfig } from "@/types/site";
 import RootLayout from "@/RootLayout";
-import ProfilePage from "@/pages/ProfilePage";
+
 import type { QueryClient } from "@tanstack/react-query";
 import type { LoaderFunctionArgs } from "react-router";
 import { getBaseUrl } from "./constant/common";
 import { initApi } from "./apiClient";
+import ProfilePage from "@/modules/profil/pages/ProfilePage";
 
 /**
  * Helper pour parser les paramètres JSON depuis l'URL

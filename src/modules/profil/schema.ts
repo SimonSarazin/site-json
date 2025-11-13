@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { LocalizedString } from "./locale-schema";
+import { LocalizedString } from "../../types/locale-schema";
 
 // Types d'entités supportés
 export const ProfileTypeSchema = z.enum([
