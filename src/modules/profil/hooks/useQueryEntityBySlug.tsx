@@ -1,9 +1,9 @@
 import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
 
-import { useCocolight } from "./useCocolight";
 import { useMemo } from "react";
 import type { SearchEntity } from "@/modules/search/schema";
 import { isEntityInstance } from "@/helpers/isEntityInstance";
+import { useCocolight } from "@/hooks/useCocolight";
 
 interface QueryEntityBySlugProps {
   slug: string | undefined;

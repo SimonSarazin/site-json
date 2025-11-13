@@ -9,12 +9,13 @@ import { useSite } from "@/hooks/useSite";
 import type { ProfileConfig, ProfileType } from "@/modules/profil/schema";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
-import { useQueryEntityBySlug } from "@/hooks/useQueryEntityBySlug";
+
 import { ProfileSeo } from "@/modules/profil/ProfileSeo";
 import { ProfileEntityProvider } from "../contexts/ProfileEntityProvider";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import "@/modules/profil/i18n";
+import { useQueryEntityBySlug } from "../hooks/useQueryEntityBySlug";
 
 /**
  * Type guard pour vérifier si entityType est une clé valide de ProfilesConfig
