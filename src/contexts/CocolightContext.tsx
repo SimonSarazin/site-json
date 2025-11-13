@@ -1,4 +1,4 @@
-import Cocolight, { type Api, type ApiClient, type UserApi, type Organization, type User, } from "@communecter/cocolight-api-client";
+import Cocolight, { type Api, type ApiClient, type UserApi, type Organization, type User, Project, } from "@communecter/cocolight-api-client";
 import { createContext, Dispatch, SetStateAction } from "react";
 
 type CocolightHelper = typeof Cocolight.helper;
@@ -21,8 +21,7 @@ export interface CocolightContextType {
   /** ID du contexte résolu depuis le slug */
   contextId?: string
   /** Entité complète (organization, project, event, etc.) */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  entity?: any
+  entity?: Organization | Project | null
   /** Helpers divers exposés par le SDK (pas encore typés) */
   helper: CocolightHelper
   /** Données temporaires transmises au profil */

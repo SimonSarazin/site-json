@@ -14,7 +14,7 @@ interface QueryEntityBySlugProps {
 }
 
 export const useQueryEntityBySlug = ({ slug, options = {} }: QueryEntityBySlugProps) => {
-  const { organization, loading, helper} = useCocolight();
+  const { organization, loading, helper, me } = useCocolight();
 
   // Le type unknown car l'API peut retourner soit une instance, soit du JSON déshydraté
   const { data, isLoading, isError, error, refetch } = useQuery<unknown>({
@@ -22,6 +22,9 @@ export const useQueryEntityBySlug = ({ slug, options = {} }: QueryEntityBySlugPr
     queryFn: async () => {
       if (!slug) throw new Error("Slug manquant");
       if (!organization) throw new Error("API non initialisée");
+      if(me && slug === me.slug) {
+        return me;
+      }
       return organization.entityBySlug(slug);
     },
     enabled: !!slug && !loading && !!organization,

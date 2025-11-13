@@ -8,9 +8,12 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
 import "@/modules/profil/i18n";
+// import { useCocolight } from "@/hooks/useCocolight";
+// import { isUser, isOrganization, isProject, isEvent } from "@/lib/getTypedEntity";
 
 export default function ProfileTemplateDefault() {
   const { entity, entityType: _entityType } = useProfileEntity();
+  // const { me } = useCocolight();
   useLoadNamespace("modules/profil");
   const t = useT("modules/profil");
 
@@ -28,6 +31,35 @@ export default function ProfileTemplateDefault() {
   } = useFormatProfileEntity(entity);
 
   const imageUrl = logoUrl;
+
+  // console.log('entityType', _entityType);
+  // console.log('isConnected', me?.isConnected);
+
+  // if(me?.isConnected) {
+  //   if (isOrganization(entity)) {
+  //     console.log('organizations isAuthor', entity.isAuthor());
+  //     console.log('organizations isAdmin', entity.isAdmin());
+  //     console.log('organizations isAuthorOrAdmin', entity.isAuthorOrAdmin());
+  //     console.log('organizations isMember', entity.isMember());
+  //   }
+
+  //   if (isProject(entity)) {
+  //     console.log('projects isAuthor', entity.isAuthor());
+  //     console.log('projects isAdmin', entity.isAdmin());
+  //     console.log('projects isAuthorOrAdmin', entity.isAuthorOrAdmin());
+  //     console.log('projects isContributor', entity.isContributor());
+  //   }
+
+  //   if (isEvent(entity)) {
+  //     console.log('events isAttendee', entity.isAttendee());
+  //   }
+
+  //   if (isUser(entity) && me && me?.slug !== entity.slug) {
+  //     console.log('citoyens isFollower', entity.isFollower());
+  //     console.log('citoyens isFollowing', entity.isFollowing());
+  //     console.log('citoyens isFriend', entity.isFriend());
+  //   }
+  // }
 
   return (
     <div className="bg-white -m-4 md:-m-8">
