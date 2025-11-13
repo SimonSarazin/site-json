@@ -281,7 +281,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                             )}
                           >
                             <div className="mt-1">{getEntityIcon(item)}</div>
-                            <Link to={`/@${item.slug}`}>
+                            <Link to={`/profil/${item.slug}`}>
                               <div className="flex-1 min-w-0">
                                 <div className="font-medium text-gray-900 truncate">
                                   {title}
@@ -410,7 +410,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                     )}
                   >
                     <div className="mt-1">{getEntityIcon(item)}</div>
-                    <Link to={`/@${item.slug}`}>
+                    <Link to={`/profil/${item.slug}`}>
                       <div className="flex-1 min-w-0">
                         <div className="font-medium text-gray-900 truncate">
                           {title}

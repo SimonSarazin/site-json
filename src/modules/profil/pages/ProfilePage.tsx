@@ -1,8 +1,6 @@
-import * as React from "react";
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router";
 import { ArrowLeft } from "lucide-react";
 import { ProfileRenderer } from "@/modules/profil/ProfileRenderer";
 import { useSite } from "@/hooks/useSite";
@@ -126,15 +124,10 @@ export default function ProfilePage() {
   const t = useT("modules/profil");
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const cleanSlug = slug?.startsWith('@') ? slug.slice(1) : slug;
-  const { data: entity, isLoading, isError } = useQueryEntityBySlug({ slug: cleanSlug });
-  const { config: siteConfig } = useSite();
 
-  React.useEffect(() => {
-    if (slug && !slug.startsWith('@')) {
-      navigate('/', { replace: true });
-    }
-  }, [slug, navigate]);
+  // Avec le pattern profil/:slug, le paramètre slug est directement le slug sans préfixe
+  const { data: entity, isLoading, isError } = useQueryEntityBySlug({ slug });
+  const { config: siteConfig } = useSite();
 
   if (isLoading) {
     return (

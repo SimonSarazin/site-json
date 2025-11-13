@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { Link, useLocation, useNavigate, useParams } from "react-router";
 import { Mail, ChevronRight, Image as ImageIcon, Phone, Globe, Calendar, MapPin, Users, Briefcase, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,12 +10,32 @@ import { useProfileEntity } from "../../hooks/useProfileEntity";
 import "@/modules/profil/i18n";
 // import { useCocolight } from "@/hooks/useCocolight";
 // import { isUser, isOrganization, isProject, isEvent } from "@/lib/getTypedEntity";
+import { LazyTabContent } from "@/components/LazyTabContent";
+import { NewsTab } from "../tabs/NewsTab";
 
 export default function ProfileTemplateDefault() {
   const { entity, entityType: _entityType } = useProfileEntity();
+  const { slug } = useParams<{ slug: string }>();
+  const location = useLocation();
+  const navigate = useNavigate();
   // const { me } = useCocolight();
   useLoadNamespace("modules/profil");
   const t = useT("modules/profil");
+
+  // Déterminer le tab actif depuis l'URL
+  // Exemples: /profil/slug → "about", /profil/slug/news → "news"
+  const pathSegments = location.pathname.split('/').filter(Boolean);
+  // pathSegments: ["profil", "slug", "news"] ou ["profil", "slug"]
+  const currentTab = pathSegments.length > 2 ? pathSegments[2] : 'about';
+
+  // Navigation vers un nouveau tab
+  const handleTabChange = (newTab: string) => {
+    if (newTab === 'about') {
+      navigate(`/profil/${slug}`);
+    } else {
+      navigate(`/profil/${slug}/${newTab}`);
+    }
+  };
 
   const {
     logoUrl,
@@ -131,7 +151,7 @@ export default function ProfileTemplateDefault() {
         </div>
 
         <div className="px-8 py-8">
-          <Tabs defaultValue="about" className="w-full">
+          <Tabs value={currentTab} onValueChange={handleTabChange} className="w-full">
             <TabsList className="grid w-full grid-cols-7 mb-8 bg-gray-100 p-1 rounded-lg">
               <TabsTrigger
                 value="about"
@@ -229,7 +249,7 @@ export default function ProfileTemplateDefault() {
                       <h3 className="font-bold text-gray-900">{organizer.name || "Sans nom"}</h3>
                       {organizer.slug && (
                         <Link
-                          to={`/@${organizer.slug}`}
+                          to={`/profil/${organizer.slug}`}
                           className="text-teal-600 hover:text-teal-700 text-sm font-medium"
                         >
                           {t("common.viewProfile")} →
@@ -393,15 +413,9 @@ export default function ProfileTemplateDefault() {
             </TabsContent>
 
             <TabsContent value="news">
-              <div className="bg-white p-8 rounded-lg border border-gray-200 shadow-sm">
-                <div className="text-center py-16">
-                  <div className="text-gray-400 mb-4">
-                    <Calendar className="w-16 h-16 mx-auto" />
-                  </div>
-                  <p className="text-xl font-semibold text-gray-700 mb-2">{t("ProfileTemplateDefault.sectionLabel", undefined, { name: t("ProfileTemplateDefault.tabs.news") })}</p>
-                  <p className="text-gray-500">{t("ProfileTemplateDefault.comingSoon")}</p>
-                </div>
-              </div>
+              <LazyTabContent value="news">
+                <NewsTab />
+              </LazyTabContent>
             </TabsContent>
 
             <TabsContent value="coworking">

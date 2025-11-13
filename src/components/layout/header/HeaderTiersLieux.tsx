@@ -43,7 +43,7 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
 
   const getProfileUrl = () => {
     if (!me?.serverData?.slug) return '/profile';
-    return `/@${me.serverData.slug}`;
+    return `/profil/${me.serverData.slug}`;
   };
   
     return (
