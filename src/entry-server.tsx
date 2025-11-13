@@ -33,7 +33,7 @@ export async function render(
   });
 
   /* 2.  Préparation du routeur statique avec queryClient --------------- */
-  const handler  = createStaticHandler(buildRoutes(cfg, queryClient));
+  const handler  = createStaticHandler(await buildRoutes(cfg, queryClient));
   const absUrl   = `http://localhost${req.originalUrl ?? req.url ?? '/'}`;
   const context  = await handler.query(new Request(absUrl));
 
