@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router";
+import { useParams, useNavigate, useLoaderData, useLocation } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -124,6 +124,12 @@ export default function ProfilePage() {
   const t = useT("modules/profil");
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const loaderData = useLoaderData() as { entity?: unknown; activeTab?: string } | null;
+
+  // Détecter le tab actif depuis le loader (SSR) ou depuis l'URL (fallback client)
+  const pathSegments = location.pathname.split('/').filter(Boolean);
+  const activeTab = loaderData?.activeTab || (pathSegments.length > 2 ? pathSegments[2] : 'about');
 
   // Avec le pattern profil/:slug, le paramètre slug est directement le slug sans préfixe
   const { data: entity, isLoading, isError } = useQueryEntityBySlug({ slug });
@@ -132,7 +138,7 @@ export default function ProfilePage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col">
-        <ProfileSeo entity={null} isLoading={true} entityType="default" />
+        <ProfileSeo entity={null} isLoading={true} entityType="default" activeTab={activeTab} />
         <SiteHeader />
         <main className="flex-1">
           <div className="container mx-auto px-4 py-8">
@@ -147,7 +153,7 @@ export default function ProfilePage() {
   if (isError) {
     return (
       <>
-        <ProfileSeo entity={null} isLoading={false} entityType="default" />
+        <ProfileSeo entity={null} isLoading={false} entityType="default" activeTab={activeTab} />
         <div className="container mx-auto px-4 py-8">
           <Card className="border-destructive">
             <CardHeader>
@@ -169,7 +175,7 @@ export default function ProfilePage() {
   if (!entity) {
     return (
       <>
-        <ProfileSeo entity={null} isLoading={false} entityType="default" />
+        <ProfileSeo entity={null} isLoading={false} entityType="default" activeTab={activeTab} />
         <div className="container mx-auto px-4 py-8">
           <Card>
             <CardHeader>
@@ -210,7 +216,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <ProfileSeo entity={entity} isLoading={false} entityType={entityType} />
+      <ProfileSeo entity={entity} isLoading={false} entityType={entityType} activeTab={activeTab} />
       {!profileConfig.hideHeader && <SiteHeader />}
 
       <main className="flex-1">

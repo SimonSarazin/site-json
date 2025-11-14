@@ -1,8 +1,9 @@
 import { useMemo } from "react";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useInfiniteQueryScrollNext } from "@/hooks/useInfiniteQueryScroll";
-import { SearchResultPage, SearchType } from "../schema";
+import { SearchEntity, SearchResultPage, SearchType } from "../schema";
 import type { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
+import { transformToEntityInstance } from "@/lib/entityTransform";
 
 export interface UseSearchQueryParams {
   queryKeyPrefix: string;
@@ -35,9 +36,7 @@ export function useSearchQuery({
   mapUsed,
   baseParams = {},
 }: UseSearchQueryParams) {
-  const { organization, entity, helper } = useCocolight();
-
-  const searchContext = organization || entity;
+  const { entity, helper } = useCocolight();
 
   const {
     data,
@@ -57,8 +56,8 @@ export function useSearchQuery({
       JSON.stringify(baseParams),
     ],
     queryFn: async ({ pageParam } = { pageParam: undefined }) => {
-      if (!searchContext) {
-        throw new Error("API non initialisée - ni organization ni entity disponible");
+      if (!entity) {
+        throw new Error("API non initialisée - entity manquante");
       }
 
       const type = Array.isArray(searchType)
@@ -114,7 +113,7 @@ export function useSearchQuery({
       }
 
       try {
-        const result = await searchContext.searchCostum(param);
+        const result = await entity.searchCostum(param);
         if (
           page &&
           page?.pageNumber > 1 &&
@@ -130,7 +129,7 @@ export function useSearchQuery({
       }
     },
     options: {
-      enabled: !!searchContext,
+      enabled: !!entity,
       staleTime: 60 * 1000,
       initialPageParam: [],
     },
@@ -139,12 +138,12 @@ export function useSearchQuery({
   // Transformation des résultats
   const transformedResults = useMemo(() => {
     const results = data?.pages?.flatMap((p) => p?.results) ?? [];
-    if (!searchContext || !results.length) return results || [];
+    if (!entity || !results.length) return results || [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return results.flatMap((d: any) => {
-      if (d?.getEntityType) return d;
-      return helper.fromEntityJSON(d, organization || searchContext);
+      return transformToEntityInstance<SearchEntity>(d, helper, entity);
     });
-  }, [data, organization, searchContext, helper]);
+  }, [data, entity, helper]);
 
   const hasCount =
     data?.pages?.[0]?.count && typeof data?.pages?.[0]?.count === "object";

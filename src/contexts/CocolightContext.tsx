@@ -21,7 +21,7 @@ export interface CocolightContextType {
   /** ID du contexte résolu depuis le slug */
   contextId?: string
   /** Entité complète (organization, project, event, etc.) */
-  entity?: Organization | Project | null
+  entity: Organization | Project | null
   /** Helpers divers exposés par le SDK (pas encore typés) */
   helper: CocolightHelper
   /** Données temporaires transmises au profil */

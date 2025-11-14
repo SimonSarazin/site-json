@@ -7,10 +7,16 @@ import { initApi } from "@/lib/apiClient";
 import type { ModuleRouteFactory } from "@/lib/modules";
 
 /**
+ * Types d'entités supportant les actualités
+ */
+const NEWS_SUPPORTED_TYPES = new Set(["organizations", "projects", "citoyens"]);
+
+/**
  * Loader pour le profil principal
  * Pré-charge les données de l'entité côté serveur
+ * Détecte le tab actif et pré-charge ses données si nécessaire
  */
-const profileLoader = async ({ params }: LoaderFunctionArgs, queryClient?: QueryClient) => {
+const profileLoader = async ({ params, request }: LoaderFunctionArgs, queryClient?: QueryClient) => {
   // Si pas de queryClient (côté client), on skip le pre-fetch
   if (!queryClient) return null;
 
@@ -19,9 +25,14 @@ const profileLoader = async ({ params }: LoaderFunctionArgs, queryClient?: Query
     throw new Response('Not Found', { status: 404 });
   }
 
+  // Détecter le tab actif depuis l'URL
+  const url = new URL(request.url);
+  const pathSegments = url.pathname.split('/').filter(Boolean);
+  const activeTab = pathSegments.length > 2 ? pathSegments[2] : 'about';
+
   try {
-    // Pré-charger les données du profil côté serveur
-    return await queryClient.ensureQueryData({
+    // 1. Pré-charger les données du profil côté serveur
+    const entity = await queryClient.ensureQueryData({
       queryKey: ["element-about", slug],
       queryFn: async () => {
         const { organization } = await initApi({
@@ -34,6 +45,27 @@ const profileLoader = async ({ params }: LoaderFunctionArgs, queryClient?: Query
         return organization.entityBySlug(slug);
       }
     });
+
+    // 2. Pré-charger les données du tab actif si nécessaire
+    if (activeTab === 'news' && entity) {
+      const entityType = entity.getEntityType?.() || "";
+
+      // Vérifier si ce type d'entité supporte les actualités
+      if (NEWS_SUPPORTED_TYPES.has(entityType)) {
+        await queryClient.prefetchInfiniteQuery({
+          queryKey: ["profile-news", entity.id],
+          queryFn: async () => {
+            return entity.getNews({
+              indexStep: 12,
+              dateLimit: Math.floor(Date.now() / 1000)
+            });
+          },
+          initialPageParam: Math.floor(Date.now() / 1000),
+        });
+      }
+    }
+
+    return { entity, activeTab };
   } catch (error) {
     console.error('Erreur lors du chargement du profil:', error);
     throw new Response('Not Found', { status: 404 });

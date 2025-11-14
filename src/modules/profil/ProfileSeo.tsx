@@ -2,25 +2,67 @@ import { Helmet } from "@dr.pogodin/react-helmet";
 import { useSite } from "@/hooks/useSite";
 import { useLocalization } from "@/hooks/useLocalization";
 import type { SearchEntity } from "@/modules/search/schema";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { useT } from "@/hooks/useT";
+import "@/modules/profil/i18n";
 
 interface ProfileSeoProps {
   entity: SearchEntity | null;
   isLoading: boolean;
   entityType: string;
+  activeTab?: string;
 }
 
 /**
  * Composant SEO pour ProfilePage - génère dynamiquement les balises meta
  * basées sur les données de l'entité chargée depuis l'API.
+ * Les meta tags s'adaptent au tab actif pour améliorer le SEO.
  */
-export function ProfileSeo({ entity, isLoading, entityType }: ProfileSeoProps) {
+export function ProfileSeo({ entity, isLoading, entityType, activeTab = 'about' }: ProfileSeoProps) {
   const { config } = useSite();
-  const { currentLocale, t } = useLocalization();
+  const { currentLocale, t: tLocale } = useLocalization();
+  useLoadNamespace("modules/profil");
+  const t = useT("modules/profil");
+
+  /**
+   * Obtenir le label i18n d'un tab
+   */
+  const getTabLabel = (tab: string): string => {
+    const tabKeys: Record<string, string> = {
+      about: "ProfileTemplateDefault.tabs.about",
+      news: "ProfileTemplateDefault.tabs.news",
+      coworking: "ProfileTemplateDefault.tabs.coworking",
+      rooms: "ProfileTemplateDefault.tabs.meetingRooms",
+      infos: "ProfileTemplateDefault.tabs.practicalInfo",
+      communities: "ProfileTemplateDefault.tabs.communities",
+      observatory: "ProfileTemplateDefault.tabs.observatories",
+    };
+    return tabKeys[tab] ? t(tabKeys[tab]) : "";
+  };
+
+  /**
+   * Générer une description SEO adaptée au tab actif
+   */
+  const getTabDescription = (tab: string, entityData: SearchEntity): string => {
+    const entityName = entityData.serverData?.name || "";
+    const baseDescription = entityData.serverData?.description || entityData.serverData?.shortDescription || "";
+
+    if (tab === "about") {
+      return baseDescription;
+    }
+
+    const tabLabel = getTabLabel(tab);
+    if (tabLabel) {
+      return `${tabLabel} - ${entityName}`;
+    }
+
+    return baseDescription;
+  };
 
   // Pendant le chargement ou si pas d'entité, afficher un titre par défaut
   if (isLoading || !entity) {
     const defaultTitle = (config.meta?.title && typeof config.meta.title === 'string')
-      ? t(config.meta.title)
+      ? tLocale(config.meta.title)
       : "Profil";
     return (
       <Helmet htmlAttributes={{ lang: currentLocale }}>
@@ -31,25 +73,31 @@ export function ProfileSeo({ entity, isLoading, entityType }: ProfileSeoProps) {
 
   // Extraire les données dynamiques de l'entité
   const entityName = entity.serverData?.name || "Profil";
-  const shortDescription = entity.serverData?.shortDescription || "";
-  const description = entity.serverData?.description || shortDescription || "";
   const imageUrl =
     entity.serverData?.profilMediumImageUrl ||
     entity.serverData?.profilImageUrl ||
     config.meta?.favicon ||
     "";
 
-  // Construction de l'URL canonique
+  // Construction de l'URL canonique avec le tab actif
   const slug = entity.serverData?.slug || "";
   const canonicalUrl = typeof window !== 'undefined' && slug
-    ? `${window.location.origin}/profil/${slug}`
+    ? activeTab !== 'about'
+      ? `${window.location.origin}/profil/${slug}/${activeTab}`
+      : `${window.location.origin}/profil/${slug}`
     : "";
 
-  // Titre de la page
+  // Titre de la page dynamique selon le tab actif
   const siteTitle = (config.meta?.title && typeof config.meta.title === 'string')
-    ? t(config.meta.title)
+    ? tLocale(config.meta.title)
     : "";
-  const pageTitle = siteTitle ? `${entityName} - ${siteTitle}` : entityName;
+
+  const pageTitle = activeTab !== 'about'
+    ? `${getTabLabel(activeTab)} - ${entityName}${siteTitle ? ` - ${siteTitle}` : ''}`
+    : (siteTitle ? `${entityName} - ${siteTitle}` : entityName);
+
+  // Description dynamique selon le tab actif
+  const description = getTabDescription(activeTab, entity);
 
   // Type schema.org basé sur entityType
   const getSchemaType = (type: string): string => {

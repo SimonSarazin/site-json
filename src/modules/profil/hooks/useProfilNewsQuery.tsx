@@ -1,15 +1,11 @@
 import { useMemo } from "react";
 import { useInfiniteQueryScroll } from "@/hooks/useInfiniteQueryScroll";
 import { useCocolight } from "@/hooks/useCocolight";
-import type { News } from "@communecter/cocolight-api-client";
-
-interface EntityWithNews {
-  id: string | null;
-  getNews: (data?: { indexStep?: number; dateLimit?: number }) => Promise<News[]>;
-}
+import { transformToEntityInstance } from "@/lib/entityTransform";
+import type { EntityTypes, News } from "@communecter/cocolight-api-client";
 
 interface UseProfilNewsQueryProps {
-  entity: EntityWithNews;
+  entity: EntityTypes;
   entityType: string;
   enabled: boolean;
   indexStep?: number;
@@ -61,7 +57,15 @@ export function useProfilNewsQuery({
       // Utiliser la date du dernier item comme cursor pour la prochaine page
       // Convertir en secondes (Unix timestamp) au lieu de millisecondes
       const lastItem = lastPage[lastPage.length - 1];
-      const timestampInSeconds = Math.floor(lastItem.serverData.date.getTime() / 1000);
+
+      const lastItemInstance = transformToEntityInstance<News>(lastItem, helper, entity);
+
+      // Vérifier que la date existe et est valide
+      if (!lastItemInstance?.serverData?.date) {
+        return undefined; // Pas de date, on ne peut pas continuer la pagination
+      }
+
+      const timestampInSeconds = Math.floor(lastItemInstance.serverData.date.getTime() / 1000);
       return timestampInSeconds;
     },
     options: {
@@ -76,20 +80,9 @@ export function useProfilNewsQuery({
     const flatNews = data ? data.pages.flatMap((page) => page) : [];
     if (!flatNews.length) return [];
 
-    return flatNews.map((item: News | Record<string, unknown>) => {
-      // Si c'est déjà une instance d'entité avec la méthode getEntityType, on la garde
-      if (item && typeof item === "object" && "getEntityType" in item) {
-        return item as News;
-      }
-      // Sinon, on essaie de transformer via helper
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return helper.fromEntityJSON(item, entity as any) as News;
-      } catch {
-        // Si la transformation échoue, on retourne l'item tel quel (cast via unknown)
-        return item as unknown as News;
-      }
-    });
+    return flatNews.map((item: News | Record<string, unknown>) =>
+      transformToEntityInstance<News>(item, helper, entity)
+    );
   }, [data, entity, helper]);
 
   return {
