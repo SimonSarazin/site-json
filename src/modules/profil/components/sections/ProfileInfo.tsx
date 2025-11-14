@@ -39,10 +39,10 @@ export default function ProfileInfo({ section }: ProfileInfoProps) {
       <CardContent className="space-y-4">
         {section.showDates !== false && startDate && (
           <div className="flex items-start gap-3">
-            <Calendar className="h-5 w-5 text-gray-500 mt-0.5" />
+            <Calendar className="h-5 w-5 text-foreground mt-0.5" />
             <div>
-              <p className="font-medium text-gray-900">{t("common.date")}</p>
-              <p className="text-sm text-gray-600">
+              <p className="font-medium text-foreground">{t("common.date")}</p>
+              <p className="text-sm text-textSecondary">
                 {t("ProfileInfo.from")} {formatDate(startDate)}
                 {endDate && (
                   <> {t("ProfileInfo.to")} {formatDate(endDate)}</>
@@ -54,10 +54,10 @@ export default function ProfileInfo({ section }: ProfileInfoProps) {
 
         {section.showAddress !== false && addressString && (
           <div className="flex items-start gap-3">
-            <MapPin className="h-5 w-5 text-gray-500 mt-0.5" />
+            <MapPin className="h-5 w-5 text-foreground mt-0.5" />
             <div>
-              <p className="font-medium text-gray-900">{t("ProfileInfo.place")}</p>
-              <p className="text-sm text-gray-600">{addressString}</p>
+              <p className="font-medium text-foreground">{t("ProfileInfo.place")}</p>
+              <p className="text-sm text-textSecondary">{addressString}</p>
             </div>
           </div>
         )}
@@ -65,11 +65,11 @@ export default function ProfileInfo({ section }: ProfileInfoProps) {
         {/* Organisateur */}
         {section.showOrganizer !== false && Object.keys(organizers).length > 0 && (
           <div className="flex items-start gap-3">
-            <Users className="h-5 w-5 text-gray-500 mt-0.5" />
+            <Users className="h-5 w-5 text-foreground mt-0.5" />
             <div>
-              <p className="font-medium text-gray-900">{t("common.organizedBy")}</p>
+              <p className="font-medium text-foreground">{t("common.organizedBy")}</p>
               {Object.entries(organizers).map(([key, org]) => (
-                <div key={key} className="text-sm text-gray-600 mt-1">
+                <div key={key} className="text-sm text-textSecondary mt-1">
                   {org.name}
                 </div>
               ))}
@@ -80,9 +80,9 @@ export default function ProfileInfo({ section }: ProfileInfoProps) {
         {/* Lien externe */}
         {url && (
           <div className="flex items-start gap-3">
-            <ExternalLink className="h-5 w-5 text-gray-500 mt-0.5" />
+            <ExternalLink className="h-5 w-5 text-foreground mt-0.5" />
             <div>
-              <p className="font-medium text-gray-900">{t("ProfileInfo.website")}</p>
+              <p className="font-medium text-foreground">{t("ProfileInfo.website")}</p>
               <a
                 href={url}
                 target="_blank"

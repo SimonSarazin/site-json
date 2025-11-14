@@ -16,8 +16,18 @@
   - [3.3 Fichier de configuration Vite (`vite.config.ts`)](#33-fichier-de-configuration-vite-viteconfigts)
 - [4. Architecture du projet](#4-architecture-du-projet)
   - [4.1 Arborescence des dossiers](#41-arborescence-des-dossiers)
-  - [4.2 Flux d’exécution](#42-flux-dexécution)
+  - [4.2 Flux d'exécution](#42-flux-dexécution)
+    - [4.2.1 buildRoutes Synchrone vs Asynchrone](#421-buildroutes-synchrone-vs-asynchrone)
+    - [4.2.2 Intégration des routes de modules](#422-intégration-des-routes-de-modules)
   - [4.3 Injection de la configuration et des ENV](#43-injection-de-la-configuration-et-des-env)
+  - [4.4 Système de découverte de modules](#44-système-de-découverte-de-modules)
+    - [4.4.1 Structure d'un module](#441-structure-dun-module)
+    - [4.4.2 Configuration de module (`module.config.ts`)](#442-configuration-de-module-moduleconfigts)
+    - [4.4.3 Auto-découverte avec `import.meta.glob`](#443-auto-découverte-avec-importmetaglob)
+    - [4.4.4 Pattern factory de routes](#444-pattern-factory-de-routes)
+    - [4.4.5 Chargement synchrone vs asynchrone](#445-chargement-synchrone-vs-asynchrone)
+    - [4.4.6 Type discriminé `DiscoveredModule`](#446-type-discriminé-discoveredmodule)
+    - [4.4.7 Guide : Créer un nouveau module](#447-guide--créer-un-nouveau-module)
 - [5. Documentation exhaustive du schéma JSON (`SiteConfigSchema`)](#5-documentation-exhaustive-du-schéma-json-siteconfigschema)
   - [5.1 Propriétés racine](#51-propriétés-racine)
   - [5.2 `MetaSchema`](#52-metaschema)
@@ -48,7 +58,7 @@
     - [5.5.19 `comparison`](#5519-comparison)
     - [5.5.20 `featureComparison`](#5520-featurecomparison)
     - [5.5.21 `socialFeed`](#5521-socialfeed)
-    - [5.5.22 `search` (déprécié)](#5522-search)
+    - [5.5.22 `search` (déprécié)](#5522-search-déprécié)
     - [5.5.23 `eventList`](#5523-eventlist)
     - [5.5.24 `productShowcase`](#5524-productshowcase)
     - [5.5.25 `cookieConsent`](#5525-cookieconsent)
@@ -61,6 +71,8 @@
     - [5.5.32 `timeline`](#5532-timeline)
     - [5.5.33 `blogPost`](#5533-blogpost)
     - [5.5.34 `searchPro`](#5534-searchpro)
+    - [Détails de `ListConfSchema`](#détails-de-listconfschema)
+    - [Détails de `MapConfSchema`](#détails-de-mapconfschema)
   - [5.6 `FooterSchema`](#56-footerschema)
   - [5.7 `IntegrationsSchema`](#57-integrationsschema)
   - [5.8 `FeatureFlagSchema`](#58-featureflagschema)
@@ -80,12 +92,43 @@
     - [7.1.3 Context et hooks](#713-context-et-hooks)
     - [7.1.4 Composants clés](#714-composants-clés)
     - [7.1.5 Exemple de configuration JSON](#715-exemple-de-configuration-json)
-  - [7.2 Autres modules à faire et documenter](#72-autres-modules-à-faire-et-documenter)
+  - [7.2 Module Profil (`src/modules/profil`)](#72-module-profil-srcmodulesprofil)
+    - [7.2.1 Architecture interne](#721-architecture-interne)
+    - [7.2.2 Configuration de module (`module.config.ts`)](#722-configuration-de-module-moduleconfigts)
+    - [7.2.3 Routes dynamiques avec loader SSR](#723-routes-dynamiques-avec-loader-ssr)
+    - [7.2.4 Context et Provider](#724-context-et-provider)
+      - [ProfileEntityContext](#profileentitycontext)
+      - [ProfileEntityProvider](#profileentityprovider)
+    - [7.2.5 Hook useProfileEntity](#725-hook-useprofileentity)
+    - [7.2.6 Hook useFormatProfileEntity](#726-hook-useformatprofileentity)
+    - [7.2.7 Schéma de configuration (`schema.ts`)](#727-schéma-de-configuration-schemats)
+    - [7.2.8 Sections de profil](#728-sections-de-profil)
+    - [7.2.9 ProfileRenderer](#729-profilerenderer)
+    - [7.2.10 ProfileSectionRenderer](#7210-profilesectionrenderer)
+    - [7.2.11 SEO dynamique (ProfileSeo)](#7211-seo-dynamique-profileseo)
+    - [7.2.12 i18n et traductions](#7212-i18n-et-traductions)
+    - [7.2.13 Configuration JSON dans site-config.json](#7213-configuration-json-dans-site-configjson)
+    - [7.2.14 Flux d'exécution complet](#7214-flux-dexécution-complet)
+  - [7.3 Autres modules](#73-autres-modules)
 - [8. API Client \& Authentification](#8-api-client--authentification)
-  - [8.1 Initialisation de l’API (`apiClient.ts`)](#81-initialisation-de-lapi-apiclientts)
+  - [8.1 Initialisation de l'API - Pattern Singleton (`apiClient.ts`)](#81-initialisation-de-lapi---pattern-singleton-apiclientts)
+    - [8.1.1 Architecture du singleton](#811-architecture-du-singleton)
+    - [8.1.2 Fonction principale: `initApiClient()`](#812-fonction-principale-initapiclient)
+    - [8.1.3 Token Storage Strategy selon l'environnement](#813-token-storage-strategy-selon-lenvironnement)
+    - [8.1.4 Helpers pour accéder aux singletons](#814-helpers-pour-accéder-aux-singletons)
+    - [8.1.5 Types et interfaces](#815-types-et-interfaces)
+    - [8.1.6 Gestion du slug contextuel](#816-gestion-du-slug-contextuel)
+    - [8.1.7 Sécurité et gestion d'erreurs](#817-sécurité-et-gestion-derreurs)
+    - [8.1.8 Usage dans les loaders SSR](#818-usage-dans-les-loaders-ssr)
+    - [8.1.9 Limitations et considérations](#819-limitations-et-considérations)
   - [8.2 Stratégies de stockage des tokens](#82-stratégies-de-stockage-des-tokens)
-    - [8.2.1 MultiServerTokenStorageStrategy](#821-multiservertokenstoragestrategy)
-    - [8.2.2 MemoryStorageStrategy](#822-memorystoragestrategy)
+    - [8.2.1 Choix automatique selon l'environnement](#821-choix-automatique-selon-lenvironnement)
+    - [8.2.2 MultiServerTokenStorageStrategy](#822-multiservertokenstoragestrategy)
+    - [8.2.3 Sécurité des tokens](#823-sécurité-des-tokens)
+    - [8.2.4 Refresh automatique des tokens](#824-refresh-automatique-des-tokens)
+    - [8.2.5 Gestion des erreurs de refresh](#825-gestion-des-erreurs-de-refresh)
+    - [8.2.6 Clear tokens (logout)](#826-clear-tokens-logout)
+    - [8.2.7 Vérification de l'état de connexion](#827-vérification-de-létat-de-connexion)
   - [8.3 Contexte React (`CocolightContext`)](#83-contexte-react-cocolightcontext)
   - [8.4 Hooks d’accès au client](#84-hooks-daccès-au-client)
     - [8.4.1 `useCocolight`](#841-usecocolight)
@@ -118,7 +161,27 @@
   - [12.1 `server/dev-server.js` ](#121-serverdev-serverjs-)
   - [12.2 `server/prod-server.js` ](#122-serverprod-serverjs-)
   - [12.3 `src/entry-server.tsx` ](#123-srcentry-servertsx-)
-  - [12.4 `src/entry-client.tsx` ](#124-srcentry-clienttsx-)
+  - [12.4 `src/entry-client.tsx` - Hydratation avec detection Sync/Async](#124-srcentry-clienttsx---hydratation-avec-detection-syncasync)
+    - [12.4.1 Déclarations globales TypeScript](#1241-déclarations-globales-typescript)
+    - [12.4.2 Récupération de la config et du state](#1242-récupération-de-la-config-et-du-state)
+    - [12.4.3 BuildRoutes avec détection Sync/Async](#1243-buildroutes-avec-détection-syncasync)
+    - [12.4.4 Composant Root avec gestion Sync/Async](#1244-composant-root-avec-gestion-syncasync)
+    - [12.4.5 Avantage de ce pattern](#1245-avantage-de-ce-pattern)
+    - [12.4.6 Hydratation React Query](#1246-hydratation-react-query)
+    - [12.4.7 Hydratation Helmet (meta tags)](#1247-hydratation-helmet-meta-tags)
+    - [12.4.8 Point d'entrée final](#1248-point-dentrée-final)
+    - [12.4.9 Initialisation i18n](#1249-initialisation-i18n)
+  - [12.5 Pattern SSR Loader - Pre-fetching des données](#125-pattern-ssr-loader---pre-fetching-des-données)
+    - [12.5.1 Principe du SSR Loader](#1251-principe-du-ssr-loader)
+    - [12.5.2 Anatomie d'un loader](#1252-anatomie-dun-loader)
+    - [12.5.3 Détection côté serveur vs client](#1253-détection-côté-serveur-vs-client)
+    - [12.5.4 Utilisation de ensureQueryData](#1254-utilisation-de-ensurequerydata)
+    - [12.5.5 Gestion des erreurs dans les loaders](#1255-gestion-des-erreurs-dans-les-loaders)
+    - [12.5.6 Désérialisation de l'état React Query](#1256-désérialisation-de-létat-react-query)
+    - [12.5.7 Pattern avec initApi singleton](#1257-pattern-avec-initapi-singleton)
+    - [12.5.8 Exemple complet: Module Profil](#1258-exemple-complet-module-profil)
+    - [12.5.9 Optimisations avancées](#1259-optimisations-avancées)
+    - [12.5.10 Limitations et considérations](#12510-limitations-et-considérations)
 
 
 ## 1. Introduction générale
@@ -411,7 +474,7 @@ Cette section décrit l’organisation générale du code, le flux d’exécutio
 
 ---
 
-### 4.2 Flux d’exécution
+### 4.2 Flux d'exécution
 
 1. **Développement (`npm run dev` / `yarn dev`)**
 
@@ -436,7 +499,123 @@ Cette section décrit l’organisation générale du code, le flux d’exécutio
 
    * À la réception du HTML, le `<script>window.__CONFIG__=…</script>` charge la config JSON.
    * Le `<script>window.__ENV__=…</script>` charge les ENV côté client.
-   * React hydrate ensuite l’application via `entry-client.tsx`, utilisant les providers définis dans `RootLayout`.
+   * React hydrate ensuite l'application via `entry-client.tsx`, utilisant les providers définis dans `RootLayout`.
+
+---
+
+#### 4.2.1 buildRoutes Synchrone vs Asynchrone
+
+La fonction `buildRoutes` (dans `src/lib/buildRoutes.tsx`) retourne soit `RouteObject[]` (synchrone) soit `Promise<RouteObject[]>` (asynchrone) selon le contexte :
+
+**Mode SYNCHRONE** (pas de queryClient + modules core uniquement) :
+- Utilisé **côté client** après hydratation
+- Appelle `getModuleRoutesSync(modules)` pour charger les routes immédiatement
+- **Évite le flash de loading** lors de la navigation
+- Les routes config JSON n'ont **pas de loaders** (pas de pré-chargement côté client)
+
+```typescript
+// src/lib/buildRoutes.tsx (lignes 155-187)
+export function buildRoutes(cfg: SiteConfig, queryClient?: QueryClient): RouteObject[] | Promise<RouteObject[]> {
+  const modules = discoverModules();
+  const hasOptional = modules.some(m => m.config.type === "optional");
+
+  // MODE SYNCHRONE : Côté client sans queryClient + modules core uniquement
+  if (!queryClient && !hasOptional) {
+    const configRoutes: RouteObject[] = cfg.pages.map((p) => ({
+      path: p.path.replace(/^\/+/, ""),
+      element: <SiteRenderer />,
+      // Pas de loader côté client
+    }));
+
+    const moduleRoutes = getModuleRoutesSync(modules);  // ← Synchrone !
+
+    const children: RouteObject[] = [
+      ...configRoutes,
+      ...moduleRoutes,
+      { path: "*", element: <SiteRenderer /> },
+    ];
+
+    return [{
+      path: "/",
+      element: <RootLayout config={cfg} />,
+      children,
+    }];
+  }
+
+  // MODE ASYNCHRONE : Côté serveur avec queryClient ou modules optional
+  return buildRoutesAsync(cfg, queryClient, modules);
+}
+```
+
+**Mode ASYNCHRONE** (avec queryClient ou modules optional) :
+- Utilisé **côté serveur** (SSR) pour pré-charger les données
+- Appelle `buildRoutesAsync()` qui utilise `getModuleRoutes(modules, queryClient)`
+- Les routes ont des **loaders** pour pré-charger les données (ex: SearchPro, profils)
+- Support **code-splitting** des modules optional
+
+```typescript
+// src/lib/buildRoutes.tsx (lignes 197-278)
+async function buildRoutesAsync(
+  cfg: SiteConfig,
+  queryClient: QueryClient | undefined,
+  modules: ReturnType<typeof discoverModules>
+): Promise<RouteObject[]> {
+  // Routes config avec loaders pour SearchPro
+  const configRoutes = cfg.pages.map((p) => ({
+    path: p.path,
+    element: <SiteRenderer />,
+    loader: async ({ request }: LoaderFunctionArgs) => {
+      if (!queryClient) return null;
+
+      // Détecter les sections searchPro ou searchProStatic
+      const searchSections = p.sections.filter(
+        (s: { type: string }) => s.type === 'searchPro' || s.type === 'searchProStatic'
+      );
+
+      // Pré-charger les résultats pour chaque section
+      await Promise.all(
+        searchSections.map(section =>
+          prefetchSearchResults(queryClient, { /* params */ })
+        )
+      );
+
+      return null;
+    }
+  }));
+
+  const moduleRoutes = await getModuleRoutes(modules, queryClient);  // ← Asynchrone !
+
+  return [{
+    path: "/",
+    element: <RootLayout config={cfg} />,
+    children: [...configRoutes, ...moduleRoutes, { path: "*", element: <SiteRenderer /> }],
+  }];
+}
+```
+
+**Avantages** :
+- **Côté client** : pas de flash loading, navigation instantanée pour modules core
+- **Côté serveur** : données pré-chargées, SEO optimal, HTML initial complet
+
+---
+
+#### 4.2.2 Intégration des routes de modules
+
+Les routes finales combinent trois sources :
+
+1. **Routes config JSON** : Pages définies dans `config.prod.json`
+2. **Routes des modules** : Découvertes automatiquement via `discoverModules()` (voir section 4.4)
+3. **Route 404** : Catch-all `{ path: "*" }` pour les erreurs
+
+```typescript
+const children: RouteObject[] = [
+  ...configRoutes,      // Pages JSON (/, /about, etc.)
+  ...moduleRoutes,      // Modules découverts (/:slug pour profil, etc.)
+  { path: "*", element: <SiteRenderer /> }  // 404
+];
+```
+
+**Ordre d'importance** : Les routes sont évaluées dans l'ordre. Les routes de modules viennent **après** les routes config, donc une page config `/about` aura priorité sur une route module `/about`.
 
 ---
 
@@ -465,7 +644,279 @@ Cette section décrit l’organisation générale du code, le flux d’exécutio
   ```
 
 * **Lecture unifiée**
-  Côté client et SSR, la fonction `readEnv` cherche d’abord `window.__ENV__`, puis `process.env`, puis `import.meta.env`, assurant une cohérence entre développement et production.
+  Côté client et SSR, la fonction `readEnv` cherche d'abord `window.__ENV__`, puis `process.env`, puis `import.meta.env`, assurant une cohérence entre développement et production.
+
+---
+
+### 4.4 Système de découverte de modules
+
+SiteForge 2.0 introduit un **système de découverte automatique de modules** qui élimine le besoin d'enregistrer manuellement les routes. Les modules sont découverts via `import.meta.glob` de Vite, compatible SSR.
+
+---
+
+#### 4.4.1 Structure d'un module
+
+Chaque module vit dans `src/modules/<moduleName>/` et peut inclure :
+
+```
+src/modules/profil/
+├── module.config.ts    # Configuration du module (optionnel)
+├── routes.tsx          # Factory de routes (optionnel)
+├── components/         # Composants du module
+├── hooks/              # Hooks personnalisés
+├── contexts/           # Contextes React
+├── schema.ts           # Schémas Zod de validation
+├── i18n/               # Fichiers de traduction
+│   ├── fr.json
+│   └── en.json
+└── index.ts            # Exports centralisés
+```
+
+**Convention** :
+- Si le module a des routes, il doit exporter un fichier `routes.tsx`
+- Si le module a une config spécifique, il peut avoir `module.config.ts`
+- Si ni l'un ni l'autre n'existe, le module est juste une bibliothèque de composants
+
+---
+
+#### 4.4.2 Configuration de module (`module.config.ts`)
+
+```typescript
+// src/modules/profil/module.config.ts
+import type { ModuleConfigSchema } from "@/lib/modules";
+
+const config: ModuleConfigSchema = {
+  name: "profil",          // Nom unique du module
+  type: "core",            // "core" ou "optional"
+  enabled: true            // false pour désactiver
+};
+
+export default config;
+```
+
+**Types de modules** :
+
+| Type | Comportement | Usage |
+|------|-------------|-------|
+| `core` | Chargé en **eager** (synchrone) | Modules essentiels toujours nécessaires (profil, auth) |
+| `optional` | Chargé en **lazy** (asynchrone) | Modules accessoires, code-splittés (analytics, admin) |
+
+**Modules sans config** : Si `module.config.ts` n'existe pas, le module est traité comme `type: "core"` par défaut.
+
+---
+
+#### 4.4.3 Auto-découverte avec `import.meta.glob`
+
+La fonction `discoverModules()` dans `src/lib/modules.ts` utilise trois appels à `import.meta.glob` :
+
+```typescript
+// src/lib/modules.ts (lignes 42-58)
+export function discoverModules(): DiscoveredModule[] {
+  // 1. Charger toutes les configs (eager)
+  const configs = import.meta.glob<{ default: ModuleConfigSchema }>(
+    "/src/modules/*/module.config.ts",
+    { eager: true }
+  );
+
+  // 2. Charger les routes CORE en eager (sync)
+  const coreRoutes = import.meta.glob<{ routes: ModuleRouteFactory }>(
+    "/src/modules/*/routes.tsx",
+    { eager: true }
+  );
+
+  // 3. Charger les routes OPTIONAL en lazy (async)
+  const optionalRoutes = import.meta.glob<{ routes: ModuleRouteFactory }>(
+    "/src/modules/*/routes.tsx",
+    { eager: false }  // ← Pas de chargement immédiat
+  );
+
+  // ... logique de fusion
+}
+```
+
+**Vite compile** ces appels au build time en imports statiques, garantissant la compatibilité SSR.
+
+---
+
+#### 4.4.4 Pattern factory de routes
+
+Les modules exportent une fonction factory `routes` qui reçoit un `QueryClient` optionnel pour SSR :
+
+```typescript
+// src/modules/profil/routes.tsx
+import type { ModuleRouteFactory } from "@/lib/modules";
+import type { QueryClient } from "@tanstack/react-query";
+import type { RouteObject } from "react-router";
+
+export const routes: ModuleRouteFactory = (queryClient?: QueryClient): RouteObject[] => [
+  {
+    path: ":slug",                    // Route dynamique
+    element: <ProfilePage />,
+    loader: async ({ params }) => {
+      // SSR pre-fetching si queryClient fourni
+      if (!queryClient) return null;
+
+      const slug = params.slug?.startsWith('@') ? params.slug.slice(1) : params.slug;
+
+      return await queryClient.ensureQueryData({
+        queryKey: ["element-about", slug],
+        queryFn: async () => {
+          const { organization } = await initApi({ baseURL: getBaseUrl() });
+          return organization.entityBySlug(slug);
+        }
+      });
+    }
+  }
+];
+```
+
+**Avantages** :
+- **Type-safe** : TypeScript valide les types de routes
+- **SSR-friendly** : Le `queryClient` permet le pré-chargement des données
+- **Flexible** : Chaque module contrôle ses propres routes
+
+---
+
+#### 4.4.5 Chargement synchrone vs asynchrone
+
+Deux fonctions récupèrent les routes des modules découverts :
+
+**`getModuleRoutesSync(modules, queryClient?)`** - Synchrone, client-side :
+
+```typescript
+// src/lib/modules.ts (lignes 135-146)
+export function getModuleRoutesSync(
+  modules: DiscoveredModule[],
+  queryClient?: QueryClient
+): RouteObject[] {
+  return modules.flatMap(module => {
+    if (module.config.type === "core") {
+      const coreModule = module as Extract<DiscoveredModule, { config: { type: "core" } }>;
+      return coreModule.routes(queryClient);
+    }
+    throw new Error(`getModuleRoutesSync ne supporte que les modules core`);
+  });
+}
+```
+
+- Utilisée **côté client** quand il n'y a que des modules core
+- **Pas de loading flash** : tout est disponible immédiatement
+- Lance une erreur si un module optional est détecté
+
+**`getModuleRoutes(modules, queryClient?)`** - Asynchrone, server-side :
+
+```typescript
+// src/lib/modules.ts (lignes 158-177)
+export async function getModuleRoutes(
+  modules: DiscoveredModule[],
+  queryClient?: QueryClient
+): Promise<RouteObject[]> {
+  const routePromises = modules.map(async (module): Promise<RouteObject[]> => {
+    if (module.config.type === "core") {
+      const coreModule = module as Extract<DiscoveredModule, { config: { type: "core" } }>;
+      return coreModule.routes(queryClient);
+    } else {
+      // Module optional : routes chargées à la demande
+      const optModule = module as Extract<DiscoveredModule, { config: { type: "optional" } }>;
+      const loaded = await optModule.routes();
+      return loaded.routes(queryClient);
+    }
+  });
+
+  const routeArrays = await Promise.all(routePromises);
+  return routeArrays.flat();
+}
+```
+
+- Utilisée **côté serveur** (SSR) ou quand des modules optional existent
+- Support **code-splitting** : modules optional chargés à la demande
+- Pré-charge les données via les loaders
+
+---
+
+#### 4.4.6 Type discriminé `DiscoveredModule`
+
+Le système utilise un union type discriminé pour la type-safety :
+
+```typescript
+// src/lib/modules.ts (lignes 25-33)
+export type DiscoveredModule =
+  | {
+      config: ModuleConfigSchema & { type: "core" };
+      routes: ModuleRouteFactory;  // ← Fonction directe
+    }
+  | {
+      config: ModuleConfigSchema & { type: "optional" };
+      routes: () => Promise<{ routes: ModuleRouteFactory }>;  // ← Loader async
+    };
+```
+
+TypeScript garantit que :
+- Les modules **core** ont des routes synchrones
+- Les modules **optional** ont des routes asynchrones (lazy-loaded)
+
+---
+
+#### 4.4.7 Guide : Créer un nouveau module
+
+**Étape 1 : Créer la structure**
+
+```bash
+mkdir -p src/modules/mymodule/{components,hooks,contexts,i18n}
+touch src/modules/mymodule/{module.config.ts,routes.tsx,schema.ts,index.ts}
+touch src/modules/mymodule/i18n/{fr,en}.json
+```
+
+**Étape 2 : Définir la configuration** (optionnel)
+
+```typescript
+// src/modules/mymodule/module.config.ts
+import type { ModuleConfigSchema } from "@/lib/modules";
+
+const config: ModuleConfigSchema = {
+  name: "mymodule",
+  type: "core",      // ou "optional" pour code-splitting
+  enabled: true
+};
+
+export default config;
+```
+
+**Étape 3 : Exporter les routes** (si le module a des routes)
+
+```typescript
+// src/modules/mymodule/routes.tsx
+import type { ModuleRouteFactory } from "@/lib/modules";
+import { MyPage } from "./components/MyPage";
+
+export const routes: ModuleRouteFactory = (queryClient) => [
+  {
+    path: "mypath",
+    element: <MyPage />,
+    loader: async () => {
+      // Pré-chargement SSR optionnel
+      if (!queryClient) return null;
+      return await queryClient.ensureQueryData({
+        queryKey: ["mydata"],
+        queryFn: fetchMyData
+      });
+    }
+  }
+];
+```
+
+**Étape 4 : Le module est automatiquement découvert !**
+
+Au prochain démarrage, `discoverModules()` trouve et charge le module sans configuration supplémentaire.
+
+**Étape 5 : Exporter les API publiques** (optionnel)
+
+```typescript
+// src/modules/mymodule/index.ts
+export { routes } from "./routes";
+export { MyPage } from "./components/MyPage";
+export { useMyHook } from "./hooks/useMyHook";
+```
 
 ---
 
@@ -1779,27 +2230,416 @@ Le schéma `SearchProSectionSchema` (voir section 5.5.34) définit toutes les pr
 
 ---
 
-### 7.2 Autres modules à faire et documenter
+### 7.2 Module Profil (`src/modules/profil`)
+
+Le module **profil** gère l'affichage des pages de profil pour tous les types d'entités du système (organizations, events, projects, citoyens, poi). Il s'agit d'un **module core** (chargé en eager) pour éviter tout flash de loading lors de l'accès aux profils.
+
+#### 7.2.1 Architecture interne
+
+```
+src/modules/profil/
+├── components/
+│   ├── sections/
+│   │   ├── ProfileHeader.tsx       // En-tête du profil (hero, simple, cover, minimal)
+│   │   ├── ProfileInfo.tsx         // Informations générales (sidebar, inline, tabs)
+│   │   ├── ProfileAbout.tsx        // Description et à propos
+│   │   ├── ProfileMap.tsx          // Carte de localisation
+│   │   ├── ProfileOrganizer.tsx    // Organisateur/Porteur de projet
+│   │   ├── ProfileMembers.tsx      // Liste des membres
+│   │   ├── ProfileGallery.tsx      // Galerie d'images
+│   │   └── ProfileRelated.tsx      // Entités liées
+│   └── templates/
+│       └── ProfileTemplateDefault.tsx  // Template par défaut (complet)
+├── contexts/
+│   ├── ProfileEntityContext.tsx    // Context React pour l'entité du profil
+│   └── ProfileEntityProvider.tsx   // Provider du context
+├── hooks/
+│   ├── useProfileEntity.tsx        // Hook pour accéder à l'entité typée
+│   └── useFormatProfileEntity.tsx  // Hook pour formater les données
+├── pages/
+│   └── ProfilePage.tsx             // Page principale des profils
+├── i18n/
+│   ├── en.json                     // Traductions anglaises
+│   └── fr.json                     // Traductions françaises
+├── module.config.ts                // Configuration du module (type: "core")
+├── routes.tsx                      // Routes dynamiques avec loader SSR
+├── schema.ts                       // Schémas Zod des profils
+├── ProfileRenderer.tsx             // Renderer principal de profil
+├── ProfileSectionRenderer.tsx      // Renderer des sections
+├── ProfileSeo.tsx                  // SEO dynamique
+├── i18n.ts                         // Pont vers react-i18next
+└── index.ts                        // Exports centralisés
+```
+
+#### 7.2.2 Configuration de module (`module.config.ts`)
+
+```ts
+const config: ModuleConfigSchema = {
+  name: "profil",
+  type: "core",          // Module core = chargé en eager (synchrone)
+  enabled: true
+};
+```
+
+Le module profil est **core** pour garantir qu'il est toujours disponible sans code-splitting, évitant ainsi tout flash de loading lors de l'accès à un profil.
+
+#### 7.2.3 Routes dynamiques avec loader SSR
+
+Le fichier `routes.tsx` exporte une fonction `routes` (de type `ModuleRouteFactory`) qui crée la route dynamique `/:slug`:
+
+```ts
+export const routes: ModuleRouteFactory = (queryClient?: QueryClient): RouteObject[] => [
+  {
+    path: ":slug",
+    element: <ProfilePage />,
+    loader: async ({ params }: LoaderFunctionArgs) => {
+      if (!queryClient) return null; // Côté client, skip pre-fetch
+
+      const slug = params.slug?.startsWith('@')
+        ? params.slug.slice(1)
+        : params.slug;
+
+      // Pré-charger les données côté serveur
+      return await queryClient.ensureQueryData({
+        queryKey: ["element-about", slug],
+        queryFn: async () => {
+          const { organization } = await initApi({ baseURL: getBaseUrl() });
+          return organization.entityBySlug(slug);
+        }
+      });
+    }
+  }
+];
+```
+
+**Convention**: Les profils sont accessibles via `/@username` ou `/:slug`.
+
+**Loader SSR**:
+- Côté serveur (avec `queryClient`): pré-charge les données dans React Query
+- Côté client (sans `queryClient`): skip le pre-fetch, les données seront chargées par le hook
+
+#### 7.2.4 Context et Provider
+
+##### ProfileEntityContext
+
+Le context expose l'entité du profil, sa configuration et son type:
+
+```ts
+interface ProfileEntityContextType {
+  entity: SearchEntity;      // Entité brute (union type)
+  config: ProfileConfig;     // Configuration des sections
+  entityType: ProfileType;   // Type: "organizations" | "events" | ...
+}
+```
+
+##### ProfileEntityProvider
+
+Le provider injecte ces valeurs dans le contexte:
+
+```tsx
+<ProfileEntityProvider
+  entity={entity}
+  config={profileConfig}
+  entityType={entityType}
+>
+  <ProfileRenderer />
+</ProfileEntityProvider>
+```
+
+#### 7.2.5 Hook useProfileEntity
+
+Ce hook expose l'entité **automatiquement typée** grâce à `getTypedEntity()`:
+
+```ts
+export function useProfileEntity() {
+  const context = useContext(ProfileEntityContext);
+  if (!context) {
+    throw new Error('useProfileEntity must be used within ProfileEntityProvider');
+  }
+
+  return {
+    entity: getTypedEntity(context.entity),  // ✅ Entité typée automatiquement
+    config: context.config,
+    entityType: context.entityType,
+  };
+}
+```
+
+**Typage automatique**: L'entité retournée est de type `User | Organization | Project | EventType | Poi`, et TypeScript peut automatiquement faire le **narrowing** avec les **type guards**:
+
+```tsx
+const { entity, entityType } = useProfileEntity();
+
+if (isUser(entity)) {
+  entity.isFriend();      // ✅ TypeScript sait que entity est User
+}
+
+if (isOrganization(entity)) {
+  entity.isMember();      // ✅ TypeScript sait que entity est Organization
+}
+```
+
+Les **type guards** sont définis dans `src/lib/getTypedEntity.ts`:
+- `isUser(entity): entity is User`
+- `isOrganization(entity): entity is Organization`
+- `isProject(entity): entity is Project`
+- `isEvent(entity): entity is EventType`
+- `isPoi(entity): entity is Poi`
+
+#### 7.2.6 Hook useFormatProfileEntity
+
+Ce hook formatte et normalise les données de l'entité pour l'affichage:
+
+```ts
+const {
+  logoUrl,
+  bannerUrl,
+  address,
+  organizer,
+  name,
+  tags,
+  badges,
+  membersCount,
+  projectsCount,
+  openingHours,
+} = useFormatProfileEntity(entity);
+```
+
+#### 7.2.7 Schéma de configuration (`schema.ts`)
+
+Le module profil utilise **Zod** pour valider la configuration des profils. La configuration principale est définie dans `site-config.json` sous la clé `profiles`:
+
+```ts
+// Types d'entités supportés
+export const ProfileTypeSchema = z.enum([
+  "events",
+  "organizations",
+  "projects",
+  "citoyens",
+  "poi"
+]);
+
+// Configuration d'un type de profil
+export const ProfileConfigSchema = z.object({
+  layout: z.enum(["default", "modern", "compact", "full-width"])
+    .optional().default("default"),
+  sections: z.array(ProfileSectionSchema),
+  hideHeader: z.boolean().optional().default(false),
+  hideFooter: z.boolean().optional().default(false),
+  seo: z.object({
+    titleTemplate: z.string().optional(),
+    descriptionTemplate: z.string().optional(),
+  }).optional(),
+});
+
+// Configuration globale
+export const ProfilesConfigSchema = z.object({
+  default: ProfileConfigSchema.optional(),
+  events: ProfileConfigSchema.optional(),
+  organizations: ProfileConfigSchema.optional(),
+  projects: ProfileConfigSchema.optional(),
+  citoyens: ProfileConfigSchema.optional(),
+  poi: ProfileConfigSchema.optional(),
+}).optional();
+```
+
+#### 7.2.8 Sections de profil
+
+Le module profil propose 9 types de sections configurables:
+
+| Section               | Type                       | Variantes                        | Description                          |
+| --------------------- | -------------------------- | -------------------------------- | ------------------------------------ |
+| `profile-header`      | ProfileHeaderSection       | hero, simple, cover, minimal     | En-tête avec bannière et logo        |
+| `profile-info`        | ProfileInfoSection         | sidebar, inline, tabs            | Informations générales               |
+| `profile-about`       | ProfileAboutSection        | —                                | Description et à propos              |
+| `profile-map`         | ProfileMapSection          | —                                | Carte de localisation (Leaflet)      |
+| `profile-organizer`   | ProfileOrganizerSection    | —                                | Organisateur/Porteur de projet       |
+| `profile-members`     | ProfileMembersSection      | —                                | Liste des membres                    |
+| `profile-gallery`     | ProfileGallerySection      | —                                | Galerie d'images avec lightbox       |
+| `profile-related`     | ProfileRelatedSection      | —                                | Entités liées (parent/children/etc.) |
+| `profile-template-default` | ProfileTemplateDefaultSection | —                     | Template complet (tout-en-un)        |
+
+Chaque section a son propre schéma Zod avec des options configurables.
+
+#### 7.2.9 ProfileRenderer
+
+Le `ProfileRenderer` est le composant principal qui:
+1. Récupère la configuration via `useProfileEntity()`
+2. Applique le layout configuré
+3. Rend les sections via `ProfileSectionRenderer`
+
+```tsx
+export function ProfileRenderer() {
+  const { config } = useProfileEntity();
+
+  return (
+    <div className={`profile-layout-${config.layout}`}>
+      {config.sections.map((section, idx) => (
+        <ProfileSectionRenderer key={idx} section={section} />
+      ))}
+    </div>
+  );
+}
+```
+
+#### 7.2.10 ProfileSectionRenderer
+
+Le `ProfileSectionRenderer` utilise un mapping lazy-loaded pour chaque type de section:
+
+```tsx
+const LazySections = {
+  "profile-header": lazyNamed(() => import("./sections/ProfileHeader"), "ProfileHeader"),
+  "profile-info": lazyNamed(() => import("./sections/ProfileInfo"), "ProfileInfo"),
+  "profile-about": lazyNamed(() => import("./sections/ProfileAbout"), "ProfileAbout"),
+  // ... etc
+};
+
+export function ProfileSectionRenderer({ section }) {
+  const Component = LazySections[section.type];
+  if (!Component) return null;
+
+  return (
+    <Suspense fallback={<ProfileSectionSkeleton />}>
+      <Component {...section} />
+    </Suspense>
+  );
+}
+```
+
+#### 7.2.11 SEO dynamique (ProfileSeo)
+
+Le composant `ProfileSeo` génère les meta tags dynamiquement:
+
+```tsx
+<ProfileSeo
+  entity={entity}
+  isLoading={false}
+  entityType={entityType}
+/>
+```
+
+Il génère:
+- `<title>` avec template configurable
+- `<meta name="description">` avec template configurable
+- Open Graph tags (og:title, og:description, og:image, og:type)
+- Twitter Card tags
+- Données structurées JSON-LD (Organization, Event, Person, Place)
+
+#### 7.2.12 i18n et traductions
+
+Le module profil gère ses propres traductions:
+
+```ts
+// i18n.ts
+import i18n from "@/lib/i18n";
+import enTranslations from "./i18n/en.json";
+import frTranslations from "./i18n/fr.json";
+
+i18n.addResourceBundle("en", "modules/profil", enTranslations);
+i18n.addResourceBundle("fr", "modules/profil", frTranslations);
+```
+
+Utilisation dans les composants:
+
+```tsx
+import { useT } from "@/hooks/useT";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+
+function ProfilePage() {
+  useLoadNamespace("modules/profil");
+  const t = useT("modules/profil");
+
+  return <h1>{t("ProfilePage.title")}</h1>;
+}
+```
+
+#### 7.2.13 Configuration JSON dans site-config.json
+
+Exemple de configuration des profils dans `site-config.json`:
+
+```json
+{
+  "profiles": {
+    "default": {
+      "layout": "default",
+      "sections": [
+        { "type": "profile-header", "variant": "hero" },
+        { "type": "profile-info", "variant": "sidebar" },
+        { "type": "profile-about" }
+      ],
+      "hideHeader": false,
+      "hideFooter": false
+    },
+    "organizations": {
+      "layout": "modern",
+      "sections": [
+        { "type": "profile-template-default" }
+      ],
+      "seo": {
+        "titleTemplate": "{name} - Organisation",
+        "descriptionTemplate": "{shortDescription}"
+      }
+    },
+    "events": {
+      "layout": "default",
+      "sections": [
+        { "type": "profile-header", "variant": "cover" },
+        { "type": "profile-info", "showDates": true },
+        { "type": "profile-about" },
+        { "type": "profile-organizer" },
+        { "type": "profile-map", "zoom": 15 }
+      ]
+    }
+  }
+}
+```
+
+**Hiérarchie de configuration**:
+1. Configuration spécifique au type (`organizations`, `events`, etc.)
+2. Si absente, fallback sur `default`
+3. Si `default` absente, configuration hardcodée dans ProfilePage
+
+#### 7.2.14 Flux d'exécution complet
+
+1. **URL**: Utilisateur accède à `/@username`
+2. **Route matching**: React Router match la route `/:slug` du module profil
+3. **Loader SSR** (côté serveur uniquement):
+   - Appel API `entityBySlug(username)`
+   - Pre-fetch des données dans React Query
+4. **ProfilePage**:
+   - Détection du type d'entité via `entity.getEntityType()`
+   - Récupération de la config profil depuis `siteConfig.profiles[type]`
+   - Injection dans ProfileEntityProvider
+5. **ProfileRenderer**:
+   - Récupération entity + config via `useProfileEntity()`
+   - Rendu des sections via ProfileSectionRenderer
+6. **Sections individuelles**:
+   - Accès à l'entité typée via `useProfileEntity()`
+   - Utilisation des type guards si nécessaire
+   - Formatage des données via `useFormatProfileEntity()`
+
+---
+
+### 7.3 Autres modules
+
+D'autres modules suivent des patterns similaires:
 
 * **EventList** (`src/modules/eventList`)
-
-  * Schéma (`schema.ts`), Hook `useEventList`, composant `EventListSection`
+  * Liste d'événements avec filtres
 * **ContactForm** (`src/modules/contactForm`)
-
-  * Schéma, Hook `useContactForm`, composant `ContactFormSection`
+  * Formulaire de contact avec validation
 * **Blog** (`src/modules/blog`)
-
-  * Schéma posts, Hook `useBlogPosts`, composant `BlogListSection`
+  * Liste d'articles de blog
 * **Newsletter** (`src/modules/newsletter`)
+  * Inscription newsletter
 
-  * Schéma, Hook `useNewsletter`, composant `NewsletterSection`
-
-Chaque module suit la même structure :
-
-1. **Validation des props** avec Zod.
-2. **Context/Hooks** pour la logique métier.
-3. **Composants** pour l’UI.
-4. **i18n** pour textes multi-langues.
+Tous les modules suivent la même structure:
+1. **Validation des props** avec Zod (`schema.ts`)
+2. **Context/Hooks** pour la logique métier
+3. **Composants** pour l'UI
+4. **i18n** pour textes multi-langues
+5. **Configuration** via `module.config.ts`
+6. **Routes** via `routes.tsx` (si nécessaire)
 
 ---
 
@@ -1809,51 +2649,439 @@ Le client d’API et le système d’authentification de SiteForge reposent sur 
 
 ---
 
-### 8.1 Initialisation de l’API (`apiClient.ts`)
+### 8.1 Initialisation de l'API - Pattern Singleton (`apiClient.ts`)
 
-Le fichier `src/lib/apiClient.ts` expose une fonction `initApiClient` qui crée et configure une instance `ApiClient` :
+Le fichier `src/lib/apiClient.ts` implémente un **pattern singleton** pour l'API client. Ce pattern garantit qu'une seule instance du client API existe dans l'application, évitant les initialisations multiples coûteuses.
+
+#### 8.1.1 Architecture du singleton
+
+Le singleton gère plusieurs caches internes:
 
 ```ts
-import { ApiClient } from "@communecter/cocolight-api-client";
-import { readEnv } from "./utils";
+// Variables d'état internes (module-level)
+let client: ApiClient | null = null;
+let userApiInstance: UserApi | null = null;
+let api: Api | null = null;
+let cachedMe: User | null = null;
+let cachedOrganization: Organization | null = null;
+let cachedContextType: string | undefined = undefined;
+let cachedContextId: string | undefined = undefined;
+let cachedEntity: any = null;
+let initialized = false;
+let initPromise: Promise<InitApiResult> | null = null;
+```
 
-export function initApiClient() {
-  const baseUrl = readEnv("VITE_BASE_URL_BACKEND", "http://localhost:3000");
-  const client = new ApiClient({
-    baseURL: baseUrl,
-    // injection des stratégies de stockage de tokens
-    tokenStorage: new MultiServerTokenStorageStrategy(),
-    // gestion des retries, circuit breaker, etc.
-    axiosOptions: { /* retry, timeout… */ }
-  });
-  return client;
+**Pourquoi ce pattern ?**
+- **Performance**: L'initialisation de l'API est coûteuse (vérification de connexion, récupération du `me`, résolution du slug contextuel)
+- **Cohérence**: Garantit que tous les composants utilisent la même instance
+- **SSR-safe**: Supporte l'initialisation côté serveur et côté client
+- **Race condition safe**: Utilise `initPromise` pour éviter les initialisations concurrentes
+
+#### 8.1.2 Fonction principale: `initApiClient()`
+
+```ts
+export async function initApiClient(
+  options: InitApiOptions = {},
+): Promise<InitApiResult> {
+  // 1. Si déjà initialisé, retourner le cache
+  if (initialized) {
+    return {
+      client: client!,
+      userApiInstance: userApiInstance!,
+      api: api!,
+      me: cachedMe,
+      organization: cachedOrganization,
+      contextType: cachedContextType,
+      contextId: cachedContextId,
+      entity: cachedEntity,
+    };
+  }
+
+  // 2. Si initialisation en cours, retourner la promesse existante
+  if (initPromise) return initPromise;
+
+  // 3. Démarrer l'initialisation
+  initPromise = (async (): Promise<InitApiResult> => {
+    const isServer = typeof window === "undefined";
+
+    // Choisir le storage selon l'environnement
+    const tokenStorageStrategy = isServer
+      ? await Cocolight.tokenStorageStrategy.createDefaultMultiServerTokenStorageStrategy("memory")
+      : await Cocolight.tokenStorageStrategy.createDefaultMultiServerTokenStorageStrategy("localStorage");
+
+    // Créer le client API
+    client = new Cocolight.ApiClient({
+      baseURL: options.baseURL ?? getBaseUrl(),
+      debug: options.debug ?? false,
+      ...options,
+      tokenStorageStrategy,
+    });
+
+    // Créer l'instance UserApi
+    userApiInstance = Cocolight.Api.userApi(client);
+    initialized = true;
+
+    // Initialiser les caches
+    cachedMe = null;
+    cachedOrganization = null;
+    const slug = getSlug();
+
+    try {
+      // Si connecté, récupérer l'utilisateur
+      if (userApiInstance.client.isConnected) {
+        const loggedUser = await userApiInstance.meIsconnected();
+        api = new Cocolight.Api(loggedUser, userApiInstance.client);
+        cachedMe = await api.me();
+      } else {
+        api = new Cocolight.Api(null, userApiInstance.client);
+      }
+
+      // Résoudre le slug contextuel (si présent)
+      if (slug) {
+        const entity = cachedMe
+          ? await cachedMe.entityBySlug(slug)
+          : await api.entitySlug(slug);
+
+        if (entity) {
+          cachedEntity = entity;
+          cachedContextType = entity.getEntityType();
+          cachedContextId = entity.id || undefined;
+
+          if (cachedContextType === "organizations") {
+            cachedOrganization = entity as Organization;
+          }
+        }
+      }
+    } catch (err) {
+      console.error("[Api.init] Erreur lors de l'initialisation:", err);
+      if (!api) {
+        api = new Cocolight.Api(null, userApiInstance.client);
+      }
+    }
+
+    return {
+      client,
+      userApiInstance,
+      api,
+      me: cachedMe,
+      organization: cachedOrganization,
+      contextType: cachedContextType,
+      contextId: cachedContextId,
+      entity: cachedEntity,
+    } as InitApiResult;
+  })();
+
+  return initPromise;
 }
 ```
 
-* **`baseURL`** : URL du backend, issue de `VITE_BASE_URL_BACKEND`.
-* **`tokenStorage`** : stratégie de stockage (voir 8.2).
-* **`axiosOptions`** : options de retry et timeout pour la résilience.
+**Flux d'initialisation**:
+1. **Vérification du cache** (`initialized`): Si déjà initialisé, retour immédiat
+2. **Vérification de promesse concurrente** (`initPromise`): Évite les double initialisations
+3. **Choix du storage**: `memory` (SSR) ou `localStorage` (client)
+4. **Création du client API**: Instance `ApiClient` avec token storage
+5. **Création de l'API façade**: Instance `UserApi` et `Api`
+6. **Récupération du `me`**: Si connecté, appel `meIsconnected()` + `api.me()`
+7. **Résolution du slug contextuel**: Si présent, résolution de l'entité via `entityBySlug(slug)`
+8. **Cache de l'entité**: Stockage dans `cachedEntity`, `cachedOrganization`, etc.
+
+#### 8.1.3 Token Storage Strategy selon l'environnement
+
+Le choix du storage est automatique:
+
+```ts
+const isServer = typeof window === "undefined";
+
+const tokenStorageStrategy = isServer
+  ? await Cocolight.tokenStorageStrategy.createDefaultMultiServerTokenStorageStrategy("memory")
+  : await Cocolight.tokenStorageStrategy.createDefaultMultiServerTokenStorageStrategy("localStorage");
+```
+
+- **Côté serveur** (`isServer = true`): Utilise `memory` (non persistant, évite les collisions entre requêtes)
+- **Côté client** (`isServer = false`): Utilise `localStorage` (persistant entre sessions)
+
+#### 8.1.4 Helpers pour accéder aux singletons
+
+Le fichier expose des helpers pour accéder facilement aux instances:
+
+```ts
+// Retourne le client API (initialise si nécessaire)
+export async function getApiClient(): Promise<ApiClient> {
+  if (!initialized) await initApiClient();
+  return client!;
+}
+
+// Retourne l'instance UserApi (initialise si nécessaire)
+export async function getUserApi(): Promise<UserApi> {
+  if (!initialized) await initApiClient();
+  return userApiInstance!;
+}
+
+// Retourne l'API façade (initialise si nécessaire)
+export async function getApi(): Promise<Api> {
+  if (!initialized) await initApiClient();
+  return api!;
+}
+
+// Alias simple pour initApiClient (retourne la promesse directement)
+export function initApi(options: InitApiOptions = {}) {
+  return initApiClient(options);
+}
+```
+
+**Usage recommandé**:
+- Utiliser `initApi()` pour forcer l'initialisation avec des options spécifiques
+- Utiliser les helpers (`getApiClient()`, `getApi()`, etc.) pour un accès lazy
+
+#### 8.1.5 Types et interfaces
+
+```ts
+export interface InitApiOptions {
+  baseURL?: string;
+  debug?: boolean;
+  [key: string]: any; // Options supplémentaires du SDK
+}
+
+export interface InitApiResult {
+  client: ApiClient;
+  userApiInstance: UserApi;
+  api: Api;
+  me: User | null;
+  organization: Organization | null;
+  contextType?: string;     // Type de l'entité contextuelle ("organizations", "events", etc.)
+  contextId?: string;       // ID de l'entité contextuelle
+  entity?: any;             // L'entité complète (organization, project, event, etc.)
+}
+```
+
+#### 8.1.6 Gestion du slug contextuel
+
+Le slug contextuel provient de `getSlug()` (défini dans `src/lib/constant/common.ts`):
+
+```ts
+const slug = getSlug(); // Ex: "toulouse", "ma-startup"
+
+if (slug) {
+  const entity = cachedMe
+    ? await cachedMe.entityBySlug(slug)  // Si connecté, utiliser me.entityBySlug
+    : await api.entitySlug(slug);         // Sinon, utiliser l'API publique
+
+  if (entity) {
+    cachedEntity = entity;
+    cachedContextType = entity.getEntityType();
+    cachedContextId = entity.id;
+
+    // Si c'est une organisation, la mettre en cache
+    if (cachedContextType === "organizations") {
+      cachedOrganization = entity as Organization;
+    }
+  }
+}
+```
+
+**Contexte d'utilisation**: Permet d'avoir un "contexte" actif dans toute l'application (ex: l'organisation courante) accessible via le singleton.
+
+#### 8.1.7 Sécurité et gestion d'erreurs
+
+L'initialisation est entourée de try-catch pour garantir qu'une instance `Api` existe toujours:
+
+```ts
+try {
+  // Initialisation normale
+} catch (err) {
+  console.error("[Api.init] Erreur lors de l'initialisation:", err);
+  if (!api) {
+    api = new Cocolight.Api(null, userApiInstance.client); // Fallback: API non connectée
+  }
+}
+```
+
+**Garantie**: Même en cas d'erreur réseau, l'application dispose d'une instance API fonctionnelle (non connectée).
+
+#### 8.1.8 Usage dans les loaders SSR
+
+Les loaders de routes utilisent `initApi()` pour initialiser l'API côté serveur:
+
+```ts
+// Dans routes.tsx du module profil
+loader: async ({ params }) => {
+  const { organization } = await initApi({
+    baseURL: getBaseUrl(),
+    debug: true
+  });
+
+  return await queryClient.ensureQueryData({
+    queryKey: ["element-about", params.slug],
+    queryFn: () => organization.entityBySlug(params.slug)
+  });
+}
+```
+
+**Avantage**: L'initialisation se fait une seule fois par requête SSR grâce au singleton.
+
+#### 8.1.9 Limitations et considérations
+
+**⚠️ Limitations du pattern singleton**:
+- **SSR multi-requêtes**: Les variables module-level sont partagées entre toutes les requêtes SSR. En production, utiliser un système de requête-scoped context (ex: AsyncLocalStorage)
+- **Reset impossible**: Une fois initialisé, le singleton ne peut pas être réinitialisé (par design)
+- **Tests unitaires**: Nécessite un reset manuel entre tests
+
+**✅ Avantages**:
+- Évite les initialisations multiples coûteuses
+- Garantit une seule source de vérité pour l'état de connexion
+- Supporte SSR et CSR avec le même code
+- Gestion automatique du storage selon l'environnement
 
 ---
 
 ### 8.2 Stratégies de stockage des tokens
 
-#### 8.2.1 MultiServerTokenStorageStrategy
+Le stockage des tokens d'authentification est géré par le SDK `@communecter/cocolight-api-client` via sa factory `createDefaultMultiServerTokenStorageStrategy()`. Cette stratégie permet de gérer l'authentification sur plusieurs serveurs simultanément (multi-tenant).
 
-Implémentée dans `src/lib/utils/MultiServerTokenStorageStrategy.js`, cette classe :
+#### 8.2.1 Choix automatique selon l'environnement
 
-* Stocke les tokens (access + refresh) distinctement par serveur (par `origin`).
-* Permet l’authentification simultanée sur plusieurs instances Communecter.
-* Expose les méthodes :
+Le type de storage est choisi automatiquement dans `initApiClient()`:
 
-  * `get(serverUrl)`, `set(serverUrl, tokens)`, `clear(serverUrl)`.
+```ts
+const isServer = typeof window === "undefined";
 
-#### 8.2.2 MemoryStorageStrategy
+const tokenStorageStrategy = isServer
+  ? await Cocolight.tokenStorageStrategy.createDefaultMultiServerTokenStorageStrategy("memory")
+  : await Cocolight.tokenStorageStrategy.createDefaultMultiServerTokenStorageStrategy("localStorage");
+```
 
-Implémentée dans `src/lib/utils/TokenStorage.js`, pour usage simple ou tests :
+**Deux modes de storage**:
 
-* Stocke les tokens en mémoire (non persistant).
-* Méthodes : `get()`, `set(tokens)`, `clear()`.
+| Mode           | Environnement | Backend           | Persistance | Usage                                      |
+| -------------- | ------------- | ----------------- | ----------- | ------------------------------------------ |
+| `"memory"`     | Server (SSR)  | Map en mémoire    | Non         | SSR, évite collisions entre requêtes       |
+| `"localStorage"` | Client (Browser) | `window.localStorage` | Oui   | Client, tokens persistés entre sessions    |
+
+#### 8.2.2 MultiServerTokenStorageStrategy
+
+Cette stratégie (fournie par le SDK) gère l'authentification multi-serveurs :
+
+**Fonctionnalités**:
+- Stocke les tokens **par serveur** (indexés par `origin`)
+- Permet l'authentification **simultanée** sur plusieurs instances Communecter
+- Gère automatiquement les **access tokens** et **refresh tokens**
+- Switch automatique entre storage backends selon l'environnement
+
+**API** (exposée par le SDK):
+```ts
+interface TokenStorageStrategy {
+  get(serverUrl: string): Promise<TokenPair | null>;
+  set(serverUrl: string, tokens: TokenPair): Promise<void>;
+  clear(serverUrl: string): Promise<void>;
+  clearAll(): Promise<void>;
+}
+
+interface TokenPair {
+  accessToken: string;
+  refreshToken: string;
+}
+```
+
+**Exemple de structure en localStorage**:
+
+```json
+{
+  "cocolight_tokens_https://api1.communecter.org": {
+    "accessToken": "eyJhbGc...",
+    "refreshToken": "eyJhbGc..."
+  },
+  "cocolight_tokens_https://api2.communecter.org": {
+    "accessToken": "eyJhbGc...",
+    "refreshToken": "eyJhbGc..."
+  }
+}
+```
+
+#### 8.2.3 Sécurité des tokens
+
+**Côté client (localStorage)**:
+- Les tokens sont stockés dans `localStorage` avec un préfixe `cocolight_tokens_`
+- **⚠️ Limitation**: `localStorage` est accessible par JavaScript, vulnérable aux attaques XSS
+- **Recommandation**: Le SDK gère le refresh automatique des tokens expirés
+
+**Côté serveur (memory)**:
+- Les tokens sont stockés en mémoire (Map JavaScript)
+- Non persistant : les tokens sont perdus à chaque redémarrage du serveur
+- **⚠️ Limitation SSR**: Les variables module-level sont partagées entre toutes les requêtes
+- **Recommandation future**: Utiliser AsyncLocalStorage pour isoler les tokens par requête
+
+#### 8.2.4 Refresh automatique des tokens
+
+Le SDK `@communecter/cocolight-api-client` gère automatiquement le refresh des tokens:
+
+1. **Détection d'expiration**: Lors d'un appel API, si le `accessToken` est expiré (HTTP 401), le SDK déclenche automatiquement un refresh
+2. **Refresh silencieux**: Utilise le `refreshToken` pour obtenir un nouveau `accessToken`
+3. **Retry automatique**: Rejoue la requête initiale avec le nouveau token
+4. **Mise à jour du storage**: Le nouveau `accessToken` est automatiquement stocké
+
+**Avantage**: Les composants React n'ont pas besoin de gérer manuellement l'expiration des tokens.
+
+#### 8.2.5 Gestion des erreurs de refresh
+
+Si le `refreshToken` est également expiré:
+
+1. Le SDK émet un événement `token-refresh-failed`
+2. L'utilisateur est automatiquement déconnecté
+3. Les tokens sont supprimés du storage
+4. Redirection vers la page de login (si configurée)
+
+**Gestion dans l'application**:
+
+```ts
+// Dans un provider React ou l'entrée de l'application
+client.on('token-refresh-failed', () => {
+  console.warn('Tokens expirés, déconnexion automatique');
+  // Optionnel: Rediriger vers /login
+  window.location.href = '/login';
+});
+```
+
+#### 8.2.6 Clear tokens (logout)
+
+Pour déconnecter un utilisateur et supprimer ses tokens:
+
+```ts
+import { getApiClient } from "@/lib/apiClient";
+
+async function logout() {
+  const client = await getApiClient();
+  const baseURL = client.config.baseURL;
+
+  // Supprimer les tokens du storage
+  await client.tokenStorageStrategy.clear(baseURL);
+
+  // Optionnel: Clear tous les tokens (multi-serveurs)
+  await client.tokenStorageStrategy.clearAll();
+
+  // Réinitialiser l'état de connexion
+  window.location.href = '/';
+}
+```
+
+#### 8.2.7 Vérification de l'état de connexion
+
+Le SDK expose `client.isConnected` pour vérifier si l'utilisateur est authentifié:
+
+```ts
+const client = await getApiClient();
+
+if (client.isConnected) {
+  console.log('Utilisateur connecté');
+  const me = await api.me();
+} else {
+  console.log('Utilisateur non connecté');
+}
+```
+
+**Fonctionnement**:
+- `isConnected` vérifie si un `accessToken` valide existe dans le storage
+- Ne fait **pas** d'appel réseau (vérification locale uniquement)
+- Peut être utilisé côté client pour afficher/masquer des éléments UI
 
 ---
 
@@ -2545,44 +3773,471 @@ Cette section décrit en détail le fonctionnement des fichiers responsables du 
 
 ---
 
-### 12.4 `src/entry-client.tsx`&#x20;
+### 12.4 `src/entry-client.tsx` - Hydratation avec detection Sync/Async
 
-1. **Initialisation i18n**
+Le fichier `entry-client.tsx` gère l'hydratation côté client avec une **détection automatique** du mode synchrone ou asynchrone de `buildRoutes()`, ce qui permet d'éviter le flash de loading pour les modules core.
 
-   ```ts
-   import "@/i18n"; // init react-i18next via I18nBridge
-   ```
-2. **Récupération de la config et du state**
+#### 12.4.1 Déclarations globales TypeScript
 
-   ```ts
-   const siteConfig = window.__CONFIG__ as SiteConfig;
-   const dehydratedState = window.__REACT_QUERY_STATE__ ?? null;
-   ```
-3. **Création du router React**
+```ts
+declare global {
+  interface Window {
+    __CONFIG__: SiteConfig;                    // Config JSON injectée par le serveur
+    __REACT_QUERY_STATE__: DehydratedState | undefined; // État React Query désérialisé
+    __staticRouterHydrationData?: Partial<     // Données d'hydratation React Router
+      Pick<RouterState, "errors" | "loaderData" | "actionData">
+    >;
+  }
+}
+```
 
-   ```ts
-   const router = createBrowserRouter(buildRoutes(siteConfig), { hydrationData: window.__staticRouterHydrationData });
-   ```
-4. **Hydratation React**
+Ces déclarations permettent à TypeScript de typer correctement les variables globales injectées par le serveur SSR.
 
-   ```tsx
-   function Root() {
-     const [queryClient] = useState(() => new QueryClient({ defaultOptions:{queries:{staleTime:60000}} }));
-     return (
-       <HelmetProvider>
-         <QueryClientProvider client={queryClient}>
-           <HydrationBoundary state={dehydratedState}>
-             <RouterProvider router={router} />
-           </HydrationBoundary>
-         </QueryClientProvider>
-       </HelmetProvider>
-     );
-   }
-   hydrateRoot(document.getElementById("root")!, <Root />);
-   ```
+#### 12.4.2 Récupération de la config et du state
 
-   * `HelmetProvider` pour relier les méta-données côté client.
-   * `HydrationBoundary` reprend l’état React Query serveur sans refetch.
+```ts
+const siteConfig = window.__CONFIG__;
+const dehydratedState = window.__REACT_QUERY_STATE__ ?? null;
+```
+
+- `siteConfig`: Configuration JSON complète du site
+- `dehydratedState`: État React Query sérialisé par le serveur (pour éviter les re-fetch)
+
+#### 12.4.3 BuildRoutes avec détection Sync/Async
+
+```ts
+// buildRoutes retourne RouteObject[] (sync) ou Promise<RouteObject[]> (async)
+// Sync : côté client avec modules core uniquement → pas de flash loading
+// Async : côté serveur ou modules optional → loading temporaire
+const routesOrPromise = buildRoutes(siteConfig);
+```
+
+**Comportement de `buildRoutes()` côté client**:
+- **Mode SYNCHRONE** (modules core uniquement): Retourne directement `RouteObject[]`
+- **Mode ASYNCHRONE** (avec modules optional): Retourne `Promise<RouteObject[]>`
+
+**Pourquoi cette distinction ?**
+- **Modules core** (type: "core"): Chargés en eager (synchrone), pas de code-splitting → pas de flash
+- **Modules optional** (type: "optional"): Chargés en lazy (asynchrone), avec code-splitting → flash temporaire
+
+#### 12.4.4 Composant Root avec gestion Sync/Async
+
+```tsx
+function Root() {
+  // 1. Créer le QueryClient (une seule fois)
+  const [queryClient] = useState(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 60 * 1000,  // Évite le refetch immédiat après hydratation
+      },
+    },
+  }));
+
+  // 2. Initialiser le router (sync ou null si async)
+  const [router, setRouter] = useState<ReturnType<typeof createBrowserRouter> | null>(() => {
+    if (routesOrPromise instanceof Promise) {
+      // Async : modules optional → initialiser à null
+      return null;
+    } else {
+      // Sync : modules core → créer le router immédiatement (pas de flash!)
+      return createBrowserRouter(routesOrPromise, {
+        hydrationData: window.__staticRouterHydrationData
+      });
+    }
+  });
+
+  // 3. Charger le router de manière asynchrone si nécessaire
+  useEffect(() => {
+    if (routesOrPromise instanceof Promise) {
+      routesOrPromise
+        .then((routes) => createBrowserRouter(routes, {
+          hydrationData: window.__staticRouterHydrationData
+        }))
+        .then(setRouter);
+    }
+  }, []);
+
+  // 4. Si router pas encore chargé, garder le HTML SSR intact
+  if (!router) {
+    return null;  // ✅ Pas de flash, le HTML SSR reste affiché
+  }
+
+  // 5. Hydratation normale
+  return (
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <HydrationBoundary state={dehydratedState}>
+          <RouterProvider router={router} />
+        </HydrationBoundary>
+      </QueryClientProvider>
+    </HelmetProvider>
+  );
+}
+```
+
+**Flux d'exécution détaillé**:
+
+1. **QueryClient**: Créé une seule fois avec `useState(() => ...)` (lazy initialization)
+2. **Router initialization**:
+   - **Si sync** (`RouteObject[]`): Créer le router immédiatement dans `useState`
+   - **Si async** (`Promise<RouteObject[]>`): Initialiser `router` à `null`
+3. **useEffect**: Si async, charger les routes puis créer le router
+4. **Rendu conditionnel**:
+   - Si `router === null`: Retourne `null` → le HTML SSR reste affiché (pas de flash)
+   - Si `router !== null`: Hydrate normalement avec `RouterProvider`
+
+#### 12.4.5 Avantage de ce pattern
+
+**Modules core uniquement (mode sync)**:
+```
+buildRoutes → RouteObject[] → createBrowserRouter → Hydratation immédiate
+                                                       ↓
+                                               Pas de flash!
+```
+
+**Avec modules optional (mode async)**:
+```
+buildRoutes → Promise<RouteObject[]> → router=null → HTML SSR affiché
+                                              ↓
+                                        useEffect résout
+                                              ↓
+                                   createBrowserRouter → setRouter → Hydratation
+                                                                        ↓
+                                                              Flash temporaire
+```
+
+**⚠️ Limitation**: Si modules optional sont présents, l'utilisateur verra temporairement le HTML SSR sans interactivité jusqu'à ce que le code-splitting soit terminé.
+
+**✅ Avantage**: Pour les modules core (profil, search), aucun flash de loading → expérience instantanée.
+
+#### 12.4.6 Hydratation React Query
+
+```tsx
+<HydrationBoundary state={dehydratedState}>
+  <RouterProvider router={router} />
+</HydrationBoundary>
+```
+
+Le `HydrationBoundary` reprend l'état React Query sérialisé par le serveur:
+- **Évite les re-fetch** inutiles après hydratation
+- **Garantit la cohérence** entre SSR et client
+- **Améliore les performances** (pas d'attente réseau)
+
+#### 12.4.7 Hydratation Helmet (meta tags)
+
+```tsx
+<HelmetProvider>
+  {/* ... */}
+</HelmetProvider>
+```
+
+Le `HelmetProvider` synchronise les meta tags entre serveur et client:
+- Côté serveur: `react-helmet` génère les tags dans `<head>`
+- Côté client: `react-helmet` prend le contrôle des tags existants
+- Permet les mises à jour dynamiques des meta tags lors de la navigation
+
+#### 12.4.8 Point d'entrée final
+
+```tsx
+const container = document.getElementById("root");
+
+if (container) {
+  hydrateRoot(container, <Root />);
+} else {
+  console.error("❌ #root non trouvé pour l'hydratation");
+}
+```
+
+- `hydrateRoot`: Fonction React 18+ pour hydrater un rendu SSR
+- Réutilise le HTML généré par le serveur au lieu de le remplacer
+- Attache les event listeners pour rendre l'UI interactive
+
+#### 12.4.9 Initialisation i18n
+
+```ts
+import "@/i18n"; // init react-i18next via I18nBridge
+```
+
+L'import de `@/i18n` initialise react-i18next côté client:
+- Charge les traductions depuis les bundles
+- Configure le détecteur de langue
+- Synchronise avec les traductions SSR
+
+---
+
+### 12.5 Pattern SSR Loader - Pre-fetching des données
+
+Les **loaders** de React Router permettent de pré-charger les données côté serveur avant le rendu. SiteForge utilise ce pattern dans tous les modules qui nécessitent des données API (profil, search, etc.).
+
+#### 12.5.1 Principe du SSR Loader
+
+Le loader est une fonction asynchrone qui:
+1. S'exécute **avant le rendu** de la route (côté serveur uniquement en SSR)
+2. Pré-charge les données dans **React Query**
+3. Désérialise l'état React Query dans le HTML
+4. Évite les **double-fetch** côté client (hydratation sans refetch)
+
+**Avantages**:
+- **SEO**: Les données sont dans le HTML initial (indexables par les moteurs de recherche)
+- **Performance**: Pas d'attente réseau côté client
+- **UX**: Pas de spinner de chargement lors de la navigation initiale
+
+#### 12.5.2 Anatomie d'un loader
+
+Un loader typique suit ce pattern:
+
+```ts
+// Dans routes.tsx d'un module
+export const routes: ModuleRouteFactory = (queryClient?: QueryClient): RouteObject[] => [
+  {
+    path: ":slug",
+    element: <ProfilePage />,
+    loader: async ({ params }: LoaderFunctionArgs) => {
+      // 1. Si pas de queryClient (côté client), skip le pre-fetch
+      if (!queryClient) return null;
+
+      // 2. Extraire et valider les paramètres
+      const slug = params.slug?.startsWith('@')
+        ? params.slug.slice(1)
+        : params.slug;
+
+      if (!slug) {
+        throw new Response('Not Found', { status: 404 });
+      }
+
+      try {
+        // 3. Pré-charger les données dans React Query
+        return await queryClient.ensureQueryData({
+          queryKey: ["element-about", slug],
+          queryFn: async () => {
+            const { organization } = await initApi({
+              baseURL: getBaseUrl(),
+              debug: true
+            });
+            return organization.entityBySlug(slug);
+          }
+        });
+      } catch (error) {
+        console.error('Erreur lors du chargement du profil:', error);
+        throw new Response('Not Found', { status: 404 });
+      }
+    }
+  }
+];
+```
+
+#### 12.5.3 Détection côté serveur vs client
+
+```ts
+if (!queryClient) return null;
+```
+
+**Pourquoi cette vérification ?**
+- **Côté serveur** (SSR): `buildRoutes(config, queryClient)` passe un `queryClient` → le loader s'exécute
+- **Côté client** (navigation): `buildRoutes(config)` ne passe **pas** de `queryClient` → le loader est skippé
+
+**Avantage**: Évite les double-fetch. Côté client, le composant utilise `useQuery` qui récupère les données depuis le cache React Query.
+
+#### 12.5.4 Utilisation de ensureQueryData
+
+```ts
+await queryClient.ensureQueryData({
+  queryKey: ["element-about", slug],
+  queryFn: async () => {
+    // Appel API
+    return organization.entityBySlug(slug);
+  }
+});
+```
+
+**`ensureQueryData` vs `fetchQuery`**:
+- `fetchQuery`: **Toujours** fetch, même si les données sont en cache
+- `ensureQueryData`: Fetch **uniquement si** les données ne sont pas en cache
+
+**Avantage**: Si plusieurs loaders utilisent la même `queryKey`, un seul fetch est effectué.
+
+#### 12.5.5 Gestion des erreurs dans les loaders
+
+Les loaders peuvent throw des `Response` pour gérer les erreurs:
+
+```ts
+// 404 Not Found
+throw new Response('Not Found', { status: 404 });
+
+// 500 Server Error
+throw new Response('Internal Server Error', { status: 500 });
+
+// Redirect
+throw redirect('/login');
+```
+
+React Router capture ces erreurs et les affiche via `errorElement` ou `ErrorBoundary`.
+
+#### 12.5.6 Désérialisation de l'état React Query
+
+Côté serveur (`entry-server.tsx`):
+
+```ts
+// 1. Déshydrater l'état après le rendu
+const dehydratedState = dehydrate(queryClient, {
+  shouldDehydrateQuery: (q) => q.queryKey[0] !== "cocolight-init"
+});
+
+// 2. Injecter dans le HTML
+res.write(`<script>window.__REACT_QUERY_STATE__=${serialize(dehydratedState)}</script>`);
+```
+
+Côté client (`entry-client.tsx`):
+
+```ts
+// 3. Récupérer l'état
+const dehydratedState = window.__REACT_QUERY_STATE__ ?? null;
+
+// 4. Hydrater React Query
+<HydrationBoundary state={dehydratedState}>
+  <RouterProvider router={router} />
+</HydrationBoundary>
+```
+
+**Flux complet**:
+1. Serveur: Loader pré-charge → React Query cache
+2. Serveur: Déshydratation → `window.__REACT_QUERY_STATE__`
+3. Client: Récupération → Hydratation React Query
+4. Client: `useQuery` trouve les données dans le cache → pas de refetch
+
+#### 12.5.7 Pattern avec initApi singleton
+
+Les loaders utilisent souvent `initApi()` pour initialiser l'API:
+
+```ts
+queryFn: async () => {
+  const { organization } = await initApi({
+    baseURL: getBaseUrl(),
+    debug: true
+  });
+  return organization.entityBySlug(slug);
+}
+```
+
+**Pourquoi ce pattern ?**
+- `initApi()` utilise le **singleton** d'API client (voir Section 8.1)
+- Garantit qu'une seule instance API existe par requête SSR
+- Partage la connexion, les tokens, et le cache entre loaders
+
+#### 12.5.8 Exemple complet: Module Profil
+
+```ts
+// src/modules/profil/routes.tsx
+export const routes: ModuleRouteFactory = (queryClient?: QueryClient): RouteObject[] => [
+  {
+    path: ":slug",
+    element: <ProfilePage />,
+    loader: async ({ params }: LoaderFunctionArgs) => {
+      if (!queryClient) return null;
+
+      const rawSlug = params.slug;
+      const slug = rawSlug?.startsWith('@') ? rawSlug.slice(1) : rawSlug;
+
+      if (!slug) {
+        throw new Response('Not Found', { status: 404 });
+      }
+
+      try {
+        return await queryClient.ensureQueryData({
+          queryKey: ["element-about", slug],
+          queryFn: async () => {
+            const { organization } = await initApi({
+              baseURL: getBaseUrl(),
+              debug: true
+            });
+            if (!organization) {
+              throw new Error("API non initialisée");
+            }
+            return organization.entityBySlug(slug);
+          }
+        });
+      } catch (error) {
+        console.error('Erreur lors du chargement du profil:', error);
+        throw new Response('Not Found', { status: 404 });
+      }
+    }
+  }
+];
+```
+
+**Usage dans le composant**:
+
+```tsx
+// src/modules/profil/pages/ProfilePage.tsx
+export default function ProfilePage() {
+  const { slug } = useParams();
+  const cleanSlug = slug?.startsWith('@') ? slug.slice(1) : slug;
+
+  // ✅ Les données sont déjà en cache (pré-chargées par le loader)
+  const { data: entity, isLoading, isError } = useQueryEntityBySlug({ slug: cleanSlug });
+
+  if (isLoading) return <ProfileSkeleton />;
+  if (isError) return <ErrorCard />;
+  if (!entity) return <NotFoundCard />;
+
+  return <ProfileContent entity={entity} />;
+}
+```
+
+**Flux d'exécution**:
+1. **SSR**: Loader pré-charge `entityBySlug(slug)` → React Query cache
+2. **SSR**: Déshydratation → HTML avec `window.__REACT_QUERY_STATE__`
+3. **Client**: Hydratation → React Query reprend le cache
+4. **Client**: `useQueryEntityBySlug` trouve les données dans le cache → `isLoading=false` immédiatement
+5. **Client**: Rendu immédiat du profil (pas de spinner)
+
+#### 12.5.9 Optimisations avancées
+
+**1. Prefetch multiple dans un loader**:
+
+```ts
+loader: async ({ params }) => {
+  if (!queryClient) return null;
+
+  // Prefetch en parallèle
+  await Promise.all([
+    queryClient.ensureQueryData({
+      queryKey: ["profile", params.slug],
+      queryFn: () => fetchProfile(params.slug)
+    }),
+    queryClient.ensureQueryData({
+      queryKey: ["profile-events", params.slug],
+      queryFn: () => fetchProfileEvents(params.slug)
+    }),
+  ]);
+
+  return null;
+};
+```
+
+**2. Filtrage du cache à déshydrater**:
+
+```ts
+// Ne pas déshydrater les queries de type "cocolight-init"
+const dehydratedState = dehydrate(queryClient, {
+  shouldDehydrateQuery: (query) => query.queryKey[0] !== "cocolight-init"
+});
+```
+
+**Raison**: Certaines queries sont spécifiques au serveur et ne doivent pas être envoyées au client (tokens sensibles, config serveur, etc.).
+
+#### 12.5.10 Limitations et considérations
+
+**⚠️ Limitations**:
+- Les loaders s'exécutent **uniquement** lors de la navigation initiale SSR
+- Lors de la navigation client-side (SPA), les loaders ne s'exécutent pas avec `queryClient`
+- Les données doivent être **sérialisables** (pas de fonctions, de classes avec méthodes, etc.)
+
+**✅ Bonnes pratiques**:
+- Toujours vérifier `if (!queryClient) return null;`
+- Utiliser `ensureQueryData` plutôt que `fetchQuery` pour éviter les double-fetch
+- Utiliser la même `queryKey` dans le loader et dans `useQuery`
+- Gérer les erreurs avec `throw new Response(...)`
 
 ---
 

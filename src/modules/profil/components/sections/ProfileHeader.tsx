@@ -97,7 +97,7 @@ export default function ProfileHeader({ section }: ProfileHeaderProps) {
 
   // Variant simple
   return (
-    <div className="border-b pb-6 mb-6">
+    <div className="border-b dark:border-gray-700 pb-6 mb-6">
       <div className="flex items-center justify-between mb-4">
         {section.showBackButton !== false && (
           <Button onClick={() => navigate(-1)} variant="ghost" size="sm">
@@ -134,9 +134,9 @@ export default function ProfileHeader({ section }: ProfileHeaderProps) {
           />
         )}
         <div className="flex-1">
-          <h1 className="text-3xl font-bold text-gray-900">{entityName}</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{entityName}</h1>
           {shortDescription && (
-            <p className="mt-2 text-gray-600">{shortDescription}</p>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">{shortDescription}</p>
           )}
         </div>
       </div>

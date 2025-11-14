@@ -2,12 +2,11 @@ import type { RouteObject } from "react-router";
 import { SiteRenderer } from '@/components/SiteRenderer';
 import type { SiteConfig } from "@/types/site";
 import RootLayout from "@/RootLayout";
-
 import type { QueryClient } from "@tanstack/react-query";
 import type { LoaderFunctionArgs } from "react-router";
 import { getBaseUrl } from "./constant/common";
 import { initApi } from "./apiClient";
-import ProfilePage from "@/modules/profil/pages/ProfilePage";
+import { discoverModules, getModuleRoutes, getModuleRoutesSync } from "./modules";
 
 /**
  * Helper pour parser les paramètres JSON depuis l'URL
@@ -139,13 +138,69 @@ async function prefetchSearchResults(
 }
 
 /**
- * Construit l'arborescence de routes pour React Router v7 à partir
- * de la configuration JSON ‹pages›. Le layout racine (<RootLayout/>)
- * entoure toutes les pages et fournit les providers globaux.
+ * Construit l'arborescence de routes pour React Router v7 à partir :
+ * 1. De la configuration JSON ‹pages› (routes du site config)
+ * 2. Des routes des modules découverts automatiquement
+ *
+ * Le layout racine (<RootLayout/>) entoure toutes les pages et fournit les providers globaux.
+ *
+ * IMPORTANT : Cette fonction retourne soit :
+ * - RouteObject[] (synchrone) : côté client sans queryClient + modules core uniquement
+ * - Promise<RouteObject[]> (asynchrone) : côté serveur avec queryClient ou modules optional
+ *
+ * @param cfg - Configuration du site (pages, header, footer, etc.)
+ * @param queryClient - Client React Query pour le pré-chargement SSR
+ * @returns Routes React Router v7 (sync ou async selon le contexte)
  */
-export function buildRoutes(cfg: SiteConfig, queryClient?: QueryClient): RouteObject[] {
-  // enfants = chaque page décrite dans cfg.pages
-  const children: RouteObject[] = cfg.pages.map((p) => ({
+export function buildRoutes(cfg: SiteConfig, queryClient?: QueryClient): RouteObject[] | Promise<RouteObject[]> {
+  // Découvrir les modules
+  const modules = discoverModules();
+  const hasOptional = modules.some(m => m.config.type === "optional");
+
+  // MODE SYNCHRONE : Côté client sans queryClient + modules core uniquement
+  if (!queryClient && !hasOptional) {
+    // 1. Routes depuis la config JSON (sans loaders côté client)
+    const configRoutes: RouteObject[] = cfg.pages.map((p) => ({
+      path: p.path.replace(/^\/+/, ""),
+      element: <SiteRenderer />,
+      // Pas de loader côté client (pas de queryClient)
+    }));
+
+    // 2. Routes des modules core (synchrone)
+    const moduleRoutes = getModuleRoutesSync(modules);
+
+    // 3. Combiner toutes les routes
+    const children: RouteObject[] = [
+      ...configRoutes,
+      ...moduleRoutes,
+      { path: "*", element: <SiteRenderer /> },
+    ];
+
+    // 4. Route root
+    return [
+      {
+        path: "/",
+        element: <RootLayout config={cfg} />,
+        children,
+      },
+    ];
+  }
+
+  // MODE ASYNCHRONE : Côté serveur avec queryClient ou modules optional
+  return buildRoutesAsync(cfg, queryClient, modules);
+}
+
+/**
+ * Version asynchrone de buildRoutes
+ * Utilisée côté serveur (SSR) ou quand il y a des modules optional
+ */
+async function buildRoutesAsync(
+  cfg: SiteConfig,
+  queryClient: QueryClient | undefined,
+  modules: ReturnType<typeof discoverModules>
+): Promise<RouteObject[]> {
+  // 1. Routes depuis la config JSON du site
+  const configRoutes: RouteObject[] = cfg.pages.map((p) => ({
     path: p.path.replace(/^\/+/, ""),   // "about" au lieu de "/about"
     element: <SiteRenderer />,            // le rendu piloté par JSON
     loader: async ({ request }: LoaderFunctionArgs) => {
@@ -201,47 +256,19 @@ export function buildRoutes(cfg: SiteConfig, queryClient?: QueryClient): RouteOb
       return null;
     },
   }));
-  children.push({
-    path: ":slug",
-    element: <ProfilePage />,
-    loader: async ({ params }: LoaderFunctionArgs) => {
-      // Si pas de queryClient (côté client), on skip le pre-fetch
-      if (!queryClient) return null;
 
-      // Nettoyer le slug (enlever le @ si présent)
-      const rawSlug = params.slug;
-      const slug = rawSlug?.startsWith('@') ? rawSlug.slice(1) : rawSlug;
+  // 2. Récupérer les routes des modules (async)
+  const moduleRoutes = await getModuleRoutes(modules, queryClient);
 
-      if (!slug) {
-        throw new Response('Not Found', { status: 404 });
-      }
+  // 3. Combiner toutes les routes : config + modules + 404
+  const children: RouteObject[] = [
+    ...configRoutes,
+    ...moduleRoutes,
+    // route 404 interne (dernier recours)
+    { path: "*", element: <SiteRenderer /> },
+  ];
 
-      try {
-        // Pré-charger les données du profil côté serveur
-        return await queryClient.ensureQueryData({
-          queryKey: ["element-about", slug],
-          queryFn: async () => {
-            const { organization } = await initApi({
-              baseURL: getBaseUrl(),
-              debug: true
-            });
-            if (!organization) {
-              throw new Error("API non initialisée");
-            }
-            return organization.entityBySlug(slug);
-          }
-        });
-      } catch (error) {
-        console.error('Erreur lors du chargement du profil:', error);
-        throw new Response('Not Found', { status: 404 });
-      }
-    }
-  });
-
-  // route 404 interne (dernier recours)
-  children.push({ path: "*", element: <SiteRenderer /> });
-
-  // route root qui encapsule tout avec RootLayout
+  // 4. Route root qui encapsule tout avec RootLayout
   return [
     {
       path: "/",              // correspond à la racine du site

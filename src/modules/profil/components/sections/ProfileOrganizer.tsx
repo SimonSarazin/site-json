@@ -46,10 +46,10 @@ export default function ProfileOrganizer({ section }: ProfileOrganizerProps) {
                 />
               )}
               <div className="flex-1">
-                <h3 className="font-semibold text-gray-900">{org.name}</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-white">{org.name}</h3>
                 {section.showLink !== false && org.slug && (
                   <a
-                    href={`/@${org.slug}`}
+                    href={`/profil/${org.slug}`}
                     className="text-sm text-blue-600 hover:underline"
                   >
                     {t("common.viewProfile")}

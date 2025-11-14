@@ -13,7 +13,7 @@ export default function DetailsModeDrawer({ openDetails, setOpenDetails, item, p
           direction="right"
           openPageTitle={t("Aller sur la page")}
           overflowType="overflow-hidden"
-          link={`/@${item?.slug}`}
+          link={`/profil/${item?.slug}`}
         >
           {item && <Preview item={item} preview={preview} />}
         </CustomDrawer>

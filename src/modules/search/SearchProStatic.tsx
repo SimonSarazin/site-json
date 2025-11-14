@@ -98,7 +98,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
       {error ? (
         <div className="p-4 bg-red-100 text-red-800 border border-red-300 rounded mb-4">
           <p>❌ Une erreur est survenue lors du chargement des résultats.</p>
-          <pre className="mt-2 text-sm whitespace-pre-wrap break-words">
+          <pre className="mt-2 text-sm whitespace-pre-wrap wrap-break-words">
             {error instanceof Error ? error.message : String(error)}
           </pre>
           <button
@@ -176,7 +176,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
               <div className="container flex justify-between mx-auto px-4 sm:px-6 lg:px-8 mb-6">
                 <div className="flex justify-between items-center">
                   {customHeader.title && (
-                    <h2 className="text-2xl font-extrabold text-gray-900">
+                    <h2 className="text-2xl font-extrabold text-foreground">
                       {typeof customHeader.title === "string"
                         ? customHeader.title
                         : t(customHeader.title)}

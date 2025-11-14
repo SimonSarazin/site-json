@@ -1,9 +1,9 @@
 import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
 
-import { useCocolight } from "./useCocolight";
 import { useMemo } from "react";
 import type { SearchEntity } from "@/modules/search/schema";
-import { isEntityInstance } from "@/helpers/isEntityInstance";
+import { useCocolight } from "@/hooks/useCocolight";
+import { transformToEntityInstance } from "@/lib/entityTransform";
 
 interface QueryEntityBySlugProps {
   slug: string | undefined;
@@ -14,17 +14,20 @@ interface QueryEntityBySlugProps {
 }
 
 export const useQueryEntityBySlug = ({ slug, options = {} }: QueryEntityBySlugProps) => {
-  const { organization, loading, helper} = useCocolight();
+  const { entity, loading, helper, me } = useCocolight();
 
   // Le type unknown car l'API peut retourner soit une instance, soit du JSON déshydraté
   const { data, isLoading, isError, error, refetch } = useQuery<unknown>({
     queryKey: ["element-about", slug],
     queryFn: async () => {
       if (!slug) throw new Error("Slug manquant");
-      if (!organization) throw new Error("API non initialisée");
-      return organization.entityBySlug(slug);
+      if (!entity) throw new Error("API non initialisée");
+      if(me && slug === me.slug) {
+        return me;
+      }
+      return entity.entityBySlug(slug);
     },
-    enabled: !!slug && !loading && !!organization,
+    enabled: !!slug && !loading && !!entity,
     staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
     ...options,
@@ -32,14 +35,11 @@ export const useQueryEntityBySlug = ({ slug, options = {} }: QueryEntityBySlugPr
 
   // Transformation des résultats lier à la deshydratation pour le SSR
   const transformedResults = useMemo(() => {
-      if (!data) return null;
-
-      // Si c'est déjà une instance (retour direct de l'API)
-      if (isEntityInstance(data)) return data;
-
-      // Sinon, c'est du JSON déshydraté qu'il faut réhydrater
-      return helper.fromEntityJSON(data, organization) as SearchEntity;
-  }, [data, organization, helper]);
+    if (!entity) return null;
+    if (!data) return null;
+      
+    return transformToEntityInstance<SearchEntity>(data, helper, entity);
+  }, [data, entity, helper]);
 
   return {
     data: transformedResults,

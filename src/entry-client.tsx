@@ -7,7 +7,7 @@ import { buildRoutes } from "@/lib/buildRoutes";
 import { type SiteConfig } from '@/types/site';
 import "./index.css";
 import { HydrationBoundary, QueryClient, QueryClientProvider, type DehydratedState } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 
 // La config JSON sérialisée par le serveur est injectée dans le global
@@ -22,16 +22,12 @@ declare global {
 }
 
 const siteConfig = window.__CONFIG__;
-
-// Construit le Data Router à partir des pages du JSON
-const router = createBrowserRouter(
-  buildRoutes(siteConfig),
-  { hydrationData: window.__staticRouterHydrationData }
-);
-
 const dehydratedState = window.__REACT_QUERY_STATE__ ?? null;
 
-
+// buildRoutes retourne RouteObject[] (sync) ou Promise<RouteObject[]> (async)
+// Sync : côté client avec modules core uniquement → pas de flash loading
+// Async : côté serveur ou modules optional → loading temporaire
+const routesOrPromise = buildRoutes(siteConfig);
 
 const container = document.getElementById("root");
 
@@ -45,6 +41,35 @@ function Root() {
       },
     },
   }));
+
+  const [router, setRouter] = useState<ReturnType<typeof createBrowserRouter> | null>(() => {
+    // Initialisation du router
+    if (routesOrPromise instanceof Promise) {
+      // Async : modules optional → on initialise à null et on chargera dans useEffect
+      return null;
+    } else {
+      // Sync : modules core → on crée le router immédiatement (pas de flash!)
+      return createBrowserRouter(routesOrPromise, {
+        hydrationData: window.__staticRouterHydrationData
+      });
+    }
+  });
+
+  // Charger le router de manière asynchrone si nécessaire
+  useEffect(() => {
+    if (routesOrPromise instanceof Promise) {
+      routesOrPromise
+        .then((routes) => createBrowserRouter(routes, {
+          hydrationData: window.__staticRouterHydrationData
+        }))
+        .then(setRouter);
+    }
+  }, []);
+
+  if (!router) {
+    // Modules optional en chargement : on garde le HTML SSR intact
+    return null;
+  }
 
   return (
   <HelmetProvider>
