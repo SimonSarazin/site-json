@@ -94,7 +94,7 @@ const HeroWithIconSectionSchema = z.object({
     subhead: LocalizedString.optional(),
     icon: z.object({
       show: z.boolean().default(true),
-      name: z.string(),
+      name: z.string().optional(),
       size: z.number().default(64),
       backdrop: z.boolean().default(false),
     }),
@@ -145,6 +145,27 @@ export const HeroTiersLieuxSchema = z.object({
 export type HeroTiersLieux = z.infer<typeof HeroTiersLieuxSchema>;
 
 export type HeroTiersLieuxProps = z.infer<typeof HeroTiersLieuxSchema>["props"];
+
+// ──────────────── Meeteem Props
+
+const MeeteemSectionSchema = z.object({
+  type: z.literal("meeteem"),
+  id: z.string().optional(),
+  props: z.object({
+    coform: z.string().min(1),
+    path: z.object({
+      name: z.string().min(1),
+      description: z.string().optional(),
+      address: z.string().min(1),
+      image: z.string().optional(),
+      finder: z.string().optional(),
+      tags: z.string().optional(),
+    })
+  })
+})
+
+export type MeeteemSection = z.infer<typeof MeeteemSectionSchema>;
+export type MeeteemSectionProps = z.infer<typeof MeeteemSectionSchema>["props"];
 
 //──────────────── Markdown / MDX
 const MarkdownSectionSchema = z.object({
@@ -947,6 +968,7 @@ export const Section = z.discriminatedUnion("type", [
   ContentSectionSchema,
   SearchProSectionSchema,
   SearchProStaticSectionSchema,
+  MeeteemSectionSchema,
   GridLayoutSectionSchema
 ]);
 export type Section = z.infer<typeof Section>;

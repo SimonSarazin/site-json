@@ -225,6 +225,26 @@
                     "props": {
                         "html": "<section id=\"messages\" class=\"py-20 bg-background\"><div class=\"container mx-auto px-4\"><div class=\"max-w-4xl mx-auto\"><div class=\"text-center mb-12\"><h2 class=\"text-4xl md:text-5xl font-bold text-foreground mb-6\">Proposez votre idée</h2><p class=\"text-xl text-muted-foreground\">Partagez vos idées pour le bien commun avec notre communauté</p></div><div class=\"grid grid-cols-1 lg:grid-cols-2 gap-12 items-start\"><div class=\"p-8 shadow-elegant\"><form class=\"space-y-6\"><div><label for=\"title\" class=\"block text-sm font-medium text-foreground mb-2\">Titre de votre idée</label><input type=\"text\" id=\"title\" placeholder=\"Une idée qui change tout...\" class=\"text-lg\" /></div><div><label for=\"category\" class=\"block text-sm font-medium text-foreground mb-2\">Catégorie (optionnel)</label><div class=\"flex flex-wrap gap-2 mb-3\"><div class=\"cursor-pointer hover:bg-primary/10 transition-colors\">Environnement</div><div class=\"cursor-pointer hover:bg-primary/10 transition-colors\">Education</div><div class=\"cursor-pointer hover:bg-primary/10 transition-colors\">Santé</div><div class=\"cursor-pointer hover:bg-primary/10 transition-colors\">Economie</div><div class=\"cursor-pointer hover:bg-primary/10 transition-colors\">Societé</div><div class=\"cursor-pointer hover:bg-primary/10 transition-colors\">Innovation</div></div></div><div><label for=\"message\" class=\"block text-sm font-medium text-foreground mb-2\">Décrivez votre idée</label><textarea class=\"flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50\" id=\"message\" placeholder=\"Expliquez votre idée, son impact potentiel, pourquoi elle mérite d'être amplifiée...\"></textarea></div><button type=\"submit\" class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 w-full bg-gradient-primary hover:opacity-90 transition-opacity px-6 py-3 bg-primary\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5 mr-2\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-send-icon lucide-send\"><path d=\"M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z\"/><path d=\"m21.854 2.147-10.94 10.939\"/></svg>Soumettre à la communauté</button></form></div><div class=\"space-y-6\"><div class=\"p-6 bg-gradient-card border-primary/20\"><div class=\"flex items-center mb-4\"><div class=\"icon-lightbulb h-6 w-6 text-primary mr-3\"></div><h3 class=\"font-semibold text-foreground\">Comment ça marche ?</h3></div><ol class=\"space-y-3 text-muted-foreground\"><li class=\"flex items-start\"><span class=\"bg-primary text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3 mt-0.5 flex-shrink-0\">1</span>Vous soumettez votre idée</li><li class=\"flex items-start\"><span class=\"bg-primary text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3 mt-0.5 flex-shrink-0\">2</span>La communauté l'évalue et vote</li><li class=\"flex items-start\"><span class=\"bg-primary text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3 mt-0.5 flex-shrink-0\">3</span>Les meilleures sont amplifiées massivement</li></ol></div><div class=\"p-6\"><div class=\"flex items-center justify-between mb-4\"><h3 class=\"font-semibold text-foreground flex items-center\"><div class=\"icon-trending-up h-5 w-5 text-secondary mr-2\"></div>Statistiques du réseau</h3></div><div class=\"space-y-3\"><div class=\"flex justify-between\"><span class=\"text-muted-foreground\">Idées soumises</span><span class=\"font-semibold text-foreground\">2,847</span></div><div class=\"flex justify-between\"><span class=\"text-muted-foreground\">Membres actifs</span><span class=\"font-semibold text-foreground\">15,623</span></div><div class=\"flex justify-between\"><span class=\"text-muted-foreground\">Idées amplifiées</span><span class=\"font-semibold text-secondary\">142</span></div></div></div></div></div></div></div></div></section>"
                     }
+                },
+                {
+                    "type": "html",
+                    "id": "title-section",
+                    "props": {
+                        "html": "<div class=\"text-center mb-12\"><h2 class=\"text-2xl md:text-5xl font-bold text-foreground mb-6\">Messages populaires</h2><p class=\"md:text-xl text-muted-foreground max-w-2xl mx-auto\">Découvrez les idées qui mobilisent notre communauté</p></div>"
+                    }
+                },
+                {
+                    "type": "meeteem",
+                    "id": "meeteem-section",
+                    "props": {
+                        "coform": "689478d9d003e90f9577fe1c",
+                        "path": {
+                            "name": "coformSocket782025_1258_0.coformSocket782025_1258_0me186691t9e9wfpvglb",
+                            "description": "coformSocket782025_1258_0.coformSocket782025_1258_0me1894vvty9rfar5m1",
+                            "address": "coformSocket782025_1258_0.coformSocket782025_1258_0me188sdr03u9pdzz0s4",
+                            "tags": "coformSocket782025_1258_0.coformSocket782025_1258_0me187bq6xvjzuwn1blf"
+                        }
+                    }
                 }
             ]
         }
@@ -243,14 +263,16 @@
                 "foreground": "#000000",
                 "border": "#e0e0e0",
                 "primary": "#3b82f6",
-                "secondary": "#10b981"
+                "secondary": "#10b981",
+                "tertiaire": "#f59e0b"
             },
             "dark" : {
                 "background": "#000000",
                 "foreground": "#ffffff",
                 "border": "#444444",
                 "primary": "#3b82f6",
-                "secondary": "#10b981"
+                "secondary": "#10b981",
+                "tertiaire": "#f59e0b"
             }
         }
     }

@@ -74,6 +74,7 @@ const LazySections: {
   searchProStatic: lazyNamed(() => import("@/modules/search/SearchProStaticSection"), "SearchProStaticSection"),
   filters: lazyNamed(() => import("./FiltersSection"), "FiltersSection"),
   gridLayout: lazyNamed(() => import("./GridLayoutSection"), "GridLayoutSection"),
+  meeteem: lazyNamed(() => import("./MeeteemSection"), "MeeteemSection"),
 };
 
 export function SectionRenderer({ section }: { section: Section }) {
