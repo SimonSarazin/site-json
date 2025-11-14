@@ -128,7 +128,7 @@ export default function CustomDrawer({
       <DrawerContent
         ref={contentRef}
         className={cn(
-          "fixed z-[99999] flex flex-col bg-background text-foreground border border-border",
+          "fixed z-99999 flex flex-col bg-background text-foreground border border-border",
           "mt-0 left-auto",
           positionClass,
           sizeClass,

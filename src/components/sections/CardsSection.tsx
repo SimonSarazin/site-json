@@ -72,13 +72,13 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
         <div>
           {
             props.headerTitle &&
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold text-foreground">
               {props.headerTitle ? t(props.headerTitle) : 'Cards'}
             </h2>
           }
 
           {showResultCount && (
-            <p className="font-semibold text-black mt-1">
+            <p className="font-semibold text-foreground mt-1">
               {items.length} {items.length === 1 ? 'résultat' : 'résultats'}
             </p>
           )}
@@ -91,8 +91,8 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
               className={cn(
                 "p-2 rounded-lg transition-colors",
                 currentLayout === 'grid'
-                  ? "bg-gray-900 text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
               )}
               aria-label="Vue grille"
             >
@@ -103,8 +103,8 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
               className={cn(
                 "p-2 rounded-lg transition-colors",
                 currentLayout === 'list'
-                  ? "bg-gray-900 text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  ? "bg-gray-900 dark:bg-slate-700 text-white"
+                  : "bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-slate-700"
               )}
               aria-label="Vue liste"
             >
@@ -136,7 +136,7 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
 
                   <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
                     {item.date && (
-                      <div className="bg-white w-1/2 px-3 py-1 rounded-md text-xs font-semibold shadow text-gray-900 flex items-center gap-1">
+                      <div className="bg-white dark:bg-slate-800 w-1/2 px-3 py-1 rounded-md text-xs font-semibold shadow text-gray-900 dark:text-white flex items-center gap-1">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
@@ -161,11 +161,11 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
                     )}
 
                     <div className="flex-1">
-                      <h3 className="font-bold text-gray-900 text-sm mb-1 truncate">
+                      <h3 className="font-bold text-gray-900 dark:text-white text-sm mb-1 truncate">
                         {item.organizerName ? t(item.organizerName) : t(item.title)}
                       </h3>
                       {item.location && (
-                        <p className="text-gray-500 text-xs truncate">
+                        <p className="text-gray-500 dark:text-gray-400 text-xs truncate">
                           {t(item.location)}
                         </p>
                       )}
@@ -192,7 +192,7 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
             <div className="space-y-4">
               {items.map((item, index) => (
                 <CardWrapper key={index} href={item.href} target={item.target}>
-                  <div className="relative bg-white rounded-xl overflow-hidden shadow hover:shadow-lg transition cursor-pointer">
+                  <div className="relative bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow hover:shadow-lg transition cursor-pointer">
                     <div className="flex items-start gap-4 p-4">
                       {item.image && (
                         <div className="w-48 h-32 flex-shrink-0 rounded-lg overflow-hidden">
@@ -216,11 +216,11 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
                           )}
 
                           <div className="flex-1">
-                            <h3 className="font-bold text-gray-900 text-base mb-1">
+                            <h3 className="font-bold text-gray-900 dark:text-white text-base mb-1">
                               {t(item.title)}
                             </h3>
                             {item.location && (
-                              <p className="text-gray-500 text-sm">
+                              <p className="text-gray-500 dark:text-gray-400 text-sm">
                                 {t(item.location)}
                               </p>
                             )}
@@ -231,10 +231,10 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
                               {item.badges.map((badge, idx) => (
                                 <button
                                   key={idx}
-                                  className="w-8 h-8 bg-gray-100 rounded-full shadow-sm flex items-center justify-center hover:bg-gray-200 transition"
+                                  className="w-8 h-8 bg-gray-100 dark:bg-slate-700 rounded-full shadow-sm flex items-center justify-center hover:bg-gray-200 dark:hover:bg-slate-600 transition"
                                   aria-label={badge.label}
                                 >
-                                  <DynamicIcon name={badge.icon as IconName} className="w-4 h-4 text-gray-700" />
+                                  <DynamicIcon name={badge.icon as IconName} className="w-4 h-4 text-gray-700 dark:text-gray-300" />
                                 </button>
                               ))}
                             </div>
@@ -251,7 +251,7 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
             <div className={cn("grid gap-6", getGridCols(columns))}>
               {items.map((item, index) => (
                 <CardWrapper key={index} href={item.href} target={item.target}>
-                  <div className="relative bg-white rounded-xl overflow-hidden shadow hover:shadow-lg transition group cursor-pointer">
+                  <div className="relative bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow hover:shadow-lg transition group cursor-pointer">
                     {item.image && (
                       <img
                         src={item.image}
@@ -265,16 +265,16 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
                         {item.badges.map((badge, idx) => (
                           <button
                             key={idx}
-                            className="w-8 h-8 bg-white rounded-full shadow flex items-center justify-center hover:bg-gray-100 transition"
+                            className="w-8 h-8 bg-white dark:bg-slate-700 rounded-full shadow flex items-center justify-center hover:bg-gray-100 dark:hover:bg-slate-600 transition"
                             aria-label={badge.label}
                           >
-                            <DynamicIcon name={badge.icon as IconName} className="w-4 h-4 text-gray-700" />
+                            <DynamicIcon name={badge.icon as IconName} className="w-4 h-4 text-gray-700 dark:text-gray-300" />
                           </button>
                         ))}
                       </div>
                     )}
 
-                    <div className="absolute bottom-3 left-3 right-3 bg-white rounded-xl p-3 px-4 mb-2 flex items-start gap-3 shadow-lg">
+                    <div className="absolute bottom-3 left-3 right-3 bg-white dark:bg-slate-700 rounded-xl p-3 px-4 mb-2 flex items-start gap-3 shadow-lg">
                       {item.avatarIcon && (
                         <div className={cn(
                           "w-8 h-8 flex items-center justify-center rounded-full shadow-sm flex-shrink-0",
@@ -285,11 +285,11 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
                       )}
 
                       <div>
-                        <h3 className="font-bold text-gray-900 text-sm mb-1">
+                        <h3 className="font-bold text-gray-900 dark:text-white text-sm mb-1">
                           {t(item.title)}
                         </h3>
                         {item.location && (
-                          <p className="text-gray-500 text-xs">
+                          <p className="text-gray-500 dark:text-gray-400 text-xs">
                             {t(item.location)}
                           </p>
                         )}
@@ -314,7 +314,7 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
           <div className={cn("grid gap-6", getGridCols(columns))}>
             {items.map((item, index) => (
               <CardWrapper key={index} href={item.href} target={item.target}>
-                <div className="group cursor-pointer bg-white rounded-2xl shadow-md hover:shadow-xl transition p-6 border border-gray-100 hover:border-yellow-300">
+                <div className="group cursor-pointer bg-white dark:bg-slate-800 rounded-2xl shadow-md hover:shadow-xl transition p-6 border border-gray-100 dark:border-gray-700 hover:border-yellow-300 dark:hover:border-yellow-500">
                   <div className={cn(
                     "w-24 h-24 mx-auto mb-4 flex items-center justify-center text-6xl group-hover:scale-110 transition-transform duration-300",
                     item.iconColor || "text-yellow-500"
@@ -341,11 +341,11 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
                     ) : null}
                   </div>
 
-                  <h4 className="font-bold mb-2 text-gray-900 text-sm group-hover:text-yellow-600 transition-colors text-center">
+                  <h4 className="font-bold mb-2 text-gray-900 dark:text-white text-sm group-hover:text-yellow-600 dark:group-hover:text-yellow-400 transition-colors text-center">
                     {t(item.title)}
                   </h4>
 
-                  <p className="text-xs text-gray-600 line-clamp-2 text-center">
+                  <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 text-center">
                     {t(item.text)}
                   </p>
                 </div>

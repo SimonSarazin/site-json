@@ -38,13 +38,13 @@ export default function ProfileAbout({ section }: ProfileAboutProps) {
       <CardContent>
         {section.showShortDescription !== false && shortDescription && (
           <div className="mb-4">
-            <p className="text-lg font-medium text-gray-900">{shortDescription}</p>
+            <p className="text-lg font-medium text-gray-900 dark:text-white">{shortDescription}</p>
           </div>
         )}
 
         {section.showDescription !== false && description && (
           <div
-            className="prose prose-sm max-w-none"
+            className="prose prose-sm max-w-none dark:prose-invert"
             dangerouslySetInnerHTML={{
               __html: renderMarkdown(description, section),
             }}

@@ -186,13 +186,13 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
           <div className="container mx-auto px-6">
             <div className="max-w-3xl mx-auto">
               <div
-                className="bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl p-8 border border-white/20"
+                className="bg-background/90 backdrop-blur-md rounded-3xl shadow-2xl p-8 border border-white/20"
                 style={{
                   backdropFilter: 'blur(10px)',
                   WebkitBackdropFilter: 'blur(10px)'
                 }}
               >
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 text-center">
+                <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-6 text-center">
                   {t(props.headline)}
                 </h1>
 
@@ -202,7 +202,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                       <select
                         value={selectedCategory}
                         onChange={(e) => setSelectedCategory(e.target.value)}
-                        className="h-full pl-6 pr-10 bg-white text-gray-700 font-medium focus:outline-none appearance-none cursor-pointer border-r border-gray-200"
+                        className="h-full pl-6 pr-10 bg-background text-foreground font-medium focus:outline-none appearance-none cursor-pointer border-r border-border"
                         style={{ minWidth: '150px' }}
                       >
                         <option value="all">Tous les lieux</option>
@@ -214,7 +214,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                         <option value="stay">Séjourner</option>
                       </select>
                       <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                        <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         </svg>
                       </div>
@@ -233,16 +233,16 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                           }
                         }}
                         placeholder={props.placeholder ? t(props.placeholder) : "Nom, ville, département, code postal ..."}
-                        className="w-full px-6 py-4 bg-white text-gray-700 focus:outline-none"
+                        className="w-full px-6 py-4 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 focus:outline-none"
                       />
                       {isLoading && (
                         <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                          <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+                          <Loader2 className="h-5 w-5 animate-spin text-gray-400 dark:text-gray-500" />
                         </div>
                       )}
                     </div>
 
-                    <button className="px-8 py-4 bg-teal-500 text-white font-semibold hover:bg-teal-600 transition flex items-center gap-2">
+                    <button className="px-8 py-4 bg-[#0092a2] text-white font-semibold hover:bg-teal-600 transition flex items-center gap-2">
                       {props.searchButtonText ? t(props.searchButtonText) : "Rechercher"}
                       <svg
                         className="w-4 h-4"
@@ -263,7 +263,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                   {isAutocompleteOpen && suggestions.length > 0 && (
                     <div
                       ref={dropdownRef}
-                      className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 max-h-96 overflow-y-auto z-50"
+                      className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 max-h-96 overflow-y-auto z-50"
                     >
                       {suggestions.map((item, index) => {
                         const title = getEntityTitle(item);
@@ -276,18 +276,18 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                             onClick={() => handleSelectSuggestion(item)}
                             onMouseEnter={() => setHighlightedIndex(index)}
                             className={cn(
-                              "w-full px-4 py-3 flex items-start gap-3 hover:bg-gray-50 transition-colors text-left border-b border-gray-100 last:border-b-0",
-                              highlightedIndex === index && "bg-gray-50"
+                              "w-full px-4 py-3 flex items-start gap-3 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors text-left border-b border-gray-100 dark:border-gray-600 last:border-b-0",
+                              highlightedIndex === index && "bg-gray-50 dark:bg-slate-700"
                             )}
                           >
                             <div className="mt-1">{getEntityIcon(item)}</div>
                             <Link to={`/profil/${item.slug}`}>
                               <div className="flex-1 min-w-0">
-                                <div className="font-medium text-gray-900 truncate">
+                                <div className="font-medium text-gray-900 dark:text-white truncate">
                                   {title}
                                 </div>
                                 {address && (
-                                  <div className="text-sm text-gray-500 truncate">
+                                  <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
                                     {address}
                                   </div>
                                 )}
@@ -318,9 +318,9 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
   }
 
   return (
-    <section className="bg-white relative">
+    <section className="bg-background relative">
       <div className="container mx-auto px-6">
-        <h1 className="text-5xl font-extrabold pt-6 text-center text-gray-900 mb-4">
+        <h1 className="text-5xl font-extrabold pt-6 text-center text-gray-900 dark:text-white mb-4">
           {t(props.headline)}
         </h1>
 
@@ -337,8 +337,8 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
               onClick={() => setActiveTabIndex(idx)}
               className={`px-6 py-3 font-semibold transition ${
                 activeTabIndex === idx
-                  ? "border-b-4 border-teal-500 text-teal-500 bg-gray-50"
-                  : "hover:bg-gray-50"
+                  ? "border-b-4 border-teal-500 text-gray-50 bg-[#0092a2] rounded-t-md dark:bg-slate-800"
+                  : "hover:bg-gray-50 dark:hover:bg-slate-800"
               }`}
             >
               {t(btn.label)}
@@ -361,15 +361,15 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                   }
                 }}
                 placeholder={props.placeholder ? t(props.placeholder) : "Ville, département, code postal ..."}
-                className="w-full bg-white px-6 py-4 border-0 focus:outline-none text-gray-700"
+                className="w-full bg-white dark:bg-slate-700 px-6 py-4 border-0 focus:outline-none text-gray-700 dark:text-gray-200"
               />
               {isLoading && (
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                  <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+                  <Loader2 className="h-5 w-5 animate-spin text-gray-400 dark:text-gray-500" />
                 </div>
               )}
             </div>
-            <button className="px-10 py-4 bg-teal-500 text-white font-semibold hover:bg-blue-900 transition flex items-center gap-2">
+            <button className="px-10 py-4 bg-[#0092a2] text-white font-semibold hover:bg-blue-900 transition flex items-center gap-2">
               {props.searchButtonText ? t(props.searchButtonText) : "Rechercher"}
               <span className="text-lg">
                 <svg
@@ -392,7 +392,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
           {isAutocompleteOpen && suggestions.length > 0 && (
             <div
               ref={dropdownRef}
-              className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 max-h-96 overflow-y-auto z-50"
+              className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 max-h-96 overflow-y-auto z-50"
             >
               {suggestions.map((item, index) => {
                 const title = getEntityTitle(item);
@@ -405,18 +405,18 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                     onClick={() => handleSelectSuggestion(item)}
                     onMouseEnter={() => setHighlightedIndex(index)}
                     className={cn(
-                      "w-full px-4 py-3 flex items-start gap-3 hover:bg-gray-50 transition-colors text-left border-b border-gray-100 last:border-b-0",
-                      highlightedIndex === index && "bg-gray-50"
+                      "w-full px-4 py-3 flex items-start gap-3 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors text-left border-b border-gray-100 dark:border-gray-600 last:border-b-0",
+                      highlightedIndex === index && "bg-gray-50 dark:bg-slate-700"
                     )}
                   >
                     <div className="mt-1">{getEntityIcon(item)}</div>
                     <Link to={`/profil/${item.slug}`}>
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-gray-900 truncate">
+                        <div className="font-medium text-gray-900 dark:text-white truncate">
                           {title}
                         </div>
                         {address && (
-                          <div className="text-sm text-gray-500 truncate">
+                          <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
                             {address}
                           </div>
                         )}
