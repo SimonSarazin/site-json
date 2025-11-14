@@ -22,10 +22,13 @@ export { ProfileEntityProvider } from "./contexts/ProfileEntityProvider";
 export { ProfileEntityContext } from "./contexts/ProfileEntityContext";
 export { useProfileEntity } from "./hooks/useProfileEntity";
 export { useFormatProfileEntity } from "./hooks/useFormatProfileEntity";
+export { useProfilNewsQuery } from "./hooks/useProfilNewsQuery";
+export { useEntityBySlugQuery } from "./hooks/useEntityBySlugQuery";
 
 // Schemas & Types
 export type {
   ProfileConfig,
+  ProfilesConfig,
   ProfileType,
   ProfileSection,
   ProfileHeaderSection,
@@ -41,5 +44,19 @@ export type {
 
 export {
   ProfileConfigSchema,
+  ProfilesConfigSchema,
+  ProfileTypeSchema,
   ProfileSectionSchema,
+  ProfileHeaderVariantSchema,
+  ProfileInfoVariantSchema,
+  ProfileLayoutVariantSchema,
+  ProfileHeaderSectionSchema,
+  ProfileInfoSectionSchema,
+  ProfileAboutSectionSchema,
+  ProfileMapSectionSchema,
+  ProfileOrganizerSectionSchema,
+  ProfileMembersSectionSchema,
+  ProfileGallerySectionSchema,
+  ProfileRelatedSectionSchema,
+  ProfileTemplateDefaultSchema,
 } from "./schema";
