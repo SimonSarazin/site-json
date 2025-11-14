@@ -1,8 +1,9 @@
 import { SearchResultPage } from "@/modules/search/schema";
 import { useCocolight } from "./useCocolight";
 import { useInfiniteQueryScrollNext } from "./useInfiniteQueryScroll";
-import { CoformAnswersSearchData } from "@communecter/cocolight-api-client";
+import { CoformAnswersSearchData, User } from "@communecter/cocolight-api-client";
 import { useMemo } from "react";
+import getMultipleValuesByPaths from "@/helpers/getMultipleValuesByPaths";
 
 export interface UseFetchAnswerParams {
     queryKeyPrefix: string;
@@ -16,17 +17,23 @@ export interface UseFetchAnswerParams {
         defaultFields?: string[];
         defaultSortBy?: Record<string, 1 | -1>;
         notSourceKey?: boolean;
-    }
+    };
+    extractionConfig?: {
+        dataPath: Record<string, string | undefined>;
+        prefix?: string;
+        includeUserInfo?: boolean;
+    };
 }
 
 export function useFetchAnswer({
     queryKeyPrefix,
     coformId,
     view,
-    baseParams = {}
+    baseParams = {},
+    extractionConfig
 }: UseFetchAnswerParams) {
-    const { organization, entity, helper } = useCocolight();
-    const searchContext = organization || entity;
+    const { entity, helper } = useCocolight();
+
     const {
         data,
         error,
@@ -43,7 +50,7 @@ export function useFetchAnswer({
             JSON.stringify(baseParams),
         ],
         queryFn: async ({ pageParam } = { pageParam: undefined }) => {
-            if (!searchContext) {
+            if (!entity) {
                 throw new Error("API non initialisée - ni organization ni entity disponible");
             }
 
@@ -87,7 +94,7 @@ export function useFetchAnswer({
 
 
             try {
-                const result = await searchContext.coformAnswersSearch(param);
+                const result = await entity.coformAnswersSearch(param);
                 if (
                     page &&
                     page?.pageNumber > 1 &&
@@ -104,19 +111,51 @@ export function useFetchAnswer({
 
         },
         options: {
-            enabled: !!searchContext,
+            enabled: !!entity,
             staleTime: 60 * 1000,
             initialPageParam: [],
         },
     });
+    // Transformation et extraction en une seule boucle pour optimiser les performances
     const transformedResults = useMemo(() => {
         const results = data?.pages?.flatMap((p) => p?.results) ?? [];
-        if (!searchContext || !results.length) return results || [];
+        if (!entity || !results.length) return results || [];
+
         return results.flatMap((d: any) => {
-            if (d?.getEntityType) return d;
-            return helper.fromEntityJSON(d, organization || searchContext);
+            // 1. Transformation : JSON -> Entity
+            const item = d?.getEntityType ? d : helper.fromEntityJSON(d, entity);
+
+            // 2. Extraction optionnelle (si extractionConfig fourni)
+            if (extractionConfig) {
+                const extractedFields = getMultipleValuesByPaths(
+                    item.serverData,
+                    extractionConfig.dataPath,
+                    extractionConfig.prefix || "answers"
+                );
+
+                let userInfo = undefined;
+                if (extractionConfig.includeUserInfo) {
+                    const user = item.serverData.user as User | undefined;
+                    const userName = user?.serverData?.name || "";
+                    userInfo = {
+                        name: userName,
+                        initial: userName.charAt(0) || "",
+                        exists: !!user
+                    };
+                }
+
+                return {
+                    answer: item,
+                    data: extractedFields,
+                    ...(userInfo && { user: userInfo })
+                };
+            }
+
+            // Retourne l'entité simple si pas d'extraction
+            return item;
         });
-    }, [data, organization, searchContext, helper]);
+    }, [data, entity, helper, extractionConfig]);
+
     const hasCount =
         data?.pages?.[0]?.count && typeof data?.pages?.[0]?.count === "object";
     const totalCount =
