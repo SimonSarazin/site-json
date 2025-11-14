@@ -1,10 +1,10 @@
-import getValueByPath from "@/helpers/getValueByPath";
+import getMultipleValuesByPaths from "@/helpers/getMultipleValuesByPaths";
 import { useFetchAnswer } from "@/hooks/useFetchAnswer";
 import { MeeteemSectionProps } from "@/types/site-schema";
-import { Answer, User } from "@communecter/cocolight-api-client";
+import type { User } from "@communecter/cocolight-api-client";
 import { TextAlignJustifyIcon } from "@radix-ui/react-icons";
 import { ChevronDown, Columns2Icon, FunnelIcon, Heart, MapIcon, MapPinIcon, MessageCircle, XIcon } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 export function MeeteemSection({ id, props }: { id?: string, props: MeeteemSectionProps }) {
     const [viewMode, setViewMode] = useState<'answers' | 'map' | 'split'>('answers');
@@ -138,6 +138,31 @@ export function MeeteemSection({ id, props }: { id?: string, props: MeeteemSecti
         }
     })
 
+    // Optimisation de l'extraction des données : extraction de tous les champs requis en une seule passe
+    // Utilise le préfixe "answers" automatiquement et filtre les champs vides
+    const extractedData = useMemo(() => {
+        return transformedResults.map(answer => {
+            // Extraction automatique avec préfixe "answers"
+            // Les champs undefined ou vides (comme tags parfois) sont automatiquement filtrés
+            const data = getMultipleValuesByPaths(answer.serverData, dataPath, "answers");
+
+            // Extraction des données utilisateur pour meilleure lisibilité
+            const user = answer.serverData.user as User | undefined;
+            const userName = user?.serverData?.name || "";
+            const userInitial = userName.charAt(0) || "";
+
+            return {
+                answer,
+                data,
+                user: {
+                    name: userName,
+                    initial: userInitial,
+                    exists: !!user
+                }
+            };
+        });
+    }, [transformedResults, dataPath]);
+
     // Gestion des filtres par tags
     const toggleFilter = (tag: string) => {
         setActiveFilters(prev =>
@@ -168,7 +193,6 @@ export function MeeteemSection({ id, props }: { id?: string, props: MeeteemSecti
 
         return matchesTag && matchesUser;
     });
-    console.log("data meeteem", transformedResults.map((answer: Answer) => ({...answer.serverData, user: answer.serverData.user ? {...((answer.serverData.user as User).serverData)} : null})));
 
     // Limiter l'affichage des cartes si "voir plus" n'est pas activé
     const displayedCards = showMore ? filteredCards : filteredCards.slice(0, 6);
@@ -286,7 +310,7 @@ export function MeeteemSection({ id, props }: { id?: string, props: MeeteemSecti
             {/* Vue Annuaire (liste) */}
             {viewMode === 'answers' && (
                 <div className="grid grid-cols-[repeat(auto-fill,minmax(32%,1fr))] gap-3 w-full bg-tertiaire">
-                    {transformedResults.map((answer, index) => (
+                    {extractedData.map(({ answer, data, user }, index) => (
                         <div
                             key={answer.serverData.id}
                             className="rounded-xl border border-foreground/40 shadow-md overflow-hidden hover:shadow-lg flex flex-col items-start p-4 border-l-4 border-l-primary/75 opacity-0 animate-[cardSlideIn_0.6s_cubic-bezier(0.4,0,0.2,1)_forwards]"
@@ -295,7 +319,7 @@ export function MeeteemSection({ id, props }: { id?: string, props: MeeteemSecti
                             {/* Header */}
                             <div className="flex-1 pr-4 border-b border-gray-300 mb-4 w-full">
                                 <div className="flex gap-2 mb-2 flex-wrap">
-                                    {(typeof dataPath.tags != "undefined" && dataPath.tags != "") && getValueByPath(answer.serverData, `answers.${dataPath.tags}`)?.map((tag: string) => (
+                                    {data.tags?.map((tag: string) => (
                                         <span
                                             key={tag}
                                             className={`px-3 py-1 rounded-full text-xs font-medium border cursor-pointer ${getTagStyles(tag)}`}
@@ -305,14 +329,14 @@ export function MeeteemSection({ id, props }: { id?: string, props: MeeteemSecti
                                     ))}
                                 </div>
                                 <h3 className="text-base font-semibold text-foreground m-0 mb-1 leading-snug cursor-pointer hover:text-primary transition-colors">
-                                    {getValueByPath(answer.serverData, `answers.${dataPath.name}`)}
+                                    {data.name}
                                 </h3>
                             </div>
 
                             {/* Contenu */}
                             <div className="flex-[2_2_0%] pr-4">
                                 <p className="text-foreground text-sm leading-relaxed m-0 overflow-hidden line-clamp-2">
-                                    {getValueByPath(answer.serverData, `answers.${dataPath.description}`)}
+                                    {data.description}
                                 </p>
                             </div>
 
@@ -320,14 +344,14 @@ export function MeeteemSection({ id, props }: { id?: string, props: MeeteemSecti
                             <div className="shrink-0 flex justify-between gap-4 w-full">
                                 {/* Auteur */}
                                 <div
-                                    onClick={() => setUserFilter(answer.serverData.user ? (answer.serverData.user as User).serverData.name : "")}
+                                    onClick={() => setUserFilter(user.name)}
                                     className="flex items-center gap-2 cursor-pointer transition-all rounded-lg p-1 hover:bg-primary/10"
                                 >
                                     <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-semibold text-sm">
-                                        {answer.serverData.user ? (answer.serverData.user as User).serverData.name.charAt(0) : ""}
+                                        {user.initial}
                                     </div>
                                     <div className="flex flex-col gap-0.5 flex-1">
-                                        <div className="font-semibold text-foreground text-xs">{answer.serverData.user ? (answer.user as User).serverData.name : ""}</div>
+                                        <div className="font-semibold text-foreground text-xs">{user.name}</div>
                                         <div className="text-[11px] text-foreground">{answer.serverData.created?.toLocaleDateString() ?? "N/A"}</div>
                                     </div>
                                 </div>
