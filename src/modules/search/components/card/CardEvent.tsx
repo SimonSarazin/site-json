@@ -35,7 +35,7 @@ export default function CardEvent({
   return (
     <div
       onClick={onClick}
-      className="relative border border-gray-300 w-full h-72 rounded-xl overflow-hidden shadow-lg group cursor-pointer"
+      className="relative border border-border w-full h-72 rounded-xl overflow-hidden shadow-lg group cursor-pointer"
     >
       {/* Image de fond */}
       {image && (
@@ -47,7 +47,13 @@ export default function CardEvent({
       )}
 
       {/* Date et titre de l'événement en haut */}
-      <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
+      <div className="
+        absolute top-0 w-full px-2 pt-1 pb-2 z-10
+        backdrop-blur-xl
+        bg-black/30 dark:bg-white/10
+        border-b border-white/40 dark:border-white/20
+        flex flex-col items-center gap-2
+      ">
         {date && (
           <div className="bg-white w-auto px-3 py-1 rounded-md text-xs font-semibold shadow text-gray-900 flex items-center gap-1">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -57,18 +63,29 @@ export default function CardEvent({
           </div>
         )}
         {eventTitle && (
-          <div className="text-white font-semibold text-sm drop-shadow-lg">
+          <div className="text-foreground font-semibold text-sm drop-shadow-lg">
             {eventTitle}
           </div>
         )}
       </div>
 
       {/* Card info en bas */}
-      <div className="absolute bottom-3 left-3 right-3 bg-white bg-opacity-90 rounded-xl p-4 flex items-start gap-3 shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-all">
+      <div
+        className="
+          absolute bottom-3 left-3 right-3
+          bg-dark/30 dark:bg-white/10
+          backdrop-blur-lg
+          rounded-xl p-4
+          flex items-start gap-3
+          shadow-lg
+          translate-y-2 group-hover:translate-y-0
+          transition-all
+        "
+      >
         {/* Avatar Icon */}
         {avatarIcon && (
           <div className={cn(
-            "w-10 h-10 flex items-center justify-center rounded-full shadow-sm flex-shrink-0",
+            "w-10 h-10 flex items-center justify-center rounded-full shadow-sm shrink-0",
             getAvatarColorClasses(avatarColor)
           )}>
             <DynamicIcon name={avatarIcon as IconName} className="w-4 h-4" />
@@ -76,11 +93,11 @@ export default function CardEvent({
         )}
 
         <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-gray-900 text-sm mb-1 truncate">
+          <h3 className="font-bold text-foreground text-sm mb-1 truncate">
             {organizerName || title}
           </h3>
           {location && (
-            <p className="text-gray-500 text-xs truncate">
+            <p className="text-foreground text-xs truncate">
               {location}
             </p>
           )}

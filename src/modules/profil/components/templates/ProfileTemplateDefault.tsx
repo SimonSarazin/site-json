@@ -62,11 +62,11 @@ export default function ProfileTemplateDefault() {
   // }
 
   return (
-    <div className="bg-white -m-4 md:-m-8">
-      <div className="w-full mx-auto bg-white shadow-sm">
-        <div className="relative h-96 bg-cover bg-center rounded-md border-gray-200 border" style={{ backgroundImage: bannerUrl ? `url('${bannerUrl}')` : `url('${imageUrl}')` }}>
+    <div className="bg-foreground -m-4 md:-m-8">
+      <div className="w-full mx-auto bg-background shadow-sm">
+        <div className="relative h-96 bg-cover bg-center rounded-md border-border border" style={{ backgroundImage: bannerUrl ? `url('${bannerUrl}')` : `url('${imageUrl}')` }}>
           <div className="absolute bottom-6 right-6 z-20">
-            <button className="bg-white text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center gap-2 shadow-md border border-gray-200">
+            <button className="bg-card text-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-muted flex items-center gap-2 shadow-md border border-border">
               <ImageIcon className="w-4 h-4" />
               {t("ProfileTemplateDefault.showAllPhotos")}
             </button>
@@ -76,14 +76,14 @@ export default function ProfileTemplateDefault() {
         <div className="relative px-8 pb-6">
           <div className="flex items-end gap-6 -mt-20">
             <div className="relative">
-              <div className="w-40 h-40 rounded-full border-4 border-white bg-white shadow-xl overflow-hidden">
+              <div className="w-40 h-40 rounded-full border-4 border-background bg-card shadow-xl overflow-hidden">
                 {logoUrl ? (
                   <img src={logoUrl} alt={entityName} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center from-yellow-100 to-yellow-50">
                     <div className="text-center p-2">
                       <div className="text-4xl mb-1">✒️</div>
-                      <div className="text-xs font-bold text-gray-700 leading-tight">
+                      <div className="text-xs font-bold text-foreground leading-tight">
                         {entityName.split(" ").slice(0, 2).join(" ")}
                       </div>
                     </div>
@@ -94,9 +94,9 @@ export default function ProfileTemplateDefault() {
 
             <div className="flex-1 flex justify-between items-end pb-2 flex-wrap gap-4">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-1">{entityName}</h1>
+                <h1 className="text-3xl font-bold text-foreground mb-1">{entityName}</h1>
                 {address && (
-                  <p className="text-gray-600">
+                  <p className="text-muted-foreground">
                     {address.addressLocality}
                     {address.postalCode && `, ${address.postalCode}`}
                   </p>
@@ -109,14 +109,14 @@ export default function ProfileTemplateDefault() {
                     {entity.serverData?.email && typeof entity.serverData.email === "string" && (
                       <button
                         onClick={() => window.location.href = `mailto:${entity.serverData.email}`}
-                        className="px-5 py-2.5 border border-gray-300 rounded-lg text-gray-700 bg-white text-sm font-medium hover:bg-gray-50 flex items-center gap-2 shadow-sm"
+                        className="px-5 py-2.5 border border-border rounded-lg text-foreground bg-card text-sm font-medium hover:bg-muted flex items-center gap-2 shadow-sm"
                       >
                         <Mail className="w-4 h-4" />
                         {t("ProfileTemplateDefault.sendEmail")}
                       </button>
                     )}
                     <button
-                      className="px-5 py-2.5 bg-teal-500 text-white rounded-lg text-sm font-medium hover:bg-teal-600 flex items-center gap-2 shadow-sm"
+                      className="px-5 py-2.5 bg-[#0092a2] text-white rounded-lg text-sm font-medium hover:bg-teal-600 flex items-center gap-2 shadow-sm"
                     >
                       {t("ProfileTemplateDefault.reservationSpace")}
                       <ChevronRight className="w-4 h-4" />
@@ -127,51 +127,51 @@ export default function ProfileTemplateDefault() {
             </div>
           </div>
 
-          <div className="mt-6 border-t border-gray-200"></div>
+          <div className="mt-6 border-t border-border"></div>
         </div>
 
         <div className="px-8 py-8">
           <Tabs defaultValue="about" className="w-full">
-            <TabsList className="grid w-full grid-cols-7 mb-8 bg-gray-100 p-1 rounded-lg">
+            <TabsList className="grid w-full grid-cols-7 mb-8 bg-secondary p-1 rounded-lg">
               <TabsTrigger
                 value="about"
-                className="data-[state=active]:bg-white data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-gray-700 hover:text-gray-900"
+                className="data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
               >
                 {t("ProfileTemplateDefault.tabs.about")}
               </TabsTrigger>
               <TabsTrigger
                 value="news"
-                className="data-[state=active]:bg-white data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-gray-700 hover:text-gray-900"
+                className="data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
               >
                 {t("ProfileTemplateDefault.tabs.news")}
               </TabsTrigger>
               <TabsTrigger
                 value="coworking"
-                className="data-[state=active]:bg-white data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-gray-700 hover:text-gray-900"
+                className="data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
               >
                 {t("ProfileTemplateDefault.tabs.coworking")}
               </TabsTrigger>
               <TabsTrigger
                 value="rooms"
-                className="data-[state=active]:bg-white data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-gray-700 hover:text-gray-900"
+                className="data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
               >
                 {t("ProfileTemplateDefault.tabs.meetingRooms")}
               </TabsTrigger>
               <TabsTrigger
                 value="infos"
-                className="data-[state=active]:bg-white data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-gray-700 hover:text-gray-900"
+                className="data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
               >
                 {t("ProfileTemplateDefault.tabs.practicalInfo")}
               </TabsTrigger>
               <TabsTrigger
                 value="communities"
-                className="data-[state=active]:bg-white data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-gray-700 hover:text-gray-900"
+                className="data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
               >
                 {t("ProfileTemplateDefault.tabs.communities")}
               </TabsTrigger>
               <TabsTrigger
                 value="observatory"
-                className="data-[state=active]:bg-white data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-gray-700 hover:text-gray-900"
+                className="data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
               >
                 {t("ProfileTemplateDefault.tabs.observatories")}
               </TabsTrigger>
@@ -182,13 +182,13 @@ export default function ProfileTemplateDefault() {
                 <div className="lg:col-span-2">
               {entity.serverData?.startDate && (
                 <div className="mb-8">
-                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-                    <span className="inline-block w-2 h-2 bg-teal-500 rounded-full"></span>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                    <span className="inline-block w-2 h-2 bg-[#0092a2] rounded-full"></span>
                     {entity.serverData?.type && typeof entity.serverData.type === "string" && (
                       <span className="capitalize">{entity.serverData.type}</span>
                     )}
                   </div>
-                  <div className="text-gray-900">
+                  <div className="text-foreground">
                     <strong>{t("common.date")}:</strong> {formatDate(entity.serverData.startDate)}
                     {entity.serverData?.endDate && (
                       <> - {formatDate(entity.serverData.endDate)}</>
@@ -199,7 +199,7 @@ export default function ProfileTemplateDefault() {
 
               {entity.serverData?.shortDescription && typeof entity.serverData.shortDescription === "string" && (
                 <div className="mb-8">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                  <h3 className="text-2xl font-bold text-foreground mb-4">
                     {entity.serverData.shortDescription}
                   </h3>
                 </div>
@@ -207,8 +207,8 @@ export default function ProfileTemplateDefault() {
 
               {entity.serverData?.description && typeof entity.serverData.description === "string" && (
                 <div className="mb-12">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">{t("ProfileTemplateDefault.description")}</h2>
-                  <div className="text-gray-800 leading-relaxed whitespace-pre-wrap bg-gray-50 p-6 rounded-lg border border-gray-200">
+                  <h2 className="text-2xl font-bold text-foreground mb-6">{t("ProfileTemplateDefault.description")}</h2>
+                  <div className="text-foreground leading-relaxed whitespace-pre-wrap bg-muted p-6 rounded-lg border border-border">
                     {entity.serverData.description}
                   </div>
                 </div>
@@ -216,20 +216,20 @@ export default function ProfileTemplateDefault() {
 
               {organizer && (
                 <div className="mb-8">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4">{t("common.organizedBy")}</h2>
-                  <div className="flex items-center gap-4 bg-white p-5 rounded-lg border border-gray-300 shadow-sm hover:border-teal-400 transition-colors">
+                  <h2 className="text-2xl font-bold text-foreground mb-4">{t("common.organizedBy")}</h2>
+                  <div className="flex items-center gap-4 bg-card p-5 rounded-lg border border-border shadow-sm hover:border-teal-400 transition-colors">
                     {organizer.profilThumbImageUrl && (
                       <img
                         src={organizer.profilThumbImageUrl}
                         alt={organizer.name || "Organisateur"}
-                        className="w-16 h-16 rounded-lg object-cover border border-gray-200"
+                        className="w-16 h-16 rounded-lg object-cover border border-border"
                       />
                     )}
                     <div>
-                      <h3 className="font-bold text-gray-900">{organizer.name || "Sans nom"}</h3>
+                      <h3 className="font-bold text-foreground">{organizer.name || "Sans nom"}</h3>
                       {organizer.slug && (
                         <Link
-                          to={`/@${organizer.slug}`}
+                          to={`/profil/${organizer.slug}`}
                           className="text-teal-600 hover:text-teal-700 text-sm font-medium"
                         >
                           {t("common.viewProfile")} →
@@ -242,15 +242,15 @@ export default function ProfileTemplateDefault() {
 
               {badges.length > 0 && (
                 <div className="mb-8">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <h2 className="text-2xl font-bold text-foreground mb-4 flex items-center gap-2">
                     <Award className="w-6 h-6 text-teal-600" />
                     {t("ProfileTemplateDefault.badges")}
                   </h2>
                   <div className="flex flex-wrap gap-3">
                     {badges.map((badge, index) => (
-                      <div key={index} className="bg-white border border-teal-300 rounded-lg px-4 py-2 flex items-center gap-2 shadow-sm hover:shadow-md transition-shadow">
+                      <div key={index} className="bg-card border border-(--themecolor) rounded-lg px-4 py-2 flex items-center gap-2 shadow-sm hover:shadow-md transition-shadow">
                         <Award className="w-4 h-4 text-teal-600" />
-                        <span className="text-gray-900 font-medium">{badge.name || 'Badge'}</span>
+                        <span className="text-foreground font-medium">{badge.name || 'Badge'}</span>
                       </div>
                     ))}
                   </div>
@@ -259,12 +259,12 @@ export default function ProfileTemplateDefault() {
 
               {tags.length > 0 && (
                 <div className="mb-8">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4">{t("ProfileTemplateDefault.tags")}</h2>
+                  <h2 className="text-2xl font-bold text-foreground mb-4">{t("ProfileTemplateDefault.tags")}</h2>
                   <div className="flex flex-wrap gap-2">
                     {tags.slice(0, 20).map((tag, index) => (
                       <span
                         key={index}
-                        className="bg-white border border-gray-300 text-gray-800 px-3 py-1.5 rounded-full text-sm font-medium hover:border-teal-400 hover:bg-gray-50 transition-colors"
+                        className="bg-card border border-border text-foreground px-3 py-1.5 rounded-full text-sm font-medium hover:border-teal-400 hover:bg-muted transition-colors"
                       >
                         {tag}
                       </span>
@@ -275,14 +275,14 @@ export default function ProfileTemplateDefault() {
 
               {openingHours && openingHours.length > 0 && (
                 <div className="mb-8">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4">{t("ProfileTemplateDefault.openingHours")}</h2>
-                  <div className="bg-white p-5 rounded-lg border border-gray-300 shadow-sm">
+                  <h2 className="text-2xl font-bold text-foreground mb-4">{t("ProfileTemplateDefault.openingHours")}</h2>
+                  <div className="bg-card p-5 rounded-lg border border-border shadow-sm">
                     {openingHours.map((schedule, index) => (
-                      <div key={index} className="flex justify-between items-center py-3 border-b border-gray-200 last:border-b-0">
-                        <span className="font-semibold text-gray-800">
+                      <div key={index} className="flex justify-between items-center py-3 border-b border-border last:border-b-0">
+                        <span className="font-semibold text-foreground">
                           {schedule.dayOfWeek}
                         </span>
-                        <div className="text-gray-900 font-medium">
+                        <div className="text-foreground font-medium">
                           {schedule.hours && schedule.hours.length > 0 && (
                             schedule.hours.map((hour, hIndex) => (
                               <span key={hIndex}>
@@ -300,27 +300,27 @@ export default function ProfileTemplateDefault() {
             </div>
 
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-lg border border-gray-300 p-6 sticky top-4 shadow-sm">
-                <h3 className="text-xl font-bold text-gray-900 mb-6">{t("ProfileTemplateDefault.information")}</h3>
+              <div className="bg-card rounded-lg border border-border p-6 sticky top-4 shadow-sm">
+                <h3 className="text-xl font-bold text-foreground mb-6">{t("ProfileTemplateDefault.information")}</h3>
 
                 {(membersCount !== null || projectsCount !== null) && (
-                  <div className="space-y-4 mb-6 pb-6 border-b border-gray-300">
+                  <div className="space-y-4 mb-6 pb-6 border-b border-border">
                     {membersCount !== null && (
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
                           <Users className="w-5 h-5 text-teal-600" />
-                          <span className="text-gray-700 font-medium">{t("ProfileTemplateDefault.members")}</span>
+                          <span className="text-foreground font-medium">{t("ProfileTemplateDefault.members")}</span>
                         </div>
-                        <span className="font-bold text-gray-900 text-lg">{membersCount}</span>
+                        <span className="font-bold text-foreground text-lg">{membersCount}</span>
                       </div>
                     )}
                     {projectsCount !== null && (
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
                           <Briefcase className="w-5 h-5 text-teal-600" />
-                          <span className="text-gray-700 font-medium">{t("ProfileTemplateDefault.projects")}</span>
+                          <span className="text-foreground font-medium">{t("ProfileTemplateDefault.projects")}</span>
                         </div>
-                        <span className="font-bold text-gray-900 text-lg">{projectsCount}</span>
+                        <span className="font-bold text-foreground text-lg">{projectsCount}</span>
                       </div>
                     )}
                   </div>
@@ -328,27 +328,27 @@ export default function ProfileTemplateDefault() {
 
                 <div className="space-y-4">
                   {entity.serverData?.username && typeof entity.serverData.username === "string" && (
-                    <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-lg">
+                    <div className="flex items-center gap-3 bg-muted p-3 rounded-lg">
                       <span className="text-teal-600 font-semibold">@{entity.serverData.username}</span>
                     </div>
                   )}
 
                   {entity.serverData?.email && typeof entity.serverData.email === "string" && (
-                    <div className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
+                    <div className="flex items-center gap-3 p-2 hover:bg-muted rounded-lg transition-colors">
                       <Mail className="w-5 h-5 text-teal-600 shrink-0" />
-                      <span className="text-gray-800 break-all text-sm">{entity.serverData.email}</span>
+                      <span className="text-foreground break-all text-sm">{entity.serverData.email}</span>
                     </div>
                   )}
 
                   {entity.serverData?.mobile && typeof entity.serverData.mobile === "string" && (
-                    <div className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
+                    <div className="flex items-center gap-3 p-2 hover:bg-muted rounded-lg transition-colors">
                       <Phone className="w-5 h-5 text-teal-600 shrink-0" />
-                      <a href={`tel:${entity.serverData.mobile}`} className="text-gray-800 font-medium text-sm hover:text-teal-600">{entity.serverData.mobile}</a>
+                      <a href={`tel:${entity.serverData.mobile}`} className="text-foreground font-medium text-sm hover:text-teal-600">{entity.serverData.mobile}</a>
                     </div>
                   )}
 
                   {entity.serverData?.url && typeof entity.serverData.url === "string" && (
-                    <div className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
+                    <div className="flex items-center gap-3 p-2 hover:bg-muted rounded-lg transition-colors">
                       <Globe className="w-5 h-5 text-teal-600 shrink-0" />
                       <a href={entity.serverData.url} target="_blank" rel="noopener noreferrer" className="text-teal-600 hover:text-teal-700 break-all text-sm font-medium">
                         {entity.serverData.url.replace(/^https?:\/\//, '')}
@@ -357,11 +357,11 @@ export default function ProfileTemplateDefault() {
                   )}
 
                   {address?.postalCode && address.addressLocality && (
-                    <div className="flex items-start gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
+                    <div className="flex items-start gap-3 p-2 hover:bg-muted rounded-lg transition-colors">
                       <MapPin className="w-5 h-5 text-teal-600 mt-1 shrink-0" />
                       <div className="text-sm">
-                        {address.streetAddress && <div className="text-gray-800 font-medium">{address.streetAddress}</div>}
-                        <div className="text-gray-700">
+                        {address.streetAddress && <div className="text-foreground font-medium">{address.streetAddress}</div>}
+                        <div className="text-foreground">
                           {address.postalCode} {address.addressLocality}
                         </div>
                       </div>
@@ -369,16 +369,16 @@ export default function ProfileTemplateDefault() {
                   )}
 
                   {entity.serverData?.openingDate && (
-                    <div className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
+                    <div className="flex items-center gap-3 p-2 hover:bg-muted rounded-lg transition-colors">
                       <Calendar className="w-5 h-5 text-teal-600 shrink-0" />
-                      <span className="text-gray-800 text-sm font-medium">{t("ProfileTemplateDefault.openSince")} {formatDate(entity.serverData.openingDate)}</span>
+                      <span className="text-foreground text-sm font-medium">{t("ProfileTemplateDefault.openSince")} {formatDate(entity.serverData.openingDate)}</span>
                     </div>
                   )}
 
                   {entity.serverData?.externalLinkRegistration && typeof entity.serverData.externalLinkRegistration === "string" && (
-                    <div className="mt-6 pt-6 border-t border-gray-300">
+                    <div className="mt-6 pt-6 border-t border-border">
                       <Button
-                        className="w-full bg-teal-500 hover:bg-teal-600"
+                        className="w-full bg-[#0092a2] hover:bg-teal-600"
                         onClick={() => window.open(entity.serverData.externalLinkRegistration as string, "_blank")}
                       >
                         {t("ProfileTemplateDefault.register")}
@@ -393,73 +393,73 @@ export default function ProfileTemplateDefault() {
             </TabsContent>
 
             <TabsContent value="news">
-              <div className="bg-white p-8 rounded-lg border border-gray-200 shadow-sm">
+              <div className="bg-card p-8 rounded-lg border border-border shadow-sm">
                 <div className="text-center py-16">
                   <div className="text-gray-400 mb-4">
                     <Calendar className="w-16 h-16 mx-auto" />
                   </div>
-                  <p className="text-xl font-semibold text-gray-700 mb-2">{t("ProfileTemplateDefault.sectionLabel", undefined, { name: t("ProfileTemplateDefault.tabs.news") })}</p>
-                  <p className="text-gray-500">{t("ProfileTemplateDefault.comingSoon")}</p>
+                  <p className="text-xl font-semibold text-foreground mb-2">{t("ProfileTemplateDefault.sectionLabel", undefined, { name: t("ProfileTemplateDefault.tabs.news") })}</p>
+                  <p className="text-muted-foreground">{t("ProfileTemplateDefault.comingSoon")}</p>
                 </div>
               </div>
             </TabsContent>
 
             <TabsContent value="coworking">
-              <div className="bg-white p-8 rounded-lg border border-gray-200 shadow-sm">
+              <div className="bg-card p-8 rounded-lg border border-border shadow-sm">
                 <div className="text-center py-16">
                   <div className="text-gray-400 mb-4">
                     <Briefcase className="w-16 h-16 mx-auto" />
                   </div>
-                  <p className="text-xl font-semibold text-gray-700 mb-2">{t("ProfileTemplateDefault.sectionLabel", undefined, { name: t("ProfileTemplateDefault.tabs.coworking") })}</p>
-                  <p className="text-gray-500">{t("ProfileTemplateDefault.comingSoon")}</p>
+                  <p className="text-xl font-semibold text-foreground mb-2">{t("ProfileTemplateDefault.sectionLabel", undefined, { name: t("ProfileTemplateDefault.tabs.coworking") })}</p>
+                  <p className="text-muted-foreground">{t("ProfileTemplateDefault.comingSoon")}</p>
                 </div>
               </div>
             </TabsContent>
 
             <TabsContent value="rooms">
-              <div className="bg-white p-8 rounded-lg border border-gray-200 shadow-sm">
+              <div className="bg-card p-8 rounded-lg border border-border shadow-sm">
                 <div className="text-center py-16">
                   <div className="text-gray-400 mb-4">
                     <Users className="w-16 h-16 mx-auto" />
                   </div>
-                  <p className="text-xl font-semibold text-gray-700 mb-2">{t("ProfileTemplateDefault.sectionLabel", undefined, { name: t("ProfileTemplateDefault.tabs.meetingRooms") })}</p>
-                  <p className="text-gray-500">{t("ProfileTemplateDefault.comingSoon")}</p>
+                  <p className="text-xl font-semibold text-foreground mb-2">{t("ProfileTemplateDefault.sectionLabel", undefined, { name: t("ProfileTemplateDefault.tabs.meetingRooms") })}</p>
+                  <p className="text-muted-foreground">{t("ProfileTemplateDefault.comingSoon")}</p>
                 </div>
               </div>
             </TabsContent>
 
             <TabsContent value="infos">
-              <div className="bg-white p-8 rounded-lg border border-gray-200 shadow-sm">
+              <div className="bg-card p-8 rounded-lg border border-border shadow-sm">
                 <div className="text-center py-16">
                   <div className="text-gray-400 mb-4">
                     <MapPin className="w-16 h-16 mx-auto" />
                   </div>
-                  <p className="text-xl font-semibold text-gray-700 mb-2">{t("ProfileTemplateDefault.sectionLabel", undefined, { name: t("ProfileTemplateDefault.tabs.practicalInfo") })}</p>
-                  <p className="text-gray-500">{t("ProfileTemplateDefault.comingSoon")}</p>
+                  <p className="text-xl font-semibold text-foreground mb-2">{t("ProfileTemplateDefault.sectionLabel", undefined, { name: t("ProfileTemplateDefault.tabs.practicalInfo") })}</p>
+                  <p className="text-muted-foreground">{t("ProfileTemplateDefault.comingSoon")}</p>
                 </div>
               </div>
             </TabsContent>
 
             <TabsContent value="communities">
-              <div className="bg-white p-8 rounded-lg border border-gray-200 shadow-sm">
+              <div className="bg-card p-8 rounded-lg border border-border shadow-sm">
                 <div className="text-center py-16">
                   <div className="text-gray-400 mb-4">
                     <Users className="w-16 h-16 mx-auto" />
                   </div>
-                  <p className="text-xl font-semibold text-gray-700 mb-2">{t("ProfileTemplateDefault.sectionLabel", undefined, { name: t("ProfileTemplateDefault.tabs.communities") })}</p>
-                  <p className="text-gray-500">{t("ProfileTemplateDefault.comingSoon")}</p>
+                  <p className="text-xl font-semibold text-foreground mb-2">{t("ProfileTemplateDefault.sectionLabel", undefined, { name: t("ProfileTemplateDefault.tabs.communities") })}</p>
+                  <p className="text-muted-foreground">{t("ProfileTemplateDefault.comingSoon")}</p>
                 </div>
               </div>
             </TabsContent>
 
             <TabsContent value="observatory">
-              <div className="bg-white p-8 rounded-lg border border-gray-200 shadow-sm">
+              <div className="bg-card p-8 rounded-lg border border-border shadow-sm">
                 <div className="text-center py-16">
                   <div className="text-gray-400 mb-4">
                     <Globe className="w-16 h-16 mx-auto" />
                   </div>
-                  <p className="text-xl font-semibold text-gray-700 mb-2">{t("ProfileTemplateDefault.sectionLabel", undefined, { name: t("ProfileTemplateDefault.tabs.observatories") })}</p>
-                  <p className="text-gray-500">{t("ProfileTemplateDefault.comingSoon")}</p>
+                  <p className="text-xl font-semibold text-foreground mb-2">{t("ProfileTemplateDefault.sectionLabel", undefined, { name: t("ProfileTemplateDefault.tabs.observatories") })}</p>
+                  <p className="text-muted-foreground">{t("ProfileTemplateDefault.comingSoon")}</p>
                 </div>
               </div>
             </TabsContent>

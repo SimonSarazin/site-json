@@ -42,7 +42,7 @@ export function ProfileSeo({ entity, isLoading, entityType }: ProfileSeoProps) {
   // Construction de l'URL canonique
   const slug = entity.serverData?.slug || "";
   const canonicalUrl = typeof window !== 'undefined' && slug
-    ? `${window.location.origin}/@${slug}`
+    ? `${window.location.origin}/profil/${slug}`
     : "";
 
   // Titre de la page

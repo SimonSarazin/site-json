@@ -68,12 +68,12 @@ export function FiltersSection({
   const hasActiveFilters = Object.values(selectedFilters).some(arr => arr.length > 0) || searchQuery.length > 0;
 
   return (
-    <aside id={id} className={cn("bg-white border border-gray-200 rounded-lg p-4", className)}>
+    <aside id={id} className={cn("bg-card border border-border rounded-lg p-4", className)}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200">
+      <div className="flex items-center justify-between mb-4 pb-4 border-b border-border">
         <div className="flex items-center gap-2">
-          <SlidersHorizontal className="w-4 h-4 text-gray-700" />
-          <h3 className="font-semibold text-gray-900">
+          <SlidersHorizontal className="w-4 h-4 text-muted-foreground" />
+          <h3 className="font-semibold text-foreground">
             {title ? t(title) : "Filtres"}
           </h3>
         </div>
@@ -93,17 +93,17 @@ export function FiltersSection({
         </button>
       </div>
 
-      <div className="pb-4 border-b border-gray-200">
+      <div className="pb-4 border-b border-border">
         <div className="relative">
           <input
             type="text"
             placeholder={t({ fr: "Rechercher par nom...", en: "Search by name..." })}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"
+            className="w-full px-4 py-2 pl-10 border border-input bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"
           />
           <svg
-            className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+            className="w-5 h-5 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -116,18 +116,18 @@ export function FiltersSection({
       {/* Filter Groups */}
       <div className="space-y-1">
         {filterGroups?.map((group) => (
-          <div key={group.id} className="border-b border-gray-100 last:border-b-0">
+          <div key={group.id} className="border-b border-border last:border-b-0">
             {/* Group Header */}
             <button
               onClick={() => toggleGroup(group.id)}
-              className="w-full flex items-center justify-between py-3 text-left hover:bg-gray-50 transition px-2 rounded"
+              className="w-full flex items-center justify-between py-3 text-left hover:bg-muted transition px-2 rounded"
             >
-              <span className="font-medium text-sm text-gray-900">
+              <span className="font-medium text-sm text-foreground">
                 {t(group.label)}
               </span>
-              <ChevronDown 
+              <ChevronDown
                 className={cn(
-                  "w-4 h-4 text-gray-600 transition-transform",
+                  "w-4 h-4 text-muted-foreground transition-transform",
                   isGroupOpen(group.id) && "rotate-180"
                 )}
               />
@@ -149,7 +149,7 @@ export function FiltersSection({
                           type="checkbox"
                           checked={isFilterSelected(group.id, filterName)}
                           onChange={() => toggleFilter(group.id, filterName)}
-                          className="w-4 h-4 border-2 border-gray-300 rounded cursor-pointer appearance-none checked:bg-teal-500 checked:border-teal-500 transition"
+                          className="w-4 h-4 border-2 border-gray-300 rounded cursor-pointer appearance-none checked:bg-[#0092a2] checked:border-teal-500 transition"
                         />
                         {isFilterSelected(group.id, filterName) && (
                           <svg
@@ -163,7 +163,7 @@ export function FiltersSection({
                         )}
                       </div>
 
-                      <span className="text-sm text-gray-700 group-hover:text-gray-900 flex-1">
+                      <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white flex-1">
                         {t(option.label)}
                       </span>
                     </label>

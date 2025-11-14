@@ -12,22 +12,21 @@ import type { ModuleRouteFactory } from "@/lib/modules";
  * Ces routes sont dynamiquement injectées dans le router principal
  * via le système de découverte de modules (src/lib/modules.ts)
  *
- * Convention : /:slug correspond aux profils accessibles via @username
+ * Convention : /profil/:slug correspond aux profils accessibles via /profil/username
  *
  * @param queryClient - Client React Query pour le pré-chargement SSR
  * @returns Liste des routes du module profil
  */
 export const routes: ModuleRouteFactory = (queryClient?: QueryClient): RouteObject[] => [
   {
-    path: ":slug",
+    path: "profil/:slug",
     element: <ProfilePage />,
     loader: async ({ params }: LoaderFunctionArgs) => {
       // Si pas de queryClient (côté client), on skip le pre-fetch
       if (!queryClient) return null;
 
-      // Nettoyer le slug (enlever le @ si présent)
-      const rawSlug = params.slug;
-      const slug = rawSlug?.startsWith('@') ? rawSlug.slice(1) : rawSlug;
+      // Récupérer le slug directement (sans @ maintenant)
+      const slug = params.slug;
 
       if (!slug) {
         throw new Response('Not Found', { status: 404 });

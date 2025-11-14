@@ -30,7 +30,7 @@ export function ContentSection({
     <section id={id} className={cn("py-16", className)}>
       <div className="container mx-auto px-6">
         {category && !isImageLeft && (
-          <p className="text-gray-600 text-sm font-medium mb-2">{t(category)}</p>
+          <p className="text-muted-foreground text-sm font-medium mb-2">{t(category)}</p>
         )}
         
         <div className={cn(
@@ -40,14 +40,14 @@ export function ContentSection({
           {/* Content Column */}
           <div className={cn(isImageLeft && "lg:order-2")}>
             {category && isImageLeft && (
-              <p className="text-gray-600 text-sm font-medium mb-4">{t(category)}</p>
+              <p className="text-muted-foreground text-sm font-medium mb-4">{t(category)}</p>
             )}
             
             <h2 className="text-4xl font-bold text-teal-500 mb-6 leading-tight">
               {t(title)}
             </h2>
             
-            <p className="text-gray-600 mb-8 leading-relaxed">
+            <p className="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">
               {t(description)}
             </p>
 
@@ -55,9 +55,9 @@ export function ContentSection({
             {tags && tags.length > 0 && (
               <div className="flex flex-wrap gap-3 mb-8">
                 {tags.map((tag, idx) => (
-                  <span 
+                  <span
                     key={idx}
-                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm cursor-pointer transition"
+                    className="px-4 py-2 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-full text-sm cursor-pointer transition"
                   >
                     {t(tag)}
                   </span>
@@ -69,21 +69,21 @@ export function ContentSection({
             {iconCard && links && links.length > 0 && (
               <div className="flex items-start gap-4 mb-6">
                 {/* Icon */}
-                <div className="w-20 h-28 bg-white rounded-2xl border border-gray-100 flex items-center justify-center text-3xl shadow-lg flex-shrink-0">
+                <div className="w-20 h-28 bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 flex items-center justify-center text-3xl shadow-lg flex-0">
                   <div dangerouslySetInnerHTML={{ __html: iconCard.svg }} />
                 </div>
                 
                 {/* Links Card */}
-                <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 flex-1">
+                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 border border-gray-100 dark:border-gray-700 flex-1">
                   <div className="space-y-4">
                     {links.map((link, idx) => (
                       <div key={idx} className="flex items-center space-x-3">
-                        <svg className="w-3 h-3 text-gray-900" fill="currentColor" viewBox="0 0 20 20">
+                        <svg className="w-3 h-3 text-gray-900 dark:text-white" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
                         </svg>
-                        <a 
-                          href={link.href} 
-                          className="font-semibold text-gray-900 hover:text-teal-500 transition"
+                        <a
+                          href={link.href}
+                          className="font-semibold text-gray-900 dark:text-white hover:text-teal-500 dark:hover:text-teal-400 transition"
                         >
                           {t(link.label)}
                         </a>
@@ -96,8 +96,8 @@ export function ContentSection({
 
             {/* Info Text */}
             {infoText && (
-              <div className="flex items-center space-x-2 text-sm text-gray-700">
-                <svg className="w-5 h-5 text-gray-900" fill="currentColor" viewBox="0 0 20 20">
+              <div className="flex items-center space-x-2 text-sm text-gray-700 dark:text-gray-300">
+                <svg className="w-5 h-5 text-gray-900 dark:text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                 </svg>
                 <span className="mt-1" dangerouslySetInnerHTML={{ __html: t(infoText) }} />
