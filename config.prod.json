@@ -1258,7 +1258,7 @@
   },
   "profiles": {
     "default": {
-      "layout": "full-width",
+      "layout": "default",
       "hideHeader": false,
       "hideFooter": false,
       "sections": [

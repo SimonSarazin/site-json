@@ -31,6 +31,7 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
   const navigate = useNavigate();
   const { me, api } = useCocolight();
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
     if (!api) return;
@@ -49,7 +50,7 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
   
     return (
         <header className={`${header.transparent ? "bg-transparent" : "bg-background"} border-b border-border ${header.sticky ? "sticky top-0 z-30" : ""}`}>
-            <nav className="container mx-auto py-4">
+            <nav className="container mx-auto py-3 sm:py-4 px-4 sm:px-6">
                 <div className="flex items-center justify-between">
                     <Link to={header.path || "/"} className="flex items-center space-x-2">
                         {header.logo && (
@@ -134,12 +135,10 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                     </div>
 
                     <div className="hidden md:flex items-center space-x-4 text-sm">
-                        {/* Theme Toggle */}
                         <ClientOnly fallback={<div className="w-10 h-10" />}>
                             {() => <ToggleButtonTheme />}
                         </ClientOnly>
 
-                        {/* Auth Section */}
                         {header.utilities?.auth && (
                             <ClientOnly fallback={<Button variant="ghost" disabled size="sm">…</Button>}>
                                 {() => (
@@ -148,15 +147,23 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                                             <>
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
-                                                        <button className="bg-background rounded-full px-4 py-1.5 flex items-center gap-2 hover:bg-secondary/80 transition">
-                                                            <div className="font-medium rounded-full px-2 py-1 bg-background text-foreground text-xs">
-                                                                {me.serverData?.name ? me.serverData.name.substring(0, 2).toUpperCase() : 'CN'}
-                                                            </div>
-                                                            <span className="text-muted-foreground">|</span>
-                                                            <span className="font-medium text-foreground">
+                                                        <button className="bg-background rounded-full px-3 lg:px-4 py-1.5 flex items-center gap-1.5 lg:gap-2 hover:bg-secondary/80 transition text-sm lg:text-base">
+                                                            {me.serverData?.profilThumbImageUrl ? (
+                                                                <img
+                                                                    src={me.serverData.profilThumbImageUrl}
+                                                                    alt={me.serverData?.name || 'Profile'}
+                                                                    className="w-6 h-6 lg:w-8 lg:h-8 rounded-full object-cover"
+                                                                />
+                                                            ) : (
+                                                                <div className="font-medium rounded-full px-1.5 lg:px-2 py-0.5 lg:py-1 bg-background text-foreground text-[10px] lg:text-xs">
+                                                                    {me.serverData?.name ? me.serverData.name.substring(0, 2).toUpperCase() : 'CN'}
+                                                                </div>
+                                                            )}
+                                                            <span className="text-muted-foreground hidden lg:inline">|</span>
+                                                            <span className="font-medium text-foreground truncate max-w-[100px] lg:max-w-[150px]">
                                                                 {me.serverData?.name || me.serverData?.email || t('Mon compte')}
                                                             </span>
-                                                            <ChevronDown className="w-3 h-3 text-foreground" />
+                                                            <ChevronDown className="w-3 h-3 text-foreground flex-shrink-0" />
                                                         </button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end" className="w-56">
@@ -184,6 +191,10 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                                                 className="bg-secondary rounded-full px-4 py-1.5 flex items-center gap-2 hover:bg-secondary/80 transition font-medium text-foreground"
                                                 onClick={() => setLoginDialogOpen(true)}
                                             >
+                                                <div className="font-medium rounded-full px-2 py-1 bg-background text-foreground text-xs">
+                                                    CN
+                                                </div>
+                                                <span className="text-muted-foreground">|</span>
                                                 {t('Se connecter')}
                                             </button>
                                         )}
@@ -193,16 +204,98 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                         )}
                     </div>
 
-                    {/* Bouton menu hamburger (mobile) */}
-                    <button className="md:hidden text-foreground hover:text-teal-500 transition relative z-50">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                        </svg>
-                    </button>
+                    <div className="md:hidden flex items-center gap-2">
+                        <ClientOnly fallback={<div className="w-8 h-8" />}>
+                            {() => <ToggleButtonTheme />}
+                        </ClientOnly>
+                        <button
+                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                            className="text-foreground hover:text-teal-500 transition relative z-50 p-2"
+                            aria-label="Toggle menu"
+                        >
+                            {mobileMenuOpen ? (
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            ) : (
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                                </svg>
+                            )}
+                        </button>
+                    </div>
                 </div>
+
+                {mobileMenuOpen && (
+                    <div className="md:hidden absolute left-0 right-0 top-full bg-background border-b border-border shadow-lg max-h-[calc(100vh-4rem)] overflow-y-auto z-40">
+                        <div className="px-4 py-4 space-y-4">
+                            {header.nav.map((item, idx) => (
+                                <div key={idx} className="space-y-2">
+                                    <div className="font-semibold text-foreground">{t(item.label)}</div>
+                                    {item.children && (
+                                        <div className="pl-4 space-y-2">
+                                            {item.children.map((sub, i) => (
+                                                <Link
+                                                    key={i}
+                                                    to={sub.path || '#'}
+                                                    className="block text-sm text-muted-foreground hover:text-teal-500 transition"
+                                                    onClick={() => setMobileMenuOpen(false)}
+                                                >
+                                                    {t(sub.label)}
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+
+                            {header.utilities?.auth && (
+                                <ClientOnly fallback={<div className="h-10" />}>
+                                    {() => (
+                                        <div className="pt-4 border-t border-border">
+                                            {me?.isConnected ? (
+                                                <div className="space-y-2">
+                                                    <button
+                                                        onClick={() => {
+                                                            navigate(getProfileUrl());
+                                                            setMobileMenuOpen(false);
+                                                        }}
+                                                        className="w-full text-left px-4 py-2 rounded-lg hover:bg-secondary transition flex items-center gap-2"
+                                                    >
+                                                        <User className="w-4 h-4" />
+                                                        {t('Profil')}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            handleLogout();
+                                                            setMobileMenuOpen(false);
+                                                        }}
+                                                        className="w-full text-left px-4 py-2 rounded-lg hover:bg-secondary transition flex items-center gap-2"
+                                                    >
+                                                        <LogOut className="w-4 h-4" />
+                                                        {t('Se déconnecter')}
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    onClick={() => {
+                                                        setLoginDialogOpen(true);
+                                                        setMobileMenuOpen(false);
+                                                    }}
+                                                    className="w-full bg-secondary rounded-lg px-4 py-2 flex items-center justify-center gap-2 hover:bg-secondary/80 transition font-medium text-foreground"
+                                                >
+                                                    {t('Se connecter')}
+                                                </button>
+                                            )}
+                                        </div>
+                                    )}
+                                </ClientOnly>
+                            )}
+                        </div>
+                    </div>
+                )}
             </nav>
 
-            {/* Dialog de connexion */}
             <Dialog open={loginDialogOpen} onOpenChange={setLoginDialogOpen}>
                 <DialogContent className="sm:max-w-md bg-card border-border">
                     <DialogTitle className="sr-only">{t('Se connecter')}</DialogTitle>

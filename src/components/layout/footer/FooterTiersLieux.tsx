@@ -9,19 +9,24 @@ export default function FooterTiersLieux({ footer }: FooterTiersLieuxProps) {
   const { t } = useLocalization();
 
   return (
-    <footer className="bg-background pt-12 pb-6 border-t dark:border-(--themecolor)">
-      <div className="container mx-auto">
+    <footer className="bg-background pt-8 sm:pt-12 pb-4 sm:pb-6 border-t dark:border-(--themecolor)">
+      <div className="container mx-auto px-4 sm:px-6">
 
-        {/* Logo */}
-        <div className="flex justify-center mb-8">
-          <img
-            src={footer.logo || '/images/default-logo.png'}
-            alt={footer.logoAlt ? t(footer.logoAlt) : ""}
-            className="h-12"
-          />
+        <div className="flex justify-center mb-6 sm:mb-8">
+          {footer.logo && (
+            <img
+              src={footer.logo.startsWith('/') ? footer.logo : `/${footer.logo}`}
+              alt={footer.logoAlt ? t(footer.logoAlt) : ""}
+              className="h-10 sm:h-12 object-contain"
+              onError={(e) => {
+                console.error('Footer logo failed to load:', footer.logo);
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          )}
         </div>
 
-        <nav className="flex flex-wrap justify-center gap-x-8 gap-y-4 text-sm text-foreground mb-12">
+        <nav className="flex flex-wrap justify-center gap-x-4 sm:gap-x-8 gap-y-2 sm:gap-y-4 text-xs sm:text-sm text-foreground mb-8 sm:mb-12">
           {footer.columns?.[0]?.links?.map((link, idx: number) => (
             <a
               key={idx}
@@ -33,10 +38,9 @@ export default function FooterTiersLieux({ footer }: FooterTiersLieuxProps) {
           ))}
         </nav>
 
-        {/* Bottom Section */}
-        <div className="flex flex-wrap justify-between items-center text-xs text-gray-500 dark:text-gray-400 border-t dark:border-(--themecolor) pt-8">
-          <p className="text-gray-500 dark:text-gray-400">{t(footer.copyright)}</p>
-          <div className="flex gap-6 flex-wrap">
+        <div className="flex flex-col sm:flex-row flex-wrap justify-between items-center gap-4 text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 border-t dark:border-(--themecolor) pt-6 sm:pt-8">
+          <p className="text-gray-500 dark:text-gray-400 text-center sm:text-left">{t(footer.copyright)}</p>
+          <div className="flex gap-4 sm:gap-6 flex-wrap justify-center">
             {footer.legalLinks?.map((link, idx: number) => (
               <a
                 key={idx}

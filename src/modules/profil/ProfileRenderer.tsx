@@ -7,10 +7,10 @@ export function ProfileRenderer() {
   const { config } = useProfileEntity();
 
   const layoutClass = {
-    "default": "max-w-4xl mx-auto",
-    "modern": "max-w-6xl mx-auto",
-    "compact": "max-w-3xl mx-auto",
-    "full-width": "w-full",
+    "default": "max-w-4xl mx-auto px-4 sm:px-6",
+    "modern": "max-w-6xl mx-auto px-4 sm:px-6",
+    "compact": "max-w-3xl mx-auto px-4 sm:px-6",
+    "full-width": "w-full px-4 sm:px-6",
   }[config.layout || "default"];
 
   return (

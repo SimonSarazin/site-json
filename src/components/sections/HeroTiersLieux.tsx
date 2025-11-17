@@ -181,29 +181,30 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
 
   if (!isFullStyle) {
     return (
-      <section className="relative min-h-[450px] flex flex-col -mt-10">
+      <section className="relative min-h-[450px] md:min-h-[500px] flex flex-col -mt-10">
         <div className="relative z-10 flex-1 flex items-center justify-center">
-          <div className="container mx-auto px-6">
+          <div className="container mx-auto px-4 sm:px-6">
             <div className="max-w-3xl mx-auto">
               <div
-                className="bg-background/90 backdrop-blur-md rounded-3xl shadow-2xl p-8 border border-white/20"
+                className="bg-background/90 backdrop-blur-md rounded-2xl sm:rounded-3xl shadow-2xl p-4 sm:p-6 md:p-8 border border-white/20"
                 style={{
                   backdropFilter: 'blur(10px)',
                   WebkitBackdropFilter: 'blur(10px)'
                 }}
               >
-                <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-6 text-center">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-4 sm:mb-6 text-center px-2">
                   {t(props.headline)}
                 </h1>
 
                 <div className="relative">
-                  <div className="flex gap-0 shadow-xl rounded-full overflow-hidden">
-                    <div className="relative">
+                  {/* Mobile: Stack vertically */}
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-0 shadow-xl rounded-2xl sm:rounded-full overflow-hidden">
+                    <div className="relative w-full sm:w-auto">
                       <select
                         value={selectedCategory}
                         onChange={(e) => setSelectedCategory(e.target.value)}
-                        className="h-full pl-6 pr-10 bg-background text-foreground font-medium focus:outline-none appearance-none cursor-pointer border-r border-border"
-                        style={{ minWidth: '150px' }}
+                        className="h-full w-full sm:w-auto pl-4 sm:pl-6 pr-10 py-3 sm:py-4 bg-background text-foreground text-sm sm:text-base font-medium focus:outline-none appearance-none cursor-pointer sm:border-r border-border rounded-t-2xl sm:rounded-none"
+                        style={{ minWidth: '0', }}
                       >
                         <option value="all">Tous les lieux</option>
                         <option value="coworking">Coworking</option>
@@ -232,18 +233,19 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                             setIsAutocompleteOpen(true);
                           }
                         }}
-                        placeholder={props.placeholder ? t(props.placeholder) : "Nom, ville, département, code postal ..."}
-                        className="w-full px-6 py-4 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 focus:outline-none"
+                        placeholder={props.placeholder ? t(props.placeholder) : "Nom, ville, département ..."}
+                        className="w-full px-4 sm:px-6 py-3 sm:py-4 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 text-sm sm:text-base focus:outline-none"
                       />
                       {isLoading && (
                         <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                          <Loader2 className="h-5 w-5 animate-spin text-gray-400 dark:text-gray-500" />
+                          <Loader2 className="h-4 w-5 sm:h-5 sm:w-5 animate-spin text-gray-400 dark:text-gray-500" />
                         </div>
                       )}
                     </div>
 
-                    <button className="px-8 py-4 bg-[#0092a2] text-white font-semibold hover:bg-teal-600 transition flex items-center gap-2">
-                      {props.searchButtonText ? t(props.searchButtonText) : "Rechercher"}
+                    <button className="px-4 sm:px-8 py-3 sm:py-4 bg-[#0092a2] text-white text-sm sm:text-base font-semibold hover:bg-teal-600 transition flex items-center justify-center gap-2 rounded-b-2xl sm:rounded-none">
+                      <span className="hidden sm:inline">{props.searchButtonText ? t(props.searchButtonText) : "Rechercher"}</span>
+                      <span className="sm:hidden">{props.searchButtonText ? t(props.searchButtonText) : "Rechercher"}</span>
                       <svg
                         className="w-4 h-4"
                         fill="none"
@@ -319,23 +321,23 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
 
   return (
     <section className="bg-background relative">
-      <div className="container mx-auto px-6">
-        <h1 className="text-5xl font-extrabold pt-6 text-center text-gray-900 dark:text-white mb-4">
+      <div className="container mx-auto px-4 sm:px-6">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold pt-4 sm:pt-6 text-center text-gray-900 dark:text-white mb-3 sm:mb-4 px-2">
           {t(props.headline)}
         </h1>
 
         {props.subhead && (
-          <p className="text-center text-teal-500 font-light text-xl italic mb-5">
+          <p className="text-center text-teal-500 font-light text-lg sm:text-xl italic mb-4 sm:mb-5 px-4">
             {t(props.subhead)}
           </p>
         )}
 
-        <div className="flex justify-center space-x-1 mb-8 text-sm flex-wrap">
+        <div className="flex justify-center space-x-1 mb-6 sm:mb-8 text-xs sm:text-sm flex-wrap gap-y-2 px-2">
           {props.ctaButtons?.map((btn, idx) => (
             <button
               key={idx}
               onClick={() => setActiveTabIndex(idx)}
-              className={`px-6 py-3 font-semibold transition ${
+              className={`px-3 sm:px-6 py-2 sm:py-3 font-semibold transition ${
                 activeTabIndex === idx
                   ? "border-b-4 border-teal-500 text-gray-50 bg-[#0092a2] rounded-t-md dark:bg-slate-800"
                   : "hover:bg-gray-50 dark:hover:bg-slate-800"
@@ -347,7 +349,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
         </div>
 
         <div className="relative z-10 max-w-4xl mx-auto -mb-8">
-          <div className="flex gap-0 shadow-xl rounded-full overflow-hidden">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-0 shadow-xl rounded-2xl sm:rounded-full overflow-hidden">
             <div className="relative flex-1">
               <input
                 ref={inputRef}
@@ -360,20 +362,21 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                     setIsAutocompleteOpen(true);
                   }
                 }}
-                placeholder={props.placeholder ? t(props.placeholder) : "Ville, département, code postal ..."}
-                className="w-full bg-white dark:bg-slate-700 px-6 py-4 border-0 focus:outline-none text-gray-700 dark:text-gray-200"
+                placeholder={props.placeholder ? t(props.placeholder) : "Ville, département ..."}
+                className="w-full bg-white dark:bg-slate-700 px-4 sm:px-6 py-3 sm:py-4 border-0 focus:outline-none text-gray-700 dark:text-gray-200 text-sm sm:text-base rounded-t-2xl sm:rounded-l-full sm:rounded-r-none"
               />
               {isLoading && (
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                  <Loader2 className="h-5 w-5 animate-spin text-gray-400 dark:text-gray-500" />
+                  <Loader2 className="h-4 w-5 sm:h-5 sm:w-5 animate-spin text-gray-400 dark:text-gray-500" />
                 </div>
               )}
             </div>
-            <button className="px-10 py-4 bg-[#0092a2] text-white font-semibold hover:bg-blue-900 transition flex items-center gap-2">
-              {props.searchButtonText ? t(props.searchButtonText) : "Rechercher"}
-              <span className="text-lg">
+            <button className="px-4 sm:px-10 py-3 sm:py-4 bg-[#0092a2] text-white text-sm sm:text-base font-semibold hover:bg-blue-900 transition flex items-center justify-center gap-2 rounded-b-2xl sm:rounded-r-full sm:rounded-l-none">
+              <span className="hidden sm:inline">{props.searchButtonText ? t(props.searchButtonText) : "Rechercher"}</span>
+              <span className="sm:hidden">{props.searchButtonText ? t(props.searchButtonText) : "Rechercher"}</span>
+              <span className="text-base sm:text-lg">
                 <svg
-                  className="w-5 h-5"
+                  className="w-4 h-4 sm:w-5 sm:h-5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -430,7 +433,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
         </div>
 
         {props.backgroundImage && (
-          <div className="relative w-full h-48 -mx-6 lg:-mx-12 overflow-hidden">
+          <div className="relative w-full h-32 sm:h-40 md:h-48 -mx-4 sm:-mx-6 lg:-mx-12 overflow-hidden">
             <img
               src={props.backgroundImage}
               className="absolute inset-0 w-full h-full object-cover object-center opacity-90"
@@ -439,6 +442,6 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
           </div>
         )}
       </div>
-    </section >
+    </section>
   );
 }

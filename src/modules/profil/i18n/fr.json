@@ -85,6 +85,10 @@
     "writeReply": "Écrire une réponse...",
     "reply": "Répondre",
     "send": "Envoyer",
+    "loginToComment": "Connectez-vous pour commenter",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "report": "Signaler un abus",
     "reactionsTypes": {
       "love": "J'adore",
       "like": "J'aime",

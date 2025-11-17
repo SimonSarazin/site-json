@@ -116,16 +116,15 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
     );
   };
 
-  // Variante Event
   if (variant === 'event') {
     return (
-      <section id={id} className={cn("py-16 bg-background", className)}>
+      <section id={id} className={cn("py-8 sm:py-12 md:py-16 bg-background", className)}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <HeaderSection />
-          <div className={cn("grid gap-6", getGridCols(columns))}>
+          <div className={cn("grid gap-4 sm:gap-6", getGridCols(columns))}>
             {items.map((item, index) => (
               <CardWrapper key={index} href={item.href} target={item.target}>
-                <div className="relative w-full h-96 rounded-xl overflow-hidden shadow-lg group cursor-pointer">
+                <div className="relative w-full h-64 sm:h-80 md:h-96 rounded-xl overflow-hidden shadow-lg group cursor-pointer">
                   {item.image && (
                     <img
                       src={item.image}
@@ -134,38 +133,38 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
                     />
                   )}
 
-                  <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
+                  <div className="absolute top-2 sm:top-3 left-2 sm:left-3 flex flex-col gap-1 sm:gap-2 z-10">
                     {item.date && (
-                      <div className="bg-white dark:bg-slate-800 w-1/2 px-3 py-1 rounded-md text-xs font-semibold shadow text-gray-900 dark:text-white flex items-center gap-1">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="bg-white dark:bg-slate-800 w-auto px-2 sm:px-3 py-0.5 sm:py-1 rounded-md text-[10px] sm:text-xs font-semibold shadow text-gray-900 dark:text-white flex items-center gap-1">
+                        <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
-                        {item.date}
+                        <span className="truncate max-w-[120px] sm:max-w-none">{item.date}</span>
                       </div>
                     )}
                     {item.eventTitle && (
-                      <div className="text-white font-semibold text-sm drop-shadow-lg">
+                      <div className="text-white font-semibold text-xs sm:text-sm drop-shadow-lg">
                         {t(item.eventTitle)}
                       </div>
                     )}
                   </div>
 
-                  <div className="absolute bottom-3 left-3 right-3 bg-white bg-opacity-90 rounded-xl p-4 flex items-start gap-3 shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-all">
+                  <div className="absolute bottom-2 sm:bottom-3 left-2 sm:left-3 right-2 sm:right-3 bg-white bg-opacity-90 rounded-xl p-2 sm:p-4 flex items-start gap-2 sm:gap-3 shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-all">
                     {item.avatarIcon && (
                       <div className={cn(
-                        "w-10 h-10 flex items-center justify-center rounded-full shadow-sm flex-shrink-0",
+                        "w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full shadow-sm flex-shrink-0",
                         getAvatarColorClasses(item.avatarColor)
                       )}>
-                        <DynamicIcon name={item.avatarIcon as IconName} className="w-4 h-4" />
+                        <DynamicIcon name={item.avatarIcon as IconName} className="w-3 h-3 sm:w-4 sm:h-4" />
                       </div>
                     )}
 
-                    <div className="flex-1">
-                      <h3 className="font-bold text-gray-900 dark:text-white text-sm mb-1 truncate">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-gray-900 dark:text-white text-xs sm:text-sm mb-0.5 sm:mb-1 truncate">
                         {item.organizerName ? t(item.organizerName) : t(item.title)}
                       </h3>
                       {item.location && (
-                        <p className="text-gray-500 dark:text-gray-400 text-xs truncate">
+                        <p className="text-gray-500 dark:text-gray-400 text-[10px] sm:text-xs truncate">
                           {t(item.location)}
                         </p>
                       )}
@@ -180,22 +179,20 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
     );
   }
 
-  // Variante Tiers-Lieux
   if (variant === 'tiers-lieux') {
     return (
-      <section id={id} className={cn("py-16 bg-background", className)}>
+      <section id={id} className={cn("py-8 sm:py-12 md:py-16 bg-background", className)}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <HeaderSection />
 
-          {/* Vue Liste */}
           {currentLayout === 'list' ? (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {items.map((item, index) => (
                 <CardWrapper key={index} href={item.href} target={item.target}>
                   <div className="relative bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow hover:shadow-lg transition cursor-pointer">
-                    <div className="flex items-start gap-4 p-4">
+                    <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 p-3 sm:p-4">
                       {item.image && (
-                        <div className="w-48 h-32 flex-shrink-0 rounded-lg overflow-hidden">
+                        <div className="w-full sm:w-48 h-32 sm:h-32 flex-shrink-0 rounded-lg overflow-hidden">
                           <img
                             src={item.image}
                             alt={t(item.title)}
@@ -247,7 +244,6 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
               ))}
             </div>
           ) : (
-            /* Vue Grille */
             <div className={cn("grid gap-6", getGridCols(columns))}>
               {items.map((item, index) => (
                 <CardWrapper key={index} href={item.href} target={item.target}>
@@ -357,13 +353,11 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
     );
   }
 
-  // Variante par défaut avec support pour vue liste
   return (
     <section id={id} className={cn("py-16 bg-background text-foreground", className)}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <HeaderSection />
 
-        {/* Vue Liste */}
         {currentLayout === 'list' ? (
           <div className="space-y-4">
             {items.map((item, index) => (
@@ -374,7 +368,7 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
                 )}>
                   <div className="flex items-start gap-4 p-6">
                     {item.image && (
-                      <div className="w-32 h-32 flex-shrink-0 rounded-lg overflow-hidden">
+                      <div className="w-32 h-32 shrink-0 rounded-lg overflow-hidden">
                         <img
                           src={item.image}
                           alt={t(item.title)}
@@ -384,7 +378,7 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
                     )}
 
                     {item.icon && !item.image && (
-                      <div className="w-12 h-12 flex-shrink-0 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                      <div className="w-12 h-12 shrink-0 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
                         <DynamicIcon name={item.icon as IconName} className="w-6 h-6" />
                       </div>
                     )}
