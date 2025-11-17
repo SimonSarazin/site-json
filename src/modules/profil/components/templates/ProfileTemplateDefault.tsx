@@ -152,7 +152,7 @@ export default function ProfileTemplateDefault() {
 
         <div className="px-8 py-8">
           <Tabs value={currentTab} onValueChange={handleTabChange} className="w-full">
-            <TabsList className="grid w-full grid-cols-7 mb-8 bg-gray-100 p-1 rounded-lg">
+            <TabsList className="w-full grid-cols-7 mb-8 bg-background border flex rounded-lg">
               <TabsTrigger
                 value="about"
                 className="data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"

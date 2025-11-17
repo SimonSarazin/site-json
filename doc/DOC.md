@@ -4174,7 +4174,7 @@ export default function ProfilePage() {
   const cleanSlug = slug?.startsWith('@') ? slug.slice(1) : slug;
 
   // ✅ Les données sont déjà en cache (pré-chargées par le loader)
-  const { data: entity, isLoading, isError } = useQueryEntityBySlug({ slug: cleanSlug });
+  const { data: entity, isLoading, isError } = useEntityBySlugQuery({ slug: cleanSlug });
 
   if (isLoading) return <ProfileSkeleton />;
   if (isError) return <ErrorCard />;
@@ -4188,7 +4188,7 @@ export default function ProfilePage() {
 1. **SSR**: Loader pré-charge `entityBySlug(slug)` → React Query cache
 2. **SSR**: Déshydratation → HTML avec `window.__REACT_QUERY_STATE__`
 3. **Client**: Hydratation → React Query reprend le cache
-4. **Client**: `useQueryEntityBySlug` trouve les données dans le cache → `isLoading=false` immédiatement
+4. **Client**: `useEntityBySlugQuery` trouve les données dans le cache → `isLoading=false` immédiatement
 5. **Client**: Rendu immédiat du profil (pas de spinner)
 
 #### 12.5.9 Optimisations avancées

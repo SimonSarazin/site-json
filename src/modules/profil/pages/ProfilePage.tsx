@@ -13,7 +13,7 @@ import { ProfileEntityProvider } from "../contexts/ProfileEntityProvider";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import "@/modules/profil/i18n";
-import { useQueryEntityBySlug } from "../hooks/useQueryEntityBySlug";
+import { useEntityBySlugQuery } from "../hooks/useEntityBySlugQuery";
 
 /**
  * Type guard pour vérifier si entityType est une clé valide de ProfilesConfig
@@ -132,7 +132,7 @@ export default function ProfilePage() {
   const activeTab = loaderData?.activeTab || (pathSegments.length > 2 ? pathSegments[2] : 'about');
 
   // Avec le pattern profil/:slug, le paramètre slug est directement le slug sans préfixe
-  const { data: entity, isLoading, isError } = useQueryEntityBySlug({ slug });
+  const { data: entity, isLoading, isError } = useEntityBySlugQuery({ slug });
   const { config: siteConfig } = useSite();
 
   if (isLoading) {
@@ -194,7 +194,7 @@ export default function ProfilePage() {
     );
   }
 
-  // Déterminer le type d'entité (entity est toujours une instance grâce à useQueryEntityBySlug)
+  // Déterminer le type d'entité (entity est toujours une instance grâce à useEntityBySlugQuery)
   const rawEntityType = entity?.getEntityType?.() || "";
   const entityType = isValidProfileKey(rawEntityType) ? rawEntityType : "default";
 

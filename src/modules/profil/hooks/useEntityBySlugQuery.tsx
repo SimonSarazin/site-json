@@ -13,7 +13,7 @@ interface QueryEntityBySlugProps {
   >;
 }
 
-export const useQueryEntityBySlug = ({ slug, options = {} }: QueryEntityBySlugProps) => {
+export const useEntityBySlugQuery = ({ slug, options = {} }: QueryEntityBySlugProps) => {
   const { entity, loading, helper, me } = useCocolight();
 
   // Le type unknown car l'API peut retourner soit une instance, soit du JSON déshydraté
