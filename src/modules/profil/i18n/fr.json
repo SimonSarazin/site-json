@@ -60,5 +60,33 @@
     "register": "Inscription",
     "comingSoon": "En construction",
     "sectionLabel": "Section {{name}}"
+  },
+  "NewsTab": {
+    "noNews": "Aucune actualité",
+    "noNewsDescription": "Les publications apparaîtront ici",
+    "loadingNews": "Chargement des actualités...",
+    "upToDate": "Vous êtes à jour !",
+    "allNewsSeen": "Vous avez vu toutes les actualités",
+    "public": "Public",
+    "sharedBy": "Partagé par",
+    "andOthers": "et {{count}} autre",
+    "andOthers_plural": "et {{count}} autres",
+    "comment": "Commenter",
+    "like": "Like",
+    "share": "Partager",
+    "reactions": "réaction",
+    "reactions_plural": "réactions",
+    "allReactions": "Toutes les réactions",
+    "reactorsList": "Liste des personnes ayant réagi (à venir)",
+    "reactionsTypes": {
+      "love": "J'adore",
+      "like": "J'aime",
+      "enjoy": "Content",
+      "glad": "Ravi",
+      "bothered": "Énervé",
+      "sad": "Triste",
+      "scared": "Inquiet",
+      "support": "Soutien"
+    }
   }
 }

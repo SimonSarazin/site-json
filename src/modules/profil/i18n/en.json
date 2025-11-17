@@ -60,5 +60,33 @@
     "register": "Register",
     "comingSoon": "Coming soon",
     "sectionLabel": "{{name}} Section"
+  },
+  "NewsTab": {
+    "noNews": "No news",
+    "noNewsDescription": "Posts will appear here",
+    "loadingNews": "Loading news...",
+    "upToDate": "You're up to date!",
+    "allNewsSeen": "You've seen all the news",
+    "public": "Public",
+    "sharedBy": "Shared by",
+    "andOthers": "and {{count}} other",
+    "andOthers_plural": "and {{count}} others",
+    "comment": "Comment",
+    "like": "Like",
+    "share": "Share",
+    "reactions": "reaction",
+    "reactions_plural": "reactions",
+    "allReactions": "All reactions",
+    "reactorsList": "List of people who reacted (coming soon)",
+    "reactionsTypes": {
+      "love": "Love",
+      "like": "Like",
+      "enjoy": "Happy",
+      "glad": "Glad",
+      "bothered": "Angry",
+      "sad": "Sad",
+      "scared": "Worried",
+      "support": "Support"
+    }
   }
 }
