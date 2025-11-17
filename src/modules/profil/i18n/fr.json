@@ -79,6 +79,12 @@
     "allReactions": "Toutes les réactions",
     "reactorsList": "Liste des personnes ayant réagi (à venir)",
     "noReactionsYet": "Aucune réaction pour le moment",
+    "comments": "Commentaires",
+    "noComments": "Aucun commentaire pour le moment",
+    "writeComment": "Écrire un commentaire...",
+    "writeReply": "Écrire une réponse...",
+    "reply": "Répondre",
+    "send": "Envoyer",
     "reactionsTypes": {
       "love": "J'adore",
       "like": "J'aime",

@@ -1,4 +1,4 @@
-import { Calendar, Loader2, Share2, MessageCircle, Tag, ThumbsUp } from "lucide-react";
+import { Calendar, Loader2, Share2, Tag, ThumbsUp, MessageCircle } from "lucide-react";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
 import { useLazyTab } from "@/hooks/useLazyTab";
 import { useProfilNewsQuery } from "../../hooks/useProfilNewsQuery";
@@ -11,6 +11,7 @@ import { NewsContent } from "../news/NewsContent";
 import { NewsImageGrid } from "../news/NewsImageGrid";
 import { NewsVoteDisplay } from "../news/NewsVoteDisplay";
 import { NewsReactionPicker } from "../news/NewsReactionPicker";
+import { NewsComments } from "../news/NewsComments";
 
 export function NewsTab() {
   const { entity, entityType } = useProfileEntity();
@@ -19,6 +20,7 @@ export function NewsTab() {
 
   const { shouldLoad } = useLazyTab("news");
   const [showReactionPicker, setShowReactionPicker] = useState<string | null>(null);
+  const [openComments, setOpenComments] = useState<Record<string, boolean>>({});
 
   const {
     news,
@@ -233,9 +235,15 @@ export function NewsTab() {
               </div>
             )}
 
-            <footer className="px-6 py-4 border-t border-border bg-muted/50 rounded-b-xl">
-              <div className="flex items-center justify-between text-base font-semibold">
-                <button className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors px-4 py-2 rounded-lg hover:bg-muted">
+            <div className="border-t border-border bg-muted/50">
+              <div className="px-6 py-4 flex items-center justify-between text-base font-semibold">
+                <button
+                  onClick={() => {
+                    const currentOpen = openComments[item.id || ''];
+                    setOpenComments({ ...openComments, [item.id || '']: !currentOpen });
+                  }}
+                  className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+                >
                   <MessageCircle className="w-5 h-5" />
                   <span className="hidden md:inline">{t("NewsTab.comment")}</span>
                   {typeof commentCount === 'number' && commentCount > 0 && (
@@ -256,13 +264,13 @@ export function NewsTab() {
                       <NewsReactionPicker onSelect={(type) => item.id && handleReaction(item.id, type)} />
                     </div>
                   )}
-                  <button className="flex items-center gap-2 text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors px-4 py-2 rounded-lg hover:bg-muted">
+                  <button className="flex items-center gap-2 text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                     <ThumbsUp className="w-5 h-5" />
                     <span className="hidden md:inline">{t("NewsTab.like")}</span>
                   </button>
                 </div>
 
-                <button className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors px-4 py-2 rounded-lg hover:bg-muted">
+                <button className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
                   <Share2 className="w-5 h-5" />
                   <span className="hidden md:inline">{t("NewsTab.share")}</span>
                   {sharedBy.length > 0 && (
@@ -270,7 +278,11 @@ export function NewsTab() {
                   )}
                 </button>
               </div>
-            </footer>
+            </div>
+
+            {openComments[item.id || ''] && (
+              <NewsComments newsId={item.id} />
+            )}
           </article>
         );
       })}
