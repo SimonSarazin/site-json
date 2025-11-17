@@ -78,6 +78,7 @@
     "reactions_plural": "réactions",
     "allReactions": "Toutes les réactions",
     "reactorsList": "Liste des personnes ayant réagi (à venir)",
+    "noReactionsYet": "Aucune réaction pour le moment",
     "reactionsTypes": {
       "love": "J'adore",
       "like": "J'aime",

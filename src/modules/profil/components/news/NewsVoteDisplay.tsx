@@ -16,9 +16,10 @@ const voteTypes = [
 
 interface NewsVoteDisplayProps {
   voteCount: Record<string, number>;
+  newsId: string | null;
 }
 
-export function NewsVoteDisplay({ voteCount }: NewsVoteDisplayProps) {
+export function NewsVoteDisplay({ voteCount, newsId }: NewsVoteDisplayProps) {
   const [showModal, setShowModal] = useState(false);
 
   const totalVotes = Object.values(voteCount).reduce((sum, count) => sum + count, 0);
@@ -74,6 +75,7 @@ export function NewsVoteDisplay({ voteCount }: NewsVoteDisplayProps) {
         open={showModal}
         onOpenChange={setShowModal}
         voteCount={voteCount}
+        newsId={newsId}
       />
     </>
   );

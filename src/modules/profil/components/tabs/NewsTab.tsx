@@ -195,7 +195,7 @@ export function NewsTab() {
               </div>
             )}
 
-            <NewsVoteDisplay voteCount={voteCount as Record<string, number>} />
+            <NewsVoteDisplay voteCount={voteCount as Record<string, number>} newsId={item.id} />
 
             {sharedBy.length > 0 && (
               <div className="px-6 pb-3">
