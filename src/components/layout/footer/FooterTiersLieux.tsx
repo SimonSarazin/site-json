@@ -10,7 +10,7 @@ export default function FooterTiersLieux({ footer }: FooterTiersLieuxProps) {
 
   return (
     <footer className="bg-background pt-8 sm:pt-12 pb-4 sm:pb-6 border-t dark:border-(--themecolor)">
-      <div className="container mx-auto px-4 sm:px-6">
+      <div className="container mx-auto">
 
         <div className="flex justify-center mb-6 sm:mb-8">
           {footer.logo && (

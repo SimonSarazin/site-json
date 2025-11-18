@@ -36,6 +36,6 @@ export function useNewsVotes(newsId: string | null) {
       return response as VoteResponse;
     },
     enabled: !!newsId && !!api,
-    staleTime: 30000,
+    staleTime: 5 * 60 * 1000,
   });
 }

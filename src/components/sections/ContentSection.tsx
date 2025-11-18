@@ -69,7 +69,7 @@ export function ContentSection({
             {iconCard && links && links.length > 0 && (
               <div className="flex items-start gap-4 mb-6">
                 {/* Icon */}
-                <div className="w-20 h-28 bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 flex items-center justify-center text-3xl shadow-lg flex-0">
+                <div className="w-28 h-28 px-4 bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 flex items-center justify-center text-3xl shadow-lg flex-0">
                   <div dangerouslySetInnerHTML={{ __html: iconCard.svg }} />
                 </div>
                 

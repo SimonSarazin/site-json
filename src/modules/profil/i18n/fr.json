@@ -89,6 +89,15 @@
     "edit": "Modifier",
     "delete": "Supprimer",
     "report": "Signaler un abus",
+    "createPost": "Créer une publication",
+    "deleteConfirm": {
+      "title": "Supprimer la publication",
+      "description": "Êtes-vous sûr de vouloir supprimer cette publication ? Cette action est irréversible.",
+      "cancel": "Annuler",
+      "confirm": "Supprimer",
+      "deleting": "Suppression...",
+      "error": "Une erreur est survenue lors de la suppression"
+    },
     "reactionsTypes": {
       "love": "J'adore",
       "like": "J'aime",
@@ -99,5 +108,54 @@
       "scared": "Inquiet",
       "support": "Soutien"
     }
+  },
+  "AddNewsModal": {
+    "title": "Créer une publication",
+    "description": "Partagez vos actualités avec la communauté",
+    "form": {
+      "text": {
+        "label": "Contenu",
+        "placeholder": "Quoi de neuf ?"
+      },
+      "tags": {
+        "label": "Tags",
+        "placeholder": "Ajouter des tags",
+        "hint": "Appuyez sur Entrée ou virgule pour ajouter",
+        "maxReached": "Maximum {{max}} tags"
+      },
+      "images": {
+        "label": "Images",
+        "button": "Ajouter des images",
+        "maxReached": "Maximum {{max}} images",
+        "remove": "Retirer"
+      },
+      "documents": {
+        "label": "Documents",
+        "button": "Ajouter des documents",
+        "maxReached": "Maximum {{max}} documents",
+        "remove": "Retirer"
+      },
+      "videoLink": {
+        "label": "Lien vidéo",
+        "placeholder": "URL de la vidéo (YouTube, Vimeo...)"
+      },
+      "status": {
+        "label": "Visibilité",
+        "public": "Public",
+        "private": "Privé",
+        "restricted": "Restreint"
+      }
+    },
+    "actions": {
+      "cancel": "Annuler",
+      "publish": "Publier",
+      "publishing": "Publication..."
+    },
+    "validation": {
+      "textRequired": "Le contenu est requis",
+      "textTooShort": "Le contenu doit contenir au moins 3 caractères"
+    },
+    "success": "Publication créée avec succès !",
+    "error": "Une erreur est survenue lors de la création"
   }
 }

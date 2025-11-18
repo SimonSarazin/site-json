@@ -7,15 +7,15 @@ import { Link, useNavigate } from "react-router";
 import { useCocolight } from "@/hooks/useCocolight";
 import { ClientOnly } from "../ClientOnly";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import LoginForm from "@/components/auth/LoginForm";
@@ -26,30 +26,30 @@ interface HeaderTiersLieuxProps {
 }
 
 export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
-  useLoadNamespace("components/layout");
-  const t = useT("components/layout");
-  const navigate = useNavigate();
-  const { me, api } = useCocolight();
-  const [loginDialogOpen, setLoginDialogOpen] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    useLoadNamespace("components/layout");
+    const t = useT("components/layout");
+    const navigate = useNavigate();
+    const { me, api } = useCocolight();
+    const [loginDialogOpen, setLoginDialogOpen] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const handleLogout = () => {
-    if (!api) return;
-    try {
-      api.logout();
-      navigate('/');
-    } catch (err) {
-      console.error('Logout error', err);
-    }
-  };
+    const handleLogout = () => {
+        if (!api) return;
+        try {
+            api.logout();
+            navigate('/');
+        } catch (err) {
+            console.error('Logout error', err);
+        }
+    };
 
-  const getProfileUrl = () => {
-    if (!me?.serverData?.slug) return '/profile';
-    return `/profil/${me.serverData.slug}`;
-  };
-  
+    const getProfileUrl = () => {
+        if (!me?.serverData?.slug) return '/profile';
+        return `/profil/${me.serverData.slug}`;
+    };
+
     return (
-        <header className={`${header.transparent ? "bg-transparent" : "bg-background"} border-b border-border ${header.sticky ? "sticky top-0 z-30" : ""}`}>
+        <header className={`${header.transparent ? "bg-transparent" : "bg-background"} rounded-b-2xl border-b border-border ${header.sticky ? "sticky top-0 z-30" : ""}`}>
             <nav className="container mx-auto py-3 sm:py-4 px-4 sm:px-6">
                 <div className="flex items-center justify-between">
                     <Link to={header.path || "/"} className="flex items-center space-x-2">
@@ -62,36 +62,38 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                     </Link>
 
                     {/* Menu desktop */}
-                    <div className="hidden md:flex items-center space-x-2 text-sm font-medium">
+                    <div className="hidden md:flex items-center space-x-1.5 text-sm font-medium">
                         {header.nav.map((item, idx) => {
                             const hasChildren = !!item.children?.length;
 
                             return (
                                 <div key={idx} className="relative group">
-                                    <Link to="#" className="hover:text-teal-500 text-foreground transition flex items-center gap-1">
+                                    <Link to="#" className="hover:text-teal-500 text-foreground transition flex items-center gap-1 truncate w-auto">
                                         {t(item.label)}
                                         {hasChildren && <ChevronDown className="w-3 h-3" />}
                                     </Link>
+
 
                                     {hasChildren && item.children && (
                                         <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-screen max-w-2xl bg-background rounded-xl shadow-2xl border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-8 z-50">
                                             {t(item.label) === "Les lieux" ? (
                                                 <div className="grid grid-cols-3 gap-8">
-                                                    <div className="flex flex-col items-center justify-center border-r border-border pr-6">
-                                                        <div className="w-20 h-20 bg-yellow-400 rounded-full flex items-center justify-center mb-4">
-                                                            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                                            </svg>
-                                                        </div>
-                                                        <h3 className="font-bold text-popover-foreground text-center mb-2">
-                                                            {item.children[0] && t(item.children[0].label)}
-                                                        </h3>
-                                                        <Link to="/lieux" className="text-teal-500 font-semibold flex items-center gap-2">
+                                                    <Link to="/lieux" className="text-teal-500 font-semibold flex items-center gap-2">
+                                                        <div className="flex flex-col items-center justify-center border-r border-border pr-6">
+                                                            <div className="w-20 h-20 bg-yellow-400 rounded-full flex items-center justify-center mb-4">
+                                                                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                                                </svg>
+                                                            </div>
+                                                            <h3 className="font-bold text-popover-foreground text-center mb-2">
+                                                                {item.children[0] && t(item.children[0].label)}
+                                                            </h3>
                                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                                                             </svg>
-                                                        </Link>
-                                                    </div>
+                                                        </div>
+                                                    </Link>
+
 
                                                     <div className="col-span-2 grid grid-cols-2 gap-6">
                                                         {item.children.slice(1).map((sub, i) => (
@@ -160,10 +162,10 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                                                                 </div>
                                                             )}
                                                             <span className="text-muted-foreground hidden lg:inline">|</span>
-                                                            <span className="font-medium text-foreground truncate max-w-[100px] lg:max-w-[150px]">
+                                                            <span className="font-medium text-foreground truncate max-w-[70px] lg:max-w-[120px]">
                                                                 {me.serverData?.name || me.serverData?.email || t('Mon compte')}
                                                             </span>
-                                                            <ChevronDown className="w-3 h-3 text-foreground flex-shrink-0" />
+                                                            <ChevronDown className="w-3 h-3 text-foreground shrink-0" />
                                                         </button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end" className="w-56">

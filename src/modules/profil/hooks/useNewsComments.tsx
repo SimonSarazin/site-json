@@ -51,6 +51,6 @@ export function useNewsComments(newsId: string | null) {
       return response as CommentsResponse;
     },
     enabled: !!newsId && !!api,
-    staleTime: 30000,
+    staleTime: 5 * 60 * 1000,
   });
 }
