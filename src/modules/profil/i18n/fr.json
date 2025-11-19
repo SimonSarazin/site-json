@@ -146,6 +146,11 @@
       "searching": "Recherche...",
       "noResults": "Aucun résultat trouvé",
       "typeToSearch": "Tapez @ pour mentionner quelqu'un"
+    },
+    "tags": {
+      "searching": "Recherche...",
+      "noResults": "Aucun tag trouvé",
+      "typeToSearch": "Tapez au moins 2 caractères pour rechercher"
     }
   },
   "AddNewsModal": {
