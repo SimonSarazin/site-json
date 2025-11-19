@@ -27,6 +27,10 @@ export function useFormatProfileEntity(entity: SearchEntity) {
     return entity.serverData?.profilImageUrl ?? null;
   }, [entity.serverData?.profilImageUrl]);
 
+  const logoThumbUrl = useMemo((): string | null => {
+    return entity.serverData?.profilThumbImageUrl ?? null;
+  }, [entity.serverData?.profilThumbImageUrl]);
+
   const imageUrl = useMemo((): string | null => {
     if (entity.serverData?.profilMediumImageUrl) {
       return entity.serverData.profilMediumImageUrl;
@@ -201,6 +205,7 @@ export function useFormatProfileEntity(entity: SearchEntity) {
   return {
     // Images
     logoUrl,
+    logoThumbUrl,
     imageUrl,
     bannerUrl,
 

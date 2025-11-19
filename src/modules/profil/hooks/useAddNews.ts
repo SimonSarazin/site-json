@@ -119,14 +119,12 @@ export function useAddNews() {
 
       const response = await api.endpointApi.addNews(requestData);
 
-
       return response;
     },
-    onSuccess: (response) => {
-      queryClient.invalidateQueries({ queryKey: ["profile-news"] });
-
-      if (response?.data?.result && response?.data?.object) {
-      }
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["profile-news"],
+      });
     },
     onError: (error) => {
       console.log(error)
