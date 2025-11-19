@@ -3,6 +3,7 @@ import { formatDistanceToNow } from "date-fns";
 import { useDateFnsLocale } from "@/hooks/useDateFnsLocale";
 import { useCocolight } from "@/hooks/useCocolight";
 import type { News, User, Organization } from "@communecter/cocolight-api-client";
+import type { NewsMention } from "../components/news/NewsContent";
 
 export interface SharedByPerson {
   name: string;
@@ -45,6 +46,9 @@ export interface FormattedNews {
 
   // Scope
   scope: string;
+
+  // Mentions
+  mentions?: NewsMention[];
 
   // Champs de NewsItemNormalized qu'on utilise
   tags?: unknown[];
@@ -185,6 +189,9 @@ export function useFormatNews(newsItem: News | null): FormattedNews | null {
       ? (serverData.scope as Record<string, unknown>).type as string || 'public'
       : 'public';
 
+    // Mentions
+    const mentions = Array.isArray(serverData.mentions) ? serverData.mentions as NewsMention[] : undefined;
+
     // Construire la news formatée avec uniquement les champs nécessaires
     const formattedNews: FormattedNews = {
       authorName: authorInfo.name,
@@ -205,6 +212,7 @@ export function useFormatNews(newsItem: News | null): FormattedNews | null {
       videoEmbedUrl,
       totalVotes,
       scope,
+      mentions,
       tags: Array.isArray(serverData.tags) ? serverData.tags : undefined,
       commentCount: typeof serverData.commentCount === 'number' ? serverData.commentCount : undefined,
       voteCount,

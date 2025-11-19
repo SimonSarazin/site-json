@@ -92,6 +92,27 @@
     "delete": "Supprimer",
     "report": "Signaler un abus",
     "createPost": "Créer une publication",
+    "reportDialog": {
+      "title": "Signaler une actualité",
+      "titleComment": "Signaler un commentaire",
+      "description": "Merci de nous aider à maintenir une communauté respectueuse en signalant les contenus inappropriés.",
+      "reasonLabel": "Raison du signalement",
+      "reasonPlaceholder": "Sélectionnez une raison",
+      "commentLabel": "Détails supplémentaires (optionnel)",
+      "commentPlaceholder": "Ajoutez des détails sur ce signalement...",
+      "cancel": "Annuler",
+      "submit": "Envoyer le signalement",
+      "submitting": "Envoi...",
+      "reasons": {
+        "spam": "Spam ou contenu promotionnel",
+        "harassment": "Harcèlement ou intimidation",
+        "hateSpeech": "Discours haineux",
+        "violence": "Violence ou menaces",
+        "inappropriate": "Contenu inapproprié",
+        "misinformation": "Désinformation",
+        "other": "Autre"
+      }
+    },
     "deleteConfirm": {
       "title": "Supprimer la publication",
       "description": "Êtes-vous sûr de vouloir supprimer cette publication ? Cette action est irréversible.",
@@ -120,6 +141,11 @@
       "sad": "Triste",
       "scared": "Inquiet",
       "support": "Soutien"
+    },
+    "mentions": {
+      "searching": "Recherche...",
+      "noResults": "Aucun résultat trouvé",
+      "typeToSearch": "Tapez @ pour mentionner quelqu'un"
     }
   },
   "AddNewsModal": {
@@ -183,11 +209,17 @@
       "editSuccess": "Commentaire modifié avec succès",
       "editError": "Impossible de modifier le commentaire",
       "deleteSuccess": "Commentaire supprimé avec succès",
-      "deleteError": "Impossible de supprimer le commentaire"
+      "deleteError": "Impossible de supprimer le commentaire",
+      "voteSuccess": "Réaction ajoutée avec succès",
+      "voteError": "Impossible d'ajouter la réaction"
     },
     "reply": {
       "addSuccess": "Réponse ajoutée avec succès",
       "addError": "Impossible d'ajouter la réponse"
+    },
+    "report": {
+      "success": "Signalement envoyé avec succès",
+      "error": "Impossible d'envoyer le signalement"
     },
     "news": {
       "addSuccess": "Actualité publiée avec succès",

@@ -2,7 +2,6 @@ import { FileText } from "lucide-react";
 
 export function NewsFileList({ files }: { files: any[] }) {
   if (!files || files.length === 0) return null;
-    console.log(files)
   return (
     <div className="px-4 sm:px-6 pb-3 w-full">
       <div className="flex flex-col gap-2 w-full">

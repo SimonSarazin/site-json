@@ -339,49 +339,16 @@ export function useShareNews(entity: EntityTypes) {
     }) => {
       if (!me) throw new Error("User not connected");
 
-      // Créer une nouvelle news qui référence l'originale
-      const shareData: NewsData = {
-        text: text || "",
-        scope: "public",
+      const shareData = {
+        comment: text || "",
       };
 
-      const sharedNews = await me.news(shareData);
-
-      // TODO: Lier la news partagée à l'originale via l'API
-      // La lib ne semble pas avoir de méthode explicite pour ça,
-      // il faut probablement utiliser un champ spécifique dans newsData
-
-      await sharedNews.save();
+      const sharedNews = await originalNews.shareNews(shareData);
 
       return { sharedNews, originalNews };
     },
 
-    onSuccess: ({ sharedNews }) => {
-      // Ajouter la news partagée au cache
-      queryClient.setQueryData<{ pages: News[][] }>(
-        ["profile-news", entityId],
-        (old) => {
-          if (!old) {
-            return {
-              pages: [[sharedNews]],
-              pageParams: [undefined],
-            };
-          }
-
-          const newPages = [...old.pages];
-          if (newPages[0]) {
-            newPages[0] = [sharedNews, ...newPages[0]];
-          } else {
-            newPages[0] = [sharedNews];
-          }
-
-          return {
-            ...old,
-            pages: newPages,
-          };
-        }
-      );
-
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["profile-news", entityId] });
       toast.success(t("toast.news.addSuccess"));
     },
@@ -471,6 +438,40 @@ export function useAddVoteNews(entity: EntityTypes, options?: MutationOptions) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["profile-news", entityId] });
       toast.success(t("toast.news.voteSuccess"));
+    },
+  });
+}
+
+/**
+ * Hook pour signaler une actualité
+ */
+export function useReportNews() {
+  const t = useT("modules/profil");
+
+  return useMutation({
+    mutationFn: async ({
+      news,
+      reason,
+      comment,
+    }: {
+      news: News;
+      reason: string;
+      comment?: string;
+    }) => {
+      console.log("[useReportNews] Reporting news:", { newsId: news.id, reason, comment });
+      await news.addReportAbuse({ reason, comment });
+      return { newsId: news.id };
+    },
+
+    onSuccess: () => {
+      toast.success(t("toast.report.success"));
+    },
+
+    onError: (error) => {
+      console.error("[useReportNews] Error:", error);
+      toast.error(t("toast.report.error"), {
+        description: error instanceof Error ? error.message : t("toast.error.generic"),
+      });
     },
   });
 }

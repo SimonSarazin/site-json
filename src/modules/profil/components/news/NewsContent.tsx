@@ -1,21 +1,58 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useT } from "@/hooks/useT";
 
+export interface NewsMention {
+  id: string;
+  slug: string;
+  type: string;
+  name: string;
+  value: string;
+  count: string;
+}
+
 interface NewsContentProps {
   text: string;
+  mentions?: NewsMention[];
   maxLength?: number;
 }
 
-export function NewsContent({ text, maxLength = 300 }: NewsContentProps) {
+/**
+ * Parse le texte pour remplacer les mentions @slug par des liens [@name](/profil/slug)
+ */
+function parseMentionsToMarkdown(text: string, mentions?: NewsMention[]): string {
+  if (!mentions || mentions.length === 0) {
+    return text;
+  }
+
+  let result = text;
+  mentions.forEach((mention) => {
+    // Remplacer @slug par [@name](/profil/slug)
+    const mentionRegex = new RegExp(`@${mention.slug}\\b`, 'g');
+    result = result.replace(
+      mentionRegex,
+      `[@${mention.name}](/profil/${mention.slug})`
+    );
+  });
+
+  return result;
+}
+
+export function NewsContent({ text, mentions, maxLength = 300 }: NewsContentProps) {
   const t = useT("modules/profil");
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const shouldTruncate = text.length > maxLength;
+  // Parser les mentions dans le texte
+  const parsedText = useMemo(
+    () => parseMentionsToMarkdown(text, mentions),
+    [text, mentions]
+  );
+
+  const shouldTruncate = parsedText.length > maxLength;
   const displayText = !isExpanded && shouldTruncate
-    ? text.substring(0, maxLength) + "..."
-    : text;
+    ? parsedText.substring(0, maxLength) + "..."
+    : parsedText;
 
   return (
     <div className="px-6 pb-4">

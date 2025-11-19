@@ -92,6 +92,27 @@
     "delete": "Delete",
     "report": "Report abuse",
     "createPost": "Create a post",
+    "reportDialog": {
+      "title": "Report news",
+      "titleComment": "Report comment",
+      "description": "Help us maintain a respectful community by reporting inappropriate content.",
+      "reasonLabel": "Report reason",
+      "reasonPlaceholder": "Select a reason",
+      "commentLabel": "Additional details (optional)",
+      "commentPlaceholder": "Add details about this report...",
+      "cancel": "Cancel",
+      "submit": "Submit report",
+      "submitting": "Sending...",
+      "reasons": {
+        "spam": "Spam or promotional content",
+        "harassment": "Harassment or bullying",
+        "hateSpeech": "Hate speech",
+        "violence": "Violence or threats",
+        "inappropriate": "Inappropriate content",
+        "misinformation": "Misinformation",
+        "other": "Other"
+      }
+    },
     "deleteConfirm": {
       "title": "Delete post",
       "description": "Are you sure you want to delete this post? This action cannot be undone.",
@@ -120,6 +141,11 @@
       "sad": "Sad",
       "scared": "Worried",
       "support": "Support"
+    },
+    "mentions": {
+      "searching": "Searching...",
+      "noResults": "No results found",
+      "typeToSearch": "Type @ to mention someone"
     }
   },
   "AddNewsModal": {
@@ -183,11 +209,17 @@
       "editSuccess": "Comment updated successfully",
       "editError": "Unable to update comment",
       "deleteSuccess": "Comment deleted successfully",
-      "deleteError": "Unable to delete comment"
+      "deleteError": "Unable to delete comment",
+      "voteSuccess": "Reaction added successfully",
+      "voteError": "Unable to add reaction"
     },
     "reply": {
       "addSuccess": "Reply added successfully",
       "addError": "Unable to add reply"
+    },
+    "report": {
+      "success": "Report sent successfully",
+      "error": "Unable to send report"
     },
     "news": {
       "addSuccess": "News published successfully",

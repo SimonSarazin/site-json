@@ -10,12 +10,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CommentInput } from "./CommentInput";
-import type { Comment } from "@communecter/cocolight-api-client";
+import { ReportDialog } from "./ReportDialog";
+import type { Comment, EntityTypes } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useFormatComment } from "../../hooks/useFormatComment";
+import { useAddCommentVote } from "../../hooks/useCommentMutations";
 
 interface CommentItemProps {
   commentItem: Comment;
+  newsId: string;
+  entity: EntityTypes;
   onEdit: (newText: string, comment: Comment) => void;
   onDelete: (commentId: string) => void;
   onReply: (text: string, comment: Comment) => void;
@@ -23,6 +27,8 @@ interface CommentItemProps {
 
 export function CommentItem({
   commentItem,
+  newsId,
+  entity: _entity,
   onEdit,
   onDelete,
   onReply
@@ -31,6 +37,11 @@ export function CommentItem({
   const { me } = useCocolight();
   const [replyingTo, setReplyingTo] = useState(false);
   const [editingComment, setEditingComment] = useState(false);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [commentToReport, setCommentToReport] = useState<Comment | null>(null);
+
+  // Mutation pour gérer les votes sur les commentaires
+  const addCommentVoteMutation = useAddCommentVote(newsId, { optimistic: true });
 
   // Utilisation du hook de formatage pour simplifier l'accès aux données
   const formattedComment = useFormatComment(commentItem);
@@ -55,6 +66,16 @@ export function CommentItem({
       onEdit(newText, commentItem);
       setEditingComment(false);
     }
+  };
+
+  const handleCommentLike = (comment: Comment) => {
+    if (!isConnected) return;
+    addCommentVoteMutation.mutate({ comment, voteType: "like" });
+  };
+
+  const handleReportComment = (comment: Comment) => {
+    setCommentToReport(comment);
+    setReportDialogOpen(true);
   };
 
   // Si le commentaire n'a pas pu être formaté, ne rien afficher
@@ -130,6 +151,7 @@ export function CommentItem({
                 variant="ghost"
                 size="sm"
                 disabled={!isConnected}
+                onClick={() => handleCommentLike(commentItem)}
                 className="bg-background md:text-xs text-[9px] h-auto py-1 px-2 hover:bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {formattedComment.totalVotes > 0 && <span className="mr-1">{formattedComment.totalVotes}</span>}
@@ -148,6 +170,7 @@ export function CommentItem({
                 variant="ghost"
                 size="sm"
                 disabled={!isConnected}
+                onClick={() => isConnected && handleReportComment(commentItem)}
                 aria-label="Signaler un abus"
                 className="bg-background md:text-xs text-[9px] h-auto py-1 px-2 hover:bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -239,6 +262,13 @@ export function CommentItem({
                     </button>
                     <button
                       disabled={!isConnected}
+                      onClick={() => {
+                        if (isConnected && reply.id) {
+                          // Créer un objet Comment minimal pour le signalement
+                          const replyComment = { id: reply.id } as Comment;
+                          handleReportComment(replyComment);
+                        }
+                      }}
                       aria-label="Signaler un abus"
                       className="bg-background text-[9px] text-muted-foreground px-2 hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
                     >
@@ -251,6 +281,13 @@ export function CommentItem({
           ))}
         </div>
       )}
+
+      <ReportDialog
+        type="comment"
+        item={commentToReport}
+        open={reportDialogOpen}
+        onOpenChange={setReportDialogOpen}
+      />
     </div>
   );
 }

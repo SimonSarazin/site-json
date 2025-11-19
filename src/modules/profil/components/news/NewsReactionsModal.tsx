@@ -4,6 +4,7 @@ import { useT } from "@/hooks/useT";
 import { useNewsVotes } from "../../hooks/useNewsVotes";
 import { useState } from "react";
 import { voteTypes } from "./constants";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 interface NewsReactionsModalProps {
   open: boolean;
@@ -65,8 +66,6 @@ export function NewsReactionsModal({ open, onOpenChange, voteCount, newsId }: Ne
       })),
   ];
 
-  const currentTab = tabs.find(tab => tab.value === activeTab) || tabs[0];
-  const displayedVotes = currentTab?.votes || [];
 
   return (
     <Modal open={open} onOpenChange={onOpenChange}>
@@ -80,45 +79,47 @@ export function NewsReactionsModal({ open, onOpenChange, voteCount, newsId }: Ne
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
         ) : (
-          <>
-            <div className="flex flex-wrap gap-2 px-6 pb-4 border-b border-border">
-              {tabs.map((tab) => {
-                const isActive = activeTab === tab.value;
-                const Icon = tab.icon;
-                const colors = tab.icon ? getColorClasses(tab.color!) : null;
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col flex-1">
+            <div className="px-6 pb-4 border-b border-border">
+              <TabsList className="h-auto p-1 bg-muted/50 flex-wrap justify-start">
+                {tabs.map((tab) => {
+                  const Icon = tab.icon;
+                  const colors = tab.icon ? getColorClasses(tab.color!) : null;
 
-                return (
-                  <button
-                    key={tab.value}
-                    onClick={() => setActiveTab(tab.value)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-                      isActive
-                        ? "bg-primary text-primary-foreground shadow-md"
-                        : "bg-muted text-muted-foreground hover:bg-muted/80"
-                    }`}
-                  >
-                    {Icon && (
-                      <Icon
-                        className={`w-4 h-4 ${isActive ? "" : colors?.text}`}
-                      />
-                    )}
-                    {tab.value === "all" ? (
-                      <span>{tab.label}</span>
-                    ) : (
-                      <span className="hidden sm:inline">{t(`NewsTab.${tab.label}`)}</span>
-                    )}
-                    <span className={`${isActive ? "opacity-100" : "opacity-70"}`}>
-                      ({tab.count})
-                    </span>
-                  </button>
-                );
-              })}
+                  return (
+                    <TabsTrigger
+                      key={tab.value}
+                      value={tab.value}
+                      className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                    >
+                      {Icon && (
+                        <Icon
+                          className={`w-4 h-4 ${activeTab === tab.value ? "" : colors?.text}`}
+                        />
+                      )}
+                      {tab.value === "all" ? (
+                        <span>{tab.label}</span>
+                      ) : (
+                        <span className="hidden sm:inline">{t(`NewsTab.${tab.label}`)}</span>
+                      )}
+                      <span className={`${activeTab === tab.value ? "opacity-100" : "opacity-70"}`}>
+                        ({tab.count})
+                      </span>
+                    </TabsTrigger>
+                  );
+                })}
+              </TabsList>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-6 py-4">
-              {displayedVotes.length > 0 ? (
+            {tabs.map((tab) => (
+              <TabsContent
+                key={tab.value}
+                value={tab.value}
+                className="flex-1 overflow-y-auto px-6 py-4 mt-0"
+              >
+                {tab.votes.length > 0 ? (
                 <ul className="space-y-2">
-                  {displayedVotes.map((vote) => {
+                  {tab.votes.map((vote) => {
                     const voteType = voteTypes.find(v => v.type === vote.status);
                     const Icon = voteType?.icon;
                     const colors = voteType ? getColorClasses(voteType.color) : getColorClasses("gray");
@@ -161,8 +162,9 @@ export function NewsReactionsModal({ open, onOpenChange, voteCount, newsId }: Ne
                   <p>{t("NewsTab.noReactionsYet")}</p>
                 </div>
               )}
-            </div>
-          </>
+              </TabsContent>
+            ))}
+          </Tabs>
         )}
       </ModalContent>
     </Modal>

@@ -13,6 +13,9 @@ import { NewsVoteDisplay } from "./NewsVoteDisplay";
 import { NewsReactionPicker } from "./NewsReactionPicker";
 import { NewsComments } from "./NewsComments";
 import { DeleteNewsDialog } from "./DeleteNewsDialog";
+import { EditNewsModal } from "./EditNewsModal";
+import { ShareNewsDialog } from "./ShareNewsDialog";
+import { ReportDialog } from "./ReportDialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,6 +38,9 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef }: NewsItemProp
 
   const [openComments, setOpenComments] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
 
   // Mutations pour gérer les actualités
   const deleteNewsMutation = useDeleteNews(entity, { optimistic: true });
@@ -88,11 +94,11 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef }: NewsItemProp
   };
 
   const handleEditNews = () => {
-    // TODO: Ouvrir modal d'édition
+    setEditModalOpen(true);
   };
 
   const handleReportNews = () => {
-    // TODO: Implémenter le signalement
+    setReportDialogOpen(true);
   };
 
   const handleReaction = (_newsId: string, reactionType: string) => {
@@ -197,7 +203,7 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef }: NewsItemProp
         </div>
       </div>
 
-      <NewsContent text={text as string} maxLength={300} />
+      <NewsContent text={text as string} mentions={formattedNews.mentions} maxLength={300} />
 
       {hasVideo && videoEmbedUrl && (
         <div className="px-4 sm:px-6 pb-3 sm:pb-4">
@@ -313,7 +319,15 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef }: NewsItemProp
             )}
           </HoverCard>
 
-          <button className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+          <button
+            onClick={() => setShareDialogOpen(true)}
+            disabled={!me?.isConnected}
+            className={`flex items-center gap-2 transition-colors ${
+              me?.isConnected
+                ? 'text-muted-foreground hover:text-foreground'
+                : 'text-muted-foreground/50 cursor-not-allowed'
+            }`}
+          >
             <Share2 className="w-5 h-5" />
             <span className="hidden md:inline">{t("NewsTab.share")}</span>
             {sharedByCount > 0 && (
@@ -332,6 +346,27 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef }: NewsItemProp
         onOpenChange={setDeleteDialogOpen}
         onConfirm={confirmDelete}
         isPending={deleteNewsMutation.isPending}
+      />
+
+      <EditNewsModal
+        entity={entity}
+        news={item}
+        open={editModalOpen}
+        onOpenChange={setEditModalOpen}
+      />
+
+      <ShareNewsDialog
+        entity={entity}
+        news={item}
+        open={shareDialogOpen}
+        onOpenChange={setShareDialogOpen}
+      />
+
+      <ReportDialog
+        type="news"
+        item={item}
+        open={reportDialogOpen}
+        onOpenChange={setReportDialogOpen}
       />
     </article>
   );

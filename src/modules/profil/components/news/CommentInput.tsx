@@ -1,9 +1,10 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { Send, SmilePlus } from "lucide-react";
 import { useLocalization } from "@/hooks/useLocalization";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import EmojiPicker, { EmojiClickData, Theme } from "emoji-picker-react";
 import { useTheme } from "next-themes";
 
@@ -31,32 +32,19 @@ export function CommentInput({
   const { currentLocale } = useLocalization();
   const { theme } = useTheme();
   const [text, setText] = useState(initialValue);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const emojiPickerRef = useRef<HTMLDivElement>(null);
-
-  // Close emoji picker when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
-        setShowEmojiPicker(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const [openEmojiPicker, setOpenEmojiPicker] = useState(false);
 
   const handleSubmit = () => {
     if (text.trim()) {
       onSubmit(text);
       setText("");
-      setShowEmojiPicker(false);
+      setOpenEmojiPicker(false);
     }
   };
 
   const handleEmojiClick = (emojiData: EmojiClickData) => {
     setText((prev) => prev + emojiData.emoji);
-    setShowEmojiPicker(false);
+    setOpenEmojiPicker(false);
   };
 
   const isSmall = size === "small";
@@ -112,29 +100,32 @@ export function CommentInput({
             >
               <Send className={iconSize} />
             </Button>
-            <div className="relative" ref={emojiPickerRef}>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className={buttonSize}
-                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+            <Popover open={openEmojiPicker} onOpenChange={setOpenEmojiPicker}>
+              <PopoverTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className={buttonSize}
+                >
+                  <SmilePlus className={`${iconSize} text-muted-foreground`} />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                side="top"
+                align="end"
+                className="w-auto p-0 border-0"
               >
-                <SmilePlus className={`${iconSize} text-muted-foreground`} />
-              </Button>
-              {showEmojiPicker && (
-                <div className="absolute bottom-full right-0 mb-2 z-50">
-                  <EmojiPicker
-                    onEmojiClick={handleEmojiClick}
-                    theme={theme === "dark" ? Theme.DARK : Theme.LIGHT}
-                    width={isSmall ? 300 : 320}
-                    height={isSmall ? 350 : 400}
-                    searchPlaceHolder={currentLocale === "fr" ? "Rechercher..." : "Search..."}
-                    previewConfig={{ showPreview: false }}
-                  />
-                </div>
-              )}
-            </div>
+                <EmojiPicker
+                  onEmojiClick={handleEmojiClick}
+                  theme={theme === "dark" ? Theme.DARK : Theme.LIGHT}
+                  width={isSmall ? 300 : 320}
+                  height={isSmall ? 350 : 400}
+                  searchPlaceHolder={currentLocale === "fr" ? "Rechercher..." : "Search..."}
+                  previewConfig={{ showPreview: false }}
+                />
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
       </div>

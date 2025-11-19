@@ -346,3 +346,101 @@ export function useReplyToComment(newsId: string, entity: EntityTypes, options?:
     },
   });
 }
+
+/**
+ * Hook pour ajouter un vote (like) à un commentaire
+ * @param newsId - ID de la news
+ * @param options - Options incluant optimistic updates
+ */
+export function useAddCommentVote(newsId: string, options?: MutationOptions) {
+  const queryClient = useQueryClient();
+  const { me } = useCocolight();
+  const t = useT("modules/profil");
+
+  return useMutation({
+    mutationFn: async ({ comment, voteType = "like" }: { comment: Comment; voteType?: string }) => {
+      if (!me) throw new Error("User not connected");
+      console.log("[useAddCommentVote] Adding vote:", { commentId: comment.id, voteType });
+      await comment.addVote(voteType);
+      return { comment, voteType };
+    },
+    onMutate: async ({ comment, voteType = "like" }) => {
+      if (!options?.optimistic) return;
+
+      // Annuler les requêtes en cours pour éviter les conflits
+      await queryClient.cancelQueries({ queryKey: ["news-comments", newsId] });
+
+      // Sauvegarder l'état précédent pour rollback
+      const previousData = queryClient.getQueryData<Comment[]>(["news-comments", newsId]);
+
+      // Mise à jour optimiste en mutant directement les Proxys
+      queryClient.setQueryData<Comment[]>(["news-comments", newsId], (old) => {
+        if (!old) return old;
+
+        // Mutation directe des objets Proxy (pas besoin de cloner)
+        old.forEach((c) => {
+          if (c.id === comment.id) {
+            // Mise à jour du vote count
+            const currentVoteCount = c.serverData.voteCount as Record<string, number> | undefined;
+            const newVoteCount = { ...(currentVoteCount || {}) };
+            newVoteCount[voteType] = (newVoteCount[voteType] || 0) + 1;
+
+            // Mutation directe du Proxy
+            c.serverData.voteCount = newVoteCount;
+          }
+        });
+
+        return old;
+      });
+
+      return { previousData };
+    },
+    onError: (error, _variables, context) => {
+      console.error("[useAddCommentVote] Error:", error);
+      // Rollback en cas d'erreur
+      if (context?.previousData) {
+        queryClient.setQueryData(["news-comments", newsId], context.previousData);
+      }
+      toast.error(t("toast.comment.voteError"));
+    },
+    onSuccess: () => {
+      // Invalider le cache pour récupérer les données à jour du serveur
+      queryClient.invalidateQueries({ queryKey: ["news-comments", newsId] });
+      toast.success(t("toast.comment.voteSuccess"));
+    },
+  });
+}
+
+/**
+ * Hook pour signaler un commentaire
+ */
+export function useReportComment() {
+  const t = useT("modules/profil");
+
+  return useMutation({
+    mutationFn: async ({
+      comment,
+      reason,
+      commentText,
+    }: {
+      comment: Comment;
+      reason: string;
+      commentText?: string;
+    }) => {
+      console.log("[useReportComment] Reporting comment:", { commentId: comment.id, reason, commentText });
+      await comment.addReportAbuse({ reason, comment: commentText });
+      return { commentId: comment.id };
+    },
+
+    onSuccess: () => {
+      toast.success(t("toast.report.success"));
+    },
+
+    onError: (error) => {
+      console.error("[useReportComment] Error:", error);
+      toast.error(t("toast.report.error"), {
+        description: error instanceof Error ? error.message : t("toast.error.generic"),
+      });
+    },
+  });
+}

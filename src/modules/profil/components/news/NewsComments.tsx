@@ -108,6 +108,8 @@ export function NewsComments({ news, entity }: NewsCommentsProps) {
                 <CommentItem
                   key={commentId}
                   commentItem={comment}
+                  newsId={news?.id || ""}
+                  entity={entity}
                   onEdit={handleEditComment}
                   onDelete={(id) => handleDeleteComment(id, comment)}
                   onReply={handleReply}
