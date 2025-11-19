@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { FileText, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/hooks/useT";
 
 interface NewsFormDocumentUploadProps {
   documents: File[];
@@ -13,6 +14,8 @@ export function NewsFormDocumentUpload({
   onDocumentsChange,
   maxDocuments = 5,
 }: NewsFormDocumentUploadProps) {
+
+  const t = useT("modules/profil");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,10 +50,10 @@ export function NewsFormDocumentUpload({
           size="sm"
           onClick={() => fileInputRef.current?.click()}
           disabled={documents.length >= maxDocuments}
-          className="text-xs sm:text-sm"
+          className="text-xs w-full sm:text-sm"
         >
           <FileText className="w-4 h-4 mr-2" />
-          Ajouter des documents
+          {t("AddNewsModal.form.documents.button")}
         </Button>
         {documents.length > 0 && (
           <span className="text-xs text-muted-foreground">

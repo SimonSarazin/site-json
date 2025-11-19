@@ -1,4 +1,4 @@
-import { Calendar, Loader2, Share2, Tag, ThumbsUp, MessageCircle, Trash2, Edit, Flag } from "lucide-react";
+import { Calendar, Loader2, Share2, Tag, ThumbsUp, MessageCircle, Trash2, Edit, Flag, Plus } from "lucide-react";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
 import { useLazyTab } from "@/hooks/useLazyTab";
 import { useProfilNewsQuery } from "../../hooks/useProfilNewsQuery";
@@ -18,7 +18,7 @@ import { fr, enUS } from "date-fns/locale";
 import { useLocalization } from "@/hooks/useLocalization";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useDeleteNews } from "../../hooks/useDeleteNews";
-// import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,6 +35,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { NewsFileList } from "../news/NewsFileList";
 
 export function NewsTab() {
   const { entity, entityType } = useProfileEntity();
@@ -133,37 +134,35 @@ export function NewsTab() {
   return (
     <>
       <div className="space-y-4 sm:space-y-6">
-        {/* {me?.isConnected && (
+        {me?.isConnected && (
           <div className="flex justify-end">
             <Button
               onClick={() => setShowAddNewsModal(true)}
-              className="bg-[#0092a2] hover:bg-teal-600 text-xs sm:text-sm"
+              className="bg-(--themecolor) hover:bg-teal-600 text-xs sm:text-sm text-white"
             >
-              <Plus className="w-4 h-4 mr-2" />
+              <Plus className="w-4 h-4 mr-2 " />
               {t("NewsTab.createPost")}
             </Button>
           </div>
-        )} */}
+        )}
 
         {news.filter(Boolean).map((item, index) => {
           const isLastItem = index === news.length - 1;
 
           const author = item.serverData.author;
-          const target = item.serverData.target;
           const sharedBy = item.serverData.sharedBy || [];
           const hasImages = item.serverData.mediaImg?.images?.length > 0;
           const images = item.serverData.mediaImg?.images || [];
+          const mediaFiles = item.serverData.mediaFile?.files || [];
           const tags = item.serverData.tags || [];
           const commentCount = item.serverData.commentCount || 0;
           const voteCount = item.serverData.voteCount || {};
           const media = item.serverData.media;
-
+          const scope = item.serverData.scope.type;
+          
           const authorName = (author?.serverData as any)?.name || (author?.data as any)?.name || "Anonyme";
           const authorPhoto = (author?.serverData as any)?.profilThumbImageUrl || (author?.data as any)?.profilThumbImageUrl || null;
-          const targetName = (target?.serverData as any)?.name || (target?.data as any)?.name;
-          const targetId = (target?.serverData as any)?.id || (target?.data as any)?.id;
           const authorId = (author?.serverData as any)?.id || (author?.data as any)?.id;
-          const isSharedPost = target && targetId !== authorId;
 
           const hasVideo = (media as any)?.content?.type === 'video_link';
           const videoEmbedUrl = (media as any)?.content?.videoLink;
@@ -195,18 +194,6 @@ export function NewsTab() {
                       <span className="text-sm sm:text-base md:text-lg font-bold text-foreground">
                         {authorName}
                       </span>
-
-                      {isSharedPost && targetName && (
-                        <>
-                          <Share2 className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground" />
-                          <span className="text-xs sm:text-sm text-muted-foreground">
-                            a partagé la publication de
-                          </span>
-                          <span className="text-xs sm:text-sm font-semibold text-foreground">
-                            {targetName}
-                          </span>
-                        </>
-                      )}
                     </div>
 
                     <div className="flex items-center gap-1 sm:gap-2 mt-1 text-xs sm:text-sm text-muted-foreground flex-wrap">
@@ -215,7 +202,7 @@ export function NewsTab() {
                         {formatDate(item.serverData.date || new Date())}
                       </time>
                       <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-xs font-medium bg-lime-700 text-white dark:bg-lime-600">
-                        {t("NewsTab.public")}
+                        {t("NewsTab." + scope)}
                       </span>
                     </div>
                   </div>
@@ -282,7 +269,7 @@ export function NewsTab() {
               )}
 
               {hasImages && <NewsImageGrid images={images} />}
-
+              {mediaFiles.length > 0 && <NewsFileList files={mediaFiles} />}
               {Array.isArray(tags) && tags.length > 0 && (
                 <div className="px-4 sm:px-6 pb-3 sm:pb-4">
                   <div className="flex flex-wrap gap-1.5 sm:gap-2">
@@ -452,7 +439,7 @@ export function NewsTab() {
             <AlertDialogAction
               onClick={handleDeleteNews}
               disabled={isDeletingNews}
-              className="bg-red-600 hover:bg-red-700 text-xs sm:text-sm"
+              className="bg-red-600 text-white hover:bg-red-700 text-xs sm:text-sm"
             >
               {isDeletingNews ? (
                 <>

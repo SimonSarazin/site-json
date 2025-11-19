@@ -68,6 +68,8 @@
     "upToDate": "You're up to date!",
     "allNewsSeen": "You've seen all the news",
     "public": "Public",
+    "private": "Private",
+    "restricted": "Restricted",
     "sharedBy": "Shared by",
     "andOthers": "and {{count}} other",
     "andOthers_plural": "and {{count}} others",
@@ -111,11 +113,16 @@
   },
   "AddNewsModal": {
     "title": "Create a post",
-    "description": "Share your news with the community",
     "form": {
       "text": {
         "label": "Content",
         "placeholder": "What's new?"
+      },
+      "scope": {
+        "label": "Post scope",
+        "public": "Public - Visible to everyone",
+        "private": "Private - Visible only to me",
+        "restricted": "Restricted - Visible to profile members"
       },
       "tags": {
         "label": "Tags",

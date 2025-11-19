@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import {
   Dialog,
@@ -14,6 +14,7 @@ import { NewsFormImageUpload } from "./NewsFormImageUpload";
 import { NewsFormDocumentUpload } from "./NewsFormDocumentUpload";
 import { NewsFormTagsInput } from "./NewsFormTagsInput";
 import { useT } from "@/hooks/useT";
+import { useAddNews } from "../../hooks/useAddNews";
 
 interface AddNewsModalProps {
   open: boolean;
@@ -22,11 +23,24 @@ interface AddNewsModalProps {
 
 export function AddNewsModal({ open, onOpenChange }: AddNewsModalProps) {
   const t = useT("modules/profil");
+  const { addNewsAsync, isAddingNews, isSuccess } = useAddNews();
 
   const [text, setText] = useState("");
+  const [scope, setScope] = useState<"public" | "private" | "restricted">("public");
   const [tags, setTags] = useState<string[]>([]);
   const [images, setImages] = useState<File[]>([]);
   const [documents, setDocuments] = useState<File[]>([]);
+
+  useEffect(() => {
+    if (isSuccess) {
+      setText("");
+      setScope("public");
+      setTags([]);
+      setImages([]);
+      setDocuments([]);
+      onOpenChange(false);
+    }
+  }, [isSuccess, onOpenChange]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,13 +56,13 @@ export function AddNewsModal({ open, onOpenChange }: AddNewsModalProps) {
     }
 
     try {
-
-      setText("");
-      setTags([]);
-      setImages([]);
-      setDocuments([]);
-
-      onOpenChange(false);
+      await addNewsAsync({
+        text: text.trim(),
+        tags,
+        scope,
+        images,
+        documents,
+      });
     } catch (error) {
       console.error("Erreur lors de l'ajout de la news:", error);
       alert(t("AddNewsModal.error"));
@@ -62,14 +76,29 @@ export function AddNewsModal({ open, onOpenChange }: AddNewsModalProps) {
           <DialogTitle className="text-lg sm:text-xl">
             {t("AddNewsModal.title")}
           </DialogTitle>
-          <p className="text-sm text-muted-foreground mt-2">
-            {t("AddNewsModal.description")}
-          </p>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="news-text" className="text-sm sm:text-base">
+            <Label htmlFor="news-scope" className="text-sm sm:text-base font-semibold">
+              {t("AddNewsModal.form.scope.label")}
+            </Label>
+            <select
+              id="news-scope"
+              value={scope}
+              onChange={(e) => setScope(e.target.value as "public" | "private" | "restricted")}
+              disabled={isAddingNews}
+              className="block w-full p-2.5 text-sm rounded-lg border border-border bg-background focus:ring-2 focus:ring-primary focus:border-primary"
+            >
+              <option value="public">{t("AddNewsModal.form.scope.public")}</option>
+              <option value="restricted">{t("AddNewsModal.form.scope.restricted")}</option>
+              <option value="private">{t("AddNewsModal.form.scope.private")}</option>
+            </select>
+          </div>
+
+          {/* Text area */}
+          <div className="space-y-2">
+            <Label htmlFor="news-text" className="text-sm sm:text-base font-semibold">
               {t("AddNewsModal.form.text.label")} <span className="text-red-500">*</span>
             </Label>
             <Textarea
@@ -77,14 +106,14 @@ export function AddNewsModal({ open, onOpenChange }: AddNewsModalProps) {
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder={t("AddNewsModal.form.text.placeholder")}
-              rows={5}
+              rows={6}
               className="resize-none text-sm sm:text-base"
-              disabled={false}
+              disabled={isAddingNews}
             />
           </div>
 
           <div className="space-y-2">
-            <Label className="text-sm sm:text-base">
+            <Label className="text-sm sm:text-base font-semibold">
               {t("AddNewsModal.form.tags.label")}
             </Label>
             <NewsFormTagsInput
@@ -95,7 +124,7 @@ export function AddNewsModal({ open, onOpenChange }: AddNewsModalProps) {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-sm sm:text-base">
+            <Label className="text-sm sm:text-base font-semibold">
               {t("AddNewsModal.form.images.label")}
             </Label>
             <NewsFormImageUpload
@@ -106,7 +135,7 @@ export function AddNewsModal({ open, onOpenChange }: AddNewsModalProps) {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-sm sm:text-base">
+            <Label className="text-sm sm:text-base font-semibold">
               {t("AddNewsModal.form.documents.label")}
             </Label>
             <NewsFormDocumentUpload
@@ -116,22 +145,22 @@ export function AddNewsModal({ open, onOpenChange }: AddNewsModalProps) {
             />
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-0">
+          <DialogFooter className="space-x-2 pt-4">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              disabled={false}
-              className="text-xs sm:text-sm"
+              disabled={isAddingNews}
+              className="text-xs sm:text-sm uppercase"
             >
               {t("AddNewsModal.actions.cancel")}
             </Button>
             <Button
               type="submit"
-              disabled={false || !text.trim()}
-              className="bg-[#0092a2] hover:bg-teal-600 text-xs sm:text-sm"
+              disabled={isAddingNews || !text.trim()}
+              className="bg-lime-700 hover:bg-lime-600 text-white font-semibold text-xs sm:text-sm uppercase"
             >
-              {false ? (
+              {isAddingNews ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   {t("AddNewsModal.actions.publishing")}

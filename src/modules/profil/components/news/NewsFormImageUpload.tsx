@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { ImagePlus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/hooks/useT";
 
 interface NewsFormImageUploadProps {
   images: File[];
@@ -13,6 +14,8 @@ export function NewsFormImageUpload({
   onImagesChange,
   maxImages = 10,
 }: NewsFormImageUploadProps) {
+
+  const t = useT("modules/profil");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [previews, setPreviews] = useState<string[]>([]);
 
@@ -53,10 +56,10 @@ export function NewsFormImageUpload({
           size="sm"
           onClick={() => fileInputRef.current?.click()}
           disabled={images.length >= maxImages}
-          className="text-xs sm:text-sm"
+          className="text-xs w-full sm:text-sm"
         >
           <ImagePlus className="w-4 h-4 mr-2" />
-          Ajouter des images
+          {t("AddNewsModal.form.images.button")}
         </Button>
         {images.length > 0 && (
           <span className="text-xs text-muted-foreground">

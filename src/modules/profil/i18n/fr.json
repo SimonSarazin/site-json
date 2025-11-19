@@ -68,6 +68,8 @@
     "upToDate": "Vous êtes à jour !",
     "allNewsSeen": "Vous avez vu toutes les actualités",
     "public": "Public",
+    "private": "Privé",
+    "restricted": "Restreint",
     "sharedBy": "Partagé par",
     "andOthers": "et {{count}} autre",
     "andOthers_plural": "et {{count}} autres",
@@ -111,11 +113,16 @@
   },
   "AddNewsModal": {
     "title": "Créer une publication",
-    "description": "Partagez vos actualités avec la communauté",
     "form": {
       "text": {
         "label": "Contenu",
         "placeholder": "Quoi de neuf ?"
+      },
+      "scope": {
+        "label": "Portée de la publication",
+        "public": "Public - Visible par tous",
+        "private": "Privé - Visible uniquement par moi",
+        "restricted": "Restreint - Visible par les membres du profil"
       },
       "tags": {
         "label": "Tags",
