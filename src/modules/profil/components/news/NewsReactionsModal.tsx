@@ -1,20 +1,9 @@
 import { Modal, ModalContent, ModalHeader, ModalTitle } from "@/components/ui/modal";
-import { Heart, ThumbsUp, Smile, Laugh, Angry, Frown, HandMetal, Loader2 } from "lucide-react";
-import { Frown as Scared } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useT } from "@/hooks/useT";
 import { useNewsVotes } from "../../hooks/useNewsVotes";
 import { useState } from "react";
-
-const voteTypes = [
-  { type: "love", color: "red", icon: Heart, label: "reactionsTypes.love" },
-  { type: "like", color: "blue", icon: ThumbsUp, label: "reactionsTypes.like" },
-  { type: "enjoy", color: "green", icon: Smile, label: "reactionsTypes.enjoy" },
-  { type: "glad", color: "teal", icon: Laugh, label: "reactionsTypes.glad" },
-  { type: "bothered", color: "yellow", icon: Angry, label: "reactionsTypes.bothered" },
-  { type: "sad", color: "gray", icon: Frown, label: "reactionsTypes.sad" },
-  { type: "scared", color: "purple", icon: Scared, label: "reactionsTypes.scared" },
-  { type: "support", color: "indigo", icon: HandMetal, label: "reactionsTypes.support" },
-];
+import { voteTypes } from "./constants";
 
 interface NewsReactionsModalProps {
   open: boolean;
@@ -147,7 +136,7 @@ export function NewsReactionsModal({ open, onOpenChange, voteCount, newsId }: Ne
                               className="w-10 h-10 rounded-full object-cover border-2 border-border flex-shrink-0"
                             />
                           ) : (
-                            <div className="w-10 h-10 rounded-full bg-linear-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white font-bold flex-shrink-0 border-2 border-border">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white font-bold flex-shrink-0 border-2 border-border">
                               {vote.name.charAt(0).toUpperCase()}
                             </div>
                           )}

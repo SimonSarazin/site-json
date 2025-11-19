@@ -100,6 +100,17 @@
       "deleting": "Suppression...",
       "error": "Une erreur est survenue lors de la suppression"
     },
+    "editComment": "Modifier le commentaire",
+    "deleteCommentTitle": "Supprimer le commentaire",
+    "deleteCommentDescription": "Êtes-vous sûr de vouloir supprimer ce commentaire ? Cette action est irréversible.",
+    "deleteNewsTitle": "Supprimer l'actualité",
+    "deleteNewsDescription": "Êtes-vous sûr de vouloir supprimer cette actualité ? Cette action est irréversible.",
+    "cancel": "Annuler",
+    "deleting": "Suppression...",
+    "readMore": "Voir plus",
+    "readLess": "Voir moins",
+    "anonymous": "Anonyme",
+    "someone": "quelqu'un",
     "reactionsTypes": {
       "love": "J'adore",
       "like": "J'aime",
@@ -164,5 +175,32 @@
     },
     "success": "Publication créée avec succès !",
     "error": "Une erreur est survenue lors de la création"
+  },
+  "toast": {
+    "comment": {
+      "addSuccess": "Commentaire ajouté avec succès",
+      "addError": "Impossible d'ajouter le commentaire",
+      "editSuccess": "Commentaire modifié avec succès",
+      "editError": "Impossible de modifier le commentaire",
+      "deleteSuccess": "Commentaire supprimé avec succès",
+      "deleteError": "Impossible de supprimer le commentaire"
+    },
+    "reply": {
+      "addSuccess": "Réponse ajoutée avec succès",
+      "addError": "Impossible d'ajouter la réponse"
+    },
+    "news": {
+      "addSuccess": "Actualité publiée avec succès",
+      "addError": "Impossible de publier l'actualité",
+      "editSuccess": "Actualité modifiée avec succès",
+      "editError": "Impossible de modifier l'actualité",
+      "deleteSuccess": "Actualité supprimée avec succès",
+      "deleteError": "Impossible de supprimer l'actualité",
+      "voteSuccess": "Réaction ajoutée avec succès",
+      "voteError": "Impossible d'ajouter la réaction"
+    },
+    "error": {
+      "generic": "Une erreur est survenue"
+    }
   }
 }

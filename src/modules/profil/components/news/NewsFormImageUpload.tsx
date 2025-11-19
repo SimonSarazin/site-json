@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { ImagePlus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/hooks/useT";
+import { toast } from "sonner";
 
 interface NewsFormImageUploadProps {
   images: File[];
@@ -24,7 +25,7 @@ export function NewsFormImageUpload({
     const validFiles = files.filter((file) => file.type.startsWith("image/"));
 
     if (images.length + validFiles.length > maxImages) {
-      alert(`Vous ne pouvez ajouter que ${maxImages} images maximum`);
+      toast.error(t("AddNewsModal.form.images.maxReached", undefined, { max: maxImages }));
       return;
     }
 

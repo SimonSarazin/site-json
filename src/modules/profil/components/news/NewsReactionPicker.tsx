@@ -1,22 +1,12 @@
-import { Heart, ThumbsUp, Smile, Laugh, Angry, Frown, HandMetal } from "lucide-react";
-import { Frown as Scared } from "lucide-react";
-
-const voteTypes = [
-  { type: "love", color: "red", icon: Heart, label: "J'adore", bgHover: "hover:bg-red-50 dark:hover:bg-red-900/20" },
-  { type: "like", color: "blue", icon: ThumbsUp, label: "J'aime", bgHover: "hover:bg-blue-50 dark:hover:bg-blue-900/20" },
-  { type: "enjoy", color: "green", icon: Smile, label: "Content", bgHover: "hover:bg-green-50 dark:hover:bg-green-900/20" },
-  { type: "glad", color: "teal", icon: Laugh, label: "Ravi", bgHover: "hover:bg-teal-50 dark:hover:bg-teal-900/20" },
-  { type: "bothered", color: "yellow", icon: Angry, label: "Énervé", bgHover: "hover:bg-yellow-50 dark:hover:bg-yellow-900/20" },
-  { type: "sad", color: "gray", icon: Frown, label: "Triste", bgHover: "hover:bg-gray-50 dark:hover:bg-gray-700" },
-  { type: "scared", color: "purple", icon: Scared, label: "Inquiet", bgHover: "hover:bg-purple-50 dark:hover:bg-purple-900/20" },
-  { type: "support", color: "indigo", icon: HandMetal, label: "Soutien", bgHover: "hover:bg-indigo-50 dark:hover:bg-indigo-900/20" },
-];
+import { useT } from "@/hooks/useT";
+import { voteTypes } from "./constants";
 
 interface NewsReactionPickerProps {
   onSelect: (type: string) => void;
 }
 
 export function NewsReactionPicker({ onSelect }: NewsReactionPickerProps) {
+  const t = useT("modules/profil");
   const getColorClass = (color: string) => {
     const colorMap: Record<string, string> = {
       red: "text-red-500",
@@ -32,7 +22,7 @@ export function NewsReactionPicker({ onSelect }: NewsReactionPickerProps) {
   };
 
   return (
-    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-background border border-border rounded-full shadow-2xl p-2 flex gap-1 animate-in fade-in zoom-in duration-200 z-50">
+    <div className="bg-background border border-border rounded-full shadow-2xl p-2 flex gap-1">
       {voteTypes.map((vote) => {
         const Icon = vote.icon;
 
@@ -44,7 +34,7 @@ export function NewsReactionPicker({ onSelect }: NewsReactionPickerProps) {
               onSelect(vote.type);
             }}
             className={`p-2 rounded-full transition-all duration-200 hover:scale-125 ${vote.bgHover}`}
-            title={vote.label}
+            title={t(`NewsTab.reactionsTypes.${vote.type}`)}
           >
             <Icon className={`w-6 h-6 ${getColorClass(vote.color)}`} />
           </button>

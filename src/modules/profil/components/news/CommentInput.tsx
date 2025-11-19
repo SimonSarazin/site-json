@@ -14,6 +14,8 @@ interface CommentInputProps {
   onSubmit: (text: string) => void;
   autoFocus?: boolean;
   size?: "default" | "small";
+  disabled?: boolean;
+  initialValue?: string;
 }
 
 export function CommentInput({
@@ -23,10 +25,12 @@ export function CommentInput({
   onSubmit,
   autoFocus = false,
   size = "default",
+  disabled = false,
+  initialValue = "",
 }: CommentInputProps) {
   const { currentLocale } = useLocalization();
   const { theme } = useTheme();
-  const [text, setText] = useState("");
+  const [text, setText] = useState(initialValue);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
 
@@ -68,7 +72,7 @@ export function CommentInput({
         {userPhoto ? (
           <AvatarImage src={userPhoto} alt={userName} />
         ) : null}
-        <AvatarFallback className="bg-linear-to-br from-teal-400 to-teal-600 text-white font-bold">
+        <AvatarFallback className="bg-gradient-to-br from-teal-400 to-teal-600 text-white font-bold">
           {userName.substring(0, 2).toUpperCase()}
         </AvatarFallback>
       </Avatar>
@@ -82,9 +86,10 @@ export function CommentInput({
               placeholder={placeholder}
               aria-label={placeholder}
               autoFocus={autoFocus}
+              disabled={disabled}
               className={`bg-transparent no-scrollbar border-0 shadow-none font-normal md:pl-5 pl-2 md:px-4 px-0 py-2 ${textSize} focus-visible:ring-0 p-3 md:pr-4 pr-1 mt-1 min-h-0 h-auto rounded-xl resize-none`}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey && text.trim()) {
+                if (e.key === 'Enter' && !e.shiftKey && text.trim() && !disabled) {
                   e.preventDefault();
                   handleSubmit();
                 }
@@ -96,7 +101,7 @@ export function CommentInput({
               type="button"
               variant="ghost"
               size="icon"
-              disabled={!text.trim()}
+              disabled={!text.trim() || disabled}
               aria-label="Send comment"
               onClick={handleSubmit}
               className={`transition-colors ${isSmall ? "" : "mr-1"} ${buttonSize} ${

@@ -1,6 +1,8 @@
 import { useState, KeyboardEvent } from "react";
 import { Tag, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useT } from "@/hooks/useT";
+import { toast } from "sonner";
 
 interface NewsFormTagsInputProps {
   tags: string[];
@@ -13,6 +15,7 @@ export function NewsFormTagsInput({
   onTagsChange,
   maxTags = 10,
 }: NewsFormTagsInputProps) {
+  const t = useT("modules/profil");
   const [inputValue, setInputValue] = useState("");
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -29,7 +32,7 @@ export function NewsFormTagsInput({
 
     if (trimmedValue === "") return;
     if (tags.length >= maxTags) {
-      alert(`${maxTags} tags  maximum allowed.`);
+      toast.error(t("AddNewsModal.form.tags.maxReached", undefined, { max: maxTags }));
       return;
     }
     if (tags.includes(trimmedValue)) {

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { useT } from "@/hooks/useT";
 
 interface NewsContentProps {
   text: string;
@@ -8,6 +9,7 @@ interface NewsContentProps {
 }
 
 export function NewsContent({ text, maxLength = 300 }: NewsContentProps) {
+  const t = useT("modules/profil");
   const [isExpanded, setIsExpanded] = useState(false);
 
   const shouldTruncate = text.length > maxLength;
@@ -35,7 +37,7 @@ export function NewsContent({ text, maxLength = 300 }: NewsContentProps) {
           onClick={() => setIsExpanded(!isExpanded)}
           className="mt-2 text-sm font-medium text-primary hover:underline"
         >
-          {isExpanded ? "Voir moins" : "Voir plus"}
+          {isExpanded ? t("NewsTab.readLess") : t("NewsTab.readMore")}
         </button>
       )}
     </div>

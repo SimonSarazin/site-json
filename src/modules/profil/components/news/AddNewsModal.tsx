@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import {
   Dialog,
@@ -14,16 +14,19 @@ import { NewsFormImageUpload } from "./NewsFormImageUpload";
 import { NewsFormDocumentUpload } from "./NewsFormDocumentUpload";
 import { NewsFormTagsInput } from "./NewsFormTagsInput";
 import { useT } from "@/hooks/useT";
-import { useAddNews } from "../../hooks/useAddNews";
+import { useAddNews } from "../../hooks/useNewsMutations";
+import { EntityTypes } from "@communecter/cocolight-api-client";
+import { toast } from "sonner";
 
 interface AddNewsModalProps {
+  entity: EntityTypes,
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function AddNewsModal({ open, onOpenChange }: AddNewsModalProps) {
+export function AddNewsModal({ entity, open, onOpenChange }: AddNewsModalProps) {
   const t = useT("modules/profil");
-  const { addNewsAsync, isAddingNews, isSuccess } = useAddNews();
+  const addNewsMutation = useAddNews(entity);
 
   const [text, setText] = useState("");
   const [scope, setScope] = useState<"public" | "private" | "restricted">("public");
@@ -31,42 +34,41 @@ export function AddNewsModal({ open, onOpenChange }: AddNewsModalProps) {
   const [images, setImages] = useState<File[]>([]);
   const [documents, setDocuments] = useState<File[]>([]);
 
-  useEffect(() => {
-    if (isSuccess) {
-      setText("");
-      setScope("public");
-      setTags([]);
-      setImages([]);
-      setDocuments([]);
-      onOpenChange(false);
-    }
-  }, [isSuccess, onOpenChange]);
+  const isAddingNews = addNewsMutation.isPending;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!text.trim()) {
-      alert(t("AddNewsModal.validation.textRequired"));
+      toast.error(t("AddNewsModal.validation.textRequired"));
       return;
     }
 
     if (text.trim().length < 3) {
-      alert(t("AddNewsModal.validation.textTooShort"));
+      toast.error(t("AddNewsModal.validation.textTooShort"));
       return;
     }
 
-    try {
-      await addNewsAsync({
-        text: text.trim(),
-        tags,
-        scope,
+    addNewsMutation.mutate({
+        newsData:{
+          text: text.trim(),
+          tags,
+          scope,
+        },
         images,
         documents,
+      },      
+      {
+        onSuccess: () => {
+          setText("");
+          setScope("public");
+          setTags([]);
+          setImages([]);
+          setDocuments([]);
+          onOpenChange(false);
+        },
       });
-    } catch (error) {
-      console.error("Erreur lors de l'ajout de la news:", error);
-      alert(t("AddNewsModal.error"));
-    }
+
   };
 
   return (

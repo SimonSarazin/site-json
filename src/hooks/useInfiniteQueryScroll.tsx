@@ -6,18 +6,12 @@ import {
 } from "@tanstack/react-query";
 import { useCallback, useRef, type RefCallback } from "react";
 
-interface InfiniteQueryScrollProps<TData, TError = unknown> {
+interface InfiniteQueryScrollProps<TData, TError = Error> {
   queryKey: QueryKey;
   queryFn: (context: { pageParam?: unknown }) => Promise<TData>;
   getNextPageParam: (lastPage: TData, allPages: TData[]) => unknown;
   options?: Omit<
-    UseInfiniteQueryOptions<
-      TData,                  // TQueryFnData
-      TError,                 // TError
-      InfiniteData<TData>,  // TData   // TData (la valeur retournée par le hook)
-      QueryKey,               // TQueryKey
-      unknown                 // TPageParam
-    >,
+    UseInfiniteQueryOptions<TData, TError, InfiniteData<TData>, QueryKey, unknown>,
     "queryKey" | "queryFn" | "getNextPageParam"
   >;
 }
@@ -34,7 +28,7 @@ interface InfiniteQueryScrollResult<TData, TError> {
   lastItemRef: RefCallback<HTMLElement>;
 }
 
-export function useInfiniteQueryScroll<TData, TError = unknown>({
+export function useInfiniteQueryScroll<TData, TError = Error>({
   queryKey,
   queryFn,
   getNextPageParam,
@@ -77,7 +71,7 @@ export function useInfiniteQueryScroll<TData, TError = unknown>({
 
   return {
     data,
-    error: error ?? null,
+    error: (error ?? null) as TError | null,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,

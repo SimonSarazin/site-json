@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { FileText, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/hooks/useT";
+import { toast } from "sonner";
 
 interface NewsFormDocumentUploadProps {
   documents: File[];
@@ -22,7 +23,7 @@ export function NewsFormDocumentUpload({
     const files = Array.from(event.target.files || []);
 
     if (documents.length + files.length > maxDocuments) {
-      alert(`Vous ne pouvez ajouter que ${maxDocuments} documents maximum`);
+      toast.error(t("AddNewsModal.form.documents.maxReached", undefined, { max: maxDocuments }));
       return;
     }
 

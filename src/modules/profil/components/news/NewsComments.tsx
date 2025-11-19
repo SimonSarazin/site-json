@@ -1,46 +1,79 @@
+import { useState, useCallback } from "react";
 import { Loader2 } from "lucide-react";
 import { useT } from "@/hooks/useT";
-import { useNewsComments } from "../../hooks/useNewsComments";
+import { useNewsCommentsQuery } from "../../hooks/useNewsCommentsQuery";
 import { useCocolight } from "@/hooks/useCocolight";
 import { CommentInput } from "./CommentInput";
 import { CommentItem } from "./CommentItem";
+import { DeleteCommentDialog } from "./DeleteCommentDialog";
+import { Comment, News, EntityTypes } from "@communecter/cocolight-api-client";
+import {
+  useAddComment,
+  useEditComment,
+  useDeleteComment,
+  useReplyToComment,
+} from "../../hooks/useCommentMutations";
 
 interface NewsCommentsProps {
-  newsId: string | null;
+  news: News | null;
+  entity: EntityTypes;
 }
 
-export function NewsComments({ newsId }: NewsCommentsProps) {
+export function NewsComments({ news, entity }: NewsCommentsProps) {
   const t = useT("modules/profil");
   const { me } = useCocolight();
 
-  const { data: commentsData, isLoading } = useNewsComments(newsId);
+  const { data: commentsData, isLoading } = useNewsCommentsQuery(news);
 
   const isConnected = me?.isConnected;
   const userPhoto = me?.serverData?.profilThumbImageUrl;
   const userName = me?.serverData?.name || me?.serverData?.email || "U";
-  const currentUserId = me?.serverData?.id;
 
-  const handleSubmitComment = (text: string) => {
-    console.log("Submit comment:", text);
-    // TODO:
-  };
+  // État pour le dialogue de confirmation de suppression
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState<Comment | null>(null);
 
-  const handleEditComment = (commentId: string) => {
-    console.log("Edit comment:", commentId);
-    // TODO:
-  };
+  // Mutations avec optimistic updates activés par défaut
+  const addCommentMutation = useAddComment(news?.id || "", entity, { optimistic: true });
+  const editCommentMutation = useEditComment(news?.id || "", entity, { optimistic: true });
+  const deleteCommentMutation = useDeleteComment(news?.id || "", entity, { optimistic: true });
+  const replyMutation = useReplyToComment(news?.id || "", entity, { optimistic: true });
 
-  const handleDeleteComment = (commentId: string) => {
-    console.log("Delete comment:", commentId);
-    // TODO:
-  };
+  const handleSubmitComment = useCallback((text: string) => {
+    if (!news?.id) return;
+    addCommentMutation.mutate({ news, text });
+  }, [news, addCommentMutation]);
 
-  const handleReply = (text: string, commentId: string) => {
-    console.log("Reply to comment:", commentId, "with text:", text);
-    // TODO:
-  };
+  const handleEditComment = useCallback((newText: string, comment: Comment) => {
+    if (!newText) return;
+    editCommentMutation.mutate({ comment, newText });
+  }, [editCommentMutation]);
 
-  const comments = commentsData ? Object.values(commentsData) : [];
+  const handleDeleteComment = useCallback((_commentId: string, comment: Comment) => {
+    setCommentToDelete(comment);
+    setDeleteDialogOpen(true);
+  }, []);
+
+  const confirmDelete = useCallback(() => {
+    if (commentToDelete) {
+      deleteCommentMutation.mutate(
+        { comment: commentToDelete },
+        {
+          onSuccess: () => {
+            setDeleteDialogOpen(false);
+            setCommentToDelete(null);
+          },
+        }
+      );
+    }
+  }, [commentToDelete, deleteCommentMutation]);
+
+  const handleReply = useCallback((text: string, comment: Comment) => {
+    if (!comment?.id) return;
+    replyMutation.mutate({ comment, text });
+  }, [replyMutation]);
+
+  const comments = commentsData ?? [];
 
   return (
     <div className="w-full bg-background rounded-b-xl">
@@ -50,6 +83,7 @@ export function NewsComments({ newsId }: NewsCommentsProps) {
           userName={userName}
           placeholder={t("NewsTab.writeComment")}
           onSubmit={handleSubmitComment}
+          disabled={addCommentMutation.isPending}
         />
       ) : (
         <div className="w-full px-5 py-5 text-center text-sm text-muted-foreground">
@@ -69,24 +103,13 @@ export function NewsComments({ newsId }: NewsCommentsProps) {
         ) : (
           <div className="space-y-4 pb-4">
             {comments.map((comment) => {
-              const commentId = comment._id.$id;
-              const replies = comment.replies ? Object.values(comment.replies) : [];
-
+              const commentId = comment.serverData.id;
               return (
                 <CommentItem
                   key={commentId}
-                  commentId={commentId}
-                  text={comment.text}
-                  created={comment.created}
-                  author={comment.author}
-                  voteCount={comment.voteCount}
-                  replies={replies}
-                  isConnected={isConnected || false}
-                  currentUserId={currentUserId}
-                  userPhoto={userPhoto}
-                  userName={userName}
+                  commentItem={comment}
                   onEdit={handleEditComment}
-                  onDelete={handleDeleteComment}
+                  onDelete={(id) => handleDeleteComment(id, comment)}
                   onReply={handleReply}
                 />
               );
@@ -94,6 +117,13 @@ export function NewsComments({ newsId }: NewsCommentsProps) {
           </div>
         )}
       </div>
+
+      <DeleteCommentDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmDelete}
+        isPending={deleteCommentMutation.isPending}
+      />
     </div>
   );
 }

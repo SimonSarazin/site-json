@@ -100,6 +100,17 @@
       "deleting": "Deleting...",
       "error": "An error occurred while deleting"
     },
+    "editComment": "Edit comment",
+    "deleteCommentTitle": "Delete comment",
+    "deleteCommentDescription": "Are you sure you want to delete this comment? This action cannot be undone.",
+    "deleteNewsTitle": "Delete news",
+    "deleteNewsDescription": "Are you sure you want to delete this news? This action cannot be undone.",
+    "cancel": "Cancel",
+    "deleting": "Deleting...",
+    "readMore": "Read more",
+    "readLess": "Read less",
+    "anonymous": "Anonymous",
+    "someone": "someone",
     "reactionsTypes": {
       "love": "Love",
       "like": "Like",
@@ -164,5 +175,32 @@
     },
     "success": "Post created successfully!",
     "error": "An error occurred while creating the post"
+  },
+  "toast": {
+    "comment": {
+      "addSuccess": "Comment added successfully",
+      "addError": "Unable to add comment",
+      "editSuccess": "Comment updated successfully",
+      "editError": "Unable to update comment",
+      "deleteSuccess": "Comment deleted successfully",
+      "deleteError": "Unable to delete comment"
+    },
+    "reply": {
+      "addSuccess": "Reply added successfully",
+      "addError": "Unable to add reply"
+    },
+    "news": {
+      "addSuccess": "News published successfully",
+      "addError": "Unable to publish news",
+      "editSuccess": "News updated successfully",
+      "editError": "Unable to update news",
+      "deleteSuccess": "News deleted successfully",
+      "deleteError": "Unable to delete news",
+      "voteSuccess": "Reaction added successfully",
+      "voteError": "Unable to add reaction"
+    },
+    "error": {
+      "generic": "An error occurred"
+    }
   }
 }
