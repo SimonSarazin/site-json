@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router";
 import { Mail, ChevronRight, Image as ImageIcon, Phone, Globe, Calendar, MapPin, Users, Briefcase, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,7 @@ export default function ProfileTemplateDefault() {
 
   const {
     logoUrl,
+    logoThumbUrl,
     address,
     organizer,
     name: entityName,
@@ -49,8 +51,11 @@ export default function ProfileTemplateDefault() {
     projectsCount,
     openingHours,
   } = useFormatProfileEntity(entity);
-
   const imageUrl = logoUrl;
+
+  const [imageError, setImageError] = useState(false);
+
+  const effectiveLogoUrl = imageError ? logoThumbUrl : logoUrl;
 
   // console.log('entityType', _entityType);
   // console.log('isConnected', me?.isConnected);
@@ -97,8 +102,13 @@ export default function ProfileTemplateDefault() {
           <div className="flex items-end gap-6 -mt-20">
             <div className="relative">
               <div className="w-40 h-40 rounded-full border-4 border-background bg-card shadow-xl overflow-hidden">
-                {logoUrl ? (
-                  <img src={logoUrl} alt={entityName} className="w-full h-full object-cover" />
+                {effectiveLogoUrl ? (
+                  <img
+                    src={effectiveLogoUrl}
+                    alt={entityName}
+                    className="w-full h-full object-cover"
+                    onError={() => setImageError(true)}
+                  />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center from-yellow-100 to-yellow-50">
                     <div className="text-center p-2">
@@ -150,56 +160,58 @@ export default function ProfileTemplateDefault() {
           <div className="mt-6 border-t border-border"></div>
         </div>
 
-        <div className="px-8 py-8">
+        <div className="px-4 py-4 sm:px-6 sm:py-6 md:px-8 md:py-8">
           <Tabs value={currentTab} onValueChange={handleTabChange} className="w-full">
-            <TabsList className="w-full grid-cols-7 mb-8 bg-background border flex rounded-lg">
+            <div className="-mx-4 px-4 sm:-mx-6 sm:px-6 md:-mx-8 md:px-8 overflow-x-auto scrollbar-hide">
+              <TabsList className="w-max min-w-full mb-6 sm:mb-8 bg-background border flex rounded-lg">
               <TabsTrigger
                 value="about"
-                className="data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
+                className="flex-shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
               >
                 {t("ProfileTemplateDefault.tabs.about")}
               </TabsTrigger>
               <TabsTrigger
                 value="news"
-                className="data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
+                className="flex-shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
               >
                 {t("ProfileTemplateDefault.tabs.news")}
               </TabsTrigger>
               <TabsTrigger
                 value="coworking"
-                className="data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
+                className="flex-shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
               >
                 {t("ProfileTemplateDefault.tabs.coworking")}
               </TabsTrigger>
               <TabsTrigger
                 value="rooms"
-                className="data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
+                className="flex-shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
               >
                 {t("ProfileTemplateDefault.tabs.meetingRooms")}
               </TabsTrigger>
               <TabsTrigger
                 value="infos"
-                className="data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
+                className="flex-shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
               >
                 {t("ProfileTemplateDefault.tabs.practicalInfo")}
               </TabsTrigger>
               <TabsTrigger
                 value="communities"
-                className="data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
+                className="flex-shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
               >
                 {t("ProfileTemplateDefault.tabs.communities")}
               </TabsTrigger>
               <TabsTrigger
                 value="observatory"
-                className="data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
+                className="flex-shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
               >
                 {t("ProfileTemplateDefault.tabs.observatories")}
               </TabsTrigger>
-            </TabsList>
+              </TabsList>
+            </div>
 
             <TabsContent value="about">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2">
+              <div className="flex flex-col lg:grid lg:grid-cols-3 gap-6 sm:gap-8">
+                <div className="order-2 lg:order-1 lg:col-span-2 min-w-0 overflow-hidden">
               {entity.serverData?.startDate && (
                 <div className="mb-8">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
@@ -226,9 +238,9 @@ export default function ProfileTemplateDefault() {
               )}
 
               {entity.serverData?.description && typeof entity.serverData.description === "string" && (
-                <div className="mb-12">
-                  <h2 className="text-2xl font-bold text-foreground mb-6">{t("ProfileTemplateDefault.description")}</h2>
-                  <div className="text-foreground leading-relaxed whitespace-pre-wrap bg-muted p-6 rounded-lg border border-border">
+                <div className="mb-8 sm:mb-12">
+                  <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6">{t("ProfileTemplateDefault.description")}</h2>
+                  <div className="text-foreground leading-relaxed whitespace-pre-wrap bg-muted p-4 sm:p-6 rounded-lg border border-border wrap-break-word">
                     {entity.serverData.description}
                   </div>
                 </div>
@@ -319,8 +331,8 @@ export default function ProfileTemplateDefault() {
               )}
             </div>
 
-            <div className="lg:col-span-1">
-              <div className="bg-card rounded-lg border border-border p-6 sticky top-4 shadow-sm">
+            <div className="order-1 lg:order-2 lg:col-span-1">
+              <div className="bg-card rounded-lg border border-border p-4 sm:p-6 lg:sticky lg:top-4 shadow-sm">
                 <h3 className="text-xl font-bold text-foreground mb-6">{t("ProfileTemplateDefault.information")}</h3>
 
                 {(membersCount !== null || projectsCount !== null) && (

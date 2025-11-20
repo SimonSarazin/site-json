@@ -1226,7 +1226,7 @@
     }
   ],
   "theme": {
-    "defaultMode": "light",
+    "defaultMode": "dark",
     "colors": {
       "light": {
         "background": "#ffffff",

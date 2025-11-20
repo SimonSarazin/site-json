@@ -1,8 +1,8 @@
-import { useState, useRef } from "react";
-import { ImagePlus, X, Loader2, Crop } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useState, useRef, useCallback } from "react";
+import { ImagePlus, X, Loader2, Crop, Upload } from "lucide-react";
 import { useT } from "@/hooks/useT";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { validateFile, IMAGE_VALIDATION_CONFIG, formatFileSize } from "../../utils/fileValidation";
 import { compressImage, canCompressImage, getCompressionRatio } from "../../utils/imageCompression";
 import { Progress } from "@/components/ui/progress";
@@ -26,10 +26,9 @@ export function NewsFormImageUpload({
   const [processingFiles, setProcessingFiles] = useState<{ [key: string]: number }>({});
   const [cropDialogOpen, setCropDialogOpen] = useState(false);
   const [cropImageData, setCropImageData] = useState<{ preview: string; fileName: string; index: number } | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || []);
-
+  const processFiles = useCallback(async (files: File[]) => {
     // Filtrer et valider les fichiers
     const validFiles: File[] = [];
     let hasErrors = false;
@@ -133,6 +132,29 @@ export function NewsFormImageUpload({
 
     const newImages = [...images, ...processedFiles];
     onImagesChange(newImages);
+  }, [images, maxImages, onImagesChange, t]);
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    processFiles(files);
+    if (event.target) event.target.value = '';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const files = Array.from(e.dataTransfer.files);
+    processFiles(files);
   };
 
   const handleRemoveImage = (index: number) => {
@@ -175,23 +197,40 @@ export function NewsFormImageUpload({
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={images.length >= maxImages}
-          className="text-xs w-full sm:text-sm"
-        >
-          <ImagePlus className="w-4 h-4 mr-2" />
-          {t("AddNewsModal.form.images.button")}
-        </Button>
-        {images.length > 0 && (
-          <span className="text-xs text-muted-foreground">
-            {images.length}/{maxImages}
-          </span>
+      <div
+        onClick={() => fileInputRef.current?.click()}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        className={cn(
+          "relative border-2 border-dashed rounded-xl p-4 transition-all cursor-pointer",
+          "hover:border-primary/50 hover:bg-primary/5",
+          isDragging
+            ? "border-primary bg-primary/10 scale-[1.02]"
+            : "border-border bg-muted/30",
+          images.length >= maxImages && "opacity-50 cursor-not-allowed"
         )}
+      >
+        <div className="flex flex-col items-center justify-center gap-2 text-center">
+          <div className={cn(
+            "p-2 rounded-full transition-colors",
+            isDragging ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
+          )}>
+            {isDragging ? (
+              <Upload className="w-5 h-5" />
+            ) : (
+              <ImagePlus className="w-5 h-5" />
+            )}
+          </div>
+          <div>
+            <p className="text-xs sm:text-sm font-medium text-foreground">
+              {t("AddNewsModal.form.images.button")}
+            </p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">
+              {images.length}/{maxImages} • PNG, JPG, GIF
+            </p>
+          </div>
+        </div>
       </div>
 
       <input
@@ -201,6 +240,7 @@ export function NewsFormImageUpload({
         multiple
         onChange={handleFileSelect}
         className="hidden"
+        disabled={images.length >= maxImages}
       />
 
       {/* Indicateurs de progression */}
@@ -225,18 +265,21 @@ export function NewsFormImageUpload({
       )}
 
       {previews.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
+        <div className="grid grid-cols-3 gap-2">
           {previews.map((preview, index) => (
-            <div key={index} className="relative group">
+            <div key={index} className="relative group aspect-square">
               <img
                 src={preview}
                 alt={`Preview ${index + 1}`}
-                className="w-full h-24 sm:h-32 object-cover rounded-lg border border-border"
+                className="w-full h-full object-cover rounded-lg border border-border"
               />
               <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-1">
                 <button
                   type="button"
-                  onClick={() => handleCropImage(index)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCropImage(index);
+                  }}
                   className="bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2"
                   title="Recadrer"
                 >
@@ -244,7 +287,10 @@ export function NewsFormImageUpload({
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleRemoveImage(index)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemoveImage(index);
+                  }}
                   className="bg-red-500 hover:bg-red-600 text-white rounded-full p-2"
                   title="Supprimer"
                 >
