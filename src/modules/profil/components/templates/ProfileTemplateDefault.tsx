@@ -76,6 +76,7 @@ export default function ProfileTemplateDefault() {
   //   }
 
   //   if (isEvent(entity)) {
+  //     console.log('events isAuthor', entity.isAuthor());
   //     console.log('events isAttendee', entity.isAttendee());
   //   }
 
@@ -83,6 +84,9 @@ export default function ProfileTemplateDefault() {
   //     console.log('citoyens isFollower', entity.isFollower());
   //     console.log('citoyens isFollowing', entity.isFollowing());
   //     console.log('citoyens isFriend', entity.isFriend());
+  //   }
+
+  //   if (isUser(entity) && me && me?.slug === entity.slug) {
   //   }
   // }
 
