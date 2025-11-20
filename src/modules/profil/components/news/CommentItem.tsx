@@ -30,7 +30,7 @@ interface CommentItemProps {
 export function CommentItem({
   commentItem,
   newsId,
-  entity: _entity,
+  entity,
   onEdit,
   onDelete,
   onReply,
@@ -49,7 +49,7 @@ export function CommentItem({
   const addCommentVoteMutation = useAddCommentVote(newsId, { optimistic: true });
 
   // Utilisation du hook de formatage pour simplifier l'accès aux données
-  const formattedComment = useFormatComment(commentItem);
+  const formattedComment = useFormatComment(commentItem, entity);
 
   const isConnected = me?.isConnected;
   const userPhoto = me?.serverData?.profilThumbImageUrl;
@@ -240,7 +240,7 @@ export function CommentItem({
               key={reply.id}
               commentItem={reply.comment}
               newsId={newsId}
-              entity={_entity}
+              entity={entity}
               onEdit={onEdit}
               onDelete={onDelete}
               onReply={onReply}

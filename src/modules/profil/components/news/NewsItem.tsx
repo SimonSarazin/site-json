@@ -47,7 +47,7 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef }: NewsItemProp
   const addVoteNewsMutation = useAddVoteNews(entity, { optimistic: true });
 
   // Utilisation du hook de formatage pour simplifier l'accès aux données
-  const formattedNews = useFormatNews(item);
+  const formattedNews = useFormatNews(item, entity);
 
   // S'abonner à commentCount pour détecter les changements via le système réactif
   const reactiveCommentCount = useReactiveProperty<number>(item.serverData, 'commentCount');
@@ -60,7 +60,8 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef }: NewsItemProp
     authorPhoto,
     targetName,
     isSharedPost,
-    isAuthor,
+    canEdit,
+    canDelete,
     hasImages,
     images,
     hasFiles,
@@ -173,30 +174,25 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef }: NewsItemProp
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-44 sm:w-48">
-                {isAuthor ? (
-                  <>
-                    <DropdownMenuItem onClick={handleEditNews}>
-                      <Edit className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      <span className="text-xs sm:text-sm">{t("NewsTab.edit")}</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={handleDeleteNews}
-                      className="text-red-600 focus:text-red-600"
-                    >
-                      <Trash2 className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      <span className="text-xs sm:text-sm">{t("NewsTab.delete")}</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleReportNews}>
-                      <Flag className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      <span className="text-xs sm:text-sm">{t("NewsTab.report")}</span>
-                    </DropdownMenuItem>
-                  </>
-                ) : (
-                  <DropdownMenuItem onClick={handleReportNews}>
-                    <Flag className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    <span className="text-xs sm:text-sm">{t("NewsTab.report")}</span>
+                {canEdit && (
+                  <DropdownMenuItem onClick={handleEditNews}>
+                    <Edit className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    <span className="text-xs sm:text-sm">{t("NewsTab.edit")}</span>
                   </DropdownMenuItem>
                 )}
+                {canDelete && (
+                  <DropdownMenuItem
+                    onClick={handleDeleteNews}
+                    className="text-red-600 focus:text-red-600"
+                  >
+                    <Trash2 className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    <span className="text-xs sm:text-sm">{t("NewsTab.delete")}</span>
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onClick={handleReportNews}>
+                  <Flag className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <span className="text-xs sm:text-sm">{t("NewsTab.report")}</span>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

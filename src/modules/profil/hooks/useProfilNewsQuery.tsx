@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useInfiniteQueryScroll } from "@/hooks/useInfiniteQueryScroll";
 import { useCocolight } from "@/hooks/useCocolight";
 import { transformToEntityInstance } from "@/lib/entityTransform";
@@ -102,8 +102,21 @@ export function useProfilNewsQuery({
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Les données du cache sont déjà des instances Proxy (transformées dans useEffect ou queryFn)
-  const news = data ? data.pages.flatMap((page) => page) : [];
+   const news = useMemo(() => {
+   if (!data) return [];
+
+   return data.pages.flatMap((page) =>
+     page.map(item => {
+       // Si déjà transformé (Proxy), le retourner tel quel
+       if (item.serverData && isReactive(item.serverData)) {
+         return item;
+       }
+       // Sinon transformer en instance Proxy
+       return transformToEntityInstance<News>(item, helper, entity);
+     })
+   );
+ }, [data, helper, entity]);
+
 
   return {
     news,

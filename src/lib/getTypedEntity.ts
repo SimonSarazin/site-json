@@ -1,5 +1,5 @@
 import type { SearchEntity } from "@/modules/search/schema";
-import type { User, Organization, Project, Event as EventType, Poi } from "@communecter/cocolight-api-client";
+import type { User, Organization, Project, Event, Poi, EntityTypes } from "@communecter/cocolight-api-client";
 
 /**
  * Type guards pour permettre à TypeScript de faire le narrowing automatique
@@ -14,22 +14,37 @@ import type { User, Organization, Project, Event as EventType, Poi } from "@comm
  * }
  */
 
-export function isUser(entity: SearchEntity): entity is User {
+/**
+ * Type guard pour vérifier si une entité est un User
+ */
+export function isUser(entity: EntityTypes): entity is User {
   return entity.getEntityType() === "citoyens";
 }
 
-export function isOrganization(entity: SearchEntity): entity is Organization {
+/**
+ * Type guard pour vérifier si une entité est une Organization
+ */
+export function isOrganization(entity: EntityTypes): entity is Organization {
   return entity.getEntityType() === "organizations";
 }
 
-export function isProject(entity: SearchEntity): entity is Project {
+/**
+ * Type guard pour vérifier si une entité est un Project
+ */
+export function isProject(entity: EntityTypes): entity is Project {
   return entity.getEntityType() === "projects";
 }
 
-export function isEvent(entity: SearchEntity): entity is EventType {
+/**
+ * Type guard pour vérifier si une entité est un Event
+ */
+export function isEvent(entity: EntityTypes): entity is Event {
   return entity.getEntityType() === "events";
 }
 
+/**
+ * Type guard pour vérifier si une entité est un Poi
+ */
 export function isPoi(entity: SearchEntity): entity is Poi {
   return entity.getEntityType() === "poi";
 }

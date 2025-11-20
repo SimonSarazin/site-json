@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { News, Comment } from "@communecter/cocolight-api-client";
 import cocolightApiClient from "@communecter/cocolight-api-client";
@@ -47,5 +47,24 @@ export function useNewsCommentsQuery(news: News | null) {
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return query;
+  // Transformer les commentaires avant de les retourner
+  const transformedData = useMemo(() => {
+    if (!query.data || !Array.isArray(query.data) || !news) {
+      return query.data;
+    }
+
+    return query.data.map(item => {
+      // Si déjà transformé (Proxy), le retourner tel quel
+      if (item.serverData && isReactive(item.serverData)) {
+        return item;
+      }
+      // Sinon transformer en instance Proxy
+      return transformToEntityInstance<Comment>(item, helper, news);
+    });
+  }, [query.data, helper, news]);
+
+  return {
+    ...query,
+    data: transformedData,
+  };
 }

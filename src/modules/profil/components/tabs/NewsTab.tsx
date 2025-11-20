@@ -5,7 +5,7 @@ import { useLazyTab } from "@/hooks/useLazyTab";
 import { useProfilNewsQuery } from "../../hooks/useProfilNewsQuery";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
-import { useCocolight } from "@/hooks/useCocolight";
+import { useUserPermissions } from "../../hooks/useUserPermissions";
 import { Button } from "@/components/ui/button";
 import "@/modules/profil/i18n";
 import { NewsItem } from "../news/NewsItem";
@@ -15,7 +15,7 @@ export function NewsTab() {
   const { entity, entityType } = useProfileEntity();
   useLoadNamespace("modules/profil");
   const t = useT("modules/profil");
-  const { me } = useCocolight();
+  const permissions = useUserPermissions(entity);
 
   const { shouldLoad } = useLazyTab("news");
   const [showAddNewsModal, setShowAddNewsModal] = useState(false);
@@ -70,7 +70,7 @@ export function NewsTab() {
   return (
     <>
       <div className="space-y-4 sm:space-y-6">
-        {me?.isConnected && (
+        {permissions.canAddNews && (
           <div className="flex justify-end">
             <Button
               onClick={() => setShowAddNewsModal(true)}

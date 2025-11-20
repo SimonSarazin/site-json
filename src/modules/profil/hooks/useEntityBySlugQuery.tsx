@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient, type UseQueryOptions } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import type { SearchEntity } from "@/modules/search/schema";
 import { useCocolight } from "@/hooks/useCocolight";
 import { transformToEntityInstance } from "@/lib/entityTransform";
@@ -56,9 +56,23 @@ export const useEntityBySlugQuery = ({ slug, options = {} }: QueryEntityBySlugPr
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Les données du cache sont déjà des instances Proxy (transformées dans useEffect ou queryFn)
+  // Transformer les données avant de les retourner
+  const transformedData = useMemo(() => {
+    if (!data || typeof data !== 'object' || !('serverData' in data) || !entity) {
+      return null;
+    }
+
+    // Si déjà transformé (Proxy), le retourner tel quel
+    if (isReactive((data as any).serverData)) {
+      return data as SearchEntity;
+    }
+
+    // Sinon transformer en instance Proxy
+    return transformToEntityInstance<SearchEntity>(data, helper, entity);
+  }, [data, helper, entity]);
+
   return {
-    data: data as SearchEntity | null,
+    data: transformedData,
     isLoading,
     isError,
     error,
