@@ -185,9 +185,9 @@ export function useDeleteComment(newsId: string, entity: EntityTypes, options?: 
   const entityId = entity.id || "";
 
   return useMutation({
-    mutationFn: async ({ comment }: { comment: Comment }) => {
+    mutationFn: async ({ comment, parentCommentId }: { comment: Comment; parentCommentId?: string }) => {
       await comment.delete();
-      return { commentId: comment.id };
+      return { commentId: comment.id, parentCommentId };
     },
 
     onMutate: options?.optimistic
@@ -196,11 +196,31 @@ export function useDeleteComment(newsId: string, entity: EntityTypes, options?: 
 
           const previousComments = queryClient.getQueryData<Comment[]>(["news-comments", newsId]);
 
-          // Retirer le commentaire du cache
-          queryClient.setQueryData<Comment[]>(["news-comments", newsId], (old) => {
-            if (!old) return old;
-            return old.filter((comment) => comment.id !== variables.comment.id);
-          });
+          // Si c'est une reply, la retirer du commentaire parent
+          if (variables.parentCommentId) {
+            queryClient.setQueryData<Comment[]>(["news-comments", newsId], (old) => {
+              if (!old) return old;
+              return old.map((comment) => {
+                if (comment.id === variables.parentCommentId && comment.serverData?.replies) {
+                  // Filtrer les replies pour retirer celle supprimée
+                  // Les replies sont maintenant des objets Comment
+                  const replies = comment.serverData.replies as unknown as Comment[];
+                  const updatedReplies = replies.filter(
+                    (reply) => reply.id !== variables.comment.id
+                  );
+                  // Muter directement le serverData (Proxy)
+                  comment.serverData.replies = updatedReplies as unknown as typeof comment.serverData.replies;
+                }
+                return comment;
+              });
+            });
+          } else {
+            // Si c'est un commentaire principal, le retirer de la liste
+            queryClient.setQueryData<Comment[]>(["news-comments", newsId], (old) => {
+              if (!old) return old;
+              return old.filter((comment) => comment.id !== variables.comment.id);
+            });
+          }
 
           return { previousComments };
         }
@@ -217,8 +237,8 @@ export function useDeleteComment(newsId: string, entity: EntityTypes, options?: 
     },
 
     onSuccess: () => {
-      // Décrémenter le commentCount dans le cache des news
-      // Les données sont déjà des instances Proxy grâce au useEffect de useProfilNewsQuery
+      // Décrémenter le commentCount pour commentaires ET replies
+      // car le count total inclut les deux
       queryClient.setQueriesData<{ pages: News[][] }>(
         { queryKey: ["profile-news", entityId] },
         (old) => {

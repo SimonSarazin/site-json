@@ -6,7 +6,7 @@ import type { Comment, User, Organization } from "@communecter/cocolight-api-cli
 
 /**
  * Interface pour une reply formatée
- * Contient uniquement les champs calculés + les champs utilisés de CommentItemNormalized
+ * Contient les champs calculés + l'objet Comment complet
  */
 export interface FormattedReply {
   // Champs calculés
@@ -19,6 +19,9 @@ export interface FormattedReply {
   // Champs de CommentItemNormalized qu'on utilise
   id: string;
   text: string;
+
+  // L'objet Comment complet pour avoir accès aux méthodes
+  comment: Comment;
 }
 
 /**
@@ -127,24 +130,28 @@ export function useFormatComment(commentItem: Comment | null): FormattedComment 
       : {};
     const totalVotes = calculateTotalVotes(voteCount);
 
-    // Formatage des replies
+    // Formatage des replies (maintenant ce sont des objets Comment)
     const formattedReplies: FormattedReply[] = [];
     if (serverData.replies && Array.isArray(serverData.replies)) {
       serverData.replies.forEach((reply) => {
-        // Les replies sont des objets normalisés
-        if (reply && typeof reply === "object") {
-          const replyObj = reply as Record<string, unknown>;
-          const replyAuthorInfo = extractAuthorInfo(replyObj.author);
+        // Les replies sont maintenant des objets Comment
+        if (reply && typeof reply === "object" && "serverData" in reply) {
+          const replyComment = reply as unknown as Comment;
+          const replyServerData = replyComment.serverData;
 
-          const replyVoteCount = replyObj.voteCount && typeof replyObj.voteCount === 'object'
-            ? replyObj.voteCount as Record<string, number>
+          if (!replyServerData) return;
+
+          const replyAuthorInfo = extractAuthorInfo(replyServerData.author);
+
+          const replyVoteCount = replyServerData.voteCount && typeof replyServerData.voteCount === 'object'
+            ? replyServerData.voteCount as Record<string, number>
             : {};
 
           // Gérer created qui peut être Date ou number
-          const replyCreated = replyObj.created instanceof Date
-            ? replyObj.created
-            : typeof replyObj.created === 'number'
-              ? new Date(replyObj.created)
+          const replyCreated = replyServerData.created instanceof Date
+            ? replyServerData.created
+            : typeof replyServerData.created === 'number'
+              ? new Date(replyServerData.created)
               : new Date();
 
           const formattedReply: FormattedReply = {
@@ -156,8 +163,9 @@ export function useFormatComment(commentItem: Comment | null): FormattedComment 
             }),
             totalVotes: calculateTotalVotes(replyVoteCount),
             isAuthor: replyAuthorInfo.id === currentUserId,
-            id: typeof replyObj.id === 'string' ? replyObj.id : '',
-            text: typeof replyObj.text === 'string' ? replyObj.text : '',
+            id: replyServerData.id,
+            text: typeof replyServerData.text === 'string' ? replyServerData.text : '',
+            comment: replyComment, // Inclure l'objet Comment complet
           };
 
           formattedReplies.push(formattedReply);

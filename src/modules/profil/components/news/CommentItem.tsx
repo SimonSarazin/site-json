@@ -21,7 +21,7 @@ interface CommentItemProps {
   newsId: string;
   entity: EntityTypes;
   onEdit: (newText: string, comment: Comment) => void;
-  onDelete: (commentId: string) => void;
+  onDelete: (commentId: string, comment: Comment, parentCommentId?: string) => void;
   onReply: (text: string, comment: Comment) => void;
 }
 
@@ -37,6 +37,7 @@ export function CommentItem({
   const { me } = useCocolight();
   const [replyingTo, setReplyingTo] = useState(false);
   const [editingComment, setEditingComment] = useState(false);
+  const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
   const [commentToReport, setCommentToReport] = useState<Comment | null>(null);
 
@@ -68,9 +69,21 @@ export function CommentItem({
     }
   };
 
+  const handleReplyEditSubmit = (newText: string, replyComment: Comment) => {
+    if (newText.trim()) {
+      onEdit(newText, replyComment);
+      setEditingReplyId(null);
+    }
+  };
+
   const handleCommentLike = (comment: Comment) => {
     if (!isConnected) return;
     addCommentVoteMutation.mutate({ comment, voteType: "like" });
+  };
+
+  const handleReplyLike = (reply: Comment) => {
+    if (!isConnected) return;
+    addCommentVoteMutation.mutate({ comment: reply, voteType: "like" });
   };
 
   const handleReportComment = (comment: Comment) => {
@@ -115,7 +128,7 @@ export function CommentItem({
                       <span className="text-xs">{t("NewsTab.edit")}</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={() => onDelete(formattedComment.id)}
+                      onClick={() => onDelete(formattedComment.id, commentItem)}
                       className="text-red-600 focus:text-red-600"
                     >
                       <Trash2 className="mr-2 h-3.5 w-3.5" />
@@ -226,14 +239,12 @@ export function CommentItem({
                           </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-40">
-                          <DropdownMenuItem onClick={() => {
-                            // TODO: Implement reply edit
-                          }}>
+                          <DropdownMenuItem onClick={() => setEditingReplyId(reply.id)}>
                             <Edit className="mr-2 h-3 w-3" />
                             <span className="text-xs">{t("NewsTab.edit")}</span>
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            onClick={() => onDelete(reply.id)}
+                            onClick={() => onDelete(reply.id, reply.comment, formattedComment.id)}
                             className="text-red-600 focus:text-red-600"
                           >
                             <Trash2 className="mr-2 h-3 w-3" />
@@ -243,9 +254,21 @@ export function CommentItem({
                       </DropdownMenu>
                     )}
                   </div>
-                  <p className="text-xs font-medium text-foreground mt-1 break-all leading-relaxed">
-                    {reply.text}
-                  </p>
+                  {editingReplyId === reply.id ? (
+                    <CommentInput
+                      userPhoto={userPhoto}
+                      userName={userName}
+                      placeholder={t("NewsTab.editComment")}
+                      onSubmit={(newText) => handleReplyEditSubmit(newText, reply.comment)}
+                      initialValue={reply.text}
+                      autoFocus
+                      size="small"
+                    />
+                  ) : (
+                    <p className="text-xs font-medium text-foreground mt-1 break-all leading-relaxed">
+                      {reply.text}
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex flex-row md:space-x-5 space-x-1 items-center py-1">
@@ -255,6 +278,7 @@ export function CommentItem({
                   <div className="flex divide-x-2 divide-border">
                     <button
                       disabled={!isConnected}
+                      onClick={() => isConnected && handleReplyLike(reply.comment)}
                       className="bg-background text-[9px] text-muted-foreground px-2 hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {reply.totalVotes > 0 && <span className="mr-1">{reply.totalVotes}</span>}
@@ -262,13 +286,7 @@ export function CommentItem({
                     </button>
                     <button
                       disabled={!isConnected}
-                      onClick={() => {
-                        if (isConnected && reply.id) {
-                          // Créer un objet Comment minimal pour le signalement
-                          const replyComment = { id: reply.id } as Comment;
-                          handleReportComment(replyComment);
-                        }
-                      }}
+                      onClick={() => isConnected && handleReportComment(reply.comment)}
                       aria-label="Signaler un abus"
                       className="bg-background text-[9px] text-muted-foreground px-2 hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
                     >

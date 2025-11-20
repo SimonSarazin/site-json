@@ -32,6 +32,7 @@ export function NewsComments({ news, entity }: NewsCommentsProps) {
   // État pour le dialogue de confirmation de suppression
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState<Comment | null>(null);
+  const [parentCommentId, setParentCommentId] = useState<string | undefined>(undefined);
 
   // Mutations avec optimistic updates activés par défaut
   const addCommentMutation = useAddComment(news?.id || "", entity, { optimistic: true });
@@ -49,24 +50,26 @@ export function NewsComments({ news, entity }: NewsCommentsProps) {
     editCommentMutation.mutate({ comment, newText });
   }, [editCommentMutation]);
 
-  const handleDeleteComment = useCallback((_commentId: string, comment: Comment) => {
+  const handleDeleteComment = useCallback((_commentId: string, comment: Comment, parentId?: string) => {
     setCommentToDelete(comment);
+    setParentCommentId(parentId);
     setDeleteDialogOpen(true);
   }, []);
 
   const confirmDelete = useCallback(() => {
     if (commentToDelete) {
       deleteCommentMutation.mutate(
-        { comment: commentToDelete },
+        { comment: commentToDelete, parentCommentId },
         {
           onSuccess: () => {
             setDeleteDialogOpen(false);
             setCommentToDelete(null);
+            setParentCommentId(undefined);
           },
         }
       );
     }
-  }, [commentToDelete, deleteCommentMutation]);
+  }, [commentToDelete, parentCommentId, deleteCommentMutation]);
 
   const handleReply = useCallback((text: string, comment: Comment) => {
     if (!comment?.id) return;
@@ -111,7 +114,7 @@ export function NewsComments({ news, entity }: NewsCommentsProps) {
                   newsId={news?.id || ""}
                   entity={entity}
                   onEdit={handleEditComment}
-                  onDelete={(id) => handleDeleteComment(id, comment)}
+                  onDelete={(id, commentObj, parentId) => handleDeleteComment(id, commentObj, parentId)}
                   onReply={handleReply}
                 />
               );
