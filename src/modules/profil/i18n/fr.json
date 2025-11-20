@@ -92,6 +92,11 @@
     "delete": "Supprimer",
     "report": "Signaler un abus",
     "createPost": "Créer une publication",
+    "maxDepthReached": "Profondeur maximale atteinte",
+    "collapseThread": "Réduire le fil",
+    "expandThread": "Développer le fil",
+    "repliesCount": "{{count}} réponse",
+    "repliesCount_plural": "{{count}} réponses",
     "reportDialog": {
       "title": "Signaler une actualité",
       "titleComment": "Signaler un commentaire",

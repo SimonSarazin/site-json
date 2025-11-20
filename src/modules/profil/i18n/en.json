@@ -92,6 +92,11 @@
     "delete": "Delete",
     "report": "Report abuse",
     "createPost": "Create a post",
+    "maxDepthReached": "Maximum depth reached",
+    "collapseThread": "Collapse thread",
+    "expandThread": "Expand thread",
+    "repliesCount": "{{count}} reply",
+    "repliesCount_plural": "{{count}} replies",
     "reportDialog": {
       "title": "Report news",
       "titleComment": "Report comment",

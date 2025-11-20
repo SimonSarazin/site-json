@@ -116,6 +116,8 @@ export function NewsComments({ news, entity }: NewsCommentsProps) {
                   onEdit={handleEditComment}
                   onDelete={(id, commentObj, parentId) => handleDeleteComment(id, commentObj, parentId)}
                   onReply={handleReply}
+                  depth={0}
+                  maxDepth={3}
                 />
               );
             })}

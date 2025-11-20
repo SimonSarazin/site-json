@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useT } from "@/hooks/useT";
 import type { Comment, News, EntityTypes } from "@communecter/cocolight-api-client";
+import { findAndRemoveComment, findAndUpdateComment, findAndAddReply } from "../utils/commentCacheUtils";
 
 /**
  * Options pour les hooks de mutation
@@ -131,25 +132,10 @@ export function useEditComment(newsId: string, _entity: EntityTypes, options?: M
 
           const previousComments = queryClient.getQueryData<Comment[]>(["news-comments", newsId]);
 
-          // Mettre à jour le commentaire dans le cache
+          // Utiliser la fonction récursive pour mettre à jour à n'importe quelle profondeur
           queryClient.setQueryData<Comment[]>(["news-comments", newsId], (old) => {
-            if (!old) return old;
-            return old.map((comment) => {
-              if (comment.id === variables.comment.id) {
-                return {
-                  ...comment,
-                  serverData: {
-                    ...comment.serverData,
-                    text: variables.newText,
-                  },
-                  data: {
-                    ...comment.data,
-                    text: variables.newText,
-                  },
-                } as Comment;
-              }
-              return comment;
-            });
+            if (!old || !variables.comment.id) return old;
+            return findAndUpdateComment(old, variables.comment.id, variables.newText);
           });
 
           return { previousComments };
@@ -196,31 +182,11 @@ export function useDeleteComment(newsId: string, entity: EntityTypes, options?: 
 
           const previousComments = queryClient.getQueryData<Comment[]>(["news-comments", newsId]);
 
-          // Si c'est une reply, la retirer du commentaire parent
-          if (variables.parentCommentId) {
-            queryClient.setQueryData<Comment[]>(["news-comments", newsId], (old) => {
-              if (!old) return old;
-              return old.map((comment) => {
-                if (comment.id === variables.parentCommentId && comment.serverData?.replies) {
-                  // Filtrer les replies pour retirer celle supprimée
-                  // Les replies sont maintenant des objets Comment
-                  const replies = comment.serverData.replies as unknown as Comment[];
-                  const updatedReplies = replies.filter(
-                    (reply) => reply.id !== variables.comment.id
-                  );
-                  // Muter directement le serverData (Proxy)
-                  comment.serverData.replies = updatedReplies as unknown as typeof comment.serverData.replies;
-                }
-                return comment;
-              });
-            });
-          } else {
-            // Si c'est un commentaire principal, le retirer de la liste
-            queryClient.setQueryData<Comment[]>(["news-comments", newsId], (old) => {
-              if (!old) return old;
-              return old.filter((comment) => comment.id !== variables.comment.id);
-            });
-          }
+          // Utiliser la fonction récursive pour retirer le commentaire à n'importe quelle profondeur
+          queryClient.setQueryData<Comment[]>(["news-comments", newsId], (old) => {
+            if (!old || !variables.comment.id) return old;
+            return findAndRemoveComment(old, variables.comment.id);
+          });
 
           return { previousComments };
         }
@@ -301,24 +267,12 @@ export function useReplyToComment(newsId: string, entity: EntityTypes, options?:
             author: me?.serverData || { name: "Anonyme" },
             voteCount: {},
             replies: [],
-          };
+          } as unknown as Comment;
 
-          // Mettre à jour le commentaire parent avec la nouvelle réponse
+          // Utiliser la fonction récursive pour ajouter la reply à n'importe quelle profondeur
           queryClient.setQueryData<Comment[]>(["news-comments", newsId], (old) => {
-            if (!old) return old;
-            return old.map((comment) => {
-              if (comment.id === variables.comment.id) {
-                const currentReplies = comment.serverData?.replies || [];
-                return {
-                  ...comment,
-                  serverData: {
-                    ...comment.serverData,
-                    replies: [...currentReplies, optimisticReply],
-                  },
-                } as Comment;
-              }
-              return comment;
-            });
+            if (!old || !variables.comment.id) return old;
+            return findAndAddReply(old, variables.comment.id, optimisticReply);
           });
 
           return { previousComments };

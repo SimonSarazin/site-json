@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Flag, MoreVertical, Trash2, Edit } from "lucide-react";
+import { Flag, MoreVertical, Trash2, Edit, ChevronDown, ChevronRight } from "lucide-react";
 import { useT } from "@/hooks/useT";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -23,6 +23,8 @@ interface CommentItemProps {
   onEdit: (newText: string, comment: Comment) => void;
   onDelete: (commentId: string, comment: Comment, parentCommentId?: string) => void;
   onReply: (text: string, comment: Comment) => void;
+  depth?: number;
+  maxDepth?: number;
 }
 
 export function CommentItem({
@@ -31,13 +33,15 @@ export function CommentItem({
   entity: _entity,
   onEdit,
   onDelete,
-  onReply
+  onReply,
+  depth = 0,
+  maxDepth = 3,
 }: CommentItemProps) {
   const t = useT("modules/profil");
   const { me } = useCocolight();
   const [replyingTo, setReplyingTo] = useState(false);
   const [editingComment, setEditingComment] = useState(false);
-  const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
   const [commentToReport, setCommentToReport] = useState<Comment | null>(null);
 
@@ -69,21 +73,9 @@ export function CommentItem({
     }
   };
 
-  const handleReplyEditSubmit = (newText: string, replyComment: Comment) => {
-    if (newText.trim()) {
-      onEdit(newText, replyComment);
-      setEditingReplyId(null);
-    }
-  };
-
   const handleCommentLike = (comment: Comment) => {
     if (!isConnected) return;
     addCommentVoteMutation.mutate({ comment, voteType: "like" });
-  };
-
-  const handleReplyLike = (reply: Comment) => {
-    if (!isConnected) return;
-    addCommentVoteMutation.mutate({ comment: reply, voteType: "like" });
   };
 
   const handleReportComment = (comment: Comment) => {
@@ -94,8 +86,19 @@ export function CommentItem({
   // Si le commentaire n'a pas pu être formaté, ne rien afficher
   if (!formattedComment) return null;
 
+  const hasReplies = formattedComment.replies.length > 0;
+  const isMaxDepth = depth >= maxDepth;
+
+  // Classes d'indentation statiques pour Tailwind (seulement si depth > 0)
+  const indentClasses: Record<number, string> = {
+    1: "ml-8 md:ml-12",
+    2: "ml-16 md:ml-24",
+    3: "ml-24 md:ml-36",
+  };
+  const indentClass = depth > 0 ? (indentClasses[Math.min(depth, 3)] || indentClasses[3]) : "";
+
   return (
-    <div>
+    <div className={indentClass}>
       <div className="w-full flex py-4 md:px-5 px-3 font-bold">
         <Avatar className="md:size-12 size-8 shrink-0">
           {formattedComment.authorPhoto ? (
@@ -170,15 +173,17 @@ export function CommentItem({
                 {formattedComment.totalVotes > 0 && <span className="mr-1">{formattedComment.totalVotes}</span>}
                 {t("NewsTab.like")}
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled={!isConnected}
-                onClick={() => isConnected && setReplyingTo(!replyingTo)}
-                className="bg-background md:text-xs text-[9px] h-auto py-1 px-2 hover:bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {t("NewsTab.reply")}
-              </Button>
+              {!isMaxDepth && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={!isConnected}
+                  onClick={() => isConnected && setReplyingTo(!replyingTo)}
+                  className="bg-background md:text-xs text-[9px] h-auto py-1 px-2 hover:bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {t("NewsTab.reply")}
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 size="sm"
@@ -189,6 +194,26 @@ export function CommentItem({
               >
                 <Flag className="w-3 h-3 inline" />
               </Button>
+              {hasReplies && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsCollapsed(!isCollapsed)}
+                  className="bg-background md:text-xs text-[9px] h-auto py-1 px-2 hover:bg-transparent"
+                >
+                  {isCollapsed ? (
+                    <>
+                      <ChevronRight className="w-3 h-3 inline mr-1" />
+                      {t("NewsTab.expandThread")} ({formattedComment.repliesCount})
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="w-3 h-3 inline mr-1" />
+                      {t("NewsTab.collapseThread")}
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
           </div>
 
@@ -207,95 +232,21 @@ export function CommentItem({
         </div>
       </div>
 
-      {formattedComment.replies.length > 0 && (
-        <div className="ml-12 md:ml-16 space-y-4">
+      {/* Rendu récursif des replies */}
+      {hasReplies && !isCollapsed && (
+        <div className="space-y-2 mt-2">
           {formattedComment.replies.map((reply) => (
-            <div key={reply.id} className="w-full flex py-2 md:px-5 px-3 font-bold">
-              <div className="shrink-0">
-                {reply.authorPhoto ? (
-                  <img
-                    src={reply.authorPhoto}
-                    alt={reply.authorName}
-                    className="block md:size-10 size-7 object-cover rounded-full"
-                  />
-                ) : (
-                  <div className="md:size-10 size-7 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white text-xs font-bold">
-                    {reply.authorName.charAt(0).toUpperCase()}
-                  </div>
-                )}
-              </div>
-
-              <div className="ml-3 grow">
-                <div className="inline-block w-full p-2.5 rounded-xl bg-muted relative group">
-                  <div className="flex justify-between items-start">
-                    <h1 className="text-foreground text-xs font-semibold">
-                      {reply.authorName}
-                    </h1>
-                    {reply.isAuthor && (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button className="ml-2 p-0.5 hover:bg-background/50 rounded transition-colors opacity-0 group-hover:opacity-100">
-                            <MoreVertical className="w-3 h-3 text-muted-foreground" />
-                          </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-40">
-                          <DropdownMenuItem onClick={() => setEditingReplyId(reply.id)}>
-                            <Edit className="mr-2 h-3 w-3" />
-                            <span className="text-xs">{t("NewsTab.edit")}</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => onDelete(reply.id, reply.comment, formattedComment.id)}
-                            className="text-red-600 focus:text-red-600"
-                          >
-                            <Trash2 className="mr-2 h-3 w-3" />
-                            <span className="text-xs">{t("NewsTab.delete")}</span>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    )}
-                  </div>
-                  {editingReplyId === reply.id ? (
-                    <CommentInput
-                      userPhoto={userPhoto}
-                      userName={userName}
-                      placeholder={t("NewsTab.editComment")}
-                      onSubmit={(newText) => handleReplyEditSubmit(newText, reply.comment)}
-                      initialValue={reply.text}
-                      autoFocus
-                      size="small"
-                    />
-                  ) : (
-                    <p className="text-xs font-medium text-foreground mt-1 break-all leading-relaxed">
-                      {reply.text}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex flex-row md:space-x-5 space-x-1 items-center py-1">
-                  <p className="text-muted-foreground text-[9px]">
-                    {reply.formattedDate}
-                  </p>
-                  <div className="flex divide-x-2 divide-border">
-                    <button
-                      disabled={!isConnected}
-                      onClick={() => isConnected && handleReplyLike(reply.comment)}
-                      className="bg-background text-[9px] text-muted-foreground px-2 hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {reply.totalVotes > 0 && <span className="mr-1">{reply.totalVotes}</span>}
-                      {t("NewsTab.like")}
-                    </button>
-                    <button
-                      disabled={!isConnected}
-                      onClick={() => isConnected && handleReportComment(reply.comment)}
-                      aria-label="Signaler un abus"
-                      className="bg-background text-[9px] text-muted-foreground px-2 hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <Flag className="w-2.5 h-2.5 inline" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <CommentItem
+              key={reply.id}
+              commentItem={reply.comment}
+              newsId={newsId}
+              entity={_entity}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onReply={onReply}
+              depth={depth + 1}
+              maxDepth={maxDepth}
+            />
           ))}
         </div>
       )}
