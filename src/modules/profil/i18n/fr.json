@@ -207,6 +207,19 @@
     "success": "Publication créée avec succès !",
     "error": "Une erreur est survenue lors de la création"
   },
+  "upload": {
+    "errors": {
+      "fileTooLarge": "Le fichier {{fileName}} est trop volumineux (max: {{maxSize}}MB)",
+      "invalidFileType": "Type de fichier non autorisé pour {{fileName}}",
+      "invalidExtension": "Extension de fichier non autorisée pour {{fileName}}"
+    },
+    "progress": {
+      "uploading": "Téléchargement en cours...",
+      "processing": "Traitement en cours...",
+      "compressing": "Compression en cours...",
+      "complete": "Téléchargement terminé"
+    }
+  },
   "toast": {
     "comment": {
       "addSuccess": "Commentaire ajouté avec succès",

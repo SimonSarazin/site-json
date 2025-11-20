@@ -1,8 +1,10 @@
-import { useRef } from "react";
-import { FileText, X } from "lucide-react";
+import { useRef, useState } from "react";
+import { FileText, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/hooks/useT";
 import { toast } from "sonner";
+import { validateFile, formatFileSize, DOCUMENT_VALIDATION_CONFIG } from "../../utils/fileValidation";
+import { Progress } from "@/components/ui/progress";
 
 interface NewsFormDocumentUploadProps {
   documents: File[];
@@ -18,16 +20,76 @@ export function NewsFormDocumentUpload({
 
   const t = useT("modules/profil");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [processingFiles, setProcessingFiles] = useState<{ [key: string]: number }>({});
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
 
-    if (documents.length + files.length > maxDocuments) {
+    // Filtrer et valider les fichiers
+    const validFiles: File[] = [];
+    let hasErrors = false;
+
+    files.forEach((file) => {
+      // Valider avec la configuration
+      const validation = validateFile(file, DOCUMENT_VALIDATION_CONFIG);
+
+      if (!validation.valid) {
+        if (validation.errorKey === "upload.errors.fileTooLarge") {
+          toast.error(
+            t("upload.errors.fileTooLarge", undefined, {
+              fileName: file.name,
+              maxSize: DOCUMENT_VALIDATION_CONFIG.maxSizeInMB,
+            })
+          );
+        } else if (validation.errorKey === "upload.errors.invalidExtension") {
+          toast.error(t("upload.errors.invalidExtension", undefined, { fileName: file.name }));
+        }
+        hasErrors = true;
+        return;
+      }
+
+      validFiles.push(file);
+    });
+
+    if (documents.length + validFiles.length > maxDocuments) {
       toast.error(t("AddNewsModal.form.documents.maxReached", undefined, { max: maxDocuments }));
       return;
     }
 
-    const newDocuments = [...documents, ...files];
+    if (validFiles.length === 0 && hasErrors) {
+      return;
+    }
+
+    // Simuler la progression pour chaque fichier
+    for (const file of validFiles) {
+      const fileKey = `${file.name}-${file.size}`;
+
+      setProcessingFiles((prev) => ({ ...prev, [fileKey]: 0 }));
+
+      // Simuler progression
+      const progressInterval = setInterval(() => {
+        setProcessingFiles((prev) => {
+          const current = prev[fileKey] || 0;
+          if (current >= 100) {
+            clearInterval(progressInterval);
+            return prev;
+          }
+          return { ...prev, [fileKey]: current + 20 };
+        });
+      }, 100);
+
+      // Nettoyer après traitement
+      setTimeout(() => {
+        clearInterval(progressInterval);
+        setProcessingFiles((prev) => {
+          const newState = { ...prev };
+          delete newState[fileKey];
+          return newState;
+        });
+      }, 600);
+    }
+
+    const newDocuments = [...documents, ...validFiles];
     onDocumentsChange(newDocuments);
   };
 
@@ -36,11 +98,6 @@ export function NewsFormDocumentUpload({
     onDocumentsChange(newDocuments);
   };
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes < 1024) return bytes + " B";
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
-    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
-  };
 
   return (
     <div className="space-y-3">
@@ -71,6 +128,27 @@ export function NewsFormDocumentUpload({
         onChange={handleFileSelect}
         className="hidden"
       />
+
+      {/* Indicateurs de progression */}
+      {Object.keys(processingFiles).length > 0 && (
+        <div className="space-y-2">
+          {Object.entries(processingFiles).map(([fileKey, progress]) => {
+            const fileName = fileKey.split('-').slice(0, -1).join('-');
+            return (
+              <div key={fileKey} className="p-2 bg-muted/50 rounded-lg border border-border">
+                <div className="flex items-center justify-between text-xs mb-1">
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <Loader2 className="w-3 h-3 animate-spin text-blue-500 shrink-0" />
+                    <span className="truncate">{fileName}</span>
+                  </div>
+                  <span className="text-muted-foreground ml-2 shrink-0">{Math.round(progress)}%</span>
+                </div>
+                <Progress value={progress} className="h-1" />
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {documents.length > 0 && (
         <div className="space-y-2">

@@ -207,6 +207,19 @@
     "success": "Post created successfully!",
     "error": "An error occurred while creating the post"
   },
+  "upload": {
+    "errors": {
+      "fileTooLarge": "File {{fileName}} is too large (max: {{maxSize}}MB)",
+      "invalidFileType": "Invalid file type for {{fileName}}",
+      "invalidExtension": "Invalid file extension for {{fileName}}"
+    },
+    "progress": {
+      "uploading": "Uploading...",
+      "processing": "Processing...",
+      "compressing": "Compressing...",
+      "complete": "Upload complete"
+    }
+  },
   "toast": {
     "comment": {
       "addSuccess": "Comment added successfully",
