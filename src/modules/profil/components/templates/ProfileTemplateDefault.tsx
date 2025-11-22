@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router";
-import { Mail, ChevronRight, Image as ImageIcon, Phone, Globe, Calendar, MapPin, Users, Briefcase, Award } from "lucide-react";
+import { Mail, ChevronRight, Image as ImageIcon, Phone, Globe, Calendar, MapPin, Users, Briefcase, Award, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatDate } from "@/helpers/formatDate";
@@ -8,9 +8,10 @@ import { useFormatProfileEntity } from "../../hooks/useFormatProfileEntity";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
+import { useUserPermissions } from "../../hooks/useUserPermissions";
+import { EditProfileModal } from "../profile-edit/EditProfileModal";
+import { ProfileImageUpload } from "../profile-edit/ProfileImageUpload";
 import "@/modules/profil/i18n";
-// import { useCocolight } from "@/hooks/useCocolight";
-// import { isUser, isOrganization, isProject, isEvent } from "@/lib/getTypedEntity";
 import { LazyTabContent } from "@/components/LazyTabContent";
 import { NewsTab } from "../tabs/NewsTab";
 
@@ -19,9 +20,10 @@ export default function ProfileTemplateDefault() {
   const { slug } = useParams<{ slug: string }>();
   const location = useLocation();
   const navigate = useNavigate();
-  // const { me } = useCocolight();
   useLoadNamespace("modules/profil");
   const t = useT("modules/profil");
+  const { canEditProfile } = useUserPermissions(entity);
+  const [editModalOpen, setEditModalOpen] = useState(false);
 
   // Déterminer le tab actif depuis l'URL
   // Exemples: /profil/slug → "about", /profil/slug/news → "news"
@@ -93,7 +95,20 @@ export default function ProfileTemplateDefault() {
   return (
     <div className="bg-foreground -m-4 md:-m-8">
       <div className="w-full mx-auto bg-background shadow-sm">
-        <div className="relative h-96 bg-cover bg-center rounded-md border-border border" style={{ backgroundImage: bannerUrl ? `url('${bannerUrl}')` : `url('${imageUrl}')` }}>
+        <div className="relative h-96 bg-cover bg-center rounded-md border-border border group" style={{ backgroundImage: bannerUrl ? `url('${bannerUrl}')` : `url('${imageUrl}')` }}>
+          {/* Bouton d'upload de bannière */}
+          {canEditProfile && entity && (
+            <div className="absolute inset-0 z-10">
+              <ProfileImageUpload
+                entity={entity}
+                type="banner"
+                currentUrl={bannerUrl || imageUrl}
+                className="w-full h-full"
+                overlayOnly={true}
+              />
+            </div>
+          )}
+
           <div className="absolute bottom-6 right-6 z-20">
             <button className="bg-card text-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-muted flex items-center gap-2 shadow-md border border-border">
               <ImageIcon className="w-4 h-4" />
@@ -104,7 +119,7 @@ export default function ProfileTemplateDefault() {
 
         <div className="relative px-8 pb-6">
           <div className="flex items-end gap-6 -mt-20">
-            <div className="relative">
+            <div className="relative group z-20">
               <div className="w-40 h-40 rounded-full border-4 border-background bg-card shadow-xl overflow-hidden">
                 {effectiveLogoUrl ? (
                   <img
@@ -124,6 +139,19 @@ export default function ProfileTemplateDefault() {
                   </div>
                 )}
               </div>
+
+              {/* Bouton d'upload d'avatar */}
+              {canEditProfile && entity && (
+                <div className="absolute inset-0 rounded-full">
+                  <ProfileImageUpload
+                    entity={entity}
+                    type="profile"
+                    currentUrl={effectiveLogoUrl}
+                    overlayOnly={true}
+                    className="w-full h-full"
+                  />
+                </div>
+              )}
             </div>
 
             <div className="flex-1 flex justify-between items-end pb-2 flex-wrap gap-4">
@@ -137,9 +165,18 @@ export default function ProfileTemplateDefault() {
                 )}
               </div>
 
-              {
-                _entityType != "citoyens" && (
-                  <div className="flex gap-3 flex-wrap">
+              <div className="flex gap-3 flex-wrap">
+                {canEditProfile && (
+                  <button
+                    onClick={() => setEditModalOpen(true)}
+                    className="px-5 py-2.5 border border-border rounded-lg text-foreground bg-card text-sm font-medium hover:bg-muted flex items-center gap-2 shadow-sm"
+                  >
+                    <Edit className="w-4 h-4" />
+                    {t("ProfileTemplateDefault.editProfile")}
+                  </button>
+                )}
+                {_entityType != "citoyens" && (
+                  <>
                     {entity.serverData?.email && typeof entity.serverData.email === "string" && (
                       <button
                         onClick={() => window.location.href = `mailto:${entity.serverData.email}`}
@@ -155,9 +192,9 @@ export default function ProfileTemplateDefault() {
                       {t("ProfileTemplateDefault.reservationSpace")}
                       <ChevronRight className="w-4 h-4" />
                     </button>
-                  </div>
-                )
-              }
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
@@ -496,6 +533,15 @@ export default function ProfileTemplateDefault() {
           </Tabs>
         </div>
       </div>
+
+      {/* Modal d'édition */}
+      {entity && (
+        <EditProfileModal
+          entity={entity}
+          open={editModalOpen}
+          onOpenChange={setEditModalOpen}
+        />
+      )}
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Share2, Edit } from "lucide-react";
@@ -5,6 +6,8 @@ import { useFormatProfileEntity } from "../../hooks/useFormatProfileEntity";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
+import { useUserPermissions } from "../../hooks/useUserPermissions";
+import { EditProfileModal } from "../profile-edit/EditProfileModal";
 import "@/modules/profil/i18n";
 
 interface ProfileHeaderProps {
@@ -20,10 +23,12 @@ interface ProfileHeaderProps {
 export default function ProfileHeader({ section }: ProfileHeaderProps) {
   const { entity } = useProfileEntity();
   useLoadNamespace("modules/profil");
-    const t = useT("modules/profil");
+  const t = useT("modules/profil");
   const navigate = useNavigate();
   const variant = section.variant || "hero";
   const { imageUrl, name: entityName, shortDescription } = useFormatProfileEntity(entity);
+  const { canEditProfile } = useUserPermissions(entity);
+  const [editModalOpen, setEditModalOpen] = useState(false);
 
   if (variant === "hero") {
     return (
@@ -69,11 +74,12 @@ export default function ProfileHeader({ section }: ProfileHeaderProps) {
               </Button>
             )}
 
-            {section.showEditButton && (
+            {canEditProfile && entity && (
               <Button
                 variant="secondary"
                 size="sm"
                 className="backdrop-blur-sm bg-white/90"
+                onClick={() => setEditModalOpen(true)}
               >
                 <Edit className="h-4 w-4" />
               </Button>
@@ -140,6 +146,15 @@ export default function ProfileHeader({ section }: ProfileHeaderProps) {
           )}
         </div>
       </div>
+
+      {/* Modal d'édition */}
+      {entity && (
+        <EditProfileModal
+          entity={entity}
+          open={editModalOpen}
+          onOpenChange={setEditModalOpen}
+        />
+      )}
     </div>
   );
 }

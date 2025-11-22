@@ -35,14 +35,14 @@ const profileLoader = async ({ params, request }: LoaderFunctionArgs, queryClien
     const entity = await queryClient.ensureQueryData({
       queryKey: ["element-about", slug],
       queryFn: async () => {
-        const { organization } = await initApi({
+        const { entity } = await initApi({
           baseURL: getBaseUrl(),
           debug: true
         });
-        if (!organization) {
+        if (!entity) {
           throw new Error("API non initialisée");
         }
-        return organization.entityBySlug(slug);
+        return entity.entityBySlug(slug);
       }
     });
 

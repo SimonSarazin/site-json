@@ -16,7 +16,8 @@ interface ImageCropDialogProps {
   fileName: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCropComplete: (croppedFile: File) => void;
+  onCropComplete: (croppedFile: File, cropData?: CropArea) => void;
+  aspect?: number;
 }
 
 interface CropArea {
@@ -32,6 +33,7 @@ export function ImageCropDialog({
   open,
   onOpenChange,
   onCropComplete,
+  aspect = 16 / 9,
 }: ImageCropDialogProps) {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
@@ -58,7 +60,7 @@ export function ImageCropDialog({
 
     try {
       const croppedFile = await getCroppedImg(image, croppedAreaPixels, rotation, fileName);
-      onCropComplete(croppedFile);
+      onCropComplete(croppedFile, croppedAreaPixels);
       onOpenChange(false);
     } catch (error) {
       console.error("Error cropping image:", error);
@@ -83,7 +85,7 @@ export function ImageCropDialog({
               crop={crop}
               zoom={zoom}
               rotation={rotation}
-              aspect={16 / 9}
+              aspect={aspect}
               onCropChange={onCropChange}
               onZoomChange={onZoomChange}
               onCropComplete={onCropCompleteCallback}

@@ -40,6 +40,21 @@ export const useEntityBySlugQuery = ({ slug, options = {} }: QueryEntityBySlugPr
   useEffect(() => {
     if (!slug || !entity) return;
 
+    // Si c'est notre propre profil et que me est disponible, utiliser me
+    if (me && slug === me.slug) {
+      const currentData = queryClient.getQueryData(["element-about", slug]);
+
+      // Remplacer le cache SSR par me (qui a les données complètes)
+      if (currentData !== me) {
+        if (import.meta.env.DEV) {
+          console.log("🔄 Remplacement des données SSR par 'me' (profil connecté)");
+        }
+        queryClient.setQueryData(["element-about", slug], me);
+      }
+      return; // Sortir, pas besoin de transformation
+    }
+
+    // Sinon, transformer les données SSR en Proxy (comportement actuel)
     const currentData = queryClient.getQueryData<unknown>(["element-about", slug]);
 
     if (currentData && typeof currentData === 'object' && currentData !== null && 'serverData' in currentData) {
@@ -54,7 +69,7 @@ export const useEntityBySlugQuery = ({ slug, options = {} }: QueryEntityBySlugPr
         );
       }
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [slug, me, entity, queryClient, helper]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Transformer les données avant de les retourner
   const transformedData = useMemo(() => {

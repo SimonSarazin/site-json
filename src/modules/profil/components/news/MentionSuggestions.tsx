@@ -19,8 +19,6 @@ export function MentionSuggestions({ query, onSelect }: MentionSuggestionsProps)
   const t = useT("modules/profil");
   const { data: users = [], isLoading } = useSearchUsers(query, query.length >= 2);
 
-  console.log(users);
-
   return (
     <Command className="rounded-lg border shadow-md" shouldFilter={false}>
       <CommandList className="max-h-[300px] overflow-y-auto" onWheel={(e) => e.stopPropagation()}>

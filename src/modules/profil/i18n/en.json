@@ -38,6 +38,7 @@
   },
   "ProfileTemplateDefault": {
     "showAllPhotos": "Show all photos",
+    "editProfile": "Edit profile",
     "sendEmail": "Send email",
     "reservationSpace": "Reservation Space",
     "tabs": {
@@ -256,6 +257,84 @@
     },
     "error": {
       "generic": "An error occurred"
+    },
+    "profile": {
+      "updateSuccess": "Profile updated successfully",
+      "updateError": "Unable to update profile",
+      "imageUploadSuccess": "Profile picture uploaded successfully",
+      "imageUploadError": "Unable to upload profile picture",
+      "bannerUploadSuccess": "Banner uploaded successfully",
+      "bannerUploadError": "Unable to upload banner"
+    }
+  },
+  "ProfileEdit": {
+    "title": "Edit profile",
+    "profileImage": "Profile picture",
+    "bannerImage": "Banner",
+    "changeImage": "Change",
+    "uploading": "Uploading...",
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "tabs": {
+      "basic": "Information",
+      "contact": "Contact",
+      "location": {
+        "label": "Location",
+        "description": "Specify your complete address"
+      },
+      "social": "Social networks"
+    },
+    "loading": "Loading...",
+    "fields": {
+      "name": {
+        "label": "Name",
+        "placeholder": "Your name",
+        "description": "The name displayed on your profile"
+      },
+      "shortDescription": {
+        "label": "Short bio",
+        "placeholder": "A short description of yourself",
+        "description": "Maximum 200 characters"
+      },
+      "description": {
+        "label": "Description",
+        "placeholder": "Describe yourself in a few sentences",
+        "description": "Present yourself in more detail"
+      },
+      "email": {
+        "label": "Email",
+        "placeholder": "email@example.com",
+        "description": "Your contact email address"
+      },
+      "mobile": {
+        "label": "Phone",
+        "placeholder": "+1 123 456 7890",
+        "description": "Your phone number"
+      },
+      "url": {
+        "label": "Website",
+        "placeholder": "https://example.com",
+        "description": "The URL of your personal website"
+      },
+      "addressCountry": {
+        "label": "Country",
+        "placeholder": "Select a country"
+      },
+      "streetAddress": {
+        "label": "Address",
+        "placeholder": "123 Main Street",
+        "searchPlaceholder": "Search for an address..."
+      },
+      "postalCode": {
+        "label": "Postal code",
+        "placeholder": "Select a postal code"
+      },
+      "addressLocality": {
+        "label": "City",
+        "placeholder": "New York",
+        "searchPlaceholder": "Search for a city..."
+      }
     }
   }
 }

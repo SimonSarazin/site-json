@@ -2,8 +2,9 @@ import { useMemo } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { useDateFnsLocale } from "@/hooks/useDateFnsLocale";
 import { useCocolight } from "@/hooks/useCocolight";
-import type { News, User, Organization } from "@communecter/cocolight-api-client";
+import type { News, User, Organization, EntityTypes } from "@communecter/cocolight-api-client";
 import type { NewsMention } from "../components/news/NewsContent";
+import { useUserPermissions } from "./useUserPermissions";
 
 export interface SharedByPerson {
   name: string;
@@ -49,6 +50,10 @@ export interface FormattedNews {
 
   // Mentions
   mentions?: NewsMention[];
+
+  // Permissions
+  canEdit: boolean;
+  canDelete: boolean;
 
   // Champs de NewsItemNormalized qu'on utilise
   tags?: unknown[];
@@ -111,10 +116,13 @@ function calculateTotalVotes(voteCount?: Record<string, number> | null): number 
 /**
  * Hook pour formater les données d'une news
  * Extrait et simplifie l'accès aux données complexes du News
+ * @param newsItem - La news à formater
+ * @param entity - L'entité propriétaire (pour calculer les permissions)
  */
-export function useFormatNews(newsItem: News | null): FormattedNews | null {
+export function useFormatNews(newsItem: News | null, entity: EntityTypes | null = null): FormattedNews | null {
   const dateFnsLocale = useDateFnsLocale();
   const { me } = useCocolight();
+  const permissions = useUserPermissions(entity, newsItem);
 
   const currentUserId = me?.serverData?.id;
 
@@ -213,6 +221,8 @@ export function useFormatNews(newsItem: News | null): FormattedNews | null {
       totalVotes,
       scope,
       mentions,
+      canEdit: permissions.canEditNews,
+      canDelete: permissions.canDeleteNews,
       tags: Array.isArray(serverData.tags) ? serverData.tags : undefined,
       commentCount: typeof serverData.commentCount === 'number' ? serverData.commentCount : undefined,
       voteCount,
@@ -221,5 +231,5 @@ export function useFormatNews(newsItem: News | null): FormattedNews | null {
     };
 
     return formattedNews;
-  }, [newsItem, dateFnsLocale, currentUserId]);
+  }, [newsItem, dateFnsLocale, currentUserId, permissions]);
 }

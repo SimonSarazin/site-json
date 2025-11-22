@@ -21,8 +21,6 @@ export function useSearchTags(query: string, enabled: boolean = true) {
           pathParams: { q: query },
         });
 
-        console.log(response);
-
         // L'API retourne un tableau d'objets avec un champ tag
         if (response && Array.isArray(response)) {
           return response

@@ -2,7 +2,8 @@ import { useMemo } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { useDateFnsLocale } from "@/hooks/useDateFnsLocale";
 import { useCocolight } from "@/hooks/useCocolight";
-import type { Comment, User, Organization } from "@communecter/cocolight-api-client";
+import type { Comment, User, Organization, EntityTypes } from "@communecter/cocolight-api-client";
+import { useUserPermissions } from "./useUserPermissions";
 
 /**
  * Interface pour une reply formatée
@@ -15,6 +16,10 @@ export interface FormattedReply {
   authorName: string;
   authorPhoto: string | null;
   isAuthor: boolean;
+
+  // Permissions
+  canEdit: boolean;
+  canDelete: boolean;
 
   // Champs de CommentItemNormalized qu'on utilise
   id: string;
@@ -37,6 +42,10 @@ export interface FormattedComment {
   totalVotes: number;
   replies: FormattedReply[];
   repliesCount: number;
+
+  // Permissions
+  canEdit: boolean;
+  canDelete: boolean;
 
   // Champs de CommentItemNormalized qu'on utilise
   id: string;
@@ -96,10 +105,13 @@ function calculateTotalVotes(voteCount?: Record<string, number> | null): number 
 /**
  * Hook pour formater les données d'un commentaire
  * Extrait et simplifie l'accès aux données complexes du Comment
+ * @param commentItem - Le commentaire à formater
+ * @param entity - L'entité propriétaire (pour calculer les permissions)
  */
-export function useFormatComment(commentItem: Comment | null): FormattedComment | null {
+export function useFormatComment(commentItem: Comment | null, entity: EntityTypes | null = null): FormattedComment | null {
   const dateFnsLocale = useDateFnsLocale();
   const { me } = useCocolight();
+  const permissions = useUserPermissions(entity);
 
   const currentUserId = me?.serverData?.id;
 
@@ -154,6 +166,8 @@ export function useFormatComment(commentItem: Comment | null): FormattedComment 
               ? new Date(replyServerData.created)
               : new Date();
 
+          const isReplyAuthor = replyAuthorInfo.id === currentUserId;
+
           const formattedReply: FormattedReply = {
             authorName: replyAuthorInfo.name,
             authorPhoto: replyAuthorInfo.photo,
@@ -162,7 +176,9 @@ export function useFormatComment(commentItem: Comment | null): FormattedComment 
               locale: dateFnsLocale,
             }),
             totalVotes: calculateTotalVotes(replyVoteCount),
-            isAuthor: replyAuthorInfo.id === currentUserId,
+            isAuthor: isReplyAuthor,
+            canEdit: isReplyAuthor, // Peut éditer si auteur de la reply
+            canDelete: isReplyAuthor || permissions.canModerateNews, // Auteur ou modérateur du profil
             id: replyServerData.id,
             text: typeof replyServerData.text === 'string' ? replyServerData.text : '',
             comment: replyComment, // Inclure l'objet Comment complet
@@ -173,19 +189,24 @@ export function useFormatComment(commentItem: Comment | null): FormattedComment 
       });
     }
 
+    // Vérifier permissions pour le commentaire principal
+    const isCommentAuthor = authorInfo.id === currentUserId;
+
     // Construire le commentaire formaté avec uniquement les champs nécessaires
     const formattedComment: FormattedComment = {
       authorName: authorInfo.name,
       authorPhoto: authorInfo.photo,
-      isAuthor: authorInfo.id === currentUserId,
+      isAuthor: isCommentAuthor,
       formattedDate,
       totalVotes,
       replies: formattedReplies,
       repliesCount: formattedReplies.length,
+      canEdit: isCommentAuthor, // Peut éditer si auteur du commentaire
+      canDelete: isCommentAuthor || permissions.canModerateNews, // Auteur ou modérateur du profil
       id: serverData.id,
       text: typeof serverData.text === 'string' ? serverData.text : '',
     };
 
     return formattedComment;
-  }, [commentItem, dateFnsLocale, currentUserId]);
+  }, [commentItem, dateFnsLocale, currentUserId, permissions]);
 }

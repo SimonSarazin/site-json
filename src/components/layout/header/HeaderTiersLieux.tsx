@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import LoginForm from "@/components/auth/LoginForm";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
+import { useReactiveProperty } from "@/hooks/useReactiveProperty";
 
 interface HeaderTiersLieuxProps {
     header: Header;
@@ -30,6 +31,11 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
     const t = useT("components/layout");
     const navigate = useNavigate();
     const { me, api } = useCocolight();
+
+    const profilThumbImageUrl = useReactiveProperty<string>(me?.serverData, 'profilThumbImageUrl') ?? null;
+    const name = useReactiveProperty<string>(me?.serverData, 'name') ?? null;
+    const email = useReactiveProperty<string>(me?.serverData, 'email') ?? null;
+
     const [loginDialogOpen, setLoginDialogOpen] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -150,20 +156,20 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
                                                         <button className="bg-background rounded-full px-3 lg:px-4 py-1.5 flex items-center gap-1.5 lg:gap-2 hover:bg-secondary/80 transition text-sm lg:text-base">
-                                                            {me.serverData?.profilThumbImageUrl ? (
+                                                            {profilThumbImageUrl ? (
                                                                 <img
-                                                                    src={me.serverData.profilThumbImageUrl}
-                                                                    alt={me.serverData?.name || 'Profile'}
+                                                                    src={profilThumbImageUrl}
+                                                                    alt={name || 'Profile'}
                                                                     className="w-6 h-6 lg:w-8 lg:h-8 rounded-full object-cover"
                                                                 />
                                                             ) : (
                                                                 <div className="font-medium rounded-full px-1.5 lg:px-2 py-0.5 lg:py-1 bg-background text-foreground text-[10px] lg:text-xs">
-                                                                    {me.serverData?.name ? me.serverData.name.substring(0, 2).toUpperCase() : 'CN'}
+                                                                    {name ? name.substring(0, 2).toUpperCase() : 'CN'}
                                                                 </div>
                                                             )}
                                                             <span className="text-muted-foreground hidden lg:inline">|</span>
                                                             <span className="font-medium text-foreground truncate max-w-[70px] lg:max-w-[120px]">
-                                                                {me.serverData?.name || me.serverData?.email || t('Mon compte')}
+                                                                {name || email || t('Mon compte')}
                                                             </span>
                                                             <ChevronDown className="w-3 h-3 text-foreground shrink-0" />
                                                         </button>

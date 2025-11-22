@@ -18,7 +18,6 @@ export function TagSuggestions({ query, onSelect }: TagSuggestionsProps) {
   const t = useT("modules/profil");
   const { data: tags = [], isLoading } = useSearchTags(query, query.length >= 2);
 
-  console.log(tags);
   return (
     <Command className="rounded-lg border shadow-md" shouldFilter={false}>
       <CommandList className="max-h-[200px] overflow-y-auto" onWheel={(e) => e.stopPropagation()}>
