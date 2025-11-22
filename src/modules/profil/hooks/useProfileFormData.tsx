@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { isEvent, isOrganization, isProject, isUser } from "@/lib/getTypedEntity";
+import { widgetFormatters } from "@/constants/DAYS";
 
 /**
  * Interface pour les données de formulaire User
@@ -38,6 +39,11 @@ export interface UserFormData {
   mastodon?: string;
   telegram?: string;
   signal?: string;
+  // Organisation spécifique
+  openingHours?: Array<{
+    dayOfWeek: string;
+    hours: Array<{ opens: string; closes: string }>;
+  }>;
 }
 
 /**
@@ -113,6 +119,11 @@ export function useProfileFormData(entity: EntityTypes | null) {
         ? serverData.address as Record<string, any>
         : {};
 
+      // Normaliser les horaires d'ouverture avec le formatter
+      const openingHours = serverData.openingHours && Array.isArray(serverData.openingHours)
+        ? widgetFormatters.openingHours(serverData.openingHours).filter((d: any) => d.hours.length > 0)
+        : [];
+
       const defaultValues = {
         name: serverData.name || "",
         shortDescription: serverData.shortDescription || "",
@@ -135,6 +146,8 @@ export function useProfileFormData(entity: EntityTypes | null) {
         level4: address.level4 || "",
         level4Name: address.level4Name || "",
         codeInsee: address.codeInsee || "",
+        // Champs spécifiques aux organisations
+        openingHours: openingHours,
       };
 
       return { defaultValues, entityType };

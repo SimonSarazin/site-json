@@ -41,6 +41,10 @@
     "editProfile": "Modifier le profil",
     "sendEmail": "Envoyer un email",
     "reservationSpace": "Espace Réservation",
+    "follow": "Suivre",
+    "unfollow": "Ne plus suivre",
+    "sendFriendRequest": "Envoyer une demande d'ami",
+    "removeFriend": "Retirer des amis",
     "tabs": {
       "about": "À propos",
       "news": "Actualités",
@@ -265,6 +269,17 @@
       "imageUploadError": "Impossible d'uploader la photo de profil",
       "bannerUploadSuccess": "Bannière uploadée avec succès",
       "bannerUploadError": "Impossible d'uploader la bannière"
+    },
+    "relationship": {
+      "followSuccess": "Utilisateur suivi avec succès",
+      "followError": "Impossible de suivre l'utilisateur",
+      "unfollowSuccess": "Utilisateur retiré des abonnements",
+      "unfollowError": "Impossible de ne plus suivre l'utilisateur",
+      "friendRequestSent": "Demande d'ami envoyée",
+      "friendRequestError": "Impossible d'envoyer la demande d'ami",
+      "friendRequestAccepted": "Demande d'ami acceptée",
+      "friendRemoved": "Ami retiré",
+      "friendRemoveError": "Impossible de retirer l'ami"
     }
   },
   "ProfileEdit": {
@@ -283,7 +298,11 @@
         "label": "Localisation",
         "description": "Indiquez votre adresse complète"
       },
-      "social": "Réseaux sociaux"
+      "social": "Réseaux sociaux",
+      "schedule": {
+        "label": "Horaires",
+        "description": "Configurez vos horaires d'ouverture hebdomadaires"
+      }
     },
     "loading": "Chargement...",
     "fields": {
@@ -334,6 +353,16 @@
         "label": "Ville",
         "placeholder": "Paris",
         "searchPlaceholder": "Rechercher une ville..."
+      }
+    },
+    "schedule": {
+      "openingHours": {
+        "label": "Horaires d'ouverture",
+        "title": "Horaires d'ouverture",
+        "description": "Définissez vos horaires d'ouverture hebdomadaires",
+        "opens": "Ouverture",
+        "closes": "Fermeture",
+        "noDaysSelected": "Sélectionnez des jours pour définir les horaires"
       }
     }
   }

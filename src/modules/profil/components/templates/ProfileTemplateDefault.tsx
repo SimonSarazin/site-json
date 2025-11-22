@@ -11,6 +11,7 @@ import { useProfileEntity } from "../../hooks/useProfileEntity";
 import { useUserPermissions } from "../../hooks/useUserPermissions";
 import { EditProfileModal } from "../profile-edit/EditProfileModal";
 import { ProfileImageUpload } from "../profile-edit/ProfileImageUpload";
+import { UserActionButtons } from "../UserActionButtons";
 import "@/modules/profil/i18n";
 import { LazyTabContent } from "@/components/LazyTabContent";
 import { NewsTab } from "../tabs/NewsTab";
@@ -175,6 +176,10 @@ export default function ProfileTemplateDefault() {
                     {t("ProfileTemplateDefault.editProfile")}
                   </button>
                 )}
+
+                {/* Boutons Follow/Friend pour les profils utilisateurs */}
+                {_entityType === "citoyens" && <UserActionButtons entity={entity} />}
+
                 {_entityType != "citoyens" && (
                   <>
                     {entity.serverData?.email && typeof entity.serverData.email === "string" && (

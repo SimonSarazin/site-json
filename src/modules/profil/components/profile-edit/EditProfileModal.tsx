@@ -17,9 +17,11 @@ import { EditBasicInfoTab } from "./EditBasicInfoTab";
 import { EditContactTab } from "./EditContactTab";
 import { EditLocationTab } from "./EditLocationTab";
 import { EditSocialTab } from "./EditSocialTab";
+import { EditScheduleTab } from "./EditScheduleTab";
 import { useProfileFormData } from "../../hooks/useProfileFormData";
 import { useUpdateProfile } from "../../hooks/useProfileMutations";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
+import { isOrganization } from "@/lib/getTypedEntity";
 
 interface EditProfileModalProps {
   entity: EntityTypes;
@@ -61,6 +63,14 @@ const userProfileSchema = z.object({
   mastodon: z.string().optional(),
   telegram: z.string().optional(),
   signal: z.string().optional(),
+  // Organisation spécifique
+  openingHours: z.array(z.object({
+    dayOfWeek: z.string(),
+    hours: z.array(z.object({
+      opens: z.string(),
+      closes: z.string(),
+    })),
+  })).optional(),
 });
 
 type UserProfileFormData = z.infer<typeof userProfileSchema>;
@@ -89,6 +99,7 @@ export function EditProfileModal({
   const updateMutation = useUpdateProfile(entity);
 
   const isUser = entityType === "citoyens";
+  const isOrg = isOrganization(entity);
 
   const form = useForm<UserProfileFormData>({
     resolver: zodResolver(userProfileSchema),
@@ -105,13 +116,14 @@ export function EditProfileModal({
       // Champs toujours optionnels (peuvent être supprimés avec une chaîne vide)
       updateData.shortDescription = data.shortDescription || "";
       updateData.description = data.description || "";
-      updateData.mobile = data.mobile || "";
       updateData.url = data.url || "";
 
       // Email: REQUIS pour User, optionnel pour Organization
       if (isUser) {
         // User: email obligatoire, ne pas envoyer si vide (validation côté client)
         if (data.email) updateData.email = data.email;
+        // Mobile: uniquement pour les utilisateurs
+        updateData.mobile = data.mobile || "";
       } else {
         // Organization: email optionnel, peut être supprimé
         updateData.email = data.email || "";
@@ -164,6 +176,16 @@ export function EditProfileModal({
         updateData.signal = data.signal || "";
       }
 
+      // Organisation spécifique
+      if (isOrg) {
+        // Horaires d'ouverture
+        if (data.openingHours && data.openingHours.length > 0) {
+          updateData.openingHours = data.openingHours;
+        } else {
+          updateData.openingHours = "";
+        }
+      }
+
       console.log("updateData avant envoi:", updateData);
       await updateMutation.mutateAsync(updateData);
       onOpenChange(false);
@@ -193,12 +215,15 @@ export function EditProfileModal({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <Tabs defaultValue="basic" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className={`grid w-full ${isUser || isOrg ? 'grid-cols-4' : 'grid-cols-3'}`}>
                 <TabsTrigger value="basic">{t("ProfileEdit.tabs.basic")}</TabsTrigger>
                 <TabsTrigger value="contact">{t("ProfileEdit.tabs.contact")}</TabsTrigger>
                 <TabsTrigger value="location">{t("ProfileEdit.tabs.location.label")}</TabsTrigger>
                 {isUser && (
                   <TabsTrigger value="social">{t("ProfileEdit.tabs.social")}</TabsTrigger>
+                )}
+                {isOrg && (
+                  <TabsTrigger value="schedule">{t("ProfileEdit.tabs.schedule.label")}</TabsTrigger>
                 )}
               </TabsList>
 
@@ -218,6 +243,12 @@ export function EditProfileModal({
                 {isUser && (
                   <TabsContent value="social">
                     <EditSocialTab form={form} />
+                  </TabsContent>
+                )}
+
+                {isOrg && (
+                  <TabsContent value="schedule">
+                    <EditScheduleTab form={form} />
                   </TabsContent>
                 )}
               </div>

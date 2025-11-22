@@ -372,26 +372,35 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
         <FormField
           control={form.control}
           name="postalCode"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t("ProfileEdit.fields.postalCode.label")}</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value || ""}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("ProfileEdit.fields.postalCode.placeholder")} />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {selectedLocality.postalCodes.map((p) => (
-                    <SelectItem key={p.postalCode} value={p.postalCode}>
-                      {p.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
+          render={({ field }) => {
+            // Group by unique postal code to avoid duplicates
+            const uniquePostalCodes = Array.from(
+              new Map(
+                selectedLocality.postalCodes.map(p => [p.postalCode, p])
+              ).values()
+            );
+
+            return (
+              <FormItem>
+                <FormLabel>{t("ProfileEdit.fields.postalCode.label")}</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value || ""}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder={t("ProfileEdit.fields.postalCode.placeholder")} />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {uniquePostalCodes.map((p) => (
+                      <SelectItem key={p.postalCode} value={p.postalCode}>
+                        {p.postalCode} - {p.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
         />
       )}
 

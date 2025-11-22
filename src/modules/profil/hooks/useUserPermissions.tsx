@@ -20,20 +20,29 @@ export interface UserPermissions {
   // Permissions de commentaires
   canEditComment: boolean;
   canDeleteComment: boolean;
+
+  // Permissions de relations (follow/friend)
+  canFollow: boolean;
+  isFollowing: boolean;
+  canSendFriendRequest: boolean;
+  isFriend: boolean;
 }
 
 /**
  * Hook centralisé pour calculer TOUTES les permissions d'un utilisateur sur une entité
- * Inclut les permissions de profil, news et commentaires
+ * Inclut les permissions de profil, news, commentaires et relations (follow/friend)
  *
  * @param entity - L'entité concernée (User, Organization, Project, Event, etc.)
  * @param news - La news concernée (optionnel, pour vérifier si l'utilisateur peut éditer/supprimer)
  * @returns Objet contenant toutes les permissions calculées
  *
  * @example
- * const { canEditProfile, canAddNews, canModerateNews } = useUserPermissions(entity);
+ * const { canEditProfile, canAddNews, canFollow, isFriend } = useUserPermissions(entity);
  * if (canEditProfile) {
  *   // Afficher le bouton d'édition du profil
+ * }
+ * if (canFollow) {
+ *   // Afficher le bouton follow
  * }
  */
 export function useUserPermissions(
@@ -53,6 +62,10 @@ export function useUserPermissions(
       canModerateNews: false,
       canEditComment: false,
       canDeleteComment: false,
+      canFollow: false,
+      isFollowing: false,
+      canSendFriendRequest: false,
+      isFriend: false,
     };
 
     // Si pas d'entité
@@ -81,11 +94,19 @@ export function useUserPermissions(
         canModerateNews: true, // Peut modérer son propre profil (supprimer tous les commentaires)
         canEditComment: true, // Géré au niveau du commentaire individuel
         canDeleteComment: true, // Géré au niveau du commentaire individuel
+        canFollow: false, // Ne peut pas se suivre soi-même
+        isFollowing: false,
+        canSendFriendRequest: false, // Ne peut pas s'envoyer de demande d'ami
+        isFriend: false,
       };
     }
 
     // CAS 2: Profil d'un autre utilisateur
     if (isUser(entity)) {
+      // Récupérer les statuts de relation
+      const isFollowingUser = entity.isFollowing?.() ?? false;
+      const isFriendWithUser = entity.isFriend?.() ?? false;
+
       return {
         canEditProfile: false, // Ne peut pas éditer le profil d'autrui
         editProfileReason: "Can only edit own profile",
@@ -95,6 +116,10 @@ export function useUserPermissions(
         canModerateNews: false, // Ne peut pas modérer le profil d'autrui
         canEditComment: true, // Peut éditer ses propres commentaires (vérifié ailleurs)
         canDeleteComment: false, // Ne peut supprimer que ses propres commentaires (vérifié ailleurs)
+        canFollow: true, // Peut suivre un autre utilisateur
+        isFollowing: isFollowingUser,
+        canSendFriendRequest: true, // Peut envoyer une demande d'ami
+        isFriend: isFriendWithUser,
       };
     }
 
@@ -113,6 +138,10 @@ export function useUserPermissions(
         canModerateNews: isOrgAdminOrAuthor, // Admins seulement peuvent modérer
         canEditComment: true, // Vérifié au niveau du commentaire individuel
         canDeleteComment: true, // Vérifié au niveau du commentaire individuel
+        canFollow: false, // Pas de follow pour les organisations
+        isFollowing: false,
+        canSendFriendRequest: false, // Pas de demandes d'ami pour les organisations
+        isFriend: false,
       };
     }
 
@@ -131,6 +160,10 @@ export function useUserPermissions(
         canModerateNews: isProjectAdmin, // Admins seulement peuvent modérer
         canEditComment: true, // Vérifié au niveau du commentaire individuel
         canDeleteComment: true, // Vérifié au niveau du commentaire individuel
+        canFollow: false, // Pas de follow pour les projets
+        isFollowing: false,
+        canSendFriendRequest: false, // Pas de demandes d'ami pour les projets
+        isFriend: false,
       };
     }
 
@@ -148,6 +181,10 @@ export function useUserPermissions(
         canModerateNews: isEventAuthor, // Seulement l'auteur de l'événement peut modérer
         canEditComment: true, // Vérifié au niveau du commentaire individuel
         canDeleteComment: true, // Vérifié au niveau du commentaire individuel
+        canFollow: false, // Pas de follow pour les événements
+        isFollowing: false,
+        canSendFriendRequest: false, // Pas de demandes d'ami pour les événements
+        isFriend: false,
       };
     }
 

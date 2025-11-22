@@ -41,6 +41,10 @@
     "editProfile": "Edit profile",
     "sendEmail": "Send email",
     "reservationSpace": "Reservation Space",
+    "follow": "Follow",
+    "unfollow": "Unfollow",
+    "sendFriendRequest": "Send Friend Request",
+    "removeFriend": "Remove Friend",
     "tabs": {
       "about": "About",
       "news": "News",
@@ -265,6 +269,17 @@
       "imageUploadError": "Unable to upload profile picture",
       "bannerUploadSuccess": "Banner uploaded successfully",
       "bannerUploadError": "Unable to upload banner"
+    },
+    "relationship": {
+      "followSuccess": "User followed successfully",
+      "followError": "Unable to follow user",
+      "unfollowSuccess": "User unfollowed successfully",
+      "unfollowError": "Unable to unfollow user",
+      "friendRequestSent": "Friend request sent",
+      "friendRequestError": "Unable to send friend request",
+      "friendRequestAccepted": "Friend request accepted",
+      "friendRemoved": "Friend removed",
+      "friendRemoveError": "Unable to remove friend"
     }
   },
   "ProfileEdit": {
@@ -283,7 +298,11 @@
         "label": "Location",
         "description": "Specify your complete address"
       },
-      "social": "Social networks"
+      "social": "Social networks",
+      "schedule": {
+        "label": "Opening Hours",
+        "description": "Configure your weekly opening hours"
+      }
     },
     "loading": "Loading...",
     "fields": {
@@ -334,6 +353,16 @@
         "label": "City",
         "placeholder": "New York",
         "searchPlaceholder": "Search for a city..."
+      }
+    },
+    "schedule": {
+      "openingHours": {
+        "label": "Opening Hours",
+        "title": "Opening Hours",
+        "description": "Define your weekly opening hours",
+        "opens": "Opens",
+        "closes": "Closes",
+        "noDaysSelected": "Select days to define opening hours"
       }
     }
   }
