@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from "sonner";
 import { useLocalization } from "@/hooks/useLocalization";
 import { Mail, CheckCircle } from 'lucide-react';
 import { NewsletterSectionProps } from '@/types/site-schema';
 
 export function NewsletterSection({ id, props }: { id?: string; props: NewsletterSectionProps }) {
   const { t } = useLocalization();
-  const { toast } = useToast();
+  
   const { headline, subhead, formAction, emailPlaceholder, submitLabel, successMessage } = props;
   
   const [email, setEmail] = useState('');
@@ -17,11 +17,9 @@ export function NewsletterSection({ id, props }: { id?: string; props: Newslette
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email) {
-      toast({
-        variant: "destructive",
-        title: "Erreur",
+      toast.error("Erreur", {
         description: "Veuillez saisir votre adresse e-mail"
       });
       return;
@@ -29,9 +27,7 @@ export function NewsletterSection({ id, props }: { id?: string; props: Newslette
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      toast({
-        variant: "destructive",
-        title: "Erreur",
+      toast.error("Erreur", {
         description: "Adresse e-mail invalide"
       });
       return;
@@ -50,8 +46,7 @@ export function NewsletterSection({ id, props }: { id?: string; props: Newslette
 
       if (response.ok) {
         setIsSubscribed(true);
-        toast({
-          title: "Succès",
+        toast.success("Succès", {
           description: successMessage ? t(successMessage) : "Inscription réussie à la newsletter"
         });
       } else {
@@ -59,9 +54,7 @@ export function NewsletterSection({ id, props }: { id?: string; props: Newslette
       }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erreur",
+      toast.error("Erreur", {
         description: "Une erreur est survenue lors de l'inscription"
       });
     } finally {

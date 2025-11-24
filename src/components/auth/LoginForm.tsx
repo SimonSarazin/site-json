@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { isValidEmail } from "@/helpers/isValidEmail";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useNavigate } from "react-router";
 
 type RadixCheckboxState = boolean | "indeterminate";
@@ -34,7 +34,6 @@ export default function LoginForm({ onSuccess, hideBackButton = false }: LoginFo
   const navigate                     = useNavigate();
   const { userApi, loading, me }     = useCocolight();
   const { config }                   = useSite();
-  const { toast }                    = useToast();
   const { loaded }                   = useLoadNamespace("components/auth");
   const t                            = useT("components/auth");
 
@@ -53,9 +52,7 @@ export default function LoginForm({ onSuccess, hideBackButton = false }: LoginFo
 
     // Si userApi n'est pas encore prêt, on arrête
     if (!userApi) {
-      toast({
-        variant: "destructive",
-        title: t("Erreur"),
+      toast.error(t("Erreur"), {
         description: t("Impossible de se connecter pour le moment"),
       });
       setLoading(false);
@@ -64,18 +61,14 @@ export default function LoginForm({ onSuccess, hideBackButton = false }: LoginFo
     
     /* Validation rapide -------------------------------------------------- */
     if (!email || !password) {
-      toast({
-        variant: "destructive",
-        title: t("Erreur"),
+      toast.error(t("Erreur"), {
         description: t("Veuillez remplir l'email et le mot de passe"),
       });
       setLoading(false);
       return;
     }
     if (!isValidEmail(email)) {
-      toast({
-        variant: "destructive",
-        title: t("Erreur"),
+      toast.error(t("Erreur"), {
         description: t("L'adresse e-mail n'est pas valide"),
       });
       setLoading(false);
@@ -99,9 +92,7 @@ export default function LoginForm({ onSuccess, hideBackButton = false }: LoginFo
           ? t("Email ou mot de passe incorrect")
           : (err as Error).message;
 
-      toast({
-        variant: "destructive",
-        title: t("Erreur"),
+      toast.error(t("Erreur"), {
         description: msg,
       });
     } finally {

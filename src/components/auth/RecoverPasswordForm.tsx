@@ -13,7 +13,7 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { isValidEmail } from "@/helpers/isValidEmail";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useNavigate } from "react-router";
 import { CheckCircle, ArrowLeft } from "lucide-react";
 
@@ -25,7 +25,7 @@ export default function RecoverPasswordForm(): JSX.Element {
 
   const navigate                     = useNavigate();
   const { userApi, loading, me }     = useCocolight();
-  const { toast }                    = useToast();
+  
   const { loaded }                   = useLoadNamespace("components/auth");
   const t                            = useT("components/auth");
 
@@ -39,27 +39,21 @@ export default function RecoverPasswordForm(): JSX.Element {
 
     // Si userApi n'est pas encore prêt, on arrête
     if (!userApi) {
-      toast({
-        variant: "destructive",
-        title: t("Erreur"),
+      toast.error(t("Erreur"), {
         description: t("Impossible de se connecter pour le moment"),
       });
       return;
     }
 
     if (!email) {
-      toast({
-        variant: "destructive",
-        title: t("Erreur"),
+      toast.error(t("Erreur"), {
         description: t("Veuillez saisir votre adresse e-mail"),
       });
       return;
     }
 
     if (!isValidEmail(email)) {
-      toast({
-        variant: "destructive",
-        title: t("Erreur"),
+      toast.error(t("Erreur"), {
         description: t("L'adresse e-mail n'est pas valide"),
       });
       return;
@@ -72,37 +66,30 @@ export default function RecoverPasswordForm(): JSX.Element {
 
       if (response.result) {
         setEmailSent(true);
-        toast({
-          title: t("E-mail envoyé"),
+        toast.success(t("E-mail envoyé"), {
           description: t(
             "Un e-mail de récupération a été envoyé à votre adresse."
           ),
         });
       } else if (response.errId === "UNKNOWN_ACCOUNT_ID") {
-        toast({
-          variant: "destructive",
-          title: t("Compte introuvable"),
+        toast.error(t("Compte introuvable"), {
           description: t("Aucun compte n'est associé à cette adresse e-mail."),
         });
       } else {
-        toast({
-          variant: "destructive",
-          title: t("Erreur"),
+        toast.error(t("Erreur"), {
           description:
             response.msg ||
             t("Une erreur est survenue lors de l'envoi de l'e-mail"),
         });
       }
     } catch (err: unknown) {
-      /* Extraction facultative du message d’erreur --------------------- */
+      /* Extraction facultative du message d'erreur --------------------- */
       const msg =
         (err as { response?: { data?: { msg?: string } } }).response?.data?.msg ||
         (err as Error).message ||
         t("Une erreur est survenue lors de l'envoi de l'e-mail");
 
-      toast({
-        variant: "destructive",
-        title: t("Erreur"),
+      toast.error(t("Erreur"), {
         description: msg,
       });
     } finally {

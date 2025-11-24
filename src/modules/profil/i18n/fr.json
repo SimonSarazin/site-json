@@ -3,7 +3,10 @@
     "organizedBy": "Organisé par",
     "viewProfile": "Voir le profil",
     "date": "Date",
-    "back": "Retour"
+    "back": "Retour",
+    "loading": "Chargement...",
+    "unknownUser": "Utilisateur Inconnu",
+    "untitled": "Sans titre"
   },
   "ProfilePage": {
     "error": {
@@ -42,9 +45,71 @@
     "sendEmail": "Envoyer un email",
     "reservationSpace": "Espace Réservation",
     "follow": "Suivre",
+    "following": "Suivi",
     "unfollow": "Ne plus suivre",
     "sendFriendRequest": "Envoyer une demande d'ami",
     "removeFriend": "Retirer des amis",
+    "requestMembership": "Demander à devenir membre",
+    "member": "Membre",
+    "admin": "Administrateur",
+    "leaveOrganization": "Quitter l'organisation",
+    "unfollowDialog": {
+      "title": "Ne plus suivre cette organisation",
+      "description": "Êtes-vous sûr de vouloir ne plus suivre cette organisation ? Vous ne recevrez plus ses actualités.",
+      "cancel": "Annuler",
+      "confirm": "Ne plus suivre"
+    },
+    "membershipDialog": {
+      "title": "Demander à devenir membre",
+      "description": "Êtes-vous sûr de vouloir envoyer une demande pour devenir membre de cette organisation ? Les administrateurs recevront votre demande.",
+      "cancel": "Annuler",
+      "confirm": "Envoyer la demande"
+    },
+    "leaveDialog": {
+      "title": "Quitter cette organisation",
+      "description": "Êtes-vous sûr de vouloir quitter cette organisation ? Vous ne serez plus membre et perdrez l'accès aux ressources réservées aux membres.",
+      "cancel": "Annuler",
+      "confirm": "Quitter l'organisation"
+    },
+    "projectAdmin": "Admin du projet",
+    "contributor": "Contributeur",
+    "requestContributor": "Demander à contribuer",
+    "requestProjectAdmin": "Demander les droits admin",
+    "leaveProject": "Quitter le projet",
+    "contributorDialog": {
+      "title": "Demander à contribuer",
+      "description": "Êtes-vous sûr de vouloir envoyer une demande pour contribuer à ce projet ? Les administrateurs du projet recevront votre demande.",
+      "cancel": "Annuler",
+      "confirm": "Envoyer la demande"
+    },
+    "projectAdminDialog": {
+      "title": "Demander les droits admin",
+      "description": "Êtes-vous sûr de vouloir demander les droits d'administrateur pour ce projet ? Les administrateurs actuels recevront votre demande.",
+      "cancel": "Annuler",
+      "confirm": "Envoyer la demande"
+    },
+    "leaveProjectDialog": {
+      "title": "Quitter ce projet",
+      "description": "Êtes-vous sûr de vouloir quitter ce projet ? Vous ne serez plus contributeur et perdrez l'accès aux ressources du projet.",
+      "cancel": "Annuler",
+      "confirm": "Quitter le projet"
+    },
+    "eventAuthor": "Auteur de l'événement",
+    "participant": "Participant",
+    "participate": "Participer",
+    "leaveEvent": "Ne plus participer",
+    "participateDialog": {
+      "title": "Participer à cet événement",
+      "description": "Êtes-vous sûr de vouloir participer à cet événement ? L'organisateur sera notifié.",
+      "cancel": "Annuler",
+      "confirm": "Participer"
+    },
+    "leaveEventDialog": {
+      "title": "Ne plus participer",
+      "description": "Êtes-vous sûr de vouloir arrêter de participer à cet événement ? Vous ne recevrez plus les actualités de l'événement.",
+      "cancel": "Annuler",
+      "confirm": "Ne plus participer"
+    },
     "tabs": {
       "about": "À propos",
       "news": "Actualités",
@@ -52,7 +117,9 @@
       "meetingRooms": "Salles de réunions",
       "practicalInfo": "Infos pratiques",
       "communities": "Communautés",
-      "observatories": "Observatoires"
+      "observatories": "Observatoires",
+      "social": "Social",
+      "membership": "Mes Organisations"
     },
     "description": "Description",
     "badges": "Badges",
@@ -65,6 +132,102 @@
     "register": "Inscription",
     "comingSoon": "En construction",
     "sectionLabel": "Section {{name}}"
+  },
+  "ProfileMembers": {
+    "title": "Membres",
+    "member": "Membre",
+    "members": "Membres",
+    "admin": "Admin",
+    "pending": "En attente",
+    "invite": "Inviter",
+    "manage": "Gérer",
+    "noMembers": "Aucun membre pour le moment",
+    "organization": {
+      "title": "Membres de l'organisation",
+      "member": "Membre",
+      "members": "Membres",
+      "admin": "Admin",
+      "pending": "Demandes en attente",
+      "invite": "Inviter un membre"
+    },
+    "project": {
+      "title": "Contributeurs du projet",
+      "contributor": "Contributeur",
+      "contributors": "Contributeurs",
+      "admin": "Admin",
+      "pending": "Demandes en attente",
+      "invite": "Inviter un contributeur"
+    },
+    "event": {
+      "title": "Participants à l'événement",
+      "participant": "Participant",
+      "participants": "Participants",
+      "author": "Auteur",
+      "pending": "Demandes en attente",
+      "invite": "Inviter un participant"
+    }
+  },
+  "InviteMemberDialog": {
+    "title": "Inviter des membres",
+    "description": "Envoyez des invitations pour rejoindre cette communauté.",
+    "emailAddresses": "Adresses email",
+    "emailPlaceholder": "Saisir une adresse email",
+    "addEmail": "Ajouter",
+    "role": "Rôle",
+    "selectRole": "Sélectionner un rôle",
+    "sending": "Envoi...",
+    "sendInvitations": "Envoyer les invitations",
+    "noEmailsError": "Veuillez ajouter au moins une adresse email",
+    "organization": {
+      "title": "Inviter des membres",
+      "description": "Envoyez des invitations pour rejoindre cette organisation."
+    },
+    "project": {
+      "title": "Inviter des contributeurs",
+      "description": "Envoyez des invitations pour contribuer à ce projet."
+    },
+    "event": {
+      "title": "Inviter des participants",
+      "description": "Envoyez des invitations pour participer à cet événement."
+    }
+  },
+  "MemberManagementDialog": {
+    "title": "Gestion des membres",
+    "searchPlaceholder": "Rechercher des membres...",
+    "noMembers": "Aucun membre trouvé",
+    "noPending": "Aucune demande en attente",
+    "promote": "Promouvoir admin",
+    "demote": "Retirer le rôle admin",
+    "remove": "Exclure le membre",
+    "acceptDialog": {
+      "title": "Accepter la demande",
+      "description": "Accepter la demande de {{name}} ?"
+    },
+    "rejectDialog": {
+      "title": "Rejeter la demande",
+      "description": "Rejeter la demande de {{name}} ?"
+    },
+    "promoteDialog": {
+      "title": "Promouvoir le membre",
+      "description": "Promouvoir {{name}} administrateur ?"
+    },
+    "demoteDialog": {
+      "title": "Retirer le rôle admin",
+      "description": "Retirer le rôle d'administrateur à {{name}} ?"
+    },
+    "removeDialog": {
+      "title": "Exclure le membre",
+      "description": "Exclure {{name}} de cette communauté ?"
+    },
+    "organization": {
+      "title": "Gestion de l'organisation"
+    },
+    "project": {
+      "title": "Gestion du projet"
+    },
+    "event": {
+      "title": "Gestion de l'événement"
+    }
   },
   "NewsTab": {
     "noNews": "Aucune actualité",
@@ -279,7 +442,47 @@
       "friendRequestError": "Impossible d'envoyer la demande d'ami",
       "friendRequestAccepted": "Demande d'ami acceptée",
       "friendRemoved": "Ami retiré",
-      "friendRemoveError": "Impossible de retirer l'ami"
+      "friendRemoveError": "Impossible de retirer l'ami",
+      "memberRequestSent": "Demande de membre envoyée avec succès",
+      "memberRequestError": "Impossible d'envoyer la demande de membre",
+      "memberLeftSuccess": "Vous avez quitté l'organisation avec succès",
+      "memberLeftError": "Impossible de quitter l'organisation",
+      "contributorRequestSent": "Demande de contribution envoyée avec succès",
+      "contributorRequestError": "Impossible d'envoyer la demande de contribution",
+      "projectAdminRequestSent": "Demande d'administration envoyée avec succès",
+      "projectAdminRequestError": "Impossible d'envoyer la demande d'administration",
+      "projectLeftSuccess": "Vous avez quitté le projet avec succès",
+      "projectLeftError": "Impossible de quitter le projet",
+      "participationSuccess": "Vous participez maintenant à cet événement",
+      "participationError": "Impossible de participer à cet événement",
+      "participationLeftSuccess": "Vous ne participez plus à cet événement",
+      "participationLeftError": "Impossible d'arrêter la participation à cet événement"
+    },
+    "members": {
+      "requestAccepted": "Demande acceptée",
+      "acceptRequestError": "Impossible d'accepter la demande",
+      "requestRejected": "Demande rejetée",
+      "rejectRequestError": "Impossible de rejeter la demande",
+      "memberPromoted": "Membre promu avec succès",
+      "promoteError": "Impossible de promouvoir le membre",
+      "memberDemoted": "Membre rétrogradé avec succès",
+      "demoteError": "Impossible de rétrograder le membre",
+      "memberRemoved": "Membre exclu avec succès",
+      "removeError": "Impossible d'exclure le membre",
+      "invitationSent": "Invitation envoyée avec succès",
+      "inviteError": "Impossible d'envoyer l'invitation"
+    },
+    "friends": {
+      "requestSent": "Demande d'amitié envoyée avec succès",
+      "sendRequestError": "Impossible d'envoyer la demande d'amitié",
+      "requestAccepted": "Demande d'amitié acceptée",
+      "acceptRequestError": "Impossible d'accepter la demande d'amitié",
+      "requestRejected": "Demande d'amitié rejetée",
+      "rejectRequestError": "Impossible de rejeter la demande d'amitié",
+      "friendRemoved": "Ami supprimé avec succès",
+      "removeError": "Impossible de supprimer l'ami",
+      "requestCancelled": "Demande d'amitié annulée",
+      "cancelError": "Impossible d'annuler la demande d'amitié"
     }
   },
   "ProfileEdit": {
@@ -365,5 +568,74 @@
         "noDaysSelected": "Sélectionnez des jours pour définir les horaires"
       }
     }
+  },
+  "SocialTab": {
+    "privateProfile": "Profil Privé",
+    "cannotViewFriends": "Vous ne pouvez pas voir la liste d'amis de cet utilisateur",
+    "searchFriends": "Rechercher des amis...",
+    "addFriend": "Ajouter un Ami",
+    "tabs": {
+      "friends": "Amis",
+      "friendsShort": "Amis",
+      "pending": "Demandes Reçues",
+      "pendingShort": "Reçues",
+      "sent": "Demandes Envoyées",
+      "sentShort": "Envoyées"
+    },
+    "noFriendsFound": "Aucun ami trouvé",
+    "noFriendsYet": "Pas encore d'amis",
+    "tryDifferentSearch": "Essayez un autre terme de recherche",
+    "startConnecting": "Commencez à vous connecter avec des personnes pour construire votre réseau",
+    "removeFriend": "Supprimer l'Ami",
+    "noPendingRequests": "Aucune demande en attente",
+    "pendingRequestsInfo": "Les demandes d'amitié en attente de votre réponse apparaîtront ici",
+    "accept": "Accepter",
+    "reject": "Rejeter",
+    "noSentRequests": "Aucune demande envoyée",
+    "sentRequestsInfo": "Les demandes d'amitié que vous avez envoyées apparaîtront ici",
+    "requestPending": "Demande en attente",
+    "cancel": "Annuler"
+  },
+  "FriendRequestDialog": {
+    "title": "Ajouter un Ami",
+    "searchPlaceholder": "Rechercher par nom ou nom d'utilisateur...",
+    "startTyping": "Commencez à taper pour rechercher des utilisateurs",
+    "noUsersFound": "Aucun utilisateur trouvé",
+    "tryDifferentSearch": "Essayez un autre terme de recherche",
+    "sendRequest": "Ajouter"
+  },
+  "MembershipTab": {
+    "privateProfile": "Profil Privé",
+    "cannotViewMemberships": "Vous ne pouvez pas voir les appartenances de cet utilisateur",
+    "searchMemberships": "Rechercher des appartenances...",
+    "tabs": {
+      "organizations": "Organisations",
+      "orgsShort": "Orgs",
+      "projects": "Projets",
+      "projectsShort": "Projets",
+      "pois": "Lieux",
+      "poisShort": "Lieux",
+      "events": "Événements",
+      "eventsShort": "Événements"
+    },
+    "organization": "Organisation",
+    "project": "Projet",
+    "poi": "Lieu",
+    "event": "Événement",
+    "admin": "Admin",
+    "member": "Membre",
+    "contributor": "Contributeur",
+    "participant": "Participant",
+    "author": "Auteur",
+    "noOrganizations": "Aucune organisation pour le moment",
+    "noProjects": "Aucun projet pour le moment",
+    "noPois": "Aucun lieu pour le moment",
+    "noEvents": "Aucun événement pour le moment",
+    "tryDifferentSearch": "Essayez un autre terme de recherche",
+    "startJoining": "Commencez à rejoindre des organisations et projets pour construire votre réseau",
+    "joinOrganization": "Rejoindre une Organisation",
+    "joinProject": "Rejoindre un Projet",
+    "addPoi": "Ajouter un Lieu",
+    "createEvent": "Créer un Événement"
   }
 }

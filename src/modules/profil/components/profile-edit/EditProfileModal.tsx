@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -105,6 +106,14 @@ export function EditProfileModal({
     resolver: zodResolver(userProfileSchema),
     defaultValues: defaultValues || undefined,
   });
+
+  // Réinitialiser le formulaire quand l'entité change ou quand le modal s'ouvre
+  useEffect(() => {
+    if (defaultValues && open) {
+      form.reset(defaultValues);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entity.slug, open, defaultValues]);
 
   const onSubmit = async (data: UserProfileFormData) => {
     try {

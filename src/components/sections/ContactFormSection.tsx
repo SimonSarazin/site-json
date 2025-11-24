@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from "sonner";
 import { useLocalization } from "@/hooks/useLocalization";
 import { ContactFormSectionProps } from '@/types/site-schema';
 
@@ -16,7 +16,7 @@ type FormState = Record<string, FieldValue>;
 
 export function ContactFormSection({ id, props }: { id?: string; props: ContactFormSectionProps }) {
   const { t } = useLocalization();
-  const { toast } = useToast();
+  
   const { fields, submitLabel, action, method = 'POST', successMessage, errorMessage } = props;
 
   const [formData, setFormData] = useState<FormState>({});
@@ -78,9 +78,7 @@ export function ContactFormSection({ id, props }: { id?: string; props: ContactF
     });
 
     if (errors.length > 0) {
-      toast({
-        variant: "destructive",
-        title: "Erreurs de validation",
+      toast.error("Erreurs de validation", {
         description: errors.join(', ')
       });
       setIsSubmitting(false);
@@ -97,19 +95,16 @@ export function ContactFormSection({ id, props }: { id?: string; props: ContactF
       });
 
       if (response.ok) {
-        toast({
-          title: "Succès",
+        toast.success("Succès", {
           description: successMessage ? t(successMessage) : "Votre message a été envoyé avec succès"
         });
         setFormData({});
       } else {
-        throw new Error('Erreur lors de l’envoi');
+        throw new Error("Erreur lors de l'envoi");
       }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err: unknown) {
-      toast({
-        variant: "destructive",
-        title: "Erreur",
+      toast.error("Erreur", {
         description: errorMessage ? t(errorMessage) : "Une erreur est survenue lors de l'envoi du formulaire"
       });
     } finally {

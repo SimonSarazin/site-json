@@ -13,10 +13,18 @@ import "@/modules/profil/i18n";
 interface ProfileHeaderProps {
   section: {
     type: "profile-header";
-    variant?: "hero" | "simple" | "cover" | "minimal";
+    variant?: "hero" | "simple" | "cover" | "minimal" | "banner-overlay";
     showBackButton?: boolean;
     showShareButton?: boolean;
     showEditButton?: boolean;
+    // Props pour variant "banner-overlay" (TODO: implémenter)
+    showBanner?: boolean;
+    showAvatar?: boolean;
+    bannerHeight?: string;
+    avatarSize?: string;
+    avatarOverlap?: boolean;
+    showLocation?: boolean;
+    allowUpload?: boolean;
   };
 }
 

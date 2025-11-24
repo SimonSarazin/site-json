@@ -21,11 +21,26 @@ export interface UserPermissions {
   canEditComment: boolean;
   canDeleteComment: boolean;
 
-  // Permissions de relations (follow/friend)
+  // Permissions de relations (follow/friend pour utilisateurs)
   canFollow: boolean;
   isFollowing: boolean;
   canSendFriendRequest: boolean;
   isFriend: boolean;
+
+  // Permissions organisation
+  canRequestMembership: boolean;
+  isMember: boolean;
+  isAdmin: boolean;
+
+  // Permissions projets
+  isContributor: boolean;
+  canRequestContributor: boolean;
+  canRequestProjectAdmin: boolean;
+
+  // Permissions événements
+  isAuthor: boolean;
+  isParticipant: boolean;
+  canParticipate: boolean;
 }
 
 /**
@@ -66,6 +81,15 @@ export function useUserPermissions(
       isFollowing: false,
       canSendFriendRequest: false,
       isFriend: false,
+      canRequestMembership: false,
+      isMember: false,
+      isAdmin: false,
+      isContributor: false,
+      canRequestContributor: false,
+      canRequestProjectAdmin: false,
+      isAuthor: false,
+      isParticipant: false,
+      canParticipate: false,
     };
 
     // Si pas d'entité
@@ -98,6 +122,15 @@ export function useUserPermissions(
         isFollowing: false,
         canSendFriendRequest: false, // Ne peut pas s'envoyer de demande d'ami
         isFriend: false,
+        canRequestMembership: false, // N/A pour son propre profil
+        isMember: false,
+        isAdmin: false,
+        isContributor: false,
+        canRequestContributor: false,
+        canRequestProjectAdmin: false,
+        isAuthor: false,
+        isParticipant: false,
+        canParticipate: false,
       };
     }
 
@@ -120,6 +153,15 @@ export function useUserPermissions(
         isFollowing: isFollowingUser,
         canSendFriendRequest: true, // Peut envoyer une demande d'ami
         isFriend: isFriendWithUser,
+        canRequestMembership: false, // N/A pour utilisateurs
+        isMember: false,
+        isAdmin: false,
+        isContributor: false,
+        canRequestContributor: false,
+        canRequestProjectAdmin: false,
+        isAuthor: false,
+        isParticipant: false,
+        canParticipate: false,
       };
     }
 
@@ -128,6 +170,7 @@ export function useUserPermissions(
       const isOrgAdminOrAuthor = entity.isAuthorOrAdmin();
       const isOrgMember = entity.isMember();
       const isNewsAuthor = news?.isAuthor() ?? false;
+      const isFollowingOrg = entity.isFollowing?.() ?? false;
 
       return {
         canEditProfile: isOrgAdminOrAuthor, // Admin ou auteur peuvent éditer le profil
@@ -138,17 +181,27 @@ export function useUserPermissions(
         canModerateNews: isOrgAdminOrAuthor, // Admins seulement peuvent modérer
         canEditComment: true, // Vérifié au niveau du commentaire individuel
         canDeleteComment: true, // Vérifié au niveau du commentaire individuel
-        canFollow: false, // Pas de follow pour les organisations
-        isFollowing: false,
+        canFollow: !isOrgAdminOrAuthor, // Peut follow si pas admin/auteur (les membres peuvent follow)
+        isFollowing: isFollowingOrg,
         canSendFriendRequest: false, // Pas de demandes d'ami pour les organisations
         isFriend: false,
+        canRequestMembership: !isOrgAdminOrAuthor && !isOrgMember, // Peut demander si pas déjà membre
+        isMember: isOrgMember,
+        isAdmin: isOrgAdminOrAuthor,
+        isContributor: false,
+        canRequestContributor: false,
+        canRequestProjectAdmin: false,
+        isAuthor: false,
+        isParticipant: false,
+        canParticipate: false,
       };
     }
 
     // CAS 4: Project
     if (isProject(entity)) {
-      const isProjectAdmin = entity.isAdmin();
-      const isProjectContributor = entity.isContributor();
+      const isProjectAdmin = entity.isAdmin?.() ?? false;
+      const isProjectContributor = entity.isContributor?.() ?? false;
+      const isFollowingProject = entity.isFollowing?.() ?? false;
       const isNewsAuthor = news?.isAuthor() ?? false;
 
       return {
@@ -160,16 +213,27 @@ export function useUserPermissions(
         canModerateNews: isProjectAdmin, // Admins seulement peuvent modérer
         canEditComment: true, // Vérifié au niveau du commentaire individuel
         canDeleteComment: true, // Vérifié au niveau du commentaire individuel
-        canFollow: false, // Pas de follow pour les projets
-        isFollowing: false,
+        canFollow: !isProjectAdmin && !isProjectContributor, // Peut suivre si pas déjà membre/admin
+        isFollowing: isFollowingProject,
         canSendFriendRequest: false, // Pas de demandes d'ami pour les projets
         isFriend: false,
+        canRequestMembership: false, // N/A pour projets (utilise canRequestContributor à la place)
+        isMember: false, // N/A pour projets (utilise isContributor à la place)
+        isAdmin: isProjectAdmin,
+        isContributor: isProjectContributor,
+        canRequestContributor: !isProjectAdmin && !isProjectContributor, // Peut demander si pas déjà contributeur/admin
+        canRequestProjectAdmin: isProjectContributor && !isProjectAdmin, // Peut demander admin si contributeur mais pas encore admin
+        isAuthor: false,
+        isParticipant: false,
+        canParticipate: false,
       };
     }
 
     // CAS 5: Event
     if (isEvent(entity)) {
-      const isEventAuthor = entity.isAuthor();
+      const isEventAuthor = entity.isAuthor?.() ?? false;
+      const isEventParticipant = entity.isAttendee?.() ?? false;
+      const isFollowingEvent = entity.isFollowing?.() ?? false;
       const isNewsAuthor = news?.isAuthor() ?? false;
 
       return {
@@ -181,10 +245,19 @@ export function useUserPermissions(
         canModerateNews: isEventAuthor, // Seulement l'auteur de l'événement peut modérer
         canEditComment: true, // Vérifié au niveau du commentaire individuel
         canDeleteComment: true, // Vérifié au niveau du commentaire individuel
-        canFollow: false, // Pas de follow pour les événements
-        isFollowing: false,
+        canFollow: !isEventAuthor, // Peut suivre si pas l'auteur
+        isFollowing: isFollowingEvent,
         canSendFriendRequest: false, // Pas de demandes d'ami pour les événements
         isFriend: false,
+        canRequestMembership: false, // N/A pour événements (utilise canParticipate à la place)
+        isMember: false, // N/A pour événements (utilise isParticipant à la place)
+        isAdmin: false, // N/A pour événements (utilise isAuthor à la place)
+        isContributor: false,
+        canRequestContributor: false,
+        canRequestProjectAdmin: false,
+        isAuthor: isEventAuthor,
+        isParticipant: isEventParticipant,
+        canParticipate: !isEventAuthor && !isEventParticipant, // Peut participer si pas auteur et pas déjà participant
       };
     }
 

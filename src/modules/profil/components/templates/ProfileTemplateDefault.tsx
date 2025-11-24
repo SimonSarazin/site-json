@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, lazy } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router";
 import { Mail, ChevronRight, Image as ImageIcon, Phone, Globe, Calendar, MapPin, Users, Briefcase, Award, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,10 +11,14 @@ import { useProfileEntity } from "../../hooks/useProfileEntity";
 import { useUserPermissions } from "../../hooks/useUserPermissions";
 import { EditProfileModal } from "../profile-edit/EditProfileModal";
 import { ProfileImageUpload } from "../profile-edit/ProfileImageUpload";
-import { UserActionButtons } from "../UserActionButtons";
+import { EntityActionButtons } from "../EntityActionButtons";
 import "@/modules/profil/i18n";
 import { LazyTabContent } from "@/components/LazyTabContent";
 import { NewsTab } from "../tabs/NewsTab";
+import { isUser } from "@/lib/getTypedEntity";
+
+const LazySocialTab = lazy(() => import("../tabs/SocialTabWrapper"));
+const LazyMembershipTab = lazy(() => import("../tabs/MembershipTabWrapper"));
 
 export default function ProfileTemplateDefault() {
   const { entity, entityType: _entityType } = useProfileEntity();
@@ -177,8 +181,8 @@ export default function ProfileTemplateDefault() {
                   </button>
                 )}
 
-                {/* Boutons Follow/Friend pour les profils utilisateurs */}
-                {_entityType === "citoyens" && <UserActionButtons entity={entity} />}
+                {/* Boutons d'action (Follow, Friend, Membership, etc.) */}
+                <EntityActionButtons entity={entity} />
 
                 {_entityType != "citoyens" && (
                   <>
@@ -222,6 +226,22 @@ export default function ProfileTemplateDefault() {
               >
                 {t("ProfileTemplateDefault.tabs.news")}
               </TabsTrigger>
+              {isUser(entity) && (
+                <>
+                  <TabsTrigger
+                    value="social"
+                    className="flex-shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
+                  >
+                    {t("ProfileTemplateDefault.tabs.social")}
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="membership"
+                    className="flex-shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
+                  >
+                    {t("ProfileTemplateDefault.tabs.membership")}
+                  </TabsTrigger>
+                </>
+              )}
               <TabsTrigger
                 value="coworking"
                 className="flex-shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
@@ -475,6 +495,22 @@ export default function ProfileTemplateDefault() {
                 <NewsTab />
               </LazyTabContent>
             </TabsContent>
+
+            {isUser(entity) && (
+              <>
+                <TabsContent value="social">
+                  <LazyTabContent value="social">
+                    <LazySocialTab />
+                  </LazyTabContent>
+                </TabsContent>
+
+                <TabsContent value="membership">
+                  <LazyTabContent value="membership">
+                    <LazyMembershipTab />
+                  </LazyTabContent>
+                </TabsContent>
+              </>
+            )}
 
             <TabsContent value="coworking">
               <div className="bg-card p-8 rounded-lg border border-border shadow-sm">

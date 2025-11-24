@@ -4,6 +4,7 @@ import { useLocalization } from "@/hooks/useLocalization";
 import type { SearchEntity } from "@/modules/search/schema";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
+import type { ProfileConfig } from "./schema";
 import "@/modules/profil/i18n";
 
 interface ProfileSeoProps {
@@ -11,6 +12,7 @@ interface ProfileSeoProps {
   isLoading: boolean;
   entityType: string;
   activeTab?: string;
+  profileConfig?: ProfileConfig | null;
 }
 
 /**
@@ -18,24 +20,41 @@ interface ProfileSeoProps {
  * basées sur les données de l'entité chargée depuis l'API.
  * Les meta tags s'adaptent au tab actif pour améliorer le SEO.
  */
-export function ProfileSeo({ entity, isLoading, entityType, activeTab = 'about' }: ProfileSeoProps) {
+export function ProfileSeo({ entity, isLoading, entityType, activeTab, profileConfig }: ProfileSeoProps) {
   const { config } = useSite();
   const { currentLocale, t: tLocale } = useLocalization();
   useLoadNamespace("modules/profil");
   const t = useT("modules/profil");
 
+  // Obtenir le premier tab de la config ou 'about' par défaut
+  const firstTabId = profileConfig?.tabs?.[0]?.id || 'about';
+  const currentTab = activeTab || firstTabId;
+
   /**
    * Obtenir le label i18n d'un tab
+   * Vérifie d'abord dans la config des tabs, puis fallback sur les clés i18n
    */
   const getTabLabel = (tab: string): string => {
+    // Chercher dans la config des tabs
+    const tabConfig = profileConfig?.tabs?.find(t => t.id === tab);
+    if (tabConfig?.label) {
+      // Utiliser le label localisé de la config
+      return typeof tabConfig.label === 'string'
+        ? tabConfig.label
+        : tabConfig.label[currentLocale] || tabConfig.label['fr'] || tabConfig.label['en'] || '';
+    }
+
+    // Fallback sur les clés i18n hardcodées
     const tabKeys: Record<string, string> = {
       about: "ProfileTemplateDefault.tabs.about",
       news: "ProfileTemplateDefault.tabs.news",
       coworking: "ProfileTemplateDefault.tabs.coworking",
-      rooms: "ProfileTemplateDefault.tabs.meetingRooms",
-      infos: "ProfileTemplateDefault.tabs.practicalInfo",
+      meetingRooms: "ProfileTemplateDefault.tabs.meetingRooms",
+      practicalInfo: "ProfileTemplateDefault.tabs.practicalInfo",
       communities: "ProfileTemplateDefault.tabs.communities",
-      observatory: "ProfileTemplateDefault.tabs.observatories",
+      observatories: "ProfileTemplateDefault.tabs.observatories",
+      social: "ProfileTemplateDefault.tabs.social",
+      membership: "ProfileTemplateDefault.tabs.membership",
     };
     return tabKeys[tab] ? t(tabKeys[tab]) : "";
   };
@@ -47,7 +66,14 @@ export function ProfileSeo({ entity, isLoading, entityType, activeTab = 'about' 
     const entityName = entityData.serverData?.name || "";
     const baseDescription = entityData.serverData?.description || entityData.serverData?.shortDescription || "";
 
-    if (tab === "about") {
+    // Si c'est le premier tab (par défaut), utiliser la description de base
+    if (tab === firstTabId) {
+      return baseDescription;
+    }
+
+    // Vérifier que le tab existe dans la config
+    const tabExists = profileConfig?.tabs?.some(t => t.id === tab);
+    if (!tabExists) {
       return baseDescription;
     }
 
@@ -82,8 +108,8 @@ export function ProfileSeo({ entity, isLoading, entityType, activeTab = 'about' 
   // Construction de l'URL canonique avec le tab actif
   const slug = entity.serverData?.slug || "";
   const canonicalUrl = typeof window !== 'undefined' && slug
-    ? activeTab !== 'about'
-      ? `${window.location.origin}/profil/${slug}/${activeTab}`
+    ? currentTab !== firstTabId
+      ? `${window.location.origin}/profil/${slug}/${currentTab}`
       : `${window.location.origin}/profil/${slug}`
     : "";
 
@@ -92,12 +118,12 @@ export function ProfileSeo({ entity, isLoading, entityType, activeTab = 'about' 
     ? tLocale(config.meta.title)
     : "";
 
-  const pageTitle = activeTab !== 'about'
-    ? `${getTabLabel(activeTab)} - ${entityName}${siteTitle ? ` - ${siteTitle}` : ''}`
+  const pageTitle = currentTab !== firstTabId
+    ? `${getTabLabel(currentTab)} - ${entityName}${siteTitle ? ` - ${siteTitle}` : ''}`
     : (siteTitle ? `${entityName} - ${siteTitle}` : entityName);
 
   // Description dynamique selon le tab actif
-  const description = getTabDescription(activeTab, entity);
+  const description = getTabDescription(currentTab, entity);
 
   // Type schema.org basé sur entityType
   const getSchemaType = (type: string): string => {

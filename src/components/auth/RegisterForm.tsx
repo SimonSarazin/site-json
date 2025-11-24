@@ -13,7 +13,7 @@ import PasswordToggleTextInput from "@/components/input/PasswordToggleTextInput"
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { isValidEmail } from "@/helpers/isValidEmail";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useNavigate } from "react-router";
 
 interface RegisterFormState {
@@ -38,7 +38,6 @@ export default function RegisterForm(): JSX.Element {
 
   const navigate                     = useNavigate();
   const { userApi, loading, me }     = useCocolight();
-  const { toast }                    = useToast();
   const { loaded }                   = useLoadNamespace("components/auth");
   const t                            = useT("components/auth");
 
@@ -60,41 +59,31 @@ export default function RegisterForm(): JSX.Element {
     const { name, username, email, pwd, confirmPassword } = formData;
 
     if (!name.trim()) {
-      toast({
-        variant: "destructive",
-        title: t("Erreur"),
+      toast.error(t("Erreur"), {
         description: t("Le nom est requis"),
       });
       return false;
     }
     if (!username.trim()) {
-      toast({
-        variant: "destructive",
-        title: t("Erreur"),
+      toast.error(t("Erreur"), {
         description: t("Le nom d'utilisateur est requis"),
       });
       return false;
     }
     if (!email || !isValidEmail(email)) {
-      toast({
-        variant: "destructive",
-        title: t("Erreur"),
+      toast.error(t("Erreur"), {
         description: t("L'adresse e-mail n'est pas valide"),
       });
       return false;
     }
     if (!pwd || pwd.length < 6) {
-      toast({
-        variant: "destructive",
-        title: t("Erreur"),
+      toast.error(t("Erreur"), {
         description: t("Le mot de passe doit contenir au moins 6 caractères"),
       });
       return false;
     }
     if (pwd !== confirmPassword) {
-      toast({
-        variant: "destructive",
-        title: t("Erreur"),
+      toast.error(t("Erreur"), {
         description: t("Les mots de passe ne correspondent pas"),
       });
       return false;
@@ -107,15 +96,13 @@ export default function RegisterForm(): JSX.Element {
 
         // Si userApi n'est pas encore prêt, on arrête
     if (!userApi) {
-      toast({
-        variant: "destructive",
-        title: t("Erreur"),
+      toast.error(t("Erreur"), {
         description: t("Impossible de se connecter pour le moment"),
       });
       setLoading(false);
       return;
     }
-    
+
     if (!validateForm()) return;
 
     setLoading(true);
@@ -131,17 +118,14 @@ export default function RegisterForm(): JSX.Element {
       });
 
       if (response.result) {
-        toast({
-          title: t("Succès"),
+        toast.success(t("Succès"), {
           description: t(
             "Votre compte a été créé avec succès ! Vous pouvez maintenant vous connecter."
           ),
         });
         navigate("/login");
       } else {
-        toast({
-          variant: "destructive",
-          title: t("Erreur"),
+        toast.error(t("Erreur"), {
           description:
             response.msg ||
             t("Une erreur est survenue lors de la création du compte"),
@@ -154,9 +138,7 @@ export default function RegisterForm(): JSX.Element {
         (err as Error).message ||
         t("Une erreur est survenue lors de la création du compte");
 
-      toast({
-        variant: "destructive",
-        title: t("Erreur"),
+      toast.error(t("Erreur"), {
         description: msg,
       });
     } finally {

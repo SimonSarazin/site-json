@@ -5,6 +5,7 @@ import ProfilePage from "./pages/ProfilePage";
 import { getBaseUrl } from "@/lib/constant/common";
 import { initApi } from "@/lib/apiClient";
 import type { ModuleRouteFactory } from "@/lib/modules";
+import type { SiteConfig } from "@/types/site-schema";
 
 /**
  * Types d'entités supportant les actualités
@@ -16,7 +17,11 @@ const NEWS_SUPPORTED_TYPES = new Set(["organizations", "projects", "citoyens"]);
  * Pré-charge les données de l'entité côté serveur
  * Détecte le tab actif et pré-charge ses données si nécessaire
  */
-const profileLoader = async ({ params, request }: LoaderFunctionArgs, queryClient?: QueryClient) => {
+const profileLoader = async (
+  { params, request }: LoaderFunctionArgs,
+  queryClient?: QueryClient,
+  config?: SiteConfig
+) => {
   // Si pas de queryClient (côté client), on skip le pre-fetch
   if (!queryClient) return null;
 
@@ -46,22 +51,29 @@ const profileLoader = async ({ params, request }: LoaderFunctionArgs, queryClien
       }
     });
 
-    // 2. Pré-charger les données du tab actif si nécessaire
-    if (activeTab === 'news' && entity) {
+    // 2. Pré-charger les données du tab actif selon sa configuration
+    if (entity && config && config.profiles) {
       const entityType = entity.getEntityType?.() || "";
+      const profileConfig = config.profiles[entityType as keyof typeof config.profiles];
 
-      // Vérifier si ce type d'entité supporte les actualités
-      if (NEWS_SUPPORTED_TYPES.has(entityType)) {
-        await queryClient.prefetchInfiniteQuery({
-          queryKey: ["profile-news", entity.id],
-          queryFn: async () => {
-            return entity.getNews({
-              indexStep: 12,
-              dateLimit: Math.floor(Date.now() / 1000)
-            });
-          },
-          initialPageParam: Math.floor(Date.now() / 1000),
-        });
+      if (profileConfig?.tabs) {
+        const tabConfig = profileConfig.tabs.find((tab: any) => tab.id === activeTab);
+
+        // Pré-charger selon le component du tab
+        if (tabConfig?.component === 'NewsTab' && NEWS_SUPPORTED_TYPES.has(entityType)) {
+          await queryClient.prefetchInfiniteQuery({
+            queryKey: ["profile-news", entity.id],
+            queryFn: async () => {
+              return entity.getNews({
+                indexStep: 12,
+                dateLimit: Math.floor(Date.now() / 1000)
+              });
+            },
+            initialPageParam: Math.floor(Date.now() / 1000),
+          });
+        }
+        // Ajouter d'autres pré-chargements ici selon les components
+        // ex: SocialTab, MembershipTab, etc.
       }
     }
 
@@ -73,58 +85,63 @@ const profileLoader = async ({ params, request }: LoaderFunctionArgs, queryClien
 };
 
 /**
+ * Génère les routes des tabs dynamiquement à partir de la config
+ */
+const generateTabRoutes = (config?: SiteConfig): RouteObject[] => {
+  if (!config?.profiles) {
+    return [{ index: true, element: null }];
+  }
+
+  // Collecter tous les tabs de tous les types d'entités
+  const allTabIds = new Set<string>();
+
+  Object.values(config.profiles).forEach(profileConfig => {
+    if (profileConfig.tabs) {
+      profileConfig.tabs.forEach(tab => {
+        allTabIds.add(tab.id);
+      });
+    }
+  });
+
+  // Créer les routes pour chaque tab unique
+  const tabRoutes: RouteObject[] = Array.from(allTabIds).map(tabId => ({
+    path: tabId,
+    element: null, // Le contenu sera rendu par ProfileTemplateDynamic
+  }));
+
+  // Ajouter la route index (par défaut)
+  return [
+    {
+      index: true,
+      element: null,
+    },
+    ...tabRoutes,
+  ];
+};
+
+/**
  * Routes du module profil
  *
- * Ces routes sont dynamiquement injectées dans le router principal
+ * Ces routes sont dynamiquement générées à partir de la configuration JSON
  * via le système de découverte de modules (src/lib/modules.ts)
  *
  * Convention : /profil/:slug pour les profils
- * Routes imbriquées pour les tabs : /profil/:slug/news, /profil/:slug/coworking, etc.
+ * Routes imbriquées pour les tabs : /profil/:slug/{tabId}
+ *
+ * Les tabs disponibles sont déterminés par config.profiles[entityType].tabs
  *
  * @param queryClient - Client React Query pour le pré-chargement SSR
+ * @param config - Configuration du site (optionnelle, pour SSR)
  * @returns Liste des routes du module profil
  */
-export const routes: ModuleRouteFactory = (queryClient?: QueryClient): RouteObject[] => [
+export const routes: ModuleRouteFactory = (
+  queryClient?: QueryClient,
+  config?: SiteConfig
+): RouteObject[] => [
   {
     path: "profil/:slug",
     element: <ProfilePage />,
-    loader: (args) => profileLoader(args, queryClient),
-    children: [
-      // Route index (par défaut) - Le contenu "about" est rendu directement dans ProfileTemplateDefault
-      {
-        index: true,
-        element: null, // Pas de composant séparé, le contenu est déjà dans le template
-      },
-      // Route pour le tab news
-      {
-        path: "news",
-        element: null, // Le contenu sera rendu via LazyTabContent dans le template
-      },
-      // Route pour le tab coworking
-      {
-        path: "coworking",
-        element: null,
-      },
-      // Route pour le tab rooms
-      {
-        path: "rooms",
-        element: null,
-      },
-      // Route pour le tab infos
-      {
-        path: "infos",
-        element: null,
-      },
-      // Route pour le tab communities
-      {
-        path: "communities",
-        element: null,
-      },
-      // Route pour le tab observatory
-      {
-        path: "observatory",
-        element: null,
-      },
-    ],
+    loader: (args) => profileLoader(args, queryClient, config),
+    children: generateTabRoutes(config),
   }
 ];

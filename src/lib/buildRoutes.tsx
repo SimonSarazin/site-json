@@ -167,7 +167,7 @@ export function buildRoutes(cfg: SiteConfig, queryClient?: QueryClient): RouteOb
     }));
 
     // 2. Routes des modules core (synchrone)
-    const moduleRoutes = getModuleRoutesSync(modules);
+    const moduleRoutes = getModuleRoutesSync(modules, undefined, cfg);
 
     // 3. Combiner toutes les routes
     const children: RouteObject[] = [
@@ -258,7 +258,7 @@ async function buildRoutesAsync(
   }));
 
   // 2. Récupérer les routes des modules (async)
-  const moduleRoutes = await getModuleRoutes(modules, queryClient);
+  const moduleRoutes = await getModuleRoutes(modules, queryClient, cfg);
 
   // 3. Combiner toutes les routes : config + modules + 404
   const children: RouteObject[] = [

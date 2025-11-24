@@ -1,12 +1,13 @@
 import type { RouteObject } from "react-router";
 import type { QueryClient } from "@tanstack/react-query";
+import type { SiteConfig } from "@/types/site-schema";
 
 /**
  * Factory function pour créer des routes de module
- * Reçoit le QueryClient optionnel pour le SSR
+ * Reçoit le QueryClient optionnel pour le SSR et la config du site
  */
 export interface ModuleRouteFactory {
-  (queryClient?: QueryClient): RouteObject[];
+  (queryClient?: QueryClient, config?: SiteConfig): RouteObject[];
 }
 
 /**
@@ -129,17 +130,19 @@ export function discoverModules(): DiscoveredModule[] {
  *
  * @param modules - Modules découverts (doivent tous être core)
  * @param queryClient - Client React Query pour SSR
+ * @param config - Configuration du site (optionnelle)
  * @returns Routes combinées de tous les modules core
  * @throws Error si un module optional est trouvé
  */
 export function getModuleRoutesSync(
   modules: DiscoveredModule[],
-  queryClient?: QueryClient
+  queryClient?: QueryClient,
+  config?: SiteConfig
 ): RouteObject[] {
   return modules.flatMap(module => {
     if (module.config.type === "core") {
       const coreModule = module as Extract<DiscoveredModule, { config: { type: "core" } }>;
-      return coreModule.routes(queryClient);
+      return coreModule.routes(queryClient, config);
     }
     throw new Error(`getModuleRoutesSync ne supporte que les modules core. Module "${module.config.name}" est de type "${module.config.type}"`);
   });
@@ -153,22 +156,24 @@ export function getModuleRoutesSync(
  *
  * @param modules - Modules découverts
  * @param queryClient - Client React Query pour SSR
+ * @param config - Configuration du site (optionnelle)
  * @returns Routes combinées de tous les modules
  */
 export async function getModuleRoutes(
   modules: DiscoveredModule[],
-  queryClient?: QueryClient
+  queryClient?: QueryClient,
+  config?: SiteConfig
 ): Promise<RouteObject[]> {
   const routePromises = modules.map(async (module): Promise<RouteObject[]> => {
     if (module.config.type === "core") {
       // Core module (sync) - routes est directement un ModuleRouteFactory
       const coreModule = module as Extract<DiscoveredModule, { config: { type: "core" } }>;
-      return coreModule.routes(queryClient);
+      return coreModule.routes(queryClient, config);
     } else {
       // Optional module (async) - routes est un loader
       const optModule = module as Extract<DiscoveredModule, { config: { type: "optional" } }>;
       const loaded = await optModule.routes();
-      return loaded.routes(queryClient);
+      return loaded.routes(queryClient, config);
     }
   });
 
