@@ -16,6 +16,7 @@ import { DeleteNewsDialog } from "./DeleteNewsDialog";
 import { EditNewsModal } from "./EditNewsModal";
 import { ShareNewsDialog } from "./ShareNewsDialog";
 import { ReportDialog } from "./ReportDialog";
+import { voteTypes } from "./constants";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -67,6 +68,7 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef }: NewsItemProp
     mediaFiles,
     tags,
     voteCount,
+    userVoteType,
     hasVideo,
     videoEmbedUrl,
     sharedBy,
@@ -107,6 +109,17 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef }: NewsItemProp
     }
 
     addVoteNewsMutation.mutate({ news: item, voteType: reactionType });
+  };
+
+  const getUserReactionIcon = (userVoteType: string | null) => {
+    if (!userVoteType) return null;
+    const voteType = voteTypes.find(v => v.type === userVoteType);
+    if (!voteType) return null;
+    return {
+      Icon: voteType.icon,
+      color: voteType.color,
+      type: voteType.type
+    };
   };
 
   return (
@@ -304,8 +317,32 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef }: NewsItemProp
                     : 'text-muted-foreground/50 cursor-not-allowed'
                 }`}
               >
-                <ThumbsUp className="w-5 h-5" />
-                <span className="hidden md:inline">{t("NewsTab.like")}</span>
+                {(() => {
+                  const userReaction = getUserReactionIcon(userVoteType);
+                  if (userReaction) {
+                    const Icon = userReaction.Icon;
+                    const colorClass = userReaction.color === 'red' ? 'text-red-500' :
+                                     userReaction.color === 'blue' ? 'text-blue-500' :
+                                     userReaction.color === 'green' ? 'text-green-500' :
+                                     userReaction.color === 'teal' ? 'text-teal-500' :
+                                     userReaction.color === 'yellow' ? 'text-yellow-500' :
+                                     userReaction.color === 'purple' ? 'text-purple-500' :
+                                     userReaction.color === 'indigo' ? 'text-indigo-500' :
+                                     'text-gray-500';
+                    return (
+                      <>
+                        <Icon className={`w-5 h-5 ${colorClass}`} />
+                        <span className="hidden md:inline">{t(`NewsTab.reactionsTypes.${userReaction.type}`)}</span>
+                      </>
+                    );
+                  }
+                  return (
+                    <>
+                      <ThumbsUp className="w-5 h-5" />
+                      <span className="hidden md:inline">{t("NewsTab.like")}</span>
+                    </>
+                  );
+                })()}
               </button>
             </HoverCardTrigger>
             {me?.isConnected && (

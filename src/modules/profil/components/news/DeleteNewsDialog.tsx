@@ -47,7 +47,7 @@ export function DeleteNewsDialog({
               onConfirm();
             }}
             disabled={isPending}
-            className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            className="bg-red-600 text-foreground hover:bg-red-700 focus:ring-red-600"
           >
             {isPending ? (
               <>

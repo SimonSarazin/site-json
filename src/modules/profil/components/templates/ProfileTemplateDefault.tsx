@@ -13,6 +13,8 @@ import "@/modules/profil/i18n";
 // import { isUser, isOrganization, isProject, isEvent } from "@/lib/getTypedEntity";
 import { LazyTabContent } from "@/components/LazyTabContent";
 import { NewsTab } from "../tabs/NewsTab";
+import { ProjectsTab } from "../tabs/ProjectsTab";
+import { CommunitiesTab } from "../tabs/CommunitiesTab";
 
 export default function ProfileTemplateDefault() {
   const { entity, entityType: _entityType } = useProfileEntity();
@@ -189,10 +191,10 @@ export default function ProfileTemplateDefault() {
                 {t("ProfileTemplateDefault.tabs.meetingRooms")}
               </TabsTrigger>
               <TabsTrigger
-                value="infos"
+                value="projects"
                 className="flex-shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
               >
-                {t("ProfileTemplateDefault.tabs.practicalInfo")}
+                {t("ProfileTemplateDefault.tabs.projects")}
               </TabsTrigger>
               <TabsTrigger
                 value="communities"
@@ -454,28 +456,16 @@ export default function ProfileTemplateDefault() {
               </div>
             </TabsContent>
 
-            <TabsContent value="infos">
-              <div className="bg-card p-8 rounded-lg border border-border shadow-sm">
-                <div className="text-center py-16">
-                  <div className="text-gray-400 mb-4">
-                    <MapPin className="w-16 h-16 mx-auto" />
-                  </div>
-                  <p className="text-xl font-semibold text-foreground mb-2">{t("ProfileTemplateDefault.sectionLabel", undefined, { name: t("ProfileTemplateDefault.tabs.practicalInfo") })}</p>
-                  <p className="text-muted-foreground">{t("ProfileTemplateDefault.comingSoon")}</p>
-                </div>
-              </div>
+            <TabsContent value="projects">
+              <LazyTabContent value="projects">
+                <ProjectsTab />
+              </LazyTabContent>
             </TabsContent>
 
             <TabsContent value="communities">
-              <div className="bg-card p-8 rounded-lg border border-border shadow-sm">
-                <div className="text-center py-16">
-                  <div className="text-gray-400 mb-4">
-                    <Users className="w-16 h-16 mx-auto" />
-                  </div>
-                  <p className="text-xl font-semibold text-foreground mb-2">{t("ProfileTemplateDefault.sectionLabel", undefined, { name: t("ProfileTemplateDefault.tabs.communities") })}</p>
-                  <p className="text-muted-foreground">{t("ProfileTemplateDefault.comingSoon")}</p>
-                </div>
-              </div>
+              <LazyTabContent value="communities">
+                <CommunitiesTab />
+              </LazyTabContent>
             </TabsContent>
 
             <TabsContent value="observatory">

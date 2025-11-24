@@ -45,7 +45,7 @@
       "news": "News",
       "coworking": "Coworking",
       "meetingRooms": "Meeting rooms",
-      "practicalInfo": "Practical info",
+      "projects": "Projects",
       "communities": "Communities",
       "observatories": "Observatories"
     },
@@ -60,6 +60,34 @@
     "register": "Register",
     "comingSoon": "Coming soon",
     "sectionLabel": "{{name}} Section"
+  },
+  "ProjectsTab": {
+    "noProjects": "No projects",
+    "noProjectsDescription": "Projects will appear here",
+    "loadingProjects": "Loading projects...",
+    "allProjectsLoaded": "All projects loaded",
+    "allProjectsSeen": "You've seen all the projects",
+    "anonymousProject": "Anonymous project",
+    "viewProject": "View project",
+    "createProject": "Create project",
+    "gridView": "Grid",
+    "detailedView": "Details",
+    "moreTags": "more tags"
+  },
+  "CommunitiesTab": {
+    "noCommunities": "No communities",
+    "noCommunitiesDescription": "Communities will appear here",
+    "comingSoon": "Coming soon",
+    "comingSoonDescription": "This section will be available soon",
+    "friends": "Friends",
+    "organizations": "Organizations",
+    "subscriptions": "Subscriptions",
+    "subscribers": "Subscribers",
+    "externalNetwork": "External network",
+    "contributors": "Contributors",
+    "contributorsToValidate": "Contributors to validate",
+    "members": "Members",
+    "membersToValidate": "Members to validate"
   },
   "NewsTab": {
     "noNews": "No news",

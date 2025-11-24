@@ -33,7 +33,7 @@ export function ProfileSeo({ entity, isLoading, entityType, activeTab = 'about' 
       news: "ProfileTemplateDefault.tabs.news",
       coworking: "ProfileTemplateDefault.tabs.coworking",
       rooms: "ProfileTemplateDefault.tabs.meetingRooms",
-      infos: "ProfileTemplateDefault.tabs.practicalInfo",
+      projects: "ProfileTemplateDefault.tabs.projects",
       communities: "ProfileTemplateDefault.tabs.communities",
       observatory: "ProfileTemplateDefault.tabs.observatories",
     };

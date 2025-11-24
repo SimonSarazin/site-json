@@ -15,6 +15,8 @@ export interface FormattedReply {
   authorName: string;
   authorPhoto: string | null;
   isAuthor: boolean;
+  voteCount: Record<string, number>;
+  userVoteType: string | null;
 
   // Champs de CommentItemNormalized qu'on utilise
   id: string;
@@ -35,6 +37,8 @@ export interface FormattedComment {
   isAuthor: boolean;
   formattedDate: string;
   totalVotes: number;
+  voteCount: Record<string, number>;
+  userVoteType: string | null;
   replies: FormattedReply[];
   repliesCount: number;
 
@@ -93,6 +97,19 @@ function calculateTotalVotes(voteCount?: Record<string, number> | null): number 
   return Object.values(voteCount).reduce((sum, count) => sum + count, 0);
 }
 
+function getUserVoteType(serverData: Record<string, unknown>, userId: string | undefined): string | null {
+  if (!userId) return null;
+  const vote = serverData.vote as Record<string, Record<string, unknown>> | undefined;
+
+  if (vote && typeof vote === "object" && userId in vote) {
+    const userVote = vote[userId];
+    if (userVote && typeof userVote === "object" && "status" in userVote) {
+      return userVote.status as string;
+    }
+  }
+  return null;
+}
+
 /**
  * Hook pour formater les données d'un commentaire
  * Extrait et simplifie l'accès aux données complexes du Comment
@@ -130,6 +147,8 @@ export function useFormatComment(commentItem: Comment | null): FormattedComment 
       : {};
     const totalVotes = calculateTotalVotes(voteCount);
 
+    const userVoteType = getUserVoteType(serverData as Record<string, unknown>, currentUserId);
+
     // Formatage des replies (maintenant ce sont des objets Comment)
     const formattedReplies: FormattedReply[] = [];
     if (serverData.replies && Array.isArray(serverData.replies)) {
@@ -154,6 +173,8 @@ export function useFormatComment(commentItem: Comment | null): FormattedComment 
               ? new Date(replyServerData.created)
               : new Date();
 
+          const replyUserVoteType = getUserVoteType(replyServerData as Record<string, unknown>, currentUserId);
+
           const formattedReply: FormattedReply = {
             authorName: replyAuthorInfo.name,
             authorPhoto: replyAuthorInfo.photo,
@@ -162,6 +183,8 @@ export function useFormatComment(commentItem: Comment | null): FormattedComment 
               locale: dateFnsLocale,
             }),
             totalVotes: calculateTotalVotes(replyVoteCount),
+            voteCount: replyVoteCount,
+            userVoteType: replyUserVoteType,
             isAuthor: replyAuthorInfo.id === currentUserId,
             id: replyServerData.id,
             text: typeof replyServerData.text === 'string' ? replyServerData.text : '',
@@ -180,6 +203,8 @@ export function useFormatComment(commentItem: Comment | null): FormattedComment 
       isAuthor: authorInfo.id === currentUserId,
       formattedDate,
       totalVotes,
+      voteCount,
+      userVoteType,
       replies: formattedReplies,
       repliesCount: formattedReplies.length,
       id: serverData.id,

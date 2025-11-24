@@ -382,7 +382,6 @@ export function useAddVoteNews(entity: EntityTypes, options?: MutationOptions) {
     }) => {
       if (!me) throw new Error("User not connected");
 
-      // Ajouter le vote via l'API
       await news.addVote(voteType);
 
       return { news, voteType };
@@ -396,23 +395,51 @@ export function useAddVoteNews(entity: EntityTypes, options?: MutationOptions) {
             ["profile-news", entityId]
           );
 
-          // Optimistic update: increment vote count
           queryClient.setQueryData<{ pages: News[][] }>(
             ["profile-news", entityId],
             (old) => {
               if (!old) return old;
 
+              const userId = me?.serverData?.id;
+              if (!userId) return old;
+
               old.pages.forEach(page =>
                 page.forEach(n => {
                   if (n.id === variables.news.id) {
-                    // Mise à jour optimiste du voteCount
-                    const voteCount = n.serverData.voteCount as Record<string, number> | undefined;
-                    if (!voteCount) {
-                      n.serverData.voteCount = { [variables.voteType]: 1 };
-                    } else {
-                      const currentCount = voteCount[variables.voteType] || 0;
-                      voteCount[variables.voteType] = currentCount + 1;
+                    const vote = n.serverData.vote as Record<string, Record<string, unknown>> | undefined;
+                    let oldVoteType: string | null = null;
+
+                    if (vote && typeof vote === "object" && userId in vote) {
+                      const userVote = vote[userId];
+                      if (userVote && typeof userVote === "object" && "status" in userVote) {
+                        oldVoteType = userVote.status as string;
+                      }
                     }
+
+                    const currentVoteCount = n.serverData.voteCount as Record<string, number> | undefined;
+                    const newVoteCount = { ...(currentVoteCount || {}) };
+
+                    if (oldVoteType && oldVoteType !== variables.voteType) {
+                      newVoteCount[oldVoteType] = Math.max((newVoteCount[oldVoteType] || 0) - 1, 0);
+                    }
+
+                    if (!oldVoteType || oldVoteType !== variables.voteType) {
+                      newVoteCount[variables.voteType] = (newVoteCount[variables.voteType] || 0) + 1;
+                    }
+
+                    n.serverData.voteCount = newVoteCount;
+
+                    const newVote = { ...(vote || {}) };
+
+                    newVote[userId] = {
+                      status: variables.voteType,
+                      date: {
+                        sec: Math.floor(Date.now() / 1000),
+                        usec: 0
+                      }
+                    };
+
+                    n.serverData.vote = newVote;
                   }
                 })
               );

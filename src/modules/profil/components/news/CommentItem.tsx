@@ -9,12 +9,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
 import { CommentInput } from "./CommentInput";
 import { ReportDialog } from "./ReportDialog";
+import { CommentReactionPicker } from "./CommentReactionPicker";
+import { CommentVoteDisplay } from "./CommentVoteDisplay";
 import type { Comment, EntityTypes } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useFormatComment } from "../../hooks/useFormatComment";
 import { useAddCommentVote } from "../../hooks/useCommentMutations";
+import { voteTypes } from "./constants";
 
 interface CommentItemProps {
   commentItem: Comment;
@@ -73,14 +77,25 @@ export function CommentItem({
     }
   };
 
-  const handleCommentLike = (comment: Comment) => {
+  const handleCommentReaction = (comment: Comment, voteType: string) => {
     if (!isConnected) return;
-    addCommentVoteMutation.mutate({ comment, voteType: "like" });
+    addCommentVoteMutation.mutate({ comment, voteType });
   };
 
   const handleReportComment = (comment: Comment) => {
     setCommentToReport(comment);
     setReportDialogOpen(true);
+  };
+
+  const getUserReactionIcon = (userVoteType: string | null) => {
+    if (!userVoteType) return null;
+    const voteType = voteTypes.find(v => v.type === userVoteType);
+    if (!voteType) return null;
+    return {
+      Icon: voteType.icon,
+      color: voteType.color,
+      type: voteType.type
+    };
   };
 
   // Si le commentaire n'a pas pu être formaté, ne rien afficher
@@ -162,17 +177,53 @@ export function CommentItem({
             <p className="text-muted-foreground md:text-xs text-[9px] text-center justify-start">
               {formattedComment.formattedDate}
             </p>
+
+            {formattedComment.totalVotes > 0 && (
+              <CommentVoteDisplay voteCount={formattedComment.voteCount} commentId={formattedComment.id} />
+            )}
+
             <div className="flex divide-x-2 divide-border">
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled={!isConnected}
-                onClick={() => handleCommentLike(commentItem)}
-                className="bg-background md:text-xs text-[9px] h-auto py-1 px-2 hover:bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {formattedComment.totalVotes > 0 && <span className="mr-1">{formattedComment.totalVotes}</span>}
-                {t("NewsTab.like")}
-              </Button>
+              <HoverCard openDelay={200} closeDelay={100}>
+                <HoverCardTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={!isConnected}
+                    className="bg-background md:text-xs text-[9px] h-auto py-1 px-2 hover:bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {(() => {
+                      const userReaction = getUserReactionIcon(formattedComment.userVoteType);
+                      if (userReaction) {
+                        const Icon = userReaction.Icon;
+                        const colorClass = userReaction.color === 'red' ? 'text-red-500' :
+                                         userReaction.color === 'blue' ? 'text-blue-500' :
+                                         userReaction.color === 'green' ? 'text-green-500' :
+                                         userReaction.color === 'teal' ? 'text-teal-500' :
+                                         userReaction.color === 'yellow' ? 'text-yellow-500' :
+                                         userReaction.color === 'purple' ? 'text-purple-500' :
+                                         userReaction.color === 'indigo' ? 'text-indigo-500' :
+                                         'text-gray-500';
+                        return (
+                          <>
+                            <Icon className={`w-3 h-3 inline mr-1 ${colorClass}`} />
+                            {t(`NewsTab.reactionsTypes.${userReaction.type}`)}
+                          </>
+                        );
+                      }
+                      return t("NewsTab.like");
+                    })()}
+                  </Button>
+                </HoverCardTrigger>
+                {isConnected && (
+                  <HoverCardContent
+                    side="top"
+                    align="center"
+                    className="w-auto p-0 border-0 bg-transparent shadow-none"
+                  >
+                    <CommentReactionPicker onSelect={(type) => handleCommentReaction(commentItem, type)} />
+                  </HoverCardContent>
+                )}
+              </HoverCard>
               {!isMaxDepth && (
                 <Button
                   variant="ghost"

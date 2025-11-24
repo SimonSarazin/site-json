@@ -43,6 +43,7 @@ export interface FormattedNews {
 
   // Votes calculés
   totalVotes: number;
+  userVoteType: string | null;
 
   // Scope
   scope: string;
@@ -106,6 +107,25 @@ function extractAuthorInfo(author: unknown): {
 function calculateTotalVotes(voteCount?: Record<string, number> | null): number {
   if (!voteCount || typeof voteCount !== "object") return 0;
   return Object.values(voteCount).reduce((sum, count) => sum + count, 0);
+}
+
+function getUserVoteType(
+  serverData: Record<string, unknown>,
+  userId: string | undefined
+): string | null {
+  if (!userId) return null;
+
+  const vote = serverData.vote as Record<string, Record<string, unknown>> | undefined;
+  if (vote && typeof vote === "object") {
+    if (userId in vote) {
+      const userVote = vote[userId];
+      if (userVote && typeof userVote === "object" && "status" in userVote) {
+        return userVote.status as string;
+      }
+    }
+  }
+
+  return null;
 }
 
 /**
@@ -184,6 +204,8 @@ export function useFormatNews(newsItem: News | null): FormattedNews | null {
       : {};
     const totalVotes = calculateTotalVotes(voteCount);
 
+    const userVoteType = getUserVoteType(serverData as Record<string, unknown>, currentUserId);
+
     // Scope (public, private, restricted)
     const scope = serverData.scope && typeof serverData.scope === 'object'
       ? (serverData.scope as Record<string, unknown>).type as string || 'public'
@@ -211,6 +233,7 @@ export function useFormatNews(newsItem: News | null): FormattedNews | null {
       hasVideo,
       videoEmbedUrl,
       totalVotes,
+      userVoteType,
       scope,
       mentions,
       tags: Array.isArray(serverData.tags) ? serverData.tags : undefined,
