@@ -3,7 +3,7 @@ import { Loader2 } from "lucide-react";
 import { useT } from "@/hooks/useT";
 import { useNewsVotes } from "../../hooks/useNewsVotes";
 import { useState } from "react";
-import { voteTypes } from "../constants";
+import { voteTypes } from "../../constants";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 interface NewsReactionsModalProps {

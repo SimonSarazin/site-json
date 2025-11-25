@@ -35,6 +35,3 @@ export { ReportDialog } from "./ReportDialog";
 export { MentionInput } from "./mention/MentionInput";
 export { MentionSuggestions } from "./mention/MentionSuggestions";
 export { TagSuggestions } from "./mention/TagSuggestions";
-
-// Constants
-export * from "./constants";
