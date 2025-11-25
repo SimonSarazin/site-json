@@ -76,6 +76,7 @@ export function useProfilNewsQuery({
     options: {
       enabled: enabled && canFetchNews,
       staleTime: 5 * 60 * 1000, // Cache 5 minutes
+      gcTime: 30 * 60 * 1000,
       initialPageParam: Math.floor(Date.now() / 1000),
     },
   });

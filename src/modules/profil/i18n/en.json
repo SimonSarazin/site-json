@@ -1,4 +1,9 @@
 {
+  "EntityGridView": {
+    "gridView": "Grid",
+    "detailedView": "Details",
+    "searchPlaceholder": "Search..."
+  },
   "common": {
     "organizedBy": "Organized by",
     "viewProfile": "View profile",
@@ -88,6 +93,73 @@
     "contributorsToValidate": "Contributors to validate",
     "members": "Members",
     "membersToValidate": "Members to validate"
+  },
+  "OrganizationsTab": {
+    "noOrganizations": "No organizations",
+    "noOrganizationsDescription": "Organizations will appear here",
+    "loadingOrganizations": "Loading organizations...",
+    "allOrganizationsLoaded": "All organizations loaded",
+    "allOrganizationsSeen": "You've seen all the organizations",
+    "anonymousOrganization": "Anonymous organization",
+    "members": "members",
+    "gridView": "Grid",
+    "detailedView": "Details",
+    "createOrganization": "Create organization",
+    "types": {
+      "ngo": "NGO",
+      "cooperative": "Cooperative",
+      "localBusiness": "Local Business",
+      "group": "Group",
+      "government": "Government Organization",
+      "organization": "Organization"
+    }
+  },
+  "SubscriptionsTab": {
+    "noSubscriptions": "No subscriptions",
+    "noSubscriptionsDescription": "Subscriptions will appear here",
+    "loadingSubscriptions": "Loading subscriptions...",
+    "allSubscriptionsLoaded": "All subscriptions loaded",
+    "allSubscriptionsSeen": "You've seen all the subscriptions",
+    "anonymousSubscription": "Anonymous subscription",
+    "gridView": "Grid",
+    "detailedView": "Details",
+    "types": {
+      "organization": "Organization",
+      "project": "Project",
+      "user": "User",
+      "event": "Event",
+      "other": "Other"
+    }
+  },
+  "SubscribersTab": {
+    "noSubscribers": "No subscribers",
+    "noSubscribersDescription": "Subscribers will appear here",
+    "loadingSubscribers": "Loading subscribers...",
+    "allSubscribersLoaded": "All subscribers loaded",
+    "allSubscribersSeen": "You've seen all the subscribers",
+    "anonymousSubscriber": "Anonymous subscriber",
+    "gridView": "Grid",
+    "detailedView": "Details"
+  },
+  "FriendsTab": {
+    "noFriends": "No friends",
+    "noFriendsDescription": "Friends will appear here",
+    "loadingFriends": "Loading friends...",
+    "allFriendsLoaded": "All friends loaded",
+    "allFriendsSeen": "You've seen all the friends",
+    "anonymousFriend": "Anonymous friend",
+    "gridView": "Grid",
+    "detailedView": "Details"
+  },
+  "ContributorsTab": {
+    "noContributors": "No contributors",
+    "noContributorsDescription": "Contributors will appear here",
+    "loadingContributors": "Loading contributors...",
+    "allContributorsLoaded": "All contributors loaded",
+    "allContributorsSeen": "You've seen all the contributors",
+    "anonymousContributor": "Anonymous contributor",
+    "gridView": "Grid",
+    "detailedView": "Details"
   },
   "NewsTab": {
     "noNews": "No news",

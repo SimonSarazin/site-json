@@ -1,7 +1,7 @@
 import { useInfiniteQueryScroll } from "@/hooks/useInfiniteQueryScroll";
-import type { EntityTypes, Project } from "@communecter/cocolight-api-client";
+import type { EntityTypes } from "@communecter/cocolight-api-client";
 
-interface UseProfilProjectsQueryProps {
+interface UseProfilSubscriptionsQueryProps {
   entity: EntityTypes;
   entityType: string;
   enabled: boolean;
@@ -9,16 +9,16 @@ interface UseProfilProjectsQueryProps {
   searchQuery?: string;
 }
 
-const PROJECTS_SUPPORTED_TYPES = new Set(["organizations", "citoyens"]);
+const SUBSCRIPTIONS_SUPPORTED_TYPES = new Set(["citoyens"]);
 
-export function useProfilProjectsQuery({
+export function useProfilSubscriptionsQuery({
   entity,
   entityType,
   enabled,
   indexStep = 12,
   searchQuery = "",
-}: UseProfilProjectsQueryProps) {
-  const canFetchProjects = PROJECTS_SUPPORTED_TYPES.has(entityType);
+}: UseProfilSubscriptionsQueryProps) {
+  const canFetchSubscriptions = SUBSCRIPTIONS_SUPPORTED_TYPES.has(entityType);
 
   const {
     data,
@@ -28,14 +28,14 @@ export function useProfilProjectsQuery({
     lastItemRef,
     error,
     refetch,
-  } = useInfiniteQueryScroll<Project[]>({
-    queryKey: ["profile-projects", entity.id, searchQuery],
+  } = useInfiniteQueryScroll<EntityTypes[]>({
+    queryKey: ["profile-subscriptions", entity.id, searchQuery],
     queryFn: async ({ pageParam = 0 }) => {
-      if (!canFetchProjects) {
+      if (!canFetchSubscriptions) {
         return [];
       }
 
-      const result = await entity.getProjects({
+      const result = await (entity as any).getSubscriptions({
         indexMin: pageParam as number,
         indexStep,
         ...(searchQuery ? { name: searchQuery } : {}),
@@ -52,17 +52,17 @@ export function useProfilProjectsQuery({
       return currentIndex;
     },
     options: {
-      enabled: enabled && canFetchProjects,
+      enabled: enabled && canFetchSubscriptions,
       staleTime: 5 * 60 * 1000,
-      gcTime: 30 * 60 * 1000,
+      gcTime: 30 * 60 * 1000, // Garder en cache 30 minutes même si démonté
       initialPageParam: 0,
     },
   });
 
-  const projects = data ? data.pages.flatMap((page) => page) : [];
+  const subscriptions = data ? data.pages.flatMap((page) => page) : [];
 
   return {
-    projects,
+    subscriptions,
     isLoading,
     isFetchingNextPage,
     hasNextPage,

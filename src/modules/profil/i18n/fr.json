@@ -1,4 +1,9 @@
 {
+  "EntityGridView": {
+    "gridView": "Grille",
+    "detailedView": "Détails",
+    "searchPlaceholder": "Rechercher..."
+  },
   "common": {
     "organizedBy": "Organisé par",
     "viewProfile": "Voir le profil",
@@ -88,6 +93,73 @@
     "contributorsToValidate": "Contributeurs à valider",
     "members": "Membres",
     "membersToValidate": "Membres à valider"
+  },
+  "OrganizationsTab": {
+    "noOrganizations": "Aucune organisation",
+    "noOrganizationsDescription": "Les organisations apparaîtront ici",
+    "loadingOrganizations": "Chargement des organisations...",
+    "allOrganizationsLoaded": "Toutes les organisations chargées",
+    "allOrganizationsSeen": "Vous avez vu toutes les organisations",
+    "anonymousOrganization": "Organisation anonyme",
+    "members": "membres",
+    "gridView": "Grille",
+    "detailedView": "Détails",
+    "createOrganization": "Créer une organisation",
+    "types": {
+      "ngo": "Association",
+      "cooperative": "Coopérative",
+      "localBusiness": "Entreprise locale",
+      "group": "Groupe",
+      "government": "Organisation gouvernementale",
+      "organization": "Organisation"
+    }
+  },
+  "SubscriptionsTab": {
+    "noSubscriptions": "Aucun abonnement",
+    "noSubscriptionsDescription": "Les abonnements apparaîtront ici",
+    "loadingSubscriptions": "Chargement des abonnements...",
+    "allSubscriptionsLoaded": "Tous les abonnements chargés",
+    "allSubscriptionsSeen": "Vous avez vu tous les abonnements",
+    "anonymousSubscription": "Abonnement anonyme",
+    "gridView": "Grille",
+    "detailedView": "Détails",
+    "types": {
+      "organization": "Organisation",
+      "project": "Projet",
+      "user": "Utilisateur",
+      "event": "Événement",
+      "other": "Autre"
+    }
+  },
+  "SubscribersTab": {
+    "noSubscribers": "Aucun abonné",
+    "noSubscribersDescription": "Les abonnés apparaîtront ici",
+    "loadingSubscribers": "Chargement des abonnés...",
+    "allSubscribersLoaded": "Tous les abonnés chargés",
+    "allSubscribersSeen": "Vous avez vu tous les abonnés",
+    "anonymousSubscriber": "Abonné anonyme",
+    "gridView": "Grille",
+    "detailedView": "Détails"
+  },
+  "FriendsTab": {
+    "noFriends": "Aucun ami",
+    "noFriendsDescription": "Les amis apparaîtront ici",
+    "loadingFriends": "Chargement des amis...",
+    "allFriendsLoaded": "Tous les amis chargés",
+    "allFriendsSeen": "Vous avez vu tous les amis",
+    "anonymousFriend": "Ami anonyme",
+    "gridView": "Grille",
+    "detailedView": "Détails"
+  },
+  "ContributorsTab": {
+    "noContributors": "Aucun contributeur",
+    "noContributorsDescription": "Les contributeurs apparaîtront ici",
+    "loadingContributors": "Chargement des contributeurs...",
+    "allContributorsLoaded": "Tous les contributeurs chargés",
+    "allContributorsSeen": "Vous avez vu tous les contributeurs",
+    "anonymousContributor": "Contributeur anonyme",
+    "gridView": "Grille",
+    "detailedView": "Détails"
   },
   "NewsTab": {
     "noNews": "Aucune actualité",

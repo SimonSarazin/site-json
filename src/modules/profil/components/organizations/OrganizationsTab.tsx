@@ -1,57 +1,54 @@
-import { Briefcase } from "lucide-react";
+import { Building2 } from "lucide-react";
 import { useState } from "react";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
-import { useLazyTab } from "@/hooks/useLazyTab";
-import { useProfilProjectsQuery } from "../../hooks/useProfilProjectsQuery";
+import { useProfilOrganizationsQuery } from "../../hooks/useProfilOrganizationsQuery";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useCocolight } from "@/hooks/useCocolight";
 import { Button } from "@/components/ui/button";
 import "@/modules/profil/i18n";
-import { ProjectItem } from "../projects/ProjectItem";
-import { ProjectItemDetailed } from "../projects/ProjectItemDetailed";
+import { OrganizationItem } from "./OrganizationItem";
+import { OrganizationItemDetailed } from "./OrganizationItemDetailed";
 import { EntityGridView } from "../shared/EntityGridView";
-import type { Project } from "@communecter/cocolight-api-client";
+import type { Organization } from "@communecter/cocolight-api-client";
 
-export function ProjectsTab() {
+interface OrganizationsTabProps {
+  enabled?: boolean;
+}
+
+export function OrganizationsTab({ enabled = true }: OrganizationsTabProps) {
   const { entity, entityType } = useProfileEntity();
   useLoadNamespace("modules/profil");
   const t = useT("modules/profil");
   const { me } = useCocolight();
-  const [showAddProjectModal, setShowAddProjectModal] = useState(false);
+  const [showAddOrganizationModal, setShowAddOrganizationModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { shouldLoad } = useLazyTab("projects");
-
   const {
-    projects,
+    organizations,
     isLoading,
     isFetchingNextPage,
     hasNextPage,
     lastItemRef,
-  } = useProfilProjectsQuery({
+  } = useProfilOrganizationsQuery({
     entity,
     entityType,
-    enabled: shouldLoad,
+    enabled,
     indexStep: 12,
     searchQuery,
   });
 
   const canCreate = me?.isConnected;
 
-  if (!shouldLoad) {
-    return null;
-  }
-
   return (
     <>
-      <EntityGridView<Project>
-        items={projects}
+      <EntityGridView<Organization>
+        items={organizations}
         isLoading={isLoading}
         isFetchingNextPage={isFetchingNextPage}
         hasNextPage={hasNextPage}
         renderGridItem={(item, isLastItem) => (
-          <ProjectItem
+          <OrganizationItem
             key={item.id}
             item={item}
             isLastItem={isLastItem}
@@ -59,38 +56,39 @@ export function ProjectsTab() {
           />
         )}
         renderDetailedItem={(item, isLastItem) => (
-          <ProjectItemDetailed
+          <OrganizationItemDetailed
             key={item.id}
             item={item}
             isLastItem={isLastItem}
             lastItemRef={lastItemRef}
           />
         )}
-        emptyIcon={<Briefcase className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 mx-auto" />}
-        endIcon={<Briefcase className="w-5 h-5 sm:w-6 sm:h-6 text-teal-600 dark:text-teal-400" />}
-        emptyTitle={t("ProjectsTab.noProjects")}
-        emptyDescription={t("ProjectsTab.noProjectsDescription")}
-        loadingText={t("ProjectsTab.loadingProjects")}
-        allLoadedTitle={t("ProjectsTab.allProjectsLoaded")}
-        allLoadedDescription={t("ProjectsTab.allProjectsSeen")}
-        gridViewLabel={t("ProjectsTab.gridView")}
-        detailedViewLabel={t("ProjectsTab.detailedView")}
-        createLabel={t("ProjectsTab.createProject")}
+        emptyIcon={<Building2 className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 mx-auto" />}
+        endIcon={<Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-teal-600 dark:text-teal-400" />}
+        emptyTitle={t("OrganizationsTab.noOrganizations")}
+        emptyDescription={t("OrganizationsTab.noOrganizationsDescription")}
+        loadingText={t("OrganizationsTab.loadingOrganizations")}
+        allLoadedTitle={t("OrganizationsTab.allOrganizationsLoaded")}
+        allLoadedDescription={t("OrganizationsTab.allOrganizationsSeen")}
+        gridViewLabel={t("OrganizationsTab.gridView")}
+        detailedViewLabel={t("OrganizationsTab.detailedView")}
+        createLabel={t("OrganizationsTab.createOrganization")}
         canCreate={canCreate}
-        onCreateClick={() => setShowAddProjectModal(true)}
+        onCreateClick={() => setShowAddOrganizationModal(true)}
+        showViewToggle={true}
         searchEnabled
         searchValue={searchQuery}
         onSearchChange={setSearchQuery}
       />
 
-      {showAddProjectModal && (
+      {showAddOrganizationModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-background rounded-lg p-6 max-w-md w-full">
             <h2 className="text-xl font-semibold mb-4">Modal à implémenter</h2>
             <p className="text-muted-foreground mb-4">
-              Le modal pour ajouter un projet sera implémenté prochainement.
+              Le modal pour ajouter une organisation sera implémenté prochainement.
             </p>
-            <Button onClick={() => setShowAddProjectModal(false)}>
+            <Button onClick={() => setShowAddOrganizationModal(false)}>
               Fermer
             </Button>
           </div>

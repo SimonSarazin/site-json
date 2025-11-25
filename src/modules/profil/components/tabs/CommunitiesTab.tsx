@@ -1,4 +1,4 @@
-import { Users, Loader2 } from "lucide-react";
+import { Users } from "lucide-react";
 import { useState } from "react";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
 import { useLazyTab } from "@/hooks/useLazyTab";
@@ -7,6 +7,11 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useCocolight } from "@/hooks/useCocolight";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import "@/modules/profil/i18n";
+import { OrganizationsTab } from "../organizations/OrganizationsTab";
+import { SubscriptionsTab } from "../subscriptions/SubscriptionsTab";
+import { SubscribersTab } from "../subscribers/SubscribersTab";
+import { FriendsTab } from "../friends/FriendsTab";
+import { ContributorsTab } from "../contributors/ContributorsTab";
 
 export function CommunitiesTab() {
   const { entityType } = useProfileEntity();
@@ -16,6 +21,7 @@ export function CommunitiesTab() {
 
   const { shouldLoad } = useLazyTab("communities");
   const [isLoading] = useState(false);
+  const [activeSubTab, setActiveSubTab] = useState<string | null>(null);
 
   const isAuthor = me?.isConnected && entityType === "organizations";
 
@@ -37,29 +43,28 @@ export function CommunitiesTab() {
     );
   }
 
-  // Déterminer les tabs selon le type d'entité
   const getTabsForEntityType = () => {
     switch (entityType) {
       case "citoyens":
         return [
-          { id: "citoyensamis", label: t("CommunitiesTab.friends"), show: true },
-          { id: "citoyensorganisations", label: t("CommunitiesTab.organizations"), show: true },
-          { id: "citoyensabonnements", label: t("CommunitiesTab.subscriptions"), show: true },
-          { id: "citoyensabonnés", label: t("CommunitiesTab.subscribers"), show: true },
-          { id: "citoyensexterne", label: t("CommunitiesTab.externalNetwork"), show: isAuthor },
+          { id: "citoyensamis", label: t("CommunitiesTab.friends"), show: true, component: "placeholder" }, // TODO: activer "friends" quand l'API GET_FRIENDS_ADMIN sera corrigée
+          { id: "citoyensorganisations", label: t("CommunitiesTab.organizations"), show: true, component: "organizations" },
+          { id: "citoyensabonnements", label: t("CommunitiesTab.subscriptions"), show: true, component: "subscriptions" },
+          { id: "citoyensabonnés", label: t("CommunitiesTab.subscribers"), show: true, component: "subscribers" },
+          { id: "citoyensexterne", label: t("CommunitiesTab.externalNetwork"), show: isAuthor, component: "placeholder" },
         ];
       case "projects":
         return [
-          { id: "contributeurs", label: t("CommunitiesTab.contributors"), show: true },
-          { id: "tovalidated", label: t("CommunitiesTab.contributorsToValidate"), show: isAuthor },
-          { id: "contributeursabonnés", label: t("CommunitiesTab.subscriptions"), show: true },
+          { id: "contributeurs", label: t("CommunitiesTab.contributors"), show: true, component: "contributors" },
+          { id: "tovalidated", label: t("CommunitiesTab.contributorsToValidate"), show: isAuthor, component: "placeholder" },
+          { id: "contributeursabonnés", label: t("CommunitiesTab.subscribers"), show: true, component: "subscribers" },
         ];
       case "organizations":
         return [
-          { id: "membres", label: t("CommunitiesTab.members"), show: true },
-          { id: "tovalidated", label: t("CommunitiesTab.membersToValidate"), show: isAuthor },
-          { id: "membresorganisations", label: t("CommunitiesTab.organizations"), show: true },
-          { id: "membresabonnés", label: t("CommunitiesTab.subscriptions"), show: true },
+          { id: "membres", label: t("CommunitiesTab.members"), show: true, component: "placeholder" },
+          { id: "tovalidated", label: t("CommunitiesTab.membersToValidate"), show: isAuthor, component: "placeholder" },
+          { id: "membresorganisations", label: t("CommunitiesTab.organizations"), show: true, component: "organizations" },
+          { id: "membresabonnés", label: t("CommunitiesTab.subscribers"), show: true, component: "subscribers" },
         ];
       default:
         return [];
@@ -67,6 +72,11 @@ export function CommunitiesTab() {
   };
 
   const tabs = getTabsForEntityType().filter(tab => tab.show);
+  const defaultTab = tabs[0]?.id || "";
+
+  if (activeSubTab === null && defaultTab) {
+    setActiveSubTab(defaultTab);
+  }
 
   if (tabs.length === 0) {
     return (
@@ -86,9 +96,48 @@ export function CommunitiesTab() {
     );
   }
 
+  const renderTabContent = (tab: { id: string; label: string; component: string }) => {
+    const isActive = activeSubTab === tab.id;
+
+    switch (tab.component) {
+      case "friends":
+        return <FriendsTab enabled={isActive} />;
+      case "organizations":
+        return <OrganizationsTab enabled={isActive} />;
+      case "subscriptions":
+        return <SubscriptionsTab enabled={isActive} />;
+      case "subscribers":
+        return <SubscribersTab enabled={isActive} />;
+      case "contributors":
+        return <ContributorsTab enabled={isActive} />;
+      case "placeholder":
+      default:
+        return (
+          <div className="bg-background p-6 sm:p-8 rounded-lg border border-border shadow-sm">
+            <div className="text-center py-12 sm:py-16">
+              <div className="text-muted-foreground mb-3 sm:mb-4">
+                <Users className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 mx-auto" />
+              </div>
+              <p className="text-lg sm:text-xl font-semibold text-foreground mb-1 sm:mb-2 px-4">
+                {t("CommunitiesTab.comingSoon")}
+              </p>
+              <p className="text-sm sm:text-base text-muted-foreground px-4">
+                {tab.label} - {t("CommunitiesTab.comingSoonDescription")}
+              </p>
+            </div>
+          </div>
+        );
+    }
+  };
+
   return (
     <div className="space-y-4 sm:space-y-6">
-      <Tabs defaultValue={tabs[0].id} className="w-full">
+      <Tabs
+        defaultValue={defaultTab}
+        value={activeSubTab || defaultTab}
+        onValueChange={setActiveSubTab}
+        className="w-full"
+      >
         <TabsList className="w-full justify-start overflow-x-auto">
           {tabs.map((tab) => (
             <TabsTrigger key={tab.id} value={tab.id}>
@@ -99,19 +148,7 @@ export function CommunitiesTab() {
 
         {tabs.map((tab) => (
           <TabsContent key={tab.id} value={tab.id}>
-            <div className="bg-background p-6 sm:p-8 rounded-lg border border-border shadow-sm">
-              <div className="text-center py-12 sm:py-16">
-                <div className="text-muted-foreground mb-3 sm:mb-4">
-                  <Users className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 mx-auto" />
-                </div>
-                <p className="text-lg sm:text-xl font-semibold text-foreground mb-1 sm:mb-2 px-4">
-                  {t("CommunitiesTab.comingSoon")}
-                </p>
-                <p className="text-sm sm:text-base text-muted-foreground px-4">
-                  {tab.label} - {t("CommunitiesTab.comingSoonDescription")}
-                </p>
-              </div>
-            </div>
+            {renderTabContent(tab)}
           </TabsContent>
         ))}
       </Tabs>

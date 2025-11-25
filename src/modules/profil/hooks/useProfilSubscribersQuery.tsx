@@ -1,7 +1,7 @@
 import { useInfiniteQueryScroll } from "@/hooks/useInfiniteQueryScroll";
-import type { EntityTypes, Project } from "@communecter/cocolight-api-client";
+import type { EntityTypes, User } from "@communecter/cocolight-api-client";
 
-interface UseProfilProjectsQueryProps {
+interface UseProfilSubscribersQueryProps {
   entity: EntityTypes;
   entityType: string;
   enabled: boolean;
@@ -9,16 +9,16 @@ interface UseProfilProjectsQueryProps {
   searchQuery?: string;
 }
 
-const PROJECTS_SUPPORTED_TYPES = new Set(["organizations", "citoyens"]);
+const SUBSCRIBERS_SUPPORTED_TYPES = new Set(["citoyens", "organizations", "projects", "events"]);
 
-export function useProfilProjectsQuery({
+export function useProfilSubscribersQuery({
   entity,
   entityType,
   enabled,
   indexStep = 12,
   searchQuery = "",
-}: UseProfilProjectsQueryProps) {
-  const canFetchProjects = PROJECTS_SUPPORTED_TYPES.has(entityType);
+}: UseProfilSubscribersQueryProps) {
+  const canFetchSubscribers = SUBSCRIBERS_SUPPORTED_TYPES.has(entityType);
 
   const {
     data,
@@ -28,14 +28,14 @@ export function useProfilProjectsQuery({
     lastItemRef,
     error,
     refetch,
-  } = useInfiniteQueryScroll<Project[]>({
-    queryKey: ["profile-projects", entity.id, searchQuery],
+  } = useInfiniteQueryScroll<User[]>({
+    queryKey: ["profile-subscribers", entity.id, searchQuery],
     queryFn: async ({ pageParam = 0 }) => {
-      if (!canFetchProjects) {
+      if (!canFetchSubscribers) {
         return [];
       }
 
-      const result = await entity.getProjects({
+      const result = await entity.getSubscribers({
         indexMin: pageParam as number,
         indexStep,
         ...(searchQuery ? { name: searchQuery } : {}),
@@ -52,17 +52,17 @@ export function useProfilProjectsQuery({
       return currentIndex;
     },
     options: {
-      enabled: enabled && canFetchProjects,
+      enabled: enabled && canFetchSubscribers,
       staleTime: 5 * 60 * 1000,
       gcTime: 30 * 60 * 1000,
       initialPageParam: 0,
     },
   });
 
-  const projects = data ? data.pages.flatMap((page) => page) : [];
+  const subscribers = data ? data.pages.flatMap((page) => page) : [];
 
   return {
-    projects,
+    subscribers,
     isLoading,
     isFetchingNextPage,
     hasNextPage,

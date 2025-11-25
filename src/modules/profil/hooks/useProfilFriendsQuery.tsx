@@ -1,7 +1,7 @@
 import { useInfiniteQueryScroll } from "@/hooks/useInfiniteQueryScroll";
-import type { EntityTypes, Project } from "@communecter/cocolight-api-client";
+import type { EntityTypes, User } from "@communecter/cocolight-api-client";
 
-interface UseProfilProjectsQueryProps {
+interface UseProfilFriendsQueryProps {
   entity: EntityTypes;
   entityType: string;
   enabled: boolean;
@@ -9,16 +9,16 @@ interface UseProfilProjectsQueryProps {
   searchQuery?: string;
 }
 
-const PROJECTS_SUPPORTED_TYPES = new Set(["organizations", "citoyens"]);
+const FRIENDS_SUPPORTED_TYPES = new Set(["citoyens"]);
 
-export function useProfilProjectsQuery({
+export function useProfilFriendsQuery({
   entity,
   entityType,
   enabled,
   indexStep = 12,
   searchQuery = "",
-}: UseProfilProjectsQueryProps) {
-  const canFetchProjects = PROJECTS_SUPPORTED_TYPES.has(entityType);
+}: UseProfilFriendsQueryProps) {
+  const canFetchFriends = FRIENDS_SUPPORTED_TYPES.has(entityType);
 
   const {
     data,
@@ -28,18 +28,23 @@ export function useProfilProjectsQuery({
     lastItemRef,
     error,
     refetch,
-  } = useInfiniteQueryScroll<Project[]>({
-    queryKey: ["profile-projects", entity.id, searchQuery],
+  } = useInfiniteQueryScroll<User[]>({
+    queryKey: ["profile-friends", entity.id, searchQuery],
     queryFn: async ({ pageParam = 0 }) => {
-      if (!canFetchProjects) {
+      if (!canFetchFriends) {
         return [];
       }
 
-      const result = await entity.getProjects({
+      const params: Record<string, unknown> = {
         indexMin: pageParam as number,
         indexStep,
-        ...(searchQuery ? { name: searchQuery } : {}),
-      });
+      };
+
+      if (searchQuery) {
+        params.name = searchQuery;
+      }
+
+      const result = await (entity as any).getFriends(params);
 
       return result.results || [];
     },
@@ -52,17 +57,17 @@ export function useProfilProjectsQuery({
       return currentIndex;
     },
     options: {
-      enabled: enabled && canFetchProjects,
+      enabled: enabled && canFetchFriends,
       staleTime: 5 * 60 * 1000,
       gcTime: 30 * 60 * 1000,
       initialPageParam: 0,
     },
   });
 
-  const projects = data ? data.pages.flatMap((page) => page) : [];
+  const friends = data ? data.pages.flatMap((page) => page) : [];
 
   return {
-    projects,
+    friends,
     isLoading,
     isFetchingNextPage,
     hasNextPage,
