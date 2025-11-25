@@ -8,7 +8,7 @@ import { useFormatProfileEntity } from "../../hooks/useFormatProfileEntity";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
-import { useUserPermissions } from "../../hooks/useUserPermissions";
+import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { EditProfileModal } from "../profile-edit/EditProfileModal";
 import { ProfileImageUpload } from "../profile-edit/ProfileImageUpload";
 import { EntityActionButtons } from "../EntityActionButtons";

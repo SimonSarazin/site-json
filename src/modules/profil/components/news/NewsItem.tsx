@@ -199,7 +199,15 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef }: NewsItemProp
         </div>
       </div>
 
-      <NewsContent text={text as string} mentions={formattedNews.mentions} maxLength={300} />
+      <NewsContent
+        text={text as string}
+        mentions={formattedNews.mentions?.map(m => ({
+          ...m,
+          value: m.name,
+          count: '1'
+        }))}
+        maxLength={300}
+      />
 
       {hasVideo && videoEmbedUrl && (
         <div className="px-4 sm:px-6 pb-3 sm:pb-4">
@@ -249,7 +257,7 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef }: NewsItemProp
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Share2 className="w-4 h-4" />
             <div className="flex -space-x-2">
-              {sharedBy.slice(0, 3).map((share, idx) => {
+              {sharedBy.slice(0, 3).map((share: any, idx: number) => {
                 return share.photo ? (
                   <img
                     key={idx}

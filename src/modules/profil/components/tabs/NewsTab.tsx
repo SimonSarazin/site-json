@@ -2,14 +2,18 @@ import { Calendar, Loader2, Plus } from "lucide-react";
 import { useState } from "react";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
 import { useLazyTab } from "@/hooks/useLazyTab";
-import { useProfilNewsQuery } from "../../hooks/useProfilNewsQuery";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
-import { useUserPermissions } from "../../hooks/useUserPermissions";
+import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { Button } from "@/components/ui/button";
 import "@/modules/profil/i18n";
-import { NewsItem } from "../news/NewsItem";
-import { AddNewsModal } from "../news/AddNewsModal";
+// Import depuis le nouveau module news
+import {
+  NewsItem,
+  AddNewsModal,
+  useNewsQuery,
+  NewsProvider
+} from "@/modules/news";
 
 export function NewsTab() {
   const { entity, entityType } = useProfileEntity();
@@ -26,7 +30,7 @@ export function NewsTab() {
     isFetchingNextPage,
     hasNextPage,
     lastItemRef,
-  } = useProfilNewsQuery({
+  } = useNewsQuery({
     entity,
     entityType,
     enabled: shouldLoad,
@@ -67,8 +71,24 @@ export function NewsTab() {
     );
   }
 
+  const newsPermissions = {
+    canAdd: permissions.canAddNews,
+    canEdit: false, // Géré individuellement par item
+    canDelete: false, // Géré individuellement par item
+    canModerate: permissions.isAdmin,
+    canComment: permissions.canEditComment, // Utiliser canEditComment comme proxy pour canComment
+    canReact: true, // Permettre les réactions par défaut si connecté
+    canShare: true, // Permettre le partage par défaut si connecté
+    canReport: true, // Permettre le signalement par défaut si connecté
+  };
+
   return (
-    <>
+    <NewsProvider value={{
+      entity,
+      permissions: newsPermissions,
+      entityId: entity?.id || undefined,
+      entityType: entity?.serverData?.type
+    }}>
       <div className="space-y-4 sm:space-y-6">
         {permissions.canAddNews && (
           <div className="flex justify-end">
@@ -127,6 +147,6 @@ export function NewsTab() {
           onOpenChange={setShowAddNewsModal}
         />
       )}
-    </>
+    </NewsProvider>
   );
 }

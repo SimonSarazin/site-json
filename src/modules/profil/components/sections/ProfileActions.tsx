@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Edit, Mail, ChevronRight } from "lucide-react";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
-import { useUserPermissions } from "../../hooks/useUserPermissions";
+import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { EntityActionButtons } from "../EntityActionButtons";
 import { EditProfileModal } from "../profile-edit/EditProfileModal";
 import { useT } from "@/hooks/useT";

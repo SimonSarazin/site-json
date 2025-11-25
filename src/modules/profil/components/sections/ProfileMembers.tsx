@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
-import { useUserPermissions } from "../../hooks/useUserPermissions";
+import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { useEntityMembers } from "../../hooks/useMembersQuery";
 import { isOrganization, isProject, isEvent } from "@/lib/getTypedEntity";
 import { Button } from "@/components/ui/button";

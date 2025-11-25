@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { isUser, isOrganization, isProject, isEvent } from "@/lib/getTypedEntity";
 import { useT } from "@/hooks/useT";
-import { useUserPermissions } from "./useUserPermissions";
+import { useUserPermissions } from "@/hooks/useUserPermissions";
 import {
   useFollowUser,
   useUnfollowUser,

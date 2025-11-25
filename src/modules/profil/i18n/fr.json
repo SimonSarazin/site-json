@@ -119,7 +119,17 @@
       "communities": "Communautés",
       "observatories": "Observatoires",
       "social": "Social",
-      "membership": "Mes Organisations"
+      "membership": "Mes Organisations",
+      "members": "Membres",
+      "projects": "Projets",
+      "events": "Événements",
+      "contributors": "Contributeurs",
+      "organizations": "Organisations",
+      "dates": "Dates & Horaires",
+      "location": "Lieu",
+      "organizer": "Organisateur",
+      "gallery": "Galerie",
+      "map": "Carte"
     },
     "description": "Description",
     "badges": "Badges",

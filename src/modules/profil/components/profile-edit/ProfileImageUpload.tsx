@@ -3,7 +3,7 @@ import { Camera, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/hooks/useT";
 import { useUploadProfileImage, useUploadProfileBanner } from "../../hooks/useProfileMutations";
-import { ImageCropDialog } from "../news/ImageCropDialog";
+import { ImageCropDialog } from "@/modules/news";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 
 interface ProfileImageUploadProps {
@@ -163,10 +163,12 @@ export function ProfileImageUpload({
         <ImageCropDialog
           open={cropDialogOpen}
           onOpenChange={setCropDialogOpen}
-          image={previewUrl}
-          fileName={selectedFile.name}
-          onCropComplete={handleCropComplete}
-          aspect={type === "banner" ? 3 / 1.2 : 1}
+          imageUrl={previewUrl}
+          onCrop={(croppedBlob) => {
+            // Convert blob to file for handleCropComplete
+            const file = new File([croppedBlob], selectedFile.name, { type: croppedBlob.type });
+            handleCropComplete(file);
+          }}
         />
       )}
     </>

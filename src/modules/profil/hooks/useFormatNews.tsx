@@ -4,7 +4,7 @@ import { useDateFnsLocale } from "@/hooks/useDateFnsLocale";
 import { useCocolight } from "@/hooks/useCocolight";
 import type { News, User, Organization, EntityTypes } from "@communecter/cocolight-api-client";
 import type { NewsMention } from "../components/news/NewsContent";
-import { useUserPermissions } from "./useUserPermissions";
+import { useUserPermissions } from "@/hooks/useUserPermissions";
 
 export interface SharedByPerson {
   name: string;

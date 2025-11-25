@@ -3,7 +3,7 @@
 import { Command as CommandPrimitive, useCommandState } from "cmdk";
 import { X } from "lucide-react";
 import * as React from "react";
-import { forwardRef, useEffect } from "react";
+import { useEffect } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import {
@@ -77,26 +77,22 @@ function isOptionsExist(groupOption: GroupOption, targetOption: Option[]): boole
  *
  * @reference: https://github.com/hsuanyi-chou/shadcn-ui-expansions/issues/34#issuecomment-1949561607
  **/
-const CommandEmpty = forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, forwardedRef) => {
+function CommandEmpty({ className, commandEmptyRef, ...props }: React.HTMLAttributes<HTMLDivElement> & { commandEmptyRef?: React.Ref<HTMLDivElement> }) {
   const render = useCommandState((state) => state.filtered.count === 0);
 
   if (!render) return null;
 
   return (
     <div
-      ref={forwardedRef}
+      ref={commandEmptyRef}
       className={cn("py-6 text-center text-sm", className)}
       cmdk-empty=""
       role="presentation"
+      data-slot="command-empty"
       {...props}
     />
   );
-});
-
-CommandEmpty.displayName = "CommandEmpty";
+}
 
 export interface MultipleSelectorProps {
   value?: Option[];
@@ -134,35 +130,32 @@ export interface MultipleSelectorRef {
   reset: () => void;
 }
 
-const MultipleSelector = React.forwardRef<MultipleSelectorRef, MultipleSelectorProps>(
-  (
-    {
-      value,
-      onChange,
-      placeholder,
-      defaultOptions: arrayDefaultOptions = [],
-      options: arrayOptions,
-      delay,
-      onSearch,
-      onSearchSync,
-      loadingIndicator,
-      emptyIndicator,
-      maxSelected = Number.MAX_SAFE_INTEGER,
-      onMaxSelected,
-      hidePlaceholderWhenSelected,
-      disabled,
-      groupBy,
-      className,
-      badgeClassName,
-      selectFirstItem = true,
-      creatable = false,
-      triggerSearchOnFocus = false,
-      commandProps,
-      inputProps,
-      hideClearAllButton = false
-    },
-    ref
-  ) => {
+function MultipleSelector({
+  value,
+  onChange,
+  placeholder,
+  defaultOptions: arrayDefaultOptions = [],
+  options: arrayOptions,
+  delay,
+  onSearch,
+  onSearchSync,
+  loadingIndicator,
+  emptyIndicator,
+  maxSelected = Number.MAX_SAFE_INTEGER,
+  onMaxSelected,
+  hidePlaceholderWhenSelected,
+  disabled,
+  groupBy,
+  className,
+  badgeClassName,
+  selectFirstItem = true,
+  creatable = false,
+  triggerSearchOnFocus = false,
+  commandProps,
+  inputProps,
+  hideClearAllButton = false,
+  multipleSelectorRef
+}: MultipleSelectorProps & { multipleSelectorRef?: React.Ref<MultipleSelectorRef> }) {
     const inputRef = React.useRef<HTMLInputElement>(null);
     const [open, setOpen] = React.useState(false);
     const [onScrollbar, setOnScrollbar] = React.useState(false);
@@ -177,7 +170,7 @@ const MultipleSelector = React.forwardRef<MultipleSelectorRef, MultipleSelectorP
     const debouncedSearchTerm = useDebounce(inputValue, delay || 500);
 
     React.useImperativeHandle(
-      ref,
+      multipleSelectorRef,
       () => ({
         selectedValue: [...selected],
         input: inputRef.current,
@@ -586,8 +579,5 @@ const MultipleSelector = React.forwardRef<MultipleSelectorRef, MultipleSelectorP
         </div>
       </Command>
     );
-  }
-);
-
-MultipleSelector.displayName = "MultipleSelector";
+}
 export default MultipleSelector;

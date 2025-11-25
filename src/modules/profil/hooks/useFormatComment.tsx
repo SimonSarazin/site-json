@@ -3,7 +3,7 @@ import { formatDistanceToNow } from "date-fns";
 import { useDateFnsLocale } from "@/hooks/useDateFnsLocale";
 import { useCocolight } from "@/hooks/useCocolight";
 import type { Comment, User, Organization, EntityTypes } from "@communecter/cocolight-api-client";
-import { useUserPermissions } from "./useUserPermissions";
+import { useUserPermissions } from "@/hooks/useUserPermissions";
 
 /**
  * Interface pour une reply formatée

@@ -1,0 +1,180 @@
+{
+  "NewsTab": {
+    "comment": "Commenter",
+    "createPost": "Créer une publication",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "like": "Aimer",
+    "noNews": "Aucune actualité",
+    "noNewsDescription": "Les publications apparaîtront ici",
+    "readLess": "Lire moins",
+    "readMore": "Lire plus",
+    "report": "Signaler",
+    "share": "Partager",
+    "sharedBy": "Partagé par",
+    "someone": "quelqu'un",
+    "upToDate": "Vous êtes à jour !",
+    "andOthers": "et {{count}} autre",
+    "andOthers_plural": "et {{count}} autres"
+  },
+  "comments": {
+    "collapseThread": "Réduire le fil",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "editComment": "Modifier le commentaire...",
+    "expandThread": "Développer le fil",
+    "like": "Aimer",
+    "loginToComment": "Connectez-vous pour commenter",
+    "noComments": "Aucun commentaire",
+    "reply": "Répondre",
+    "writeComment": "Écrire un commentaire...",
+    "writeReply": "Écrire une réponse...",
+    "deleteDialog": {
+      "title": "Supprimer le commentaire",
+      "description": "Êtes-vous sûr de vouloir supprimer ce commentaire ? Cette action ne peut pas être annulée.",
+      "cancel": "Annuler",
+      "confirm": "Supprimer"
+    }
+  },
+  "forms": {
+    "addNews": {
+      "title": "Nouvelle actualité",
+      "textLabel": "Message",
+      "textPlaceholder": "Que voulez-vous partager ?",
+      "cancel": "Annuler",
+      "post": "Publier",
+      "posting": "Publication..."
+    },
+    "scope": {
+      "label": "Visibilité",
+      "public": "Public",
+      "private": "Privé",
+      "restricted": "Restreint"
+    },
+    "editNews": {
+      "title": "Modifier l'actualité",
+      "textLabel": "Message",
+      "textPlaceholder": "Modifiez votre message...",
+      "cancel": "Annuler",
+      "save": "Enregistrer",
+      "saving": "Enregistrement..."
+    },
+    "imageUpload": {
+      "label": "Images",
+      "upload": "Ajouter des images",
+      "uploading": "Upload en cours..."
+    },
+    "documentUpload": {
+      "label": "Documents",
+      "upload": "Ajouter des documents",
+      "uploading": "Upload en cours..."
+    },
+    "tagsInput": {
+      "label": "Tags",
+      "placeholder": "Ajouter des tags...",
+      "maxReached": "Maximum {{max}} tags autorisés"
+    },
+    "imageCrop": {
+      "title": "Recadrer l'image",
+      "cancel": "Annuler",
+      "apply": "Appliquer"
+    }
+  },
+  "reportDialog": {
+    "title": "Signaler une actualité",
+    "titleComment": "Signaler un commentaire",
+    "description": "Merci de nous aider à maintenir une communauté respectueuse en signalant les contenus inappropriés.",
+    "reasonLabel": "Raison du signalement",
+    "reasonPlaceholder": "Sélectionnez une raison",
+    "commentLabel": "Détails supplémentaires (optionnel)",
+    "commentPlaceholder": "Ajoutez des détails sur ce signalement...",
+    "cancel": "Annuler",
+    "submit": "Envoyer le signalement",
+    "submitting": "Envoi...",
+    "reasons": {
+      "spam": "Spam ou contenu promotionnel",
+      "harassment": "Harcèlement ou intimidation",
+      "hateSpeech": "Discours haineux",
+      "violence": "Violence ou menaces",
+      "inappropriate": "Contenu inapproprié",
+      "misinformation": "Désinformation",
+      "other": "Autre"
+    }
+  },
+  "deleteDialog": {
+    "title": "Supprimer l'actualité",
+    "description": "Êtes-vous sûr de vouloir supprimer cette actualité ? Cette action ne peut pas être annulée.",
+    "cancel": "Annuler",
+    "confirm": "Supprimer"
+  },
+  "shareDialog": {
+    "title": "Partager cette actualité",
+    "description": "Ajoutez votre commentaire (optionnel)",
+    "messageLabel": "Votre commentaire",
+    "messagePlaceholder": "Que pensez-vous de cette publication ?",
+    "cancel": "Annuler",
+    "share": "Partager",
+    "sharing": "Partage..."
+  },
+  "mentions": {
+    "searching": "Recherche...",
+    "noResults": "Aucun résultat trouvé",
+    "typeToSearch": "Tapez @ pour mentionner quelqu'un"
+  },
+  "tags": {
+    "searching": "Recherche...",
+    "noResults": "Aucun tag trouvé",
+    "typeToSearch": "Tapez au moins 2 caractères pour rechercher"
+  },
+  "reactions": {
+    "allReactions": "Toutes les réactions",
+    "noReactions": "Aucune réaction",
+    "reactions": "réaction",
+    "reactions_plural": "réactions"
+  },
+  "reactionsTypes": {
+    "love": "J'adore",
+    "like": "J'aime",
+    "enjoy": "Content",
+    "glad": "Ravi",
+    "bothered": "Énervé",
+    "sad": "Triste",
+    "scared": "Inquiet",
+    "support": "Soutien"
+  },
+  "validation": {
+    "textRequired": "Le texte est requis",
+    "textTooShort": "Le texte doit contenir au moins 3 caractères"
+  },
+  "toast": {
+    "addSuccess": "Actualité publiée avec succès",
+    "addError": "Impossible de publier l'actualité",
+    "editSuccess": "Actualité modifiée avec succès",
+    "editError": "Impossible de modifier l'actualité",
+    "deleteSuccess": "Actualité supprimée avec succès",
+    "deleteError": "Impossible de supprimer l'actualité",
+    "voteSuccess": "Réaction ajoutée avec succès",
+    "voteError": "Impossible d'ajouter la réaction",
+    "comment": {
+      "addSuccess": "Commentaire ajouté avec succès",
+      "addError": "Impossible d'ajouter le commentaire",
+      "editSuccess": "Commentaire modifié avec succès",
+      "editError": "Impossible de modifier le commentaire",
+      "deleteSuccess": "Commentaire supprimé avec succès",
+      "deleteError": "Impossible de supprimer le commentaire",
+      "voteSuccess": "Réaction ajoutée avec succès",
+      "voteError": "Impossible d'ajouter la réaction"
+    },
+    "reply": {
+      "addSuccess": "Réponse ajoutée avec succès",
+      "addError": "Impossible d'ajouter la réponse"
+    },
+    "report": {
+      "success": "Signalement envoyé avec succès",
+      "error": "Impossible d'envoyer le signalement"
+    },
+    "error": {
+      "generic": "Une erreur est survenue"
+    }
+  }
+}

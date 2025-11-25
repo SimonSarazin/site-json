@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Edit, Mail, ChevronRight, ImageIcon } from "lucide-react";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
 import { useFormatProfileEntity } from "../../hooks/useFormatProfileEntity";
-import { useUserPermissions } from "../../hooks/useUserPermissions";
+import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { useT } from "@/hooks/useT";
 import { EntityActionButtons } from "../EntityActionButtons";
 import { ProfileImageUpload } from "../profile-edit/ProfileImageUpload";
