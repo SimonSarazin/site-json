@@ -89,19 +89,47 @@ export function useEditNews(entity: EntityTypes, options?: MutationOptions) {
   return useMutation({
     mutationFn: async ({
       news,
+      newsData,
+      images,
+      documents,
       newText,
       newScope,
       newTags,
     }: {
       news: News;
+      newsData?: NewsData;
+      images?: File[];
+      documents?: File[];
+      // Keep old interface for backward compatibility
       newText?: string;
       newScope?: "public" | "private" | "restricted";
       newTags?: string[];
     }) => {
-      // Update the draft data
-      if (newText !== undefined) news.data.text = newText;
-      if (newScope !== undefined) news.data.scope = newScope;
-      if (newTags !== undefined) news.data.tags = newTags;
+      // Use new interface if provided, otherwise fall back to old interface
+      if (newsData) {
+        news.data.text = newsData.text;
+        news.data.scope = newsData.scope;
+        news.data.tags = newsData.tags;
+      } else {
+        // Backward compatibility
+        if (newText !== undefined) news.data.text = newText;
+        if (newScope !== undefined) news.data.scope = newScope;
+        if (newTags !== undefined) news.data.tags = newTags;
+      }
+
+      // Handle images upload if provided
+      if (images && images.length > 0) {
+        for (const image of images) {
+          await news.addImage(image);
+        }
+      }
+
+      // Handle documents upload if provided
+      if (documents && documents.length > 0) {
+        for (const document of documents) {
+          await news.addFile(document);
+        }
+      }
 
       // Save changes
       const result = await news.save();
@@ -200,34 +228,9 @@ export function useAddNews(entity: EntityTypes) {
       return { news };
     },
 
-    onSuccess: ({ news }) => {
-      // Ajouter la nouvelle news au cache
-      queryClient.setQueryData<{ pages: News[][] }>(
-        ["news", entityId],
-        (old) => {
-          if (!old) {
-            return {
-              pages: [[news]],
-              pageParams: [undefined],
-            };
-          }
-
-          // Ajouter au début de la première page
-          const newPages = [...old.pages];
-          if (newPages[0]) {
-            newPages[0] = [news, ...newPages[0]];
-          } else {
-            newPages[0] = [news];
-          }
-
-          return {
-            ...old,
-            pages: newPages,
-          };
-        }
-      );
-
+    onSuccess: () => {
       toast.success(t("toast.addSuccess"));
+      queryClient.invalidateQueries({ queryKey: ["news", entityId] });
     },
 
     onError: (error) => {

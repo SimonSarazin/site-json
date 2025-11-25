@@ -5,17 +5,13 @@ import { formatDate } from "@/helpers/formatDate";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useFormatNews } from "../hooks/useFormatNews";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
-import { useDeleteNews, useAddVoteNews } from "../hooks/useNewsMutations";
+import { useAddVoteNews } from "../hooks/useNewsMutations";
 import { NewsContent } from "./NewsContent";
 import { NewsImageGrid } from "./media/NewsImageGrid";
 import { NewsFileList } from "./media/NewsFileList";
 import { NewsVoteDisplay } from "./interactions/NewsVoteDisplay";
 import { NewsReactionPicker } from "./interactions/NewsReactionPicker";
 import { NewsComments } from "./comment/NewsComments";
-import { DeleteNewsDialog } from "./DeleteNewsDialog";
-import { EditNewsModal } from "./forms/EditNewsModal";
-import { ShareNewsDialog } from "./ShareNewsDialog";
-import { ReportDialog } from "./ReportDialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,9 +27,13 @@ interface NewsItemProps {
   entity?: EntityTypes;
   isLastItem?: boolean;
   lastItemRef?: (node: HTMLElement | null) => void;
+  onEdit?: (news: News) => void;
+  onDelete?: (news: News) => void;
+  onShare?: (news: News) => void;
+  onReport?: (news: News) => void;
 }
 
-export function NewsItem({ item, entity, isLastItem, lastItemRef }: NewsItemProps) {
+export function NewsItem({ item, entity, isLastItem, lastItemRef, onEdit, onDelete, onShare, onReport }: NewsItemProps) {
   const t = useT("modules/news");
   const { me } = useCocolight();
   const { entity: contextEntity } = useNewsContext();
@@ -42,13 +42,8 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef }: NewsItemProp
   const currentEntity = entity || contextEntity;
 
   const [openComments, setOpenComments] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [shareDialogOpen, setShareDialogOpen] = useState(false);
-  const [reportDialogOpen, setReportDialogOpen] = useState(false);
 
   // Mutations pour gérer les actualités
-  const deleteNewsMutation = useDeleteNews(currentEntity, { optimistic: true });
   const addVoteNewsMutation = useAddVoteNews(currentEntity, { optimistic: true });
 
   // Utilisation du hook de formatage pour simplifier l'accès aux données
@@ -56,8 +51,6 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef }: NewsItemProp
 
   // S'abonner à commentCount pour détecter les changements via le système réactif
   const reactiveCommentCount = useReactiveProperty<number>(item.serverData, 'commentCount');
-
-  console.log("reactiveCommentCount:", item.serverData, reactiveCommentCount);
 
   // Si la news n'a pas pu être formatée, ne rien afficher
   if (!formattedNews || !currentEntity) return null;
@@ -85,30 +78,17 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef }: NewsItemProp
     formattedDate,
     scope,
   } = formattedNews;
-
-    console.log("scope:", scope);
     
   const handleDeleteNews = () => {
-    setDeleteDialogOpen(true);
-  };
-
-  const confirmDelete = () => {
-    deleteNewsMutation.mutate(
-      { news: item },
-      {
-        onSuccess: () => {
-          setDeleteDialogOpen(false);
-        },
-      }
-    );
+    onDelete?.(item);
   };
 
   const handleEditNews = () => {
-    setEditModalOpen(true);
+    onEdit?.(item);
   };
 
   const handleReportNews = () => {
-    setReportDialogOpen(true);
+    onReport?.(item);
   };
 
   const handleReaction = (_newsId: string, reactionType: string) => {
@@ -325,7 +305,7 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef }: NewsItemProp
           </HoverCard>
 
           <button
-            onClick={() => setShareDialogOpen(true)}
+            onClick={() => onShare?.(item)}
             disabled={!me?.isConnected}
             className={`flex items-center gap-2 transition-colors ${
               me?.isConnected
@@ -345,34 +325,6 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef }: NewsItemProp
       {openComments && (
         <NewsComments news={item} entity={currentEntity} />
       )}
-
-      <DeleteNewsDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        onConfirm={confirmDelete}
-        isPending={deleteNewsMutation.isPending}
-      />
-
-      <EditNewsModal
-        entity={currentEntity}
-        news={item}
-        open={editModalOpen}
-        onOpenChange={setEditModalOpen}
-      />
-
-      <ShareNewsDialog
-        entity={currentEntity}
-        news={item}
-        open={shareDialogOpen}
-        onOpenChange={setShareDialogOpen}
-      />
-
-      <ReportDialog
-        type="news"
-        item={item}
-        open={reportDialogOpen}
-        onOpenChange={setReportDialogOpen}
-      />
     </article>
   );
 }

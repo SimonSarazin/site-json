@@ -8,14 +8,16 @@ import { LocalizedString } from "@/types/locale-schema";
 // Section News pour affichage dans d'autres modules
 export const NewsSectionSchema = z.object({
   type: z.literal("news"),
-  title: LocalizedString.optional(),
-  entityId: z.string().optional(),
-  entityType: z.string().optional(),
-  maxItems: z.number().positive().optional().default(10),
-  showAddButton: z.boolean().optional().default(true),
-  showFilters: z.boolean().optional().default(false),
-  showComments: z.boolean().optional().default(true),
-  showReactions: z.boolean().optional().default(true),
+  id: z.string().optional(),
+  props: z.object({
+    title: LocalizedString.optional(),
+    entitySlug: z.string().optional(),
+    maxItems: z.number().positive().optional().default(10),
+    showAddButton: z.boolean().optional().default(true),
+    showFilters: z.boolean().optional().default(false),
+    showComments: z.boolean().optional().default(true),
+    showReactions: z.boolean().optional().default(true),
+  }),
 });
 
 export type NewsSection = z.infer<typeof NewsSectionSchema>;

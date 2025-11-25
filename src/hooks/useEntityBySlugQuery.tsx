@@ -15,7 +15,6 @@ interface QueryEntityBySlugProps {
   >;
 }
 
-// DEPRECATED: Use @/hooks/useEntityBySlugQuery instead
 export const useEntityBySlugQuery = ({ slug, options = {} }: QueryEntityBySlugProps) => {
   const { entity, loading, helper, me } = useCocolight();
   const queryClient = useQueryClient();

@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useT } from "@/hooks/useT";
 import type { Comment, News, EntityTypes } from "@communecter/cocolight-api-client";
-import { findAndRemoveComment, findAndUpdateComment, findAndAddReply } from "../utils/commentCacheUtils";
+import { findAndRemoveComment, findAndUpdateComment, findAndAddReply } from "../../news/utils/commentCacheUtils";
 
 /**
  * Options pour les hooks de mutation

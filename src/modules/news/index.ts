@@ -22,6 +22,7 @@ export { useNewsQuery } from "./hooks/useNewsQuery";
 export { useFormatNews } from "./hooks/useFormatNews";
 export { useFormatComment } from "./hooks/useFormatComment";
 export { useNewsCommentsQuery } from "./hooks/useNewsCommentsQuery";
+export { useNewsEntity } from "./hooks/useNewsEntity";
 export * from "./hooks/useNewsMutations";
 export * from "./hooks/useNewsVotes";
 export * from "./hooks/useCommentMutations";
@@ -30,12 +31,4 @@ export * from "./hooks/useCommentMutations";
 export { NewsItem } from "./components/NewsItem";
 export { AddNewsModal } from "./components/forms/AddNewsModal";
 export { ImageCropDialog } from "./components/forms/ImageCropDialog";
-
-// Export des pages
-export * from "./pages";
-
-// Export des routes
-export * from "./routes";
-
-// Export du module config
-export { default as newsModuleConfig } from "./module.config";
+export { NewsSection } from "./components/sections/NewsSection";

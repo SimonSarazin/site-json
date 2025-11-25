@@ -7,6 +7,7 @@
 //               et d'autocomplétion dans VS Code.
 // ------------------------------------------------------------
 import { SearchProSectionSchema, SearchProStaticSectionSchema } from "@/modules/search/schema";
+import { NewsSectionSchema } from "@/modules/news/schema";
 import { z } from "zod";
 import { LocalizedString, LOCALES } from "./locale-schema";
 import { ProfilesConfigSchema } from "../modules/profil/schema";
@@ -910,7 +911,8 @@ export const Section = z.discriminatedUnion("type", [
   ContentSectionSchema,
   SearchProSectionSchema,
   SearchProStaticSectionSchema,
-  GridLayoutSectionSchema
+  GridLayoutSectionSchema,
+  NewsSectionSchema
 ]);
 export type Section = z.infer<typeof Section>;
 

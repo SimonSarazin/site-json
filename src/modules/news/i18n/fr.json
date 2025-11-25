@@ -15,7 +15,29 @@
     "someone": "quelqu'un",
     "upToDate": "Vous êtes à jour !",
     "andOthers": "et {{count}} autre",
-    "andOthers_plural": "et {{count}} autres"
+    "andOthers_plural": "et {{count}} autres",
+    "loadingNews": "Chargement des actualités...",
+    "allNewsSeen": "Vous avez vu toutes les actualités disponibles"
+  },
+  "NewsSection": {
+    "comment": "Commenter",
+    "createPost": "Créer une publication",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "like": "Aimer",
+    "noNews": "Aucune actualité",
+    "noNewsDescription": "Les publications apparaîtront ici",
+    "readLess": "Lire moins",
+    "readMore": "Lire plus",
+    "report": "Signaler",
+    "share": "Partager",
+    "sharedBy": "Partagé par",
+    "someone": "quelqu'un",
+    "upToDate": "Vous êtes à jour !",
+    "loadingNews": "Chargement des actualités...",
+    "allNewsSeen": "Vous avez vu toutes les actualités disponibles",
+    "entityError": "Erreur de chargement",
+    "entityErrorDescription": "Impossible de charger les données de cette entité"
   },
   "comments": {
     "collapseThread": "Réduire le fil",
@@ -55,6 +77,7 @@
       "title": "Modifier l'actualité",
       "textLabel": "Message",
       "textPlaceholder": "Modifiez votre message...",
+      "tagsLabel": "Tags",
       "cancel": "Annuler",
       "save": "Enregistrer",
       "saving": "Enregistrement..."

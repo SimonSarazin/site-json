@@ -15,7 +15,29 @@
     "someone": "someone",
     "upToDate": "You're up to date!",
     "andOthers": "and {{count}} other",
-    "andOthers_plural": "and {{count}} others"
+    "andOthers_plural": "and {{count}} others",
+    "loadingNews": "Loading news...",
+    "allNewsSeen": "You've seen all available news"
+  },
+  "NewsSection": {
+    "comment": "Comment",
+    "createPost": "Create a post",
+    "delete": "Delete",
+    "edit": "Edit",
+    "like": "Like",
+    "noNews": "No news",
+    "noNewsDescription": "Posts will appear here",
+    "readLess": "Read less",
+    "readMore": "Read more",
+    "report": "Report",
+    "share": "Share",
+    "sharedBy": "Shared by",
+    "someone": "someone",
+    "upToDate": "You're up to date!",
+    "loadingNews": "Loading news...",
+    "allNewsSeen": "You've seen all available news",
+    "entityError": "Loading error",
+    "entityErrorDescription": "Unable to load data for this entity"
   },
   "comments": {
     "collapseThread": "Collapse thread",
@@ -55,6 +77,7 @@
       "title": "Edit news",
       "textLabel": "Message",
       "textPlaceholder": "Edit your message...",
+      "tagsLabel": "Tags",
       "cancel": "Cancel",
       "save": "Save",
       "saving": "Saving..."

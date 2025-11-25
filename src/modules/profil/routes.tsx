@@ -62,7 +62,7 @@ const profileLoader = async (
         // Pré-charger selon le component du tab
         if (tabConfig?.component === 'NewsTab' && NEWS_SUPPORTED_TYPES.has(entityType)) {
           await queryClient.prefetchInfiniteQuery({
-            queryKey: ["profile-news", entity.id],
+            queryKey: ["news", entity.id],
             queryFn: async () => {
               return entity.getNews({
                 indexStep: 12,

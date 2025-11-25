@@ -9,8 +9,8 @@ import cocolightApiClient from "@communecter/cocolight-api-client";
 const { isReactive } = cocolightApiClient;
 
 interface UseNewsQueryProps {
-  entity: EntityTypes;
-  entityType: string;
+  entity: EntityTypes | null;
+  entityType: string | null;
   enabled?: boolean;
   indexStep?: number;
 }
@@ -36,10 +36,7 @@ export function useNewsQuery({
 
   // Construction de la clé de cache - simple comme l'original
   const queryKey = useMemo(() => {
-    if (entity?.id) {
-      return ["news", entity.id];
-    }
-    return ["news", "general"];
+      return ["news", entity?.id];
   }, [entity?.id]);
 
   const {
@@ -52,15 +49,17 @@ export function useNewsQuery({
     refetch,
   } = useInfiniteQueryScroll<News[]>({
     queryKey,
-    queryFn: async ({ pageParam = Math.floor(Date.now() / 1000) }) => {
-      if (!canFetchNews) {
+    queryFn: async ({ pageParam }) => {
+      if (!canFetchNews || !entity) {
         return [];
       }
 
-      return entity.getNews({
-        indexStep,
-        dateLimit: pageParam as number,
-      });
+      const params: { indexStep: number; dateLimit?: number } = { indexStep };
+      if (pageParam) {
+        params.dateLimit = pageParam as number;
+      }
+
+      return entity.getNews(params);
     },
     getNextPageParam: (lastPage: News[]) => {
       // Si la page est complète (indexStep items), il y a probablement d'autres pages
@@ -71,6 +70,11 @@ export function useNewsQuery({
       // Utiliser la date du dernier item comme cursor pour la prochaine page
       // Convertir en secondes (Unix timestamp) au lieu de millisecondes
       const lastItem = lastPage[lastPage.length - 1];
+
+      // Vérifier que entity existe avant de transformer
+      if (!entity) {
+        return undefined;
+      }
 
       const lastItemInstance = transformToEntityInstance<News>(lastItem, helper, entity);
 
@@ -85,8 +89,8 @@ export function useNewsQuery({
     options: {
       staleTime: 1000 * 60 * 5, // 5 minutes
       gcTime: 1000 * 60 * 10,   // 10 minutes
-      enabled: enabled && canFetchNews,
-      initialPageParam: Math.floor(Date.now() / 1000),
+      enabled: enabled && canFetchNews && !!entity,
+      initialPageParam: undefined,
     }
   });
 
