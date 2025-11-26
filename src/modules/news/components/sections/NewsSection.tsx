@@ -17,6 +17,7 @@ import type { News } from "@communecter/cocolight-api-client";
 import { useNewsQuery } from "../../hooks/useNewsQuery";
 import { NewsProvider } from "../../contexts/NewsContext";
 import { useNewsEntity } from "../../hooks/useNewsEntity";
+import { useNewsDetailUrlGenerator } from "@/modules/profil/hooks/useNewsDetailUrlGenerator";
 import "../../i18n";
 
 interface NewsSectionProps {
@@ -49,6 +50,9 @@ export const NewsSection = ({ id, props }: NewsSectionProps) => {
 
   const permissions = useUserPermissions(entity);
   const { shouldLoad } = useLazyTab("news");
+
+  // Hook pour générer les URLs de détail des news
+  const detailUrlGenerator = useNewsDetailUrlGenerator(entity);
 
   // Mutation pour la suppression (conditionné sur l'existence de l'entité)
   const deleteNewsMutation = entity ? useDeleteNews(entity, { optimistic: true }) : null;
@@ -186,7 +190,8 @@ export const NewsSection = ({ id, props }: NewsSectionProps) => {
       entity,
       permissions: newsPermissions,
       entityId: entity?.id || undefined,
-      entityType: entity?.serverData?.type
+      entityType: entity?.serverData?.type,
+      detailUrlGenerator: detailUrlGenerator || undefined
     }}>
       <section id={id} className="space-y-4 sm:space-y-6">
         {props.title && (

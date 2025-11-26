@@ -10,6 +10,7 @@ export interface NewsContextType {
   entityType?: string;
   config?: NewsModuleConfig;
   permissions?: NewsPermissions;
+  detailUrlGenerator?: (newsId: string) => string | null; // Fonction pour générer l'URL de détail
 }
 
 // Configuration du module News

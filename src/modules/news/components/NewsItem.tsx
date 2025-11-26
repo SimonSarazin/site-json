@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Calendar, Share2, Tag, ThumbsUp, MessageCircle, Trash2, Edit, Flag, ExternalLink } from "lucide-react";
 import { useT } from "@/hooks/useT";
 import { formatDate } from "@/helpers/formatDate";
@@ -19,7 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
-import { Link, useLocation } from "react-router";
+import { Link } from "react-router";
 import type { News, EntityTypes } from "@communecter/cocolight-api-client";
 import { useNewsContext } from "../contexts/NewsContext";
 
@@ -38,26 +38,17 @@ interface NewsItemProps {
 export function NewsItem({ item, entity, isLastItem, lastItemRef, onEdit, onDelete, onShare, onReport, detailMode = false }: NewsItemProps) {
   const t = useT("modules/news");
   const { me } = useCocolight();
-  const { entity: contextEntity } = useNewsContext();
-  const location = useLocation();
+  const newsContext = useNewsContext();
+  const { entity: contextEntity } = newsContext;
 
   // Use entity from props or context
   const currentEntity = entity || contextEntity;
 
-  // Générer l'URL vers la page de détail
-  const getDetailUrl = () => {
-    if (!currentEntity?.slug || detailMode) return null;
-
-    // Si nous sommes dans un profil, construire l'URL relative
-    if (location.pathname.includes('/profil/')) {
-      return `/profil/${currentEntity.slug}/news/${item.id}`;
-    }
-
-    // Sinon, utiliser l'URL du profil
-    return `/profil/${currentEntity.slug}/news/${item.id}`;
-  };
-
-  const detailUrl = getDetailUrl();
+  // Générer l'URL vers la page de détail via le contexte
+  const detailUrl = useMemo(() => {
+    if (detailMode || !newsContext?.detailUrlGenerator || !item.id) return null;
+    return newsContext.detailUrlGenerator(item.id);
+  }, [detailMode, newsContext?.detailUrlGenerator, item.id]);
 
   const [openComments, setOpenComments] = useState(false);
 
