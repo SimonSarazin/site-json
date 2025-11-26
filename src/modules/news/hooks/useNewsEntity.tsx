@@ -10,7 +10,7 @@ interface UseNewsEntityProps {
  * Hook pour résoudre l'entité à utiliser pour les news
  * Logique simple :
  * 1. Si entitySlug fourni → utiliser useEntityBySlugQuery
- * 2. Sinon → utiliser entity par défaut de useCocolight
+ * 2. Sinon → utiliser entity par défaut de useCocolight (qui peut être me ou l'entité du contexte)
  */
 export const useNewsEntity = ({ entitySlug }: UseNewsEntityProps) => {
   const { entity: defaultEntity } = useCocolight();

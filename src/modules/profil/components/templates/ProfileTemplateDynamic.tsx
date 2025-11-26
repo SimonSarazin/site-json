@@ -1,10 +1,11 @@
-import { useMemo } from "react";
+import { useMemo, Suspense } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useLocalization } from "@/hooks/useLocalization";
 import { ProfileSectionRenderer } from "../../ProfileSectionRenderer";
+import { TabDetailRenderer } from "../TabDetailRenderer";
 import type { ProfileTab } from "../../schema";
 import type { LocalizedString } from "@/types/locale-schema";
 
@@ -32,9 +33,10 @@ export default function ProfileTemplateDynamic() {
   const navigate = useNavigate();
   const { currentLocale } = useLocalization();
 
-  // Déterminer le tab actif depuis l'URL
+  // Déterminer le tab actif depuis l'URL et si on est sur une sous-route
   const pathSegments = location.pathname.split('/').filter(Boolean);
   const currentTab = pathSegments.length > 2 ? pathSegments[2] : (config.tabs?.[0]?.id || 'about');
+  const isSubRoute = pathSegments.length > 3; // /profil/:slug/:tab/:subRoute...
 
   // Filtrer les tabs selon les conditions
   const availableTabs = useMemo(() => {
@@ -132,16 +134,37 @@ export default function ProfileTemplateDynamic() {
 
             {availableTabs.map(tab => (
               <TabsContent key={tab.id} value={tab.id}>
-                {/* Mode component : rendu direct du composant */}
-                {tab.component && renderTabComponent(tab.component)}
+                {/* Si on est sur une sous-route, rendre TabDetailRenderer */}
+                {isSubRoute && tab.subRoutes && tab.subRoutes.length > 0 ? (
+                  <Suspense fallback={
+                    <div className="p-8 text-center">
+                      <div className="animate-pulse space-y-4">
+                        <div className="h-6 bg-muted rounded w-3/4 mx-auto"></div>
+                        <div className="h-4 bg-muted rounded w-1/2 mx-auto"></div>
+                        <div className="space-y-2">
+                          <div className="h-4 bg-muted rounded"></div>
+                          <div className="h-4 bg-muted rounded"></div>
+                          <div className="h-4 bg-muted rounded w-2/3"></div>
+                        </div>
+                      </div>
+                    </div>
+                  }>
+                    <TabDetailRenderer tabId={tab.id} />
+                  </Suspense>
+                ) : (
+                  <>
+                    {/* Mode component : rendu direct du composant */}
+                    {tab.component && renderTabComponent(tab.component)}
 
-                {/* Mode sections : rendu via ProfileSectionRenderer */}
-                {tab.sections && tab.sections.map((section, index) => (
-                  <ProfileSectionRenderer
-                    key={`${tab.id}-${section.type}-${index}`}
-                    section={section}
-                  />
-                ))}
+                    {/* Mode sections : rendu via ProfileSectionRenderer */}
+                    {tab.sections && tab.sections.map((section, index) => (
+                      <ProfileSectionRenderer
+                        key={`${tab.id}-${section.type}-${index}`}
+                        section={section}
+                      />
+                    ))}
+                  </>
+                )}
               </TabsContent>
             ))}
           </Tabs>

@@ -209,6 +209,13 @@ export const ProfileTabConditionSchema = z.object({
   userContext: z.enum(["own", "other", "any"]).optional(),
 }).optional();
 
+// Schema pour les sous-routes d'un tab
+export const ProfileTabSubRouteSchema = z.object({
+  path: z.string(), // ex: ":newsId" pour /profil/:slug/news/:newsId
+  component: z.string(), // ex: "NewsDetailPage"
+  loader: z.string().optional(), // nom de la fonction loader optionnelle
+});
+
 // Schema pour un tab de profil
 export const ProfileTabSchema = z.object({
   id: z.string(),
@@ -221,6 +228,9 @@ export const ProfileTabSchema = z.object({
   // Option 2 : Utiliser un composant dédié
   component: z.enum(["SocialTab", "MembershipTab", "NewsTab"]).optional(),
 
+  // Sous-routes pour les pages de détail (ex: news/:newsId)
+  subRoutes: z.array(ProfileTabSubRouteSchema).optional(),
+
   condition: ProfileTabConditionSchema,
 }).refine(
   (data) => (data.sections && data.sections.length > 0) || data.component,
@@ -229,6 +239,7 @@ export const ProfileTabSchema = z.object({
 
 export type ProfileTab = z.infer<typeof ProfileTabSchema>;
 export type ProfileTabCondition = z.infer<typeof ProfileTabConditionSchema>;
+export type ProfileTabSubRoute = z.infer<typeof ProfileTabSubRouteSchema>;
 
 // Configuration d'un type de profil
 export const ProfileConfigSchema = z.object({

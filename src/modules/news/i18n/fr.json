@@ -37,7 +37,8 @@
     "loadingNews": "Chargement des actualités...",
     "allNewsSeen": "Vous avez vu toutes les actualités disponibles",
     "entityError": "Erreur de chargement",
-    "entityErrorDescription": "Impossible de charger les données de cette entité"
+    "entityErrorDescription": "Impossible de charger les données de cette entité",
+    "viewDetails": "Voir les détails"
   },
   "comments": {
     "collapseThread": "Réduire le fil",
@@ -168,6 +169,14 @@
   "validation": {
     "textRequired": "Le texte est requis",
     "textTooShort": "Le texte doit contenir au moins 3 caractères"
+  },
+  "NewsDetailPage": {
+    "back": "Retour",
+    "share": "Partager",
+    "report": "Signaler",
+    "invalidNewsId": "ID de news invalide",
+    "newsNotFound": "Actualité introuvable",
+    "newsNotFoundDescription": "Cette actualité n'existe pas ou a été supprimée"
   },
   "toast": {
     "addSuccess": "Actualité publiée avec succès",

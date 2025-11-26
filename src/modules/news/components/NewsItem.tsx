@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calendar, Share2, Tag, ThumbsUp, MessageCircle, Trash2, Edit, Flag } from "lucide-react";
+import { Calendar, Share2, Tag, ThumbsUp, MessageCircle, Trash2, Edit, Flag, ExternalLink } from "lucide-react";
 import { useT } from "@/hooks/useT";
 import { formatDate } from "@/helpers/formatDate";
 import { useCocolight } from "@/hooks/useCocolight";
@@ -19,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
+import { Link, useLocation } from "react-router";
 import type { News, EntityTypes } from "@communecter/cocolight-api-client";
 import { useNewsContext } from "../contexts/NewsContext";
 
@@ -31,15 +32,32 @@ interface NewsItemProps {
   onDelete?: (news: News) => void;
   onShare?: (news: News) => void;
   onReport?: (news: News) => void;
+  detailMode?: boolean; // Si true, affichage en mode détail (pas de lien vers détail)
 }
 
-export function NewsItem({ item, entity, isLastItem, lastItemRef, onEdit, onDelete, onShare, onReport }: NewsItemProps) {
+export function NewsItem({ item, entity, isLastItem, lastItemRef, onEdit, onDelete, onShare, onReport, detailMode = false }: NewsItemProps) {
   const t = useT("modules/news");
   const { me } = useCocolight();
   const { entity: contextEntity } = useNewsContext();
+  const location = useLocation();
 
   // Use entity from props or context
   const currentEntity = entity || contextEntity;
+
+  // Générer l'URL vers la page de détail
+  const getDetailUrl = () => {
+    if (!currentEntity?.slug || detailMode) return null;
+
+    // Si nous sommes dans un profil, construire l'URL relative
+    if (location.pathname.includes('/profil/')) {
+      return `/profil/${currentEntity.slug}/news/${item.id}`;
+    }
+
+    // Sinon, utiliser l'URL du profil
+    return `/profil/${currentEntity.slug}/news/${item.id}`;
+  };
+
+  const detailUrl = getDetailUrl();
 
   const [openComments, setOpenComments] = useState(false);
 
@@ -163,6 +181,14 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef, onEdit, onDele
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-44 sm:w-48">
+                {detailUrl && (
+                  <DropdownMenuItem asChild>
+                    <Link to={detailUrl}>
+                      <ExternalLink className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      <span className="text-xs sm:text-sm">{t("NewsSection.viewDetails")}</span>
+                    </Link>
+                  </DropdownMenuItem>
+                )}
                 {canEdit && (
                   <DropdownMenuItem onClick={handleEditNews}>
                     <Edit className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />

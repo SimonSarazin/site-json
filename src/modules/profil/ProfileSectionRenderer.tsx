@@ -19,6 +19,7 @@ import type {
 } from "@/modules/profil/schema";
 import type { Section } from "@/types/site-schema";
 import { SectionRenderer } from "@/components/sections/SectionRenderer";
+import { useProfileEntity } from "./hooks/useProfileEntity";
 
 // Lazy load des sections
 const ProfileHeader = lazy(() => import("./components/sections/ProfileHeader"));
@@ -67,10 +68,26 @@ const PROFILE_SECTION_TYPES = [
 ] as const;
 
 export function ProfileSectionRenderer({ section }: ProfileSectionRendererProps) {
+  const { entity } = useProfileEntity();
+
   // Check if it's a profile-specific section
   const isProfileSection = PROFILE_SECTION_TYPES.includes(section.type as typeof PROFILE_SECTION_TYPES[number]);
 
   if (!isProfileSection) {
+    // Special handling for news sections - inject profile entity
+    if (section.type === 'news') {
+      const newsSection = section as Section & { type: 'news' };
+      return <SectionRenderer
+        section={{
+          ...newsSection,
+          props: {
+            ...newsSection.props,
+            entitySlug: entity?.slug
+          }
+        }}
+      />;
+    }
+
     // It's a site section - use the SectionRenderer
     return <SectionRenderer section={section as Section} />;
   }

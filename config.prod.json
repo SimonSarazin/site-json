@@ -1412,7 +1412,23 @@
             "fr": "Actualités",
             "en": "News"
           },
-          "component": "NewsTab"
+          "sections": [
+            {
+              "type": "news",
+              "props": {
+                "maxItems": 10,
+                "showAddButton": true,
+                "showComments": true,
+                "showReactions": true
+              }
+            }
+          ],
+          "subRoutes": [
+            {
+              "path": ":newsId",
+              "component": "NewsDetailPage"
+            }
+          ]
         },
         {
           "id": "social",
@@ -1494,7 +1510,23 @@
             "fr": "Actualités",
             "en": "News"
           },
-          "component": "NewsTab"
+          "sections": [
+            {
+              "type": "news",
+              "props": {
+                "maxItems": 10,
+                "showAddButton": true,
+                "showComments": true,
+                "showReactions": true
+              }
+            }
+          ],
+          "subRoutes": [
+            {
+              "path": ":newsId",
+              "component": "NewsDetailPage"
+            }
+          ]
         },
         {
           "id": "members",
@@ -1625,7 +1657,23 @@
             "fr": "Actualités",
             "en": "News"
           },
-          "component": "NewsTab"
+          "sections": [
+            {
+              "type": "news",
+              "props": {
+                "maxItems": 10,
+                "showAddButton": true,
+                "showComments": true,
+                "showReactions": true
+              }
+            }
+          ],
+          "subRoutes": [
+            {
+              "path": ":newsId",
+              "component": "NewsDetailPage"
+            }
+          ]
         },
         {
           "id": "contributors",

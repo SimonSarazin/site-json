@@ -37,7 +37,8 @@
     "loadingNews": "Loading news...",
     "allNewsSeen": "You've seen all available news",
     "entityError": "Loading error",
-    "entityErrorDescription": "Unable to load data for this entity"
+    "entityErrorDescription": "Unable to load data for this entity",
+    "viewDetails": "View details"
   },
   "comments": {
     "collapseThread": "Collapse thread",
@@ -168,6 +169,14 @@
   "validation": {
     "textRequired": "Text is required",
     "textTooShort": "Text must be at least 3 characters long"
+  },
+  "NewsDetailPage": {
+    "back": "Back",
+    "share": "Share",
+    "report": "Report",
+    "invalidNewsId": "Invalid news ID",
+    "newsNotFound": "News not found",
+    "newsNotFoundDescription": "This news doesn't exist or has been deleted"
   },
   "toast": {
     "addSuccess": "News published successfully",
