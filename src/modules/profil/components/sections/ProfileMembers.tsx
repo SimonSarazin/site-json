@@ -19,7 +19,7 @@ interface ProfileMembersProps {
     title?: { fr?: string; en?: string };
     limit?: number;
     showRole?: boolean;
-    showManagement?: boolean; // Nouvelle option pour afficher la gestion
+    showManagement?: boolean;
   };
 }
 
@@ -32,10 +32,12 @@ export default function ProfileMembers({ section }: ProfileMembersProps) {
   const [showInvite, setShowInvite] = useState(false);
 
   // Récupérer les membres selon l'onglet sélectionné
-  const allMembers = useEntityMembers(entity, {}, {});
+  const allMembers = useEntityMembers(entity, { toBeValidated: false }, {});
   const pendingMembers = useEntityMembers(entity, { toBeValidated: true }, {});
   const adminMembers = useEntityMembers(entity, { isAdmin: true }, {});
 
+  // console.log("allMembers.members", allMembers.members);
+  
   if (!entity) return null;
 
   // Déterminer les labels selon le type d'entité
@@ -85,7 +87,15 @@ export default function ProfileMembers({ section }: ProfileMembersProps) {
     labels.title : labels.title;
 
   // Fonction pour rendre une liste de membres
-  const renderMemberList = (members: any[], isLoading: boolean) => {
+  const renderMemberList = (
+    members: any[],
+    isLoading: boolean,
+    lastItemRef?: (node: HTMLElement | null) => void,
+    isFetchingNextPage?: boolean,
+    hasNextPage?: boolean
+  ) => {
+
+    console.log("Rendering members:", isFetchingNextPage, isLoading);
     if (isLoading) {
       return (
         <div className="space-y-4">
@@ -111,36 +121,47 @@ export default function ProfileMembers({ section }: ProfileMembersProps) {
       );
     }
 
-    const limitedMembers = section.limit ? members.slice(0, section.limit) : members;
-
     return (
       <div className="space-y-3">
-        {limitedMembers.map((member: any) => (
-          <div key={member.id} className="flex items-center justify-between p-3 border rounded-lg">
+        {members.map((member: any, index: number) => (
+          <div
+            key={member.id}
+            className="flex items-center justify-between p-3 border rounded-lg"
+          >
             <div className="flex items-center space-x-3">
               <Avatar className="h-10 w-10">
-                <AvatarImage src={member.image} alt={member.name} />
-                <AvatarFallback>{member.name?.[0] || "?"}</AvatarFallback>
+                <AvatarImage src={member.serverData?.profilThumbImageUrl} alt={member.serverData.name} />
+                <AvatarFallback>{member.serverData.name?.[0] || "?"}</AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-medium">{member.name}</p>
-                <p className="text-sm text-gray-500">{member.email}</p>
+                <p className="font-medium">{member.serverData.name}</p>
+                <p className="text-sm text-gray-500">{member.serverData.email}</p>
               </div>
             </div>
-            {section.showRole && (
+            {/* {section.showRole && (
               <div className="flex items-center space-x-2">
-                {member.roles?.map((role: string) => (
-                  <Badge key={role} variant={role === "admin" ? "default" : "outline"}>
-                    {role}
-                  </Badge>
-                ))}
+
               </div>
-            )}
+            )} */}
           </div>
         ))}
+
+        <div ref={lastItemRef} className="h-12" />
+
+        {/* Infinite scroll loading indicator */}
+        {isFetchingNextPage && (
+          <div className="flex justify-center py-4 text-muted-foreground">
+            <div className="flex items-center space-x-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+              <span>{t("ProfileMembers.loadingMore")}</span>
+            </div>
+          </div>
+        )}
       </div>
     );
   };
+
+  console.log("permissions.isAdmin", permissions.isAdmin);
 
   return (
     <Card>
@@ -180,46 +201,68 @@ export default function ProfileMembers({ section }: ProfileMembersProps) {
         <Tabs value={selectedTab} onValueChange={setSelectedTab}>
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="all">
-              {labels.members} ({allMembers.members?.length || 0})
+              {labels.members} ({allMembers.totalCount})
             </TabsTrigger>
             {(permissions.isAdmin || (isEvent(entity) && permissions.isAuthor)) && (
               <TabsTrigger value="pending">
-                {labels.pending} ({pendingMembers.members?.length || 0})
+                {labels.pending} ({pendingMembers.totalCount})
               </TabsTrigger>
             )}
             <TabsTrigger value="admins">
-              {labels.admin}s ({adminMembers.members?.length || 0})
+              {labels.admin}s ({adminMembers.totalCount})
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="all" className="mt-4">
-            {renderMemberList(allMembers.members || [], allMembers.isLoading)}
+            {renderMemberList(
+              allMembers.members || [],
+              allMembers.isLoading,
+              allMembers.lastItemRef,
+              allMembers.isFetchingNextPage,
+              allMembers.hasNextPage
+            )}
           </TabsContent>
 
           {(permissions.isAdmin || (isEvent(entity) && permissions.isAuthor)) && (
             <TabsContent value="pending" className="mt-4">
-              {renderMemberList(pendingMembers.members || [], pendingMembers.isLoading)}
+              {renderMemberList(
+                pendingMembers.members || [],
+                pendingMembers.isLoading,
+                pendingMembers.lastItemRef,
+                pendingMembers.isFetchingNextPage,
+                pendingMembers.hasNextPage
+              )}
             </TabsContent>
           )}
 
           <TabsContent value="admins" className="mt-4">
-            {renderMemberList(adminMembers.members || [], adminMembers.isLoading)}
+            {renderMemberList(
+              adminMembers.members || [],
+              adminMembers.isLoading,
+              adminMembers.lastItemRef,
+              adminMembers.isFetchingNextPage,
+              adminMembers.hasNextPage
+            )}
           </TabsContent>
         </Tabs>
       </CardContent>
 
       {/* Dialogs */}
+      {showManagement && (
       <MemberManagementDialog
         entity={entity}
         open={showManagement}
         onOpenChange={setShowManagement}
       />
+      )}
 
+      {showInvite && (
       <InviteMemberDialog
         entity={entity}
         open={showInvite}
         onOpenChange={setShowInvite}
       />
+      )}
     </Card>
   );
 }

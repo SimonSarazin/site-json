@@ -39,26 +39,33 @@ export function useOrganizationMembers(
         throw new Error("Entity must be an organization");
       }
 
-      const indexMin = typeof pageParam === 'number' ? pageParam : 0;
+      const page = pageParam as { pageNumber?: number; next?: () => Promise<{ results: any[]; count: any; hasNext: boolean; pageNumber: number; next?: () => Promise<any> }> } | undefined;
       const pagination = {
         name: params?.search,
-        indexMin,
         indexStep: params?.indexStep || 20
       };
 
-      const result = await entity.getMembers(pagination, options);
-      return {
-        results: result.results,
-        count: result.count,
-        hasNext: result.hasNext,
-        pageNumber: Math.floor(indexMin / (params?.indexStep || 20)) + 1,
-        next: result.next
-      };
+        const result = await entity.getMembers(pagination, options);
+
+        console.log("useOrganizationMembers result:", result);
+
+        // Use next() function if available and we're on a subsequent page
+        if (
+          page &&
+          page.pageNumber &&
+          page.pageNumber > 1 &&
+          typeof page.next !== "function" &&
+          result.next
+        ) {
+          return result.next();
+        }
+
+        return result;
     },
     options: {
       enabled: !!entity && isOrganization(entity),
       staleTime: 5 * 60 * 1000,
-      initialPageParam: 0
+      initialPageParam: undefined
     }
   });
 
@@ -67,7 +74,13 @@ export function useOrganizationMembers(
     return data.pages.flatMap(page => page.results);
   }, [data]);
 
+  const totalCount = useMemo(() => {
+    if (!data || data.pages.length === 0) return 0;
+    return data.pages[0].count?.total || 0;
+  }, [data]);
+
   return {
+    totalCount: totalCount,
     members,
     isLoading,
     isFetchingNextPage,
@@ -101,26 +114,31 @@ export function useProjectContributors(
         throw new Error("Entity must be a project");
       }
 
-      const indexMin = typeof pageParam === 'number' ? pageParam : 0;
+      const page = pageParam as { pageNumber?: number; next?: () => Promise<{ results: any[]; count: any; hasNext: boolean; pageNumber: number; next?: () => Promise<any> }> } | undefined;
       const pagination = {
         name: params?.search,
-        indexMin,
         indexStep: params?.indexStep || 20
       };
 
       const result = await entity.getContributors(pagination, options);
-      return {
-        results: result.results,
-        count: result.count,
-        hasNext: result.hasNext,
-        pageNumber: Math.floor(indexMin / (params?.indexStep || 20)) + 1,
-        next: result.next
-      };
+
+      // Use next() function if available and we're on a subsequent page
+      if (
+        page &&
+        page.pageNumber &&
+        page.pageNumber > 1 &&
+        typeof page.next !== "function" &&
+        result.next
+      ) {
+        return result.next();
+      }
+
+      return result;
     },
     options: {
       enabled: !!entity && isProject(entity),
       staleTime: 5 * 60 * 1000,
-      initialPageParam: 0
+      initialPageParam: undefined
     }
   });
 
@@ -129,7 +147,13 @@ export function useProjectContributors(
     return data.pages.flatMap(page => page.results);
   }, [data]);
 
+  const totalCount = useMemo(() => {
+    if (!data || data.pages.length === 0) return 0;
+    return data.pages[0].count?.total || 0;
+  }, [data]);
+
   return {
+    totalCount: totalCount,
     contributors,
     isLoading,
     isFetchingNextPage,
@@ -163,26 +187,31 @@ export function useEventAttendees(
         throw new Error("Entity must be an event");
       }
 
-      const indexMin = typeof pageParam === 'number' ? pageParam : 0;
+      const page = pageParam as { pageNumber?: number; next?: () => Promise<{ results: any[]; count: any; hasNext: boolean; pageNumber: number; next?: () => Promise<any> }> } | undefined;
       const pagination = {
         name: params?.search,
-        indexMin,
         indexStep: params?.indexStep || 20
       };
 
       const result = await entity.getAttendees(pagination, options);
-      return {
-        results: result.results,
-        count: result.count,
-        hasNext: result.hasNext,
-        pageNumber: Math.floor(indexMin / (params?.indexStep || 20)) + 1,
-        next: result.next
-      };
+
+      // Use next() function if available and we're on a subsequent page
+      if (
+        page &&
+        page.pageNumber &&
+        page.pageNumber > 1 &&
+        typeof page.next !== "function" &&
+        result.next
+      ) {
+        return result.next();
+      }
+
+      return result;
     },
     options: {
       enabled: !!entity && isEvent(entity),
       staleTime: 5 * 60 * 1000,
-      initialPageParam: 0
+      initialPageParam: undefined
     }
   });
 
@@ -191,7 +220,13 @@ export function useEventAttendees(
     return data.pages.flatMap(page => page.results);
   }, [data]);
 
+  const totalCount = useMemo(() => {
+    if (!data || data.pages.length === 0) return 0;
+    return data.pages[0].count?.total || 0;
+  }, [data]);
+
   return {
+    totalCount: totalCount,
     attendees,
     isLoading,
     isFetchingNextPage,
@@ -244,6 +279,7 @@ export function useEntityMembers(
   }
 
   return {
+    totalCount: 0,
     members: [],
     isLoading: false,
     isFetchingNextPage: false,

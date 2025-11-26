@@ -23,7 +23,7 @@
     "@types/react-dom": "19.1.2"
   },
   "dependencies": {
-    "@communecter/cocolight-api-client": "^1.0.76",
+    "@communecter/cocolight-api-client": "^1.0.78",
     "@dr.pogodin/react-helmet": "^3.0.2",
     "@hookform/resolvers": "^3.10.0",
     "@icons-pack/react-simple-icons": "^13.3.0",

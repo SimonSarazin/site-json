@@ -152,6 +152,7 @@
     "invite": "Inviter",
     "manage": "Gérer",
     "noMembers": "Aucun membre pour le moment",
+    "loadingMore": "Chargement de plus de membres...",
     "organization": {
       "title": "Membres de l'organisation",
       "member": "Membre",

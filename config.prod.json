@@ -1538,7 +1538,7 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-members" }
+                { "type": "profile-members", "showRole": true, "showManagement": true }
               ],
               "rightSections": [
                 {

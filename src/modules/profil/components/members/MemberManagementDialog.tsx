@@ -76,8 +76,9 @@ export function MemberManagementDialog({ entity, open, onOpenChange }: MemberMan
   });
 
   // Queries
-  const allMembers = useEntityMembers(entity, {}, {});
-  const pendingMembers = useEntityMembers(entity, { toBeValidated: true }, {});
+  const allMembers = useEntityMembers(entity, { toBeValidated: false }, { search: searchTerm });
+  const pendingMembers = useEntityMembers(entity, { toBeValidated: true }, { search: searchTerm });
+  const adminMembers = useEntityMembers(entity, { isAdmin: true }, { search: searchTerm });
 
   // Mutations
   const acceptMutation = useAcceptMemberRequest(entity);
@@ -171,13 +172,6 @@ export function MemberManagementDialog({ entity, open, onOpenChange }: MemberMan
     });
   };
 
-  const filterMembers = (members: any[]) => {
-    if (!searchTerm) return members;
-    return members.filter(member =>
-      member.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.email?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  };
 
   const renderMemberActions = (member: any, isPending = false) => {
     if (isPending) {
@@ -186,7 +180,7 @@ export function MemberManagementDialog({ entity, open, onOpenChange }: MemberMan
           <Button
             size="sm"
             variant="default"
-            onClick={() => handleAcceptMember(member.id, member.name)}
+            onClick={() => handleAcceptMember(member.id, member.serverData.name)}
             disabled={acceptMutation.isPending}
           >
             <Check className="h-4 w-4" />
@@ -194,7 +188,7 @@ export function MemberManagementDialog({ entity, open, onOpenChange }: MemberMan
           <Button
             size="sm"
             variant="destructive"
-            onClick={() => handleRejectMember(member.id, member.name)}
+            onClick={() => handleRejectMember(member.id, member.serverData.name)}
             disabled={rejectMutation.isPending}
           >
             <X className="h-4 w-4" />
@@ -211,21 +205,21 @@ export function MemberManagementDialog({ entity, open, onOpenChange }: MemberMan
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          {!member.isAdmin && !isEvent(entity) && (
-            <DropdownMenuItem onClick={() => handlePromoteMember(member.id, member.name)}>
+          {!member.isAdmin() && !isEvent(entity) && (
+            <DropdownMenuItem onClick={() => handlePromoteMember(member.id, member.serverData.name)}>
               <Crown className="h-4 w-4 mr-2" />
               {t("MemberManagementDialog.promote")}
             </DropdownMenuItem>
           )}
-          {member.isAdmin && !isEvent(entity) && (
-            <DropdownMenuItem onClick={() => handleDemoteMember(member.id, member.name)}>
+          {member.isAdmin() && !isEvent(entity) && (
+            <DropdownMenuItem onClick={() => handleDemoteMember(member.id, member.serverData.name)}>
               <ShieldOff className="h-4 w-4 mr-2" />
               {t("MemberManagementDialog.demote")}
             </DropdownMenuItem>
           )}
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            onClick={() => handleRemoveMember(member.id, member.name)}
+            onClick={() => handleRemoveMember(member.id, member.serverData.name)}
             className="text-red-600"
           >
             <Trash2 className="h-4 w-4 mr-2" />
@@ -236,7 +230,14 @@ export function MemberManagementDialog({ entity, open, onOpenChange }: MemberMan
     );
   };
 
-  const renderMemberList = (members: any[], isLoading: boolean, isPending = false) => {
+  const renderMemberList = (
+    members: any[],
+    isLoading: boolean,
+    isPending = false,
+    lastItemRef?: (node: HTMLElement | null) => void,
+    isFetchingNextPage?: boolean,
+    hasNextPage?: boolean
+  ) => {
     if (isLoading) {
       return (
         <div className="space-y-3">
@@ -255,9 +256,7 @@ export function MemberManagementDialog({ entity, open, onOpenChange }: MemberMan
       );
     }
 
-    const filteredMembers = filterMembers(members);
-
-    if (filteredMembers.length === 0) {
+    if (members.length === 0) {
       return (
         <div className="text-center py-8 text-gray-500">
           <User className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -268,28 +267,42 @@ export function MemberManagementDialog({ entity, open, onOpenChange }: MemberMan
 
     return (
       <div className="space-y-3">
-        {filteredMembers.map((member: any) => (
-          <div key={member.id} className="flex items-center justify-between p-3 border rounded-lg">
+        {members.map((member: any, index: number) => (
+          <div
+            key={member.id}
+            className="flex items-center justify-between p-3 border rounded-lg"
+            ref={index === members.length - 1 ? lastItemRef : undefined}
+          >
             <div className="flex items-center space-x-3">
               <Avatar className="h-10 w-10">
-                <AvatarImage src={member.image} alt={member.name} />
-                <AvatarFallback>{member.name?.[0] || "?"}</AvatarFallback>
+                <AvatarImage src={member.serverData?.profilThumbImageUrl} alt={member.serverData?.name} />
+                <AvatarFallback>{member.serverData?.name?.[0] || "?"}</AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-medium">{member.name}</p>
-                <p className="text-sm text-gray-500">{member.email}</p>
+                <p className="font-medium">{member.serverData?.name}</p>
+                <p className="text-sm text-gray-500">{member.serverData?.email}</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
-              {!isPending && member.roles?.map((role: string) => (
-                <Badge key={role} variant={role === "admin" ? "default" : "outline"}>
-                  {role}
+              {!isPending && member.isAdmin() && (
+                <Badge key="admin" variant="default">
+                  admin
                 </Badge>
-              ))}
+              )}
               {renderMemberActions(member, isPending)}
             </div>
           </div>
         ))}
+
+        {/* Infinite scroll loading indicator */}
+        {isFetchingNextPage && (
+          <div className="flex justify-center py-4 text-muted-foreground">
+            <div className="flex items-center space-x-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+              <span>{t("ProfileMembers.loadingMore")}</span>
+            </div>
+          </div>
+        )}
       </div>
     );
   };
@@ -321,19 +334,47 @@ export function MemberManagementDialog({ entity, open, onOpenChange }: MemberMan
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList>
                 <TabsTrigger value="pending">
-                  {labels.pending} ({pendingMembers.members?.length || 0})
+                  {labels.pending} ({pendingMembers.totalCount || 0})
                 </TabsTrigger>
                 <TabsTrigger value="all">
-                  {labels.members} ({allMembers.members?.length || 0})
+                  {labels.members} ({allMembers.totalCount || 0})
+                </TabsTrigger>
+                <TabsTrigger value="admins">
+                  {labels.admin}s ({adminMembers.totalCount || 0})
                 </TabsTrigger>
               </TabsList>
 
               <TabsContent value="pending" className="mt-4 max-h-96 overflow-y-auto">
-                {renderMemberList(pendingMembers.members || [], pendingMembers.isLoading, true)}
+                {renderMemberList(
+                  pendingMembers.members || [],
+                  pendingMembers.isLoading,
+                  true,
+                  pendingMembers.lastItemRef,
+                  pendingMembers.isFetchingNextPage,
+                  pendingMembers.hasNextPage
+                )}
               </TabsContent>
 
               <TabsContent value="all" className="mt-4 max-h-96 overflow-y-auto">
-                {renderMemberList(allMembers.members || [], allMembers.isLoading, false)}
+                {renderMemberList(
+                  allMembers.members || [],
+                  allMembers.isLoading,
+                  false,
+                  allMembers.lastItemRef,
+                  allMembers.isFetchingNextPage,
+                  allMembers.hasNextPage
+                )}
+              </TabsContent>
+
+              <TabsContent value="admins" className="mt-4 max-h-96 overflow-y-auto">
+                {renderMemberList(
+                  adminMembers.members || [],
+                  adminMembers.isLoading,
+                  false,
+                  adminMembers.lastItemRef,
+                  adminMembers.isFetchingNextPage,
+                  adminMembers.hasNextPage
+                )}
               </TabsContent>
             </Tabs>
           </div>
