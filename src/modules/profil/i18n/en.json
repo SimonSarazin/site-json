@@ -161,6 +161,16 @@
     "gridView": "Grid",
     "detailedView": "Details"
   },
+  "MembersTab": {
+    "noMembers": "No members",
+    "noMembersDescription": "Members will appear here",
+    "loadingMembers": "Loading members...",
+    "allMembersLoaded": "All members loaded",
+    "allMembersSeen": "You've seen all the members",
+    "anonymousMember": "Anonymous member",
+    "gridView": "Grid",
+    "detailedView": "Details"
+  },
   "NewsTab": {
     "noNews": "No news",
     "noNewsDescription": "Posts will appear here",

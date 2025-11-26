@@ -9,7 +9,7 @@ interface UseProfilOrganizationsQueryProps {
   searchQuery?: string;
 }
 
-const ORGANIZATIONS_SUPPORTED_TYPES = new Set(["citoyens", "organizations"]);
+const ORGANIZATIONS_SUPPORTED_TYPES = new Set(["citoyens"]);
 
 export function useProfilOrganizationsQuery({
   entity,

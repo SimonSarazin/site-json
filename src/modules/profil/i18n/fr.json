@@ -161,6 +161,16 @@
     "gridView": "Grille",
     "detailedView": "Détails"
   },
+  "MembersTab": {
+    "noMembers": "Aucun membre",
+    "noMembersDescription": "Les membres apparaîtront ici",
+    "loadingMembers": "Chargement des membres...",
+    "allMembersLoaded": "Tous les membres chargés",
+    "allMembersSeen": "Vous avez vu tous les membres",
+    "anonymousMember": "Membre anonyme",
+    "gridView": "Grille",
+    "detailedView": "Détails"
+  },
   "NewsTab": {
     "noNews": "Aucune actualité",
     "noNewsDescription": "Les publications apparaîtront ici",

@@ -12,6 +12,7 @@ import { SubscriptionsTab } from "../subscriptions/SubscriptionsTab";
 import { SubscribersTab } from "../subscribers/SubscribersTab";
 import { FriendsTab } from "../friends/FriendsTab";
 import { ContributorsTab } from "../contributors/ContributorsTab";
+import { MembersTab } from "../members/MembersTab";
 
 export function CommunitiesTab() {
   const { entityType } = useProfileEntity();
@@ -47,7 +48,7 @@ export function CommunitiesTab() {
     switch (entityType) {
       case "citoyens":
         return [
-          { id: "citoyensamis", label: t("CommunitiesTab.friends"), show: true, component: "placeholder" }, // TODO: activer "friends" quand l'API GET_FRIENDS_ADMIN sera corrigée
+          { id: "citoyensamis", label: t("CommunitiesTab.friends"), show: true, component: "friends" },
           { id: "citoyensorganisations", label: t("CommunitiesTab.organizations"), show: true, component: "organizations" },
           { id: "citoyensabonnements", label: t("CommunitiesTab.subscriptions"), show: true, component: "subscriptions" },
           { id: "citoyensabonnés", label: t("CommunitiesTab.subscribers"), show: true, component: "subscribers" },
@@ -61,9 +62,8 @@ export function CommunitiesTab() {
         ];
       case "organizations":
         return [
-          { id: "membres", label: t("CommunitiesTab.members"), show: true, component: "placeholder" },
+          { id: "membres", label: t("CommunitiesTab.members"), show: true, component: "members" },
           { id: "tovalidated", label: t("CommunitiesTab.membersToValidate"), show: isAuthor, component: "placeholder" },
-          { id: "membresorganisations", label: t("CommunitiesTab.organizations"), show: true, component: "organizations" },
           { id: "membresabonnés", label: t("CommunitiesTab.subscribers"), show: true, component: "subscribers" },
         ];
       default:
@@ -110,6 +110,8 @@ export function CommunitiesTab() {
         return <SubscribersTab enabled={isActive} />;
       case "contributors":
         return <ContributorsTab enabled={isActive} />;
+      case "members":
+        return <MembersTab enabled={isActive} />;
       case "placeholder":
       default:
         return (
