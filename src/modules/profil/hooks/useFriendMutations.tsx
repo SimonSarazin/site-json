@@ -2,26 +2,23 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useT } from "@/hooks/useT";
 import { useCocolight } from "@/hooks/useCocolight";
-import type { EntityTypes } from "@communecter/cocolight-api-client";
+import type { User } from "@communecter/cocolight-api-client";
 import { isUser } from "@/lib/getTypedEntity";
 
 /**
  * Hook pour envoyer une demande d'amitié
  */
-export function useSendFriendRequest(currentUser: EntityTypes | null) {
+export function useSendFriendRequest(currentUser: User | null) {
   const queryClient = useQueryClient();
   const t = useT("modules/profil");
-  const { api } = useCocolight();
+  const { me } = useCocolight();
 
   return useMutation({
-    mutationFn: async ({ userId }: { userId: string }) => {
-      if (!currentUser || !isUser(currentUser) || !api) {
+    mutationFn: async ({ user }: { user: User }) => {
+      if (!currentUser || !isUser(currentUser) || !me) {
         throw new Error("Current user and API are required");
       }
-
-      // Créer une instance de l'utilisateur cible et envoyer la demande
-      const targetUser = await api.user({ id: userId });
-      return await targetUser.sendFriendRequest();
+      return await user.sendFriendRequest();
     },
 
     onSuccess: () => {
@@ -45,20 +42,17 @@ export function useSendFriendRequest(currentUser: EntityTypes | null) {
 /**
  * Hook pour accepter une demande d'amitié
  */
-export function useAcceptFriendRequest(currentUser: EntityTypes | null) {
+export function useAcceptFriendRequest(currentUser: User | null) {
   const queryClient = useQueryClient();
   const t = useT("modules/profil");
-  const { api } = useCocolight();
+  const { me } = useCocolight();
 
   return useMutation({
-    mutationFn: async ({ userId }: { userId: string }) => {
-      if (!currentUser || !isUser(currentUser) || !api) {
+    mutationFn: async ({ user }: { user: User }) => {
+      if (!currentUser || !isUser(currentUser) || !me) {
         throw new Error("Current user and API are required");
       }
-
-      // Créer une instance de l'utilisateur qui a envoyé la demande et l'accepter
-      const friendUser = await api.user({ id: userId });
-      return await friendUser.acceptFriendRequest();
+      return await user.acceptFriendRequest();
     },
 
     onSuccess: () => {
@@ -81,21 +75,17 @@ export function useAcceptFriendRequest(currentUser: EntityTypes | null) {
 /**
  * Hook pour rejeter une demande d'amitié
  */
-export function useRejectFriendRequest(currentUser: EntityTypes | null) {
+export function useRejectFriendRequest(currentUser: User | null) {
   const queryClient = useQueryClient();
   const t = useT("modules/profil");
-  const { api } = useCocolight();
+  const { me } = useCocolight();
 
   return useMutation({
-    mutationFn: async ({ userId }: { userId: string }) => {
-      if (!currentUser || !isUser(currentUser) || !api) {
+    mutationFn: async ({ user }: { user: User }) => {
+      if (!currentUser || !isUser(currentUser) || !me) {
         throw new Error("Current user and API are required");
       }
-
-      // Pour rejeter, on peut utiliser removeFriend si un lien existe déjà
-      // ou utiliser l'API disconnect directement
-      const friendUser = await api.user({ id: userId });
-      return await friendUser.removeFriend();
+      return await user.removeFriend();
     },
 
     onSuccess: () => {
@@ -117,20 +107,19 @@ export function useRejectFriendRequest(currentUser: EntityTypes | null) {
 /**
  * Hook pour retirer un ami (unfriend)
  */
-export function useRemoveFriend(currentUser: EntityTypes | null) {
+export function useRemoveFriend(currentUser: User | null) {
   const queryClient = useQueryClient();
   const t = useT("modules/profil");
-  const { api } = useCocolight();
+  const { me } = useCocolight();
 
   return useMutation({
-    mutationFn: async ({ userId }: { userId: string }) => {
-      if (!currentUser || !isUser(currentUser) || !api) {
+    mutationFn: async ({ user }: { user: User }) => {
+      if (!currentUser || !isUser(currentUser) || !me) {
         throw new Error("Current user and API are required");
       }
 
       // Supprimer l'ami
-      const friendUser = await api.user({ id: userId });
-      return await friendUser.removeFriend();
+      return await user.removeFriend();
     },
 
     onSuccess: () => {
@@ -152,20 +141,19 @@ export function useRemoveFriend(currentUser: EntityTypes | null) {
 /**
  * Hook pour annuler une demande d'amitié envoyée
  */
-export function useCancelFriendRequest(currentUser: EntityTypes | null) {
+export function useCancelFriendRequest(currentUser: User | null) {
   const queryClient = useQueryClient();
   const t = useT("modules/profil");
-  const { api } = useCocolight();
+  const { me } = useCocolight();
 
   return useMutation({
-    mutationFn: async ({ userId }: { userId: string }) => {
-      if (!currentUser || !isUser(currentUser) || !api) {
+    mutationFn: async ({ user }: { user: User }) => {
+      if (!currentUser || !isUser(currentUser) || !me) {
         throw new Error("Current user and API are required");
       }
 
       // Pour annuler, on peut utiliser removeFriend
-      const targetUser = await api.user({ id: userId });
-      return await targetUser.removeFriend();
+      return await user.removeFriend();
     },
 
     onSuccess: () => {

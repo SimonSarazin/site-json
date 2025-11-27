@@ -10,6 +10,7 @@ import { useFriendsQuery } from "../../hooks/useFriendsQuery";
 import { useAcceptFriendRequest, useRejectFriendRequest, useRemoveFriend, useCancelFriendRequest } from "../../hooks/useFriendMutations";
 import { useCocolight } from "@/hooks/useCocolight";
 import { FriendRequestDialog } from "../social/FriendRequestDialog";
+import type { User } from "@communecter/cocolight-api-client";
 
 export function SocialTab() {
   const { entity } = useProfileEntity();
@@ -179,7 +180,7 @@ export function SocialTab() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => removeFriendMutation.mutate({ userId: friend.id })}
+                        onClick={() => removeFriendMutation.mutate({ user: friend })}
                         disabled={removeFriendMutation.isPending}
                         className="text-red-600 hover:text-red-700 hover:bg-red-50"
                       >
@@ -244,7 +245,7 @@ export function SocialTab() {
                     <div className="flex items-center gap-2">
                       <Button
                         size="sm"
-                        onClick={() => acceptFriendMutation.mutate({ userId: user.id || '' })}
+                        onClick={() => acceptFriendMutation.mutate({ user })}
                         disabled={acceptFriendMutation.isPending}
                         className="bg-teal-600 hover:bg-teal-700"
                       >
@@ -253,7 +254,7 @@ export function SocialTab() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => rejectFriendMutation.mutate({ userId: user.id || '' })}
+                        onClick={() => rejectFriendMutation.mutate({ user })}
                         disabled={rejectFriendMutation.isPending}
                         className="text-red-600 hover:text-red-700"
                       >
@@ -316,7 +317,7 @@ export function SocialTab() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => cancelRequestMutation.mutate({ userId: user.id || '' })}
+                      onClick={() => cancelRequestMutation.mutate({ user })}
                       disabled={cancelRequestMutation.isPending}
                       className="text-red-600 hover:text-red-700"
                     >

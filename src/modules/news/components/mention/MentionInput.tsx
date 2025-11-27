@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover";
 import { MentionSuggestions } from "./MentionSuggestions";
-import type { SearchedUser } from "../../hooks/useSearchUsers";
+import { User } from "@communecter/cocolight-api-client";
 
 interface MentionInputProps {
   value: string;
@@ -50,20 +50,20 @@ export function MentionInput({
     }
   };
 
-  const selectMention = (user: SearchedUser) => {
+  const selectMention = (user: User) => {
     const beforeMention = value.substring(0, mentionStartPos);
     const afterCursor = value.substring(cursorPosition);
-    const newValue = `${beforeMention}@${user.slug} ${afterCursor}`;
+    const newValue = `${beforeMention}@${user.serverData.slug} ${afterCursor}`;
 
     onChange(newValue);
     setShowSuggestions(false);
     setSearchQuery("");
 
     // Notifier l'ajout de la mention
-    onMentionAdd?.(user.slug);
+    onMentionAdd?.(user.serverData.slug);
 
     // Repositionner le curseur après le nom inséré
-    const newCursorPos = beforeMention.length + user.slug.length + 2; // +2 pour @ et espace
+    const newCursorPos = beforeMention.length + user.serverData.slug.length + 2; // +2 pour @ et espace
     setTimeout(() => {
       if (textareaRef.current) {
         textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);

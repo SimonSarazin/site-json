@@ -84,14 +84,10 @@ export function useUnfollowUser(entity: EntityTypes | null) {
 }
 
 /**
- * Hook pour envoyer une demande d'ami
+ * Hook pour envoyer une demande d'ami (pour useEntityActions)
  *
  * @param entity - L'utilisateur à qui envoyer la demande
  * @returns Mutation React Query
- *
- * @example
- * const sendRequestMutation = useSendFriendRequest(entity);
- * sendRequestMutation.mutate();
  */
 export function useSendFriendRequest(entity: EntityTypes | null) {
   const queryClient = useQueryClient();
@@ -109,6 +105,8 @@ export function useSendFriendRequest(entity: EntityTypes | null) {
     onSuccess: () => {
       if (entity) {
         queryClient.invalidateQueries({ queryKey: ["element-about", entity.slug] });
+        queryClient.invalidateQueries({ queryKey: ["user-friends", entity.slug] });
+        queryClient.invalidateQueries({ queryKey: ["user-sent-friend-requests", entity.slug] });
       }
       toast.success(t("toast.relationship.friendRequestSent"));
     },
@@ -123,53 +121,10 @@ export function useSendFriendRequest(entity: EntityTypes | null) {
 }
 
 /**
- * Hook pour accepter une demande d'ami
- *
- * @param entity - L'utilisateur dont on accepte la demande
- * @returns Mutation React Query
- *
- * @example
- * const acceptRequestMutation = useAcceptFriendRequest(entity);
- * acceptRequestMutation.mutate();
- */
-export function useAcceptFriendRequest(entity: EntityTypes | null) {
-  const queryClient = useQueryClient();
-  const t = useT("modules/profil");
-
-  return useMutation({
-    mutationFn: async () => {
-      if (!entity || !isUser(entity)) {
-        throw new Error("Invalid entity: must be a user");
-      }
-
-      return await entity.acceptFriendRequest();
-    },
-
-    onSuccess: () => {
-      if (entity) {
-        queryClient.invalidateQueries({ queryKey: ["element-about", entity.slug] });
-      }
-      toast.success(t("toast.relationship.friendRequestAccepted"));
-    },
-
-    onError: (error) => {
-      const errorMessage = error instanceof Error ? error.message : t("toast.error.generic");
-      toast.error(t("toast.relationship.friendRequestError"), {
-        description: errorMessage,
-      });
-    },
-  });
-}
-
-/**
- * Hook pour retirer un ami / rejeter une demande
+ * Hook pour retirer un ami (pour useEntityActions)
  *
  * @param entity - L'utilisateur à retirer de ses amis
  * @returns Mutation React Query
- *
- * @example
- * const removeFriendMutation = useRemoveFriend(entity);
- * removeFriendMutation.mutate();
  */
 export function useRemoveFriend(entity: EntityTypes | null) {
   const queryClient = useQueryClient();
@@ -187,6 +142,7 @@ export function useRemoveFriend(entity: EntityTypes | null) {
     onSuccess: () => {
       if (entity) {
         queryClient.invalidateQueries({ queryKey: ["element-about", entity.slug] });
+        queryClient.invalidateQueries({ queryKey: ["user-friends", entity.slug] });
       }
       toast.success(t("toast.relationship.friendRemoved"));
     },

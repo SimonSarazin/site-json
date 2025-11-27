@@ -8,11 +8,12 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { useSearchUsers, type SearchedUser } from "../../hooks/useSearchUsers";
+import { useSearchUsers } from "@/hooks/useSearchUsers";
+import { User } from "@communecter/cocolight-api-client";
 
 interface MentionSuggestionsProps {
   query: string;
-  onSelect: (user: SearchedUser) => void;
+  onSelect: (user: User) => void;
 }
 
 export function MentionSuggestions({ query, onSelect }: MentionSuggestionsProps) {
@@ -51,24 +52,19 @@ export function MentionSuggestions({ query, onSelect }: MentionSuggestionsProps)
                 className="flex items-center gap-2 px-3 py-2 cursor-pointer"
               >
                 <Avatar className="h-8 w-8 shrink-0">
-                  {user.profilThumbImageUrl && (
-                    <AvatarImage src={user.profilThumbImageUrl} alt={user.name} />
+                  {user.serverData.profilThumbImageUrl && (
+                    <AvatarImage src={user.serverData.profilThumbImageUrl} alt={user.serverData.name} />
                   )}
                   <AvatarFallback className="bg-gradient-to-br from-teal-400 to-teal-600 text-white text-xs font-bold">
-                    {user.name.substring(0, 2).toUpperCase()}
+                    {user.serverData.name.substring(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-sm truncate">{user.name}</div>
+                  <div className="font-medium text-sm truncate">{user.serverData.name}</div>
                   <div className="text-xs text-muted-foreground truncate">
-                    @{user.slug}
+                    @{user.serverData.slug}
                   </div>
                 </div>
-                {user.type && (
-                  <span className="text-xs text-muted-foreground px-2 py-0.5 rounded bg-muted">
-                    {user.type}
-                  </span>
-                )}
               </CommandItem>
             ))}
           </CommandGroup>

@@ -85,13 +85,39 @@ export function useFriendsQuery(user: EntityTypes | null, params?: FriendsQueryP
         };
       }
 
-      // Utiliser la vraie méthode API
-      const result = await user.getFriends({
-        name: params?.search,
-        indexMin: 0,
-        indexStep: params?.indexStep || 20,
-        ...filters
-      });
+      try {
+        // Utiliser la vraie méthode API
+        const result = await user.getFriends({
+          name: params?.search,
+          indexStep: params?.indexStep || 20,
+          ...filters
+        });
+
+        // Use next() function if available and we're on a subsequent page
+        if (
+          page &&
+          page.pageNumber &&
+          page.pageNumber > 1 &&
+          typeof page.next !== "function" &&
+          result.next
+        ) {
+          return result.next();
+        }
+
+        return result;
+      } catch (error) {
+        console.error("🔴 Error in useFriendsQuery:", {
+          error,
+          user: user?.id,
+          userSlug: user?.slug,
+          userType: user?.serverData?.type,
+          params,
+          filters,
+          pageParam,
+          page
+        });
+        throw error;
+      }
 
       // Use next() function if available and we're on a subsequent page
       if (
