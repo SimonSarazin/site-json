@@ -19,18 +19,39 @@ export function SocialTab() {
   const [activeTab, setActiveTab] = useState("friends");
 
   // Queries - utilisation du hook unifié avec les 4 statuts
-  const { friends, totalCount: friendsCount, isLoading: friendsLoading } = useFriendsQuery(entity, {
+  const {
+    friends,
+    totalCount: friendsCount,
+    isLoading: friendsLoading,
+    isFetchingNextPage: friendsFetching,
+    lastItemRef: friendsLastRef,
+    hasNextPage: friendsHasNext
+  } = useFriendsQuery(entity, {
     search: searchTerm,
     status: "friends",
     indexStep: 20
   });
 
-  const { friends: pendingRequests, totalCount: pendingCount, isLoading: pendingLoading } = useFriendsQuery(entity, {
+  const {
+    friends: pendingRequests,
+    totalCount: pendingCount,
+    isLoading: pendingLoading,
+    isFetchingNextPage: pendingFetching,
+    lastItemRef: pendingLastRef,
+    hasNextPage: pendingHasNext
+  } = useFriendsQuery(entity, {
     status: "pending",
     indexStep: 20
   });
 
-  const { friends: sentRequests, totalCount: sentCount, isLoading: sentLoading } = useFriendsQuery(entity, {
+  const {
+    friends: sentRequests,
+    totalCount: sentCount,
+    isLoading: sentLoading,
+    isFetchingNextPage: sentFetching,
+    lastItemRef: sentLastRef,
+    hasNextPage: sentHasNext
+  } = useFriendsQuery(entity, {
     search: searchTerm,
     status: "sent",
     indexStep: 20
@@ -130,8 +151,12 @@ export function SocialTab() {
               </div>
             ) : (
               <div className="divide-y divide-border">
-                {friends.map((friend: any) => (
-                  <div key={friend.id} className="p-4 flex items-center justify-between hover:bg-muted/50">
+                {friends.map((friend: any, index: number) => (
+                  <div
+                    key={friend.id}
+                    className="p-4 flex items-center justify-between hover:bg-muted/50"
+                    ref={index === friends.length - 1 ? friendsLastRef : undefined}
+                  >
                     <div className="flex items-center gap-3">
                       <Avatar className="h-12 w-12">
                         <AvatarImage src={friend.serverData?.profilImageUrl} />
@@ -166,6 +191,12 @@ export function SocialTab() {
                     </div>
                   </div>
                 ))}
+                {friendsFetching && (
+                  <div className="p-4 text-center border-t">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-teal-600 mx-auto"></div>
+                    <p className="text-muted-foreground text-sm mt-2">{t("common.loading")}</p>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -186,8 +217,12 @@ export function SocialTab() {
               </div>
             ) : (
               <div className="divide-y divide-border">
-                {pendingRequests.map((user) => (
-                  <div key={user.id} className="p-4 flex items-center justify-between">
+                {pendingRequests.map((user, index: number) => (
+                  <div
+                    key={user.id}
+                    className="p-4 flex items-center justify-between"
+                    ref={index === pendingRequests.length - 1 ? pendingLastRef : undefined}
+                  >
                     <div className="flex items-center gap-3">
                       <Avatar className="h-12 w-12">
                         <AvatarImage src={user.serverData?.profilImageUrl} />
@@ -227,6 +262,12 @@ export function SocialTab() {
                     </div>
                   </div>
                 ))}
+                {pendingFetching && (
+                  <div className="p-4 text-center border-t">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-teal-600 mx-auto"></div>
+                    <p className="text-muted-foreground text-sm mt-2">{t("common.loading")}</p>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -247,8 +288,12 @@ export function SocialTab() {
               </div>
             ) : (
               <div className="divide-y divide-border">
-                {sentRequests.map((user) => (
-                  <div key={user.id} className="p-4 flex items-center justify-between">
+                {sentRequests.map((user, index: number) => (
+                  <div
+                    key={user.id}
+                    className="p-4 flex items-center justify-between"
+                    ref={index === sentRequests.length - 1 ? sentLastRef : undefined}
+                  >
                     <div className="flex items-center gap-3">
                       <Avatar className="h-12 w-12">
                         <AvatarImage src={user.serverData?.profilImageUrl} />
@@ -279,6 +324,12 @@ export function SocialTab() {
                     </Button>
                   </div>
                 ))}
+                {sentFetching && (
+                  <div className="p-4 text-center border-t">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-teal-600 mx-auto"></div>
+                    <p className="text-muted-foreground text-sm mt-2">{t("common.loading")}</p>
+                  </div>
+                )}
               </div>
             )}
           </div>

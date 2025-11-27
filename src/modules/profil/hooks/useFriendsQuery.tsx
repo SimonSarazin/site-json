@@ -28,7 +28,7 @@ export function useFriendsQuery(user: EntityTypes | null, params?: FriendsQueryP
         throw new Error("User is required");
       }
 
-      const indexMin = typeof pageParam === 'number' ? pageParam : 0;
+      const page = pageParam as { pageNumber?: number; next?: () => Promise<{ results: any[]; count: any; hasNext: boolean; pageNumber: number; next?: () => Promise<any> }> } | undefined;
 
       let filters = {};
 
@@ -88,21 +88,28 @@ export function useFriendsQuery(user: EntityTypes | null, params?: FriendsQueryP
       // Utiliser la vraie méthode API
       const result = await user.getFriends({
         name: params?.search,
+        indexMin: 0,
+        indexStep: params?.indexStep || 20,
         ...filters
       });
 
-      return {
-        results: result.results,
-        count: result.count,
-        hasNext: result.hasNext,
-        pageNumber: Math.floor(indexMin / (params?.indexStep || 20)) + 1,
-        next: result.next
-      };
+      // Use next() function if available and we're on a subsequent page
+      if (
+        page &&
+        page.pageNumber &&
+        page.pageNumber > 1 &&
+        typeof page.next !== "function" &&
+        result.next
+      ) {
+        return result.next();
+      }
+
+      return result;
     },
     options: {
       enabled: !!(user && isUser(user)),
       staleTime: 5 * 60 * 1000, // 5 minutes
-      initialPageParam: 0
+      initialPageParam: undefined
     }
   });
 
