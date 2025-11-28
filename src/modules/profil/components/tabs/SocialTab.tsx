@@ -10,7 +10,6 @@ import { useFriendsQuery } from "../../hooks/useFriendsQuery";
 import { useAcceptFriendRequest, useRejectFriendRequest, useRemoveFriend, useCancelFriendRequest } from "../../hooks/useFriendMutations";
 import { useCocolight } from "@/hooks/useCocolight";
 import { FriendRequestDialog } from "../social/FriendRequestDialog";
-import type { User } from "@communecter/cocolight-api-client";
 
 export function SocialTab() {
   const { entity } = useProfileEntity();
@@ -25,8 +24,7 @@ export function SocialTab() {
     totalCount: friendsCount,
     isLoading: friendsLoading,
     isFetchingNextPage: friendsFetching,
-    lastItemRef: friendsLastRef,
-    hasNextPage: friendsHasNext
+    lastItemRef: friendsLastRef
   } = useFriendsQuery(entity, {
     search: searchTerm,
     status: "friends",
@@ -38,8 +36,7 @@ export function SocialTab() {
     totalCount: pendingCount,
     isLoading: pendingLoading,
     isFetchingNextPage: pendingFetching,
-    lastItemRef: pendingLastRef,
-    hasNextPage: pendingHasNext
+    lastItemRef: pendingLastRef
   } = useFriendsQuery(entity, {
     status: "pending",
     indexStep: 20
@@ -50,8 +47,7 @@ export function SocialTab() {
     totalCount: sentCount,
     isLoading: sentLoading,
     isFetchingNextPage: sentFetching,
-    lastItemRef: sentLastRef,
-    hasNextPage: sentHasNext
+    lastItemRef: sentLastRef
   } = useFriendsQuery(entity, {
     search: searchTerm,
     status: "sent",

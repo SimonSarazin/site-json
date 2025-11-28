@@ -6,7 +6,9 @@
     "back": "Retour",
     "loading": "Chargement...",
     "unknownUser": "Utilisateur Inconnu",
-    "untitled": "Sans titre"
+    "untitled": "Sans titre",
+    "cancel": "Annuler",
+    "confirm": "Confirmer"
   },
   "ProfilePage": {
     "error": {
@@ -200,6 +202,79 @@
     "event": {
       "title": "Inviter des participants",
       "description": "Envoyez des invitations pour participer à cet événement."
+    },
+    "tabs": {
+      "searchUsers": "Rechercher des utilisateurs",
+      "inviteByEmail": "Inviter par email"
+    },
+    "searchUsers": "Rechercher des utilisateurs",
+    "searchPlaceholder": "Tapez pour rechercher...",
+    "startTyping": "Commencez à taper pour rechercher",
+    "minimumChars": "Tapez au moins 2 caractères",
+    "searching": "Recherche en cours...",
+    "noUsersFound": "Aucun utilisateur trouvé",
+    "tryDifferentSearch": "Essayez une recherche différente",
+    "emailInvitationsComingSoon": "Invitations par email bientôt disponibles",
+    "useSearchForNow": "Utilisez la recherche d'utilisateurs en attendant",
+    "demote": "Rétrograder",
+    "remove": "Supprimer",
+    "promoteToAdmin": "Promouvoir admin",
+    "validate": "Valider",
+    "validateAdmin": "Valider admin",
+    "reject": "Rejeter",
+    "inviteMember": "Inviter membre",
+    "inviteAdmin": "Inviter admin",
+    "inviteContributor": "Inviter contributeur",
+    "inviteParticipant": "Inviter participant",
+    "adminInvitationSent": "Invitation admin envoyée",
+    "invitationSent": "Invitation {{type}} envoyée",
+    "invited": "Invité",
+    "badges": {
+      "admin": "Admin",
+      "member": "Membre",
+      "contributor": "Contributeur",
+      "participant": "Participant",
+      "adminInvitationPending": "Invitation admin en cours",
+      "adminRequestPending": "Demande admin en attente",
+      "invitationPending": "Invitation en cours",
+      "validationPending": "En attente de validation"
+    },
+    "cancel": "Annuler",
+    "demoteDialog": {
+      "title": "Rétrograder l'administrateur",
+      "description": "Rétrograder {{name}} en tant que membre normal ?",
+      "cancel": "Annuler",
+      "confirm": "Rétrograder"
+    },
+    "removeDialog": {
+      "title": "Supprimer le membre",
+      "description": "Supprimer {{name}} de cette communauté ?",
+      "cancel": "Annuler",
+      "confirm": "Supprimer"
+    },
+    "promoteDialog": {
+      "title": "Promouvoir en administrateur",
+      "description": "Promouvoir {{name}} en tant qu'administrateur ?",
+      "cancel": "Annuler",
+      "confirm": "Promouvoir"
+    },
+    "validateDialog": {
+      "title": "Valider la demande",
+      "description": "Valider la demande de {{name}} ?",
+      "cancel": "Annuler",
+      "confirm": "Valider"
+    },
+    "validateAdminDialog": {
+      "title": "Valider la demande d'admin",
+      "description": "Valider la demande d'administrateur de {{name}} ?",
+      "cancel": "Annuler",
+      "confirm": "Valider"
+    },
+    "rejectDialog": {
+      "title": "Rejeter la demande",
+      "description": "Rejeter la demande de {{name}} ?",
+      "cancel": "Annuler",
+      "confirm": "Rejeter"
     }
   },
   "MemberManagementDialog": {
@@ -319,18 +394,22 @@
       "participationLeftError": "Impossible d'arrêter la participation à cet événement"
     },
     "members": {
-      "requestAccepted": "Demande acceptée",
-      "acceptRequestError": "Impossible d'accepter la demande",
-      "requestRejected": "Demande rejetée",
-      "rejectRequestError": "Impossible de rejeter la demande",
-      "memberPromoted": "Membre promu avec succès",
-      "promoteError": "Impossible de promouvoir le membre",
-      "memberDemoted": "Membre rétrogradé avec succès",
-      "demoteError": "Impossible de rétrograder le membre",
-      "memberRemoved": "Membre exclu avec succès",
-      "removeError": "Impossible d'exclure le membre",
-      "invitationSent": "Invitation envoyée avec succès",
-      "inviteError": "Impossible d'envoyer l'invitation"
+      "demoteSuccess": "{{name}} a été rétrogradé avec succès",
+      "demoteError": "Impossible de rétrograder {{name}}",
+      "promoteSuccess": "{{name}} a été promu administrateur",
+      "promoteError": "Impossible de promouvoir {{name}}",
+      "validateSuccess": "{{name}} a été validé avec succès",
+      "validateError": "Impossible de valider {{name}}",
+      "validateAdminSuccess": "{{name}} a été validé en tant qu'administrateur",
+      "validateAdminError": "Impossible de valider {{name}} en tant qu'administrateur",
+      "rejectSuccess": "La demande de {{name}} a été rejetée",
+      "rejectError": "Impossible de rejeter la demande de {{name}}",
+      "removeSuccess": "{{name}} a été supprimé avec succès",
+      "removeError": "Impossible de supprimer {{name}}",
+      "inviteSuccess": "Invitation envoyée à {{name}}",
+      "inviteError": "Impossible d'envoyer l'invitation à {{name}}",
+      "inviteAdminSuccess": "Invitation d'administrateur envoyée à {{name}}",
+      "inviteAdminError": "Impossible d'envoyer l'invitation d'administrateur à {{name}}"
     },
     "friends": {
       "requestSent": "Demande d'amitié envoyée avec succès",

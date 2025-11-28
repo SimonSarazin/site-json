@@ -1,13 +1,6 @@
 import { useState } from "react";
 import { useT } from "@/hooks/useT";
 import { useEntityMembers } from "../../hooks/useMembersQuery";
-import {
-  useAcceptMemberRequest,
-  useRejectMemberRequest,
-  usePromoteMember,
-  useDemoteMember,
-  useRemoveMember,
-} from "../../hooks/useMemberMutations";
 import { isOrganization, isProject, isEvent } from "@/lib/getTypedEntity";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import {
@@ -80,12 +73,6 @@ export function MemberManagementDialog({ entity, open, onOpenChange }: MemberMan
   const pendingMembers = useEntityMembers(entity, { toBeValidated: true }, { search: searchTerm });
   const adminMembers = useEntityMembers(entity, { isAdmin: true }, { search: searchTerm });
 
-  // Mutations
-  const acceptMutation = useAcceptMemberRequest(entity);
-  const rejectMutation = useRejectMemberRequest(entity);
-  const promoteMutation = usePromoteMember(entity);
-  const demoteMutation = useDemoteMember(entity);
-  const removeMutation = useRemoveMember(entity);
 
   if (!entity) return null;
 
@@ -130,47 +117,6 @@ export function MemberManagementDialog({ entity, open, onOpenChange }: MemberMan
     setConfirmation({ ...config, open: true });
   };
 
-  const handleAcceptMember = (memberId: string, memberName: string) => {
-    showConfirmation({
-      title: t("MemberManagementDialog.acceptDialog.title"),
-      description: t("MemberManagementDialog.acceptDialog.description").replace("{{name}}", memberName),
-      action: () => acceptMutation.mutate({ memberId }),
-    });
-  };
-
-  const handleRejectMember = (memberId: string, memberName: string) => {
-    showConfirmation({
-      title: t("MemberManagementDialog.rejectDialog.title"),
-      description: t("MemberManagementDialog.rejectDialog.description").replace("{{name}}", memberName),
-      action: () => rejectMutation.mutate({ memberId }),
-      isDestructive: true,
-    });
-  };
-
-  const handlePromoteMember = (memberId: string, memberName: string) => {
-    showConfirmation({
-      title: t("MemberManagementDialog.promoteDialog.title"),
-      description: t("MemberManagementDialog.promoteDialog.description").replace("{{name}}", memberName),
-      action: () => promoteMutation.mutate({ memberId }),
-    });
-  };
-
-  const handleDemoteMember = (memberId: string, memberName: string) => {
-    showConfirmation({
-      title: t("MemberManagementDialog.demoteDialog.title"),
-      description: t("MemberManagementDialog.demoteDialog.description").replace("{{name}}", memberName),
-      action: () => demoteMutation.mutate({ memberId }),
-    });
-  };
-
-  const handleRemoveMember = (memberId: string, memberName: string) => {
-    showConfirmation({
-      title: t("MemberManagementDialog.removeDialog.title"),
-      description: t("MemberManagementDialog.removeDialog.description").replace("{{name}}", memberName),
-      action: () => removeMutation.mutate({ memberId }),
-      isDestructive: true,
-    });
-  };
 
 
   const renderMemberActions = (member: any, isPending = false) => {
@@ -180,16 +126,31 @@ export function MemberManagementDialog({ entity, open, onOpenChange }: MemberMan
           <Button
             size="sm"
             variant="default"
-            onClick={() => handleAcceptMember(member.id, member.serverData.name)}
-            disabled={acceptMutation.isPending}
+            onClick={() => showConfirmation({
+              title: t("MemberManagementDialog.acceptDialog.title"),
+              description: t("MemberManagementDialog.acceptDialog.description").replace("{{name}}", member.serverData.name),
+              action: async () => {
+                if (member.validateMemberRequest) {
+                  await member.validateMemberRequest();
+                }
+              }
+            })}
           >
             <Check className="h-4 w-4" />
           </Button>
           <Button
             size="sm"
             variant="destructive"
-            onClick={() => handleRejectMember(member.id, member.serverData.name)}
-            disabled={rejectMutation.isPending}
+            onClick={() => showConfirmation({
+              title: t("MemberManagementDialog.rejectDialog.title"),
+              description: t("MemberManagementDialog.rejectDialog.description").replace("{{name}}", member.serverData.name),
+              action: async () => {
+                if (member.removeFromParent) {
+                  await member.removeFromParent();
+                }
+              },
+              isDestructive: true
+            })}
           >
             <X className="h-4 w-4" />
           </Button>
@@ -205,21 +166,46 @@ export function MemberManagementDialog({ entity, open, onOpenChange }: MemberMan
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          {!member.isAdmin() && !isEvent(entity) && (
-            <DropdownMenuItem onClick={() => handlePromoteMember(member.id, member.serverData.name)}>
+          {member.isAdmin && !member.isAdmin() && !isEvent(entity) && (
+            <DropdownMenuItem onClick={() => showConfirmation({
+              title: t("MemberManagementDialog.promoteDialog.title"),
+              description: t("MemberManagementDialog.promoteDialog.description").replace("{{name}}", member.serverData.name),
+              action: async () => {
+                if (member.promoteToAdmin) {
+                  await member.promoteToAdmin();
+                }
+              }
+            })}>
               <Crown className="h-4 w-4 mr-2" />
               {t("MemberManagementDialog.promote")}
             </DropdownMenuItem>
           )}
-          {member.isAdmin() && !isEvent(entity) && (
-            <DropdownMenuItem onClick={() => handleDemoteMember(member.id, member.serverData.name)}>
+          {member.isAdmin && member.isAdmin() && !isEvent(entity) && (
+            <DropdownMenuItem onClick={() => showConfirmation({
+              title: t("MemberManagementDialog.demoteDialog.title"),
+              description: t("MemberManagementDialog.demoteDialog.description").replace("{{name}}", member.serverData.name),
+              action: async () => {
+                if (member.demoteFromAdmin) {
+                  await member.demoteFromAdmin();
+                }
+              }
+            })}>
               <ShieldOff className="h-4 w-4 mr-2" />
               {t("MemberManagementDialog.demote")}
             </DropdownMenuItem>
           )}
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            onClick={() => handleRemoveMember(member.id, member.serverData.name)}
+            onClick={() => showConfirmation({
+              title: t("MemberManagementDialog.removeDialog.title"),
+              description: t("MemberManagementDialog.removeDialog.description").replace("{{name}}", member.serverData.name),
+              action: async () => {
+                if (member.removeFromParent) {
+                  await member.removeFromParent();
+                }
+              },
+              isDestructive: true
+            })}
             className="text-red-600"
           >
             <Trash2 className="h-4 w-4 mr-2" />
@@ -235,8 +221,7 @@ export function MemberManagementDialog({ entity, open, onOpenChange }: MemberMan
     isLoading: boolean,
     isPending = false,
     lastItemRef?: (node: HTMLElement | null) => void,
-    isFetchingNextPage?: boolean,
-    hasNextPage?: boolean
+    isFetchingNextPage?: boolean
   ) => {
     if (isLoading) {
       return (
@@ -350,8 +335,7 @@ export function MemberManagementDialog({ entity, open, onOpenChange }: MemberMan
                   pendingMembers.isLoading,
                   true,
                   pendingMembers.lastItemRef,
-                  pendingMembers.isFetchingNextPage,
-                  pendingMembers.hasNextPage
+                  pendingMembers.isFetchingNextPage
                 )}
               </TabsContent>
 
@@ -361,8 +345,7 @@ export function MemberManagementDialog({ entity, open, onOpenChange }: MemberMan
                   allMembers.isLoading,
                   false,
                   allMembers.lastItemRef,
-                  allMembers.isFetchingNextPage,
-                  allMembers.hasNextPage
+                  allMembers.isFetchingNextPage
                 )}
               </TabsContent>
 
@@ -372,8 +355,7 @@ export function MemberManagementDialog({ entity, open, onOpenChange }: MemberMan
                   adminMembers.isLoading,
                   false,
                   adminMembers.lastItemRef,
-                  adminMembers.isFetchingNextPage,
-                  adminMembers.hasNextPage
+                  adminMembers.isFetchingNextPage
                 )}
               </TabsContent>
             </Tabs>

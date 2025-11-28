@@ -60,10 +60,10 @@ export function MentionInput({
     setSearchQuery("");
 
     // Notifier l'ajout de la mention
-    onMentionAdd?.(user.serverData.slug);
+    onMentionAdd?.(user.serverData.slug || '');
 
     // Repositionner le curseur après le nom inséré
-    const newCursorPos = beforeMention.length + user.serverData.slug.length + 2; // +2 pour @ et espace
+    const newCursorPos = beforeMention.length + (user.serverData.slug?.length || 0) + 2; // +2 pour @ et espace
     setTimeout(() => {
       if (textareaRef.current) {
         textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);

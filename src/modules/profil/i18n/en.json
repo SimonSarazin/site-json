@@ -6,7 +6,9 @@
     "back": "Back",
     "loading": "Loading...",
     "unknownUser": "Unknown User",
-    "untitled": "Untitled"
+    "untitled": "Untitled",
+    "cancel": "Cancel",
+    "confirm": "Confirm"
   },
   "ProfilePage": {
     "error": {
@@ -200,6 +202,79 @@
     "event": {
       "title": "Invite Participants",
       "description": "Send invitations to participate in this event."
+    },
+    "tabs": {
+      "searchUsers": "Search users",
+      "inviteByEmail": "Invite by email"
+    },
+    "searchUsers": "Search users",
+    "searchPlaceholder": "Type to search...",
+    "startTyping": "Start typing to search",
+    "minimumChars": "Type at least 2 characters",
+    "searching": "Searching...",
+    "noUsersFound": "No users found",
+    "tryDifferentSearch": "Try a different search",
+    "emailInvitationsComingSoon": "Email invitations coming soon",
+    "useSearchForNow": "Use user search for now",
+    "demote": "Demote",
+    "remove": "Remove",
+    "promoteToAdmin": "Promote to admin",
+    "validate": "Validate",
+    "validateAdmin": "Validate admin",
+    "reject": "Reject",
+    "inviteMember": "Invite member",
+    "inviteAdmin": "Invite admin",
+    "inviteContributor": "Invite contributor",
+    "inviteParticipant": "Invite participant",
+    "adminInvitationSent": "Admin invitation sent",
+    "invitationSent": "{{type}} invitation sent",
+    "invited": "Invited",
+    "badges": {
+      "admin": "Admin",
+      "member": "Member",
+      "contributor": "Contributor",
+      "participant": "Participant",
+      "adminInvitationPending": "Admin invitation pending",
+      "adminRequestPending": "Admin request pending",
+      "invitationPending": "Invitation pending",
+      "validationPending": "Awaiting validation"
+    },
+    "cancel": "Cancel",
+    "demoteDialog": {
+      "title": "Demote administrator",
+      "description": "Demote {{name}} to regular member?",
+      "cancel": "Cancel",
+      "confirm": "Demote"
+    },
+    "removeDialog": {
+      "title": "Remove member",
+      "description": "Remove {{name}} from this community?",
+      "cancel": "Cancel",
+      "confirm": "Remove"
+    },
+    "promoteDialog": {
+      "title": "Promote to administrator",
+      "description": "Promote {{name}} to administrator?",
+      "cancel": "Cancel",
+      "confirm": "Promote"
+    },
+    "validateDialog": {
+      "title": "Validate request",
+      "description": "Validate {{name}}'s request?",
+      "cancel": "Cancel",
+      "confirm": "Validate"
+    },
+    "validateAdminDialog": {
+      "title": "Validate admin request",
+      "description": "Validate {{name}}'s admin request?",
+      "cancel": "Cancel",
+      "confirm": "Validate"
+    },
+    "rejectDialog": {
+      "title": "Reject request",
+      "description": "Reject {{name}}'s request?",
+      "cancel": "Cancel",
+      "confirm": "Reject"
     }
   },
   "MemberManagementDialog": {
@@ -319,18 +394,22 @@
       "participationLeftError": "Unable to stop participating in this event"
     },
     "members": {
-      "requestAccepted": "Member request accepted",
-      "acceptRequestError": "Unable to accept request",
-      "requestRejected": "Member request rejected",
-      "rejectRequestError": "Unable to reject request",
-      "memberPromoted": "Member promoted successfully",
-      "promoteError": "Unable to promote member",
-      "memberDemoted": "Member demoted successfully",
-      "demoteError": "Unable to demote member",
-      "memberRemoved": "Member removed successfully",
-      "removeError": "Unable to remove member",
-      "invitationSent": "Invitation sent successfully",
-      "inviteError": "Unable to send invitation"
+      "demoteSuccess": "{{name}} has been demoted successfully",
+      "demoteError": "Unable to demote {{name}}",
+      "promoteSuccess": "{{name}} has been promoted to administrator",
+      "promoteError": "Unable to promote {{name}}",
+      "validateSuccess": "{{name}} has been validated successfully",
+      "validateError": "Unable to validate {{name}}",
+      "validateAdminSuccess": "{{name}} has been validated as administrator",
+      "validateAdminError": "Unable to validate {{name}} as administrator",
+      "rejectSuccess": "{{name}}'s request has been rejected",
+      "rejectError": "Unable to reject {{name}}'s request",
+      "removeSuccess": "{{name}} has been removed successfully",
+      "removeError": "Unable to remove {{name}}",
+      "inviteSuccess": "Invitation sent to {{name}}",
+      "inviteError": "Unable to send invitation to {{name}}",
+      "inviteAdminSuccess": "Admin invitation sent to {{name}}",
+      "inviteAdminError": "Unable to send admin invitation to {{name}}"
     },
     "friends": {
       "requestSent": "Friend request sent successfully",

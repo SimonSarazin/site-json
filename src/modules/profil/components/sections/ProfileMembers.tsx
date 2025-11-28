@@ -6,12 +6,12 @@ import { useEntityMembers } from "../../hooks/useMembersQuery";
 import { isOrganization, isProject, isEvent } from "@/lib/getTypedEntity";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MemberManagementDialog } from "../members/MemberManagementDialog";
 import { InviteMemberDialog } from "../members/InviteMemberDialog";
 import { Users, UserPlus, Settings } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ProfileMembersProps {
   section: {
@@ -91,11 +91,9 @@ export default function ProfileMembers({ section }: ProfileMembersProps) {
     members: any[],
     isLoading: boolean,
     lastItemRef?: (node: HTMLElement | null) => void,
-    isFetchingNextPage?: boolean,
-    hasNextPage?: boolean
+    isFetchingNextPage?: boolean
   ) => {
 
-    console.log("Rendering members:", isFetchingNextPage, isLoading);
     if (isLoading) {
       return (
         <div className="space-y-4">
@@ -123,7 +121,7 @@ export default function ProfileMembers({ section }: ProfileMembersProps) {
 
     return (
       <div className="space-y-3">
-        {members.map((member: any, index: number) => (
+        {members.map((member: any) => (
           <div
             key={member.id}
             className="flex items-center justify-between p-3 border rounded-lg"
@@ -161,8 +159,6 @@ export default function ProfileMembers({ section }: ProfileMembersProps) {
     );
   };
 
-  console.log("permissions.isAdmin", permissions.isAdmin);
-
   return (
     <Card>
       <CardHeader>
@@ -179,8 +175,8 @@ export default function ProfileMembers({ section }: ProfileMembersProps) {
                 onClick={() => setShowInvite(true)}
                 disabled={!permissions.canEditProfile}
               >
-                <UserPlus className="h-4 w-4 mr-1" />
-                {labels.invite}
+                <UserPlus className="h-4 w-4 sm:mr-1" />
+                <span className="hidden sm:inline">{labels.invite}</span>
               </Button>
               {section.showManagement && (
                 <Button
@@ -189,8 +185,8 @@ export default function ProfileMembers({ section }: ProfileMembersProps) {
                   onClick={() => setShowManagement(true)}
                   disabled={!permissions.canEditProfile}
                 >
-                  <Settings className="h-4 w-4 mr-1" />
-                  {t("ProfileMembers.manage")}
+                  <Settings className="h-4 w-4 sm:mr-1" />
+                  <span className="hidden sm:inline">{t("ProfileMembers.manage")}</span>
                 </Button>
               )}
             </div>
@@ -200,15 +196,24 @@ export default function ProfileMembers({ section }: ProfileMembersProps) {
       <CardContent>
         <Tabs value={selectedTab} onValueChange={setSelectedTab}>
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="all">
+            <TabsTrigger value="all" className={cn(
+              "text-xs sm:text-sm",
+              "p-2 sm:p-3"
+            )}>
               {labels.members} ({allMembers.totalCount})
             </TabsTrigger>
             {(permissions.isAdmin || (isEvent(entity) && permissions.isAuthor)) && (
-              <TabsTrigger value="pending">
+              <TabsTrigger value="pending" className={cn(
+              "text-xs sm:text-sm",
+              "p-2 sm:p-3"
+            )}>
                 {labels.pending} ({pendingMembers.totalCount})
               </TabsTrigger>
             )}
-            <TabsTrigger value="admins">
+            <TabsTrigger value="admins" className={cn(
+              "text-xs sm:text-sm",
+              "p-2 sm:p-3"
+            )}>
               {labels.admin}s ({adminMembers.totalCount})
             </TabsTrigger>
           </TabsList>
@@ -218,8 +223,7 @@ export default function ProfileMembers({ section }: ProfileMembersProps) {
               allMembers.members || [],
               allMembers.isLoading,
               allMembers.lastItemRef,
-              allMembers.isFetchingNextPage,
-              allMembers.hasNextPage
+              allMembers.isFetchingNextPage
             )}
           </TabsContent>
 
@@ -229,8 +233,7 @@ export default function ProfileMembers({ section }: ProfileMembersProps) {
                 pendingMembers.members || [],
                 pendingMembers.isLoading,
                 pendingMembers.lastItemRef,
-                pendingMembers.isFetchingNextPage,
-                pendingMembers.hasNextPage
+                pendingMembers.isFetchingNextPage
               )}
             </TabsContent>
           )}
@@ -240,8 +243,7 @@ export default function ProfileMembers({ section }: ProfileMembersProps) {
               adminMembers.members || [],
               adminMembers.isLoading,
               adminMembers.lastItemRef,
-              adminMembers.isFetchingNextPage,
-              adminMembers.hasNextPage
+              adminMembers.isFetchingNextPage
             )}
           </TabsContent>
         </Tabs>
