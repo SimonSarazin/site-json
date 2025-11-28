@@ -3,10 +3,11 @@ import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { useEntityMembers } from "../../hooks/useMembersQuery";
-import { isOrganization, isProject, isEvent } from "@/lib/getTypedEntity";
+import { isEvent } from "@/lib/getTypedEntity";
+import { useEntityLabels } from "../../hooks/useEntityLabels";
+import { MemberListRenderer } from "../members/MemberListRenderer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MemberManagementDialog } from "../members/MemberManagementDialog";
 import { InviteMemberDialog } from "../members/InviteMemberDialog";
@@ -36,128 +37,15 @@ export default function ProfileMembers({ section }: ProfileMembersProps) {
   const pendingMembers = useEntityMembers(entity, { toBeValidated: true }, {});
   const adminMembers = useEntityMembers(entity, { isAdmin: true }, {});
 
-  // console.log("allMembers.members", allMembers.members);
-  
+  // Labels spécifiques à l'entité
+  const labels = useEntityLabels(entity);
+
   if (!entity) return null;
-
-  // Déterminer les labels selon le type d'entité
-  const getEntityLabels = () => {
-    if (isOrganization(entity)) {
-      return {
-        title: t("ProfileMembers.organization.title"),
-        member: t("ProfileMembers.organization.member"),
-        members: t("ProfileMembers.organization.members"),
-        admin: t("ProfileMembers.organization.admin"),
-        pending: t("ProfileMembers.organization.pending"),
-        invite: t("ProfileMembers.organization.invite"),
-      };
-    } else if (isProject(entity)) {
-      return {
-        title: t("ProfileMembers.project.title"),
-        member: t("ProfileMembers.project.contributor"),
-        members: t("ProfileMembers.project.contributors"),
-        admin: t("ProfileMembers.project.admin"),
-        pending: t("ProfileMembers.project.pending"),
-        invite: t("ProfileMembers.project.invite"),
-      };
-    } else if (isEvent(entity)) {
-      return {
-        title: t("ProfileMembers.event.title"),
-        member: t("ProfileMembers.event.participant"),
-        members: t("ProfileMembers.event.participants"),
-        admin: t("ProfileMembers.event.author"),
-        pending: t("ProfileMembers.event.pending"),
-        invite: t("ProfileMembers.event.invite"),
-      };
-    }
-    return {
-      title: t("ProfileMembers.title"),
-      member: t("ProfileMembers.member"),
-      members: t("ProfileMembers.members"),
-      admin: t("ProfileMembers.admin"),
-      pending: t("ProfileMembers.pending"),
-      invite: t("ProfileMembers.invite"),
-    };
-  };
-
-  const labels = getEntityLabels();
   const title = (section.title && typeof section.title === 'object' && 'fr' in section.title) ?
     (section.title as any)[navigator?.language?.startsWith('fr') ? 'fr' : 'en'] ||
     (section.title as any).en ||
     labels.title : labels.title;
 
-  // Fonction pour rendre une liste de membres
-  const renderMemberList = (
-    members: any[],
-    isLoading: boolean,
-    lastItemRef?: (node: HTMLElement | null) => void,
-    isFetchingNextPage?: boolean
-  ) => {
-
-    if (isLoading) {
-      return (
-        <div className="space-y-4">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="flex items-center space-x-3 animate-pulse">
-              <div className="h-10 w-10 bg-gray-200 rounded-full" />
-              <div className="flex-1 space-y-2">
-                <div className="h-4 bg-gray-200 rounded w-1/3" />
-                <div className="h-3 bg-gray-200 rounded w-1/4" />
-              </div>
-            </div>
-          ))}
-        </div>
-      );
-    }
-
-    if (!members || members.length === 0) {
-      return (
-        <div className="text-center py-8 text-gray-500">
-          <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-          <p>{t("ProfileMembers.noMembers")}</p>
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-3">
-        {members.map((member: any) => (
-          <div
-            key={member.id}
-            className="flex items-center justify-between p-3 border rounded-lg"
-          >
-            <div className="flex items-center space-x-3">
-              <Avatar className="h-10 w-10">
-                <AvatarImage src={member.serverData?.profilThumbImageUrl} alt={member.serverData.name} />
-                <AvatarFallback>{member.serverData.name?.[0] || "?"}</AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="font-medium">{member.serverData.name}</p>
-                <p className="text-sm text-gray-500">{member.serverData.email}</p>
-              </div>
-            </div>
-            {/* {section.showRole && (
-              <div className="flex items-center space-x-2">
-
-              </div>
-            )} */}
-          </div>
-        ))}
-
-        <div ref={lastItemRef} className="h-12" />
-
-        {/* Infinite scroll loading indicator */}
-        {isFetchingNextPage && (
-          <div className="flex justify-center py-4 text-muted-foreground">
-            <div className="flex items-center space-x-2">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
-              <span>{t("ProfileMembers.loadingMore")}</span>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
 
   return (
     <Card>
@@ -219,32 +107,44 @@ export default function ProfileMembers({ section }: ProfileMembersProps) {
           </TabsList>
 
           <TabsContent value="all" className="mt-4">
-            {renderMemberList(
-              allMembers.members || [],
-              allMembers.isLoading,
-              allMembers.lastItemRef,
-              allMembers.isFetchingNextPage
-            )}
+            <MemberListRenderer
+              members={allMembers.members || []}
+              entity={entity}
+              isLoading={allMembers.isLoading}
+              showActions={false}
+              showBadges={section.showRole}
+              isPending={false}
+              lastItemRef={allMembers.lastItemRef}
+              isFetchingNextPage={allMembers.isFetchingNextPage}
+            />
           </TabsContent>
 
           {(permissions.isAdmin || (isEvent(entity) && permissions.isAuthor)) && (
             <TabsContent value="pending" className="mt-4">
-              {renderMemberList(
-                pendingMembers.members || [],
-                pendingMembers.isLoading,
-                pendingMembers.lastItemRef,
-                pendingMembers.isFetchingNextPage
-              )}
+              <MemberListRenderer
+                members={pendingMembers.members || []}
+                entity={entity}
+                isLoading={pendingMembers.isLoading}
+                showActions={false}
+                showBadges={section.showRole}
+                isPending={true}
+                lastItemRef={pendingMembers.lastItemRef}
+                isFetchingNextPage={pendingMembers.isFetchingNextPage}
+              />
             </TabsContent>
           )}
 
           <TabsContent value="admins" className="mt-4">
-            {renderMemberList(
-              adminMembers.members || [],
-              adminMembers.isLoading,
-              adminMembers.lastItemRef,
-              adminMembers.isFetchingNextPage
-            )}
+            <MemberListRenderer
+              members={adminMembers.members || []}
+              entity={entity}
+              isLoading={adminMembers.isLoading}
+              showActions={false}
+              showBadges={section.showRole}
+              isPending={false}
+              lastItemRef={adminMembers.lastItemRef}
+              isFetchingNextPage={adminMembers.isFetchingNextPage}
+            />
           </TabsContent>
         </Tabs>
       </CardContent>

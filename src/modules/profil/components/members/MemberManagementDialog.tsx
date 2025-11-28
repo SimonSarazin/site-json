@@ -1,53 +1,22 @@
 import { useState } from "react";
 import { useT } from "@/hooks/useT";
 import { useEntityMembers } from "../../hooks/useMembersQuery";
-import { isOrganization, isProject, isEvent } from "@/lib/getTypedEntity";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
-import {
-  useDemoteMember,
-  usePromoteMember,
-  useRemoveMember,
-  useValidateMember,
-  useRejectMember
-} from "../../hooks/useMemberMutations";
+import { useEntityLabels } from "../../hooks/useEntityLabels";
+import { useConfirmationDialog } from "../../hooks/useConfirmationDialog";
+import { ConfirmationDialog } from "./ConfirmationDialog";
+import { MemberListRenderer } from "./MemberListRenderer";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import {
   Settings,
-  MoreVertical,
-  Check,
-  X,
-  Crown,
-  User,
-  Trash2,
   Search,
-  ShieldOff,
 } from "lucide-react";
 
 interface MemberManagementDialogProps {
@@ -56,236 +25,22 @@ interface MemberManagementDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-interface ConfirmationState {
-  open: boolean;
-  title: string;
-  description: string;
-  action: () => void;
-  isDestructive?: boolean;
-}
-
 export function MemberManagementDialog({ entity, open, onOpenChange }: MemberManagementDialogProps) {
   const t = useT("modules/profil");
   const [activeTab, setActiveTab] = useState("pending");
   const [searchTerm, setSearchTerm] = useState("");
-  const [confirmation, setConfirmation] = useState<ConfirmationState>({
-    open: false,
-    title: "",
-    description: "",
-    action: () => {},
-  });
-
-  // Hooks de mutations
-  const demoteMember = useDemoteMember(entity);
-  const promoteMember = usePromoteMember(entity);
-  const removeMember = useRemoveMember(entity);
-  const validateMember = useValidateMember(entity);
-  const rejectMember = useRejectMember(entity);
+  const { confirmation, showConfirmation, hideConfirmation, executeAction } = useConfirmationDialog();
 
   // Queries
   const allMembers = useEntityMembers(entity, { toBeValidated: false }, { search: searchTerm });
   const pendingMembers = useEntityMembers(entity, { toBeValidated: true }, { search: searchTerm });
   const adminMembers = useEntityMembers(entity, { isAdmin: true }, { search: searchTerm });
 
+  // Labels spécifiques à l'entité
+  const labels = useEntityLabels(entity);
 
   if (!entity) return null;
-
-  const getEntityLabels = () => {
-    if (isOrganization(entity)) {
-      return {
-        title: t("MemberManagementDialog.organization.title"),
-        members: t("ProfileMembers.organization.members"),
-        pending: t("ProfileMembers.organization.pending"),
-        member: t("ProfileMembers.organization.member"),
-        admin: t("ProfileMembers.organization.admin"),
-      };
-    } else if (isProject(entity)) {
-      return {
-        title: t("MemberManagementDialog.project.title"),
-        members: t("ProfileMembers.project.contributors"),
-        pending: t("ProfileMembers.project.pending"),
-        member: t("ProfileMembers.project.contributor"),
-        admin: t("ProfileMembers.project.admin"),
-      };
-    } else if (isEvent(entity)) {
-      return {
-        title: t("MemberManagementDialog.event.title"),
-        members: t("ProfileMembers.event.participants"),
-        pending: t("ProfileMembers.event.pending"),
-        member: t("ProfileMembers.event.participant"),
-        admin: t("ProfileMembers.event.author"),
-      };
-    }
-    return {
-      title: t("MemberManagementDialog.title"),
-      members: t("ProfileMembers.members"),
-      pending: t("ProfileMembers.pending"),
-      member: t("ProfileMembers.member"),
-      admin: t("ProfileMembers.admin"),
-    };
-  };
-
-  const labels = getEntityLabels();
-
-  const showConfirmation = (config: Omit<ConfirmationState, "open">) => {
-    setConfirmation({ ...config, open: true });
-  };
-
-
-
-  const renderMemberActions = (member: any, isPending = false) => {
-    if (isPending) {
-      return (
-        <div className="flex items-center space-x-2">
-          <Button
-            size="sm"
-            variant="default"
-            onClick={() => showConfirmation({
-              title: t("MemberManagementDialog.acceptDialog.title"),
-              description: t("MemberManagementDialog.acceptDialog.description").replace("{{name}}", member.serverData.name),
-              action: () => validateMember.mutate(member)
-            })}
-          >
-            <Check className="h-4 w-4" />
-          </Button>
-          <Button
-            size="sm"
-            variant="destructive"
-            onClick={() => showConfirmation({
-              title: t("MemberManagementDialog.rejectDialog.title"),
-              description: t("MemberManagementDialog.rejectDialog.description").replace("{{name}}", member.serverData.name),
-              action: () => rejectMember.mutate(member),
-              isDestructive: true
-            })}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      );
-    }
-
-    return (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm">
-            <MoreVertical className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          {member.isAdmin && !member.isAdmin() && !isEvent(entity) && (
-            <DropdownMenuItem onClick={() => showConfirmation({
-              title: t("MemberManagementDialog.promoteDialog.title"),
-              description: t("MemberManagementDialog.promoteDialog.description").replace("{{name}}", member.serverData.name),
-              action: () => promoteMember.mutate(member)
-            })}>
-              <Crown className="h-4 w-4 mr-2" />
-              {t("MemberManagementDialog.promote")}
-            </DropdownMenuItem>
-          )}
-          {member.isAdmin && member.isAdmin() && !isEvent(entity) && (
-            <DropdownMenuItem onClick={() => showConfirmation({
-              title: t("MemberManagementDialog.demoteDialog.title"),
-              description: t("MemberManagementDialog.demoteDialog.description").replace("{{name}}", member.serverData.name),
-              action: () => demoteMember.mutate(member)
-            })}>
-              <ShieldOff className="h-4 w-4 mr-2" />
-              {t("MemberManagementDialog.demote")}
-            </DropdownMenuItem>
-          )}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            onClick={() => showConfirmation({
-              title: t("MemberManagementDialog.removeDialog.title"),
-              description: t("MemberManagementDialog.removeDialog.description").replace("{{name}}", member.serverData.name),
-              action: () => removeMember.mutate(member),
-              isDestructive: true
-            })}
-            className="text-red-600"
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            {t("MemberManagementDialog.remove")}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    );
-  };
-
-  const renderMemberList = (
-    members: any[],
-    isLoading: boolean,
-    isPending = false,
-    lastItemRef?: (node: HTMLElement | null) => void,
-    isFetchingNextPage?: boolean
-  ) => {
-    if (isLoading) {
-      return (
-        <div className="space-y-3">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex items-center justify-between p-3 border rounded-lg animate-pulse">
-              <div className="flex items-center space-x-3">
-                <div className="h-10 w-10 bg-gray-200 rounded-full" />
-                <div className="space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-32" />
-                  <div className="h-3 bg-gray-200 rounded w-24" />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      );
-    }
-
-    if (members.length === 0) {
-      return (
-        <div className="text-center py-8 text-gray-500">
-          <User className="h-12 w-12 mx-auto mb-4 opacity-50" />
-          <p>{isPending ? t("MemberManagementDialog.noPending") : t("MemberManagementDialog.noMembers")}</p>
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-3">
-        {members.map((member: any, index: number) => (
-          <div
-            key={member.id}
-            className="flex items-center justify-between p-3 border rounded-lg"
-            ref={index === members.length - 1 ? lastItemRef : undefined}
-          >
-            <div className="flex items-center space-x-3">
-              <Avatar className="h-10 w-10">
-                <AvatarImage src={member.serverData?.profilThumbImageUrl} alt={member.serverData?.name} />
-                <AvatarFallback>{member.serverData?.name?.[0] || "?"}</AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="font-medium">{member.serverData?.name}</p>
-                <p className="text-sm text-gray-500">{member.serverData?.email}</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              {!isPending && member.isAdmin() && (
-                <Badge key="admin" variant="default">
-                  admin
-                </Badge>
-              )}
-              {renderMemberActions(member, isPending)}
-            </div>
-          </div>
-        ))}
-
-        {/* Infinite scroll loading indicator */}
-        {isFetchingNextPage && (
-          <div className="flex justify-center py-4 text-muted-foreground">
-            <div className="flex items-center space-x-2">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
-              <span>{t("ProfileMembers.loadingMore")}</span>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
-
+  
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -293,7 +48,7 @@ export function MemberManagementDialog({ entity, open, onOpenChange }: MemberMan
           <DialogHeader>
             <DialogTitle className="flex items-center space-x-2">
               <Settings className="h-5 w-5" />
-              <span>{labels.title}</span>
+              <span>{labels.managementTitle}</span>
             </DialogTitle>
           </DialogHeader>
 
@@ -324,33 +79,45 @@ export function MemberManagementDialog({ entity, open, onOpenChange }: MemberMan
               </TabsList>
 
               <TabsContent value="pending" className="mt-4 max-h-96 overflow-y-auto">
-                {renderMemberList(
-                  pendingMembers.members || [],
-                  pendingMembers.isLoading,
-                  true,
-                  pendingMembers.lastItemRef,
-                  pendingMembers.isFetchingNextPage
-                )}
+                <MemberListRenderer
+                  members={pendingMembers.members || []}
+                  entity={entity}
+                  isLoading={pendingMembers.isLoading}
+                  showActions={true}
+                  showBadges={false}
+                  isPending={true}
+                  lastItemRef={pendingMembers.lastItemRef}
+                  isFetchingNextPage={pendingMembers.isFetchingNextPage}
+                  showConfirmation={showConfirmation}
+                />
               </TabsContent>
 
               <TabsContent value="all" className="mt-4 max-h-96 overflow-y-auto">
-                {renderMemberList(
-                  allMembers.members || [],
-                  allMembers.isLoading,
-                  false,
-                  allMembers.lastItemRef,
-                  allMembers.isFetchingNextPage
-                )}
+                <MemberListRenderer
+                  members={allMembers.members || []}
+                  entity={entity}
+                  isLoading={allMembers.isLoading}
+                  showActions={true}
+                  showBadges={true}
+                  isPending={false}
+                  lastItemRef={allMembers.lastItemRef}
+                  isFetchingNextPage={allMembers.isFetchingNextPage}
+                  showConfirmation={showConfirmation}
+                />
               </TabsContent>
 
               <TabsContent value="admins" className="mt-4 max-h-96 overflow-y-auto">
-                {renderMemberList(
-                  adminMembers.members || [],
-                  adminMembers.isLoading,
-                  false,
-                  adminMembers.lastItemRef,
-                  adminMembers.isFetchingNextPage
-                )}
+                <MemberListRenderer
+                  members={adminMembers.members || []}
+                  entity={entity}
+                  isLoading={adminMembers.isLoading}
+                  showActions={true}
+                  showBadges={true}
+                  isPending={false}
+                  lastItemRef={adminMembers.lastItemRef}
+                  isFetchingNextPage={adminMembers.isFetchingNextPage}
+                  showConfirmation={showConfirmation}
+                />
               </TabsContent>
             </Tabs>
           </div>
@@ -358,23 +125,11 @@ export function MemberManagementDialog({ entity, open, onOpenChange }: MemberMan
       </Dialog>
 
       {/* Confirmation Dialog */}
-      <AlertDialog open={confirmation.open} onOpenChange={(open) => setConfirmation(prev => ({ ...prev, open }))}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{confirmation.title}</AlertDialogTitle>
-            <AlertDialogDescription>{confirmation.description}</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmation.action}
-              className={confirmation.isDestructive ? "bg-red-600 hover:bg-red-700" : ""}
-            >
-              {t("common.confirm")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmationDialog
+        confirmation={confirmation}
+        onOpenChange={hideConfirmation}
+        onConfirm={executeAction}
+      />
     </>
   );
 }

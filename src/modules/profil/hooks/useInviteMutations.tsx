@@ -11,9 +11,6 @@ const invalidateMemberQueries = (queryClient: ReturnType<typeof useQueryClient>,
   // Invalider le cache principal de l'entité
   queryClient.invalidateQueries({ queryKey: ["element-about", entity.slug] });
 
-  // Invalider les queries de recherche d'utilisateurs pour cette entité
-  queryClient.invalidateQueries({ queryKey: ["search-users"] });
-
   // Invalider les queries de membres selon le type d'entité
   if (isOrganization(entity)) {
     queryClient.invalidateQueries({ queryKey: ["organization-members", entity.slug] });

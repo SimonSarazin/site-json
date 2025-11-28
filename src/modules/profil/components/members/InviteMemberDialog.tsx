@@ -1,17 +1,12 @@
 import { useState } from "react";
 import { useT } from "@/hooks/useT";
 import { useSearchUsers } from "@/hooks/useSearchUsers";
-import { isOrganization, isProject, isEvent } from "@/lib/getTypedEntity";
 import type { EntityTypes, User } from "@communecter/cocolight-api-client";
-import {
-  useDemoteMember,
-  usePromoteMember,
-  useRemoveMember,
-  useValidateMember,
-  useValidateAdmin,
-  useRejectMember
-} from "../../hooks/useMemberMutations";
-import { useInviteMember, useInviteAdmin } from "../../hooks/useInviteMutations";
+import { useEntityLabels } from "../../hooks/useEntityLabels";
+import { useConfirmationDialog } from "../../hooks/useConfirmationDialog";
+import { useUserActions } from "../../hooks/useUserActions";
+import { useUserStatusBadge } from "../../hooks/useUserStatusBadge";
+import { ConfirmationDialog } from "./ConfirmationDialog";
 import {
   Dialog,
   DialogContent,
@@ -28,21 +23,10 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { UserPlus, X, Search, Loader2, Mail, Crown, ShieldOff, Trash2, MoreVertical, Check, User as UserIcon, Clock } from "lucide-react";
+import { UserPlus, Search, Loader2, Mail, MoreVertical } from "lucide-react";
 
 
 interface InviteMemberDialogProps {
@@ -51,465 +35,20 @@ interface InviteMemberDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-interface ConfirmationState {
-  open: boolean;
-  title: string;
-  description: string;
-  action: () => void;
-  isDestructive?: boolean;
-}
-
-interface UserAction {
-  id: string;
-  label: string;
-  icon: React.ReactNode;
-  variant: "default" | "outline" | "destructive" | "secondary";
-  onClick: () => void;
-  disabled?: boolean;
-  requiresConfirmation?: boolean;
-}
-
 export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberDialogProps) {
   const t = useT("modules/profil");
   const [activeTab, setActiveTab] = useState("users");
   const [searchTerm, setSearchTerm] = useState("");
-  const [confirmation, setConfirmation] = useState<ConfirmationState>({
-    open: false,
-    title: "",
-    description: "",
-    action: () => {},
-  });
-
-  // Hooks de mutations
-  const demoteMember = useDemoteMember(entity);
-  const promoteMember = usePromoteMember(entity);
-  const removeMember = useRemoveMember(entity);
-  const validateMember = useValidateMember(entity);
-  const validateAdmin = useValidateAdmin(entity);
-  const rejectMember = useRejectMember(entity);
-  const inviteMember = useInviteMember(entity);
-  const inviteAdmin = useInviteAdmin(entity);
+  const { confirmation, showConfirmation, hideConfirmation, executeAction } = useConfirmationDialog();
+  const { getUserActionButtons } = useUserActions(entity, showConfirmation);
+  const { getUserStatusBadge } = useUserStatusBadge();
 
   // Recherche d'utilisateurs en temps réel via l'API
   const { data: users = [], isLoading } = useSearchUsers(searchTerm, searchTerm.length >= 2, entity);
 
+  // Labels spécifiques à l'entité
+  const labels = useEntityLabels(entity);
 
-  const getEntityLabels = () => {
-    if (entity && isOrganization(entity)) {
-      return {
-        title: t("InviteMemberDialog.organization.title"),
-        description: t("InviteMemberDialog.organization.description"),
-      };
-    } else if (entity && isProject(entity)) {
-      return {
-        title: t("InviteMemberDialog.project.title"),
-        description: t("InviteMemberDialog.project.description"),
-      };
-    } else if (entity && isEvent(entity)) {
-      return {
-        title: t("InviteMemberDialog.event.title"),
-        description: t("InviteMemberDialog.event.description"),
-      };
-    }
-    return {
-      title: t("InviteMemberDialog.title"),
-      description: t("InviteMemberDialog.description"),
-    };
-  };
-
-  const labels = getEntityLabels();
-
-  const showConfirmation = (config: Omit<ConfirmationState, "open">) => {
-    setConfirmation({ ...config, open: true });
-  };
-
-  // Fonction qui analyse l'état d'un utilisateur et retourne les actions possibles
-  const getUserActionButtons = (user: User): UserAction[] => {
-    const actions: UserAction[] = [];
-    const userName = user.serverData?.name || "Unknown";
-
-    if (!entity) return actions;
-
-    // Actions spécifiques selon le type d'entité
-    if (isOrganization(entity)) {
-      // Admin d'organisation
-      if (user.isAdmin?.()) {
-        actions.push({
-          id: "demote",
-          label: t("InviteMemberDialog.demote"),
-          icon: <ShieldOff className="w-3 h-3" />,
-          variant: "outline",
-          onClick: () => showConfirmation({
-            title: t("InviteMemberDialog.demoteDialog.title"),
-            description: t("InviteMemberDialog.demoteDialog.description", undefined, { name: userName }),
-            action: () => demoteMember.mutate(user)
-          }),
-          requiresConfirmation: true
-        });
-
-        actions.push({
-          id: "remove",
-          label: t("InviteMemberDialog.remove"),
-          icon: <Trash2 className="w-3 h-3" />,
-          variant: "destructive",
-          onClick: () => showConfirmation({
-            title: t("InviteMemberDialog.removeDialog.title"),
-            description: t("InviteMemberDialog.removeDialog.description", undefined, { name: userName }),
-            action: () => removeMember.mutate(user),
-            isDestructive: true
-          }),
-          requiresConfirmation: true
-        });
-
-        return actions;
-      }
-
-      // Membre d'organisation
-      if (user.isMember?.()) {
-        actions.push({
-          id: "promote",
-          label: t("InviteMemberDialog.promoteToAdmin"),
-          icon: <Crown className="w-3 h-3" />,
-          variant: "outline",
-          onClick: () => showConfirmation({
-            title: t("InviteMemberDialog.promoteDialog.title"),
-            description: t("InviteMemberDialog.promoteDialog.description", undefined, { name: userName }),
-            action: () => promoteMember.mutate(user)
-          }),
-          requiresConfirmation: true
-        });
-
-        actions.push({
-          id: "remove",
-          label: t("InviteMemberDialog.remove"),
-          icon: <Trash2 className="w-3 h-3" />,
-          variant: "destructive",
-          onClick: () => showConfirmation({
-            title: t("InviteMemberDialog.removeDialog.title"),
-            description: t("InviteMemberDialog.removeDialog.description", undefined, { name: userName }),
-            action: () => removeMember.mutate(user),
-            isDestructive: true
-          }),
-          requiresConfirmation: true
-        });
-
-        return actions;
-      }
-
-      // États d'invitation/validation pour organisations
-      if (user.isInvitingAdmin?.()) {
-        return [{
-          id: "inviting-admin",
-          label: t("InviteMemberDialog.adminInvitationSent"),
-          icon: <Crown className="w-3 h-3" />,
-          variant: "secondary",
-          onClick: () => {},
-          disabled: true
-        }];
-      }
-
-      if (user.isAdminPending?.()) {
-        actions.push({
-          id: "validate-admin",
-          label: t("InviteMemberDialog.validateAdmin"),
-          icon: <Crown className="w-3 h-3" />,
-          variant: "default",
-          onClick: () => showConfirmation({
-            title: t("InviteMemberDialog.validateAdminDialog.title"),
-            description: t("InviteMemberDialog.validateAdminDialog.description", undefined, { name: userName }),
-            action: () => validateAdmin.mutate(user)
-          }),
-          requiresConfirmation: true
-        });
-
-        return actions;
-      }
-
-      if (user.isInviting?.()) {
-        return [{
-          id: "inviting",
-          label: t("InviteMemberDialog.invited"),
-          icon: <Mail className="w-3 h-3" />,
-          variant: "secondary",
-          onClick: () => {},
-          disabled: true
-        }];
-      }
-
-      if (user.isToBeValidated?.()) {
-        actions.push({
-          id: "validate",
-          label: t("InviteMemberDialog.validate"),
-          icon: <Check className="w-3 h-3" />,
-          variant: "default",
-          onClick: () => showConfirmation({
-            title: t("InviteMemberDialog.validateDialog.title"),
-            description: t("InviteMemberDialog.validateDialog.description", undefined, { name: userName }),
-            action: () => validateMember.mutate(user)
-          }),
-          requiresConfirmation: true
-        });
-
-        actions.push({
-          id: "reject",
-          label: t("InviteMemberDialog.reject"),
-          icon: <X className="w-3 h-3" />,
-          variant: "destructive",
-          onClick: () => showConfirmation({
-            title: t("InviteMemberDialog.rejectDialog.title"),
-            description: t("InviteMemberDialog.rejectDialog.description", undefined, { name: userName }),
-            action: () => rejectMember.mutate(user),
-            isDestructive: true
-          }),
-          requiresConfirmation: true
-        });
-
-        return actions;
-      }
-    } else if (isProject(entity)) {
-      // Admin de projet
-      if (user.isAdmin?.()) {
-        actions.push({
-          id: "demote",
-          label: t("InviteMemberDialog.demote"),
-          icon: <ShieldOff className="w-3 h-3" />,
-          variant: "outline",
-          onClick: () => showConfirmation({
-            title: t("InviteMemberDialog.demoteDialog.title"),
-            description: t("InviteMemberDialog.demoteDialog.description", undefined, { name: userName }),
-            action: () => demoteMember.mutate(user)
-          }),
-          requiresConfirmation: true
-        });
-
-        actions.push({
-          id: "remove",
-          label: t("InviteMemberDialog.remove"),
-          icon: <Trash2 className="w-3 h-3" />,
-          variant: "destructive",
-          onClick: () => showConfirmation({
-            title: t("InviteMemberDialog.removeDialog.title"),
-            description: t("InviteMemberDialog.removeDialog.description", undefined, { name: userName }),
-            action: () => removeMember.mutate(user),
-            isDestructive: true
-          }),
-          requiresConfirmation: true
-        });
-
-        return actions;
-      }
-
-      // Contributeur de projet
-      if (user.isContributor?.()) {
-        actions.push({
-          id: "promote",
-          label: t("InviteMemberDialog.promoteToAdmin"),
-          icon: <Crown className="w-3 h-3" />,
-          variant: "outline",
-          onClick: () => showConfirmation({
-            title: t("InviteMemberDialog.promoteDialog.title"),
-            description: t("InviteMemberDialog.promoteDialog.description", undefined, { name: userName }),
-            action: () => promoteMember.mutate(user)
-          }),
-          requiresConfirmation: true
-        });
-
-        actions.push({
-          id: "remove",
-          label: t("InviteMemberDialog.remove"),
-          icon: <Trash2 className="w-3 h-3" />,
-          variant: "destructive",
-          onClick: () => showConfirmation({
-            title: t("InviteMemberDialog.removeDialog.title"),
-            description: t("InviteMemberDialog.removeDialog.description", undefined, { name: userName }),
-            action: () => removeMember.mutate(user),
-            isDestructive: true
-          }),
-          requiresConfirmation: true
-        });
-
-        return actions;
-      }
-
-      // États d'invitation/validation pour projets
-      if (user.isInvitingAdmin?.()) {
-        return [{
-          id: "inviting-admin",
-          label: t("InviteMemberDialog.adminInvitationSent"),
-          icon: <Crown className="w-3 h-3" />,
-          variant: "secondary",
-          onClick: () => {},
-          disabled: true
-        }];
-      }
-
-      if (user.isAdminPending?.()) {
-        actions.push({
-          id: "validate-admin",
-          label: t("InviteMemberDialog.validateAdmin"),
-          icon: <Crown className="w-3 h-3" />,
-          variant: "default",
-          onClick: () => showConfirmation({
-            title: t("InviteMemberDialog.validateAdminDialog.title"),
-            description: t("InviteMemberDialog.validateAdminDialog.description", undefined, { name: userName }),
-            action: () => validateAdmin.mutate(user)
-          }),
-          requiresConfirmation: true
-        });
-
-        return actions;
-      }
-
-      if (user.isInviting?.()) {
-        return [{
-          id: "inviting",
-          label: t("InviteMemberDialog.invited"),
-          icon: <Mail className="w-3 h-3" />,
-          variant: "secondary",
-          onClick: () => {},
-          disabled: true
-        }];
-      }
-
-      if (user.isToBeValidated?.()) {
-        actions.push({
-          id: "validate",
-          label: t("InviteMemberDialog.validate"),
-          icon: <Check className="w-3 h-3" />,
-          variant: "default",
-          onClick: () => showConfirmation({
-            title: t("InviteMemberDialog.validateDialog.title"),
-            description: t("InviteMemberDialog.validateDialog.description", undefined, { name: userName }),
-            action: () => validateMember.mutate(user)
-          }),
-          requiresConfirmation: true
-        });
-
-        actions.push({
-          id: "reject",
-          label: t("InviteMemberDialog.reject"),
-          icon: <X className="w-3 h-3" />,
-          variant: "destructive",
-          onClick: () => showConfirmation({
-            title: t("InviteMemberDialog.rejectDialog.title"),
-            description: t("InviteMemberDialog.rejectDialog.description", undefined, { name: userName }),
-            action: () => rejectMember.mutate(user),
-            isDestructive: true
-          }),
-          requiresConfirmation: true
-        });
-
-        return actions;
-      }
-    } else if (isEvent(entity)) {
-      // Participant d'événement
-      if (user.isAttendee?.()) {
-        actions.push({
-          id: "remove",
-          label: t("InviteMemberDialog.remove"),
-          icon: <Trash2 className="w-3 h-3" />,
-          variant: "destructive",
-          onClick: () => showConfirmation({
-            title: t("InviteMemberDialog.removeDialog.title"),
-            description: t("InviteMemberDialog.removeDialog.description", undefined, { name: userName }),
-            action: () => removeMember.mutate(user),
-            isDestructive: true
-          }),
-          requiresConfirmation: true
-        });
-
-        return actions;
-      }
-
-      // États d'invitation/validation pour événements
-      if (user.isInviting?.()) {
-        return [{
-          id: "inviting",
-          label: t("InviteMemberDialog.invited"),
-          icon: <Mail className="w-3 h-3" />,
-          variant: "secondary",
-          onClick: () => {},
-          disabled: true
-        }];
-      }
-
-      if (user.isToBeValidated?.()) {
-        actions.push({
-          id: "validate",
-          label: t("InviteMemberDialog.validate"),
-          icon: <Check className="w-3 h-3" />,
-          variant: "default",
-          onClick: () => showConfirmation({
-            title: t("InviteMemberDialog.validateDialog.title"),
-            description: t("InviteMemberDialog.validateDialog.description", undefined, { name: userName }),
-            action: () => validateMember.mutate(user)
-          }),
-          requiresConfirmation: true
-        });
-
-        actions.push({
-          id: "reject",
-          label: t("InviteMemberDialog.reject"),
-          icon: <X className="w-3 h-3" />,
-          variant: "destructive",
-          onClick: () => showConfirmation({
-            title: t("InviteMemberDialog.rejectDialog.title"),
-            description: t("InviteMemberDialog.rejectDialog.description", undefined, { name: userName }),
-            action: () => rejectMember.mutate(user),
-            isDestructive: true
-          }),
-          requiresConfirmation: true
-        });
-
-        return actions;
-      }
-    }
-
-    // Utilisateur normal - actions d'invitation (dernier recours)
-    if (isOrganization(entity)) {
-      actions.push({
-        id: "invite-member",
-        label: t("InviteMemberDialog.inviteMember"),
-        icon: <UserPlus className="w-3 h-3" />,
-        variant: "default",
-        onClick: () => inviteMember.mutate(user)
-      });
-
-      actions.push({
-        id: "invite-admin",
-        label: t("InviteMemberDialog.inviteAdmin"),
-        icon: <Crown className="w-3 h-3" />,
-        variant: "outline",
-        onClick: () => inviteAdmin.mutate(user)
-      });
-    } else if (isProject(entity)) {
-      actions.push({
-        id: "invite-contributor",
-        label: t("InviteMemberDialog.inviteContributor"),
-        icon: <UserPlus className="w-3 h-3" />,
-        variant: "default",
-        onClick: () => inviteMember.mutate(user)
-      });
-
-      actions.push({
-        id: "invite-admin",
-        label: t("InviteMemberDialog.inviteAdmin"),
-        icon: <Crown className="w-3 h-3" />,
-        variant: "outline",
-        onClick: () => inviteAdmin.mutate(user)
-      });
-    } else if (isEvent(entity)) {
-      actions.push({
-        id: "invite-participant",
-        label: t("InviteMemberDialog.inviteParticipant"),
-        icon: <UserPlus className="w-3 h-3" />,
-        variant: "default",
-        onClick: () => inviteMember.mutate(user)
-      });
-    }
-
-    return actions;
-  };
 
   // Composant pour afficher les actions d'un utilisateur
   const UserActionButtons = ({ user }: { user: User }) => {
@@ -563,147 +102,11 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
     );
   };
 
-  // Fonction pour obtenir le badge de statut d'un utilisateur
-  const getUserStatusBadge = (user: User) => {
-    if (!entity) return null;
-    // États spécifiques selon le type d'entité
-    if (isOrganization(entity)) {
-      if (user.isAdmin?.()) {
-        return (
-          <Badge variant="default">
-            <span className="hidden sm:inline">{t("InviteMemberDialog.badges.admin")}</span>
-            <Crown className="sm:hidden w-3 h-3" />
-          </Badge>
-        );
-      }
-      if (user.isMember?.()) {
-        return (
-          <Badge variant="secondary">
-            <span className="hidden sm:inline">{t("InviteMemberDialog.badges.member")}</span>
-            <UserIcon className="sm:hidden w-3 h-3" />
-          </Badge>
-        );
-      }
-      if (user.isInvitingAdmin?.()) {
-        return (
-          <Badge variant="outline">
-            <span className="hidden sm:inline">{t("InviteMemberDialog.badges.adminInvitationPending")}</span>
-            <Crown className="sm:hidden w-3 h-3 animate-pulse" />
-          </Badge>
-        );
-      }
-      if (user.isAdminPending?.()) {
-        return (
-          <Badge variant="outline">
-            <span className="hidden sm:inline">{t("InviteMemberDialog.badges.adminRequestPending")}</span>
-            <Clock className="sm:hidden w-3 h-3" />
-          </Badge>
-        );
-      }
-      if (user.isInviting?.()) {
-        return (
-          <Badge variant="outline">
-            <span className="hidden sm:inline">{t("InviteMemberDialog.badges.invitationPending")}</span>
-            <Mail className="sm:hidden w-3 h-3 animate-pulse" />
-          </Badge>
-        );
-      }
-      if (user.isToBeValidated?.()) {
-        return (
-          <Badge variant="outline">
-            <span className="hidden sm:inline">{t("InviteMemberDialog.badges.validationPending")}</span>
-            <Clock className="sm:hidden w-3 h-3" />
-          </Badge>
-        );
-      }
-    } else if (isProject(entity)) {
-      if (user.isAdmin?.()) {
-        return (
-          <Badge variant="default">
-            <span className="hidden sm:inline">{t("InviteMemberDialog.badges.admin")}</span>
-            <Crown className="sm:hidden w-3 h-3" />
-          </Badge>
-        );
-      }
-      if (user.isContributor?.()) {
-        return (
-          <Badge variant="secondary">
-            <span className="hidden sm:inline">{t("InviteMemberDialog.badges.contributor")}</span>
-            <UserIcon className="sm:hidden w-3 h-3" />
-          </Badge>
-        );
-      }
-      if (user.isInvitingAdmin?.()) {
-        return (
-          <Badge variant="outline">
-            <span className="hidden sm:inline">{t("InviteMemberDialog.badges.adminInvitationPending")}</span>
-            <Crown className="sm:hidden w-3 h-3 animate-pulse" />
-          </Badge>
-        );
-      }
-      if (user.isAdminPending?.()) {
-        return (
-          <Badge variant="outline">
-            <span className="hidden sm:inline">{t("InviteMemberDialog.badges.adminRequestPending")}</span>
-            <Clock className="sm:hidden w-3 h-3" />
-          </Badge>
-        );
-      }
-      if (user.isInviting?.()) {
-        return (
-          <Badge variant="outline">
-            <span className="hidden sm:inline">{t("InviteMemberDialog.badges.invitationPending")}</span>
-            <Mail className="sm:hidden w-3 h-3 animate-pulse" />
-          </Badge>
-        );
-      }
-      if (user.isToBeValidated?.()) {
-        return (
-          <Badge variant="outline">
-            <span className="hidden sm:inline">{t("InviteMemberDialog.badges.validationPending")}</span>
-            <Clock className="sm:hidden w-3 h-3" />
-          </Badge>
-        );
-      }
-    } else if (isEvent(entity)) {
-      if (user.isAttendee?.()) {
-        return (
-          <Badge variant="secondary">
-            <span className="hidden sm:inline">{t("InviteMemberDialog.badges.participant")}</span>
-            <UserIcon className="sm:hidden w-3 h-3" />
-          </Badge>
-        );
-      }
-      if (user.isInviting?.()) {
-        return (
-          <Badge variant="outline">
-            <span className="hidden sm:inline">{t("InviteMemberDialog.badges.invitationPending")}</span>
-            <Mail className="sm:hidden w-3 h-3 animate-pulse" />
-          </Badge>
-        );
-      }
-      if (user.isToBeValidated?.()) {
-        return (
-          <Badge variant="outline">
-            <span className="hidden sm:inline">{t("InviteMemberDialog.badges.validationPending")}</span>
-            <Clock className="sm:hidden w-3 h-3" />
-          </Badge>
-        );
-      }
-    }
-
-    return null;
-  };
 
   const handleClose = () => {
     setSearchTerm("");
     setActiveTab("users");
-    setConfirmation({
-      open: false,
-      title: "",
-      description: "",
-      action: () => {},
-    });
+    hideConfirmation();
     onOpenChange(false);
   };
 
@@ -809,7 +212,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
-                            {getUserStatusBadge(user)}
+                            {getUserStatusBadge(user, entity)}
                             <UserActionButtons user={user} />
                           </div>
                         </div>
@@ -842,23 +245,11 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
       </DialogContent>
 
       {/* Confirmation Dialog */}
-      <AlertDialog open={confirmation.open} onOpenChange={(open) => setConfirmation(prev => ({ ...prev, open }))}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{confirmation.title}</AlertDialogTitle>
-            <AlertDialogDescription>{confirmation.description}</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmation.action}
-              className={confirmation.isDestructive ? "bg-red-600 hover:bg-red-700" : ""}
-            >
-              {t("common.confirm")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmationDialog
+        confirmation={confirmation}
+        onOpenChange={hideConfirmation}
+        onConfirm={executeAction}
+      />
     </Dialog>
   );
 }
