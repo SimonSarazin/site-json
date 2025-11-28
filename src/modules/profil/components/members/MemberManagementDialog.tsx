@@ -4,6 +4,13 @@ import { useEntityMembers } from "../../hooks/useMembersQuery";
 import { isOrganization, isProject, isEvent } from "@/lib/getTypedEntity";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import {
+  useDemoteMember,
+  usePromoteMember,
+  useRemoveMember,
+  useValidateMember,
+  useRejectMember
+} from "../../hooks/useMemberMutations";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -68,6 +75,13 @@ export function MemberManagementDialog({ entity, open, onOpenChange }: MemberMan
     action: () => {},
   });
 
+  // Hooks de mutations
+  const demoteMember = useDemoteMember(entity);
+  const promoteMember = usePromoteMember(entity);
+  const removeMember = useRemoveMember(entity);
+  const validateMember = useValidateMember(entity);
+  const rejectMember = useRejectMember(entity);
+
   // Queries
   const allMembers = useEntityMembers(entity, { toBeValidated: false }, { search: searchTerm });
   const pendingMembers = useEntityMembers(entity, { toBeValidated: true }, { search: searchTerm });
@@ -129,11 +143,7 @@ export function MemberManagementDialog({ entity, open, onOpenChange }: MemberMan
             onClick={() => showConfirmation({
               title: t("MemberManagementDialog.acceptDialog.title"),
               description: t("MemberManagementDialog.acceptDialog.description").replace("{{name}}", member.serverData.name),
-              action: async () => {
-                if (member.validateMemberRequest) {
-                  await member.validateMemberRequest();
-                }
-              }
+              action: () => validateMember.mutate(member)
             })}
           >
             <Check className="h-4 w-4" />
@@ -144,11 +154,7 @@ export function MemberManagementDialog({ entity, open, onOpenChange }: MemberMan
             onClick={() => showConfirmation({
               title: t("MemberManagementDialog.rejectDialog.title"),
               description: t("MemberManagementDialog.rejectDialog.description").replace("{{name}}", member.serverData.name),
-              action: async () => {
-                if (member.removeFromParent) {
-                  await member.removeFromParent();
-                }
-              },
+              action: () => rejectMember.mutate(member),
               isDestructive: true
             })}
           >
@@ -170,11 +176,7 @@ export function MemberManagementDialog({ entity, open, onOpenChange }: MemberMan
             <DropdownMenuItem onClick={() => showConfirmation({
               title: t("MemberManagementDialog.promoteDialog.title"),
               description: t("MemberManagementDialog.promoteDialog.description").replace("{{name}}", member.serverData.name),
-              action: async () => {
-                if (member.promoteToAdmin) {
-                  await member.promoteToAdmin();
-                }
-              }
+              action: () => promoteMember.mutate(member)
             })}>
               <Crown className="h-4 w-4 mr-2" />
               {t("MemberManagementDialog.promote")}
@@ -184,11 +186,7 @@ export function MemberManagementDialog({ entity, open, onOpenChange }: MemberMan
             <DropdownMenuItem onClick={() => showConfirmation({
               title: t("MemberManagementDialog.demoteDialog.title"),
               description: t("MemberManagementDialog.demoteDialog.description").replace("{{name}}", member.serverData.name),
-              action: async () => {
-                if (member.demoteFromAdmin) {
-                  await member.demoteFromAdmin();
-                }
-              }
+              action: () => demoteMember.mutate(member)
             })}>
               <ShieldOff className="h-4 w-4 mr-2" />
               {t("MemberManagementDialog.demote")}
@@ -199,11 +197,7 @@ export function MemberManagementDialog({ entity, open, onOpenChange }: MemberMan
             onClick={() => showConfirmation({
               title: t("MemberManagementDialog.removeDialog.title"),
               description: t("MemberManagementDialog.removeDialog.description").replace("{{name}}", member.serverData.name),
-              action: async () => {
-                if (member.removeFromParent) {
-                  await member.removeFromParent();
-                }
-              },
+              action: () => removeMember.mutate(member),
               isDestructive: true
             })}
             className="text-red-600"

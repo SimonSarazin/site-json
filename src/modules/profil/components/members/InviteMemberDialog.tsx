@@ -1,9 +1,17 @@
 import { useState } from "react";
-import { toast } from "sonner";
 import { useT } from "@/hooks/useT";
 import { useSearchUsers } from "@/hooks/useSearchUsers";
 import { isOrganization, isProject, isEvent } from "@/lib/getTypedEntity";
 import type { EntityTypes, User } from "@communecter/cocolight-api-client";
+import {
+  useDemoteMember,
+  usePromoteMember,
+  useRemoveMember,
+  useValidateMember,
+  useValidateAdmin,
+  useRejectMember
+} from "../../hooks/useMemberMutations";
+import { useInviteMember, useInviteAdmin } from "../../hooks/useInviteMutations";
 import {
   Dialog,
   DialogContent,
@@ -72,6 +80,16 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
     action: () => {},
   });
 
+  // Hooks de mutations
+  const demoteMember = useDemoteMember(entity);
+  const promoteMember = usePromoteMember(entity);
+  const removeMember = useRemoveMember(entity);
+  const validateMember = useValidateMember(entity);
+  const validateAdmin = useValidateAdmin(entity);
+  const rejectMember = useRejectMember(entity);
+  const inviteMember = useInviteMember(entity);
+  const inviteAdmin = useInviteAdmin(entity);
+
   // Recherche d'utilisateurs en temps réel via l'API
   const { data: users = [], isLoading } = useSearchUsers(searchTerm, searchTerm.length >= 2, entity);
 
@@ -124,19 +142,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
           onClick: () => showConfirmation({
             title: t("InviteMemberDialog.demoteDialog.title"),
             description: t("InviteMemberDialog.demoteDialog.description", undefined, { name: userName }),
-            action: async () => {
-              try {
-                if (user.demoteFromAdmin) {
-                  await user.demoteFromAdmin();
-                  toast.success(t("toast.members.demoteSuccess", undefined, { name: userName }));
-                }
-              } catch (error) {
-                const errorMessage = error instanceof Error ? error.message : t("toast.error.generic");
-                toast.error(t("toast.members.demoteError", undefined, { name: userName }), {
-                  description: errorMessage,
-                });
-              }
-            }
+            action: () => demoteMember.mutate(user)
           }),
           requiresConfirmation: true
         });
@@ -149,19 +155,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
           onClick: () => showConfirmation({
             title: t("InviteMemberDialog.removeDialog.title"),
             description: t("InviteMemberDialog.removeDialog.description", undefined, { name: userName }),
-            action: async () => {
-              try {
-                if (user.removeFromParent) {
-                  await user.removeFromParent();
-                  toast.success(t("toast.members.removeSuccess", undefined, { name: userName }));
-                }
-              } catch (error) {
-                const errorMessage = error instanceof Error ? error.message : t("toast.error.generic");
-                toast.error(t("toast.members.removeError", undefined, { name: userName }), {
-                  description: errorMessage,
-                });
-              }
-            },
+            action: () => removeMember.mutate(user),
             isDestructive: true
           }),
           requiresConfirmation: true
@@ -180,19 +174,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
           onClick: () => showConfirmation({
             title: t("InviteMemberDialog.promoteDialog.title"),
             description: t("InviteMemberDialog.promoteDialog.description", undefined, { name: userName }),
-            action: async () => {
-              try {
-                if (user.promoteToAdmin) {
-                  await user.promoteToAdmin();
-                  toast.success(t("toast.members.promoteSuccess", undefined, { name: userName }));
-                }
-              } catch (error) {
-                const errorMessage = error instanceof Error ? error.message : t("toast.error.generic");
-                toast.error(t("toast.members.promoteError", undefined, { name: userName }), {
-                  description: errorMessage,
-                });
-              }
-            }
+            action: () => promoteMember.mutate(user)
           }),
           requiresConfirmation: true
         });
@@ -205,19 +187,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
           onClick: () => showConfirmation({
             title: t("InviteMemberDialog.removeDialog.title"),
             description: t("InviteMemberDialog.removeDialog.description", undefined, { name: userName }),
-            action: async () => {
-              try {
-                if (user.removeFromParent) {
-                  await user.removeFromParent();
-                  toast.success(t("toast.members.removeSuccess", undefined, { name: userName }));
-                }
-              } catch (error) {
-                const errorMessage = error instanceof Error ? error.message : t("toast.error.generic");
-                toast.error(t("toast.members.removeError", undefined, { name: userName }), {
-                  description: errorMessage,
-                });
-              }
-            },
+            action: () => removeMember.mutate(user),
             isDestructive: true
           }),
           requiresConfirmation: true
@@ -247,19 +217,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
           onClick: () => showConfirmation({
             title: t("InviteMemberDialog.validateAdminDialog.title"),
             description: t("InviteMemberDialog.validateAdminDialog.description", undefined, { name: userName }),
-            action: async () => {
-              try {
-                if (user.validateAdminRequest) {
-                  await user.validateAdminRequest();
-                  toast.success(t("toast.members.validateAdminSuccess", undefined, { name: userName }));
-                }
-              } catch (error) {
-                const errorMessage = error instanceof Error ? error.message : t("toast.error.generic");
-                toast.error(t("toast.members.validateAdminError", undefined, { name: userName }), {
-                  description: errorMessage,
-                });
-              }
-            }
+            action: () => validateAdmin.mutate(user)
           }),
           requiresConfirmation: true
         });
@@ -287,19 +245,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
           onClick: () => showConfirmation({
             title: t("InviteMemberDialog.validateDialog.title"),
             description: t("InviteMemberDialog.validateDialog.description", undefined, { name: userName }),
-            action: async () => {
-              try {
-                if (user.validateMemberRequest) {
-                  await user.validateMemberRequest();
-                  toast.success(t("toast.members.validateSuccess", undefined, { name: userName }));
-                }
-              } catch (error) {
-                const errorMessage = error instanceof Error ? error.message : t("toast.error.generic");
-                toast.error(t("toast.members.validateError", undefined, { name: userName }), {
-                  description: errorMessage,
-                });
-              }
-            }
+            action: () => validateMember.mutate(user)
           }),
           requiresConfirmation: true
         });
@@ -312,19 +258,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
           onClick: () => showConfirmation({
             title: t("InviteMemberDialog.rejectDialog.title"),
             description: t("InviteMemberDialog.rejectDialog.description", undefined, { name: userName }),
-            action: async () => {
-              try {
-                if (user.removeFromParent) {
-                  await user.removeFromParent();
-                  toast.success(t("toast.members.removeSuccess", undefined, { name: userName }));
-                }
-              } catch (error) {
-                const errorMessage = error instanceof Error ? error.message : t("toast.error.generic");
-                toast.error(t("toast.members.removeError", undefined, { name: userName }), {
-                  description: errorMessage,
-                });
-              }
-            },
+            action: () => rejectMember.mutate(user),
             isDestructive: true
           }),
           requiresConfirmation: true
@@ -343,19 +277,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
           onClick: () => showConfirmation({
             title: t("InviteMemberDialog.demoteDialog.title"),
             description: t("InviteMemberDialog.demoteDialog.description", undefined, { name: userName }),
-            action: async () => {
-              try {
-                if (user.demoteFromAdmin) {
-                  await user.demoteFromAdmin();
-                  toast.success(t("toast.members.demoteSuccess", undefined, { name: userName }));
-                }
-              } catch (error) {
-                const errorMessage = error instanceof Error ? error.message : t("toast.error.generic");
-                toast.error(t("toast.members.demoteError", undefined, { name: userName }), {
-                  description: errorMessage,
-                });
-              }
-            }
+            action: () => demoteMember.mutate(user)
           }),
           requiresConfirmation: true
         });
@@ -368,19 +290,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
           onClick: () => showConfirmation({
             title: t("InviteMemberDialog.removeDialog.title"),
             description: t("InviteMemberDialog.removeDialog.description", undefined, { name: userName }),
-            action: async () => {
-              try {
-                if (user.removeFromParent) {
-                  await user.removeFromParent();
-                  toast.success(t("toast.members.removeSuccess", undefined, { name: userName }));
-                }
-              } catch (error) {
-                const errorMessage = error instanceof Error ? error.message : t("toast.error.generic");
-                toast.error(t("toast.members.removeError", undefined, { name: userName }), {
-                  description: errorMessage,
-                });
-              }
-            },
+            action: () => removeMember.mutate(user),
             isDestructive: true
           }),
           requiresConfirmation: true
@@ -399,19 +309,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
           onClick: () => showConfirmation({
             title: t("InviteMemberDialog.promoteDialog.title"),
             description: t("InviteMemberDialog.promoteDialog.description", undefined, { name: userName }),
-            action: async () => {
-              try {
-                if (user.promoteToAdmin) {
-                  await user.promoteToAdmin();
-                  toast.success(t("toast.members.promoteSuccess", undefined, { name: userName }));
-                }
-              } catch (error) {
-                const errorMessage = error instanceof Error ? error.message : t("toast.error.generic");
-                toast.error(t("toast.members.promoteError", undefined, { name: userName }), {
-                  description: errorMessage,
-                });
-              }
-            }
+            action: () => promoteMember.mutate(user)
           }),
           requiresConfirmation: true
         });
@@ -424,19 +322,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
           onClick: () => showConfirmation({
             title: t("InviteMemberDialog.removeDialog.title"),
             description: t("InviteMemberDialog.removeDialog.description", undefined, { name: userName }),
-            action: async () => {
-              try {
-                if (user.removeFromParent) {
-                  await user.removeFromParent();
-                  toast.success(t("toast.members.removeSuccess", undefined, { name: userName }));
-                }
-              } catch (error) {
-                const errorMessage = error instanceof Error ? error.message : t("toast.error.generic");
-                toast.error(t("toast.members.removeError", undefined, { name: userName }), {
-                  description: errorMessage,
-                });
-              }
-            },
+            action: () => removeMember.mutate(user),
             isDestructive: true
           }),
           requiresConfirmation: true
@@ -466,19 +352,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
           onClick: () => showConfirmation({
             title: t("InviteMemberDialog.validateAdminDialog.title"),
             description: t("InviteMemberDialog.validateAdminDialog.description", undefined, { name: userName }),
-            action: async () => {
-              try {
-                if (user.validateAdminRequest) {
-                  await user.validateAdminRequest();
-                  toast.success(t("toast.members.validateAdminSuccess", undefined, { name: userName }));
-                }
-              } catch (error) {
-                const errorMessage = error instanceof Error ? error.message : t("toast.error.generic");
-                toast.error(t("toast.members.validateAdminError", undefined, { name: userName }), {
-                  description: errorMessage,
-                });
-              }
-            }
+            action: () => validateAdmin.mutate(user)
           }),
           requiresConfirmation: true
         });
@@ -506,19 +380,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
           onClick: () => showConfirmation({
             title: t("InviteMemberDialog.validateDialog.title"),
             description: t("InviteMemberDialog.validateDialog.description", undefined, { name: userName }),
-            action: async () => {
-              try {
-                if (user.validateMemberRequest) {
-                  await user.validateMemberRequest();
-                  toast.success(t("toast.members.validateSuccess", undefined, { name: userName }));
-                }
-              } catch (error) {
-                const errorMessage = error instanceof Error ? error.message : t("toast.error.generic");
-                toast.error(t("toast.members.validateError", undefined, { name: userName }), {
-                  description: errorMessage,
-                });
-              }
-            }
+            action: () => validateMember.mutate(user)
           }),
           requiresConfirmation: true
         });
@@ -531,19 +393,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
           onClick: () => showConfirmation({
             title: t("InviteMemberDialog.rejectDialog.title"),
             description: t("InviteMemberDialog.rejectDialog.description", undefined, { name: userName }),
-            action: async () => {
-              try {
-                if (user.removeFromParent) {
-                  await user.removeFromParent();
-                  toast.success(t("toast.members.removeSuccess", undefined, { name: userName }));
-                }
-              } catch (error) {
-                const errorMessage = error instanceof Error ? error.message : t("toast.error.generic");
-                toast.error(t("toast.members.removeError", undefined, { name: userName }), {
-                  description: errorMessage,
-                });
-              }
-            },
+            action: () => rejectMember.mutate(user),
             isDestructive: true
           }),
           requiresConfirmation: true
@@ -562,19 +412,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
           onClick: () => showConfirmation({
             title: t("InviteMemberDialog.removeDialog.title"),
             description: t("InviteMemberDialog.removeDialog.description", undefined, { name: userName }),
-            action: async () => {
-              try {
-                if (user.removeFromParent) {
-                  await user.removeFromParent();
-                  toast.success(t("toast.members.removeSuccess", undefined, { name: userName }));
-                }
-              } catch (error) {
-                const errorMessage = error instanceof Error ? error.message : t("toast.error.generic");
-                toast.error(t("toast.members.removeError", undefined, { name: userName }), {
-                  description: errorMessage,
-                });
-              }
-            },
+            action: () => removeMember.mutate(user),
             isDestructive: true
           }),
           requiresConfirmation: true
@@ -604,19 +442,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
           onClick: () => showConfirmation({
             title: t("InviteMemberDialog.validateDialog.title"),
             description: t("InviteMemberDialog.validateDialog.description", undefined, { name: userName }),
-            action: async () => {
-              try {
-                if (user.validateMemberRequest) {
-                  await user.validateMemberRequest();
-                  toast.success(t("toast.members.validateSuccess", undefined, { name: userName }));
-                }
-              } catch (error) {
-                const errorMessage = error instanceof Error ? error.message : t("toast.error.generic");
-                toast.error(t("toast.members.validateError", undefined, { name: userName }), {
-                  description: errorMessage,
-                });
-              }
-            }
+            action: () => validateMember.mutate(user)
           }),
           requiresConfirmation: true
         });
@@ -629,19 +455,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
           onClick: () => showConfirmation({
             title: t("InviteMemberDialog.rejectDialog.title"),
             description: t("InviteMemberDialog.rejectDialog.description", undefined, { name: userName }),
-            action: async () => {
-              try {
-                if (user.removeFromParent) {
-                  await user.removeFromParent();
-                  toast.success(t("toast.members.removeSuccess", undefined, { name: userName }));
-                }
-              } catch (error) {
-                const errorMessage = error instanceof Error ? error.message : t("toast.error.generic");
-                toast.error(t("toast.members.removeError", undefined, { name: userName }), {
-                  description: errorMessage,
-                });
-              }
-            },
+            action: () => rejectMember.mutate(user),
             isDestructive: true
           }),
           requiresConfirmation: true
@@ -658,19 +472,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
         label: t("InviteMemberDialog.inviteMember"),
         icon: <UserPlus className="w-3 h-3" />,
         variant: "default",
-        onClick: async () => {
-          try {
-            if (user.sendRequestToJoinParent) {
-              await user.sendRequestToJoinParent();
-              toast.success(t("toast.members.inviteSuccess", undefined, { name: userName }));
-            }
-          } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : t("toast.error.generic");
-            toast.error(t("toast.members.inviteError", undefined, { name: userName }), {
-              description: errorMessage,
-            });
-          }
-        }
+        onClick: () => inviteMember.mutate(user)
       });
 
       actions.push({
@@ -678,19 +480,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
         label: t("InviteMemberDialog.inviteAdmin"),
         icon: <Crown className="w-3 h-3" />,
         variant: "outline",
-        onClick: async () => {
-          try {
-            if (user.sendRequestToJoinParent) {
-              await user.sendRequestToJoinParent({ admin: true });
-              toast.success(t("toast.members.inviteAdminSuccess", undefined, { name: userName }));
-            }
-          } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : t("toast.error.generic");
-            toast.error(t("toast.members.inviteAdminError", undefined, { name: userName }), {
-              description: errorMessage,
-            });
-          }
-        }
+        onClick: () => inviteAdmin.mutate(user)
       });
     } else if (isProject(entity)) {
       actions.push({
@@ -698,19 +488,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
         label: t("InviteMemberDialog.inviteContributor"),
         icon: <UserPlus className="w-3 h-3" />,
         variant: "default",
-        onClick: async () => {
-          try {
-            if (user.sendRequestToJoinParent) {
-              await user.sendRequestToJoinParent();
-              toast.success(t("toast.members.inviteSuccess", undefined, { name: userName }));
-            }
-          } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : t("toast.error.generic");
-            toast.error(t("toast.members.inviteError", undefined, { name: userName }), {
-              description: errorMessage,
-            });
-          }
-        }
+        onClick: () => inviteMember.mutate(user)
       });
 
       actions.push({
@@ -718,19 +496,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
         label: t("InviteMemberDialog.inviteAdmin"),
         icon: <Crown className="w-3 h-3" />,
         variant: "outline",
-        onClick: async () => {
-          try {
-            if (user.sendRequestToJoinParent) {
-              await user.sendRequestToJoinParent({ admin: true });
-              toast.success(t("toast.members.inviteAdminSuccess", undefined, { name: userName }));
-            }
-          } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : t("toast.error.generic");
-            toast.error(t("toast.members.inviteAdminError", undefined, { name: userName }), {
-              description: errorMessage,
-            });
-          }
-        }
+        onClick: () => inviteAdmin.mutate(user)
       });
     } else if (isEvent(entity)) {
       actions.push({
@@ -738,19 +504,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
         label: t("InviteMemberDialog.inviteParticipant"),
         icon: <UserPlus className="w-3 h-3" />,
         variant: "default",
-        onClick: async () => {
-          try {
-            if (user.sendRequestToJoinParent) {
-              await user.sendRequestToJoinParent();
-              toast.success(t("toast.members.inviteSuccess", undefined, { name: userName }));
-            }
-          } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : t("toast.error.generic");
-            toast.error(t("toast.members.inviteError", undefined, { name: userName }), {
-              description: errorMessage,
-            });
-          }
-        }
+        onClick: () => inviteMember.mutate(user)
       });
     }
 
