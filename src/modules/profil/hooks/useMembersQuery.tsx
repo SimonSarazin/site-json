@@ -1,14 +1,13 @@
-import { useInfiniteQueryScrollNext } from "@/hooks/useInfiniteQueryScroll";
 import type { EntityTypes, User, Organization } from "@communecter/cocolight-api-client";
 import { isOrganization, isProject, isEvent } from "@/lib/getTypedEntity";
-import { useMemo } from "react";
+import { useInfiniteEntityQuery } from "./core";
 
 export interface MemberQueryOptions {
   toBeValidated?: boolean;
   isAdmin?: boolean;
   isAdminPending?: boolean;
   isInviting?: boolean;
-  roles?: any[];
+  roles?: unknown[];
 }
 
 export interface MemberQueryParams {
@@ -24,70 +23,20 @@ export function useOrganizationMembers(
   options: MemberQueryOptions = {},
   params?: MemberQueryParams
 ) {
-  const {
-    data,
-    isLoading,
-    isFetchingNextPage,
-    hasNextPage,
-    lastItemRef,
-    error,
-    refetch,
-  } = useInfiniteQueryScrollNext<(User | Organization)[]>({
+  const result = useInfiniteEntityQuery<EntityTypes, User | Organization>({
+    entity,
+    typeCheck: isOrganization,
     queryKey: ["organization-members", entity?.slug, options, params],
-    queryFn: async ({ pageParam }) => {
-      if (!entity || !isOrganization(entity)) {
-        throw new Error("Entity must be an organization");
-      }
-
-      const page = pageParam as { pageNumber?: number; next?: () => Promise<{ results: any[]; count: any; hasNext: boolean; pageNumber: number; next?: () => Promise<any> }> } | undefined;
-      const pagination = {
-        name: params?.search,
-        indexStep: params?.indexStep || 20
-      };
-
-        const result = await entity.getMembers(pagination, options);
-
-        console.log("useOrganizationMembers result:", result);
-
-        // Use next() function if available and we're on a subsequent page
-        if (
-          page &&
-          page.pageNumber &&
-          page.pageNumber > 1 &&
-          typeof page.next !== "function" &&
-          result.next
-        ) {
-          return result.next();
-        }
-
-        return result;
+    fetchFn: (e, pagination) => {
+      if (!isOrganization(e)) throw new Error("Entity must be an organization");
+      return e.getMembers(pagination, options);
     },
-    options: {
-      enabled: !!entity && isOrganization(entity),
-      staleTime: 5 * 60 * 1000,
-      initialPageParam: undefined
-    }
+    params,
   });
 
-  const members = useMemo(() => {
-    if (!data) return [];
-    return data.pages.flatMap(page => page.results);
-  }, [data]);
-
-  const totalCount = useMemo(() => {
-    if (!data || data.pages.length === 0) return 0;
-    return data.pages[0].count?.total || 0;
-  }, [data]);
-
   return {
-    totalCount: totalCount,
-    members,
-    isLoading,
-    isFetchingNextPage,
-    hasNextPage,
-    lastItemRef,
-    error,
-    refetch,
+    ...result,
+    members: result.items,
   };
 }
 
@@ -99,68 +48,20 @@ export function useProjectContributors(
   options: MemberQueryOptions = {},
   params?: MemberQueryParams
 ) {
-  const {
-    data,
-    isLoading,
-    isFetchingNextPage,
-    hasNextPage,
-    lastItemRef,
-    error,
-    refetch,
-  } = useInfiniteQueryScrollNext<(User | Organization)[]>({
+  const result = useInfiniteEntityQuery<EntityTypes, User | Organization>({
+    entity,
+    typeCheck: isProject,
     queryKey: ["project-contributors", entity?.slug, options, params],
-    queryFn: async ({ pageParam }) => {
-      if (!entity || !isProject(entity)) {
-        throw new Error("Entity must be a project");
-      }
-
-      const page = pageParam as { pageNumber?: number; next?: () => Promise<{ results: any[]; count: any; hasNext: boolean; pageNumber: number; next?: () => Promise<any> }> } | undefined;
-      const pagination = {
-        name: params?.search,
-        indexStep: params?.indexStep || 20
-      };
-
-      const result = await entity.getContributors(pagination, options);
-
-      // Use next() function if available and we're on a subsequent page
-      if (
-        page &&
-        page.pageNumber &&
-        page.pageNumber > 1 &&
-        typeof page.next !== "function" &&
-        result.next
-      ) {
-        return result.next();
-      }
-
-      return result;
+    fetchFn: (e, pagination) => {
+      if (!isProject(e)) throw new Error("Entity must be a project");
+      return e.getContributors(pagination, options);
     },
-    options: {
-      enabled: !!entity && isProject(entity),
-      staleTime: 5 * 60 * 1000,
-      initialPageParam: undefined
-    }
+    params,
   });
 
-  const contributors = useMemo(() => {
-    if (!data) return [];
-    return data.pages.flatMap(page => page.results);
-  }, [data]);
-
-  const totalCount = useMemo(() => {
-    if (!data || data.pages.length === 0) return 0;
-    return data.pages[0].count?.total || 0;
-  }, [data]);
-
   return {
-    totalCount: totalCount,
-    contributors,
-    isLoading,
-    isFetchingNextPage,
-    hasNextPage,
-    lastItemRef,
-    error,
-    refetch,
+    ...result,
+    contributors: result.items,
   };
 }
 
@@ -172,68 +73,20 @@ export function useEventAttendees(
   options: MemberQueryOptions = {},
   params?: MemberQueryParams
 ) {
-  const {
-    data,
-    isLoading,
-    isFetchingNextPage,
-    hasNextPage,
-    lastItemRef,
-    error,
-    refetch,
-  } = useInfiniteQueryScrollNext<(User | Organization)[]>({
+  const result = useInfiniteEntityQuery<EntityTypes, User | Organization>({
+    entity,
+    typeCheck: isEvent,
     queryKey: ["event-attendees", entity?.slug, options, params],
-    queryFn: async ({ pageParam }) => {
-      if (!entity || !isEvent(entity)) {
-        throw new Error("Entity must be an event");
-      }
-
-      const page = pageParam as { pageNumber?: number; next?: () => Promise<{ results: any[]; count: any; hasNext: boolean; pageNumber: number; next?: () => Promise<any> }> } | undefined;
-      const pagination = {
-        name: params?.search,
-        indexStep: params?.indexStep || 20
-      };
-
-      const result = await entity.getAttendees(pagination, options);
-
-      // Use next() function if available and we're on a subsequent page
-      if (
-        page &&
-        page.pageNumber &&
-        page.pageNumber > 1 &&
-        typeof page.next !== "function" &&
-        result.next
-      ) {
-        return result.next();
-      }
-
-      return result;
+    fetchFn: (e, pagination) => {
+      if (!isEvent(e)) throw new Error("Entity must be an event");
+      return e.getAttendees(pagination, options);
     },
-    options: {
-      enabled: !!entity && isEvent(entity),
-      staleTime: 5 * 60 * 1000,
-      initialPageParam: undefined
-    }
+    params,
   });
 
-  const attendees = useMemo(() => {
-    if (!data) return [];
-    return data.pages.flatMap(page => page.results);
-  }, [data]);
-
-  const totalCount = useMemo(() => {
-    if (!data || data.pages.length === 0) return 0;
-    return data.pages[0].count?.total || 0;
-  }, [data]);
-
   return {
-    totalCount: totalCount,
-    attendees,
-    isLoading,
-    isFetchingNextPage,
-    hasNextPage,
-    lastItemRef,
-    error,
-    refetch,
+    ...result,
+    attendees: result.items,
   };
 }
 
@@ -243,7 +96,7 @@ export function useEventAttendees(
 export function useEntityMembers(
   entity: EntityTypes | null,
   options: MemberQueryOptions = {},
-  pagination = {}
+  pagination: MemberQueryParams = {}
 ) {
   const orgQuery = useOrganizationMembers(
     entity && isOrganization(entity) ? entity : null,
@@ -264,28 +117,29 @@ export function useEntityMembers(
   if (entity && isOrganization(entity)) {
     return {
       ...orgQuery,
-      members: orgQuery.members
+      members: orgQuery.members,
     };
   } else if (entity && isProject(entity)) {
     return {
       ...projectQuery,
-      members: projectQuery.contributors
+      members: projectQuery.contributors,
     };
   } else if (entity && isEvent(entity)) {
     return {
       ...eventQuery,
-      members: eventQuery.attendees
+      members: eventQuery.attendees,
     };
   }
 
   return {
     totalCount: 0,
     members: [],
+    items: [],
     isLoading: false,
     isFetchingNextPage: false,
     hasNextPage: false,
     lastItemRef: () => {},
     error: null,
-    refetch: async () => {}
+    refetch: async () => {},
   };
 }

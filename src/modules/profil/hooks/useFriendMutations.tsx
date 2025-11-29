@@ -1,41 +1,27 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { useT } from "@/hooks/useT";
-import { useCocolight } from "@/hooks/useCocolight";
 import type { User } from "@communecter/cocolight-api-client";
 import { isUser } from "@/lib/getTypedEntity";
+import { useMutationWithToast } from "./core";
+import { QUERY_KEYS } from "../constants";
 
 /**
  * Hook pour envoyer une demande d'amitié
  */
 export function useSendFriendRequest(currentUser: User | null) {
-  const queryClient = useQueryClient();
-  const t = useT("modules/profil");
-  const { me } = useCocolight();
-
-  return useMutation({
-    mutationFn: async ({ user }: { user: User }) => {
-      if (!currentUser || !isUser(currentUser) || !me) {
-        throw new Error("Current user and API are required");
+  return useMutationWithToast<void, { user: User }>({
+    mutationFn: async ({ user }) => {
+      if (!currentUser || !isUser(currentUser)) {
+        throw new Error("Current user is required");
       }
-      return await user.sendFriendRequest();
+      await user.sendFriendRequest();
     },
-
-    onSuccess: () => {
-      // Invalider les caches des amis
-      if (currentUser) {
-        queryClient.invalidateQueries({ queryKey: ["user-friends", currentUser.slug] });
-        queryClient.invalidateQueries({ queryKey: ["user-sent-friend-requests", currentUser.slug] });
-      }
-      toast.success(t("toast.friends.requestSent"));
-    },
-
-    onError: (error) => {
-      const errorMessage = error instanceof Error ? error.message : t("toast.error.generic");
-      toast.error(t("toast.friends.sendRequestError"), {
-        description: errorMessage,
-      });
-    },
+    successKey: "toast.friends.requestSent",
+    errorKey: "toast.friends.sendRequestError",
+    invalidateQueries: currentUser
+      ? [
+          QUERY_KEYS.USER_FRIENDS(currentUser.slug),
+          QUERY_KEYS.USER_SENT_FRIEND_REQUESTS(currentUser.slug),
+        ]
+      : [],
   });
 }
 
@@ -43,32 +29,18 @@ export function useSendFriendRequest(currentUser: User | null) {
  * Hook pour accepter une demande d'amitié
  */
 export function useAcceptFriendRequest(currentUser: User | null) {
-  const queryClient = useQueryClient();
-  const t = useT("modules/profil");
-  const { me } = useCocolight();
-
-  return useMutation({
-    mutationFn: async ({ user }: { user: User }) => {
-      if (!currentUser || !isUser(currentUser) || !me) {
-        throw new Error("Current user and API are required");
+  return useMutationWithToast<void, { user: User }>({
+    mutationFn: async ({ user }) => {
+      if (!currentUser || !isUser(currentUser)) {
+        throw new Error("Current user is required");
       }
-      return await user.acceptFriendRequest();
+      await user.acceptFriendRequest();
     },
-
-    onSuccess: () => {
-      if (currentUser) {
-        queryClient.invalidateQueries({ queryKey: ["user-friends", currentUser.slug] });
-        queryClient.invalidateQueries({ queryKey: ["user-pending-friends", currentUser.slug] });
-      }
-      toast.success(t("toast.friends.requestAccepted"));
-    },
-
-    onError: (error) => {
-      const errorMessage = error instanceof Error ? error.message : t("toast.error.generic");
-      toast.error(t("toast.friends.acceptRequestError"), {
-        description: errorMessage,
-      });
-    },
+    successKey: "toast.friends.requestAccepted",
+    errorKey: "toast.friends.acceptRequestError",
+    invalidateQueries: currentUser
+      ? [QUERY_KEYS.USER_FRIENDS(currentUser.slug), QUERY_KEYS.USER_PENDING_FRIENDS(currentUser.slug)]
+      : [],
   });
 }
 
@@ -76,65 +48,33 @@ export function useAcceptFriendRequest(currentUser: User | null) {
  * Hook pour rejeter une demande d'amitié
  */
 export function useRejectFriendRequest(currentUser: User | null) {
-  const queryClient = useQueryClient();
-  const t = useT("modules/profil");
-  const { me } = useCocolight();
-
-  return useMutation({
-    mutationFn: async ({ user }: { user: User }) => {
-      if (!currentUser || !isUser(currentUser) || !me) {
-        throw new Error("Current user and API are required");
+  return useMutationWithToast<void, { user: User }>({
+    mutationFn: async ({ user }) => {
+      if (!currentUser || !isUser(currentUser)) {
+        throw new Error("Current user is required");
       }
-      return await user.removeFriend();
+      await user.removeFriend();
     },
-
-    onSuccess: () => {
-      if (currentUser) {
-        queryClient.invalidateQueries({ queryKey: ["user-pending-friends", currentUser.slug] });
-      }
-      toast.success(t("toast.friends.requestRejected"));
-    },
-
-    onError: (error) => {
-      const errorMessage = error instanceof Error ? error.message : t("toast.error.generic");
-      toast.error(t("toast.friends.rejectRequestError"), {
-        description: errorMessage,
-      });
-    },
+    successKey: "toast.friends.requestRejected",
+    errorKey: "toast.friends.rejectRequestError",
+    invalidateQueries: currentUser ? [QUERY_KEYS.USER_PENDING_FRIENDS(currentUser.slug)] : [],
   });
 }
 
 /**
- * Hook pour retirer un ami (unfriend)
+ * Hook pour retirer un ami
  */
 export function useRemoveFriend(currentUser: User | null) {
-  const queryClient = useQueryClient();
-  const t = useT("modules/profil");
-  const { me } = useCocolight();
-
-  return useMutation({
-    mutationFn: async ({ user }: { user: User }) => {
-      if (!currentUser || !isUser(currentUser) || !me) {
-        throw new Error("Current user and API are required");
+  return useMutationWithToast<void, { user: User }>({
+    mutationFn: async ({ user }) => {
+      if (!currentUser || !isUser(currentUser)) {
+        throw new Error("Current user is required");
       }
-
-      // Supprimer l'ami
-      return await user.removeFriend();
+      await user.removeFriend();
     },
-
-    onSuccess: () => {
-      if (currentUser) {
-        queryClient.invalidateQueries({ queryKey: ["user-friends", currentUser.slug] });
-      }
-      toast.success(t("toast.friends.friendRemoved"));
-    },
-
-    onError: (error) => {
-      const errorMessage = error instanceof Error ? error.message : t("toast.error.generic");
-      toast.error(t("toast.friends.removeError"), {
-        description: errorMessage,
-      });
-    },
+    successKey: "toast.friends.friendRemoved",
+    errorKey: "toast.friends.removeError",
+    invalidateQueries: currentUser ? [QUERY_KEYS.USER_FRIENDS(currentUser.slug)] : [],
   });
 }
 
@@ -142,32 +82,15 @@ export function useRemoveFriend(currentUser: User | null) {
  * Hook pour annuler une demande d'amitié envoyée
  */
 export function useCancelFriendRequest(currentUser: User | null) {
-  const queryClient = useQueryClient();
-  const t = useT("modules/profil");
-  const { me } = useCocolight();
-
-  return useMutation({
-    mutationFn: async ({ user }: { user: User }) => {
-      if (!currentUser || !isUser(currentUser) || !me) {
-        throw new Error("Current user and API are required");
+  return useMutationWithToast<void, { user: User }>({
+    mutationFn: async ({ user }) => {
+      if (!currentUser || !isUser(currentUser)) {
+        throw new Error("Current user is required");
       }
-
-      // Pour annuler, on peut utiliser removeFriend
-      return await user.removeFriend();
+      await user.removeFriend();
     },
-
-    onSuccess: () => {
-      if (currentUser) {
-        queryClient.invalidateQueries({ queryKey: ["user-sent-friend-requests", currentUser.slug] });
-      }
-      toast.success(t("toast.friends.requestCancelled"));
-    },
-
-    onError: (error) => {
-      const errorMessage = error instanceof Error ? error.message : t("toast.error.generic");
-      toast.error(t("toast.friends.cancelError"), {
-        description: errorMessage,
-      });
-    },
+    successKey: "toast.friends.requestCancelled",
+    errorKey: "toast.friends.cancelError",
+    invalidateQueries: currentUser ? [QUERY_KEYS.USER_SENT_FRIEND_REQUESTS(currentUser.slug)] : [],
   });
 }

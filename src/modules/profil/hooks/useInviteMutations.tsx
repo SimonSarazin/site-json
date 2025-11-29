@@ -1,17 +1,19 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { useT } from "@/hooks/useT";
+import { useQueryClient } from "@tanstack/react-query";
 import type { User, EntityTypes } from "@communecter/cocolight-api-client";
 import { isOrganization, isProject, isEvent } from "@/lib/getTypedEntity";
+import { useMutationWithToast } from "./core";
 
-// Fonction utilitaire pour invalider toutes les queries liées aux membres
-const invalidateMemberQueries = (queryClient: ReturnType<typeof useQueryClient>, entity: EntityTypes | null) => {
+/**
+ * Invalide toutes les queries liées aux membres d'une entité
+ */
+function invalidateMemberQueriesForEntity(
+  queryClient: ReturnType<typeof useQueryClient>,
+  entity: EntityTypes | null
+): void {
   if (!entity) return;
 
-  // Invalider le cache principal de l'entité
   queryClient.invalidateQueries({ queryKey: ["element-about", entity.slug] });
 
-  // Invalider les queries de membres selon le type d'entité
   if (isOrganization(entity)) {
     queryClient.invalidateQueries({ queryKey: ["organization-members", entity.slug] });
   } else if (isProject(entity)) {
@@ -19,54 +21,50 @@ const invalidateMemberQueries = (queryClient: ReturnType<typeof useQueryClient>,
   } else if (isEvent(entity)) {
     queryClient.invalidateQueries({ queryKey: ["event-attendees", entity.slug] });
   }
-};
+}
 
+/**
+ * Hook pour inviter un membre
+ */
 export function useInviteMember(entity: EntityTypes | null) {
   const queryClient = useQueryClient();
-  const t = useT("modules/profil");
 
-  return useMutation({
-    mutationFn: async (user: User) => {
+  return useMutationWithToast<void, User>({
+    mutationFn: async (user) => {
       if (user.sendRequestToJoinParent) {
         await user.sendRequestToJoinParent();
       }
     },
-    onSuccess: (_, user) => {
-      const userName = user.serverData?.name || t("common.unknownUser");
-      invalidateMemberQueries(queryClient, entity);
-      toast.success(t("toast.members.inviteSuccess", undefined, { name: userName }));
+    successKey: "toast.members.inviteSuccess",
+    errorKey: "toast.members.inviteError",
+    getSuccessParams: (_, user) => ({ name: user.serverData?.name || "" }),
+    getErrorParams: (_, user) => ({ name: user.serverData?.name || "" }),
+    onSuccessCallback: () => {
+      invalidateMemberQueriesForEntity(queryClient, entity);
     },
-    onError: (error: Error, user) => {
-      const userName = user.serverData?.name || t("common.unknownUser");
-      const errorMessage = error.message || t("toast.error.generic");
-      toast.error(t("toast.members.inviteError", undefined, { name: userName }), {
-        description: errorMessage,
-      });
-    },
+    invalidateQueries: [],
   });
 }
 
+/**
+ * Hook pour inviter un admin
+ */
 export function useInviteAdmin(entity: EntityTypes | null) {
   const queryClient = useQueryClient();
-  const t = useT("modules/profil");
 
-  return useMutation({
-    mutationFn: async (user: User) => {
+  return useMutationWithToast<void, User>({
+    mutationFn: async (user) => {
       if (user.sendRequestToJoinParent) {
         await user.sendRequestToJoinParent({ admin: true });
       }
     },
-    onSuccess: (_, user) => {
-      const userName = user.serverData?.name || t("common.unknownUser");
-      invalidateMemberQueries(queryClient, entity);
-      toast.success(t("toast.members.inviteAdminSuccess", undefined, { name: userName }));
+    successKey: "toast.members.inviteAdminSuccess",
+    errorKey: "toast.members.inviteAdminError",
+    getSuccessParams: (_, user) => ({ name: user.serverData?.name || "" }),
+    getErrorParams: (_, user) => ({ name: user.serverData?.name || "" }),
+    onSuccessCallback: () => {
+      invalidateMemberQueriesForEntity(queryClient, entity);
     },
-    onError: (error: Error, user) => {
-      const userName = user.serverData?.name || t("common.unknownUser");
-      const errorMessage = error.message || t("toast.error.generic");
-      toast.error(t("toast.members.inviteAdminError", undefined, { name: userName }), {
-        description: errorMessage,
-      });
-    },
+    invalidateQueries: [],
   });
 }
