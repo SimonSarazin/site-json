@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useDebounce } from "@/hooks/useDebounce";
 import { useT } from "@/hooks/useT";
 import { useEntityMembers } from "../../hooks/useMembersQuery";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
@@ -29,12 +30,13 @@ export function MemberManagementDialog({ entity, open, onOpenChange }: MemberMan
   const t = useT("modules/profil");
   const [activeTab, setActiveTab] = useState("pending");
   const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearch = useDebounce(searchTerm, 300);
   const { confirmation, showConfirmation, hideConfirmation, executeAction } = useConfirmationDialog();
 
   // Queries
-  const allMembers = useEntityMembers(entity, { toBeValidated: false }, { search: searchTerm });
-  const pendingMembers = useEntityMembers(entity, { toBeValidated: true }, { search: searchTerm });
-  const adminMembers = useEntityMembers(entity, { isAdmin: true }, { search: searchTerm });
+  const allMembers = useEntityMembers(entity, { toBeValidated: false }, { search: debouncedSearch });
+  const pendingMembers = useEntityMembers(entity, { toBeValidated: true }, { search: debouncedSearch });
+  const adminMembers = useEntityMembers(entity, { isAdmin: true }, { search: debouncedSearch });
 
   // Labels spécifiques à l'entité
   const labels = useEntityLabels(entity);

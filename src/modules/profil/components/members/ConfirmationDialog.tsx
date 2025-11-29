@@ -1,14 +1,5 @@
 import { useT } from "@/hooks/useT";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import type { ConfirmationState } from "../../hooks/useConfirmationDialog";
 
 interface ConfirmationDialogProps {
@@ -25,22 +16,15 @@ export function ConfirmationDialog({ confirmation, onOpenChange, onConfirm }: Co
   const t = useT("modules/profil");
 
   return (
-    <AlertDialog open={confirmation.open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{confirmation.title}</AlertDialogTitle>
-          <AlertDialogDescription>{confirmation.description}</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={onConfirm}
-            className={confirmation.isDestructive ? "bg-red-600 hover:bg-red-700" : ""}
-          >
-            {t("common.confirm")}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ConfirmDialog
+      open={confirmation.open}
+      onOpenChange={onOpenChange}
+      onConfirm={onConfirm}
+      title={confirmation.title}
+      description={confirmation.description}
+      confirmLabel={t("common.confirm")}
+      cancelLabel={t("common.cancel")}
+      isDestructive={confirmation.isDestructive}
+    />
   );
 }

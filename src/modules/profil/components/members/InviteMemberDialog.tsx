@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useDebounce } from "@/hooks/useDebounce";
 import { useT } from "@/hooks/useT";
 import { useSearchUsers } from "@/hooks/useSearchUsers";
 import type { EntityTypes, User } from "@communecter/cocolight-api-client";
@@ -39,12 +40,13 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
   const t = useT("modules/profil");
   const [activeTab, setActiveTab] = useState("users");
   const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearch = useDebounce(searchTerm, 300);
   const { confirmation, showConfirmation, hideConfirmation, executeAction } = useConfirmationDialog();
   const { getUserActionButtons } = useUserActions(entity, showConfirmation);
   const { getUserStatusBadge } = useUserStatusBadge();
 
   // Recherche d'utilisateurs en temps réel via l'API
-  const { data: users = [], isLoading } = useSearchUsers(searchTerm, searchTerm.length >= 2, entity);
+  const { data: users = [], isLoading } = useSearchUsers(debouncedSearch, debouncedSearch.length >= 2, entity);
 
   // Labels spécifiques à l'entité
   const labels = useEntityLabels(entity);

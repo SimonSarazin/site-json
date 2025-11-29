@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useDebounce } from "@/hooks/useDebounce";
 import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
 import { useRelatedEntities, getEntityTypeFromRelation } from "../../hooks/useRelatedEntities";
@@ -27,6 +28,7 @@ export default function ProfileRelated({ section }: ProfileRelatedProps) {
   const { entity } = useProfileEntity();
   const t = useT("modules/profil");
   const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearch = useDebounce(searchTerm, 300);
 
   const { limit = 20, title } = section;
 
@@ -41,7 +43,7 @@ export default function ProfileRelated({ section }: ProfileRelatedProps) {
     hasNextPage,
     lastItemRef,
   } = useRelatedEntities(entity, relationType, {
-    search: searchTerm,
+    search: debouncedSearch,
     indexStep: limit,
   });
 

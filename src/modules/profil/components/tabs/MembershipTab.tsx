@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useDebounce } from "@/hooks/useDebounce";
 import { Search, Building2, Briefcase, MapPin, Calendar, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,6 +18,7 @@ export function MembershipTab() {
   const t = useT("modules/profil");
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("organizations");
+  const debouncedSearch = useDebounce(searchTerm, 300);
 
   // Queries avec infinite scroll
   const {
@@ -27,7 +29,7 @@ export function MembershipTab() {
     lastItemRef: organizationsLastRef,
     hasNextPage: organizationsHasNext
   } = useUserOrganizations(entity, {
-    search: searchTerm,
+    search: debouncedSearch,
     indexStep: 20
   });
 
@@ -39,7 +41,7 @@ export function MembershipTab() {
     lastItemRef: projectsLastRef,
     hasNextPage: projectsHasNext
   } = useUserProjects(entity, {
-    search: searchTerm,
+    search: debouncedSearch,
     indexStep: 20
   });
 
@@ -51,7 +53,7 @@ export function MembershipTab() {
     lastItemRef: poisLastRef,
     hasNextPage: poisHasNext
   } = useUserPois(entity, {
-    search: searchTerm,
+    search: debouncedSearch,
     indexStep: 20
   });
 
@@ -63,7 +65,7 @@ export function MembershipTab() {
     lastItemRef: eventsLastRef,
     hasNextPage: eventsHasNext
   } = useUserEvents(entity, {
-    search: searchTerm,
+    search: debouncedSearch,
     indexStep: 20
   });
 

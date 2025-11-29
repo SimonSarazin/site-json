@@ -1,5 +1,6 @@
 import { Loader2 } from "lucide-react";
 import { useT } from "@/hooks/useT";
+import { useDebounce } from "@/hooks/useDebounce";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Command,
@@ -18,7 +19,8 @@ interface MentionSuggestionsProps {
 
 export function MentionSuggestions({ query, onSelect }: MentionSuggestionsProps) {
   const t = useT("modules/news");
-  const { data: users = [], isLoading } = useSearchUsers(query, query.length >= 2);
+  const debouncedQuery = useDebounce(query, 300);
+  const { data: users = [], isLoading } = useSearchUsers(debouncedQuery, debouncedQuery.length >= 2);
 
   return (
     <Command className="rounded-lg border shadow-md" shouldFilter={false}>

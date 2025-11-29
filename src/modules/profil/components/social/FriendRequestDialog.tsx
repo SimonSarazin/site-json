@@ -1,33 +1,108 @@
 import { useState } from "react";
-import { UserPlus, Search, Loader2 } from "lucide-react";
+import { useDebounce } from "@/hooks/useDebounce";
+import { UserPlus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import type { User } from "@communecter/cocolight-api-client";
 import { useT } from "@/hooks/useT";
 import { useSendFriendRequest } from "../../hooks/useFriendMutations";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useSearchUsers } from "@/hooks/useSearchUsers";
-import { User } from "@communecter/cocolight-api-client";
+import { LoadingState, EmptyState, UserListItem } from "../shared";
 
 export function FriendRequestDialog() {
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearch = useDebounce(searchTerm, 300);
   const { me } = useCocolight();
   const t = useT("modules/profil");
 
   const sendFriendRequestMutation = useSendFriendRequest(me);
 
   // Recherche d'utilisateurs en temps réel via l'API
-  const { data: users = [], isLoading } = useSearchUsers(searchTerm, searchTerm.length >= 2);
+  const { data: users = [], isLoading } = useSearchUsers(
+    debouncedSearch,
+    debouncedSearch.length >= 2
+  );
 
   const handleSendRequest = (user: User) => {
-    sendFriendRequestMutation.mutate({ user }, {
-      onSuccess: () => {
-        setOpen(false);
-        setSearchTerm("");
+    sendFriendRequestMutation.mutate(
+      { user },
+      {
+        onSuccess: () => {
+          setOpen(false);
+          setSearchTerm("");
+        },
       }
-    });
+    );
+  };
+
+  const renderContent = () => {
+    if (searchTerm === "") {
+      return (
+        <EmptyState
+          icon={Search}
+          title={t("FriendRequestDialog.startTyping")}
+          variant="compact"
+        />
+      );
+    }
+
+    if (searchTerm.length < 2) {
+      return (
+        <EmptyState
+          icon={Search}
+          title={t("FriendRequestDialog.minimumChars")}
+          variant="compact"
+        />
+      );
+    }
+
+    if (isLoading) {
+      return <LoadingState variant="spinner" message={t("FriendRequestDialog.searching")} />;
+    }
+
+    if (users.length === 0) {
+      return (
+        <EmptyState
+          icon={Search}
+          title={t("FriendRequestDialog.noUsersFound")}
+          description={t("FriendRequestDialog.tryDifferentSearch")}
+          variant="compact"
+        />
+      );
+    }
+
+    return (
+      <div className="space-y-2">
+        {users.map((user) => (
+          <UserListItem
+            key={user.serverData.id}
+            user={user}
+            subtitle={user.serverData.slug ? `@${user.serverData.slug}` : undefined}
+            variant="card"
+            actions={
+              <Button
+                size="sm"
+                onClick={() => handleSendRequest(user)}
+                disabled={sendFriendRequestMutation.isPending}
+                className="bg-teal-600 hover:bg-teal-700"
+              >
+                <UserPlus className="w-3 h-3 mr-1" />
+                {t("FriendRequestDialog.sendRequest")}
+              </Button>
+            }
+          />
+        ))}
+      </div>
+    );
   };
 
   return (
@@ -57,75 +132,7 @@ export function FriendRequestDialog() {
             />
           </div>
 
-          <div className="max-h-80 overflow-y-auto">
-            {searchTerm === "" ? (
-              <div className="text-center py-8">
-                <Search className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-                <p className="text-muted-foreground text-sm">
-                  {t("FriendRequestDialog.startTyping")}
-                </p>
-              </div>
-            ) : searchTerm.length < 2 ? (
-              <div className="text-center py-8">
-                <Search className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-                <p className="text-muted-foreground text-sm">
-                  {t("FriendRequestDialog.minimumChars")}
-                </p>
-              </div>
-            ) : isLoading ? (
-              <div className="text-center py-8">
-                <Loader2 className="w-8 h-8 mx-auto text-teal-600 animate-spin mb-4" />
-                <p className="text-muted-foreground text-sm">
-                  {t("FriendRequestDialog.searching")}
-                </p>
-              </div>
-            ) : users.length === 0 ? (
-              <div className="text-center py-8">
-                <Search className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-                <p className="text-foreground font-medium mb-2">
-                  {t("FriendRequestDialog.noUsersFound")}
-                </p>
-                <p className="text-muted-foreground text-sm">
-                  {t("FriendRequestDialog.tryDifferentSearch")}
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {users.map((user) => (
-                  <div
-                    key={user.serverData.id}
-                    className="flex items-center justify-between p-3 hover:bg-muted rounded-lg border border-border"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={user.serverData.profilThumbImageUrl || undefined} />
-                        <AvatarFallback>
-                          {user.serverData.name.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <h4 className="font-medium text-foreground text-sm">
-                          {user.serverData.name}
-                        </h4>
-                        <p className="text-xs text-muted-foreground">
-                          {user.serverData.slug && `@${user.serverData.slug}`}
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      size="sm"
-                      onClick={() => handleSendRequest(user)}
-                      disabled={sendFriendRequestMutation.isPending}
-                      className="bg-teal-600 hover:bg-teal-700"
-                    >
-                      <UserPlus className="w-3 h-3 mr-1" />
-                      {t("FriendRequestDialog.sendRequest")}
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <div className="max-h-80 overflow-y-auto">{renderContent()}</div>
         </div>
       </DialogContent>
     </Dialog>

@@ -1,6 +1,5 @@
 import type { User, Organization, EntityTypes } from "@communecter/cocolight-api-client";
 import { useT } from "@/hooks/useT";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,6 +11,7 @@ import {
 import { Users, Check, X, MoreVertical } from "lucide-react";
 import { useUserStatusBadge } from "../../hooks/useUserStatusBadge";
 import { useUserActions } from "../../hooks/useUserActions";
+import { LoadingState, EmptyState, UserListItem } from "../shared";
 
 interface MemberListRendererProps {
   members: (User | Organization)[];
@@ -26,7 +26,7 @@ interface MemberListRendererProps {
     title: string;
     description: string;
     action: () => void;
-    isDestructive?: boolean
+    isDestructive?: boolean;
   }) => void;
 }
 
@@ -43,7 +43,7 @@ export function MemberListRenderer({
   isPending = false,
   lastItemRef,
   isFetchingNextPage,
-  showConfirmation
+  showConfirmation,
 }: MemberListRendererProps) {
   const t = useT("modules/profil");
   const { getUserStatusBadge } = useUserStatusBadge();
@@ -54,28 +54,21 @@ export function MemberListRenderer({
 
   // État de chargement
   if (isLoading) {
-    return (
-      <div className="space-y-4">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="flex items-center space-x-3 animate-pulse">
-            <div className="h-10 w-10 bg-gray-200 rounded-full" />
-            <div className="flex-1 space-y-2">
-              <div className="h-4 bg-gray-200 rounded w-1/3" />
-              <div className="h-3 bg-gray-200 rounded w-1/4" />
-            </div>
-          </div>
-        ))}
-      </div>
-    );
+    return <LoadingState variant="list" rows={3} />;
   }
 
   // Liste vide
   if (!members || members.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
-        <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-        <p>{isPending ? t("MemberManagementDialog.noPending") : t("ProfileMembers.noMembers")}</p>
-      </div>
+      <EmptyState
+        icon={Users}
+        title={
+          isPending
+            ? t("MemberManagementDialog.noPending")
+            : t("ProfileMembers.noMembers")
+        }
+        variant="compact"
+      />
     );
   }
 
@@ -90,32 +83,45 @@ export function MemberListRenderer({
           <Button
             size="sm"
             variant="default"
-            onClick={() => showConfirmation({
-              title: t("MemberManagementDialog.acceptDialog.title"),
-              description: t("MemberManagementDialog.acceptDialog.description", undefined, { name: member.serverData?.name }),
-              action: () => {
-                // Cette action sera gérée par le hook useUserActions
-                const actions = getUserActionButtons(member);
-                const validateAction = actions.find(a => a.id === "validate");
-                validateAction?.onClick();
-              }
-            })}
+            onClick={() =>
+              showConfirmation({
+                title: t("MemberManagementDialog.acceptDialog.title"),
+                description: t(
+                  "MemberManagementDialog.acceptDialog.description",
+                  undefined,
+                  { name: member.serverData?.name }
+                ),
+                action: () => {
+                  const actions = getUserActionButtons(member);
+                  const validateAction = actions.find(
+                    (a) => a.id === "validate"
+                  );
+                  validateAction?.onClick();
+                },
+              })
+            }
           >
             <Check className="h-4 w-4" />
           </Button>
           <Button
             size="sm"
             variant="destructive"
-            onClick={() => showConfirmation({
-              title: t("MemberManagementDialog.rejectDialog.title"),
-              description: t("MemberManagementDialog.rejectDialog.description", undefined, { name: member.serverData?.name }),
-              action: () => {
-                const actions = getUserActionButtons(member);
-                const rejectAction = actions.find(a => a.id === "reject");
-                rejectAction?.onClick();
-              },
-              isDestructive: true
-            })}
+            onClick={() =>
+              showConfirmation({
+                title: t("MemberManagementDialog.rejectDialog.title"),
+                description: t(
+                  "MemberManagementDialog.rejectDialog.description",
+                  undefined,
+                  { name: member.serverData?.name }
+                ),
+                action: () => {
+                  const actions = getUserActionButtons(member);
+                  const rejectAction = actions.find((a) => a.id === "reject");
+                  rejectAction?.onClick();
+                },
+                isDestructive: true,
+              })
+            }
           >
             <X className="h-4 w-4" />
           </Button>
@@ -176,45 +182,24 @@ export function MemberListRenderer({
   return (
     <div className="space-y-3">
       {members.map((member: User | Organization, index: number) => (
-        <div
+        <UserListItem
           key={member.id}
-          className="flex items-center justify-between p-3 border rounded-lg"
           ref={index === members.length - 1 ? lastItemRef : undefined}
-        >
-          <div className="flex items-center space-x-3">
-            <Avatar className="h-10 w-10">
-              <AvatarImage
-                src={member.serverData?.profilThumbImageUrl}
-                alt={member.serverData?.name}
-              />
-              <AvatarFallback>
-                {member.serverData?.name?.[0] || "?"}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="font-medium">{member.serverData?.name}</p>
-              <p className="text-sm text-gray-500">{member.serverData?.email}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-3">
-            {/* Badge de statut */}
-            {showBadges && getUserStatusBadge(member, entity)}
-
-            {/* Actions */}
-            {renderMemberActions(member)}
-          </div>
-        </div>
+          user={member}
+          subtitle={member.serverData?.email}
+          variant="card"
+          badge={showBadges ? getUserStatusBadge(member, entity) : undefined}
+          actions={renderMemberActions(member)}
+        />
       ))}
 
       {/* Indicateur de chargement pour le scroll infini */}
       {isFetchingNextPage && (
-        <div className="flex justify-center py-4 text-muted-foreground">
-          <div className="flex items-center space-x-2">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
-            <span>{t("ProfileMembers.loadingMore")}</span>
-          </div>
-        </div>
+        <LoadingState
+          variant="spinner"
+          size="sm"
+          message={t("ProfileMembers.loadingMore")}
+        />
       )}
     </div>
   );

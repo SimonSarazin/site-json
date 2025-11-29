@@ -10,7 +10,7 @@ import "@/components/auth/i18n";
 
 import { useCocolight } from "@/hooks/useCocolight";
 import { useSite } from "@/hooks/useSite";
-import PasswordToggleTextInput from "@/components/input/PasswordToggleTextInput";
+import PasswordToggleTextInput from "@/components/form/PasswordToggleTextInput";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";

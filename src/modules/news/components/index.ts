@@ -21,7 +21,6 @@ export { AddNewsModal } from "./forms/AddNewsModal";
 export { EditNewsModal } from "./forms/EditNewsModal";
 export { NewsFormImageUpload } from "./forms/NewsFormImageUpload";
 export { NewsFormDocumentUpload } from "./forms/NewsFormDocumentUpload";
-export { NewsFormTagsInput } from "./forms/NewsFormTagsInput";
 export { ImageCropDialog } from "./forms/ImageCropDialog";
 export { FileUploadProgress } from "./forms/FileUploadProgress";
 
@@ -34,4 +33,3 @@ export { ReportDialog } from "./ReportDialog";
 // Mention components
 export { MentionInput } from "./mention/MentionInput";
 export { MentionSuggestions } from "./mention/MentionSuggestions";
-export { TagSuggestions } from "./mention/TagSuggestions";

@@ -7,6 +7,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { useSearchTags } from "@/hooks/useSearchTags";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface TagSuggestionsProps {
   query: string;
@@ -27,7 +28,8 @@ const defaultTexts = {
 
 export function TagSuggestions({ query, onSelect, texts }: TagSuggestionsProps) {
   const t = { ...defaultTexts, ...texts };
-  const { data: tags = [], isLoading } = useSearchTags(query, query.length >= 2);
+  const debouncedQuery = useDebounce(query, 300);
+  const { data: tags = [], isLoading } = useSearchTags(debouncedQuery, debouncedQuery.length >= 2);
 
   return (
     <Command className="rounded-lg border shadow-md" shouldFilter={false}>

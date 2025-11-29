@@ -9,7 +9,7 @@ import { useT } from "@/hooks/useT";
 import "@/components/auth/i18n";
 
 import { useCocolight } from "@/hooks/useCocolight";
-import PasswordToggleTextInput from "@/components/input/PasswordToggleTextInput";
+import PasswordToggleTextInput from "@/components/form/PasswordToggleTextInput";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { isValidEmail } from "@/helpers/isValidEmail";

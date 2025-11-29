@@ -1,10 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useFormatProfileEntity } from "../../hooks/useFormatProfileEntity";
 import { renderMarkdown } from "@/helpers/renderMarkdown";
-import { useT } from "@/hooks/useT";
-import { useProfileEntity } from "../../hooks/useProfileEntity";
-import "@/modules/profil/i18n";
-import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { useProfileSetup } from "../../hooks/useProfileSetup";
 
 interface ProfileAboutProps {
   section: {
@@ -16,10 +13,7 @@ interface ProfileAboutProps {
 }
 
 export default function ProfileAbout({ section }: ProfileAboutProps) {
-  const { entity } = useProfileEntity();
-  useLoadNamespace("modules/profil");
-  const t = useT("modules/profil");
-
+  const { entity, t } = useProfileSetup();
   const { shortDescription, description } = useFormatProfileEntity(entity);
 
   const hasContent =
@@ -38,7 +32,9 @@ export default function ProfileAbout({ section }: ProfileAboutProps) {
       <CardContent>
         {section.showShortDescription !== false && shortDescription && (
           <div className="mb-4">
-            <p className="text-lg font-medium text-gray-900 dark:text-white">{shortDescription}</p>
+            <p className="text-lg font-medium text-gray-900 dark:text-white">
+              {shortDescription}
+            </p>
           </div>
         )}
 

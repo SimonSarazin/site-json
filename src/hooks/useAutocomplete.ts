@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useCocolight } from "@/hooks/useCocolight";
-import { SearchEntity } from "@/modules/search/schema";
-import { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
+import { useDebounce } from "@/hooks/useDebounce";
+import type { SearchEntity } from "@/modules/search/schema";
+import type { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
 
 interface UseAutocompleteOptions {
   searchTypes?: GlobalAutocompleteCostumData["searchType"];
@@ -32,6 +33,9 @@ export function useAutocomplete(
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
+  // Utilisation du hook useDebounce au lieu d'un setTimeout manuel
+  const debouncedQuery = useDebounce(query, debounceMs);
+
   const fetchSuggestions = useCallback(
     async (searchQuery: string) => {
       if (!organization || searchQuery.length < minChars) {
@@ -48,14 +52,11 @@ export function useAutocomplete(
           searchType: searchTypes,
           indexMin: 0,
           indexStep: indexMax,
-        }
-        // Utilisation de organization.searchCostum avec paramètres minimaux
+        };
         const result = await organization.searchCostum(param);
 
         // Les results sont un objet avec des IDs comme clés, pas un tableau
         const resultsObj = result?.results || {};
-
-        // Convertir l'objet en tableau de valeurs
         const resultsArray = Object.values(resultsObj);
 
         // Transformer les entités JSON en entités Cocolight
@@ -77,17 +78,13 @@ export function useAutocomplete(
   );
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (query.length >= minChars) {
-        fetchSuggestions(query);
-      } else {
-        setSuggestions([]);
-        setIsLoading(false);
-      }
-    }, debounceMs);
-
-    return () => clearTimeout(timer);
-  }, [query, fetchSuggestions, debounceMs, minChars]);
+    if (debouncedQuery.length >= minChars) {
+      fetchSuggestions(debouncedQuery);
+    } else {
+      setSuggestions([]);
+      setIsLoading(false);
+    }
+  }, [debouncedQuery, fetchSuggestions, minChars]);
 
   return { suggestions, isLoading, error };
 }
