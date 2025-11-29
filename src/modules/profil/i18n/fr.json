@@ -495,6 +495,14 @@
         "label": "Ville",
         "placeholder": "Paris",
         "searchPlaceholder": "Rechercher une ville..."
+      },
+      "tags": {
+        "label": "Tags",
+        "placeholder": "Ajouter des tags...",
+        "maxReached": "Maximum {{max}} tags autorisés",
+        "searching": "Recherche...",
+        "noResults": "Aucun tag trouvé",
+        "typeToSearch": "Tapez au moins 2 caractères"
       }
     },
     "schedule": {
@@ -576,5 +584,17 @@
     "joinProject": "Rejoindre un Projet",
     "addPoi": "Ajouter un Lieu",
     "createEvent": "Créer un Événement"
+  },
+  "ProfileRelated": {
+    "empty": {
+      "projects": "Aucun projet lié",
+      "events": "Aucun événement lié",
+      "poi": "Aucun lieu lié"
+    },
+    "result": "résultat",
+    "results": "résultats",
+    "searchPlaceholder": "Rechercher...",
+    "tryDifferentSearch": "Essayez un autre terme de recherche",
+    "noRelatedEntities": "Aucune entité liée pour le moment"
   }
 }

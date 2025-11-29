@@ -1563,7 +1563,7 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-related" }
+                { "type": "profile-related", "relationType": "projects", "title": { "fr": "Projets", "en": "Projects" } }
               ],
               "rightSections": [
                 {
@@ -1587,7 +1587,7 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-related" }
+                { "type": "profile-related", "relationType": "events", "title": { "fr": "Événements", "en": "Events" } }
               ],
               "rightSections": [
                 {
@@ -1710,7 +1710,7 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-related" }
+                { "type": "profile-related", "relationType": "projects", "title": { "fr": "Organisations partenaires", "en": "Partner Organizations" } }
               ],
               "rightSections": [
                 {
@@ -1734,7 +1734,7 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-related" }
+                { "type": "profile-related", "relationType": "events", "title": { "fr": "Événements", "en": "Events" } }
               ],
               "rightSections": [
                 {
@@ -1860,7 +1860,7 @@
               "type": "profile-tab-layout",
               "leftSections": [
                 { "type": "profile-organizer" },
-                { "type": "profile-related" }
+                { "type": "profile-related", "relationType": "events", "title": { "fr": "Autres événements", "en": "Other events" } }
               ],
               "rightSections": [
                 {

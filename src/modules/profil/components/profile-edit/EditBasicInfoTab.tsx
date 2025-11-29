@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { TagsInput } from "@/components/form";
 
 interface EditBasicInfoTabProps {
   form: UseFormReturn<any>;
@@ -90,6 +91,32 @@ export function EditBasicInfoTab({ form }: EditBasicInfoTabProps) {
             <FormDescription>
               {t("ProfileEdit.fields.description.description")}
             </FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      {/* Tags */}
+      <FormField
+        control={form.control}
+        name="tags"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>{t("ProfileEdit.fields.tags.label")}</FormLabel>
+            <FormControl>
+              <TagsInput
+                tags={field.value || []}
+                onTagsChange={field.onChange}
+                maxTags={10}
+                texts={{
+                  placeholder: t("ProfileEdit.fields.tags.placeholder"),
+                  maxReached: t("ProfileEdit.fields.tags.maxReached"),
+                  searching: t("ProfileEdit.fields.tags.searching"),
+                  noResults: t("ProfileEdit.fields.tags.noResults"),
+                  typeToSearch: t("ProfileEdit.fields.tags.typeToSearch"),
+                }}
+              />
+            </FormControl>
             <FormMessage />
           </FormItem>
         )}

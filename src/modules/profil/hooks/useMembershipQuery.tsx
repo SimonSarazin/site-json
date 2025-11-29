@@ -1,5 +1,5 @@
 import { useInfiniteQueryScrollNext } from "@/hooks/useInfiniteQueryScroll";
-import type { EntityTypes, Organization, Project, Poi } from "@communecter/cocolight-api-client";
+import type { EntityTypes, Organization, Project, Poi, Event } from "@communecter/cocolight-api-client";
 import { isUser } from "@/lib/getTypedEntity";
 import { useMemo } from "react";
 
@@ -218,19 +218,80 @@ export function useUserPois(user: EntityTypes | null, params?: MembershipQueryPa
   };
 }
 
+// Type for API result
+interface EventApiResult {
+  results: Event[];
+  count: { total: number };
+  hasNext: boolean;
+  pageNumber: number;
+  next?: () => Promise<EventApiResult>;
+}
+
 /**
- * Hook pour récupérer les événements d'un utilisateur
+ * Hook pour récupérer les événements d'un utilisateur avec infinite scroll
  */
-export function useUserEvents() {
-  // Pour l'instant, retournons des données vides car l'API getEvents n'est pas encore disponible
+export function useUserEvents(user: EntityTypes | null, params?: MembershipQueryParams) {
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    lastItemRef,
+    error,
+    refetch,
+  } = useInfiniteQueryScrollNext<Event[]>({
+    queryKey: ["user-events", user?.slug, params],
+    queryFn: async ({ pageParam }): Promise<EventApiResult> => {
+      if (!user || !isUser(user)) {
+        throw new Error("User is required");
+      }
+
+      const page = pageParam as { pageNumber?: number; next?: () => Promise<EventApiResult> } | undefined;
+
+      const result = await user.getEvents({
+        name: params?.search,
+        indexMin: 0,
+        indexStep: params?.indexStep || 20
+      });
+
+      // Use next() function if available and we're on a subsequent page
+      if (
+        page &&
+        page.pageNumber &&
+        page.pageNumber > 1 &&
+        typeof page.next !== "function" &&
+        result.next
+      ) {
+        return result.next();
+      }
+
+      return result;
+    },
+    options: {
+      enabled: !!(user && isUser(user)),
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      initialPageParam: undefined
+    }
+  });
+
+  const events = useMemo(() => {
+    if (!data) return [];
+    return data.pages.flatMap(page => page.results);
+  }, [data]);
+
+  const totalCount = useMemo(() => {
+    if (!data || data.pages.length === 0) return 0;
+    return data.pages[0].count?.total || 0;
+  }, [data]);
+
   return {
-    events: [],
-    totalCount: 0,
-    isLoading: false,
-    isFetchingNextPage: false,
-    hasNextPage: false,
-    lastItemRef: () => {},
-    error: null,
-    refetch: async () => {},
+    events,
+    totalCount,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    lastItemRef,
+    error,
+    refetch,
   };
 }

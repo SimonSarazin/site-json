@@ -22,7 +22,7 @@ import { EditScheduleTab } from "./EditScheduleTab";
 import { useProfileFormData } from "../../hooks/useProfileFormData";
 import { useUpdateProfile } from "../../hooks/useProfileMutations";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
-import { isOrganization } from "@/lib/getTypedEntity";
+import { isOrganization, isUser as isUserGuard } from "@/lib/getTypedEntity";
 
 interface EditProfileModalProps {
   entity: EntityTypes;
@@ -72,6 +72,8 @@ const userProfileSchema = z.object({
       closes: z.string(),
     })),
   })).optional(),
+  // Tags
+  tags: z.array(z.string()).optional(),
 });
 
 type UserProfileFormData = z.infer<typeof userProfileSchema>;
@@ -99,7 +101,7 @@ export function EditProfileModal({
   const { defaultValues, entityType } = useProfileFormData(entity);
   const updateMutation = useUpdateProfile(entity);
 
-  const isUser = entityType === "citoyens";
+  const isUser = isUserGuard(entity);
   const isOrg = isOrganization(entity);
 
   const form = useForm<UserProfileFormData>({
@@ -193,6 +195,14 @@ export function EditProfileModal({
         } else {
           updateData.openingHours = "";
         }
+      }
+
+      // Tags (pour tous les types d'entités)
+      // L'API attend "" pour effacer tous les tags, ou un tableau de strings
+      if (data.tags && data.tags.length > 0) {
+        updateData.tags = data.tags;
+      } else {
+        updateData.tags = "";
       }
 
       console.log("updateData avant envoi:", updateData);

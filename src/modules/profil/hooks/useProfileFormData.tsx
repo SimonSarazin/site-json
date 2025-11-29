@@ -44,6 +44,8 @@ export interface UserFormData {
     dayOfWeek: string;
     hours: Array<{ opens: string; closes: string }>;
   }>;
+  // Tags
+  tags?: string[];
 }
 
 /**
@@ -68,46 +70,48 @@ export function useProfileFormData(entity: EntityTypes | null) {
     // User
     if (isUser(entity)) {
       const address = serverData.address && typeof serverData.address === 'object'
-        ? serverData.address as Record<string, any>
+        ? serverData.address as Record<string, unknown>
         : {};
 
       const socialNetworks = serverData.socialNetwork && typeof serverData.socialNetwork === 'object'
-        ? serverData.socialNetwork as Record<string, any>
+        ? serverData.socialNetwork as Record<string, unknown>
         : {};
 
       const defaultValues: UserFormData = {
-        name: serverData.name || "",
-        username: serverData.username || "",
-        shortDescription: serverData.shortDescription || "",
-        description: serverData.description || "",
-        email: serverData.email || "",
-        mobile: serverData.mobile || "",
-        url: serverData.url || "",
+        name: (serverData.name as string) || "",
+        username: (serverData.username as string) || "",
+        shortDescription: (serverData.shortDescription as string) || "",
+        description: (serverData.description as string) || "",
+        email: (serverData.email as string) || "",
+        mobile: (serverData.mobile as string) || "",
+        url: (serverData.url as string) || "",
         // Adresse complète
-        addressCountry: address.addressCountry || "",
-        streetAddress: address.streetAddress || "",
-        postalCode: address.postalCode || "",
-        addressLocality: address.addressLocality || "",
-        localityId: address.localityId || "",
-        level1: address.level1 || "",
-        level1Name: address.level1Name || "",
-        level2: address.level2 || "",
-        level2Name: address.level2Name || "",
-        level3: address.level3 || "",
-        level3Name: address.level3Name || "",
-        level4: address.level4 || "",
-        level4Name: address.level4Name || "",
-        codeInsee: address.codeInsee || "",
+        addressCountry: (address.addressCountry as string) || "",
+        streetAddress: (address.streetAddress as string) || "",
+        postalCode: (address.postalCode as string) || "",
+        addressLocality: (address.addressLocality as string) || "",
+        localityId: (address.localityId as string) || "",
+        level1: (address.level1 as string) || "",
+        level1Name: (address.level1Name as string) || "",
+        level2: (address.level2 as string) || "",
+        level2Name: (address.level2Name as string) || "",
+        level3: (address.level3 as string) || "",
+        level3Name: (address.level3Name as string) || "",
+        level4: (address.level4 as string) || "",
+        level4Name: (address.level4Name as string) || "",
+        codeInsee: (address.codeInsee as string) || "",
         // Réseaux sociaux
-        github: socialNetworks.github || "",
-        gitlab: socialNetworks.gitlab || "",
-        facebook: socialNetworks.facebook || "",
-        twitter: socialNetworks.twitter || "",
-        instagram: socialNetworks.instagram || "",
-        diaspora: socialNetworks.diaspora || "",
-        mastodon: socialNetworks.mastodon || "",
-        telegram: socialNetworks.telegram || "",
-        signal: socialNetworks.signal || "",
+        github: (socialNetworks.github as string) || "",
+        gitlab: (socialNetworks.gitlab as string) || "",
+        facebook: (socialNetworks.facebook as string) || "",
+        twitter: (socialNetworks.twitter as string) || "",
+        instagram: (socialNetworks.instagram as string) || "",
+        diaspora: (socialNetworks.diaspora as string) || "",
+        mastodon: (socialNetworks.mastodon as string) || "",
+        telegram: (socialNetworks.telegram as string) || "",
+        signal: (socialNetworks.signal as string) || "",
+        // Tags
+        tags: Array.isArray(serverData.tags) ? serverData.tags as string[] : [],
       };
 
       return { defaultValues, entityType };
@@ -116,38 +120,40 @@ export function useProfileFormData(entity: EntityTypes | null) {
     // Organization
     if (isOrganization(entity)) {
       const address = serverData.address && typeof serverData.address === 'object'
-        ? serverData.address as Record<string, any>
+        ? serverData.address as Record<string, unknown>
         : {};
 
       // Normaliser les horaires d'ouverture avec le formatter
       const openingHours = serverData.openingHours && Array.isArray(serverData.openingHours)
-        ? widgetFormatters.openingHours(serverData.openingHours).filter((d: any) => d.hours.length > 0)
+        ? widgetFormatters.openingHours(serverData.openingHours).filter((d: { hours: unknown[] }) => d.hours.length > 0)
         : [];
 
       const defaultValues = {
-        name: serverData.name || "",
-        shortDescription: serverData.shortDescription || "",
-        description: serverData.description || "",
-        email: serverData.email || "",
-        mobile: serverData.mobile || "",
-        url: serverData.url || "",
+        name: (serverData.name as string) || "",
+        shortDescription: (serverData.shortDescription as string) || "",
+        description: (serverData.description as string) || "",
+        email: (serverData.email as string) || "",
+        mobile: (serverData.mobile as string) || "",
+        url: (serverData.url as string) || "",
         // Adresse complète
-        addressCountry: address.addressCountry || "",
-        streetAddress: address.streetAddress || "",
-        postalCode: address.postalCode || "",
-        addressLocality: address.addressLocality || "",
-        localityId: address.localityId || "",
-        level1: address.level1 || "",
-        level1Name: address.level1Name || "",
-        level2: address.level2 || "",
-        level2Name: address.level2Name || "",
-        level3: address.level3 || "",
-        level3Name: address.level3Name || "",
-        level4: address.level4 || "",
-        level4Name: address.level4Name || "",
-        codeInsee: address.codeInsee || "",
+        addressCountry: (address.addressCountry as string) || "",
+        streetAddress: (address.streetAddress as string) || "",
+        postalCode: (address.postalCode as string) || "",
+        addressLocality: (address.addressLocality as string) || "",
+        localityId: (address.localityId as string) || "",
+        level1: (address.level1 as string) || "",
+        level1Name: (address.level1Name as string) || "",
+        level2: (address.level2 as string) || "",
+        level2Name: (address.level2Name as string) || "",
+        level3: (address.level3 as string) || "",
+        level3Name: (address.level3Name as string) || "",
+        level4: (address.level4 as string) || "",
+        level4Name: (address.level4Name as string) || "",
+        codeInsee: (address.codeInsee as string) || "",
         // Champs spécifiques aux organisations
         openingHours: openingHours,
+        // Tags
+        tags: Array.isArray(serverData.tags) ? serverData.tags as string[] : [],
       };
 
       return { defaultValues, entityType };
@@ -156,28 +162,30 @@ export function useProfileFormData(entity: EntityTypes | null) {
     // Project
     if (isProject(entity)) {
       const address = serverData.address && typeof serverData.address === 'object'
-        ? serverData.address as Record<string, any>
+        ? serverData.address as Record<string, unknown>
         : {};
 
       const defaultValues = {
-        name: serverData.name || "",
-        shortDescription: serverData.shortDescription || "",
-        description: serverData.description || "",
+        name: (serverData.name as string) || "",
+        shortDescription: (serverData.shortDescription as string) || "",
+        description: (serverData.description as string) || "",
         // Adresse complète
-        addressCountry: address.addressCountry || "",
-        streetAddress: address.streetAddress || "",
-        postalCode: address.postalCode || "",
-        addressLocality: address.addressLocality || "",
-        localityId: address.localityId || "",
-        level1: address.level1 || "",
-        level1Name: address.level1Name || "",
-        level2: address.level2 || "",
-        level2Name: address.level2Name || "",
-        level3: address.level3 || "",
-        level3Name: address.level3Name || "",
-        level4: address.level4 || "",
-        level4Name: address.level4Name || "",
-        codeInsee: address.codeInsee || "",
+        addressCountry: (address.addressCountry as string) || "",
+        streetAddress: (address.streetAddress as string) || "",
+        postalCode: (address.postalCode as string) || "",
+        addressLocality: (address.addressLocality as string) || "",
+        localityId: (address.localityId as string) || "",
+        level1: (address.level1 as string) || "",
+        level1Name: (address.level1Name as string) || "",
+        level2: (address.level2 as string) || "",
+        level2Name: (address.level2Name as string) || "",
+        level3: (address.level3 as string) || "",
+        level3Name: (address.level3Name as string) || "",
+        level4: (address.level4 as string) || "",
+        level4Name: (address.level4Name as string) || "",
+        codeInsee: (address.codeInsee as string) || "",
+        // Tags
+        tags: Array.isArray(serverData.tags) ? serverData.tags as string[] : [],
       };
 
       return { defaultValues, entityType };
@@ -186,33 +194,36 @@ export function useProfileFormData(entity: EntityTypes | null) {
     // Event
     if (isEvent(entity)) {
       const address = serverData.address && typeof serverData.address === 'object'
-        ? serverData.address as Record<string, any>
+        ? serverData.address as Record<string, unknown>
         : {};
 
       const defaultValues = {
-        name: serverData.name || "",
-        shortDescription: serverData.shortDescription || "",
-        description: serverData.description || "",
+        name: (serverData.name as string) || "",
+        shortDescription: (serverData.shortDescription as string) || "",
+        description: (serverData.description as string) || "",
         // Adresse complète
-        addressCountry: address.addressCountry || "",
-        streetAddress: address.streetAddress || "",
-        postalCode: address.postalCode || "",
-        addressLocality: address.addressLocality || "",
-        localityId: address.localityId || "",
-        level1: address.level1 || "",
-        level1Name: address.level1Name || "",
-        level2: address.level2 || "",
-        level2Name: address.level2Name || "",
-        level3: address.level3 || "",
-        level3Name: address.level3Name || "",
-        level4: address.level4 || "",
-        level4Name: address.level4Name || "",
-        codeInsee: address.codeInsee || "",
+        addressCountry: (address.addressCountry as string) || "",
+        streetAddress: (address.streetAddress as string) || "",
+        postalCode: (address.postalCode as string) || "",
+        addressLocality: (address.addressLocality as string) || "",
+        localityId: (address.localityId as string) || "",
+        level1: (address.level1 as string) || "",
+        level1Name: (address.level1Name as string) || "",
+        level2: (address.level2 as string) || "",
+        level2Name: (address.level2Name as string) || "",
+        level3: (address.level3 as string) || "",
+        level3Name: (address.level3Name as string) || "",
+        level4: (address.level4 as string) || "",
+        level4Name: (address.level4Name as string) || "",
+        codeInsee: (address.codeInsee as string) || "",
+        // Tags
+        tags: Array.isArray(serverData.tags) ? serverData.tags as string[] : [],
       };
 
       return { defaultValues, entityType };
     }
 
     return { defaultValues: null, entityType };
-  }, [entity]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entity, entity?.serverData?.updated]);
 }

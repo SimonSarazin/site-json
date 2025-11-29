@@ -4,6 +4,8 @@ export { default as SelectInput } from "./SelectInput";
 export { default as CheckboxInput } from "./CheckboxInput";
 export { default as RadioInput } from "./RadioInput";
 export { default as FileInput } from "./FileInput";
+export { TagsInput } from "./TagsInput";
+export { TagSuggestions } from "./TagSuggestions";
 
 export type { TextInputProps } from "./TextInput";
 export type { TextareaInputProps } from "./TextareaInput";

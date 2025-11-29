@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { Search, Building2, Briefcase, MapPin, Calendar, Plus, ExternalLink } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Search, Building2, Briefcase, MapPin, Calendar, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +7,9 @@ import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
 import { useUserOrganizations, useUserProjects, useUserPois, useUserEvents } from "../../hooks/useMembershipQuery";
 import { useCocolight } from "@/hooks/useCocolight";
-import { Link } from "react-router";
+import { EntityCard, getEntityIcon, type EntityType } from "../shared/EntityCard";
+import { EntityGrid } from "../shared/EntityGrid";
+import { EntityEmptyState } from "../shared/EntityEmptyState";
 
 export function MembershipTab() {
   const { entity } = useProfileEntity();
@@ -61,7 +62,10 @@ export function MembershipTab() {
     isFetchingNextPage: eventsFetching,
     lastItemRef: eventsLastRef,
     hasNextPage: eventsHasNext
-  } = useUserEvents();
+  } = useUserEvents(entity, {
+    search: searchTerm,
+    indexStep: 20
+  });
 
   const isOwnProfile = me?.slug === entity?.slug;
 
@@ -79,190 +83,60 @@ export function MembershipTab() {
     );
   }
 
-  const renderEntityCard = (entity: any, type: "organization" | "project" | "poi" | "event", _index: number, lastItemRef?: any) => {
-    const getIcon = () => {
-      switch (type) {
-        case "organization": return <Building2 className="w-5 h-5 text-teal-600" />;
-        case "project": return <Briefcase className="w-5 h-5 text-blue-600" />;
-        case "poi": return <MapPin className="w-5 h-5 text-green-600" />;
-        case "event": return <Calendar className="w-5 h-5 text-orange-600" />;
-      }
+  const getEmptyStateAction = (type: EntityType) => {
+    const actionLabels: Record<EntityType, string> = {
+      organization: t("MembershipTab.joinOrganization"),
+      project: t("MembershipTab.joinProject"),
+      poi: t("MembershipTab.addPoi"),
+      event: t("MembershipTab.createEvent"),
     };
 
-    const getTypeLabel = () => {
-      switch (type) {
-        case "organization": return t("MembershipTab.organization");
-        case "project": return t("MembershipTab.project");
-        case "poi": return t("MembershipTab.poi");
-        case "event": return t("MembershipTab.event");
-      }
+    return {
+      label: actionLabels[type],
+      onClick: () => {
+        // TODO: Implémenter l'action
+        console.log(`Action for ${type}`);
+      },
+      icon: <Plus className="w-4 h-4 mr-2" />,
     };
-
-    return (
-      <div
-        key={entity.id}
-        ref={lastItemRef}
-        className="bg-card border border-border rounded-lg p-4 hover:shadow-md transition-shadow"
-      >
-        <div className="flex items-start gap-4">
-          {/* Image/Logo */}
-          <div className="w-16 h-16 rounded-lg border border-border overflow-hidden bg-muted flex-shrink-0">
-            {entity.serverData?.profilImageUrl ? (
-              <img
-                src={entity.serverData.profilImageUrl}
-                alt={entity.serverData?.name || ""}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                {getIcon()}
-              </div>
-            )}
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-2">
-                  <h3 className="font-semibold text-foreground truncate">
-                    {entity.serverData?.name || t("common.untitled")}
-                  </h3>
-                  <Badge variant="secondary" className="text-xs">
-                    {getTypeLabel()}
-                  </Badge>
-                </div>
-
-                {entity.serverData?.shortDescription && (
-                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                    {entity.serverData.shortDescription}
-                  </p>
-                )}
-
-                {/* Localisation */}
-                {entity.serverData?.address?.addressLocality && (
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
-                    <MapPin className="w-3 h-3" />
-                    <span>
-                      {entity.serverData.address.addressLocality}
-                      {entity.serverData.address.postalCode &&
-                        `, ${entity.serverData.address.postalCode}`}
-                    </span>
-                  </div>
-                )}
-
-                {/* Date pour les événements */}
-                {type === "event" && entity.serverData?.startDate && (
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
-                    <Calendar className="w-3 h-3" />
-                    <span>{new Date(entity.serverData.startDate).toLocaleDateString()}</span>
-                  </div>
-                )}
-
-                {/* Rôle de l'utilisateur */}
-                <div className="flex items-center gap-2 text-xs">
-                  {/* Admin badge - seulement pour organizations, projects, events */}
-                  {type !== "poi" && entity.isAdmin?.() && (
-                    <Badge variant="outline" className="text-teal-600 border-teal-600">
-                      {t("MembershipTab.admin")}
-                    </Badge>
-                  )}
-
-                  {/* Badges spécifiques selon le type d'entité */}
-                  {type === "organization" && entity.isMember?.() && (
-                    <Badge variant="outline">
-                      {t("MembershipTab.member")}
-                    </Badge>
-                  )}
-                  {type === "project" && entity.isContributor?.() && (
-                    <Badge variant="outline">
-                      {t("MembershipTab.contributor")}
-                    </Badge>
-                  )}
-                  {type === "event" && entity.isAttendee?.() && (
-                    <Badge variant="outline">
-                      {t("MembershipTab.participant")}
-                    </Badge>
-                  )}
-                  {type === "poi" && entity.isAuthor?.() && (
-                    <Badge variant="outline">
-                      {t("MembershipTab.author")}
-                    </Badge>
-                  )}
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center gap-2 ml-4">
-                <Button variant="outline" size="sm" asChild>
-                  <Link to={`/profil/${entity.slug}`}>
-                    <ExternalLink className="w-4 h-4" />
-                    <span className="hidden sm:inline ml-1">{t("common.viewProfile")}</span>
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
   };
+
+  const renderEmptyState = (type: EntityType, emptyMessage: string) => (
+    <EntityEmptyState
+      icon={getEntityIcon(type)}
+      title={emptyMessage}
+      description={searchTerm ? t("MembershipTab.tryDifferentSearch") : t("MembershipTab.startJoining")}
+      action={getEmptyStateAction(type)}
+    />
+  );
 
   const renderTabContent = (
     items: any[],
     loading: boolean,
     isFetchingNext: boolean,
     hasNext: boolean,
-    lastItemRef: any,
-    type: "organization" | "project" | "poi" | "event",
+    lastItemRef: (node: HTMLElement | null) => void,
+    type: EntityType,
     emptyMessage: string
   ) => (
-    <div className="space-y-4">
-      {loading ? (
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mx-auto"></div>
-          <p className="text-muted-foreground mt-2">{t("common.loading")}</p>
-        </div>
-      ) : items.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="text-gray-400 mb-4">
-            {type === "organization" && <Building2 className="w-12 h-12 mx-auto" />}
-            {type === "project" && <Briefcase className="w-12 h-12 mx-auto" />}
-            {type === "poi" && <MapPin className="w-12 h-12 mx-auto" />}
-            {type === "event" && <Calendar className="w-12 h-12 mx-auto" />}
-          </div>
-          <p className="text-foreground font-medium mb-2">{emptyMessage}</p>
-          <p className="text-muted-foreground text-sm mb-4">
-            {searchTerm ? t("MembershipTab.tryDifferentSearch") : t("MembershipTab.startJoining")}
-          </p>
-          <Button className="bg-teal-600 hover:bg-teal-700">
-            <Plus className="w-4 h-4 mr-2" />
-            {type === "organization" && t("MembershipTab.joinOrganization")}
-            {type === "project" && t("MembershipTab.joinProject")}
-            {type === "poi" && t("MembershipTab.addPoi")}
-            {type === "event" && t("MembershipTab.createEvent")}
-          </Button>
-        </div>
-      ) : (
-        <div className="grid gap-4">
-          {items.map((item, index) => {
-            const isLast = index === items.length - 1;
-            return renderEntityCard(
-              item,
-              type,
-              index,
-              isLast && hasNext ? lastItemRef : undefined
-            );
-          })}
-          {isFetchingNext && (
-            <div className="text-center py-4">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-teal-600 mx-auto"></div>
-              <p className="text-muted-foreground text-sm mt-2">{t("common.loading")}</p>
-            </div>
-          )}
-        </div>
+    <EntityGrid
+      items={items}
+      isLoading={loading}
+      isFetchingNext={isFetchingNext}
+      hasNextPage={hasNext}
+      lastItemRef={lastItemRef}
+      columns={{ sm: 1, md: 1, lg: 1, xl: 1 }}
+      renderItem={(item, _index, isLast, ref) => (
+        <EntityCard
+          key={item.id || item.slug}
+          entity={item}
+          type={type}
+          showRole={true}
+          lastItemRef={isLast && hasNext ? ref : undefined}
+        />
       )}
-    </div>
+      emptyState={renderEmptyState(type, emptyMessage)}
+    />
   );
 
   return (
