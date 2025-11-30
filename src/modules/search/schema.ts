@@ -169,16 +169,6 @@ export type SearchProStaticSectionProps = z.infer<typeof SearchProStaticSectionS
 
 export type SearchEntity = User | Organization | Project | EventType | Poi;
 
-export interface SearchResultPage<T extends SearchEntity = SearchEntity> {
-  count?: Record<string, number>;
-  /** Tableau de résultats (mélange possible) */
-  results: T[];
-  pageNumber: number;
-  hasNext: boolean;
-  next: () => Promise<SearchResultPage<T>>;
-}
-
-
 export interface SearchListViewProps<T extends SearchEntity = SearchEntity> {
   results: T[];
   columns?: ListConf["columns"];

@@ -5,6 +5,7 @@ import {
   type QueryKey,
 } from "@tanstack/react-query";
 import { useCallback, useRef, type RefCallback } from "react";
+import type { PaginatorPage } from "@communecter/cocolight-api-client";
 
 interface InfiniteQueryScrollProps<TData, TError = Error> {
   queryKey: QueryKey;
@@ -83,25 +84,17 @@ export function useInfiniteQueryScroll<TData, TError = Error>({
 }
 
 
-// Hook "Next" spécialisé pour la pagination avec fonction next()
-export interface PageData<T> {
-  results: T;
-  count?: Record<string, number>;
-  hasNext: boolean;
-  pageNumber: number;
-  next?: () => Promise<PageData<T>>;
-}
-
+// Hook "Next" spécialisé utilisant PaginatorPage de @communecter/cocolight-api-client
 interface InfiniteQueryScrollNextProps<TData, TError = unknown> {
   queryKey: QueryKey;
-  queryFn: (context: { pageParam?: unknown }) => Promise<PageData<TData>>;
+  queryFn: (context: { pageParam?: unknown }) => Promise<PaginatorPage<TData>>;
   options?: Omit<
     UseInfiniteQueryOptions<
-      PageData<TData>,        // TQueryFnData
-      TError,                 // TError
-      InfiniteData<PageData<TData>>,  // TData
-      QueryKey,               // TQueryKey
-      unknown                 // TPageParam
+      PaginatorPage<TData>,        // TQueryFnData
+      TError,                      // TError
+      InfiniteData<PaginatorPage<TData>>,  // TData
+      QueryKey,                    // TQueryKey
+      unknown                      // TPageParam
     >,
     "queryKey" | "queryFn" | "getNextPageParam"
   >;
@@ -112,14 +105,14 @@ export function useInfiniteQueryScrollNext<TData, TError = unknown>({
   queryFn,
   options = { initialPageParam: undefined },
 }: InfiniteQueryScrollNextProps<TData, TError>): InfiniteQueryScrollResult<
-  PageData<TData>,
+  PaginatorPage<TData>,
   TError
 > {
-  return useInfiniteQueryScroll<PageData<TData>, TError>({
+  return useInfiniteQueryScroll<PaginatorPage<TData>, TError>({
     queryKey,
     queryFn: ({ pageParam }) =>
       pageParam != null && typeof pageParam === "object" && "next" in pageParam
-        ? (pageParam as PageData<TData>).next!()
+        ? (pageParam as PaginatorPage<TData>).next!()
         : queryFn({ pageParam }),
     getNextPageParam: (lastPage) =>
       lastPage.hasNext

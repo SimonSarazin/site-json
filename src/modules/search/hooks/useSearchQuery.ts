@@ -1,8 +1,8 @@
 import { useMemo, useEffect } from "react";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useInfiniteQueryScrollNext } from "@/hooks/useInfiniteQueryScroll";
-import { SearchEntity, SearchResultPage, SearchType } from "../schema";
-import type { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
+import { SearchEntity, SearchType } from "../schema";
+import type { GlobalAutocompleteCostumData, PaginatorPage } from "@communecter/cocolight-api-client";
 import { transformToEntityInstance } from "@/lib/entityTransform";
 import { useQueryClient } from "@tanstack/react-query";
 import cocolightApiClient from "@communecter/cocolight-api-client";
@@ -51,7 +51,7 @@ export function useSearchQuery({
     isLoading,
     isPending,
     refetch,
-  } = useInfiniteQueryScrollNext({
+  } = useInfiniteQueryScrollNext<SearchEntity>({
     queryKey: [
       queryKeyPrefix,
       searchText,
@@ -71,7 +71,7 @@ export function useSearchQuery({
           ? Object.values(searchType).flat()
           : [];
       const tags = Object.values(searchTags).flat() as string[];
-      const page = pageParam as SearchResultPage | undefined;
+      const page = pageParam as PaginatorPage<SearchEntity> | undefined;
 
       const {
         fediverse = false,
@@ -114,7 +114,7 @@ export function useSearchQuery({
       }
 
       if (!param.searchType) {
-        return { results: [], count: {}, hasNext: false, pageNumber: 1 };
+        return { results: [], count: { total: 0 }, hasNext: false, hasPrev: false, pageNumber: 1, pageIndex: 0 };
       }
 
       try {
@@ -151,7 +151,7 @@ export function useSearchQuery({
 
   // Transformer le cache une seule fois après l'hydratation SSR
   useEffect(() => {
-    const currentData = queryClient.getQueryData<{ pages: SearchResultPage[]; pageParams: unknown[] }>(queryKey);
+    const currentData = queryClient.getQueryData<{ pages: PaginatorPage<SearchEntity>[]; pageParams: unknown[] }>(queryKey);
 
     if (currentData?.pages && currentData.pages.length > 0 && entity) {
       const firstItem = currentData.pages[0]?.results?.[0];
@@ -178,7 +178,7 @@ export function useSearchQuery({
     const results = data?.pages?.flatMap((p) => p?.results) ?? [];
     if (!entity || !results.length) return results || [];
 
-    return results.map((item: any) => {
+    return results.map((item) => {
       // Si déjà transformé (Proxy), le retourner tel quel
       if (item.serverData && isReactive(item.serverData)) {
         return item;

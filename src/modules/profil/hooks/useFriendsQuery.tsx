@@ -18,7 +18,7 @@ export function useFriendsQuery(user: EntityTypes | null, params?: FriendsQueryP
     lastItemRef,
     error,
     refetch,
-  } = useInfiniteQueryScrollNext<User[]>({
+  } = useInfiniteQueryScrollNext<User>({
     queryKey: ["user-friends", user?.slug, params],
     queryFn: async ({ pageParam }) => {
       if (!user || !isUser(user)) {

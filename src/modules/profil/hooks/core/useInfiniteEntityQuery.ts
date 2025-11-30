@@ -1,9 +1,7 @@
-import {
-  useInfiniteQueryScrollNext,
-  type PageData,
-} from "@/hooks/useInfiniteQueryScroll";
+import { useInfiniteQueryScrollNext } from "@/hooks/useInfiniteQueryScroll";
 import { useMemo } from "react";
 import type { QueryKey } from "@tanstack/react-query";
+import type { PaginatorPage } from "@communecter/cocolight-api-client";
 
 export interface InfiniteEntityQueryConfig<TEntity, TResult> {
   /**
@@ -27,7 +25,7 @@ export interface InfiniteEntityQueryConfig<TEntity, TResult> {
   fetchFn: (
     entity: TEntity,
     pagination: { name?: string; indexStep: number }
-  ) => Promise<PageData<TResult[]>>;
+  ) => Promise<PaginatorPage<TResult>>;
 
   /**
    * Paramètres de pagination et recherche
@@ -82,7 +80,7 @@ export function useInfiniteEntityQuery<TEntity, TResult>({
     lastItemRef,
     error,
     refetch,
-  } = useInfiniteQueryScrollNext<TResult[]>({
+  } = useInfiniteQueryScrollNext<TResult>({
     queryKey,
     queryFn: async () => {
       if (!entity || !typeCheck(entity)) {

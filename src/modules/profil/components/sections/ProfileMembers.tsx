@@ -85,22 +85,19 @@ export default function ProfileMembers({ section }: ProfileMembersProps) {
         <Tabs value={selectedTab} onValueChange={setSelectedTab}>
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="all" className={cn(
-              "text-xs sm:text-sm",
-              "p-2 sm:p-3"
+              "text-xs sm:text-sm"
             )}>
               {labels.members} ({allMembers.totalCount})
             </TabsTrigger>
             {(permissions.isAdmin || (isEvent(entity) && permissions.isAuthor)) && (
               <TabsTrigger value="pending" className={cn(
-              "text-xs sm:text-sm",
-              "p-2 sm:p-3"
+              "text-xs sm:text-sm"
             )}>
                 {labels.pending} ({pendingMembers.totalCount})
               </TabsTrigger>
             )}
             <TabsTrigger value="admins" className={cn(
-              "text-xs sm:text-sm",
-              "p-2 sm:p-3"
+              "text-xs sm:text-sm"
             )}>
               {labels.admin}s ({adminMembers.totalCount})
             </TabsTrigger>

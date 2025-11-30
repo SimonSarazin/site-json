@@ -20,7 +20,7 @@ export function useUserOrganizations(user: EntityTypes | null, params?: Membersh
     lastItemRef,
     error,
     refetch,
-  } = useInfiniteQueryScrollNext<Organization[]>({
+  } = useInfiniteQueryScrollNext<Organization>({
     queryKey: ["user-organizations", user?.slug, params],
     queryFn: async ({ pageParam }) => {
       if (!user || !isUser(user)) {
@@ -90,7 +90,7 @@ export function useUserProjects(user: EntityTypes | null, params?: MembershipQue
     lastItemRef,
     error,
     refetch,
-  } = useInfiniteQueryScrollNext<Project[]>({
+  } = useInfiniteQueryScrollNext<Project>({
     queryKey: ["user-projects", user?.slug, params],
     queryFn: async ({ pageParam }) => {
       if (!user || !isUser(user)) {
@@ -160,7 +160,7 @@ export function useUserPois(user: EntityTypes | null, params?: MembershipQueryPa
     lastItemRef,
     error,
     refetch,
-  } = useInfiniteQueryScrollNext<Poi[]>({
+  } = useInfiniteQueryScrollNext<Poi>({
     queryKey: ["user-pois", user?.slug, params],
     queryFn: async ({ pageParam }) => {
       if (!user || !isUser(user)) {
@@ -230,7 +230,7 @@ export function useUserEvents(user: EntityTypes | null, params?: MembershipQuery
     lastItemRef,
     error,
     refetch,
-  } = useInfiniteQueryScrollNext<Event[]>({
+  } = useInfiniteQueryScrollNext<Event>({
     queryKey: ["user-events", user?.slug, params],
     queryFn: async ({ pageParam }) => {
       if (!user || !isUser(user)) {

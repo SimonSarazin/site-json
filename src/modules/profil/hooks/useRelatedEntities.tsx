@@ -23,7 +23,7 @@ export function useRelatedEntities(
     lastItemRef,
     error,
     refetch,
-  } = useInfiniteQueryScrollNext<(Project | Event | Poi)[]>({
+  } = useInfiniteQueryScrollNext<Project | Event | Poi>({
     queryKey: ["related-entities", entity?.slug, relationType, params],
     queryFn: async ({ pageParam }) => {
       if (!entity) {
@@ -52,7 +52,9 @@ export function useRelatedEntities(
               results: [],
               count: { total: 0 },
               hasNext: false,
+              hasPrev: false,
               pageNumber: 1,
+              pageIndex: 0,
             };
           }
           break;
@@ -64,7 +66,7 @@ export function useRelatedEntities(
           } else if (isProject(entity)) {
             result = await entity.getEvents(queryParams);
           } else {
-            return { results: [], count: { total: 0 }, hasNext: false, pageNumber: 1 };
+            return { results: [], count: { total: 0 }, hasNext: false, hasPrev: false, pageNumber: 1, pageIndex: 0 };
           }
           break;
 
@@ -77,7 +79,9 @@ export function useRelatedEntities(
               results: [],
               count: { total: 0 },
               hasNext: false,
+              hasPrev: false,
               pageNumber: 1,
+              pageIndex: 0,
             };
           }
           break;
@@ -87,7 +91,9 @@ export function useRelatedEntities(
             results: [],
             count: { total: 0 },
             hasNext: false,
+            hasPrev: false,
             pageNumber: 1,
+            pageIndex: 0,
           };
       }
 
