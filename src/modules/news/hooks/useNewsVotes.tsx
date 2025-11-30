@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useCocolight } from "@/hooks/useCocolight";
+import { NEWS_QUERY_KEYS } from "../constants/queryKeys";
 
 interface VoteUser {
   _id: { $id: string };
@@ -26,7 +27,7 @@ export function useNewsVotes(newsId: string | null) {
   const { api } = useCocolight();
 
   return useQuery({
-    queryKey: ["news-votes", newsId],
+    queryKey: NEWS_QUERY_KEYS.NEWS_VOTES(newsId),
     queryFn: async () => {
       if (!newsId || !api) {
         throw new Error("Missing newsId or api");

@@ -138,19 +138,3 @@ export function useRelatedEntities(
     refetch,
   };
 }
-
-/**
- * Détermine le type d'entité (pour EntityCard) à partir du relationType
- */
-export function getEntityTypeFromRelation(
-  relationType: RelationType
-): "project" | "event" | "poi" {
-  switch (relationType) {
-    case "projects":
-      return "project";
-    case "events":
-      return "event";
-    case "poi":
-      return "poi";
-  }
-}

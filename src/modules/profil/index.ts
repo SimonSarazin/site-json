@@ -22,7 +22,6 @@ export { ProfileEntityProvider } from "./contexts/ProfileEntityProvider";
 export { ProfileEntityContext } from "./contexts/ProfileEntityContext";
 export { useProfileEntity } from "./hooks/useProfileEntity";
 export { useFormatProfileEntity } from "./hooks/useFormatProfileEntity";
-export { useProfilNewsQuery } from "./hooks/useProfilNewsQuery";
 export { useEntityBySlugQuery } from "./hooks/useEntityBySlugQuery";
 
 // Types centralisés

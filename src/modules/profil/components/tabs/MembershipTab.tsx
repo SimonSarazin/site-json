@@ -8,7 +8,8 @@ import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
 import { useUserOrganizations, useUserProjects, useUserPois, useUserEvents } from "../../hooks/useMembershipQuery";
 import { useCocolight } from "@/hooks/useCocolight";
-import { EntityCard, getEntityIcon, type EntityType } from "../shared/EntityCard";
+import type { CollectionKey } from "@communecter/cocolight-api-client";
+import { EntityCard, getEntityIcon } from "../shared/EntityCard";
 import { EntityGrid } from "../shared/EntityGrid";
 import { EntityEmptyState } from "../shared/EntityEmptyState";
 
@@ -85,16 +86,16 @@ export function MembershipTab() {
     );
   }
 
-  const getEmptyStateAction = (type: EntityType) => {
-    const actionLabels: Record<EntityType, string> = {
-      organization: t("MembershipTab.joinOrganization"),
-      project: t("MembershipTab.joinProject"),
+  const getEmptyStateAction = (type: CollectionKey) => {
+    const actionLabels: Partial<Record<CollectionKey, string>> = {
+      organizations: t("MembershipTab.joinOrganization"),
+      projects: t("MembershipTab.joinProject"),
       poi: t("MembershipTab.addPoi"),
-      event: t("MembershipTab.createEvent"),
+      events: t("MembershipTab.createEvent"),
     };
 
     return {
-      label: actionLabels[type],
+      label: actionLabels[type] || type,
       onClick: () => {
         // TODO: Implémenter l'action
         console.log(`Action for ${type}`);
@@ -103,7 +104,7 @@ export function MembershipTab() {
     };
   };
 
-  const renderEmptyState = (type: EntityType, emptyMessage: string) => (
+  const renderEmptyState = (type: CollectionKey, emptyMessage: string) => (
     <EntityEmptyState
       icon={getEntityIcon(type)}
       title={emptyMessage}
@@ -118,7 +119,7 @@ export function MembershipTab() {
     isFetchingNext: boolean,
     hasNext: boolean,
     lastItemRef: (node: HTMLElement | null) => void,
-    type: EntityType,
+    type: CollectionKey,
     emptyMessage: string
   ) => (
     <EntityGrid
@@ -132,7 +133,6 @@ export function MembershipTab() {
         <EntityCard
           key={item.id || item.slug}
           entity={item}
-          type={type}
           showRole={true}
           lastItemRef={isLast && hasNext ? ref : undefined}
         />
@@ -211,7 +211,7 @@ export function MembershipTab() {
             organizationsFetching,
             !!organizationsHasNext,
             organizationsLastRef,
-            "organization",
+            "organizations",
             t("MembershipTab.noOrganizations")
           )}
         </TabsContent>
@@ -223,7 +223,7 @@ export function MembershipTab() {
             projectsFetching,
             !!projectsHasNext,
             projectsLastRef,
-            "project",
+            "projects",
             t("MembershipTab.noProjects")
           )}
         </TabsContent>
@@ -247,7 +247,7 @@ export function MembershipTab() {
             eventsFetching,
             !!eventsHasNext,
             eventsLastRef,
-            "event",
+            "events",
             t("MembershipTab.noEvents")
           )}
         </TabsContent>

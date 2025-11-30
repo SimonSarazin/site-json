@@ -12,11 +12,11 @@ import { ShareNewsDialog } from "./ShareNewsDialog";
 import { ReportDialog } from "./ReportDialog";
 import { EditNewsModal } from "./forms/EditNewsModal";
 import { DeleteNewsDialog } from "./DeleteNewsDialog";
-import { NewsProvider } from "../contexts/NewsContext";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
 import type { NewsSection } from "../schema";
 import type { News } from "@communecter/cocolight-api-client";
 import "../i18n";
+import { NewsProvider } from "../contexts/NewsProvider";
 
 interface NewsDetailPageProps {
   params: Record<string, string | undefined>;

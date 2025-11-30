@@ -3,48 +3,49 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useT } from "@/hooks/useT";
 import { Link } from "react-router";
-import type { EntityTypes } from "@communecter/cocolight-api-client";
-
-export type EntityType = "organization" | "project" | "poi" | "event";
+import type { EntityTypes, CollectionKey } from "@communecter/cocolight-api-client";
 
 interface EntityCardProps {
   entity: EntityTypes;
-  type: EntityType;
   showRole?: boolean;
   lastItemRef?: (node: HTMLDivElement | null) => void;
 }
 
 export function EntityCard({
   entity,
-  type,
   showRole = false,
   lastItemRef,
 }: EntityCardProps) {
   const t = useT("modules/profil");
+  const type = entity.getEntityType?.() || "";
 
   const getIcon = () => {
     switch (type) {
-      case "organization":
+      case "organizations":
         return <Building2 className="w-5 h-5 text-teal-600" />;
-      case "project":
+      case "projects":
         return <Briefcase className="w-5 h-5 text-blue-600" />;
       case "poi":
         return <MapPin className="w-5 h-5 text-green-600" />;
-      case "event":
+      case "events":
         return <Calendar className="w-5 h-5 text-orange-600" />;
+      default:
+        return <MapPin className="w-5 h-5 text-gray-600" />;
     }
   };
 
   const getTypeLabel = () => {
     switch (type) {
-      case "organization":
+      case "organizations":
         return t("MembershipTab.organization");
-      case "project":
+      case "projects":
         return t("MembershipTab.project");
       case "poi":
         return t("MembershipTab.poi");
-      case "event":
+      case "events":
         return t("MembershipTab.event");
+      default:
+        return type;
     }
   };
 
@@ -101,7 +102,7 @@ export function EntityCard({
               )}
 
               {/* Date pour les événements */}
-              {type === "event" && entity.serverData?.startDate && (
+              {type === "events" && entity.serverData?.startDate && (
                 <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
                   <Calendar className="w-3 h-3" />
                   <span>
@@ -124,15 +125,15 @@ export function EntityCard({
                   )}
 
                   {/* Badges spécifiques selon le type d'entité */}
-                  {type === "organization" && entity.isMember?.() && (
+                  {type === "organizations" && entity.isMember?.() && (
                     <Badge variant="outline">{t("MembershipTab.member")}</Badge>
                   )}
-                  {type === "project" && entity.isContributor?.() && (
+                  {type === "projects" && entity.isContributor?.() && (
                     <Badge variant="outline">
                       {t("MembershipTab.contributor")}
                     </Badge>
                   )}
-                  {type === "event" && entity.isAttendee?.() && (
+                  {type === "events" && entity.isAttendee?.() && (
                     <Badge variant="outline">
                       {t("MembershipTab.participant")}
                     </Badge>
@@ -163,15 +164,17 @@ export function EntityCard({
 }
 
 // Helper pour obtenir l'icône par type (utilisable dans EntityEmptyState)
-export function getEntityIcon(type: EntityType, className = "w-12 h-12") {
+export function getEntityIcon(type: CollectionKey, className = "w-12 h-12") {
   switch (type) {
-    case "organization":
+    case "organizations":
       return <Building2 className={`${className} mx-auto`} />;
-    case "project":
+    case "projects":
       return <Briefcase className={`${className} mx-auto`} />;
     case "poi":
       return <MapPin className={`${className} mx-auto`} />;
-    case "event":
+    case "events":
       return <Calendar className={`${className} mx-auto`} />;
+    default:
+      return <MapPin className={`${className} mx-auto`} />;
   }
 }

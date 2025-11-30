@@ -5,6 +5,7 @@ import { transformToEntityInstance } from "@/lib/entityTransform";
 import type { EntityTypes, News } from "@communecter/cocolight-api-client";
 import { useQueryClient } from "@tanstack/react-query";
 import cocolightApiClient from "@communecter/cocolight-api-client";
+import { NEWS_QUERY_KEYS } from "../constants/queryKeys";
 
 const { isReactive } = cocolightApiClient;
 
@@ -34,9 +35,8 @@ export function useNewsQuery({
 
   const canFetchNews = entityType ? NEWS_SUPPORTED_TYPES.has(entityType) : true;
 
-  // Construction de la clé de cache - simple comme l'original
   const queryKey = useMemo(() => {
-      return ["news", entity?.id];
+    return NEWS_QUERY_KEYS.NEWS(entity?.id ?? null);
   }, [entity?.id]);
 
   const {

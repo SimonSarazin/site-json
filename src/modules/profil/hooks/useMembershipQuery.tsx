@@ -2,6 +2,7 @@ import { useInfiniteQueryScrollNext } from "@/hooks/useInfiniteQueryScroll";
 import type { EntityTypes, Organization, Project, Poi, Event, PaginatorPage } from "@communecter/cocolight-api-client";
 import { isUser } from "@/lib/getTypedEntity";
 import { useMemo } from "react";
+import { QUERY_KEYS } from "../constants/queryKeys";
 
 export interface MembershipQueryParams {
   indexStep?: number;
@@ -21,7 +22,7 @@ export function useUserOrganizations(user: EntityTypes | null, params?: Membersh
     error,
     refetch,
   } = useInfiniteQueryScrollNext<Organization>({
-    queryKey: ["user-organizations", user?.slug, params],
+    queryKey: [...QUERY_KEYS.USER_ORGANIZATIONS(user?.slug ?? null), params],
     queryFn: async ({ pageParam }) => {
       if (!user || !isUser(user)) {
         throw new Error("User is required");
@@ -91,7 +92,7 @@ export function useUserProjects(user: EntityTypes | null, params?: MembershipQue
     error,
     refetch,
   } = useInfiniteQueryScrollNext<Project>({
-    queryKey: ["user-projects", user?.slug, params],
+    queryKey: [...QUERY_KEYS.USER_PROJECTS(user?.slug ?? null), params],
     queryFn: async ({ pageParam }) => {
       if (!user || !isUser(user)) {
         throw new Error("User is required");
@@ -161,7 +162,7 @@ export function useUserPois(user: EntityTypes | null, params?: MembershipQueryPa
     error,
     refetch,
   } = useInfiniteQueryScrollNext<Poi>({
-    queryKey: ["user-pois", user?.slug, params],
+    queryKey: [...QUERY_KEYS.USER_POIS(user?.slug ?? null), params],
     queryFn: async ({ pageParam }) => {
       if (!user || !isUser(user)) {
         throw new Error("User is required");
@@ -231,7 +232,7 @@ export function useUserEvents(user: EntityTypes | null, params?: MembershipQuery
     error,
     refetch,
   } = useInfiniteQueryScrollNext<Event>({
-    queryKey: ["user-events", user?.slug, params],
+    queryKey: [...QUERY_KEYS.USER_EVENTS(user?.slug ?? null), params],
     queryFn: async ({ pageParam }) => {
       if (!user || !isUser(user)) {
         throw new Error("User is required");

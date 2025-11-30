@@ -20,18 +20,3 @@ export const voteTypes: VoteType[] = [
   { type: "scared", color: "purple", icon: Scared, label: "reactionsTypes.scared", bgHover: "hover:bg-purple-50 dark:hover:bg-purple-900/20" },
   { type: "support", color: "indigo", icon: HandMetal, label: "reactionsTypes.support", bgHover: "hover:bg-indigo-50 dark:hover:bg-indigo-900/20" },
 ];
-
-export interface ReportReason {
-  value: string;
-  labelKey: string;
-}
-
-export const REPORT_REASONS: ReportReason[] = [
-  { value: "spam", labelKey: "reportDialog.reasons.spam" },
-  { value: "harassment", labelKey: "reportDialog.reasons.harassment" },
-  { value: "hateSpeech", labelKey: "reportDialog.reasons.hateSpeech" },
-  { value: "violence", labelKey: "reportDialog.reasons.violence" },
-  { value: "inappropriate", labelKey: "reportDialog.reasons.inappropriate" },
-  { value: "misinformation", labelKey: "reportDialog.reasons.misinformation" },
-  { value: "other", labelKey: "reportDialog.reasons.other" },
-];

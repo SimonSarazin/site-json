@@ -64,39 +64,6 @@ export default function ProfileTemplateDefault() {
 
   const effectiveLogoUrl = imageError ? logoThumbUrl : logoUrl;
 
-  // console.log('entityType', _entityType);
-  // console.log('isConnected', me?.isConnected);
-
-  // if(me?.isConnected) {
-  //   if (isOrganization(entity)) {
-  //     console.log('organizations isAuthor', entity.isAuthor());
-  //     console.log('organizations isAdmin', entity.isAdmin());
-  //     console.log('organizations isAuthorOrAdmin', entity.isAuthorOrAdmin());
-  //     console.log('organizations isMember', entity.isMember());
-  //   }
-
-  //   if (isProject(entity)) {
-  //     console.log('projects isAuthor', entity.isAuthor());
-  //     console.log('projects isAdmin', entity.isAdmin());
-  //     console.log('projects isAuthorOrAdmin', entity.isAuthorOrAdmin());
-  //     console.log('projects isContributor', entity.isContributor());
-  //   }
-
-  //   if (isEvent(entity)) {
-  //     console.log('events isAuthor', entity.isAuthor());
-  //     console.log('events isAttendee', entity.isAttendee());
-  //   }
-
-  //   if (isUser(entity) && me && me?.slug !== entity.slug) {
-  //     console.log('citoyens isFollower', entity.isFollower());
-  //     console.log('citoyens isFollowing', entity.isFollowing());
-  //     console.log('citoyens isFriend', entity.isFriend());
-  //   }
-
-  //   if (isUser(entity) && me && me?.slug === entity.slug) {
-  //   }
-  // }
-
   return (
     <div className="bg-foreground -m-4 md:-m-8">
       <div className="w-full mx-auto bg-background shadow-sm">

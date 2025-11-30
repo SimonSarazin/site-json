@@ -2,6 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { User, EntityTypes } from "@communecter/cocolight-api-client";
 import { isOrganization, isProject, isEvent } from "@/lib/getTypedEntity";
 import { useMutationWithToast } from "./core";
+import { QUERY_KEYS } from "../constants/queryKeys";
 
 /**
  * Invalide toutes les queries liées aux membres d'une entité
@@ -12,15 +13,15 @@ function invalidateMemberQueriesForEntity(
 ): void {
   if (!entity) return;
 
-  queryClient.invalidateQueries({ queryKey: ["element-about", entity.slug] });
-  queryClient.invalidateQueries({ queryKey: ["search-users"] });
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ELEMENT_ABOUT(entity.slug ?? null) });
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SEARCH_USERS() });
 
   if (isOrganization(entity)) {
-    queryClient.invalidateQueries({ queryKey: ["organization-members", entity.slug] });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ORGANIZATION_MEMBERS(entity.slug ?? null) });
   } else if (isProject(entity)) {
-    queryClient.invalidateQueries({ queryKey: ["project-contributors", entity.slug] });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.PROJECT_CONTRIBUTORS(entity.slug ?? null) });
   } else if (isEvent(entity)) {
-    queryClient.invalidateQueries({ queryKey: ["event-attendees", entity.slug] });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.EVENT_ATTENDEES(entity.slug ?? null) });
   }
 }
 

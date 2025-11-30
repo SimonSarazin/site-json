@@ -15,10 +15,10 @@ import { ReportDialog } from "../ReportDialog";
 import { useDeleteNews } from "../../hooks/useNewsMutations";
 import type { News } from "@communecter/cocolight-api-client";
 import { useNewsQuery } from "../../hooks/useNewsQuery";
-import { NewsProvider } from "../../contexts/NewsContext";
 import { useNewsEntity } from "../../hooks/useNewsEntity";
 import { useNewsDetailUrlGenerator } from "@/modules/profil/hooks/useNewsDetailUrlGenerator";
 import "../../i18n";
+import { NewsProvider } from "../../contexts/NewsProvider";
 
 interface NewsSectionProps {
   id?: string;

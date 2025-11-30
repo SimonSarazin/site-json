@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
-import { useRelatedEntities, getEntityTypeFromRelation } from "../../hooks/useRelatedEntities";
+import { useRelatedEntities, type RelationType } from "../../hooks/useRelatedEntities";
 import { EntityCard, getEntityIcon } from "../shared/EntityCard";
 import { EntityGrid } from "../shared/EntityGrid";
 import { EntityEmptyState } from "../shared/EntityEmptyState";
@@ -12,16 +12,13 @@ interface ProfileRelatedProps {
   section: ProfileRelatedSection;
 }
 
-// Types de relations supportés par ce composant (doivent correspondre à RelationType du hook)
-type SupportedRelationType = "projects" | "events" | "poi";
-
-function mapRelationType(type: string | undefined): SupportedRelationType {
-  // Mapper les types du schema vers les types supportés
+function mapRelationType(type: string | undefined): RelationType {
+  // Valider que le type est supporté par le hook
   if (type === "projects" || type === "events" || type === "poi") {
     return type;
   }
   // Les types "parent" et "children" ne sont pas encore supportés
-  return "projects"; // Valeur par défaut
+  return "projects";
 }
 
 export default function ProfileRelated({ section }: ProfileRelatedProps) {
@@ -32,7 +29,6 @@ export default function ProfileRelated({ section }: ProfileRelatedProps) {
 
   const { limit = 20, title } = section;
 
-  // Convertir le relationType du schema en type supporté
   const relationType = mapRelationType(section.relationType);
 
   const {
@@ -46,8 +42,6 @@ export default function ProfileRelated({ section }: ProfileRelatedProps) {
     search: debouncedSearch,
     indexStep: limit,
   });
-
-  const entityType = getEntityTypeFromRelation(relationType);
 
   const getEmptyTitle = () => {
     switch (relationType) {
@@ -92,14 +86,13 @@ export default function ProfileRelated({ section }: ProfileRelatedProps) {
           <EntityCard
             key={item.id || item.slug}
             entity={item}
-            type={entityType}
             showRole={false}
             lastItemRef={isLast && hasNextPage ? ref : undefined}
           />
         )}
         emptyState={
           <EntityEmptyState
-            icon={getEntityIcon(entityType)}
+            icon={getEntityIcon(relationType)}
             title={getEmptyTitle()}
             description={
               searchTerm

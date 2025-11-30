@@ -21,7 +21,7 @@ import {
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
 import { Link } from "react-router";
 import type { News, EntityTypes } from "@communecter/cocolight-api-client";
-import { useNewsContext } from "../contexts/NewsContext";
+import { useNewsContext } from "../hooks/useNewsContext";
 
 interface NewsItemProps {
   item: News;

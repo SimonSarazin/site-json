@@ -97,7 +97,7 @@ export const ProfileGallerySectionSchema = z.object({
 export const ProfileRelatedSectionSchema = z.object({
   type: z.literal("profile-related"),
   title: LocalizedString.optional(),
-  relationType: z.enum(["parent", "children", "projects", "events"]).optional(),
+  relationType: z.enum(["parent", "children", "projects", "events", "poi"]).optional(),
   limit: z.number().optional().default(4),
 });
 

@@ -2,6 +2,7 @@ import type { EntityTypes, User, Organization } from "@communecter/cocolight-api
 import { isOrganization, isProject, isEvent } from "@/lib/getTypedEntity";
 import { useInfiniteEntityQuery } from "./core";
 import type { MemberQueryOptions, MemberQueryParams } from "../types";
+import { QUERY_KEYS } from "../constants/queryKeys";
 
 export type { MemberQueryOptions, MemberQueryParams };
 
@@ -16,7 +17,7 @@ export function useOrganizationMembers(
   const result = useInfiniteEntityQuery<EntityTypes, User | Organization>({
     entity,
     typeCheck: isOrganization,
-    queryKey: ["organization-members", entity?.slug, options, params],
+    queryKey: [...QUERY_KEYS.ORGANIZATION_MEMBERS(entity?.slug ?? null), options, params],
     fetchFn: (e, pagination) => {
       if (!isOrganization(e)) throw new Error("Entity must be an organization");
       return e.getMembers(pagination, options);
@@ -41,7 +42,7 @@ export function useProjectContributors(
   const result = useInfiniteEntityQuery<EntityTypes, User | Organization>({
     entity,
     typeCheck: isProject,
-    queryKey: ["project-contributors", entity?.slug, options, params],
+    queryKey: [...QUERY_KEYS.PROJECT_CONTRIBUTORS(entity?.slug ?? null), options, params],
     fetchFn: (e, pagination) => {
       if (!isProject(e)) throw new Error("Entity must be a project");
       return e.getContributors(pagination, options);
@@ -66,7 +67,7 @@ export function useEventAttendees(
   const result = useInfiniteEntityQuery<EntityTypes, User | Organization>({
     entity,
     typeCheck: isEvent,
-    queryKey: ["event-attendees", entity?.slug, options, params],
+    queryKey: [...QUERY_KEYS.EVENT_ATTENDEES(entity?.slug ?? null), options, params],
     fetchFn: (e, pagination) => {
       if (!isEvent(e)) throw new Error("Entity must be an event");
       return e.getAttendees(pagination, options);

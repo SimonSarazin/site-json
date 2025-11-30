@@ -4,6 +4,7 @@ import type { SearchEntity } from "@/modules/search/schema";
 import { useCocolight } from "@/hooks/useCocolight";
 import { transformToEntityInstance } from "@/lib/entityTransform";
 import cocolightApiClient from "@communecter/cocolight-api-client";
+import { QUERY_KEYS } from "../constants/queryKeys";
 
 const { isReactive } = cocolightApiClient;
 
@@ -22,7 +23,7 @@ export const useEntityBySlugQuery = ({ slug, options = {} }: QueryEntityBySlugPr
 
   // Le type unknown car l'API peut retourner soit une instance, soit du JSON déshydraté
   const { data, isLoading, isError, error, refetch } = useQuery<unknown>({
-    queryKey: ["element-about", slug],
+    queryKey: QUERY_KEYS.ELEMENT_ABOUT(slug ?? null),
     queryFn: async () => {
       if (!slug) throw new Error("Slug manquant");
       if (!entity) throw new Error("API non initialisée");
@@ -43,20 +44,20 @@ export const useEntityBySlugQuery = ({ slug, options = {} }: QueryEntityBySlugPr
 
     // Si c'est notre propre profil et que me est disponible, utiliser me
     if (me && slug === me.slug) {
-      const currentData = queryClient.getQueryData(["element-about", slug]);
+      const currentData = queryClient.getQueryData(QUERY_KEYS.ELEMENT_ABOUT(slug));
 
       // Remplacer le cache SSR par me (qui a les données complètes)
       if (currentData !== me) {
         if (import.meta.env.DEV) {
           console.log("🔄 Remplacement des données SSR par 'me' (profil connecté)");
         }
-        queryClient.setQueryData(["element-about", slug], me);
+        queryClient.setQueryData(QUERY_KEYS.ELEMENT_ABOUT(slug), me);
       }
       return; // Sortir, pas besoin de transformation
     }
 
     // Sinon, transformer les données SSR en Proxy (comportement actuel)
-    const currentData = queryClient.getQueryData<unknown>(["element-about", slug]);
+    const currentData = queryClient.getQueryData<unknown>(QUERY_KEYS.ELEMENT_ABOUT(slug));
 
     if (currentData && typeof currentData === 'object' && currentData !== null && 'serverData' in currentData) {
       // Vérifier si c'est un plain object (après SSR)
@@ -65,7 +66,7 @@ export const useEntityBySlugQuery = ({ slug, options = {} }: QueryEntityBySlugPr
           console.log("🔄 Transformation du cache de l'entité après hydratation SSR");
         }
         // Transformer le cache en instance Proxy
-        queryClient.setQueryData(["element-about", slug],
+        queryClient.setQueryData(QUERY_KEYS.ELEMENT_ABOUT(slug),
           transformToEntityInstance<SearchEntity>(currentData, helper, entity)
         );
       }

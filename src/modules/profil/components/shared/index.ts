@@ -1,4 +1,4 @@
-export { EntityCard, getEntityIcon, type EntityType } from "./EntityCard";
+export { EntityCard, getEntityIcon } from "./EntityCard";
 export { EntityGrid } from "./EntityGrid";
 export { EntityEmptyState } from "./EntityEmptyState";
 

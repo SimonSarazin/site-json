@@ -21,7 +21,7 @@ import {
 import { useT } from "@/hooks/useT";
 import { useReportNews } from "../hooks/useNewsMutations";
 import { useReportComment } from "../hooks/useCommentMutations";
-import { REPORT_REASONS } from "../constants";
+import { REPORT_REASONS } from "../constants/reportReasons";
 import type { News, Comment } from "@communecter/cocolight-api-client";
 
 interface ReportDialogProps {

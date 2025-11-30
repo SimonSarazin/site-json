@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { useT } from "@/hooks/useT";
 import { useCocolight } from "@/hooks/useCocolight";
 import type { News, EntityTypes } from "@communecter/cocolight-api-client";
+import { NEWS_QUERY_KEYS } from "../constants/queryKeys";
 
 interface MutationOptions {
   optimistic?: boolean;
@@ -34,15 +35,15 @@ export function useDeleteNews(entity: EntityTypes, options?: MutationOptions) {
 
     onMutate: options?.optimistic
       ? async (variables) => {
-          await queryClient.cancelQueries({ queryKey: ["news", entityId] });
+          await queryClient.cancelQueries({ queryKey: NEWS_QUERY_KEYS.NEWS(entityId) });
 
           const previousData = queryClient.getQueryData<{ pages: News[][] }>(
-            ["news", entityId]
+            NEWS_QUERY_KEYS.NEWS(entityId)
           );
 
           // Optimistic update: remove from cache
           queryClient.setQueryData<{ pages: News[][] }>(
-            ["news", entityId],
+            NEWS_QUERY_KEYS.NEWS(entityId),
             (old) => {
               if (!old) return old;
 
@@ -61,7 +62,7 @@ export function useDeleteNews(entity: EntityTypes, options?: MutationOptions) {
 
     onError: (error, _variables, context) => {
       if (context?.previousData) {
-        queryClient.setQueryData(["news", entityId], context.previousData);
+        queryClient.setQueryData(NEWS_QUERY_KEYS.NEWS(entityId), context.previousData);
       }
 
       toast.error(t("toast.deleteError"), {
@@ -70,7 +71,7 @@ export function useDeleteNews(entity: EntityTypes, options?: MutationOptions) {
     },
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["news", entityId] });
+      queryClient.invalidateQueries({ queryKey: NEWS_QUERY_KEYS.NEWS(entityId) });
       toast.success(t("toast.deleteSuccess"));
     },
   });
@@ -138,15 +139,15 @@ export function useEditNews(entity: EntityTypes, options?: MutationOptions) {
 
     onMutate: options?.optimistic
       ? async (variables) => {
-          await queryClient.cancelQueries({ queryKey: ["news", entityId] });
+          await queryClient.cancelQueries({ queryKey: NEWS_QUERY_KEYS.NEWS(entityId) });
 
           const previousData = queryClient.getQueryData<{ pages: News[][] }>(
-            ["news", entityId]
+            NEWS_QUERY_KEYS.NEWS(entityId)
           );
 
           // Optimistic update: mutate the proxy directly
           queryClient.setQueryData<{ pages: News[][] }>(
-            ["news", entityId],
+            NEWS_QUERY_KEYS.NEWS(entityId),
             (old) => {
               if (!old) return old;
 
@@ -170,7 +171,7 @@ export function useEditNews(entity: EntityTypes, options?: MutationOptions) {
 
     onError: (error, _variables, context) => {
       if (context?.previousData) {
-        queryClient.setQueryData(["news", entityId], context.previousData);
+        queryClient.setQueryData(NEWS_QUERY_KEYS.NEWS(entityId), context.previousData);
       }
 
       toast.error(t("toast.editError"), {
@@ -179,7 +180,7 @@ export function useEditNews(entity: EntityTypes, options?: MutationOptions) {
     },
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["news", entityId] });
+      queryClient.invalidateQueries({ queryKey: NEWS_QUERY_KEYS.NEWS(entityId) });
       toast.success(t("toast.editSuccess"));
     },
   });
@@ -230,7 +231,7 @@ export function useAddNews(entity: EntityTypes) {
 
     onSuccess: () => {
       toast.success(t("toast.addSuccess"));
-      queryClient.invalidateQueries({ queryKey: ["news", entityId] });
+      queryClient.invalidateQueries({ queryKey: NEWS_QUERY_KEYS.NEWS(entityId) });
     },
 
     onError: (error) => {
@@ -270,7 +271,7 @@ export function useAddNewsImage(entity: EntityTypes) {
     },
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["news", entityId] });
+      queryClient.invalidateQueries({ queryKey: NEWS_QUERY_KEYS.NEWS(entityId) });
       toast.success(t("toast.editSuccess"));
     },
 
@@ -308,7 +309,7 @@ export function useAddNewsMention(entity: EntityTypes) {
     },
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["news", entityId] });
+      queryClient.invalidateQueries({ queryKey: NEWS_QUERY_KEYS.NEWS(entityId) });
       toast.success(t("toast.editSuccess"));
     },
 
@@ -350,7 +351,7 @@ export function useShareNews(entity: EntityTypes) {
     },
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["news", entityId] });
+      queryClient.invalidateQueries({ queryKey: NEWS_QUERY_KEYS.NEWS(entityId) });
       toast.success(t("toast.addSuccess"));
     },
 
@@ -391,15 +392,15 @@ export function useAddVoteNews(entity: EntityTypes | null | undefined, options?:
 
     onMutate: options?.optimistic
       ? async (variables) => {
-          await queryClient.cancelQueries({ queryKey: ["news", entityId] });
+          await queryClient.cancelQueries({ queryKey: NEWS_QUERY_KEYS.NEWS(entityId) });
 
           const previousData = queryClient.getQueryData<{ pages: News[][] }>(
-            ["news", entityId]
+            NEWS_QUERY_KEYS.NEWS(entityId)
           );
 
           // Optimistic update: increment vote count
           queryClient.setQueryData<{ pages: News[][] }>(
-            ["news", entityId],
+            NEWS_QUERY_KEYS.NEWS(entityId),
             (old) => {
               if (!old) return old;
 
@@ -428,7 +429,7 @@ export function useAddVoteNews(entity: EntityTypes | null | undefined, options?:
 
     onError: (error, _variables, context) => {
       if (context?.previousData) {
-        queryClient.setQueryData(["news", entityId], context.previousData);
+        queryClient.setQueryData(NEWS_QUERY_KEYS.NEWS(entityId), context.previousData);
       }
 
       toast.error(t("toast.voteError"), {
@@ -437,7 +438,7 @@ export function useAddVoteNews(entity: EntityTypes | null | undefined, options?:
     },
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["news", entityId] });
+      queryClient.invalidateQueries({ queryKey: NEWS_QUERY_KEYS.NEWS(entityId) });
       toast.success(t("toast.voteSuccess"));
     },
   });

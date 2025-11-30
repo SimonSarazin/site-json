@@ -3,6 +3,7 @@ import type { EntityTypes, User, PaginatorPage } from "@communecter/cocolight-ap
 import { isUser } from "@/lib/getTypedEntity";
 import { useMemo } from "react";
 import type { FriendsQueryParams } from "../types";
+import { QUERY_KEYS } from "../constants/queryKeys";
 
 export type { FriendsQueryParams };
 
@@ -19,7 +20,7 @@ export function useFriendsQuery(user: EntityTypes | null, params?: FriendsQueryP
     error,
     refetch,
   } = useInfiniteQueryScrollNext<User>({
-    queryKey: ["user-friends", user?.slug, params],
+    queryKey: [...QUERY_KEYS.USER_FRIENDS(user?.slug ?? null), params],
     queryFn: async ({ pageParam }) => {
       if (!user || !isUser(user)) {
         throw new Error("User is required");

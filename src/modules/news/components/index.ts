@@ -1,6 +1,12 @@
 // Main news components
 export { NewsItem } from "./NewsItem";
 export { NewsContent } from "./NewsContent";
+export { NewsDetailPage } from "./NewsDetailPage";
+
+// Section components
+// Note: NewsSection component not exported here to avoid conflict with NewsSection type from schema
+// Import directly from "./components/sections/NewsSection" if needed
+export { NewsSection as NewsSectionComponent } from "./sections/NewsSection";
 
 // Media components
 export { NewsImageGrid } from "./media/NewsImageGrid";
