@@ -5,7 +5,7 @@ import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { Button } from "@/components/ui/button";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
-import { useNewsById } from "../hooks/useNewsById";
+import { useNewsByIdQuery } from "../hooks/useNewsByIdQuery";
 import { useDeleteNews } from "../hooks/useNewsMutations";
 import { NewsItem } from "./NewsItem";
 import { ShareNewsDialog } from "./ShareNewsDialog";
@@ -52,7 +52,7 @@ export const NewsDetailPage = ({ params, entity, sectionProps }: NewsDetailPageP
     isLoading,
     isError,
     error
-  } = useNewsById({
+  } = useNewsByIdQuery({
     newsId: newsId!,
     entity,
     enabled: !!newsId

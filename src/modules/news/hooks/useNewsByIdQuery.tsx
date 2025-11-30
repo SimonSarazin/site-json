@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 
-interface UseNewsByIdProps {
+interface useNewsByIdQueryProps {
   newsId: string;
   entity: EntityTypes;
   enabled?: boolean;
@@ -10,7 +10,7 @@ interface UseNewsByIdProps {
 /**
  * Hook pour récupérer une news spécifique par son ID
  */
-export const useNewsById = ({ newsId, entity, enabled = true }: UseNewsByIdProps) => {
+export const useNewsByIdQuery = ({ newsId, entity, enabled = true }: useNewsByIdQueryProps) => {
   return useQuery({
     queryKey: ["news", entity.id, newsId],
     queryFn: async () => {
