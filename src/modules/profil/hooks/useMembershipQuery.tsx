@@ -1,5 +1,5 @@
 import { useInfiniteQueryScrollNext } from "@/hooks/useInfiniteQueryScroll";
-import type { EntityTypes, Organization, Project, Poi, Event } from "@communecter/cocolight-api-client";
+import type { EntityTypes, Organization, Project, Poi, Event, PaginatorPage } from "@communecter/cocolight-api-client";
 import { isUser } from "@/lib/getTypedEntity";
 import { useMemo } from "react";
 
@@ -27,7 +27,7 @@ export function useUserOrganizations(user: EntityTypes | null, params?: Membersh
         throw new Error("User is required");
       }
 
-      const page = pageParam as { pageNumber?: number; next?: () => Promise<{ results: any[]; count: any; hasNext: boolean; pageNumber: number; next?: () => Promise<any> }> } | undefined;
+      const page = pageParam as PaginatorPage<Organization> | undefined;
 
       // Utiliser la vraie méthode API
       const result = await user.getOrganizations({
@@ -97,7 +97,7 @@ export function useUserProjects(user: EntityTypes | null, params?: MembershipQue
         throw new Error("User is required");
       }
 
-      const page = pageParam as { pageNumber?: number; next?: () => Promise<{ results: any[]; count: any; hasNext: boolean; pageNumber: number; next?: () => Promise<any> }> } | undefined;
+      const page = pageParam as PaginatorPage<Project> | undefined;
 
       // Utiliser la vraie méthode API
       const result = await user.getProjects({
@@ -167,7 +167,7 @@ export function useUserPois(user: EntityTypes | null, params?: MembershipQueryPa
         throw new Error("User is required");
       }
 
-      const page = pageParam as { pageNumber?: number; next?: () => Promise<{ results: any[]; count: any; hasNext: boolean; pageNumber: number; next?: () => Promise<any> }> } | undefined;
+      const page = pageParam as PaginatorPage<Poi> | undefined;
 
       // Utiliser la vraie méthode API
       const result = await user.getPois({
@@ -218,15 +218,6 @@ export function useUserPois(user: EntityTypes | null, params?: MembershipQueryPa
   };
 }
 
-// Type for API result
-interface EventApiResult {
-  results: Event[];
-  count: { total: number };
-  hasNext: boolean;
-  pageNumber: number;
-  next?: () => Promise<EventApiResult>;
-}
-
 /**
  * Hook pour récupérer les événements d'un utilisateur avec infinite scroll
  */
@@ -241,12 +232,12 @@ export function useUserEvents(user: EntityTypes | null, params?: MembershipQuery
     refetch,
   } = useInfiniteQueryScrollNext<Event[]>({
     queryKey: ["user-events", user?.slug, params],
-    queryFn: async ({ pageParam }): Promise<EventApiResult> => {
+    queryFn: async ({ pageParam }) => {
       if (!user || !isUser(user)) {
         throw new Error("User is required");
       }
 
-      const page = pageParam as { pageNumber?: number; next?: () => Promise<EventApiResult> } | undefined;
+      const page = pageParam as PaginatorPage<Event> | undefined;
 
       const result = await user.getEvents({
         name: params?.search,

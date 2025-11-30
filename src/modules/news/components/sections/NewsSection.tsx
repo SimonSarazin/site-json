@@ -187,7 +187,7 @@ export const NewsSection = ({ id, props }: NewsSectionProps) => {
 
   return (
     <NewsProvider value={{
-      entity,
+      entity: entity || undefined,
       permissions: newsPermissions,
       entityId: entity?.id || undefined,
       entityType: entity?.serverData?.type,

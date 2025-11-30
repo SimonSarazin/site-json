@@ -367,11 +367,11 @@ export function useShareNews(entity: EntityTypes) {
  * @param entity - L'entité propriétaire (pour mettre à jour le cache)
  * @param options - Options incluant optimistic updates
  */
-export function useAddVoteNews(entity: EntityTypes, options?: MutationOptions) {
+export function useAddVoteNews(entity: EntityTypes | null | undefined, options?: MutationOptions) {
   const queryClient = useQueryClient();
   const t = useT("modules/news");
   const { me } = useCocolight();
-  const entityId = entity.id || "";
+  const entityId = entity?.id || "";
 
   return useMutation({
     mutationFn: async ({

@@ -1,5 +1,5 @@
 import { createContext, useContext, type ReactNode } from "react";
-import type { NewsContextType } from "../types/news";
+import type { NewsContextType } from "../types";
 
 /**
  * Context pour le module News

@@ -23,31 +23,9 @@ import {
   useLeaveEvent,
 } from "./useRelationshipMutations";
 import { UserPlus, UserMinus, UserCheck, UserX, Users, LogOut } from "lucide-react";
+import type { EntityAction, EntityActionsResult } from "../types";
 
-export interface EntityAction {
-  id: string;
-  type: "follow" | "unfollow" | "friend" | "unfriend" | "join" | "leave";
-  label: string;
-  icon: React.ReactNode;
-  variant: "default" | "outline" | "destructive";
-  onClick: () => void;
-  requiresConfirmation: boolean;
-  confirmationTitle?: string;
-  confirmationDescription?: string;
-  confirmationConfirm?: string;
-  confirmationCancel?: string;
-  isDestructive?: boolean;
-  isPending: boolean;
-  show: boolean;
-}
-
-export interface EntityActionsResult {
-  actions: EntityAction[];
-  layout: "separate-buttons" | "status-dropdown";
-  statusLabel?: string;
-  statusIcon?: React.ReactNode;
-  statusVariant?: "default" | "outline";
-}
+export type { EntityAction, EntityActionsResult };
 
 /**
  * Hook centralisé pour obtenir les actions disponibles sur une entité

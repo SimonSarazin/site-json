@@ -1,3 +1,4 @@
+import type { EntityTypes } from "@communecter/cocolight-api-client";
 
 /**
  * Types spécifiques au module News
@@ -5,7 +6,7 @@
 
 // Context du module News
 export interface NewsContextType {
-  entity?: any; // EntityTypes depuis cocolight-api-client
+  entity?: EntityTypes;
   entityId?: string;
   entityType?: string;
   config?: NewsModuleConfig;

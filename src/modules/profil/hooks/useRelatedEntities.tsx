@@ -1,26 +1,10 @@
 import { useInfiniteQueryScrollNext } from "@/hooks/useInfiniteQueryScroll";
-import type { EntityTypes, Project, Event, Poi } from "@communecter/cocolight-api-client";
+import type { EntityTypes, Project, Event, Poi, PaginatorPage } from "@communecter/cocolight-api-client";
 import { isOrganization, isProject } from "@/lib/getTypedEntity";
 import { useMemo } from "react";
+import type { RelationType, RelatedEntitiesParams, UseRelatedEntitiesResult } from "../types";
 
-// Types de relations supportés pour ProfileRelated
-export type RelationType = "projects" | "events" | "poi";
-
-export interface RelatedEntitiesParams {
-  indexStep?: number;
-  search?: string;
-}
-
-export interface UseRelatedEntitiesResult {
-  entities: (Project | Event | Poi)[];
-  totalCount: number;
-  isLoading: boolean;
-  isFetchingNextPage: boolean;
-  hasNextPage: boolean;
-  lastItemRef: (node: HTMLElement | null) => void;
-  error: Error | null;
-  refetch: () => void;
-}
+export type { RelationType, RelatedEntitiesParams, UseRelatedEntitiesResult };
 
 /**
  * Hook pour récupérer les entités liées (projets, événements, POI) d'une organisation ou projet
@@ -46,16 +30,7 @@ export function useRelatedEntities(
         throw new Error("Entity is required");
       }
 
-      const page = pageParam as {
-        pageNumber?: number;
-        next?: () => Promise<{
-          results: (Project | Event | Poi)[];
-          count: { total: number };
-          hasNext: boolean;
-          pageNumber: number;
-          next?: () => Promise<unknown>;
-        }>;
-      } | undefined;
+      const page = pageParam as PaginatorPage<Project | Event | Poi> |  undefined
 
       const queryParams = {
         name: params?.search,
@@ -63,16 +38,7 @@ export function useRelatedEntities(
         indexStep: params?.indexStep || 20,
       };
 
-      // Type pour le résultat de l'API
-      type ApiResult = {
-        results: (Project | Event | Poi)[];
-        count: { total: number };
-        hasNext: boolean;
-        pageNumber: number;
-        next?: () => Promise<ApiResult>;
-      };
-
-      let result: ApiResult | undefined;
+      let result: PaginatorPage<Project | Event | Poi>
 
       // Récupérer les entités liées selon le type de relation
       switch (relationType) {

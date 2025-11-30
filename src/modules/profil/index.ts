@@ -25,6 +25,20 @@ export { useFormatProfileEntity } from "./hooks/useFormatProfileEntity";
 export { useProfilNewsQuery } from "./hooks/useProfilNewsQuery";
 export { useEntityBySlugQuery } from "./hooks/useEntityBySlugQuery";
 
+// Types centralisés
+export type {
+  EntityAction,
+  EntityActionsResult,
+  UserAction,
+  RelationType,
+  RelatedEntitiesParams,
+  UseRelatedEntitiesResult,
+  MemberQueryOptions,
+  MemberQueryParams,
+  FriendsQueryParams,
+  ConfirmationState,
+} from "./types";
+
 // Schemas & Types
 export type {
   ProfileConfig,

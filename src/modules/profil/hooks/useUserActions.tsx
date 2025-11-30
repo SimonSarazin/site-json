@@ -1,4 +1,3 @@
-import React from "react";
 import { useT } from "@/hooks/useT";
 import { isOrganization, isProject, isEvent, isUser } from "@/lib/getTypedEntity";
 import type { User, Organization, EntityTypes } from "@communecter/cocolight-api-client";
@@ -12,16 +11,9 @@ import {
 } from "./useMemberMutations";
 import { useInviteMember, useInviteAdmin } from "./useInviteMutations";
 import { ShieldOff, Crown, Trash2, Check, X, UserPlus, Mail } from "lucide-react";
+import type { UserAction } from "../types";
 
-export interface UserAction {
-  id: string;
-  label: string;
-  icon: React.ReactNode;
-  variant: "default" | "outline" | "destructive" | "secondary";
-  onClick: () => void;
-  disabled?: boolean;
-  requiresConfirmation?: boolean;
-}
+export type { UserAction };
 
 /**
  * Hook pour obtenir les actions disponibles pour un utilisateur

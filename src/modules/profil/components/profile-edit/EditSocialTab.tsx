@@ -1,5 +1,4 @@
 import type { UseFormReturn } from "react-hook-form";
-import { useT } from "@/hooks/useT";
 import {
   Github,
   GitlabIcon as Gitlab,
@@ -17,15 +16,15 @@ interface EditSocialTabProps {
 }
 
 const socialNetworks = [
-  { name: "github", icon: Github, placeholder: "username" },
-  { name: "gitlab", icon: Gitlab, placeholder: "username" },
-  { name: "facebook", icon: Facebook, placeholder: "username" },
-  { name: "twitter", icon: Twitter, placeholder: "@username" },
+  { name: "github", icon: Github, placeholder: "" },
+  { name: "gitlab", icon: Gitlab, placeholder: "" },
+  { name: "facebook", icon: Facebook, placeholder: "" },
+  { name: "twitter", icon: Twitter, placeholder: "" },
   { name: "instagram", icon: Instagram, placeholder: "@username" },
-  { name: "diaspora", icon: MessageCircle, placeholder: "username@pod.example" },
-  { name: "mastodon", icon: MessageCircle, placeholder: "@username@instance.social" },
-  { name: "telegram", icon: Send, placeholder: "@username" },
-  { name: "signal", icon: Phone, placeholder: "+33..." },
+  { name: "diaspora", icon: MessageCircle, placeholder: "" },
+  { name: "mastodon", icon: MessageCircle, placeholder: "" },
+  { name: "telegram", icon: Send, placeholder: "" },
+  { name: "signal", icon: Phone, placeholder: "" },
 ] as const;
 
 /**

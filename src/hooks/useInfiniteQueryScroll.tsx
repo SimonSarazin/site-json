@@ -83,7 +83,7 @@ export function useInfiniteQueryScroll<TData, TError = Error>({
 }
 
 
-// Si vous avez besoin d’un hook “Next” spécialisé
+// Hook "Next" spécialisé pour la pagination avec fonction next()
 export interface PageData<T> {
   results: T;
   count?: Record<string, number>;

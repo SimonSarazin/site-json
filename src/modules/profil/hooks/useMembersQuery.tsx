@@ -1,19 +1,9 @@
 import type { EntityTypes, User, Organization } from "@communecter/cocolight-api-client";
 import { isOrganization, isProject, isEvent } from "@/lib/getTypedEntity";
 import { useInfiniteEntityQuery } from "./core";
+import type { MemberQueryOptions, MemberQueryParams } from "../types";
 
-export interface MemberQueryOptions {
-  toBeValidated?: boolean;
-  isAdmin?: boolean;
-  isAdminPending?: boolean;
-  isInviting?: boolean;
-  roles?: unknown[];
-}
-
-export interface MemberQueryParams {
-  indexStep?: number;
-  search?: string;
-}
+export type { MemberQueryOptions, MemberQueryParams };
 
 /**
  * Hook pour récupérer les membres d'une organisation

@@ -1,12 +1,7 @@
 import { useState } from "react";
+import type { ConfirmationState } from "../types";
 
-export interface ConfirmationState {
-  open: boolean;
-  title: string;
-  description: string;
-  action: () => void;
-  isDestructive?: boolean;
-}
+export type { ConfirmationState };
 
 /**
  * Hook pour gérer l'état d'un dialogue de confirmation

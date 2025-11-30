@@ -1,13 +1,10 @@
 import { useInfiniteQueryScrollNext } from "@/hooks/useInfiniteQueryScroll";
-import type { EntityTypes, User } from "@communecter/cocolight-api-client";
+import type { EntityTypes, User, PaginatorPage } from "@communecter/cocolight-api-client";
 import { isUser } from "@/lib/getTypedEntity";
 import { useMemo } from "react";
+import type { FriendsQueryParams } from "../types";
 
-export interface FriendsQueryParams {
-  indexStep?: number;
-  search?: string;
-  status?: "all" | "pending" | "friends" | "sent";
-}
+export type { FriendsQueryParams };
 
 /**
  * Hook pour récupérer les amis d'un utilisateur
@@ -28,7 +25,7 @@ export function useFriendsQuery(user: EntityTypes | null, params?: FriendsQueryP
         throw new Error("User is required");
       }
 
-      const page = pageParam as { pageNumber?: number; next?: () => Promise<{ results: any[]; count: any; hasNext: boolean; pageNumber: number; next?: () => Promise<any> }> } | undefined;
+      const page = pageParam as PaginatorPage<User> | undefined;
 
       let filters = {};
 
