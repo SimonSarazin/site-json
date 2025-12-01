@@ -22,7 +22,7 @@ interface ProfileSeoProps {
  */
 export function ProfileSeo({ entity, isLoading, entityType, activeTab, profileConfig }: ProfileSeoProps) {
   const { config } = useSite();
-  const { currentLocale, t: tLocale } = useLocalization();
+  const { currentLocale } = useLocalization();
   useLoadNamespace("modules/profil");
   const t = useT("modules/profil");
 
@@ -36,12 +36,9 @@ export function ProfileSeo({ entity, isLoading, entityType, activeTab, profileCo
    */
   const getTabLabel = (tab: string): string => {
     // Chercher dans la config des tabs
-    const tabConfig = profileConfig?.tabs?.find(t => t.id === tab);
+    const tabConfig = profileConfig?.tabs?.find(tc => tc.id === tab);
     if (tabConfig?.label) {
-      // Utiliser le label localisé de la config
-      return typeof tabConfig.label === 'string'
-        ? tabConfig.label
-        : tabConfig.label[currentLocale] || tabConfig.label['fr'] || tabConfig.label['en'] || '';
+      return t(tabConfig.label);
     }
 
     // Fallback sur les clés i18n hardcodées
@@ -87,9 +84,7 @@ export function ProfileSeo({ entity, isLoading, entityType, activeTab, profileCo
 
   // Pendant le chargement ou si pas d'entité, afficher un titre par défaut
   if (isLoading || !entity) {
-    const defaultTitle = (config.meta?.title && typeof config.meta.title === 'string')
-      ? tLocale(config.meta.title)
-      : "Profil";
+    const defaultTitle = config.meta?.title ? t(config.meta.title) : "Profil";
     return (
       <Helmet htmlAttributes={{ lang: currentLocale }}>
         <title>{defaultTitle}</title>
@@ -114,9 +109,7 @@ export function ProfileSeo({ entity, isLoading, entityType, activeTab, profileCo
     : "";
 
   // Titre de la page dynamique selon le tab actif
-  const siteTitle = (config.meta?.title && typeof config.meta.title === 'string')
-    ? tLocale(config.meta.title)
-    : "";
+  const siteTitle = config.meta?.title ? t(config.meta.title) : "";
 
   const pageTitle = currentTab !== firstTabId
     ? `${getTabLabel(currentTab)} - ${entityName}${siteTitle ? ` - ${siteTitle}` : ''}`

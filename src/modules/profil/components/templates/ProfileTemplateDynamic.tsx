@@ -3,16 +3,14 @@ import { useLocation, useNavigate, useParams } from "react-router";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
 import { useCocolight } from "@/hooks/useCocolight";
-import { useLocalization } from "@/hooks/useLocalization";
 import { ProfileSectionRenderer } from "../../ProfileSectionRenderer";
 import { TabDetailRenderer } from "../TabDetailRenderer";
-import type { ProfileTab } from "../../schema";
-import type { LocalizedString } from "@/types/locale-schema";
 
 // Import direct des composants tab
 import { SocialTab } from "../tabs/SocialTab";
 import { MembershipTab } from "../tabs/MembershipTab";
 import { NewsTab } from "../tabs/NewsTab";
+import { useLocalization } from "@/hooks/useLocalization";
 
 /**
  * Template dynamique de profil avec tabs configurables
@@ -31,8 +29,8 @@ export default function ProfileTemplateDynamic() {
   const { slug } = useParams<{ slug: string }>();
   const location = useLocation();
   const navigate = useNavigate();
-  const { currentLocale } = useLocalization();
-
+  const { t } = useLocalization();
+  
   // Déterminer le tab actif depuis l'URL et si on est sur une sous-route
   const pathSegments = location.pathname.split('/').filter(Boolean);
   const currentTab = pathSegments.length > 2 ? pathSegments[2] : (config.tabs?.[0]?.id || 'about');
@@ -82,15 +80,6 @@ export default function ProfileTemplateDynamic() {
     }
   };
 
-  // Fonction helper pour obtenir le label localisé
-  const getTabLabel = (tab: ProfileTab): string => {
-    if (typeof tab.label === "string") {
-      return tab.label;
-    }
-    const localizedLabel = tab.label as LocalizedString;
-    return localizedLabel[currentLocale] || localizedLabel.fr || localizedLabel.en || tab.id;
-  };
-
   // Fonction pour rendre un composant tab dédié
   const renderTabComponent = (componentName: string) => {
     switch (componentName) {
@@ -126,7 +115,7 @@ export default function ProfileTemplateDynamic() {
                     value={tab.id}
                     className="flex-shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
                   >
-                    {getTabLabel(tab)}
+                    {t(tab.label)}
                   </TabsTrigger>
                 ))}
               </TabsList>
