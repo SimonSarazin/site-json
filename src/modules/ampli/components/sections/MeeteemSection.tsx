@@ -1,4 +1,4 @@
-import { useFetchAnswer } from "@/hooks/useFetchAnswer";
+import { useFetchAnswerQuery } from "@/modules/ampli/hooks/useFetchAnswerQuery";
 import { MeeteemSectionProps } from "@/types/site-schema";
 import { TextAlignJustifyIcon } from "@radix-ui/react-icons";
 import { ChevronDown, Columns2Icon, FunnelIcon, Heart, MapIcon, MapPinIcon, MessageCircle, XIcon } from "lucide-react";
@@ -9,104 +9,17 @@ export function MeeteemSection({ id, props }: { id?: string, props: MeeteemSecti
 
     const [activeFilters, setActiveFilters] = useState<string[]>([]);
     const [userFilter, setUserFilter] = useState<string | null>(null);
-    const [showMore, setShowMore] = useState<boolean>(false);
     const [filtersCollapsed, setFiltersCollapsed] = useState<boolean>(false);
-    // Données d'exemple (à remplacer par props)
-    const sampleCards = [
-        {
-            id: 1,
-            title: "Projet Environnement Durable",
-            description: "Initiative pour réduire l'empreinte carbone de notre communauté en développant des solutions écologiques innovantes et durables.",
-            tags: ['environment', 'tendance'],
-            author: { name: "Marie Dupont", avatar: null, initials: "MD" },
-            date: "10/10/2025",
-            stats: { votes: 42, comments: 15 },
-            image: null,
-            headerImage: null
-        },
-        {
-            id: 2,
-            title: "Éducation Numérique pour Tous",
-            description: "Programme d'accès à l'éducation numérique pour les quartiers défavorisés avec des ateliers gratuits et du matériel adapté.",
-            tags: ['education'],
-            author: { name: "Jean Martin", avatar: null, initials: "JM" },
-            date: "10/10/2025",
-            stats: { votes: 28, comments: 8 },
-            image: null,
-            headerImage: null
-        },
-        {
-            id: 3,
-            title: "Réseau Solidaire Local",
-            description: "Création d'un réseau d'entraide local pour favoriser les échanges de services et renforcer les liens sociaux dans notre quartier.",
-            tags: ['societe'],
-            author: { name: "Sophie Bernard", avatar: null, initials: "SB" },
-            date: "10/10/2025",
-            stats: { votes: 35, comments: 12 },
-            image: null,
-            headerImage: null
-        },
-        {
-            id: 4,
-            title: "Mobilité Verte Urbaine",
-            description: "Développement d'un réseau de pistes cyclables et de stations de vélos partagés pour encourager les transports doux.",
-            tags: ['environment'],
-            author: { name: "Pierre Dubois", avatar: null, initials: "PD" },
-            date: "10/10/2025",
-            stats: { votes: 56, comments: 22 },
-            image: null,
-            headerImage: null
-        },
-        {
-            id: 5,
-            title: "Formation Continue en Ligne",
-            description: "Plateforme gratuite de formation continue pour adultes avec des cours certifiants dans divers domaines professionnels.",
-            tags: ['education', 'tendance'],
-            author: { name: "Claire Rousseau", avatar: null, initials: "CR" },
-            date: "10/10/2025",
-            stats: { votes: 41, comments: 18 },
-            image: null,
-            headerImage: null
-        },
-        {
-            id: 6,
-            title: "Coworking Solidaire",
-            description: "Espace de coworking accessible à tous avec tarifs solidaires pour entrepreneurs et travailleurs indépendants.",
-            tags: ['societe'],
-            author: { name: "Marc Leroy", avatar: null, initials: "ML" },
-            date: "10/10/2025",
-            stats: { votes: 33, comments: 9 },
-            image: null,
-            headerImage: null
-        },
-        {
-            id: 7,
-            title: "Jardins Partagés Urbains",
-            description: "Création de jardins communautaires dans les espaces urbains inutilisés pour cultiver fruits et légumes localement.",
-            tags: ['environment', 'societe'],
-            author: { name: "Anne Moreau", avatar: null, initials: "AM" },
-            date: "10/10/2025",
-            stats: { votes: 67, comments: 31 },
-            image: null,
-            headerImage: null
-        }
-    ];
-
     const {
         coform,
         path: dataPath
     } = props;
 
     const {
-        error,
         lastItemRef,
-        isFetchingNextPage,
-        isLoading: loadingMap,
-        isPending,
-        refetch,
         transformedResults,
-        totalCount
-    } = useFetchAnswer({
+        isLoading
+    } = useFetchAnswerQuery({
         queryKeyPrefix: `Meeteem-${coform}`,
         coformId: coform,
         view: viewMode,
@@ -139,7 +52,7 @@ export function MeeteemSection({ id, props }: { id?: string, props: MeeteemSecti
             prefix: "answers",
             includeUserInfo: true
         }
-    })
+    });
 
     // Gestion des filtres par tags
     const toggleFilter = (tag: string) => {
@@ -152,39 +65,27 @@ export function MeeteemSection({ id, props }: { id?: string, props: MeeteemSecti
 
 
     // Configuration des tags disponibles
-    const availableTags = [
-        { id: 'environment', label: 'Environnement', color: 'green' },
-        { id: 'education', label: 'Éducation', color: 'blue' },
-        { id: 'societe', label: 'Société', color: 'purple' },
-        { id: 'tendance', label: 'Tendance', color: 'yellow' }
-    ];
+    const availableTags = isLoading ? [] : transformedResults.reduce<string[]>((acc, { data }) => {
+        data.tags?.forEach((tag: string) => {
+            if (!acc.includes(tag)) {
+                acc.push(tag);
+            }
+        });
+        return acc;
+    }, []);
 
     // Filtrer les cartes
-    const filteredCards = sampleCards.filter(card => {
+    const filteredCards = transformedResults.filter(({ data, user }) => {
         if (activeFilters.length === 0 && !userFilter) return true;
 
         const matchesTag = activeFilters.length === 0 ||
-            card.tags.some(tag => activeFilters.includes(tag));
+            data.tags?.some((tag: string) => activeFilters.includes(tag));
 
         const matchesUser = !userFilter ||
-            card.author.name === userFilter;
+            user.name === userFilter;
 
         return matchesTag && matchesUser;
     });
-
-    // Limiter l'affichage des cartes si "voir plus" n'est pas activé
-    const displayedCards = showMore ? filteredCards : filteredCards.slice(0, 6);
-
-    // Styles pour les tags selon leur type
-    const getTagStyles = (tag: string) => {
-        const styles: Record<string, string> = {
-            environment: 'bg-green-50 text-green-600 border-green-300',
-            education: 'bg-blue-50 text-blue-600 border-blue-400',
-            societe: 'bg-purple-50 text-purple-600 border-purple-400',
-            tendance: 'bg-yellow-50 text-yellow-600 border-yellow-400'
-        };
-        return styles[tag] || 'bg-gray-50 text-gray-600 border-gray-300';
-    };
 
     return (
         <div className="w-full max-w-[1200px] mx-auto px-5 py-8" id={id}>
@@ -212,8 +113,8 @@ export function MeeteemSection({ id, props }: { id?: string, props: MeeteemSecti
                     <button
                         onClick={() => setViewMode('answers')}
                         className={`px-4 py-2 rounded-md border-none text-sm font-medium transition-all flex items-center gap-2 ${viewMode === 'answers'
-                                ? 'bg-primary text-white shadow-sm'
-                                : 'text-foreground hover:text-primary'
+                            ? 'bg-primary text-white shadow-sm'
+                            : 'text-foreground hover:text-primary'
                             }`}
                     >
                         <TextAlignJustifyIcon className="w-4 h-4" />
@@ -222,8 +123,8 @@ export function MeeteemSection({ id, props }: { id?: string, props: MeeteemSecti
                     <button
                         onClick={() => setViewMode('map')}
                         className={`px-4 py-2 rounded-md border-none text-sm font-medium transition-all flex items-center gap-2 ${viewMode === 'map'
-                                ? 'bg-primary text-white shadow-sm'
-                                : 'text-foreground hover:text-primary'
+                            ? 'bg-primary text-white shadow-sm'
+                            : 'text-foreground hover:text-primary'
                             }`}
                     >
                         <MapPinIcon className="w-4 h-4" />
@@ -232,8 +133,8 @@ export function MeeteemSection({ id, props }: { id?: string, props: MeeteemSecti
                     <button
                         onClick={() => setViewMode('split')}
                         className={`px-4 py-2 rounded-md border-none text-sm font-medium transition-all flex items-center gap-2 ${viewMode === 'split'
-                                ? 'bg-primary text-white shadow-sm'
-                                : 'text-foreground hover:text-primary'
+                            ? 'bg-primary text-white shadow-sm'
+                            : 'text-foreground hover:text-primary'
                             }`}
                     >
                         <Columns2Icon className="w-4 h-4" />
@@ -268,15 +169,14 @@ export function MeeteemSection({ id, props }: { id?: string, props: MeeteemSecti
                             <div className="flex flex-wrap gap-3">
                                 {availableTags.map(tag => (
                                     <button
-                                        key={tag.id}
-                                        onClick={() => toggleFilter(tag.id)}
-                                        className={`px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-all flex items-center gap-2 ${activeFilters.includes(tag.id)
-                                                ? 'bg-primary border-primary text-white -translate-y-0.5 shadow-lg shadow-primary/30'
-                                                : 'border border-gray-200 text-foreground hover:bg-primary hover:border-primary hover:text-white hover:-translate-y-0.5 hover:shadow-md'
+                                        key={tag}
+                                        onClick={() => toggleFilter(tag)}
+                                        className={`px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-all flex items-center gap-2 ${activeFilters.includes(tag)
+                                            ? 'bg-primary border-primary text-white -translate-y-0.5 shadow-lg shadow-primary/30'
+                                            : 'border border-gray-200 text-foreground hover:bg-primary hover:border-primary hover:text-white hover:-translate-y-0.5 hover:shadow-md'
                                             }`}
                                     >
-                                        <i className="fas fa-tag"></i>
-                                        {tag.label}
+                                        {tag}
                                     </button>
                                 ))}
                             </div>
@@ -288,7 +188,7 @@ export function MeeteemSection({ id, props }: { id?: string, props: MeeteemSecti
             {/* Vue Annuaire (liste) */}
             {viewMode === 'answers' && (
                 <div className="grid grid-cols-[repeat(auto-fill,minmax(32%,1fr))] gap-3 w-full bg-tertiaire">
-                    {transformedResults?.map(({ answer, data, user }, index) => (
+                    {filteredCards?.map(({ answer, data, user }, index) => (
                         <div
                             key={answer.serverData.id}
                             className="rounded-xl border border-foreground/40 shadow-md overflow-hidden hover:shadow-lg flex flex-col items-start p-4 border-l-4 border-l-primary/75 opacity-0 animate-[cardSlideIn_0.6s_cubic-bezier(0.4,0,0.2,1)_forwards]"
@@ -300,9 +200,10 @@ export function MeeteemSection({ id, props }: { id?: string, props: MeeteemSecti
                                     {data.tags?.map((tag: string) => (
                                         <span
                                             key={tag}
-                                            className={`px-3 py-1 rounded-full text-xs font-medium border cursor-pointer ${getTagStyles(tag)}`}
+                                            onClick={() => toggleFilter(tag)}
+                                            className={`px-3 py-1 rounded-full text-xs font-medium border cursor-pointer bg-gray-50 text-gray-600 border-gray-300${activeFilters.includes(tag) ? " bg-primary text-white border-primary" : ""}`}
                                         >
-                                            {availableTags.find(t => t.id === tag)?.label || tag}
+                                            {availableTags.find(t => t === tag) || tag}
                                         </span>
                                     ))}
                                 </div>
@@ -336,11 +237,11 @@ export function MeeteemSection({ id, props }: { id?: string, props: MeeteemSecti
 
                                 {/* Stats */}
                                 <div className="flex items-center gap-4">
-                                    <div className="flex items-center gap-1 text-xs rounded-xl px-2 py-1 border bg-white border-pink-600 text-pink-600 texthover:-translate-y-0.5 hover:shadow-sm transition-all">
+                                    <div className="flex items-center gap-1 text-xs rounded-xl px-2 py-1 border border-pink-600 text-pink-600 texthover:-translate-y-0.5 hover:shadow-sm transition-all">
                                         <Heart className="w-3.5 h-3.5" />
                                         <span>{answer.serverData.vote ? Object.keys(answer.serverData.vote).length : 0}</span>
                                     </div>
-                                    <div className="flex items-center gap-1 text-xs rounded-xl px-2 py-1 border bg-white text-primary border-primary hover:-translate-y-0.5 hover:shadow-sm transition-all">
+                                    <div className="flex items-center gap-1 text-xs rounded-xl px-2 py-1 border text-primary border-primary hover:-translate-y-0.5 hover:shadow-sm transition-all">
                                         <MessageCircle className="w-3.5 h-3.5 text-primary" />
                                         <span>{answer.serverData.comments ? Object.keys(answer.serverData.comments).length : 0}</span>
                                     </div>
@@ -369,37 +270,43 @@ export function MeeteemSection({ id, props }: { id?: string, props: MeeteemSecti
                 <div className="flex gap-5 h-[600px]">
                     {/* Colonne gauche - Cartes */}
                     <div className="flex-1 overflow-y-auto pr-2 space-y-3">
-                        {displayedCards.map((card) => (
+                        {filteredCards?.map(({ answer, data, user }) => (
                             <div
-                                key={card.id}
-                                className="bg-white rounded-xl border border-gray-200 shadow-md overflow-hidden hover:shadow-lg flex items-center p-4 border-l-4 border-l-emerald-400"
+                                key={answer.serverData.id}
+                                className="rounded-xl border border-foreground/40 shadow-md overflow-hidden hover:shadow-lg flex items-center p-4 border-l-4 border-l-primary/75"
                             >
                                 <div className="flex-1">
                                     <div className="flex gap-2 mb-2 flex-wrap">
-                                        {card.tags.map((tag: string) => (
-                                            <span key={tag} className={`px-2 py-1 rounded-full text-xs font-medium border ${getTagStyles(tag)}`}>
-                                                {availableTags.find(t => t.id === tag)?.label || tag}
+                                        {data.tags?.map((tag: string) => (
+                                            <span
+                                                key={tag}
+                                                onClick={() => toggleFilter(tag)}
+                                                className={`px-2 py-1 rounded-full text-xs font-medium border cursor-pointer bg-gray-50 text-gray-600 border-gray-300${activeFilters.includes(tag) ? " bg-primary text-white border-primary" : ""}`}>
+                                                {availableTags.find(t => t === tag) || tag}
                                             </span>
                                         ))}
                                     </div>
-                                    <h4 className="text-sm font-semibold text-black m-0 mb-1 cursor-pointer hover:text-emerald-400">{card.title}</h4>
-                                    <p className="text-xs text-black m-0 line-clamp-2">{card.description}</p>
+                                    <h4 className="text-sm font-semibold text-foreground m-0 mb-1 cursor-pointer hover:text-primary">{data.name}</h4>
+                                    <p className="text-xs text-foreground m-0 line-clamp-2">{data.description}</p>
 
                                     <div className="flex items-center gap-3 mt-3 w-full justify-between">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-6 h-6 rounded-full bg-emerald-400 text-white flex items-center justify-center text-[10px] font-semibold">
-                                                {card.author.initials}
+                                        <div className="flex items-center gap-2 cursor-pointer" onClick={() => setUserFilter(user?.name || "")}>
+                                            <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-[10px] font-semibold">
+                                                {user?.initial}
                                             </div>
-                                            <span className="text-[12px] text-gray-600">{card.author.name}</span>
+                                            <div className="flex flex-col gap-0.5">
+                                                <span className="font-semibold text-sm">{user.name}</span>
+                                                <span className="text-[11px]">{answer.serverData.created?.toLocaleDateString() ?? "N/A"}</span>
+                                            </div>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <div className="flex items-center gap-1 text-[12px] rounded-xl px-2 py-1 border text-pink-500 border-pink-500 hover:-translate-y-0.5 hover:shadow-sm transition-all">
-                                                <Heart className="w-3.5 h-3.5 text-pink-500" />
-                                                <span>{card.stats.votes}</span>
+                                                <Heart className="w-3.5 h-3.5" />
+                                                <span>{answer.serverData.vote ? Object.keys(answer.serverData.vote).length : 0}</span>
                                             </div>
                                             <div className="flex items-center gap-1 text-[12px] rounded-xl px-2 py-1 border text-primary border-primary hover:-translate-y-0.5 hover:shadow-sm transition-all">
                                                 <MessageCircle className="w-3.5 h-3.5 text-primary" />
-                                                <span>{card.stats.comments}</span>
+                                                <span>{answer.serverData.comments ? Object.keys(answer.serverData.comments).length : 0}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -423,7 +330,7 @@ export function MeeteemSection({ id, props }: { id?: string, props: MeeteemSecti
 
             {/* Styles pour les animations personnalisées */}
             <style>
-            {`
+                {`
                 @keyframes cardSlideIn {
                     0% {
                         opacity: 0;

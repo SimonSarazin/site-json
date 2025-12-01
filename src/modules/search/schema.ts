@@ -1,5 +1,5 @@
 import { LocalizedString } from "@/types/locale-schema";
-import type { Organization, Poi, Project, User, Event as EventType } from "@communecter/cocolight-api-client";
+import type { Organization, Poi, Project, User, Event as EventType, Answer } from "@communecter/cocolight-api-client";
 import { IconName } from "lucide-react/dynamic";
 import { z } from "zod";
 
@@ -167,7 +167,7 @@ export const SearchProStaticSectionSchema = z.object({
 export type SearchProStaticSection = z.infer<typeof SearchProStaticSectionSchema>;
 export type SearchProStaticSectionProps = z.infer<typeof SearchProStaticSectionSchema>["props"]
 
-export type SearchEntity = User | Organization | Project | EventType | Poi;
+export type SearchEntity = User | Organization | Project | EventType | Poi | Answer;
 
 export interface SearchResultPage<T extends SearchEntity = SearchEntity> {
   count?: Record<string, number>;

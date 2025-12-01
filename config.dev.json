@@ -31,6 +31,14 @@
                 },
                 "path": "/",
                 "icon": "home"
+            },
+            {
+                "label": {
+                    "fr": "Sinistre",
+                    "en": "Sinistre"
+                },
+                "path": "/ampli/sinistre",
+                "icon": "home"
             }
         ],
         "sticky": true,
@@ -82,7 +90,7 @@
                             "show": true,
                             "name": "megaphone",
                             "size": 50,
-                            "backdrop" : true
+                            "backdrop": true
                         },
                         "backgroundImage": "http://communecter74-dev/images/ampli/background.jpg",
                         "align": "center",
@@ -217,7 +225,6 @@
                         "columns": 3,
                         "layout": "grid"
                     }
-
                 },
                 {
                     "type": "html",
@@ -247,6 +254,33 @@
                     }
                 }
             ]
+        },
+        {
+            "path": "/login",
+            "title": {
+                "fr": "Connexion - Meeteem",
+                "en": "Login - Meeteem"
+            },
+            "seo": {
+                "title": {
+                    "fr": "Connexion - Meeteem"
+                },
+                "description": {
+                    "fr": "Bienvenue sur la page d'accueil de Meeteem, votre plateforme de co-construction."
+                },
+                "keywords": [],
+                "ogImage": "",
+                "noIndex": false,
+                "noFollow": false
+            },
+            "layout": "fullwidth",
+            "sections": [
+                {
+                    "type": "loginForm",
+                    "id": "login-form-section",
+                    "props": {}
+                }
+            ]
         }
     ],
     "footer": {
@@ -258,7 +292,7 @@
     },
     "theme": {
         "colors": {
-            "light" : {
+            "light": {
                 "background": "#ffffff",
                 "foreground": "#000000",
                 "border": "#e0e0e0",
@@ -266,7 +300,7 @@
                 "secondary": "#10b981",
                 "tertiaire": "#f59e0b"
             },
-            "dark" : {
+            "dark": {
                 "background": "#000000",
                 "foreground": "#ffffff",
                 "border": "#444444",
@@ -275,5 +309,32 @@
                 "tertiaire": "#f59e0b"
             }
         }
-    }
+    },
+    "auth": {
+        "login": {
+            "title": {
+                "fr": "Se connecter",
+                "en": "Sign in"
+            },
+            "subtitle": {
+                "fr": "Accédez à votre réseau des tiers-lieux",
+                "en": "Access your third places network"
+            }
+        }
+    },
+    "ampli": [
+        {
+            "slug": "sinistre",
+            "layout": "fullwidth",
+            "props": {
+                "coform": "689478d9d003e90f9577fe1c",
+                "path": {
+                    "name": "coformSocket782025_1258_0.coformSocket782025_1258_0me186691t9e9wfpvglb",
+                    "description": "coformSocket782025_1258_0.coformSocket782025_1258_0me1894vvty9rfar5m1",
+                    "address": "coformSocket782025_1258_0.coformSocket782025_1258_0me188sdr03u9pdzz0s4",
+                    "tags": "coformSocket782025_1258_0.coformSocket782025_1258_0me187bq6xvjzuwn1blf"
+                }
+            }
+        }
+    ]
 }

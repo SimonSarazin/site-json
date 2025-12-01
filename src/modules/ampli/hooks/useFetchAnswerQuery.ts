@@ -1,11 +1,11 @@
 import { SearchResultPage } from "@/modules/search/schema";
-import { useCocolight } from "./useCocolight";
-import { useInfiniteQueryScrollNext } from "./useInfiniteQueryScroll";
+import { useCocolight } from "../../../hooks/useCocolight";
+import { useInfiniteQueryScrollNext } from "../../../hooks/useInfiniteQueryScroll";
 import { CoformAnswersSearchData, User } from "@communecter/cocolight-api-client";
 import { useMemo } from "react";
 import getMultipleValuesByPaths from "@/helpers/getMultipleValuesByPaths";
 
-export interface UseFetchAnswerParams {
+export interface UseFetchAnswerQueryParams {
     queryKeyPrefix: string;
     coformId: string;
     view: 'answers' | 'map' | 'split';
@@ -25,13 +25,13 @@ export interface UseFetchAnswerParams {
     };
 }
 
-export function useFetchAnswer({
+export function useFetchAnswerQuery({
     queryKeyPrefix,
     coformId,
     view,
     baseParams = {},
     extractionConfig
-}: UseFetchAnswerParams) {
+}: UseFetchAnswerQueryParams) {
     const { entity, helper } = useCocolight();
 
     const {
