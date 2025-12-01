@@ -39,7 +39,6 @@ const ProfileHeaderComplete = lazy(() => import("./components/sections/ProfileHe
 const ProfileTabLayout = lazy(() => import("./components/sections/ProfileTabLayout"));
 
 // Lazy load des templates
-const ProfileTemplateDefault = lazy(() => import("./components/templates/ProfileTemplateDefault"));
 const ProfileTemplateDynamic = lazy(() => import("./components/templates/ProfileTemplateDynamic"));
 
 interface ProfileSectionRendererProps {
@@ -63,7 +62,6 @@ const PROFILE_SECTION_TYPES = [
   "profile-opening-hours",
   "profile-header-complete",
   "profile-tab-layout",
-  "profile-template-default",
   "profile-template-dynamic",
 ] as const;
 
@@ -138,9 +136,6 @@ export function ProfileSectionRenderer({ section }: ProfileSectionRendererProps)
 
     case "profile-tab-layout":
       return <ProfileTabLayout section={section as ProfileTabLayoutSection} />;
-
-    case "profile-template-default":
-      return <ProfileTemplateDefault />;
 
     case "profile-template-dynamic":
       return <ProfileTemplateDynamic />;

@@ -17,7 +17,6 @@ function mapRelationType(type: string | undefined): RelationType {
   if (type === "projects" || type === "events" || type === "poi") {
     return type;
   }
-  // Les types "parent" et "children" ne sont pas encore supportés
   return "projects";
 }
 

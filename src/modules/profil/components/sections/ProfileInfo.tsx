@@ -16,6 +16,7 @@ import { useProfileSetup } from "../../hooks/useProfileSetup";
 interface ProfileInfoProps {
   section: {
     type: "profile-info";
+    // TODO: variant pas en place
     variant?: "sidebar" | "inline" | "tabs";
     showAddress?: boolean;
     showDates?: boolean;

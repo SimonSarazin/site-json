@@ -9,6 +9,7 @@ import { ProfileImageUpload } from "../profile-edit/ProfileImageUpload";
 import { EditProfileModal } from "../profile-edit/EditProfileModal";
 import type { ProfileHeaderCompleteSection } from "../../schema";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { isUser } from "@/lib/getTypedEntity";
 
 interface ProfileHeaderCompleteProps {
   section: ProfileHeaderCompleteSection;
@@ -44,8 +45,6 @@ export default function ProfileHeaderComplete({ section }: ProfileHeaderComplete
 
   const effectiveLogoUrl = imageError ? logoThumbUrl : logoUrl;
   const imageUrl = logoUrl;
-  const entityType = entity.getEntityType?.();
-  const isUser = entityType === "citoyens";
 
   return (
     <>
@@ -146,7 +145,7 @@ export default function ProfileHeaderComplete({ section }: ProfileHeaderComplete
                 {/* Boutons d'action (Follow, Friend, Membership, etc.) */}
                 <EntityActionButtons entity={entity} />
 
-                {!isUser && (
+                {!isUser(entity) && (
                   <>
                     {entity.serverData?.email && typeof entity.serverData.email === "string" && (
                       <button

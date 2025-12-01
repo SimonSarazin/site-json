@@ -13,6 +13,7 @@ import "@/modules/profil/i18n";
 interface ProfileHeaderProps {
   section: {
     type: "profile-header";
+    // TODO: tous les variant ne sont pas en place
     variant?: "hero" | "simple" | "cover" | "minimal" | "banner-overlay";
     showBackButton?: boolean;
     showShareButton?: boolean;

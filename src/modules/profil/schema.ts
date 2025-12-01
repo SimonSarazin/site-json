@@ -97,7 +97,7 @@ export const ProfileGallerySectionSchema = z.object({
 export const ProfileRelatedSectionSchema = z.object({
   type: z.literal("profile-related"),
   title: LocalizedString.optional(),
-  relationType: z.enum(["parent", "children", "projects", "events", "poi"]).optional(),
+  relationType: z.enum(["projects", "events", "poi"]).optional(),
   limit: z.number().optional().default(4),
 });
 
@@ -155,15 +155,6 @@ export const ProfileTabLayoutSectionSchema = z.object({
   rightSections: z.array(z.unknown()),
 });
 
-export const ProfileTemplateDefaultSchema = z.object({
-  type: z.literal("profile-template-default"),
-  showBackButton: z.boolean().optional().default(true),
-  showShareButton: z.boolean().optional().default(true),
-  showAddress: z.boolean().optional().default(true),
-  showMap: z.boolean().optional().default(true),
-  markdownEnabled: z.boolean().optional().default(true),
-});
-
 export const ProfileTemplateDynamicSchema = z.object({
   type: z.literal("profile-template-dynamic"),
 });
@@ -185,7 +176,6 @@ const ProfileOnlySectionSchema = z.discriminatedUnion("type", [
   ProfileOpeningHoursSectionSchema,
   ProfileHeaderCompleteSectionSchema,
   ProfileTabLayoutSectionSchema,
-  ProfileTemplateDefaultSchema,
   ProfileTemplateDynamicSchema,
 ]);
 
@@ -197,7 +187,7 @@ export const ProfileSectionSchema = z.union([
     type: z.string(),
     id: z.string().optional(),
     props: z.any().optional(),
-  }).passthrough(), // Allow any site section structure
+  }).loose(), // Allow any site section structure
 ]);
 
 export type ProfileSection = z.infer<typeof ProfileSectionSchema>;
@@ -284,4 +274,3 @@ export type ProfileTagsSection = z.infer<typeof ProfileTagsSectionSchema>;
 export type ProfileOpeningHoursSection = z.infer<typeof ProfileOpeningHoursSectionSchema>;
 export type ProfileHeaderCompleteSection = z.infer<typeof ProfileHeaderCompleteSectionSchema>;
 export type ProfileTabLayoutSection = z.infer<typeof ProfileTabLayoutSectionSchema>;
-export type ProfileTemplateDefaultSection = z.infer<typeof ProfileTemplateDefaultSchema>;

@@ -61,7 +61,6 @@ export type {
   ProfileOpeningHoursSection,
   ProfileHeaderCompleteSection,
   ProfileTabLayoutSection,
-  ProfileTemplateDefaultSection,
 } from "./schema";
 
 export {
@@ -89,5 +88,4 @@ export {
   ProfileOpeningHoursSectionSchema,
   ProfileHeaderCompleteSectionSchema,
   ProfileTabLayoutSectionSchema,
-  ProfileTemplateDefaultSchema,
 } from "./schema";
