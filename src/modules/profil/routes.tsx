@@ -11,6 +11,8 @@ import type { ModuleRouteFactory } from "@/lib/modules";
  */
 const NEWS_SUPPORTED_TYPES = new Set(["organizations", "projects", "citoyens"]);
 
+const PROJECTS_SUPPORTED_TYPES = new Set(["organizations", "citoyens"]);
+
 /**
  * Loader pour le profil principal
  * Pré-charge les données de l'entité côté serveur
@@ -47,9 +49,9 @@ const profileLoader = async ({ params, request }: LoaderFunctionArgs, queryClien
     });
 
     // 2. Pré-charger les données du tab actif si nécessaire
-    if (activeTab === 'news' && entity) {
-      const entityType = entity.getEntityType?.() || "";
+    const entityType = entity.getEntityType?.() || "";
 
+    if (activeTab === 'news' && entity) {
       // Vérifier si ce type d'entité supporte les actualités
       if (NEWS_SUPPORTED_TYPES.has(entityType)) {
         await queryClient.prefetchInfiniteQuery({
@@ -61,6 +63,22 @@ const profileLoader = async ({ params, request }: LoaderFunctionArgs, queryClien
             });
           },
           initialPageParam: Math.floor(Date.now() / 1000),
+        });
+      }
+    }
+
+    if (activeTab === 'projects' && entity) {
+      if (PROJECTS_SUPPORTED_TYPES.has(entityType)) {
+        await queryClient.prefetchInfiniteQuery({
+          queryKey: ["profile-projects", entity.id],
+          queryFn: async () => {
+            const result = await entity.getProjects({
+              indexMin: 0,
+              indexStep: 12,
+            });
+            return result.results || [];
+          },
+          initialPageParam: 0,
         });
       }
     }
@@ -110,9 +128,8 @@ export const routes: ModuleRouteFactory = (queryClient?: QueryClient): RouteObje
         path: "rooms",
         element: null,
       },
-      // Route pour le tab infos
       {
-        path: "infos",
+        path: "projects",
         element: null,
       },
       // Route pour le tab communities

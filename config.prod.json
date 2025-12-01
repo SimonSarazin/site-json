@@ -1226,12 +1226,12 @@
     }
   ],
   "theme": {
-    "defaultMode": "light",
+    "defaultMode": "dark",
     "colors": {
       "light": {
         "background": "#ffffff",
         "foreground": "#000000",
-        "border": "#e5e7eb",
+        "bordercolor": "#e5e7eb",
         "themecolor": "#0092a2",
         "text-secondary": "#4a5565"
       },
@@ -1258,7 +1258,7 @@
   },
   "profiles": {
     "default": {
-      "layout": "full-width",
+      "layout": "default",
       "hideHeader": false,
       "hideFooter": false,
       "sections": [

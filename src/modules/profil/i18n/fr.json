@@ -1,4 +1,9 @@
 {
+  "EntityGridView": {
+    "gridView": "Grille",
+    "detailedView": "Détails",
+    "searchPlaceholder": "Rechercher..."
+  },
   "common": {
     "organizedBy": "Organisé par",
     "viewProfile": "Voir le profil",
@@ -45,7 +50,7 @@
       "news": "Actualités",
       "coworking": "Coworking",
       "meetingRooms": "Salles de réunions",
-      "practicalInfo": "Infos pratiques",
+      "projects": "Projets",
       "communities": "Communautés",
       "observatories": "Observatoires"
     },
@@ -61,6 +66,111 @@
     "comingSoon": "En construction",
     "sectionLabel": "Section {{name}}"
   },
+  "ProjectsTab": {
+    "noProjects": "Aucun projet",
+    "noProjectsDescription": "Les projets apparaîtront ici",
+    "loadingProjects": "Chargement des projets...",
+    "allProjectsLoaded": "Tous les projets chargés",
+    "allProjectsSeen": "Vous avez vu tous les projets",
+    "anonymousProject": "Projet anonyme",
+    "viewProject": "Voir le projet",
+    "createProject": "Créer un projet",
+    "gridView": "Grille",
+    "detailedView": "Détails",
+    "moreTags": "tags de plus"
+  },
+  "CommunitiesTab": {
+    "noCommunities": "Aucune communauté",
+    "noCommunitiesDescription": "Les communautés apparaîtront ici",
+    "comingSoon": "Bientôt disponible",
+    "comingSoonDescription": "Cette section sera disponible prochainement",
+    "friends": "Amis",
+    "organizations": "Organisations",
+    "subscriptions": "Abonnements",
+    "subscribers": "Abonnés",
+    "externalNetwork": "Réseau externe",
+    "contributors": "Contributeurs",
+    "contributorsToValidate": "Contributeurs à valider",
+    "members": "Membres",
+    "membersToValidate": "Membres à valider"
+  },
+  "OrganizationsTab": {
+    "noOrganizations": "Aucune organisation",
+    "noOrganizationsDescription": "Les organisations apparaîtront ici",
+    "loadingOrganizations": "Chargement des organisations...",
+    "allOrganizationsLoaded": "Toutes les organisations chargées",
+    "allOrganizationsSeen": "Vous avez vu toutes les organisations",
+    "anonymousOrganization": "Organisation anonyme",
+    "members": "membres",
+    "gridView": "Grille",
+    "detailedView": "Détails",
+    "createOrganization": "Créer une organisation",
+    "types": {
+      "ngo": "Association",
+      "cooperative": "Coopérative",
+      "localBusiness": "Entreprise locale",
+      "group": "Groupe",
+      "government": "Organisation gouvernementale",
+      "organization": "Organisation"
+    }
+  },
+  "SubscriptionsTab": {
+    "noSubscriptions": "Aucun abonnement",
+    "noSubscriptionsDescription": "Les abonnements apparaîtront ici",
+    "loadingSubscriptions": "Chargement des abonnements...",
+    "allSubscriptionsLoaded": "Tous les abonnements chargés",
+    "allSubscriptionsSeen": "Vous avez vu tous les abonnements",
+    "anonymousSubscription": "Abonnement anonyme",
+    "gridView": "Grille",
+    "detailedView": "Détails",
+    "types": {
+      "organization": "Organisation",
+      "project": "Projet",
+      "user": "Utilisateur",
+      "event": "Événement",
+      "other": "Autre"
+    }
+  },
+  "SubscribersTab": {
+    "noSubscribers": "Aucun abonné",
+    "noSubscribersDescription": "Les abonnés apparaîtront ici",
+    "loadingSubscribers": "Chargement des abonnés...",
+    "allSubscribersLoaded": "Tous les abonnés chargés",
+    "allSubscribersSeen": "Vous avez vu tous les abonnés",
+    "anonymousSubscriber": "Abonné anonyme",
+    "gridView": "Grille",
+    "detailedView": "Détails"
+  },
+  "FriendsTab": {
+    "noFriends": "Aucun ami",
+    "noFriendsDescription": "Les amis apparaîtront ici",
+    "loadingFriends": "Chargement des amis...",
+    "allFriendsLoaded": "Tous les amis chargés",
+    "allFriendsSeen": "Vous avez vu tous les amis",
+    "anonymousFriend": "Ami anonyme",
+    "gridView": "Grille",
+    "detailedView": "Détails"
+  },
+  "ContributorsTab": {
+    "noContributors": "Aucun contributeur",
+    "noContributorsDescription": "Les contributeurs apparaîtront ici",
+    "loadingContributors": "Chargement des contributeurs...",
+    "allContributorsLoaded": "Tous les contributeurs chargés",
+    "allContributorsSeen": "Vous avez vu tous les contributeurs",
+    "anonymousContributor": "Contributeur anonyme",
+    "gridView": "Grille",
+    "detailedView": "Détails"
+  },
+  "MembersTab": {
+    "noMembers": "Aucun membre",
+    "noMembersDescription": "Les membres apparaîtront ici",
+    "loadingMembers": "Chargement des membres...",
+    "allMembersLoaded": "Tous les membres chargés",
+    "allMembersSeen": "Vous avez vu tous les membres",
+    "anonymousMember": "Membre anonyme",
+    "gridView": "Grille",
+    "detailedView": "Détails"
+  },
   "NewsTab": {
     "noNews": "Aucune actualité",
     "noNewsDescription": "Les publications apparaîtront ici",
@@ -68,6 +178,8 @@
     "upToDate": "Vous êtes à jour !",
     "allNewsSeen": "Vous avez vu toutes les actualités",
     "public": "Public",
+    "private": "Privé",
+    "restricted": "Restreint",
     "sharedBy": "Partagé par",
     "andOthers": "et {{count}} autre",
     "andOthers_plural": "et {{count}} autres",
@@ -78,6 +190,63 @@
     "reactions_plural": "réactions",
     "allReactions": "Toutes les réactions",
     "reactorsList": "Liste des personnes ayant réagi (à venir)",
+    "noReactionsYet": "Aucune réaction pour le moment",
+    "comments": "Commentaires",
+    "noComments": "Aucun commentaire pour le moment",
+    "writeComment": "Écrire un commentaire...",
+    "writeReply": "Écrire une réponse...",
+    "reply": "Répondre",
+    "send": "Envoyer",
+    "loginToComment": "Connectez-vous pour commenter",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "report": "Signaler un abus",
+    "createPost": "Créer une publication",
+    "maxDepthReached": "Profondeur maximale atteinte",
+    "collapseThread": "Réduire le fil",
+    "expandThread": "Développer le fil",
+    "repliesCount": "{{count}} réponse",
+    "repliesCount_plural": "{{count}} réponses",
+    "reportDialog": {
+      "title": "Signaler une actualité",
+      "titleComment": "Signaler un commentaire",
+      "description": "Merci de nous aider à maintenir une communauté respectueuse en signalant les contenus inappropriés.",
+      "reasonLabel": "Raison du signalement",
+      "reasonPlaceholder": "Sélectionnez une raison",
+      "commentLabel": "Détails supplémentaires (optionnel)",
+      "commentPlaceholder": "Ajoutez des détails sur ce signalement...",
+      "cancel": "Annuler",
+      "submit": "Envoyer le signalement",
+      "submitting": "Envoi...",
+      "reasons": {
+        "spam": "Spam ou contenu promotionnel",
+        "harassment": "Harcèlement ou intimidation",
+        "hateSpeech": "Discours haineux",
+        "violence": "Violence ou menaces",
+        "inappropriate": "Contenu inapproprié",
+        "misinformation": "Désinformation",
+        "other": "Autre"
+      }
+    },
+    "deleteConfirm": {
+      "title": "Supprimer la publication",
+      "description": "Êtes-vous sûr de vouloir supprimer cette publication ? Cette action est irréversible.",
+      "cancel": "Annuler",
+      "confirm": "Supprimer",
+      "deleting": "Suppression...",
+      "error": "Une erreur est survenue lors de la suppression"
+    },
+    "editComment": "Modifier le commentaire",
+    "deleteCommentTitle": "Supprimer le commentaire",
+    "deleteCommentDescription": "Êtes-vous sûr de vouloir supprimer ce commentaire ? Cette action est irréversible.",
+    "deleteNewsTitle": "Supprimer l'actualité",
+    "deleteNewsDescription": "Êtes-vous sûr de vouloir supprimer cette actualité ? Cette action est irréversible.",
+    "cancel": "Annuler",
+    "deleting": "Suppression...",
+    "readMore": "Voir plus",
+    "readLess": "Voir moins",
+    "anonymous": "Anonyme",
+    "someone": "quelqu'un",
     "reactionsTypes": {
       "love": "J'adore",
       "like": "J'aime",
@@ -87,6 +256,226 @@
       "sad": "Triste",
       "scared": "Inquiet",
       "support": "Soutien"
+    },
+    "mentions": {
+      "searching": "Recherche...",
+      "noResults": "Aucun résultat trouvé",
+      "typeToSearch": "Tapez @ pour mentionner quelqu'un"
+    },
+    "tags": {
+      "searching": "Recherche...",
+      "noResults": "Aucun tag trouvé",
+      "typeToSearch": "Tapez au moins 2 caractères pour rechercher"
+    }
+  },
+  "AddNewsModal": {
+    "title": "Créer une publication",
+    "form": {
+      "text": {
+        "label": "Contenu",
+        "placeholder": "Quoi de neuf ?"
+      },
+      "scope": {
+        "label": "Portée de la publication",
+        "public": "Public - Visible par tous",
+        "private": "Privé - Visible uniquement par moi",
+        "restricted": "Restreint - Visible par les membres du profil"
+      },
+      "tags": {
+        "label": "Tags",
+        "placeholder": "Ajouter des tags",
+        "hint": "Appuyez sur Entrée ou virgule pour ajouter",
+        "maxReached": "Maximum {{max}} tags"
+      },
+      "images": {
+        "label": "Images",
+        "button": "Ajouter des images",
+        "maxReached": "Maximum {{max}} images",
+        "remove": "Retirer"
+      },
+      "documents": {
+        "label": "Documents",
+        "button": "Ajouter des documents",
+        "maxReached": "Maximum {{max}} documents",
+        "remove": "Retirer"
+      },
+      "videoLink": {
+        "label": "Lien vidéo",
+        "placeholder": "URL de la vidéo (YouTube, Vimeo...)"
+      },
+      "status": {
+        "label": "Visibilité",
+        "public": "Public",
+        "private": "Privé",
+        "restricted": "Restreint"
+      }
+    },
+    "actions": {
+      "cancel": "Annuler",
+      "publish": "Publier",
+      "publishing": "Publication..."
+    },
+    "validation": {
+      "textRequired": "Le contenu est requis",
+      "textTooShort": "Le contenu doit contenir au moins 3 caractères"
+    },
+    "success": "Publication créée avec succès !",
+    "error": "Une erreur est survenue lors de la création"
+  },
+  "upload": {
+    "errors": {
+      "fileTooLarge": "Le fichier {{fileName}} est trop volumineux (max: {{maxSize}}MB)",
+      "invalidFileType": "Type de fichier non autorisé pour {{fileName}}",
+      "invalidExtension": "Extension de fichier non autorisée pour {{fileName}}"
+    },
+    "progress": {
+      "uploading": "Téléchargement en cours...",
+      "processing": "Traitement en cours...",
+      "compressing": "Compression en cours...",
+      "complete": "Téléchargement terminé"
+    }
+  },
+  "AddProjectModal": {
+    "title": "Créer un projet",
+    "creatingAs": "Création en tant que",
+    "form": {
+      "name": {
+        "label": "Nom du projet",
+        "placeholder": "Nom de votre projet"
+      },
+      "visibility": {
+        "label": "Rendre le projet visible publiquement ?",
+        "public": "Public",
+        "private": "Privé"
+      },
+      "images": {
+        "label": "Images du projet"
+      },
+      "shortDescription": {
+        "label": "Description courte",
+        "placeholder": "Décrivez brièvement votre projet..."
+      },
+      "url": {
+        "label": "URL principale",
+        "placeholder": "https://votre-site.com"
+      },
+      "tags": {
+        "label": "Tags"
+      }
+    },
+    "actions": {
+      "cancel": "Annuler",
+      "create": "Créer le projet",
+      "creating": "Création..."
+    },
+    "validation": {
+      "nameRequired": "Le nom du projet est requis",
+      "nameTooShort": "Le nom doit contenir au moins 3 caractères"
+    }
+  },
+  "AddOrganizationModal": {
+    "title": "Créer une organisation",
+    "creatingAs": "Création en tant que",
+    "form": {
+      "name": {
+        "label": "Nom de votre organisation",
+        "placeholder": "Nom de votre organisation"
+      },
+      "type": {
+        "label": "Type d'organisation",
+        "placeholder": "Sélectionner un type",
+        "options": {
+          "ngo": "Association",
+          "localBusiness": "Entreprise locale",
+          "group": "Groupe",
+          "government": "Organisation gouvernementale",
+          "cooperative": "Coopérative"
+        }
+      },
+      "role": {
+        "label": "Votre rôle",
+        "placeholder": "Sélectionner un rôle",
+        "options": {
+          "admin": "Administrateur",
+          "member": "Membre"
+        }
+      },
+      "tags": {
+        "label": "Tags"
+      },
+      "images": {
+        "label": "Vos images ici"
+      },
+      "email": {
+        "label": "E-mail principal",
+        "placeholder": "contact@exemple.com"
+      },
+      "shortDescription": {
+        "label": "Description courte",
+        "placeholder": "Décrivez brièvement votre organisation..."
+      },
+      "url": {
+        "label": "URL principale",
+        "placeholder": "https://votre-site.com"
+      }
+    },
+    "actions": {
+      "cancel": "Annuler",
+      "create": "Créer l'organisation",
+      "creating": "Création..."
+    },
+    "validation": {
+      "nameRequired": "Le nom de l'organisation est requis",
+      "nameTooShort": "Le nom doit contenir au moins 3 caractères"
+    }
+  },
+  "toast": {
+    "comment": {
+      "addSuccess": "Commentaire ajouté avec succès",
+      "addError": "Impossible d'ajouter le commentaire",
+      "editSuccess": "Commentaire modifié avec succès",
+      "editError": "Impossible de modifier le commentaire",
+      "deleteSuccess": "Commentaire supprimé avec succès",
+      "deleteError": "Impossible de supprimer le commentaire",
+      "voteSuccess": "Réaction ajoutée avec succès",
+      "voteError": "Impossible d'ajouter la réaction"
+    },
+    "reply": {
+      "addSuccess": "Réponse ajoutée avec succès",
+      "addError": "Impossible d'ajouter la réponse"
+    },
+    "report": {
+      "success": "Signalement envoyé avec succès",
+      "error": "Impossible d'envoyer le signalement"
+    },
+    "news": {
+      "addSuccess": "Actualité publiée avec succès",
+      "addError": "Impossible de publier l'actualité",
+      "editSuccess": "Actualité modifiée avec succès",
+      "editError": "Impossible de modifier l'actualité",
+      "deleteSuccess": "Actualité supprimée avec succès",
+      "deleteError": "Impossible de supprimer l'actualité",
+      "voteSuccess": "Réaction ajoutée avec succès",
+      "voteError": "Impossible d'ajouter la réaction"
+    },
+    "project": {
+      "addSuccess": "Projet créé avec succès",
+      "addError": "Impossible de créer le projet",
+      "editSuccess": "Projet modifié avec succès",
+      "editError": "Impossible de modifier le projet",
+      "deleteSuccess": "Projet supprimé avec succès",
+      "deleteError": "Impossible de supprimer le projet"
+    },
+    "organization": {
+      "addSuccess": "Organisation créée avec succès",
+      "addError": "Impossible de créer l'organisation",
+      "editSuccess": "Organisation modifiée avec succès",
+      "editError": "Impossible de modifier l'organisation",
+      "deleteSuccess": "Organisation supprimée avec succès",
+      "deleteError": "Impossible de supprimer l'organisation"
+    },
+    "error": {
+      "generic": "Une erreur est survenue"
     }
   }
 }

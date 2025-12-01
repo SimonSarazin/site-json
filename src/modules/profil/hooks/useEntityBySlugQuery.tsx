@@ -1,9 +1,11 @@
-import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
-
-import { useMemo } from "react";
+import { useQuery, useQueryClient, type UseQueryOptions } from "@tanstack/react-query";
+import { useEffect } from "react";
 import type { SearchEntity } from "@/modules/search/schema";
 import { useCocolight } from "@/hooks/useCocolight";
 import { transformToEntityInstance } from "@/lib/entityTransform";
+import cocolightApiClient from "@communecter/cocolight-api-client";
+
+const { isReactive } = cocolightApiClient;
 
 interface QueryEntityBySlugProps {
   slug: string | undefined;
@@ -15,6 +17,7 @@ interface QueryEntityBySlugProps {
 
 export const useEntityBySlugQuery = ({ slug, options = {} }: QueryEntityBySlugProps) => {
   const { entity, loading, helper, me } = useCocolight();
+  const queryClient = useQueryClient();
 
   // Le type unknown car l'API peut retourner soit une instance, soit du JSON déshydraté
   const { data, isLoading, isError, error, refetch } = useQuery<unknown>({
@@ -33,16 +36,29 @@ export const useEntityBySlugQuery = ({ slug, options = {} }: QueryEntityBySlugPr
     ...options,
   });
 
-  // Transformation des résultats lier à la deshydratation pour le SSR
-  const transformedResults = useMemo(() => {
-    if (!entity) return null;
-    if (!data) return null;
-      
-    return transformToEntityInstance<SearchEntity>(data, helper, entity);
-  }, [data, entity, helper]);
+  // Transformer le cache une seule fois après l'hydratation SSR
+  useEffect(() => {
+    if (!slug || !entity) return;
 
+    const currentData = queryClient.getQueryData<unknown>(["element-about", slug]);
+
+    if (currentData && typeof currentData === 'object' && currentData !== null && 'serverData' in currentData) {
+      // Vérifier si c'est un plain object (après SSR)
+      if (!isReactive((currentData as any).serverData)) {
+        if (import.meta.env.DEV) {
+          console.log("🔄 Transformation du cache de l'entité après hydratation SSR");
+        }
+        // Transformer le cache en instance Proxy
+        queryClient.setQueryData(["element-about", slug],
+          transformToEntityInstance<SearchEntity>(currentData, helper, entity)
+        );
+      }
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Les données du cache sont déjà des instances Proxy (transformées dans useEffect ou queryFn)
   return {
-    data: transformedResults,
+    data: data as SearchEntity | null,
     isLoading,
     isError,
     error,

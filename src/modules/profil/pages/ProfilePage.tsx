@@ -214,17 +214,31 @@ export default function ProfilePage() {
       hideFooter: false,
     };
 
+  function getLayoutClasses(layout: string) {
+    switch (layout) {
+      case "full-width":
+        return "w-full";
+      case "modern":
+        return "w-full sm:max-w-6xl mx-auto";
+      case "compact":
+        return "w-full sm:max-w-3xl mx-auto";
+      case "default":
+      default:
+        return "w-full sm:max-w-7xl mx-auto";
+    }
+  }
+
+  const layout = profileConfig.layout || "default";
+
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className={`min-h-screen flex flex-col ${getLayoutClasses(layout)}`}>
       <ProfileSeo entity={entity} isLoading={false} entityType={entityType} activeTab={activeTab} />
       {!profileConfig.hideHeader && <SiteHeader />}
 
-      <main className="flex-1">
-        <div className="container mx-auto px-4 py-8">
-          <ProfileEntityProvider entity={entity} config={profileConfig} entityType={entityType}>
-            <ProfileRenderer />
-          </ProfileEntityProvider>
-        </div>
+      <main className="flex-1 mt-1">
+        <ProfileEntityProvider entity={entity} config={profileConfig} entityType={entityType}>
+          <ProfileRenderer />
+        </ProfileEntityProvider>
       </main>
 
       {!profileConfig.hideFooter && <SiteFooter />}

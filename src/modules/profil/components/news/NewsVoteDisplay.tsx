@@ -1,27 +1,21 @@
-import { useState } from "react";
-import { Heart, ThumbsUp, Smile, Laugh, Angry, Frown, HandMetal } from "lucide-react";
-import { Frown as Scared } from "lucide-react";
+import { useState, useMemo } from "react";
 import { NewsReactionsModal } from "./NewsReactionsModal";
-
-const voteTypes = [
-  { type: "love", color: "red", icon: Heart, label: "J'adore" },
-  { type: "like", color: "blue", icon: ThumbsUp, label: "J'aime" },
-  { type: "enjoy", color: "green", icon: Smile, label: "Content" },
-  { type: "glad", color: "teal", icon: Laugh, label: "Ravi" },
-  { type: "bothered", color: "yellow", icon: Angry, label: "Énervé" },
-  { type: "sad", color: "gray", icon: Frown, label: "Triste" },
-  { type: "scared", color: "purple", icon: Scared, label: "Inquiet" },
-  { type: "support", color: "indigo", icon: HandMetal, label: "Soutien" },
-];
+import { useT } from "@/hooks/useT";
+import { voteTypes } from "./constants";
 
 interface NewsVoteDisplayProps {
   voteCount: Record<string, number>;
+  newsId: string | null;
 }
 
-export function NewsVoteDisplay({ voteCount }: NewsVoteDisplayProps) {
+export function NewsVoteDisplay({ voteCount, newsId }: NewsVoteDisplayProps) {
+  const t = useT("modules/profil");
   const [showModal, setShowModal] = useState(false);
 
-  const totalVotes = Object.values(voteCount).reduce((sum, count) => sum + count, 0);
+  const totalVotes = useMemo(
+    () => Object.values(voteCount).reduce((sum, count) => sum + count, 0),
+    [voteCount]
+  );
 
   if (totalVotes === 0) return null;
 
@@ -54,7 +48,7 @@ export function NewsVoteDisplay({ voteCount }: NewsVoteDisplayProps) {
                   <div
                     key={vote.type}
                     className={`w-7 h-7 rounded-full ${colors.bg} border-2 border-background flex items-center justify-center cursor-pointer hover:scale-125 hover:z-10 transition-all duration-200`}
-                    title={`${vote.label} (${voteCount[vote.type]})`}
+                    title={`${t(`NewsTab.reactionsTypes.${vote.type}`)} (${voteCount[vote.type]})`}
                   >
                     <Icon className={`w-4 h-4 ${colors.text}`} />
                   </div>
@@ -65,7 +59,7 @@ export function NewsVoteDisplay({ voteCount }: NewsVoteDisplayProps) {
             onClick={() => setShowModal(true)}
             className="text-muted-foreground hover:underline"
           >
-            {totalVotes} {totalVotes > 1 ? 'réactions' : 'réaction'}
+            {totalVotes} {t(totalVotes > 1 ? "NewsTab.reactions_plural" : "NewsTab.reactions")}
           </button>
         </div>
       </div>
@@ -74,6 +68,7 @@ export function NewsVoteDisplay({ voteCount }: NewsVoteDisplayProps) {
         open={showModal}
         onOpenChange={setShowModal}
         voteCount={voteCount}
+        newsId={newsId}
       />
     </>
   );

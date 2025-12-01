@@ -1,8 +1,12 @@
-import { useMemo } from "react";
+import { useEffect } from "react";
 import { useInfiniteQueryScroll } from "@/hooks/useInfiniteQueryScroll";
 import { useCocolight } from "@/hooks/useCocolight";
 import { transformToEntityInstance } from "@/lib/entityTransform";
 import type { EntityTypes, News } from "@communecter/cocolight-api-client";
+import { useQueryClient } from "@tanstack/react-query";
+import cocolightApiClient from "@communecter/cocolight-api-client";
+
+const { isReactive } = cocolightApiClient;
 
 interface UseProfilNewsQueryProps {
   entity: EntityTypes;
@@ -26,6 +30,7 @@ export function useProfilNewsQuery({
   indexStep = 12,
 }: UseProfilNewsQueryProps) {
   const { helper } = useCocolight();
+  const queryClient = useQueryClient();
   const canFetchNews = NEWS_SUPPORTED_TYPES.has(entityType);
 
   const {
@@ -71,19 +76,35 @@ export function useProfilNewsQuery({
     options: {
       enabled: enabled && canFetchNews,
       staleTime: 5 * 60 * 1000, // Cache 5 minutes
+      gcTime: 30 * 60 * 1000,
       initialPageParam: Math.floor(Date.now() / 1000),
     },
   });
 
-  // Transformation des résultats pour s'assurer qu'on a des instances News complètes
-  const news = useMemo(() => {
-    const flatNews = data ? data.pages.flatMap((page) => page) : [];
-    if (!flatNews.length) return [];
+  // Transformer le cache une seule fois après l'hydratation SSR
+  useEffect(() => {
+    const currentData = queryClient.getQueryData<{ pages: News[][];  pageParams: unknown[] }>(["profile-news", entity.id]);
 
-    return flatNews.map((item: News | Record<string, unknown>) =>
-      transformToEntityInstance<News>(item, helper, entity)
-    );
-  }, [data, entity, helper]);
+    if (currentData?.pages && currentData.pages.length > 0) {
+      // Vérifier si c'est des plain objects (après SSR)
+      const firstItem = currentData.pages[0]?.[0];
+      if (firstItem && firstItem.serverData && !isReactive(firstItem.serverData)) {
+        if (import.meta.env.DEV) {
+          console.log("🔄 Transformation du cache après hydratation SSR");
+        }
+        // Transformer tout le cache en instances Proxy
+        queryClient.setQueryData(["profile-news", entity.id], {
+          ...currentData,
+          pages: currentData.pages.map(page =>
+            page.map(item => transformToEntityInstance<News>(item, helper, entity))
+          )
+        });
+      }
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Les données du cache sont déjà des instances Proxy (transformées dans useEffect ou queryFn)
+  const news = data ? data.pages.flatMap((page) => page) : [];
 
   return {
     news,
