@@ -1,6 +1,7 @@
 import { useState } from "react";
 import SearchCard from "./SearchCard";
-import { SearchListViewProps, type SearchEntity } from "../schema";
+import { SearchListViewProps } from "../schema";
+import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { SwitchDetailsMode } from "./SwitchDetailsMode";
 import SearchCardDetailed from "./SearchCardDetailed";
 

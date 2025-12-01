@@ -1,7 +1,8 @@
 import { useMemo, useEffect } from "react";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useInfiniteQueryScrollNext } from "@/hooks/useInfiniteQueryScroll";
-import { SearchEntity, SearchType } from "../schema";
+import { SearchType } from "../schema";
+import type { SearchEntity } from "@communecter/cocolight-api-client";
 import type { GlobalAutocompleteCostumData, PaginatorPage } from "@communecter/cocolight-api-client";
 import { transformToEntityInstance } from "@/lib/entityTransform";
 import { useQueryClient } from "@tanstack/react-query";

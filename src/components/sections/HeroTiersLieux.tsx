@@ -4,7 +4,7 @@ import { Loader2, MapPin, Building2, Calendar, User, FolderOpen } from "lucide-r
 
 import { HeroTiersLieuxProps as SchemaHeroTiersLieuxProps } from "@/types/site-schema";
 import { useAutocomplete } from "@/hooks/useAutocomplete";
-import { SearchEntity } from "@/modules/search/schema";
+import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { cn } from "@/lib/utils";
 import { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
 import { Link } from "react-router";

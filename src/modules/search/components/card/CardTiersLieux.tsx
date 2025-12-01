@@ -1,4 +1,5 @@
-import { SearchCardProps, SearchEntity } from "../../schema";
+import { SearchCardProps } from "../../schema";
+import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { cn } from "@/lib/utils";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 

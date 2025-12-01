@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useDebounce } from "@/hooks/useDebounce";
-import type { SearchEntity } from "@/modules/search/schema";
+import type { SearchEntity } from "@communecter/cocolight-api-client";
 import type { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
 
 interface UseAutocompleteOptions {

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
-import type { SearchEntity } from "@/modules/search/schema";
+import type { SearchEntity } from "@communecter/cocolight-api-client";
 import type { GeoCoordinates, OpeningHoursEntry, PostalAddress } from "@communecter/cocolight-api-client";
 
 

@@ -1,7 +1,7 @@
 import { Helmet } from "@dr.pogodin/react-helmet";
 import { useSite } from "@/hooks/useSite";
 import { useLocalization } from "@/hooks/useLocalization";
-import type { SearchEntity } from "@/modules/search/schema";
+import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import type { ProfileConfig } from "./schema";

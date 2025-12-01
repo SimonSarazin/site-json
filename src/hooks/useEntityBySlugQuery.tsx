@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient, type UseQueryOptions } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
-import type { SearchEntity } from "@/modules/search/schema";
+import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
 import { transformToEntityInstance } from "@/lib/entityTransform";
 import cocolightApiClient from "@communecter/cocolight-api-client";

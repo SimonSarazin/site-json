@@ -1,4 +1,4 @@
-import type { SearchEntity } from "@/modules/search/schema";
+import type { SearchEntity } from "@communecter/cocolight-api-client";
 import type { User, Organization, Project, Event, Poi, EntityTypes } from "@communecter/cocolight-api-client";
 
 /**
