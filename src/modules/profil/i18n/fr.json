@@ -335,6 +335,100 @@
       "complete": "Téléchargement terminé"
     }
   },
+  "AddProjectModal": {
+    "title": "Créer un projet",
+    "creatingAs": "Création en tant que",
+    "form": {
+      "name": {
+        "label": "Nom du projet",
+        "placeholder": "Nom de votre projet"
+      },
+      "visibility": {
+        "label": "Rendre le projet visible publiquement ?",
+        "public": "Public",
+        "private": "Privé"
+      },
+      "images": {
+        "label": "Images du projet"
+      },
+      "shortDescription": {
+        "label": "Description courte",
+        "placeholder": "Décrivez brièvement votre projet..."
+      },
+      "url": {
+        "label": "URL principale",
+        "placeholder": "https://votre-site.com"
+      },
+      "tags": {
+        "label": "Tags"
+      }
+    },
+    "actions": {
+      "cancel": "Annuler",
+      "create": "Créer le projet",
+      "creating": "Création..."
+    },
+    "validation": {
+      "nameRequired": "Le nom du projet est requis",
+      "nameTooShort": "Le nom doit contenir au moins 3 caractères"
+    }
+  },
+  "AddOrganizationModal": {
+    "title": "Créer une organisation",
+    "creatingAs": "Création en tant que",
+    "form": {
+      "name": {
+        "label": "Nom de votre organisation",
+        "placeholder": "Nom de votre organisation"
+      },
+      "type": {
+        "label": "Type d'organisation",
+        "placeholder": "Sélectionner un type",
+        "options": {
+          "ngo": "Association",
+          "localBusiness": "Entreprise locale",
+          "group": "Groupe",
+          "government": "Organisation gouvernementale",
+          "cooperative": "Coopérative"
+        }
+      },
+      "role": {
+        "label": "Votre rôle",
+        "placeholder": "Sélectionner un rôle",
+        "options": {
+          "admin": "Administrateur",
+          "member": "Membre"
+        }
+      },
+      "tags": {
+        "label": "Tags"
+      },
+      "images": {
+        "label": "Vos images ici"
+      },
+      "email": {
+        "label": "E-mail principal",
+        "placeholder": "contact@exemple.com"
+      },
+      "shortDescription": {
+        "label": "Description courte",
+        "placeholder": "Décrivez brièvement votre organisation..."
+      },
+      "url": {
+        "label": "URL principale",
+        "placeholder": "https://votre-site.com"
+      }
+    },
+    "actions": {
+      "cancel": "Annuler",
+      "create": "Créer l'organisation",
+      "creating": "Création..."
+    },
+    "validation": {
+      "nameRequired": "Le nom de l'organisation est requis",
+      "nameTooShort": "Le nom doit contenir au moins 3 caractères"
+    }
+  },
   "toast": {
     "comment": {
       "addSuccess": "Commentaire ajouté avec succès",
@@ -363,6 +457,22 @@
       "deleteError": "Impossible de supprimer l'actualité",
       "voteSuccess": "Réaction ajoutée avec succès",
       "voteError": "Impossible d'ajouter la réaction"
+    },
+    "project": {
+      "addSuccess": "Projet créé avec succès",
+      "addError": "Impossible de créer le projet",
+      "editSuccess": "Projet modifié avec succès",
+      "editError": "Impossible de modifier le projet",
+      "deleteSuccess": "Projet supprimé avec succès",
+      "deleteError": "Impossible de supprimer le projet"
+    },
+    "organization": {
+      "addSuccess": "Organisation créée avec succès",
+      "addError": "Impossible de créer l'organisation",
+      "editSuccess": "Organisation modifiée avec succès",
+      "editError": "Impossible de modifier l'organisation",
+      "deleteSuccess": "Organisation supprimée avec succès",
+      "deleteError": "Impossible de supprimer l'organisation"
     },
     "error": {
       "generic": "Une erreur est survenue"

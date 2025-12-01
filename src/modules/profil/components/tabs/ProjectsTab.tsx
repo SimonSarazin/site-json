@@ -6,11 +6,11 @@ import { useProfilProjectsQuery } from "../../hooks/useProfilProjectsQuery";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useCocolight } from "@/hooks/useCocolight";
-import { Button } from "@/components/ui/button";
 import "@/modules/profil/i18n";
 import { ProjectItem } from "../projects/ProjectItem";
 import { ProjectItemDetailed } from "../projects/ProjectItemDetailed";
 import { EntityGridView } from "../shared/EntityGridView";
+import { AddProjectModal } from "../projects/AddProjectModal";
 import type { Project } from "@communecter/cocolight-api-client";
 
 export function ProjectsTab() {
@@ -83,19 +83,11 @@ export function ProjectsTab() {
         onSearchChange={setSearchQuery}
       />
 
-      {showAddProjectModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-background rounded-lg p-6 max-w-md w-full">
-            <h2 className="text-xl font-semibold mb-4">Modal à implémenter</h2>
-            <p className="text-muted-foreground mb-4">
-              Le modal pour ajouter un projet sera implémenté prochainement.
-            </p>
-            <Button onClick={() => setShowAddProjectModal(false)}>
-              Fermer
-            </Button>
-          </div>
-        </div>
-      )}
+      <AddProjectModal
+        entity={entity}
+        open={showAddProjectModal}
+        onOpenChange={setShowAddProjectModal}
+      />
     </>
   );
 }

@@ -5,11 +5,11 @@ import { useProfilOrganizationsQuery } from "../../hooks/useProfilOrganizationsQ
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useCocolight } from "@/hooks/useCocolight";
-import { Button } from "@/components/ui/button";
 import "@/modules/profil/i18n";
 import { OrganizationItem } from "./OrganizationItem";
 import { OrganizationItemDetailed } from "./OrganizationItemDetailed";
 import { EntityGridView } from "../shared/EntityGridView";
+import { AddOrganizationModal } from "./AddOrganizationModal";
 import type { Organization } from "@communecter/cocolight-api-client";
 
 interface OrganizationsTabProps {
@@ -81,19 +81,10 @@ export function OrganizationsTab({ enabled = true }: OrganizationsTabProps) {
         onSearchChange={setSearchQuery}
       />
 
-      {showAddOrganizationModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-background rounded-lg p-6 max-w-md w-full">
-            <h2 className="text-xl font-semibold mb-4">Modal à implémenter</h2>
-            <p className="text-muted-foreground mb-4">
-              Le modal pour ajouter une organisation sera implémenté prochainement.
-            </p>
-            <Button onClick={() => setShowAddOrganizationModal(false)}>
-              Fermer
-            </Button>
-          </div>
-        </div>
-      )}
+      <AddOrganizationModal
+        open={showAddOrganizationModal}
+        onOpenChange={setShowAddOrganizationModal}
+      />
     </>
   );
 }
