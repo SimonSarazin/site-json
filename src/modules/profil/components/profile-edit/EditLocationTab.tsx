@@ -1,6 +1,6 @@
 import { UseFormReturn } from "react-hook-form";
 import { useT } from "@/hooks/useT";
-import { MapPin, Loader2 } from "lucide-react";
+import { MapPin, Loader2, Trash2 } from "lucide-react";
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -14,6 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
 interface EditLocationTabProps {
@@ -291,6 +292,40 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
     setStreetOptions([]);
   };
 
+  // Reset all address fields
+  const resetAllAddress = () => {
+    // Reset pays
+    form.setValue("addressCountry", "");
+
+    // Reset ville et ses métadonnées
+    form.setValue("addressLocality", "");
+    form.setValue("localityId", "");
+    form.setValue("postalCode", "");
+    form.setValue("codeInsee", "");
+    form.setValue("level1", "");
+    form.setValue("level1Name", "");
+    form.setValue("level2", "");
+    form.setValue("level2Name", "");
+    form.setValue("level3", "");
+    form.setValue("level3Name", "");
+    form.setValue("level4", "");
+    form.setValue("level4Name", "");
+
+    // Reset rue
+    form.setValue("streetAddress", "");
+
+    // Reset coordonnées géo
+    form.setValue("geo", undefined);
+    form.setValue("geoPosition", undefined);
+
+    // Reset states locaux
+    setSelectedLocality(null);
+    setSelectedStreet(null);
+    setCities([]);
+    setStreetOptions([]);
+    initializedRef.current = false;
+  };
+
   // Normalized values for SelectObject
   const normalizedCity = useMemo(
     () => (selectedLocality ? [selectedLocality] : []),
@@ -306,9 +341,26 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-        <MapPin className="w-4 h-4" />
-        <span>{t("ProfileEdit.tabs.location.description")}</span>
+      {/* Header avec bouton reset */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <MapPin className="w-4 h-4" />
+          <span>{t("ProfileEdit.tabs.location.description")}</span>
+        </div>
+
+        {/* Bouton reset - visible seulement si au moins un champ est rempli */}
+        {(addressCountry || addressLocality || streetAddress) && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={resetAllAddress}
+            className="text-destructive hover:text-destructive"
+          >
+            <Trash2 className="w-4 h-4 mr-2" />
+            {t("ProfileEdit.tabs.location.resetAddress")}
+          </Button>
+        )}
       </div>
 
       {/* Country */}

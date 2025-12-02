@@ -20,8 +20,6 @@ interface EditScheduleTabProps {
  * Onglet pour éditer les horaires et dates spécifiques aux organisations
  *
  * Features:
- * - Date d'ouverture de l'organisation
- * - Lien d'inscription externe
  * - Horaires d'ouverture hebdomadaires
  */
 export function EditScheduleTab({ form }: EditScheduleTabProps) {

@@ -164,10 +164,11 @@ export function ProfileImageUpload({
           open={cropDialogOpen}
           onOpenChange={setCropDialogOpen}
           imageUrl={previewUrl}
-          onCrop={(croppedBlob) => {
+          aspect={type === "profile" ? 1 : 16 / 9}
+          onCrop={(croppedBlob, cropArea) => {
             // Convert blob to file for handleCropComplete
             const file = new File([croppedBlob], selectedFile.name, { type: croppedBlob.type });
-            handleCropComplete(file);
+            handleCropComplete(file, cropArea);
           }}
         />
       )}

@@ -8,7 +8,8 @@
     "unknownUser": "Unknown User",
     "untitled": "Untitled",
     "cancel": "Cancel",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "searchPlaceholder": "Search..."
   },
   "ProfilePage": {
     "error": {
@@ -438,12 +439,17 @@
       "contact": "Contact",
       "location": {
         "label": "Location",
-        "description": "Specify your complete address"
+        "description": "Specify your complete address",
+        "resetAddress": "Clear address"
       },
       "social": "Social networks",
       "schedule": {
         "label": "Opening Hours",
         "description": "Configure your weekly opening hours"
+      },
+      "eventDates": {
+        "label": "Dates",
+        "description": "Configure your event dates and schedule"
       }
     },
     "loading": "Loading...",
@@ -452,6 +458,11 @@
         "label": "Name",
         "placeholder": "Your name",
         "description": "The name displayed on your profile"
+      },
+      "birthDate": {
+        "label": "Birth date",
+        "placeholder": "Select a date",
+        "description": "Your birth date (optional)"
       },
       "shortDescription": {
         "label": "Short bio",
@@ -469,9 +480,14 @@
         "description": "Your contact email address"
       },
       "mobile": {
-        "label": "Phone",
+        "label": "Mobile phone",
         "placeholder": "+1 123 456 7890",
-        "description": "Your phone number"
+        "description": "Your mobile phone number"
+      },
+      "fixe": {
+        "label": "Landline",
+        "placeholder": "+1 123 456 7890",
+        "description": "Your landline phone number"
       },
       "url": {
         "label": "Website",
@@ -503,6 +519,72 @@
         "searching": "Searching...",
         "noResults": "No tags found",
         "typeToSearch": "Type at least 2 characters"
+      },
+      "type": {
+        "label": "Organization type",
+        "placeholder": "Select a type",
+        "description": "The legal or structural type of your organization",
+        "options": {
+          "NGO": "Non-profit organization",
+          "LocalBusiness": "Local business",
+          "Group": "Group",
+          "GovernmentOrganization": "Government organization",
+          "Cooperative": "Cooperative"
+        }
+      },
+      "eventType": {
+        "label": "Event type",
+        "placeholder": "Select a type",
+        "description": "The type of your event",
+        "options": {
+          "workshop": "Workshop",
+          "competition": "Competition",
+          "concert": "Concert",
+          "contest": "Contest",
+          "conference": "Conference",
+          "debate": "Debate",
+          "exhibition": "Exhibition",
+          "festival": "Festival",
+          "crowdfunding": "Crowdfunding",
+          "fair": "Fair",
+          "course": "Course",
+          "protest": "Protest",
+          "market": "Market",
+          "film": "Film screening",
+          "getTogether": "Get together",
+          "meeting": "Meeting",
+          "spectacle": "Show",
+          "internship": "Internship",
+          "stand": "Stand",
+          "others": "Other"
+        }
+      },
+      "recurrency": {
+        "label": "Recurring event",
+        "description": "Enable if the event repeats weekly with fixed schedules"
+      },
+      "startDate": {
+        "label": "Start date",
+        "placeholder": "Select start date"
+      },
+      "endDate": {
+        "label": "End date",
+        "placeholder": "Select end date"
+      },
+      "parent": {
+        "label": "Parent organization",
+        "placeholder": "Select an organization...",
+        "description": "The organization this project belongs to"
+      },
+      "organizer": {
+        "label": "Organizer",
+        "placeholder": "Select the organizer...",
+        "description": "The organization or person organizing this event"
+      },
+      "parentEvent": {
+        "label": "Parent entity",
+        "placeholder": "Select a parent entity...",
+        "description": "The organization or project this event belongs to"
       }
     },
     "schedule": {

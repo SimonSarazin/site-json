@@ -5,17 +5,19 @@ import { IconFormField } from "./fields";
 
 interface EditContactTabProps {
   form: UseFormReturn<any>;
+  entityType: string;
 }
 
 /**
  * Tab pour éditer les informations de contact
  *
  * Champs :
- * - email
- * - mobile (téléphone)
- * - url (site web)
+ * - email (tous)
+ * - mobile (citoyens uniquement)
+ * - fixe (citoyens uniquement)
+ * - url (tous)
  */
-export function EditContactTab({ form }: EditContactTabProps) {
+export function EditContactTab({ form, entityType }: EditContactTabProps) {
   const t = useT("modules/profil");
 
   return (
@@ -30,15 +32,29 @@ export function EditContactTab({ form }: EditContactTabProps) {
         description={t("ProfileEdit.fields.email.description")}
       />
 
-      <IconFormField
-        control={form.control}
-        name="mobile"
-        icon={Phone}
-        label={t("ProfileEdit.fields.mobile.label")}
-        type="tel"
-        placeholder={t("ProfileEdit.fields.mobile.placeholder")}
-        description={t("ProfileEdit.fields.mobile.description")}
-      />
+      {entityType === "citoyens" && (
+        <>
+          <IconFormField
+            control={form.control}
+            name="mobile"
+            icon={Phone}
+            label={t("ProfileEdit.fields.mobile.label")}
+            type="tel"
+            placeholder={t("ProfileEdit.fields.mobile.placeholder")}
+            description={t("ProfileEdit.fields.mobile.description")}
+          />
+
+          <IconFormField
+            control={form.control}
+            name="fixe"
+            icon={Phone}
+            label={t("ProfileEdit.fields.fixe.label")}
+            type="tel"
+            placeholder={t("ProfileEdit.fields.fixe.placeholder")}
+            description={t("ProfileEdit.fields.fixe.description")}
+          />
+        </>
+      )}
 
       <IconFormField
         control={form.control}

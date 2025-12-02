@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { useT } from "@/hooks/useT";
 import {
@@ -10,7 +11,17 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { TagsInput } from "@/components/form";
+import { TagsInput, DatePickerInput } from "@/components/form";
+import { SelectParent } from "./SelectParent";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ORGANIZATION_TYPES, EVENT_TYPES } from "@communecter/cocolight-api-client";
+import { useProfileEntity } from "../../hooks/useProfileEntity";
 
 interface EditBasicInfoTabProps {
   form: UseFormReturn<any>;
@@ -25,8 +36,17 @@ interface EditBasicInfoTabProps {
  * - shortDescription (bio courte)
  * - description (bio longue)
  */
-export function EditBasicInfoTab({ form }: EditBasicInfoTabProps) {
+export function EditBasicInfoTab({ form, entityType }: EditBasicInfoTabProps) {
   const t = useT("modules/profil");
+  const { entity } = useProfileEntity();
+
+  // Filtre pour ne montrer que les événements du parent
+  const parentEventFilter = useMemo(() => {
+    if (!entity?.parent?.id) return undefined;
+    return { filters : {
+      [`organizer.${entity.parent.id}`]: { $exists: true },
+    }};
+  }, [entity?.parent?.id]);
 
   return (
     <div className="space-y-6">
@@ -50,6 +70,174 @@ export function EditBasicInfoTab({ form }: EditBasicInfoTabProps) {
           </FormItem>
         )}
       />
+
+      {/* Date de naissance (citoyens) */}
+      {entityType === "citoyens" && (
+        <FormField
+          control={form.control}
+          name="birthDate"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t("ProfileEdit.fields.birthDate.label")}</FormLabel>
+              <FormControl>
+                <DatePickerInput
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder={t("ProfileEdit.fields.birthDate.placeholder")}
+                  clearable
+                  endYear={new Date().getFullYear() - 13}
+                />
+              </FormControl>
+              <FormDescription>
+                {t("ProfileEdit.fields.birthDate.description")}
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      )}
+
+      {/* Type d'organisation */}
+      {entityType === "organizations" && (
+        <FormField
+          control={form.control}
+          name="type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t("ProfileEdit.fields.type.label")}</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("ProfileEdit.fields.type.placeholder")} />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {ORGANIZATION_TYPES.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {t(`ProfileEdit.fields.type.options.${type}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormDescription>
+                {t("ProfileEdit.fields.type.description")}
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      )}
+
+      {/* Type d'événement */}
+      {entityType === "events" && (
+        <FormField
+          control={form.control}
+          name="type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t("ProfileEdit.fields.eventType.label")}</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("ProfileEdit.fields.eventType.placeholder")} />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {EVENT_TYPES.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {t(`ProfileEdit.fields.eventType.options.${type}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormDescription>
+                {t("ProfileEdit.fields.eventType.description")}
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      )}
+
+      {/* Parent pour projets */}
+      {entityType === "projects" && (
+        <FormField
+          control={form.control}
+          name="parent"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t("ProfileEdit.fields.parent.label")}</FormLabel>
+              <FormControl>
+                <SelectParent
+                  multiple={true}
+                  includeMe={true}
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder={t("ProfileEdit.fields.parent.placeholder")}
+                  searchTypes={["organizations"]}
+                />
+              </FormControl>
+              <FormDescription>
+                {t("ProfileEdit.fields.parent.description")}
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      )}
+
+      {/* Organisateur pour événements */}
+      {entityType === "events" && (
+        <FormField
+          control={form.control}
+          name="organizer"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t("ProfileEdit.fields.organizer.label")}</FormLabel>
+              <FormControl>
+                <SelectParent
+                  multiple={true}
+                  includeMe={true}
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder={t("ProfileEdit.fields.organizer.placeholder")}
+                  searchTypes={["organizations", "projects"]}
+                />
+              </FormControl>
+              <FormDescription>
+                {t("ProfileEdit.fields.organizer.description")}
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      )}
+
+      {/* Parent pour événements */}
+      {entityType === "events" && (
+        <FormField
+          control={form.control}
+          name="parent"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t("ProfileEdit.fields.parentEvent.label")}</FormLabel>
+              <FormControl>
+                <SelectParent
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder={t("ProfileEdit.fields.parentEvent.placeholder")}
+                  searchTypes={["events"]}
+                  filters={parentEventFilter}
+                />
+              </FormControl>
+              <FormDescription>
+                {t("ProfileEdit.fields.parentEvent.description")}
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      )}
 
       {/* Bio courte */}
       <FormField

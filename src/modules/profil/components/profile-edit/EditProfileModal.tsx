@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { useT } from "@/hooks/useT";
+import { getProfileSchema, type ProfileFormData } from "../../schemaForm";
 import { Loader2 } from "lucide-react";
 import {
   Dialog,
@@ -19,64 +19,18 @@ import { EditContactTab } from "./EditContactTab";
 import { EditLocationTab } from "./EditLocationTab";
 import { EditSocialTab } from "./EditSocialTab";
 import { EditScheduleTab } from "./EditScheduleTab";
+import { EditEventDatesTab } from "./EditEventDatesTab";
 import { useProfileFormData } from "../../hooks/useProfileFormData";
 import { useUpdateProfile } from "../../hooks/useProfileMutations";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
-import { isOrganization, isUser as isUserGuard } from "@/lib/getTypedEntity";
+import { DAYS } from "@/constants/DAYS";
+import { formatISO } from "date-fns";
 
 interface EditProfileModalProps {
   entity: EntityTypes;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
-
-// Schéma de validation pour User
-const userProfileSchema = z.object({
-  name: z.string().min(1, "Le nom est requis"),
-  username: z.string().optional(),
-  shortDescription: z.string().optional(),
-  description: z.string().optional(),
-  email: z.union([z.string().email("Email invalide"), z.literal("")]).optional(),
-  mobile: z.string().optional(),
-  url: z.union([z.string().url("URL invalide"), z.literal("")]).optional(),
-  // Adresse complète
-  addressCountry: z.string().optional(),
-  streetAddress: z.string().optional(),
-  postalCode: z.string().optional(),
-  addressLocality: z.string().optional(),
-  localityId: z.string().optional(),
-  level1: z.string().optional(),
-  level1Name: z.string().optional(),
-  level2: z.string().optional(),
-  level2Name: z.string().optional(),
-  level3: z.string().optional(),
-  level3Name: z.string().optional(),
-  level4: z.string().optional(),
-  level4Name: z.string().optional(),
-  codeInsee: z.string().optional(),
-  // Réseaux sociaux
-  github: z.string().optional(),
-  gitlab: z.string().optional(),
-  facebook: z.string().optional(),
-  twitter: z.string().optional(),
-  instagram: z.string().optional(),
-  diaspora: z.string().optional(),
-  mastodon: z.string().optional(),
-  telegram: z.string().optional(),
-  signal: z.string().optional(),
-  // Organisation spécifique
-  openingHours: z.array(z.object({
-    dayOfWeek: z.string(),
-    hours: z.array(z.object({
-      opens: z.string(),
-      closes: z.string(),
-    })),
-  })).optional(),
-  // Tags
-  tags: z.array(z.string()).optional(),
-});
-
-type UserProfileFormData = z.infer<typeof userProfileSchema>;
 
 /**
  * Modal pour éditer un profil
@@ -101,11 +55,10 @@ export function EditProfileModal({
   const { defaultValues, entityType } = useProfileFormData(entity);
   const updateMutation = useUpdateProfile(entity);
 
-  const isUser = isUserGuard(entity);
-  const isOrg = isOrganization(entity);
+  const schema = getProfileSchema(entityType || "citoyens");
 
-  const form = useForm<UserProfileFormData>({
-    resolver: zodResolver(userProfileSchema),
+  const form = useForm<ProfileFormData>({
+    resolver: zodResolver(schema),
     defaultValues: defaultValues || undefined,
   });
 
@@ -117,107 +70,163 @@ export function EditProfileModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entity.slug, open, defaultValues]);
 
-  const onSubmit = async (data: UserProfileFormData) => {
+  const onSubmit = async (formData: ProfileFormData) => {
+    const data = formData as Record<string, unknown>;
+
     try {
-      // Préparer les données à envoyer
-      const updateData: Record<string, any> = {
+      const updateData: Record<string, unknown> = {
         name: data.name,
       };
 
-      // Champs toujours optionnels (peuvent être supprimés avec une chaîne vide)
-      updateData.shortDescription = data.shortDescription || "";
-      updateData.description = data.description || "";
-      updateData.url = data.url || "";
-
-      // Email: REQUIS pour User, optionnel pour Organization
-      if (isUser) {
-        // User: email obligatoire, ne pas envoyer si vide (validation côté client)
-        if (data.email) updateData.email = data.email;
-        // Mobile: uniquement pour les utilisateurs
-        updateData.mobile = data.mobile || "";
-      } else {
-        // Organization: email optionnel, peut être supprimé
-        updateData.email = data.email || "";
-      }
-
-      // Adresse complète
-      // L'API requiert soit un objet PostalAddress complet avec @type et tous les champs requis,
-      // soit une chaîne vide ""
-      if (data.addressCountry && data.addressLocality && data.localityId) {
-        // L'utilisateur a sélectionné une ville, créer un objet PostalAddress valide
-        const address: Record<string, any> = {
-          "@type": "PostalAddress",
-          // Champs requis (doivent être des strings)
-          addressCountry: data.addressCountry,
-          addressLocality: data.addressLocality,
-          localityId: data.localityId,
-          level1: data.level1 || "",
-          level1Name: data.level1Name || "",
-          codeInsee: data.codeInsee || "",
-        };
-
-        // Champs optionnels
-        if (data.level2) address.level2 = data.level2;
-        if (data.level2Name) address.level2Name = data.level2Name;
-        if (data.level3) address.level3 = data.level3;
-        if (data.level3Name) address.level3Name = data.level3Name;
-        if (data.level4) address.level4 = data.level4;
-        if (data.level4Name) address.level4Name = data.level4Name;
-        if (data.postalCode) address.postalCode = data.postalCode;
-        if (data.streetAddress) address.streetAddress = data.streetAddress;
-
-        updateData.address = address;
-      } else {
-        // Pas d'adresse ou adresse incomplète, envoyer une chaîne vide
-        updateData.address = "";
-      }
-
-      // User spécifique
-      if (isUser) {
-        // Réseaux sociaux - tous optionnels, peuvent être supprimés avec une chaîne vide
-        // Envoyer directement à la racine (pour entity.data/draft)
-        updateData.github = data.github || "";
-        updateData.gitlab = data.gitlab || "";
-        updateData.facebook = data.facebook || "";
-        updateData.twitter = data.twitter || "";
-        updateData.instagram = data.instagram || "";
-        updateData.diaspora = data.diaspora || "";
-        updateData.mastodon = data.mastodon || "";
-        updateData.telegram = data.telegram || "";
-        updateData.signal = data.signal || "";
-      }
-
-      // Organisation spécifique
-      if (isOrg) {
-        // Horaires d'ouverture
-        if (data.openingHours && data.openingHours.length > 0) {
-          updateData.openingHours = data.openingHours;
-        } else {
-          updateData.openingHours = "";
+      // Helper pour construire l'adresse
+      const buildAddress = (): Record<string, unknown> | "" => {
+        if (data.addressCountry && data.addressLocality && data.localityId) {
+          const address: Record<string, unknown> = {
+            "@type": "PostalAddress",
+            addressCountry: data.addressCountry,
+            addressLocality: data.addressLocality,
+            localityId: data.localityId,
+            level1: data.level1 || "",
+            level1Name: data.level1Name || "",
+            codeInsee: data.codeInsee || "",
+          };
+          if (data.level2) address.level2 = data.level2;
+          if (data.level2Name) address.level2Name = data.level2Name;
+          if (data.level3) address.level3 = data.level3;
+          if (data.level3Name) address.level3Name = data.level3Name;
+          if (data.level4) address.level4 = data.level4;
+          if (data.level4Name) address.level4Name = data.level4Name;
+          if (data.postalCode) address.postalCode = data.postalCode;
+          if (data.streetAddress) address.streetAddress = data.streetAddress;
+          return address;
         }
+        return "";
+      };
+
+      // Helper pour les tags
+      const buildTags = () =>
+        Array.isArray(data.tags) && data.tags.length > 0 ? data.tags : "";
+
+      // Helper pour les réseaux sociaux
+      const buildSocial = () => ({
+        github: data.github || "",
+        gitlab: data.gitlab || "",
+        facebook: data.facebook || "",
+        twitter: data.twitter || "",
+        instagram: data.instagram || "",
+        diaspora: data.diaspora || "",
+        mastodon: data.mastodon || "",
+        telegram: data.telegram || "",
+        signal: data.signal || "",
+      });
+
+      // Helper pour les horaires d'ouverture
+      // Toujours 7 entrées organisées par jour (Mo, Tu, We, Th, Fr, Sa, Su)
+      const buildOpeningHours = () => {
+        const arr = Array.isArray(data.openingHours) ? data.openingHours : [];
+        return DAYS.map((day) => {
+          const match = arr.find(
+            (o): o is { dayOfWeek: string; hours: { opens: string; closes: string }[] } =>
+              typeof o === "object" && o !== null && o.dayOfWeek === day
+          );
+          return match || "";
+        });
+      };
+
+      switch (entityType) {
+        case "citoyens":
+          Object.assign(updateData, {
+            shortDescription: data.shortDescription || "",
+            description: data.description || "",
+            url: data.url || "",
+            email: data.email || "",
+            mobile: data.mobile || "",
+            fixe: data.fixe || "",
+            birthDate: data.birthDate || "",
+            tags: buildTags(),
+            address: buildAddress(),
+            ...buildSocial(),
+          });
+          break;
+
+        case "organizations":
+          Object.assign(updateData, {
+            shortDescription: data.shortDescription || "",
+            description: data.description || "",
+            url: data.url || "",
+            email: data.email || "",
+            tags: buildTags(),
+            address: buildAddress(),
+            openingHours: buildOpeningHours(),
+          });
+          Object.assign(updateData, buildSocial());
+          if (data.type) updateData.type = data.type;
+          break;
+
+        case "projects":
+          Object.assign(updateData, {
+            shortDescription: data.shortDescription || "",
+            description: data.description || "",
+            url: data.url || "",
+            email: data.email || "",
+            tags: buildTags(),
+            address: buildAddress(),
+          });
+          Object.assign(updateData, buildSocial());
+          if (data.avancement) updateData.avancement = data.avancement;
+          if (data.parent) updateData.parent = data.parent;
+          break;
+
+        case "events":
+          Object.assign(updateData, {
+            shortDescription: data.shortDescription || "",
+            url: data.url || "",
+            email: data.email || "",
+            recurrency: data.recurrency || false,
+            tags: buildTags(),
+            address: buildAddress(),
+            openingHours: buildOpeningHours(),
+          });
+          if (data.type) updateData.type = data.type;
+          if (typeof data.startDate === "string") {
+            updateData.startDate = formatISO(new Date(data.startDate));
+          }
+          if (typeof data.endDate === "string") {
+            updateData.endDate = formatISO(new Date(data.endDate));
+          }
+          updateData.timeZone = data.timeZone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+          updateData.parent = data.parent || "";
+          if (data.organizer) updateData.organizer = data.organizer;
+          break;
+
+        case "poi":
+          Object.assign(updateData, {
+            shortDescription: data.shortDescription || "",
+            description: data.description || "",
+            url: data.url || "",
+            email: data.email || "",
+            tags: buildTags(),
+            address: buildAddress(),
+            // PAS de social pour POI
+          });
+          if (data.type) updateData.type = data.type;
+          break;
+      }
+      if (import.meta.env.DEV) {
+        console.log("updateData avant envoi:", updateData);
       }
 
-      // Tags (pour tous les types d'entités)
-      // L'API attend "" pour effacer tous les tags, ou un tableau de strings
-      if (data.tags && data.tags.length > 0) {
-        updateData.tags = data.tags;
-      } else {
-        updateData.tags = "";
-      }
-
-      console.log("updateData avant envoi:", updateData);
       await updateMutation.mutateAsync(updateData);
       onOpenChange(false);
     } catch (error) {
       console.error("Error updating profile:", error);
-      // Afficher les détails de l'erreur de validation
-      if (error && typeof error === 'object') {
+      if (error && typeof error === "object") {
         console.error("Error details:", {
-          message: (error as any).message,
-          validationErrors: (error as any).validationErrors,
-          details: (error as any).details,
-          response: (error as any).response,
-          data: (error as any).data,
+          message: (error as Record<string, unknown>).message,
+          validationErrors: (error as Record<string, unknown>).validationErrors,
+          details: (error as Record<string, unknown>).details,
+          response: (error as Record<string, unknown>).response,
+          data: (error as Record<string, unknown>).data,
         });
       }
     }
@@ -234,15 +243,18 @@ export function EditProfileModal({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <Tabs defaultValue="basic" className="w-full">
-              <TabsList className={`grid w-full ${isUser || isOrg ? 'grid-cols-4' : 'grid-cols-3'}`}>
+              <TabsList className={`grid w-full ${entityType === "citoyens" || entityType === "organizations" || entityType === "events" ? 'grid-cols-4' : 'grid-cols-3'}`}>
                 <TabsTrigger value="basic">{t("ProfileEdit.tabs.basic")}</TabsTrigger>
                 <TabsTrigger value="contact">{t("ProfileEdit.tabs.contact")}</TabsTrigger>
                 <TabsTrigger value="location">{t("ProfileEdit.tabs.location.label")}</TabsTrigger>
-                {isUser && (
+                {entityType === "citoyens" && (
                   <TabsTrigger value="social">{t("ProfileEdit.tabs.social")}</TabsTrigger>
                 )}
-                {isOrg && (
+                {entityType === "organizations" && (
                   <TabsTrigger value="schedule">{t("ProfileEdit.tabs.schedule.label")}</TabsTrigger>
+                )}
+                {entityType === "events" && (
+                  <TabsTrigger value="eventDates">{t("ProfileEdit.tabs.eventDates.label")}</TabsTrigger>
                 )}
               </TabsList>
 
@@ -252,22 +264,28 @@ export function EditProfileModal({
                 </TabsContent>
 
                 <TabsContent value="contact">
-                  <EditContactTab form={form} />
+                  <EditContactTab form={form} entityType={entityType || ""} />
                 </TabsContent>
 
                 <TabsContent value="location">
                   <EditLocationTab form={form} />
                 </TabsContent>
 
-                {isUser && (
+                {entityType === "citoyens" && (
                   <TabsContent value="social">
                     <EditSocialTab form={form} />
                   </TabsContent>
                 )}
 
-                {isOrg && (
+                {entityType === "organizations" && (
                   <TabsContent value="schedule">
                     <EditScheduleTab form={form} />
+                  </TabsContent>
+                )}
+
+                {entityType === "events" && (
+                  <TabsContent value="eventDates">
+                    <EditEventDatesTab form={form} />
                   </TabsContent>
                 )}
               </div>

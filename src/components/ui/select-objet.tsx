@@ -133,9 +133,7 @@ export function SelectObject({
       setOpen(false);
     }
   };
-
-
-
+  
   return (
     <div className={className}>
       <Popover modal open={open} onOpenChange={setOpen}>

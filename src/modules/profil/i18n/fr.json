@@ -8,7 +8,8 @@
     "unknownUser": "Utilisateur Inconnu",
     "untitled": "Sans titre",
     "cancel": "Annuler",
-    "confirm": "Confirmer"
+    "confirm": "Confirmer",
+    "searchPlaceholder": "Rechercher..."
   },
   "ProfilePage": {
     "error": {
@@ -438,12 +439,17 @@
       "contact": "Contact",
       "location": {
         "label": "Localisation",
-        "description": "Indiquez votre adresse complète"
+        "description": "Indiquez votre adresse complète",
+        "resetAddress": "Effacer l'adresse"
       },
       "social": "Réseaux sociaux",
       "schedule": {
         "label": "Horaires",
         "description": "Configurez vos horaires d'ouverture hebdomadaires"
+      },
+      "eventDates": {
+        "label": "Dates",
+        "description": "Configurez les dates et horaires de votre événement"
       }
     },
     "loading": "Chargement...",
@@ -452,6 +458,11 @@
         "label": "Nom",
         "placeholder": "Votre nom",
         "description": "Le nom affiché sur votre profil"
+      },
+      "birthDate": {
+        "label": "Date de naissance",
+        "placeholder": "Sélectionner une date",
+        "description": "Votre date de naissance (optionnel)"
       },
       "shortDescription": {
         "label": "Bio courte",
@@ -469,9 +480,14 @@
         "description": "Votre adresse email de contact"
       },
       "mobile": {
-        "label": "Téléphone",
+        "label": "Téléphone mobile",
         "placeholder": "+33 6 12 34 56 78",
-        "description": "Votre numéro de téléphone"
+        "description": "Votre numéro de téléphone mobile"
+      },
+      "fixe": {
+        "label": "Téléphone fixe",
+        "placeholder": "+33 1 23 45 67 89",
+        "description": "Votre numéro de téléphone fixe"
       },
       "url": {
         "label": "Site web",
@@ -503,6 +519,72 @@
         "searching": "Recherche...",
         "noResults": "Aucun tag trouvé",
         "typeToSearch": "Tapez au moins 2 caractères"
+      },
+      "type": {
+        "label": "Type d'organisation",
+        "placeholder": "Sélectionner un type",
+        "description": "Le type juridique ou structurel de votre organisation",
+        "options": {
+          "NGO": "Association",
+          "LocalBusiness": "Entreprise locale",
+          "Group": "Groupe",
+          "GovernmentOrganization": "Organisation gouvernementale",
+          "Cooperative": "Coopérative"
+        }
+      },
+      "eventType": {
+        "label": "Type d'événement",
+        "placeholder": "Sélectionner un type",
+        "description": "Le type de votre événement",
+        "options": {
+          "workshop": "Atelier",
+          "competition": "Compétition",
+          "concert": "Concert",
+          "contest": "Concours",
+          "conference": "Conférence",
+          "debate": "Débat",
+          "exhibition": "Exposition",
+          "festival": "Festival",
+          "crowdfunding": "Financement participatif",
+          "fair": "Foire",
+          "course": "Formation",
+          "protest": "Manifestation",
+          "market": "Marché",
+          "film": "Projection",
+          "getTogether": "Rencontre",
+          "meeting": "Réunion",
+          "spectacle": "Spectacle",
+          "internship": "Stage",
+          "stand": "Stand",
+          "others": "Autre"
+        }
+      },
+      "recurrency": {
+        "label": "Événement récurrent",
+        "description": "Activez si l'événement se répète chaque semaine selon des horaires fixes"
+      },
+      "startDate": {
+        "label": "Date de début",
+        "placeholder": "Sélectionner la date de début"
+      },
+      "endDate": {
+        "label": "Date de fin",
+        "placeholder": "Sélectionner la date de fin"
+      },
+      "parent": {
+        "label": "Organisation parente",
+        "placeholder": "Sélectionner une organisation...",
+        "description": "L'organisation à laquelle ce projet est rattaché"
+      },
+      "organizer": {
+        "label": "Organisateur",
+        "placeholder": "Sélectionner l'organisateur...",
+        "description": "L'organisation ou la personne qui organise cet événement"
+      },
+      "parentEvent": {
+        "label": "Entité parente",
+        "placeholder": "Sélectionner une entité parente...",
+        "description": "L'organisation ou le projet auquel cet événement est rattaché"
       }
     },
     "schedule": {

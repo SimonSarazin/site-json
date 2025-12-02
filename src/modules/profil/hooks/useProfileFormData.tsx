@@ -2,51 +2,12 @@ import { useMemo } from "react";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { isEvent, isOrganization, isProject, isUser } from "@/lib/getTypedEntity";
 import { widgetFormatters } from "@/constants/DAYS";
-
-/**
- * Interface pour les données de formulaire User
- */
-export interface UserFormData {
-  name: string;
-  username?: string;
-  shortDescription?: string;
-  description?: string;
-  email?: string;
-  mobile?: string;
-  url?: string;
-  // Adresse complète
-  addressCountry?: string;
-  streetAddress?: string;
-  postalCode?: string;
-  addressLocality?: string;
-  localityId?: string;
-  level1?: string;
-  level1Name?: string;
-  level2?: string;
-  level2Name?: string;
-  level3?: string;
-  level3Name?: string;
-  level4?: string;
-  level4Name?: string;
-  codeInsee?: string;
-  // Réseaux sociaux
-  github?: string;
-  gitlab?: string;
-  facebook?: string;
-  twitter?: string;
-  instagram?: string;
-  diaspora?: string;
-  mastodon?: string;
-  telegram?: string;
-  signal?: string;
-  // Organisation spécifique
-  openingHours?: Array<{
-    dayOfWeek: string;
-    hours: Array<{ opens: string; closes: string }>;
-  }>;
-  // Tags
-  tags?: string[];
-}
+import type {
+  UserProfileFormData,
+  OrganizationProfileFormData,
+  ProjectProfileFormData,
+  EventProfileFormData,
+} from "../schemaForm";
 
 /**
  * Hook pour extraire les données d'un profil et les formater pour React Hook Form
@@ -77,14 +38,17 @@ export function useProfileFormData(entity: EntityTypes | null) {
         ? serverData.socialNetwork as Record<string, unknown>
         : {};
 
-      const defaultValues: UserFormData = {
+      const defaultValues: UserProfileFormData = {
         name: (serverData.name as string) || "",
-        username: (serverData.username as string) || "",
         shortDescription: (serverData.shortDescription as string) || "",
         description: (serverData.description as string) || "",
         email: (serverData.email as string) || "",
         mobile: (serverData.mobile as string) || "",
+        fixe: (serverData.fixe as string) || "",
         url: (serverData.url as string) || "",
+        birthDate: serverData.birthDate
+          ? new Date(serverData.birthDate as Date).toISOString().split('T')[0]
+          : "",
         // Adresse complète
         addressCountry: (address.addressCountry as string) || "",
         streetAddress: (address.streetAddress as string) || "",
@@ -123,18 +87,22 @@ export function useProfileFormData(entity: EntityTypes | null) {
         ? serverData.address as Record<string, unknown>
         : {};
 
+      const socialNetworks = serverData.socialNetwork && typeof serverData.socialNetwork === 'object'
+        ? serverData.socialNetwork as Record<string, unknown>
+        : {};
+
       // Normaliser les horaires d'ouverture avec le formatter
       const openingHours = serverData.openingHours && Array.isArray(serverData.openingHours)
         ? widgetFormatters.openingHours(serverData.openingHours).filter((d: { hours: unknown[] }) => d.hours.length > 0)
         : [];
 
-      const defaultValues = {
+      const defaultValues: OrganizationProfileFormData = {
         name: (serverData.name as string) || "",
         shortDescription: (serverData.shortDescription as string) || "",
         description: (serverData.description as string) || "",
         email: (serverData.email as string) || "",
-        mobile: (serverData.mobile as string) || "",
         url: (serverData.url as string) || "",
+        type: serverData.type as OrganizationProfileFormData["type"],
         // Adresse complète
         addressCountry: (address.addressCountry as string) || "",
         streetAddress: (address.streetAddress as string) || "",
@@ -150,6 +118,16 @@ export function useProfileFormData(entity: EntityTypes | null) {
         level4: (address.level4 as string) || "",
         level4Name: (address.level4Name as string) || "",
         codeInsee: (address.codeInsee as string) || "",
+        // Réseaux sociaux
+        github: (socialNetworks.github as string) || "",
+        gitlab: (socialNetworks.gitlab as string) || "",
+        facebook: (socialNetworks.facebook as string) || "",
+        twitter: (socialNetworks.twitter as string) || "",
+        instagram: (socialNetworks.instagram as string) || "",
+        diaspora: (socialNetworks.diaspora as string) || "",
+        mastodon: (socialNetworks.mastodon as string) || "",
+        telegram: (socialNetworks.telegram as string) || "",
+        signal: (socialNetworks.signal as string) || "",
         // Champs spécifiques aux organisations
         openingHours: openingHours,
         // Tags
@@ -165,10 +143,23 @@ export function useProfileFormData(entity: EntityTypes | null) {
         ? serverData.address as Record<string, unknown>
         : {};
 
-      const defaultValues = {
+      const socialNetworks = serverData.socialNetwork && typeof serverData.socialNetwork === 'object'
+        ? serverData.socialNetwork as Record<string, unknown>
+        : {};
+
+      // Parent au format { mongoId: { type, name } }
+      const parent = serverData.parent && typeof serverData.parent === 'object' && !Array.isArray(serverData.parent)
+        ? serverData.parent as Record<string, { type: string; name?: string }>
+        : undefined;
+
+      const defaultValues: ProjectProfileFormData = {
         name: (serverData.name as string) || "",
         shortDescription: (serverData.shortDescription as string) || "",
         description: (serverData.description as string) || "",
+        email: (serverData.email as string) || "",
+        url: (serverData.url as string) || "",
+        avancement: serverData.avancement as ProjectProfileFormData["avancement"],
+        parent,
         // Adresse complète
         addressCountry: (address.addressCountry as string) || "",
         streetAddress: (address.streetAddress as string) || "",
@@ -184,6 +175,16 @@ export function useProfileFormData(entity: EntityTypes | null) {
         level4: (address.level4 as string) || "",
         level4Name: (address.level4Name as string) || "",
         codeInsee: (address.codeInsee as string) || "",
+        // Réseaux sociaux
+        github: (socialNetworks.github as string) || "",
+        gitlab: (socialNetworks.gitlab as string) || "",
+        facebook: (socialNetworks.facebook as string) || "",
+        twitter: (socialNetworks.twitter as string) || "",
+        instagram: (socialNetworks.instagram as string) || "",
+        diaspora: (socialNetworks.diaspora as string) || "",
+        mastodon: (socialNetworks.mastodon as string) || "",
+        telegram: (socialNetworks.telegram as string) || "",
+        signal: (socialNetworks.signal as string) || "",
         // Tags
         tags: Array.isArray(serverData.tags) ? serverData.tags as string[] : [],
       };
@@ -197,10 +198,39 @@ export function useProfileFormData(entity: EntityTypes | null) {
         ? serverData.address as Record<string, unknown>
         : {};
 
-      const defaultValues = {
+      // Normaliser les horaires d'ouverture avec le formatter
+      const openingHours = serverData.openingHours && Array.isArray(serverData.openingHours)
+        ? widgetFormatters.openingHours(serverData.openingHours).filter((d: { hours: unknown[] }) => d.hours.length > 0)
+        : [];
+
+      // Parent et organizer au format { mongoId: { type, name } }
+      const parent = serverData.parent && typeof serverData.parent === 'object' && !Array.isArray(serverData.parent)
+        ? serverData.parent as Record<string, { type: string; name?: string }>
+        : undefined;
+
+      const organizer = serverData.organizer && typeof serverData.organizer === 'object' && !Array.isArray(serverData.organizer)
+        ? serverData.organizer as Record<string, { type: string; name?: string }>
+        : {};
+
+      const defaultValues: EventProfileFormData = {
         name: (serverData.name as string) || "",
         shortDescription: (serverData.shortDescription as string) || "",
-        description: (serverData.description as string) || "",
+        email: (serverData.email as string) || "",
+        url: (serverData.url as string) || "",
+        type: serverData.type as EventProfileFormData["type"],
+        public: serverData.public !== false,
+        recurrency: Boolean(serverData.recurrency),
+        parent,
+        organizer,
+        // Dates et horaires
+        timeZone: (serverData.timeZone as string) || "",
+        startDate: serverData.startDate
+          ? new Date(serverData.startDate as Date).toISOString()
+          : "",
+        endDate: serverData.endDate
+          ? new Date(serverData.endDate as Date).toISOString()
+          : "",
+        openingHours: openingHours,
         // Adresse complète
         addressCountry: (address.addressCountry as string) || "",
         streetAddress: (address.streetAddress as string) || "",

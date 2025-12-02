@@ -16,7 +16,7 @@ interface ImageCropDialogProps {
   imageUrl: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCrop: (croppedImageBlob: Blob) => void;
+  onCrop: (croppedImageBlob: Blob, cropArea: CropArea) => void;
   aspect?: number;
 }
 
@@ -60,7 +60,7 @@ export function ImageCropDialog({
 
     try {
       const croppedBlob = await getCroppedImg(imageUrl, croppedAreaPixels, rotation);
-      onCrop(croppedBlob);
+      onCrop(croppedBlob, croppedAreaPixels);
       onOpenChange(false);
     } catch (error) {
       console.error("Error cropping image:", error);
