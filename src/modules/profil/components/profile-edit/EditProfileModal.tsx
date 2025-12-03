@@ -90,8 +90,52 @@ export function EditProfileModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entity.slug, open, defaultValues]);
 
-  const onSubmit = async (formData: ProfileFormData) => {
-    const data = formData as Record<string, unknown>;
+  /**
+   * Handler de soumission manuel pour exécuter les validations Zod ET les validations conditionnelles
+   * en même temps (form.handleSubmit n'appelle le callback que si Zod passe)
+   */
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // 1. Déclencher la validation Zod (sans bloquer)
+    await form.trigger();
+
+    // 2. Validation manuelle pour les événements
+    if (entityType === "events") {
+      const data = form.getValues() as Record<string, unknown>;
+
+      // Organizer requis
+      if (!data.organizer || Object.keys(data.organizer as object).length === 0) {
+        form.setError("organizer" as keyof ProfileFormData, { message: "validation.organizer.required" });
+      }
+
+      if (!data.recurrency) {
+        // Événement ponctuel: dates requises
+        if (!data.startDate) {
+          form.setError("startDate" as keyof ProfileFormData, { message: "validation.startDate.required" });
+        }
+        if (!data.endDate) {
+          form.setError("endDate" as keyof ProfileFormData, { message: "validation.endDate.required" });
+        }
+        if (data.startDate && data.endDate && new Date(data.endDate as string) < new Date(data.startDate as string)) {
+          form.setError("endDate" as keyof ProfileFormData, { message: "validation.endDate.afterStart" });
+        }
+      } else {
+        // Événement récurrent: openingHours requis
+        const openingHours = data.openingHours as unknown[];
+        if (!openingHours || openingHours.filter(h => h !== "").length === 0) {
+          form.setError("openingHours" as keyof ProfileFormData, { message: "validation.openingHours.required" });
+        }
+      }
+    }
+
+    // 3. Vérifier s'il y a des erreurs (Zod + manuelles)
+    if (Object.keys(form.formState.errors).length > 0) {
+      return;
+    }
+
+    // 4. Soumettre
+    const data = form.getValues() as Record<string, unknown>;
 
     try {
       const updateData: Record<string, unknown> = {
@@ -262,7 +306,7 @@ export function EditProfileModal({
 
         {/* Formulaire avec tabs */}
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={handleFormSubmit} className="space-y-6">
             <Tabs defaultValue="basic" className="w-full">
               <TabsList className={`grid w-full ${entityType === "citoyens" || entityType === "organizations" || entityType === "events" ? 'grid-cols-4' : 'grid-cols-3'}`}>
                 <TabsTrigger value="basic" className="gap-1">

@@ -100,7 +100,48 @@ export function AddEventModal({ open, onOpenChange, parent }: AddEventModalProps
     }};
   }, [parent?.id]);
 
-  const onSubmit = async (data: AddEventFormData) => {
+  /**
+   * Handler de soumission manuel pour exécuter les validations Zod ET nos validations conditionnelles
+   * en même temps (form.handleSubmit n'appelle le callback que si Zod passe)
+   */
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // 1. Déclencher la validation Zod (sans bloquer)
+    await form.trigger();
+
+    // 2. Valider les champs conditionnels
+    const data = form.getValues();
+
+    // Organizer requis (sauf si parent est fourni car il devient l'organizer)
+    if (!parent && (!data.organizer || Object.keys(data.organizer).length === 0)) {
+      form.setError("organizer", { message: "validation.organizer.required" });
+    }
+
+    if (!data.recurrency) {
+      // Événement ponctuel: dates requises
+      if (!data.startDate) {
+        form.setError("startDate", { message: "validation.startDate.required" });
+      }
+      if (!data.endDate) {
+        form.setError("endDate", { message: "validation.endDate.required" });
+      }
+      if (data.startDate && data.endDate && new Date(data.endDate) < new Date(data.startDate)) {
+        form.setError("endDate", { message: "validation.endDate.afterStart" });
+      }
+    } else {
+      // Événement récurrent: openingHours requis
+      if (!data.openingHours || data.openingHours.filter(h => h !== "").length === 0) {
+        form.setError("openingHours", { message: "validation.openingHours.required" });
+      }
+    }
+
+    // 3. Vérifier s'il y a des erreurs (Zod + manuelles)
+    if (Object.keys(form.formState.errors).length > 0) {
+      return;
+    }
+
+    // 4. Soumettre
     try {
       await addMutation.mutateAsync(data);
       form.reset();
@@ -114,7 +155,7 @@ export function AddEventModal({ open, onOpenChange, parent }: AddEventModalProps
     form.reset();
     onOpenChange(false);
   };
-
+  
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
@@ -126,7 +167,7 @@ export function AddEventModal({ open, onOpenChange, parent }: AddEventModalProps
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleFormSubmit} className="space-y-4">
             <Tabs defaultValue="info" className="w-full">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="info" className="gap-1">

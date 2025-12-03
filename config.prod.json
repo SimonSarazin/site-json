@@ -1778,13 +1778,7 @@
       "sections": [
         {
           "type": "profile-header-complete",
-          "showAddDropdown": true,
-          "addConfig": {
-            "organization": false,
-            "project": false,
-            "event": false,
-            "poi": true
-          }
+          "showAddDropdown": false
         },
         {
           "type": "profile-template-dynamic"

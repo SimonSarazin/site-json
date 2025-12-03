@@ -11,11 +11,64 @@ const urlOrEmptySchema = z.union([z.url({ error: "validation.url.invalid" }), z.
 // Champ date ISO optionnel ou vide (pour birthDate)
 const dateOrEmptySchema = z.union([z.iso.date({ error: "validation.date.invalid" }), z.literal("")]);
 
-// Champs partagés pour les tags
+// Champs partagés pour les tags (edit forms acceptent "" comme valeur vide)
 const tagsSchema = z.union([
   z.array(z.string()),
   z.literal("")
 ]);
+
+// Email optionnel OU vide (pour edit forms qui acceptent le vide)
+const emailOrEmptySchema = z.union([
+  z.email({ error: "validation.email.invalid" }),
+  z.literal("")
+]);
+
+// Slug (identique partout)
+const slugSchema = z.string()
+  .min(3, "validation.slug.minLength")
+  .max(100, "validation.slug.maxLength")
+  .regex(/^[a-zA-Z0-9]+$/, "validation.slug.format");
+
+// Réseaux sociaux (9 champs)
+const socialFieldsSchema = z.object({
+  github: urlOrEmptySchema.optional(),
+  gitlab: urlOrEmptySchema.optional(),
+  facebook: urlOrEmptySchema.optional(),
+  twitter: urlOrEmptySchema.optional(),
+  instagram: urlOrEmptySchema.optional(),
+  diaspora: urlOrEmptySchema.optional(),
+  mastodon: urlOrEmptySchema.optional(),
+  telegram: urlOrEmptySchema.optional(),
+  signal: urlOrEmptySchema.optional(),
+});
+
+// Localisation (14 champs, tous optionnels)
+const localityFieldsSchema = z.object({
+  addressCountry: z.string().optional(),
+  streetAddress: z.string().optional(),
+  postalCode: z.string().optional(),
+  addressLocality: z.string().optional(),
+  localityId: z.string().optional(),
+  level1: z.string().optional(),
+  level1Name: z.string().optional(),
+  level2: z.string().optional(),
+  level2Name: z.string().optional(),
+  level3: z.string().optional(),
+  level3Name: z.string().optional(),
+  level4: z.string().optional(),
+  level4Name: z.string().optional(),
+  codeInsee: z.string().optional(),
+});
+
+// Types POI (liste partagée entre poiProfileSchema et addPoiSchema)
+const POI_TYPES = [
+  "link", "tool", "machine", "software", "rh",
+  "Resource material", "Financial Ressource", "ficheBlanche",
+  "geoJson", "compostPickup", "video", "sharedLibrary",
+  "recoveryCenter", "trash", "history", "something2See",
+  "funPlace", "place", "artPiece", "streetArts",
+  "openScene", "stand", "parking", "other"
+] as const;
 
 // ============================================================================
 // SCHÉMAS PARTAGÉS POUR ADD_BLOCKS
@@ -69,7 +122,7 @@ const openingHoursSchema = z.array(z.union([
 export const userProfileSchema = z.object({
   // UPDATE_BLOCK_INFO
   name: z.string().min(1, "validation.name.required"),
-  email: z.email({ error: "validation.email.invalid" }).optional(),
+  email: z.email({ error: "validation.email.invalid" }).optional(), // PAS emailOrEmpty (user n'accepte pas le vide)
   url: urlOrEmptySchema.optional(),
   tags: tagsSchema.optional(),
   birthDate: dateOrEmptySchema.optional(),
@@ -80,38 +133,14 @@ export const userProfileSchema = z.object({
   shortDescription: z.string().optional(),
   description: z.string().optional(),
 
-  // UPDATE_BLOCK_SOCIAL
-  github: urlOrEmptySchema.optional(),
-  gitlab: urlOrEmptySchema.optional(),
-  facebook: urlOrEmptySchema.optional(),
-  twitter: urlOrEmptySchema.optional(),
-  instagram: urlOrEmptySchema.optional(),
-  diaspora: urlOrEmptySchema.optional(),
-  mastodon: urlOrEmptySchema.optional(),
-  telegram: urlOrEmptySchema.optional(),
-  signal: urlOrEmptySchema.optional(),
-
-  // UPDATE_BLOCK_LOCALITY (aplati)
-  addressCountry: z.string().optional(),
-  streetAddress: z.string().optional(),
-  postalCode: z.string().optional(),
-  addressLocality: z.string().optional(),
-  localityId: z.string().optional(),
-  level1: z.string().optional(),
-  level1Name: z.string().optional(),
-  level2: z.string().optional(),
-  level2Name: z.string().optional(),
-  level3: z.string().optional(),
-  level3Name: z.string().optional(),
-  level4: z.string().optional(),
-  level4Name: z.string().optional(),
-  codeInsee: z.string().optional(),
-
   // UPDATE_BLOCK_SLUG
-  slug: z.string()
-    .min(3, "validation.slug.minLength")
-    .max(100, "validation.slug.maxLength")
-    .regex(/^[a-zA-Z0-9]+$/, "validation.slug.format"),
+  slug: slugSchema,
+
+  // UPDATE_BLOCK_SOCIAL
+  ...socialFieldsSchema.shape,
+
+  // UPDATE_BLOCK_LOCALITY
+  ...localityFieldsSchema.shape,
 });
 
 export type UserProfileFormData = z.infer<typeof userProfileSchema>;
@@ -123,7 +152,7 @@ export type UserProfileFormData = z.infer<typeof userProfileSchema>;
 export const organizationProfileSchema = z.object({
   // UPDATE_BLOCK_INFO
   name: z.string().min(1, "validation.name.required"),
-  email: z.union([z.email({ error: "validation.email.invalid" }), z.literal("")]).optional(),
+  email: emailOrEmptySchema.optional(),
   url: urlOrEmptySchema.optional(),
   tags: tagsSchema.optional(),
   type: z.enum(ORGANIZATION_TYPES).optional(),
@@ -132,41 +161,17 @@ export const organizationProfileSchema = z.object({
   shortDescription: z.string().optional(),
   description: z.string().optional(),
 
-  // UPDATE_BLOCK_SOCIAL
-  github: urlOrEmptySchema.optional(),
-  gitlab: urlOrEmptySchema.optional(),
-  facebook: urlOrEmptySchema.optional(),
-  twitter: urlOrEmptySchema.optional(),
-  instagram: urlOrEmptySchema.optional(),
-  diaspora: urlOrEmptySchema.optional(),
-  mastodon: urlOrEmptySchema.optional(),
-  telegram: urlOrEmptySchema.optional(),
-  signal: urlOrEmptySchema.optional(),
-
-  // UPDATE_BLOCK_LOCALITY (aplati)
-  addressCountry: z.string().optional(),
-  streetAddress: z.string().optional(),
-  postalCode: z.string().optional(),
-  addressLocality: z.string().optional(),
-  localityId: z.string().optional(),
-  level1: z.string().optional(),
-  level1Name: z.string().optional(),
-  level2: z.string().optional(),
-  level2Name: z.string().optional(),
-  level3: z.string().optional(),
-  level3Name: z.string().optional(),
-  level4: z.string().optional(),
-  level4Name: z.string().optional(),
-  codeInsee: z.string().optional(),
-
   // UPDATE_BLOCK_SLUG
-  slug: z.string()
-    .min(3, "validation.slug.minLength")
-    .max(100, "validation.slug.maxLength")
-    .regex(/^[a-zA-Z0-9]+$/, "validation.slug.format"),
+  slug: slugSchema,
 
   // VIRTUAL_OPENING_HOURS (spécifique à Organization)
-  openingHours: openingHoursSchema.optional()
+  openingHours: openingHoursSchema.optional(),
+
+  // UPDATE_BLOCK_SOCIAL
+  ...socialFieldsSchema.shape,
+
+  // UPDATE_BLOCK_LOCALITY
+  ...localityFieldsSchema.shape,
 });
 
 export type OrganizationProfileFormData = z.infer<typeof organizationProfileSchema>;
@@ -178,7 +183,7 @@ export type OrganizationProfileFormData = z.infer<typeof organizationProfileSche
 export const projectProfileSchema = z.object({
   // UPDATE_BLOCK_INFO
   name: z.string().min(1, "validation.name.required"),
-  email: z.union([z.email({ error: "validation.email.invalid" }), z.literal("")]).optional(),
+  email: emailOrEmptySchema.optional(),
   url: urlOrEmptySchema.optional(),
   tags: tagsSchema.optional(),
   avancement: z.enum(PROJECT_AVANCEMENTS).optional(),
@@ -188,38 +193,14 @@ export const projectProfileSchema = z.object({
   shortDescription: z.string().optional(),
   description: z.string().optional(),
 
-  // UPDATE_BLOCK_SOCIAL
-  github: urlOrEmptySchema.optional(),
-  gitlab: urlOrEmptySchema.optional(),
-  facebook: urlOrEmptySchema.optional(),
-  twitter: urlOrEmptySchema.optional(),
-  instagram: urlOrEmptySchema.optional(),
-  diaspora: urlOrEmptySchema.optional(),
-  mastodon: urlOrEmptySchema.optional(),
-  telegram: urlOrEmptySchema.optional(),
-  signal: urlOrEmptySchema.optional(),
-
-  // UPDATE_BLOCK_LOCALITY (aplati)
-  addressCountry: z.string().optional(),
-  streetAddress: z.string().optional(),
-  postalCode: z.string().optional(),
-  addressLocality: z.string().optional(),
-  localityId: z.string().optional(),
-  level1: z.string().optional(),
-  level1Name: z.string().optional(),
-  level2: z.string().optional(),
-  level2Name: z.string().optional(),
-  level3: z.string().optional(),
-  level3Name: z.string().optional(),
-  level4: z.string().optional(),
-  level4Name: z.string().optional(),
-  codeInsee: z.string().optional(),
-
   // UPDATE_BLOCK_SLUG
-  slug: z.string()
-    .min(3, "validation.slug.minLength")
-    .max(100, "validation.slug.maxLength")
-    .regex(/^[a-zA-Z0-9]+$/, "validation.slug.format"),
+  slug: slugSchema,
+
+  // UPDATE_BLOCK_SOCIAL
+  ...socialFieldsSchema.shape,
+
+  // UPDATE_BLOCK_LOCALITY
+  ...localityFieldsSchema.shape,
 });
 
 export type ProjectProfileFormData = z.infer<typeof projectProfileSchema>;
@@ -230,13 +211,13 @@ export type ProjectProfileFormData = z.infer<typeof projectProfileSchema>;
 // ============================================================================
 
 export const eventProfileSchema = z.object({
-  // Champs INFO (via ADD_EVENT)
+  // Champs INFO (via ADD_EVENT) - name min(2) pour events
   name: z.string().min(2, "validation.name.minLength"),
-  email: z.union([z.email({ error: "validation.email.invalid" }), z.literal("")]).optional(),
+  email: emailOrEmptySchema.optional(),
   url: urlOrEmptySchema.optional(),
   tags: tagsSchema.optional(),
   type: z.enum(EVENT_TYPES),
-  // organizer est validé dans superRefine pour un meilleur contrôle des erreurs
+  // organizer est validé manuellement dans onSubmit pour un meilleur contrôle des erreurs
   organizer: parentSchema.optional(),
   parent: parentSchema.optional(),
 
@@ -257,81 +238,19 @@ export const eventProfileSchema = z.object({
   endDate: z.iso.datetime({ error: "validation.datetime.invalid" }).optional(),
   openingHours: openingHoursSchema.optional(),
 
-  // LOCALITY (aplati)
-  addressCountry: z.string().optional(),
-  streetAddress: z.string().optional(),
-  postalCode: z.string().optional(),
-  addressLocality: z.string().optional(),
-  localityId: z.string().optional(),
-  level1: z.string().optional(),
-  level1Name: z.string().optional(),
-  level2: z.string().optional(),
-  level2Name: z.string().optional(),
-  level3: z.string().optional(),
-  level3Name: z.string().optional(),
-  level4: z.string().optional(),
-  level4Name: z.string().optional(),
-  codeInsee: z.string().optional(),
+  // SLUG
+  slug: slugSchema,
 
-  // GEO (optionnel, format objet)
+  // GEO (optionnel, format objet) - spécifique à Event
   geo: geoSchema.optional(),
   geoPosition: geoPositionSchema.optional(),
 
-  // SLUG
-  slug: z.string()
-    .min(3, "validation.slug.minLength")
-    .max(100, "validation.slug.maxLength")
-    .regex(/^[a-zA-Z0-9]+$/, "validation.slug.format"),
-}).superRefine((data, ctx) => {
-  // Validation organizer obligatoire
-  if (!data.organizer || Object.keys(data.organizer).length === 0) {
-    ctx.addIssue({
-      code: "custom",
-      message: "validation.organizer.required",
-      path: ["organizer"],
-    });
-  }
-
-  // Validation conditionnelle selon recurrency
-  if (!data.recurrency) {
-    // Événement ponctuel: startDate ET endDate requis
-    if (!data.startDate) {
-      ctx.addIssue({
-        code: "custom",
-        message: "validation.startDate.required",
-        path: ["startDate"],
-      });
-    }
-    if (!data.endDate) {
-      ctx.addIssue({
-        code: "custom",
-        message: "validation.endDate.required",
-        path: ["endDate"],
-      });
-    }
-    // Si les deux sont fournis, endDate doit être après startDate
-    if (data.startDate && data.endDate) {
-      const start = new Date(data.startDate);
-      const end = new Date(data.endDate);
-      if (end < start) {
-        ctx.addIssue({
-          code: "custom",
-          message: "validation.endDate.afterStart",
-          path: ["endDate"],
-        });
-      }
-    }
-  } else {
-    // Événement récurrent: openingHours requis
-    if (!data.openingHours || data.openingHours.length === 0) {
-      ctx.addIssue({
-        code: "custom",
-        message: "validation.openingHours.required",
-        path: ["openingHours"],
-      });
-    }
-  }
+  // LOCALITY
+  ...localityFieldsSchema.shape,
 });
+// Note: Les validations conditionnelles (organizer requis, startDate/endDate requis si !recurrency,
+// openingHours requis si recurrency) sont faites manuellement dans onSubmit des formulaires
+// car superRefine ne s'exécute pas si d'autres validations échouent (bug connu zodResolver)
 
 export type EventProfileFormData = z.infer<typeof eventProfileSchema>;
 
@@ -343,62 +262,21 @@ export type EventProfileFormData = z.infer<typeof eventProfileSchema>;
 export const poiProfileSchema = z.object({
   // UPDATE_BLOCK_INFO
   name: z.string().min(1, "validation.name.required"),
-  email: z.union([z.email({ error: "validation.email.invalid" }), z.literal("")]).optional(),
+  email: emailOrEmptySchema.optional(),
   url: urlOrEmptySchema.optional(),
   tags: tagsSchema.optional(),
-  type: z.enum([
-    "link",
-    "tool",
-    "machine",
-    "software",
-    "rh",
-    "Resource material",
-    "Financial Ressource",
-    "ficheBlanche",
-    "geoJson",
-    "compostPickup",
-    "video",
-    "sharedLibrary",
-    "recoveryCenter",
-    "trash",
-    "history",
-    "something2See",
-    "funPlace",
-    "place",
-    "artPiece",
-    "streetArts",
-    "openScene",
-    "stand",
-    "parking",
-    "other"
-  ]).optional(),
+  type: z.enum(POI_TYPES).optional(), // optional pour edit
   urls: z.array(z.string()).optional(),
 
   // UPDATE_BLOCK_DESCRIPTION
   shortDescription: z.string().optional(),
   description: z.string().optional(),
 
-  // UPDATE_BLOCK_LOCALITY (aplati)
-  addressCountry: z.string().optional(),
-  streetAddress: z.string().optional(),
-  postalCode: z.string().optional(),
-  addressLocality: z.string().optional(),
-  localityId: z.string().optional(),
-  level1: z.string().optional(),
-  level1Name: z.string().optional(),
-  level2: z.string().optional(),
-  level2Name: z.string().optional(),
-  level3: z.string().optional(),
-  level3Name: z.string().optional(),
-  level4: z.string().optional(),
-  level4Name: z.string().optional(),
-  codeInsee: z.string().optional(),
-
   // UPDATE_BLOCK_SLUG
-  slug: z.string()
-    .min(3, "validation.slug.minLength")
-    .max(100, "validation.slug.maxLength")
-    .regex(/^[a-zA-Z0-9]+$/, "validation.slug.format"),
+  slug: slugSchema,
+
+  // UPDATE_BLOCK_LOCALITY (PAS de social, PAS de geo pour POI)
+  ...localityFieldsSchema.shape,
 });
 
 export type PoiProfileFormData = z.infer<typeof poiProfileSchema>;
@@ -408,35 +286,24 @@ export type PoiProfileFormData = z.infer<typeof poiProfileSchema>;
 // ============================================================================
 
 export const addOrganizationSchema = z.object({
-  // Champs requis
+  // Champs requis - name min(3) pour AddOrganization
   name: z.string().min(3, "validation.name.minLength"),
   type: z.enum(ORGANIZATION_TYPES),
   role: z.enum(["admin", "member"]),
 
-  // Champs optionnels
+  // Champs optionnels - email SANS vide, tags SANS vide (add forms)
   tags: z.array(z.string()).optional(),
   email: z.email({ error: "validation.email.invalid" }).optional(),
   shortDescription: z.string().optional(),
   url: urlOrEmptySchema.optional(),
   preferences: preferencesSchema.optional(),
 
-  // Localisation (aplatie pour compatibilité avec EditLocationTab)
-  addressCountry: z.string().optional(),
-  addressLocality: z.string().optional(),
-  localityId: z.string().optional(),
-  postalCode: z.string().optional(),
-  streetAddress: z.string().optional(),
-  codeInsee: z.string().optional(),
-  level1: z.string().optional(),
-  level1Name: z.string().optional(),
-  level2: z.string().optional(),
-  level2Name: z.string().optional(),
-  level3: z.string().optional(),
-  level3Name: z.string().optional(),
-  level4: z.string().optional(),
-  level4Name: z.string().optional(),
+  // GEO (spécifique aux add schemas)
   geo: geoSchema.optional(),
   geoPosition: geoPositionSchema.optional(),
+
+  // LOCALITY
+  ...localityFieldsSchema.shape,
 });
 
 export type AddOrganizationFormData = z.infer<typeof addOrganizationSchema>;
@@ -449,35 +316,25 @@ export const addProjectSchema = z.object({
   // Champs requis
   name: z.string().min(1, "validation.name.required"),
 
-  // Champs optionnels
+  // Champs optionnels - tags SANS vide (add forms)
   parent: parentSchema.optional(),
   public: z.boolean().default(true),
   tags: z.array(z.string()).optional(),
   shortDescription: z.string().optional(),
   url: urlOrEmptySchema.optional(),
+  // preferences spécifique à AddProject (avec crowdfunding)
   preferences: z.object({
     isOpenData: z.boolean().default(false),
     isOpenEdition: z.boolean().default(false),
     crowdfunding: z.boolean().default(true),
   }).optional(),
 
-  // Localisation (aplatie pour compatibilité avec EditLocationTab)
-  addressCountry: z.string().optional(),
-  addressLocality: z.string().optional(),
-  localityId: z.string().optional(),
-  postalCode: z.string().optional(),
-  streetAddress: z.string().optional(),
-  codeInsee: z.string().optional(),
-  level1: z.string().optional(),
-  level1Name: z.string().optional(),
-  level2: z.string().optional(),
-  level2Name: z.string().optional(),
-  level3: z.string().optional(),
-  level3Name: z.string().optional(),
-  level4: z.string().optional(),
-  level4Name: z.string().optional(),
+  // GEO (spécifique aux add schemas)
   geo: geoSchema.optional(),
   geoPosition: geoPositionSchema.optional(),
+
+  // LOCALITY
+  ...localityFieldsSchema.shape,
 });
 
 export type AddProjectFormData = z.infer<typeof addProjectSchema>;
@@ -487,69 +344,34 @@ export type AddProjectFormData = z.infer<typeof addProjectSchema>;
 // ============================================================================
 
 export const addPoiSchema = z.object({
-  // Champs requis
+  // Champs requis - type REQUIS pour add (pas .optional())
   name: z.string().min(1, "validation.name.required"),
-  type: z.enum([
-    "link",
-    "tool",
-    "machine",
-    "software",
-    "rh",
-    "Resource material",
-    "Financial Ressource",
-    "ficheBlanche",
-    "geoJson",
-    "compostPickup",
-    "video",
-    "sharedLibrary",
-    "recoveryCenter",
-    "trash",
-    "history",
-    "something2See",
-    "funPlace",
-    "place",
-    "artPiece",
-    "streetArts",
-    "openScene",
-    "stand",
-    "parking",
-    "other"
-  ]),
+  type: z.enum(POI_TYPES),
 
-  // Champs optionnels
+  // Champs optionnels - tags SANS vide (add forms)
   parent: parentSchema.optional(),
   description: z.string().optional(),
   tags: z.array(z.string()).optional(),
   urls: z.array(z.string()).optional(),
 
-  // Localisation (aplatie pour compatibilité avec EditLocationTab)
-  addressCountry: z.string().optional(),
-  addressLocality: z.string().optional(),
-  localityId: z.string().optional(),
-  postalCode: z.string().optional(),
-  streetAddress: z.string().optional(),
-  codeInsee: z.string().optional(),
-  level1: z.string().optional(),
-  level1Name: z.string().optional(),
-  level2: z.string().optional(),
-  level2Name: z.string().optional(),
-  level3: z.string().optional(),
-  level3Name: z.string().optional(),
-  level4: z.string().optional(),
-  level4Name: z.string().optional(),
+  // GEO (spécifique aux add schemas)
   geo: geoSchema.optional(),
   geoPosition: geoPositionSchema.optional(),
+
+  // LOCALITY
+  ...localityFieldsSchema.shape,
 });
 
 export type AddPoiFormData = z.infer<typeof addPoiSchema>;
 
 // ============================================================================
 // ADD_EVENT SCHEMA (simplifié pour le formulaire de création)
+// Note: slug est omis car il est généré automatiquement côté serveur
 // ============================================================================
 
-export const addEventSchema = eventProfileSchema;
+export const addEventSchema = eventProfileSchema.omit({ slug: true });
 
-export type AddEventFormData = z.infer<typeof eventProfileSchema>;
+export type AddEventFormData = z.infer<typeof addEventSchema>;
 
 // ============================================================================
 // PROFILE FORM HELPERS
