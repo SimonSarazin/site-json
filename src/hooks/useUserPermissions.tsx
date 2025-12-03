@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useCocolight } from "@/hooks/useCocolight";
 import type { EntityTypes, News} from "@communecter/cocolight-api-client";
-import { isEvent, isOrganization, isProject, isUser } from "@/lib/getTypedEntity";
+import { isEvent, isOrganization, isProject, isUser, isPoi } from "@/lib/getTypedEntity";
 
 /**
  * Interface pour les permissions calculées
@@ -292,7 +292,42 @@ export function useUserPermissions(
         canAddOrganization: false,
         canAddProject: false,
         canAddEvent: false, // Pas de sous-événement (pour l'instant)
-        canAddPoi: isEventAuthor,
+        canAddPoi: false,
+      };
+    }
+
+    // CAS 6: POI (pas de news sur les POI)
+    if (isPoi(entity)) {
+      const isPoiAuthor = entity.isAuthor?.() ?? false;
+      const isFollowingPoi = entity.isFollowing?.() ?? false;
+
+      return {
+        canEditProfile: isPoiAuthor, // Seulement l'auteur peut éditer le POI
+        editProfileReason: isPoiAuthor ? undefined : "Must be author of POI",
+        canAddNews: false, // Pas de news sur les POI
+        canEditNews: false,
+        canDeleteNews: false,
+        canModerateNews: false,
+        canEditComment: false, // Pas de commentaires sur les POI
+        canDeleteComment: false,
+        canFollow: !isPoiAuthor, // Peut suivre si pas l'auteur
+        isFollowing: isFollowingPoi,
+        canSendFriendRequest: false, // Pas de demandes d'ami pour les POI
+        isFriend: false,
+        canRequestMembership: false, // N/A pour POI
+        isMember: false,
+        isAdmin: false,
+        isContributor: false,
+        canRequestContributor: false,
+        canRequestProjectAdmin: false,
+        isAuthor: isPoiAuthor,
+        isParticipant: false,
+        canParticipate: false,
+        // Pas de création d'entités enfants sur un POI
+        canAddOrganization: false,
+        canAddProject: false,
+        canAddEvent: false,
+        canAddPoi: false,
       };
     }
 

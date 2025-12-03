@@ -1,4 +1,3 @@
-import type { SearchEntity } from "@communecter/cocolight-api-client";
 import type { User, Organization, Project, Event, Poi, EntityTypes } from "@communecter/cocolight-api-client";
 
 /**
@@ -45,6 +44,6 @@ export function isEvent(entity: EntityTypes): entity is Event {
 /**
  * Type guard pour vérifier si une entité est un Poi
  */
-export function isPoi(entity: SearchEntity): entity is Poi {
+export function isPoi(entity: EntityTypes): entity is Poi {
   return entity.getEntityType() === "poi";
 }
