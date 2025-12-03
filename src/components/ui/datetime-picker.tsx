@@ -5,6 +5,7 @@ import { useImperativeHandle, useRef, useState, useEffect, useMemo } from "react
 import { DayPicker } from "react-day-picker";
 
 import { Button, buttonVariants } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
@@ -820,92 +821,88 @@ function DateTimePicker({
   }
 
   return (
-    <Popover {...props}>
-      <PopoverTrigger asChild disabled={disabled}>
-        <Button
-          variant="outline"
-          className={cn(
-            "w-full justify-start text-left font-normal",
-            !displayDate && "text-muted-foreground",
-            className
-          )}
-          ref={buttonRef}
-          data-slot="datetime-picker-trigger"
-        >
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          {displayDate ? (
-            format(
-              displayDate,
-              hourCycle === 24 ? initHourFormat.hour24 : initHourFormat.hour12,
-              {
-                locale: loc,
-              }
-            )
-          ) : (
-            <span>{placeholder}</span>
-          )}
-          {clearable && displayDate && (
-            <span
-              role="button"
-              className="ml-auto flex items-center justify-center"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onChange?.(undefined);
-                setDisplayDate(undefined);
-              }}
-              onPointerDown={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-            >
-              <X className="h-4 w-4 opacity-50 hover:opacity-100" />
-            </span>
-          )}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" data-slot="datetime-picker-content">
-        <Calendar
-          mode="single"
-          selected={displayDate}
-          month={month}
-          onSelect={(newDate) => {
-            if (newDate) {
-              newDate.setHours(
-                month?.getHours?.() ?? 0,
-                month?.getMinutes?.() ?? 0,
-                month?.getSeconds?.() ?? 0
-              );
-              onSelect(newDate);
-            }
-          }}
-          onMonthChange={handleMonthChange}
-          yearRange={yearRange}
-          locale={locale}
-          min={min}
-          max={max}
-        />
-        {granularity !== "day" && (
-          <div className="border-border border-t p-3">
-            <TimePicker
-              onChange={(value) => {
-                const clampedValue = clampDate(value, min, max);
-                onChange?.(clampedValue);
-                setDisplayDate(clampedValue);
-                if (clampedValue) {
-                  setMonth(clampedValue);
+    <ButtonGroup className={cn("w-full", className)}>
+      <Popover {...props}>
+        <PopoverTrigger asChild disabled={disabled}>
+          <Button
+            variant="outline"
+            className={cn(
+              "flex-1 justify-start text-left font-normal",
+              !displayDate && "text-muted-foreground"
+            )}
+            ref={buttonRef}
+            data-slot="datetime-picker-trigger"
+          >
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {displayDate ? (
+              format(
+                displayDate,
+                hourCycle === 24 ? initHourFormat.hour24 : initHourFormat.hour12,
+                {
+                  locale: loc,
                 }
-              }}
-              date={month}
-              hourCycle={hourCycle}
-              granularity={granularity}
-              min={min}
-              max={max}
-            />
-          </div>
-        )}
-      </PopoverContent>
-    </Popover>
+              )
+            ) : (
+              <span>{placeholder}</span>
+            )}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" data-slot="datetime-picker-content">
+          <Calendar
+            mode="single"
+            selected={displayDate}
+            month={month}
+            onSelect={(newDate) => {
+              if (newDate) {
+                newDate.setHours(
+                  month?.getHours?.() ?? 0,
+                  month?.getMinutes?.() ?? 0,
+                  month?.getSeconds?.() ?? 0
+                );
+                onSelect(newDate);
+              }
+            }}
+            onMonthChange={handleMonthChange}
+            yearRange={yearRange}
+            locale={locale}
+            min={min}
+            max={max}
+          />
+          {granularity !== "day" && (
+            <div className="border-border border-t p-3">
+              <TimePicker
+                onChange={(value) => {
+                  const clampedValue = clampDate(value, min, max);
+                  onChange?.(clampedValue);
+                  setDisplayDate(clampedValue);
+                  if (clampedValue) {
+                    setMonth(clampedValue);
+                  }
+                }}
+                date={month}
+                hourCycle={hourCycle}
+                granularity={granularity}
+                min={min}
+                max={max}
+              />
+            </div>
+          )}
+        </PopoverContent>
+      </Popover>
+      {clearable && displayDate && (
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          onClick={() => {
+            onChange?.(undefined);
+            setDisplayDate(undefined);
+          }}
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      )}
+    </ButtonGroup>
   );
 }
 
