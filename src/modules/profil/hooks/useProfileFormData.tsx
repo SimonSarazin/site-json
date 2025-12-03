@@ -1,12 +1,13 @@
 import { useMemo } from "react";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
-import { isEvent, isOrganization, isProject, isUser } from "@/lib/getTypedEntity";
+import { isEvent, isOrganization, isProject, isUser, isPoi } from "@/lib/getTypedEntity";
 import { widgetFormatters } from "@/constants/DAYS";
 import type {
   UserProfileFormData,
   OrganizationProfileFormData,
   ProjectProfileFormData,
   EventProfileFormData,
+  PoiProfileFormData,
 } from "../schemaForm";
 
 /**
@@ -25,59 +26,54 @@ export function useProfileFormData(entity: EntityTypes | null) {
       return { defaultValues: null, entityType: null };
     }
 
-    const { serverData } = entity;
     const entityType = entity.getEntityType();
 
     // User
     if (isUser(entity)) {
-      const address = serverData.address && typeof serverData.address === 'object'
-        ? serverData.address as Record<string, unknown>
-        : {};
-
-      const socialNetworks = serverData.socialNetwork && typeof serverData.socialNetwork === 'object'
-        ? serverData.socialNetwork as Record<string, unknown>
-        : {};
+      const { serverData } = entity;
+      const address = serverData.address ?? {};
+      const socialNetworks = serverData.socialNetwork ?? {};
 
       const defaultValues: UserProfileFormData = {
-        name: (serverData.name as string) || "",
-        shortDescription: (serverData.shortDescription as string) || "",
-        description: (serverData.description as string) || "",
-        email: (serverData.email as string) || "",
-        mobile: (serverData.mobile as string) || "",
-        fixe: (serverData.fixe as string) || "",
-        url: (serverData.url as string) || "",
+        name: serverData.name || "",
+        shortDescription: serverData.shortDescription || "",
+        description: serverData.description || "",
+        email: serverData.email || "",
+        mobile: serverData.mobile || "",
+        fixe: serverData.fixe || "",
+        url: serverData.url || "",
         birthDate: serverData.birthDate
-          ? new Date(serverData.birthDate as Date).toISOString().split('T')[0]
+          ? new Date(serverData.birthDate).toISOString().split('T')[0]
           : "",
         // Adresse complète
-        addressCountry: (address.addressCountry as string) || "",
-        streetAddress: (address.streetAddress as string) || "",
-        postalCode: (address.postalCode as string) || "",
-        addressLocality: (address.addressLocality as string) || "",
-        localityId: (address.localityId as string) || "",
-        level1: (address.level1 as string) || "",
-        level1Name: (address.level1Name as string) || "",
-        level2: (address.level2 as string) || "",
-        level2Name: (address.level2Name as string) || "",
-        level3: (address.level3 as string) || "",
-        level3Name: (address.level3Name as string) || "",
-        level4: (address.level4 as string) || "",
-        level4Name: (address.level4Name as string) || "",
-        codeInsee: (address.codeInsee as string) || "",
+        addressCountry: address.addressCountry || "",
+        streetAddress: address.streetAddress || "",
+        postalCode: address.postalCode || "",
+        addressLocality: address.addressLocality || "",
+        localityId: address.localityId || "",
+        level1: address.level1 || "",
+        level1Name: address.level1Name || "",
+        level2: address.level2 || "",
+        level2Name: address.level2Name || "",
+        level3: address.level3 || "",
+        level3Name: address.level3Name || "",
+        level4: address.level4 || "",
+        level4Name: address.level4Name || "",
+        codeInsee: address.codeInsee || "",
         // Réseaux sociaux
-        github: (socialNetworks.github as string) || "",
-        gitlab: (socialNetworks.gitlab as string) || "",
-        facebook: (socialNetworks.facebook as string) || "",
-        twitter: (socialNetworks.twitter as string) || "",
-        instagram: (socialNetworks.instagram as string) || "",
-        diaspora: (socialNetworks.diaspora as string) || "",
-        mastodon: (socialNetworks.mastodon as string) || "",
-        telegram: (socialNetworks.telegram as string) || "",
-        signal: (socialNetworks.signal as string) || "",
+        github: socialNetworks.github || "",
+        gitlab: socialNetworks.gitlab || "",
+        facebook: socialNetworks.facebook || "",
+        twitter: socialNetworks.twitter || "",
+        instagram: socialNetworks.instagram || "",
+        diaspora: socialNetworks.diaspora || "",
+        mastodon: socialNetworks.mastodon || "",
+        telegram: socialNetworks.telegram || "",
+        signal: socialNetworks.signal || "",
         // Tags
-        tags: Array.isArray(serverData.tags) ? serverData.tags as string[] : [],
+        tags: serverData.tags || [],
         // Slug
-        slug: (serverData.slug as string) || "",
+        slug: serverData.slug || "",
       };
 
       return { defaultValues, entityType };
@@ -85,13 +81,9 @@ export function useProfileFormData(entity: EntityTypes | null) {
 
     // Organization
     if (isOrganization(entity)) {
-      const address = serverData.address && typeof serverData.address === 'object'
-        ? serverData.address as Record<string, unknown>
-        : {};
-
-      const socialNetworks = serverData.socialNetwork && typeof serverData.socialNetwork === 'object'
-        ? serverData.socialNetwork as Record<string, unknown>
-        : {};
+      const { serverData } = entity;
+      const address = serverData.address ?? {};
+      const socialNetworks = serverData.socialNetwork ?? {};
 
       // Normaliser les horaires d'ouverture avec le formatter
       const openingHours = serverData.openingHours && Array.isArray(serverData.openingHours)
@@ -99,43 +91,43 @@ export function useProfileFormData(entity: EntityTypes | null) {
         : [];
 
       const defaultValues: OrganizationProfileFormData = {
-        name: (serverData.name as string) || "",
-        shortDescription: (serverData.shortDescription as string) || "",
-        description: (serverData.description as string) || "",
-        email: (serverData.email as string) || "",
-        url: (serverData.url as string) || "",
-        type: serverData.type as OrganizationProfileFormData["type"],
+        name: serverData.name || "",
+        shortDescription: serverData.shortDescription || "",
+        description: serverData.description || "",
+        email: serverData.email || "",
+        url: serverData.url || "",
+        type: serverData.type,
         // Adresse complète
-        addressCountry: (address.addressCountry as string) || "",
-        streetAddress: (address.streetAddress as string) || "",
-        postalCode: (address.postalCode as string) || "",
-        addressLocality: (address.addressLocality as string) || "",
-        localityId: (address.localityId as string) || "",
-        level1: (address.level1 as string) || "",
-        level1Name: (address.level1Name as string) || "",
-        level2: (address.level2 as string) || "",
-        level2Name: (address.level2Name as string) || "",
-        level3: (address.level3 as string) || "",
-        level3Name: (address.level3Name as string) || "",
-        level4: (address.level4 as string) || "",
-        level4Name: (address.level4Name as string) || "",
-        codeInsee: (address.codeInsee as string) || "",
+        addressCountry: address.addressCountry || "",
+        streetAddress: address.streetAddress || "",
+        postalCode: address.postalCode || "",
+        addressLocality: address.addressLocality || "",
+        localityId: address.localityId || "",
+        level1: address.level1 || "",
+        level1Name: address.level1Name || "",
+        level2: address.level2 || "",
+        level2Name: address.level2Name || "",
+        level3: address.level3 || "",
+        level3Name: address.level3Name || "",
+        level4: address.level4 || "",
+        level4Name: address.level4Name || "",
+        codeInsee: address.codeInsee || "",
         // Réseaux sociaux
-        github: (socialNetworks.github as string) || "",
-        gitlab: (socialNetworks.gitlab as string) || "",
-        facebook: (socialNetworks.facebook as string) || "",
-        twitter: (socialNetworks.twitter as string) || "",
-        instagram: (socialNetworks.instagram as string) || "",
-        diaspora: (socialNetworks.diaspora as string) || "",
-        mastodon: (socialNetworks.mastodon as string) || "",
-        telegram: (socialNetworks.telegram as string) || "",
-        signal: (socialNetworks.signal as string) || "",
+        github: socialNetworks.github || "",
+        gitlab: socialNetworks.gitlab || "",
+        facebook: socialNetworks.facebook || "",
+        twitter: socialNetworks.twitter || "",
+        instagram: socialNetworks.instagram || "",
+        diaspora: socialNetworks.diaspora || "",
+        mastodon: socialNetworks.mastodon || "",
+        telegram: socialNetworks.telegram || "",
+        signal: socialNetworks.signal || "",
         // Champs spécifiques aux organisations
         openingHours: openingHours,
         // Tags
-        tags: Array.isArray(serverData.tags) ? serverData.tags as string[] : [],
+        tags: serverData.tags || [],
         // Slug
-        slug: (serverData.slug as string) || "",
+        slug: serverData.slug || "",
       };
 
       return { defaultValues, entityType };
@@ -143,56 +135,50 @@ export function useProfileFormData(entity: EntityTypes | null) {
 
     // Project
     if (isProject(entity)) {
-      const address = serverData.address && typeof serverData.address === 'object'
-        ? serverData.address as Record<string, unknown>
-        : {};
-
-      const socialNetworks = serverData.socialNetwork && typeof serverData.socialNetwork === 'object'
-        ? serverData.socialNetwork as Record<string, unknown>
-        : {};
+      const { serverData } = entity;
+      const address = serverData.address ?? {};
+      const socialNetworks = serverData.socialNetwork ?? {};
 
       // Parent au format { mongoId: { type, name } }
-      const parent = serverData.parent && typeof serverData.parent === 'object' && !Array.isArray(serverData.parent)
-        ? serverData.parent as Record<string, { type: string; name?: string }>
-        : undefined;
+      const parent = serverData.parent ?? undefined;
 
       const defaultValues: ProjectProfileFormData = {
-        name: (serverData.name as string) || "",
-        shortDescription: (serverData.shortDescription as string) || "",
-        description: (serverData.description as string) || "",
-        email: (serverData.email as string) || "",
-        url: (serverData.url as string) || "",
-        avancement: serverData.avancement as ProjectProfileFormData["avancement"],
+        name: serverData.name || "",
+        shortDescription: serverData.shortDescription || "",
+        description: serverData.description || "",
+        email: serverData.email || "",
+        url: serverData.url || "",
+        avancement: serverData.avancement,
         parent,
         // Adresse complète
-        addressCountry: (address.addressCountry as string) || "",
-        streetAddress: (address.streetAddress as string) || "",
-        postalCode: (address.postalCode as string) || "",
-        addressLocality: (address.addressLocality as string) || "",
-        localityId: (address.localityId as string) || "",
-        level1: (address.level1 as string) || "",
-        level1Name: (address.level1Name as string) || "",
-        level2: (address.level2 as string) || "",
-        level2Name: (address.level2Name as string) || "",
-        level3: (address.level3 as string) || "",
-        level3Name: (address.level3Name as string) || "",
-        level4: (address.level4 as string) || "",
-        level4Name: (address.level4Name as string) || "",
-        codeInsee: (address.codeInsee as string) || "",
+        addressCountry: address.addressCountry || "",
+        streetAddress: address.streetAddress || "",
+        postalCode: address.postalCode || "",
+        addressLocality: address.addressLocality || "",
+        localityId: address.localityId || "",
+        level1: address.level1 || "",
+        level1Name: address.level1Name || "",
+        level2: address.level2 || "",
+        level2Name: address.level2Name || "",
+        level3: address.level3 || "",
+        level3Name: address.level3Name || "",
+        level4: address.level4 || "",
+        level4Name: address.level4Name || "",
+        codeInsee: address.codeInsee || "",
         // Réseaux sociaux
-        github: (socialNetworks.github as string) || "",
-        gitlab: (socialNetworks.gitlab as string) || "",
-        facebook: (socialNetworks.facebook as string) || "",
-        twitter: (socialNetworks.twitter as string) || "",
-        instagram: (socialNetworks.instagram as string) || "",
-        diaspora: (socialNetworks.diaspora as string) || "",
-        mastodon: (socialNetworks.mastodon as string) || "",
-        telegram: (socialNetworks.telegram as string) || "",
-        signal: (socialNetworks.signal as string) || "",
+        github: socialNetworks.github || "",
+        gitlab: socialNetworks.gitlab || "",
+        facebook: socialNetworks.facebook || "",
+        twitter: socialNetworks.twitter || "",
+        instagram: socialNetworks.instagram || "",
+        diaspora: socialNetworks.diaspora || "",
+        mastodon: socialNetworks.mastodon || "",
+        telegram: socialNetworks.telegram || "",
+        signal: socialNetworks.signal || "",
         // Tags
-        tags: Array.isArray(serverData.tags) ? serverData.tags as string[] : [],
+        tags: serverData.tags || [],
         // Slug
-        slug: (serverData.slug as string) || "",
+        slug: serverData.slug || "",
       };
 
       return { defaultValues, entityType };
@@ -200,62 +186,92 @@ export function useProfileFormData(entity: EntityTypes | null) {
 
     // Event
     if (isEvent(entity)) {
-      const address = serverData.address && typeof serverData.address === 'object'
-        ? serverData.address as Record<string, unknown>
-        : {};
+      const { serverData } = entity;
+      const address = serverData.address ?? {};
 
       // Normaliser les horaires d'ouverture avec le formatter
       const openingHours = serverData.openingHours && Array.isArray(serverData.openingHours)
         ? widgetFormatters.openingHours(serverData.openingHours).filter((d: { hours: unknown[] }) => d.hours.length > 0)
         : [];
 
-      // Parent et organizer au format { mongoId: { type, name } }
-      const parent = serverData.parent && typeof serverData.parent === 'object' && !Array.isArray(serverData.parent)
-        ? serverData.parent as Record<string, { type: string; name?: string }>
-        : undefined;
-
-      const organizer = serverData.organizer && typeof serverData.organizer === 'object' && !Array.isArray(serverData.organizer)
-        ? serverData.organizer as Record<string, { type: string; name?: string }>
-        : {};
+      // Parent et organizer
+      const parent = serverData.parent ?? undefined;
+      const organizer = serverData.organizer ?? {};
 
       const defaultValues: EventProfileFormData = {
-        name: (serverData.name as string) || "",
-        shortDescription: (serverData.shortDescription as string) || "",
-        email: (serverData.email as string) || "",
-        url: (serverData.url as string) || "",
-        type: serverData.type as EventProfileFormData["type"],
+        name: serverData.name || "",
+        shortDescription: serverData.shortDescription || "",
+        email: serverData.email || "",
+        url: serverData.url || "",
+        type: serverData.type,
         public: serverData.public !== false,
         recurrency: Boolean(serverData.recurrency),
         parent,
         organizer,
         // Dates et horaires
-        timeZone: (serverData.timeZone as string) || "",
+        timeZone: serverData.timeZone || "",
         startDate: serverData.startDate
-          ? new Date(serverData.startDate as Date).toISOString()
+          ? new Date(serverData.startDate).toISOString()
           : "",
         endDate: serverData.endDate
-          ? new Date(serverData.endDate as Date).toISOString()
+          ? new Date(serverData.endDate).toISOString()
           : "",
         openingHours: openingHours,
         // Adresse complète
-        addressCountry: (address.addressCountry as string) || "",
-        streetAddress: (address.streetAddress as string) || "",
-        postalCode: (address.postalCode as string) || "",
-        addressLocality: (address.addressLocality as string) || "",
-        localityId: (address.localityId as string) || "",
-        level1: (address.level1 as string) || "",
-        level1Name: (address.level1Name as string) || "",
-        level2: (address.level2 as string) || "",
-        level2Name: (address.level2Name as string) || "",
-        level3: (address.level3 as string) || "",
-        level3Name: (address.level3Name as string) || "",
-        level4: (address.level4 as string) || "",
-        level4Name: (address.level4Name as string) || "",
-        codeInsee: (address.codeInsee as string) || "",
+        addressCountry: address.addressCountry || "",
+        streetAddress: address.streetAddress || "",
+        postalCode: address.postalCode || "",
+        addressLocality: address.addressLocality || "",
+        localityId: address.localityId || "",
+        level1: address.level1 || "",
+        level1Name: address.level1Name || "",
+        level2: address.level2 || "",
+        level2Name: address.level2Name || "",
+        level3: address.level3 || "",
+        level3Name: address.level3Name || "",
+        level4: address.level4 || "",
+        level4Name: address.level4Name || "",
+        codeInsee: address.codeInsee || "",
         // Tags
-        tags: Array.isArray(serverData.tags) ? serverData.tags as string[] : [],
+        tags: serverData.tags || [],
         // Slug
-        slug: (serverData.slug as string) || "",
+        slug: serverData.slug || "",
+      };
+
+      return { defaultValues, entityType };
+    }
+
+    // POI
+    if (isPoi(entity)) {
+      const { serverData } = entity;
+      const address = serverData.address ?? {};
+
+      const defaultValues: PoiProfileFormData = {
+        name: serverData.name || "",
+        description: serverData.description || "",
+        email: serverData.email || "",
+        url: serverData.url || "",
+        type: serverData.type,
+        urls: serverData.urls || [],
+        // Adresse complète
+        addressCountry: address.addressCountry || "",
+        streetAddress: address.streetAddress || "",
+        postalCode: address.postalCode || "",
+        addressLocality: address.addressLocality || "",
+        localityId: address.localityId || "",
+        level1: address.level1 || "",
+        level1Name: address.level1Name || "",
+        level2: address.level2 || "",
+        level2Name: address.level2Name || "",
+        level3: address.level3 || "",
+        level3Name: address.level3Name || "",
+        level4: address.level4 || "",
+        level4Name: address.level4Name || "",
+        codeInsee: address.codeInsee || "",
+        // Tags
+        tags: serverData.tags || [],
+        // Slug
+        slug: serverData.slug || "",
       };
 
       return { defaultValues, entityType };

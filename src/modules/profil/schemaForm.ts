@@ -1,4 +1,4 @@
-import { EVENT_TYPES, ORGANIZATION_TYPES, PROJECT_AVANCEMENTS } from "@communecter/cocolight-api-client";
+import { EVENT_TYPES, ORGANIZATION_TYPES, POI_TYPES, PROJECT_AVANCEMENTS } from "@communecter/cocolight-api-client";
 import { z } from "zod";
 
 // ============================================================================
@@ -59,16 +59,6 @@ const localityFieldsSchema = z.object({
   level4Name: z.string().optional(),
   codeInsee: z.string().optional(),
 });
-
-// Types POI (liste partagée entre poiProfileSchema et addPoiSchema)
-const POI_TYPES = [
-  "link", "tool", "machine", "software", "rh",
-  "Resource material", "Financial Ressource", "ficheBlanche",
-  "geoJson", "compostPickup", "video", "sharedLibrary",
-  "recoveryCenter", "trash", "history", "something2See",
-  "funPlace", "place", "artPiece", "streetArts",
-  "openScene", "stand", "parking", "other"
-] as const;
 
 // ============================================================================
 // SCHÉMAS PARTAGÉS POUR ADD_BLOCKS
@@ -268,8 +258,7 @@ export const poiProfileSchema = z.object({
   type: z.enum(POI_TYPES).optional(), // optional pour edit
   urls: z.array(z.string()).optional(),
 
-  // UPDATE_BLOCK_DESCRIPTION
-  shortDescription: z.string().optional(),
+  // UPDATE_BLOCK_DESCRIPTION (POI n'a pas de shortDescription)
   description: z.string().optional(),
 
   // UPDATE_BLOCK_SLUG
