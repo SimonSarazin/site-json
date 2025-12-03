@@ -71,6 +71,27 @@ export function EditBasicInfoTab({ form, entityType }: EditBasicInfoTabProps) {
         )}
       />
 
+      {/* Slug */}
+      <FormField
+        control={form.control}
+        name="slug"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>{t("ProfileEdit.fields.slug.label")}</FormLabel>
+            <FormControl>
+              <Input
+                {...field}
+                placeholder={t("ProfileEdit.fields.slug.placeholder")}
+              />
+            </FormControl>
+            <FormDescription>
+              {t("ProfileEdit.fields.slug.description")}
+            </FormDescription>
+            <TranslatedFormMessage />
+          </FormItem>
+        )}
+      />
+
       {/* Date de naissance (citoyens) */}
       {entityType === "citoyens" && (
         <FormField

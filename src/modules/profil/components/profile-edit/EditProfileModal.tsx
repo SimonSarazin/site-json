@@ -76,6 +76,7 @@ export function EditProfileModal({
     try {
       const updateData: Record<string, unknown> = {
         name: data.name,
+        slug: data.slug,
       };
 
       // Helper pour construire l'adresse

@@ -76,6 +76,8 @@ export function useProfileFormData(entity: EntityTypes | null) {
         signal: (socialNetworks.signal as string) || "",
         // Tags
         tags: Array.isArray(serverData.tags) ? serverData.tags as string[] : [],
+        // Slug
+        slug: (serverData.slug as string) || "",
       };
 
       return { defaultValues, entityType };
@@ -132,6 +134,8 @@ export function useProfileFormData(entity: EntityTypes | null) {
         openingHours: openingHours,
         // Tags
         tags: Array.isArray(serverData.tags) ? serverData.tags as string[] : [],
+        // Slug
+        slug: (serverData.slug as string) || "",
       };
 
       return { defaultValues, entityType };
@@ -187,6 +191,8 @@ export function useProfileFormData(entity: EntityTypes | null) {
         signal: (socialNetworks.signal as string) || "",
         // Tags
         tags: Array.isArray(serverData.tags) ? serverData.tags as string[] : [],
+        // Slug
+        slug: (serverData.slug as string) || "",
       };
 
       return { defaultValues, entityType };
@@ -248,6 +254,8 @@ export function useProfileFormData(entity: EntityTypes | null) {
         codeInsee: (address.codeInsee as string) || "",
         // Tags
         tags: Array.isArray(serverData.tags) ? serverData.tags as string[] : [],
+        // Slug
+        slug: (serverData.slug as string) || "",
       };
 
       return { defaultValues, entityType };

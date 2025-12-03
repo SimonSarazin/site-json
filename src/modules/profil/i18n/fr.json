@@ -459,6 +459,11 @@
         "placeholder": "Votre nom",
         "description": "Le nom affiché sur votre profil"
       },
+      "slug": {
+        "label": "Identifiant URL (slug)",
+        "placeholder": "monprofil",
+        "description": "L'identifiant unique utilisé dans l'URL (lettres et chiffres uniquement, min 3 caractères)"
+      },
       "birthDate": {
         "label": "Date de naissance",
         "placeholder": "Sélectionner une date",

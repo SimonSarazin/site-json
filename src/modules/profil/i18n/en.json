@@ -459,6 +459,11 @@
         "placeholder": "Your name",
         "description": "The name displayed on your profile"
       },
+      "slug": {
+        "label": "URL identifier (slug)",
+        "placeholder": "myprofile",
+        "description": "The unique identifier used in the URL (letters and numbers only, min 3 characters)"
+      },
       "birthDate": {
         "label": "Birth date",
         "placeholder": "Select a date",

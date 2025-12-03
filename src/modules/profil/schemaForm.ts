@@ -127,8 +127,7 @@ export const userProfileSchema = z.object({
   slug: z.string()
     .min(3, "validation.slug.minLength")
     .max(100, "validation.slug.maxLength")
-    .regex(/^[a-zA-Z0-9]+$/, "validation.slug.format")
-    .optional(),
+    .regex(/^[a-zA-Z0-9]+$/, "validation.slug.format"),
 });
 
 export type UserProfileFormData = z.infer<typeof userProfileSchema>;
@@ -180,20 +179,10 @@ export const organizationProfileSchema = z.object({
   slug: z.string()
     .min(3, "validation.slug.minLength")
     .max(100, "validation.slug.maxLength")
-    .regex(/^[a-zA-Z0-9]+$/, "validation.slug.format")
-    .optional(),
+    .regex(/^[a-zA-Z0-9]+$/, "validation.slug.format"),
 
   // VIRTUAL_OPENING_HOURS (spécifique à Organization)
-  openingHours: z.array(z.union([
-    z.literal(""),
-    z.object({
-      dayOfWeek: z.enum(["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]),
-      hours: z.array(z.object({
-        opens: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "validation.openingHours.format"),
-        closes: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "validation.openingHours.format"),
-      })),
-    })
-  ])).length(7).optional(),
+  openingHours: openingHoursSchema.optional()
 });
 
 export type OrganizationProfileFormData = z.infer<typeof organizationProfileSchema>;
@@ -246,8 +235,7 @@ export const projectProfileSchema = z.object({
   slug: z.string()
     .min(3, "validation.slug.minLength")
     .max(100, "validation.slug.maxLength")
-    .regex(/^[a-zA-Z0-9]+$/, "validation.slug.format")
-    .optional(),
+    .regex(/^[a-zA-Z0-9]+$/, "validation.slug.format"),
 });
 
 export type ProjectProfileFormData = z.infer<typeof projectProfileSchema>;
@@ -309,8 +297,7 @@ export const eventProfileSchema = z.object({
   slug: z.string()
     .min(3, "validation.slug.minLength")
     .max(100, "validation.slug.maxLength")
-    .regex(/^[a-zA-Z0-9]+$/, "validation.slug.format")
-    .optional(),
+    .regex(/^[a-zA-Z0-9]+$/, "validation.slug.format"),
 }).superRefine((data, ctx) => {
   // Validation organizer obligatoire
   if (!data.organizer || Object.keys(data.organizer).length === 0) {
@@ -427,8 +414,7 @@ export const poiProfileSchema = z.object({
   slug: z.string()
     .min(3, "validation.slug.minLength")
     .max(100, "validation.slug.maxLength")
-    .regex(/^[a-zA-Z0-9]+$/, "validation.slug.format")
-    .optional(),
+    .regex(/^[a-zA-Z0-9]+$/, "validation.slug.format"),
 });
 
 export type PoiProfileFormData = z.infer<typeof poiProfileSchema>;
