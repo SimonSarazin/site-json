@@ -423,6 +423,16 @@
       "removeError": "Failed to remove friend",
       "requestCancelled": "Friend request cancelled",
       "cancelError": "Failed to cancel friend request"
+    },
+    "add": {
+      "organizationSuccess": "Organization created successfully",
+      "organizationError": "Failed to create organization",
+      "projectSuccess": "Project created successfully",
+      "projectError": "Failed to create project",
+      "eventSuccess": "Event created successfully",
+      "eventError": "Failed to create event",
+      "poiSuccess": "Location created successfully",
+      "poiError": "Failed to create location"
     }
   },
   "ProfileEdit": {
@@ -671,6 +681,31 @@
     "joinProject": "Join Project",
     "addPoi": "Add Place",
     "createEvent": "Create Event"
+  },
+  "AddEntity": {
+    "create": "Create",
+    "organization": "Organization",
+    "project": "Project",
+    "event": "Event",
+    "poi": "Place",
+    "modal": {
+      "organization": {
+        "title": "Create an organization",
+        "description": "Fill in your organization details"
+      },
+      "project": {
+        "title": "Create a project",
+        "description": "Fill in your project details"
+      },
+      "event": {
+        "title": "Create an event",
+        "description": "Fill in your event details"
+      },
+      "poi": {
+        "title": "Add a place",
+        "description": "Fill in the place details"
+      }
+    }
   },
   "ProfileRelated": {
     "empty": {

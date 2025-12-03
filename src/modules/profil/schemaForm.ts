@@ -521,11 +521,27 @@ export const addPoiSchema = z.object({
 export type AddPoiFormData = z.infer<typeof addPoiSchema>;
 
 // ============================================================================
-// ADD_EVENT SCHEMA
+// ADD_EVENT SCHEMA (simplifié pour le formulaire de création)
 // ============================================================================
 
-// Réutilise eventProfileSchema (mêmes champs et validations conditionnelles)
-export const addEventSchema = eventProfileSchema;
+export const addEventSchema = z.object({
+  // Champs requis
+  name: z.string().min(2, "validation.name.minLength"),
+  type: z.enum(EVENT_TYPES),
+
+  // Champs optionnels
+  shortDescription: z.string().optional(),
+  public: z.boolean().default(true),
+  recurrency: z.boolean().default(false),
+
+  // Dates (requises si non récurrent, gérées par le composant)
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+
+  // Relations
+  organizer: parentSchema.optional(),
+  parent: parentSchema.optional(),
+});
 
 export type AddEventFormData = z.infer<typeof addEventSchema>;
 

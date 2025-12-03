@@ -56,7 +56,7 @@ export function StatusDropdownLayout({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant={statusVariant} className="px-5 py-2.5 h-auto text-sm font-medium gap-2">
+          <Button variant={statusVariant} className="h-auto text-sm font-medium gap-2">
             {statusIcon}
             {statusLabel}
             <ChevronDown className="w-4 h-4" />

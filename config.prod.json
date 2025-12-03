@@ -1363,7 +1363,14 @@
       "hideFooter": false,
       "sections": [
         {
-          "type": "profile-header-complete"
+          "type": "profile-header-complete",
+          "showAddDropdown": true,
+          "addConfig": {
+            "organization": true,
+            "project": true,
+            "event": true,
+            "poi": true
+          }
         },
         {
           "type": "profile-template-dynamic"
@@ -1462,7 +1469,14 @@
       "hideFooter": false,
       "sections": [
         {
-          "type": "profile-header-complete"
+          "type": "profile-header-complete",
+          "showAddDropdown": true,
+          "addConfig": {
+            "organization": false,
+            "project": true,
+            "event": true,
+            "poi": true
+          }
         },
         {
           "type": "profile-template-dynamic"
@@ -1609,7 +1623,14 @@
       "hideFooter": false,
       "sections": [
         {
-          "type": "profile-header-complete"
+          "type": "profile-header-complete",
+          "showAddDropdown": true,
+          "addConfig": {
+            "organization": false,
+            "project": false,
+            "event": true,
+            "poi": true
+          }
         },
         {
           "type": "profile-template-dynamic"
@@ -1756,7 +1777,14 @@
       "hideFooter": false,
       "sections": [
         {
-          "type": "profile-header-complete"
+          "type": "profile-header-complete",
+          "showAddDropdown": true,
+          "addConfig": {
+            "organization": false,
+            "project": false,
+            "event": false,
+            "poi": true
+          }
         },
         {
           "type": "profile-template-dynamic"
@@ -1906,7 +1934,8 @@
       "hideFooter": false,
       "sections": [
         {
-          "type": "profile-header-complete"
+          "type": "profile-header-complete",
+          "showAddDropdown": false
         },
         {
           "type": "profile-template-dynamic"

@@ -41,6 +41,12 @@ export interface UserPermissions {
   isAuthor: boolean;
   isParticipant: boolean;
   canParticipate: boolean;
+
+  // Permissions d'ajout d'entités
+  canAddOrganization: boolean;
+  canAddProject: boolean;
+  canAddEvent: boolean;
+  canAddPoi: boolean;
 }
 
 /**
@@ -90,6 +96,10 @@ export function useUserPermissions(
       isAuthor: false,
       isParticipant: false,
       canParticipate: false,
+      canAddOrganization: false,
+      canAddProject: false,
+      canAddEvent: false,
+      canAddPoi: false,
     };
 
     // Si pas d'entité
@@ -131,6 +141,11 @@ export function useUserPermissions(
         isAuthor: false,
         isParticipant: false,
         canParticipate: false,
+        // Peut créer toutes les entités depuis son propre profil
+        canAddOrganization: true,
+        canAddProject: true,
+        canAddEvent: true,
+        canAddPoi: true,
       };
     }
 
@@ -162,6 +177,11 @@ export function useUserPermissions(
         isAuthor: false,
         isParticipant: false,
         canParticipate: false,
+        // Ne peut pas créer d'entités sur le profil d'un autre utilisateur
+        canAddOrganization: false,
+        canAddProject: false,
+        canAddEvent: false,
+        canAddPoi: false,
       };
     }
 
@@ -194,6 +214,11 @@ export function useUserPermissions(
         isAuthor: false,
         isParticipant: false,
         canParticipate: false,
+        // Admin ou membre peuvent créer des entités enfants
+        canAddOrganization: false, // Pas de sous-organisation
+        canAddProject: isOrgAdminOrAuthor || isOrgMember,
+        canAddEvent: isOrgAdminOrAuthor || isOrgMember,
+        canAddPoi: isOrgAdminOrAuthor || isOrgMember,
       };
     }
 
@@ -226,6 +251,11 @@ export function useUserPermissions(
         isAuthor: false,
         isParticipant: false,
         canParticipate: false,
+        // Admin ou contributeur peuvent créer des entités enfants
+        canAddOrganization: false,
+        canAddProject: false, // Pas de sous-projet
+        canAddEvent: isProjectAdmin || isProjectContributor,
+        canAddPoi: isProjectAdmin || isProjectContributor,
       };
     }
 
@@ -258,6 +288,11 @@ export function useUserPermissions(
         isAuthor: isEventAuthor,
         isParticipant: isEventParticipant,
         canParticipate: !isEventAuthor && !isEventParticipant, // Peut participer si pas auteur et pas déjà participant
+        // Seulement l'auteur peut créer des POI sur un événement
+        canAddOrganization: false,
+        canAddProject: false,
+        canAddEvent: false, // Pas de sous-événement (pour l'instant)
+        canAddPoi: isEventAuthor,
       };
     }
 

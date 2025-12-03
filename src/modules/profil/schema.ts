@@ -101,12 +101,24 @@ export const ProfileRelatedSectionSchema = z.object({
   limit: z.number().optional().default(4),
 });
 
+// Configuration pour le dropdown d'ajout d'entités
+export const AddConfigSchema = z.object({
+  organization: z.boolean().optional().default(true),
+  project: z.boolean().optional().default(true),
+  event: z.boolean().optional().default(true),
+  poi: z.boolean().optional().default(true),
+}).optional();
+
 export const ProfileActionsSectionSchema = z.object({
   type: z.literal("profile-actions"),
   showEditButton: z.boolean().optional().default(true),
   showEntityActions: z.boolean().optional().default(true),
   showEmailButton: z.boolean().optional().default(true),
   showReservationButton: z.boolean().optional().default(false),
+  // Dropdown "Créer" pour ajouter des entités
+  showAddDropdown: z.boolean().optional().default(true),
+  addConfig: AddConfigSchema,
+  addDropdownLabel: LocalizedString.optional(),
   emailButtonLabel: LocalizedString.optional(),
   reservationButtonLabel: LocalizedString.optional(),
   layout: z.enum(["horizontal", "vertical", "grid"]).optional().default("horizontal"),
@@ -147,6 +159,10 @@ export const ProfileHeaderCompleteSectionSchema = z.object({
   showAvatar: z.boolean().optional().default(true),
   showLocation: z.boolean().optional().default(true),
   showActions: z.boolean().optional().default(true),
+  // Options pour le dropdown d'ajout d'entités
+  showAddDropdown: z.boolean().optional().default(true),
+  addConfig: AddConfigSchema,
+  addDropdownLabel: LocalizedString.optional(),
 });
 
 export const ProfileTabLayoutSectionSchema = z.object({
@@ -268,6 +284,7 @@ export type ProfileMembersSection = z.infer<typeof ProfileMembersSectionSchema>;
 export type ProfileGallerySection = z.infer<typeof ProfileGallerySectionSchema>;
 export type ProfileRelatedSection = z.infer<typeof ProfileRelatedSectionSchema>;
 export type ProfileActionsSection = z.infer<typeof ProfileActionsSectionSchema>;
+export type AddConfig = z.infer<typeof AddConfigSchema>;
 export type ProfileEventDatesSection = z.infer<typeof ProfileEventDatesSectionSchema>;
 export type ProfileBadgesSection = z.infer<typeof ProfileBadgesSectionSchema>;
 export type ProfileTagsSection = z.infer<typeof ProfileTagsSectionSchema>;

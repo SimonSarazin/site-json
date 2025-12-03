@@ -4,10 +4,10 @@ import { useProfileEntity } from "../../hooks/useProfileEntity";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { EntityActionButtons } from "../EntityActionButtons";
 import { EditProfileModal } from "../profile-edit/EditProfileModal";
+import { AddEntityDropdown } from "../action-buttons/AddEntityDropdown";
+import { Button } from "@/components/ui/button";
 import { useT } from "@/hooks/useT";
-import { useLocalization } from "@/hooks/useLocalization";
 import type { ProfileActionsSection } from "../../schema";
-import type { LocalizedString } from "@/types/locale-schema";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 
 interface ProfileActionsProps {
@@ -23,7 +23,6 @@ export default function ProfileActions({ section }: ProfileActionsProps) {
   const { canEditProfile } = useUserPermissions(entity);
   useLoadNamespace("modules/profil");
   const t = useT("modules/profil");
-  const { currentLocale } = useLocalization();
   const [editModalOpen, setEditModalOpen] = useState(false);
 
   const {
@@ -31,6 +30,9 @@ export default function ProfileActions({ section }: ProfileActionsProps) {
     showEntityActions = true,
     showEmailButton = true,
     showReservationButton = false,
+    showAddDropdown = true,
+    addConfig,
+    addDropdownLabel,
     emailButtonLabel,
     reservationButtonLabel,
     layout = "horizontal",
@@ -40,15 +42,6 @@ export default function ProfileActions({ section }: ProfileActionsProps) {
 
   const entityType = entity.getEntityType?.();
   const isUser = entityType === "citoyens";
-
-  // Résoudre les labels localisés
-  const resolvedEmailLabel = emailButtonLabel
-    ? (typeof emailButtonLabel === "string" ? emailButtonLabel : (emailButtonLabel as LocalizedString)[currentLocale] || emailButtonLabel.fr || emailButtonLabel.en)
-    : t("ProfileTemplateDefault.sendEmail");
-
-  const resolvedReservationLabel = reservationButtonLabel
-    ? (typeof reservationButtonLabel === "string" ? reservationButtonLabel : (reservationButtonLabel as LocalizedString)[currentLocale] || reservationButtonLabel.fr || reservationButtonLabel.en)
-    : t("ProfileTemplateDefault.reservationSpace");
 
   // Classes CSS selon le layout
   const layoutClasses = {
@@ -62,40 +55,47 @@ export default function ProfileActions({ section }: ProfileActionsProps) {
       <div className={layoutClasses[layout]}>
         {/* Bouton Edit Profile */}
         {showEditButton && canEditProfile && (
-          <button
+          <Button
+            variant="outline"
             onClick={() => setEditModalOpen(true)}
-            className="px-5 py-2.5 border border-border rounded-lg text-foreground bg-card text-sm font-medium hover:bg-muted flex items-center gap-2 shadow-sm"
           >
             <Edit className="w-4 h-4" />
             {t("ProfileTemplateDefault.editProfile")}
-          </button>
+          </Button>
         )}
 
         {/* Boutons d'action d'entité (Follow, Friend, Membership, etc.) */}
         {showEntityActions && <EntityActionButtons entity={entity} />}
+
+        {/* Dropdown pour créer des entités */}
+        {showAddDropdown && (
+          <AddEntityDropdown
+            entity={entity}
+            config={addConfig}
+            label={addDropdownLabel ? t(addDropdownLabel) : undefined}
+          />
+        )}
 
         {/* Boutons email et réservation (seulement pour non-users) */}
         {!isUser && (
           <>
             {/* Bouton Email */}
             {showEmailButton && entity.serverData?.email && typeof entity.serverData.email === "string" && (
-              <button
+              <Button
+                variant="outline"
                 onClick={() => window.location.href = `mailto:${entity.serverData.email}`}
-                className="px-5 py-2.5 border border-border rounded-lg text-foreground bg-card text-sm font-medium hover:bg-muted flex items-center gap-2 shadow-sm"
               >
                 <Mail className="w-4 h-4" />
-                {resolvedEmailLabel}
-              </button>
+                {emailButtonLabel ? t(emailButtonLabel) : t("ProfileTemplateDefault.sendEmail")}
+              </Button>
             )}
 
             {/* Bouton Réservation */}
             {showReservationButton && (
-              <button
-                className="px-5 py-2.5 bg-[#0092a2] text-white rounded-lg text-sm font-medium hover:bg-teal-600 flex items-center gap-2 shadow-sm"
-              >
-                {resolvedReservationLabel}
+              <Button className="bg-[#0092a2] hover:bg-teal-600">
+                {reservationButtonLabel ? t(reservationButtonLabel) : t("ProfileTemplateDefault.reservationSpace")}
                 <ChevronRight className="w-4 h-4" />
-              </button>
+              </Button>
             )}
           </>
         )}

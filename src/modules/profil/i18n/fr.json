@@ -423,6 +423,16 @@
       "removeError": "Impossible de supprimer l'ami",
       "requestCancelled": "Demande d'amitié annulée",
       "cancelError": "Impossible d'annuler la demande d'amitié"
+    },
+    "add": {
+      "organizationSuccess": "Organisation créée avec succès",
+      "organizationError": "Impossible de créer l'organisation",
+      "projectSuccess": "Projet créé avec succès",
+      "projectError": "Impossible de créer le projet",
+      "eventSuccess": "Événement créé avec succès",
+      "eventError": "Impossible de créer l'événement",
+      "poiSuccess": "Lieu créé avec succès",
+      "poiError": "Impossible de créer le lieu"
     }
   },
   "ProfileEdit": {
@@ -671,6 +681,31 @@
     "joinProject": "Rejoindre un Projet",
     "addPoi": "Ajouter un Lieu",
     "createEvent": "Créer un Événement"
+  },
+  "AddEntity": {
+    "create": "Créer",
+    "organization": "Organisation",
+    "project": "Projet",
+    "event": "Événement",
+    "poi": "Lieu",
+    "modal": {
+      "organization": {
+        "title": "Créer une organisation",
+        "description": "Renseignez les informations de votre organisation"
+      },
+      "project": {
+        "title": "Créer un projet",
+        "description": "Renseignez les informations de votre projet"
+      },
+      "event": {
+        "title": "Créer un événement",
+        "description": "Renseignez les informations de votre événement"
+      },
+      "poi": {
+        "title": "Ajouter un lieu",
+        "description": "Renseignez les informations du lieu"
+      }
+    }
   },
   "ProfileRelated": {
     "empty": {

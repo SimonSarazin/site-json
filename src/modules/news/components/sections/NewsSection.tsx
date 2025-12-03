@@ -49,6 +49,7 @@ export const NewsSection = ({ id, props }: NewsSectionProps) => {
   });
 
   const permissions = useUserPermissions(entity);
+
   const { shouldLoad } = useLazyTab("news");
 
   // Hook pour générer les URLs de détail des news
@@ -134,7 +135,7 @@ export const NewsSection = ({ id, props }: NewsSectionProps) => {
         {props.title && (
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-foreground">
-              {typeof props.title === "string" ? props.title : props.title["fr"] || props.title["en"]}
+              {typeof props.title === "string" ? props.title : t(props.title)}
             </h2>
           </div>
         )}
@@ -151,26 +152,45 @@ export const NewsSection = ({ id, props }: NewsSectionProps) => {
 
   if (!news || news.length === 0) {
     return (
-      <section id={id} className="bg-background p-6 sm:p-8 rounded-lg border border-border shadow-sm">
-        {props.title && (
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold text-foreground">
-              {typeof props.title === "string" ? props.title : props.title["fr"] || props.title["en"]}
-            </h2>
+      <>
+        <section id={id} className="bg-background p-6 sm:p-8 rounded-lg border border-border shadow-sm">
+          {props.title && (
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-foreground">
+                {typeof props.title === "string" ? props.title : t(props.title)}
+              </h2>
+            </div>
+          )}
+          <div className="text-center py-12 sm:py-16">
+            <div className="text-muted-foreground mb-3 sm:mb-4">
+              <Calendar className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 mx-auto" />
+            </div>
+            <p className="text-lg sm:text-xl font-semibold text-foreground mb-1 sm:mb-2 px-4">
+              {t("NewsSection.noNews")}
+            </p>
+            <p className="text-sm sm:text-base text-muted-foreground px-4 mb-4">
+              {t("NewsSection.noNewsDescription")}
+            </p>
+            {permissions.canAddNews && (props.showAddButton ?? true) && (
+              <Button
+                onClick={() => setShowAddNewsModal(true)}
+                className="bg-teal-600 hover:bg-teal-700 text-xs sm:text-sm text-white"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                {t("NewsSection.createPost")}
+              </Button>
+            )}
           </div>
+        </section>
+
+        {showAddNewsModal && entity && (
+          <AddNewsModal
+            entity={entity}
+            open={showAddNewsModal}
+            onOpenChange={setShowAddNewsModal}
+          />
         )}
-        <div className="text-center py-12 sm:py-16">
-          <div className="text-muted-foreground mb-3 sm:mb-4">
-            <Calendar className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 mx-auto" />
-          </div>
-          <p className="text-lg sm:text-xl font-semibold text-foreground mb-1 sm:mb-2 px-4">
-            {t("NewsSection.noNews")}
-          </p>
-          <p className="text-sm sm:text-base text-muted-foreground px-4">
-            {t("NewsSection.noNewsDescription")}
-          </p>
-        </div>
-      </section>
+      </>
     );
   }
 
@@ -185,6 +205,7 @@ export const NewsSection = ({ id, props }: NewsSectionProps) => {
     canReport: true,
   };
 
+
   return (
     <NewsProvider value={{
       entity: entity || undefined,
@@ -197,7 +218,7 @@ export const NewsSection = ({ id, props }: NewsSectionProps) => {
         {props.title && (
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-foreground">
-              {typeof props.title === "string" ? props.title : props.title["fr"] || props.title["en"]}
+              {typeof props.title === "string" ? props.title : t(props.title)}
             </h2>
           </div>
         )}

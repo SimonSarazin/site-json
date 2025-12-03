@@ -4,9 +4,11 @@ import { useProfileEntity } from "../../hooks/useProfileEntity";
 import { useFormatProfileEntity } from "../../hooks/useFormatProfileEntity";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { useT } from "@/hooks/useT";
+import { Button } from "@/components/ui/button";
 import { EntityActionButtons } from "../EntityActionButtons";
 import { ProfileImageUpload } from "../profile-edit/ProfileImageUpload";
 import { EditProfileModal } from "../profile-edit/EditProfileModal";
+import { AddEntityDropdown } from "../action-buttons/AddEntityDropdown";
 import type { ProfileHeaderCompleteSection } from "../../schema";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { isUser } from "@/lib/getTypedEntity";
@@ -39,6 +41,9 @@ export default function ProfileHeaderComplete({ section }: ProfileHeaderComplete
     showAvatar = true,
     showLocation = true,
     showActions = true,
+    showAddDropdown = true,
+    addConfig,
+    addDropdownLabel,
   } = section;
 
   if (!entity) return null;
@@ -68,10 +73,10 @@ export default function ProfileHeaderComplete({ section }: ProfileHeaderComplete
           )}
 
           <div className="absolute bottom-6 right-6 z-20">
-            <button className="bg-card text-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-muted flex items-center gap-2 shadow-md border border-border">
+            <Button>
               <ImageIcon className="w-4 h-4" />
               {t("ProfileTemplateDefault.showAllPhotos")}
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -133,35 +138,42 @@ export default function ProfileHeaderComplete({ section }: ProfileHeaderComplete
             {showActions && (
               <div className="flex gap-3 flex-wrap">
                 {canEditProfile && (
-                  <button
+                  <Button
+                    variant="outline"
                     onClick={() => setEditModalOpen(true)}
-                    className="px-5 py-2.5 border border-border rounded-lg text-foreground bg-card text-sm font-medium hover:bg-muted flex items-center gap-2 shadow-sm"
                   >
                     <Edit className="w-4 h-4" />
                     {t("ProfileTemplateDefault.editProfile")}
-                  </button>
+                  </Button>
                 )}
 
                 {/* Boutons d'action (Follow, Friend, Membership, etc.) */}
                 <EntityActionButtons entity={entity} />
 
+                {/* Dropdown pour créer des entités */}
+                {showAddDropdown && (
+                  <AddEntityDropdown
+                    entity={entity}
+                    config={addConfig}
+                    label={addDropdownLabel ? t(addDropdownLabel) : undefined}
+                  />
+                )}
+
                 {!isUser(entity) && (
                   <>
                     {entity.serverData?.email && typeof entity.serverData.email === "string" && (
-                      <button
+                      <Button
+                        variant="outline"
                         onClick={() => window.location.href = `mailto:${entity.serverData.email}`}
-                        className="px-5 py-2.5 border border-border rounded-lg text-foreground bg-card text-sm font-medium hover:bg-muted flex items-center gap-2 shadow-sm"
                       >
                         <Mail className="w-4 h-4" />
                         {t("ProfileTemplateDefault.sendEmail")}
-                      </button>
+                      </Button>
                     )}
-                    <button
-                      className="px-5 py-2.5 bg-[#0092a2] text-white rounded-lg text-sm font-medium hover:bg-teal-600 flex items-center gap-2 shadow-sm"
-                    >
+                    <Button className="bg-[#0092a2] hover:bg-teal-600">
                       {t("ProfileTemplateDefault.reservationSpace")}
                       <ChevronRight className="w-4 h-4" />
-                    </button>
+                    </Button>
                   </>
                 )}
               </div>
