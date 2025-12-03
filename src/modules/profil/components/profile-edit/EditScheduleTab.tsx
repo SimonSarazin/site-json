@@ -6,9 +6,9 @@ import {
   FormItem,
   FormLabel,
   FormControl,
-  FormMessage,
   FormDescription,
 } from "@/components/ui/form";
+import { TranslatedFormMessage } from "./TranslatedFormMessage";
 import { OpeningHoursPicker } from "@/components/shared/OpeningHoursPicker";
 
 interface EditScheduleTabProps {
@@ -51,7 +51,7 @@ export function EditScheduleTab({ form }: EditScheduleTabProps) {
             <FormDescription>
               {t("ProfileEdit.schedule.openingHours.description")}
             </FormDescription>
-            <FormMessage />
+            <TranslatedFormMessage />
           </FormItem>
         )}
       />

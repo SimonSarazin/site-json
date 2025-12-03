@@ -6,9 +6,9 @@ import {
   FormItem,
   FormLabel,
   FormControl,
-  FormMessage,
   FormDescription,
 } from "@/components/ui/form";
+import { TranslatedFormMessage } from "./TranslatedFormMessage";
 import { Switch } from "@/components/ui/switch";
 import { DateTimePicker } from "@/components/ui/datetime-picker";
 import { OpeningHoursPicker } from "@/components/shared/OpeningHoursPicker";
@@ -82,7 +82,7 @@ export function EditEventDatesTab({ form }: EditEventDatesTabProps) {
                     placeholder={t("ProfileEdit.fields.startDate.placeholder")}
                   />
                 </FormControl>
-                <FormMessage />
+                <TranslatedFormMessage />
               </FormItem>
             )}
           />
@@ -105,7 +105,7 @@ export function EditEventDatesTab({ form }: EditEventDatesTabProps) {
                     placeholder={t("ProfileEdit.fields.endDate.placeholder")}
                   />
                 </FormControl>
-                <FormMessage />
+                <TranslatedFormMessage />
               </FormItem>
             )}
           />
@@ -132,7 +132,7 @@ export function EditEventDatesTab({ form }: EditEventDatesTabProps) {
               <FormDescription>
                 {t("ProfileEdit.schedule.openingHours.description")}
               </FormDescription>
-              <FormMessage />
+              <TranslatedFormMessage />
             </FormItem>
           )}
         />

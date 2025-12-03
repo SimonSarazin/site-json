@@ -11,8 +11,8 @@ import {
   FormItem,
   FormLabel,
   FormControl,
-  FormMessage,
 } from "@/components/ui/form";
+import { TranslatedFormMessage } from "./TranslatedFormMessage";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
@@ -384,7 +384,7 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
                 ))}
               </SelectContent>
             </Select>
-            <FormMessage />
+            <TranslatedFormMessage />
           </FormItem>
         )}
       />
@@ -413,7 +413,7 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
                   }
                 />
               </FormControl>
-              <FormMessage />
+              <TranslatedFormMessage />
             </FormItem>
           )}
         />
@@ -449,7 +449,7 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
                     ))}
                   </SelectContent>
                 </Select>
-                <FormMessage />
+                <TranslatedFormMessage />
               </FormItem>
             );
           }}
@@ -480,7 +480,7 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
                   }
                 />
               </FormControl>
-              <FormMessage />
+              <TranslatedFormMessage />
             </FormItem>
           )}
         />
@@ -496,7 +496,7 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
                 <FormControl>
                   <Input {...field} placeholder={t("ProfileEdit.fields.streetAddress.placeholder")} />
                 </FormControl>
-                <FormMessage />
+                <TranslatedFormMessage />
               </FormItem>
             )}
           />

@@ -6,10 +6,10 @@ import { z } from "zod";
 // ============================================================================
 
 // Champ URL optionnel ou vide
-const urlOrEmptySchema = z.union([z.url({ error: "URL invalide" }), z.literal("")]);
+const urlOrEmptySchema = z.union([z.url({ error: "validation.url.invalid" }), z.literal("")]);
 
 // Champ date ISO optionnel ou vide (pour birthDate)
-const dateOrEmptySchema = z.union([z.iso.date({ error: "Date invalide" }), z.literal("")]);
+const dateOrEmptySchema = z.union([z.iso.date({ error: "validation.date.invalid" }), z.literal("")]);
 
 // Champs partagés pour les tags
 const tagsSchema = z.union([
@@ -72,8 +72,8 @@ const openingHoursSchema = z.array(z.union([
   z.object({
     dayOfWeek: z.enum(["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]),
     hours: z.array(z.object({
-      opens: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Format HH:MM requis"),
-      closes: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Format HH:MM requis"),
+      opens: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "validation.openingHours.format"),
+      closes: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "validation.openingHours.format"),
     })),
   })
 ]));
@@ -84,8 +84,8 @@ const openingHoursSchema = z.array(z.union([
 
 export const userProfileSchema = z.object({
   // UPDATE_BLOCK_INFO
-  name: z.string().min(1, "Le nom est requis"),
-  email: z.email({ error: "Email invalide" }).optional(),
+  name: z.string().min(1, "validation.name.required"),
+  email: z.email({ error: "validation.email.invalid" }).optional(),
   url: urlOrEmptySchema.optional(),
   tags: tagsSchema.optional(),
   birthDate: dateOrEmptySchema.optional(),
@@ -125,9 +125,9 @@ export const userProfileSchema = z.object({
 
   // UPDATE_BLOCK_SLUG
   slug: z.string()
-    .min(3, "Le slug doit contenir au moins 3 caractères")
-    .max(100, "Le slug ne peut pas dépasser 100 caractères")
-    .regex(/^[a-zA-Z0-9]+$/, "Le slug ne peut contenir que des lettres et des chiffres")
+    .min(3, "validation.slug.minLength")
+    .max(100, "validation.slug.maxLength")
+    .regex(/^[a-zA-Z0-9]+$/, "validation.slug.format")
     .optional(),
 });
 
@@ -139,8 +139,8 @@ export type UserProfileFormData = z.infer<typeof userProfileSchema>;
 
 export const organizationProfileSchema = z.object({
   // UPDATE_BLOCK_INFO
-  name: z.string().min(1, "Le nom est requis"),
-  email: z.union([z.email({ error: "Email invalide" }), z.literal("")]).optional(),
+  name: z.string().min(1, "validation.name.required"),
+  email: z.union([z.email({ error: "validation.email.invalid" }), z.literal("")]).optional(),
   url: urlOrEmptySchema.optional(),
   tags: tagsSchema.optional(),
   type: z.enum(ORGANIZATION_TYPES).optional(),
@@ -178,9 +178,9 @@ export const organizationProfileSchema = z.object({
 
   // UPDATE_BLOCK_SLUG
   slug: z.string()
-    .min(3, "Le slug doit contenir au moins 3 caractères")
-    .max(100, "Le slug ne peut pas dépasser 100 caractères")
-    .regex(/^[a-zA-Z0-9]+$/, "Le slug ne peut contenir que des lettres et des chiffres")
+    .min(3, "validation.slug.minLength")
+    .max(100, "validation.slug.maxLength")
+    .regex(/^[a-zA-Z0-9]+$/, "validation.slug.format")
     .optional(),
 
   // VIRTUAL_OPENING_HOURS (spécifique à Organization)
@@ -189,8 +189,8 @@ export const organizationProfileSchema = z.object({
     z.object({
       dayOfWeek: z.enum(["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]),
       hours: z.array(z.object({
-        opens: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Format HH:MM requis"),
-        closes: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Format HH:MM requis"),
+        opens: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "validation.openingHours.format"),
+        closes: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "validation.openingHours.format"),
       })),
     })
   ])).length(7).optional(),
@@ -204,8 +204,8 @@ export type OrganizationProfileFormData = z.infer<typeof organizationProfileSche
 
 export const projectProfileSchema = z.object({
   // UPDATE_BLOCK_INFO
-  name: z.string().min(1, "Le nom est requis"),
-  email: z.union([z.email({ error: "Email invalide" }), z.literal("")]).optional(),
+  name: z.string().min(1, "validation.name.required"),
+  email: z.union([z.email({ error: "validation.email.invalid" }), z.literal("")]).optional(),
   url: urlOrEmptySchema.optional(),
   tags: tagsSchema.optional(),
   avancement: z.enum(PROJECT_AVANCEMENTS).optional(),
@@ -244,9 +244,9 @@ export const projectProfileSchema = z.object({
 
   // UPDATE_BLOCK_SLUG
   slug: z.string()
-    .min(3, "Le slug doit contenir au moins 3 caractères")
-    .max(100, "Le slug ne peut pas dépasser 100 caractères")
-    .regex(/^[a-zA-Z0-9]+$/, "Le slug ne peut contenir que des lettres et des chiffres")
+    .min(3, "validation.slug.minLength")
+    .max(100, "validation.slug.maxLength")
+    .regex(/^[a-zA-Z0-9]+$/, "validation.slug.format")
     .optional(),
 });
 
@@ -259,8 +259,8 @@ export type ProjectProfileFormData = z.infer<typeof projectProfileSchema>;
 
 export const eventProfileSchema = z.object({
   // Champs INFO (via ADD_EVENT)
-  name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
-  email: z.union([z.email({ error: "Email invalide" }), z.literal("")]).optional(),
+  name: z.string().min(2, "validation.name.minLength"),
+  email: z.union([z.email({ error: "validation.email.invalid" }), z.literal("")]).optional(),
   url: urlOrEmptySchema.optional(),
   tags: tagsSchema.optional(),
   type: z.enum(EVENT_TYPES),
@@ -281,8 +281,8 @@ export const eventProfileSchema = z.object({
   // DATES ET HORAIRES
   timeZone: z.string().optional(),
   recurrency: z.boolean().default(false),
-  startDate: z.iso.datetime({ error: "Format ISO 8601 requis" }).optional(),
-  endDate: z.iso.datetime({ error: "Format ISO 8601 requis" }).optional(),
+  startDate: z.iso.datetime({ error: "validation.datetime.invalid" }).optional(),
+  endDate: z.iso.datetime({ error: "validation.datetime.invalid" }).optional(),
   openingHours: openingHoursSchema.optional(),
 
   // LOCALITY (aplati)
@@ -307,16 +307,16 @@ export const eventProfileSchema = z.object({
 
   // SLUG
   slug: z.string()
-    .min(3, "Le slug doit contenir au moins 3 caractères")
-    .max(100, "Le slug ne peut pas dépasser 100 caractères")
-    .regex(/^[a-zA-Z0-9]+$/, "Le slug ne peut contenir que des lettres et des chiffres")
+    .min(3, "validation.slug.minLength")
+    .max(100, "validation.slug.maxLength")
+    .regex(/^[a-zA-Z0-9]+$/, "validation.slug.format")
     .optional(),
 }).superRefine((data, ctx) => {
   // Validation organizer obligatoire
   if (!data.organizer || Object.keys(data.organizer).length === 0) {
     ctx.addIssue({
       code: "custom",
-      message: "L'organisateur est obligatoire",
+      message: "validation.organizer.required",
       path: ["organizer"],
     });
   }
@@ -327,14 +327,14 @@ export const eventProfileSchema = z.object({
     if (!data.startDate) {
       ctx.addIssue({
         code: "custom",
-        message: "La date de début est requise pour un événement ponctuel",
+        message: "validation.startDate.required",
         path: ["startDate"],
       });
     }
     if (!data.endDate) {
       ctx.addIssue({
         code: "custom",
-        message: "La date de fin est requise pour un événement ponctuel",
+        message: "validation.endDate.required",
         path: ["endDate"],
       });
     }
@@ -345,7 +345,7 @@ export const eventProfileSchema = z.object({
       if (end < start) {
         ctx.addIssue({
           code: "custom",
-          message: "La date de fin doit être après la date de début",
+          message: "validation.endDate.afterStart",
           path: ["endDate"],
         });
       }
@@ -355,7 +355,7 @@ export const eventProfileSchema = z.object({
     if (!data.openingHours || data.openingHours.length === 0) {
       ctx.addIssue({
         code: "custom",
-        message: "Les horaires d'ouverture sont requis pour un événement récurrent",
+        message: "validation.openingHours.required",
         path: ["openingHours"],
       });
     }
@@ -371,8 +371,8 @@ export type EventProfileFormData = z.infer<typeof eventProfileSchema>;
 
 export const poiProfileSchema = z.object({
   // UPDATE_BLOCK_INFO
-  name: z.string().min(1, "Le nom est requis"),
-  email: z.union([z.email({ error: "Email invalide" }), z.literal("")]).optional(),
+  name: z.string().min(1, "validation.name.required"),
+  email: z.union([z.email({ error: "validation.email.invalid" }), z.literal("")]).optional(),
   url: urlOrEmptySchema.optional(),
   tags: tagsSchema.optional(),
   type: z.enum([
@@ -425,9 +425,9 @@ export const poiProfileSchema = z.object({
 
   // UPDATE_BLOCK_SLUG
   slug: z.string()
-    .min(3, "Le slug doit contenir au moins 3 caractères")
-    .max(100, "Le slug ne peut pas dépasser 100 caractères")
-    .regex(/^[a-zA-Z0-9]+$/, "Le slug ne peut contenir que des lettres et des chiffres")
+    .min(3, "validation.slug.minLength")
+    .max(100, "validation.slug.maxLength")
+    .regex(/^[a-zA-Z0-9]+$/, "validation.slug.format")
     .optional(),
 });
 
@@ -439,13 +439,13 @@ export type PoiProfileFormData = z.infer<typeof poiProfileSchema>;
 
 export const addOrganizationSchema = z.object({
   // Champs requis
-  name: z.string().min(3, "Le nom doit contenir au moins 3 caractères"),
+  name: z.string().min(3, "validation.name.minLength"),
   type: z.enum(ORGANIZATION_TYPES),
   role: z.enum(["admin", "member"]),
 
   // Champs optionnels
   tags: z.array(z.string()).optional(),
-  email: z.email({ error: "Email invalide" }).optional(),
+  email: z.email({ error: "validation.email.invalid" }).optional(),
   shortDescription: z.string().optional(),
   url: urlOrEmptySchema.optional(),
   preferences: preferencesSchema.optional(),
@@ -464,7 +464,7 @@ export type AddOrganizationFormData = z.infer<typeof addOrganizationSchema>;
 
 export const addProjectSchema = z.object({
   // Champs requis
-  name: z.string().min(1, "Le nom est requis"),
+  name: z.string().min(1, "validation.name.required"),
 
   // Champs optionnels
   parent: parentSchema.optional(),
@@ -492,7 +492,7 @@ export type AddProjectFormData = z.infer<typeof addProjectSchema>;
 
 export const addPoiSchema = z.object({
   // Champs requis
-  name: z.string().min(1, "Le nom est requis"),
+  name: z.string().min(1, "validation.name.required"),
   type: z.enum([
     "link",
     "tool",

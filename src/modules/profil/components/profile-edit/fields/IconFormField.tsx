@@ -6,8 +6,8 @@ import {
   FormLabel,
   FormControl,
   FormDescription,
-  FormMessage,
 } from "@/components/ui/form";
+import { TranslatedFormMessage } from "../TranslatedFormMessage";
 import { Input } from "@/components/ui/input";
 
 interface IconFormFieldProps<T extends FieldValues> {
@@ -89,7 +89,7 @@ export function IconFormField<T extends FieldValues>({
             />
           </FormControl>
           {description && <FormDescription>{description}</FormDescription>}
-          <FormMessage />
+          <TranslatedFormMessage />
         </FormItem>
       )}
     />

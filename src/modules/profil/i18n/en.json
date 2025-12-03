@@ -678,5 +678,42 @@
     "searchPlaceholder": "Search...",
     "tryDifferentSearch": "Try a different search term",
     "noRelatedEntities": "No related entities yet"
+  },
+  "validation": {
+    "name": {
+      "required": "Name is required",
+      "minLength": "Name must be at least 2 characters"
+    },
+    "email": {
+      "invalid": "Invalid email"
+    },
+    "url": {
+      "invalid": "Invalid URL"
+    },
+    "date": {
+      "invalid": "Invalid date"
+    },
+    "organizer": {
+      "required": "Organizer is required"
+    },
+    "startDate": {
+      "required": "Start date is required for a one-time event"
+    },
+    "endDate": {
+      "required": "End date is required for a one-time event",
+      "afterStart": "End date must be after start date"
+    },
+    "openingHours": {
+      "required": "Opening hours are required for a recurring event",
+      "format": "HH:MM format required"
+    },
+    "slug": {
+      "minLength": "Slug must be at least 3 characters",
+      "maxLength": "Slug cannot exceed 100 characters",
+      "format": "Slug can only contain letters and numbers"
+    },
+    "datetime": {
+      "invalid": "ISO 8601 format required"
+    }
   }
 }

@@ -6,9 +6,9 @@ import {
   FormItem,
   FormLabel,
   FormControl,
-  FormMessage,
   FormDescription,
 } from "@/components/ui/form";
+import { TranslatedFormMessage } from "./TranslatedFormMessage";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { TagsInput, DatePickerInput } from "@/components/form";
@@ -66,7 +66,7 @@ export function EditBasicInfoTab({ form, entityType }: EditBasicInfoTabProps) {
             <FormDescription>
               {t("ProfileEdit.fields.name.description")}
             </FormDescription>
-            <FormMessage />
+            <TranslatedFormMessage />
           </FormItem>
         )}
       />
@@ -91,7 +91,7 @@ export function EditBasicInfoTab({ form, entityType }: EditBasicInfoTabProps) {
               <FormDescription>
                 {t("ProfileEdit.fields.birthDate.description")}
               </FormDescription>
-              <FormMessage />
+              <TranslatedFormMessage />
             </FormItem>
           )}
         />
@@ -122,7 +122,7 @@ export function EditBasicInfoTab({ form, entityType }: EditBasicInfoTabProps) {
               <FormDescription>
                 {t("ProfileEdit.fields.type.description")}
               </FormDescription>
-              <FormMessage />
+              <TranslatedFormMessage />
             </FormItem>
           )}
         />
@@ -153,7 +153,7 @@ export function EditBasicInfoTab({ form, entityType }: EditBasicInfoTabProps) {
               <FormDescription>
                 {t("ProfileEdit.fields.eventType.description")}
               </FormDescription>
-              <FormMessage />
+              <TranslatedFormMessage />
             </FormItem>
           )}
         />
@@ -180,7 +180,7 @@ export function EditBasicInfoTab({ form, entityType }: EditBasicInfoTabProps) {
               <FormDescription>
                 {t("ProfileEdit.fields.parent.description")}
               </FormDescription>
-              <FormMessage />
+              <TranslatedFormMessage />
             </FormItem>
           )}
         />
@@ -207,7 +207,7 @@ export function EditBasicInfoTab({ form, entityType }: EditBasicInfoTabProps) {
               <FormDescription>
                 {t("ProfileEdit.fields.organizer.description")}
               </FormDescription>
-              <FormMessage />
+              <TranslatedFormMessage />
             </FormItem>
           )}
         />
@@ -233,7 +233,7 @@ export function EditBasicInfoTab({ form, entityType }: EditBasicInfoTabProps) {
               <FormDescription>
                 {t("ProfileEdit.fields.parentEvent.description")}
               </FormDescription>
-              <FormMessage />
+              <TranslatedFormMessage />
             </FormItem>
           )}
         />
@@ -257,7 +257,7 @@ export function EditBasicInfoTab({ form, entityType }: EditBasicInfoTabProps) {
             <FormDescription>
               {t("ProfileEdit.fields.shortDescription.description")}
             </FormDescription>
-            <FormMessage />
+            <TranslatedFormMessage />
           </FormItem>
         )}
       />
@@ -279,7 +279,7 @@ export function EditBasicInfoTab({ form, entityType }: EditBasicInfoTabProps) {
             <FormDescription>
               {t("ProfileEdit.fields.description.description")}
             </FormDescription>
-            <FormMessage />
+            <TranslatedFormMessage />
           </FormItem>
         )}
       />
@@ -305,7 +305,7 @@ export function EditBasicInfoTab({ form, entityType }: EditBasicInfoTabProps) {
                 }}
               />
             </FormControl>
-            <FormMessage />
+            <TranslatedFormMessage />
           </FormItem>
         )}
       />
