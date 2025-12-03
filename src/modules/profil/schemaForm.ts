@@ -33,22 +33,6 @@ const geoPositionSchema = z.object({
   coordinates: z.array(z.number()).length(2),
 });
 
-// Schéma pour l'adresse (création)
-const addressSchema = z.object({
-  addressCountry: z.string(),
-  codeInsee: z.string(),
-  addressLocality: z.string(),
-  localityId: z.string(),
-  level1: z.string(),
-  level1Name: z.string(),
-  level3: z.string().optional(),
-  level3Name: z.string().optional(),
-  level4: z.string().optional(),
-  level4Name: z.string().optional(),
-  postalCode: z.string().optional(),
-  streetAddress: z.string().optional(),
-});
-
 // Schéma parent (référence entité parente)
 const parentSchema = z.record(
   z.string().regex(/^[a-f0-9]{24}$/),
@@ -436,10 +420,23 @@ export const addOrganizationSchema = z.object({
   url: urlOrEmptySchema.optional(),
   preferences: preferencesSchema.optional(),
 
-  // Localisation (optionnelle)
+  // Localisation (aplatie pour compatibilité avec EditLocationTab)
+  addressCountry: z.string().optional(),
+  addressLocality: z.string().optional(),
+  localityId: z.string().optional(),
+  postalCode: z.string().optional(),
+  streetAddress: z.string().optional(),
+  codeInsee: z.string().optional(),
+  level1: z.string().optional(),
+  level1Name: z.string().optional(),
+  level2: z.string().optional(),
+  level2Name: z.string().optional(),
+  level3: z.string().optional(),
+  level3Name: z.string().optional(),
+  level4: z.string().optional(),
+  level4Name: z.string().optional(),
   geo: geoSchema.optional(),
   geoPosition: geoPositionSchema.optional(),
-  address: addressSchema.optional(),
 });
 
 export type AddOrganizationFormData = z.infer<typeof addOrganizationSchema>;
@@ -464,10 +461,23 @@ export const addProjectSchema = z.object({
     crowdfunding: z.boolean().default(true),
   }).optional(),
 
-  // Localisation (optionnelle)
+  // Localisation (aplatie pour compatibilité avec EditLocationTab)
+  addressCountry: z.string().optional(),
+  addressLocality: z.string().optional(),
+  localityId: z.string().optional(),
+  postalCode: z.string().optional(),
+  streetAddress: z.string().optional(),
+  codeInsee: z.string().optional(),
+  level1: z.string().optional(),
+  level1Name: z.string().optional(),
+  level2: z.string().optional(),
+  level2Name: z.string().optional(),
+  level3: z.string().optional(),
+  level3Name: z.string().optional(),
+  level4: z.string().optional(),
+  level4Name: z.string().optional(),
   geo: geoSchema.optional(),
   geoPosition: geoPositionSchema.optional(),
-  address: addressSchema.optional(),
 });
 
 export type AddProjectFormData = z.infer<typeof addProjectSchema>;
@@ -512,10 +522,23 @@ export const addPoiSchema = z.object({
   tags: z.array(z.string()).optional(),
   urls: z.array(z.string()).optional(),
 
-  // Localisation (optionnelle)
+  // Localisation (aplatie pour compatibilité avec EditLocationTab)
+  addressCountry: z.string().optional(),
+  addressLocality: z.string().optional(),
+  localityId: z.string().optional(),
+  postalCode: z.string().optional(),
+  streetAddress: z.string().optional(),
+  codeInsee: z.string().optional(),
+  level1: z.string().optional(),
+  level1Name: z.string().optional(),
+  level2: z.string().optional(),
+  level2Name: z.string().optional(),
+  level3: z.string().optional(),
+  level3Name: z.string().optional(),
+  level4: z.string().optional(),
+  level4Name: z.string().optional(),
   geo: geoSchema.optional(),
   geoPosition: geoPositionSchema.optional(),
-  address: addressSchema.optional(),
 });
 
 export type AddPoiFormData = z.infer<typeof addPoiSchema>;
@@ -538,9 +561,30 @@ export const addEventSchema = z.object({
   startDate: z.string().optional(),
   endDate: z.string().optional(),
 
+  // Horaires d'ouverture (pour événements récurrents)
+  openingHours: openingHoursSchema.optional(),
+
   // Relations
   organizer: parentSchema.optional(),
   parent: parentSchema.optional(),
+
+  // Localisation (aplatie pour compatibilité avec EditLocationTab)
+  addressCountry: z.string().optional(),
+  addressLocality: z.string().optional(),
+  localityId: z.string().optional(),
+  postalCode: z.string().optional(),
+  streetAddress: z.string().optional(),
+  codeInsee: z.string().optional(),
+  level1: z.string().optional(),
+  level1Name: z.string().optional(),
+  level2: z.string().optional(),
+  level2Name: z.string().optional(),
+  level3: z.string().optional(),
+  level3Name: z.string().optional(),
+  level4: z.string().optional(),
+  level4Name: z.string().optional(),
+  geo: geoSchema.optional(),
+  geoPosition: geoPositionSchema.optional(),
 });
 
 export type AddEventFormData = z.infer<typeof addEventSchema>;

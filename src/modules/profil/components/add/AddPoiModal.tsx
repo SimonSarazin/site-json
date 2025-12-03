@@ -15,6 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TagsInput } from "@/components/form/TagsInput";
 import {
   Select,
   SelectContent,
@@ -25,6 +27,7 @@ import {
 import { addPoiSchema, type AddPoiFormData } from "../../schemaForm";
 import { useAddPoi } from "../../hooks/useAddMutations";
 import { TranslatedFormMessage } from "../profile-edit/TranslatedFormMessage";
+import { EditLocationTab } from "../profile-edit/EditLocationTab";
 
 // Types de POI disponibles
 const POI_TYPES = [
@@ -53,9 +56,9 @@ interface AddPoiModalProps {
 }
 
 /**
- * Modal pour cr&eacute;er un nouveau POI (Point d'Int&eacute;r&ecirc;t)
+ * Modal pour créer un nouveau POI (Point d'Intérêt)
  *
- * @param parent - L'entit&eacute; parente (organisation, projet, &eacute;v&eacute;nement)
+ * @param parent - L'entité parente (organisation, projet, événement)
  */
 export function AddPoiModal({ open, onOpenChange, parent }: AddPoiModalProps) {
   const t = useT("modules/profil");
@@ -68,6 +71,12 @@ export function AddPoiModal({ open, onOpenChange, parent }: AddPoiModalProps) {
       name: "",
       type: "place",
       description: "",
+      tags: [],
+      addressCountry: "",
+      addressLocality: "",
+      localityId: "",
+      postalCode: "",
+      streetAddress: "",
     },
   });
 
@@ -95,13 +104,13 @@ export function AddPoiModal({ open, onOpenChange, parent }: AddPoiModalProps) {
       machine: "Machine",
       software: "Logiciel",
       rh: "Ressource humaine",
-      video: "Vid&eacute;o",
+      video: "Vidéo",
       history: "Histoire",
-      something2See: "&Agrave; voir",
+      something2See: "À voir",
       funPlace: "Lieu sympa",
       artPiece: "Oeuvre d'art",
       streetArts: "Art de rue",
-      openScene: "Sc&egrave;ne ouverte",
+      openScene: "Scène ouverte",
       stand: "Stand",
       parking: "Parking",
       other: "Autre",
@@ -111,7 +120,7 @@ export function AddPoiModal({ open, onOpenChange, parent }: AddPoiModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t("AddEntity.modal.poi.title")}</DialogTitle>
           <DialogDescription>
@@ -121,76 +130,113 @@ export function AddPoiModal({ open, onOpenChange, parent }: AddPoiModalProps) {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* Nom */}
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("ProfileEdit.fields.name.label")} *</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t("ProfileEdit.fields.name.placeholder")}
-                      {...field}
-                    />
-                  </FormControl>
-                  <TranslatedFormMessage />
-                </FormItem>
-              )}
-            />
+            <Tabs defaultValue="info" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="info">{t("AddEntity.tabs.info")}</TabsTrigger>
+                <TabsTrigger value="location">{t("AddEntity.tabs.location")}</TabsTrigger>
+              </TabsList>
 
-            {/* Type de POI */}
-            <FormField
-              control={form.control}
-              name="type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Type *</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="S&eacute;lectionner un type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {POI_TYPES.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {getPoiTypeLabel(type)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <TranslatedFormMessage />
-                </FormItem>
-              )}
-            />
+              {/* Tab Informations */}
+              <TabsContent value="info" className="space-y-4 mt-4">
+                {/* Nom */}
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("ProfileEdit.fields.name.label")} *</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t("ProfileEdit.fields.name.placeholder")}
+                          {...field}
+                        />
+                      </FormControl>
+                      <TranslatedFormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            {/* Description */}
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("ProfileEdit.fields.description.label")}</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder={t("ProfileEdit.fields.description.placeholder")}
-                      className="resize-none"
-                      rows={4}
-                      {...field}
-                    />
-                  </FormControl>
-                  <TranslatedFormMessage />
-                </FormItem>
-              )}
-            />
+                {/* Type de POI */}
+                <FormField
+                  control={form.control}
+                  name="type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Type *</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Sélectionner un type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {POI_TYPES.map((type) => (
+                            <SelectItem key={type} value={type}>
+                              {getPoiTypeLabel(type)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <TranslatedFormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            {/* Parent affich&eacute; en lecture seule si fourni */}
-            {parent && (
-              <div className="text-sm text-muted-foreground">
-                {t("ProfileEdit.fields.parent.label")}: <strong>{parent.serverData?.name}</strong>
-              </div>
-            )}
+                {/* Description */}
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("ProfileEdit.fields.description.label")}</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder={t("ProfileEdit.fields.description.placeholder")}
+                          className="resize-none"
+                          rows={4}
+                          {...field}
+                        />
+                      </FormControl>
+                      <TranslatedFormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Tags */}
+                <FormField
+                  control={form.control}
+                  name="tags"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("ProfileEdit.fields.tags.label")}</FormLabel>
+                      <FormControl>
+                        <TagsInput
+                          tags={Array.isArray(field.value) ? field.value : []}
+                          onTagsChange={field.onChange}
+                          maxTags={10}
+                          texts={{
+                            placeholder: t("ProfileEdit.fields.tags.placeholder"),
+                          }}
+                        />
+                      </FormControl>
+                      <TranslatedFormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Parent affiché en lecture seule si fourni */}
+                {parent && (
+                  <div className="text-sm text-muted-foreground">
+                    {t("ProfileEdit.fields.parent.label")}: <strong>{parent.serverData?.name}</strong>
+                  </div>
+                )}
+              </TabsContent>
+
+              {/* Tab Localisation */}
+              <TabsContent value="location" className="mt-4">
+                <EditLocationTab form={form} />
+              </TabsContent>
+            </Tabs>
 
             <DialogFooter>
               <Button

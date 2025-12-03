@@ -15,6 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TagsInput } from "@/components/form/TagsInput";
 import {
   Select,
   SelectContent,
@@ -25,6 +27,7 @@ import {
 import { addOrganizationSchema, type AddOrganizationFormData } from "../../schemaForm";
 import { useAddOrganization } from "../../hooks/useAddMutations";
 import { TranslatedFormMessage } from "../profile-edit/TranslatedFormMessage";
+import { EditLocationTab } from "../profile-edit/EditLocationTab";
 
 interface AddOrganizationModalProps {
   open: boolean;
@@ -32,7 +35,7 @@ interface AddOrganizationModalProps {
 }
 
 /**
- * Modal pour cr&eacute;er une nouvelle organisation
+ * Modal pour creer une nouvelle organisation
  */
 export function AddOrganizationModal({ open, onOpenChange }: AddOrganizationModalProps) {
   const t = useT("modules/profil");
@@ -48,6 +51,12 @@ export function AddOrganizationModal({ open, onOpenChange }: AddOrganizationModa
       shortDescription: "",
       email: undefined,
       url: "",
+      tags: [],
+      addressCountry: "",
+      addressLocality: "",
+      localityId: "",
+      postalCode: "",
+      streetAddress: "",
     },
   });
 
@@ -56,8 +65,17 @@ export function AddOrganizationModal({ open, onOpenChange }: AddOrganizationModa
       await addMutation.mutateAsync(data);
       form.reset();
       onOpenChange(false);
-    } catch {
-      // Error handling is done in the mutation
+   } catch (error) {
+      console.error("Error updating profile:", error);
+      if (error && typeof error === "object") {
+        console.error("Error details:", {
+          message: (error as Record<string, unknown>).message,
+          validationErrors: (error as Record<string, unknown>).validationErrors,
+          details: (error as Record<string, unknown>).details,
+          response: (error as Record<string, unknown>).response,
+          data: (error as Record<string, unknown>).data,
+        });
+      }
     }
   };
 
@@ -68,7 +86,7 @@ export function AddOrganizationModal({ open, onOpenChange }: AddOrganizationModa
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t("AddEntity.modal.organization.title")}</DialogTitle>
           <DialogDescription>
@@ -78,130 +96,167 @@ export function AddOrganizationModal({ open, onOpenChange }: AddOrganizationModa
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* Nom */}
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("ProfileEdit.fields.name.label")} *</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t("ProfileEdit.fields.name.placeholder")}
-                      {...field}
-                    />
-                  </FormControl>
-                  <TranslatedFormMessage />
-                </FormItem>
-              )}
-            />
+            <Tabs defaultValue="info" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="info">{t("AddEntity.tabs.info")}</TabsTrigger>
+                <TabsTrigger value="location">{t("AddEntity.tabs.location")}</TabsTrigger>
+              </TabsList>
 
-            {/* Type d'organisation */}
-            <FormField
-              control={form.control}
-              name="type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("ProfileEdit.fields.type.label")} *</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t("ProfileEdit.fields.type.placeholder")} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {ORGANIZATION_TYPES.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {t(`ProfileEdit.fields.type.options.${type}`)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <TranslatedFormMessage />
-                </FormItem>
-              )}
-            />
+              {/* Tab Informations */}
+              <TabsContent value="info" className="space-y-4 mt-4">
+                {/* Nom */}
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("ProfileEdit.fields.name.label")} *</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t("ProfileEdit.fields.name.placeholder")}
+                          {...field}
+                        />
+                      </FormControl>
+                      <TranslatedFormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            {/* Role dans l'organisation */}
-            <FormField
-              control={form.control}
-              name="role"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("InviteMemberDialog.role")} *</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t("InviteMemberDialog.selectRole")} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="admin">{t("InviteMemberDialog.badges.admin")}</SelectItem>
-                      <SelectItem value="member">{t("InviteMemberDialog.badges.member")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <TranslatedFormMessage />
-                </FormItem>
-              )}
-            />
+                {/* Type d'organisation */}
+                <FormField
+                  control={form.control}
+                  name="type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("ProfileEdit.fields.type.label")} *</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder={t("ProfileEdit.fields.type.placeholder")} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {ORGANIZATION_TYPES.map((type) => (
+                            <SelectItem key={type} value={type}>
+                              {t(`ProfileEdit.fields.type.options.${type}`)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <TranslatedFormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            {/* Description courte */}
-            <FormField
-              control={form.control}
-              name="shortDescription"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("ProfileEdit.fields.shortDescription.label")}</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder={t("ProfileEdit.fields.shortDescription.placeholder")}
-                      className="resize-none"
-                      rows={3}
-                      {...field}
-                    />
-                  </FormControl>
-                  <TranslatedFormMessage />
-                </FormItem>
-              )}
-            />
+                {/* Role dans l'organisation */}
+                <FormField
+                  control={form.control}
+                  name="role"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("InviteMemberDialog.role")} *</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder={t("InviteMemberDialog.selectRole")} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="admin">{t("InviteMemberDialog.badges.admin")}</SelectItem>
+                          <SelectItem value="member">{t("InviteMemberDialog.badges.member")}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <TranslatedFormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            {/* Email (optionnel) */}
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("ProfileEdit.fields.email.label")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="email"
-                      placeholder={t("ProfileEdit.fields.email.placeholder")}
-                      {...field}
-                    />
-                  </FormControl>
-                  <TranslatedFormMessage />
-                </FormItem>
-              )}
-            />
+                {/* Description courte */}
+                <FormField
+                  control={form.control}
+                  name="shortDescription"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("ProfileEdit.fields.shortDescription.label")}</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder={t("ProfileEdit.fields.shortDescription.placeholder")}
+                          className="resize-none"
+                          rows={3}
+                          {...field}
+                        />
+                      </FormControl>
+                      <TranslatedFormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            {/* URL (optionnel) */}
-            <FormField
-              control={form.control}
-              name="url"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("ProfileEdit.fields.url.label")}</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="url"
-                      placeholder={t("ProfileEdit.fields.url.placeholder")}
-                      {...field}
-                    />
-                  </FormControl>
-                  <TranslatedFormMessage />
-                </FormItem>
-              )}
-            />
+                {/* Email (optionnel) */}
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("ProfileEdit.fields.email.label")}</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder={t("ProfileEdit.fields.email.placeholder")}
+                          {...field}
+                        />
+                      </FormControl>
+                      <TranslatedFormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* URL (optionnel) */}
+                <FormField
+                  control={form.control}
+                  name="url"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("ProfileEdit.fields.url.label")}</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="url"
+                          placeholder={t("ProfileEdit.fields.url.placeholder")}
+                          {...field}
+                        />
+                      </FormControl>
+                      <TranslatedFormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Tags */}
+                <FormField
+                  control={form.control}
+                  name="tags"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("ProfileEdit.fields.tags.label")}</FormLabel>
+                      <FormControl>
+                        <TagsInput
+                          tags={Array.isArray(field.value) ? field.value : []}
+                          onTagsChange={field.onChange}
+                          maxTags={10}
+                          texts={{
+                            placeholder: t("ProfileEdit.fields.tags.placeholder"),
+                          }}
+                        />
+                      </FormControl>
+                      <TranslatedFormMessage />
+                    </FormItem>
+                  )}
+                />
+              </TabsContent>
+
+              {/* Tab Localisation */}
+              <TabsContent value="location" className="mt-4">
+                <EditLocationTab form={form} />
+              </TabsContent>
+            </Tabs>
 
             <DialogFooter>
               <Button

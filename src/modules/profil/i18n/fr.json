@@ -688,6 +688,11 @@
     "project": "Projet",
     "event": "Événement",
     "poi": "Lieu",
+    "tabs": {
+      "info": "Informations",
+      "dates": "Dates",
+      "location": "Localisation"
+    },
     "modal": {
       "organization": {
         "title": "Créer une organisation",
@@ -695,11 +700,13 @@
       },
       "project": {
         "title": "Créer un projet",
-        "description": "Renseignez les informations de votre projet"
+        "description": "Renseignez les informations de votre projet",
+        "public": "Projet public"
       },
       "event": {
         "title": "Créer un événement",
-        "description": "Renseignez les informations de votre événement"
+        "description": "Renseignez les informations de votre événement",
+        "public": "Événement public"
       },
       "poi": {
         "title": "Ajouter un lieu",

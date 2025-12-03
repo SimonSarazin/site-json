@@ -11,31 +11,139 @@ import type {
 import { useNavigate } from "react-router";
 
 /**
+ * Construit un objet address à partir des champs aplatis du formulaire
+ * Retourne undefined si aucune donnée d'adresse n'est présente
+ */
+function buildAddressFromForm(data: {
+  addressCountry?: string;
+  addressLocality?: string;
+  localityId?: string;
+  postalCode?: string;
+  streetAddress?: string;
+  codeInsee?: string;
+  level1?: string;
+  level1Name?: string;
+  level2?: string;
+  level2Name?: string;
+  level3?: string;
+  level3Name?: string;
+  level4?: string;
+  level4Name?: string;
+}) {
+  // Vérifier si au moins un champ d'adresse est rempli
+  const hasAddressData = data.addressCountry || data.addressLocality ||
+    data.postalCode || data.streetAddress;
+
+  if (!hasAddressData) {
+    return undefined;
+  }
+
+  return {
+    "@type": "PostalAddress",
+    addressCountry: data.addressCountry || undefined,
+    addressLocality: data.addressLocality || undefined,
+    localityId: data.localityId || undefined,
+    postalCode: data.postalCode || undefined,
+    streetAddress: data.streetAddress || undefined,
+    codeInsee: data.codeInsee || undefined,
+    level1: data.level1 || undefined,
+    level1Name: data.level1Name || undefined,
+    level2: data.level2 || undefined,
+    level2Name: data.level2Name || undefined,
+    level3: data.level3 || undefined,
+    level3Name: data.level3Name || undefined,
+    level4: data.level4 || undefined,
+    level4Name: data.level4Name || undefined,
+  };
+}
+
+/**
+ * Extrait les champs d'adresse des données du formulaire et les remplace par l'objet address
+ */
+function transformFormDataWithAddress<T extends Record<string, unknown>>(data: T): Omit<T,
+  'addressCountry' | 'addressLocality' | 'localityId' | 'postalCode' | 'streetAddress' |
+  'codeInsee' | 'level1' | 'level1Name' | 'level2' | 'level2Name' | 'level3' | 'level3Name' |
+  'level4' | 'level4Name'
+> & { address?: ReturnType<typeof buildAddressFromForm> } {
+  const {
+    addressCountry,
+    addressLocality,
+    localityId,
+    postalCode,
+    streetAddress,
+    codeInsee,
+    level1,
+    level1Name,
+    level2,
+    level2Name,
+    level3,
+    level3Name,
+    level4,
+    level4Name,
+    ...rest
+  } = data;
+
+  const address = buildAddressFromForm({
+    addressCountry: addressCountry as string | undefined,
+    addressLocality: addressLocality as string | undefined,
+    localityId: localityId as string | undefined,
+    postalCode: postalCode as string | undefined,
+    streetAddress: streetAddress as string | undefined,
+    codeInsee: codeInsee as string | undefined,
+    level1: level1 as string | undefined,
+    level1Name: level1Name as string | undefined,
+    level2: level2 as string | undefined,
+    level2Name: level2Name as string | undefined,
+    level3: level3 as string | undefined,
+    level3Name: level3Name as string | undefined,
+    level4: level4 as string | undefined,
+    level4Name: level4Name as string | undefined,
+  });
+
+  return {
+    ...rest,
+    ...(address ? { address } : {}),
+  } as Omit<T,
+    'addressCountry' | 'addressLocality' | 'localityId' | 'postalCode' | 'streetAddress' |
+    'codeInsee' | 'level1' | 'level1Name' | 'level2' | 'level2Name' | 'level3' | 'level3Name' |
+    'level4' | 'level4Name'
+  > & { address?: ReturnType<typeof buildAddressFromForm> };
+}
+
+/**
  * Hook pour créer une nouvelle organisation
+ *
+ * @param entity - L'entité depuis laquelle créer (utilisateur connecté par défaut)
  *
  * @example
  * const { mutate, isPending } = useAddOrganization();
  * mutate({ name: "Mon orga", type: "NGO", role: "admin" });
  */
-export function useAddOrganization() {
+export function useAddOrganization(entity?: EntityTypes | null) {
   const { me } = useCocolight();
   const navigate = useNavigate();
 
+  // Utiliser l'entité fournie ou me par défaut
+  const targetEntity = entity || me;
+
   return useMutationWithToast<{ organization: Organization }, AddOrganizationFormData>({
     mutationFn: async (data) => {
-      if (!me) {
-        throw new Error("User not connected");
+      if (!targetEntity) {
+        throw new Error("No entity provided");
       }
 
+      // Transformer les données avec l'objet address
+      const transformedData = transformFormDataWithAddress(data);
+
       // Créer l'organisation via le SDK
-      const organization = await me.organization(data);
+      const organization = await targetEntity.organization(transformedData);
       await organization.save();
 
       return { organization };
     },
     successKey: "toast.add.organizationSuccess",
     errorKey: "toast.add.organizationError",
-    invalidateQueries: me ? [QUERY_KEYS.USER_ORGANIZATIONS(me.slug)] : [],
+    invalidateQueries: targetEntity ? [QUERY_KEYS.USER_ORGANIZATIONS(targetEntity.slug)] : [],
     onSuccessCallback: (data) => {
       // Rediriger vers le profil de la nouvelle organisation
       if (data.organization.slug) {
@@ -48,35 +156,41 @@ export function useAddOrganization() {
 /**
  * Hook pour créer un nouveau projet
  *
- * @param parentEntity - L'entité parente optionnelle (organization, user)
+ * @param entity - L'entité depuis laquelle créer (organization, user)
  *
  * @example
  * const { mutate, isPending } = useAddProject(organization);
  * mutate({ name: "Mon projet" });
  */
-export function useAddProject(parentEntity?: EntityTypes | null) {
+export function useAddProject(entity?: EntityTypes | null) {
   const { me } = useCocolight();
   const navigate = useNavigate();
 
+  // Utiliser l'entité fournie ou me par défaut
+  const targetEntity = entity || me;
+
   return useMutationWithToast<{ project: Project }, AddProjectFormData>({
     mutationFn: async (data) => {
-      if (!me) {
-        throw new Error("User not connected");
+      if (!targetEntity) {
+        throw new Error("No entity provided");
       }
 
-      // Ajouter le parent si fourni
-      const projectData = { ...data };
-      if (parentEntity?.id) {
+      // Transformer les données avec l'objet address
+      const transformedData = transformFormDataWithAddress(data);
+
+      // Ajouter le parent si on crée depuis une entité parente
+      const projectData = { ...transformedData };
+      if (entity?.id) {
         projectData.parent = {
-          [parentEntity.id]: {
-            type: parentEntity.getEntityType?.() || "organizations",
-            name: parentEntity.serverData?.name,
+          [entity.id]: {
+            type: entity.getEntityType?.() || "organizations",
+            name: entity.serverData?.name,
           },
         };
       }
 
       // Créer le projet via le SDK
-      const project = await me.project(projectData);
+      const project = await targetEntity.project(projectData);
       await project.save();
 
       return { project };
@@ -84,8 +198,8 @@ export function useAddProject(parentEntity?: EntityTypes | null) {
     successKey: "toast.add.projectSuccess",
     errorKey: "toast.add.projectError",
     invalidateQueries: [
-      ...(me ? [QUERY_KEYS.USER_PROJECTS(me.slug)] : []),
-      ...(parentEntity ? [QUERY_KEYS.ELEMENT_ABOUT(parentEntity.slug)] : []),
+      ...(targetEntity ? [QUERY_KEYS.USER_PROJECTS(targetEntity.slug)] : []),
+      ...(entity ? [QUERY_KEYS.ELEMENT_ABOUT(entity.slug)] : []),
     ],
     onSuccessCallback: (data) => {
       // Rediriger vers le profil du nouveau projet
@@ -99,35 +213,41 @@ export function useAddProject(parentEntity?: EntityTypes | null) {
 /**
  * Hook pour créer un nouvel événement
  *
- * @param parentEntity - L'entité parente (organization, project, user) - organizer obligatoire
+ * @param entity - L'entité depuis laquelle créer (organization, project, user)
  *
  * @example
  * const { mutate, isPending } = useAddEvent(organization);
  * mutate({ name: "Mon événement", type: "meeting", startDate: "...", endDate: "..." });
  */
-export function useAddEvent(parentEntity?: EntityTypes | null) {
+export function useAddEvent(entity?: EntityTypes | null) {
   const { me } = useCocolight();
   const navigate = useNavigate();
 
+  // Utiliser l'entité fournie ou me par défaut
+  const targetEntity = entity || me;
+
   return useMutationWithToast<{ event: Event }, AddEventFormData>({
     mutationFn: async (data) => {
-      if (!me) {
-        throw new Error("User not connected");
+      if (!targetEntity) {
+        throw new Error("No entity provided");
       }
 
-      // Construire les données de l'événement
-      const eventData = { ...data };
+      // Transformer les données avec l'objet address
+      const transformedData = transformFormDataWithAddress(data);
 
-      // L'organizer est obligatoire - utiliser le parent ou l'utilisateur
+      // Construire les données de l'événement
+      const eventData = { ...transformedData };
+
+      // L'organizer est obligatoire - utiliser l'entité fournie ou l'utilisateur
       if (!eventData.organizer || Object.keys(eventData.organizer).length === 0) {
-        if (parentEntity?.id) {
+        if (entity?.id) {
           eventData.organizer = {
-            [parentEntity.id]: {
-              type: parentEntity.getEntityType?.() || "organizations",
-              name: parentEntity.serverData?.name,
+            [entity.id]: {
+              type: entity.getEntityType?.() || "organizations",
+              name: entity.serverData?.name,
             },
           };
-        } else if (me.id) {
+        } else if (me?.id) {
           eventData.organizer = {
             [me.id]: {
               type: "citoyens",
@@ -137,18 +257,11 @@ export function useAddEvent(parentEntity?: EntityTypes | null) {
         }
       }
 
-      // Ajouter le parent si différent de l'organizer
-      if (parentEntity?.id && !eventData.parent) {
-        eventData.parent = {
-          [parentEntity.id]: {
-            type: parentEntity.getEntityType?.() || "organizations",
-            name: parentEntity.serverData?.name,
-          },
-        };
-      }
+      // Le parent est pour les sous-événements uniquement
+      // Ne pas confondre avec organizer - on ne l'ajoute pas si non défini
 
       // Créer l'événement via le SDK
-      const event = await me.event(eventData);
+      const event = await targetEntity.event(eventData);
       await event.save();
 
       return { event };
@@ -156,8 +269,8 @@ export function useAddEvent(parentEntity?: EntityTypes | null) {
     successKey: "toast.add.eventSuccess",
     errorKey: "toast.add.eventError",
     invalidateQueries: [
-      ...(me ? [QUERY_KEYS.USER_EVENTS(me.slug)] : []),
-      ...(parentEntity ? [QUERY_KEYS.ELEMENT_ABOUT(parentEntity.slug)] : []),
+      ...(targetEntity ? [QUERY_KEYS.USER_EVENTS(targetEntity.slug)] : []),
+      ...(entity ? [QUERY_KEYS.ELEMENT_ABOUT(entity.slug)] : []),
     ],
     onSuccessCallback: (data) => {
       // Rediriger vers le profil du nouvel événement
@@ -171,35 +284,41 @@ export function useAddEvent(parentEntity?: EntityTypes | null) {
 /**
  * Hook pour créer un nouveau POI (Point d'Intérêt)
  *
- * @param parentEntity - L'entité parente optionnelle (organization, project, event)
+ * @param entity - L'entité depuis laquelle créer (organization, project, event)
  *
  * @example
  * const { mutate, isPending } = useAddPoi(organization);
  * mutate({ name: "Mon POI", type: "place" });
  */
-export function useAddPoi(parentEntity?: EntityTypes | null) {
+export function useAddPoi(entity?: EntityTypes | null) {
   const { me } = useCocolight();
   const navigate = useNavigate();
 
+  // Utiliser l'entité fournie ou me par défaut
+  const targetEntity = entity || me;
+
   return useMutationWithToast<{ poi: Poi }, AddPoiFormData>({
     mutationFn: async (data) => {
-      if (!me) {
-        throw new Error("User not connected");
+      if (!targetEntity) {
+        throw new Error("No entity provided");
       }
 
-      // Ajouter le parent si fourni
-      const poiData = { ...data };
-      if (parentEntity?.id) {
+      // Transformer les données avec l'objet address
+      const transformedData = transformFormDataWithAddress(data);
+
+      // Ajouter le parent si on crée depuis une entité parente
+      const poiData = { ...transformedData };
+      if (entity?.id) {
         poiData.parent = {
-          [parentEntity.id]: {
-            type: parentEntity.getEntityType?.() || "organizations",
-            name: parentEntity.serverData?.name,
+          [entity.id]: {
+            type: entity.getEntityType?.() || "organizations",
+            name: entity.serverData?.name,
           },
         };
       }
 
       // Créer le POI via le SDK
-      const poi = await me.poi(poiData);
+      const poi = await targetEntity.poi(poiData);
       await poi.save();
 
       return { poi };
@@ -207,8 +326,8 @@ export function useAddPoi(parentEntity?: EntityTypes | null) {
     successKey: "toast.add.poiSuccess",
     errorKey: "toast.add.poiError",
     invalidateQueries: [
-      ...(me ? [QUERY_KEYS.USER_POIS(me.slug)] : []),
-      ...(parentEntity ? [QUERY_KEYS.ELEMENT_ABOUT(parentEntity.slug)] : []),
+      ...(targetEntity ? [QUERY_KEYS.USER_POIS(targetEntity.slug)] : []),
+      ...(entity ? [QUERY_KEYS.ELEMENT_ABOUT(entity.slug)] : []),
     ],
     onSuccessCallback: (data) => {
       // Rediriger vers le profil du nouveau POI

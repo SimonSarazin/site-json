@@ -12,11 +12,11 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { DateTimePicker } from "@/components/ui/datetime-picker";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -27,6 +27,8 @@ import {
 import { addEventSchema, type AddEventFormData } from "../../schemaForm";
 import { useAddEvent } from "../../hooks/useAddMutations";
 import { TranslatedFormMessage } from "../profile-edit/TranslatedFormMessage";
+import { EditEventDatesTab } from "../profile-edit/EditEventDatesTab";
+import { EditLocationTab } from "../profile-edit/EditLocationTab";
 
 interface AddEventModalProps {
   open: boolean;
@@ -35,9 +37,9 @@ interface AddEventModalProps {
 }
 
 /**
- * Modal pour cr&eacute;er un nouvel &eacute;v&eacute;nement
+ * Modal pour créer un nouvel événement
  *
- * @param parent - L'entit&eacute; parente (organisation, projet) pour d&eacute;finir l'organisateur
+ * @param parent - L'entité parente (organisation, projet) pour définir l'organisateur
  */
 export function AddEventModal({ open, onOpenChange, parent }: AddEventModalProps) {
   const t = useT("modules/profil");
@@ -54,6 +56,7 @@ export function AddEventModal({ open, onOpenChange, parent }: AddEventModalProps
       recurrency: false,
       startDate: undefined,
       endDate: undefined,
+      openingHours: undefined,
       organizer: parent?.id
         ? {
             [parent.id]: {
@@ -62,10 +65,13 @@ export function AddEventModal({ open, onOpenChange, parent }: AddEventModalProps
             },
           }
         : undefined,
+      addressCountry: "",
+      addressLocality: "",
+      localityId: "",
+      postalCode: "",
+      streetAddress: "",
     },
   });
-
-  const recurrency = form.watch("recurrency");
 
   const onSubmit = async (data: AddEventFormData) => {
     try {
@@ -84,7 +90,7 @@ export function AddEventModal({ open, onOpenChange, parent }: AddEventModalProps
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t("AddEntity.modal.event.title")}</DialogTitle>
           <DialogDescription>
@@ -94,109 +100,26 @@ export function AddEventModal({ open, onOpenChange, parent }: AddEventModalProps
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* Nom */}
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("ProfileEdit.fields.name.label")} *</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t("ProfileEdit.fields.name.placeholder")}
-                      {...field}
-                    />
-                  </FormControl>
-                  <TranslatedFormMessage />
-                </FormItem>
-              )}
-            />
+            <Tabs defaultValue="info" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="info">{t("AddEntity.tabs.info")}</TabsTrigger>
+                <TabsTrigger value="dates">{t("AddEntity.tabs.dates")}</TabsTrigger>
+                <TabsTrigger value="location">{t("AddEntity.tabs.location")}</TabsTrigger>
+              </TabsList>
 
-            {/* Type d'&eacute;v&eacute;nement */}
-            <FormField
-              control={form.control}
-              name="type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("ProfileEdit.fields.eventType.label")} *</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t("ProfileEdit.fields.eventType.placeholder")} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {EVENT_TYPES.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {t(`ProfileEdit.fields.eventType.options.${type}`)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <TranslatedFormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Description courte */}
-            <FormField
-              control={form.control}
-              name="shortDescription"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("ProfileEdit.fields.shortDescription.label")}</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder={t("ProfileEdit.fields.shortDescription.placeholder")}
-                      className="resize-none"
-                      rows={3}
-                      {...field}
-                    />
-                  </FormControl>
-                  <TranslatedFormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* R&eacute;currence */}
-            <FormField
-              control={form.control}
-              name="recurrency"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>
-                      {t("ProfileEdit.fields.recurrency.label")}
-                    </FormLabel>
-                    <FormDescription>
-                      {t("ProfileEdit.fields.recurrency.description")}
-                    </FormDescription>
-                  </div>
-                </FormItem>
-              )}
-            />
-
-            {/* Dates (uniquement si non récurrent) */}
-            {!recurrency && (
-              <div className="grid grid-cols-2 gap-4">
+              {/* Tab Informations */}
+              <TabsContent value="info" className="space-y-4 mt-4">
+                {/* Nom */}
                 <FormField
                   control={form.control}
-                  name="startDate"
+                  name="name"
                   render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>{t("ProfileEdit.fields.startDate.label")} *</FormLabel>
+                    <FormItem>
+                      <FormLabel>{t("ProfileEdit.fields.name.label")} *</FormLabel>
                       <FormControl>
-                        <DateTimePicker
-                          value={field.value ? new Date(field.value) : undefined}
-                          onChange={(date) => field.onChange(date?.toISOString())}
-                          placeholder={t("ProfileEdit.fields.startDate.placeholder")}
-                          granularity="minute"
+                        <Input
+                          placeholder={t("ProfileEdit.fields.name.placeholder")}
+                          {...field}
                         />
                       </FormControl>
                       <TranslatedFormMessage />
@@ -204,61 +127,91 @@ export function AddEventModal({ open, onOpenChange, parent }: AddEventModalProps
                   )}
                 />
 
+                {/* Type d'événement */}
                 <FormField
                   control={form.control}
-                  name="endDate"
+                  name="type"
                   render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>{t("ProfileEdit.fields.endDate.label")} *</FormLabel>
+                    <FormItem>
+                      <FormLabel>{t("ProfileEdit.fields.eventType.label")} *</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder={t("ProfileEdit.fields.eventType.placeholder")} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {EVENT_TYPES.map((type) => (
+                            <SelectItem key={type} value={type}>
+                              {t(`ProfileEdit.fields.eventType.options.${type}`)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <TranslatedFormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Description courte */}
+                <FormField
+                  control={form.control}
+                  name="shortDescription"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("ProfileEdit.fields.shortDescription.label")}</FormLabel>
                       <FormControl>
-                        <DateTimePicker
-                          value={field.value ? new Date(field.value) : undefined}
-                          onChange={(date) => field.onChange(date?.toISOString())}
-                          placeholder={t("ProfileEdit.fields.endDate.placeholder")}
-                          granularity="minute"
+                        <Textarea
+                          placeholder={t("ProfileEdit.fields.shortDescription.placeholder")}
+                          className="resize-none"
+                          rows={3}
+                          {...field}
                         />
                       </FormControl>
                       <TranslatedFormMessage />
                     </FormItem>
                   )}
                 />
-              </div>
-            )}
 
-            {/* Note pour &eacute;v&eacute;nements r&eacute;currents */}
-            {recurrency && (
-              <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
-                {t("ProfileEdit.schedule.openingHours.description")}
-              </div>
-            )}
+                {/* Public */}
+                <FormField
+                  control={form.control}
+                  name="public"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel>
+                          {t("AddEntity.modal.event.public")}
+                        </FormLabel>
+                      </div>
+                    </FormItem>
+                  )}
+                />
 
-            {/* Public */}
-            <FormField
-              control={form.control}
-              name="public"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>
-                      Public
-                    </FormLabel>
+                {/* Organisateur affiché en lecture seule si fourni */}
+                {parent && (
+                  <div className="text-sm text-muted-foreground">
+                    {t("ProfileEdit.fields.organizer.label")}: <strong>{parent.serverData?.name}</strong>
                   </div>
-                </FormItem>
-              )}
-            />
+                )}
+              </TabsContent>
 
-            {/* Organisateur affich&eacute; en lecture seule si fourni */}
-            {parent && (
-              <div className="text-sm text-muted-foreground">
-                {t("ProfileEdit.fields.organizer.label")}: <strong>{parent.serverData?.name}</strong>
-              </div>
-            )}
+              {/* Tab Dates */}
+              <TabsContent value="dates" className="mt-4">
+                <EditEventDatesTab form={form} />
+              </TabsContent>
+
+              {/* Tab Localisation */}
+              <TabsContent value="location" className="mt-4">
+                <EditLocationTab form={form} />
+              </TabsContent>
+            </Tabs>
 
             <DialogFooter>
               <Button
