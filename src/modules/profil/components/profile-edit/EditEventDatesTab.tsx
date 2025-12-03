@@ -11,7 +11,7 @@ import {
 import { TranslatedFormMessage } from "./TranslatedFormMessage";
 import { Switch } from "@/components/ui/switch";
 import { DateTimePicker } from "@/components/ui/datetime-picker";
-import { OpeningHoursPicker } from "@/components/shared/OpeningHoursPicker";
+import { OpeningHoursPicker } from "@/components/form/OpeningHoursPicker";
 
 interface EditEventDatesTabProps {
   form: UseFormReturn<any>;

@@ -9,7 +9,7 @@ import {
   FormDescription,
 } from "@/components/ui/form";
 import { TranslatedFormMessage } from "./TranslatedFormMessage";
-import { OpeningHoursPicker } from "@/components/shared/OpeningHoursPicker";
+import { OpeningHoursPicker } from "@/components/form/OpeningHoursPicker";
 
 interface EditScheduleTabProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
