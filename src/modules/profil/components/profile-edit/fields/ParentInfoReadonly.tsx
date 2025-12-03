@@ -6,12 +6,16 @@ interface ParentInfoReadonlyProps {
    * L'entité parente
    */
   parent: EntityTypes | null | undefined;
+  /**
+   * Clé de traduction pour le label (par défaut: ProfileEdit.fields.parent.label)
+   */
+  labelKey?: string;
 }
 
 /**
  * Affichage en lecture seule du parent d'une entité
  */
-export function ParentInfoReadonly({ parent }: ParentInfoReadonlyProps) {
+export function ParentInfoReadonly({ parent, labelKey = "ProfileEdit.fields.parent.label" }: ParentInfoReadonlyProps) {
   const t = useT("modules/profil");
 
   if (!parent) {
@@ -20,7 +24,7 @@ export function ParentInfoReadonly({ parent }: ParentInfoReadonlyProps) {
 
   return (
     <div className="text-sm text-muted-foreground">
-      {t("ProfileEdit.fields.parent.label")}: <strong>{parent.serverData?.name}</strong>
+      {t(labelKey)}: <strong>{parent.serverData?.name}</strong>
     </div>
   );
 }

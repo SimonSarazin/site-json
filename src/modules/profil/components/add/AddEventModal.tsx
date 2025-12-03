@@ -1,7 +1,9 @@
+import { useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
+import type { FieldErrors } from "react-hook-form";
 import { useT } from "@/hooks/useT";
 import {
   Dialog,
@@ -23,7 +25,26 @@ import {
   FormFieldShortDescription,
   FormFieldPublic,
   FormFieldType,
+  FormFieldTags,
+  FormFieldUrl,
+  SelectParent,
+  ParentInfoReadonly,
 } from "../profile-edit/fields";
+import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
+
+// Mapping des champs par onglet pour détecter les erreurs
+const TAB_FIELDS = {
+  info: ['name', 'type', 'shortDescription', 'public', 'tags', 'url', 'organizer', 'parent'],
+  dates: ['startDate', 'endDate', 'recurrency', 'openingHours'],
+  location: ['addressCountry', 'addressLocality', 'postalCode', 'streetAddress', 'localityId'],
+} as const;
+
+type TabName = keyof typeof TAB_FIELDS;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function hasTabErrors(tabName: TabName, errors: FieldErrors<any>): boolean {
+  return TAB_FIELDS[tabName].some(field => !!errors[field]);
+}
 
 interface AddEventModalProps {
   open: boolean;
@@ -47,6 +68,8 @@ export function AddEventModal({ open, onOpenChange, parent }: AddEventModalProps
       name: "",
       type: "meeting",
       shortDescription: "",
+      url: "",
+      tags: [],
       public: true,
       recurrency: false,
       startDate: undefined,
@@ -65,8 +88,17 @@ export function AddEventModal({ open, onOpenChange, parent }: AddEventModalProps
       localityId: "",
       postalCode: "",
       streetAddress: "",
+      parent: undefined,
     },
   });
+
+  // Filtre pour ne montrer que les événements de l'organisateur (parent)
+  const parentEventFilter = useMemo(() => {
+    if (!parent?.id) return undefined;
+    return { filters: {
+      [`organizer.${parent.id}`]: { $exists: true },
+    }};
+  }, [parent?.id]);
 
   const onSubmit = async (data: AddEventFormData) => {
     try {
@@ -97,9 +129,24 @@ export function AddEventModal({ open, onOpenChange, parent }: AddEventModalProps
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <Tabs defaultValue="info" className="w-full">
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="info">{t("AddEntity.tabs.info")}</TabsTrigger>
-                <TabsTrigger value="dates">{t("AddEntity.tabs.dates")}</TabsTrigger>
-                <TabsTrigger value="location">{t("AddEntity.tabs.location")}</TabsTrigger>
+                <TabsTrigger value="info" className="gap-1">
+                  {t("AddEntity.tabs.info")}
+                  {hasTabErrors('info', form.formState.errors) && (
+                    <AlertCircle className="h-4 w-4 text-destructive" />
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="dates" className="gap-1">
+                  {t("AddEntity.tabs.dates")}
+                  {hasTabErrors('dates', form.formState.errors) && (
+                    <AlertCircle className="h-4 w-4 text-destructive" />
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="location" className="gap-1">
+                  {t("AddEntity.tabs.location")}
+                  {hasTabErrors('location', form.formState.errors) && (
+                    <AlertCircle className="h-4 w-4 text-destructive" />
+                  )}
+                </TabsTrigger>
               </TabsList>
 
               {/* Tab Informations */}
@@ -110,8 +157,34 @@ export function AddEventModal({ open, onOpenChange, parent }: AddEventModalProps
                 {/* Type d'événement */}
                 <FormFieldType control={form.control} variant="event" required />
 
+                {/* Organisateur affiché en lecture seule */}
+                <ParentInfoReadonly parent={parent} labelKey="ProfileEdit.fields.organizer.label" />
+
+                {/* Événement parent (sous-événement) */}
+                <FormField
+                  control={form.control}
+                  name="parent"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("ProfileEdit.fields.parentEvent.label")}</FormLabel>
+                      <FormControl>
+                        <SelectParent
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder={t("ProfileEdit.fields.parentEvent.placeholder")}
+                          searchTypes={["events"]}
+                          filters={parentEventFilter}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
                 {/* Description courte */}
                 <FormFieldShortDescription control={form.control} />
+
+                {/* URL (optionnel) */}
+                <FormFieldUrl control={form.control} />
 
                 {/* Public */}
                 <FormFieldPublic
@@ -119,12 +192,9 @@ export function AddEventModal({ open, onOpenChange, parent }: AddEventModalProps
                   labelKey="AddEntity.modal.event.public"
                 />
 
-                {/* Organisateur affiché en lecture seule si fourni */}
-                {parent && (
-                  <div className="text-sm text-muted-foreground">
-                    {t("ProfileEdit.fields.organizer.label")}: <strong>{parent.serverData?.name}</strong>
-                  </div>
-                )}
+                {/* Tags */}
+                <FormFieldTags control={form.control} />
+
               </TabsContent>
 
               {/* Tab Dates */}

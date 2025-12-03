@@ -547,47 +547,9 @@ export type AddPoiFormData = z.infer<typeof addPoiSchema>;
 // ADD_EVENT SCHEMA (simplifié pour le formulaire de création)
 // ============================================================================
 
-export const addEventSchema = z.object({
-  // Champs requis
-  name: z.string().min(2, "validation.name.minLength"),
-  type: z.enum(EVENT_TYPES),
+export const addEventSchema = eventProfileSchema;
 
-  // Champs optionnels
-  shortDescription: z.string().optional(),
-  public: z.boolean().default(true),
-  recurrency: z.boolean().default(false),
-
-  // Dates (requises si non récurrent, gérées par le composant)
-  startDate: z.string().optional(),
-  endDate: z.string().optional(),
-
-  // Horaires d'ouverture (pour événements récurrents)
-  openingHours: openingHoursSchema.optional(),
-
-  // Relations
-  organizer: parentSchema.optional(),
-  parent: parentSchema.optional(),
-
-  // Localisation (aplatie pour compatibilité avec EditLocationTab)
-  addressCountry: z.string().optional(),
-  addressLocality: z.string().optional(),
-  localityId: z.string().optional(),
-  postalCode: z.string().optional(),
-  streetAddress: z.string().optional(),
-  codeInsee: z.string().optional(),
-  level1: z.string().optional(),
-  level1Name: z.string().optional(),
-  level2: z.string().optional(),
-  level2Name: z.string().optional(),
-  level3: z.string().optional(),
-  level3Name: z.string().optional(),
-  level4: z.string().optional(),
-  level4Name: z.string().optional(),
-  geo: geoSchema.optional(),
-  geoPosition: geoPositionSchema.optional(),
-});
-
-export type AddEventFormData = z.infer<typeof addEventSchema>;
+export type AddEventFormData = z.infer<typeof eventProfileSchema>;
 
 // ============================================================================
 // PROFILE FORM HELPERS

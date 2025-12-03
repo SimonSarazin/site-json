@@ -1,7 +1,8 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
+import type { FieldErrors } from "react-hook-form";
 import { useT } from "@/hooks/useT";
 import {
   Dialog,
@@ -25,6 +26,19 @@ import {
   FormFieldPublic,
   ParentInfoReadonly,
 } from "../profile-edit/fields";
+
+// Mapping des champs par onglet pour détecter les erreurs
+const TAB_FIELDS = {
+  info: ['name', 'shortDescription', 'url', 'public', 'tags'],
+  location: ['addressCountry', 'addressLocality', 'postalCode', 'streetAddress', 'localityId'],
+} as const;
+
+type TabName = keyof typeof TAB_FIELDS;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function hasTabErrors(tabName: TabName, errors: FieldErrors<any>): boolean {
+  return TAB_FIELDS[tabName].some(field => !!errors[field]);
+}
 
 interface AddProjectModalProps {
   open: boolean;
@@ -92,8 +106,18 @@ export function AddProjectModal({ open, onOpenChange, parent }: AddProjectModalP
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <Tabs defaultValue="info" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="info">{t("AddEntity.tabs.info")}</TabsTrigger>
-                <TabsTrigger value="location">{t("AddEntity.tabs.location")}</TabsTrigger>
+                <TabsTrigger value="info" className="gap-1">
+                  {t("AddEntity.tabs.info")}
+                  {hasTabErrors('info', form.formState.errors) && (
+                    <AlertCircle className="h-4 w-4 text-destructive" />
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="location" className="gap-1">
+                  {t("AddEntity.tabs.location")}
+                  {hasTabErrors('location', form.formState.errors) && (
+                    <AlertCircle className="h-4 w-4 text-destructive" />
+                  )}
+                </TabsTrigger>
               </TabsList>
 
               {/* Tab Informations */}

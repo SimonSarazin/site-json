@@ -10,3 +10,4 @@ export { FormFieldPublic } from "./FormFieldPublic";
 export { FormFieldSelect } from "./FormFieldSelect";
 export { FormFieldType } from "./FormFieldType";
 export { ParentInfoReadonly } from "./ParentInfoReadonly";
+export { SelectParent } from "./SelectParent";

@@ -3,7 +3,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useT } from "@/hooks/useT";
 import { getProfileSchema, type ProfileFormData } from "../../schemaForm";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
+import type { FieldErrors } from "react-hook-form";
 import {
   Dialog,
   DialogContent,
@@ -25,6 +26,25 @@ import { useUpdateProfile } from "../../hooks/useProfileMutations";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { DAYS } from "@/constants/DAYS";
 import { formatISO } from "date-fns";
+
+// Mapping des champs par onglet pour détecter les erreurs
+const TAB_FIELDS = {
+  basic: ['name', 'slug', 'birthDate', 'type', 'parent', 'organizer', 'shortDescription', 'description', 'tags'],
+  contact: ['email', 'mobile', 'fixe', 'url'],
+  location: ['addressCountry', 'addressLocality', 'postalCode', 'streetAddress', 'localityId', 'codeInsee'],
+  social: ['github', 'gitlab', 'facebook', 'twitter', 'instagram', 'diaspora', 'mastodon', 'telegram', 'signal'],
+  schedule: ['openingHours'],
+  eventDates: ['startDate', 'endDate', 'openingHours', 'recurrency'],
+} as const;
+
+type TabName = keyof typeof TAB_FIELDS;
+
+/**
+ * Vérifie si un onglet contient des erreurs de validation
+ */
+function hasTabErrors(tabName: TabName, errors: FieldErrors<ProfileFormData>): boolean {
+  return TAB_FIELDS[tabName].some(field => !!errors[field as keyof ProfileFormData]);
+}
 
 interface EditProfileModalProps {
   entity: EntityTypes;
@@ -245,17 +265,47 @@ export function EditProfileModal({
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <Tabs defaultValue="basic" className="w-full">
               <TabsList className={`grid w-full ${entityType === "citoyens" || entityType === "organizations" || entityType === "events" ? 'grid-cols-4' : 'grid-cols-3'}`}>
-                <TabsTrigger value="basic">{t("ProfileEdit.tabs.basic")}</TabsTrigger>
-                <TabsTrigger value="contact">{t("ProfileEdit.tabs.contact")}</TabsTrigger>
-                <TabsTrigger value="location">{t("ProfileEdit.tabs.location.label")}</TabsTrigger>
+                <TabsTrigger value="basic" className="gap-1">
+                  {t("ProfileEdit.tabs.basic")}
+                  {hasTabErrors('basic', form.formState.errors) && (
+                    <AlertCircle className="h-4 w-4 text-destructive" />
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="contact" className="gap-1">
+                  {t("ProfileEdit.tabs.contact")}
+                  {hasTabErrors('contact', form.formState.errors) && (
+                    <AlertCircle className="h-4 w-4 text-destructive" />
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="location" className="gap-1">
+                  {t("ProfileEdit.tabs.location.label")}
+                  {hasTabErrors('location', form.formState.errors) && (
+                    <AlertCircle className="h-4 w-4 text-destructive" />
+                  )}
+                </TabsTrigger>
                 {entityType === "citoyens" && (
-                  <TabsTrigger value="social">{t("ProfileEdit.tabs.social")}</TabsTrigger>
+                  <TabsTrigger value="social" className="gap-1">
+                    {t("ProfileEdit.tabs.social")}
+                    {hasTabErrors('social', form.formState.errors) && (
+                      <AlertCircle className="h-4 w-4 text-destructive" />
+                    )}
+                  </TabsTrigger>
                 )}
                 {entityType === "organizations" && (
-                  <TabsTrigger value="schedule">{t("ProfileEdit.tabs.schedule.label")}</TabsTrigger>
+                  <TabsTrigger value="schedule" className="gap-1">
+                    {t("ProfileEdit.tabs.schedule.label")}
+                    {hasTabErrors('schedule', form.formState.errors) && (
+                      <AlertCircle className="h-4 w-4 text-destructive" />
+                    )}
+                  </TabsTrigger>
                 )}
                 {entityType === "events" && (
-                  <TabsTrigger value="eventDates">{t("ProfileEdit.tabs.eventDates.label")}</TabsTrigger>
+                  <TabsTrigger value="eventDates" className="gap-1">
+                    {t("ProfileEdit.tabs.eventDates.label")}
+                    {hasTabErrors('eventDates', form.formState.errors) && (
+                      <AlertCircle className="h-4 w-4 text-destructive" />
+                    )}
+                  </TabsTrigger>
                 )}
               </TabsList>
 
