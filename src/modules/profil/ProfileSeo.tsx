@@ -61,7 +61,7 @@ export function ProfileSeo({ entity, isLoading, entityType, activeTab, profileCo
    */
   const getTabDescription = (tab: string, entityData: SearchEntity): string => {
     const entityName = entityData.serverData?.name || "";
-    const baseDescription = entityData.serverData?.description || entityData.serverData?.shortDescription || "";
+    const baseDescription = (entityData.serverData?.description || entityData.serverData?.shortDescription || "") as string;
 
     // Si c'est le premier tab (par défaut), utiliser la description de base
     if (tab === firstTabId) {
@@ -131,6 +131,7 @@ export function ProfileSeo({ entity, isLoading, entityType, activeTab, profileCo
   };
 
   // Données structurées schema.org
+  const entityUrl = entity.serverData?.url as string[] | undefined;
   const structuredData = {
     "@context": "https://schema.org",
     "@type": getSchemaType(entityType),
@@ -146,7 +147,7 @@ export function ProfileSeo({ entity, isLoading, entityType, activeTab, profileCo
         addressLocality: entity.serverData.address.addressLocality,
       },
     }),
-    ...(entity.serverData?.url && entity.serverData.url.length > 0 && { sameAs: entity.serverData.url }),
+    ...(entityUrl && entityUrl.length > 0 && { sameAs: entityUrl }),
   };
 
   return (

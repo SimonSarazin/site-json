@@ -9,10 +9,10 @@ export default function CardTiersLieux({
 }: SearchCardProps) {
   
   const serverData = item?.serverData;
-  
+
   // Extraction des données
-  const image = serverData?.image || serverData?.profilImageUrl;
-  const title = serverData?.name || serverData?.title || "";
+  const image = serverData?.profilImageUrl;
+  const title = serverData?.name;
   const location = getLocation(item);
   const avatarIcon = getAvatarIcon(item);
   const avatarColor = getAvatarColor(item);
@@ -91,18 +91,16 @@ export default function CardTiersLieux({
 // Fonctions utilitaires pour extraire les données
 function getLocation(item: SearchEntity): string | null {
   const serverData = item?.serverData;
-  
+
   // Essayer différentes sources pour la localisation
   if (serverData?.address?.addressLocality) {
-    const locality = serverData.address.addressLocality;
-    const region = serverData.address?.addressRegion;
-    return region ? `${locality}, ${region}` : locality;
+    return serverData.address.addressLocality;
   }
-  
+
   if (serverData?.location) {
-    return serverData.location;
+    return serverData.location as string;
   }
-  
+
   return null;
 }
 
@@ -110,10 +108,10 @@ function getAvatarIcon(item: SearchEntity): string | null {
   const serverData = item?.serverData;
 
   // Vous pouvez personnaliser selon le type d'entité
-  if (serverData?.avatarIcon) return serverData.avatarIcon;
+  if (serverData?.avatarIcon) return serverData.avatarIcon as string;
 
   // Icône par défaut selon le type (kebab-case pour lucide-react/dynamic)
-  const type = serverData?.type;
+  const type = serverData?.type as string | undefined;
   if (type === "organizations") return "building-2";
   if (type === "projects") return "lightbulb";
   if (type === "events") return "calendar";
@@ -124,16 +122,16 @@ function getAvatarIcon(item: SearchEntity): string | null {
 
 function getAvatarColor(item: SearchEntity): string {
   const serverData = item?.serverData;
-  
-  if (serverData?.avatarColor) return serverData.avatarColor;
-  
+
+  if (serverData?.avatarColor) return serverData.avatarColor as string;
+
   // Couleur par défaut selon le type
-  const type = serverData?.type;
+  const type = serverData?.type as string | undefined;
   if (type === "organizations") return "blue";
   if (type === "projects") return "orange";
   if (type === "events") return "purple";
   if (type === "poi") return "green";
-  
+
   return "teal";
 }
 

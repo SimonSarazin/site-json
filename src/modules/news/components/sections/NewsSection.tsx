@@ -211,7 +211,7 @@ export const NewsSection = ({ id, props }: NewsSectionProps) => {
       entity: entity || undefined,
       permissions: newsPermissions,
       entityId: entity?.id || undefined,
-      entityType: entity?.serverData?.type,
+      entityType: entity?.getEntityType?.(),
       detailUrlGenerator: detailUrlGenerator || undefined
     }}>
       <section id={id} className="space-y-4 sm:space-y-6">

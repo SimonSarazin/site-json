@@ -3,6 +3,7 @@ import { useT } from "@/hooks/useT";
 import { formatDate } from "@/helpers/formatDate";
 import type { ProfileEventDatesSection } from "../../schema";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { isEvent } from "@/lib/getTypedEntity";
 
 interface ProfileEventDatesProps {
   section: ProfileEventDatesSection;
@@ -14,11 +15,11 @@ interface ProfileEventDatesProps {
  */
 export default function ProfileEventDates({ section }: ProfileEventDatesProps) {
   const { entity } = useProfileEntity();
-    useLoadNamespace("modules/profil");
-    const t = useT("modules/profil");
+  useLoadNamespace("modules/profil");
+  const t = useT("modules/profil");
 
-  // Si pas de date de début, ne rien afficher
-  if (!entity?.serverData?.startDate) {
+  // Ce composant ne s'affiche que pour les Events
+  if (!entity || !isEvent(entity)) {
     return null;
   }
 

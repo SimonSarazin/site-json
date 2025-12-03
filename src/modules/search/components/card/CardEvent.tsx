@@ -11,8 +11,8 @@ export default function CardEvent({
   const serverData = item?.serverData;
 
   // Extraction des données
-  const image = serverData?.image || serverData?.profilImageUrl;
-  const title = serverData?.name || serverData?.title || "";
+  const image = serverData?.profilImageUrl;
+  const title = serverData?.name;
   const eventTitle = getEventTitle(item);
   const date = getEventDate(item);
   const organizerName = getOrganizerName(item);
@@ -112,9 +112,7 @@ export default function CardEvent({
 function getEventTitle(item: SearchEntity): string | null {
   const serverData = item?.serverData;
 
-  if (serverData?.eventTitle) return serverData.eventTitle;
   if (serverData?.name) return serverData.name;
-  if (serverData?.title) return serverData.title;
 
   return null;
 }
@@ -153,8 +151,14 @@ function getEventDate(item: SearchEntity): string | null {
 function getOrganizerName(item: SearchEntity): string | null {
   const serverData = item?.serverData;
 
-  if (serverData?.organizerName) return serverData.organizerName;
-  if (serverData?.organizer?.name) return serverData.organizer.name;
+  if (serverData?.organizerName) return serverData.organizerName as string;
+
+  // organizer est spécifique à Event - vérifier son existence
+  const organizer = serverData?.organizer as Record<string, { name?: string }> | undefined;
+  if (organizer) {
+    const firstOrg = Object.values(organizer)[0];
+    if (firstOrg?.name) return firstOrg.name;
+  }
 
   return null;
 }
@@ -164,13 +168,11 @@ function getLocation(item: SearchEntity): string | null {
 
   // Essayer différentes sources pour la localisation
   if (serverData?.address?.addressLocality) {
-    const locality = serverData.address.addressLocality;
-    const region = serverData.address?.addressRegion;
-    return region ? `${locality}, ${region}` : locality;
+    return serverData.address.addressLocality;
   }
 
   if (serverData?.location) {
-    return serverData.location;
+    return serverData.location as string;
   }
 
   return null;
@@ -179,7 +181,7 @@ function getLocation(item: SearchEntity): string | null {
 function getAvatarIcon(item: SearchEntity): string | null {
   const serverData = item?.serverData;
 
-  if (serverData?.avatarIcon) return serverData.avatarIcon;
+  if (serverData?.avatarIcon) return serverData.avatarIcon as string;
 
   // Icône par défaut pour les événements
   if (serverData?.tags && Array.isArray(serverData.tags)) {
@@ -193,7 +195,7 @@ function getAvatarIcon(item: SearchEntity): string | null {
     };
 
     for (const tag of serverData.tags) {
-      const icon = tagIconMap[tag.toLowerCase()];
+      const icon = tagIconMap[(tag as string).toLowerCase()];
       if (icon) return icon;
     }
   }
@@ -204,7 +206,7 @@ function getAvatarIcon(item: SearchEntity): string | null {
 function getAvatarColor(item: SearchEntity): string {
   const serverData = item?.serverData;
 
-  if (serverData?.avatarColor) return serverData.avatarColor;
+  if (serverData?.avatarColor) return serverData.avatarColor as string;
 
   return "purple"; // Couleur par défaut pour les événements
 }
