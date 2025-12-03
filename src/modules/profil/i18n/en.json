@@ -587,9 +587,9 @@
         "placeholder": "Select end date"
       },
       "parent": {
-        "label": "Parent organization",
-        "placeholder": "Select an organization...",
-        "description": "The organization this project belongs to"
+        "label": "Parent entity",
+        "placeholder": "Select a parent entity...",
+        "description": "The entity this element belongs to"
       },
       "organizer": {
         "label": "Organizer",

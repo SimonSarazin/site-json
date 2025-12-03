@@ -1,6 +1,5 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ORGANIZATION_TYPES } from "@communecter/cocolight-api-client";
 import { Loader2 } from "lucide-react";
 import { useT } from "@/hooks/useT";
 import {
@@ -14,9 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TagsInput } from "@/components/form/TagsInput";
 import {
   Select,
   SelectContent,
@@ -26,8 +23,15 @@ import {
 } from "@/components/ui/select";
 import { addOrganizationSchema, type AddOrganizationFormData } from "../../schemaForm";
 import { useAddOrganization } from "../../hooks/useAddMutations";
-import { TranslatedFormMessage } from "../profile-edit/TranslatedFormMessage";
+import { TranslatedFormMessage } from "../profile-edit/fields/TranslatedFormMessage";
 import { EditLocationTab } from "../profile-edit/EditLocationTab";
+import {
+  FormFieldName,
+  FormFieldTags,
+  FormFieldShortDescription,
+  FormFieldUrl,
+  FormFieldType,
+} from "../profile-edit/fields";
 
 interface AddOrganizationModalProps {
   open: boolean;
@@ -105,48 +109,10 @@ export function AddOrganizationModal({ open, onOpenChange }: AddOrganizationModa
               {/* Tab Informations */}
               <TabsContent value="info" className="space-y-4 mt-4">
                 {/* Nom */}
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("ProfileEdit.fields.name.label")} *</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder={t("ProfileEdit.fields.name.placeholder")}
-                          {...field}
-                        />
-                      </FormControl>
-                      <TranslatedFormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormFieldName control={form.control} required />
 
                 {/* Type d'organisation */}
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("ProfileEdit.fields.type.label")} *</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder={t("ProfileEdit.fields.type.placeholder")} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {ORGANIZATION_TYPES.map((type) => (
-                            <SelectItem key={type} value={type}>
-                              {t(`ProfileEdit.fields.type.options.${type}`)}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <TranslatedFormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormFieldType control={form.control} variant="organization" required />
 
                 {/* Role dans l'organisation */}
                 <FormField
@@ -172,24 +138,7 @@ export function AddOrganizationModal({ open, onOpenChange }: AddOrganizationModa
                 />
 
                 {/* Description courte */}
-                <FormField
-                  control={form.control}
-                  name="shortDescription"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("ProfileEdit.fields.shortDescription.label")}</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder={t("ProfileEdit.fields.shortDescription.placeholder")}
-                          className="resize-none"
-                          rows={3}
-                          {...field}
-                        />
-                      </FormControl>
-                      <TranslatedFormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormFieldShortDescription control={form.control} />
 
                 {/* Email (optionnel) */}
                 <FormField
@@ -211,45 +160,10 @@ export function AddOrganizationModal({ open, onOpenChange }: AddOrganizationModa
                 />
 
                 {/* URL (optionnel) */}
-                <FormField
-                  control={form.control}
-                  name="url"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("ProfileEdit.fields.url.label")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="url"
-                          placeholder={t("ProfileEdit.fields.url.placeholder")}
-                          {...field}
-                        />
-                      </FormControl>
-                      <TranslatedFormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormFieldUrl control={form.control} />
 
                 {/* Tags */}
-                <FormField
-                  control={form.control}
-                  name="tags"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("ProfileEdit.fields.tags.label")}</FormLabel>
-                      <FormControl>
-                        <TagsInput
-                          tags={Array.isArray(field.value) ? field.value : []}
-                          onTagsChange={field.onChange}
-                          maxTags={10}
-                          texts={{
-                            placeholder: t("ProfileEdit.fields.tags.placeholder"),
-                          }}
-                        />
-                      </FormControl>
-                      <TranslatedFormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormFieldTags control={form.control} />
               </TabsContent>
 
               {/* Tab Localisation */}

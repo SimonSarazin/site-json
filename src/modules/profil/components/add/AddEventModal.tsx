@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { EVENT_TYPES, type EntityTypes } from "@communecter/cocolight-api-client";
+import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { Loader2 } from "lucide-react";
 import { useT } from "@/hooks/useT";
 import {
@@ -12,23 +12,18 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Form } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { addEventSchema, type AddEventFormData } from "../../schemaForm";
 import { useAddEvent } from "../../hooks/useAddMutations";
-import { TranslatedFormMessage } from "../profile-edit/TranslatedFormMessage";
 import { EditEventDatesTab } from "../profile-edit/EditEventDatesTab";
 import { EditLocationTab } from "../profile-edit/EditLocationTab";
+import {
+  FormFieldName,
+  FormFieldShortDescription,
+  FormFieldPublic,
+  FormFieldType,
+} from "../profile-edit/fields";
 
 interface AddEventModalProps {
   open: boolean;
@@ -110,88 +105,18 @@ export function AddEventModal({ open, onOpenChange, parent }: AddEventModalProps
               {/* Tab Informations */}
               <TabsContent value="info" className="space-y-4 mt-4">
                 {/* Nom */}
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("ProfileEdit.fields.name.label")} *</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder={t("ProfileEdit.fields.name.placeholder")}
-                          {...field}
-                        />
-                      </FormControl>
-                      <TranslatedFormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormFieldName control={form.control} required />
 
                 {/* Type d'événement */}
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("ProfileEdit.fields.eventType.label")} *</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder={t("ProfileEdit.fields.eventType.placeholder")} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {EVENT_TYPES.map((type) => (
-                            <SelectItem key={type} value={type}>
-                              {t(`ProfileEdit.fields.eventType.options.${type}`)}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <TranslatedFormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormFieldType control={form.control} variant="event" required />
 
                 {/* Description courte */}
-                <FormField
-                  control={form.control}
-                  name="shortDescription"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("ProfileEdit.fields.shortDescription.label")}</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder={t("ProfileEdit.fields.shortDescription.placeholder")}
-                          className="resize-none"
-                          rows={3}
-                          {...field}
-                        />
-                      </FormControl>
-                      <TranslatedFormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormFieldShortDescription control={form.control} />
 
                 {/* Public */}
-                <FormField
+                <FormFieldPublic
                   control={form.control}
-                  name="public"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel>
-                          {t("AddEntity.modal.event.public")}
-                        </FormLabel>
-                      </div>
-                    </FormItem>
-                  )}
+                  labelKey="AddEntity.modal.event.public"
                 />
 
                 {/* Organisateur affiché en lecture seule si fourni */}

@@ -12,7 +12,7 @@ import {
   FormLabel,
   FormControl,
 } from "@/components/ui/form";
-import { TranslatedFormMessage } from "./TranslatedFormMessage";
+import { TranslatedFormMessage } from "./fields/TranslatedFormMessage";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";

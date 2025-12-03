@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { useT } from "@/hooks/useT";
 import { Calendar, Clock, Repeat } from "lucide-react";
@@ -8,7 +9,7 @@ import {
   FormControl,
   FormDescription,
 } from "@/components/ui/form";
-import { TranslatedFormMessage } from "./TranslatedFormMessage";
+import { TranslatedFormMessage } from "./fields/TranslatedFormMessage";
 import { Switch } from "@/components/ui/switch";
 import { DateTimePicker } from "@/components/ui/datetime-picker";
 import { OpeningHoursPicker } from "@/components/form/OpeningHoursPicker";
@@ -28,6 +29,13 @@ export function EditEventDatesTab({ form }: EditEventDatesTabProps) {
   const t = useT("modules/profil");
   const recurrency = form.watch("recurrency");
   const startDateValue = form.watch("startDate");
+
+  // Date minimum = aujourd'hui à minuit (permet de sélectionner le jour courant)
+  const minDate = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today;
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -77,9 +85,10 @@ export function EditEventDatesTab({ form }: EditEventDatesTabProps) {
                   <DateTimePicker
                     value={field.value ? new Date(field.value) : undefined}
                     onChange={(date) => field.onChange(date?.toISOString() || "")}
-                    min={new Date()}
+                    min={minDate}
                     granularity="minute"
                     placeholder={t("ProfileEdit.fields.startDate.placeholder")}
+                    clearable
                   />
                 </FormControl>
                 <TranslatedFormMessage />
@@ -100,9 +109,10 @@ export function EditEventDatesTab({ form }: EditEventDatesTabProps) {
                   <DateTimePicker
                     value={field.value ? new Date(field.value) : undefined}
                     onChange={(date) => field.onChange(date?.toISOString() || "")}
-                    min={startDateValue ? new Date(startDateValue) : new Date()}
+                    min={startDateValue ? new Date(startDateValue) : minDate}
                     granularity="minute"
                     placeholder={t("ProfileEdit.fields.endDate.placeholder")}
+                    clearable
                   />
                 </FormControl>
                 <TranslatedFormMessage />

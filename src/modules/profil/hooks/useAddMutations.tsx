@@ -9,106 +9,11 @@ import type {
   AddPoiFormData,
 } from "../schemaForm";
 import { useNavigate } from "react-router";
-
-/**
- * Construit un objet address à partir des champs aplatis du formulaire
- * Retourne undefined si aucune donnée d'adresse n'est présente
- */
-function buildAddressFromForm(data: {
-  addressCountry?: string;
-  addressLocality?: string;
-  localityId?: string;
-  postalCode?: string;
-  streetAddress?: string;
-  codeInsee?: string;
-  level1?: string;
-  level1Name?: string;
-  level2?: string;
-  level2Name?: string;
-  level3?: string;
-  level3Name?: string;
-  level4?: string;
-  level4Name?: string;
-}) {
-  // Vérifier si au moins un champ d'adresse est rempli
-  const hasAddressData = data.addressCountry || data.addressLocality ||
-    data.postalCode || data.streetAddress;
-
-  if (!hasAddressData) {
-    return undefined;
-  }
-
-  return {
-    "@type": "PostalAddress",
-    addressCountry: data.addressCountry || undefined,
-    addressLocality: data.addressLocality || undefined,
-    localityId: data.localityId || undefined,
-    postalCode: data.postalCode || undefined,
-    streetAddress: data.streetAddress || undefined,
-    codeInsee: data.codeInsee || undefined,
-    level1: data.level1 || undefined,
-    level1Name: data.level1Name || undefined,
-    level2: data.level2 || undefined,
-    level2Name: data.level2Name || undefined,
-    level3: data.level3 || undefined,
-    level3Name: data.level3Name || undefined,
-    level4: data.level4 || undefined,
-    level4Name: data.level4Name || undefined,
-  };
-}
-
-/**
- * Extrait les champs d'adresse des données du formulaire et les remplace par l'objet address
- */
-function transformFormDataWithAddress<T extends Record<string, unknown>>(data: T): Omit<T,
-  'addressCountry' | 'addressLocality' | 'localityId' | 'postalCode' | 'streetAddress' |
-  'codeInsee' | 'level1' | 'level1Name' | 'level2' | 'level2Name' | 'level3' | 'level3Name' |
-  'level4' | 'level4Name'
-> & { address?: ReturnType<typeof buildAddressFromForm> } {
-  const {
-    addressCountry,
-    addressLocality,
-    localityId,
-    postalCode,
-    streetAddress,
-    codeInsee,
-    level1,
-    level1Name,
-    level2,
-    level2Name,
-    level3,
-    level3Name,
-    level4,
-    level4Name,
-    ...rest
-  } = data;
-
-  const address = buildAddressFromForm({
-    addressCountry: addressCountry as string | undefined,
-    addressLocality: addressLocality as string | undefined,
-    localityId: localityId as string | undefined,
-    postalCode: postalCode as string | undefined,
-    streetAddress: streetAddress as string | undefined,
-    codeInsee: codeInsee as string | undefined,
-    level1: level1 as string | undefined,
-    level1Name: level1Name as string | undefined,
-    level2: level2 as string | undefined,
-    level2Name: level2Name as string | undefined,
-    level3: level3 as string | undefined,
-    level3Name: level3Name as string | undefined,
-    level4: level4 as string | undefined,
-    level4Name: level4Name as string | undefined,
-  });
-
-  return {
-    ...rest,
-    ...(address ? { address } : {}),
-  } as Omit<T,
-    'addressCountry' | 'addressLocality' | 'localityId' | 'postalCode' | 'streetAddress' |
-    'codeInsee' | 'level1' | 'level1Name' | 'level2' | 'level2Name' | 'level3' | 'level3Name' |
-    'level4' | 'level4Name'
-  > & { address?: ReturnType<typeof buildAddressFromForm> };
-}
+import {
+  transformFormDataWithAddress,
+  buildParentReference,
+  buildOrganizerReference,
+} from "./mutationUtils";
 
 /**
  * Hook pour créer une nouvelle organisation
@@ -179,15 +84,11 @@ export function useAddProject(entity?: EntityTypes | null) {
       const transformedData = transformFormDataWithAddress(data);
 
       // Ajouter le parent si on crée depuis une entité parente
-      const projectData = { ...transformedData };
-      if (entity?.id) {
-        projectData.parent = {
-          [entity.id]: {
-            type: entity.getEntityType?.() || "organizations",
-            name: entity.serverData?.name,
-          },
-        };
-      }
+      const parent = buildParentReference(entity);
+      const projectData = {
+        ...transformedData,
+        ...(parent ? { parent } : {}),
+      };
 
       // Créer le projet via le SDK
       const project = await targetEntity.project(projectData);
@@ -240,25 +141,11 @@ export function useAddEvent(entity?: EntityTypes | null) {
 
       // L'organizer est obligatoire - utiliser l'entité fournie ou l'utilisateur
       if (!eventData.organizer || Object.keys(eventData.organizer).length === 0) {
-        if (entity?.id) {
-          eventData.organizer = {
-            [entity.id]: {
-              type: entity.getEntityType?.() || "organizations",
-              name: entity.serverData?.name,
-            },
-          };
-        } else if (me?.id) {
-          eventData.organizer = {
-            [me.id]: {
-              type: "citoyens",
-              name: me.serverData?.name,
-            },
-          };
+        const organizer = buildOrganizerReference(entity, me);
+        if (organizer) {
+          eventData.organizer = organizer;
         }
       }
-
-      // Le parent est pour les sous-événements uniquement
-      // Ne pas confondre avec organizer - on ne l'ajoute pas si non défini
 
       // Créer l'événement via le SDK
       const event = await targetEntity.event(eventData);
@@ -307,15 +194,11 @@ export function useAddPoi(entity?: EntityTypes | null) {
       const transformedData = transformFormDataWithAddress(data);
 
       // Ajouter le parent si on crée depuis une entité parente
-      const poiData = { ...transformedData };
-      if (entity?.id) {
-        poiData.parent = {
-          [entity.id]: {
-            type: entity.getEntityType?.() || "organizations",
-            name: entity.serverData?.name,
-          },
-        };
-      }
+      const parent = buildParentReference(entity);
+      const poiData = {
+        ...transformedData,
+        ...(parent ? { parent } : {}),
+      };
 
       // Créer le POI via le SDK
       const poi = await targetEntity.poi(poiData);

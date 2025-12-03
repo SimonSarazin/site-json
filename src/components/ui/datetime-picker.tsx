@@ -1,6 +1,6 @@
 import { add, format, isBefore, isAfter, type Locale } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, X } from "lucide-react";
 import { useImperativeHandle, useRef, useState, useEffect, useMemo } from "react";
 import { DayPicker } from "react-day-picker";
 
@@ -685,7 +685,7 @@ interface DateTimePickerProps extends Omit<React.ComponentPropsWithoutRef<typeof
   locale?: Locale;
   defaultPopupValue?: Date;
   value?: Date;
-  onChange?: (date: Date) => void;
+  onChange?: (date: Date | undefined) => void;
   onMonthChange?: (date: Date) => void;
   hourCycle?: 12 | 24;
   yearRange?: number;
@@ -700,6 +700,8 @@ interface DateTimePickerProps extends Omit<React.ComponentPropsWithoutRef<typeof
   max?: Date;
   className?: string;
   dateTimePickerRef?: React.RefObject<DateTimePickerRef>;
+  /** Affiche un bouton X pour effacer la valeur */
+  clearable?: boolean;
 }
 
 interface DateTimePickerRef {
@@ -722,6 +724,7 @@ function DateTimePicker({
   max,
   className,
   dateTimePickerRef,
+  clearable = false,
   ...props
 }: DateTimePickerProps) {
   const now = useMemo(() => new Date(), []);
@@ -840,6 +843,24 @@ function DateTimePicker({
             )
           ) : (
             <span>{placeholder}</span>
+          )}
+          {clearable && displayDate && (
+            <span
+              role="button"
+              className="ml-auto flex items-center justify-center"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onChange?.(undefined);
+                setDisplayDate(undefined);
+              }}
+              onPointerDown={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+            >
+              <X className="h-4 w-4 opacity-50 hover:opacity-100" />
+            </span>
           )}
         </Button>
       </PopoverTrigger>

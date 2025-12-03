@@ -8,7 +8,7 @@ import {
   FormControl,
   FormDescription,
 } from "@/components/ui/form";
-import { TranslatedFormMessage } from "./TranslatedFormMessage";
+import { TranslatedFormMessage } from "./fields/TranslatedFormMessage";
 import { OpeningHoursPicker } from "@/components/form/OpeningHoursPicker";
 
 interface EditScheduleTabProps {

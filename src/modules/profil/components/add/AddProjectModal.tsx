@@ -12,16 +12,19 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Form } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TagsInput } from "@/components/form/TagsInput";
 import { addProjectSchema, type AddProjectFormData } from "../../schemaForm";
 import { useAddProject } from "../../hooks/useAddMutations";
-import { TranslatedFormMessage } from "../profile-edit/TranslatedFormMessage";
 import { EditLocationTab } from "../profile-edit/EditLocationTab";
+import {
+  FormFieldName,
+  FormFieldTags,
+  FormFieldShortDescription,
+  FormFieldUrl,
+  FormFieldPublic,
+  ParentInfoReadonly,
+} from "../profile-edit/fields";
 
 interface AddProjectModalProps {
   open: boolean;
@@ -96,111 +99,22 @@ export function AddProjectModal({ open, onOpenChange, parent }: AddProjectModalP
               {/* Tab Informations */}
               <TabsContent value="info" className="space-y-4 mt-4">
                 {/* Nom */}
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("ProfileEdit.fields.name.label")} *</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder={t("ProfileEdit.fields.name.placeholder")}
-                          {...field}
-                        />
-                      </FormControl>
-                      <TranslatedFormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormFieldName control={form.control} required />
 
                 {/* Description courte */}
-                <FormField
-                  control={form.control}
-                  name="shortDescription"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("ProfileEdit.fields.shortDescription.label")}</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder={t("ProfileEdit.fields.shortDescription.placeholder")}
-                          className="resize-none"
-                          rows={3}
-                          {...field}
-                        />
-                      </FormControl>
-                      <TranslatedFormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormFieldShortDescription control={form.control} />
 
                 {/* URL (optionnel) */}
-                <FormField
-                  control={form.control}
-                  name="url"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("ProfileEdit.fields.url.label")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="url"
-                          placeholder={t("ProfileEdit.fields.url.placeholder")}
-                          {...field}
-                        />
-                      </FormControl>
-                      <TranslatedFormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormFieldUrl control={form.control} />
 
                 {/* Public */}
-                <FormField
-                  control={form.control}
-                  name="public"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel>
-                          {t("AddEntity.modal.project.public")}
-                        </FormLabel>
-                      </div>
-                    </FormItem>
-                  )}
-                />
+                <FormFieldPublic control={form.control} />
 
                 {/* Tags */}
-                <FormField
-                  control={form.control}
-                  name="tags"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("ProfileEdit.fields.tags.label")}</FormLabel>
-                      <FormControl>
-                        <TagsInput
-                          tags={Array.isArray(field.value) ? field.value : []}
-                          onTagsChange={field.onChange}
-                          maxTags={10}
-                          texts={{
-                            placeholder: t("ProfileEdit.fields.tags.placeholder"),
-                          }}
-                        />
-                      </FormControl>
-                      <TranslatedFormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormFieldTags control={form.control} />
 
                 {/* Parent affiché en lecture seule si fourni */}
-                {parent && (
-                  <div className="text-sm text-muted-foreground">
-                    {t("ProfileEdit.fields.parent.label")}: <strong>{parent.serverData?.name}</strong>
-                  </div>
-                )}
+                <ParentInfoReadonly parent={parent} />
               </TabsContent>
 
               {/* Tab Localisation */}

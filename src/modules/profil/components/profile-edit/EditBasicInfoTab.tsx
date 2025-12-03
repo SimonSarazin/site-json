@@ -8,20 +8,18 @@ import {
   FormControl,
   FormDescription,
 } from "@/components/ui/form";
-import { TranslatedFormMessage } from "./TranslatedFormMessage";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { TagsInput, DatePickerInput } from "@/components/form";
-import { SelectParent } from "./SelectParent";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { ORGANIZATION_TYPES, EVENT_TYPES } from "@communecter/cocolight-api-client";
+import { TranslatedFormMessage } from "./fields/TranslatedFormMessage";
+import { DatePickerInput } from "@/components/form";
+import { SelectParent } from "./fields/SelectParent";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
+import {
+  FormFieldName,
+  FormFieldSlug,
+  FormFieldShortDescription,
+  FormFieldDescription,
+  FormFieldTags,
+  FormFieldType,
+} from "./fields";
 
 interface EditBasicInfoTabProps {
   form: UseFormReturn<any>;
@@ -51,46 +49,10 @@ export function EditBasicInfoTab({ form, entityType }: EditBasicInfoTabProps) {
   return (
     <div className="space-y-6">
       {/* Nom */}
-      <FormField
-        control={form.control}
-        name="name"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>{t("ProfileEdit.fields.name.label")}</FormLabel>
-            <FormControl>
-              <Input
-                {...field}
-                placeholder={t("ProfileEdit.fields.name.placeholder")}
-              />
-            </FormControl>
-            <FormDescription>
-              {t("ProfileEdit.fields.name.description")}
-            </FormDescription>
-            <TranslatedFormMessage />
-          </FormItem>
-        )}
-      />
+      <FormFieldName control={form.control} showDescription />
 
       {/* Slug */}
-      <FormField
-        control={form.control}
-        name="slug"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>{t("ProfileEdit.fields.slug.label")}</FormLabel>
-            <FormControl>
-              <Input
-                {...field}
-                placeholder={t("ProfileEdit.fields.slug.placeholder")}
-              />
-            </FormControl>
-            <FormDescription>
-              {t("ProfileEdit.fields.slug.description")}
-            </FormDescription>
-            <TranslatedFormMessage />
-          </FormItem>
-        )}
-      />
+      <FormFieldSlug control={form.control} />
 
       {/* Date de naissance (citoyens) */}
       {entityType === "citoyens" && (
@@ -120,64 +82,12 @@ export function EditBasicInfoTab({ form, entityType }: EditBasicInfoTabProps) {
 
       {/* Type d'organisation */}
       {entityType === "organizations" && (
-        <FormField
-          control={form.control}
-          name="type"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t("ProfileEdit.fields.type.label")}</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("ProfileEdit.fields.type.placeholder")} />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {ORGANIZATION_TYPES.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {t(`ProfileEdit.fields.type.options.${type}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormDescription>
-                {t("ProfileEdit.fields.type.description")}
-              </FormDescription>
-              <TranslatedFormMessage />
-            </FormItem>
-          )}
-        />
+        <FormFieldType control={form.control} variant="organization" showDescription />
       )}
 
       {/* Type d'événement */}
       {entityType === "events" && (
-        <FormField
-          control={form.control}
-          name="type"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t("ProfileEdit.fields.eventType.label")}</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("ProfileEdit.fields.eventType.placeholder")} />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {EVENT_TYPES.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {t(`ProfileEdit.fields.eventType.options.${type}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormDescription>
-                {t("ProfileEdit.fields.eventType.description")}
-              </FormDescription>
-              <TranslatedFormMessage />
-            </FormItem>
-          )}
-        />
+        <FormFieldType control={form.control} variant="event" showDescription />
       )}
 
       {/* Parent pour projets */}
@@ -261,75 +171,18 @@ export function EditBasicInfoTab({ form, entityType }: EditBasicInfoTabProps) {
       )}
 
       {/* Bio courte */}
-      <FormField
+      <FormFieldShortDescription
         control={form.control}
-        name="shortDescription"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>{t("ProfileEdit.fields.shortDescription.label")}</FormLabel>
-            <FormControl>
-              <Textarea
-                {...field}
-                placeholder={t("ProfileEdit.fields.shortDescription.placeholder")}
-                rows={2}
-                maxLength={200}
-              />
-            </FormControl>
-            <FormDescription>
-              {t("ProfileEdit.fields.shortDescription.description")}
-            </FormDescription>
-            <TranslatedFormMessage />
-          </FormItem>
-        )}
+        rows={2}
+        maxLength={200}
+        showDescription
       />
 
       {/* Description longue */}
-      <FormField
-        control={form.control}
-        name="description"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>{t("ProfileEdit.fields.description.label")}</FormLabel>
-            <FormControl>
-              <Textarea
-                {...field}
-                placeholder={t("ProfileEdit.fields.description.placeholder")}
-                rows={6}
-              />
-            </FormControl>
-            <FormDescription>
-              {t("ProfileEdit.fields.description.description")}
-            </FormDescription>
-            <TranslatedFormMessage />
-          </FormItem>
-        )}
-      />
+      <FormFieldDescription control={form.control} />
 
       {/* Tags */}
-      <FormField
-        control={form.control}
-        name="tags"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>{t("ProfileEdit.fields.tags.label")}</FormLabel>
-            <FormControl>
-              <TagsInput
-                tags={field.value || []}
-                onTagsChange={field.onChange}
-                maxTags={10}
-                texts={{
-                  placeholder: t("ProfileEdit.fields.tags.placeholder"),
-                  maxReached: t("ProfileEdit.fields.tags.maxReached"),
-                  searching: t("ProfileEdit.fields.tags.searching"),
-                  noResults: t("ProfileEdit.fields.tags.noResults"),
-                  typeToSearch: t("ProfileEdit.fields.tags.typeToSearch"),
-                }}
-              />
-            </FormControl>
-            <TranslatedFormMessage />
-          </FormItem>
-        )}
-      />
+      <FormFieldTags control={form.control} extendedTexts />
     </div>
   );
 }

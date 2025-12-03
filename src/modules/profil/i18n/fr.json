@@ -587,9 +587,9 @@
         "placeholder": "Sélectionner la date de fin"
       },
       "parent": {
-        "label": "Organisation parente",
-        "placeholder": "Sélectionner une organisation...",
-        "description": "L'organisation à laquelle ce projet est rattaché"
+        "label": "Entité parente",
+        "placeholder": "Sélectionner une entité parente...",
+        "description": "L'entité à laquelle cet élément est rattaché"
       },
       "organizer": {
         "label": "Organisateur",

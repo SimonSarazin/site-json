@@ -13,10 +13,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TagsInput } from "@/components/form/TagsInput";
 import {
   Select,
   SelectContent,
@@ -26,8 +24,13 @@ import {
 } from "@/components/ui/select";
 import { addPoiSchema, type AddPoiFormData } from "../../schemaForm";
 import { useAddPoi } from "../../hooks/useAddMutations";
-import { TranslatedFormMessage } from "../profile-edit/TranslatedFormMessage";
+import { TranslatedFormMessage } from "../profile-edit/fields/TranslatedFormMessage";
 import { EditLocationTab } from "../profile-edit/EditLocationTab";
+import {
+  FormFieldName,
+  FormFieldTags,
+  ParentInfoReadonly,
+} from "../profile-edit/fields";
 
 // Types de POI disponibles
 const POI_TYPES = [
@@ -139,22 +142,7 @@ export function AddPoiModal({ open, onOpenChange, parent }: AddPoiModalProps) {
               {/* Tab Informations */}
               <TabsContent value="info" className="space-y-4 mt-4">
                 {/* Nom */}
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("ProfileEdit.fields.name.label")} *</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder={t("ProfileEdit.fields.name.placeholder")}
-                          {...field}
-                        />
-                      </FormControl>
-                      <TranslatedFormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormFieldName control={form.control} required />
 
                 {/* Type de POI */}
                 <FormField
@@ -203,33 +191,10 @@ export function AddPoiModal({ open, onOpenChange, parent }: AddPoiModalProps) {
                 />
 
                 {/* Tags */}
-                <FormField
-                  control={form.control}
-                  name="tags"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("ProfileEdit.fields.tags.label")}</FormLabel>
-                      <FormControl>
-                        <TagsInput
-                          tags={Array.isArray(field.value) ? field.value : []}
-                          onTagsChange={field.onChange}
-                          maxTags={10}
-                          texts={{
-                            placeholder: t("ProfileEdit.fields.tags.placeholder"),
-                          }}
-                        />
-                      </FormControl>
-                      <TranslatedFormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormFieldTags control={form.control} />
 
                 {/* Parent affiché en lecture seule si fourni */}
-                {parent && (
-                  <div className="text-sm text-muted-foreground">
-                    {t("ProfileEdit.fields.parent.label")}: <strong>{parent.serverData?.name}</strong>
-                  </div>
-                )}
+                <ParentInfoReadonly parent={parent} />
               </TabsContent>
 
               {/* Tab Localisation */}

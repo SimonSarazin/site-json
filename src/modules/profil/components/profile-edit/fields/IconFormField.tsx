@@ -7,7 +7,7 @@ import {
   FormControl,
   FormDescription,
 } from "@/components/ui/form";
-import { TranslatedFormMessage } from "../TranslatedFormMessage";
+import { TranslatedFormMessage } from "./TranslatedFormMessage";
 import { Input } from "@/components/ui/input";
 
 interface IconFormFieldProps<T extends FieldValues> {
