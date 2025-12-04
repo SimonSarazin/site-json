@@ -39,6 +39,25 @@ const TAB_FIELDS = {
 
 type TabName = keyof typeof TAB_FIELDS;
 
+// Configuration des onglets par type d'entité
+const ENTITY_TABS: Record<string, TabName[]> = {
+  citoyens: ['basic', 'contact', 'location', 'social'],
+  organizations: ['basic', 'contact', 'location', 'schedule'],
+  projects: ['basic', 'contact', 'location'],
+  events: ['basic', 'contact', 'location', 'eventDates'],
+  poi: ['basic', 'location'],
+};
+
+// Clés de traduction pour les tabs (certains ont .label)
+const TAB_TRANSLATION_KEYS: Record<TabName, string> = {
+  basic: 'basic',
+  contact: 'contact',
+  location: 'location.label',
+  social: 'social',
+  schedule: 'schedule.label',
+  eventDates: 'eventDates.label',
+};
+
 /**
  * Vérifie si un onglet contient des erreurs de validation
  */
@@ -266,10 +285,8 @@ export function EditProfileModal({
 
         case "poi":
           Object.assign(updateData, {
-            shortDescription: data.shortDescription || "",
+            // PAS de shortDescription pour POI
             description: data.description || "",
-            url: data.url || "",
-            email: data.email || "",
             tags: buildTags(),
             address: buildAddress(),
             // PAS de social pour POI
@@ -307,84 +324,56 @@ export function EditProfileModal({
         {/* Formulaire avec tabs */}
         <Form {...form}>
           <form onSubmit={handleFormSubmit} className="space-y-6">
-            <Tabs defaultValue="basic" className="w-full">
-              <TabsList className={`grid w-full ${entityType === "citoyens" || entityType === "organizations" || entityType === "events" ? 'grid-cols-4' : 'grid-cols-3'}`}>
-                <TabsTrigger value="basic" className="gap-1">
-                  {t("ProfileEdit.tabs.basic")}
-                  {hasTabErrors('basic', form.formState.errors) && (
-                    <AlertCircle className="h-4 w-4 text-destructive" />
-                  )}
-                </TabsTrigger>
-                <TabsTrigger value="contact" className="gap-1">
-                  {t("ProfileEdit.tabs.contact")}
-                  {hasTabErrors('contact', form.formState.errors) && (
-                    <AlertCircle className="h-4 w-4 text-destructive" />
-                  )}
-                </TabsTrigger>
-                <TabsTrigger value="location" className="gap-1">
-                  {t("ProfileEdit.tabs.location.label")}
-                  {hasTabErrors('location', form.formState.errors) && (
-                    <AlertCircle className="h-4 w-4 text-destructive" />
-                  )}
-                </TabsTrigger>
-                {entityType === "citoyens" && (
-                  <TabsTrigger value="social" className="gap-1">
-                    {t("ProfileEdit.tabs.social")}
-                    {hasTabErrors('social', form.formState.errors) && (
-                      <AlertCircle className="h-4 w-4 text-destructive" />
+            {(() => {
+              const tabs = ENTITY_TABS[entityType || 'citoyens'] || ENTITY_TABS.citoyens;
+              return (
+                <Tabs defaultValue="basic" className="w-full">
+                  <TabsList className={`grid w-full grid-cols-${tabs.length}`}>
+                    {tabs.map(tab => (
+                      <TabsTrigger key={tab} value={tab} className="gap-1">
+                        {t(`ProfileEdit.tabs.${TAB_TRANSLATION_KEYS[tab]}`)}
+                        {hasTabErrors(tab, form.formState.errors) && (
+                          <AlertCircle className="h-4 w-4 text-destructive" />
+                        )}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+
+                  <div className="mt-6">
+                    {tabs.includes('basic') && (
+                      <TabsContent value="basic">
+                        <EditBasicInfoTab form={form} entityType={entityType || ""} />
+                      </TabsContent>
                     )}
-                  </TabsTrigger>
-                )}
-                {entityType === "organizations" && (
-                  <TabsTrigger value="schedule" className="gap-1">
-                    {t("ProfileEdit.tabs.schedule.label")}
-                    {hasTabErrors('schedule', form.formState.errors) && (
-                      <AlertCircle className="h-4 w-4 text-destructive" />
+                    {tabs.includes('contact') && (
+                      <TabsContent value="contact">
+                        <EditContactTab form={form} entityType={entityType || ""} />
+                      </TabsContent>
                     )}
-                  </TabsTrigger>
-                )}
-                {entityType === "events" && (
-                  <TabsTrigger value="eventDates" className="gap-1">
-                    {t("ProfileEdit.tabs.eventDates.label")}
-                    {hasTabErrors('eventDates', form.formState.errors) && (
-                      <AlertCircle className="h-4 w-4 text-destructive" />
+                    {tabs.includes('location') && (
+                      <TabsContent value="location">
+                        <EditLocationTab form={form} />
+                      </TabsContent>
                     )}
-                  </TabsTrigger>
-                )}
-              </TabsList>
-
-              <div className="mt-6">
-                <TabsContent value="basic">
-                  <EditBasicInfoTab form={form} entityType={entityType || ""} />
-                </TabsContent>
-
-                <TabsContent value="contact">
-                  <EditContactTab form={form} entityType={entityType || ""} />
-                </TabsContent>
-
-                <TabsContent value="location">
-                  <EditLocationTab form={form} />
-                </TabsContent>
-
-                {entityType === "citoyens" && (
-                  <TabsContent value="social">
-                    <EditSocialTab form={form} />
-                  </TabsContent>
-                )}
-
-                {entityType === "organizations" && (
-                  <TabsContent value="schedule">
-                    <EditScheduleTab form={form} />
-                  </TabsContent>
-                )}
-
-                {entityType === "events" && (
-                  <TabsContent value="eventDates">
-                    <EditEventDatesTab form={form} />
-                  </TabsContent>
-                )}
-              </div>
-            </Tabs>
+                    {tabs.includes('social') && (
+                      <TabsContent value="social">
+                        <EditSocialTab form={form} />
+                      </TabsContent>
+                    )}
+                    {tabs.includes('schedule') && (
+                      <TabsContent value="schedule">
+                        <EditScheduleTab form={form} />
+                      </TabsContent>
+                    )}
+                    {tabs.includes('eventDates') && (
+                      <TabsContent value="eventDates">
+                        <EditEventDatesTab form={form} />
+                      </TabsContent>
+                    )}
+                  </div>
+                </Tabs>
+              );
+            })()}
 
             <DialogFooter>
               <Button

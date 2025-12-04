@@ -252,8 +252,6 @@ export type EventProfileFormData = z.infer<typeof eventProfileSchema>;
 export const poiProfileSchema = z.object({
   // UPDATE_BLOCK_INFO
   name: z.string().min(1, "validation.name.required"),
-  email: emailOrEmptySchema.optional(),
-  url: urlOrEmptySchema.optional(),
   tags: tagsSchema.optional(),
   type: z.enum(POI_TYPES).optional(), // optional pour edit
   urls: z.array(z.string()).optional(),

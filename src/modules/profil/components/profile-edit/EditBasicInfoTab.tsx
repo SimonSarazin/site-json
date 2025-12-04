@@ -170,13 +170,15 @@ export function EditBasicInfoTab({ form, entityType }: EditBasicInfoTabProps) {
         />
       )}
 
-      {/* Bio courte */}
-      <FormFieldShortDescription
-        control={form.control}
-        rows={2}
-        maxLength={200}
-        showDescription
-      />
+      {/* Bio courte (pas pour POI) */}
+      {entityType !== "poi" && (
+        <FormFieldShortDescription
+          control={form.control}
+          rows={2}
+          maxLength={200}
+          showDescription
+        />
+      )}
 
       {/* Description longue */}
       <FormFieldDescription control={form.control} />

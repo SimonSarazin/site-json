@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { EntityTypes } from "@communecter/cocolight-api-client";
+import type { EntityTypes, SocialNetworkPayload, PostalAddress } from "@communecter/cocolight-api-client";
 import { isEvent, isOrganization, isProject, isUser, isPoi } from "@/lib/getTypedEntity";
 import { widgetFormatters } from "@/constants/DAYS";
 import type {
@@ -9,6 +9,64 @@ import type {
   EventProfileFormData,
   PoiProfileFormData,
 } from "../schemaForm";
+
+// ============================================================================
+// HELPERS - Extraction des champs répétitifs
+// ============================================================================
+
+/**
+ * Extrait les 14 champs d'adresse depuis un objet PostalAddress
+ */
+function extractAddressFields(address: PostalAddress | undefined) {
+  const addr = address ?? {};
+  return {
+    addressCountry: addr.addressCountry || "",
+    streetAddress: addr.streetAddress || "",
+    postalCode: addr.postalCode || "",
+    addressLocality: addr.addressLocality || "",
+    localityId: addr.localityId || "",
+    level1: addr.level1 || "",
+    level1Name: addr.level1Name || "",
+    level2: addr.level2 || "",
+    level2Name: addr.level2Name || "",
+    level3: addr.level3 || "",
+    level3Name: addr.level3Name || "",
+    level4: addr.level4 || "",
+    level4Name: addr.level4Name || "",
+    codeInsee: addr.codeInsee || "",
+  };
+}
+
+/**
+ * Extrait les 9 champs de réseaux sociaux
+ */
+function extractSocialFields(socialNetwork: SocialNetworkPayload | undefined) {
+  const sn = socialNetwork ?? {};
+  return {
+    github: sn.github || "",
+    gitlab: sn.gitlab || "",
+    facebook: sn.facebook || "",
+    twitter: sn.twitter || "",
+    instagram: sn.instagram || "",
+    diaspora: sn.diaspora || "",
+    mastodon: sn.mastodon || "",
+    telegram: sn.telegram || "",
+    signal: sn.signal || "",
+  };
+}
+
+/**
+ * Normalise les horaires d'ouverture avec le formatter
+ */
+function extractOpeningHours(openingHours: unknown) {
+  return openingHours && Array.isArray(openingHours)
+    ? widgetFormatters.openingHours(openingHours).filter((d: { hours: unknown[] }) => d.hours.length > 0)
+    : [];
+}
+
+// ============================================================================
+// HOOK PRINCIPAL
+// ============================================================================
 
 /**
  * Hook pour extraire les données d'un profil et les formater pour React Hook Form
@@ -31,49 +89,24 @@ export function useProfileFormData(entity: EntityTypes | null) {
     // User
     if (isUser(entity)) {
       const { serverData } = entity;
-      const address = serverData.address ?? {};
-      const socialNetworks = serverData.socialNetwork ?? {};
 
       const defaultValues: UserProfileFormData = {
         name: serverData.name || "",
         shortDescription: serverData.shortDescription || "",
         description: serverData.description || "",
         email: serverData.email || "",
+        url: serverData.url || "",
+        tags: serverData.tags || [],
+        slug: serverData.slug || "",
+        // Spécifique User
         mobile: serverData.mobile || "",
         fixe: serverData.fixe || "",
-        url: serverData.url || "",
         birthDate: serverData.birthDate
           ? new Date(serverData.birthDate).toISOString().split('T')[0]
           : "",
-        // Adresse complète
-        addressCountry: address.addressCountry || "",
-        streetAddress: address.streetAddress || "",
-        postalCode: address.postalCode || "",
-        addressLocality: address.addressLocality || "",
-        localityId: address.localityId || "",
-        level1: address.level1 || "",
-        level1Name: address.level1Name || "",
-        level2: address.level2 || "",
-        level2Name: address.level2Name || "",
-        level3: address.level3 || "",
-        level3Name: address.level3Name || "",
-        level4: address.level4 || "",
-        level4Name: address.level4Name || "",
-        codeInsee: address.codeInsee || "",
-        // Réseaux sociaux
-        github: socialNetworks.github || "",
-        gitlab: socialNetworks.gitlab || "",
-        facebook: socialNetworks.facebook || "",
-        twitter: socialNetworks.twitter || "",
-        instagram: socialNetworks.instagram || "",
-        diaspora: socialNetworks.diaspora || "",
-        mastodon: socialNetworks.mastodon || "",
-        telegram: socialNetworks.telegram || "",
-        signal: socialNetworks.signal || "",
-        // Tags
-        tags: serverData.tags || [],
-        // Slug
-        slug: serverData.slug || "",
+        // Helpers
+        ...extractAddressFields(serverData.address),
+        ...extractSocialFields(serverData.socialNetwork),
       };
 
       return { defaultValues, entityType };
@@ -82,13 +115,6 @@ export function useProfileFormData(entity: EntityTypes | null) {
     // Organization
     if (isOrganization(entity)) {
       const { serverData } = entity;
-      const address = serverData.address ?? {};
-      const socialNetworks = serverData.socialNetwork ?? {};
-
-      // Normaliser les horaires d'ouverture avec le formatter
-      const openingHours = serverData.openingHours && Array.isArray(serverData.openingHours)
-        ? widgetFormatters.openingHours(serverData.openingHours).filter((d: { hours: unknown[] }) => d.hours.length > 0)
-        : [];
 
       const defaultValues: OrganizationProfileFormData = {
         name: serverData.name || "",
@@ -97,37 +123,13 @@ export function useProfileFormData(entity: EntityTypes | null) {
         email: serverData.email || "",
         url: serverData.url || "",
         type: serverData.type,
-        // Adresse complète
-        addressCountry: address.addressCountry || "",
-        streetAddress: address.streetAddress || "",
-        postalCode: address.postalCode || "",
-        addressLocality: address.addressLocality || "",
-        localityId: address.localityId || "",
-        level1: address.level1 || "",
-        level1Name: address.level1Name || "",
-        level2: address.level2 || "",
-        level2Name: address.level2Name || "",
-        level3: address.level3 || "",
-        level3Name: address.level3Name || "",
-        level4: address.level4 || "",
-        level4Name: address.level4Name || "",
-        codeInsee: address.codeInsee || "",
-        // Réseaux sociaux
-        github: socialNetworks.github || "",
-        gitlab: socialNetworks.gitlab || "",
-        facebook: socialNetworks.facebook || "",
-        twitter: socialNetworks.twitter || "",
-        instagram: socialNetworks.instagram || "",
-        diaspora: socialNetworks.diaspora || "",
-        mastodon: socialNetworks.mastodon || "",
-        telegram: socialNetworks.telegram || "",
-        signal: socialNetworks.signal || "",
-        // Champs spécifiques aux organisations
-        openingHours: openingHours,
-        // Tags
         tags: serverData.tags || [],
-        // Slug
         slug: serverData.slug || "",
+        // Spécifique Organization
+        openingHours: extractOpeningHours(serverData.openingHours),
+        // Helpers
+        ...extractAddressFields(serverData.address),
+        ...extractSocialFields(serverData.socialNetwork),
       };
 
       return { defaultValues, entityType };
@@ -136,11 +138,6 @@ export function useProfileFormData(entity: EntityTypes | null) {
     // Project
     if (isProject(entity)) {
       const { serverData } = entity;
-      const address = serverData.address ?? {};
-      const socialNetworks = serverData.socialNetwork ?? {};
-
-      // Parent au format { mongoId: { type, name } }
-      const parent = serverData.parent ?? undefined;
 
       const defaultValues: ProjectProfileFormData = {
         name: serverData.name || "",
@@ -148,55 +145,22 @@ export function useProfileFormData(entity: EntityTypes | null) {
         description: serverData.description || "",
         email: serverData.email || "",
         url: serverData.url || "",
-        avancement: serverData.avancement,
-        parent,
-        // Adresse complète
-        addressCountry: address.addressCountry || "",
-        streetAddress: address.streetAddress || "",
-        postalCode: address.postalCode || "",
-        addressLocality: address.addressLocality || "",
-        localityId: address.localityId || "",
-        level1: address.level1 || "",
-        level1Name: address.level1Name || "",
-        level2: address.level2 || "",
-        level2Name: address.level2Name || "",
-        level3: address.level3 || "",
-        level3Name: address.level3Name || "",
-        level4: address.level4 || "",
-        level4Name: address.level4Name || "",
-        codeInsee: address.codeInsee || "",
-        // Réseaux sociaux
-        github: socialNetworks.github || "",
-        gitlab: socialNetworks.gitlab || "",
-        facebook: socialNetworks.facebook || "",
-        twitter: socialNetworks.twitter || "",
-        instagram: socialNetworks.instagram || "",
-        diaspora: socialNetworks.diaspora || "",
-        mastodon: socialNetworks.mastodon || "",
-        telegram: socialNetworks.telegram || "",
-        signal: socialNetworks.signal || "",
-        // Tags
         tags: serverData.tags || [],
-        // Slug
         slug: serverData.slug || "",
+        // Spécifique Project
+        avancement: serverData.avancement,
+        parent: serverData.parent ?? undefined,
+        // Helpers
+        ...extractAddressFields(serverData.address),
+        ...extractSocialFields(serverData.socialNetwork),
       };
 
       return { defaultValues, entityType };
     }
 
-    // Event
+    // Event (pas de socialNetwork, pas de description)
     if (isEvent(entity)) {
       const { serverData } = entity;
-      const address = serverData.address ?? {};
-
-      // Normaliser les horaires d'ouverture avec le formatter
-      const openingHours = serverData.openingHours && Array.isArray(serverData.openingHours)
-        ? widgetFormatters.openingHours(serverData.openingHours).filter((d: { hours: unknown[] }) => d.hours.length > 0)
-        : [];
-
-      // Parent et organizer
-      const parent = serverData.parent ?? undefined;
-      const organizer = serverData.organizer ?? {};
 
       const defaultValues: EventProfileFormData = {
         name: serverData.name || "",
@@ -204,11 +168,13 @@ export function useProfileFormData(entity: EntityTypes | null) {
         email: serverData.email || "",
         url: serverData.url || "",
         type: serverData.type,
+        tags: serverData.tags || [],
+        slug: serverData.slug || "",
+        // Spécifique Event
         public: serverData.public !== false,
         recurrency: Boolean(serverData.recurrency),
-        parent,
-        organizer,
-        // Dates et horaires
+        parent: serverData.parent ?? undefined,
+        organizer: serverData.organizer ?? {},
         timeZone: serverData.timeZone || "",
         startDate: serverData.startDate
           ? new Date(serverData.startDate).toISOString()
@@ -216,62 +182,28 @@ export function useProfileFormData(entity: EntityTypes | null) {
         endDate: serverData.endDate
           ? new Date(serverData.endDate).toISOString()
           : "",
-        openingHours: openingHours,
-        // Adresse complète
-        addressCountry: address.addressCountry || "",
-        streetAddress: address.streetAddress || "",
-        postalCode: address.postalCode || "",
-        addressLocality: address.addressLocality || "",
-        localityId: address.localityId || "",
-        level1: address.level1 || "",
-        level1Name: address.level1Name || "",
-        level2: address.level2 || "",
-        level2Name: address.level2Name || "",
-        level3: address.level3 || "",
-        level3Name: address.level3Name || "",
-        level4: address.level4 || "",
-        level4Name: address.level4Name || "",
-        codeInsee: address.codeInsee || "",
-        // Tags
-        tags: serverData.tags || [],
-        // Slug
-        slug: serverData.slug || "",
+        openingHours: extractOpeningHours(serverData.openingHours),
+        // Helpers
+        ...extractAddressFields(serverData.address),
       };
 
       return { defaultValues, entityType };
     }
 
-    // POI
+    // POI (pas de socialNetwork, pas de shortDescription)
     if (isPoi(entity)) {
       const { serverData } = entity;
-      const address = serverData.address ?? {};
 
       const defaultValues: PoiProfileFormData = {
         name: serverData.name || "",
         description: serverData.description || "",
-        email: serverData.email || "",
-        url: serverData.url || "",
         type: serverData.type,
-        urls: serverData.urls || [],
-        // Adresse complète
-        addressCountry: address.addressCountry || "",
-        streetAddress: address.streetAddress || "",
-        postalCode: address.postalCode || "",
-        addressLocality: address.addressLocality || "",
-        localityId: address.localityId || "",
-        level1: address.level1 || "",
-        level1Name: address.level1Name || "",
-        level2: address.level2 || "",
-        level2Name: address.level2Name || "",
-        level3: address.level3 || "",
-        level3Name: address.level3Name || "",
-        level4: address.level4 || "",
-        level4Name: address.level4Name || "",
-        codeInsee: address.codeInsee || "",
-        // Tags
         tags: serverData.tags || [],
-        // Slug
         slug: serverData.slug || "",
+        // Spécifique POI
+        urls: serverData.urls || [],
+        // Helpers
+        ...extractAddressFields(serverData.address),
       };
 
       return { defaultValues, entityType };
