@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { Loader2, AlertCircle } from "lucide-react";
-import type { FieldErrors } from "react-hook-form";
+import type { FieldErrors, Resolver } from "react-hook-form";
 import { useT } from "@/hooks/useT";
 import {
   Dialog,
@@ -82,8 +82,7 @@ export function AddPoiModal({ open, onOpenChange, parent }: AddPoiModalProps) {
   const addMutation = useAddPoi(parent);
 
   const form = useForm<AddPoiFormData>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(addPoiSchema) as any,
+    resolver: zodResolver(addPoiSchema) as Resolver<AddPoiFormData>,
     defaultValues: {
       name: "",
       type: "place",

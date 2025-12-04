@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, AlertCircle } from "lucide-react";
-import type { FieldErrors } from "react-hook-form";
+import type { FieldErrors, Resolver } from "react-hook-form";
 import { useT } from "@/hooks/useT";
 import {
   Dialog,
@@ -60,8 +60,7 @@ export function AddOrganizationModal({ open, onOpenChange }: AddOrganizationModa
   const addMutation = useAddOrganization();
 
   const form = useForm<AddOrganizationFormData>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(addOrganizationSchema) as any,
+    resolver: zodResolver(addOrganizationSchema) as Resolver<AddOrganizationFormData>,
     defaultValues: {
       name: "",
       type: "NGO",

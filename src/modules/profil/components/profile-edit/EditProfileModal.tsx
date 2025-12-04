@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useT } from "@/hooks/useT";
 import { getProfileSchema, type ProfileFormData } from "../../schemaForm";
 import { Loader2, AlertCircle } from "lucide-react";
-import type { FieldErrors } from "react-hook-form";
+import type { FieldErrors, Resolver } from "react-hook-form";
 import {
   Dialog,
   DialogContent,
@@ -97,7 +97,7 @@ export function EditProfileModal({
   const schema = getProfileSchema(entityType || "citoyens");
 
   const form = useForm<ProfileFormData>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as Resolver<ProfileFormData>,
     defaultValues: defaultValues || undefined,
   });
 

@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { Loader2, AlertCircle } from "lucide-react";
-import type { FieldErrors } from "react-hook-form";
+import type { FieldErrors, Resolver } from "react-hook-form";
 import { useT } from "@/hooks/useT";
 import {
   Dialog,
@@ -62,8 +62,7 @@ export function AddEventModal({ open, onOpenChange, parent }: AddEventModalProps
   const addMutation = useAddEvent(parent);
 
   const form = useForm<AddEventFormData>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(addEventSchema) as any,
+    resolver: zodResolver(addEventSchema) as Resolver<AddEventFormData>,
     defaultValues: {
       name: "",
       type: "meeting",

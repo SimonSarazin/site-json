@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { Loader2, AlertCircle } from "lucide-react";
-import type { FieldErrors } from "react-hook-form";
+import type { FieldErrors, Resolver } from "react-hook-form";
 import { useT } from "@/hooks/useT";
 import {
   Dialog,
@@ -56,8 +56,7 @@ export function AddProjectModal({ open, onOpenChange, parent }: AddProjectModalP
   const addMutation = useAddProject(parent);
 
   const form = useForm<AddProjectFormData>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(addProjectSchema) as any,
+    resolver: zodResolver(addProjectSchema) as Resolver<AddProjectFormData>,
     defaultValues: {
       name: "",
       shortDescription: "",
