@@ -1226,23 +1226,138 @@
     }
   ],
   "theme": {
-    "defaultMode": "dark",
     "colors": {
       "light": {
         "background": "#ffffff",
-        "foreground": "#000000",
-        "bordercolor": "#e5e7eb",
-        "themecolor": "#0092a2",
-        "text-secondary": "#4a5565"
+        "foreground": "#0f172a",
+        "card": "#ffffff",
+        "cardForeground": "#0f172a",
+        "popover": "#ffffff",
+        "popoverForeground": "#0f172a",
+        "primary": "#1f7a73",
+        "primaryForeground": "#f9fafb",
+        "secondary": "#f1f5f9",
+        "secondaryForeground": "#0f172a",
+        "muted": "#f1f5f9",
+        "mutedForeground": "#64748b",
+        "accent": "#f1f5f9",
+        "accentForeground": "#0f172a",
+        "destructive": "#ef4444",
+        "destructiveForeground": "#f9fafb",
+        "border": "#e2e8f0",
+        "input": "#e2e8f0",
+        "ring": "#1f7a73",
+        "chart1": "#1f7a73",
+        "chart2": "#cc3373",
+        "chart3": "#f5e53d",
+        "chart4": "#3526d9",
+        "chart5": "#42ad1f",
+        "sidebar": "#ffffff",
+        "sidebarForeground": "#0f172a",
+        "sidebarPrimary": "#1f7a73",
+        "sidebarPrimaryForeground": "#f9fafb",
+        "sidebarAccent": "#f1f5f9",
+        "sidebarAccentForeground": "#0f172a",
+        "sidebarBorder": "#e2e8f0",
+        "sidebarRing": "#1f7a73",
+        "success": "oklch(0.6959 0.1491 162.4796)",
+        "successForeground": "oklch(1.0000 0.0000 0.0000)",
+        "warning": "oklch(0.7686 0.1647 70.0804)",
+        "warningForeground": "oklch(1.0000 0.0000 0.0000)",
+        "error": "oklch(0.6368 0.2078 25.3313)",
+        "errorForeground": "oklch(1.0000 0.0000 0.0000)",
+        "info": "oklch(0.6847 0.1479 237.3225)",
+        "infoForeground": "oklch(1.0000 0.0000 0.0000)",
+        "radius": "0.5rem",
+        "spacing": "0.25rem"
       },
       "dark": {
-        "background": "#000000",
-        "foreground": "#ffffff",
-        "border": "#1e2939",
-        "themecolor": "#0092a2",
-        "text-secondary": "#99a1af"
+        "background": "#0f172a",
+        "foreground": "#f9fafb",
+        "card": "#0f172a",
+        "cardForeground": "#f9fafb",
+        "popover": "#0f172a",
+        "popoverForeground": "#f9fafb",
+        "primary": "#1f7a73",
+        "primaryForeground": "#0f172a",
+        "secondary": "#1e293b",
+        "secondaryForeground": "#f9fafb",
+        "muted": "#1e293b",
+        "mutedForeground": "#94a3b8",
+        "accent": "#1e293b",
+        "accentForeground": "#f9fafb",
+        "destructive": "#7f1d1d",
+        "destructiveForeground": "#f9fafb",
+        "border": "#1e293b",
+        "input": "#1e293b",
+        "ring": "#1f7a73",
+        "chart1": "#1f7a73",
+        "chart2": "#cc3373",
+        "chart3": "#f5e53d",
+        "chart4": "#3526d9",
+        "chart5": "#42ad1f",
+        "sidebar": "#0f172a",
+        "sidebarForeground": "#f9fafb",
+        "sidebarPrimary": "#1f7a73",
+        "sidebarPrimaryForeground": "#0f172a",
+        "sidebarAccent": "#1e293b",
+        "sidebarAccentForeground": "#f9fafb",
+        "sidebarBorder": "#1e293b",
+        "sidebarRing": "#1f7a73",
+        "success": "oklch(0.6959 0.1491 162.4796)",
+        "successForeground": "oklch(1.0000 0.0000 0.0000)",
+        "warning": "oklch(0.7686 0.1647 70.0804)",
+        "warningForeground": "oklch(1.0000 0.0000 0.0000)",
+        "error": "oklch(0.6368 0.2078 25.3313)",
+        "errorForeground": "oklch(1.0000 0.0000 0.0000)",
+        "info": "oklch(0.6847 0.1479 237.3225)",
+        "infoForeground": "oklch(1.0000 0.0000 0.0000)",
+        "radius": "0.5rem"
       }
-    }
+    },
+    "typography": {
+      "fontFamily": {
+        "sans": [
+          "sans-serif"
+        ],
+        "serif": [
+          "serif"
+        ],
+        "mono": [
+          "monospace"
+        ]
+      },
+      "letterSpacing": "0em"
+    },
+    "spacing": {
+      "base": "0.25rem"
+    },
+    "borderRadius": {
+      "base": "0.5rem"
+    },
+    "shadows": {
+      "light": {
+        "shadow2xs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowXs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowSm": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowMd": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 2px 4px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowLg": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 4px 6px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowXl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 8px 10px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow2xl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.63)"
+      },
+      "dark": {
+        "shadow2xs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowXs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowSm": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowMd": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 2px 4px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowLg": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 4px 6px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowXl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 8px 10px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow2xl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.63)"
+      }
+    },
+    "customCSS": ""
   },
   "auth": {
     "login": {
