@@ -97,21 +97,12 @@ function getLocation(item: SearchEntity): string | null {
     return serverData.address.addressLocality;
   }
 
-  if (serverData?.location) {
-    return serverData.location as string;
-  }
-
   return null;
 }
 
 function getAvatarIcon(item: SearchEntity): string | null {
-  const serverData = item?.serverData;
-
-  // Vous pouvez personnaliser selon le type d'entité
-  if (serverData?.avatarIcon) return serverData.avatarIcon as string;
-
   // Icône par défaut selon le type (kebab-case pour lucide-react/dynamic)
-  const type = serverData?.type as string | undefined;
+  const type = item?.getEntityType?.();
   if (type === "organizations") return "building-2";
   if (type === "projects") return "lightbulb";
   if (type === "events") return "calendar";
@@ -121,12 +112,8 @@ function getAvatarIcon(item: SearchEntity): string | null {
 }
 
 function getAvatarColor(item: SearchEntity): string {
-  const serverData = item?.serverData;
-
-  if (serverData?.avatarColor) return serverData.avatarColor as string;
-
   // Couleur par défaut selon le type
-  const type = serverData?.type as string | undefined;
+  const type = item?.getEntityType?.();
   if (type === "organizations") return "blue";
   if (type === "projects") return "orange";
   if (type === "events") return "purple";

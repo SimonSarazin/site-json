@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Calendar, Share2, Tag, ThumbsUp, MessageCircle, Trash2, Edit, Flag, ExternalLink } from "lucide-react";
+import { Calendar, Share2, Tag, ThumbsUp, MessageCircle, Trash2, Edit, Flag, ExternalLink, MoreVertical } from "lucide-react";
 import { useT } from "@/hooks/useT";
 import { formatDate } from "@/helpers/formatDate";
 import { useCocolight } from "@/hooks/useCocolight";
@@ -12,10 +12,12 @@ import { NewsFileList } from "./media/NewsFileList";
 import { NewsVoteDisplay } from "./interactions/NewsVoteDisplay";
 import { NewsReactionPicker } from "./interactions/NewsReactionPicker";
 import { NewsComments } from "./comment/NewsComments";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
@@ -165,40 +167,41 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef, onEdit, onDele
             </span>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="p-1.5 sm:p-2 hover:bg-muted rounded-lg transition-colors">
-                  <svg className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                  </svg>
-                </button>
+                <Button variant="ghost" size="icon">
+                  <MoreVertical />
+                </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-44 sm:w-48">
+              <DropdownMenuContent align="end">
                 {detailUrl && (
                   <DropdownMenuItem asChild>
                     <Link to={detailUrl}>
-                      <ExternalLink className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      <ExternalLink />
                       <span className="text-xs sm:text-sm">{t("NewsSection.viewDetails")}</span>
                     </Link>
                   </DropdownMenuItem>
                 )}
                 {canEdit && (
                   <DropdownMenuItem onClick={handleEditNews}>
-                    <Edit className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    <Edit />
                     <span className="text-xs sm:text-sm">{t("NewsTab.edit")}</span>
                   </DropdownMenuItem>
                 )}
-                {canDelete && (
-                  <DropdownMenuItem
-                    onClick={handleDeleteNews}
-                    className="text-red-600 focus:text-red-600"
-                  >
-                    <Trash2 className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    <span className="text-xs sm:text-sm">{t("NewsTab.delete")}</span>
-                  </DropdownMenuItem>
-                )}
                 <DropdownMenuItem onClick={handleReportNews}>
-                  <Flag className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <Flag />
                   <span className="text-xs sm:text-sm">{t("NewsTab.report")}</span>
                 </DropdownMenuItem>
+                {canDelete && (
+                  <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={handleDeleteNews}
+                    variant="destructive"
+                  >
+                    <Trash2 />
+                    <span className="text-xs sm:text-sm">{t("NewsTab.delete")}</span>
+                  </DropdownMenuItem>
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

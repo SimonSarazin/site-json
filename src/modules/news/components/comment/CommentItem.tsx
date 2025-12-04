@@ -7,6 +7,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CommentInput } from "./CommentInput";
@@ -122,21 +123,22 @@ export function CommentItem({
               {formattedComment.isAuthor && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="ml-2 p-1 hover:bg-background/50 rounded transition-colors opacity-0 group-hover:opacity-100">
-                      <MoreVertical className="w-3.5 h-3.5 text-muted-foreground" />
-                    </button>
+                    <Button variant="ghost" size="icon" className="ml-2 p-1 hover:bg-background/50 rounded transition-colors opacity-0 group-hover:opacity-100">
+                      <MoreVertical />
+                    </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-40">
+                  <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={handleEditClick}>
-                      <Edit className="mr-2 h-3.5 w-3.5" />
-                      <span className="text-xs">{t("comments.edit")}</span>
+                      <Edit />
+                      <span className="text-xs sm:text-sm">{t("comments.edit")}</span>
                     </DropdownMenuItem>
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={() => onDelete(formattedComment.id, commentItem)}
-                      className="text-red-600 focus:text-red-600"
+                      variant="destructive"
                     >
-                      <Trash2 className="mr-2 h-3.5 w-3.5" />
-                      <span className="text-xs">{t("comments.delete")}</span>
+                      <Trash2 />
+                      <span className="text-xs sm:text-sm">{t("comments.delete")}</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
