@@ -40,7 +40,12 @@
   "ProfileMap": {
     "title": "Location",
     "mapPlaceholder": "Map to be implemented",
-    "coordinates": "Coordinates"
+    "coordinates": "Coordinates",
+    "loading": "Loading map..."
+  },
+  "ProfileOpeningHours": {
+    "closed": "Closed",
+    "open": "Open"
   },
   "ProfileTemplateDefault": {
     "showAllPhotos": "Show all photos",

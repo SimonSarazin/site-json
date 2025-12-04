@@ -2,14 +2,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useFormatProfileEntity } from "../../hooks/useFormatProfileEntity";
 import { renderMarkdown } from "@/helpers/renderMarkdown";
 import { useProfileSetup } from "../../hooks/useProfileSetup";
+import type { ProfileAboutSection } from "../../schema";
 
 interface ProfileAboutProps {
-  section: {
-    type: "profile-about";
-    showDescription?: boolean;
-    showShortDescription?: boolean;
-    markdownEnabled?: boolean;
-  };
+  section: ProfileAboutSection;
 }
 
 export default function ProfileAbout({ section }: ProfileAboutProps) {

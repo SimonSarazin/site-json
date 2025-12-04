@@ -81,7 +81,7 @@ export default function ProfileOpeningHours({ section }: ProfileOpeningHoursProp
                     {hIndex < schedule.hours.length - 1 && ", "}
                   </span>
                 ))
-              : "Fermé"}
+              : t("ProfileOpeningHours.closed")}
           </span>
         </li>
       ))}

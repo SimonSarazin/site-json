@@ -13,15 +13,10 @@ import { MemberManagementDialog } from "../members/MemberManagementDialog";
 import { InviteMemberDialog } from "../members/InviteMemberDialog";
 import { Users, UserPlus, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { ProfileMembersSection } from "../../schema";
 
 interface ProfileMembersProps {
-  section: {
-    type: "profile-members";
-    title?: { fr?: string; en?: string };
-    limit?: number;
-    showRole?: boolean;
-    showManagement?: boolean;
-  };
+  section: ProfileMembersSection;
 }
 
 export default function ProfileMembers({ section }: ProfileMembersProps) {
@@ -41,10 +36,8 @@ export default function ProfileMembers({ section }: ProfileMembersProps) {
   const labels = useEntityLabels(entity);
 
   if (!entity) return null;
-  const title = (section.title && typeof section.title === 'object' && 'fr' in section.title) ?
-    (section.title as any)[navigator?.language?.startsWith('fr') ? 'fr' : 'en'] ||
-    (section.title as any).en ||
-    labels.title : labels.title;
+
+  const title = section.title ? t(section.title) : labels.title;
 
 
   return (

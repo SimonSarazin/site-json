@@ -40,7 +40,12 @@
   "ProfileMap": {
     "title": "Localisation",
     "mapPlaceholder": "Carte à implémenter",
-    "coordinates": "Coordonnées"
+    "coordinates": "Coordonnées",
+    "loading": "Chargement de la carte..."
+  },
+  "ProfileOpeningHours": {
+    "closed": "Fermé",
+    "open": "Ouvert"
   },
   "ProfileTemplateDefault": {
     "showAllPhotos": "Afficher toutes les photos",

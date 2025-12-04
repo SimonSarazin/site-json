@@ -4,6 +4,7 @@ import {
   FormItem,
   FormLabel,
   FormControl,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useT } from "@/hooks/useT";
@@ -22,6 +23,10 @@ interface FormFieldUrlProps<T extends FieldValues> {
    * Désactivé
    */
   disabled?: boolean;
+  /**
+   * Afficher la description d'aide
+   */
+  showDescription?: boolean;
 }
 
 /**
@@ -32,6 +37,7 @@ export function FormFieldUrl<T extends FieldValues>({
   control,
   name = "url" as FieldPath<T>,
   disabled,
+  showDescription = false,
 }: FormFieldUrlProps<T>) {
   const t = useT("modules/profil");
 
@@ -50,6 +56,11 @@ export function FormFieldUrl<T extends FieldValues>({
               disabled={disabled}
             />
           </FormControl>
+          {showDescription && (
+            <FormDescription>
+              {t("ProfileEdit.fields.url.description")}
+            </FormDescription>
+          )}
           <TranslatedFormMessage />
         </FormItem>
       )}

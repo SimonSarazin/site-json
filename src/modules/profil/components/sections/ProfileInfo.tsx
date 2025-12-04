@@ -12,24 +12,10 @@ import { Button } from "@/components/ui/button";
 import { formatDate } from "@/helpers/formatDate";
 import { useFormatProfileEntity } from "../../hooks/useFormatProfileEntity";
 import { useProfileSetup } from "../../hooks/useProfileSetup";
+import type { ProfileInfoSection } from "../../schema";
 
 interface ProfileInfoProps {
-  section: {
-    type: "profile-info";
-    // TODO: variant pas en place
-    variant?: "sidebar" | "inline" | "tabs";
-    showAddress?: boolean;
-    showDates?: boolean;
-    showOrganizer?: boolean;
-    showAttendees?: boolean;
-    showUsername?: boolean;
-    showEmail?: boolean;
-    showPhone?: boolean;
-    showWebsite?: boolean;
-    showCounts?: boolean;
-    showOpeningDate?: boolean;
-    sticky?: boolean;
-  };
+  section: ProfileInfoSection;
 }
 
 export default function ProfileInfo({ section }: ProfileInfoProps) {

@@ -1,24 +1,24 @@
+import { lazy, Suspense } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useFormatProfileEntity } from "../../hooks/useFormatProfileEntity";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
 import "@/modules/profil/i18n";
+import type { ProfileMapSection } from "../../schema";
+
+const ProfileMapWrapper = lazy(() => import("./ProfileMapWrapper"));
 
 interface ProfileMapProps {
-  section: {
-    type: "profile-map";
-    height?: string;
-    zoom?: number;
-    showMarker?: boolean;
-  };
+  section: ProfileMapSection;
 }
 
 export default function ProfileMap({ section }: ProfileMapProps) {
   const { entity } = useProfileEntity();
   useLoadNamespace("modules/profil");
   const t = useT("modules/profil");
-  
+
   const { geo } = useFormatProfileEntity(entity);
 
   if (!geo || !geo.latitude || !geo.longitude) {
@@ -26,33 +26,43 @@ export default function ProfileMap({ section }: ProfileMapProps) {
   }
 
   const lat = parseFloat(String(geo.latitude));
-  const lon = parseFloat(String(geo.longitude));
+  const lng = parseFloat(String(geo.longitude));
 
-  if (isNaN(lat) || isNaN(lon)) {
+  if (isNaN(lat) || isNaN(lng)) {
     return null;
   }
 
   const height = section.height || "400px";
+  const zoom = section.zoom || 15;
+  const showMarker = section.showMarker !== false;
 
-  // Note: Pour une vraie carte, utilisez Leaflet ou Google Maps
-  // Ici on affiche juste un placeholder avec les coordonnées
+  const LoadingFallback = (
+    <div
+      className="flex flex-col items-center justify-center gap-2 w-full rounded-lg"
+      style={{ height }}
+    >
+      <Skeleton className="w-full h-full rounded-lg" />
+      <p className="text-sm text-muted-foreground">
+        {t("ProfileMap.loading")}
+      </p>
+    </div>
+  );
+
   return (
     <Card className="mb-6">
       <CardHeader>
         <CardTitle>{t("ProfileMap.title")}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div
-          className="bg-muted rounded-lg flex items-center justify-center"
-          style={{ height }}
-        >
-          <div className="text-center text-muted-foreground">
-            <p>{t("ProfileMap.mapPlaceholder")}</p>
-            <p className="text-sm mt-2">
-              {t("ProfileMap.coordinates")}: {lat.toFixed(6)}, {lon.toFixed(6)}
-            </p>
-          </div>
-        </div>
+        <Suspense fallback={LoadingFallback}>
+          <ProfileMapWrapper
+            lat={lat}
+            lng={lng}
+            height={height}
+            zoom={zoom}
+            showMarker={showMarker}
+          />
+        </Suspense>
       </CardContent>
     </Card>
   );

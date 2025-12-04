@@ -41,12 +41,9 @@ export default function ProfileTags({ section }: ProfileTagsProps) {
     ? (typeof title === "string" ? title : (title as LocalizedString)[currentLocale] || title.fr || title.en)
     : t("ProfileTemplateDefault.tags");
 
-  // Gestion du clic sur un tag
-  const handleTagClick = (tag: string) => {
-    if (searchOnClick) {
-      // TODO: Implémenter la recherche par tag
-      console.log("Search for tag:", tag);
-    }
+  // TODO: Implémenter la recherche par tag
+  const handleTagClick = (_tag: string) => {
+    // À implémenter : rediriger vers la recherche par tag
   };
 
   return (

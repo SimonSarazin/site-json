@@ -4,15 +4,10 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
 import "@/modules/profil/i18n";
+import type { ProfileOrganizerSection } from "../../schema";
 
 interface ProfileOrganizerProps {
-  section: {
-    type: "profile-organizer";
-    title?: { fr?: string; en?: string };
-    showLogo?: boolean;
-    showDescription?: boolean;
-    showLink?: boolean;
-  };
+  section: ProfileOrganizerSection;
 }
 
 export default function ProfileOrganizer({ section }: ProfileOrganizerProps) {

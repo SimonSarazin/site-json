@@ -62,7 +62,7 @@ export default function ProfileBadges({ section }: ProfileBadgesProps) {
         {displayedBadges.map((badge, index) => (
           <div
             key={index}
-            className="bg-card border border-(--themecolor) rounded-lg px-4 py-2 flex items-center gap-2 shadow-sm hover:shadow-md transition-shadow"
+            className="bg-card border border-primary rounded-lg px-4 py-2 flex items-center gap-2 shadow-sm hover:shadow-md transition-shadow"
           >
             {showIcon && <Award className="w-4 h-4 text-primary" />}
             <span className="text-foreground font-medium">

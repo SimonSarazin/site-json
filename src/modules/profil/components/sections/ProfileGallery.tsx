@@ -1,14 +1,11 @@
+import type { ProfileGallerySection } from "../../schema";
+
 interface ProfileGalleryProps {
-  section: {
-    type: "profile-gallery";
-    title?: { fr?: string; en?: string };
-    columns?: number;
-    lightbox?: boolean;
-  };
+  section: ProfileGallerySection;
 }
 
 export default function ProfileGallery({ section: _section }: ProfileGalleryProps) {
-  // TODO
+  // TODO: Implémenter la galerie
   // Si besoin d'entity: const { entity } = useProfileEntity();
   return null;
 }
