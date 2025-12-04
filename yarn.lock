@@ -213,10 +213,10 @@
     "@babel/helper-string-parser" "^7.27.1"
     "@babel/helper-validator-identifier" "^7.28.5"
 
-"@communecter/cocolight-api-client@^1.0.101":
-  version "1.0.101"
-  resolved "https://registry.npmjs.org/@communecter/cocolight-api-client/-/cocolight-api-client-1.0.101.tgz"
-  integrity sha512-C8CwLcFo19s8vZ1ztg6dm5mdStmRLBcDW6iJucEMW7rVDSB2ibaPv+9zYCkTISrEJkXsekQhmS3xrL2nRpB73Q==
+"@communecter/cocolight-api-client@^1.0.103":
+  version "1.0.103"
+  resolved "https://registry.npmjs.org/@communecter/cocolight-api-client/-/cocolight-api-client-1.0.103.tgz"
+  integrity sha512-KhzX+EtEAv/ZWjP0Z9uPlVKAap+Ev7Ut9hxgeXbXVeIwPhFPytAUgLsFBkt0CDa5lHlmdfTYN8gcP96hjJOYdQ==
 
 "@csstools/color-helpers@^5.1.0":
   version "5.1.0"
