@@ -32,7 +32,9 @@ import {
   FormFieldShortDescription,
   FormFieldUrl,
   FormFieldType,
+  ParentInfoReadonly,
 } from "../profile-edit/fields";
+import { EntityTypes } from "@communecter/cocolight-api-client";
 
 // Mapping des champs par onglet pour détecter les erreurs
 const TAB_FIELDS = {
@@ -50,12 +52,13 @@ function hasTabErrors(tabName: TabName, errors: FieldErrors<any>): boolean {
 interface AddOrganizationModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  parent?: EntityTypes | null;
 }
 
 /**
  * Modal pour creer une nouvelle organisation
  */
-export function AddOrganizationModal({ open, onOpenChange }: AddOrganizationModalProps) {
+export function AddOrganizationModal({ open, onOpenChange, parent }: AddOrganizationModalProps) {
   const t = useT("modules/profil");
   const addMutation = useAddOrganization();
 
@@ -134,6 +137,9 @@ export function AddOrganizationModal({ open, onOpenChange }: AddOrganizationModa
               <div className="mt-4 flex-1 overflow-y-auto pr-4">
               {/* Tab Informations */}
               <TabsContent value="info" className="space-y-4">
+                {/* Parent affiché en lecture seule si fourni */}
+                <ParentInfoReadonly parent={parent} />
+
                 {/* Nom */}
                 <FormFieldName control={form.control} required />
 
@@ -149,7 +155,7 @@ export function AddOrganizationModal({ open, onOpenChange }: AddOrganizationModa
                       <FormLabel>{t("InviteMemberDialog.role")} *</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="w-full">
                             <SelectValue placeholder={t("InviteMemberDialog.selectRole")} />
                           </SelectTrigger>
                         </FormControl>

@@ -132,6 +132,7 @@ export function AddEntityDropdown({ entity, config, label, variant = "outline", 
       <AddOrganizationModal
         open={openModal === "organization"}
         onOpenChange={(open) => !open && handleCloseModal()}
+        parent={entity}
       />
       <AddProjectModal
         open={openModal === "project"}

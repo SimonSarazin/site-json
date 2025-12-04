@@ -167,6 +167,10 @@ export function AddPoiModal({ open, onOpenChange, parent }: AddPoiModalProps) {
               <div className="mt-4 flex-1 overflow-y-auto pr-4">
               {/* Tab Informations */}
               <TabsContent value="info" className="space-y-4">
+
+                {/* Parent affiché en lecture seule si fourni */}
+                <ParentInfoReadonly parent={parent} />
+
                 {/* Nom */}
                 <FormFieldName control={form.control} required />
 
@@ -179,7 +183,7 @@ export function AddPoiModal({ open, onOpenChange, parent }: AddPoiModalProps) {
                       <FormLabel>Type *</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="w-full">
                             <SelectValue placeholder="Sélectionner un type" />
                           </SelectTrigger>
                         </FormControl>
@@ -219,8 +223,6 @@ export function AddPoiModal({ open, onOpenChange, parent }: AddPoiModalProps) {
                 {/* Tags */}
                 <FormFieldTags control={form.control} />
 
-                {/* Parent affiché en lecture seule si fourni */}
-                <ParentInfoReadonly parent={parent} />
               </TabsContent>
 
               {/* Tab Localisation */}

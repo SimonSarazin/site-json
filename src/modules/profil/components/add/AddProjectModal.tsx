@@ -124,6 +124,9 @@ export function AddProjectModal({ open, onOpenChange, parent }: AddProjectModalP
               <div className="mt-4 flex-1 overflow-y-auto pr-4">
               {/* Tab Informations */}
               <TabsContent value="info" className="space-y-4">
+                {/* Parent affiché en lecture seule si fourni */}
+                <ParentInfoReadonly parent={parent} />
+
                 {/* Nom */}
                 <FormFieldName control={form.control} required />
 
@@ -138,9 +141,6 @@ export function AddProjectModal({ open, onOpenChange, parent }: AddProjectModalP
 
                 {/* Tags */}
                 <FormFieldTags control={form.control} />
-
-                {/* Parent affiché en lecture seule si fourni */}
-                <ParentInfoReadonly parent={parent} />
               </TabsContent>
 
               {/* Tab Localisation */}

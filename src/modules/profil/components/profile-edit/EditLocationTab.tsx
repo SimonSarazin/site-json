@@ -372,7 +372,7 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
             <FormLabel>{t("ProfileEdit.fields.addressCountry.label")}</FormLabel>
             <Select onValueChange={field.onChange} value={field.value || ""}>
               <FormControl>
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder={t("ProfileEdit.fields.addressCountry.placeholder")} />
                 </SelectTrigger>
               </FormControl>
@@ -437,7 +437,7 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
                 <FormLabel>{t("ProfileEdit.fields.postalCode.label")}</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value || ""}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder={t("ProfileEdit.fields.postalCode.placeholder")} />
                     </SelectTrigger>
                   </FormControl>

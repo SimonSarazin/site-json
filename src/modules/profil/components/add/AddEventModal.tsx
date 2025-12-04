@@ -194,14 +194,15 @@ export function AddEventModal({ open, onOpenChange, parent }: AddEventModalProps
               <div className="mt-4 flex-1 overflow-y-auto pr-4">
               {/* Tab Informations */}
               <TabsContent value="info" className="space-y-4">
+                
+                {/* Organisateur affiché en lecture seule */}
+                <ParentInfoReadonly parent={parent} labelKey="ProfileEdit.fields.organizer.label" />
+
                 {/* Nom */}
                 <FormFieldName control={form.control} required />
 
                 {/* Type d'événement */}
                 <FormFieldType control={form.control} variant="event" required />
-
-                {/* Organisateur affiché en lecture seule */}
-                <ParentInfoReadonly parent={parent} labelKey="ProfileEdit.fields.organizer.label" />
 
                 {/* Événement parent (sous-événement) */}
                 <FormField

@@ -80,7 +80,7 @@ export function FormFieldType<T extends FieldValues>({
             disabled={disabled}
           >
             <FormControl>
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder={t(`${labelKey}.placeholder`)} />
               </SelectTrigger>
             </FormControl>

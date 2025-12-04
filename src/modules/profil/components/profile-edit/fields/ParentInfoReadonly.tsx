@@ -24,7 +24,7 @@ export function ParentInfoReadonly({ parent, labelKey = "ProfileEdit.fields.pare
 
   return (
     <div className="text-sm text-muted-foreground">
-      {t(labelKey)}: <strong>{parent.serverData?.name}</strong>
+      {t(labelKey)}: <strong className="text-primary">{parent.serverData?.name}</strong>
     </div>
   );
 }
