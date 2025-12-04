@@ -15,7 +15,7 @@ export function SeparateButtonsLayout({ actions }: SeparateButtonsLayoutProps) {
   const isLoading = actions.some((action) => action.isPending);
 
   return (
-    <div className="flex gap-3 flex-wrap">
+    <>
       {actions
         .filter((action) => action.show)
         .map((action) => (
@@ -30,6 +30,6 @@ export function SeparateButtonsLayout({ actions }: SeparateButtonsLayoutProps) {
             {action.label}
           </Button>
         ))}
-    </div>
+    </>
   );
 }

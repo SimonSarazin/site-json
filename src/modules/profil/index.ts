@@ -59,7 +59,6 @@ export type {
   ProfileBadgesSection,
   ProfileTagsSection,
   ProfileOpeningHoursSection,
-  ProfileHeaderCompleteSection,
   ProfileTabLayoutSection,
 } from "./schema";
 
@@ -86,6 +85,5 @@ export {
   ProfileBadgesSectionSchema,
   ProfileTagsSectionSchema,
   ProfileOpeningHoursSectionSchema,
-  ProfileHeaderCompleteSectionSchema,
   ProfileTabLayoutSectionSchema,
 } from "./schema";

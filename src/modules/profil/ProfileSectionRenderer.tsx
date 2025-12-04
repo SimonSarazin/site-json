@@ -13,7 +13,6 @@ import type {
   ProfileBadgesSection,
   ProfileTagsSection,
   ProfileOpeningHoursSection,
-  ProfileHeaderCompleteSection,
   ProfileTabLayoutSection,
   ProfileSection
 } from "@/modules/profil/schema";
@@ -35,7 +34,6 @@ const ProfileEventDates = lazy(() => import("./components/sections/ProfileEventD
 const ProfileBadges = lazy(() => import("./components/sections/ProfileBadges"));
 const ProfileTags = lazy(() => import("./components/sections/ProfileTags"));
 const ProfileOpeningHours = lazy(() => import("./components/sections/ProfileOpeningHours"));
-const ProfileHeaderComplete = lazy(() => import("./components/sections/ProfileHeaderComplete"));
 const ProfileTabLayout = lazy(() => import("./components/sections/ProfileTabLayout"));
 
 // Lazy load des templates
@@ -60,7 +58,6 @@ const PROFILE_SECTION_TYPES = [
   "profile-badges",
   "profile-tags",
   "profile-opening-hours",
-  "profile-header-complete",
   "profile-tab-layout",
   "profile-template-dynamic",
 ] as const;
@@ -130,9 +127,6 @@ export function ProfileSectionRenderer({ section }: ProfileSectionRendererProps)
 
     case "profile-opening-hours":
       return <ProfileOpeningHours section={section as ProfileOpeningHoursSection} />;
-
-    case "profile-header-complete":
-      return <ProfileHeaderComplete section={section as ProfileHeaderCompleteSection} />;
 
     case "profile-tab-layout":
       return <ProfileTabLayout section={section as ProfileTabLayoutSection} />;

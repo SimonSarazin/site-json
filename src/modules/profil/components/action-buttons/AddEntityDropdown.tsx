@@ -3,7 +3,8 @@ import { Plus, Building2, Briefcase, Calendar, MapPin } from "lucide-react";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { useT } from "@/hooks/useT";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import type { VariantProps } from "class-variance-authority";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { AddConfig } from "../../schema";
+
 import { AddOrganizationModal } from "../add/AddOrganizationModal";
 import { AddProjectModal } from "../add/AddProjectModal";
 import { AddEventModal } from "../add/AddEventModal";
@@ -22,6 +24,9 @@ interface AddEntityDropdownProps {
   entity: EntityTypes;
   config?: AddConfig;
   label?: string;
+  variant?: VariantProps<typeof buttonVariants>["variant"];
+  size?: VariantProps<typeof buttonVariants>["size"];
+  className?: string;
 }
 
 interface AddOption {
@@ -38,7 +43,7 @@ interface AddOption {
  * 2. Les permissions de l'utilisateur (admin, member, contributor, etc.)
  * 3. La configuration JSON (addConfig peut désactiver certains types)
  */
-export function AddEntityDropdown({ entity, config, label }: AddEntityDropdownProps) {
+export function AddEntityDropdown({ entity, config, label, variant = "outline", size, className }: AddEntityDropdownProps) {
   const permissions = useUserPermissions(entity);
   const t = useT("modules/profil");
 
@@ -105,9 +110,9 @@ export function AddEntityDropdown({ entity, config, label }: AddEntityDropdownPr
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline">
-            <Plus className="w-4 h-4 mr-2" />
-            {label || t("AddEntity.create")}
+          <Button variant={variant} size={size} className={className}>
+            <Plus />
+            <span className="hidden sm:inline">{label || t("AddEntity.create")}</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
@@ -116,7 +121,7 @@ export function AddEntityDropdown({ entity, config, label }: AddEntityDropdownPr
               key={option.type}
               onClick={() => handleOpenModal(option.type)}
             >
-              <option.icon className="w-4 h-4 mr-2" />
+              <option.icon />
               {option.label}
             </DropdownMenuItem>
           ))}

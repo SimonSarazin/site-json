@@ -1,169 +1,33 @@
-import { useState } from "react";
-import { useNavigate } from "react-router";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, Share2, Edit } from "lucide-react";
-import { useFormatProfileEntity } from "../../hooks/useFormatProfileEntity";
-import { useLoadNamespace } from "@/hooks/useLoadNamespace";
-import { useT } from "@/hooks/useT";
-import { useProfileEntity } from "../../hooks/useProfileEntity";
-import { useUserPermissions } from "@/hooks/useUserPermissions";
-import { EditProfileModal } from "../profile-edit/EditProfileModal";
-import "@/modules/profil/i18n";
+import type { ProfileHeaderSection } from "../../schema";
+import {
+  ProfileHeaderHero,
+  ProfileHeaderSimple,
+  ProfileHeaderComplete,
+  ProfileHeaderCover,
+  ProfileHeaderMinimal,
+  ProfileHeaderBannerOverlay,
+} from "./headers";
 
 interface ProfileHeaderProps {
-  section: {
-    type: "profile-header";
-    // TODO: tous les variant ne sont pas en place
-    variant?: "hero" | "simple" | "cover" | "minimal" | "banner-overlay";
-    showBackButton?: boolean;
-    showShareButton?: boolean;
-    showEditButton?: boolean;
-    // Props pour variant "banner-overlay" (TODO: implémenter)
-    showBanner?: boolean;
-    showAvatar?: boolean;
-    bannerHeight?: string;
-    avatarSize?: string;
-    avatarOverlap?: boolean;
-    showLocation?: boolean;
-    allowUpload?: boolean;
-  };
+  section: ProfileHeaderSection;
 }
 
 export default function ProfileHeader({ section }: ProfileHeaderProps) {
-  const { entity } = useProfileEntity();
-  useLoadNamespace("modules/profil");
-  const t = useT("modules/profil");
-  const navigate = useNavigate();
   const variant = section.variant || "hero";
-  const { imageUrl, name: entityName, shortDescription } = useFormatProfileEntity(entity);
-  const { canEditProfile } = useUserPermissions(entity);
-  const [editModalOpen, setEditModalOpen] = useState(false);
 
-  if (variant === "hero") {
-    return (
-      <div className="relative w-full">
-        {imageUrl && (
-          <div className="relative h-64 md:h-96 w-full overflow-hidden">
-            <img
-              src={imageUrl}
-              alt={entityName}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 from-black/60 to-transparent" />
-          </div>
-        )}
-
-        <div className="absolute top-4 left-4 right-4 flex justify-between">
-          {section.showBackButton !== false && (
-            <Button
-              onClick={() => navigate(-1)}
-              variant="secondary"
-              size="sm"
-              className="backdrop-blur-sm bg-white/90"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              {t("ProfileHeader.back")}
-            </Button>
-          )}
-
-          <div className="flex gap-2">
-            {section.showShareButton && (
-              <Button
-                variant="secondary"
-                size="sm"
-                className="backdrop-blur-sm bg-white/90"
-                onClick={() => {
-                  navigator.share?.({
-                    title: entityName,
-                    url: window.location.href,
-                  });
-                }}
-              >
-                <Share2 className="h-4 w-4" />
-              </Button>
-            )}
-
-            {canEditProfile && entity && (
-              <Button
-                variant="secondary"
-                size="sm"
-                className="backdrop-blur-sm bg-white/90"
-                onClick={() => setEditModalOpen(true)}
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-        </div>
-
-        <div className={`${imageUrl ? "absolute bottom-0 left-0 right-0" : ""} p-6 md:p-8`}>
-          <h1 className={`text-3xl md:text-4xl font-bold ${imageUrl ? "text-white" : "text-gray-900"}`}>
-            {entityName}
-          </h1>
-          {shortDescription && (
-            <p className={`mt-2 text-lg ${imageUrl ? "text-white/90" : "text-gray-600"}`}>
-              {shortDescription}
-            </p>
-          )}
-        </div>
-      </div>
-    );
+  switch (variant) {
+    case "hero":
+      return <ProfileHeaderHero section={section} />;
+    case "complete":
+      return <ProfileHeaderComplete section={section} />;
+    case "cover":
+      return <ProfileHeaderCover section={section} />;
+    case "minimal":
+      return <ProfileHeaderMinimal section={section} />;
+    case "banner-overlay":
+      return <ProfileHeaderBannerOverlay section={section} />;
+    case "simple":
+    default:
+      return <ProfileHeaderSimple section={section} />;
   }
-
-  // Variant simple
-  return (
-    <div className="border-b dark:border-gray-700 pb-6 mb-6">
-      <div className="flex items-center justify-between mb-4">
-        {section.showBackButton !== false && (
-          <Button onClick={() => navigate(-1)} variant="ghost" size="sm">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {t("ProfileHeader.back")}
-          </Button>
-        )}
-
-        <div className="flex gap-2">
-          {section.showShareButton && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                navigator.share?.({
-                  title: entityName,
-                  url: window.location.href,
-                });
-              }}
-            >
-              <Share2 className="mr-2 h-4 w-4" />
-              {t("ProfileHeader.share")}
-            </Button>
-          )}
-        </div>
-      </div>
-
-      <div className="flex gap-6 items-start">
-        {imageUrl && (
-          <img
-            src={imageUrl}
-            alt={entityName}
-            className="w-24 h-24 rounded-lg object-cover"
-          />
-        )}
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{entityName}</h1>
-          {shortDescription && (
-            <p className="mt-2 text-gray-600 dark:text-gray-400">{shortDescription}</p>
-          )}
-        </div>
-      </div>
-
-      {/* Modal d'édition */}
-      {entity && (
-        <EditProfileModal
-          entity={entity}
-          open={editModalOpen}
-          onOpenChange={setEditModalOpen}
-        />
-      )}
-    </div>
-  );
 }

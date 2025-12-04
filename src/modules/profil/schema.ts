@@ -12,8 +12,16 @@ export const ProfileTypeSchema = z.enum([
 
 export type ProfileType = z.infer<typeof ProfileTypeSchema>;
 
+// Configuration pour le dropdown d'ajout d'entités (déplacé ici pour être utilisé dans ProfileHeaderSectionSchema)
+export const AddConfigSchema = z.object({
+  organization: z.boolean().optional().default(true),
+  project: z.boolean().optional().default(true),
+  event: z.boolean().optional().default(true),
+  poi: z.boolean().optional().default(true),
+}).optional();
+
 // Variantes de sections de profil
-export const ProfileHeaderVariantSchema = z.enum(["hero", "simple", "cover", "minimal", "banner-overlay"]);
+export const ProfileHeaderVariantSchema = z.enum(["hero", "simple", "cover", "minimal", "banner-overlay", "complete"]);
 export const ProfileInfoVariantSchema = z.enum(["sidebar", "inline", "tabs"]);
 export const ProfileLayoutVariantSchema = z.enum(["default", "modern", "compact", "full-width"]);
 
@@ -32,6 +40,14 @@ export const ProfileHeaderSectionSchema = z.object({
   avatarOverlap: z.boolean().optional().default(true),
   showLocation: z.boolean().optional().default(true),
   allowUpload: z.boolean().optional().default(true),
+  // Props pour variant "complete"
+  showActions: z.boolean().optional().default(true),
+  showAddDropdown: z.boolean().optional().default(true),
+  addConfig: AddConfigSchema,
+  addDropdownLabel: LocalizedString.optional(),
+  showEmailButton: z.boolean().optional().default(true),
+  showReservationButton: z.boolean().optional().default(false),
+  showAllPhotosButton: z.boolean().optional().default(true),
 });
 
 export const ProfileInfoSectionSchema = z.object({
@@ -101,14 +117,6 @@ export const ProfileRelatedSectionSchema = z.object({
   limit: z.number().optional().default(4),
 });
 
-// Configuration pour le dropdown d'ajout d'entités
-export const AddConfigSchema = z.object({
-  organization: z.boolean().optional().default(true),
-  project: z.boolean().optional().default(true),
-  event: z.boolean().optional().default(true),
-  poi: z.boolean().optional().default(true),
-}).optional();
-
 export const ProfileActionsSectionSchema = z.object({
   type: z.literal("profile-actions"),
   showEditButton: z.boolean().optional().default(true),
@@ -153,18 +161,6 @@ export const ProfileOpeningHoursSectionSchema = z.object({
   showCurrentStatus: z.boolean().optional().default(false),
 });
 
-export const ProfileHeaderCompleteSectionSchema = z.object({
-  type: z.literal("profile-header-complete"),
-  showBanner: z.boolean().optional().default(true),
-  showAvatar: z.boolean().optional().default(true),
-  showLocation: z.boolean().optional().default(true),
-  showActions: z.boolean().optional().default(true),
-  // Options pour le dropdown d'ajout d'entités
-  showAddDropdown: z.boolean().optional().default(true),
-  addConfig: AddConfigSchema,
-  addDropdownLabel: LocalizedString.optional(),
-});
-
 export const ProfileTabLayoutSectionSchema = z.object({
   type: z.literal("profile-tab-layout"),
   leftSections: z.array(z.unknown()),
@@ -190,7 +186,6 @@ const ProfileOnlySectionSchema = z.discriminatedUnion("type", [
   ProfileBadgesSectionSchema,
   ProfileTagsSectionSchema,
   ProfileOpeningHoursSectionSchema,
-  ProfileHeaderCompleteSectionSchema,
   ProfileTabLayoutSectionSchema,
   ProfileTemplateDynamicSchema,
 ]);
@@ -289,5 +284,4 @@ export type ProfileEventDatesSection = z.infer<typeof ProfileEventDatesSectionSc
 export type ProfileBadgesSection = z.infer<typeof ProfileBadgesSectionSchema>;
 export type ProfileTagsSection = z.infer<typeof ProfileTagsSectionSchema>;
 export type ProfileOpeningHoursSection = z.infer<typeof ProfileOpeningHoursSectionSchema>;
-export type ProfileHeaderCompleteSection = z.infer<typeof ProfileHeaderCompleteSectionSchema>;
 export type ProfileTabLayoutSection = z.infer<typeof ProfileTabLayoutSectionSchema>;

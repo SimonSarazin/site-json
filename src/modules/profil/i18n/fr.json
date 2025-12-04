@@ -440,6 +440,8 @@
     "profileImage": "Photo de profil",
     "bannerImage": "Bannière",
     "changeImage": "Changer",
+    "changeBanner": "Changer la bannière",
+    "changeAvatar": "Changer l'avatar",
     "uploading": "Upload...",
     "save": "Sauvegarder",
     "saving": "Enregistrement...",

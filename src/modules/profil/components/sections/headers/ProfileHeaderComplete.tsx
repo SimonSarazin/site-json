@@ -1,66 +1,54 @@
 import { useState } from "react";
-import { Edit, Mail, ChevronRight, ImageIcon } from "lucide-react";
-import { useProfileEntity } from "../../hooks/useProfileEntity";
-import { useFormatProfileEntity } from "../../hooks/useFormatProfileEntity";
-import { useUserPermissions } from "@/hooks/useUserPermissions";
-import { useT } from "@/hooks/useT";
 import { Button } from "@/components/ui/button";
-import { EntityActionButtons } from "../EntityActionButtons";
-import { ProfileImageUpload } from "../profile-edit/ProfileImageUpload";
-import { EditProfileModal } from "../profile-edit/EditProfileModal";
-import { AddEntityDropdown } from "../action-buttons/AddEntityDropdown";
-import type { ProfileHeaderCompleteSection } from "../../schema";
+import { Edit, Mail, ChevronRight, ImageIcon } from "lucide-react";
+import { useFormatProfileEntity } from "../../../hooks/useFormatProfileEntity";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { useT } from "@/hooks/useT";
+import { useProfileEntity } from "../../../hooks/useProfileEntity";
+import { useUserPermissions } from "@/hooks/useUserPermissions";
+import { EditProfileModal } from "../../profile-edit/EditProfileModal";
+import { ProfileImageUpload } from "../../profile-edit/ProfileImageUpload";
+import { EntityActionButtons } from "../../EntityActionButtons";
+import { AddEntityDropdown } from "../../action-buttons/AddEntityDropdown";
 import { isUser } from "@/lib/getTypedEntity";
+import type { ProfileHeaderSection } from "../../../schema";
+import "@/modules/profil/i18n";
+import { ButtonGroup } from "@/components/ui/button-group";
 
 interface ProfileHeaderCompleteProps {
-  section: ProfileHeaderCompleteSection;
+  section: ProfileHeaderSection;
 }
 
-/**
- * Section header complète extraite de ProfileTemplateDefault (lignes 103-211)
- * Contient: Banner + Avatar + Nom + Localisation + Action Buttons
- */
-export default function ProfileHeaderComplete({ section }: ProfileHeaderCompleteProps) {
+export function ProfileHeaderComplete({ section }: ProfileHeaderCompleteProps) {
   const { entity } = useProfileEntity();
+  useLoadNamespace("modules/profil");
+  const t = useT("modules/profil");
   const {
+    imageUrl,
     logoUrl,
     logoThumbUrl,
     bannerUrl,
     name: entityName,
-    address
+    address,
   } = useFormatProfileEntity(entity);
   const { canEditProfile } = useUserPermissions(entity);
-  useLoadNamespace("modules/profil");
-  const t = useT("modules/profil");
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [imageError, setImageError] = useState(false);
-
-  const {
-    showBanner = true,
-    showAvatar = true,
-    showLocation = true,
-    showActions = true,
-    showAddDropdown = true,
-    addConfig,
-    addDropdownLabel,
-  } = section;
 
   if (!entity) return null;
 
   const effectiveLogoUrl = imageError ? logoThumbUrl : logoUrl;
-  const imageUrl = logoUrl;
 
   return (
     <>
       {/* Banner */}
-      {showBanner && (
+      {section.showBanner !== false && (
         <div
           className="relative h-96 bg-cover bg-center rounded-md border-border border group"
           style={{ backgroundImage: bannerUrl ? `url('${bannerUrl}')` : `url('${imageUrl}')` }}
         >
           {/* Bouton d'upload de bannière */}
-          {canEditProfile && entity && (
+          {canEditProfile && section.allowUpload !== false && entity && (
             <div className="absolute inset-0 z-10">
               <ProfileImageUpload
                 entity={entity}
@@ -72,12 +60,14 @@ export default function ProfileHeaderComplete({ section }: ProfileHeaderComplete
             </div>
           )}
 
-          <div className="absolute bottom-6 right-6 z-20">
-            <Button>
-              <ImageIcon className="w-4 h-4" />
-              {t("ProfileTemplateDefault.showAllPhotos")}
-            </Button>
-          </div>
+          {section.showAllPhotosButton !== false && (
+            <div className="absolute bottom-6 right-6 z-20">
+              <Button>
+                <ImageIcon className="w-4 h-4" />
+                {t("ProfileTemplateDefault.showAllPhotos")}
+              </Button>
+            </div>
+          )}
         </div>
       )}
 
@@ -85,7 +75,7 @@ export default function ProfileHeaderComplete({ section }: ProfileHeaderComplete
       <div className="relative px-8 pb-6">
         <div className="flex items-end gap-6 -mt-20">
           {/* Avatar */}
-          {showAvatar && (
+          {section.showAvatar !== false && (
             <div className="relative group z-20">
               <div className="w-40 h-40 rounded-full border-4 border-background bg-card shadow-xl overflow-hidden">
                 {effectiveLogoUrl ? (
@@ -108,7 +98,7 @@ export default function ProfileHeaderComplete({ section }: ProfileHeaderComplete
               </div>
 
               {/* Bouton d'upload d'avatar */}
-              {canEditProfile && entity && (
+              {canEditProfile && section.allowUpload !== false && entity && (
                 <div className="absolute inset-0 rounded-full">
                   <ProfileImageUpload
                     entity={entity}
@@ -126,7 +116,7 @@ export default function ProfileHeaderComplete({ section }: ProfileHeaderComplete
             {/* Nom + Localisation */}
             <div>
               <h1 className="text-3xl font-bold text-foreground mb-1">{entityName}</h1>
-              {showLocation && address && (
+              {section.showLocation !== false && address && (
                 <p className="text-muted-foreground">
                   {address.addressLocality}
                   {address.postalCode && `, ${address.postalCode}`}
@@ -135,47 +125,54 @@ export default function ProfileHeaderComplete({ section }: ProfileHeaderComplete
             </div>
 
             {/* Action Buttons */}
-            {showActions && (
+            {section.showActions !== false && (
               <div className="flex gap-3 flex-wrap">
+                <ButtonGroup>
+                
+                {/* Boutons d'action (Follow, Friend, Membership, etc.) */}
+                <EntityActionButtons entity={entity} />
+
                 {canEditProfile && (
                   <Button
                     variant="outline"
                     onClick={() => setEditModalOpen(true)}
                   >
-                    <Edit className="w-4 h-4" />
-                    {t("ProfileTemplateDefault.editProfile")}
+                    <Edit />
+                    <span className="hidden sm:inline">{t("ProfileTemplateDefault.editProfile")}</span>
                   </Button>
                 )}
 
-                {/* Boutons d'action (Follow, Friend, Membership, etc.) */}
-                <EntityActionButtons entity={entity} />
 
                 {/* Dropdown pour créer des entités */}
-                {showAddDropdown && (
+                {section.showAddDropdown !== false && (
                   <AddEntityDropdown
                     entity={entity}
-                    config={addConfig}
-                    label={addDropdownLabel ? t(addDropdownLabel) : undefined}
+                    config={section.addConfig}
+                    label={section.addDropdownLabel ? t(section.addDropdownLabel) : undefined}
                   />
                 )}
+                </ButtonGroup>
 
                 {!isUser(entity) && (
                   <>
-                    {entity.serverData?.email && typeof entity.serverData.email === "string" && (
+                    {section.showEmailButton !== false && entity.serverData?.email && typeof entity.serverData.email === "string" && (
                       <Button
                         variant="outline"
                         onClick={() => window.location.href = `mailto:${entity.serverData.email}`}
                       >
-                        <Mail className="w-4 h-4" />
-                        {t("ProfileTemplateDefault.sendEmail")}
+                        <Mail />
+                        <span className="hidden sm:inline">{t("ProfileTemplateDefault.sendEmail")}</span>
                       </Button>
                     )}
-                    <Button className="bg-[#0092a2] hover:bg-teal-600">
-                      {t("ProfileTemplateDefault.reservationSpace")}
-                      <ChevronRight className="w-4 h-4" />
-                    </Button>
+                    {section.showReservationButton && (
+                      <Button className="bg-[#0092a2] hover:bg-teal-600">
+                        <span className="hidden sm:inline">{t("ProfileTemplateDefault.reservationSpace")}</span>
+                        <ChevronRight />
+                      </Button>
+                    )}
                   </>
                 )}
+                
               </div>
             )}
           </div>
@@ -186,7 +183,7 @@ export default function ProfileHeaderComplete({ section }: ProfileHeaderComplete
       </div>
 
       {/* Edit Modal */}
-      {canEditProfile && (
+      {canEditProfile && entity && (
         <EditProfileModal
           open={editModalOpen}
           onOpenChange={setEditModalOpen}

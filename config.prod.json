@@ -1263,7 +1263,8 @@
       "hideFooter": false,
       "sections": [
         {
-          "type": "profile-header-complete"
+          "type": "profile-header",
+          "variant": "complete"
         },
         {
           "type": "profile-template-dynamic"
@@ -1363,7 +1364,8 @@
       "hideFooter": false,
       "sections": [
         {
-          "type": "profile-header-complete",
+          "type": "profile-header",
+          "variant": "complete",
           "showAddDropdown": true,
           "addConfig": {
             "organization": true,
@@ -1469,7 +1471,8 @@
       "hideFooter": false,
       "sections": [
         {
-          "type": "profile-header-complete",
+          "type": "profile-header",
+          "variant": "complete",
           "showAddDropdown": true,
           "addConfig": {
             "organization": false,
@@ -1623,7 +1626,8 @@
       "hideFooter": false,
       "sections": [
         {
-          "type": "profile-header-complete",
+          "type": "profile-header",
+          "variant": "complete",
           "showAddDropdown": true,
           "addConfig": {
             "organization": false,
@@ -1777,7 +1781,8 @@
       "hideFooter": false,
       "sections": [
         {
-          "type": "profile-header-complete",
+          "type": "profile-header",
+          "variant": "complete",
           "showAddDropdown": false
         },
         {
@@ -1928,7 +1933,8 @@
       "hideFooter": false,
       "sections": [
         {
-          "type": "profile-header-complete",
+          "type": "profile-header",
+          "variant": "complete",
           "showAddDropdown": false
         },
         {

@@ -56,9 +56,9 @@ export function StatusDropdownLayout({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant={statusVariant} className="h-auto text-sm font-medium gap-2">
+          <Button variant={statusVariant} className="gap-2">
             {statusIcon}
-            {statusLabel}
+            <span className="hidden sm:inline">{statusLabel}</span>
             <ChevronDown className="w-4 h-4" />
           </Button>
         </DropdownMenuTrigger>
@@ -79,11 +79,7 @@ export function StatusDropdownLayout({
             <DropdownMenuItem
               key={action.id}
               onClick={() => handleActionClick(action)}
-              className={
-                action.isDestructive
-                  ? "text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
-                  : undefined
-              }
+              variant={action.isDestructive ? "destructive" : "default"}
             >
               {action.icon}
               {action.label}
