@@ -108,7 +108,7 @@ export function CommentItem({
               alt={formattedComment.authorName}
             />
           ) : null}
-          <AvatarFallback className="bg-gradient-to-br from-teal-400 to-teal-600 text-white font-bold text-xs">
+          <AvatarFallback className="bg-gradient-to-br from-primary/80 to-primary text-primary-foreground font-bold text-xs">
             {formattedComment.authorName.charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>

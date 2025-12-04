@@ -32,7 +32,7 @@ export default function ProfileAbout({ section }: ProfileAboutProps) {
       <CardContent>
         {section.showShortDescription !== false && shortDescription && (
           <div className="mb-4">
-            <p className="text-lg font-medium text-gray-900 dark:text-white">
+            <p className="text-lg font-medium text-foreground">
               {shortDescription}
             </p>
           </div>

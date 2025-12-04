@@ -20,14 +20,14 @@ export function EntityEmptyState({
 }: EntityEmptyStateProps) {
   return (
     <div className="text-center py-12">
-      <div className="text-gray-400 mb-4">{icon}</div>
+      <div className="text-muted-foreground mb-4">{icon}</div>
       <p className="text-foreground font-medium mb-2">{title}</p>
       {description && (
         <p className="text-muted-foreground text-sm mb-4">{description}</p>
       )}
       {action && (
         <Button
-          className="bg-teal-600 hover:bg-teal-700"
+          className="bg-primary hover:bg-primary/90"
           onClick={action.onClick}
         >
           {action.icon}

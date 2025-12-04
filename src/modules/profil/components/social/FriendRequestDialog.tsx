@@ -93,7 +93,7 @@ export function FriendRequestDialog() {
                 size="sm"
                 onClick={() => handleSendRequest(user)}
                 disabled={sendFriendRequestMutation.isPending}
-                className="bg-teal-600 hover:bg-teal-700"
+                className="bg-primary hover:bg-primary/90"
               >
                 <UserPlus className="w-3 h-3 mr-1" />
                 {t("FriendRequestDialog.sendRequest")}
@@ -108,7 +108,7 @@ export function FriendRequestDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-teal-600 hover:bg-teal-700">
+        <Button className="bg-primary hover:bg-primary/90">
           <UserPlus className="w-4 h-4 mr-2" />
           {t("SocialTab.addFriend")}
         </Button>

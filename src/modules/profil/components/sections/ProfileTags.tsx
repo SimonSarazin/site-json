@@ -62,7 +62,7 @@ export default function ProfileTags({ section }: ProfileTagsProps) {
           return (
             <TagElement
               key={index}
-              className="bg-card border border-border text-foreground px-3 py-1.5 rounded-full text-sm font-medium hover:border-teal-400 hover:bg-muted transition-colors"
+              className="bg-card border border-border text-foreground px-3 py-1.5 rounded-full text-sm font-medium hover:border-primary hover:bg-muted transition-colors"
               onClick={searchOnClick ? () => handleTagClick(tag) : undefined}
               type={searchOnClick ? "button" : undefined}
             >

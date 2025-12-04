@@ -58,7 +58,7 @@ export function ProfileHeaderHero({ section }: ProfileHeaderHeroProps) {
             )}
           </div>
         ) : (
-          <div className="h-32 bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800" />
+          <div className="h-32 bg-gradient-to-br from-muted to-muted/80" />
         )}
 
         {/* Top buttons */}
@@ -107,11 +107,11 @@ export function ProfileHeaderHero({ section }: ProfileHeaderHeroProps) {
 
         {/* Content */}
         <div className={`${coverImage ? "absolute bottom-0 left-0 right-0" : ""} p-6 md:p-8`}>
-          <h1 className={`text-3xl md:text-4xl font-bold ${coverImage ? "text-white" : "text-gray-900 dark:text-white"}`}>
+          <h1 className={`text-3xl md:text-4xl font-bold ${coverImage ? "text-white" : "text-foreground"}`}>
             {entityName}
           </h1>
           {shortDescription && (
-            <p className={`mt-2 text-lg ${coverImage ? "text-white/90" : "text-gray-600 dark:text-gray-400"}`}>
+            <p className={`mt-2 text-lg ${coverImage ? "text-white/90" : "text-muted-foreground"}`}>
               {shortDescription}
             </p>
           )}

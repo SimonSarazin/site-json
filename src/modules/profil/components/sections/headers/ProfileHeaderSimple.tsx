@@ -33,7 +33,7 @@ export function ProfileHeaderSimple({ section }: ProfileHeaderSimpleProps) {
   const avatarImage = logoUrl || imageUrl;
 
   return (
-    <div className="border-b dark:border-gray-700 pb-6 mb-6">
+    <div className="border-b border-border pb-6 mb-6">
       {/* Top bar */}
       <div className="flex items-center justify-between mb-4">
         {section.showBackButton !== false && (
@@ -83,7 +83,7 @@ export function ProfileHeaderSimple({ section }: ProfileHeaderSimpleProps) {
               className="w-24 h-24 rounded-lg object-cover"
             />
           ) : (
-            <div className="w-24 h-24 rounded-lg bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
+            <div className="w-24 h-24 rounded-lg bg-gradient-to-br from-muted to-muted/80 flex items-center justify-center">
               <span className="text-2xl font-bold text-muted-foreground">
                 {entityName.charAt(0).toUpperCase()}
               </span>
@@ -105,9 +105,9 @@ export function ProfileHeaderSimple({ section }: ProfileHeaderSimpleProps) {
         </div>
 
         <div className="flex-1">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{entityName}</h1>
+          <h1 className="text-3xl font-bold text-foreground">{entityName}</h1>
           {shortDescription && (
-            <p className="mt-2 text-gray-600 dark:text-gray-400">{shortDescription}</p>
+            <p className="mt-2 text-muted-foreground">{shortDescription}</p>
           )}
 
           {/* Action Buttons */}

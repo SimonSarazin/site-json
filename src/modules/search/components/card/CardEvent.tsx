@@ -11,7 +11,7 @@ const AVATAR_COLOR_CLASSES: Record<string, string> = {
   purple: 'bg-purple-50 text-purple-500',
   red: 'bg-red-50 text-red-500',
   yellow: 'bg-yellow-50 text-yellow-500',
-  teal: 'bg-teal-50 text-teal-500',
+  teal: 'bg-primary/10 text-primary',
 };
 
 // Map des tags vers des icônes

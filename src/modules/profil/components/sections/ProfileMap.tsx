@@ -43,10 +43,10 @@ export default function ProfileMap({ section }: ProfileMapProps) {
       </CardHeader>
       <CardContent>
         <div
-          className="bg-gray-100 rounded-lg flex items-center justify-center"
+          className="bg-muted rounded-lg flex items-center justify-center"
           style={{ height }}
         >
-          <div className="text-center text-gray-600">
+          <div className="text-center text-muted-foreground">
             <p>{t("ProfileMap.mapPlaceholder")}</p>
             <p className="text-sm mt-2">
               {t("ProfileMap.coordinates")}: {lat.toFixed(6)}, {lon.toFixed(6)}

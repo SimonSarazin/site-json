@@ -43,7 +43,7 @@ export function ContentSection({
               <p className="text-muted-foreground text-sm font-medium mb-4">{t(category)}</p>
             )}
             
-            <h2 className="text-4xl font-bold text-teal-500 mb-6 leading-tight">
+            <h2 className="text-4xl font-bold text-primary mb-6 leading-tight">
               {t(title)}
             </h2>
             
@@ -83,7 +83,7 @@ export function ContentSection({
                         </svg>
                         <a
                           href={link.href}
-                          className="font-semibold text-gray-900 dark:text-white hover:text-teal-500 dark:hover:text-teal-400 transition"
+                          className="font-semibold text-gray-900 dark:text-white hover:text-primary dark:hover:text-primary transition"
                         >
                           {t(link.label)}
                         </a>
@@ -119,7 +119,7 @@ export function ContentSection({
 
             {/* Decorative Elements */}
             {decorativeElements && decorativeElements.type === "corner-icon" && (
-              <div className="absolute bottom-0 right-0 w-32 h-32 bg-teal-400 rounded-tl-full flex items-center justify-center shadow-2xl">
+              <div className="absolute bottom-0 right-0 w-32 h-32 bg-primary rounded-tl-full flex items-center justify-center shadow-2xl">
                 <div className="text-white text-4xl mb-4 ml-4">
                   <div className="flex space-x-2 mb-1">
                     <div className="w-2 h-2 bg-white rounded-full"></div>

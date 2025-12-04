@@ -89,7 +89,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
               <DropdownMenuItem
                 onClick={action.onClick}
                 disabled={action.disabled}
-                className={action.variant === "destructive" ? "text-red-600" : ""}
+                className={action.variant === "destructive" ? "text-destructive" : ""}
               >
                 {action.icon}
                 <span className="ml-2">{action.label}</span>
@@ -123,7 +123,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
         </DialogHeader>
 
         <div className="space-y-4">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             {labels.description}
           </p>
 
@@ -161,14 +161,14 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
                 <div className="max-h-60 overflow-y-auto">
                   {searchTerm === "" ? (
                     <div className="text-center py-8">
-                      <Search className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                      <Search className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
                       <p className="text-muted-foreground text-sm">
                         {t("InviteMemberDialog.startTyping")}
                       </p>
                     </div>
                   ) : searchTerm.length < 2 ? (
                     <div className="text-center py-8">
-                      <Search className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                      <Search className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
                       <p className="text-muted-foreground text-sm">
                         {t("InviteMemberDialog.minimumChars")}
                       </p>
@@ -182,7 +182,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
                     </div>
                   ) : users.length === 0 ? (
                     <div className="text-center py-8">
-                      <Search className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                      <Search className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
                       <p className="text-foreground font-medium mb-2">
                         {t("InviteMemberDialog.noUsersFound")}
                       </p>
@@ -227,7 +227,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
 
             <TabsContent value="emails" className="space-y-4 mt-6">
               <div className="text-center py-8">
-                <Mail className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                <Mail className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
                 <p className="text-foreground font-medium mb-2">
                   {t("InviteMemberDialog.emailInvitationsComingSoon")}
                 </p>

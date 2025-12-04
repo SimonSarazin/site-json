@@ -243,7 +243,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                       )}
                     </div>
 
-                    <button className="px-4 sm:px-8 py-3 sm:py-4 bg-[#0092a2] text-white text-sm sm:text-base font-semibold hover:bg-teal-600 transition flex items-center justify-center gap-2 rounded-b-2xl sm:rounded-none">
+                    <button className="px-4 sm:px-8 py-3 sm:py-4 bg-primary text-primary-foreground text-sm sm:text-base font-semibold hover:bg-primary/90 transition flex items-center justify-center gap-2 rounded-b-2xl sm:rounded-none">
                       <span className="hidden sm:inline">{props.searchButtonText ? t(props.searchButtonText) : "Rechercher"}</span>
                       <span className="sm:hidden">{props.searchButtonText ? t(props.searchButtonText) : "Rechercher"}</span>
                       <svg
@@ -336,7 +336,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
               </h1>
 
               {props.subhead && (
-                <p className="text-center text-teal-500 font-light text-base sm:text-lg italic mb-4 sm:mb-6 px-4">
+                <p className="text-center text-primary font-light text-base sm:text-lg italic mb-4 sm:mb-6 px-4">
                   {t(props.subhead)}
                 </p>
               )}
@@ -347,7 +347,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                     key={idx}
                     onClick={() => setActiveTabIndex(idx)}
                     className={`px-3 sm:px-6 py-2 sm:py-3 font-semibold transition ${activeTabIndex === idx
-                      ? "border-b-4 border-teal-500 text-gray-50 bg-[#0092a2] rounded-t-md dark:bg-slate-800"
+                      ? "border-b-4 border-primary text-primary-foreground bg-primary rounded-t-md dark:bg-slate-800"
                       : "hover:bg-gray-50 dark:hover:bg-slate-800"
                       }`}
                   >
@@ -380,7 +380,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                     )}
                   </div>
 
-                  <button className="px-4 sm:px-8 py-3 sm:py-4 bg-[#0092a2] text-white text-sm sm:text-base font-semibold hover:bg-teal-600 transition flex items-center justify-center gap-2 rounded-b-2xl sm:rounded-r-full sm:rounded-l-none">
+                  <button className="px-4 sm:px-8 py-3 sm:py-4 bg-primary text-primary-foreground text-sm sm:text-base font-semibold hover:bg-primary/90 transition flex items-center justify-center gap-2 rounded-b-2xl sm:rounded-r-full sm:rounded-l-none">
                     <span className="hidden sm:inline">{props.searchButtonText ? t(props.searchButtonText) : "Rechercher"}</span>
                     <span className="sm:hidden">{props.searchButtonText ? t(props.searchButtonText) : "Rechercher"}</span>
                     <svg

@@ -164,7 +164,7 @@ export function MemberListRenderer({
               <DropdownMenuItem
                 onClick={action.onClick}
                 disabled={action.disabled}
-                className={action.variant === "destructive" ? "text-red-600" : ""}
+                className={action.variant === "destructive" ? "text-destructive" : ""}
               >
                 {action.icon}
                 <span className="ml-2">{action.label}</span>

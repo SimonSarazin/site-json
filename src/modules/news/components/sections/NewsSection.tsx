@@ -174,7 +174,7 @@ export const NewsSection = ({ id, props }: NewsSectionProps) => {
             {permissions.canAddNews && (props.showAddButton ?? true) && (
               <Button
                 onClick={() => setShowAddNewsModal(true)}
-                className="bg-teal-600 hover:bg-teal-700 text-xs sm:text-sm text-white"
+                className="bg-primary hover:bg-primary/90 text-xs sm:text-sm text-primary-foreground"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 {t("NewsSection.createPost")}
@@ -227,7 +227,7 @@ export const NewsSection = ({ id, props }: NewsSectionProps) => {
           <div className="flex justify-end">
             <Button
               onClick={() => setShowAddNewsModal(true)}
-              className="bg-teal-600 hover:bg-teal-700 text-xs sm:text-sm text-white"
+              className="bg-primary hover:bg-primary/90 text-xs sm:text-sm text-primary-foreground"
             >
               <Plus className="w-4 h-4 mr-2" />
               {t("NewsSection.createPost")}
@@ -252,7 +252,7 @@ export const NewsSection = ({ id, props }: NewsSectionProps) => {
         {isFetchingNextPage && (
           <div className="bg-background p-8 rounded-xl border border-border shadow-sm">
             <div className="text-center">
-              <Loader2 className="w-10 h-10 animate-spin mx-auto text-teal-600" />
+              <Loader2 className="w-10 h-10 animate-spin mx-auto text-primary" />
               <p className="text-sm text-muted-foreground mt-3 font-medium">
                 {t("NewsSection.loadingNews")}
               </p>
@@ -263,8 +263,8 @@ export const NewsSection = ({ id, props }: NewsSectionProps) => {
         {!hasNextPage && news.length > 0 && (
           <div className="bg-background p-6 sm:p-8 rounded-xl border border-border shadow-sm">
             <div className="text-center">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-teal-100 dark:bg-teal-900/30 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3">
-                <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-teal-600 dark:text-teal-400" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3">
+                <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-primary dark:text-primary" />
               </div>
               <p className="text-sm sm:text-base text-foreground font-semibold mb-1">
                 {t("NewsSection.upToDate")}

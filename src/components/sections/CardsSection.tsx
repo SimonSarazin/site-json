@@ -42,7 +42,7 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
       purple: 'bg-purple-50 text-purple-500',
       red: 'bg-red-50 text-red-500',
       yellow: 'bg-yellow-50 text-yellow-500',
-      teal: 'bg-teal-50 text-teal-500',
+      teal: 'bg-primary/10 text-primary',
     };
     return colorMap[color || 'teal'] || colorMap.teal;
   };

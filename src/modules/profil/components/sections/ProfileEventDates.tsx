@@ -33,7 +33,7 @@ export default function ProfileEventDates({ section }: ProfileEventDatesProps) {
       {/* Type d'événement avec indicateur coloré */}
       {showType && eventType && typeof eventType === "string" && (
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-          <span className="inline-block w-2 h-2 bg-[#0092a2] rounded-full"></span>
+          <span className="inline-block w-2 h-2 bg-primary rounded-full"></span>
           <span className="capitalize">{eventType}</span>
         </div>
       )}

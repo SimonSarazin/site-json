@@ -92,7 +92,7 @@ export default function ProfileActions({ section }: ProfileActionsProps) {
 
             {/* Bouton Réservation */}
             {showReservationButton && (
-              <Button className="bg-[#0092a2] hover:bg-teal-600">
+              <Button className="bg-primary hover:bg-primary/90">
                 {reservationButtonLabel ? t(reservationButtonLabel) : t("ProfileTemplateDefault.reservationSpace")}
                 <ChevronRight className="w-4 h-4" />
               </Button>

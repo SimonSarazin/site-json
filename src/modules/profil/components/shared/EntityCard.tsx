@@ -30,7 +30,7 @@ export function EntityCard({
       case "events":
         return <Calendar className="w-5 h-5 text-orange-600" />;
       default:
-        return <MapPin className="w-5 h-5 text-gray-600" />;
+        return <MapPin className="w-5 h-5 text-muted-foreground" />;
     }
   };
 
@@ -118,7 +118,7 @@ export function EntityCard({
                   {type !== "poi" && entity.isAdmin?.() && (
                     <Badge
                       variant="outline"
-                      className="text-primary border-teal-600"
+                      className="text-primary border-primary"
                     >
                       {t("MembershipTab.admin")}
                     </Badge>

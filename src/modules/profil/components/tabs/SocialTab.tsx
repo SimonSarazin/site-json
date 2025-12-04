@@ -174,7 +174,7 @@ export function SocialTab() {
                   size="sm"
                   onClick={() => removeFriendMutation.mutate({ user: friend })}
                   disabled={removeFriendMutation.isPending}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  className="text-destructive hover:text-destructive/80 hover:bg-destructive/10"
                 >
                   <UserMinus className="w-4 h-4" />
                   <span className="hidden sm:inline ml-1">{t("SocialTab.removeFriend")}</span>
@@ -200,7 +200,7 @@ export function SocialTab() {
                     size="sm"
                     onClick={() => acceptFriendMutation.mutate({ user })}
                     disabled={acceptFriendMutation.isPending}
-                    className="bg-teal-600 hover:bg-teal-700"
+                    className="bg-primary hover:bg-primary/90"
                   >
                     {t("SocialTab.accept")}
                   </Button>
@@ -209,7 +209,7 @@ export function SocialTab() {
                     size="sm"
                     onClick={() => rejectFriendMutation.mutate({ user })}
                     disabled={rejectFriendMutation.isPending}
-                    className="text-red-600 hover:text-red-700"
+                    className="text-destructive hover:text-destructive/80"
                   >
                     {t("SocialTab.reject")}
                   </Button>
@@ -235,7 +235,7 @@ export function SocialTab() {
                   size="sm"
                   onClick={() => cancelRequestMutation.mutate({ user })}
                   disabled={cancelRequestMutation.isPending}
-                  className="text-red-600 hover:text-red-700"
+                  className="text-destructive hover:text-destructive/80"
                 >
                   {t("SocialTab.cancel")}
                 </Button>

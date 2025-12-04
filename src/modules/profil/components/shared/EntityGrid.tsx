@@ -76,7 +76,7 @@ export function EntityGrid<T>({
       {/* État de chargement initial */}
       {isLoading ? (
         <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
           <p className="text-muted-foreground mt-2">{t("common.loading")}</p>
         </div>
       ) : items.length === 0 ? (
@@ -104,7 +104,7 @@ export function EntityGrid<T>({
       {/* Indicateur de chargement pour les pages suivantes */}
       {isFetchingNext && (
         <div className="text-center py-4">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-teal-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
           <p className="text-muted-foreground text-sm mt-2">
             {t("common.loading")}
           </p>

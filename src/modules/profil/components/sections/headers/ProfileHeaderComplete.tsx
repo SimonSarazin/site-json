@@ -86,7 +86,7 @@ export function ProfileHeaderComplete({ section }: ProfileHeaderCompleteProps) {
                     onError={() => setImageError(true)}
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center from-yellow-100 to-yellow-50">
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/80">
                     <div className="text-center p-2">
                       <div className="text-4xl mb-1">✒️</div>
                       <div className="text-xs font-bold text-foreground leading-tight">
@@ -165,7 +165,7 @@ export function ProfileHeaderComplete({ section }: ProfileHeaderCompleteProps) {
                       </Button>
                     )}
                     {section.showReservationButton && (
-                      <Button className="bg-[#0092a2] hover:bg-teal-600">
+                      <Button className="bg-primary hover:bg-primary/90">
                         <span className="hidden sm:inline">{t("ProfileTemplateDefault.reservationSpace")}</span>
                         <ChevronRight />
                       </Button>

@@ -76,7 +76,7 @@ export function MembershipTab() {
     return (
       <div className="bg-card p-8 rounded-lg border border-border shadow-sm">
         <div className="text-center py-16">
-          <div className="text-gray-400 mb-4">
+          <div className="text-muted-foreground mb-4">
             <Building2 className="w-16 h-16 mx-auto" />
           </div>
           <p className="text-xl font-semibold text-foreground mb-2">{t("MembershipTab.privateProfile")}</p>

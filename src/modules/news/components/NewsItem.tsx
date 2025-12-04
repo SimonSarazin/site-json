@@ -123,7 +123,7 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef, onEdit, onDele
                 className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full object-cover border-2 border-border hover:scale-105 transition-transform cursor-pointer"
               />
             ) : (
-              <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white font-bold text-base sm:text-lg md:text-xl shadow-md">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full bg-gradient-to-br from-primary/80 to-primary flex items-center justify-center text-primary-foreground font-bold text-base sm:text-lg md:text-xl shadow-md">
                 {authorName.charAt(0).toUpperCase()}
               </div>
             )}
@@ -232,7 +232,7 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef, onEdit, onDele
               return (
                 <span
                   key={tagIndex}
-                  className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400 rounded-full text-[10px] sm:text-xs font-medium border border-teal-200 dark:border-teal-700 hover:bg-teal-100 dark:hover:bg-teal-900/30 transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary rounded-full text-[10px] sm:text-xs font-medium border border-primary/30 dark:border-primary/40 hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors cursor-pointer"
                 >
                   <Tag className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                   {tagStr.startsWith('#') ? tagStr : `#${tagStr}`}
@@ -268,7 +268,7 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef, onEdit, onDele
                   <div
                     key={idx}
                     title={share.name}
-                    className="w-7 h-7 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white text-xs font-bold border-2 border-background hover:scale-110 transition-transform cursor-pointer"
+                    className="w-7 h-7 rounded-full bg-gradient-to-br from-primary/80 to-primary flex items-center justify-center text-primary-foreground text-xs font-bold border-2 border-background hover:scale-110 transition-transform cursor-pointer"
                   >
                     {share.name.charAt(0).toUpperCase()}
                   </div>

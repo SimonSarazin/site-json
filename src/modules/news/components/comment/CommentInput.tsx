@@ -60,7 +60,7 @@ export function CommentInput({
         {userPhoto ? (
           <AvatarImage src={userPhoto} alt={userName} />
         ) : null}
-        <AvatarFallback className="bg-gradient-to-br from-teal-400 to-teal-600 text-white font-bold">
+        <AvatarFallback className="bg-gradient-to-br from-primary/80 to-primary text-primary-foreground font-bold">
           {userName.substring(0, 2).toUpperCase()}
         </AvatarFallback>
       </Avatar>

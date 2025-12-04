@@ -57,7 +57,7 @@ export function LoadingState({
     return (
       <div className={`flex flex-col items-center justify-center py-8 ${className}`}>
         <div
-          className={`animate-spin rounded-full border-b-2 border-teal-600 ${spinnerSizes[size]}`}
+          className={`animate-spin rounded-full border-b-2 border-primary ${spinnerSizes[size]}`}
         />
         {displayMessage && (
           <p className="text-muted-foreground mt-2 text-sm">{displayMessage}</p>

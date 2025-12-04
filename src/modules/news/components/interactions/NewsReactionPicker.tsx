@@ -12,7 +12,7 @@ export function NewsReactionPicker({ onSelect }: NewsReactionPickerProps) {
       red: "text-red-500",
       blue: "text-blue-500",
       green: "text-green-500",
-      teal: "text-teal-500",
+      primary: "text-primary",
       yellow: "text-yellow-500",
       gray: "text-gray-500",
       purple: "text-purple-500",

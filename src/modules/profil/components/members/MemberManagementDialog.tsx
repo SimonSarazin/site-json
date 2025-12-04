@@ -57,7 +57,7 @@ export function MemberManagementDialog({ entity, open, onOpenChange }: MemberMan
           <div className="space-y-4">
             {/* Search */}
             <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder={t("MemberManagementDialog.searchPlaceholder")}
                 value={searchTerm}

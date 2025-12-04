@@ -328,7 +328,7 @@ export function EditProfileModal({
               const tabs = ENTITY_TABS[entityType || 'citoyens'] || ENTITY_TABS.citoyens;
               return (
                 <Tabs defaultValue="basic" className="w-full">
-                  <TabsList className={`grid w-full grid-cols-${tabs.length}`}>
+                  <TabsList className="w-full">
                     {tabs.map(tab => (
                       <TabsTrigger key={tab} value={tab} className="gap-1">
                         {t(`ProfileEdit.tabs.${TAB_TRANSLATION_KEYS[tab]}`)}

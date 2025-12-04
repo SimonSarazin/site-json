@@ -51,7 +51,7 @@ export function ProfileHeaderBannerOverlay({ section }: ProfileHeaderBannerOverl
           style={{ backgroundImage: coverImage ? `url('${coverImage}')` : undefined }}
         >
           {!coverImage && (
-            <div className="absolute inset-0 bg-gradient-to-br from-gray-300 to-gray-400 dark:from-gray-700 dark:to-gray-800 rounded-md" />
+            <div className="absolute inset-0 bg-gradient-to-br from-muted to-muted/80 rounded-md" />
           )}
 
           {/* Upload overlay */}
@@ -115,7 +115,7 @@ export function ProfileHeaderBannerOverlay({ section }: ProfileHeaderBannerOverl
                     onError={() => setImageError(true)}
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800">
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/80">
                     <span className="text-2xl font-bold text-muted-foreground">
                       {entityName.charAt(0).toUpperCase()}
                     </span>

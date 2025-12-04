@@ -134,7 +134,7 @@ export default function ProfileInfo({ section }: ProfileInfoProps) {
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-primary hover:text-teal-700 break-all text-sm font-medium"
+              className="text-primary hover:text-primary/80 break-all text-sm font-medium"
             >
               {url.replace(/^https?:\/\//, "")}
             </a>
@@ -223,7 +223,7 @@ export default function ProfileInfo({ section }: ProfileInfoProps) {
           typeof externalLinkRegistration === "string" && (
             <div className="mt-6 pt-6 border-t border-border">
               <Button
-                className="w-full bg-[#0092a2] hover:bg-teal-600"
+                className="w-full bg-primary hover:bg-primary/90"
                 onClick={() =>
                   window.open(externalLinkRegistration, "_blank")
                 }
