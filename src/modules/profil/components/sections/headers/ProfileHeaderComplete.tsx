@@ -72,7 +72,7 @@ export function ProfileHeaderComplete({ section }: ProfileHeaderCompleteProps) {
       )}
 
       {/* Avatar + Name + Actions */}
-      <div className="relative px-8 pb-6">
+      <div className="relative sm:px-6 pb-6">
         <div className="flex items-end gap-6 -mt-20">
           {/* Avatar */}
           {section.showAvatar !== false && (
@@ -179,7 +179,7 @@ export function ProfileHeaderComplete({ section }: ProfileHeaderCompleteProps) {
         </div>
 
         {/* Separator */}
-        <div className="mt-6 border-t border-border"></div>
+        {/* <div className="mt-6 border-t border-border"></div> */}
       </div>
 
       {/* Edit Modal */}

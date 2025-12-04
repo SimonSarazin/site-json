@@ -101,7 +101,7 @@ export default function ProfileTemplateDynamic() {
   }
 
   return (
-    <div className="bg-foreground -m-4 md:-m-8">
+    <div className="bg-foreground lg:-m-8">
       <div className="w-full mx-auto bg-background">
         {/* Padding wrapper pour les tabs - Même style que ProfileTemplateDefault ligne 213 */}
         <div className="px-4 py-4 sm:px-6 sm:py-6 md:px-8 md:py-8">

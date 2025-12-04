@@ -316,30 +316,32 @@ export function EditProfileModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>{t("ProfileEdit.title")}</DialogTitle>
         </DialogHeader>
 
         {/* Formulaire avec tabs */}
         <Form {...form}>
-          <form onSubmit={handleFormSubmit} className="space-y-6">
+          <form onSubmit={handleFormSubmit} className="flex-1 flex flex-col min-h-0">
             {(() => {
               const tabs = ENTITY_TABS[entityType || 'citoyens'] || ENTITY_TABS.citoyens;
               return (
-                <Tabs defaultValue="basic" className="w-full">
-                  <TabsList className="w-full">
-                    {tabs.map(tab => (
-                      <TabsTrigger key={tab} value={tab} className="gap-1">
-                        {t(`ProfileEdit.tabs.${TAB_TRANSLATION_KEYS[tab]}`)}
-                        {hasTabErrors(tab, form.formState.errors) && (
-                          <AlertCircle className="h-4 w-4 text-destructive" />
-                        )}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
+                <Tabs defaultValue="basic" className="w-full flex-1 flex flex-col min-h-0">
+                  <div className="overflow-x-auto scrollbar-hide -mx-6 px-6 shrink-0">
+                    <TabsList className="w-max min-w-full flex">
+                      {tabs.map(tab => (
+                        <TabsTrigger key={tab} value={tab} className="shrink-0 gap-1 px-2 sm:px-3 text-xs sm:text-sm">
+                          {t(`ProfileEdit.tabs.${TAB_TRANSLATION_KEYS[tab]}`)}
+                          {hasTabErrors(tab, form.formState.errors) && (
+                            <AlertCircle className="h-4 w-4 text-destructive shrink-0" />
+                          )}
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                  </div>
 
-                  <div className="mt-6">
+                  <div className="mt-6 flex-1 overflow-y-auto pr-4">
                     {tabs.includes('basic') && (
                       <TabsContent value="basic">
                         <EditBasicInfoTab form={form} entityType={entityType || ""} />
@@ -375,7 +377,7 @@ export function EditProfileModal({
               );
             })()}
 
-            <DialogFooter>
+            <DialogFooter className="mt-6 pt-4 border-t border-border">
               <Button
                 type="button"
                 variant="outline"

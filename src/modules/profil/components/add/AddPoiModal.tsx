@@ -136,7 +136,7 @@ export function AddPoiModal({ open, onOpenChange, parent }: AddPoiModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>{t("AddEntity.modal.poi.title")}</DialogTitle>
           <DialogDescription>
@@ -145,25 +145,28 @@ export function AddPoiModal({ open, onOpenChange, parent }: AddPoiModalProps) {
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <Tabs defaultValue="info" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="info" className="gap-1">
-                  {t("AddEntity.tabs.info")}
-                  {hasTabErrors('info', form.formState.errors) && (
-                    <AlertCircle className="h-4 w-4 text-destructive" />
-                  )}
-                </TabsTrigger>
-                <TabsTrigger value="location" className="gap-1">
-                  {t("AddEntity.tabs.location")}
-                  {hasTabErrors('location', form.formState.errors) && (
-                    <AlertCircle className="h-4 w-4 text-destructive" />
-                  )}
-                </TabsTrigger>
-              </TabsList>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col min-h-0">
+            <Tabs defaultValue="info" className="w-full flex-1 flex flex-col min-h-0">
+              <div className="overflow-x-auto scrollbar-hide -mx-6 px-6 shrink-0">
+                <TabsList className="w-max min-w-full flex">
+                  <TabsTrigger value="info" className="shrink-0 gap-1 px-2 sm:px-3 text-xs sm:text-sm">
+                    {t("AddEntity.tabs.info")}
+                    {hasTabErrors('info', form.formState.errors) && (
+                      <AlertCircle className="h-4 w-4 text-destructive shrink-0" />
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger value="location" className="shrink-0 gap-1 px-2 sm:px-3 text-xs sm:text-sm">
+                    {t("AddEntity.tabs.location")}
+                    {hasTabErrors('location', form.formState.errors) && (
+                      <AlertCircle className="h-4 w-4 text-destructive shrink-0" />
+                    )}
+                  </TabsTrigger>
+                </TabsList>
+              </div>
 
+              <div className="mt-4 flex-1 overflow-y-auto pr-4">
               {/* Tab Informations */}
-              <TabsContent value="info" className="space-y-4 mt-4">
+              <TabsContent value="info" className="space-y-4">
                 {/* Nom */}
                 <FormFieldName control={form.control} required />
 
@@ -221,12 +224,13 @@ export function AddPoiModal({ open, onOpenChange, parent }: AddPoiModalProps) {
               </TabsContent>
 
               {/* Tab Localisation */}
-              <TabsContent value="location" className="mt-4">
+              <TabsContent value="location">
                 <EditLocationTab form={form} />
               </TabsContent>
+              </div>
             </Tabs>
 
-            <DialogFooter>
+            <DialogFooter className="mt-6 pt-4 border-t border-border">
               <Button
                 type="button"
                 variant="outline"

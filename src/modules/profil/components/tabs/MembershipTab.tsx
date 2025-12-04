@@ -162,7 +162,6 @@ export function MembershipTab() {
           <TabsTrigger value="organizations" className="flex items-center gap-2">
             <Building2 className="w-4 h-4" />
             <span className="hidden sm:inline">{t("MembershipTab.tabs.organizations")}</span>
-            <span className="sm:hidden">{t("MembershipTab.tabs.orgsShort")}</span>
             {organizationsCount > 0 && (
               <Badge variant="secondary" className="ml-1 text-xs px-1.5 py-0.5">
                 {organizationsCount}
@@ -173,7 +172,6 @@ export function MembershipTab() {
           <TabsTrigger value="projects" className="flex items-center gap-2">
             <Briefcase className="w-4 h-4" />
             <span className="hidden sm:inline">{t("MembershipTab.tabs.projects")}</span>
-            <span className="sm:hidden">{t("MembershipTab.tabs.projectsShort")}</span>
             {projectsCount > 0 && (
               <Badge variant="secondary" className="ml-1 text-xs px-1.5 py-0.5">
                 {projectsCount}
@@ -184,7 +182,6 @@ export function MembershipTab() {
           <TabsTrigger value="pois" className="flex items-center gap-2">
             <MapPin className="w-4 h-4" />
             <span className="hidden sm:inline">{t("MembershipTab.tabs.pois")}</span>
-            <span className="sm:hidden">{t("MembershipTab.tabs.poisShort")}</span>
             {poisCount > 0 && (
               <Badge variant="secondary" className="ml-1 text-xs px-1.5 py-0.5">
                 {poisCount}
@@ -195,7 +192,6 @@ export function MembershipTab() {
           <TabsTrigger value="events" className="flex items-center gap-2">
             <Calendar className="w-4 h-4" />
             <span className="hidden sm:inline">{t("MembershipTab.tabs.events")}</span>
-            <span className="sm:hidden">{t("MembershipTab.tabs.eventsShort")}</span>
             {eventsCount > 0 && (
               <Badge variant="secondary" className="ml-1 text-xs px-1.5 py-0.5">
                 {eventsCount}
