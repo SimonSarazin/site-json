@@ -116,7 +116,7 @@ export function FriendRequestDialog() {
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <UserPlus className="w-5 h-5 text-teal-600" />
+            <UserPlus className="w-5 h-5 text-primary" />
             {t("FriendRequestDialog.title")}
           </DialogTitle>
         </DialogHeader>

@@ -22,7 +22,7 @@ export function EntityCard({
   const getIcon = () => {
     switch (type) {
       case "organizations":
-        return <Building2 className="w-5 h-5 text-teal-600" />;
+        return <Building2 className="w-5 h-5 text-primary" />;
       case "projects":
         return <Briefcase className="w-5 h-5 text-blue-600" />;
       case "poi":
@@ -118,7 +118,7 @@ export function EntityCard({
                   {type !== "poi" && entity.isAdmin?.() && (
                     <Badge
                       variant="outline"
-                      className="text-teal-600 border-teal-600"
+                      className="text-primary border-teal-600"
                     >
                       {t("MembershipTab.admin")}
                     </Badge>

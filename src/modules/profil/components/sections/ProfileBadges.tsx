@@ -53,7 +53,7 @@ export default function ProfileBadges({ section }: ProfileBadgesProps) {
     <div className="mb-8">
       {/* Titre avec icône */}
       <h2 className="text-2xl font-bold text-foreground mb-4 flex items-center gap-2">
-        {showIcon && <Award className="w-6 h-6 text-teal-600" />}
+        {showIcon && <Award className="w-6 h-6 text-primary" />}
         {resolvedTitle}
       </h2>
 
@@ -64,7 +64,7 @@ export default function ProfileBadges({ section }: ProfileBadgesProps) {
             key={index}
             className="bg-card border border-(--themecolor) rounded-lg px-4 py-2 flex items-center gap-2 shadow-sm hover:shadow-md transition-shadow"
           >
-            {showIcon && <Award className="w-4 h-4 text-teal-600" />}
+            {showIcon && <Award className="w-4 h-4 text-primary" />}
             <span className="text-foreground font-medium">
               {badge.name || "Badge"}
             </span>

@@ -175,7 +175,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
                     </div>
                   ) : isLoading ? (
                     <div className="text-center py-8">
-                      <Loader2 className="w-8 h-8 mx-auto text-teal-600 animate-spin mb-4" />
+                      <Loader2 className="w-8 h-8 mx-auto text-primary animate-spin mb-4" />
                       <p className="text-muted-foreground text-sm">
                         {t("InviteMemberDialog.searching")}
                       </p>

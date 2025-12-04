@@ -102,7 +102,7 @@ export default function ProfileTemplateDynamic() {
 
   return (
     <div className="bg-foreground -m-4 md:-m-8">
-      <div className="w-full mx-auto bg-background shadow-sm">
+      <div className="w-full mx-auto bg-background">
         {/* Padding wrapper pour les tabs - Même style que ProfileTemplateDefault ligne 213 */}
         <div className="px-4 py-4 sm:px-6 sm:py-6 md:px-8 md:py-8">
           {/* Tabs dynamiques */}
@@ -113,7 +113,7 @@ export default function ProfileTemplateDynamic() {
                   <TabsTrigger
                     key={tab.id}
                     value={tab.id}
-                    className="flex-shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
+                    className="flex-shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm text-foreground hover:text-foreground"
                   >
                     {t(tab.label)}
                   </TabsTrigger>

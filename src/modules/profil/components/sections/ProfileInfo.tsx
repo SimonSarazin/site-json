@@ -67,7 +67,7 @@ export default function ProfileInfo({ section }: ProfileInfoProps) {
             {membersCount !== null && (
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
-                  <Users className="w-5 h-5 text-teal-600" />
+                  <Users className="w-5 h-5 text-primary" />
                   <span className="text-foreground font-medium">
                     {t("ProfileTemplateDefault.members")}
                   </span>
@@ -80,7 +80,7 @@ export default function ProfileInfo({ section }: ProfileInfoProps) {
             {projectsCount !== null && (
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
-                  <Briefcase className="w-5 h-5 text-teal-600" />
+                  <Briefcase className="w-5 h-5 text-primary" />
                   <span className="text-foreground font-medium">
                     {t("ProfileTemplateDefault.projects")}
                   </span>
@@ -99,14 +99,14 @@ export default function ProfileInfo({ section }: ProfileInfoProps) {
           username &&
           typeof username === "string" && (
             <div className="flex items-center gap-3 bg-muted p-3 rounded-lg">
-              <span className="text-teal-600 font-semibold">@{username}</span>
+              <span className="text-primary font-semibold">@{username}</span>
             </div>
           )}
 
         {/* Email */}
         {section.showEmail !== false && email && typeof email === "string" && (
           <div className="flex items-center gap-3 p-2 hover:bg-muted rounded-lg transition-colors">
-            <Mail className="w-5 h-5 text-teal-600 shrink-0" />
+            <Mail className="w-5 h-5 text-primary shrink-0" />
             <span className="text-foreground break-all text-sm">{email}</span>
           </div>
         )}
@@ -116,10 +116,10 @@ export default function ProfileInfo({ section }: ProfileInfoProps) {
           mobile &&
           typeof mobile === "string" && (
             <div className="flex items-center gap-3 p-2 hover:bg-muted rounded-lg transition-colors">
-              <Phone className="w-5 h-5 text-teal-600 shrink-0" />
+              <Phone className="w-5 h-5 text-primary shrink-0" />
               <a
                 href={`tel:${mobile}`}
-                className="text-foreground font-medium text-sm hover:text-teal-600"
+                className="text-foreground font-medium text-sm hover:text-primary"
               >
                 {mobile}
               </a>
@@ -129,12 +129,12 @@ export default function ProfileInfo({ section }: ProfileInfoProps) {
         {/* Website URL */}
         {section.showWebsite !== false && url && typeof url === "string" && (
           <div className="flex items-center gap-3 p-2 hover:bg-muted rounded-lg transition-colors">
-            <Globe className="w-5 h-5 text-teal-600 shrink-0" />
+            <Globe className="w-5 h-5 text-primary shrink-0" />
             <a
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-teal-600 hover:text-teal-700 break-all text-sm font-medium"
+              className="text-primary hover:text-teal-700 break-all text-sm font-medium"
             >
               {url.replace(/^https?:\/\//, "")}
             </a>
@@ -146,7 +146,7 @@ export default function ProfileInfo({ section }: ProfileInfoProps) {
           address?.postalCode &&
           address.addressLocality && (
             <div className="flex items-start gap-3 p-2 hover:bg-muted rounded-lg transition-colors">
-              <MapPin className="w-5 h-5 text-teal-600 mt-1 shrink-0" />
+              <MapPin className="w-5 h-5 text-primary mt-1 shrink-0" />
               <div className="text-sm">
                 {address.streetAddress && (
                   <div className="text-foreground font-medium">
@@ -167,7 +167,7 @@ export default function ProfileInfo({ section }: ProfileInfoProps) {
             typeof openingDate === "number" ||
             openingDate instanceof Date) && (
             <div className="flex items-center gap-3 p-2 hover:bg-muted rounded-lg transition-colors">
-              <Calendar className="w-5 h-5 text-teal-600 shrink-0" />
+              <Calendar className="w-5 h-5 text-primary shrink-0" />
               <span className="text-foreground text-sm font-medium">
                 {t("ProfileTemplateDefault.openSince")}{" "}
                 {formatDate(openingDate as string | number | Date)}
@@ -182,7 +182,7 @@ export default function ProfileInfo({ section }: ProfileInfoProps) {
             typeof startDate === "number" ||
             startDate instanceof Date) && (
             <div className="flex items-start gap-3 p-2 hover:bg-muted rounded-lg transition-colors">
-              <Calendar className="w-5 h-5 text-teal-600 mt-0.5 shrink-0" />
+              <Calendar className="w-5 h-5 text-primary mt-0.5 shrink-0" />
               <div>
                 <p className="font-medium text-foreground text-sm">
                   {t("common.date")}
@@ -204,7 +204,7 @@ export default function ProfileInfo({ section }: ProfileInfoProps) {
         {section.showOrganizer !== false &&
           Object.keys(organizers).length > 0 && (
             <div className="flex items-start gap-3 p-2 hover:bg-muted rounded-lg transition-colors">
-              <Users className="w-5 h-5 text-teal-600 mt-0.5 shrink-0" />
+              <Users className="w-5 h-5 text-primary mt-0.5 shrink-0" />
               <div>
                 <p className="font-medium text-foreground text-sm">
                   {t("common.organizedBy")}
