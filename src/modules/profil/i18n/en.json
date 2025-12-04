@@ -468,8 +468,8 @@
     "fields": {
       "name": {
         "label": "Name",
-        "placeholder": "Your name",
-        "description": "The name displayed on your profile"
+        "placeholder": "Entity name",
+        "description": "The name that will be publicly displayed"
       },
       "slug": {
         "label": "URL identifier (slug)",
@@ -482,14 +482,14 @@
         "description": "Your birth date (optional)"
       },
       "shortDescription": {
-        "label": "Short bio",
-        "placeholder": "A short description of yourself",
-        "description": "Maximum 200 characters"
+        "label": "Short description",
+        "placeholder": "A brief description",
+        "description": "Summary in a few words (max 200 characters)"
       },
       "description": {
         "label": "Description",
-        "placeholder": "Describe yourself in a few sentences",
-        "description": "Present yourself in more detail"
+        "placeholder": "Detailed description",
+        "description": "Complete and detailed presentation"
       },
       "email": {
         "label": "Email",
@@ -608,10 +608,20 @@
       "openingHours": {
         "label": "Opening Hours",
         "title": "Opening Hours",
-        "description": "Define your weekly opening hours",
+        "description": "Define the weekly opening hours",
         "opens": "Opens",
         "closes": "Closes",
         "noDaysSelected": "Select days to define opening hours"
+      }
+    },
+    "eventDates": {
+      "openingHours": {
+        "label": "Event schedule",
+        "title": "Recurring schedule",
+        "description": "Define the days and times when the event takes place each week",
+        "opens": "Start",
+        "closes": "End",
+        "noDaysSelected": "Select days to define the schedule"
       }
     }
   },

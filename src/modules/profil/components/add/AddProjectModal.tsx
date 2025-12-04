@@ -128,19 +128,19 @@ export function AddProjectModal({ open, onOpenChange, parent }: AddProjectModalP
                 <ParentInfoReadonly parent={parent} />
 
                 {/* Nom */}
-                <FormFieldName control={form.control} required />
+                <FormFieldName control={form.control} required showDescription />
 
                 {/* Description courte */}
-                <FormFieldShortDescription control={form.control} />
+                <FormFieldShortDescription control={form.control} showDescription />
 
                 {/* URL (optionnel) */}
-                <FormFieldUrl control={form.control} />
+                <FormFieldUrl control={form.control} showDescription />
 
                 {/* Public */}
                 <FormFieldPublic control={form.control} />
 
                 {/* Tags */}
-                <FormFieldTags control={form.control} />
+                <FormFieldTags control={form.control} extendedTexts />
               </TabsContent>
 
               {/* Tab Localisation */}

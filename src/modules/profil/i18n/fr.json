@@ -468,8 +468,8 @@
     "fields": {
       "name": {
         "label": "Nom",
-        "placeholder": "Votre nom",
-        "description": "Le nom affiché sur votre profil"
+        "placeholder": "Nom de l'entité",
+        "description": "Le nom qui sera affiché publiquement"
       },
       "slug": {
         "label": "Identifiant URL (slug)",
@@ -482,14 +482,14 @@
         "description": "Votre date de naissance (optionnel)"
       },
       "shortDescription": {
-        "label": "Bio courte",
-        "placeholder": "Une courte description de vous",
-        "description": "Maximum 200 caractères"
+        "label": "Description courte",
+        "placeholder": "Une brève description",
+        "description": "Résumé en quelques mots (max 200 caractères)"
       },
       "description": {
         "label": "Description",
-        "placeholder": "Décrivez-vous en quelques phrases",
-        "description": "Présentez-vous plus en détail"
+        "placeholder": "Description détaillée",
+        "description": "Présentation complète et détaillée"
       },
       "email": {
         "label": "Email",
@@ -608,9 +608,19 @@
       "openingHours": {
         "label": "Horaires d'ouverture",
         "title": "Horaires d'ouverture",
-        "description": "Définissez vos horaires d'ouverture hebdomadaires",
+        "description": "Définissez les horaires d'ouverture hebdomadaires",
         "opens": "Ouverture",
         "closes": "Fermeture",
+        "noDaysSelected": "Sélectionnez des jours pour définir les horaires"
+      }
+    },
+    "eventDates": {
+      "openingHours": {
+        "label": "Horaires de l'événement",
+        "title": "Horaires récurrents",
+        "description": "Définissez les jours et heures où l'événement a lieu chaque semaine",
+        "opens": "Début",
+        "closes": "Fin",
         "noDaysSelected": "Sélectionnez des jours pour définir les horaires"
       }
     }

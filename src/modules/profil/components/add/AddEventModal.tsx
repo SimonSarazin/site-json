@@ -199,10 +199,10 @@ export function AddEventModal({ open, onOpenChange, parent }: AddEventModalProps
                 <ParentInfoReadonly parent={parent} labelKey="ProfileEdit.fields.organizer.label" />
 
                 {/* Nom */}
-                <FormFieldName control={form.control} required />
+                <FormFieldName control={form.control} required showDescription />
 
                 {/* Type d'événement */}
-                <FormFieldType control={form.control} variant="event" required />
+                <FormFieldType control={form.control} variant="event" required showDescription />
 
                 {/* Événement parent (sous-événement) */}
                 <FormField
@@ -225,10 +225,10 @@ export function AddEventModal({ open, onOpenChange, parent }: AddEventModalProps
                 />
 
                 {/* Description courte */}
-                <FormFieldShortDescription control={form.control} />
+                <FormFieldShortDescription control={form.control} showDescription />
 
                 {/* URL (optionnel) */}
-                <FormFieldUrl control={form.control} />
+                <FormFieldUrl control={form.control} showDescription />
 
                 {/* Public */}
                 <FormFieldPublic
@@ -237,7 +237,7 @@ export function AddEventModal({ open, onOpenChange, parent }: AddEventModalProps
                 />
 
                 {/* Tags */}
-                <FormFieldTags control={form.control} />
+                <FormFieldTags control={form.control} extendedTexts />
 
               </TabsContent>
 

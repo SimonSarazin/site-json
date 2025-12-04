@@ -18,6 +18,8 @@ interface OpeningHoursPickerProps {
   onChange: (value: OpeningHoursEntry[]) => void;
   className?: string;
   t: (key: string) => string;
+  /** Préfixe de traduction (défaut: "ProfileEdit.schedule.openingHours") */
+  translationPrefix?: string;
 }
 
 const getDayName = (dayKey: string) => {
@@ -49,6 +51,7 @@ export function OpeningHoursPicker({
   onChange,
   className,
   t,
+  translationPrefix = "ProfileEdit.schedule.openingHours",
 }: OpeningHoursPickerProps) {
   // Extraire les jours actifs avec leurs horaires
   const active = value
@@ -99,7 +102,7 @@ export function OpeningHoursPicker({
   return (
     <Card className={cn("p-4 space-y-4", className)}>
       <CardHeader>
-        <CardTitle>{t("ProfileEdit.schedule.openingHours.title")}</CardTitle>
+        <CardTitle>{t(`${translationPrefix}.title`)}</CardTitle>
       </CardHeader>
       <CardContent>
         {/* Sélecteur de jours */}
@@ -126,7 +129,7 @@ export function OpeningHoursPicker({
         <div className="space-y-4">
           {active.length === 0 && (
             <p className="text-sm text-muted-foreground text-center py-4">
-              {t("ProfileEdit.schedule.openingHours.noDaysSelected")}
+              {t(`${translationPrefix}.noDaysSelected`)}
             </p>
           )}
 
@@ -142,7 +145,7 @@ export function OpeningHoursPicker({
                 {/* Heure d'ouverture */}
                 <div>
                   <Label className="flex justify-center pb-2">
-                    {t("ProfileEdit.schedule.openingHours.opens")}
+                    {t(`${translationPrefix}.opens`)}
                   </Label>
                   <TimePicker
                     date={
@@ -163,7 +166,7 @@ export function OpeningHoursPicker({
                 {/* Heure de fermeture */}
                 <div>
                   <Label className="flex justify-center pb-2">
-                    {t("ProfileEdit.schedule.openingHours.closes")}
+                    {t(`${translationPrefix}.closes`)}
                   </Label>
                   <TimePicker
                     date={

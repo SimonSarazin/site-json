@@ -130,17 +130,18 @@ export function EditEventDatesTab({ form }: EditEventDatesTabProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>
-                {t("ProfileEdit.schedule.openingHours.label")}
+                {t("ProfileEdit.eventDates.openingHours.label")}
               </FormLabel>
               <FormControl>
                 <OpeningHoursPicker
                   value={field.value}
                   onChange={field.onChange}
                   t={t}
+                  translationPrefix="ProfileEdit.eventDates.openingHours"
                 />
               </FormControl>
               <FormDescription>
-                {t("ProfileEdit.schedule.openingHours.description")}
+                {t("ProfileEdit.eventDates.openingHours.description")}
               </FormDescription>
               <TranslatedFormMessage />
             </FormItem>

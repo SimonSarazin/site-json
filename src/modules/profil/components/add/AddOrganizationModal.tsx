@@ -141,10 +141,10 @@ export function AddOrganizationModal({ open, onOpenChange, parent }: AddOrganiza
                 <ParentInfoReadonly parent={parent} />
 
                 {/* Nom */}
-                <FormFieldName control={form.control} required />
+                <FormFieldName control={form.control} required showDescription />
 
                 {/* Type d'organisation */}
-                <FormFieldType control={form.control} variant="organization" required />
+                <FormFieldType control={form.control} variant="organization" required showDescription />
 
                 {/* Role dans l'organisation */}
                 <FormField
@@ -170,7 +170,7 @@ export function AddOrganizationModal({ open, onOpenChange, parent }: AddOrganiza
                 />
 
                 {/* Description courte */}
-                <FormFieldShortDescription control={form.control} />
+                <FormFieldShortDescription control={form.control} showDescription />
 
                 {/* Email (optionnel) */}
                 <FormField
@@ -192,10 +192,10 @@ export function AddOrganizationModal({ open, onOpenChange, parent }: AddOrganiza
                 />
 
                 {/* URL (optionnel) */}
-                <FormFieldUrl control={form.control} />
+                <FormFieldUrl control={form.control} showDescription />
 
                 {/* Tags */}
-                <FormFieldTags control={form.control} />
+                <FormFieldTags control={form.control} extendedTexts />
               </TabsContent>
 
               {/* Tab Localisation */}

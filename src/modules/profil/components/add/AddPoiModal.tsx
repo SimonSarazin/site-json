@@ -172,7 +172,7 @@ export function AddPoiModal({ open, onOpenChange, parent }: AddPoiModalProps) {
                 <ParentInfoReadonly parent={parent} />
 
                 {/* Nom */}
-                <FormFieldName control={form.control} required />
+                <FormFieldName control={form.control} required showDescription />
 
                 {/* Type de POI */}
                 <FormField
@@ -221,7 +221,7 @@ export function AddPoiModal({ open, onOpenChange, parent }: AddPoiModalProps) {
                 />
 
                 {/* Tags */}
-                <FormFieldTags control={form.control} />
+                <FormFieldTags control={form.control} extendedTexts />
 
               </TabsContent>
 

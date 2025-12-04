@@ -88,10 +88,7 @@ export function ProfileHeaderComplete({ section }: ProfileHeaderCompleteProps) {
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/80">
                     <div className="text-center p-2">
-                      <div className="text-4xl mb-1">✒️</div>
-                      <div className="text-xs font-bold text-foreground leading-tight">
-                        {entityName.split(" ").slice(0, 2).join(" ")}
-                      </div>
+                      <div className="text-4xl mb-1">{entityName.charAt(0).toUpperCase()}</div>
                     </div>
                   </div>
                 )}
