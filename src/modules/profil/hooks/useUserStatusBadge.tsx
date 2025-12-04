@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { isOrganization, isProject, isEvent, isUser } from "@/lib/getTypedEntity";
 import type { User, Organization, EntityTypes } from "@communecter/cocolight-api-client";
 import { Crown, User as UserIcon, Mail, Clock } from "lucide-react";
+import { useCocolight } from "@/hooks/useCocolight";
 
 /**
  * Hook pour obtenir le badge de statut d'un utilisateur
@@ -10,9 +11,10 @@ import { Crown, User as UserIcon, Mail, Clock } from "lucide-react";
  */
 export function useUserStatusBadge() {
   const t = useT("modules/profil");
+  const { me } = useCocolight();
 
   const getUserStatusBadge = (user: User | Organization, entity: EntityTypes | null) => {
-    if (!entity || !isUser(user)) return null;
+    if (!entity || !isUser(user) || !me?.isConnected) return null;
 
     // États spécifiques selon le type d'entité
     if (isOrganization(entity)) {
