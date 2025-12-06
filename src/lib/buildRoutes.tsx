@@ -204,8 +204,6 @@ async function buildRoutesAsync(
     path: p.path.replace(/^\/+/, ""),   // "about" au lieu de "/about"
     element: <SiteRenderer />,            // le rendu piloté par JSON
     loader: async ({ request }: LoaderFunctionArgs) => {
-      console.log("[SSR Loader] Starting, queryClient exists:", !!queryClient);
-
       // Si pas de queryClient, skip le pré-chargement (côté client)
       if (!queryClient) return null;
 
