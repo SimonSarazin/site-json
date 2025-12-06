@@ -12,6 +12,11 @@ import { Writable }                             from 'node:stream';
 import { dehydrate, type DehydratedState, HydrationBoundary, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { getBaseUrl } from './lib/constant/common';
 import { initApi } from './lib/apiClient';
+import {
+  ChunkCollectorContext,
+  createChunkCollector,
+  preloadAll
+} from 'vite-preload';
 
 const STREAM_TIMEOUT_MS = 30_000;
 
@@ -57,6 +62,15 @@ export async function render(
     shouldDehydrateQuery: q => q.queryKey[0] !== "cocolight-init",
   });
 
+  /* 4.  Précharger tous les composants lazy AVANT le rendu ------------ */
+  await preloadAll();
+
+  /* 5.  Créer le collecteur de chunks pour injecter les modulepreload -- */
+  const collector = createChunkCollector({
+    manifest: './dist/client/.vite/manifest.json',
+    entry: 'index.html',
+  });
+
   /* --------------------------------------------------------- */
   /*  Streaming React 19                                       */
   /* --------------------------------------------------------- */
@@ -64,11 +78,13 @@ export async function render(
 
     const { pipe, abort } = renderToPipeableStream(
       <HelmetProvider context={helmetCtx}>
-        <QueryClientProvider client={queryClient}>
-          <HydrationBoundary state={dehydratedState}>
-            <StaticRouterProvider router={router} context={context} />
-          </HydrationBoundary>
-        </QueryClientProvider>
+        <ChunkCollectorContext collector={collector}>
+          <QueryClientProvider client={queryClient}>
+            <HydrationBoundary state={dehydratedState}>
+              <StaticRouterProvider router={router} context={context} />
+            </HydrationBoundary>
+          </QueryClientProvider>
+        </ChunkCollectorContext>
       </HelmetProvider>,
       {
         /* Module ESM en dev, script classique en prod */
@@ -78,8 +94,12 @@ export async function render(
             : [],
         onShellReady() {
           /* ⬇️  head prêt : on délègue son injection au serveur HTTP      */
+          /* Récupérer les tags de preload pour les chunks lazy utilisés   */
+          const preloadTags = collector.getTags();
+
           onHead(
-            `${helmetCtx.helmet?.title ?? ''}
+            `${preloadTags}
+             ${helmetCtx.helmet?.title ?? ''}
              ${helmetCtx.helmet?.meta ?? ''}
              ${helmetCtx.helmet?.link ?? ''}`,
              dehydratedState

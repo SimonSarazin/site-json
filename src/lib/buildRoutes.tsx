@@ -108,7 +108,7 @@ async function prefetchSearchResults(
         }
 
         if (defaultTags && Array.isArray(defaultTags) && defaultTags.length > 0) {
-          apiParam.defaultTags = defaultTags;
+          apiParam.searchTags = defaultTags;
         }
 
         if (!apiParam.searchType) {
@@ -204,6 +204,8 @@ async function buildRoutesAsync(
     path: p.path.replace(/^\/+/, ""),   // "about" au lieu de "/about"
     element: <SiteRenderer />,            // le rendu piloté par JSON
     loader: async ({ request }: LoaderFunctionArgs) => {
+      console.log("[SSR Loader] Starting, queryClient exists:", !!queryClient);
+
       // Si pas de queryClient, skip le pré-chargement (côté client)
       if (!queryClient) return null;
 
@@ -238,7 +240,7 @@ async function buildRoutesAsync(
                 tags: {},
                 type: baseParams.defaultTypes
                   ? { type: baseParams.defaultTypes as string[] }
-                  : {},
+                  : null,
                 map: (props.showMap as boolean) || false,
               };
 
@@ -252,7 +254,6 @@ async function buildRoutesAsync(
           });
         })
       );
-
       return null;
     },
   }));

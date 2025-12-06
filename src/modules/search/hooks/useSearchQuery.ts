@@ -44,6 +44,15 @@ export function useSearchQuery({
   const { entity, helper } = useCocolight();
   const queryClient = useQueryClient();
 
+  const clientQueryKey = [
+    queryKeyPrefix,
+    searchText,
+    JSON.stringify(searchTags),
+    JSON.stringify(searchType),
+    mapUsed,
+    JSON.stringify(baseParams),
+  ];
+
   const {
     data,
     error,
@@ -53,15 +62,8 @@ export function useSearchQuery({
     isPending,
     refetch,
   } = useInfiniteQueryScrollNext<SearchEntity>({
-    queryKey: [
-      queryKeyPrefix,
-      searchText,
-      JSON.stringify(searchTags),
-      JSON.stringify(searchType),
-      mapUsed,
-      JSON.stringify(baseParams),
-    ],
-    queryFn: async ({ pageParam } = { pageParam: undefined }) => {
+    queryKey: clientQueryKey,
+    queryFn: async ({ pageParam }) => {
       if (!entity) {
         throw new Error("API non initialisée - entity manquante");
       }
@@ -111,7 +113,7 @@ export function useSearchQuery({
       if (type && type.length > 0) param.searchType = type as GlobalAutocompleteCostumData["searchType"];
       if (!type && defaultTypes) param.searchType = defaultTypes;
       if (defaultTags && defaultTags.length > 0) {
-        param.defaultTags = defaultTags;
+        param.searchTags = defaultTags;
       }
 
       if (!param.searchType) {
@@ -129,15 +131,24 @@ export function useSearchQuery({
           return result.next();
         }
         return result;
-      } catch (err) {
-        console.error("Error fetching search results:", err);
-        throw err;
+      } catch (error) {
+        console.error("Error fetching search results:", error);
+        if (error && typeof error === "object") {
+        console.error("Error details:", {
+          message: (error as Record<string, unknown>).message,
+          validationErrors: (error as Record<string, unknown>).validationErrors,
+          details: (error as Record<string, unknown>).details,
+          response: (error as Record<string, unknown>).response,
+          data: (error as Record<string, unknown>).data,
+        });
+      }
+        throw error;
       }
     },
     options: {
       enabled: !!entity,
       staleTime: 60 * 1000,
-      initialPageParam: [],
+      initialPageParam: undefined,
     },
   });
 

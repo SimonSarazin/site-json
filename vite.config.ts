@@ -3,9 +3,11 @@ import tailwindcss from "@tailwindcss/vite"
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { visualizer } from 'rollup-plugin-visualizer';
+import preloadPlugin from 'vite-preload/plugin';
 
 export default defineConfig(({ mode, isSsrBuild }) => ({
   plugins: [
+    preloadPlugin(), // Doit être AVANT react() pour tracer les lazy imports
     react(),
     tailwindcss(),
     // Generate bundle analysis report
@@ -28,6 +30,7 @@ export default defineConfig(({ mode, isSsrBuild }) => ({
     'process.env.NODE_ENV': JSON.stringify(mode),
   },
   build: {
+    manifest: true, // Génère le manifest.json pour vite-preload
     rollupOptions: isSsrBuild ? {
       input: 'src/entry-server.tsx',
       output: {
