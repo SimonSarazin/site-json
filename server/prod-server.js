@@ -1,6 +1,5 @@
 import express from "express";
 import compression from "compression";
-import serveStatic from "serve-static";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -14,7 +13,7 @@ const app = express();
 
 app.use(compression());   // gzip
 app.use(
-  serveStatic(path.resolve(__dirname, "../dist/client"), { index: false })
+  express.static(path.resolve(__dirname, "../dist/client"), { index: false })
 );
 
 /* ----------------------------------------------------------------------
