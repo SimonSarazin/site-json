@@ -305,7 +305,7 @@ function MultipleSelector({
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [debouncedSearchTerm, groupBy, open, triggerSearchOnFocus]);
 
-    const CreatableItem = (): JSX.Element | undefined => {
+    const CreatableItem = (): React.ReactNode => {
       if (!creatable) return undefined;
       if (
         isOptionsExist(options, [{ value: inputValue, label: inputValue }]) ||
@@ -350,7 +350,7 @@ function MultipleSelector({
       return undefined;
     };
 
-    const EmptyItem = React.useCallback((): JSX.Element | undefined => {
+    const EmptyItem = React.useCallback((): React.ReactNode => {
       if (!emptyIndicator) return undefined;
 
       // For async search that showing emptyIndicator

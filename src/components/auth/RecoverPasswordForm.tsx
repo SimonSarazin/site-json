@@ -1,4 +1,4 @@
-import {
+import React, {
   useState,
   useEffect,
   type ChangeEvent,
@@ -17,7 +17,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router";
 import { CheckCircle, ArrowLeft } from "lucide-react";
 
-export default function RecoverPasswordForm(): JSX.Element {
+export default function RecoverPasswordForm(): React.ReactNode {
   /* ------------------------------------------------------------------- */
   const [email, setEmail]           = useState<string>("");
   const [loadingRecover, setLoad]   = useState<boolean>(false);

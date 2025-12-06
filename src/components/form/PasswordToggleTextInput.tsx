@@ -1,4 +1,4 @@
-import {
+import React, {
   useState,
   type ChangeEventHandler,
   type InputHTMLAttributes,
@@ -28,7 +28,7 @@ export default function PasswordToggleTextInput({
   placeholder = "Mot de passe",
   className,
   ...props
-}: PasswordToggleTextInputProps): JSX.Element {
+}: PasswordToggleTextInputProps): React.ReactNode {
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
   return (

@@ -377,7 +377,7 @@ interface TimePeriodSelectProps extends React.ComponentPropsWithoutRef<"div"> {
   onDateChange?: (date: Date) => void;
   onLeftFocus?: () => void;
   onRightFocus?: () => void;
-  buttonRef?: React.RefObject<HTMLButtonElement>;
+  buttonRef?: React.RefObject<HTMLButtonElement | null>;
 }
 
 function TimePeriodSelect({
@@ -439,7 +439,7 @@ interface TimePickerInputProps extends Omit<React.ComponentPropsWithoutRef<"inpu
   onRightFocus?: () => void;
   min?: Date;
   max?: Date;
-  inputRef?: React.RefObject<HTMLInputElement>;
+  inputRef?: React.RefObject<HTMLInputElement | null>;
 }
 
 function TimePickerInput({

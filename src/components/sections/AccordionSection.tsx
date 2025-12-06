@@ -1,3 +1,4 @@
+import React from "react";
 import {
   Accordion,
   AccordionContent,
@@ -8,7 +9,7 @@ import { useLocalization } from "@/hooks/useLocalization";
 import { AccordionSectionProps } from "@/types/site-schema";
 import { type AccordionMultipleProps, type AccordionSingleProps } from "@radix-ui/react-accordion";
 
-export function AccordionSection({ id, props }: { id?: string; props: AccordionSectionProps }): JSX.Element {
+export function AccordionSection({ id, props }: { id?: string; props: AccordionSectionProps }): React.ReactNode {
   const { t } = useLocalization();
   const { items, allowMultiple = false } = props;
 

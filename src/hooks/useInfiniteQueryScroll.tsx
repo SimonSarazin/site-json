@@ -55,7 +55,7 @@ export function useInfiniteQueryScroll<TData, TError = Error>({
     ...options,
   });
 
-  const observerRef = useRef<IntersectionObserver>();
+  const observerRef = useRef<IntersectionObserver | null>(null);
   const lastItemRef: RefCallback<HTMLElement> = useCallback(
     (node) => {
       if (isLoading || isFetchingNextPage) return;

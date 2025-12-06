@@ -1,4 +1,4 @@
-import {
+import React, {
   useState,
   useEffect,
   type ChangeEvent,
@@ -24,7 +24,7 @@ interface RegisterFormState {
   confirmPassword: string;
 }
 
-export default function RegisterForm(): JSX.Element {
+export default function RegisterForm(): React.ReactNode {
   /* ------------------------------------------------------------------- */
   const [formData, setFormData] = useState<RegisterFormState>({
     name: "",

@@ -1,4 +1,4 @@
-import {
+import React, {
   useState,
   useEffect,
   type ChangeEvent,
@@ -25,7 +25,7 @@ interface LoginFormProps {
   hideBackButton?: boolean;
 }
 
-export default function LoginForm({ onSuccess, hideBackButton = false }: LoginFormProps = {}): JSX.Element {
+export default function LoginForm({ onSuccess, hideBackButton = false }: LoginFormProps = {}): React.ReactNode {
   const [email, setEmail]           = useState<string>("");
   const [password, setPassword]     = useState<string>("");
   const [remember, setRemember]     = useState<boolean>(false);
