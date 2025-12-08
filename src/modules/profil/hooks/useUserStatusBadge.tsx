@@ -14,7 +14,7 @@ export function useUserStatusBadge() {
   const { me } = useCocolight();
 
   const getUserStatusBadge = (user: User | Organization, entity: EntityTypes | null) => {
-    if (!entity || !isUser(user) || !me?.isConnected) return null;
+    if (!entity || !isUser(user) || !me?.isConnected || !entity?.isConnected || !user?.userContext) return null;
 
     // États spécifiques selon le type d'entité
     if (isOrganization(entity)) {

@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { useInfiniteQueryScroll } from "@/hooks/useInfiniteQueryScroll";
 import { useCocolight } from "@/hooks/useCocolight";
+import { useHydratedUserContextId } from "@/hooks/useHydratedUserContextId";
 import { transformToEntityInstance } from "@/lib/entityTransform";
 import type { EntityTypes, News } from "@communecter/cocolight-api-client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -32,12 +33,13 @@ export function useNewsQuery({
 }: UseNewsQueryProps) {
   const { helper } = useCocolight();
   const queryClient = useQueryClient();
-
   const canFetchNews = entityType ? NEWS_SUPPORTED_TYPES.has(entityType) : true;
 
+  // userContextId compatible SSR : null au premier render, puis la vraie valeur après hydratation
+  const userContextId = useHydratedUserContextId();
   const queryKey = useMemo(() => {
-    return NEWS_QUERY_KEYS.NEWS(entity?.id ?? null);
-  }, [entity?.id]);
+    return NEWS_QUERY_KEYS.NEWS(entity?.id ?? null, userContextId);
+  }, [entity?.id, userContextId]);
 
   const {
     data,

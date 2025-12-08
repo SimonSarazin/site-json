@@ -1,9 +1,11 @@
 import { useQuery, useQueryClient, type UseQueryOptions } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo } from "react";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
+import { useHydratedUserContextId } from "@/hooks/useHydratedUserContextId";
 import { transformToEntityInstance } from "@/lib/entityTransform";
 import cocolightApiClient from "@communecter/cocolight-api-client";
+import { QUERY_KEYS } from "@/modules/profil/constants/queryKeys";
 
 const { isReactive } = cocolightApiClient;
 
@@ -18,11 +20,14 @@ interface QueryEntityBySlugProps {
 export const useEntityBySlugQuery = ({ slug, options = {} }: QueryEntityBySlugProps) => {
   const { entity, loading, helper, me } = useCocolight();
   const queryClient = useQueryClient();
-  const prevUserContextRef = useRef<unknown>(undefined);
+
+  // userContextId compatible SSR : null au premier render, puis la vraie valeur après hydratation
+  const userContextId = useHydratedUserContextId();
+  const queryKey = QUERY_KEYS.ELEMENT_ABOUT(slug ?? null, userContextId);
 
   // Le type unknown car l'API peut retourner soit une instance, soit du JSON déshydraté
   const { data, isLoading, isError, error, refetch } = useQuery<unknown>({
-    queryKey: ["element-about", slug],
+    queryKey,
     queryFn: async () => {
       if (!slug) throw new Error("Slug manquant");
       if (!entity) throw new Error("API non initialisée");
@@ -37,41 +42,26 @@ export const useEntityBySlugQuery = ({ slug, options = {} }: QueryEntityBySlugPr
     ...options,
   });
 
-  // userContext change donc connecter donc refetch avec l'entity connecter
-  useEffect(() => {
-    const currentUserContext = entity?.userContext ?? null;
-    const prevUserContext = prevUserContextRef.current ?? null;
-
-    // Comparer avec la valeur précédente (null et undefined sont équivalents)
-    if (currentUserContext !== prevUserContext) {
-      // Mettre à jour la ref avec la nouvelle valeur
-      prevUserContextRef.current = currentUserContext;
-
-      // Refetch à chaque changement (connexion, déconnexion, changement d'utilisateur)
-      refetch();
-    }
-  }, [entity?.userContext, refetch]);
-
   // Transformer le cache une seule fois après l'hydratation SSR
   useEffect(() => {
     if (!slug || !entity) return;
 
     // Si c'est notre propre profil et que me est disponible, utiliser me
     if (me && slug === me.slug) {
-      const currentData = queryClient.getQueryData(["element-about", slug]);
+      const currentData = queryClient.getQueryData(queryKey);
 
       // Remplacer le cache SSR par me (qui a les données complètes)
       if (currentData !== me) {
         if (import.meta.env.DEV) {
           console.log("🔄 Remplacement des données SSR par 'me' (profil connecté)");
         }
-        queryClient.setQueryData(["element-about", slug], me);
+        queryClient.setQueryData(queryKey, me);
       }
       return; // Sortir, pas besoin de transformation
     }
 
     // Sinon, transformer les données SSR en Proxy (comportement actuel)
-    const currentData = queryClient.getQueryData<unknown>(["element-about", slug]);
+    const currentData = queryClient.getQueryData<unknown>(queryKey);
 
     if (currentData && typeof currentData === 'object' && currentData !== null && 'serverData' in currentData) {
       // Vérifier si c'est un plain object (après SSR)
@@ -80,7 +70,7 @@ export const useEntityBySlugQuery = ({ slug, options = {} }: QueryEntityBySlugPr
           console.log("🔄 Transformation du cache de l'entité après hydratation SSR");
         }
         // Transformer le cache en instance Proxy
-        queryClient.setQueryData(["element-about", slug],
+        queryClient.setQueryData(queryKey,
           transformToEntityInstance<SearchEntity>(currentData, helper, entity)
         );
       }

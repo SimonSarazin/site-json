@@ -30,7 +30,7 @@ export function useUpdateProfile(entity: EntityTypes | null) {
     },
     successKey: "toast.profile.updateSuccess",
     errorKey: "toast.profile.updateError",
-    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT(entity.slug)] : [],
+    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : [],
   });
 }
 
@@ -51,7 +51,7 @@ export function useUploadProfileImage(entity: EntityTypes | null) {
     },
     successKey: "toast.profile.imageUploadSuccess",
     errorKey: "toast.profile.imageUploadError",
-    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT(entity.slug)] : [],
+    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : [],
   });
 }
 

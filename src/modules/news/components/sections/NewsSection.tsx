@@ -55,8 +55,8 @@ export const NewsSection = ({ id, props }: NewsSectionProps) => {
   // Hook pour générer les URLs de détail des news
   const detailUrlGenerator = useNewsDetailUrlGenerator(entity);
 
-  // Mutation pour la suppression (conditionné sur l'existence de l'entité)
-  const deleteNewsMutation = entity ? useDeleteNews(entity, { optimistic: true }) : null;
+  // Mutation pour la suppression (hook appelé inconditionnellement pour respecter Rules of Hooks)
+  const deleteNewsMutation = useDeleteNews(entity, { optimistic: true });
 
   const {
     news,
@@ -93,7 +93,7 @@ export const NewsSection = ({ id, props }: NewsSectionProps) => {
   };
 
   const confirmDelete = () => {
-    if (selectedNews && deleteNewsMutation) {
+    if (selectedNews && entity) {
       deleteNewsMutation.mutate(
         { news: selectedNews },
         {
@@ -304,7 +304,7 @@ export const NewsSection = ({ id, props }: NewsSectionProps) => {
               if (!open) setSelectedNews(null);
             }}
             onConfirm={confirmDelete}
-            isPending={deleteNewsMutation?.isPending || false}
+            isPending={deleteNewsMutation.isPending}
           />
 
           <ShareNewsDialog

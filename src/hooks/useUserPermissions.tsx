@@ -103,7 +103,7 @@ export function useUserPermissions(
     };
 
     // Si pas d'entité
-    if (!entity?.isConnected || !entity?.userContext) {
+    if (!entity?.isConnected) {
       return defaultPermissions;
     }
 
@@ -115,8 +115,15 @@ export function useUserPermissions(
       };
     }
 
+    // Pour son propre profil, pas besoin de userContext
+    // Pour les autres entités, userContext est requis pour calculer les permissions
+    const isOwnProfile = isUser(entity) && me.slug === entity.slug;
+    if (!isOwnProfile && !entity?.userContext) {
+      return defaultPermissions;
+    }
+
     // CAS 1: Profil de l'utilisateur connecté
-    if (isUser(entity) && me.slug === entity.slug) {
+    if (isOwnProfile) {
       // Vérifier si l'utilisateur est l'auteur de la news
       const isNewsAuthor = news?.isAuthor() ?? false;
 

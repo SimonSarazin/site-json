@@ -4,6 +4,7 @@ import type { News, Comment } from "@communecter/cocolight-api-client";
 import cocolightApiClient from "@communecter/cocolight-api-client";
 import { transformToEntityInstance } from "@/lib/entityTransform";
 import { useCocolight } from "@/hooks/useCocolight";
+import { useHydratedUserContextId } from "@/hooks/useHydratedUserContextId";
 import { NEWS_QUERY_KEYS } from "../constants/queryKeys";
 
 const { isReactive } = cocolightApiClient;
@@ -18,9 +19,12 @@ const { isReactive } = cocolightApiClient;
 export function useNewsCommentsQuery(news: News | null) {
   const queryClient = useQueryClient();
   const { helper } = useCocolight();
+  // userContextId compatible SSR : null au premier render, puis la vraie valeur après hydratation
+  const userContextId = useHydratedUserContextId();
+  const queryKey = NEWS_QUERY_KEYS.NEWS_COMMENTS(news?.id ?? null, userContextId);
 
   const query = useQuery({
-    queryKey: NEWS_QUERY_KEYS.NEWS_COMMENTS(news?.id ?? null),
+    queryKey,
     queryFn: async () => {
       if (!news?.id) {
         throw new Error("Missing newsId or api");
@@ -38,7 +42,7 @@ export function useNewsCommentsQuery(news: News | null) {
   useEffect(() => {
     if (!news?.id) return;
 
-    const currentData = queryClient.getQueryData<Comment[]>(NEWS_QUERY_KEYS.NEWS_COMMENTS(news.id));
+    const currentData = queryClient.getQueryData<Comment[]>(queryKey);
 
     if (currentData && currentData.length > 0) {
       // Vérifier si c'est des plain objects (après SSR)
@@ -48,7 +52,7 @@ export function useNewsCommentsQuery(news: News | null) {
           console.log("🔄 Transformation du cache des commentaires après hydratation SSR");
         }
         // Transformer tout le cache en instances Proxy
-        queryClient.setQueryData(NEWS_QUERY_KEYS.NEWS_COMMENTS(news.id),
+        queryClient.setQueryData(queryKey,
           currentData.map(item => transformToEntityInstance<Comment>(item, helper, news))
         );
       }

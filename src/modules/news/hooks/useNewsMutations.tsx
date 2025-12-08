@@ -4,6 +4,7 @@ import { useT } from "@/hooks/useT";
 import { useCocolight } from "@/hooks/useCocolight";
 import type { News, EntityTypes } from "@communecter/cocolight-api-client";
 import { NEWS_QUERY_KEYS } from "../constants/queryKeys";
+import { useHydratedUserContextId } from "@/hooks/useHydratedUserContextId";
 
 interface MutationOptions {
   optimistic?: boolean;
@@ -22,10 +23,12 @@ interface NewsData {
  * @param entity - L'entité propriétaire (pour mettre à jour le cache)
  * @param options - Options incluant optimistic updates
  */
-export function useDeleteNews(entity: EntityTypes, options?: MutationOptions) {
+export function useDeleteNews(entity: EntityTypes | null, options?: MutationOptions) {
   const queryClient = useQueryClient();
   const t = useT("modules/news");
-  const entityId = entity.id || "";
+  const entityId = entity?.id || "";
+  const userContextId = useHydratedUserContextId();
+  const newsQueryKey = NEWS_QUERY_KEYS.NEWS(entityId, userContextId);
 
   return useMutation({
     mutationFn: async ({ news }: { news: News }) => {
@@ -35,15 +38,15 @@ export function useDeleteNews(entity: EntityTypes, options?: MutationOptions) {
 
     onMutate: options?.optimistic
       ? async (variables) => {
-          await queryClient.cancelQueries({ queryKey: NEWS_QUERY_KEYS.NEWS(entityId) });
+          await queryClient.cancelQueries({ queryKey: newsQueryKey });
 
           const previousData = queryClient.getQueryData<{ pages: News[][] }>(
-            NEWS_QUERY_KEYS.NEWS(entityId)
+            newsQueryKey
           );
 
           // Optimistic update: remove from cache
           queryClient.setQueryData<{ pages: News[][] }>(
-            NEWS_QUERY_KEYS.NEWS(entityId),
+            newsQueryKey,
             (old) => {
               if (!old) return old;
 
@@ -62,7 +65,7 @@ export function useDeleteNews(entity: EntityTypes, options?: MutationOptions) {
 
     onError: (error, _variables, context) => {
       if (context?.previousData) {
-        queryClient.setQueryData(NEWS_QUERY_KEYS.NEWS(entityId), context.previousData);
+        queryClient.setQueryData(newsQueryKey, context.previousData);
       }
 
       toast.error(t("toast.deleteError"), {
@@ -71,7 +74,7 @@ export function useDeleteNews(entity: EntityTypes, options?: MutationOptions) {
     },
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: NEWS_QUERY_KEYS.NEWS(entityId) });
+      queryClient.invalidateQueries({ queryKey: NEWS_QUERY_KEYS.NEWS_PREFIX(entityId) });
       toast.success(t("toast.deleteSuccess"));
     },
   });
@@ -86,6 +89,8 @@ export function useEditNews(entity: EntityTypes, options?: MutationOptions) {
   const queryClient = useQueryClient();
   const t = useT("modules/news");
   const entityId = entity.id || "";
+  const userContextId = useHydratedUserContextId();
+  const newsQueryKey = NEWS_QUERY_KEYS.NEWS(entityId, userContextId);
 
   return useMutation({
     mutationFn: async ({
@@ -139,15 +144,15 @@ export function useEditNews(entity: EntityTypes, options?: MutationOptions) {
 
     onMutate: options?.optimistic
       ? async (variables) => {
-          await queryClient.cancelQueries({ queryKey: NEWS_QUERY_KEYS.NEWS(entityId) });
+          await queryClient.cancelQueries({ queryKey: newsQueryKey });
 
           const previousData = queryClient.getQueryData<{ pages: News[][] }>(
-            NEWS_QUERY_KEYS.NEWS(entityId)
+            newsQueryKey
           );
 
           // Optimistic update: mutate the proxy directly
           queryClient.setQueryData<{ pages: News[][] }>(
-            NEWS_QUERY_KEYS.NEWS(entityId),
+            newsQueryKey,
             (old) => {
               if (!old) return old;
 
@@ -171,7 +176,7 @@ export function useEditNews(entity: EntityTypes, options?: MutationOptions) {
 
     onError: (error, _variables, context) => {
       if (context?.previousData) {
-        queryClient.setQueryData(NEWS_QUERY_KEYS.NEWS(entityId), context.previousData);
+        queryClient.setQueryData(newsQueryKey, context.previousData);
       }
 
       toast.error(t("toast.editError"), {
@@ -180,7 +185,7 @@ export function useEditNews(entity: EntityTypes, options?: MutationOptions) {
     },
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: NEWS_QUERY_KEYS.NEWS(entityId) });
+      queryClient.invalidateQueries({ queryKey: NEWS_QUERY_KEYS.NEWS_PREFIX(entityId) });
       toast.success(t("toast.editSuccess"));
     },
   });
@@ -231,7 +236,7 @@ export function useAddNews(entity: EntityTypes) {
 
     onSuccess: () => {
       toast.success(t("toast.addSuccess"));
-      queryClient.invalidateQueries({ queryKey: NEWS_QUERY_KEYS.NEWS(entityId) });
+      queryClient.invalidateQueries({ queryKey: NEWS_QUERY_KEYS.NEWS_PREFIX(entityId) });
     },
 
     onError: (error) => {
@@ -271,7 +276,7 @@ export function useAddNewsImage(entity: EntityTypes) {
     },
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: NEWS_QUERY_KEYS.NEWS(entityId) });
+      queryClient.invalidateQueries({ queryKey: NEWS_QUERY_KEYS.NEWS_PREFIX(entityId) });
       toast.success(t("toast.editSuccess"));
     },
 
@@ -309,7 +314,7 @@ export function useAddNewsMention(entity: EntityTypes) {
     },
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: NEWS_QUERY_KEYS.NEWS(entityId) });
+      queryClient.invalidateQueries({ queryKey: NEWS_QUERY_KEYS.NEWS_PREFIX(entityId) });
       toast.success(t("toast.editSuccess"));
     },
 
@@ -351,7 +356,7 @@ export function useShareNews(entity: EntityTypes) {
     },
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: NEWS_QUERY_KEYS.NEWS(entityId) });
+      queryClient.invalidateQueries({ queryKey: NEWS_QUERY_KEYS.NEWS_PREFIX(entityId) });
       toast.success(t("toast.addSuccess"));
     },
 
@@ -373,6 +378,8 @@ export function useAddVoteNews(entity: EntityTypes | null | undefined, options?:
   const t = useT("modules/news");
   const { me } = useCocolight();
   const entityId = entity?.id || "";
+  const userContextId = useHydratedUserContextId();
+  const newsQueryKey = NEWS_QUERY_KEYS.NEWS(entityId, userContextId);
 
   return useMutation({
     mutationFn: async ({
@@ -392,15 +399,15 @@ export function useAddVoteNews(entity: EntityTypes | null | undefined, options?:
 
     onMutate: options?.optimistic
       ? async (variables) => {
-          await queryClient.cancelQueries({ queryKey: NEWS_QUERY_KEYS.NEWS(entityId) });
+          await queryClient.cancelQueries({ queryKey: newsQueryKey });
 
           const previousData = queryClient.getQueryData<{ pages: News[][] }>(
-            NEWS_QUERY_KEYS.NEWS(entityId)
+            newsQueryKey
           );
 
           // Optimistic update: increment vote count
           queryClient.setQueryData<{ pages: News[][] }>(
-            NEWS_QUERY_KEYS.NEWS(entityId),
+            newsQueryKey,
             (old) => {
               if (!old) return old;
 
@@ -429,7 +436,7 @@ export function useAddVoteNews(entity: EntityTypes | null | undefined, options?:
 
     onError: (error, _variables, context) => {
       if (context?.previousData) {
-        queryClient.setQueryData(NEWS_QUERY_KEYS.NEWS(entityId), context.previousData);
+        queryClient.setQueryData(newsQueryKey, context.previousData);
       }
 
       toast.error(t("toast.voteError"), {
@@ -438,7 +445,7 @@ export function useAddVoteNews(entity: EntityTypes | null | undefined, options?:
     },
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: NEWS_QUERY_KEYS.NEWS(entityId) });
+      queryClient.invalidateQueries({ queryKey: NEWS_QUERY_KEYS.NEWS_PREFIX(entityId) });
       toast.success(t("toast.voteSuccess"));
     },
   });

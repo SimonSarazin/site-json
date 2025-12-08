@@ -13,15 +13,15 @@ function invalidateMemberQueriesForEntity(
 ): void {
   if (!entity) return;
 
-  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ELEMENT_ABOUT(entity.slug ?? null) });
-  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SEARCH_USERS() });
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug ?? null) });
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SEARCH_USERS_PREFIX() });
 
   if (isOrganization(entity)) {
-    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ORGANIZATION_MEMBERS(entity.slug ?? null) });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ORGANIZATION_MEMBERS_PREFIX(entity.slug ?? null) });
   } else if (isProject(entity)) {
-    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.PROJECT_CONTRIBUTORS(entity.slug ?? null) });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.PROJECT_CONTRIBUTORS_PREFIX(entity.slug ?? null) });
   } else if (isEvent(entity)) {
-    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.EVENT_ATTENDEES(entity.slug ?? null) });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.EVENT_ATTENDEES_PREFIX(entity.slug ?? null) });
   }
 }
 

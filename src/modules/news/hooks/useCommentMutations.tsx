@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useCocolight } from "@/hooks/useCocolight";
+import { useHydratedUserContextId } from "@/hooks/useHydratedUserContextId";
 import { useT } from "@/hooks/useT";
 import type { Comment, News, EntityTypes } from "@communecter/cocolight-api-client";
 import { findAndRemoveComment, findAndUpdateComment, findAndAddReply } from "../utils/commentCacheUtils";
@@ -26,6 +27,8 @@ export function useAddComment(newsId: string, entity: EntityTypes, options?: Mut
   const { me } = useCocolight();
   const t = useT("modules/news");
   const entityId = entity.id || "";
+  const userContextId = useHydratedUserContextId();
+  const commentsQueryKey = NEWS_QUERY_KEYS.NEWS_COMMENTS(newsId, userContextId);
 
   return useMutation({
     mutationFn: async ({ news, text }: { news: News; text: string }) => {
@@ -37,10 +40,10 @@ export function useAddComment(newsId: string, entity: EntityTypes, options?: Mut
     onMutate: options?.optimistic
       ? async (variables) => {
           // Annuler les requêtes en cours pour éviter les conflits
-          await queryClient.cancelQueries({ queryKey: NEWS_QUERY_KEYS.NEWS_COMMENTS(newsId) });
+          await queryClient.cancelQueries({ queryKey: commentsQueryKey });
 
           // Sauvegarder l'état précédent
-          const previousComments = queryClient.getQueryData<Comment[]>(NEWS_QUERY_KEYS.NEWS_COMMENTS(newsId));
+          const previousComments = queryClient.getQueryData<Comment[]>(commentsQueryKey);
 
           // Créer un commentaire optimiste
           const optimisticComment = {
@@ -60,7 +63,7 @@ export function useAddComment(newsId: string, entity: EntityTypes, options?: Mut
           } as unknown as Comment;
 
           // Mettre à jour le cache de manière optimiste
-          queryClient.setQueryData<Comment[]>(NEWS_QUERY_KEYS.NEWS_COMMENTS(newsId), (old) => {
+          queryClient.setQueryData<Comment[]>(commentsQueryKey, (old) => {
             return [optimisticComment, ...(old || [])];
           });
 
@@ -71,7 +74,7 @@ export function useAddComment(newsId: string, entity: EntityTypes, options?: Mut
     onError: (error, _variables, context) => {
       // Rollback en cas d'erreur
       if (context?.previousComments) {
-        queryClient.setQueryData(NEWS_QUERY_KEYS.NEWS_COMMENTS(newsId), context.previousComments);
+        queryClient.setQueryData(commentsQueryKey, context.previousComments);
       }
 
       toast.error(t("toast.comment.addError"), {
@@ -83,7 +86,7 @@ export function useAddComment(newsId: string, entity: EntityTypes, options?: Mut
       // Incrémenter le commentCount dans le cache des news
       // Les données sont déjà des instances Proxy grâce au useEffect de useNewsQuery
       queryClient.setQueriesData<{ pages: News[][] }>(
-        { queryKey: NEWS_QUERY_KEYS.NEWS(entityId) },
+        { queryKey: NEWS_QUERY_KEYS.NEWS_PREFIX(entityId) },
         (old) => {
           if (!old) return old;
 
@@ -106,7 +109,7 @@ export function useAddComment(newsId: string, entity: EntityTypes, options?: Mut
       );
 
       // Invalider pour récupérer les commentaires à jour du serveur
-      queryClient.invalidateQueries({ queryKey: NEWS_QUERY_KEYS.NEWS_COMMENTS(newsId) });
+      queryClient.invalidateQueries({ queryKey: NEWS_QUERY_KEYS.NEWS_COMMENTS_PREFIX(newsId) });
       toast.success(t("toast.comment.addSuccess"));
     },
   });
@@ -121,6 +124,8 @@ export function useAddComment(newsId: string, entity: EntityTypes, options?: Mut
 export function useEditComment(newsId: string, _entity: EntityTypes, options?: MutationOptions) {
   const queryClient = useQueryClient();
   const t = useT("modules/news");
+  const userContextId = useHydratedUserContextId();
+  const commentsQueryKey = NEWS_QUERY_KEYS.NEWS_COMMENTS(newsId, userContextId);
 
   return useMutation({
     mutationFn: async ({ comment, newText }: { comment: Comment; newText: string }) => {
@@ -131,12 +136,12 @@ export function useEditComment(newsId: string, _entity: EntityTypes, options?: M
 
     onMutate: options?.optimistic
       ? async (variables) => {
-          await queryClient.cancelQueries({ queryKey: NEWS_QUERY_KEYS.NEWS_COMMENTS(newsId) });
+          await queryClient.cancelQueries({ queryKey: commentsQueryKey });
 
-          const previousComments = queryClient.getQueryData<Comment[]>(NEWS_QUERY_KEYS.NEWS_COMMENTS(newsId));
+          const previousComments = queryClient.getQueryData<Comment[]>(commentsQueryKey);
 
           // Utiliser la fonction récursive pour mettre à jour à n'importe quelle profondeur
-          queryClient.setQueryData<Comment[]>(NEWS_QUERY_KEYS.NEWS_COMMENTS(newsId), (old) => {
+          queryClient.setQueryData<Comment[]>(commentsQueryKey, (old) => {
             if (!old || !variables.comment.id) return old;
             return findAndUpdateComment(old, variables.comment.id, variables.newText);
           });
@@ -147,7 +152,7 @@ export function useEditComment(newsId: string, _entity: EntityTypes, options?: M
 
     onError: (error, _variables, context) => {
       if (context?.previousComments) {
-        queryClient.setQueryData(NEWS_QUERY_KEYS.NEWS_COMMENTS(newsId), context.previousComments);
+        queryClient.setQueryData(commentsQueryKey, context.previousComments);
       }
 
       toast.error(t("toast.comment.editError"), {
@@ -156,7 +161,7 @@ export function useEditComment(newsId: string, _entity: EntityTypes, options?: M
     },
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: NEWS_QUERY_KEYS.NEWS_COMMENTS(newsId) });
+      queryClient.invalidateQueries({ queryKey: NEWS_QUERY_KEYS.NEWS_COMMENTS_PREFIX(newsId) });
       toast.success(t("toast.comment.editSuccess"));
     },
   });
@@ -172,6 +177,8 @@ export function useDeleteComment(newsId: string, entity: EntityTypes, options?: 
   const queryClient = useQueryClient();
   const t = useT("modules/news");
   const entityId = entity.id || "";
+  const userContextId = useHydratedUserContextId();
+  const commentsQueryKey = NEWS_QUERY_KEYS.NEWS_COMMENTS(newsId, userContextId);
 
   return useMutation({
     mutationFn: async ({ comment, parentCommentId }: { comment: Comment; parentCommentId?: string }) => {
@@ -181,12 +188,12 @@ export function useDeleteComment(newsId: string, entity: EntityTypes, options?: 
 
     onMutate: options?.optimistic
       ? async (variables) => {
-          await queryClient.cancelQueries({ queryKey: NEWS_QUERY_KEYS.NEWS_COMMENTS(newsId) });
+          await queryClient.cancelQueries({ queryKey: commentsQueryKey });
 
-          const previousComments = queryClient.getQueryData<Comment[]>(NEWS_QUERY_KEYS.NEWS_COMMENTS(newsId));
+          const previousComments = queryClient.getQueryData<Comment[]>(commentsQueryKey);
 
           // Utiliser la fonction récursive pour retirer le commentaire à n'importe quelle profondeur
-          queryClient.setQueryData<Comment[]>(NEWS_QUERY_KEYS.NEWS_COMMENTS(newsId), (old) => {
+          queryClient.setQueryData<Comment[]>(commentsQueryKey, (old) => {
             if (!old || !variables.comment.id) return old;
             return findAndRemoveComment(old, variables.comment.id);
           });
@@ -197,7 +204,7 @@ export function useDeleteComment(newsId: string, entity: EntityTypes, options?: 
 
     onError: (error, _variables, context) => {
       if (context?.previousComments) {
-        queryClient.setQueryData(NEWS_QUERY_KEYS.NEWS_COMMENTS(newsId), context.previousComments);
+        queryClient.setQueryData(commentsQueryKey, context.previousComments);
       }
 
       toast.error(t("toast.comment.deleteError"), {
@@ -209,7 +216,7 @@ export function useDeleteComment(newsId: string, entity: EntityTypes, options?: 
       // Décrémenter le commentCount pour commentaires ET replies
       // car le count total inclut les deux
       queryClient.setQueriesData<{ pages: News[][] }>(
-        { queryKey: NEWS_QUERY_KEYS.NEWS(entityId) },
+        { queryKey: NEWS_QUERY_KEYS.NEWS_PREFIX(entityId) },
         (old) => {
           if (!old) return old;
 
@@ -231,7 +238,7 @@ export function useDeleteComment(newsId: string, entity: EntityTypes, options?: 
         }
       );
 
-      queryClient.invalidateQueries({ queryKey: NEWS_QUERY_KEYS.NEWS_COMMENTS(newsId) });
+      queryClient.invalidateQueries({ queryKey: NEWS_QUERY_KEYS.NEWS_COMMENTS_PREFIX(newsId) });
       toast.success(t("toast.comment.deleteSuccess"));
     },
   });
@@ -248,6 +255,8 @@ export function useReplyToComment(newsId: string, entity: EntityTypes, options?:
   const { me } = useCocolight();
   const t = useT("modules/news");
   const entityId = entity.id || "";
+  const userContextId = useHydratedUserContextId();
+  const commentsQueryKey = NEWS_QUERY_KEYS.NEWS_COMMENTS(newsId, userContextId);
 
   return useMutation({
     mutationFn: async ({ comment, text }: { comment: Comment; text: string }) => {
@@ -258,9 +267,9 @@ export function useReplyToComment(newsId: string, entity: EntityTypes, options?:
 
     onMutate: options?.optimistic
       ? async (variables) => {
-          await queryClient.cancelQueries({ queryKey: NEWS_QUERY_KEYS.NEWS_COMMENTS(newsId) });
+          await queryClient.cancelQueries({ queryKey: commentsQueryKey });
 
-          const previousComments = queryClient.getQueryData<Comment[]>(NEWS_QUERY_KEYS.NEWS_COMMENTS(newsId));
+          const previousComments = queryClient.getQueryData<Comment[]>(commentsQueryKey);
 
           // Créer une réponse optimiste
           const optimisticReply = {
@@ -273,7 +282,7 @@ export function useReplyToComment(newsId: string, entity: EntityTypes, options?:
           } as unknown as Comment;
 
           // Utiliser la fonction récursive pour ajouter la reply à n'importe quelle profondeur
-          queryClient.setQueryData<Comment[]>(NEWS_QUERY_KEYS.NEWS_COMMENTS(newsId), (old) => {
+          queryClient.setQueryData<Comment[]>(commentsQueryKey, (old) => {
             if (!old || !variables.comment.id) return old;
             return findAndAddReply(old, variables.comment.id, optimisticReply);
           });
@@ -284,7 +293,7 @@ export function useReplyToComment(newsId: string, entity: EntityTypes, options?:
 
     onError: (error, _variables, context) => {
       if (context?.previousComments) {
-        queryClient.setQueryData(NEWS_QUERY_KEYS.NEWS_COMMENTS(newsId), context.previousComments);
+        queryClient.setQueryData(commentsQueryKey, context.previousComments);
       }
 
       toast.error(t("toast.reply.addError"), {
@@ -296,7 +305,7 @@ export function useReplyToComment(newsId: string, entity: EntityTypes, options?:
       // Incrémenter le commentCount dans le cache des news
       // Les données sont déjà des instances Proxy grâce au useEffect de useNewsQuery
       queryClient.setQueriesData<{ pages: News[][] }>(
-        { queryKey: NEWS_QUERY_KEYS.NEWS(entityId) },
+        { queryKey: NEWS_QUERY_KEYS.NEWS_PREFIX(entityId) },
         (old) => {
           if (!old) return old;
 
@@ -318,7 +327,7 @@ export function useReplyToComment(newsId: string, entity: EntityTypes, options?:
         }
       );
 
-      queryClient.invalidateQueries({ queryKey: NEWS_QUERY_KEYS.NEWS_COMMENTS(newsId) });
+      queryClient.invalidateQueries({ queryKey: NEWS_QUERY_KEYS.NEWS_COMMENTS_PREFIX(newsId) });
       toast.success(t("toast.reply.addSuccess"));
     },
   });
@@ -333,6 +342,8 @@ export function useAddCommentVote(newsId: string, options?: MutationOptions) {
   const queryClient = useQueryClient();
   const { me } = useCocolight();
   const t = useT("modules/news");
+  const userContextId = useHydratedUserContextId();
+  const commentsQueryKey = NEWS_QUERY_KEYS.NEWS_COMMENTS(newsId, userContextId);
 
   return useMutation({
     mutationFn: async ({ comment, voteType = "like" }: { comment: Comment; voteType?: string }) => {
@@ -345,13 +356,13 @@ export function useAddCommentVote(newsId: string, options?: MutationOptions) {
       if (!options?.optimistic) return;
 
       // Annuler les requêtes en cours pour éviter les conflits
-      await queryClient.cancelQueries({ queryKey: NEWS_QUERY_KEYS.NEWS_COMMENTS(newsId) });
+      await queryClient.cancelQueries({ queryKey: commentsQueryKey });
 
       // Sauvegarder l'état précédent pour rollback
-      const previousData = queryClient.getQueryData<Comment[]>(NEWS_QUERY_KEYS.NEWS_COMMENTS(newsId));
+      const previousData = queryClient.getQueryData<Comment[]>(commentsQueryKey);
 
       // Mise à jour optimiste en mutant directement les Proxys
-      queryClient.setQueryData<Comment[]>(NEWS_QUERY_KEYS.NEWS_COMMENTS(newsId), (old) => {
+      queryClient.setQueryData<Comment[]>(commentsQueryKey, (old) => {
         if (!old) return old;
 
         // Mutation directe des objets Proxy (pas besoin de cloner)
@@ -376,13 +387,13 @@ export function useAddCommentVote(newsId: string, options?: MutationOptions) {
       console.error("[useAddCommentVote] Error:", error);
       // Rollback en cas d'erreur
       if (context?.previousData) {
-        queryClient.setQueryData(NEWS_QUERY_KEYS.NEWS_COMMENTS(newsId), context.previousData);
+        queryClient.setQueryData(commentsQueryKey, context.previousData);
       }
       toast.error(t("toast.comment.voteError"));
     },
     onSuccess: () => {
       // Invalider le cache pour récupérer les données à jour du serveur
-      queryClient.invalidateQueries({ queryKey: NEWS_QUERY_KEYS.NEWS_COMMENTS(newsId) });
+      queryClient.invalidateQueries({ queryKey: NEWS_QUERY_KEYS.NEWS_COMMENTS_PREFIX(newsId) });
       toast.success(t("toast.comment.voteSuccess"));
     },
   });

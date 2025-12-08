@@ -18,8 +18,8 @@ export function useSendFriendRequest(currentUser: User | null) {
     errorKey: "toast.friends.sendRequestError",
     invalidateQueries: currentUser
       ? [
-          QUERY_KEYS.USER_FRIENDS(currentUser.slug),
-          QUERY_KEYS.USER_SENT_FRIEND_REQUESTS(currentUser.slug),
+          QUERY_KEYS.USER_FRIENDS_PREFIX(currentUser.slug),
+          QUERY_KEYS.USER_SENT_FRIEND_REQUESTS_PREFIX(currentUser.slug),
         ]
       : [],
   });
@@ -39,7 +39,7 @@ export function useAcceptFriendRequest(currentUser: User | null) {
     successKey: "toast.friends.requestAccepted",
     errorKey: "toast.friends.acceptRequestError",
     invalidateQueries: currentUser
-      ? [QUERY_KEYS.USER_FRIENDS(currentUser.slug), QUERY_KEYS.USER_PENDING_FRIENDS(currentUser.slug)]
+      ? [QUERY_KEYS.USER_FRIENDS_PREFIX(currentUser.slug), QUERY_KEYS.USER_PENDING_FRIENDS_PREFIX(currentUser.slug)]
       : [],
   });
 }
@@ -57,7 +57,7 @@ export function useRejectFriendRequest(currentUser: User | null) {
     },
     successKey: "toast.friends.requestRejected",
     errorKey: "toast.friends.rejectRequestError",
-    invalidateQueries: currentUser ? [QUERY_KEYS.USER_PENDING_FRIENDS(currentUser.slug)] : [],
+    invalidateQueries: currentUser ? [QUERY_KEYS.USER_PENDING_FRIENDS_PREFIX(currentUser.slug)] : [],
   });
 }
 
@@ -74,7 +74,7 @@ export function useRemoveFriend(currentUser: User | null) {
     },
     successKey: "toast.friends.friendRemoved",
     errorKey: "toast.friends.removeError",
-    invalidateQueries: currentUser ? [QUERY_KEYS.USER_FRIENDS(currentUser.slug)] : [],
+    invalidateQueries: currentUser ? [QUERY_KEYS.USER_FRIENDS_PREFIX(currentUser.slug)] : [],
   });
 }
 
@@ -91,6 +91,6 @@ export function useCancelFriendRequest(currentUser: User | null) {
     },
     successKey: "toast.friends.requestCancelled",
     errorKey: "toast.friends.cancelError",
-    invalidateQueries: currentUser ? [QUERY_KEYS.USER_SENT_FRIEND_REQUESTS(currentUser.slug)] : [],
+    invalidateQueries: currentUser ? [QUERY_KEYS.USER_SENT_FRIEND_REQUESTS_PREFIX(currentUser.slug)] : [],
   });
 }

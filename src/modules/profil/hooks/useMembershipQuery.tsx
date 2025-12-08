@@ -3,6 +3,7 @@ import type { EntityTypes, Organization, Project, Poi, Event, PaginatorPage } fr
 import { isUser } from "@/lib/getTypedEntity";
 import { useMemo } from "react";
 import { QUERY_KEYS } from "../constants/queryKeys";
+import { useHydratedUserContextId } from "@/hooks/useHydratedUserContextId";
 
 export interface MembershipQueryParams {
   indexStep?: number;
@@ -13,6 +14,9 @@ export interface MembershipQueryParams {
  * Hook pour récupérer les organisations d'un utilisateur avec infinite scroll
  */
 export function useUserOrganizations(user: EntityTypes | null, params?: MembershipQueryParams) {
+  // userContextId compatible SSR : null au premier render, puis la vraie valeur après hydratation
+  const userContextId = useHydratedUserContextId();
+
   const {
     data,
     isLoading,
@@ -22,7 +26,7 @@ export function useUserOrganizations(user: EntityTypes | null, params?: Membersh
     error,
     refetch,
   } = useInfiniteQueryScrollNext<Organization>({
-    queryKey: [...QUERY_KEYS.USER_ORGANIZATIONS(user?.slug ?? null), params],
+    queryKey: [...QUERY_KEYS.USER_ORGANIZATIONS(user?.slug ?? null, userContextId), params],
     queryFn: async ({ pageParam }) => {
       if (!user || !isUser(user)) {
         throw new Error("User is required");
@@ -83,6 +87,9 @@ export function useUserOrganizations(user: EntityTypes | null, params?: Membersh
  * Hook pour récupérer les projets d'un utilisateur avec infinite scroll
  */
 export function useUserProjects(user: EntityTypes | null, params?: MembershipQueryParams) {
+  // userContextId compatible SSR : null au premier render, puis la vraie valeur après hydratation
+  const userContextId = useHydratedUserContextId();
+
   const {
     data,
     isLoading,
@@ -92,7 +99,7 @@ export function useUserProjects(user: EntityTypes | null, params?: MembershipQue
     error,
     refetch,
   } = useInfiniteQueryScrollNext<Project>({
-    queryKey: [...QUERY_KEYS.USER_PROJECTS(user?.slug ?? null), params],
+    queryKey: [...QUERY_KEYS.USER_PROJECTS(user?.slug ?? null, userContextId), params],
     queryFn: async ({ pageParam }) => {
       if (!user || !isUser(user)) {
         throw new Error("User is required");
@@ -153,6 +160,9 @@ export function useUserProjects(user: EntityTypes | null, params?: MembershipQue
  * Hook pour récupérer les POIs d'un utilisateur avec infinite scroll
  */
 export function useUserPois(user: EntityTypes | null, params?: MembershipQueryParams) {
+  // userContextId compatible SSR : null au premier render, puis la vraie valeur après hydratation
+  const userContextId = useHydratedUserContextId();
+
   const {
     data,
     isLoading,
@@ -162,7 +172,7 @@ export function useUserPois(user: EntityTypes | null, params?: MembershipQueryPa
     error,
     refetch,
   } = useInfiniteQueryScrollNext<Poi>({
-    queryKey: [...QUERY_KEYS.USER_POIS(user?.slug ?? null), params],
+    queryKey: [...QUERY_KEYS.USER_POIS(user?.slug ?? null, userContextId), params],
     queryFn: async ({ pageParam }) => {
       if (!user || !isUser(user)) {
         throw new Error("User is required");
@@ -223,6 +233,9 @@ export function useUserPois(user: EntityTypes | null, params?: MembershipQueryPa
  * Hook pour récupérer les événements d'un utilisateur avec infinite scroll
  */
 export function useUserEvents(user: EntityTypes | null, params?: MembershipQueryParams) {
+  // userContextId compatible SSR : null au premier render, puis la vraie valeur après hydratation
+  const userContextId = useHydratedUserContextId();
+
   const {
     data,
     isLoading,
@@ -232,7 +245,7 @@ export function useUserEvents(user: EntityTypes | null, params?: MembershipQuery
     error,
     refetch,
   } = useInfiniteQueryScrollNext<Event>({
-    queryKey: [...QUERY_KEYS.USER_EVENTS(user?.slug ?? null), params],
+    queryKey: [...QUERY_KEYS.USER_EVENTS(user?.slug ?? null, userContextId), params],
     queryFn: async ({ pageParam }) => {
       if (!user || !isUser(user)) {
         throw new Error("User is required");

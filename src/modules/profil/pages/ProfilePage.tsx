@@ -13,7 +13,7 @@ import { ProfileEntityProvider } from "../contexts/ProfileEntityProvider";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import "@/modules/profil/i18n";
-import { useEntityBySlugQuery } from "../hooks/useEntityBySlugQuery";
+import { useEntityBySlugQuery } from "@/hooks/useEntityBySlugQuery";
 
 /**
  * Type guard pour vérifier si entityType est une clé valide de ProfilesConfig

@@ -20,7 +20,7 @@ export function useFollowUser(entity: EntityTypes | null) {
     ),
     successKey: "toast.relationship.followSuccess",
     errorKey: "toast.relationship.followError",
-    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT(entity.slug)] : [],
+    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : [],
   });
 }
 
@@ -37,7 +37,7 @@ export function useUnfollowUser(entity: EntityTypes | null) {
     ),
     successKey: "toast.relationship.unfollowSuccess",
     errorKey: "toast.relationship.unfollowError",
-    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT(entity.slug)] : [],
+    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : [],
   });
 }
 
@@ -56,9 +56,9 @@ export function useSendFriendRequest(entity: EntityTypes | null) {
     errorKey: "toast.relationship.friendRequestError",
     invalidateQueries: entity
       ? [
-          QUERY_KEYS.ELEMENT_ABOUT(entity.slug),
-          QUERY_KEYS.USER_FRIENDS(entity.slug),
-          QUERY_KEYS.USER_SENT_FRIEND_REQUESTS(entity.slug),
+          QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug),
+          QUERY_KEYS.USER_FRIENDS_PREFIX(entity.slug),
+          QUERY_KEYS.USER_SENT_FRIEND_REQUESTS_PREFIX(entity.slug),
         ]
       : [],
   });
@@ -78,7 +78,7 @@ export function useRemoveFriend(entity: EntityTypes | null) {
     successKey: "toast.relationship.friendRemoved",
     errorKey: "toast.relationship.friendRemoveError",
     invalidateQueries: entity
-      ? [QUERY_KEYS.ELEMENT_ABOUT(entity.slug), QUERY_KEYS.USER_FRIENDS(entity.slug)]
+      ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug), QUERY_KEYS.USER_FRIENDS_PREFIX(entity.slug)]
       : [],
   });
 }
@@ -100,7 +100,7 @@ export function useFollowOrganization(entity: EntityTypes | null) {
     ),
     successKey: "toast.relationship.followSuccess",
     errorKey: "toast.relationship.followError",
-    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT(entity.slug)] : [],
+    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : [],
   });
 }
 
@@ -117,7 +117,7 @@ export function useUnfollowOrganization(entity: EntityTypes | null) {
     ),
     successKey: "toast.relationship.unfollowSuccess",
     errorKey: "toast.relationship.unfollowError",
-    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT(entity.slug)] : [],
+    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : [],
   });
 }
 
@@ -134,7 +134,7 @@ export function useRequestMembership(entity: EntityTypes | null) {
     ),
     successKey: "toast.relationship.memberRequestSent",
     errorKey: "toast.relationship.memberRequestError",
-    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT(entity.slug)] : [],
+    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : [],
   });
 }
 
@@ -151,7 +151,7 @@ export function useLeaveOrganization(entity: EntityTypes | null) {
     ),
     successKey: "toast.relationship.memberLeftSuccess",
     errorKey: "toast.relationship.memberLeftError",
-    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT(entity.slug)] : [],
+    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : [],
   });
 }
 
@@ -172,7 +172,7 @@ export function useFollowProject(entity: EntityTypes | null) {
     ),
     successKey: "toast.relationship.followSuccess",
     errorKey: "toast.relationship.followError",
-    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT(entity.slug)] : [],
+    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : [],
   });
 }
 
@@ -189,7 +189,7 @@ export function useUnfollowProject(entity: EntityTypes | null) {
     ),
     successKey: "toast.relationship.unfollowSuccess",
     errorKey: "toast.relationship.unfollowError",
-    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT(entity.slug)] : [],
+    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : [],
   });
 }
 
@@ -206,7 +206,7 @@ export function useRequestContributor(entity: EntityTypes | null) {
     ),
     successKey: "toast.relationship.contributorRequestSent",
     errorKey: "toast.relationship.contributorRequestError",
-    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT(entity.slug)] : [],
+    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : [],
   });
 }
 
@@ -223,7 +223,7 @@ export function useRequestProjectAdmin(entity: EntityTypes | null) {
     ),
     successKey: "toast.relationship.projectAdminRequestSent",
     errorKey: "toast.relationship.projectAdminRequestError",
-    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT(entity.slug)] : [],
+    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : [],
   });
 }
 
@@ -240,7 +240,7 @@ export function useLeaveProject(entity: EntityTypes | null) {
     ),
     successKey: "toast.relationship.projectLeftSuccess",
     errorKey: "toast.relationship.projectLeftError",
-    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT(entity.slug)] : [],
+    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : [],
   });
 }
 
@@ -261,7 +261,7 @@ export function useFollowEvent(entity: EntityTypes | null) {
     ),
     successKey: "toast.relationship.followSuccess",
     errorKey: "toast.relationship.followError",
-    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT(entity.slug)] : [],
+    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : [],
   });
 }
 
@@ -278,7 +278,7 @@ export function useUnfollowEvent(entity: EntityTypes | null) {
     ),
     successKey: "toast.relationship.unfollowSuccess",
     errorKey: "toast.relationship.unfollowError",
-    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT(entity.slug)] : [],
+    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : [],
   });
 }
 
@@ -295,7 +295,7 @@ export function useParticipateEvent(entity: EntityTypes | null) {
     ),
     successKey: "toast.relationship.participationSuccess",
     errorKey: "toast.relationship.participationError",
-    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT(entity.slug)] : [],
+    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : [],
   });
 }
 
@@ -312,6 +312,6 @@ export function useLeaveEvent(entity: EntityTypes | null) {
     ),
     successKey: "toast.relationship.participationLeftSuccess",
     errorKey: "toast.relationship.participationLeftError",
-    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT(entity.slug)] : [],
+    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : [],
   });
 }

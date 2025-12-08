@@ -4,6 +4,7 @@ import { isUser } from "@/lib/getTypedEntity";
 import { useMemo } from "react";
 import type { FriendsQueryParams } from "../types";
 import { QUERY_KEYS } from "../constants/queryKeys";
+import { useHydratedUserContextId } from "@/hooks/useHydratedUserContextId";
 
 export type { FriendsQueryParams };
 
@@ -11,6 +12,9 @@ export type { FriendsQueryParams };
  * Hook pour récupérer les amis d'un utilisateur
  */
 export function useFriendsQuery(user: EntityTypes | null, params?: FriendsQueryParams) {
+  // userContextId compatible SSR : null au premier render, puis la vraie valeur après hydratation
+  const userContextId = useHydratedUserContextId();
+
   const {
     data,
     isLoading,
@@ -20,7 +24,7 @@ export function useFriendsQuery(user: EntityTypes | null, params?: FriendsQueryP
     error,
     refetch,
   } = useInfiniteQueryScrollNext<User>({
-    queryKey: [...QUERY_KEYS.USER_FRIENDS(user?.slug ?? null), params],
+    queryKey: [...QUERY_KEYS.USER_FRIENDS(user?.slug ?? null, userContextId), params],
     queryFn: async ({ pageParam }) => {
       if (!user || !isUser(user)) {
         throw new Error("User is required");

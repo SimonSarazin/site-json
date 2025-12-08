@@ -48,7 +48,7 @@ export function useAddOrganization(entity?: EntityTypes | null) {
     },
     successKey: "toast.add.organizationSuccess",
     errorKey: "toast.add.organizationError",
-    invalidateQueries: targetEntity ? [QUERY_KEYS.USER_ORGANIZATIONS(targetEntity.slug)] : [],
+    invalidateQueries: targetEntity ? [QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(targetEntity.slug)] : [],
     onSuccessCallback: (data) => {
       // Rediriger vers le profil de la nouvelle organisation
       if (data.organization.slug) {
@@ -99,8 +99,8 @@ export function useAddProject(entity?: EntityTypes | null) {
     successKey: "toast.add.projectSuccess",
     errorKey: "toast.add.projectError",
     invalidateQueries: [
-      ...(targetEntity ? [QUERY_KEYS.USER_PROJECTS(targetEntity.slug)] : []),
-      ...(entity ? [QUERY_KEYS.ELEMENT_ABOUT(entity.slug)] : []),
+      ...(targetEntity ? [QUERY_KEYS.USER_PROJECTS_PREFIX(targetEntity.slug)] : []),
+      ...(entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : []),
     ],
     onSuccessCallback: (data) => {
       // Rediriger vers le profil du nouveau projet
@@ -156,8 +156,8 @@ export function useAddEvent(entity?: EntityTypes | null) {
     successKey: "toast.add.eventSuccess",
     errorKey: "toast.add.eventError",
     invalidateQueries: [
-      ...(targetEntity ? [QUERY_KEYS.USER_EVENTS(targetEntity.slug)] : []),
-      ...(entity ? [QUERY_KEYS.ELEMENT_ABOUT(entity.slug)] : []),
+      ...(targetEntity ? [QUERY_KEYS.USER_EVENTS_PREFIX(targetEntity.slug)] : []),
+      ...(entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : []),
     ],
     onSuccessCallback: (data) => {
       // Rediriger vers le profil du nouvel événement
@@ -209,8 +209,8 @@ export function useAddPoi(entity?: EntityTypes | null) {
     successKey: "toast.add.poiSuccess",
     errorKey: "toast.add.poiError",
     invalidateQueries: [
-      ...(targetEntity ? [QUERY_KEYS.USER_POIS(targetEntity.slug)] : []),
-      ...(entity ? [QUERY_KEYS.ELEMENT_ABOUT(entity.slug)] : []),
+      ...(targetEntity ? [QUERY_KEYS.USER_POIS_PREFIX(targetEntity.slug)] : []),
+      ...(entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : []),
     ],
     onSuccessCallback: (data) => {
       // Rediriger vers le profil du nouveau POI
