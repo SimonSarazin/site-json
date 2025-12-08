@@ -331,3 +331,5 @@ export const NewsSection = ({ id, props }: NewsSectionProps) => {
     </NewsProvider>
   );
 };
+
+export default NewsSection;

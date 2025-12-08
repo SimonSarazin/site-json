@@ -38,9 +38,11 @@ export function MarkdownSection({
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto prose prose-gray dark:prose-invert">
-          <div dangerouslySetInnerHTML={{ __html: safeHtml }} />
+          <div dangerouslySetInnerHTML={{ __html: safeHtml }} suppressHydrationWarning />
         </div>
       </div>
     </section>
   );
 }
+
+export default MarkdownSection;

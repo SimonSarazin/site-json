@@ -177,3 +177,4 @@ export function FiltersSection({
     </aside>
   );
 }
+export default FiltersSection;

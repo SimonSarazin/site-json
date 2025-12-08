@@ -1,3 +1,4 @@
+import { T } from "@/components/ui/T";
 import { useLocalization } from "@/hooks/useLocalization";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { Loader2, MapPin, Building2, Calendar, User, FolderOpen } from "lucide-react";
@@ -192,9 +193,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                   WebkitBackdropFilter: 'blur(12px)'
                 }}
               >
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-4 sm:mb-6 text-center px-2">
-                  {t(props.headline)}
-                </h1>
+                <T k={props.headline} as="h1" className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-4 sm:mb-6 text-center px-2" />
 
                 <div className="relative">
                   {/* Mobile: Stack vertically */}
@@ -331,14 +330,10 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                 WebkitBackdropFilter: 'blur(12px)'
               }}
             >
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-4 sm:mb-6 text-center px-2">
-                {t(props.headline)}
-              </h1>
+              <T k={props.headline} as="h1" className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-4 sm:mb-6 text-center px-2" />
 
               {props.subhead && (
-                <p className="text-center text-primary font-light text-base sm:text-lg italic mb-4 sm:mb-6 px-4">
-                  {t(props.subhead)}
-                </p>
+                <T k={props.subhead} as="p" className="text-center text-primary font-light text-base sm:text-lg italic mb-4 sm:mb-6 px-4" />
               )}
 
               <div className="flex justify-center space-x-1 mb-4 sm:mb-6 text-xs sm:text-sm flex-wrap gap-y-2 px-2">
@@ -351,7 +346,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                       : "hover:bg-gray-50 dark:hover:bg-slate-800"
                       }`}
                   >
-                    {t(btn.label)}
+                    <T k={btn.label} />
                   </button>
                 ))}
               </div>
@@ -455,3 +450,4 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
     </section>
   );
 }
+export default HeroTiersLieux;

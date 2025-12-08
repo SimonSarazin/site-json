@@ -1,88 +1,94 @@
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
+import { lazy } from "vite-preload"; // Utiliser lazy de vite-preload pour tracer les chunks
+import type { PreloadableComponent } from "react-lazy-with-preload";
 import type { Section, SectionPropsMap } from "@/types/site";
 import { ErrorBoundary } from "../layout/ErrorBoundary";
 
+// vite-preload retourne PreloadableComponent au lieu de LazyExoticComponent
 type LazySectionComponent<T extends Section['type']> =
-  React.LazyExoticComponent<
+  PreloadableComponent<
     React.ComponentType<{ id?: string; props: SectionPropsMap[T] }>
   >;
-
-/**
- * Certains fichiers de section exportent un composant NOMMÉ (ex. `export const HeroSection = …`).
- * React.lazy attend un export **par défaut**.
- * On transforme donc le module importé pour fournir `{ default: NamedExport }`.
- */
-function lazyNamed<
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Mod extends Record<string, React.ComponentType<any>>, // <- reste `any` ici, c’est interne
-  K extends keyof Mod
->(loader: () => Promise<Mod>, exportName: K) {
-  // La lib React ne permet pas mieux : on ne connaît pas les props du composant avant d’importer le module.
-  // Mais ce `any` est local ; il n’atteint plus SectionRenderer.
-  return lazy(() => loader().then((m) => ({ default: m[exportName] })));
-}
 
 // -----------------------------------------------------------------------------
 // Mapping « type » → Composant paresseux
 // Chaque entrée crée un CHUNK séparé (code‑splitting).
+// IMPORTANT: Utiliser lazy() directement (pas lazyNamed) pour que vite-preload
+// puisse tracer les chunks correctement. Tous les composants doivent avoir
+// un export default.
 // -----------------------------------------------------------------------------
 const LazySections: {
   [K in keyof SectionPropsMap]: LazySectionComponent<K>;
 } = {
-  hero: lazyNamed(() => import("./HeroSection"), "HeroSection"),
-  "hero-tiers-lieux": lazyNamed(() => import("./HeroTiersLieux"), "HeroTiersLieux"),
-  markdown: lazyNamed(() => import("./MarkdownSection"), "MarkdownSection"),
-  cards: lazyNamed(() => import("./CardsSection"), "CardsSection"),
-  gallery: lazyNamed(() => import("./GallerySection"), "GallerySection"),
-  video: lazyNamed(() => import("./VideoSection"), "VideoSection"),
-  testimonials: lazyNamed(() => import("./TestimonialsSection"), "TestimonialsSection"),
-  pricing: lazyNamed(() => import("./PricingSection"), "PricingSection"),
-  faq: lazyNamed(() => import("./FAQSection"), "FAQSection"),
-  table: lazyNamed(() => import("./TableSection"), "TableSection"),
-  blogPost: lazyNamed(() => import("./BlogPostSection"), "BlogPostSection"),
-  blogList: lazyNamed(() => import("./BlogListSection"), "BlogListSection"),
-  team: lazyNamed(() => import("./TeamSection"), "TeamSection"),
-  stats: lazyNamed(() => import("./StatsSection"), "StatsSection"),
-  cta: lazyNamed(() => import("./CTASection"), "CTASection"),
-  logoCloud: lazyNamed(() => import("./LogoCloudSection"), "LogoCloudSection"),
-  chart: lazyNamed(() => import("./ChartSection"), "ChartSection"),
-  accordion: lazyNamed(() => import("./AccordionSection"), "AccordionSection"),
-  tabs: lazyNamed(() => import("./TabsSection"), "TabsSection"),
-  steps: lazyNamed(() => import("./StepsSection"), "StepsSection"),
-  timeline: lazyNamed(() => import("./TimelineSection"), "TimelineSection"),
-  banner: lazyNamed(() => import("./BannerSection"), "BannerSection"),
-  map: lazyNamed(() => import("./MapSection"), "MapSection"),
-  newsletter: lazyNamed(() => import("./NewsletterSection"), "NewsletterSection"),
-  contactForm: lazyNamed(() => import("./ContactFormSection"), "ContactFormSection"),
-  comparison: lazyNamed(() => import("./ComparisonSection"), "ComparisonSection"),
-  featureComparison: lazyNamed(() => import("./FeatureComparisonSection"), "FeatureComparisonSection"),
-  socialFeed: lazyNamed(() => import("./SocialFeedSection"), "SocialFeedSection"),
-  eventList: lazyNamed(() => import("./EventListSection"), "EventListSection"),
-  productShowcase: lazyNamed(() => import("./ProductShowcaseSection"), "ProductShowcaseSection"),
-  breadcrumb: lazyNamed(() => import("./BreadcrumbSection"), "BreadcrumbSection"),
-  cookieConsent: lazyNamed(() => import("./CookieConsentSection"), "CookieConsentSection"),
-  html: lazyNamed(() => import("./HTMLSection"), "HTMLSection"),
-  title: lazyNamed(() => import("./TitleSection"), "TitleSection"),
-  content: lazyNamed(() => import("./ContentSection"), "ContentSection"),
-  loginForm: lazyNamed(() => import("./LoginFormSection"), "LoginFormSection"),
-  registerForm: lazyNamed(() => import("./RegisterFormSection"), "RegisterFormSection"),
-  recoverPasswordForm: lazyNamed(() => import("./RecoverPasswordFormSection"), "RecoverPasswordFormSection"),
-  searchPro: lazy(() =>
-    import("@/modules/search").then(m => ({ default: m.SearchSection }))
-  ),
-  searchProStatic: lazyNamed(() => import("@/modules/search/SearchProStaticSection"), "SearchProStaticSection"),
-  filters: lazyNamed(() => import("./FiltersSection"), "FiltersSection"),
-  gridLayout: lazyNamed(() => import("./GridLayoutSection"), "GridLayoutSection"),
-  news: lazyNamed(() => import("@/modules/news/components/sections/NewsSection"), "NewsSection"),
+  hero: lazy(() => import("./HeroSection")),
+  "hero-tiers-lieux": lazy(() => import("./HeroTiersLieux")),
+  markdown: lazy(() => import("./MarkdownSection")),
+  cards: lazy(() => import("./CardsSection")),
+  gallery: lazy(() => import("./GallerySection")),
+  video: lazy(() => import("./VideoSection")),
+  testimonials: lazy(() => import("./TestimonialsSection")),
+  pricing: lazy(() => import("./PricingSection")),
+  faq: lazy(() => import("./FAQSection")),
+  table: lazy(() => import("./TableSection")),
+  blogPost: lazy(() => import("./BlogPostSection")),
+  blogList: lazy(() => import("./BlogListSection")),
+  team: lazy(() => import("./TeamSection")),
+  stats: lazy(() => import("./StatsSection")),
+  cta: lazy(() => import("./CTASection")),
+  logoCloud: lazy(() => import("./LogoCloudSection")),
+  chart: lazy(() => import("./ChartSection")),
+  accordion: lazy(() => import("./AccordionSection")),
+  tabs: lazy(() => import("./TabsSection")),
+  steps: lazy(() => import("./StepsSection")),
+  timeline: lazy(() => import("./TimelineSection")),
+  banner: lazy(() => import("./BannerSection")),
+  map: lazy(() => import("./MapSection")),
+  newsletter: lazy(() => import("./NewsletterSection")),
+  contactForm: lazy(() => import("./ContactFormSection")),
+  comparison: lazy(() => import("./ComparisonSection")),
+  featureComparison: lazy(() => import("./FeatureComparisonSection")),
+  socialFeed: lazy(() => import("./SocialFeedSection")),
+  eventList: lazy(() => import("./EventListSection")),
+  productShowcase: lazy(() => import("./ProductShowcaseSection")),
+  breadcrumb: lazy(() => import("./BreadcrumbSection")),
+  cookieConsent: lazy(() => import("./CookieConsentSection")),
+  html: lazy(() => import("./HTMLSection")),
+  title: lazy(() => import("./TitleSection")),
+  content: lazy(() => import("./ContentSection")),
+  loginForm: lazy(() => import("./LoginFormSection")),
+  registerForm: lazy(() => import("./RegisterFormSection")),
+  recoverPasswordForm: lazy(() => import("./RecoverPasswordFormSection")),
+  searchPro: lazy(() => import("@/modules/search/SearchProSection")),
+  searchProStatic: lazy(() => import("@/modules/search/SearchProStaticSection")),
+  filters: lazy(() => import("./FiltersSection")),
+  gridLayout: lazy(() => import("./GridLayoutSection")),
+  news: lazy(() => import("@/modules/news/components/sections/NewsSection")),
 };
 
-export function SectionRenderer({ section }: { section: Section }) {
-  const Component = LazySections[section.type] as React.ComponentType<{
-    id?: string;
-    props: typeof section.props;   // ← props réellement présentes à l’exécution
-  }>;
+// Fallback skeleton pour les sections en cours de chargement
+// Ce fallback est visible en SSR et pendant l'hydratation
+function SectionLoadingFallback({ id, type }: { id?: string; type: string }) {
+  return (
+    <section
+      id={id}
+      className="py-8 animate-pulse"
+      data-loading-section={type}
+    >
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="h-8 bg-muted/40 rounded-lg w-1/3 mb-4" />
+        <div className="h-4 bg-muted/30 rounded w-2/3 mb-2" />
+        <div className="h-4 bg-muted/30 rounded w-1/2" />
+      </div>
+    </section>
+  );
+}
 
-  if (!Component) {
+export function SectionRenderer({ section }: { section: Section }) {
+  const sectionContext = `Section[type=${section.type}, id=${section.id || "none"}]`;
+  const LazyComponent = LazySections[section.type] as React.ComponentType<{ id?: string; props: typeof section.props }>;
+
+  if (!LazyComponent) {
+    console.warn(`[SectionRenderer] Unknown section type: "${section.type}"`);
     return (
       <section id={section.id} className="py-16 bg-muted/30 text-foreground">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -94,12 +100,19 @@ export function SectionRenderer({ section }: { section: Section }) {
     );
   }
 
-  // On transmet les props communes à tous les composants de section
-  // `id` est utilisé comme ancres / scroll.
   return (
-    <Suspense fallback={null}>
-      <ErrorBoundary fallback={<section>⚠️ Section failed to load.</section>}>
-        <Component id={section.id} props={section.props} />
+    <Suspense fallback={<SectionLoadingFallback id={section.id} type={section.type} />}>
+      <ErrorBoundary
+        context={sectionContext}
+        fallback={
+          <section id={section.id} className="py-8 bg-destructive/10">
+            <div className="container mx-auto px-4 text-center text-destructive">
+              Failed to load section: {section.type}
+            </div>
+          </section>
+        }
+      >
+        <LazyComponent id={section.id} props={section.props} />
       </ErrorBoundary>
     </Suspense>
   );

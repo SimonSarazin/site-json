@@ -46,3 +46,4 @@ export function GridLayoutSection({
     </section>
   );
 }
+export default GridLayoutSection;

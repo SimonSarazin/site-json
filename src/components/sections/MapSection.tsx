@@ -55,3 +55,4 @@ export function MapSection({ id, props }: { id?: string; props: MapSectionProps 
     </section>
   );
 }
+export default MapSection;

@@ -1,9 +1,8 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { useLocalization } from "@/hooks/useLocalization";
+import { T } from "@/components/ui/T";
 import { FAQSectionProps } from '@/types/site-schema';
 
 export function FAQSection({ id, props }: { id?: string; props: FAQSectionProps }) {
-  const { t } = useLocalization();
   const { items, accordion = true } = props;
 
   if (accordion) {
@@ -19,10 +18,10 @@ export function FAQSection({ id, props }: { id?: string; props: FAQSectionProps 
                   className="bg-background rounded-lg px-6 border"
                 >
                   <AccordionTrigger className="text-left hover:no-underline py-4">
-                    <span className="font-semibold text-foreground">{t(item.q)}</span>
+                    <T k={item.q} as="span" className="font-semibold text-foreground" />
                   </AccordionTrigger>
                   <AccordionContent className="pb-4 text-muted-foreground">
-                    {t(item.a)}
+                    <T k={item.a} />
                   </AccordionContent>
                 </AccordionItem>
               ))}
@@ -39,8 +38,8 @@ export function FAQSection({ id, props }: { id?: string; props: FAQSectionProps 
         <div className="max-w-3xl mx-auto space-y-8">
           {items.map((item, index) => (
             <div key={index} className="bg-background rounded-lg p-6 border">
-              <h3 className="font-semibold text-lg mb-3 text-foreground">{t(item.q)}</h3>
-              <p className="text-muted-foreground leading-relaxed">{t(item.a)}</p>
+              <T k={item.q} as="h3" className="font-semibold text-lg mb-3 text-foreground" />
+              <T k={item.a} as="p" className="text-muted-foreground leading-relaxed" />
             </div>
           ))}
         </div>
@@ -48,3 +47,4 @@ export function FAQSection({ id, props }: { id?: string; props: FAQSectionProps 
     </section>
   );
 }
+export default FAQSection;

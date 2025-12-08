@@ -14,3 +14,4 @@ export function LoginFormSection({ id }: { id?: string; props: LoginFormSectionP
         </section>
   );
 }
+export default LoginFormSection;

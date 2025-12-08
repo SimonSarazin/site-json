@@ -155,3 +155,5 @@ export function GallerySection({ id, props }: { id?: string; props: GallerySecti
     </section>
   );
 }
+
+export default GallerySection;

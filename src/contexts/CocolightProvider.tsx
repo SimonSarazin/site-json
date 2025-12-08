@@ -21,7 +21,8 @@ export function CocolightProvider({
   children,
   clientOptions = DEFAULT_CLIENT_OPTIONS,
 }: CocolightProviderProps) {
-  /* 1️⃣ — données initiales, déjà prêtes grâce à Suspense ---------------- */
+
+    /* 1️⃣ — données initiales, déjà prêtes grâce à Suspense ---------------- */
   const {
     client, // ApiClient           (stable)
     userApiInstance, // UserApi             (stable)
@@ -39,7 +40,7 @@ export function CocolightProvider({
   }, []);
 
   // ----------------------------- state ------------------------------------
-  const [api, setApi] = useState<Api>(initialApi);
+  const [api, setApi] = useState<Api | null>(initialApi);
   const [me, setMe] = useState<User | null>(initialMe as User | null);
   const [organization, setOrganization] = useState<Organization | null>(
     initialOrg as Organization | null,
@@ -95,7 +96,11 @@ export function CocolightProvider({
     const handleSessionReset = async () => {
       setMe(null);
       if (userApiInstance?.client) {
-        setApi(new Cocolight.Api(null, userApiInstance.client));
+        const apiReset = new Cocolight.Api(null, userApiInstance.client);
+        setApi(apiReset);
+        const slug = getSlug();
+        const resolvedEntity = await apiReset.entitySlug(slug);
+        setEntity(resolvedEntity as Organization | Project);
       }
     };
 

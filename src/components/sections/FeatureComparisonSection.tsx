@@ -1,12 +1,11 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Check, X } from 'lucide-react';
-import { useLocalization } from "@/hooks/useLocalization";
+import { T } from "@/components/ui/T";
 import { cn } from '@/lib/utils';
 import { FeatureComparisonSectionProps } from '@/types/site-schema';
 
 export function FeatureComparisonSection({ id, props }: { id?: string; props: FeatureComparisonSectionProps }) {
-  const { t } = useLocalization();
   const { features, plans } = props;
 
   const renderFeatureValue = (value: boolean | string) => {
@@ -40,7 +39,7 @@ export function FeatureComparisonSection({ id, props }: { id?: string; props: Fe
                             Populaire
                           </Badge>
                         )}
-                        <div className="font-semibold">{t(plan.name)}</div>
+                        <T k={plan.name} as="div" className="font-semibold" />
                       </div>
                     </TableHead>
                   ))}
@@ -51,17 +50,15 @@ export function FeatureComparisonSection({ id, props }: { id?: string; props: Fe
                   <TableRow key={featureIndex}>
                     <TableCell className="font-medium">
                       <div>
-                        <div className="font-semibold">{t(feature.name)}</div>
+                        <T k={feature.name} as="div" className="font-semibold" />
                         {feature.description && (
-                          <div className="text-sm text-muted-foreground mt-1">
-                            {t(feature.description)}
-                          </div>
+                          <T k={feature.description} as="div" className="text-sm text-muted-foreground mt-1" />
                         )}
                       </div>
                     </TableCell>
                     {plans.map((plan, planIndex) => (
-                      <TableCell 
-                        key={planIndex} 
+                      <TableCell
+                        key={planIndex}
                         className={cn(
                           "text-center",
                           plan.highlighted && "bg-primary/5"
@@ -80,3 +77,4 @@ export function FeatureComparisonSection({ id, props }: { id?: string; props: Fe
     </section>
   );
 }
+export default FeatureComparisonSection;

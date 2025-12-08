@@ -1,4 +1,5 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { T } from "@/components/ui/T";
 import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from '@/lib/utils';
 import type { Section, TabsSectionProps } from '@/types/site-schema';
@@ -13,8 +14,8 @@ export function TabsSection({ id, props }: { id?: string; props: TabsSectionProp
     <section id={id} className="py-4 sm:py-16 bg-background text-foreground">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mx-auto">
-          <Tabs 
-            defaultValue={defaultTab || tabs[0]?.id} 
+          <Tabs
+            defaultValue={defaultTab || tabs[0]?.id}
             orientation={orientation}
             className={cn(
               "w-full",
@@ -27,31 +28,31 @@ export function TabsSection({ id, props }: { id?: string; props: TabsSectionProp
               orientation === 'vertical' && "flex-col h-fit w-64"
             )}>
               {tabs.map((tab) => (
-                <TabsTrigger 
-                  key={tab.id} 
+                <TabsTrigger
+                  key={tab.id}
                   value={tab.id}
                   className={cn(
                     "flex items-center gap-2",
                     orientation === 'vertical' && "justify-start"
                   )}
                 >
-                  {tab.icon && 
+                  {tab.icon &&
                   <DynamicIcon
                     name={tab.icon as IconName}
                     className="w-4 h-4"
                   />
                   }
-                  {t(tab.label)}
+                  <T k={tab.label} />
                 </TabsTrigger>
               ))}
             </TabsList>
-            
+
             <div className={cn(
               orientation === 'vertical' && "flex-1"
             )}>
               {tabs.map((tab) => (
-                <TabsContent 
-                  key={tab.id} 
+                <TabsContent
+                  key={tab.id}
                   value={tab.id}
                   className="mt-2 sm:mt-6 p-0 sm:p-6 bg-card rounded-lg border"
                 >
@@ -60,9 +61,10 @@ export function TabsSection({ id, props }: { id?: string; props: TabsSectionProp
                     <SectionRenderer key={idx} section={section} />
                   ))
                 ) : (
-                  <div 
+                  <div
                     className="prose prose-gray dark:prose-invert max-w-none"
-                    dangerouslySetInnerHTML={{ __html: t(tab.content) }} 
+                    dangerouslySetInnerHTML={{ __html: t(tab.content) }}
+                    suppressHydrationWarning
                   />
                 )}
                 </TabsContent>
@@ -74,3 +76,4 @@ export function TabsSection({ id, props }: { id?: string; props: TabsSectionProp
     </section>
   );
 }
+export default TabsSection;

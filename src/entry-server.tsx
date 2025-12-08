@@ -8,10 +8,10 @@ import {
 }                                               from 'react-router';
 import { type SiteConfig }                      from '@/types/site';
 import { buildRoutes }                          from '@/lib/buildRoutes';
-import { Writable }                             from 'node:stream';
+import { Writable, Transform }                  from 'node:stream';
 import { dehydrate, type DehydratedState, HydrationBoundary, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { getBaseUrl } from './lib/constant/common';
-import { initApi } from './lib/apiClient';
+import { initApi, resetApiState } from './lib/apiClient';
 import {
   ChunkCollectorContext,
   createChunkCollector,
@@ -28,7 +28,11 @@ export async function render(
   res: Response,
   cfg: SiteConfig,
   onHead: (headHtml: string, dehydratedState: DehydratedState) => Promise<void>,
+  closingTags = '</div></body></html>',
 ): Promise<void> {
+  /* Reset de l'état API pour éviter le cache entre requêtes SSR */
+  resetApiState();
+
   /* Remplira title/meta/link dans onShellReady */
   const helmetCtx: HelmetDataContext = {};
 
@@ -53,12 +57,23 @@ export async function render(
 
   /* 3.  Pré-hydratation React-Query ------------------------------------ */
   // ⬇️  on exécute la requête "cocolight-init" AVANT le rendu
-  await queryClient.ensureQueryData({
+  const initResult = await queryClient.ensureQueryData({
     queryKey: ["cocolight-init"],
     queryFn: () => initApi({ baseURL: getBaseUrl(), debug: true })
   });
 
+  // Créer une query SÉRIALISABLE avec les données utiles pour l'hydratation
+  // (sans les classes ApiClient, Api qui ne peuvent pas être sérialisées)
+  queryClient.setQueryData(["cocolight-data"], {
+    me: initResult.me ? initResult.me : null,
+    organization: initResult.organization ? initResult.organization : null,
+    entity: initResult.entity ? initResult.entity : null,
+    contextType: initResult.contextType,
+    contextId: initResult.contextId,
+  });
+
   const dehydratedState = dehydrate(queryClient, {
+    // Exclure cocolight-init (non-sérialisable), mais garder cocolight-data
     shouldDehydrateQuery: q => q.queryKey[0] !== "cocolight-init",
   });
 
@@ -75,6 +90,33 @@ export async function render(
   /*  Streaming React 19                                       */
   /* --------------------------------------------------------- */
   await new Promise<void>((resolve, reject) => {
+    let streamFinished = false;
+
+    // Transform stream qui ajoute les closing tags automatiquement
+    // quand le pipe React se termine (via flush)
+    const appendTransform = new Transform({
+      transform(chunk, _encoding, callback) {
+        callback(null, chunk);
+      },
+      flush(callback) {
+        this.push(closingTags);
+        callback();
+      },
+    });
+
+    // Quand le transform stream se termine, on résout la promesse
+    appendTransform.on('finish', () => {
+      streamFinished = true;
+      resolve();
+    });
+
+    appendTransform.on('error', (err) => {
+      console.error('[SSR] Transform error:', err);
+      reject(err);
+    });
+
+    // Pipe le transform vers la response
+    appendTransform.pipe(res as unknown as Writable);
 
     const { pipe, abort } = renderToPipeableStream(
       <HelmetProvider context={helmetCtx}>
@@ -105,15 +147,16 @@ export async function render(
              dehydratedState
           );
 
-          /* Express.Response est bien un Writable (cast pour TS)         */
-          pipe(res as unknown as Writable);
+          /* Pipe vers le transform qui ajoutera les closing tags */
+          pipe(appendTransform);
         },
 
-        onAllReady() {
-          res.write("</div></body></html>");                  // </div></body></html>
-          res.end();
-          resolve();
-        },
+  onAllReady() {
+    // Terminer le transform stream, ce qui déclenchera flush()
+    // et ajoutera les closing tags automatiquement
+    appendTransform.end();
+  },
+
 
         onShellError(err) {
           console.error(err);
@@ -135,8 +178,12 @@ export async function render(
 
     res.once('close', () => {
       clearTimeout(timer);
-      abort();
-      resolve();
+      if (!streamFinished) {
+        // Seulement abort si le stream n'est pas terminé normalement
+        abort();
+        appendTransform.destroy();
+        resolve();
+      }
     });
   });
 }

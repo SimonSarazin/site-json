@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Quote } from 'lucide-react';
+import { T } from "@/components/ui/T";
 import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from '@/lib/utils';
 import { TestimonialsSectionProps } from '@/types/site-schema';
@@ -36,7 +37,7 @@ export function TestimonialsSection({ id, props }: { id?: string; props: Testimo
         <div className="flex flex-col h-full">
           <Quote className="w-8 h-8 text-primary mb-4" />
           <blockquote className="text-lg leading-relaxed mb-6 flex-1 text-foreground">
-            "{t(item.quote)}"
+            "<T k={item.quote} />"
           </blockquote>
           <div className="flex items-center gap-4">
             <Avatar>
@@ -46,9 +47,9 @@ export function TestimonialsSection({ id, props }: { id?: string; props: Testimo
               </AvatarFallback>
             </Avatar>
             <div>
-              <div className="font-semibold text-foreground">{t(item.author)}</div>
+              <T k={item.author} as="div" className="font-semibold text-foreground" />
               {item.role && (
-                <div className="text-sm text-muted-foreground">{t(item.role)}</div>
+                <T k={item.role} as="div" className="text-sm text-muted-foreground" />
               )}
             </div>
           </div>
@@ -84,7 +85,7 @@ export function TestimonialsSection({ id, props }: { id?: string; props: Testimo
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </Button>
-                  
+
                   <div className="flex gap-2">
                     {items.map((_, index) => (
                       <button
@@ -98,7 +99,7 @@ export function TestimonialsSection({ id, props }: { id?: string; props: Testimo
                       />
                     ))}
                   </div>
-                  
+
                   <Button
                     variant="outline"
                     size="sm"
@@ -129,3 +130,4 @@ export function TestimonialsSection({ id, props }: { id?: string; props: Testimo
     </section>
   );
 }
+export default TestimonialsSection;

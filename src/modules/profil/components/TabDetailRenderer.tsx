@@ -1,4 +1,5 @@
-import { lazy, useMemo } from "react";
+import { useMemo } from "react";
+import { lazy } from "vite-preload";
 import { useParams, useLocation } from "react-router";
 import { useSite } from "@/hooks/useSite";
 import { useProfileEntity } from "../hooks/useProfileEntity";

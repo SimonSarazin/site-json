@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient, type UseQueryOptions } from "@tanstack/react-query";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
 import { transformToEntityInstance } from "@/lib/entityTransform";
@@ -20,6 +20,7 @@ interface QueryEntityBySlugProps {
 export const useEntityBySlugQuery = ({ slug, options = {} }: QueryEntityBySlugProps) => {
   const { entity, loading, helper, me } = useCocolight();
   const queryClient = useQueryClient();
+  const prevUserContextRef = useRef<unknown>(undefined);
 
   // Le type unknown car l'API peut retourner soit une instance, soit du JSON déshydraté
   const { data, isLoading, isError, error, refetch } = useQuery<unknown>({
@@ -37,6 +38,21 @@ export const useEntityBySlugQuery = ({ slug, options = {} }: QueryEntityBySlugPr
     refetchOnWindowFocus: false,
     ...options,
   });
+
+  // userContext change donc connecter donc refetch avec l'entity connecter
+  useEffect(() => {
+    const currentUserContext = entity?.userContext ?? null;
+    const prevUserContext = prevUserContextRef.current ?? null;
+
+    // Comparer avec la valeur précédente (null et undefined sont équivalents)
+    if (currentUserContext !== prevUserContext) {
+      // Mettre à jour la ref avec la nouvelle valeur
+      prevUserContextRef.current = currentUserContext;
+
+      // Refetch à chaque changement (connexion, déconnexion, changement d'utilisateur)
+      refetch();
+    }
+  }, [entity?.userContext, refetch]);
 
   // Transformer le cache une seule fois après l'hydratation SSR
   useEffect(() => {

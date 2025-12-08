@@ -92,10 +92,11 @@ export function BlogPostSection({ id, props }: { id?: string; props: BlogPostSec
 
           {/* Content */}
           <div className="prose prose-lg max-w-none dark:prose-invert">
-            <div dangerouslySetInnerHTML={{ __html: t(content) }} />
+            <div dangerouslySetInnerHTML={{ __html: t(content) }} suppressHydrationWarning />
           </div>
         </div>
       </div>
     </article>
   );
 }
+export default BlogPostSection;

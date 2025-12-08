@@ -111,12 +111,15 @@ app.use(['/{*all}'], async (req, res) => {
       siteConfig,
       // callback onHead : reçoit les balises Helmet
       (helmetHead, dehydratedState) => {
-        res.write(helmetHead);      // <title> / <meta> / <link>…
-        res.write(`<script>window.__REACT_QUERY_STATE__=${serialize(
+        const stateScript = `<script>window.__REACT_QUERY_STATE__=${serialize(
                             dehydratedState, { isJSON: true }
-                          )}</script>`);
+                          )}</script>`;
+
+        res.write(helmetHead);      // <title> / <meta> / <link>…
+        res.write(stateScript);
         res.write(beforeRoot);      // </head><body><div id="root">
       },
+      tail,  // closing tags from template
     );
 
   } catch (e) {

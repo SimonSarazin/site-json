@@ -2,15 +2,16 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from "sonner";
+import { T } from "@/components/ui/T";
 import { useLocalization } from "@/hooks/useLocalization";
 import { Mail, CheckCircle } from 'lucide-react';
 import { NewsletterSectionProps } from '@/types/site-schema';
 
 export function NewsletterSection({ id, props }: { id?: string; props: NewsletterSectionProps }) {
   const { t } = useLocalization();
-  
+
   const { headline, subhead, formAction, emailPlaceholder, submitLabel, successMessage } = props;
-  
+
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -89,22 +90,18 @@ export function NewsletterSection({ id, props }: { id?: string; props: Newslette
           <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
             <Mail className="w-8 h-8 text-primary" />
           </div>
-          
-          <h2 className="text-3xl font-bold mb-4 text-foreground">
-            {t(headline)}
-          </h2>
-          
+
+          <T k={headline} as="h2" className="text-3xl font-bold mb-4 text-foreground" />
+
           {subhead && (
-            <p className="text-muted-foreground mb-8 text-lg">
-              {t(subhead)}
-            </p>
+            <T k={subhead} as="p" className="text-muted-foreground mb-8 text-lg" />
           )}
 
           <form onSubmit={handleSubmit} className="flex gap-2 max-w-md mx-auto">
             <Input
               type="email"
               placeholder={
-                emailPlaceholder 
+                emailPlaceholder
                   ? t(emailPlaceholder)
                   : 'Votre adresse e-mail...'
               }
@@ -114,10 +111,10 @@ export function NewsletterSection({ id, props }: { id?: string; props: Newslette
               required
             />
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Inscription...' : t(submitLabel)}
+              {isSubmitting ? 'Inscription...' : <T k={submitLabel} />}
             </Button>
           </form>
-          
+
           <p className="text-xs text-muted-foreground mt-4">
             En vous inscrivant, vous acceptez de recevoir nos e-mails. Vous pouvez vous désabonner à tout moment.
           </p>
@@ -126,3 +123,4 @@ export function NewsletterSection({ id, props }: { id?: string; props: Newslette
     </section>
   );
 }
+export default NewsletterSection;

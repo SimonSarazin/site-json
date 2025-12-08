@@ -23,6 +23,38 @@ export interface InitApiOptions {
   [key: string]: any;
 }
 
+// Type pour les données hydratées SSR
+interface CocolightHydratedData {
+  me: Record<string, unknown> | null;
+  organization: Record<string, unknown> | null;
+  entity: Record<string, unknown> | null;
+  contextType?: string;
+  contextId?: string;
+}
+
+/**
+ * Récupère les données hydratées de cocolight-data depuis le state React Query
+ */
+function getHydratedCocolightData(): CocolightHydratedData | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const reactQueryState = (window as any).__REACT_QUERY_STATE__;
+    if (!reactQueryState?.queries) return null;
+
+    // Chercher la query cocolight-data dans le state
+    const cocolightDataQuery = reactQueryState.queries.find(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (q: any) => q.queryKey?.[0] === "cocolight-data"
+    );
+
+    return cocolightDataQuery?.state?.data ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export interface InitApiResult {
   client: ApiClient;
   userApiInstance: UserApi;
@@ -50,6 +82,20 @@ let cachedContextId: string | undefined = undefined;
 let cachedEntity: any                    = null;
 let initialized = false;
 let initPromise: Promise<InitApiResult> | null = null;
+
+// Reset pour SSR - à appeler au début de chaque requête
+export function resetApiState(): void {
+  client = null;
+  userApiInstance = null;
+  api = null;
+  cachedMe = null;
+  cachedOrganization = null;
+  cachedContextType = undefined;
+  cachedContextId = undefined;
+  cachedEntity = null;
+  initialized = false;
+  initPromise = null;
+}
 
 // ————————————————————————————————————————————————————————————
 // Initialisation unique
@@ -104,6 +150,31 @@ export async function initApiClient(
     cachedEntity = null;
     const slug = getSlug();
 
+    // Vérifier s'il y a des données hydratées du SSR
+    // On utilise le cache SSR seulement si l'user n'est pas connecté
+    // Car les données d'un user connecté peuvent être différentes (droits, données personnelles)
+    const hydratedData = getHydratedCocolightData();
+    const isUserConnected = userApiInstance.client.isConnected;
+
+    if (hydratedData && !isUserConnected) {
+      console.log("[Api.init] User non connecté - utilisation du cache SSR");
+
+      // Transformer les données JSON en instances avec le client
+      if (hydratedData.entity) {
+        cachedEntity = Cocolight.helper.fromEntityJSON(hydratedData.entity, client);
+        cachedContextType = hydratedData.contextType;
+        cachedContextId = hydratedData.contextId;
+
+        if (cachedContextType === "organizations") {
+          cachedOrganization = cachedEntity as Organization;
+        }
+      }
+
+      if (hydratedData.organization && !cachedOrganization) {
+        cachedOrganization = Cocolight.helper.fromEntityJSON(hydratedData.organization, client) as Organization;
+      }
+    }
+
     try {
       if (userApiInstance.client.isConnected) {
         const loggedUser = await userApiInstance.meIsconnected();
@@ -113,7 +184,8 @@ export async function initApiClient(
         api = new Cocolight.Api(null, userApiInstance.client);
       }
 
-      if (slug) {
+      // Seulement fetch le slug si on n'a pas déjà les données hydratées
+      if (slug && !cachedEntity) {
         try {
           const entity = cachedMe ?  await cachedMe.entityBySlug(slug) : await api.entitySlug(slug);
 

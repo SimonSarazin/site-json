@@ -239,3 +239,5 @@ export function ContactFormSection({ id, props }: { id?: string; props: ContactF
     </section>
   );
 }
+
+export default ContactFormSection;

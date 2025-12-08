@@ -1,11 +1,10 @@
 import { Button } from '@/components/ui/button';
-import { useLocalization } from "@/hooks/useLocalization";
+import { T } from "@/components/ui/T";
 import { useNavigate } from "react-router";
 import { cn } from '@/lib/utils';
 import { type HeroSectionProps } from '@/types/site-schema';
 
 export function HeroSection({ id, props }: { id?: string; props: HeroSectionProps }) {
-  const { t } = useLocalization();
   const navigate = useNavigate();
   const { headline, subhead, backgroundImage, videoBg, align = 'center', overlay = false, cta, scrollTo } = props;
 
@@ -27,7 +26,7 @@ export function HeroSection({ id, props }: { id?: string; props: HeroSectionProp
   };
 
   return (
-    <section 
+    <section
       id={id}
       className={cn(
         "relative min-h-[70vh] flex items-center justify-center overflow-hidden"
@@ -35,12 +34,12 @@ export function HeroSection({ id, props }: { id?: string; props: HeroSectionProp
     >
       {/* Background */}
       {backgroundImage && (
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${backgroundImage})` }}
         />
       )}
-      
+
       {videoBg && (
         <video
           autoPlay
@@ -69,14 +68,10 @@ export function HeroSection({ id, props }: { id?: string; props: HeroSectionProp
           align === 'center' && "text-center",
           align === 'right' && "text-right"
         )}>
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 animate-in fade-in slide-in-from-bottom-4 duration-1000">
-            {t(headline)}
-          </h1>
-          
+          <T k={headline} as="h1" className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 animate-in fade-in slide-in-from-bottom-4 duration-1000" />
+
           {subhead && (
-            <p className="text-xl md:text-2xl mb-8 opacity-90 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-200">
-              {t(subhead)}
-            </p>
+            <T k={subhead} as="p" className="text-xl md:text-2xl mb-8 opacity-90 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-200" />
           )}
 
           {cta && cta.length > 0 && (
@@ -89,7 +84,7 @@ export function HeroSection({ id, props }: { id?: string; props: HeroSectionProp
                   className="text-lg px-8 py-6"
                   onClick={() => handleCTAClick(button.href)}
                 >
-                  {t(button.label)}
+                  <T k={button.label} />
                 </Button>
               ))}
             </div>
@@ -113,3 +108,4 @@ export function HeroSection({ id, props }: { id?: string; props: HeroSectionProp
     </section>
   );
 }
+export default HeroSection;

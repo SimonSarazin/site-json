@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { X, Info, CheckCircle, AlertTriangle, AlertCircle } from 'lucide-react';
-import { useLocalization } from "@/hooks/useLocalization";
+import { T } from "@/components/ui/T";
 import { cn } from '@/lib/utils';
 import { BannerSectionProps } from '@/types/site-schema';
 
 export function BannerSection({ id, props }: { id?: string; props: BannerSectionProps }) {
-  const { t } = useLocalization();
   const { text, variant = 'info', dismissible = false } = props;
   const [isVisible, setIsVisible] = useState(true);
 
@@ -44,11 +43,9 @@ export function BannerSection({ id, props }: { id?: string; props: BannerSection
         <div className="flex items-center justify-between py-3">
           <div className="flex items-center gap-3">
             {getIcon()}
-            <p className="text-sm font-medium">
-              {t(text)}
-            </p>
+            <T k={text} as="p" className="text-sm font-medium" />
           </div>
-          
+
           {dismissible && (
             <Button
               variant="ghost"
@@ -65,3 +62,4 @@ export function BannerSection({ id, props }: { id?: string; props: BannerSection
     </section>
   );
 }
+export default BannerSection;

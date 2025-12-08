@@ -1,11 +1,10 @@
 import { Button } from '@/components/ui/button';
-import { useLocalization } from "@/hooks/useLocalization";
+import { T } from "@/components/ui/T";
 import { useNavigate } from "react-router";
 import { cn } from '@/lib/utils';
 import { CTASectionProps } from '@/types/site-schema';
 
 export function CTASection({ id, props }: { id?: string; props: CTASectionProps }) {
-  const { t } = useLocalization();
   const navigate = useNavigate();
   const { headline, subhead, backgroundImage, backgroundColor, buttons, align = 'center' } = props;
 
@@ -23,7 +22,7 @@ export function CTASection({ id, props }: { id?: string; props: CTASectionProps 
   };
 
   return (
-    <section 
+    <section
       id={id}
       className={cn(
         "relative py-20 overflow-hidden",
@@ -36,7 +35,7 @@ export function CTASection({ id, props }: { id?: string; props: CTASectionProps 
       {/* Background Image */}
       {backgroundImage && (
         <>
-          <div 
+          <div
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{ backgroundImage: `url(${backgroundImage})` }}
           />
@@ -52,20 +51,24 @@ export function CTASection({ id, props }: { id?: string; props: CTASectionProps 
           align === 'center' && "text-center",
           align === 'right' && "text-right"
         )}>
-          <h2 className={cn(
-            "text-3xl md:text-5xl font-bold mb-6",
-            backgroundImage ? "text-white" : "text-foreground"
-          )}>
-            {t(headline)}
-          </h2>
-          
+          <T
+            k={headline}
+            as="h2"
+            className={cn(
+              "text-3xl md:text-5xl font-bold mb-6",
+              backgroundImage ? "text-white" : "text-foreground"
+            )}
+          />
+
           {subhead && (
-            <p className={cn(
-              "text-xl mb-8 opacity-90",
-              backgroundImage ? "text-white" : "text-muted-foreground"
-            )}>
-              {t(subhead)}
-            </p>
+            <T
+              k={subhead}
+              as="p"
+              className={cn(
+                "text-xl mb-8 opacity-90",
+                backgroundImage ? "text-white" : "text-muted-foreground"
+              )}
+            />
           )}
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -81,7 +84,7 @@ export function CTASection({ id, props }: { id?: string; props: CTASectionProps 
                 )}
                 onClick={() => handleButtonClick(button.href)}
               >
-                {t(button.label)}
+                <T k={button.label} />
               </Button>
             ))}
           </div>
@@ -90,3 +93,4 @@ export function CTASection({ id, props }: { id?: string; props: CTASectionProps 
     </section>
   );
 }
+export default CTASection;

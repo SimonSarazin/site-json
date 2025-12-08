@@ -5,6 +5,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { T } from "@/components/ui/T";
 import { useLocalization } from "@/hooks/useLocalization";
 import { AccordionSectionProps } from "@/types/site-schema";
 import { type AccordionMultipleProps, type AccordionSingleProps } from "@radix-ui/react-accordion";
@@ -49,14 +50,13 @@ export function AccordionSection({ id, props }: { id?: string; props: AccordionS
                 className="bg-card rounded-lg px-6 border"
               >
                 <AccordionTrigger className="text-left hover:no-underline py-4">
-                  <span className="font-semibold text-foreground">
-                    {t(item.title)}
-                  </span>
+                  <T k={item.title} as="span" className="font-semibold text-foreground" />
                 </AccordionTrigger>
 
                 <AccordionContent className="pb-4 text-muted-foreground">
                   <div
                     dangerouslySetInnerHTML={{ __html: t(item.content) }}
+                    suppressHydrationWarning
                   />
                 </AccordionContent>
               </AccordionItem>
@@ -67,3 +67,5 @@ export function AccordionSection({ id, props }: { id?: string; props: AccordionS
     </section>
   );
 }
+
+export default AccordionSection;

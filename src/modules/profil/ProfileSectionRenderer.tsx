@@ -1,4 +1,4 @@
-import { lazy } from "react";
+import { lazy } from "vite-preload";
 import type {
   ProfileAboutSection,
   ProfileGallerySection,

@@ -103,7 +103,7 @@ export function useUserPermissions(
     };
 
     // Si pas d'entité
-    if (!entity) {
+    if (!entity?.isConnected || !entity?.userContext) {
       return defaultPermissions;
     }
 

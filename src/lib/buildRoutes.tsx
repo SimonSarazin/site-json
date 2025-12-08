@@ -216,12 +216,12 @@ async function buildRoutesAsync(
         map: url.searchParams.get('map') !== 'false',
       };
 
-      // Détecter les sections searchPro ou searchProStatic
+      // Détecter uniquement les sections searchPro (pas searchProStatic pour éviter les problèmes SSR)
       const searchSections = p.sections.filter(
-        (s: { type: string }) => s.type === 'searchPro' || s.type === 'searchProStatic'
+        (s: { type: string }) => s.type === 'searchPro'
       );
 
-      // Pré-charger les résultats pour chaque section de recherche
+      // Pré-charger les résultats pour chaque section de recherche      console.log(`[SSR Prefetch] Found ${searchSections.length} search sections to prefetch`);
       await Promise.all(
         searchSections.map(async (section: { type: string; props?: Record<string, unknown> }) => {
           const props = section.props || {};
