@@ -136,8 +136,19 @@ export function useAddEvent(entity?: EntityTypes | null) {
       // Transformer les données avec l'objet address
       const transformedData = transformFormDataWithAddress(data);
 
-      // Construire les données de l'événement
-      const eventData = { ...transformedData };
+      // Type avec les dates converties en objets Date
+      type EventDataWithDates = Omit<typeof transformedData, 'startDate' | 'endDate'> & {
+        startDate?: Date;
+        endDate?: Date;
+        organizer?: ReturnType<typeof buildOrganizerReference>;
+      };
+
+      // Construire les données de l'événement avec les dates converties
+      const eventData: EventDataWithDates = {
+        ...transformedData,
+        startDate: transformedData.startDate ? new Date(transformedData.startDate) : undefined,
+        endDate: transformedData.endDate ? new Date(transformedData.endDate) : undefined,
+      };
 
       // L'organizer est obligatoire - utiliser l'entité fournie ou l'utilisateur
       if (!eventData.organizer || Object.keys(eventData.organizer).length === 0) {
