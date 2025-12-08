@@ -8,7 +8,7 @@
  * appelles pourra être renseignée petit à petit dans ce fichier .d.ts.
  */
 
-import Cocolight, { type Api, type ApiClient, type Organization, type User, type UserApi } from "@communecter/cocolight-api-client";
+import Cocolight, { type Api, type ApiClient, type User, type UserApi } from "@communecter/cocolight-api-client";
 import { getBaseUrl, getSlug } from "./constant/common";
 
 // ————————————————————————————————————————————————————————————
@@ -26,7 +26,6 @@ export interface InitApiOptions {
 // Type pour les données hydratées SSR
 interface CocolightHydratedData {
   me: Record<string, unknown> | null;
-  organization: Record<string, unknown> | null;
   entity: Record<string, unknown> | null;
   contextType?: string;
   contextId?: string;
@@ -60,7 +59,6 @@ export interface InitApiResult {
   userApiInstance: UserApi;
   api: Api;
   me: User | null;
-  organization: Organization | null;
   contextType?: string;
   contextId?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -75,7 +73,6 @@ let client: ApiClient | null             = null;
 let userApiInstance: UserApi | null      = null;
 let api: Api | null                      = null;
 let cachedMe: User | null                = null;
-let cachedOrganization: Organization | null = null;
 let cachedContextType: string | undefined = undefined;
 let cachedContextId: string | undefined = undefined;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -89,7 +86,6 @@ export function resetApiState(): void {
   userApiInstance = null;
   api = null;
   cachedMe = null;
-  cachedOrganization = null;
   cachedContextType = undefined;
   cachedContextId = undefined;
   cachedEntity = null;
@@ -111,7 +107,6 @@ export async function initApiClient(
       userApiInstance: userApiInstance!,
       api: api!,
       me: cachedMe,
-      organization: cachedOrganization,
       contextType: cachedContextType,
       contextId: cachedContextId,
       entity: cachedEntity,
@@ -144,7 +139,6 @@ export async function initApiClient(
     initialized = true;
 
     cachedMe = null;
-    cachedOrganization = null;
     cachedContextType = undefined;
     cachedContextId = undefined;
     cachedEntity = null;
@@ -164,14 +158,6 @@ export async function initApiClient(
         cachedEntity = Cocolight.helper.fromEntityJSON(hydratedData.entity, client);
         cachedContextType = hydratedData.contextType;
         cachedContextId = hydratedData.contextId;
-
-        if (cachedContextType === "organizations") {
-          cachedOrganization = cachedEntity as Organization;
-        }
-      }
-
-      if (hydratedData.organization && !cachedOrganization) {
-        cachedOrganization = Cocolight.helper.fromEntityJSON(hydratedData.organization, client) as Organization;
       }
     }
 
@@ -191,13 +177,8 @@ export async function initApiClient(
 
           if (entity) {
             cachedEntity = entity;
-
             cachedContextType = entity.getEntityType();
             cachedContextId = entity.id || undefined;
-
-            if (cachedContextType === "organizations") {
-              cachedOrganization = entity as Organization;
-            }
           }
         } catch (slugErr) {
           console.error("[Api.init] Erreur lors de la résolution du slug:", slugErr);
@@ -215,7 +196,6 @@ export async function initApiClient(
       userApiInstance,
       api,
       me: cachedMe,
-      organization: cachedOrganization,
       contextType: cachedContextType,
       contextId: cachedContextId,
       entity: cachedEntity,

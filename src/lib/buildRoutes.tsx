@@ -47,12 +47,12 @@ async function prefetchSearchResults(
     return await queryClient.ensureQueryData({
       queryKey,
       queryFn: async () => {
-        const { organization, entity, api } = await initApi({
+        const { entity, api } = await initApi({
           baseURL: getBaseUrl(),
           debug: true
         });
 
-        const searchContext = organization || entity || api;
+        const searchContext = entity || api;
 
         if (!searchContext?.searchCostum) {
           console.warn("searchCostum non disponible");

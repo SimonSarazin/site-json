@@ -28,7 +28,6 @@ export function CocolightProvider({
     userApiInstance, // UserApi             (stable)
     api: initialApi, // Api                 (mutable : login/logout)
     me: initialMe,
-    organization: initialOrg,
     contextType: initialContextType,
     contextId: initialContextId,
     entity: initialEntity,
@@ -42,9 +41,6 @@ export function CocolightProvider({
   // ----------------------------- state ------------------------------------
   const [api, setApi] = useState<Api | null>(initialApi);
   const [me, setMe] = useState<User | null>(initialMe as User | null);
-  const [organization, setOrganization] = useState<Organization | null>(
-    initialOrg as Organization | null,
-  );
   const [entity, setEntity] = useState<Organization | Project | null>(
     initialEntity as Organization | Project | null,
   );
@@ -77,9 +73,6 @@ export function CocolightProvider({
               setContextType(resolvedContextType);
               setContextId(resolvedContextId);
 
-              if (resolvedContextType === "organizations") {
-                setOrganization(resolvedEntity as Organization);
-              }
             }
           } catch (slugErr) {
             console.error("[CocolightProvider] Erreur lors de la résolution du slug:", slugErr);
@@ -123,7 +116,6 @@ export function CocolightProvider({
       userApi: userApiInstance,
       api,
       me,
-      organization,
       contextType,
       contextId,
       entity,
@@ -132,7 +124,7 @@ export function CocolightProvider({
       setDataToProfile,
       loading: false,
     }),
-    [client, userApiInstance, api, me, organization, contextType, contextId, entity, dataToProfile],
+    [client, userApiInstance, api, me, contextType, contextId, entity, dataToProfile],
   );
 
   return (

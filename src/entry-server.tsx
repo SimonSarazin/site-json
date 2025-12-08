@@ -66,7 +66,6 @@ export async function render(
   // (sans les classes ApiClient, Api qui ne peuvent pas être sérialisées)
   queryClient.setQueryData(["cocolight-data"], {
     me: initResult.me ? initResult.me : null,
-    organization: initResult.organization ? initResult.organization : null,
     entity: initResult.entity ? initResult.entity : null,
     contextType: initResult.contextType,
     contextId: initResult.contextId,

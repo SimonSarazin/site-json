@@ -28,7 +28,7 @@ export function useAutocomplete(
     minChars = 2,
   } = options;
 
-  const { organization, helper } = useCocolight();
+  const { entity, helper } = useCocolight();
   const [suggestions, setSuggestions] = useState<SearchEntity[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -38,7 +38,7 @@ export function useAutocomplete(
 
   const fetchSuggestions = useCallback(
     async (searchQuery: string) => {
-      if (!organization || searchQuery.length < minChars) {
+      if (!entity || searchQuery.length < minChars) {
         setSuggestions([]);
         return;
       }
@@ -53,7 +53,7 @@ export function useAutocomplete(
           indexMin: 0,
           indexStep: indexMax,
         };
-        const result = await organization.searchCostum(param);
+        const result = await entity.searchCostum(param);
 
         // Les results sont un objet avec des IDs comme clés, pas un tableau
         const resultsObj = result?.results || {};
@@ -62,7 +62,7 @@ export function useAutocomplete(
         // Transformer les entités JSON en entités Cocolight
         const transformedResults = resultsArray.flatMap((d: any) => {
           if (d?.getEntityType) return d;
-          return helper.fromEntityJSON(d, organization);
+          return helper.fromEntityJSON(d, entity);
         });
 
         setSuggestions(transformedResults);
@@ -74,7 +74,7 @@ export function useAutocomplete(
         setIsLoading(false);
       }
     },
-    [organization, helper, searchTypes, indexMax, minChars]
+    [entity, helper, searchTypes, indexMax, minChars]
   );
 
   useEffect(() => {
