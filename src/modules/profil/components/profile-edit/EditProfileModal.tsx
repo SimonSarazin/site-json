@@ -217,6 +217,23 @@ export function EditProfileModal({
         });
       };
 
+      // Helper pour transformer les références d'entités (parent, organizer)
+      // Ne garde que name et type pour chaque entrée
+      const buildEntityReference = (ref: unknown) => {
+        if (!ref || typeof ref !== "object") return "";
+        const entries = Object.entries(ref as Record<string, unknown>);
+        if (entries.length === 0) return "";
+        return Object.fromEntries(
+          entries.map(([id, entity]) => [
+            id,
+            {
+              name: (entity as { name?: string }).name,
+              type: (entity as { type?: string }).type,
+            },
+          ])
+        );
+      };
+
       switch (entityType) {
         case "citoyens":
           Object.assign(updateData, {
@@ -258,7 +275,7 @@ export function EditProfileModal({
           });
           Object.assign(updateData, buildSocial());
           if (data.avancement) updateData.avancement = data.avancement;
-          if (data.parent) updateData.parent = data.parent;
+          updateData.parent = buildEntityReference(data.parent);
           break;
 
         case "events":
@@ -279,8 +296,8 @@ export function EditProfileModal({
             updateData.endDate = formatISO(new Date(data.endDate));
           }
           updateData.timeZone = data.timeZone || Intl.DateTimeFormat().resolvedOptions().timeZone;
-          updateData.parent = data.parent || "";
-          if (data.organizer) updateData.organizer = data.organizer;
+          updateData.parent = buildEntityReference(data.parent);
+          updateData.organizer = buildEntityReference(data.organizer);
           break;
 
         case "poi":
