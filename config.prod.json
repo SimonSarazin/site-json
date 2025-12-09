@@ -268,7 +268,7 @@
     "height": "lg",
     "utilities": {
       "themeSwitch": false,
-      "langSwitch": false,
+      "langSwitch": true,
       "search": false,
       "auth": true,
       "cart": false,

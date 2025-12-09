@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
+import { useLocalization } from "@/hooks/useLocalization";
 import { Header } from "@/types/site-schema";
-import { ChevronDown, User, LogOut, Settings } from "lucide-react";
+import { ChevronDown, User, LogOut, Settings, Globe } from "lucide-react";
 import { Link, useNavigate } from "react-router";
 import { useCocolight } from "@/hooks/useCocolight";
 import { ClientOnly } from "../ClientOnly";
@@ -28,6 +29,7 @@ interface HeaderTiersLieuxProps {
 export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
     useLoadNamespace("components/layout");
     const t = useT("components/layout");
+    const { currentLocale, setLocale, availableLocales } = useLocalization();
     const navigate = useNavigate();
     const { me, api } = useCocolight();
     const [loginDialogOpen, setLoginDialogOpen] = useState(false);
@@ -141,6 +143,28 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                             {() => <ToggleButtonTheme />}
                         </ClientOnly>
 
+                        {header.utilities?.langSwitch && availableLocales.length > 1 && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="gap-2">
+                                        <Globe className="h-4 w-4" />
+                                        {currentLocale.toUpperCase()}
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    {availableLocales.map(loc => (
+                                        <DropdownMenuItem
+                                            key={loc}
+                                            onClick={() => setLocale(loc)}
+                                            className={loc === currentLocale ? 'bg-accent' : ''}
+                                        >
+                                            {loc.toUpperCase()}
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
+
                         {header.utilities?.auth && (
                             <ClientOnly fallback={<Button variant="ghost" disabled size="sm">…</Button>}>
                                 {() => (
@@ -210,6 +234,27 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                         <ClientOnly fallback={<div className="w-8 h-8" />}>
                             {() => <ToggleButtonTheme />}
                         </ClientOnly>
+                        {header.utilities?.langSwitch && availableLocales.length > 1 && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="gap-1 px-2">
+                                        <Globe className="h-4 w-4" />
+                                        {currentLocale.toUpperCase()}
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    {availableLocales.map(loc => (
+                                        <DropdownMenuItem
+                                            key={loc}
+                                            onClick={() => setLocale(loc)}
+                                            className={loc === currentLocale ? 'bg-accent' : ''}
+                                        >
+                                            {loc.toUpperCase()}
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
                         <button
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                             className="text-foreground hover:text-teal-500 transition relative z-50 p-2"

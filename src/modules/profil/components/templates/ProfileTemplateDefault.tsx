@@ -1,20 +1,17 @@
 import { useState } from "react";
-import { Link, useLocation, useNavigate, useParams } from "react-router";
-import { Mail, ChevronRight, Image as ImageIcon, Phone, Globe, Calendar, MapPin, Users, Briefcase, Award } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useLocation, useNavigate, useParams } from "react-router";
+import { Mail, ChevronRight, Image as ImageIcon, Globe, Users, Briefcase } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { formatDate } from "@/helpers/formatDate";
 import { useFormatProfileEntity } from "../../hooks/useFormatProfileEntity";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
 import "@/modules/profil/i18n";
-// import { useCocolight } from "@/hooks/useCocolight";
-// import { isUser, isOrganization, isProject, isEvent } from "@/lib/getTypedEntity";
 import { LazyTabContent } from "@/components/LazyTabContent";
 import { NewsTab } from "../tabs/NewsTab";
 import { ProjectsTab } from "../tabs/ProjectsTab";
 import { CommunitiesTab } from "../tabs/CommunitiesTab";
+import { AboutTab } from "../tabs/AboutTab";
 
 export default function ProfileTemplateDefault() {
   const { entity, entityType: _entityType } = useProfileEntity();
@@ -44,14 +41,8 @@ export default function ProfileTemplateDefault() {
     logoUrl,
     logoThumbUrl,
     address,
-    organizer,
     name: entityName,
     bannerUrl,
-    tags,
-    badges,
-    membersCount,
-    projectsCount,
-    openingHours,
   } = useFormatProfileEntity(entity);
   const imageUrl = logoUrl;
 
@@ -168,43 +159,43 @@ export default function ProfileTemplateDefault() {
               <TabsList className="w-max min-w-full mb-6 sm:mb-8 bg-background border flex rounded-lg">
               <TabsTrigger
                 value="about"
-                className="flex-shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
+                className="shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
               >
                 {t("ProfileTemplateDefault.tabs.about")}
               </TabsTrigger>
               <TabsTrigger
                 value="news"
-                className="flex-shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
+                className="shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
               >
                 {t("ProfileTemplateDefault.tabs.news")}
               </TabsTrigger>
               <TabsTrigger
                 value="coworking"
-                className="flex-shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
+                className="shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
               >
                 {t("ProfileTemplateDefault.tabs.coworking")}
               </TabsTrigger>
               <TabsTrigger
                 value="rooms"
-                className="flex-shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
+                className="shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
               >
                 {t("ProfileTemplateDefault.tabs.meetingRooms")}
               </TabsTrigger>
               <TabsTrigger
                 value="projects"
-                className="flex-shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
+                className="shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
               >
                 {t("ProfileTemplateDefault.tabs.projects")}
               </TabsTrigger>
               <TabsTrigger
                 value="communities"
-                className="flex-shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
+                className="shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
               >
                 {t("ProfileTemplateDefault.tabs.communities")}
               </TabsTrigger>
               <TabsTrigger
                 value="observatory"
-                className="flex-shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
+                className="shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
               >
                 {t("ProfileTemplateDefault.tabs.observatories")}
               </TabsTrigger>
@@ -212,218 +203,9 @@ export default function ProfileTemplateDefault() {
             </div>
 
             <TabsContent value="about">
-              <div className="flex flex-col lg:grid lg:grid-cols-3 gap-6 sm:gap-8">
-                <div className="order-2 lg:order-1 lg:col-span-2 min-w-0 overflow-hidden">
-              {entity.serverData?.startDate && (
-                <div className="mb-8">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                    <span className="inline-block w-2 h-2 bg-[#0092a2] rounded-full"></span>
-                    {entity.serverData?.type && typeof entity.serverData.type === "string" && (
-                      <span className="capitalize">{entity.serverData.type}</span>
-                    )}
-                  </div>
-                  <div className="text-foreground">
-                    <strong>{t("common.date")}:</strong> {formatDate(entity.serverData.startDate)}
-                    {entity.serverData?.endDate && (
-                      <> - {formatDate(entity.serverData.endDate)}</>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {entity.serverData?.shortDescription && typeof entity.serverData.shortDescription === "string" && (
-                <div className="mb-8">
-                  <h3 className="text-2xl font-bold text-foreground mb-4">
-                    {entity.serverData.shortDescription}
-                  </h3>
-                </div>
-              )}
-
-              {entity.serverData?.description && typeof entity.serverData.description === "string" && (
-                <div className="mb-8 sm:mb-12">
-                  <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6">{t("ProfileTemplateDefault.description")}</h2>
-                  <div className="text-foreground leading-relaxed whitespace-pre-wrap bg-muted p-4 sm:p-6 rounded-lg border border-border wrap-break-word">
-                    {entity.serverData.description}
-                  </div>
-                </div>
-              )}
-
-              {organizer && (
-                <div className="mb-8">
-                  <h2 className="text-2xl font-bold text-foreground mb-4">{t("common.organizedBy")}</h2>
-                  <div className="flex items-center gap-4 bg-card p-5 rounded-lg border border-border shadow-sm hover:border-teal-400 transition-colors">
-                    {organizer.profilThumbImageUrl && (
-                      <img
-                        src={organizer.profilThumbImageUrl}
-                        alt={organizer.name || "Organisateur"}
-                        className="w-16 h-16 rounded-lg object-cover border border-border"
-                      />
-                    )}
-                    <div>
-                      <h3 className="font-bold text-foreground">{organizer.name || "Sans nom"}</h3>
-                      {organizer.slug && (
-                        <Link
-                          to={`/profil/${organizer.slug}`}
-                          className="text-teal-600 hover:text-teal-700 text-sm font-medium"
-                        >
-                          {t("common.viewProfile")} →
-                        </Link>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {badges.length > 0 && (
-                <div className="mb-8">
-                  <h2 className="text-2xl font-bold text-foreground mb-4 flex items-center gap-2">
-                    <Award className="w-6 h-6 text-teal-600" />
-                    {t("ProfileTemplateDefault.badges")}
-                  </h2>
-                  <div className="flex flex-wrap gap-3">
-                    {badges.map((badge, index) => (
-                      <div key={index} className="bg-card border border-(--themecolor) rounded-lg px-4 py-2 flex items-center gap-2 shadow-sm hover:shadow-md transition-shadow">
-                        <Award className="w-4 h-4 text-teal-600" />
-                        <span className="text-foreground font-medium">{badge.name || 'Badge'}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {tags.length > 0 && (
-                <div className="mb-8">
-                  <h2 className="text-2xl font-bold text-foreground mb-4">{t("ProfileTemplateDefault.tags")}</h2>
-                  <div className="flex flex-wrap gap-2">
-                    {tags.slice(0, 20).map((tag, index) => (
-                      <span
-                        key={index}
-                        className="bg-card border border-border text-foreground px-3 py-1.5 rounded-full text-sm font-medium hover:border-teal-400 hover:bg-muted transition-colors"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {openingHours && openingHours.length > 0 && (
-                <div className="mb-8">
-                  <h2 className="text-2xl font-bold text-foreground mb-4">{t("ProfileTemplateDefault.openingHours")}</h2>
-                  <div className="bg-card p-5 rounded-lg border border-border shadow-sm">
-                    {openingHours.map((schedule, index) => (
-                      <div key={index} className="flex justify-between items-center py-3 border-b border-border last:border-b-0">
-                        <span className="font-semibold text-foreground">
-                          {schedule.dayOfWeek}
-                        </span>
-                        <div className="text-foreground font-medium">
-                          {schedule.hours && schedule.hours.length > 0 && (
-                            schedule.hours.map((hour, hIndex) => (
-                              <span key={hIndex}>
-                                {hour.opens} - {hour.closes}
-                                {hIndex < schedule.hours.length - 1 && ', '}
-                              </span>
-                            ))
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="order-1 lg:order-2 lg:col-span-1">
-              <div className="bg-card rounded-lg border border-border p-4 sm:p-6 lg:sticky lg:top-4 shadow-sm">
-                <h3 className="text-xl font-bold text-foreground mb-6">{t("ProfileTemplateDefault.information")}</h3>
-
-                {(membersCount !== null || projectsCount !== null) && (
-                  <div className="space-y-4 mb-6 pb-6 border-b border-border">
-                    {membersCount !== null && (
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-2">
-                          <Users className="w-5 h-5 text-teal-600" />
-                          <span className="text-foreground font-medium">{t("ProfileTemplateDefault.members")}</span>
-                        </div>
-                        <span className="font-bold text-foreground text-lg">{membersCount}</span>
-                      </div>
-                    )}
-                    {projectsCount !== null && (
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-2">
-                          <Briefcase className="w-5 h-5 text-teal-600" />
-                          <span className="text-foreground font-medium">{t("ProfileTemplateDefault.projects")}</span>
-                        </div>
-                        <span className="font-bold text-foreground text-lg">{projectsCount}</span>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                <div className="space-y-4">
-                  {entity.serverData?.username && typeof entity.serverData.username === "string" && (
-                    <div className="flex items-center gap-3 bg-muted p-3 rounded-lg">
-                      <span className="text-teal-600 font-semibold">@{entity.serverData.username}</span>
-                    </div>
-                  )}
-
-                  {entity.serverData?.email && typeof entity.serverData.email === "string" && (
-                    <div className="flex items-center gap-3 p-2 hover:bg-muted rounded-lg transition-colors">
-                      <Mail className="w-5 h-5 text-teal-600 shrink-0" />
-                      <span className="text-foreground break-all text-sm">{entity.serverData.email}</span>
-                    </div>
-                  )}
-
-                  {entity.serverData?.mobile && typeof entity.serverData.mobile === "string" && (
-                    <div className="flex items-center gap-3 p-2 hover:bg-muted rounded-lg transition-colors">
-                      <Phone className="w-5 h-5 text-teal-600 shrink-0" />
-                      <a href={`tel:${entity.serverData.mobile}`} className="text-foreground font-medium text-sm hover:text-teal-600">{entity.serverData.mobile}</a>
-                    </div>
-                  )}
-
-                  {entity.serverData?.url && typeof entity.serverData.url === "string" && (
-                    <div className="flex items-center gap-3 p-2 hover:bg-muted rounded-lg transition-colors">
-                      <Globe className="w-5 h-5 text-teal-600 shrink-0" />
-                      <a href={entity.serverData.url} target="_blank" rel="noopener noreferrer" className="text-teal-600 hover:text-teal-700 break-all text-sm font-medium">
-                        {entity.serverData.url.replace(/^https?:\/\//, '')}
-                      </a>
-                    </div>
-                  )}
-
-                  {address?.postalCode && address.addressLocality && (
-                    <div className="flex items-start gap-3 p-2 hover:bg-muted rounded-lg transition-colors">
-                      <MapPin className="w-5 h-5 text-teal-600 mt-1 shrink-0" />
-                      <div className="text-sm">
-                        {address.streetAddress && <div className="text-foreground font-medium">{address.streetAddress}</div>}
-                        <div className="text-foreground">
-                          {address.postalCode} {address.addressLocality}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {entity.serverData?.openingDate && (
-                    <div className="flex items-center gap-3 p-2 hover:bg-muted rounded-lg transition-colors">
-                      <Calendar className="w-5 h-5 text-teal-600 shrink-0" />
-                      <span className="text-foreground text-sm font-medium">{t("ProfileTemplateDefault.openSince")} {formatDate(entity.serverData.openingDate)}</span>
-                    </div>
-                  )}
-
-                  {entity.serverData?.externalLinkRegistration && typeof entity.serverData.externalLinkRegistration === "string" && (
-                    <div className="mt-6 pt-6 border-t border-border">
-                      <Button
-                        className="w-full bg-[#0092a2] hover:bg-teal-600"
-                        onClick={() => window.open(entity.serverData.externalLinkRegistration as string, "_blank")}
-                      >
-                        {t("ProfileTemplateDefault.register")}
-                        <ChevronRight className="w-4 h-4 ml-2" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </div>
-                </div>
-              </div>
+              <LazyTabContent value="about">
+                <AboutTab />
+              </LazyTabContent>
             </TabsContent>
 
             <TabsContent value="news">

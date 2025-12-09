@@ -429,6 +429,29 @@
       "nameTooShort": "Le nom doit contenir au moins 3 caractères"
     }
   },
+  "AboutTab": {
+    "description": "Description",
+    "notSpecified": "Non spécifié",
+    "generalInfo": "Informations générales",
+    "name": "Nom",
+    "email": "Adresse e-mail",
+    "birthDate": "Date de naissance",
+    "link": "Lien",
+    "freeInfo": "Informations / URLs",
+    "fixedPhone": "Téléphone fixe",
+    "mobilePhone": "Téléphone mobile",
+    "type": "Type",
+    "tags": "Tags",
+    "progress": "Avancement",
+    "socialNetworks": "Réseaux sociaux",
+    "badges": "Badges",
+    "openingDate": "Date d'ouverture",
+    "openingHours": "Horaires d'ouverture",
+    "from": "Du",
+    "to": "Au",
+    "address": "Adresse",
+    "addressNotProvided": "Adresse non renseignée"
+  },
   "toast": {
     "comment": {
       "addSuccess": "Commentaire ajouté avec succès",

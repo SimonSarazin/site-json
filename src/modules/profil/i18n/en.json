@@ -429,6 +429,29 @@
       "nameTooShort": "Name must be at least 3 characters"
     }
   },
+  "AboutTab": {
+    "description": "Description",
+    "notSpecified": "Not specified",
+    "generalInfo": "General information",
+    "name": "Name",
+    "email": "Email address",
+    "birthDate": "Date of birth",
+    "link": "Link",
+    "freeInfo": "Information / URLs",
+    "fixedPhone": "Fixed phone",
+    "mobilePhone": "Mobile phone",
+    "type": "Type",
+    "tags": "Tags",
+    "progress": "Progress",
+    "socialNetworks": "Social networks",
+    "badges": "Badges",
+    "openingDate": "Opening date",
+    "openingHours": "Opening hours",
+    "from": "From",
+    "to": "To",
+    "address": "Address",
+    "addressNotProvided": "Address not provided"
+  },
   "toast": {
     "comment": {
       "addSuccess": "Comment added successfully",
