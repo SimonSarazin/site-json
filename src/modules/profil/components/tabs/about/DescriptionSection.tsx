@@ -1,6 +1,9 @@
-import { FileText } from "lucide-react";
+import { useState } from "react";
+import { FileText, Pencil } from "lucide-react";
 import { useT } from "@/hooks/useT";
 import type { ProfileEntity } from "@/modules/profil/types";
+import { useProfileMutations } from "@/modules/profil/hooks/useProfileMutations";
+import { EditDescriptionModal } from "./edit/EditDescriptionModal";
 
 interface DescriptionSectionProps {
   entity: ProfileEntity;
@@ -9,9 +12,11 @@ interface DescriptionSectionProps {
 
 export function DescriptionSection({ entity, entityType }: DescriptionSectionProps) {
   const t = useT("modules/profil");
+  const { canEdit } = useProfileMutations();
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
-  const shortDescription = entity.serverData?.shortDescription;
-  const description = entity.serverData?.description;
+  const shortDescription = entity.serverData?.shortDescription as string | undefined;
+  const description = entity.serverData?.description as string | undefined;
 
   const hasContent = shortDescription || description;
 
@@ -20,14 +25,23 @@ export function DescriptionSection({ entity, entityType }: DescriptionSectionPro
   }
 
   return (
-    <li className="ms-6 w-full mb-4">
+    <li className={`ms-6 w-full mb-4 group ${canEdit ? "hover:bg-muted/50 hover:rounded-lg p-2 -ml-3 pl-8 transition-colors" : ""}`}>
       <span className="absolute flex items-center justify-center w-6 h-6 rounded-full -start-3 ring-8 ring-background bg-teal-600 text-white">
         <FileText className="w-3 h-3" />
       </span>
-      <div className="flex justify-between">
+      <div className="flex justify-between items-center">
         <h2 className="flex items-center text-base font-semibold text-foreground uppercase">
           {t("AboutTab.description")}
         </h2>
+        {canEdit && (
+          <button
+            onClick={() => setIsEditOpen(true)}
+            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded"
+            aria-label={String(t("EditAbout.edit"))}
+          >
+            <Pencil className="w-4 h-4 text-muted-foreground" />
+          </button>
+        )}
       </div>
       <div className="text-sm mt-2">
         {shortDescription && typeof shortDescription === "string" ? (
@@ -36,7 +50,7 @@ export function DescriptionSection({ entity, entityType }: DescriptionSectionPro
           </p>
         ) : null}
         {description && typeof description === "string" ? (
-          <div className="font-medium text-foreground whitespace-pre-wrap break-words">
+          <div className="font-medium text-foreground whitespace-pre-wrap wrap-break-word">
             {description}
           </div>
         ) : (
@@ -45,6 +59,17 @@ export function DescriptionSection({ entity, entityType }: DescriptionSectionPro
           )
         )}
       </div>
+
+      {canEdit && (
+        <EditDescriptionModal
+          open={isEditOpen}
+          onOpenChange={setIsEditOpen}
+          initialData={{
+            shortDescription: shortDescription || "",
+            description: description || "",
+          }}
+        />
+      )}
     </li>
   );
 }

@@ -11,7 +11,7 @@ interface Badge {
   name?: string;
   description?: string;
   icon?: string;
-  show?: string;
+  show?: boolean | string;
   order?: string;
   attenteEmetteur?: boolean;
   attenteRecepteur?: boolean;
@@ -43,7 +43,8 @@ export function BadgesSection({ entity }: BadgesSectionProps) {
   const filteredBadges: Badge[] = Object.entries(badges)
     .filter(([, item]) => {
       const badge = item as Badge;
-      return !badge.attenteEmetteur && !badge.attenteRecepteur && badge.show === "true";
+      const isShown = badge.show === true || badge.show === "true";
+      return !badge.attenteEmetteur && !badge.attenteRecepteur && isShown;
     })
     .map(([id, item]) => ({ ...(item as Badge), id }))
     .sort((a, b) => parseInt(a.order || "0", 10) - parseInt(b.order || "0", 10));

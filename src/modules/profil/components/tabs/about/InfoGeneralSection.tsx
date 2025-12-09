@@ -1,7 +1,10 @@
-import { BookUser, AtSign, Globe, Phone, Smartphone, Tag, LayoutList, Cake } from "lucide-react";
+import { useState } from "react";
+import { BookUser, AtSign, Globe, Phone, Smartphone, Tag, LayoutList, Cake, Pencil } from "lucide-react";
 import { useT } from "@/hooks/useT";
 import { formatDate } from "@/helpers/formatDate";
 import type { ProfileEntity } from "@/modules/profil/types";
+import { useProfileMutations } from "@/modules/profil/hooks/useProfileMutations";
+import { EditInfoGeneralModal } from "./edit/EditInfoGeneralModal";
 
 interface InfoGeneralSectionProps {
   entity: ProfileEntity;
@@ -10,6 +13,8 @@ interface InfoGeneralSectionProps {
 
 export function InfoGeneralSection({ entity, entityType }: InfoGeneralSectionProps) {
   const t = useT("modules/profil");
+  const { canEdit } = useProfileMutations();
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
   const serverData = entity.serverData as Record<string, unknown> | undefined;
   const entityName = "name" in entity ? (entity as { name?: string }).name : undefined;
@@ -44,14 +49,23 @@ export function InfoGeneralSection({ entity, entityType }: InfoGeneralSectionPro
   };
 
   return (
-    <li className="ms-6 w-full mb-4">
+    <li className={`ms-6 w-full mb-4 group ${canEdit ? "hover:bg-muted/50 hover:rounded-lg p-2 -ml-3 pl-8 transition-colors" : ""}`}>
       <span className="absolute flex items-center justify-center w-6 h-6 rounded-full -start-3 ring-8 ring-background bg-teal-600 text-white">
         <BookUser className="w-3 h-3" />
       </span>
-      <div className="flex justify-between">
+      <div className="flex justify-between items-center">
         <h2 className="flex items-center mb-1 text-base font-semibold text-foreground uppercase">
           {t("AboutTab.generalInfo")}
         </h2>
+        {canEdit && (
+          <button
+            onClick={() => setIsEditOpen(true)}
+            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded"
+            aria-label={String(t("EditAbout.edit"))}
+          >
+            <Pencil className="w-4 h-4 text-muted-foreground" />
+          </button>
+        )}
       </div>
       <div className="text-sm">
         {renderInfoItem(<AtSign className="w-4 h-4" />, t("AboutTab.name"), name as string)}
@@ -137,6 +151,25 @@ export function InfoGeneralSection({ entity, entityType }: InfoGeneralSectionPro
           </div>
         </div>
       </div>
+
+      {canEdit && (
+        <EditInfoGeneralModal
+          open={isEditOpen}
+          onOpenChange={setIsEditOpen}
+          entityType={entityType}
+          initialData={{
+            name: name as string,
+            email: email as string,
+            url: url as string,
+            fixe: fixe as string,
+            mobile: mobile as string,
+            birthDate: birthDate as string,
+            type: type as string,
+            avancement: avancement as string,
+            tags: tags as string[],
+          }}
+        />
+      )}
     </li>
   );
 }
