@@ -12,6 +12,7 @@ import { NewsTab } from "../tabs/NewsTab";
 import { ProjectsTab } from "../tabs/ProjectsTab";
 import { CommunitiesTab } from "../tabs/CommunitiesTab";
 import { AboutTab } from "../tabs/AboutTab";
+import { ProfileBannerCarriedBy } from "../banner/ProfileBannerCarriedBy";
 
 export default function ProfileTemplateDefault() {
   const { entity, entityType: _entityType } = useProfileEntity();
@@ -83,6 +84,10 @@ export default function ProfileTemplateDefault() {
     <div className="bg-foreground -m-4 md:-m-8">
       <div className="w-full mx-auto bg-background shadow-sm">
         <div className="relative h-96 bg-cover bg-center rounded-md border-border border" style={{ backgroundImage: bannerUrl ? `url('${bannerUrl}')` : `url('${imageUrl}')` }}>
+          <ProfileBannerCarriedBy
+            parent={entity?.serverData?.parent as Record<string, { id?: string; _id?: { $id?: string }; name?: string; type?: string; collection?: string; profilThumbImageUrl?: string }> | undefined}
+          />
+
           <div className="absolute bottom-6 right-6 z-20">
             <button className="bg-card text-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-muted flex items-center gap-2 shadow-md border border-border">
               <ImageIcon className="w-4 h-4" />

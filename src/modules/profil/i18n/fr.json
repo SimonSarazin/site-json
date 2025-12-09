@@ -452,6 +452,9 @@
     "address": "Adresse",
     "addressNotProvided": "Adresse non renseignée"
   },
+  "ProfileBannerCarriedBy": {
+    "carriedBy": "Porté par"
+  },
   "toast": {
     "comment": {
       "addSuccess": "Commentaire ajouté avec succès",
