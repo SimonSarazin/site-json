@@ -2,6 +2,7 @@ import type { RouteObject } from "react-router";
 import type { QueryClient } from "@tanstack/react-query";
 import type { LoaderFunctionArgs } from "react-router";
 import ProfilePage from "./pages/ProfilePage";
+import { ProfileErrorBoundary } from "./components/ProfileErrorBoundary";
 import type { ModuleRouteFactory } from "@/lib/modules";
 import type { SiteConfig } from "@/types/site-schema";
 import type { ProfileTabSubRoute } from "./schema";
@@ -150,6 +151,7 @@ export const routes: ModuleRouteFactory = (
   {
     path: "profil/:slug",
     element: <ProfilePage />,
+    errorElement: <ProfileErrorBoundary />,
     loader: (args) => profileLoader(args, queryClient, config),
     children: generateTabRoutes(config),
   }

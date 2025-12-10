@@ -315,8 +315,18 @@ export function EditProfileModal({
         console.log("updateData avant envoi:", updateData);
       }
 
+      const newSlug = data.slug as string;
+      const oldSlug = entity.slug;
+
       await updateMutation.mutateAsync(updateData);
       onOpenChange(false);
+
+      // Si le slug a changé, rediriger vers la nouvelle URL
+      if (newSlug && newSlug !== oldSlug && typeof window !== "undefined") {
+        const newPath = window.location.pathname.replace(oldSlug, newSlug);
+        window.history.replaceState(null, "", newPath);
+        window.location.reload();
+      }
     } catch (error) {
       console.error("Error updating profile:", error);
       if (error && typeof error === "object") {
