@@ -1,4 +1,4 @@
-import { ClipboardList, Loader2, Map, X, Plus, List, LayoutGrid } from "lucide-react";
+import { ClipboardList, Loader2, Map, X, List, LayoutGrid } from "lucide-react";
 import React, { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -9,16 +9,14 @@ import SearchFilters from "./components/SearchFilters";
 import SearchListView from "./components/SearchListView";
 import SearchListSkeleton from "./components/SearchListSkeleton";
 import SearchMapWrapper from "./components/SearchMapWrapper";
-import DynamicFormModal from "./components/DynamicFormModal";
 import { Skeleton } from "@/components/ui/skeleton";
 
-import { useCocolight } from "@/hooks/useCocolight";
 import useSearchFilters from "@/modules/search/hooks/useSearchFilters";
 import { useSearchQuery } from "@/modules/search/hooks/useSearchQuery";
 import { ClientOnly } from "@/components/layout/ClientOnly";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
-import "@/modules/search/i18n";
+import "@/modules/search/i18n"; // Required: registers i18n resources
 import "@/modules/search/styles.css";
 import { SearchProSectionProps, TagsFilter } from "./schema";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -52,7 +50,6 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
   /* ------------------------------------------------------------------ */
   const { loaded } = useLoadNamespace("modules/search");
   const t = useT("modules/search");
-  const { me } = useCocolight();
 
   /* ------------------------------------------------------------------ */
   /* Destructure props with sensible defaults                            */
@@ -79,37 +76,7 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
   /* UI state                                                            */
   /* ------------------------------------------------------------------ */
   const [showFiltersModal, setShowFiltersModal] = useState(false);
-  const [showAddModal, setShowAddModal] = useState(false);
   const [isDetailedView, setIsDetailedView] = useState(false);
-
-  /* ------------------------------------------------------------------ */
-  /* Gestionnaire pour le bouton Ajouter                                */
-  /* ------------------------------------------------------------------ */
-  const handleAddClick = () => {
-    setShowAddModal(true);
-  };
-
-  /* ------------------------------------------------------------------ */
-  /* Déterminer le type d'entité basé sur les filtres                   */
-  /* ------------------------------------------------------------------ */
-  const determineEntityType = (): string | null => {
-    // Si un type est spécifié dans les filtres, utiliser le premier
-    if (searchType && Object.keys(searchType).length > 0) {
-      const firstTypeKey = Object.keys(searchType)[0];
-      const firstTypeValues = searchType[firstTypeKey];
-      if (Array.isArray(firstTypeValues) && firstTypeValues.length > 0) {
-        return firstTypeValues[0];
-      }
-    }
-
-    // Sinon, utiliser le type par défaut de la configuration
-    if (baseParams?.defaultTypes && Array.isArray(baseParams.defaultTypes) && baseParams.defaultTypes.length > 0) {
-      return baseParams.defaultTypes[0];
-    }
-
-    return null;
-  };
-
 
   /* ------------------------------------------------------------------ */
   /* Search filters hook : manages q / tags / type / map                 */
@@ -231,13 +198,6 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
             onTypeChange={setSearchType}
             countTypes={hasCount && data?.pages?.[0]?.count ? data?.pages?.[0]?.count : {}}
           />
-
-          {/* Bouton Ajouter conditionnel mobile - seulement si connecté */}
-          {me && (
-            <Button size="icon" className="flex-shrink-0" onClick={handleAddClick}>
-              <Plus className="h-4 w-4" />
-            </Button>
-          )}
         </div>
 
         {/* Desktop filters */}
@@ -257,13 +217,6 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
                   countTypes={hasCount && data?.pages?.[0]?.count ? data?.pages?.[0]?.count : {}}
                 />
               </div>
-              {/* Bouton Ajouter conditionnel - seulement si connecté */}
-              {me && (
-                <Button className="flex items-center gap-2 whitespace-nowrap" onClick={handleAddClick}>
-                  <Plus className="h-4 w-4" />
-                  {t("Ajouter")}
-                </Button>
-              )}
             </div>
             {(showActiveFiltersTypes || showActiveFiltersTags) && filters && Object.keys(filters).length > 0 && (
               <ActiveFiltersBar
@@ -488,14 +441,6 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
           </div>
         </div>
       )}
-
-      {/* Modal d'ajout d'entité */}
-      <DynamicFormModal
-        isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        entityType={determineEntityType()}
-        defaultTypes={baseParams?.defaultTypes}
-      />
     </div>
   );
 };

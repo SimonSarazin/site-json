@@ -19,9 +19,12 @@ export { ProfileSeo } from "./ProfileSeo";
 
 // Contexts & Hooks
 export { ProfileEntityProvider } from "./contexts/ProfileEntityProvider";
-export { ProfileEntityContext } from "./contexts/ProfileEntityContext";
-export { useProfileEntity } from "./hooks/useProfileEntity";
+export { ProfileEntityContext, type ProfileEntityContextType } from "./contexts/ProfileEntityContext";
+export { useProfileEntity, useOptionalProfileEntity } from "./hooks/useProfileEntity";
 export { useFormatProfileEntity } from "./hooks/useFormatProfileEntity";
+
+// Prefetch
+export { prefetchProfileQuery } from "./prefetch";
 
 // Types centralisés
 export type {

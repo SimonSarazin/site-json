@@ -2,8 +2,9 @@ import { useMemo } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { useDateFnsLocale } from "@/hooks/useDateFnsLocale";
 import { useCocolight } from "@/hooks/useCocolight";
-import type { News, User, Organization, EntityTypes, NewsMention } from "@communecter/cocolight-api-client";
+import type { News, EntityTypes, NewsMention } from "@communecter/cocolight-api-client";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
+import { extractAuthorInfo, calculateTotalVotes } from "@/lib/entityFormatting";
 
 export interface SharedByPerson {
   name: string;
@@ -60,56 +61,6 @@ export interface FormattedNews {
   voteCount?: Record<string, number>;
   text?: unknown;
   date?: Date;
-}
-
-/**
- * Vérifie si un objet est une entité (User ou Organization) avec serverData
- */
-function isEntityInstance(obj: unknown): obj is User | Organization {
-  return obj !== null && typeof obj === "object" && "serverData" in obj;
-}
-
-/**
- * Extrait les informations d'un auteur (peut être un objet brut ou une entité)
- */
-function extractAuthorInfo(author: unknown): {
-  id: string;
-  name: string;
-  photo: string | null;
-} {
-  // Si c'est une entité avec serverData
-  if (isEntityInstance(author)) {
-    return {
-      id: author.serverData?.id || "",
-      name: author.serverData?.name || "Anonyme",
-      photo: author.serverData?.profilThumbImageUrl || null,
-    };
-  }
-
-  // Si c'est un objet brut
-  if (author && typeof author === "object") {
-    const authorObj = author as Record<string, unknown>;
-    return {
-      id: (authorObj.id as string) || "",
-      name: (authorObj.name as string) || "Anonyme",
-      photo: (authorObj.profilThumbImageUrl as string) || null,
-    };
-  }
-
-  // Fallback
-  return {
-    id: "",
-    name: "Anonyme",
-    photo: null,
-  };
-}
-
-/**
- * Calcule le total des votes à partir de voteCount
- */
-function calculateTotalVotes(voteCount?: Record<string, number> | null): number {
-  if (!voteCount || typeof voteCount !== "object") return 0;
-  return Object.values(voteCount).reduce((sum, count) => sum + count, 0);
 }
 
 /**

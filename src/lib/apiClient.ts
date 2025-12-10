@@ -17,7 +17,6 @@ import { getBaseUrl, getSlug } from "./constant/common";
 
 export interface InitApiOptions {
   baseURL?: string;
-  debug?: boolean;
   /** Toute option supplémentaire fournie par le SDK */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
@@ -129,8 +128,8 @@ export async function initApiClient(
     // Instanciation du client HTTP
     client = new Cocolight.ApiClient({
       baseURL: options.baseURL ?? getBaseUrl(),
-      debug: options.debug ?? false,
       ...options,
+      debug: import.meta.env.DEV ?? false,
       tokenStorageStrategy,
     });
 
@@ -151,7 +150,9 @@ export async function initApiClient(
     const isUserConnected = userApiInstance.client.isConnected;
 
     if (hydratedData && !isUserConnected) {
-      console.log("[Api.init] User non connecté - utilisation du cache SSR");
+      if (import.meta.env.DEV) {
+        console.log("[Api.init] User non connecté - utilisation du cache SSR");
+      }
 
       // Transformer les données JSON en instances avec le client
       if (hydratedData.entity) {

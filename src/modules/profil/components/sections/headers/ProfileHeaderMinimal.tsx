@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Edit } from "lucide-react";
 import { useFormatProfileEntity } from "../../../hooks/useFormatProfileEntity";
-import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../../hooks/useProfileEntity";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
@@ -10,7 +9,6 @@ import { EditProfileModal } from "../../profile-edit/EditProfileModal";
 import { EntityActionButtons } from "../../EntityActionButtons";
 import { AddEntityDropdown } from "../../action-buttons/AddEntityDropdown";
 import type { ProfileHeaderSection } from "../../../schema";
-import "@/modules/profil/i18n";
 
 interface ProfileHeaderMinimalProps {
   section: ProfileHeaderSection;
@@ -21,7 +19,6 @@ interface ProfileHeaderMinimalProps {
  */
 export function ProfileHeaderMinimal({ section }: ProfileHeaderMinimalProps) {
   const { entity } = useProfileEntity();
-  useLoadNamespace("modules/profil");
   const t = useT("modules/profil");
   const { name: entityName, shortDescription, address } = useFormatProfileEntity(entity);
   const { canEditProfile } = useUserPermissions(entity);

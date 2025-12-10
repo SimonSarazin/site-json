@@ -1,14 +1,10 @@
-import { useMemo, useEffect } from "react";
+import { useMemo } from "react";
 import { useCocolight } from "@/hooks/useCocolight";
-import { useInfiniteQueryScrollNext } from "@/hooks/useInfiniteQueryScroll";
+import { useInfiniteQueryScrollNextWithTransform } from "@/hooks/useInfiniteQueryScroll";
 import { SearchType } from "../schema";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 import type { GlobalAutocompleteCostumData, PaginatorPage } from "@communecter/cocolight-api-client";
-import { transformToEntityInstance } from "@/lib/entityTransform";
-import { useQueryClient } from "@tanstack/react-query";
-import cocolightApiClient from "@communecter/cocolight-api-client";
-
-const { isReactive } = cocolightApiClient;
+import { SEARCH_QUERY_KEYS } from "../constants/queryKeys";
 
 export interface UseSearchQueryParams {
   queryKeyPrefix: string;
@@ -42,16 +38,16 @@ export function useSearchQuery({
   baseParams = {},
 }: UseSearchQueryParams) {
   const { entity, helper } = useCocolight();
-  const queryClient = useQueryClient();
 
-  const clientQueryKey = [
+  // Query key centralisée (single source of truth)
+  const queryKey = SEARCH_QUERY_KEYS.results({
     queryKeyPrefix,
     searchText,
-    JSON.stringify(searchTags),
-    JSON.stringify(searchType),
+    searchTags,
+    searchType,
     mapUsed,
-    JSON.stringify(baseParams),
-  ];
+    baseParams,
+  });
 
   const {
     data,
@@ -61,8 +57,10 @@ export function useSearchQuery({
     isLoading,
     isPending,
     refetch,
-  } = useInfiniteQueryScrollNext<SearchEntity>({
-    queryKey: clientQueryKey,
+    totalCount,
+    hasCount,
+  } = useInfiniteQueryScrollNextWithTransform<SearchEntity>({
+    queryKey,
     queryFn: async ({ pageParam }) => {
       if (!entity) {
         throw new Error("API non initialisée - entity manquante");
@@ -150,62 +148,14 @@ export function useSearchQuery({
       staleTime: 60 * 1000,
       initialPageParam: undefined,
     },
+    // Transformation SSR automatique via le hook
+    transform: entity ? { entity, helper } : undefined,
   });
 
-  const queryKey = [
-    queryKeyPrefix,
-    searchText,
-    JSON.stringify(searchTags),
-    JSON.stringify(searchType),
-    mapUsed,
-    JSON.stringify(baseParams),
-  ];
-
-  // Transformer le cache une seule fois après l'hydratation SSR
-  useEffect(() => {
-    const currentData = queryClient.getQueryData<{ pages: PaginatorPage<SearchEntity>[]; pageParams: unknown[] }>(queryKey);
-
-    if (currentData?.pages && currentData.pages.length > 0 && entity) {
-      const firstItem = currentData.pages[0]?.results?.[0];
-      if (firstItem && firstItem.serverData && !isReactive(firstItem.serverData)) {
-        if (import.meta.env.DEV) {
-          console.log("🔄 Transformation du cache de recherche après hydratation SSR");
-        }
-        // Transformer tout le cache en instances Proxy
-        queryClient.setQueryData(queryKey, {
-          ...currentData,
-          pages: currentData.pages.map(page => ({
-            ...page,
-            results: page.results?.map(item =>
-              transformToEntityInstance<SearchEntity>(item, helper, entity)
-            ) ?? [],
-          })),
-        });
-      }
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Transformation des résultats
+  // Les résultats sont déjà transformés par le hook
   const transformedResults = useMemo(() => {
-    const results = data?.pages?.flatMap((p) => p?.results) ?? [];
-    if (!entity || !results.length) return results || [];
-
-    return results.map((item) => {
-      // Si déjà transformé (Proxy), le retourner tel quel
-      if (item.serverData && isReactive(item.serverData)) {
-        return item;
-      }
-      // Sinon transformer en instance Proxy
-      return transformToEntityInstance<SearchEntity>(item, helper, entity);
-    });
-  }, [data, entity, helper]);
-
-  const hasCount =
-    data?.pages?.[0]?.count && typeof data?.pages?.[0]?.count === "object";
-  const totalCount =
-    hasCount && data?.pages?.[0]?.count?.[("total")]
-      ? data?.pages?.[0]?.count?.[("total")]
-      : undefined;
+    return data?.pages?.flatMap((p) => p?.results) ?? [];
+  }, [data?.pages]);
 
   return {
     data,

@@ -8,7 +8,6 @@ import { AddEntityDropdown } from "../action-buttons/AddEntityDropdown";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/hooks/useT";
 import type { ProfileActionsSection } from "../../schema";
-import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 
 interface ProfileActionsProps {
   section: ProfileActionsSection;
@@ -21,7 +20,6 @@ interface ProfileActionsProps {
 export default function ProfileActions({ section }: ProfileActionsProps) {
   const { entity } = useProfileEntity();
   const { canEditProfile } = useUserPermissions(entity);
-  useLoadNamespace("modules/profil");
   const t = useT("modules/profil");
   const [editModalOpen, setEditModalOpen] = useState(false);
 

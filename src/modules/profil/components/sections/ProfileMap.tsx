@@ -3,10 +3,8 @@ import { lazy } from "vite-preload";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFormatProfileEntity } from "../../hooks/useFormatProfileEntity";
-import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
-import "@/modules/profil/i18n";
 import type { ProfileMapSection } from "../../schema";
 
 const ProfileMapWrapper = lazy(() => import("./ProfileMapWrapper"));
@@ -17,7 +15,6 @@ interface ProfileMapProps {
 
 export default function ProfileMap({ section }: ProfileMapProps) {
   const { entity } = useProfileEntity();
-  useLoadNamespace("modules/profil");
   const t = useT("modules/profil");
 
   const { geo } = useFormatProfileEntity(entity);

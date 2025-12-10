@@ -348,7 +348,6 @@ export function useAddCommentVote(newsId: string, options?: MutationOptions) {
   return useMutation({
     mutationFn: async ({ comment, voteType = "like" }: { comment: Comment; voteType?: string }) => {
       if (!me) throw new Error("User not connected");
-      console.log("[useAddCommentVote] Adding vote:", { commentId: comment.id, voteType });
       await comment.addVote(voteType);
       return { comment, voteType };
     },
@@ -415,7 +414,6 @@ export function useReportComment() {
       reason: string;
       commentText?: string;
     }) => {
-      console.log("[useReportComment] Reporting comment:", { commentId: comment.id, reason, commentText });
       await comment.addReportAbuse({ reason, comment: commentText });
       return { commentId: comment.id };
     },

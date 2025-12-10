@@ -26,7 +26,7 @@ function RootLayout({ config }: Props) {
     <ErrorBoundary fallback={<p>Une erreur est survenue 😢.</p>}>
       {/* Suspense : spinner si les promises (React Query, lazy, etc.) sont en vol */}
       <Suspense fallback={<p>loading</p>}>
-        <CocolightProvider clientOptions={{ baseURL: getBaseUrl(), debug: true }}>
+        <CocolightProvider clientOptions={{ baseURL: getBaseUrl() }}>
           <ThemeProvider attribute="class" defaultTheme={defaultTheme} enableSystem>
             <SiteProvider config={config}>
               <LocalizationProvider

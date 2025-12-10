@@ -4,9 +4,8 @@ import type { SiteConfig } from "@/types/site";
 import RootLayout from "@/RootLayout";
 import type { QueryClient } from "@tanstack/react-query";
 import type { LoaderFunctionArgs } from "react-router";
-import { getBaseUrl } from "./constant/common";
-import { initApi } from "./apiClient";
 import { discoverModules, getModuleRoutes, getModuleRoutesSync } from "./modules";
+import { prefetchSearchResults } from "@/modules/search/prefetch";
 
 /**
  * Helper pour parser les paramètres JSON depuis l'URL
@@ -21,120 +20,38 @@ function parseJSON(value: string | null): unknown {
 }
 
 /**
- * Fonction de préchargement des résultats de recherche pour le SSR
+ * Registry des extracteurs de sections imbriquées
+ * Pour ajouter un nouveau container : ajouter 1 ligne ici
  */
-async function prefetchSearchResults(
-  queryClient: QueryClient,
-  params: {
-    queryKeyPrefix: string;
-    searchText: string;
-    searchTags: Record<string, string[]>;
-    searchType: Record<string, string[]> | null;
-    mapUsed: boolean;
-    baseParams: Record<string, unknown>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const SECTION_EXTRACTORS: Record<string, (props: any) => unknown[]> = {
+  gridLayout: (p) => [p.leftSection, p.rightSection],
+  tabs: (p) => p.tabs?.flatMap((t: { content: unknown }) => Array.isArray(t.content) ? t.content : []) || [],
+};
+
+/**
+ * Recherche récursive des sections de recherche (searchPro/searchProStatic)
+ * Utilise SECTION_EXTRACTORS pour gérer les containers
+ */
+function findSearchSections(
+  sections: Array<{ type: string; props?: Record<string, unknown> }>
+): Array<{ type: string; props?: Record<string, unknown> }> {
+  const result: Array<{ type: string; props?: Record<string, unknown> }> = [];
+
+  for (const section of sections) {
+    // Section de recherche directe
+    if (section.type === 'searchPro' || section.type === 'searchProStatic') {
+      result.push(section);
+    }
+    // Container avec sections imbriquées
+    else if (SECTION_EXTRACTORS[section.type] && section.props) {
+      const nested = SECTION_EXTRACTORS[section.type](section.props)
+        .filter(Boolean) as Array<{ type: string; props?: Record<string, unknown> }>;
+      result.push(...findSearchSections(nested));
+    }
   }
-) {
-  const queryKey = [
-    params.queryKeyPrefix,
-    params.searchText,
-    JSON.stringify(params.searchTags),
-    JSON.stringify(params.searchType),
-    params.mapUsed,
-    JSON.stringify(params.baseParams),
-  ];
 
-  try {
-    return await queryClient.ensureQueryData({
-      queryKey,
-      queryFn: async () => {
-        const { entity, api } = await initApi({
-          baseURL: getBaseUrl(),
-          debug: true
-        });
-
-        const searchContext = entity || api;
-
-        if (!searchContext?.searchCostum) {
-          console.warn("searchCostum non disponible");
-          return {
-            pages: [{
-              results: [],
-              count: {},
-              hasNext: false,
-              pageNumber: 1
-            }],
-            pageParams: [undefined]
-          };
-        }
-
-        const type = params.searchType
-          ? Object.values(params.searchType).flat()
-          : [];
-        const tags = Object.values(params.searchTags).flat();
-
-        const {
-          fediverse = false,
-          indexStepList = 10,
-          indexStepMap = 0,
-          defaultTypes,
-          defaultTags,
-          defaultFilters,
-          defaultFields,
-          defaultSortBy,
-          notSourceKey,
-        } = params.baseParams as Record<string, unknown>;
-
-        const apiParam: Record<string, unknown> = {
-          name: params.searchText,
-          fediverse,
-          indexMin: 0,
-          indexStep: params.mapUsed ? indexStepMap : indexStepList,
-        };
-
-        if (tags.length > 0) {
-          apiParam.searchTags = tags;
-          apiParam.options = { tags: { verb: "$all" } };
-        }
-
-        if (defaultFilters) apiParam.filters = defaultFilters;
-        if (defaultFields) apiParam.fields = defaultFields;
-        if (defaultSortBy) apiParam.sortBy = defaultSortBy;
-        if (notSourceKey) apiParam.notSourceKey = true;
-
-        if (type.length > 0) {
-          apiParam.searchType = type;
-        } else if (defaultTypes) {
-          apiParam.searchType = defaultTypes;
-        }
-
-        if (defaultTags && Array.isArray(defaultTags) && defaultTags.length > 0) {
-          apiParam.searchTags = defaultTags;
-        }
-
-        if (!apiParam.searchType) {
-          return {
-            pages: [{
-              results: [],
-              count: {},
-              hasNext: false,
-              pageNumber: 1
-            }],
-            pageParams: [undefined]
-          };
-        }
-
-        const result = await searchContext.searchCostum(apiParam);
-
-        return {
-          pages: [result],
-          pageParams: [undefined]
-        };
-      },
-    });
-  } catch (error) {
-    console.error("Erreur préchargement recherche:", error);
-    return null;
-  }
+  return result;
 }
 
 /**
@@ -216,10 +133,8 @@ async function buildRoutesAsync(
         map: url.searchParams.get('map') !== 'false',
       };
 
-      // Détecter uniquement les sections searchPro (pas searchProStatic pour éviter les problèmes SSR)
-      const searchSections = p.sections.filter(
-        (s: { type: string }) => s.type === 'searchPro'
-      );
+      // Détecter les sections searchPro/searchProStatic (y compris dans gridLayout, tabs, etc.)
+      const searchSections = findSearchSections(p.sections);
 
       // Pré-charger les résultats pour chaque section de recherche      console.log(`[SSR Prefetch] Found ${searchSections.length} search sections to prefetch`);
       await Promise.all(

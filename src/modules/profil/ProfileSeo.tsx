@@ -2,10 +2,8 @@ import { Helmet } from "@dr.pogodin/react-helmet";
 import { useSite } from "@/hooks/useSite";
 import { useLocalization } from "@/hooks/useLocalization";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
-import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import type { ProfileConfig } from "./schema";
-import "@/modules/profil/i18n";
 
 interface ProfileSeoProps {
   entity: SearchEntity | null;
@@ -23,7 +21,6 @@ interface ProfileSeoProps {
 export function ProfileSeo({ entity, isLoading, entityType, activeTab, profileConfig }: ProfileSeoProps) {
   const { config } = useSite();
   const { currentLocale } = useLocalization();
-  useLoadNamespace("modules/profil");
   const t = useT("modules/profil");
 
   // Obtenir le premier tab de la config ou 'about' par défaut

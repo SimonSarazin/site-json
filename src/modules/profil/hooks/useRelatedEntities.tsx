@@ -1,8 +1,9 @@
-import { useInfiniteQueryScrollNext } from "@/hooks/useInfiniteQueryScroll";
+import { useInfiniteQueryScrollNextWithTransform } from "@/hooks/useInfiniteQueryScroll";
 import type { EntityTypes, Project, Event, Poi, PaginatorPage } from "@communecter/cocolight-api-client";
 import { isOrganization, isProject } from "@/lib/getTypedEntity";
 import { useMemo } from "react";
 import type { RelationType, RelatedEntitiesParams, UseRelatedEntitiesResult } from "../types";
+import { useCocolight } from "@/hooks/useCocolight";
 
 export type { RelationType, RelatedEntitiesParams, UseRelatedEntitiesResult };
 
@@ -15,15 +16,18 @@ export function useRelatedEntities(
   relationType: RelationType,
   params?: RelatedEntitiesParams
 ): UseRelatedEntitiesResult {
+  const { helper } = useCocolight();
+
   const {
     data,
+    totalCount,
     isLoading,
     isFetchingNextPage,
     hasNextPage,
     lastItemRef,
     error,
     refetch,
-  } = useInfiniteQueryScrollNext<Project | Event | Poi>({
+  } = useInfiniteQueryScrollNextWithTransform<Project | Event | Poi>({
     queryKey: ["related-entities", entity?.slug, relationType, params],
     queryFn: async ({ pageParam }) => {
       if (!entity) {
@@ -112,19 +116,15 @@ export function useRelatedEntities(
     },
     options: {
       enabled: !!entity,
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 5 * 60 * 1000,
       initialPageParam: undefined,
     },
+    transform: entity ? { entity, helper } : undefined,
   });
 
   const entities = useMemo(() => {
     if (!data) return [];
     return data.pages.flatMap((page) => page.results);
-  }, [data]);
-
-  const totalCount = useMemo(() => {
-    if (!data || data.pages.length === 0) return 0;
-    return data.pages[0].count?.total || 0;
   }, [data]);
 
   return {

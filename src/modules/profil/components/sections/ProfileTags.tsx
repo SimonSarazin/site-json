@@ -4,7 +4,6 @@ import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
 import type { ProfileTagsSection } from "../../schema";
 import type { LocalizedString } from "@/types/locale-schema";
-import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 
 interface ProfileTagsProps {
   section: ProfileTagsSection;
@@ -17,7 +16,6 @@ interface ProfileTagsProps {
 export default function ProfileTags({ section }: ProfileTagsProps) {
   const { entity } = useProfileEntity();
   const { tags } = useFormatProfileEntity(entity);
-  useLoadNamespace("modules/profil");
   const t = useT("modules/profil");
   const { currentLocale } = useLocalization();
 

@@ -467,7 +467,6 @@ export function useReportNews() {
       reason: string;
       comment?: string;
     }) => {
-      console.log("[useReportNews] Reporting news:", { newsId: news.id, reason, comment });
       await news.addReportAbuse({ reason, comment });
       return { newsId: news.id };
     },

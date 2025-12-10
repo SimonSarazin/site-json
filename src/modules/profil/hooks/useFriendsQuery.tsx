@@ -1,10 +1,11 @@
-import { useInfiniteQueryScrollNext } from "@/hooks/useInfiniteQueryScroll";
+import { useInfiniteQueryScrollNextWithTransform } from "@/hooks/useInfiniteQueryScroll";
 import type { EntityTypes, User, PaginatorPage } from "@communecter/cocolight-api-client";
 import { isUser } from "@/lib/getTypedEntity";
 import { useMemo } from "react";
 import type { FriendsQueryParams } from "../types";
 import { QUERY_KEYS } from "../constants/queryKeys";
 import { useHydratedUserContextId } from "@/hooks/useHydratedUserContextId";
+import { useCocolight } from "@/hooks/useCocolight";
 
 export type { FriendsQueryParams };
 
@@ -14,16 +15,18 @@ export type { FriendsQueryParams };
 export function useFriendsQuery(user: EntityTypes | null, params?: FriendsQueryParams) {
   // userContextId compatible SSR : null au premier render, puis la vraie valeur après hydratation
   const userContextId = useHydratedUserContextId();
+  const { helper } = useCocolight();
 
   const {
     data,
+    totalCount,
     isLoading,
     isFetchingNextPage,
     hasNextPage,
     lastItemRef,
     error,
     refetch,
-  } = useInfiniteQueryScrollNext<User>({
+  } = useInfiniteQueryScrollNextWithTransform<User>({
     queryKey: [...QUERY_KEYS.USER_FRIENDS(user?.slug ?? null, userContextId), params],
     queryFn: async ({ pageParam }) => {
       if (!user || !isUser(user)) {
@@ -112,17 +115,14 @@ export function useFriendsQuery(user: EntityTypes | null, params?: FriendsQueryP
       enabled: !!(user && isUser(user)),
       staleTime: 5 * 60 * 1000, // 5 minutes
       initialPageParam: undefined
-    }
+    },
+    // Transformation SSR - user vient du paramètre, pas de useCocolight()
+    transform: user ? { entity: user, helper } : undefined,
   });
 
   const friends = useMemo(() => {
     if (!data) return [];
     return data.pages.flatMap(page => page.results);
-  }, [data]);
-
-  const totalCount = useMemo(() => {
-    if (!data || data.pages.length === 0) return 0;
-    return data.pages[0].count?.total || 0;
   }, [data]);
 
   return {

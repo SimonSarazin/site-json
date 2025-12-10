@@ -35,7 +35,9 @@ export function CocolightProvider({
 
   useEffect(() => {
     // 🟢 Compte uniquement les commits RÉELS
-    console.count("CocolightProvider commit");
+    if (import.meta.env.DEV) {
+      console.count("CocolightProvider commit");
+    }
   }, []);
 
   // ----------------------------- state ------------------------------------

@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ClientOnly } from "@/components/layout/ClientOnly";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
-import "@/modules/search/i18n";
+import "@/modules/search/i18n"; // Required: registers i18n resources
 import "@/modules/search/styles.css";
 import { SearchProStaticSectionProps } from "./schema";
 import { useSearchQuery } from "./hooks/useSearchQuery";
@@ -45,17 +45,20 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   const [mapUsed, setMapUsed] = useState(showMap);
   const [isDetailedView, setIsDetailedView] = useState(false);
 
+  const filterNames = contextFilters?.filterNames;
+  const searchQuery = contextFilters?.searchQuery;
+
   const searchText = useMemo(
-    () => contextFilters?.searchQuery || "",
-    [contextFilters?.searchQuery]
+    () => searchQuery || "",
+    [searchQuery]
   );
 
   const searchTags = useMemo<Record<string, string[]>>(
     () =>
-      contextFilters?.filterNames && contextFilters.filterNames.length > 0
-        ? { tags: contextFilters.filterNames }
+      filterNames && filterNames.length > 0
+        ? { tags: filterNames }
         : {} as Record<string, string[]>,
-    [contextFilters?.filterNames]
+    [filterNames]
   );
 
   const [searchType] = useState<Record<string, string[]> | null>(

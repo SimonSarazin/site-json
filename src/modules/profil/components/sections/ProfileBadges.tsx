@@ -5,7 +5,6 @@ import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
 import type { ProfileBadgesSection } from "../../schema";
 import type { LocalizedString } from "@/types/locale-schema";
-import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 
 interface ProfileBadgesProps {
   section: ProfileBadgesSection;
@@ -18,7 +17,6 @@ interface ProfileBadgesProps {
 export default function ProfileBadges({ section }: ProfileBadgesProps) {
   const { entity } = useProfileEntity();
   const { badges } = useFormatProfileEntity(entity);
-  useLoadNamespace("modules/profil");
   const t = useT("modules/profil");
   const { currentLocale } = useLocalization();
 

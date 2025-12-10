@@ -2,12 +2,10 @@ import type { RouteObject } from "react-router";
 import type { QueryClient } from "@tanstack/react-query";
 import type { LoaderFunctionArgs } from "react-router";
 import ProfilePage from "./pages/ProfilePage";
-import { getBaseUrl } from "@/lib/constant/common";
-import { initApi } from "@/lib/apiClient";
 import type { ModuleRouteFactory } from "@/lib/modules";
 import type { SiteConfig } from "@/types/site-schema";
 import type { ProfileTabSubRoute } from "./schema";
-import { QUERY_KEYS } from "./constants/queryKeys";
+import { prefetchProfileQuery } from "./prefetch";
 import { prefetchNewsQuery, NEWS_SUPPORTED_TYPES } from "@/modules/news";
 
 /**
@@ -35,19 +33,7 @@ const profileLoader = async (
 
   try {
     // 1. Pré-charger les données du profil côté serveur
-    const entity = await queryClient.ensureQueryData({
-      queryKey: QUERY_KEYS.ELEMENT_ABOUT(slug),
-      queryFn: async () => {
-        const { entity } = await initApi({
-          baseURL: getBaseUrl(),
-          debug: true
-        });
-        if (!entity) {
-          throw new Error("API non initialisée");
-        }
-        return entity.entityBySlug(slug);
-      }
-    });
+    const entity = await prefetchProfileQuery(queryClient, slug);
 
     // 2. Pré-charger les données du tab actif selon sa configuration
     if (entity && config && config.profiles) {

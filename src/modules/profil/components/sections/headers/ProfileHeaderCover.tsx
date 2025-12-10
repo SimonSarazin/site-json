@@ -3,7 +3,6 @@ import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Share2 } from "lucide-react";
 import { useFormatProfileEntity } from "../../../hooks/useFormatProfileEntity";
-import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../../hooks/useProfileEntity";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
@@ -12,7 +11,6 @@ import { ProfileEditDropdown } from "../../profile-edit/ProfileEditDropdown";
 import { EntityActionButtons } from "../../EntityActionButtons";
 import { AddEntityDropdown } from "../../action-buttons/AddEntityDropdown";
 import type { ProfileHeaderSection } from "../../../schema";
-import "@/modules/profil/i18n";
 import { ButtonGroup } from "@/components/ui/button-group";
 
 interface ProfileHeaderCoverProps {
@@ -24,7 +22,6 @@ interface ProfileHeaderCoverProps {
  */
 export function ProfileHeaderCover({ section }: ProfileHeaderCoverProps) {
   const { entity } = useProfileEntity();
-  useLoadNamespace("modules/profil");
   const t = useT("modules/profil");
   const navigate = useNavigate();
   const { imageUrl, bannerUrl, name: entityName, shortDescription } = useFormatProfileEntity(entity);

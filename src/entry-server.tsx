@@ -59,7 +59,7 @@ export async function render(
   // ⬇️  on exécute la requête "cocolight-init" AVANT le rendu
   const initResult = await queryClient.ensureQueryData({
     queryKey: ["cocolight-init"],
-    queryFn: () => initApi({ baseURL: getBaseUrl(), debug: true })
+    queryFn: () => initApi({ baseURL: getBaseUrl() })
   });
 
   // Créer une query SÉRIALISABLE avec les données utiles pour l'hydratation

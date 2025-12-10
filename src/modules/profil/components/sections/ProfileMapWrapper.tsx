@@ -1,7 +1,6 @@
 import { useClientModule } from "@/hooks/useClientModule";
 import { useT } from "@/hooks/useT";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 
 interface ProfileMapWrapperProps {
   lat: number;
@@ -13,7 +12,6 @@ interface ProfileMapWrapperProps {
 
 export default function ProfileMapWrapper(props: ProfileMapWrapperProps) {
   const [mounted, MapModule] = useClientModule(() => import("./ProfileMapLeaflet"));
-  useLoadNamespace("modules/profil");
   const t = useT("modules/profil");
 
   if (!mounted || !MapModule) {

@@ -71,6 +71,8 @@
     - [5.5.32 `timeline`](#5532-timeline)
     - [5.5.33 `blogPost`](#5533-blogpost)
     - [5.5.34 `searchPro`](#5534-searchpro)
+    - [Détails de `ListConfSchema`](#détails-de-listconfschema)
+    - [Détails de `MapConfSchema`](#détails-de-mapconfschema)
     - [5.5.35 `searchProStatic`](#5535-searchprostatic)
     - [5.5.36 `hero-tiers-lieux`](#5536-hero-tiers-lieux)
     - [5.5.37 `title`](#5537-title)
@@ -78,8 +80,6 @@
     - [5.5.39 `filters`](#5539-filters)
     - [5.5.40 `gridLayout`](#5540-gridlayout)
     - [5.5.41 `news`](#5541-news)
-    - [Détails de `ListConfSchema`](#détails-de-listconfschema)
-    - [Détails de `MapConfSchema`](#détails-de-mapconfschema)
   - [5.6 `FooterSchema`](#56-footerschema)
   - [5.7 `IntegrationsSchema`](#57-integrationsschema)
   - [5.8 `FeatureFlagSchema`](#58-featureflagschema)
@@ -87,10 +87,18 @@
   - [5.10 `PerformanceConfigSchema`](#510-performanceconfigschema)
   - [5.11 `AdvancedSiteConfig`](#511-advancedsiteconfig)
 - [6. Sections dynamiques](#6-sections-dynamiques)
-  - [6.1 Vue d’ensemble de `SectionRenderer.tsx`](#61-vue-densemble-de-sectionrenderertsx)
-    - [Extrait simplifié](#extrait-simplifié)
+  - [6.1 Vue d'ensemble de `SectionRenderer.tsx`](#61-vue-densemble-de-sectionrenderertsx)
+    - [Code actuel](#code-actuel)
   - [6.2 Propriétés communes à toutes les sections](#62-propriétés-communes-à-toutes-les-sections)
   - [6.3 Description rapide des principaux types de section](#63-description-rapide-des-principaux-types-de-section)
+    - [Sections de contenu \& layout](#sections-de-contenu--layout)
+    - [Sections de données \& commerce](#sections-de-données--commerce)
+    - [Sections d'engagement](#sections-dengagement)
+    - [Sections de formulaires](#sections-de-formulaires)
+    - [Sections de liste \& événements](#sections-de-liste--événements)
+    - [Sections de recherche \& carte (depuis modules)](#sections-de-recherche--carte-depuis-modules)
+    - [Section news (depuis module news)](#section-news-depuis-module-news)
+    - [Autres](#autres)
   - [6.4 Comment ajouter ou personnaliser une nouvelle section](#64-comment-ajouter-ou-personnaliser-une-nouvelle-section)
 - [7. Modules fonctionnels](#7-modules-fonctionnels)
   - [7.1 Module Search (`src/modules/search`)](#71-module-search-srcmodulessearch)
@@ -2649,7 +2657,6 @@ src/modules/search/
 │   ├── SwitchDetailsMode.tsx  # Switch drawer/dialog
 │   ├── Preview.tsx            # Prévisualisation
 │   ├── AddEntityModal.tsx     # Modal d'ajout d'entité
-│   ├── DynamicFormModal.tsx   # Formulaire dynamique
 │   ├── renderMapPopup.tsx     # Rendu des popups carte
 │   ├── card/
 │   │   ├── CardDefault.tsx    # Carte standard

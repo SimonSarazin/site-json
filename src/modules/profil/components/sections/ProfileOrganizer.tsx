@@ -1,9 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useFormatProfileEntity } from "../../hooks/useFormatProfileEntity";
-import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
-import "@/modules/profil/i18n";
 import type { ProfileOrganizerSection } from "../../schema";
 
 interface ProfileOrganizerProps {
@@ -12,7 +10,6 @@ interface ProfileOrganizerProps {
 
 export default function ProfileOrganizer({ section }: ProfileOrganizerProps) {
   const { entity } = useProfileEntity();
-  useLoadNamespace("modules/profil");
   const t = useT("modules/profil");
   const { organizers } = useFormatProfileEntity(entity);
 

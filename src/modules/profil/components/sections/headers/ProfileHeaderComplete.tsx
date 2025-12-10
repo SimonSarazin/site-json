@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Edit, Mail, ChevronRight, ImageIcon } from "lucide-react";
 import { useFormatProfileEntity } from "../../../hooks/useFormatProfileEntity";
-import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../../hooks/useProfileEntity";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
@@ -12,7 +11,6 @@ import { EntityActionButtons } from "../../EntityActionButtons";
 import { AddEntityDropdown } from "../../action-buttons/AddEntityDropdown";
 import { isUser } from "@/lib/getTypedEntity";
 import type { ProfileHeaderSection } from "../../../schema";
-import "@/modules/profil/i18n";
 import { ButtonGroup } from "@/components/ui/button-group";
 
 interface ProfileHeaderCompleteProps {
@@ -21,7 +19,6 @@ interface ProfileHeaderCompleteProps {
 
 export function ProfileHeaderComplete({ section }: ProfileHeaderCompleteProps) {
   const { entity } = useProfileEntity();
-  useLoadNamespace("modules/profil");
   const t = useT("modules/profil");
   const {
     imageUrl,

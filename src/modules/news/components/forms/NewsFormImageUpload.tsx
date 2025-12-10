@@ -170,7 +170,9 @@ export function NewsFormImageUpload({
 
           setProcessingFiles((prev) => ({ ...prev, [fileKey]: 60 }));
 
-          console.log(`Compressed ${file.name}: ${formatFileSize(originalSize)} → ${formatFileSize(compressedSize)} (-${ratio}%)`);
+          if (import.meta.env.DEV) {
+            console.log(`Compressed ${file.name}: ${formatFileSize(originalSize)} → ${formatFileSize(compressedSize)} (-${ratio}%)`);
+          }
         } catch (error) {
           console.error(`Compression failed for ${file.name}:`, error);
           // En cas d'erreur, garder le fichier original

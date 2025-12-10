@@ -2,7 +2,6 @@ import { useProfileEntity } from "../../hooks/useProfileEntity";
 import { useT } from "@/hooks/useT";
 import { formatDate } from "@/helpers/formatDate";
 import type { ProfileEventDatesSection } from "../../schema";
-import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { isEvent } from "@/lib/getTypedEntity";
 
 interface ProfileEventDatesProps {
@@ -15,7 +14,6 @@ interface ProfileEventDatesProps {
  */
 export default function ProfileEventDates({ section }: ProfileEventDatesProps) {
   const { entity } = useProfileEntity();
-  useLoadNamespace("modules/profil");
   const t = useT("modules/profil");
 
   // Ce composant ne s'affiche que pour les Events

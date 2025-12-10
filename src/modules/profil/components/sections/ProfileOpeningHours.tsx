@@ -4,7 +4,6 @@ import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
 import type { ProfileOpeningHoursSection } from "../../schema";
 import type { LocalizedString } from "@/types/locale-schema";
-import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 
 interface ProfileOpeningHoursProps {
   section: ProfileOpeningHoursSection;
@@ -17,7 +16,6 @@ interface ProfileOpeningHoursProps {
 export default function ProfileOpeningHours({ section }: ProfileOpeningHoursProps) {
   const { entity } = useProfileEntity();
   const { openingHours } = useFormatProfileEntity(entity);
-  useLoadNamespace("modules/profil");
   const t = useT("modules/profil");
   const { currentLocale } = useLocalization();
 

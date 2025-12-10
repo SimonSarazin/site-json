@@ -1,5 +1,5 @@
 import { SectionRenderer } from "./SectionRenderer";
-import type { Section } from "@/types/site";
+import type { Section, GridLayoutSectionProps } from "@/types/site";
 import { cn } from "@/lib/utils";
 
 export function GridLayoutSection({
@@ -7,16 +7,12 @@ export function GridLayoutSection({
   props
 }: {
   id?: string;
-  props: {
-    leftSection: Section;
-    rightSection: Section;
-    leftColumns?: 1 | 2 | 3 | 4;
-    rightColumns?: 1 | 2 | 3 | 4;
-    gap?: number;
-    className?: string;
-  };
+  props: GridLayoutSectionProps;
 }) {
-  const { leftSection, rightSection, leftColumns = 1, rightColumns = 3, gap = 8, className } = props;
+  const { leftColumns = 1, rightColumns = 3, gap = 8, className } = props;
+  // Cast nécessaire car z.lazy() infère unknown (même pattern que TabsSection)
+  const leftSection = props.leftSection as Section | undefined;
+  const rightSection = props.rightSection as Section | undefined;
 
   const getColSpan = (cols: number) => {
     const colSpanMap: Record<number, string> = {
@@ -35,12 +31,16 @@ export function GridLayoutSection({
           className={cn("grid grid-cols-1 lg:grid-cols-4")}
           style={{ gap: `${gap * 0.25}rem` }}
         >
-          <div className={`${getColSpan(leftColumns)}`}>
-            <SectionRenderer section={leftSection} />
-          </div>
-          <div className={getColSpan(rightColumns)}>
-            <SectionRenderer section={rightSection} />
-          </div>
+          {leftSection && (
+            <div className={`${getColSpan(leftColumns)}`}>
+              <SectionRenderer section={leftSection} />
+            </div>
+          )}
+          {rightSection && (
+            <div className={getColSpan(rightColumns)}>
+              <SectionRenderer section={rightSection} />
+            </div>
+          )}
         </div>
       </div>
     </section>
