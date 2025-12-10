@@ -33,6 +33,57 @@ interface UpdateSocialData {
   diaspora?: string | null;
   [key: string]: string | null | undefined;
 }
+interface ApiAddressData {
+  "@type": "PostalAddress";
+  addressCountry: string;
+  addressLocality: string;
+  localityId: string;
+  codeInsee: string;
+  level1: string;
+  level1Name: string;
+  level3?: string;
+  level3Name?: string;
+  level4?: string;
+  level4Name?: string;
+  postalCode?: string;
+  streetAddress?: string;
+}
+
+interface GeoData {
+  "@type"?: "GeoCoordinates";
+  latitude: string | number;
+  longitude: string | number;
+}
+
+interface GeoPositionData {
+  type: "Point";
+  coordinates: [number, number];
+  float: true;
+}
+
+interface UpdateLocalityData {
+  address: ApiAddressData | "";
+  geo?: GeoData;
+  geoPosition?: GeoPositionData;
+  [key: string]: ApiAddressData | "" | GeoData | GeoPositionData | undefined;
+}
+
+interface OpeningHourEntry {
+  dayOfWeek: string;
+  hours?: Array<{ opens: string; closes: string }>;
+}
+
+interface UpdateProfileImageData {
+  profil_avatar: File;
+}
+
+interface UpdateBannerImageData {
+  banner: File;
+  cropX: number;
+  cropY: number;
+  cropW: number;
+  cropH: number;
+}
 
 export function useProfileMutations() {
   const { entity } = useProfileEntity();
@@ -196,10 +247,88 @@ export function useProfileMutations() {
     },
   });
 
+  const updateLocalityMutation = useMutation({
+    mutationFn: async (data: UpdateLocalityData) => {
+      if (!entity || !("updateLocality" in entity)) {
+        throw new Error("error");
+      }
+
+      const response = await entity.updateLocality(data) as ApiResponse;
+      return { data, response };
+    },
+    onSuccess: ({ data }) => {
+      if (!entity?.slug) return;
+
+      const serverData = entity.serverData as Record<string, unknown> | undefined;
+      if (serverData) {
+        if (data.address === "" || !data.address) {
+          delete serverData.address;
+          delete serverData.geo;
+          delete serverData.geoPosition;
+        } else {
+          serverData.address = data.address;
+          if (data.geo) serverData.geo = data.geo;
+          if (data.geoPosition) serverData.geoPosition = data.geoPosition;
+        }
+      }
+
+      queryClient.refetchQueries({
+        queryKey: ["element-about", entity.slug],
+      });
+    },
+  });
+
+  const updateOpeningHoursMutation = useMutation({
+    mutationFn: async (data: OpeningHourEntry[]) => {
+      if (!entity || !("updateOpeningHours" in entity)) {
+        throw new Error("error2");
+      }
+
+      const response = await (entity as { updateOpeningHours: (hours: OpeningHourEntry[]) => Promise<unknown> }).updateOpeningHours(data);
+      return { data, response };
+    },
+    onSuccess: ({ data }) => {
+      if (!entity?.slug) return;
+
+      const serverData = entity.serverData as Record<string, unknown> | undefined;
+      if (serverData) {
+        serverData.openingHours = data;
+      }
+
+      queryClient.refetchQueries({
+        queryKey: ["element-about", entity.slug],
+      });
+    },
+  });
+
+  const updateProfileImageMutation = useMutation({
+    mutationFn: async (data: UpdateProfileImageData) => {
+      if (!entity || !("updateImageProfil" in entity)) {
+        throw new Error("error updateImageProfil");
+      }
+
+      await (entity as { updateImageProfil: (data: { profil_avatar: File }) => Promise<unknown> }).updateImageProfil(data);
+    },
+  });
+
+  const updateBannerImageMutation = useMutation({
+    mutationFn: async (data: UpdateBannerImageData) => {
+      if (!entity || !("updateImageBanner" in entity)) {
+        throw new Error("error updateImageBanner");
+      }
+
+      await (entity as { updateImageBanner: (data: { banner: File; cropX: number; cropY: number; cropW: number; cropH: number }) => Promise<unknown> }).updateImageBanner(data);
+    },
+  });
+
   return {
     canEdit: canEdit(),
     updateDescription: updateDescriptionMutation,
     updateInfo: updateInfoMutation,
     updateSocial: updateSocialMutation,
+    updateLocality: updateLocalityMutation,
+    updateOpeningHours: updateOpeningHoursMutation,
+    updateProfileImage: updateProfileImageMutation,
+    updateBannerImage: updateBannerImageMutation,
   };
 }

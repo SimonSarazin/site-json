@@ -94,7 +94,6 @@ export function EditInfoGeneralModal({
       url: initialData.url || "",
       fixe: initialData.fixe || "",
       mobile: initialData.mobile || "",
-      // Extract only the date part (YYYY-MM-DD) from birthDate, removing any time component
       birthDate: initialData.birthDate
         ? (typeof initialData.birthDate === "string"
             ? initialData.birthDate.split("T")[0].split(" ")[0]
@@ -118,14 +117,6 @@ export function EditInfoGeneralModal({
         : [];
       const initialTagsString = initialData.tags?.join(", ") || "";
 
-      const initialBirthDateOnly = initialData.birthDate
-        ? (typeof initialData.birthDate === "string"
-            ? initialData.birthDate.split("T")[0].split(" ")[0]
-            : initialData.birthDate instanceof Date
-              ? initialData.birthDate.toISOString().split("T")[0]
-              : "")
-        : "";
-
       const apiData = {
         name: data.name !== initialData.name ? data.name : null,
         email: data.email !== (initialData.email || "") ? data.email : null,
@@ -135,7 +126,7 @@ export function EditInfoGeneralModal({
         birthDate: data.birthDate || null,
         type: data.type !== (initialData.type || "") ? data.type : null,
         avancement: data.avancement !== (initialData.avancement || "") ? data.avancement : null,
-        tags: data.tags !== initialTagsString ? (tagsArray.length > 0 ? tagsArray : "") : null,
+        tags: data.tags !== initialTagsString ? (tagsArray.length > 0 ? tagsArray : null) : null,
       };
 
       const hasChanges = Object.values(apiData).some(v => v !== null);

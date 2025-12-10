@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
-import { Mail, ChevronRight, Image as ImageIcon, Globe, Users, Briefcase } from "lucide-react";
+import { Mail, ChevronRight, Image as ImageIcon, Globe, Users, Briefcase, Camera, Pencil } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFormatProfileEntity } from "../../hooks/useFormatProfileEntity";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
+import { useProfileMutations } from "../../hooks/useProfileMutations";
 import "@/modules/profil/i18n";
 import { LazyTabContent } from "@/components/LazyTabContent";
 import { NewsTab } from "../tabs/NewsTab";
@@ -13,15 +14,20 @@ import { ProjectsTab } from "../tabs/ProjectsTab";
 import { CommunitiesTab } from "../tabs/CommunitiesTab";
 import { AboutTab } from "../tabs/AboutTab";
 import { ProfileBannerCarriedBy } from "../banner/ProfileBannerCarriedBy";
+import { EditProfileImageModal } from "../banner/EditProfileImageModal";
+import { EditBannerImageModal } from "../banner/EditBannerImageModal";
 
 export default function ProfileTemplateDefault() {
   const { entity, entityType: _entityType } = useProfileEntity();
   const { slug } = useParams<{ slug: string }>();
   const location = useLocation();
   const navigate = useNavigate();
-  // const { me } = useCocolight();
+  const { canEdit } = useProfileMutations();
   useLoadNamespace("modules/profil");
   const t = useT("modules/profil");
+
+  const [isEditProfileImageOpen, setIsEditProfileImageOpen] = useState(false);
+  const [isEditBannerOpen, setIsEditBannerOpen] = useState(false);
 
   // Déterminer le tab actif depuis l'URL
   // Exemples: /profil/slug → "about", /profil/slug/news → "news"
@@ -83,10 +89,20 @@ export default function ProfileTemplateDefault() {
   return (
     <div className="bg-foreground -m-4 md:-m-8">
       <div className="w-full mx-auto bg-background shadow-sm">
-        <div className="relative h-96 bg-cover bg-center rounded-md border-border border" style={{ backgroundImage: bannerUrl ? `url('${bannerUrl}')` : `url('${imageUrl}')` }}>
+        <div className="relative h-96 bg-cover bg-center rounded-md border-border border group/banner" style={{ backgroundImage: bannerUrl ? `url('${bannerUrl}')` : `url('${imageUrl}')` }}>
           <ProfileBannerCarriedBy
             parent={entity?.serverData?.parent as Record<string, { id?: string; _id?: { $id?: string }; name?: string; type?: string; collection?: string; profilThumbImageUrl?: string }> | undefined}
           />
+
+          {canEdit && (
+            <button
+              onClick={() => setIsEditBannerOpen(true)}
+              className="absolute top-4 right-4 z-20 bg-black/50 hover:bg-black/70 text-white p-2.5 rounded-full opacity-0 group-hover/banner:opacity-100 transition-all duration-200 backdrop-blur-sm"
+              aria-label={String(t("EditImage.editBannerImage"))}
+            >
+              <Camera className="w-5 h-5" />
+            </button>
+          )}
 
           <div className="absolute bottom-6 right-6 z-20">
             <button className="bg-card text-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-muted flex items-center gap-2 shadow-md border border-border">
@@ -98,7 +114,7 @@ export default function ProfileTemplateDefault() {
 
         <div className="relative px-8 pb-6">
           <div className="flex items-end gap-6 -mt-20">
-            <div className="relative">
+            <div className="relative group/avatar">
               <div className="w-40 h-40 rounded-full border-4 border-background bg-card shadow-xl overflow-hidden">
                 {effectiveLogoUrl ? (
                   <img
@@ -118,6 +134,16 @@ export default function ProfileTemplateDefault() {
                   </div>
                 )}
               </div>
+
+              {canEdit && (
+                <button
+                  onClick={() => setIsEditProfileImageOpen(true)}
+                  className="absolute bottom-2 right-2 z-20 bg-teal-600 hover:bg-teal-700 text-white p-2 rounded-full opacity-0 group-hover/avatar:opacity-100 transition-all duration-200 shadow-lg"
+                  aria-label={String(t("EditImage.editProfileImage"))}
+                >
+                  <Pencil className="w-4 h-4" />
+                </button>
+              )}
             </div>
 
             <div className="flex-1 flex justify-between items-end pb-2 flex-wrap gap-4">
@@ -269,6 +295,19 @@ export default function ProfileTemplateDefault() {
           </Tabs>
         </div>
       </div>
+
+      {/* Edit Image Modals */}
+      <EditProfileImageModal
+        open={isEditProfileImageOpen}
+        onOpenChange={setIsEditProfileImageOpen}
+        currentImage={effectiveLogoUrl || undefined}
+      />
+
+      <EditBannerImageModal
+        open={isEditBannerOpen}
+        onOpenChange={setIsEditBannerOpen}
+        currentImage={bannerUrl || undefined}
+      />
     </div>
   );
 }

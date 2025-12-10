@@ -1,7 +1,11 @@
-import { Clock } from "lucide-react";
+import { useState } from "react";
+import { Clock, Pencil } from "lucide-react";
 import { useT } from "@/hooks/useT";
 import { formatDate } from "@/helpers/formatDate";
 import type { ProfileEntity } from "@/modules/profil/types";
+import { useProfileMutations } from "@/modules/profil/hooks/useProfileMutations";
+import { EditOpeningHoursModal } from "./edit/EditOpeningHoursModal";
+import { EditDateTimeModal } from "./edit/EditDateTimeModal";
 
 interface OpeningHoursSectionProps {
   entity: ProfileEntity;
@@ -28,10 +32,19 @@ const DAY_NAMES: Record<string, string> = {
   Friday: "Vendredi",
   Saturday: "Samedi",
   Sunday: "Dimanche",
+  Mo: "Lundi",
+  Tu: "Mardi",
+  We: "Mercredi",
+  Th: "Jeudi",
+  Fr: "Vendredi",
+  Sa: "Samedi",
+  Su: "Dimanche",
 };
 
 export function OpeningHoursSection({ entity, entityType }: OpeningHoursSectionProps) {
   const t = useT("modules/profil");
+  const { canEdit } = useProfileMutations();
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
   if (entityType === "poi" || entityType === "citoyens") {
     return null;
@@ -46,15 +59,27 @@ export function OpeningHoursSection({ entity, entityType }: OpeningHoursSectionP
   const isProject = entityType === "projects";
   const title = isProject ? t("AboutTab.openingDate") : t("AboutTab.openingHours");
 
+  // Enable edit for both organizations and projects
+  const canEditSection = canEdit;
+
   return (
-    <li className="ms-6 w-full mb-4">
+    <li className={`ms-6 w-full mb-4 group ${canEditSection ? "hover:bg-muted/50 hover:rounded-lg p-2 -ml-3 pl-8 transition-colors" : ""}`}>
       <span className="absolute flex items-center justify-center w-6 h-6 rounded-full -start-3 ring-8 ring-background bg-teal-600 text-white">
         <Clock className="w-3 h-3" />
       </span>
-      <div className="flex justify-between">
+      <div className="flex justify-between items-center">
         <h2 className="flex items-center mb-1 text-base font-semibold text-foreground uppercase">
           {String(title)}
         </h2>
+        {canEditSection && (
+          <button
+            onClick={() => setIsEditOpen(true)}
+            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded"
+            aria-label={String(t("EditAbout.edit"))}
+          >
+            <Pencil className="w-4 h-4 text-muted-foreground" />
+          </button>
+        )}
       </div>
       {hasOpeningHours ? (
         <ol className="relative border-s border-teal-600 mt-2 ml-2">
@@ -95,9 +120,40 @@ export function OpeningHoursSection({ entity, entityType }: OpeningHoursSectionP
           ))}
         </ol>
       ) : (
-        <span className="text-sm text-muted-foreground mt-2 block">
-          {t("AboutTab.notSpecified")}
-        </span>
+        <div className="mt-2">
+          {canEditSection ? (
+            <button
+              onClick={() => setIsEditOpen(true)}
+              className="flex items-center gap-2 px-4 py-3 w-full text-sm text-muted-foreground border-2 border-dashed border-muted-foreground/30 rounded-lg hover:border-teal-500 hover:text-teal-600 hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-all"
+            >
+              <Clock className="w-4 h-4" />
+              {isProject ? t("EditAbout.addDateTime") : t("EditAbout.addOpeningHours")}
+            </button>
+          ) : (
+            <span className="text-sm text-muted-foreground block">
+              {t("AboutTab.notSpecified")}
+            </span>
+          )}
+        </div>
+      )}
+
+      {canEditSection && isProject && (
+        <EditDateTimeModal
+          open={isEditOpen}
+          onOpenChange={setIsEditOpen}
+          initialData={{
+            startDate: startDate as string | Date | null | undefined,
+            endDate: endDate as string | Date | null | undefined,
+          }}
+        />
+      )}
+
+      {canEditSection && !isProject && (
+        <EditOpeningHoursModal
+          open={isEditOpen}
+          onOpenChange={setIsEditOpen}
+          initialData={openingHours || []}
+        />
       )}
     </li>
   );
