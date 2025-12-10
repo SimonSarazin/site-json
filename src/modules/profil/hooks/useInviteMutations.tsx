@@ -36,6 +36,7 @@ export function useInviteMember(entity: EntityTypes | null) {
         await user.sendRequestToJoinParent();
       }
     },
+    namespace: "modules/profil",
     successKey: "toast.members.inviteSuccess",
     errorKey: "toast.members.inviteError",
     getSuccessParams: (_, user) => ({ name: user.serverData?.name || "" }),
@@ -59,6 +60,7 @@ export function useInviteAdmin(entity: EntityTypes | null) {
         await user.sendRequestToJoinParent({ admin: true });
       }
     },
+    namespace: "modules/profil",
     successKey: "toast.members.inviteAdminSuccess",
     errorKey: "toast.members.inviteAdminError",
     getSuccessParams: (_, user) => ({ name: user.serverData?.name || "" }),

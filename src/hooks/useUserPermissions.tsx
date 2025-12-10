@@ -194,27 +194,29 @@ export function useUserPermissions(
 
     // CAS 3: Organization
     if (isOrganization(entity)) {
-      const isOrgAdminOrAuthor = entity.isAuthorOrAdmin();
+      const isOrgAdmin= entity.isAdmin();
+      // const isOrgAuthor = entity.isAuthorOrAdmin();
+      // const isOrgAdminOrAuthor = isOrgAdmin || isOrgAuthor;
       const isOrgMember = entity.isMember();
       const isNewsAuthor = news?.isAuthor() ?? false;
       const isFollowingOrg = entity.isFollowing?.() ?? false;
 
       return {
-        canEditProfile: isOrgAdminOrAuthor, // Admin ou auteur peuvent éditer le profil
-        editProfileReason: isOrgAdminOrAuthor ? undefined : "Must be admin or author of organization",
-        canAddNews: isOrgAdminOrAuthor || isOrgMember, // Admins + Membres peuvent publier
-        canEditNews: isNewsAuthor || isOrgAdminOrAuthor, // Auteur de la news OU Admin de l'orga
-        canDeleteNews: isNewsAuthor || isOrgAdminOrAuthor, // Auteur de la news OU Admin de l'orga
-        canModerateNews: isOrgAdminOrAuthor, // Admins seulement peuvent modérer
+        canEditProfile: isOrgAdmin, // Admin ou auteur peuvent éditer le profil
+        editProfileReason: isOrgAdmin ? undefined : "Must be admin of organization",
+        canAddNews: isOrgAdmin || isOrgMember, // Admins + Membres peuvent publier
+        canEditNews: isNewsAuthor || isOrgAdmin, // Auteur de la news OU Admin de l'orga
+        canDeleteNews: isNewsAuthor || isOrgAdmin, // Auteur de la news OU Admin de l'orga
+        canModerateNews: isOrgAdmin, // Admins seulement peuvent modérer
         canEditComment: true, // Vérifié au niveau du commentaire individuel
         canDeleteComment: true, // Vérifié au niveau du commentaire individuel
-        canFollow: !isOrgAdminOrAuthor, // Peut follow si pas admin/auteur (les membres peuvent follow)
+        canFollow: !isOrgAdmin, // Peut follow si pas admin/auteur (les membres peuvent follow)
         isFollowing: isFollowingOrg,
         canSendFriendRequest: false, // Pas de demandes d'ami pour les organisations
         isFriend: false,
-        canRequestMembership: !isOrgAdminOrAuthor && !isOrgMember, // Peut demander si pas déjà membre
+        canRequestMembership: !isOrgAdmin && !isOrgMember, // Peut demander si pas déjà membre
         isMember: isOrgMember,
-        isAdmin: isOrgAdminOrAuthor,
+        isAdmin: isOrgAdmin,
         isContributor: false,
         canRequestContributor: false,
         canRequestProjectAdmin: false,
@@ -223,9 +225,9 @@ export function useUserPermissions(
         canParticipate: false,
         // Admin ou membre peuvent créer des entités enfants
         canAddOrganization: false, // Pas de sous-organisation
-        canAddProject: isOrgAdminOrAuthor || isOrgMember,
-        canAddEvent: isOrgAdminOrAuthor || isOrgMember,
-        canAddPoi: isOrgAdminOrAuthor || isOrgMember,
+        canAddProject: isOrgAdmin || isOrgMember,
+        canAddEvent: isOrgAdmin || isOrgMember,
+        canAddPoi: isOrgAdmin || isOrgMember,
       };
     }
 
@@ -268,21 +270,23 @@ export function useUserPermissions(
 
     // CAS 5: Event
     if (isEvent(entity)) {
+      const isAdmin = entity.isAdmin?.({ checkHierarchy: true}) ?? false;
       const isEventAuthor = entity.isAuthor?.() ?? false;
+      const isOrgAdminOrAuthor = isAdmin || isEventAuthor;
       const isEventParticipant = entity.isAttendee?.() ?? false;
       const isFollowingEvent = entity.isFollowing?.() ?? false;
       const isNewsAuthor = news?.isAuthor() ?? false;
 
       return {
-        canEditProfile: isEventAuthor, // Seulement l'auteur peut éditer l'événement
-        editProfileReason: isEventAuthor ? undefined : "Must be author of event",
-        canAddNews: isEventAuthor, // Seulement l'auteur de l'événement peut publier
-        canEditNews: isNewsAuthor || isEventAuthor, // Auteur de la news OU Auteur de l'événement
-        canDeleteNews: isNewsAuthor || isEventAuthor, // Auteur de la news OU Auteur de l'événement
-        canModerateNews: isEventAuthor, // Seulement l'auteur de l'événement peut modérer
+        canEditProfile: isOrgAdminOrAuthor, // Seulement l'auteur peut éditer l'événement
+        editProfileReason: isOrgAdminOrAuthor ? undefined : "Must be author of event",
+        canAddNews: isOrgAdminOrAuthor, // Seulement l'auteur de l'événement peut publier
+        canEditNews: isNewsAuthor || isOrgAdminOrAuthor, // Auteur de la news OU Auteur de l'événement
+        canDeleteNews: isNewsAuthor || isOrgAdminOrAuthor, // Auteur de la news OU Auteur de l'événement
+        canModerateNews: isOrgAdminOrAuthor, // Seulement l'auteur de l'événement peut modérer
         canEditComment: true, // Vérifié au niveau du commentaire individuel
         canDeleteComment: true, // Vérifié au niveau du commentaire individuel
-        canFollow: !isEventAuthor, // Peut suivre si pas l'auteur
+        canFollow: true, // Peut suivre si pas l'auteur
         isFollowing: isFollowingEvent,
         canSendFriendRequest: false, // Pas de demandes d'ami pour les événements
         isFriend: false,
@@ -294,7 +298,7 @@ export function useUserPermissions(
         canRequestProjectAdmin: false,
         isAuthor: isEventAuthor,
         isParticipant: isEventParticipant,
-        canParticipate: !isEventAuthor && !isEventParticipant, // Peut participer si pas auteur et pas déjà participant
+        canParticipate: !isEventParticipant, // Peut participer si pas déjà participant
         // Seulement l'auteur peut créer des POI sur un événement
         canAddOrganization: false,
         canAddProject: false,

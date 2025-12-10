@@ -46,6 +46,7 @@ export function useAddOrganization(entity?: EntityTypes | null) {
 
       return { organization };
     },
+    namespace: "modules/profil",
     successKey: "toast.add.organizationSuccess",
     errorKey: "toast.add.organizationError",
     invalidateQueries: targetEntity ? [QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(targetEntity.slug)] : [],
@@ -96,6 +97,7 @@ export function useAddProject(entity?: EntityTypes | null) {
 
       return { project };
     },
+    namespace: "modules/profil",
     successKey: "toast.add.projectSuccess",
     errorKey: "toast.add.projectError",
     invalidateQueries: [
@@ -164,6 +166,7 @@ export function useAddEvent(entity?: EntityTypes | null) {
 
       return { event };
     },
+    namespace: "modules/profil",
     successKey: "toast.add.eventSuccess",
     errorKey: "toast.add.eventError",
     invalidateQueries: [
@@ -217,6 +220,7 @@ export function useAddPoi(entity?: EntityTypes | null) {
 
       return { poi };
     },
+    namespace: "modules/profil",
     successKey: "toast.add.poiSuccess",
     errorKey: "toast.add.poiError",
     invalidateQueries: [

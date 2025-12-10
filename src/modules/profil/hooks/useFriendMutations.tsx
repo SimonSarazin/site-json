@@ -14,6 +14,7 @@ export function useSendFriendRequest(currentUser: User | null) {
       }
       await user.sendFriendRequest();
     },
+    namespace: "modules/profil",
     successKey: "toast.friends.requestSent",
     errorKey: "toast.friends.sendRequestError",
     invalidateQueries: currentUser
@@ -36,6 +37,7 @@ export function useAcceptFriendRequest(currentUser: User | null) {
       }
       await user.acceptFriendRequest();
     },
+    namespace: "modules/profil",
     successKey: "toast.friends.requestAccepted",
     errorKey: "toast.friends.acceptRequestError",
     invalidateQueries: currentUser
@@ -55,6 +57,7 @@ export function useRejectFriendRequest(currentUser: User | null) {
       }
       await user.removeFriend();
     },
+    namespace: "modules/profil",
     successKey: "toast.friends.requestRejected",
     errorKey: "toast.friends.rejectRequestError",
     invalidateQueries: currentUser ? [QUERY_KEYS.USER_PENDING_FRIENDS_PREFIX(currentUser.slug)] : [],
@@ -72,6 +75,7 @@ export function useRemoveFriend(currentUser: User | null) {
       }
       await user.removeFriend();
     },
+    namespace: "modules/profil",
     successKey: "toast.friends.friendRemoved",
     errorKey: "toast.friends.removeError",
     invalidateQueries: currentUser ? [QUERY_KEYS.USER_FRIENDS_PREFIX(currentUser.slug)] : [],
@@ -89,6 +93,7 @@ export function useCancelFriendRequest(currentUser: User | null) {
       }
       await user.removeFriend();
     },
+    namespace: "modules/profil",
     successKey: "toast.friends.requestCancelled",
     errorKey: "toast.friends.cancelError",
     invalidateQueries: currentUser ? [QUERY_KEYS.USER_SENT_FRIEND_REQUESTS_PREFIX(currentUser.slug)] : [],

@@ -37,6 +37,7 @@ export function useDemoteMember(entity: EntityTypes | null) {
         await user.demoteFromAdmin();
       }
     },
+    namespace: "modules/profil",
     successKey: "toast.members.demoteSuccess",
     errorKey: "toast.members.demoteError",
     getSuccessParams: (_, user) => ({ name: user.serverData?.name || "" }),
@@ -60,6 +61,7 @@ export function usePromoteMember(entity: EntityTypes | null) {
         await user.promoteToAdmin();
       }
     },
+    namespace: "modules/profil",
     successKey: "toast.members.promoteSuccess",
     errorKey: "toast.members.promoteError",
     getSuccessParams: (_, user) => ({ name: user.serverData?.name || "" }),
@@ -83,6 +85,7 @@ export function useRemoveMember(entity: EntityTypes | null) {
         await user.removeFromParent();
       }
     },
+    namespace: "modules/profil",
     successKey: "toast.members.removeSuccess",
     errorKey: "toast.members.removeError",
     getSuccessParams: (_, user) => ({ name: user.serverData?.name || "" }),
@@ -106,6 +109,7 @@ export function useValidateMember(entity: EntityTypes | null) {
         await user.validateMemberRequest();
       }
     },
+    namespace: "modules/profil",
     successKey: "toast.members.validateSuccess",
     errorKey: "toast.members.validateError",
     getSuccessParams: (_, user) => ({ name: user.serverData?.name || "" }),
@@ -129,6 +133,7 @@ export function useValidateAdmin(entity: EntityTypes | null) {
         await user.validateAdminRequest();
       }
     },
+    namespace: "modules/profil",
     successKey: "toast.members.validateAdminSuccess",
     errorKey: "toast.members.validateAdminError",
     getSuccessParams: (_, user) => ({ name: user.serverData?.name || "" }),
@@ -152,6 +157,7 @@ export function useRejectMember(entity: EntityTypes | null) {
         await user.removeFromParent();
       }
     },
+    namespace: "modules/profil",
     successKey: "toast.members.removeSuccess",
     errorKey: "toast.members.removeError",
     getSuccessParams: (_, user) => ({ name: user.serverData?.name || "" }),

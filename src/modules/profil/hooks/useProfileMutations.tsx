@@ -28,6 +28,7 @@ export function useUpdateProfile(entity: EntityTypes | null) {
 
       return { entity, result };
     },
+    namespace: "modules/profil",
     successKey: "toast.profile.updateSuccess",
     errorKey: "toast.profile.updateError",
     invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : [],
@@ -49,6 +50,7 @@ export function useUploadProfileImage(entity: EntityTypes | null) {
 
       return { entity, result: null };
     },
+    namespace: "modules/profil",
     successKey: "toast.profile.imageUploadSuccess",
     errorKey: "toast.profile.imageUploadError",
     invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : [],
@@ -75,6 +77,7 @@ export function useUploadProfileBanner(entity: EntityTypes | null) {
 
       return { entity, result: null };
     },
+    namespace: "modules/profil",
     successKey: "toast.profile.bannerUploadSuccess",
     errorKey: "toast.profile.bannerUploadError",
     onSuccessCallback: async () => {
