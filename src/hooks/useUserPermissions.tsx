@@ -225,9 +225,9 @@ export function useUserPermissions(
         canParticipate: false,
         // Admin ou membre peuvent créer des entités enfants
         canAddOrganization: false, // Pas de sous-organisation
-        canAddProject: isOrgAdmin || isOrgMember,
-        canAddEvent: isOrgAdmin || isOrgMember,
-        canAddPoi: isOrgAdmin || isOrgMember,
+        canAddProject: isOrgAdmin,
+        canAddEvent: isOrgAdmin,
+        canAddPoi: isOrgAdmin,
       };
     }
 
@@ -263,8 +263,8 @@ export function useUserPermissions(
         // Admin ou contributeur peuvent créer des entités enfants
         canAddOrganization: false,
         canAddProject: false, // Pas de sous-projet
-        canAddEvent: isProjectAdmin || isProjectContributor,
-        canAddPoi: isProjectAdmin || isProjectContributor,
+        canAddEvent: isProjectAdmin,
+        canAddPoi: isProjectAdmin,
       };
     }
 
