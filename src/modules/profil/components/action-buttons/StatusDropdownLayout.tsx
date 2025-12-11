@@ -47,10 +47,17 @@ export function StatusDropdownLayout({
     }
   };
 
-  // Séparer les actions follow/unfollow des actions membership/leave
+  // Séparer les actions par catégorie
   const followActions = actions.filter((a) => a.type === "follow" || a.type === "unfollow");
   const membershipActions = actions.filter((a) => a.type === "join" || a.type === "leave");
-  const needsSeparator = followActions.length > 0 && membershipActions.length > 0;
+  const invitationActions = actions.filter((a) => a.type === "accept" || a.type === "reject");
+  const pendingActions = actions.filter((a) => a.type === "pending");
+
+  // Calcul des séparateurs nécessaires
+  const hasFollow = followActions.length > 0;
+  const hasMembership = membershipActions.length > 0;
+  const hasInvitation = invitationActions.length > 0;
+  const hasPending = pendingActions.length > 0;
 
   return (
     <>
@@ -71,8 +78,38 @@ export function StatusDropdownLayout({
             </DropdownMenuItem>
           ))}
 
-          {/* Séparateur si nécessaire */}
-          {needsSeparator && <DropdownMenuSeparator />}
+          {/* Séparateur après follow si autres actions */}
+          {hasFollow && (hasMembership || hasInvitation || hasPending) && <DropdownMenuSeparator />}
+
+          {/* Actions d'invitation (Accepter/Refuser) */}
+          {invitationActions.filter((a) => a.show).map((action) => (
+            <DropdownMenuItem
+              key={action.id}
+              onClick={() => handleActionClick(action)}
+              variant={action.type === "reject" ? "destructive" : "default"}
+            >
+              {action.icon}
+              {action.label}
+            </DropdownMenuItem>
+          ))}
+
+          {/* Séparateur après invitation si autres actions */}
+          {hasInvitation && (hasMembership || hasPending) && <DropdownMenuSeparator />}
+
+          {/* Badges en attente (non cliquables) */}
+          {pendingActions.filter((a) => a.show).map((action) => (
+            <DropdownMenuItem
+              key={action.id}
+              disabled
+              className="opacity-70 cursor-default"
+            >
+              {action.icon}
+              {action.label}
+            </DropdownMenuItem>
+          ))}
+
+          {/* Séparateur après pending si membership */}
+          {hasPending && hasMembership && <DropdownMenuSeparator />}
 
           {/* Actions Membership/Leave */}
           {membershipActions.filter((a) => a.show).map((action) => (

@@ -22,7 +22,7 @@ export function SeparateButtonsLayout({ actions }: SeparateButtonsLayoutProps) {
           <Button
             key={action.id}
             onClick={action.onClick}
-            disabled={isLoading}
+            disabled={action.disabled || isLoading}
             variant={action.variant}
             className="px-5 py-2.5 h-auto border border-border rounded-lg text-foreground bg-card text-sm font-medium hover:bg-muted flex items-center gap-2 shadow-sm"
           >

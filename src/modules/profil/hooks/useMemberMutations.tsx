@@ -146,6 +146,30 @@ export function useValidateAdmin(entity: EntityTypes | null) {
 }
 
 /**
+ * Hook pour qu'un membre/contributeur demande à devenir admin
+ * Utilise entity.requestPromoteToAdmin() - différent de usePromoteMember qui est pour les admins
+ * Fonctionne pour Organizations (membre → admin) et Projects (contributeur → admin)
+ */
+export function useRequestPromoteToAdmin(entity: EntityTypes | null) {
+  const queryClient = useQueryClient();
+
+  return useMutationWithToast<void, void>({
+    mutationFn: async () => {
+      if (entity && (isProject(entity) || isOrganization(entity)) && entity.requestPromoteToAdmin) {
+        await entity.requestPromoteToAdmin();
+      }
+    },
+    namespace: "modules/profil",
+    successKey: "toast.members.requestPromoteSuccess",
+    errorKey: "toast.members.requestPromoteError",
+    onSuccessCallback: () => {
+      invalidateMemberQueriesForEntity(queryClient, entity);
+    },
+    invalidateQueries: [],
+  });
+}
+
+/**
  * Hook pour rejeter une demande de membre
  */
 export function useRejectMember(entity: EntityTypes | null) {

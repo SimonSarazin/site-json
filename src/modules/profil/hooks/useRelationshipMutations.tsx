@@ -44,50 +44,6 @@ export function useUnfollowUser(entity: EntityTypes | null) {
   });
 }
 
-/**
- * Hook pour envoyer une demande d'ami
- */
-export function useSendFriendRequest(entity: EntityTypes | null) {
-  return useMutationWithToast({
-    mutationFn: createValidatedMutationFn(
-      entity,
-      isUser,
-      "Invalid entity: must be a user",
-      (e) => e.sendFriendRequest()
-    ),
-    namespace: "modules/profil",
-    successKey: "toast.relationship.friendRequestSent",
-    errorKey: "toast.relationship.friendRequestError",
-    invalidateQueries: entity
-      ? [
-          QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug),
-          QUERY_KEYS.USER_FRIENDS_PREFIX(entity.slug),
-          QUERY_KEYS.USER_SENT_FRIEND_REQUESTS_PREFIX(entity.slug),
-        ]
-      : [],
-  });
-}
-
-/**
- * Hook pour retirer un ami
- */
-export function useRemoveFriend(entity: EntityTypes | null) {
-  return useMutationWithToast({
-    mutationFn: createValidatedMutationFn(
-      entity,
-      isUser,
-      "Invalid entity: must be a user",
-      (e) => e.removeFriend()
-    ),
-    namespace: "modules/profil",
-    successKey: "toast.relationship.friendRemoved",
-    errorKey: "toast.relationship.friendRemoveError",
-    invalidateQueries: entity
-      ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug), QUERY_KEYS.USER_FRIENDS_PREFIX(entity.slug)]
-      : [],
-  });
-}
-
 // =====================================================
 // ORGANIZATION RELATIONSHIP MUTATIONS
 // =====================================================
@@ -143,6 +99,28 @@ export function useRequestMembership(entity: EntityTypes | null) {
     namespace: "modules/profil",
     successKey: "toast.relationship.memberRequestSent",
     errorKey: "toast.relationship.memberRequestError",
+    invalidateQueries: [
+      ...(entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug), QUERY_KEYS.ORGANIZATION_MEMBERS_PREFIX(entity.slug)] : []),
+      ...(me ? [QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(me.slug)] : []),
+    ],
+  });
+}
+
+/**
+ * Hook pour demander à devenir admin direct d'une organisation (non-membre)
+ */
+export function useRequestOrganizationAdmin(entity: EntityTypes | null) {
+  const { me } = useCocolight();
+  return useMutationWithToast({
+    mutationFn: createValidatedMutationFn(
+      entity,
+      isOrganization,
+      "Invalid entity: must be an organization",
+      (e) => e.requestToJoinAdmin()
+    ),
+    namespace: "modules/profil",
+    successKey: "toast.relationship.orgAdminRequestSent",
+    errorKey: "toast.relationship.orgAdminRequestError",
     invalidateQueries: [
       ...(entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug), QUERY_KEYS.ORGANIZATION_MEMBERS_PREFIX(entity.slug)] : []),
       ...(me ? [QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(me.slug)] : []),
@@ -357,6 +335,142 @@ export function useLeaveEvent(entity: EntityTypes | null) {
     errorKey: "toast.relationship.participationLeftError",
     invalidateQueries: [
       ...(entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug), QUERY_KEYS.EVENT_ATTENDEES_PREFIX(entity.slug)] : []),
+      ...(me ? [QUERY_KEYS.USER_EVENTS_PREFIX(me.slug)] : []),
+    ],
+  });
+}
+
+// =====================================================
+// INVITATION MUTATIONS (Accept/Reject)
+// =====================================================
+
+/**
+ * Hook pour accepter une invitation à rejoindre une organisation
+ */
+export function useAcceptOrgInvitation(entity: EntityTypes | null) {
+  const { me } = useCocolight();
+  return useMutationWithToast({
+    mutationFn: createValidatedMutationFn(
+      entity,
+      isOrganization,
+      "Invalid entity: must be an organization",
+      (e) => e.acceptInvitation()
+    ),
+    namespace: "modules/profil",
+    successKey: "toast.invitation.acceptSuccess",
+    errorKey: "toast.invitation.acceptError",
+    invalidateQueries: [
+      ...(entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug), QUERY_KEYS.ORGANIZATION_MEMBERS_PREFIX(entity.slug)] : []),
+      ...(me ? [QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(me.slug)] : []),
+    ],
+  });
+}
+
+/**
+ * Hook pour refuser une invitation à rejoindre une organisation
+ */
+export function useRejectOrgInvitation(entity: EntityTypes | null) {
+  const { me } = useCocolight();
+  return useMutationWithToast({
+    mutationFn: createValidatedMutationFn(
+      entity,
+      isOrganization,
+      "Invalid entity: must be an organization",
+      (e) => e.leave()
+    ),
+    namespace: "modules/profil",
+    successKey: "toast.invitation.rejectSuccess",
+    errorKey: "toast.invitation.rejectError",
+    invalidateQueries: [
+      ...(entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : []),
+      ...(me ? [QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(me.slug)] : []),
+    ],
+  });
+}
+
+/**
+ * Hook pour accepter une invitation à rejoindre un projet
+ */
+export function useAcceptProjectInvitation(entity: EntityTypes | null) {
+  const { me } = useCocolight();
+  return useMutationWithToast({
+    mutationFn: createValidatedMutationFn(
+      entity,
+      isProject,
+      "Invalid entity: must be a project",
+      (e) => e.acceptInvitation()
+    ),
+    namespace: "modules/profil",
+    successKey: "toast.invitation.acceptSuccess",
+    errorKey: "toast.invitation.acceptError",
+    invalidateQueries: [
+      ...(entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug), QUERY_KEYS.PROJECT_CONTRIBUTORS_PREFIX(entity.slug)] : []),
+      ...(me ? [QUERY_KEYS.USER_PROJECTS_PREFIX(me.slug)] : []),
+    ],
+  });
+}
+
+/**
+ * Hook pour refuser une invitation à rejoindre un projet
+ */
+export function useRejectProjectInvitation(entity: EntityTypes | null) {
+  const { me } = useCocolight();
+  return useMutationWithToast({
+    mutationFn: createValidatedMutationFn(
+      entity,
+      isProject,
+      "Invalid entity: must be a project",
+      (e) => e.leave()
+    ),
+    namespace: "modules/profil",
+    successKey: "toast.invitation.rejectSuccess",
+    errorKey: "toast.invitation.rejectError",
+    invalidateQueries: [
+      ...(entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : []),
+      ...(me ? [QUERY_KEYS.USER_PROJECTS_PREFIX(me.slug)] : []),
+    ],
+  });
+}
+
+/**
+ * Hook pour accepter une invitation à participer à un événement
+ */
+export function useAcceptEventInvitation(entity: EntityTypes | null) {
+  const { me } = useCocolight();
+  return useMutationWithToast({
+    mutationFn: createValidatedMutationFn(
+      entity,
+      isEvent,
+      "Invalid entity: must be an event",
+      (e) => e.acceptInvitation()
+    ),
+    namespace: "modules/profil",
+    successKey: "toast.invitation.acceptSuccess",
+    errorKey: "toast.invitation.acceptError",
+    invalidateQueries: [
+      ...(entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug), QUERY_KEYS.EVENT_ATTENDEES_PREFIX(entity.slug)] : []),
+      ...(me ? [QUERY_KEYS.USER_EVENTS_PREFIX(me.slug)] : []),
+    ],
+  });
+}
+
+/**
+ * Hook pour refuser une invitation à participer à un événement
+ */
+export function useRejectEventInvitation(entity: EntityTypes | null) {
+  const { me } = useCocolight();
+  return useMutationWithToast({
+    mutationFn: createValidatedMutationFn(
+      entity,
+      isEvent,
+      "Invalid entity: must be an event",
+      (e) => e.leave()
+    ),
+    namespace: "modules/profil",
+    successKey: "toast.invitation.rejectSuccess",
+    errorKey: "toast.invitation.rejectError",
+    invalidateQueries: [
+      ...(entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : []),
       ...(me ? [QUERY_KEYS.USER_EVENTS_PREFIX(me.slug)] : []),
     ],
   });

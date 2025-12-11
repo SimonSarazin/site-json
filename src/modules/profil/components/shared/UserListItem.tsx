@@ -1,4 +1,5 @@
 import { forwardRef } from "react";
+import { Link } from "react-router";
 import type { User, Organization } from "@communecter/cocolight-api-client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
@@ -55,6 +56,7 @@ export const UserListItem = forwardRef<HTMLDivElement, UserListItemProps>(
     const avatarUrl =
       user.serverData?.profilThumbImageUrl || user.serverData?.profilImageUrl;
     const fallback = name.charAt(0).toUpperCase();
+    const slug = user.serverData?.slug;
 
     // Sous-titre par défaut: username ou email
     const displaySubtitle =
@@ -88,7 +90,17 @@ export const UserListItem = forwardRef<HTMLDivElement, UserListItemProps>(
             <AvatarFallback>{fallback}</AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
-            <h3 className="font-medium text-foreground truncate">{name}</h3>
+            {slug ? (
+              <Link
+                to={`/profil/${slug}`}
+                className="font-medium text-foreground truncate block hover:underline"
+                onClick={(e: React.MouseEvent) => e.stopPropagation()}
+              >
+                {name}
+              </Link>
+            ) : (
+              <h3 className="font-medium text-foreground truncate">{name}</h3>
+            )}
             {displaySubtitle && (
               <p className="text-sm text-muted-foreground truncate">
                 {displaySubtitle}

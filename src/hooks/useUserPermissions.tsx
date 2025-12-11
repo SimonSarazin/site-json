@@ -29,18 +29,31 @@ export interface UserPermissions {
 
   // Permissions organisation
   canRequestMembership: boolean;
+  canRequestOrganizationAdmin: boolean;
   isMember: boolean;
-  isAdmin: boolean;
-
+  
   // Permissions projets
   isContributor: boolean;
   canRequestContributor: boolean;
   canRequestProjectAdmin: boolean;
 
+  // Permissions organisation / projets
+  isAdmin: boolean;
+  canRequestPromotion: boolean;
+
   // Permissions événements
   isAuthor: boolean;
   isParticipant: boolean;
   canParticipate: boolean;
+
+  isToBeValidated: boolean;
+  isInviting: boolean;
+  isInvitingAdmin: boolean;
+  isAdminPending: boolean;
+
+  // Permissions demandes d'ami (Users uniquement)
+  hasSentFriendRequest: boolean;
+  hasReceivedFriendRequest: boolean;
 
   // Permissions d'ajout d'entités
   canAddOrganization: boolean;
@@ -88,11 +101,19 @@ export function useUserPermissions(
       canSendFriendRequest: false,
       isFriend: false,
       canRequestMembership: false,
+      canRequestOrganizationAdmin: false,
       isMember: false,
       isAdmin: false,
       isContributor: false,
+      isToBeValidated: false,
+      isInviting: false,
+      isInvitingAdmin: false,
+      isAdminPending: false,
+      hasSentFriendRequest: false,
+      hasReceivedFriendRequest: false,
       canRequestContributor: false,
       canRequestProjectAdmin: false,
+      canRequestPromotion: false,
       isAuthor: false,
       isParticipant: false,
       canParticipate: false,
@@ -140,11 +161,19 @@ export function useUserPermissions(
         canSendFriendRequest: false, // Ne peut pas s'envoyer de demande d'ami
         isFriend: false,
         canRequestMembership: false, // N/A pour son propre profil
+        canRequestOrganizationAdmin: false,
         isMember: false,
         isAdmin: false,
         isContributor: false,
+        isToBeValidated: false,
+        isInviting: false,
+        isInvitingAdmin: false,
+        isAdminPending: false,
+        hasSentFriendRequest: false,
+        hasReceivedFriendRequest: false,
         canRequestContributor: false,
         canRequestProjectAdmin: false,
+        canRequestPromotion: false,
         isAuthor: false,
         isParticipant: false,
         canParticipate: false,
@@ -161,6 +190,9 @@ export function useUserPermissions(
       // Récupérer les statuts de relation
       const isFollowingUser = entity.isFollowing?.() ?? false;
       const isFriendWithUser = entity.isFriend?.() ?? false;
+      // États des demandes d'ami
+      const hasSentFriendRequest = entity.isInviting?.() ?? false;     // J'ai envoyé une demande
+      const hasReceivedFriendRequest = entity.isToBeValidated?.() ?? false; // J'ai reçu une demande
 
       return {
         canEditProfile: false, // Ne peut pas éditer le profil d'autrui
@@ -173,14 +205,22 @@ export function useUserPermissions(
         canDeleteComment: false, // Ne peut supprimer que ses propres commentaires (vérifié ailleurs)
         canFollow: true, // Peut suivre un autre utilisateur
         isFollowing: isFollowingUser,
-        canSendFriendRequest: true, // Peut envoyer une demande d'ami
+        canSendFriendRequest: !isFriendWithUser && !hasSentFriendRequest && !hasReceivedFriendRequest, // Peut envoyer si pas déjà ami ou en attente
         isFriend: isFriendWithUser,
         canRequestMembership: false, // N/A pour utilisateurs
+        canRequestOrganizationAdmin: false,
         isMember: false,
         isAdmin: false,
         isContributor: false,
+        isToBeValidated: hasReceivedFriendRequest,
+        isInviting: hasSentFriendRequest,
+        isInvitingAdmin: false,
+        isAdminPending: false,
+        hasSentFriendRequest,      // Pour afficher "Demande envoyée" + "Annuler"
+        hasReceivedFriendRequest,  // Pour afficher "Accepter" / "Refuser"
         canRequestContributor: false,
         canRequestProjectAdmin: false,
+        canRequestPromotion: false,
         isAuthor: false,
         isParticipant: false,
         canParticipate: false,
@@ -200,6 +240,10 @@ export function useUserPermissions(
       const isOrgMember = entity.isMember();
       const isNewsAuthor = news?.isAuthor() ?? false;
       const isFollowingOrg = entity.isFollowing?.() ?? false;
+      const isToBeValidated = entity.isToBeValidated?.() ?? false;
+      const isInviting = entity.isInviting?.() ?? false;
+      const isInvitingAdmin = entity.isInvitingAdmin?.() ?? false;
+      const isAdminPending = entity.isAdminPending?.() ?? false;
 
       return {
         canEditProfile: isOrgAdmin, // Admin ou auteur peuvent éditer le profil
@@ -214,12 +258,20 @@ export function useUserPermissions(
         isFollowing: isFollowingOrg,
         canSendFriendRequest: false, // Pas de demandes d'ami pour les organisations
         isFriend: false,
-        canRequestMembership: !isOrgAdmin && !isOrgMember, // Peut demander si pas déjà membre
+        canRequestMembership: !isOrgAdmin && !isOrgMember && !isToBeValidated && !isInviting && !isInvitingAdmin && !isAdminPending, // Peut demander si pas déjà membre
+        canRequestOrganizationAdmin: !isOrgAdmin && !isOrgMember && !isToBeValidated && !isInviting && !isInvitingAdmin && !isAdminPending, // Peut demander admin direct si pas déjà membre
         isMember: isOrgMember,
         isAdmin: isOrgAdmin,
         isContributor: false,
+        isToBeValidated: isToBeValidated,
+        isInviting: isInviting,
+        isInvitingAdmin: isInvitingAdmin,
+        isAdminPending: isAdminPending,
+        hasSentFriendRequest: false,
+        hasReceivedFriendRequest: false,
         canRequestContributor: false,
         canRequestProjectAdmin: false,
+        canRequestPromotion: isOrgMember && !isOrgAdmin,
         isAuthor: false,
         isParticipant: false,
         canParticipate: false,
@@ -237,6 +289,10 @@ export function useUserPermissions(
       const isProjectContributor = entity.isContributor?.() ?? false;
       const isFollowingProject = entity.isFollowing?.() ?? false;
       const isNewsAuthor = news?.isAuthor() ?? false;
+      const isToBeValidated = entity.isToBeValidated?.() ?? false;
+      const isInviting = entity.isInviting?.() ?? false;
+      const isInvitingAdmin = entity.isInvitingAdmin?.() ?? false;
+      const isAdminPending = entity.isAdminPending?.() ?? false;
 
       return {
         canEditProfile: isProjectAdmin, // Seulement les admins peuvent éditer le profil du projet
@@ -252,11 +308,19 @@ export function useUserPermissions(
         canSendFriendRequest: false, // Pas de demandes d'ami pour les projets
         isFriend: false,
         canRequestMembership: false, // N/A pour projets (utilise canRequestContributor à la place)
+        canRequestOrganizationAdmin: false, // N/A pour projets
         isMember: false, // N/A pour projets (utilise isContributor à la place)
         isAdmin: isProjectAdmin,
         isContributor: isProjectContributor,
-        canRequestContributor: !isProjectAdmin && !isProjectContributor, // Peut demander si pas déjà contributeur/admin
-        canRequestProjectAdmin: isProjectContributor && !isProjectAdmin, // Peut demander admin si contributeur mais pas encore admin
+        isToBeValidated: isToBeValidated,
+        isInviting: isInviting,
+        isInvitingAdmin: isInvitingAdmin,
+        isAdminPending: isAdminPending,
+        hasSentFriendRequest: false,
+        hasReceivedFriendRequest: false,
+        canRequestContributor: !isProjectAdmin && !isProjectContributor && !isToBeValidated && !isInviting && !isInvitingAdmin && !isAdminPending, // Peut demander si pas déjà contributeur/admin et pas en attente
+        canRequestProjectAdmin: !isProjectAdmin && !isProjectContributor && !isToBeValidated && !isInviting && !isInvitingAdmin && !isAdminPending, // Demande admin direct si pas membre
+        canRequestPromotion: isProjectContributor && !isProjectAdmin && !isAdminPending, // Demande promotion si contributeur mais pas admin
         isAuthor: false,
         isParticipant: false,
         canParticipate: false,
@@ -276,6 +340,9 @@ export function useUserPermissions(
       const isEventParticipant = entity.isAttendee?.() ?? false;
       const isFollowingEvent = entity.isFollowing?.() ?? false;
       const isNewsAuthor = news?.isAuthor() ?? false;
+      const isInviting = entity.isInviting?.() ?? false;
+      const isInvitingAdmin = entity.isInvitingAdmin?.() ?? false;
+      const isAdminPending = entity.isAdminPending?.() ?? false;
 
       return {
         canEditProfile: isOrgAdminOrAuthor, // Seulement l'auteur peut éditer l'événement
@@ -291,11 +358,19 @@ export function useUserPermissions(
         canSendFriendRequest: false, // Pas de demandes d'ami pour les événements
         isFriend: false,
         canRequestMembership: false, // N/A pour événements (utilise canParticipate à la place)
+        canRequestOrganizationAdmin: false, // N/A pour événements
         isMember: false, // N/A pour événements (utilise isParticipant à la place)
         isAdmin: false, // N/A pour événements (utilise isAuthor à la place)
         isContributor: false,
+        isToBeValidated: false,
+        isInviting: isInviting,
+        isInvitingAdmin: isInvitingAdmin,
+        isAdminPending: isAdminPending,
+        hasSentFriendRequest: false,
+        hasReceivedFriendRequest: false,
         canRequestContributor: false,
         canRequestProjectAdmin: false,
+        canRequestPromotion: false,
         isAuthor: isEventAuthor,
         isParticipant: isEventParticipant,
         canParticipate: !isEventParticipant, // Peut participer si pas déjà participant
@@ -326,11 +401,19 @@ export function useUserPermissions(
         canSendFriendRequest: false, // Pas de demandes d'ami pour les POI
         isFriend: false,
         canRequestMembership: false, // N/A pour POI
+        canRequestOrganizationAdmin: false, // N/A pour POI
         isMember: false,
         isAdmin: false,
         isContributor: false,
+        isToBeValidated: false,
+        isInviting: false,
+        isInvitingAdmin: false,
+        isAdminPending: false,
+        hasSentFriendRequest: false,
+        hasReceivedFriendRequest: false,
         canRequestContributor: false,
         canRequestProjectAdmin: false,
+        canRequestPromotion: false,
         isAuthor: isPoiAuthor,
         isParticipant: false,
         canParticipate: false,

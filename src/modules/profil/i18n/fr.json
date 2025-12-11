@@ -118,6 +118,49 @@
       "cancel": "Annuler",
       "confirm": "Ne plus participer"
     },
+    "membershipPending": "Demande en attente",
+    "contributorPending": "Demande en attente",
+    "participationPending": "Demande en attente",
+    "adminRequestPending": "Demande admin en attente",
+    "acceptInvitation": "Accepter l'invitation",
+    "acceptAdminInvitation": "Accepter l'invitation admin",
+    "rejectInvitation": "Refuser l'invitation",
+    "rejectInvitationDialog": {
+      "title": "Refuser l'invitation",
+      "description": "Êtes-vous sûr de vouloir refuser cette invitation ?",
+      "cancel": "Annuler",
+      "confirm": "Refuser"
+    },
+    "requestPromotion": "Devenir administrateur",
+    "promotionDialog": {
+      "title": "Demander à devenir administrateur",
+      "description": "Votre demande sera envoyée aux administrateurs du projet pour validation.",
+      "confirm": "Envoyer la demande",
+      "cancel": "Annuler"
+    },
+    "requestOrganizationAdmin": "Demander les droits admin",
+    "orgAdminDialog": {
+      "title": "Demander les droits admin",
+      "description": "Êtes-vous sûr de vouloir demander les droits d'administrateur pour cette organisation ? Les administrateurs actuels recevront votre demande.",
+      "confirm": "Envoyer la demande",
+      "cancel": "Annuler"
+    },
+    "friendRequestPending": "Demande envoyée",
+    "cancelFriendRequest": "Annuler la demande",
+    "acceptFriendRequest": "Accepter",
+    "rejectFriendRequest": "Refuser",
+    "cancelFriendDialog": {
+      "title": "Annuler la demande d'ami",
+      "description": "Êtes-vous sûr de vouloir annuler cette demande d'ami ?",
+      "confirm": "Annuler la demande",
+      "cancel": "Garder"
+    },
+    "rejectFriendDialog": {
+      "title": "Refuser la demande d'ami",
+      "description": "Êtes-vous sûr de vouloir refuser cette demande d'ami ?",
+      "confirm": "Refuser",
+      "cancel": "Annuler"
+    },
     "tabs": {
       "about": "À propos",
       "news": "Actualités",
@@ -374,6 +417,12 @@
       "bannerUploadSuccess": "Bannière uploadée avec succès",
       "bannerUploadError": "Impossible d'uploader la bannière"
     },
+    "invitation": {
+      "acceptSuccess": "Invitation acceptée avec succès",
+      "acceptError": "Impossible d'accepter l'invitation",
+      "rejectSuccess": "Invitation refusée",
+      "rejectError": "Impossible de refuser l'invitation"
+    },
     "relationship": {
       "followSuccess": "Utilisateur suivi avec succès",
       "followError": "Impossible de suivre l'utilisateur",
@@ -392,6 +441,8 @@
       "contributorRequestError": "Impossible d'envoyer la demande de contribution",
       "projectAdminRequestSent": "Demande d'administration envoyée avec succès",
       "projectAdminRequestError": "Impossible d'envoyer la demande d'administration",
+      "orgAdminRequestSent": "Demande d'administration envoyée avec succès",
+      "orgAdminRequestError": "Impossible d'envoyer la demande d'administration",
       "projectLeftSuccess": "Vous avez quitté le projet avec succès",
       "projectLeftError": "Impossible de quitter le projet",
       "participationSuccess": "Vous participez maintenant à cet événement",
@@ -404,6 +455,8 @@
       "demoteError": "Impossible de rétrograder {{name}}",
       "promoteSuccess": "{{name}} a été promu administrateur",
       "promoteError": "Impossible de promouvoir {{name}}",
+      "requestPromoteSuccess": "Votre demande de devenir administrateur a été envoyée",
+      "requestPromoteError": "Impossible d'envoyer la demande de promotion",
       "validateSuccess": "{{name}} a été validé avec succès",
       "validateError": "Impossible de valider {{name}}",
       "validateAdminSuccess": "{{name}} a été validé en tant qu'administrateur",

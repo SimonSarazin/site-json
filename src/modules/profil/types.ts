@@ -17,7 +17,7 @@ import type { Project, Event, Poi } from "@communecter/cocolight-api-client";
  */
 export interface EntityAction {
   id: string;
-  type: "follow" | "unfollow" | "friend" | "unfriend" | "join" | "leave";
+  type: "follow" | "unfollow" | "friend" | "unfriend" | "join" | "leave" | "pending" | "accept" | "reject";
   label: string;
   icon: React.ReactNode;
   variant: "default" | "outline" | "destructive";
@@ -28,7 +28,8 @@ export interface EntityAction {
   confirmationConfirm?: string;
   confirmationCancel?: string;
   isDestructive?: boolean;
-  isPending: boolean;
+  isPending?: boolean;
+  disabled?: boolean;
   show: boolean;
 }
 

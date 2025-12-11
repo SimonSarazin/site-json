@@ -118,6 +118,49 @@
       "cancel": "Cancel",
       "confirm": "Stop participating"
     },
+    "membershipPending": "Request pending",
+    "contributorPending": "Request pending",
+    "participationPending": "Request pending",
+    "adminRequestPending": "Admin request pending",
+    "acceptInvitation": "Accept invitation",
+    "acceptAdminInvitation": "Accept admin invitation",
+    "rejectInvitation": "Decline invitation",
+    "rejectInvitationDialog": {
+      "title": "Decline invitation",
+      "description": "Are you sure you want to decline this invitation?",
+      "cancel": "Cancel",
+      "confirm": "Decline"
+    },
+    "requestPromotion": "Become administrator",
+    "promotionDialog": {
+      "title": "Request to become administrator",
+      "description": "Your request will be sent to project administrators for approval.",
+      "confirm": "Send request",
+      "cancel": "Cancel"
+    },
+    "requestOrganizationAdmin": "Request admin rights",
+    "orgAdminDialog": {
+      "title": "Request admin rights",
+      "description": "Are you sure you want to request admin rights for this organization? Current administrators will receive your request.",
+      "confirm": "Send request",
+      "cancel": "Cancel"
+    },
+    "friendRequestPending": "Request sent",
+    "cancelFriendRequest": "Cancel request",
+    "acceptFriendRequest": "Accept",
+    "rejectFriendRequest": "Decline",
+    "cancelFriendDialog": {
+      "title": "Cancel friend request",
+      "description": "Are you sure you want to cancel this friend request?",
+      "confirm": "Cancel request",
+      "cancel": "Keep"
+    },
+    "rejectFriendDialog": {
+      "title": "Decline friend request",
+      "description": "Are you sure you want to decline this friend request?",
+      "confirm": "Decline",
+      "cancel": "Cancel"
+    },
     "tabs": {
       "about": "About",
       "news": "News",
@@ -374,6 +417,12 @@
       "bannerUploadSuccess": "Banner uploaded successfully",
       "bannerUploadError": "Unable to upload banner"
     },
+    "invitation": {
+      "acceptSuccess": "Invitation accepted successfully",
+      "acceptError": "Unable to accept invitation",
+      "rejectSuccess": "Invitation declined",
+      "rejectError": "Unable to decline invitation"
+    },
     "relationship": {
       "followSuccess": "User followed successfully",
       "followError": "Unable to follow user",
@@ -392,6 +441,8 @@
       "contributorRequestError": "Unable to send contributor request",
       "projectAdminRequestSent": "Admin request sent successfully",
       "projectAdminRequestError": "Unable to send admin request",
+      "orgAdminRequestSent": "Admin request sent successfully",
+      "orgAdminRequestError": "Unable to send admin request",
       "projectLeftSuccess": "You have successfully left the project",
       "projectLeftError": "Unable to leave the project",
       "participationSuccess": "You are now participating in this event",
@@ -404,6 +455,8 @@
       "demoteError": "Unable to demote {{name}}",
       "promoteSuccess": "{{name}} has been promoted to administrator",
       "promoteError": "Unable to promote {{name}}",
+      "requestPromoteSuccess": "Your request to become administrator has been sent",
+      "requestPromoteError": "Unable to send promotion request",
       "validateSuccess": "{{name}} has been validated successfully",
       "validateError": "Unable to validate {{name}}",
       "validateAdminSuccess": "{{name}} has been validated as administrator",

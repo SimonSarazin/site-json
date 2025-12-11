@@ -20,7 +20,7 @@ const socialNetworks = [
   { name: "gitlab", icon: Gitlab, placeholder: "" },
   { name: "facebook", icon: Facebook, placeholder: "" },
   { name: "twitter", icon: Twitter, placeholder: "" },
-  { name: "instagram", icon: Instagram, placeholder: "@username" },
+  { name: "instagram", icon: Instagram, placeholder: "" },
   { name: "diaspora", icon: MessageCircle, placeholder: "" },
   { name: "mastodon", icon: MessageCircle, placeholder: "" },
   { name: "telegram", icon: Send, placeholder: "" },
