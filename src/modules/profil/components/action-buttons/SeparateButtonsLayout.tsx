@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import type { EntityAction } from "../../hooks/useEntityActions";
+import type { EntityAction } from "../../types";
 
 interface SeparateButtonsLayoutProps {
   actions: EntityAction[];

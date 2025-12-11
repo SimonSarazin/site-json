@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Users, Check, X, MoreVertical } from "lucide-react";
 import { useUserStatusBadge } from "../../hooks/useUserStatusBadge";
-import { useUserActions } from "../../hooks/useUserActions";
+import { useAdminActions } from "../../actions";
 import { LoadingState, EmptyState, UserListItem } from "../shared";
 
 interface MemberListRendererProps {
@@ -47,7 +47,7 @@ export function MemberListRenderer({
 }: MemberListRendererProps) {
   const t = useT("modules/profil");
   const { getUserStatusBadge } = useUserStatusBadge();
-  const { getUserActionButtons } = useUserActions(
+  const { getUserActionButtons } = useAdminActions(
     entity,
     showConfirmation || (() => {})
   );

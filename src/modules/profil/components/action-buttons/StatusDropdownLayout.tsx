@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ConfirmationDialog } from "./ConfirmationDialog";
-import type { EntityAction } from "../../hooks/useEntityActions";
+import type { EntityAction } from "../../types";
 
 interface StatusDropdownLayoutProps {
   actions: EntityAction[];

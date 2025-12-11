@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import type { User } from "@communecter/cocolight-api-client";
 import { useT } from "@/hooks/useT";
-import { useSendFriendRequest } from "../../hooks/useFriendMutations";
+import { useSendFriendRequest } from "../../actions";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useSearchUsers } from "@/hooks/useSearchUsers";
 import { LoadingState, EmptyState, UserListItem } from "../shared";

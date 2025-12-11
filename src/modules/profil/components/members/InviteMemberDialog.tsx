@@ -5,7 +5,7 @@ import { useSearchUsers } from "@/hooks/useSearchUsers";
 import type { EntityTypes, User } from "@communecter/cocolight-api-client";
 import { useEntityLabels } from "../../hooks/useEntityLabels";
 import { useConfirmationDialog } from "../../hooks/useConfirmationDialog";
-import { useUserActions } from "../../hooks/useUserActions";
+import { useAdminActions } from "../../actions";
 import { useUserStatusBadge } from "../../hooks/useUserStatusBadge";
 import { ConfirmationDialog } from "./ConfirmationDialog";
 import {
@@ -42,7 +42,7 @@ export function InviteMemberDialog({ entity, open, onOpenChange }: InviteMemberD
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 300);
   const { confirmation, showConfirmation, hideConfirmation, executeAction } = useConfirmationDialog();
-  const { getUserActionButtons } = useUserActions(entity, showConfirmation);
+  const { getUserActionButtons } = useAdminActions(entity, showConfirmation);
   const { getUserStatusBadge } = useUserStatusBadge();
 
   // Recherche d'utilisateurs en temps réel via l'API

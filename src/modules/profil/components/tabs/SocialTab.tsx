@@ -13,7 +13,7 @@ import {
   useRejectFriendRequest,
   useRemoveFriend,
   useCancelFriendRequest,
-} from "../../hooks/useFriendMutations";
+} from "../../actions";
 import { useCocolight } from "@/hooks/useCocolight";
 import { FriendRequestDialog } from "../social/FriendRequestDialog";
 import { LoadingState, EmptyState, UserListItem, CountBadge } from "../shared";

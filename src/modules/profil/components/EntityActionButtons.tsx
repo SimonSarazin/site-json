@@ -1,5 +1,5 @@
 import type { EntityTypes } from "@communecter/cocolight-api-client";
-import { useEntityActions } from "../hooks/useEntityActions";
+import { useEntityActions } from "../actions";
 import { SeparateButtonsLayout } from "./action-buttons/SeparateButtonsLayout";
 import { StatusDropdownLayout } from "./action-buttons/StatusDropdownLayout";
 

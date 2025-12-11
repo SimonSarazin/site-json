@@ -1,15 +1,24 @@
-import type { User } from "@communecter/cocolight-api-client";
+/**
+ * Mutations pour les relations d'amitié (Users uniquement)
+ * Remplace useFriendMutations.tsx
+ */
 import { useQueryClient } from "@tanstack/react-query";
+import type { User } from "@communecter/cocolight-api-client";
 import { isUser } from "@/lib/getTypedEntity";
-import { useMutationWithToast } from "./core";
-import { QUERY_KEYS } from "../constants";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { QUERY_KEYS } from "../../constants/queryKeys";
+
+interface FriendMutationParams {
+  user: User;
+}
 
 /**
  * Hook pour envoyer une demande d'amitié
  */
 export function useSendFriendRequest(currentUser: User | null) {
   const queryClient = useQueryClient();
-  return useMutationWithToast<void, { user: User }>({
+
+  return useMutationWithToast<void, FriendMutationParams>({
     mutationFn: async ({ user }) => {
       if (!currentUser || !isUser(currentUser)) {
         throw new Error("Current user is required");
@@ -26,7 +35,6 @@ export function useSendFriendRequest(currentUser: User | null) {
         ]
       : [],
     onSuccessCallback: (_, { user }) => {
-      // Invalider le profil de l'utilisateur cible
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ELEMENT_ABOUT_PREFIX(user.slug) });
     },
   });
@@ -37,7 +45,8 @@ export function useSendFriendRequest(currentUser: User | null) {
  */
 export function useAcceptFriendRequest(currentUser: User | null) {
   const queryClient = useQueryClient();
-  return useMutationWithToast<void, { user: User }>({
+
+  return useMutationWithToast<void, FriendMutationParams>({
     mutationFn: async ({ user }) => {
       if (!currentUser || !isUser(currentUser)) {
         throw new Error("Current user is required");
@@ -49,13 +58,12 @@ export function useAcceptFriendRequest(currentUser: User | null) {
     errorKey: "toast.friends.acceptRequestError",
     invalidateQueries: currentUser
       ? [
-        QUERY_KEYS.USER_FRIENDS_PREFIX(currentUser.slug),
-        QUERY_KEYS.USER_PENDING_FRIENDS_PREFIX(currentUser.slug),
-        QUERY_KEYS.ELEMENT_ABOUT_PREFIX(currentUser.slug)
-      ]
+          QUERY_KEYS.USER_FRIENDS_PREFIX(currentUser.slug),
+          QUERY_KEYS.USER_PENDING_FRIENDS_PREFIX(currentUser.slug),
+          QUERY_KEYS.ELEMENT_ABOUT_PREFIX(currentUser.slug),
+        ]
       : [],
     onSuccessCallback: (_, { user }) => {
-      // Invalider le profil de l'utilisateur cible
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ELEMENT_ABOUT_PREFIX(user.slug) });
     },
   });
@@ -66,7 +74,8 @@ export function useAcceptFriendRequest(currentUser: User | null) {
  */
 export function useRejectFriendRequest(currentUser: User | null) {
   const queryClient = useQueryClient();
-  return useMutationWithToast<void, { user: User }>({
+
+  return useMutationWithToast<void, FriendMutationParams>({
     mutationFn: async ({ user }) => {
       if (!currentUser || !isUser(currentUser)) {
         throw new Error("Current user is required");
@@ -76,12 +85,13 @@ export function useRejectFriendRequest(currentUser: User | null) {
     namespace: "modules/profil",
     successKey: "toast.friends.requestRejected",
     errorKey: "toast.friends.rejectRequestError",
-    invalidateQueries: currentUser ? [
-      QUERY_KEYS.USER_PENDING_FRIENDS_PREFIX(currentUser.slug),
-      QUERY_KEYS.ELEMENT_ABOUT_PREFIX(currentUser.slug)
-    ] : [],
+    invalidateQueries: currentUser
+      ? [
+          QUERY_KEYS.USER_PENDING_FRIENDS_PREFIX(currentUser.slug),
+          QUERY_KEYS.ELEMENT_ABOUT_PREFIX(currentUser.slug),
+        ]
+      : [],
     onSuccessCallback: (_, { user }) => {
-      // Invalider le profil de l'utilisateur cible
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ELEMENT_ABOUT_PREFIX(user.slug) });
     },
   });
@@ -92,7 +102,8 @@ export function useRejectFriendRequest(currentUser: User | null) {
  */
 export function useRemoveFriend(currentUser: User | null) {
   const queryClient = useQueryClient();
-  return useMutationWithToast<void, { user: User }>({
+
+  return useMutationWithToast<void, FriendMutationParams>({
     mutationFn: async ({ user }) => {
       if (!currentUser || !isUser(currentUser)) {
         throw new Error("Current user is required");
@@ -102,12 +113,13 @@ export function useRemoveFriend(currentUser: User | null) {
     namespace: "modules/profil",
     successKey: "toast.friends.friendRemoved",
     errorKey: "toast.friends.removeError",
-    invalidateQueries: currentUser ? [
-      QUERY_KEYS.USER_FRIENDS_PREFIX(currentUser.slug),
-      QUERY_KEYS.ELEMENT_ABOUT_PREFIX(currentUser.slug)
-    ] : [],
+    invalidateQueries: currentUser
+      ? [
+          QUERY_KEYS.USER_FRIENDS_PREFIX(currentUser.slug),
+          QUERY_KEYS.ELEMENT_ABOUT_PREFIX(currentUser.slug),
+        ]
+      : [],
     onSuccessCallback: (_, { user }) => {
-      // Invalider le profil de l'utilisateur cible
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ELEMENT_ABOUT_PREFIX(user.slug) });
     },
   });
@@ -118,7 +130,8 @@ export function useRemoveFriend(currentUser: User | null) {
  */
 export function useCancelFriendRequest(currentUser: User | null) {
   const queryClient = useQueryClient();
-  return useMutationWithToast<void, { user: User }>({
+
+  return useMutationWithToast<void, FriendMutationParams>({
     mutationFn: async ({ user }) => {
       if (!currentUser || !isUser(currentUser)) {
         throw new Error("Current user is required");
@@ -128,12 +141,13 @@ export function useCancelFriendRequest(currentUser: User | null) {
     namespace: "modules/profil",
     successKey: "toast.friends.requestCancelled",
     errorKey: "toast.friends.cancelError",
-    invalidateQueries: currentUser ? [
-      QUERY_KEYS.USER_SENT_FRIEND_REQUESTS_PREFIX(currentUser.slug),
-      QUERY_KEYS.ELEMENT_ABOUT_PREFIX(currentUser.slug)
-    ] : [],
+    invalidateQueries: currentUser
+      ? [
+          QUERY_KEYS.USER_SENT_FRIEND_REQUESTS_PREFIX(currentUser.slug),
+          QUERY_KEYS.ELEMENT_ABOUT_PREFIX(currentUser.slug),
+        ]
+      : [],
     onSuccessCallback: (_, { user }) => {
-      // Invalider le profil de l'utilisateur cible
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ELEMENT_ABOUT_PREFIX(user.slug) });
     },
   });
