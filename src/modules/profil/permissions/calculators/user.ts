@@ -47,8 +47,8 @@ export function calculateOtherUserPermissions(entity: User): ProfilPermissions {
   const isFollowingUser = entity.isFollowing?.() ?? false;
   const isFriendWithUser = entity.isFriend?.() ?? false;
   // États des demandes d'ami
-  const hasSentFriendRequest = entity.isInviting?.() ?? false; // J'ai envoyé une demande
-  const hasReceivedFriendRequest = entity.isToBeValidated?.() ?? false; // J'ai reçu une demande
+  const hasSentFriendRequest = entity.isInvitingFriend?.() ?? false; // J'ai envoyé une demande
+  const hasReceivedFriendRequest = entity.isToBeValidatedFriend?.() ?? false; // J'ai reçu une demande
 
   return {
     canEditProfile: false,
