@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Pencil, Loader2 } from "lucide-react";
+import { TYPE_ORGA_OPTIONS, AVANCEMENT_OPTIONS, infoSchema } from "@/modules/profil/components/news/constants";
 import {
   Dialog,
   DialogContent,
@@ -22,34 +23,6 @@ import {
 import { useT } from "@/hooks/useT";
 import { useProfileMutations } from "@/modules/profil/hooks/useProfileMutations";
 import { useToast } from "@/hooks/use-toast";
-
-const TYPE_ORGA_OPTIONS = [
-  { value: "NGO", label: "Association" },
-  { value: "LocalBusiness", label: "Entreprise locale" },
-  { value: "Group", label: "Groupe" },
-  { value: "GovernmentOrganization", label: "Organisation gouvernementale" },
-  { value: "Cooperative", label: "Coopérative" },
-];
-
-const AVANCEMENT_OPTIONS = [
-  { value: "idea", label: "Idée" },
-  { value: "starting", label: "Démarrage" },
-  { value: "development", label: "Développement" },
-  { value: "mature", label: "Mature" },
-  { value: "ending", label: "Fin" },
-];
-
-const infoSchema = z.object({
-  name: z.string().min(2, "Le nom doit avoir au moins 2 caractères"),
-  email: z.string().email("Email invalide").optional().or(z.literal("")),
-  url: z.string().url("URL invalide").optional().or(z.literal("")),
-  fixe: z.string().optional(),
-  mobile: z.string().optional(),
-  birthDate: z.string().optional(),
-  type: z.string().optional(),
-  avancement: z.string().optional(),
-  tags: z.string().optional(),
-});
 
 type InfoFormData = z.infer<typeof infoSchema>;
 

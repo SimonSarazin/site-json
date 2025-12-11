@@ -1,6 +1,7 @@
 import { Heart, ThumbsUp, Smile, Laugh, Angry, Frown, HandMetal } from "lucide-react";
 import { Frown as Scared } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { z } from "zod";
 
 export interface VoteType {
   type: string;
@@ -35,3 +36,31 @@ export const REPORT_REASONS: ReportReason[] = [
   { value: "misinformation", labelKey: "NewsTab.reportDialog.reasons.misinformation" },
   { value: "other", labelKey: "NewsTab.reportDialog.reasons.other" },
 ];
+
+export const TYPE_ORGA_OPTIONS = [
+  { value: "NGO", label: "Association" },
+  { value: "LocalBusiness", label: "Entreprise locale" },
+  { value: "Group", label: "Groupe" },
+  { value: "GovernmentOrganization", label: "Organisation gouvernementale" },
+  { value: "Cooperative", label: "Coopérative" },
+];
+
+export const AVANCEMENT_OPTIONS = [
+  { value: "idea", label: "Idée" },
+  { value: "starting", label: "Démarrage" },
+  { value: "development", label: "Développement" },
+  { value: "mature", label: "Mature" },
+  { value: "ending", label: "Fin" },
+];
+
+export const infoSchema = z.object({
+  name: z.string().min(2, "Le nom doit avoir au moins 2 caractères"),
+  email: z.string().email("Email invalide").optional().or(z.literal("")),
+  url: z.string().url("URL invalide").optional().or(z.literal("")),
+  fixe: z.string().optional(),
+  mobile: z.string().optional(),
+  birthDate: z.string().optional(),
+  type: z.string().optional(),
+  avancement: z.string().optional(),
+  tags: z.string().optional(),
+});
