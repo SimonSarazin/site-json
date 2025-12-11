@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Edit, Mail, ChevronRight } from "lucide-react";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
-import { useUserPermissions } from "@/hooks/useUserPermissions";
+import { useProfilPermissions } from "../../hooks/useProfilPermissions";
 import { EntityActionButtons } from "../EntityActionButtons";
 import { EditProfileModal } from "../profile-edit/EditProfileModal";
 import { AddEntityDropdown } from "../action-buttons/AddEntityDropdown";
@@ -19,7 +19,7 @@ interface ProfileActionsProps {
  */
 export default function ProfileActions({ section }: ProfileActionsProps) {
   const { entity } = useProfileEntity();
-  const { canEditProfile } = useUserPermissions(entity);
+  const { canEditProfile } = useProfilPermissions(entity);
   const t = useT("modules/profil");
   const [editModalOpen, setEditModalOpen] = useState(false);
 

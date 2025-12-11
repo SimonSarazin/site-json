@@ -6,7 +6,7 @@ import { useMemo } from "react";
 import type { User } from "@communecter/cocolight-api-client";
 import { isUser } from "@/lib/getTypedEntity";
 import { useT } from "@/hooks/useT";
-import { useUserPermissions } from "@/hooks/useUserPermissions";
+import { useProfilPermissions } from "../../hooks/useProfilPermissions";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useFollowEntity, useUnfollowEntity } from "../mutations/relationship";
 import {
@@ -27,7 +27,7 @@ import type { EntityAction, EntityActionsResult } from "../../types";
  */
 export function useUserEntityActions(entity: User | null): EntityActionsResult | null {
   const t = useT("modules/profil");
-  const permissions = useUserPermissions(entity);
+  const permissions = useProfilPermissions(entity);
   const { me } = useCocolight();
   const currentUser = me && isUser(me) ? (me as User) : null;
 

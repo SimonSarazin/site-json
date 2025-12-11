@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Plus, Building2, Briefcase, Calendar, MapPin } from "lucide-react";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
-import { useUserPermissions } from "@/hooks/useUserPermissions";
+import { useProfilPermissions } from "../../hooks/useProfilPermissions";
 import { useT } from "@/hooks/useT";
 import { Button, buttonVariants } from "@/components/ui/button";
 import type { VariantProps } from "class-variance-authority";
@@ -44,7 +44,7 @@ interface AddOption {
  * 3. La configuration JSON (addConfig peut désactiver certains types)
  */
 export function AddEntityDropdown({ entity, config, label, variant = "outline", size, className }: AddEntityDropdownProps) {
-  const permissions = useUserPermissions(entity);
+  const permissions = useProfilPermissions(entity);
   const t = useT("modules/profil");
 
   // État du modal ouvert

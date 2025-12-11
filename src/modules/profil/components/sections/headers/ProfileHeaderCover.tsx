@@ -5,7 +5,7 @@ import { ArrowLeft, Share2 } from "lucide-react";
 import { useFormatProfileEntity } from "../../../hooks/useFormatProfileEntity";
 import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../../hooks/useProfileEntity";
-import { useUserPermissions } from "@/hooks/useUserPermissions";
+import { useProfilPermissions } from "../../../hooks/useProfilPermissions";
 import { EditProfileModal } from "../../profile-edit/EditProfileModal";
 import { ProfileEditDropdown } from "../../profile-edit/ProfileEditDropdown";
 import { EntityActionButtons } from "../../EntityActionButtons";
@@ -25,7 +25,7 @@ export function ProfileHeaderCover({ section }: ProfileHeaderCoverProps) {
   const t = useT("modules/profil");
   const navigate = useNavigate();
   const { imageUrl, bannerUrl, name: entityName, shortDescription } = useFormatProfileEntity(entity);
-  const { canEditProfile } = useUserPermissions(entity);
+  const { canEditProfile } = useProfilPermissions(entity);
   const [editModalOpen, setEditModalOpen] = useState(false);
 
   const coverImage = bannerUrl || imageUrl;

@@ -3,7 +3,7 @@ import { formatDistanceToNow } from "date-fns";
 import { useDateFnsLocale } from "@/hooks/useDateFnsLocale";
 import { useCocolight } from "@/hooks/useCocolight";
 import type { Comment, EntityTypes } from "@communecter/cocolight-api-client";
-import { useUserPermissions } from "@/hooks/useUserPermissions";
+import { useNewsPermissions } from "./useNewsPermissions";
 import { extractAuthorInfo, calculateTotalVotes } from "@/lib/entityFormatting";
 
 /**
@@ -62,7 +62,7 @@ export interface FormattedComment {
 export function useFormatComment(commentItem: Comment | null, entity: EntityTypes | null = null): FormattedComment | null {
   const dateFnsLocale = useDateFnsLocale();
   const { me } = useCocolight();
-  const permissions = useUserPermissions(entity);
+  const permissions = useNewsPermissions(entity);
 
   const currentUserId = me?.serverData?.id;
 

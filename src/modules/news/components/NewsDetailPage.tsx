@@ -12,7 +12,7 @@ import { ShareNewsDialog } from "./ShareNewsDialog";
 import { ReportDialog } from "./ReportDialog";
 import { EditNewsModal } from "./forms/EditNewsModal";
 import { DeleteNewsDialog } from "./DeleteNewsDialog";
-import { useUserPermissions } from "@/hooks/useUserPermissions";
+import { useNewsPermissions } from "../hooks/useNewsPermissions";
 import type { NewsSection } from "../schema";
 import type { News } from "@communecter/cocolight-api-client";
 import "../i18n";
@@ -34,7 +34,7 @@ export const NewsDetailPage = ({ params, entity, sectionProps }: NewsDetailPageP
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const permissions = useUserPermissions(entity);
+  const permissions = useNewsPermissions(entity);
 
   // Mutation pour la suppression (conditionné sur l'existence de l'entité)
   const deleteNewsMutation = useDeleteNews(entity, { optimistic: true });
@@ -172,7 +172,7 @@ export const NewsDetailPage = ({ params, entity, sectionProps }: NewsDetailPageP
     canAdd: false, // Pas d'ajout en mode détail
     canEdit: permissions.canEditNews, // Basé sur les vraies permissions
     canDelete: permissions.canDeleteNews, // Basé sur les vraies permissions
-    canModerate: permissions.isAdmin,
+    canModerate: permissions.canModerateNews,
     canComment: (props.showComments ?? true) && permissions.canEditComment,
     canReact: (props.showReactions ?? true),
     canShare: true,

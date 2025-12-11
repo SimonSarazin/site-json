@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
-import { useUserPermissions } from "@/hooks/useUserPermissions";
+import { useProfilPermissions } from "../../hooks/useProfilPermissions";
 import { useEntityMembers } from "../../hooks/useMembersQuery";
 import { isEvent } from "@/lib/getTypedEntity";
 import { useEntityLabels } from "../../hooks/useEntityLabels";
@@ -22,7 +22,7 @@ interface ProfileMembersProps {
 export default function ProfileMembers({ section }: ProfileMembersProps) {
   const t = useT("modules/profil");
   const { entity } = useProfileEntity();
-  const permissions = useUserPermissions(entity);
+  const permissions = useProfilPermissions(entity);
   const [selectedTab, setSelectedTab] = useState("all");
   const [showManagement, setShowManagement] = useState(false);
   const [showInvite, setShowInvite] = useState(false);

@@ -4,7 +4,7 @@ import { Edit, Mail, ChevronRight, ImageIcon } from "lucide-react";
 import { useFormatProfileEntity } from "../../../hooks/useFormatProfileEntity";
 import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../../hooks/useProfileEntity";
-import { useUserPermissions } from "@/hooks/useUserPermissions";
+import { useProfilPermissions } from "../../../hooks/useProfilPermissions";
 import { EditProfileModal } from "../../profile-edit/EditProfileModal";
 import { ProfileImageUpload } from "../../profile-edit/ProfileImageUpload";
 import { EntityActionButtons } from "../../EntityActionButtons";
@@ -28,7 +28,7 @@ export function ProfileHeaderComplete({ section }: ProfileHeaderCompleteProps) {
     name: entityName,
     address,
   } = useFormatProfileEntity(entity);
-  const { canEditProfile } = useUserPermissions(entity);
+  const { canEditProfile } = useProfilPermissions(entity);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [imageError, setImageError] = useState(false);
 

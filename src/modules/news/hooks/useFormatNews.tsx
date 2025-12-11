@@ -3,7 +3,7 @@ import { formatDistanceToNow } from "date-fns";
 import { useDateFnsLocale } from "@/hooks/useDateFnsLocale";
 import { useCocolight } from "@/hooks/useCocolight";
 import type { News, EntityTypes, NewsMention } from "@communecter/cocolight-api-client";
-import { useUserPermissions } from "@/hooks/useUserPermissions";
+import { useNewsPermissions } from "./useNewsPermissions";
 import { extractAuthorInfo, calculateTotalVotes } from "@/lib/entityFormatting";
 
 export interface SharedByPerson {
@@ -72,7 +72,7 @@ export interface FormattedNews {
 export function useFormatNews(newsItem: News | null, entity: EntityTypes | null = null): FormattedNews | null {
   const dateFnsLocale = useDateFnsLocale();
   const { me } = useCocolight();
-  const permissions = useUserPermissions(entity, newsItem);
+  const permissions = useNewsPermissions(entity, newsItem);
 
   const currentUserId = me?.serverData?.id;
 

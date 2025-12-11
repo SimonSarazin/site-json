@@ -2,7 +2,7 @@ import { Calendar, Loader2, Plus } from "lucide-react";
 import { useState } from "react";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
-import { useUserPermissions } from "@/hooks/useUserPermissions";
+import { useNewsPermissions } from "../../hooks/useNewsPermissions";
 import { Button } from "@/components/ui/button";
 import { useLazyTab } from "@/hooks/useLazyTab";
 import type { NewsSection as NewsSectionType } from "../../schema";
@@ -48,7 +48,7 @@ export const NewsSection = ({ id, props }: NewsSectionProps) => {
     entitySlug: props.entitySlug,
   });
 
-  const permissions = useUserPermissions(entity);
+  const permissions = useNewsPermissions(entity);
 
   const { shouldLoad } = useLazyTab("news");
 
@@ -198,7 +198,7 @@ export const NewsSection = ({ id, props }: NewsSectionProps) => {
     canAdd: permissions.canAddNews && (props.showAddButton ?? true),
     canEdit: false,
     canDelete: false,
-    canModerate: permissions.isAdmin,
+    canModerate: permissions.canModerateNews,
     canComment: (props.showComments ?? true) && permissions.canEditComment,
     canReact: (props.showReactions ?? true),
     canShare: true,

@@ -5,7 +5,7 @@
 import { useMemo } from "react";
 import type { Event } from "@communecter/cocolight-api-client";
 import { useT } from "@/hooks/useT";
-import { useUserPermissions } from "@/hooks/useUserPermissions";
+import { useProfilPermissions } from "../../hooks/useProfilPermissions";
 import { UserPlus, UserCheck } from "lucide-react";
 import {
   useFollowEntity,
@@ -26,7 +26,7 @@ import type { EntityAction, EntityActionsResult } from "../../types";
  */
 export function useEventEntityActions(entity: Event | null): EntityActionsResult | null {
   const t = useT("modules/profil");
-  const permissions = useUserPermissions(entity);
+  const permissions = useProfilPermissions(entity);
 
   // Mutations
   const followMutation = useFollowEntity(entity);

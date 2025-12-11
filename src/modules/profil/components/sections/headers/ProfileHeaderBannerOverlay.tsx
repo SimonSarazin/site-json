@@ -5,7 +5,7 @@ import { ArrowLeft, Share2, Edit } from "lucide-react";
 import { useFormatProfileEntity } from "../../../hooks/useFormatProfileEntity";
 import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../../hooks/useProfileEntity";
-import { useUserPermissions } from "@/hooks/useUserPermissions";
+import { useProfilPermissions } from "../../../hooks/useProfilPermissions";
 import { EditProfileModal } from "../../profile-edit/EditProfileModal";
 import { ProfileImageUpload } from "../../profile-edit/ProfileImageUpload";
 import { EntityActionButtons } from "../../EntityActionButtons";
@@ -32,7 +32,7 @@ export function ProfileHeaderBannerOverlay({ section }: ProfileHeaderBannerOverl
     name: entityName,
     address,
   } = useFormatProfileEntity(entity);
-  const { canEditProfile } = useUserPermissions(entity);
+  const { canEditProfile } = useProfilPermissions(entity);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [imageError, setImageError] = useState(false);
 
