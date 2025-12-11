@@ -131,6 +131,16 @@
     - [7.3.4 Exemple de configuration JSON](#734-exemple-de-configuration-json)
     - [7.3.5 Préchargement SSR](#735-préchargement-ssr)
   - [7.4 Récapitulatif des modules](#74-récapitulatif-des-modules)
+  - [7.5 Système de permissions modulaire (`src/lib/permissions`)](#75-système-de-permissions-modulaire-srclibpermissions)
+    - [7.5.1 Architecture](#751-architecture)
+    - [7.5.2 Types de base](#752-types-de-base)
+    - [7.5.3 Registre des calculateurs](#753-registre-des-calculateurs)
+    - [7.5.4 Hook générique `usePermissions`](#754-hook-générique-usepermissions)
+    - [7.5.5 Créer des permissions pour un module](#755-créer-des-permissions-pour-un-module)
+    - [7.5.6 Permissions du module Profil](#756-permissions-du-module-profil)
+    - [7.5.7 Permissions du module News](#757-permissions-du-module-news)
+    - [7.5.8 Hook rétrocompatible `useUserPermissions`](#758-hook-rétrocompatible-useuserpermissions)
+    - [7.5.9 Avantages de l'architecture modulaire](#759-avantages-de-larchitecture-modulaire)
 - [8. API Client \& Authentification](#8-api-client--authentification)
   - [8.1 Initialisation de l'API - Pattern Singleton (`apiClient.ts`)](#81-initialisation-de-lapi---pattern-singleton-apiclientts)
     - [8.1.1 Architecture du singleton](#811-architecture-du-singleton)
@@ -2836,6 +2846,22 @@ Le module **profil** gère l'affichage des pages de profil pour tous les types d
 
 ```
 src/modules/profil/
+├── actions/                        // Système d'actions refactorisé (config-driven)
+│   ├── config/                     // Configurations des actions
+│   │   ├── entityActionConfig.ts   // Config des actions d'entité (follow, join, etc.)
+│   │   ├── memberActionConfig.ts   // Config des actions de membres
+│   │   └── index.ts
+│   ├── hooks/                      // Hooks d'actions par type d'entité
+│   │   ├── useUserEntityActions.tsx
+│   │   ├── useOrgEntityActions.tsx
+│   │   ├── useProjectEntityActions.tsx
+│   │   └── useEventEntityActions.tsx
+│   ├── mutations/                  // Factories de mutations
+│   │   ├── createEntityMutation.ts
+│   │   └── createUserMutation.ts
+│   └── builders/                   // Builders d'objets action
+│       ├── buildEntityAction.tsx
+│       └── buildUserAction.tsx
 ├── components/
 │   ├── sections/
 │   │   ├── ProfileHeader.tsx       // En-tête du profil (hero, simple, cover, minimal)
@@ -2853,7 +2879,19 @@ src/modules/profil/
 │   └── ProfileEntityProvider.tsx   // Provider du context
 ├── hooks/
 │   ├── useProfileEntity.tsx        // Hook pour accéder à l'entité typée
-│   └── useFormatProfileEntity.tsx  // Hook pour formater les données
+│   ├── useFormatProfileEntity.tsx  // Hook pour formater les données
+│   └── useProfilPermissions.ts     // Hook local pour permissions profil (voir 7.5)
+├── permissions/                    // Système de permissions modulaire (voir 7.5)
+│   ├── types.ts                    // ProfilPermissions (48 champs)
+│   ├── defaults.ts                 // DEFAULT_PROFIL_PERMISSIONS
+│   ├── calculators/                // Calculateurs par type d'entité
+│   │   ├── user.ts                 // calculateOwnProfilePermissions, calculateOtherUserPermissions
+│   │   ├── organization.ts         // calculateOrganizationPermissions
+│   │   ├── project.ts              // calculateProjectPermissions
+│   │   ├── event.ts                // calculateEventPermissions
+│   │   └── poi.ts                  // calculatePoiPermissions
+│   ├── register.ts                 // Enregistrement namespace "profil"
+│   └── index.ts                    // Exports
 ├── pages/
 │   └── ProfilePage.tsx             // Page principale des profils
 ├── i18n/
@@ -3444,7 +3482,15 @@ src/modules/news/
 │   ├── useFormatNews.tsx      # Formatage des données news
 │   ├── useFormatComment.tsx   # Formatage des commentaires
 │   ├── useNewsEntity.tsx      # Accès à l'entité news
-│   └── useNewsContext.tsx     # Accès au contexte news
+│   ├── useNewsContext.tsx     # Accès au contexte news
+│   └── useNewsPermissions.ts  # Hook local pour permissions news (voir 7.5)
+├── permissions/              # Système de permissions modulaire (voir 7.5)
+│   ├── types.ts              # NewsPermissions (6 champs)
+│   ├── defaults.ts           # DEFAULT_NEWS_PERMISSIONS
+│   ├── calculators/
+│   │   └── news.ts           # calculateNewsPermissions
+│   ├── register.ts           # Enregistrement namespace "news"
+│   └── index.ts              # Exports
 ├── contexts/
 │   ├── NewsContext.tsx        # Contexte React
 │   ├── NewsProvider.tsx       # Provider du contexte
@@ -3612,6 +3658,320 @@ Tous les modules suivent la même structure :
 4. **i18n** pour textes multi-langues
 5. **Configuration** via `module.config.ts` (si routes)
 6. **Routes** via `routes.tsx` (si nécessaire)
+7. **Permissions** via `permissions/` (si le module gère des permissions)
+
+---
+
+### 7.5 Système de permissions modulaire (`src/lib/permissions`)
+
+Le système de permissions de SiteForge est conçu pour être **extensible par module**. Chaque module peut enregistrer ses propres calculateurs de permissions sans modifier le code central.
+
+#### 7.5.1 Architecture
+
+```
+src/lib/permissions/
+├── types.ts           # Interfaces PermissionContext, PermissionCalculator
+├── registry.ts        # Registre central (Map) des calculateurs
+├── usePermissions.ts  # Hook générique pour calculer les permissions
+└── index.ts           # Exports publics
+```
+
+**Principe** : Chaque module enregistre un calculateur dans un **registre central** via `registerPermissions()`. Le hook `usePermissions()` agrège les résultats des calculateurs demandés.
+
+#### 7.5.2 Types de base
+
+```ts
+// src/lib/permissions/types.ts
+import type { EntityTypes, User } from "@communecter/cocolight-api-client";
+
+/**
+ * Contexte passé aux calculateurs de permissions
+ */
+export interface PermissionContext {
+  entity: EntityTypes | null;  // Entité concernée
+  me: User | null;             // Utilisateur connecté
+  data?: Record<string, unknown>; // Données additionnelles (news, etc.)
+}
+
+/**
+ * Interface pour un calculateur de permissions
+ */
+export interface PermissionCalculator<T = Record<string, unknown>> {
+  namespace: string;           // ex: "profil", "news"
+  calculate: (context: PermissionContext) => T;
+}
+```
+
+#### 7.5.3 Registre des calculateurs
+
+```ts
+// src/lib/permissions/registry.ts
+const calculators = new Map<string, PermissionCalculator>();
+
+/**
+ * Enregistre un calculateur de permissions pour un module
+ */
+export function registerPermissions<T>(calculator: PermissionCalculator<T>): void {
+  calculators.set(calculator.namespace, calculator);
+}
+
+export function getCalculator(namespace: string): PermissionCalculator | undefined {
+  return calculators.get(namespace);
+}
+
+export function hasCalculator(namespace: string): boolean {
+  return calculators.has(namespace);
+}
+```
+
+#### 7.5.4 Hook générique `usePermissions`
+
+```ts
+// src/lib/permissions/usePermissions.ts
+export function usePermissions<T extends Record<string, unknown>>(
+  namespaces: string[],
+  entity: EntityTypes | null,
+  data?: Record<string, unknown>
+): T {
+  const { me } = useCocolight();
+
+  return useMemo(() => {
+    const context: PermissionContext = { entity, me, data };
+    const result: Record<string, unknown> = {};
+
+    for (const ns of namespaces) {
+      const calculator = getCalculator(ns);
+      if (calculator) {
+        result[ns] = calculator.calculate(context);
+      }
+    }
+
+    return result as T;
+  }, [entity, me, data, namespaces]);
+}
+```
+
+**Usage** :
+
+```ts
+// Demander plusieurs namespaces
+const { profil, news } = usePermissions<{
+  profil: ProfilPermissions;
+  news: NewsPermissions;
+}>(["profil", "news"], entity, { news: currentNews });
+
+// Utiliser les permissions
+if (profil.canEditProfile) { /* ... */ }
+if (news.canAddNews) { /* ... */ }
+```
+
+#### 7.5.5 Créer des permissions pour un module
+
+**Étape 1 : Définir les types**
+
+```ts
+// src/modules/mymodule/permissions/types.ts
+export interface MyModulePermissions {
+  canDoSomething: boolean;
+  canDoOther: boolean;
+}
+```
+
+**Étape 2 : Définir les valeurs par défaut**
+
+```ts
+// src/modules/mymodule/permissions/defaults.ts
+export const DEFAULT_PERMISSIONS: MyModulePermissions = {
+  canDoSomething: false,
+  canDoOther: false,
+};
+```
+
+**Étape 3 : Créer le(s) calculateur(s)**
+
+```ts
+// src/modules/mymodule/permissions/calculators/main.ts
+import type { MyModulePermissions } from "../types";
+import { DEFAULT_PERMISSIONS } from "../defaults";
+
+export function calculateMyPermissions(entity: EntityTypes): MyModulePermissions {
+  // Logique de calcul selon le type d'entité
+  return {
+    canDoSomething: entity.userContext?.isAdmin ?? false,
+    canDoOther: true,
+  };
+}
+```
+
+**Étape 4 : Enregistrer dans le registre**
+
+```ts
+// src/modules/mymodule/permissions/register.ts
+import { registerPermissions } from "@/lib/permissions";
+import type { PermissionContext } from "@/lib/permissions";
+import type { MyModulePermissions } from "./types";
+import { DEFAULT_PERMISSIONS } from "./defaults";
+import { calculateMyPermissions } from "./calculators/main";
+
+function calculate(ctx: PermissionContext): MyModulePermissions {
+  if (!ctx.entity?.isConnected || !ctx.me?.isConnected) {
+    return DEFAULT_PERMISSIONS;
+  }
+  return calculateMyPermissions(ctx.entity);
+}
+
+// Enregistrement automatique à l'import
+registerPermissions<MyModulePermissions>({
+  namespace: "mymodule",
+  calculate,
+});
+```
+
+**Étape 5 : Créer un hook local (optionnel mais recommandé)**
+
+```ts
+// src/modules/mymodule/hooks/useMyModulePermissions.ts
+import type { EntityTypes } from "@communecter/cocolight-api-client";
+import { usePermissions } from "@/lib/permissions";
+import type { MyModulePermissions } from "../permissions";
+
+// Déclenche l'enregistrement du calculateur
+import "../permissions/register";
+
+export function useMyModulePermissions(entity: EntityTypes | null): MyModulePermissions {
+  const { mymodule } = usePermissions<{ mymodule: MyModulePermissions }>(
+    ["mymodule"],
+    entity
+  );
+  return mymodule;
+}
+```
+
+#### 7.5.6 Permissions du module Profil
+
+Le module profil enregistre le namespace `"profil"` avec **48 permissions** :
+
+```
+src/modules/profil/permissions/
+├── types.ts              # ProfilPermissions (48 champs)
+├── defaults.ts           # DEFAULT_PROFIL_PERMISSIONS
+├── calculators/
+│   ├── user.ts           # calculateOwnProfilePermissions, calculateOtherUserPermissions
+│   ├── organization.ts   # calculateOrganizationPermissions
+│   ├── project.ts        # calculateProjectPermissions
+│   ├── event.ts          # calculateEventPermissions
+│   └── poi.ts            # calculatePoiPermissions
+├── register.ts           # Enregistrement "profil"
+└── index.ts              # Exports
+```
+
+**Interface `ProfilPermissions`** :
+
+| Catégorie | Permissions |
+|-----------|------------|
+| **Profil** | `canEditProfile`, `editProfileReason` |
+| **Relations** | `canFollow`, `isFollowing`, `canSendFriendRequest`, `isFriend` |
+| **Organisation** | `canRequestMembership`, `canRequestOrganizationAdmin`, `isMember` |
+| **Projets** | `isContributor`, `canRequestContributor`, `canRequestProjectAdmin` |
+| **Admin** | `isAdmin`, `canRequestPromotion` |
+| **Événements** | `isAuthor`, `isParticipant`, `canParticipate` |
+| **Invitations** | `isToBeValidated`, `isInviting`, `isInvitingAdmin`, `isAdminPending` |
+| **Amis** | `hasSentFriendRequest`, `hasReceivedFriendRequest` |
+| **Création** | `canAddOrganization`, `canAddProject`, `canAddEvent`, `canAddPoi` |
+
+**Hook local** :
+
+```ts
+import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
+
+const { canEditProfile, isAdmin, isMember } = useProfilPermissions(entity);
+```
+
+#### 7.5.7 Permissions du module News
+
+Le module news enregistre le namespace `"news"` avec **6 permissions** :
+
+```
+src/modules/news/permissions/
+├── types.ts              # NewsPermissions (6 champs)
+├── defaults.ts           # DEFAULT_NEWS_PERMISSIONS
+├── calculators/
+│   └── news.ts           # calculateNewsPermissions
+├── register.ts           # Enregistrement "news"
+└── index.ts              # Exports
+```
+
+**Interface `NewsPermissions`** :
+
+```ts
+export interface NewsPermissions {
+  canAddNews: boolean;       // Peut créer une news
+  canEditNews: boolean;      // Peut éditer la news courante
+  canDeleteNews: boolean;    // Peut supprimer la news courante
+  canModerateNews: boolean;  // Peut modérer (admin)
+  canEditComment: boolean;   // Peut éditer un commentaire
+  canDeleteComment: boolean; // Peut supprimer un commentaire
+}
+```
+
+**Hook local** :
+
+```ts
+import { useNewsPermissions } from "@/modules/news/hooks/useNewsPermissions";
+
+const { canAddNews, canEditNews, canModerateNews } = useNewsPermissions(entity, news);
+```
+
+#### 7.5.8 Hook rétrocompatible `useUserPermissions`
+
+Pour la rétrocompatibilité, le hook global `useUserPermissions` agrège **tous** les namespaces :
+
+```ts
+// src/hooks/useUserPermissions.tsx
+import { usePermissions } from "@/lib/permissions";
+import "@/modules/profil/permissions/register";
+import "@/modules/news/permissions/register";
+
+export type UserPermissions = ProfilPermissions & NewsPermissions;
+
+export function useUserPermissions(
+  entity: EntityTypes | null,
+  news?: News | null
+): UserPermissions {
+  const permissions = usePermissions<{
+    profil: ProfilPermissions;
+    news: NewsPermissions;
+  }>(["profil", "news"], entity, { news });
+
+  // Flatten pour rétrocompatibilité
+  return {
+    ...permissions.profil,
+    ...permissions.news,
+  };
+}
+```
+
+**Usage** :
+
+```ts
+// Ancien code (toujours fonctionnel)
+const { canEditProfile, canAddNews } = useUserPermissions(entity);
+
+// Nouveau code recommandé (plus performant)
+const { canEditProfile } = useProfilPermissions(entity);
+const { canAddNews } = useNewsPermissions(entity);
+```
+
+#### 7.5.9 Avantages de l'architecture modulaire
+
+| Aspect | Avant | Après |
+|--------|-------|-------|
+| **Fichier principal** | 434 lignes monolithique | 63 lignes wrapper |
+| **Ajouter un module** | Modifier `useUserPermissions` | Créer `permissions/` dans le module |
+| **Ajouter un type d'entité** | Modifier `useUserPermissions` | Créer un calculateur |
+| **Testabilité** | Difficile (tout couplé) | Facile (fonctions pures isolées) |
+| **Couplage** | Fort (tout dans un fichier) | Faible (par module) |
+| **Performance** | Calcule tout | Ne calcule que les namespaces demandés |
 
 ---
 
