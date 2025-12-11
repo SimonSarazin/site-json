@@ -1,5 +1,5 @@
 import type { EntityTypes } from "@communecter/cocolight-api-client";
-import { useMutationWithToast } from "./core";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { QUERY_KEYS } from "../constants";
 
 interface BannerUploadData {

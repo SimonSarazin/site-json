@@ -1,5 +1,5 @@
 import type { EntityTypes, Organization, Project, Event, Poi } from "@communecter/cocolight-api-client";
-import { useMutationWithToast } from "./core";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { QUERY_KEYS } from "../constants";
 import { useCocolight } from "@/hooks/useCocolight";
 import type {

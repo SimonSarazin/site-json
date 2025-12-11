@@ -1,6 +1,6 @@
 import type { EntityTypes, User, Organization } from "@communecter/cocolight-api-client";
 import { isOrganization, isProject, isEvent } from "@/lib/getTypedEntity";
-import { useInfiniteEntityQuery } from "./core";
+import { useInfiniteEntityQuery } from "@/hooks/useInfiniteEntityQuery";
 import type { MemberQueryOptions, MemberQueryParams } from "../types";
 import { QUERY_KEYS } from "../constants/queryKeys";
 import { useHydratedUserContextId } from "@/hooks/useHydratedUserContextId";
