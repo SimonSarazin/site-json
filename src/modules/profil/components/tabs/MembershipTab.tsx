@@ -9,7 +9,8 @@ import { useProfileEntity } from "../../hooks/useProfileEntity";
 import { useUserOrganizations, useUserProjects, useUserPois, useUserEvents } from "../../hooks/useMembershipQuery";
 import { useCocolight } from "@/hooks/useCocolight";
 import type { CollectionKey } from "@communecter/cocolight-api-client";
-import { EntityCard, getEntityIcon } from "../shared/EntityCard";
+import { EntityCard } from "../shared/EntityCard";
+import { getEntityIcon } from "@/lib/entityIcons";
 import { EntityGrid } from "../shared/EntityGrid";
 import { EntityEmptyState } from "../shared/EntityEmptyState";
 

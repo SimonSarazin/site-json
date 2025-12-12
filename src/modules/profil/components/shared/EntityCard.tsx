@@ -1,9 +1,10 @@
-import { Building2, Briefcase, MapPin, Calendar, ExternalLink } from "lucide-react";
+import { MapPin, Calendar, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useT } from "@/hooks/useT";
 import { Link } from "react-router";
-import type { EntityTypes, CollectionKey } from "@communecter/cocolight-api-client";
+import type { EntityTypes } from "@communecter/cocolight-api-client";
+import { getEntityIcon } from "@/lib/entityIcons";
 
 interface EntityCardProps {
   entity: EntityTypes;
@@ -18,21 +19,6 @@ export function EntityCard({
 }: EntityCardProps) {
   const t = useT("modules/profil");
   const type = entity.getEntityType?.() || "";
-
-  const getIcon = () => {
-    switch (type) {
-      case "organizations":
-        return <Building2 className="w-5 h-5 text-primary" />;
-      case "projects":
-        return <Briefcase className="w-5 h-5 text-blue-600" />;
-      case "poi":
-        return <MapPin className="w-5 h-5 text-green-600" />;
-      case "events":
-        return <Calendar className="w-5 h-5 text-orange-600" />;
-      default:
-        return <MapPin className="w-5 h-5 text-muted-foreground" />;
-    }
-  };
 
   const getTypeLabel = () => {
     switch (type) {
@@ -65,7 +51,7 @@ export function EntityCard({
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              {getIcon()}
+              {getEntityIcon(type, { className: "w-5 h-5", withColor: true })}
             </div>
           )}
         </div>
@@ -163,18 +149,3 @@ export function EntityCard({
   );
 }
 
-// Helper pour obtenir l'icône par type (utilisable dans EntityEmptyState)
-export function getEntityIcon(type: CollectionKey, className = "w-12 h-12") {
-  switch (type) {
-    case "organizations":
-      return <Building2 className={`${className} mx-auto`} />;
-    case "projects":
-      return <Briefcase className={`${className} mx-auto`} />;
-    case "poi":
-      return <MapPin className={`${className} mx-auto`} />;
-    case "events":
-      return <Calendar className={`${className} mx-auto`} />;
-    default:
-      return <MapPin className={`${className} mx-auto`} />;
-  }
-}

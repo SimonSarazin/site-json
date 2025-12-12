@@ -1,5 +1,5 @@
 # ===== Étape 1 : build complet =====
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 WORKDIR /app
 
 # 1. Copie manifestes et installation (dev+prod)
@@ -15,7 +15,7 @@ RUN npm install --production --frozen-lockfile && \
     npm cache clean --force
 
 # ===== Étape 2 : image finale =====
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 WORKDIR /app
 
 # 4. Copie uniquement l’essentiel

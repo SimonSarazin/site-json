@@ -1,9 +1,7 @@
 import { useProfileEntity } from "../../hooks/useProfileEntity";
 import { useFormatProfileEntity } from "../../hooks/useFormatProfileEntity";
 import { useT } from "@/hooks/useT";
-import { useLocalization } from "@/hooks/useLocalization";
 import type { ProfileTagsSection } from "../../schema";
-import type { LocalizedString } from "@/types/locale-schema";
 
 interface ProfileTagsProps {
   section: ProfileTagsSection;
@@ -17,7 +15,6 @@ export default function ProfileTags({ section }: ProfileTagsProps) {
   const { entity } = useProfileEntity();
   const { tags } = useFormatProfileEntity(entity);
   const t = useT("modules/profil");
-  const { currentLocale } = useLocalization();
 
   const {
     title,
@@ -26,17 +23,20 @@ export default function ProfileTags({ section }: ProfileTagsProps) {
     searchOnClick = false,
   } = section;
 
+  // Dédoublonner les tags
+  const uniqueTags = [...new Set(tags)];
+
   // Si pas de tags, ne rien afficher
-  if (!tags || tags.length === 0) {
+  if (!uniqueTags || uniqueTags.length === 0) {
     return null;
   }
 
   // Limiter le nombre de tags affichés
-  const displayedTags = tags.slice(0, maxDisplay);
+  const displayedTags = uniqueTags.slice(0, maxDisplay);
 
   // Résoudre le titre localisé
   const resolvedTitle = title
-    ? (typeof title === "string" ? title : (title as LocalizedString)[currentLocale] || title.fr || title.en)
+    ? t(title)
     : t("ProfileTemplateDefault.tags");
 
   // TODO: Implémenter la recherche par tag
@@ -68,9 +68,9 @@ export default function ProfileTags({ section }: ProfileTagsProps) {
       </div>
 
       {/* Indicateur si tags tronqués */}
-      {tags.length > maxDisplay && (
+      {uniqueTags.length > maxDisplay && (
         <p className="text-sm text-muted-foreground mt-2">
-          +{tags.length - maxDisplay} {t("common.more")}
+          +{uniqueTags.length - maxDisplay} {t("common.more")}
         </p>
       )}
     </div>

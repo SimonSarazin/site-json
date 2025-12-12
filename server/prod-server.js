@@ -9,18 +9,12 @@ import serialize from "serialize-javascript";
 // dotenv.config();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const app = express();
-
-app.use(compression());   // gzip
-app.use(
-  express.static(path.resolve(__dirname, "../dist/client"), { index: false })
-);
 
 /* ----------------------------------------------------------------------
  *  Chargement obligatoire de la configuration en production
  * -------------------------------------------------------------------- */
-async function loadSiteConfig() {
-  // 1. JSON inline (variable d’environnement complète)
+function loadSiteConfig() {
+  // 1. JSON inline (variable d'environnement complète)
   if (process.env.SITE_CONFIG_JSON) {
     try {
       return JSON.parse(process.env.SITE_CONFIG_JSON);
@@ -43,11 +37,23 @@ async function loadSiteConfig() {
     }
   }
 
-  // Si nous sommes en production et rien n’a été fourni :
+  // Si nous sommes en production et rien n'a été fourni :
   throw new Error(
     "🛑  Aucune configuration trouvée : définissez SITE_CONFIG_JSON ou SITE_CONFIG_PATH (obligatoire en production)"
   );
 }
+
+/* ---- Charger la config UNE SEULE FOIS au démarrage -------------------- */
+const cachedConfig = loadSiteConfig();
+const configScript = `<script>window.__CONFIG__=${serialize(cachedConfig, { isJSON: true })}</script>`;
+console.log("Config chargée :", cachedConfig?.meta?.title?.fr || "Config OK");
+
+const app = express();
+
+app.use(compression());   // gzip
+app.use(
+  express.static(path.resolve(__dirname, "../dist/client"), { index: false })
+);
 
 app.use((req, res, next) => {
   if (
@@ -71,13 +77,6 @@ app.use(['/{*all}'], async (req, res) => {
       path.resolve(__dirname, "../dist/client/index.html"),
       "utf-8"
     );
-
-      // --- Injection de la config -------------------------------------------------
-    // 2. Chargement + injection de la configuration
-    const siteConfig = await loadSiteConfig();
-    const configScript = `<script>window.__CONFIG__=${serialize(siteConfig, {
-      isJSON: true,
-    })}</script>`;
 
     let injectEnvScript = "";
 
@@ -108,7 +107,7 @@ app.use(['/{*all}'], async (req, res) => {
     await render(
       req,
       res,
-      siteConfig,
+      cachedConfig,
       // callback onHead : reçoit les balises Helmet
       (helmetHead, dehydratedState) => {
         const stateScript = `<script>window.__REACT_QUERY_STATE__=${serialize(

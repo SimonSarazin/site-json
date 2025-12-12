@@ -359,7 +359,7 @@
         },
         {
           "type": "searchProStatic",
-          "id": "section-events-futur",
+          "id": "section-lieux",
           "props": {
             "customHeader": {
               "title": {
@@ -390,8 +390,8 @@
                 "xl": 5
               },
               "card": {
-                "type": "event",
-                "variant": "event",
+                "type": "tiers-lieux",
+                "variant": "tiers-lieux",
                 "detailsMode": "drawer"
               }
             }
@@ -435,7 +435,7 @@
                 "href": "/lieux"
               },
               {
-                "iconImage": "./TL_Icones.png",
+                "iconImage": "./images/tiersLieux/TL_Icones.png",
                 "iconClipPath": "polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)",
                 "iconColor": "text-yellow-500",
                 "title": {
@@ -1200,12 +1200,6 @@
     "copyright": {
       "fr": "Copyright 2025",
       "en": "Copyright 2025"
-    }
-  },
-  "integrations": {
-    "analytics": {
-      "provider": "ga4",
-      "id": "G-XXXXXXX"
     }
   },
   "features": [

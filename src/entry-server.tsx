@@ -17,6 +17,8 @@ import {
   createChunkCollector,
   preloadAll
 } from 'vite-preload';
+import { extractCriticalImages } from './lib/extractCriticalImages';
+import { generateImagePreloadTags } from './lib/generatePreloadTags';
 
 const STREAM_TIMEOUT_MS = 30_000;
 
@@ -30,6 +32,10 @@ export async function render(
   onHead: (headHtml: string, dehydratedState: DehydratedState) => Promise<void>,
   closingTags = '</div></body></html>',
 ): Promise<void> {
+  const isDev = import.meta.env.DEV;
+  const timings: Record<string, string> = {};
+  let t0 = isDev ? performance.now() : 0;
+
   /* Reset de l'état API pour éviter le cache entre requêtes SSR */
   resetApiState();
 
@@ -42,9 +48,15 @@ export async function render(
   });
 
   /* 2.  Préparation du routeur statique avec queryClient --------------- */
+  if (isDev) t0 = performance.now();
   const handler  = createStaticHandler(await buildRoutes(cfg, queryClient));
+  if (isDev) timings.buildRoutes = (performance.now() - t0).toFixed(1);
+
   const absUrl   = `http://localhost${req.originalUrl ?? req.url ?? '/'}`;
+
+  if (isDev) t0 = performance.now();
   const context  = await handler.query(new Request(absUrl));
+  if (isDev) timings.routerQuery = (performance.now() - t0).toFixed(1);
 
   /* Cas redirection depuis un loader ------------------------------------ */
   if (context instanceof Response) {
@@ -57,10 +69,12 @@ export async function render(
 
   /* 3.  Pré-hydratation React-Query ------------------------------------ */
   // ⬇️  on exécute la requête "cocolight-init" AVANT le rendu
+  if (isDev) t0 = performance.now();
   const initResult = await queryClient.ensureQueryData({
     queryKey: ["cocolight-init"],
     queryFn: () => initApi({ baseURL: getBaseUrl() })
   });
+  if (isDev) timings.initApi = (performance.now() - t0).toFixed(1);
 
   // Créer une query SÉRIALISABLE avec les données utiles pour l'hydratation
   // (sans les classes ApiClient, Api qui ne peuvent pas être sérialisées)
@@ -77,13 +91,19 @@ export async function render(
   });
 
   /* 4.  Précharger tous les composants lazy AVANT le rendu ------------ */
+  if (isDev) t0 = performance.now();
   await preloadAll();
+  if (isDev) timings.preloadAll = (performance.now() - t0).toFixed(1);
 
   /* 5.  Créer le collecteur de chunks pour injecter les modulepreload -- */
   const collector = createChunkCollector({
     manifest: './dist/client/.vite/manifest.json',
     entry: 'index.html',
   });
+
+  if (isDev) {
+    console.log(`[PERF entry-server] buildRoutes:${timings.buildRoutes}ms | routerQuery:${timings.routerQuery}ms | initApi:${timings.initApi}ms | preloadAll:${timings.preloadAll}ms`);
+  }
 
   /* --------------------------------------------------------- */
   /*  Streaming React 19                                       */
@@ -135,11 +155,21 @@ export async function render(
             : [],
         onShellReady() {
           /* ⬇️  head prêt : on délègue son injection au serveur HTTP      */
+
+          /* Extraire le pathname depuis l'URL */
+          const pathname = new URL(absUrl).pathname;
+
+          /* Extraire les images critiques pour le LCP */
+          const criticalImages = extractCriticalImages(cfg, pathname);
+          const imagePreloadTags = generateImagePreloadTags(criticalImages);
+
           /* Récupérer les tags de preload pour les chunks lazy utilisés   */
           const preloadTags = collector.getTags();
 
+          /* Injecter dans le head (images EN PREMIER pour priorité maximale) */
           onHead(
-            `${preloadTags}
+            `${imagePreloadTags}
+             ${preloadTags}
              ${helmetCtx.helmet?.title ?? ''}
              ${helmetCtx.helmet?.meta ?? ''}
              ${helmetCtx.helmet?.link ?? ''}`,

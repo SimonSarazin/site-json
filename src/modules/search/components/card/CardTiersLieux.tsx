@@ -2,6 +2,7 @@ import { SearchCardProps } from "../../schema";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { cn } from "@/lib/utils";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
+import { getEntityIconName, getEntityColorClasses } from "@/lib/entityIcons";
 
 export default function CardTiersLieux({
   item,
@@ -9,27 +10,15 @@ export default function CardTiersLieux({
 }: SearchCardProps) {
   
   const serverData = item?.serverData;
+  const entityType = item?.getEntityType?.() || "";
 
   // Extraction des données
   const image = serverData?.profilImageUrl;
   const title = serverData?.name;
   const location = getLocation(item);
-  const avatarIcon = getAvatarIcon(item);
-  const avatarColor = getAvatarColor(item);
+  const avatarIcon = getEntityIconName(entityType);
+  const avatarColorClasses = getEntityColorClasses(entityType);
   const badges = getBadges(item);
-  
-  const getAvatarColorClasses = (color?: string) => {
-    const colorMap: Record<string, string> = {
-      orange: 'bg-orange-50 text-orange-500',
-      blue: 'bg-blue-50 text-blue-500',
-      green: 'bg-green-50 text-green-500',
-      purple: 'bg-purple-50 text-purple-500',
-      red: 'bg-red-50 text-red-500',
-      yellow: 'bg-yellow-50 text-yellow-500',
-      teal: 'bg-primary/10 text-primary',
-    };
-    return colorMap[color || 'teal'] || colorMap.teal;
-  };
 
   return (
     <div 
@@ -51,34 +40,34 @@ export default function CardTiersLieux({
           {badges.map((badge, idx) => (
             <button
               key={idx}
-              className="w-8 h-8 bg-white rounded-full shadow flex items-center justify-center hover:bg-gray-100 transition"
+              className="w-8 h-8 bg-background rounded-full shadow flex items-center justify-center hover:bg-muted transition"
               aria-label={badge.label}
               onClick={(e) => e.stopPropagation()}
             >
-              <DynamicIcon name={badge.icon as IconName} className="w-4 h-4 text-gray-700" />
+              <DynamicIcon name={badge.icon as IconName} className="w-4 h-4 text-muted-foreground" />
             </button>
           ))}
         </div>
       )}
 
       {/* Card info en bas */}
-      <div className="absolute bottom-3 left-3 right-3 bg-white rounded-xl p-3 px-4 mb-2 flex items-start gap-3 shadow-lg">
+      <div className="absolute bottom-3 left-3 right-3 bg-card rounded-xl p-3 px-4 mb-2 flex items-start gap-3 shadow-lg border border-border">
         {/* Avatar Icon */}
         {avatarIcon && (
           <div className={cn(
-            "w-8 h-8 flex items-center justify-center rounded-full shadow-sm flex-shrink-0",
-            getAvatarColorClasses(avatarColor)
+            "w-8 h-8 flex items-center justify-center rounded-full shadow-sm shrink-0",
+            avatarColorClasses
           )}>
             <DynamicIcon name={avatarIcon as IconName} className="w-4 h-4" />
           </div>
         )}
 
         <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-gray-900 text-sm mb-1 truncate">
+          <h3 className="font-bold text-foreground text-sm mb-1 truncate">
             {title}
           </h3>
           {location && (
-            <p className="text-gray-500 text-xs truncate">
+            <p className="text-muted-foreground text-xs truncate">
               {location}
             </p>
           )}
@@ -100,26 +89,23 @@ function getLocation(item: SearchEntity): string | null {
   return null;
 }
 
-function getAvatarIcon(item: SearchEntity): string | null {
-  // Icône par défaut selon le type (kebab-case pour lucide-react/dynamic)
-  const type = item?.getEntityType?.();
-  if (type === "organizations") return "building-2";
-  if (type === "projects") return "lightbulb";
-  if (type === "events") return "calendar";
-  if (type === "poi") return "map-pin";
+// Mapping des mots-clés vers des icônes (recherche partielle case-insensitive)
+const TAG_ICON_KEYWORDS: Array<{ keywords: string[]; icon: string }> = [
+  { keywords: ['coworking', 'bureaux partagés'], icon: 'laptop' },
+  { keywords: ['fablab', 'makerspace', 'hackerspace'], icon: 'factory' },
+  { keywords: ['café', 'coffee'], icon: 'coffee' },
+  { keywords: ['restaurant', 'food'], icon: 'utensils-crossed' },
+  { keywords: ['réunion', 'meeting', 'salle'], icon: 'users' },
+];
 
-  return "lightbulb"; // Icône par défaut (kebab-case)
-}
-
-function getAvatarColor(item: SearchEntity): string {
-  // Couleur par défaut selon le type
-  const type = item?.getEntityType?.();
-  if (type === "organizations") return "blue";
-  if (type === "projects") return "orange";
-  if (type === "events") return "purple";
-  if (type === "poi") return "green";
-
-  return "teal";
+function findTagIcon(tag: string): string | null {
+  const tagLower = tag.toLowerCase();
+  for (const { keywords, icon } of TAG_ICON_KEYWORDS) {
+    if (keywords.some(keyword => tagLower.includes(keyword))) {
+      return icon;
+    }
+  }
+  return null;
 }
 
 function getBadges(item: SearchEntity): Array<{ icon: string; label?: string }> {
@@ -133,17 +119,18 @@ function getBadges(item: SearchEntity): Array<{ icon: string; label?: string }> 
   const badges: Array<{ icon: string; label?: string }> = [];
 
   if (serverData?.tags && Array.isArray(serverData.tags)) {
-    // Mapper certains tags à des icônes (kebab-case pour lucide-react/dynamic)
-    const tagIconMap: Record<string, string> = {
-      'coworking': 'laptop',
-      'fablab': 'factory',
-      'makerspace': 'wrench',
-      'café': 'coffee',
-      'restaurant': 'utensils-crossed',
-    };
+    // Dédoublonner les tags (case-insensitive)
+    const seenTags = new Set<string>();
+    const uniqueTags = serverData.tags.filter((tag: string) => {
+      const tagLower = tag.toLowerCase();
+      if (seenTags.has(tagLower)) return false;
+      seenTags.add(tagLower);
+      return true;
+    });
 
-    serverData.tags.slice(0, 2).forEach((tag: string) => {
-      const icon = tagIconMap[tag.toLowerCase()] || 'tag';
+    // Mapper les tags vers des icônes (max 2)
+    uniqueTags.slice(0, 2).forEach((tag: string) => {
+      const icon = findTagIcon(tag) || 'tag';
       badges.push({ icon, label: tag });
     });
   }

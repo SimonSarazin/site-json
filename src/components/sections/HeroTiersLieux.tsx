@@ -1,7 +1,7 @@
 import { T } from "@/components/ui/T";
 import { useLocalization } from "@/hooks/useLocalization";
 import { useState, useRef, useEffect, useMemo } from "react";
-import { Loader2, MapPin, Building2, Calendar, User, FolderOpen } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 import { HeroTiersLieuxProps as SchemaHeroTiersLieuxProps } from "@/types/site-schema";
 import { useAutocomplete } from "@/hooks/useAutocomplete";
@@ -10,25 +10,7 @@ import { cn } from "@/lib/utils";
 import { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
 import { Link } from "react-router";
 import { usePageFiltersOptional } from "@/contexts/PageFiltersContext";
-
-const getEntityIcon = (entity: SearchEntity) => {
-  const type = entity?.getEntityType?.() || "";
-
-  switch (type) {
-    case "poi":
-      return <MapPin className="h-4 w-4 text-blue-500" />;
-    case "organizations":
-      return <Building2 className="h-4 w-4 text-purple-500" />;
-    case "events":
-      return <Calendar className="h-4 w-4 text-green-500" />;
-    case "citoyens":
-      return <User className="h-4 w-4 text-orange-500" />;
-    case "projects":
-      return <FolderOpen className="h-4 w-4 text-pink-500" />;
-    default:
-      return <MapPin className="h-4 w-4 text-gray-500" />;
-  }
-};
+import { getEntityIcon } from "@/lib/entityIcons";
 
 const getEntityTitle = (entity: SearchEntity): string => {
 
@@ -281,7 +263,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                               highlightedIndex === index && "bg-gray-50 dark:bg-slate-700"
                             )}
                           >
-                            <div className="mt-1">{getEntityIcon(item)}</div>
+                            <div className="mt-1">{getEntityIcon(item?.getEntityType?.() || "", { className: "h-4 w-4", withColor: true })}</div>
                             <Link to={`/profil/${item.slug}`}>
                               <div className="flex-1 min-w-0">
                                 <div className="font-medium text-gray-900 dark:text-white truncate">
@@ -414,7 +396,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                             highlightedIndex === index && "bg-gray-50 dark:bg-slate-700"
                           )}
                         >
-                          <div className="mt-1">{getEntityIcon(item)}</div>
+                          <div className="mt-1">{getEntityIcon(item?.getEntityType?.() || "", { className: "h-4 w-4", withColor: true })}</div>
                           <Link to={`/profil/${item.slug}`}>
                             <div className="flex-1 min-w-0">
                               <div className="font-medium text-gray-900 dark:text-white truncate">
