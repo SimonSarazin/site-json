@@ -1,4 +1,4 @@
-import { isRouteErrorResponse } from "react-router-dom";
+import { isRouteErrorResponse } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Home, ArrowLeft, SearchX } from "lucide-react";
 
