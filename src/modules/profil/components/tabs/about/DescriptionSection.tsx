@@ -26,7 +26,7 @@ export function DescriptionSection({ entity, entityType }: DescriptionSectionPro
 
   return (
     <li className={`ms-6 w-full mb-4 group ${canEdit ? "hover:bg-muted/50 hover:rounded-lg p-2 -ml-3 pl-8 transition-colors" : ""}`}>
-      <span className="absolute flex items-center justify-center w-6 h-6 rounded-full -start-3 ring-8 ring-background bg-teal-600 text-white">
+      <span className="absolute flex items-center justify-center w-6 h-6 rounded-full -start-3 ring-8 ring-background bg-primary text-primary-foreground">
         <FileText className="w-3 h-3" />
       </span>
       <div className="flex justify-between items-center">

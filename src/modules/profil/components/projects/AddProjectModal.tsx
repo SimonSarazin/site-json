@@ -113,7 +113,7 @@ export function AddProjectModal({ entity, open, onOpenChange }: AddProjectModalP
 
           <div className="space-y-2">
             <Label htmlFor="project-name" className="text-sm sm:text-base font-semibold">
-              {t("AddProjectModal.form.name.label")} <span className="text-red-500">*</span>
+              {t("AddProjectModal.form.name.label")} <span className="text-destructive">*</span>
             </Label>
             <Input
               id="project-name"
@@ -138,7 +138,7 @@ export function AddProjectModal({ entity, open, onOpenChange }: AddProjectModalP
                 disabled={isAddingProject}
                 className={cn(
                   "flex-1",
-                  isPublic && "bg-lime-700 hover:bg-lime-600 text-white"
+                  isPublic && "bg-success hover:bg-success/90 text-success-foreground"
                 )}
               >
                 <Globe className="w-4 h-4 mr-2" />
@@ -151,7 +151,7 @@ export function AddProjectModal({ entity, open, onOpenChange }: AddProjectModalP
                 disabled={isAddingProject}
                 className={cn(
                   "flex-1",
-                  !isPublic && "bg-gray-700 hover:bg-gray-600 text-white"
+                  !isPublic && "bg-muted-foreground hover:bg-muted-foreground/90 text-background"
                 )}
               >
                 <Lock className="w-4 h-4 mr-2" />
@@ -225,7 +225,7 @@ export function AddProjectModal({ entity, open, onOpenChange }: AddProjectModalP
             <Button
               type="submit"
               disabled={isAddingProject || !name.trim()}
-              className="bg-lime-700 hover:bg-lime-600 text-white font-semibold text-xs sm:text-sm uppercase"
+              className="bg-success hover:bg-success/90 text-success-foreground font-semibold text-xs sm:text-sm uppercase"
             >
               {isAddingProject ? (
                 <>

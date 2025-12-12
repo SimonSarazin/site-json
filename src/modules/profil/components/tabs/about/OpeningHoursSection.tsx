@@ -64,7 +64,7 @@ export function OpeningHoursSection({ entity, entityType }: OpeningHoursSectionP
 
   return (
     <li className={`ms-6 w-full mb-4 group ${canEditSection ? "hover:bg-muted/50 hover:rounded-lg p-2 -ml-3 pl-8 transition-colors" : ""}`}>
-      <span className="absolute flex items-center justify-center w-6 h-6 rounded-full -start-3 ring-8 ring-background bg-teal-600 text-white">
+      <span className="absolute flex items-center justify-center w-6 h-6 rounded-full -start-3 ring-8 ring-background bg-primary text-primary-foreground">
         <Clock className="w-3 h-3" />
       </span>
       <div className="flex justify-between items-center">
@@ -82,11 +82,11 @@ export function OpeningHoursSection({ entity, entityType }: OpeningHoursSectionP
         )}
       </div>
       {hasOpeningHours ? (
-        <ol className="relative border-s border-teal-600 mt-2 ml-2">
+        <ol className="relative border-s border-primary mt-2 ml-2">
           {startDate && endDate ? (
             <>
               <li className="mb-2 ms-4">
-                <div className="absolute w-3 h-3 rounded-full mt-1.5 -start-1.5 border border-teal-600 bg-teal-700" />
+                <div className="absolute w-3 h-3 rounded-full mt-1.5 -start-1.5 border border-primary bg-primary" />
                 <time className="text-sm font-normal leading-none text-muted-foreground">
                   {String(t("AboutTab.from"))}
                 </time>
@@ -95,7 +95,7 @@ export function OpeningHoursSection({ entity, entityType }: OpeningHoursSectionP
                 </p>
               </li>
               <li className="ms-4">
-                <div className="absolute w-3 h-3 rounded-full mt-1.5 -start-1.5 border border-teal-600 bg-teal-700" />
+                <div className="absolute w-3 h-3 rounded-full mt-1.5 -start-1.5 border border-primary bg-primary" />
                 <time className="mb-1 text-sm font-normal leading-none text-muted-foreground">
                   {String(t("AboutTab.to"))}
                 </time>
@@ -107,7 +107,7 @@ export function OpeningHoursSection({ entity, entityType }: OpeningHoursSectionP
           ) : null}
           {openingHours && openingHours.length > 0 && openingHours.map((item, index) => (
             <li key={index} className="mb-2 ms-4">
-              <div className="absolute w-3 h-3 rounded-full mt-1.5 -start-1.5 border border-teal-600 bg-teal-700" />
+              <div className="absolute w-3 h-3 rounded-full mt-1.5 -start-1.5 border border-primary bg-primary" />
               <time className="text-sm font-normal leading-none text-muted-foreground">
                 {DAY_NAMES[item.dayOfWeek] || item.dayOfWeek}
               </time>
@@ -124,7 +124,7 @@ export function OpeningHoursSection({ entity, entityType }: OpeningHoursSectionP
           {canEditSection ? (
             <button
               onClick={() => setIsEditOpen(true)}
-              className="flex items-center gap-2 px-4 py-3 w-full text-sm text-muted-foreground border-2 border-dashed border-muted-foreground/30 rounded-lg hover:border-teal-500 hover:text-teal-600 hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-all"
+              className="flex items-center gap-2 px-4 py-3 w-full text-sm text-muted-foreground border-2 border-dashed border-muted-foreground/30 rounded-lg hover:border-primary hover:text-primary hover:bg-primary/10 transition-all"
             >
               <Clock className="w-4 h-4" />
               {isProject ? t("EditAbout.addDateTime") : t("EditAbout.addOpeningHours")}

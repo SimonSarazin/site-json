@@ -138,7 +138,7 @@ export default function ProfileTemplateDefault() {
               {canEdit && (
                 <button
                   onClick={() => setIsEditProfileImageOpen(true)}
-                  className="absolute bottom-2 right-2 z-20 bg-teal-600 hover:bg-teal-700 text-white p-2 rounded-full opacity-0 group-hover/avatar:opacity-100 transition-all duration-200 shadow-lg"
+                  className="absolute bottom-2 right-2 z-20 bg-primary hover:bg-primary/90 text-primary-foreground p-2 rounded-full opacity-0 group-hover/avatar:opacity-100 transition-all duration-200 shadow-lg"
                   aria-label={String(t("EditImage.editProfileImage"))}
                 >
                   <Pencil className="w-4 h-4" />
@@ -170,7 +170,7 @@ export default function ProfileTemplateDefault() {
                       </button>
                     )}
                     <button
-                      className="px-5 py-2.5 bg-[#0092a2] text-white rounded-lg text-sm font-medium hover:bg-teal-600 flex items-center gap-2 shadow-sm"
+                      className="px-5 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 flex items-center gap-2 shadow-sm"
                     >
                       {t("ProfileTemplateDefault.reservationSpace")}
                       <ChevronRight className="w-4 h-4" />
@@ -190,43 +190,43 @@ export default function ProfileTemplateDefault() {
               <TabsList className="w-max min-w-full mb-6 sm:mb-8 bg-background border flex rounded-lg">
               <TabsTrigger
                 value="about"
-                className="shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
+                className="shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm text-foreground hover:text-foreground"
               >
                 {t("ProfileTemplateDefault.tabs.about")}
               </TabsTrigger>
               <TabsTrigger
                 value="news"
-                className="shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
+                className="shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm text-foreground hover:text-foreground"
               >
                 {t("ProfileTemplateDefault.tabs.news")}
               </TabsTrigger>
               <TabsTrigger
                 value="coworking"
-                className="shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
+                className="shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm text-foreground hover:text-foreground"
               >
                 {t("ProfileTemplateDefault.tabs.coworking")}
               </TabsTrigger>
               <TabsTrigger
                 value="rooms"
-                className="shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
+                className="shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm text-foreground hover:text-foreground"
               >
                 {t("ProfileTemplateDefault.tabs.meetingRooms")}
               </TabsTrigger>
               <TabsTrigger
                 value="projects"
-                className="shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
+                className="shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm text-foreground hover:text-foreground"
               >
                 {t("ProfileTemplateDefault.tabs.projects")}
               </TabsTrigger>
               <TabsTrigger
                 value="communities"
-                className="shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
+                className="shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm text-foreground hover:text-foreground"
               >
                 {t("ProfileTemplateDefault.tabs.communities")}
               </TabsTrigger>
               <TabsTrigger
                 value="observatory"
-                className="shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-teal-600 data-[state=active]:shadow-sm text-foreground hover:text-foreground"
+                className="shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm text-foreground hover:text-foreground"
               >
                 {t("ProfileTemplateDefault.tabs.observatories")}
               </TabsTrigger>
@@ -248,7 +248,7 @@ export default function ProfileTemplateDefault() {
             <TabsContent value="coworking">
               <div className="bg-card p-8 rounded-lg border border-border shadow-sm">
                 <div className="text-center py-16">
-                  <div className="text-gray-400 mb-4">
+                  <div className="text-muted-foreground mb-4">
                     <Briefcase className="w-16 h-16 mx-auto" />
                   </div>
                   <p className="text-xl font-semibold text-foreground mb-2">{t("ProfileTemplateDefault.sectionLabel", undefined, { name: t("ProfileTemplateDefault.tabs.coworking") })}</p>
@@ -260,7 +260,7 @@ export default function ProfileTemplateDefault() {
             <TabsContent value="rooms">
               <div className="bg-card p-8 rounded-lg border border-border shadow-sm">
                 <div className="text-center py-16">
-                  <div className="text-gray-400 mb-4">
+                  <div className="text-muted-foreground mb-4">
                     <Users className="w-16 h-16 mx-auto" />
                   </div>
                   <p className="text-xl font-semibold text-foreground mb-2">{t("ProfileTemplateDefault.sectionLabel", undefined, { name: t("ProfileTemplateDefault.tabs.meetingRooms") })}</p>
@@ -284,7 +284,7 @@ export default function ProfileTemplateDefault() {
             <TabsContent value="observatory">
               <div className="bg-card p-8 rounded-lg border border-border shadow-sm">
                 <div className="text-center py-16">
-                  <div className="text-gray-400 mb-4">
+                  <div className="text-muted-foreground mb-4">
                     <Globe className="w-16 h-16 mx-auto" />
                   </div>
                   <p className="text-xl font-semibold text-foreground mb-2">{t("ProfileTemplateDefault.sectionLabel", undefined, { name: t("ProfileTemplateDefault.tabs.observatories") })}</p>

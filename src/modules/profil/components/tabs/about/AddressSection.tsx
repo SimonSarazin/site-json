@@ -68,7 +68,7 @@ export function AddressSection({ entity }: AddressSectionProps) {
 
   return (
     <li className={`ms-6 w-full mb-4 group ${canEdit ? "hover:bg-muted/50 hover:rounded-lg p-2 -ml-3 pl-8 transition-colors" : ""}`}>
-      <span className="absolute flex items-center justify-center w-6 h-6 rounded-full -start-3 ring-8 ring-background bg-teal-600 text-white">
+      <span className="absolute flex items-center justify-center w-6 h-6 rounded-full -start-3 ring-8 ring-background bg-primary text-primary-foreground">
         <MapPin className="w-3 h-3" />
       </span>
       <div className="flex justify-between items-center">
@@ -88,10 +88,10 @@ export function AddressSection({ entity }: AddressSectionProps) {
 
       {hasAddress ? (
         <div className="mt-2 space-y-3">
-          <div className="bg-linear-to-br from-teal-50 to-emerald-50 dark:from-teal-900/20 dark:to-emerald-900/20 rounded-lg p-4 border border-teal-200 dark:border-teal-800">
+          <div className="bg-linear-to-br from-primary/10 to-primary/5 rounded-lg p-4 border border-primary/20">
             <div className="flex items-start gap-3">
-              <div className="p-2 bg-teal-100 dark:bg-teal-800 rounded-full shrink-0">
-                <Navigation className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+              <div className="p-2 bg-primary/20 rounded-full shrink-0">
+                <Navigation className="w-4 h-4 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
                 {address?.streetAddress && (
@@ -116,7 +116,7 @@ export function AddressSection({ entity }: AddressSectionProps) {
                   href={mapsLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2 text-teal-600 hover:bg-teal-100 dark:hover:bg-teal-800 rounded-full transition-colors shrink-0"
+                  className="p-2 text-primary hover:bg-primary/10 rounded-full transition-colors shrink-0"
                   title={String(t("AboutTab.openInMaps"))}
                 >
                   <ExternalLink className="w-4 h-4" />
@@ -142,7 +142,7 @@ export function AddressSection({ entity }: AddressSectionProps) {
                     href={mapsLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-gray-800 rounded-full shadow-md text-xs font-medium text-teal-600 hover:bg-teal-50 dark:hover:bg-teal-900 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-card rounded-full shadow-md text-xs font-medium text-primary hover:bg-primary/10 transition-colors"
                   >
                     <Navigation className="w-3 h-3" />
                     {t("AboutTab.getDirections")}
@@ -157,7 +157,7 @@ export function AddressSection({ entity }: AddressSectionProps) {
           {canEdit ? (
             <button
               onClick={() => setIsEditOpen(true)}
-              className="flex items-center gap-2 px-4 py-3 w-full text-sm text-muted-foreground border-2 border-dashed border-muted-foreground/30 rounded-lg hover:border-teal-500 hover:text-teal-600 hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-all"
+              className="flex items-center gap-2 px-4 py-3 w-full text-sm text-muted-foreground border-2 border-dashed border-muted-foreground/30 rounded-lg hover:border-primary hover:text-primary hover:bg-primary/10 transition-all"
             >
               <MapPin className="w-4 h-4" />
               {t("AboutTab.addAddress")}

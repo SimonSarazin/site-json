@@ -36,13 +36,13 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
 
   const getAvatarColorClasses = (color?: string) => {
     const colorMap: Record<string, string> = {
-      orange: 'bg-orange-50 text-orange-500',
-      blue: 'bg-blue-50 text-blue-500',
-      green: 'bg-green-50 text-green-500',
-      purple: 'bg-purple-50 text-purple-500',
-      red: 'bg-red-50 text-red-500',
-      yellow: 'bg-yellow-50 text-yellow-500',
-      teal: 'bg-teal-50 text-teal-500',
+      orange: 'bg-warning/20 text-warning',
+      blue: 'bg-info/20 text-info',
+      green: 'bg-success/20 text-success',
+      purple: 'bg-chart-2/20 text-chart-2',
+      red: 'bg-destructive/20 text-destructive',
+      yellow: 'bg-chart-4/20 text-chart-4',
+      teal: 'bg-primary/20 text-primary',
     };
     return colorMap[color || 'teal'] || colorMap.teal;
   };
@@ -310,10 +310,10 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
           <div className={cn("grid gap-6", getGridCols(columns))}>
             {items.map((item, index) => (
               <CardWrapper key={index} href={item.href} target={item.target}>
-                <div className="group cursor-pointer bg-white dark:bg-slate-800 rounded-2xl shadow-md hover:shadow-xl transition p-6 border border-gray-100 dark:border-gray-700 hover:border-yellow-300 dark:hover:border-yellow-500">
+                <div className="group cursor-pointer bg-card rounded-2xl shadow-md hover:shadow-xl transition p-6 border border-border hover:border-primary">
                   <div className={cn(
                     "w-24 h-24 mx-auto mb-4 flex items-center justify-center text-6xl group-hover:scale-110 transition-transform duration-300",
-                    item.iconColor || "text-yellow-500"
+                    item.iconColor || "text-primary"
                   )}>
                     {/* Support pour iconImage avec clipPath */}
                     {item.iconImage ? (
@@ -337,11 +337,11 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
                     ) : null}
                   </div>
 
-                  <h4 className="font-bold mb-2 text-gray-900 dark:text-white text-sm group-hover:text-yellow-600 dark:group-hover:text-yellow-400 transition-colors text-center">
+                  <h4 className="font-bold mb-2 text-card-foreground text-sm group-hover:text-primary transition-colors text-center">
                     {t(item.title)}
                   </h4>
 
-                  <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 text-center">
+                  <p className="text-xs text-muted-foreground line-clamp-2 text-center">
                     {t(item.text)}
                   </p>
                 </div>

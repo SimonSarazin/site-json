@@ -64,7 +64,7 @@ export function OrganizationsTab({ enabled = true }: OrganizationsTabProps) {
           />
         )}
         emptyIcon={<Building2 className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 mx-auto" />}
-        endIcon={<Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-teal-600 dark:text-teal-400" />}
+        endIcon={<Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />}
         emptyTitle={t("OrganizationsTab.noOrganizations")}
         emptyDescription={t("OrganizationsTab.noOrganizationsDescription")}
         loadingText={t("OrganizationsTab.loadingOrganizations")}

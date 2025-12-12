@@ -60,7 +60,7 @@ export function CommentInput({
         {userPhoto ? (
           <AvatarImage src={userPhoto} alt={userName} />
         ) : null}
-        <AvatarFallback className="bg-gradient-to-br from-teal-400 to-teal-600 text-white font-bold">
+        <AvatarFallback className="bg-linear-to-br from-primary/80 to-primary text-primary-foreground font-bold">
           {userName.substring(0, 2).toUpperCase()}
         </AvatarFallback>
       </Avatar>
@@ -94,7 +94,7 @@ export function CommentInput({
               onClick={handleSubmit}
               className={`transition-colors ${isSmall ? "" : "mr-1"} ${buttonSize} ${
                 text.trim()
-                  ? 'text-blue-500 hover:text-blue-600'
+                  ? 'text-info hover:text-info/80'
                   : 'opacity-50 cursor-not-allowed'
               }`}
             >

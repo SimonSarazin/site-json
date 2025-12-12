@@ -22,7 +22,7 @@ export function AboutTab() {
   return (
     <div className="px-4">
       <div className="p-2 text-foreground">
-        <ol className="relative border-s border-teal-600 mb-5">
+        <ol className="relative border-s border-primary mb-5">
           <DescriptionSection entity={entity} entityType={collection} />
 
           <InfoGeneralSection entity={entity} entityType={collection} />

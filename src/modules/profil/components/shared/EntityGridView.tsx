@@ -127,7 +127,7 @@ export function EntityGridView<T>({
           <div className="flex justify-end">
             <Button
               onClick={onCreateClick}
-              className="bg-teal-600 hover:bg-teal-700 text-xs sm:text-sm text-white"
+              className="bg-primary hover:bg-primary/90 text-xs sm:text-sm text-primary-foreground"
             >
               <Plus className="w-4 h-4 mr-2" />
               {createLabel}
@@ -165,7 +165,7 @@ export function EntityGridView<T>({
                   variant={!isDetailedView ? "default" : "outline"}
                   size="sm"
                   onClick={() => setIsDetailedView(false)}
-                  className={!isDetailedView ? "bg-teal-600 hover:bg-teal-700 text-white" : ""}
+                  className={!isDetailedView ? "bg-primary hover:bg-primary/90 text-primary-foreground" : ""}
                 >
                   <LayoutGrid className="w-4 h-4 mr-2" />
                   {gridLabel}
@@ -174,7 +174,7 @@ export function EntityGridView<T>({
                   variant={isDetailedView ? "default" : "outline"}
                   size="sm"
                   onClick={() => setIsDetailedView(true)}
-                  className={isDetailedView ? "bg-teal-600 hover:bg-teal-700 text-white" : ""}
+                  className={isDetailedView ? "bg-primary hover:bg-primary/90 text-primary-foreground" : ""}
                 >
                   <List className="w-4 h-4 mr-2" />
                   {detailedLabel}
@@ -208,7 +208,7 @@ export function EntityGridView<T>({
           {canCreate && createLabel && onCreateClick && (
             <Button
               onClick={onCreateClick}
-              className="bg-teal-600 hover:bg-teal-700 text-xs sm:text-sm text-white"
+              className="bg-primary hover:bg-primary/90 text-xs sm:text-sm text-primary-foreground"
             >
               <Plus className="w-4 h-4 mr-2" />
               {createLabel}
@@ -232,7 +232,7 @@ export function EntityGridView<T>({
       {isFetchingNextPage && (
         <div className="bg-background p-8 rounded-xl border border-border shadow-sm">
           <div className="text-center">
-            <Loader2 className="w-10 h-10 animate-spin mx-auto text-teal-600" />
+            <Loader2 className="w-10 h-10 animate-spin mx-auto text-primary" />
             <p className="text-sm text-muted-foreground mt-3 font-medium">
               {loadingText}
             </p>
@@ -243,7 +243,7 @@ export function EntityGridView<T>({
       {!hasNextPage && items.length > 0 && (
         <div className="bg-background p-6 sm:p-8 rounded-xl border border-border shadow-sm">
           <div className="text-center">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-teal-100 dark:bg-teal-900/30 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3">
               {endIcon}
             </div>
             <p className="text-sm sm:text-base text-foreground font-semibold mb-1">

@@ -49,7 +49,7 @@ export function SocialNetworksSection({ entity, entityType }: SocialNetworksSect
 
   return (
     <li className={`ms-6 w-full mb-4 group ${canEdit ? "hover:bg-muted/50 hover:rounded-lg p-2 -ml-3 pl-8 transition-colors" : ""}`}>
-      <span className="absolute flex items-center justify-center w-6 h-6 rounded-full -start-3 ring-8 ring-background bg-teal-600 text-white">
+      <span className="absolute flex items-center justify-center w-6 h-6 rounded-full -start-3 ring-8 ring-background bg-primary text-primary-foreground">
         <Share2 className="w-3 h-3" />
       </span>
       <div className="flex justify-between items-center">
@@ -78,7 +78,7 @@ export function SocialNetworksSection({ entity, entityType }: SocialNetworksSect
                 title={key}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-foreground bg-card border border-border focus:outline-none hover:bg-muted focus:ring-4 focus:ring-muted font-medium rounded px-3 py-1.5 hover:border-teal-400 transition-colors"
+                className="text-foreground bg-card border border-border focus:outline-none hover:bg-muted focus:ring-4 focus:ring-muted font-medium rounded px-3 py-1.5 hover:border-primary transition-colors"
                 aria-label={key}
               >
                 <IconComponent className="w-4 h-4" aria-hidden="true" />

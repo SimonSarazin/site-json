@@ -1226,23 +1226,7 @@
     }
   ],
   "theme": {
-    "defaultMode": "dark",
-    "colors": {
-      "light": {
-        "background": "#ffffff",
-        "foreground": "#000000",
-        "bordercolor": "#e5e7eb",
-        "themecolor": "#0092a2",
-        "text-secondary": "#4a5565"
-      },
-      "dark": {
-        "background": "#000000",
-        "foreground": "#ffffff",
-        "border": "#1e2939",
-        "themecolor": "#0092a2",
-        "text-secondary": "#99a1af"
-      }
-    }
+    "defaultMode": "dark"
   },
   "auth": {
     "login": {

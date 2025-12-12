@@ -77,7 +77,7 @@ export function EntityCard({
       <div className="p-4 flex flex-col flex-grow">
         {typeBadge && <div className="mb-2">{typeBadge}</div>}
 
-        <h3 className="font-semibold text-foreground group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors line-clamp-2 mb-2">
+        <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2 mb-2">
           {name}
         </h3>
 
@@ -112,7 +112,7 @@ export function EntityCard({
             {tags.slice(0, maxTags).map((tag, idx) => (
               <span
                 key={idx}
-                className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800"
+                className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-primary/10 text-primary border border-primary/20"
               >
                 {tag}
               </span>

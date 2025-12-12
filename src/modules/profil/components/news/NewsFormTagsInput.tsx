@@ -101,14 +101,14 @@ export function NewsFormTagsInput({
         {tags.map((tag, index) => (
           <span
             key={index}
-            className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400 rounded-full text-xs sm:text-sm font-medium border border-teal-200 dark:border-teal-700"
+            className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 bg-primary/10 text-primary rounded-full text-xs sm:text-sm font-medium border border-primary/20"
           >
             <Tag className="w-3 h-3" />
             #{tag}
             <button
               type="button"
               onClick={() => removeTag(index)}
-              className="ml-1 hover:text-teal-900 dark:hover:text-teal-200"
+              className="ml-1 hover:text-primary/80"
             >
               <X className="w-3 h-3" />
             </button>

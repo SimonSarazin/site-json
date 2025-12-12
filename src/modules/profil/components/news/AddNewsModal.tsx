@@ -200,7 +200,7 @@ export function AddNewsModal({ entity, open, onOpenChange }: AddNewsModalProps) 
           {/* Text area with mention support + emoji */}
           <div className="space-y-2">
             <Label htmlFor="news-text" className="text-sm sm:text-base font-semibold">
-              {t("AddNewsModal.form.text.label")} <span className="text-red-500">*</span>
+              {t("AddNewsModal.form.text.label")} <span className="text-destructive">*</span>
             </Label>
             <div className="relative">
               <MentionInput
@@ -289,7 +289,7 @@ export function AddNewsModal({ entity, open, onOpenChange }: AddNewsModalProps) 
             <Button
               type="submit"
               disabled={isAddingNews || !text.trim()}
-              className="bg-lime-700 hover:bg-lime-600 text-white font-semibold text-xs sm:text-sm uppercase"
+              className="bg-success hover:bg-success/90 text-success-foreground font-semibold text-xs sm:text-sm uppercase"
             >
               {isAddingNews ? (
                 <>

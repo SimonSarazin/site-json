@@ -51,9 +51,9 @@ export function ProfileBannerCarriedBy({ parent }: ProfileBannerCarriedByProps) 
   };
 
   return (
-    <div className="p-2 mt-5 text-white bg-teal-800/75 h-10 top-2 right-2 rounded-lg absolute flex items-center justify-center z-10">
+    <div className="p-2 mt-5 text-primary-foreground bg-primary/75 h-10 top-2 right-2 rounded-lg absolute flex items-center justify-center z-10">
       <div className="text-xs font-normal flex w-full justify-center items-center gap-2">
-        <div className="flex items-center gap-1 font-semibold text-white">
+        <div className="flex items-center gap-1 font-semibold text-primary-foreground">
           <Users className="w-4 h-4" />
           {String(t("ProfileBannerCarriedBy.carriedBy"))}:
         </div>

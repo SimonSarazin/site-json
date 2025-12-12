@@ -41,7 +41,7 @@ export function InfoGeneralSection({ entity, entityType }: InfoGeneralSectionPro
     const displayValue = formatValue ? formatValue(value) : value;
     return (
       <p className="mb-2 text-sm font-medium truncate flex items-center gap-2">
-        <span className="text-teal-600">{icon}</span>
+        <span className="text-primary">{icon}</span>
         <span className="text-muted-foreground">{String(label)}:</span>
         <span className="text-foreground">{displayValue}</span>
       </p>
@@ -50,7 +50,7 @@ export function InfoGeneralSection({ entity, entityType }: InfoGeneralSectionPro
 
   return (
     <li className={`ms-6 w-full mb-4 group ${canEdit ? "hover:bg-muted/50 hover:rounded-lg p-2 -ml-3 pl-8 transition-colors" : ""}`}>
-      <span className="absolute flex items-center justify-center w-6 h-6 rounded-full -start-3 ring-8 ring-background bg-teal-600 text-white">
+      <span className="absolute flex items-center justify-center w-6 h-6 rounded-full -start-3 ring-8 ring-background bg-primary text-primary-foreground">
         <BookUser className="w-3 h-3" />
       </span>
       <div className="flex justify-between items-center">
@@ -88,7 +88,7 @@ export function InfoGeneralSection({ entity, entityType }: InfoGeneralSectionPro
         )}
 
         <p className="mb-2 text-sm font-medium flex items-start gap-2">
-          <Globe className="w-4 h-4 text-teal-600 mt-0.5 shrink-0" />
+          <Globe className="w-4 h-4 text-primary mt-0.5 shrink-0" />
           <span className="flex flex-wrap items-center gap-1">
             <span className="text-muted-foreground mr-1">
               {entityType !== "poi" ? t("AboutTab.link") : t("AboutTab.freeInfo")}:
@@ -99,7 +99,7 @@ export function InfoGeneralSection({ entity, entityType }: InfoGeneralSectionPro
                   href={url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-teal-600 hover:text-teal-700 break-all"
+                  className="text-primary hover:text-primary/80 break-all"
                 >
                   {url}
                 </a>
@@ -133,14 +133,14 @@ export function InfoGeneralSection({ entity, entityType }: InfoGeneralSectionPro
         )}
 
         <div className="mb-4 text-base font-normal flex items-start gap-2">
-          <Tag className="w-4 h-4 text-teal-600 mt-0.5 shrink-0" />
+          <Tag className="w-4 h-4 text-primary mt-0.5 shrink-0" />
           <div className="flex flex-wrap items-center gap-1">
             <span className="text-muted-foreground mr-1 text-sm">{t("AboutTab.tags")}:</span>
             {tags && Array.isArray(tags) && tags.length > 0 ? (
               tags.map((tag, index) => (
                 <span
                   key={index}
-                  className="text-white bg-teal-600 text-xs font-medium px-2.5 py-0.5 rounded"
+                  className="text-primary-foreground bg-primary text-xs font-medium px-2.5 py-0.5 rounded"
                 >
                   {tag}
                 </span>

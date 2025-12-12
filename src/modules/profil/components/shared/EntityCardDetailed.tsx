@@ -117,7 +117,7 @@ export function EntityCardDetailed({
                   {tags.slice(0, maxTags).map((tag, idx) => (
                     <span
                       key={idx}
-                      className="inline-flex items-center px-2.5 py-1 rounded-full text-xs bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800 font-medium"
+                      className="inline-flex items-center px-2.5 py-1 rounded-full text-xs bg-primary/10 text-primary border border-primary/20 font-medium"
                     >
                       {tag}
                     </span>
@@ -134,7 +134,7 @@ export function EntityCardDetailed({
             {slug && (
               <Link
                 to={linkTo}
-                className="ml-2 shrink-0 p-2 text-teal-600 hover:text-teal-700 hover:bg-teal-50 dark:hover:bg-teal-900/20 rounded-lg transition-colors"
+                className="ml-2 shrink-0 p-2 text-primary hover:text-primary/80 hover:bg-primary/10 rounded-lg transition-colors"
               >
                 <ExternalLink className="w-5 h-5" />
               </Link>
