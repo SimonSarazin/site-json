@@ -39,7 +39,7 @@ export function SocialNetworksSection({ entity, entityType }: SocialNetworksSect
   const t = useT("modules/profil");
   const { canEdit } = useProfileMutations();
   const [isEditOpen, setIsEditOpen] = useState(false);
-  console.log(canEdit)
+
   if (entityType === "poi") {
     return null;
   }

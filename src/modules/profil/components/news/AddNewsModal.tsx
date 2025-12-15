@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 import { NewsFormImageUpload } from "./NewsFormImageUpload";
 import { NewsFormDocumentUpload } from "./NewsFormDocumentUpload";
-import { NewsFormTagsInput } from "./NewsFormTagsInput";
+import { TagsInput } from "@/components/form";
 import { useT } from "@/hooks/useT";
 import { useAddNews, useAddNewsMention } from "../../hooks/useNewsMutations";
 import { EntityTypes } from "@communecter/cocolight-api-client";
@@ -268,10 +268,17 @@ export function AddNewsModal({ entity, open, onOpenChange }: AddNewsModalProps) 
               <Label htmlFor="news-tags" className="text-sm sm:text-base font-semibold">
                 {t("AddNewsModal.form.tags.label")}
               </Label>
-              <NewsFormTagsInput
+              <TagsInput
                 tags={tags}
                 onTagsChange={setTags}
                 maxTags={10}
+                texts={{
+                  placeholder: t("AddNewsModal.form.tags.placeholder"),
+                  maxReached: t("AddNewsModal.form.tags.maxReached", undefined, { max: "{{max}}" }),
+                  searching: t("tags.searching"),
+                  noResults: t("tags.noResults"),
+                  typeToSearch: t("tags.typeToSearch"),
+                }}
               />
             </div>
           </div>

@@ -41,11 +41,11 @@ export function SubscriptionItemDetailed({ item, isLastItem, lastItemRef }: Subs
 
   const getTypeBadgeColor = (type: string | undefined): string => {
     switch (type) {
-      case "organizations": return "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800";
-      case "projects": return "bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800";
-      case "citoyens": return "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800";
-      case "events": return "bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800";
-      default: return "bg-gray-50 dark:bg-gray-900/20 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800";
+      case "organizations": return "bg-info/10 text-info border-info/30";
+      case "projects": return "bg-chart-2/10 text-chart-2 border-chart-2/30";
+      case "citoyens": return "bg-success/10 text-success border-success/30";
+      case "events": return "bg-warning/10 text-warning border-warning/30";
+      default: return "bg-muted text-muted-foreground border-border";
     }
   };
 

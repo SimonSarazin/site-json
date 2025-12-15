@@ -36,7 +36,7 @@ export function SearchProStaticSection({
             </div>
           }
         >
-          <ErrorBoundary fallback={<section className="p-4 bg-red-100 text-red-800">
+          <ErrorBoundary fallback={<section className="p-4 bg-destructive/10 text-destructive">
               <p>Erreur lors du chargement de la section</p>
             </section>}>
             <SearchProStatic props={props} />

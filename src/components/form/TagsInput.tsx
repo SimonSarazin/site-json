@@ -1,23 +1,44 @@
 import { useState, KeyboardEvent, useRef, useEffect } from "react";
 import { Tag, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover";
-import { useT } from "@/hooks/useT";
+import {
+  Popover,
+  PopoverContent,
+  PopoverAnchor,
+} from "@/components/ui/popover";
 import { toast } from "sonner";
 import { TagSuggestions } from "./TagSuggestions";
 
-interface NewsFormTagsInputProps {
+interface TagsInputProps {
   tags: string[];
   onTagsChange: (tags: string[]) => void;
   maxTags?: number;
+  /** Textes pour l'internationalisation */
+  texts?: {
+    placeholder?: string;
+    maxReached?: string;
+    // Pour TagSuggestions
+    searching?: string;
+    noResults?: string;
+    typeToSearch?: string;
+  };
 }
 
-export function NewsFormTagsInput({
+const defaultTexts = {
+  placeholder: "Ajouter des tags...",
+  maxReached: "Maximum {{max}} tags autorisés",
+  searching: "Recherche...",
+  noResults: "Aucun tag trouvé",
+  typeToSearch: "Tapez au moins 2 caractères",
+};
+
+export function TagsInput({
   tags,
   onTagsChange,
   maxTags = 10,
-}: NewsFormTagsInputProps) {
-  const t = useT("modules/profil");
+  texts,
+}: TagsInputProps) {
+  const t = { ...defaultTexts, ...texts };
   const [inputValue, setInputValue] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -49,7 +70,7 @@ export function NewsFormTagsInput({
 
     if (trimmedValue === "") return;
     if (tags.length >= maxTags) {
-      toast.error(t("AddNewsModal.form.tags.maxReached", undefined, { max: maxTags }));
+      toast.error(t.maxReached.replace("{{max}}", String(maxTags)));
       return;
     }
     if (tags.includes(trimmedValue)) {
@@ -84,14 +105,15 @@ export function NewsFormTagsInput({
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      if (!target.closest('[data-radix-popper-content-wrapper]')) {
+      if (!target.closest("[data-radix-popper-content-wrapper]")) {
         setShowSuggestions(false);
       }
     };
 
     if (showSuggestions) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [showSuggestions]);
 
@@ -101,14 +123,14 @@ export function NewsFormTagsInput({
         {tags.map((tag, index) => (
           <span
             key={index}
-            className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 bg-primary/10 text-primary rounded-full text-xs sm:text-sm font-medium border border-primary/20"
+            className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary rounded-full text-xs sm:text-sm font-medium border border-primary/30 dark:border-primary/40"
           >
             <Tag className="w-3 h-3" />
             #{tag}
             <button
               type="button"
               onClick={() => removeTag(index)}
-              className="ml-1 hover:text-primary/80"
+              className="ml-1 hover:text-primary/80 dark:hover:text-primary/80"
             >
               <X className="w-3 h-3" />
             </button>
@@ -133,7 +155,7 @@ export function NewsFormTagsInput({
                   }
                 }, 200);
               }}
-              placeholder={t("AddNewsModal.form.tags.placeholder")}
+              placeholder={t.placeholder}
               className="text-xs sm:text-sm pr-16"
               disabled={tags.length >= maxTags}
             />
@@ -153,6 +175,11 @@ export function NewsFormTagsInput({
             <TagSuggestions
               query={inputValue}
               onSelect={selectTag}
+              texts={{
+                searching: t.searching,
+                noResults: t.noResults,
+                typeToSearch: t.typeToSearch,
+              }}
             />
           </PopoverContent>
         </Popover>
@@ -160,3 +187,5 @@ export function NewsFormTagsInput({
     </div>
   );
 }
+
+export type { TagsInputProps };

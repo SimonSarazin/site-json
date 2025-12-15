@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
-import { Mail, ChevronRight, Image as ImageIcon, Globe, Users, Briefcase, Camera, Pencil } from "lucide-react";
+import { Mail, ChevronRight, Image as ImageIcon, Globe, Users, Briefcase, Camera, Pencil, User } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFormatProfileEntity } from "../../hooks/useFormatProfileEntity";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -54,8 +54,30 @@ export default function ProfileTemplateDefault() {
   const imageUrl = logoUrl;
 
   const [imageError, setImageError] = useState(false);
+  const [bannerError, setBannerError] = useState(false);
 
-  const effectiveLogoUrl = imageError ? logoThumbUrl : logoUrl;
+  const getDefaultImage = () => {
+    switch (_entityType) {
+      case "citoyens":
+        return "/images/citoyens.png";
+      case "organizations":
+        return "/images/organizations.png";
+      case "projects":
+        return "/images/project.png";
+      default:
+        return "/images/defaultImage.png";
+    }
+  };
+
+  const defaultImage = getDefaultImage();
+
+  const effectiveLogoUrl = imageError
+    ? defaultImage
+    : (logoUrl || logoThumbUrl || defaultImage);
+
+  const effectiveBannerUrl = bannerError
+    ? defaultImage
+    : (bannerUrl || imageUrl || defaultImage);
 
   // console.log('entityType', _entityType);
   // console.log('isConnected', me?.isConnected);
@@ -89,7 +111,13 @@ export default function ProfileTemplateDefault() {
   return (
     <div className="bg-foreground -m-4 md:-m-8">
       <div className="w-full mx-auto bg-background shadow-sm">
-        <div className="relative h-96 bg-cover bg-center rounded-md border-border border group/banner" style={{ backgroundImage: bannerUrl ? `url('${bannerUrl}')` : `url('${imageUrl}')` }}>
+        <div className="relative h-96 rounded-md border-border border group/banner overflow-hidden">
+          <img
+            src={effectiveBannerUrl}
+            alt={entityName}
+            className="absolute inset-0 w-full h-full object-cover"
+            onError={() => setBannerError(true)}
+          />
           <ProfileBannerCarriedBy
             parent={entity?.serverData?.parent as Record<string, { id?: string; _id?: { $id?: string }; name?: string; type?: string; collection?: string; profilThumbImageUrl?: string }> | undefined}
           />
@@ -116,22 +144,17 @@ export default function ProfileTemplateDefault() {
           <div className="flex items-end gap-6 -mt-20">
             <div className="relative group/avatar">
               <div className="w-40 h-40 rounded-full border-4 border-background bg-card shadow-xl overflow-hidden">
-                {effectiveLogoUrl ? (
+                {imageError || !effectiveLogoUrl ? (
+                  <div className="w-full h-full flex items-center justify-center bg-muted">
+                    <User className="w-20 h-20 text-muted-foreground" />
+                  </div>
+                ) : (
                   <img
                     src={effectiveLogoUrl}
                     alt={entityName}
                     className="w-full h-full object-cover"
                     onError={() => setImageError(true)}
                   />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center from-yellow-100 to-yellow-50">
-                    <div className="text-center p-2">
-                      <div className="text-4xl mb-1">✒️</div>
-                      <div className="text-xs font-bold text-foreground leading-tight">
-                        {entityName.split(" ").slice(0, 2).join(" ")}
-                      </div>
-                    </div>
-                  </div>
                 )}
               </div>
 

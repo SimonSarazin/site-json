@@ -2,9 +2,9 @@ import { Users } from "lucide-react";
 import { useState } from "react";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
 import { useLazyTab } from "@/hooks/useLazyTab";
+import { useProfileMutations } from "../../hooks/useProfileMutations";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
-import { useCocolight } from "@/hooks/useCocolight";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import "@/modules/profil/i18n";
 import { OrganizationsTab } from "../organizations/OrganizationsTab";
@@ -18,13 +18,11 @@ export function CommunitiesTab() {
   const { entityType } = useProfileEntity();
   useLoadNamespace("modules/profil");
   const t = useT("modules/profil");
-  const { me } = useCocolight();
+  const { canEdit } = useProfileMutations();
 
   const { shouldLoad } = useLazyTab("communities");
   const [isLoading] = useState(false);
   const [activeSubTab, setActiveSubTab] = useState<string | null>(null);
-
-  const isAuthor = me?.isConnected && entityType === "organizations";
 
   if (!shouldLoad) {
     return null;
@@ -52,18 +50,18 @@ export function CommunitiesTab() {
           { id: "citoyensorganisations", label: t("CommunitiesTab.organizations"), show: true, component: "organizations" },
           { id: "citoyensabonnements", label: t("CommunitiesTab.subscriptions"), show: true, component: "subscriptions" },
           { id: "citoyensabonnés", label: t("CommunitiesTab.subscribers"), show: true, component: "subscribers" },
-          { id: "citoyensexterne", label: t("CommunitiesTab.externalNetwork"), show: isAuthor, component: "placeholder" },
+          { id: "citoyensexterne", label: t("CommunitiesTab.externalNetwork"), show: canEdit, component: "placeholder" },
         ];
       case "projects":
         return [
           { id: "contributeurs", label: t("CommunitiesTab.contributors"), show: true, component: "contributors" },
-          { id: "tovalidated", label: t("CommunitiesTab.contributorsToValidate"), show: isAuthor, component: "placeholder" },
+          { id: "tovalidated", label: t("CommunitiesTab.contributorsToValidate"), show: canEdit, component: "placeholder" },
           { id: "contributeursabonnés", label: t("CommunitiesTab.subscribers"), show: true, component: "subscribers" },
         ];
       case "organizations":
         return [
           { id: "membres", label: t("CommunitiesTab.members"), show: true, component: "members" },
-          { id: "tovalidated", label: t("CommunitiesTab.membersToValidate"), show: isAuthor, component: "placeholder" },
+          { id: "tovalidated", label: t("CommunitiesTab.membersToValidate"), show: canEdit, component: "placeholder" },
           { id: "membresabonnés", label: t("CommunitiesTab.subscribers"), show: true, component: "subscribers" },
         ];
       default:

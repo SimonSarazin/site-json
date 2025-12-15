@@ -96,14 +96,14 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
       data-co="page-search-static"
     >
       {error ? (
-        <div className="p-4 bg-red-100 text-red-800 border border-red-300 rounded mb-4">
+        <div className="p-4 bg-destructive/10 text-destructive border border-destructive/30 rounded mb-4">
           <p>❌ Une erreur est survenue lors du chargement des résultats.</p>
           <pre className="mt-2 text-sm whitespace-pre-wrap wrap-break-words">
             {error instanceof Error ? error.message : String(error)}
           </pre>
           <button
             onClick={() => refetch()}
-            className="mt-2 px-3 py-1 text-sm bg-red-50 border border-red-400 text-red-700 rounded hover:bg-red-200"
+            className="mt-2 px-3 py-1 text-sm bg-destructive/5 border border-destructive/40 text-destructive rounded hover:bg-destructive/20"
           >
             Réessayer
           </button>

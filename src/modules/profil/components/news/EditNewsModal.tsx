@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { NewsFormTagsInput } from "./NewsFormTagsInput";
+import { TagsInput } from "@/components/form";
 import { useT } from "@/hooks/useT";
 import { useEditNews } from "../../hooks/useNewsMutations";
 import type { News, EntityTypes } from "@communecter/cocolight-api-client";
@@ -131,10 +131,17 @@ export function EditNewsModal({ entity, news, open, onOpenChange }: EditNewsModa
             <Label className="text-sm sm:text-base font-semibold">
               {t("AddNewsModal.form.tags.label")}
             </Label>
-            <NewsFormTagsInput
+            <TagsInput
               tags={tags}
               onTagsChange={setTags}
               maxTags={10}
+              texts={{
+                placeholder: t("AddNewsModal.form.tags.placeholder"),
+                maxReached: t("AddNewsModal.form.tags.maxReached", undefined, { max: "{{max}}" }),
+                searching: t("tags.searching"),
+                noResults: t("tags.noResults"),
+                typeToSearch: t("tags.typeToSearch"),
+              }}
             />
           </div>
 

@@ -252,7 +252,7 @@ export function NewsFormImageUpload({
               <div key={fileKey} className="space-y-1">
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
-                    <Loader2 className="w-3 h-3 animate-spin text-blue-500" />
+                    <Loader2 className="w-3 h-3 animate-spin text-info" />
                     <span className="truncate max-w-[200px]">{fileName}</span>
                   </div>
                   <span className="text-muted-foreground">{Math.round(progress)}%</span>
@@ -280,7 +280,7 @@ export function NewsFormImageUpload({
                     e.stopPropagation();
                     handleCropImage(index);
                   }}
-                  className="bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2"
+                  className="bg-info hover:bg-info/90 text-info-foreground rounded-full p-2"
                   title="Recadrer"
                 >
                   <Crop className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -291,7 +291,7 @@ export function NewsFormImageUpload({
                     e.stopPropagation();
                     handleRemoveImage(index);
                   }}
-                  className="bg-red-500 hover:bg-red-600 text-white rounded-full p-2"
+                  className="bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-full p-2"
                   title="Supprimer"
                 >
                   <X className="w-3 h-3 sm:w-4 sm:h-4" />

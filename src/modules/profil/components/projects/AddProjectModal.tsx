@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { NewsFormImageUpload } from "../news/NewsFormImageUpload";
-import { NewsFormTagsInput } from "../news/NewsFormTagsInput";
+import { TagsInput } from "@/components/form";
 import { useT } from "@/hooks/useT";
 import { useAddProject } from "../../hooks/useProjectMutations";
 import { EntityTypes } from "@communecter/cocolight-api-client";
@@ -205,10 +205,17 @@ export function AddProjectModal({ entity, open, onOpenChange }: AddProjectModalP
             <Label htmlFor="project-tags" className="text-sm sm:text-base font-semibold">
               {t("AddProjectModal.form.tags.label")}
             </Label>
-            <NewsFormTagsInput
+            <TagsInput
               tags={tags}
               onTagsChange={setTags}
               maxTags={10}
+              texts={{
+                placeholder: t("AddNewsModal.form.tags.placeholder"),
+                maxReached: t("AddNewsModal.form.tags.maxReached", undefined, { max: "{{max}}" }),
+                searching: t("tags.searching"),
+                noResults: t("tags.noResults"),
+                typeToSearch: t("tags.typeToSearch"),
+              }}
             />
           </div>
 

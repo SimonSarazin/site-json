@@ -2,9 +2,9 @@ import { Building2 } from "lucide-react";
 import { useState } from "react";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
 import { useProfilOrganizationsQuery } from "../../hooks/useProfilOrganizationsQuery";
+import { useProfileMutations } from "../../hooks/useProfileMutations";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
-import { useCocolight } from "@/hooks/useCocolight";
 import "@/modules/profil/i18n";
 import { OrganizationItem } from "./OrganizationItem";
 import { OrganizationItemDetailed } from "./OrganizationItemDetailed";
@@ -20,7 +20,7 @@ export function OrganizationsTab({ enabled = true }: OrganizationsTabProps) {
   const { entity, entityType } = useProfileEntity();
   useLoadNamespace("modules/profil");
   const t = useT("modules/profil");
-  const { me } = useCocolight();
+  const { canEdit } = useProfileMutations();
   const [showAddOrganizationModal, setShowAddOrganizationModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -37,8 +37,6 @@ export function OrganizationsTab({ enabled = true }: OrganizationsTabProps) {
     indexStep: 12,
     searchQuery,
   });
-
-  const canCreate = me?.isConnected;
 
   return (
     <>
@@ -73,7 +71,7 @@ export function OrganizationsTab({ enabled = true }: OrganizationsTabProps) {
         gridViewLabel={t("OrganizationsTab.gridView")}
         detailedViewLabel={t("OrganizationsTab.detailedView")}
         createLabel={t("OrganizationsTab.createOrganization")}
-        canCreate={canCreate}
+        canCreate={canEdit}
         onCreateClick={() => setShowAddOrganizationModal(true)}
         showViewToggle={true}
         searchEnabled

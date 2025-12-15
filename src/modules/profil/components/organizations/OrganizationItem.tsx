@@ -34,7 +34,7 @@ export function OrganizationItem({ item, isLastItem, lastItemRef }: Organization
   };
 
   const typeBadge = type ? (
-    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 w-fit">
+    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-info/10 text-info border border-info/30 w-fit">
       {getTypeLabel(type)}
     </span>
   ) : undefined;

@@ -51,7 +51,7 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
     };
 
     return (
-        <header className={`${header.transparent ? "bg-transparent" : "bg-background"} rounded-b-2xl border-b border-border ${header.sticky ? "sticky top-0 z-30" : ""}`}>
+        <header className={`${header.transparent ? "bg-transparent" : "bg-background"} rounded-b-2xl border-b border-border ${header.sticky ? "sticky top-0 z-50" : ""}`}>
             <nav className="container mx-auto py-3 sm:py-4 px-4 sm:px-6">
                 <div className="flex items-center justify-between">
                     <Link to={header.path || "/"} className="flex items-center space-x-2">
@@ -77,7 +77,7 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
 
 
                                     {hasChildren && item.children && (
-                                        <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-screen max-w-2xl bg-background rounded-xl shadow-2xl border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-8 z-50">
+                                        <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-screen max-w-2xl bg-popover text-popover-foreground rounded-xl shadow-2xl border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-8 z-[60]">
                                             {t(item.label) === "Les lieux" ? (
                                                 <div className="grid grid-cols-3 gap-8">
                                                     <Link to="/lieux" className="text-primary font-semibold flex items-center gap-2">
@@ -257,7 +257,7 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                         )}
                         <button
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                            className="text-foreground hover:text-primary transition relative z-50 p-2"
+                            className="text-foreground hover:text-primary transition relative z-[60] p-2"
                             aria-label="Toggle menu"
                         >
                             {mobileMenuOpen ? (
@@ -274,7 +274,7 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                 </div>
 
                 {mobileMenuOpen && (
-                    <div className="md:hidden absolute left-0 right-0 top-full bg-background border-b border-border shadow-lg max-h-[calc(100vh-4rem)] overflow-y-auto z-40">
+                    <div className="md:hidden absolute left-0 right-0 top-full bg-popover text-popover-foreground border-b border-border shadow-lg max-h-[calc(100vh-4rem)] overflow-y-auto z-[55]">
                         <div className="px-4 py-4 space-y-4">
                             {header.nav.map((item, idx) => (
                                 <div key={idx} className="space-y-2">

@@ -1,6 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useProfileEntity } from "./useProfileEntity";
+import { useT } from "@/hooks/useT";
+import { showSuccessToast, showErrorToast } from "@/lib/toastUtils";
 
 interface UpdateDescriptionData {
   shortDescription?: string | null;
@@ -89,6 +91,7 @@ export function useProfileMutations() {
   const { entity } = useProfileEntity();
   const { me } = useCocolight();
   const queryClient = useQueryClient();
+  const t = useT("modules/profil");
 
   const updateCache = (updates: Record<string, unknown>) => {
     if (!entity?.slug) return;
@@ -216,6 +219,10 @@ export function useProfileMutations() {
     },
     onSuccess: (updatedValues) => {
       updateCache(updatedValues as Record<string, unknown>);
+      showSuccessToast("toast.profile.updateSuccess", t);
+    },
+    onError: (error) => {
+      showErrorToast(error, "toast.profile.updateError", t);
     },
   });
 
@@ -230,6 +237,10 @@ export function useProfileMutations() {
     },
     onSuccess: (updatedValues) => {
       updateCache(updatedValues as Record<string, unknown>);
+      showSuccessToast("toast.profile.updateSuccess", t);
+    },
+    onError: (error) => {
+      showErrorToast(error, "toast.profile.updateError", t);
     },
   });
 
@@ -244,6 +255,10 @@ export function useProfileMutations() {
     },
     onSuccess: (updatedValues) => {
       updateSocialCache(updatedValues as Record<string, unknown>);
+      showSuccessToast("toast.profile.updateSuccess", t);
+    },
+    onError: (error) => {
+      showErrorToast(error, "toast.profile.updateError", t);
     },
   });
 
@@ -275,6 +290,10 @@ export function useProfileMutations() {
       queryClient.refetchQueries({
         queryKey: ["element-about", entity.slug],
       });
+      showSuccessToast("toast.profile.updateSuccess", t);
+    },
+    onError: (error) => {
+      showErrorToast(error, "toast.profile.updateError", t);
     },
   });
 
@@ -298,6 +317,10 @@ export function useProfileMutations() {
       queryClient.refetchQueries({
         queryKey: ["element-about", entity.slug],
       });
+      showSuccessToast("toast.profile.updateSuccess", t);
+    },
+    onError: (error) => {
+      showErrorToast(error, "toast.profile.updateError", t);
     },
   });
 
@@ -309,6 +332,12 @@ export function useProfileMutations() {
 
       await (entity as { updateImageProfil: (data: { profil_avatar: File }) => Promise<unknown> }).updateImageProfil(data);
     },
+    onSuccess: () => {
+      showSuccessToast("toast.profile.imageUploadSuccess", t);
+    },
+    onError: (error) => {
+      showErrorToast(error, "toast.profile.imageUploadError", t);
+    },
   });
 
   const updateBannerImageMutation = useMutation({
@@ -318,6 +347,12 @@ export function useProfileMutations() {
       }
 
       await (entity as { updateImageBanner: (data: { banner: File; cropX: number; cropY: number; cropW: number; cropH: number }) => Promise<unknown> }).updateImageBanner(data);
+    },
+    onSuccess: () => {
+      showSuccessToast("toast.profile.bannerUploadSuccess", t);
+    },
+    onError: (error) => {
+      showErrorToast(error, "toast.profile.bannerUploadError", t);
     },
   });
 
