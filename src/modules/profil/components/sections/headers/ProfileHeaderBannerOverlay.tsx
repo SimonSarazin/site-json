@@ -43,11 +43,15 @@ export function ProfileHeaderBannerOverlay({ section }: ProfileHeaderBannerOverl
     <>
       {/* Banner */}
       {section.showBanner !== false && (
-        <div
-          className="relative h-64 bg-cover bg-center rounded-md border-border border group"
-          style={{ backgroundImage: coverImage ? `url('${coverImage}')` : undefined }}
-        >
-          {!coverImage && (
+        <div className="relative h-64 rounded-md border-border border group overflow-hidden bg-muted">
+          {coverImage ? (
+            <img
+              src={coverImage}
+              alt={`${entityName} banner`}
+              className="absolute inset-0 w-full h-full object-cover"
+              fetchPriority="high"
+            />
+          ) : (
             <div className="absolute inset-0 bg-gradient-to-br from-muted to-muted/80 rounded-md" />
           )}
 

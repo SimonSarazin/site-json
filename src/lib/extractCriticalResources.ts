@@ -1,8 +1,9 @@
 /**
- * extractCriticalImages.ts
+ * extractCriticalResources.ts
  *
- * Extrait les images critiques d'une config SiteForge pour le préchargement LCP.
- * Analyse le header, footer, meta et les sections "above the fold" de la page courante.
+ * Extrait les ressources critiques d'une config SiteForge pour le préchargement LCP.
+ * - Images : header, footer, meta et sections "above the fold"
+ * - Fonts : Google Fonts définies dans la config theme
  */
 
 import type { SiteConfig, Page } from '@/types/site-schema';
@@ -138,11 +139,22 @@ function extractSectionImages(sections: Page['sections'], maxSections = 2): stri
 }
 
 /**
+ * Données du loader qui peuvent contenir des images à précharger
+ */
+export interface LoaderDataWithImages {
+  preloadImages?: string[];
+}
+
+/**
  * Extrait toutes les images critiques d'une config en fonction de la page courante
+ * @param config - Configuration du site
+ * @param pathname - Chemin de la page courante
+ * @param loaderData - Données optionnelles du loader React Router (peut contenir preloadImages)
  */
 export function extractCriticalImages(
   config: SiteConfig,
-  pathname: string
+  pathname: string,
+  loaderData?: Record<string, LoaderDataWithImages | unknown>
 ): CriticalImage[] {
   const images: CriticalImage[] = [];
   const seen = new Set<string>();
@@ -191,5 +203,66 @@ export function extractCriticalImages(
     addImage(config.footer.logo);
   }
 
+  // 7. Images provenant des loaders (données dynamiques API)
+  if (loaderData) {
+    for (const routeId of Object.keys(loaderData)) {
+      const data = loaderData[routeId] as LoaderDataWithImages | null;
+      if (data?.preloadImages && Array.isArray(data.preloadImages)) {
+        for (const img of data.preloadImages) {
+          // Images de profil avec priorité haute (souvent LCP sur pages profil)
+          addImage(img, 'high');
+        }
+      }
+    }
+  }
+
   return images;
+}
+
+/**
+ * Interface pour les fonts critiques à précharger
+ */
+export interface CriticalFont {
+  family: string;
+  url: string;
+}
+
+/**
+ * Extrait les noms de police depuis un tableau de familles CSS
+ * Filtre les polices génériques (sans-serif, serif, etc.)
+ */
+function extractFontFamilies(families?: string[]): string[] {
+  if (!families) return [];
+  const genericFonts = ['sans-serif', 'serif', 'monospace', 'system-ui', 'cursive', 'fantasy'];
+  return families
+    .map(f => f.trim().replace(/['"]/g, '').split(',')[0].trim())
+    .filter(f => f && !genericFonts.includes(f.toLowerCase()));
+}
+
+/**
+ * Construit l'URL Google Fonts pour une police
+ */
+function buildGoogleFontURL(font: string): string {
+  const encoded = font.replace(/ /g, '+');
+  return `https://fonts.googleapis.com/css2?family=${encoded}:wght@400;500;600;700&display=swap`;
+}
+
+/**
+ * Extrait les Google Fonts de la config pour le préchargement
+ */
+export function extractCriticalFonts(config: SiteConfig): CriticalFont[] {
+  const fontFamily = config.theme?.typography?.fontFamily;
+  if (!fontFamily) return [];
+
+  const fonts = new Set<string>();
+
+  // Extraire les fonts de chaque catégorie
+  extractFontFamilies(fontFamily.sans).forEach(f => fonts.add(f));
+  extractFontFamilies(fontFamily.serif).forEach(f => fonts.add(f));
+  extractFontFamilies(fontFamily.mono).forEach(f => fonts.add(f));
+
+  return Array.from(fonts).map(family => ({
+    family,
+    url: buildGoogleFontURL(family),
+  }));
 }

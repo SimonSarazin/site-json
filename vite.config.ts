@@ -109,7 +109,15 @@ export default defineConfig(({ mode, isSsrBuild }) => ({
     }
   },
   ssr: {
-    noExternal: ['@radix-ui/', 'lucide-react'],
-    external: ['express', 'compression', '@communecter/cocolight-api-client']
+    noExternal: true,
+    external: [
+      // Deps serveur (utilisées par prod-server.js)
+      'express',
+      'compression',
+      'serialize-javascript',
+      // Problèmes de bundling CommonJS
+      'isomorphic-dompurify',
+      '@communecter/cocolight-api-client'
+    ]
   }
 }));

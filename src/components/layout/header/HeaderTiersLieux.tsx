@@ -63,6 +63,10 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                             <img
                                 src={`/${header.logo}`}
                                 alt={header.logoAlt ? t(header.logoAlt) : ""}
+                                width={207}
+                                height={48}
+                                className="h-10 sm:h-12"
+                                style={{ aspectRatio: '207/48' }}
                             />
                         )}
                     </Link>

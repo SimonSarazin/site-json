@@ -35,9 +35,11 @@ export function ProfileHeaderCover({ section }: ProfileHeaderCoverProps) {
       <div className="relative w-full h-80 md:h-96 overflow-hidden rounded-lg group mb-1">
         {/* Background image */}
         {coverImage ? (
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url('${coverImage}')` }}
+          <img
+            src={coverImage}
+            alt={`${entityName} cover`}
+            className="absolute inset-0 w-full h-full object-cover"
+            fetchPriority="high"
           />
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-muted to-muted/60" />

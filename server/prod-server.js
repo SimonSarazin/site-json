@@ -50,18 +50,39 @@ console.log("Config chargée :", cachedConfig?.meta?.title?.fr || "Config OK");
 
 const app = express();
 
-app.use(compression());   // gzip
+// Compression gzip avec options optimisées
+app.use(compression({
+  level: 6,        // Bon compromis vitesse/compression
+  threshold: 1024, // Minimum 1KB pour compresser
+}));
+
+// ETag pour requêtes conditionnelles (304 Not Modified)
+app.set('etag', 'strong');
+
+// Cache long terme pour assets hashés Vite (1 an, immutable)
+app.use('/assets', (req, res, next) => {
+  res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  next();
+});
+
+// Cache moyen terme pour images statiques (1 jour + revalidation 7 jours)
+app.use('/images', (req, res, next) => {
+  res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
+  next();
+});
+
+// Servir les fichiers statiques avec ETag et Last-Modified
 app.use(
-  express.static(path.resolve(__dirname, "../dist/client"), { index: false })
+  express.static(path.resolve(__dirname, "../dist/client"), {
+    index: false,
+    etag: true,
+    lastModified: true,
+  })
 );
 
+// 404 pour requêtes de fichiers statiques inexistants
 app.use((req, res, next) => {
-  if (
-    req.url.startsWith("/favicon") ||
-    req.url.startsWith("/sw") ||
-    req.url.startsWith("/manifest") ||
-    req.url.match(/\.(png|jpg|jpeg|gif|svg|css|js|json|ico|webp|mp4|woff2|woff|env|php|txt|py|properties|bak)$/)
-  ) {
+  if (req.url.match(/\.(png|jpg|jpeg|gif|svg|css|js|json|ico|webp|mp4|woff2|woff)$/)) {
     return res.status(404).end();
   }
   next();

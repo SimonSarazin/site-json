@@ -40,10 +40,17 @@ export function ProfileHeaderComplete({ section }: ProfileHeaderCompleteProps) {
     <>
       {/* Banner */}
       {section.showBanner !== false && (
-        <div
-          className="relative h-96 bg-cover bg-center rounded-md border-border border group"
-          style={{ backgroundImage: bannerUrl ? `url('${bannerUrl}')` : `url('${imageUrl}')` }}
-        >
+        <div className="relative h-96 rounded-md border-border border group overflow-hidden bg-muted">
+          {/* Image de bannière avec object-fit cover (meilleur LCP que background-image) */}
+          {(bannerUrl || imageUrl) && (
+            <img
+              src={bannerUrl || imageUrl || undefined}
+              alt={`${entityName} banner`}
+              className="absolute inset-0 w-full h-full object-cover"
+              fetchPriority="high"
+            />
+          )}
+
           {/* Bouton d'upload de bannière */}
           {canEditProfile && section.allowUpload !== false && entity && (
             <div className="absolute inset-0 z-10">

@@ -17,8 +17,8 @@ import {
   createChunkCollector,
   preloadAll
 } from 'vite-preload';
-import { extractCriticalImages } from './lib/extractCriticalImages';
-import { generateImagePreloadTags } from './lib/generatePreloadTags';
+import { extractCriticalImages, extractCriticalFonts } from './lib/extractCriticalResources';
+import { generateImagePreloadTags, generateFontPreloadTags } from './lib/generatePreloadTags';
 
 const STREAM_TIMEOUT_MS = 30_000;
 
@@ -159,16 +159,22 @@ export async function render(
           /* Extraire le pathname depuis l'URL */
           const pathname = new URL(absUrl).pathname;
 
-          /* Extraire les images critiques pour le LCP */
-          const criticalImages = extractCriticalImages(cfg, pathname);
+          /* Extraire les images critiques pour le LCP (config + données loaders) */
+          const loaderData = context.loaderData as Record<string, unknown> | undefined;
+          const criticalImages = extractCriticalImages(cfg, pathname, loaderData);
           const imagePreloadTags = generateImagePreloadTags(criticalImages);
+
+          /* Extraire les fonts critiques (Google Fonts) */
+          const criticalFonts = extractCriticalFonts(cfg);
+          const fontPreloadTags = generateFontPreloadTags(criticalFonts);
 
           /* Récupérer les tags de preload pour les chunks lazy utilisés   */
           const preloadTags = collector.getTags();
 
-          /* Injecter dans le head (images EN PREMIER pour priorité maximale) */
+          /* Injecter dans le head (fonts et images EN PREMIER pour priorité maximale) */
           onHead(
-            `${imagePreloadTags}
+            `${fontPreloadTags}
+             ${imagePreloadTags}
              ${preloadTags}
              ${helmetCtx.helmet?.title ?? ''}
              ${helmetCtx.helmet?.meta ?? ''}

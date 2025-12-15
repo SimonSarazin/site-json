@@ -36,6 +36,27 @@ const profileLoader = async (
     // 1. Pré-charger les données du profil côté serveur
     const entity = await prefetchProfileQuery(queryClient, slug);
 
+    // Collecter les images critiques pour le préchargement LCP
+    const preloadImages: string[] = [];
+    const serverData = entity.serverData;
+    if (serverData) {
+      // Image de profil (priorité haute - souvent visible en premier)
+      if (serverData.profilMediumImageUrl && typeof serverData.profilMediumImageUrl === 'string') {
+        preloadImages.push(serverData.profilMediumImageUrl);
+      } else if (serverData.profilImageUrl && typeof serverData.profilImageUrl === 'string') {
+        preloadImages.push(serverData.profilImageUrl);
+      }
+      if (serverData.profilThumbImageUrl && typeof serverData.profilThumbImageUrl === 'string') {
+        preloadImages.push(serverData.profilThumbImageUrl);
+      }
+      // Bannière (grande image visible en haut de page)
+      if (serverData.profilBannerUrl && typeof serverData.profilBannerUrl === 'string') {
+        preloadImages.push(serverData.profilBannerUrl);
+      } else if (serverData.profilRealBannerUrl && typeof serverData.profilRealBannerUrl === 'string') {
+        preloadImages.push(serverData.profilRealBannerUrl);
+      }
+    }
+
     // 2. Pré-charger les données du tab actif selon sa configuration
     if (entity && config && config.profiles) {
       const entityType = entity.getEntityType?.() || "";
@@ -65,7 +86,7 @@ const profileLoader = async (
       }
     }
 
-    return { entity, activeTab };
+    return { entity, activeTab, preloadImages };
   } catch (error) {
     console.error('Erreur lors du chargement du profil:', error);
     throw new Response('Not Found', { status: 404 });
