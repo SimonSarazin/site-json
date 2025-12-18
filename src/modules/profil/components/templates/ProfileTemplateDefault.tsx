@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
-import { Mail, ChevronRight, Image as ImageIcon, Globe, Users, Briefcase, Camera, Pencil, User } from "lucide-react";
+import { Image as ImageIcon, Camera, Pencil, User, Settings } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { useFormatProfileEntity } from "../../hooks/useFormatProfileEntity";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
@@ -16,6 +17,9 @@ import { AboutTab } from "../tabs/AboutTab";
 import { ProfileBannerCarriedBy } from "../banner/ProfileBannerCarriedBy";
 import { EditProfileImageModal } from "../banner/EditProfileImageModal";
 import { EditBannerImageModal } from "../banner/EditBannerImageModal";
+import { EditProfileModal } from "../tabs/about/edit/EditProfileModal";
+import { ProfileActions } from "../actions/ProfileActions";
+import { EntityStatusButton } from "../actions/EntityStatusButton";
 
 export default function ProfileTemplateDefault() {
   const { entity, entityType: _entityType } = useProfileEntity();
@@ -28,6 +32,7 @@ export default function ProfileTemplateDefault() {
 
   const [isEditProfileImageOpen, setIsEditProfileImageOpen] = useState(false);
   const [isEditBannerOpen, setIsEditBannerOpen] = useState(false);
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
 
   // Déterminer le tab actif depuis l'URL
   // Exemples: /profil/slug → "about", /profil/slug/news → "news"
@@ -110,7 +115,7 @@ export default function ProfileTemplateDefault() {
 
   return (
     <div className="bg-foreground -m-4 md:-m-8">
-      <div className="w-full mx-auto bg-background shadow-sm">
+      <div className="w-full mx-auto bg-background">
         <div className="relative h-96 rounded-md border-border border group/banner overflow-hidden">
           <img
             src={effectiveBannerUrl}
@@ -180,31 +185,30 @@ export default function ProfileTemplateDefault() {
                 )}
               </div>
 
-              {
-                _entityType != "citoyens" && (
-                  <div className="flex gap-3 flex-wrap">
-                    {entity.serverData?.email && typeof entity.serverData.email === "string" && (
-                      <button
-                        onClick={() => window.location.href = `mailto:${entity.serverData.email}`}
-                        className="px-5 py-2.5 border border-border rounded-lg text-foreground bg-card text-sm font-medium hover:bg-muted flex items-center gap-2 shadow-sm"
-                      >
-                        <Mail className="w-4 h-4" />
-                        {t("ProfileTemplateDefault.sendEmail")}
-                      </button>
-                    )}
-                    <button
-                      className="px-5 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 flex items-center gap-2 shadow-sm"
-                    >
-                      {t("ProfileTemplateDefault.reservationSpace")}
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </div>
-                )
-              }
+              <div className="flex items-center gap-2 flex-wrap">
+                {canEdit && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsEditProfileOpen(true)}
+                    className="gap-2"
+                  >
+                    <Settings className="w-4 h-4" />
+                    <span className="hidden sm:inline">{t("ProfileTemplateDefault.editProfile")}</span>
+                  </Button>
+                )}
+
+                <EntityStatusButton />
+
+                <ProfileActions
+                  email={entity?.serverData?.email as string | undefined}
+                  phone={(entity?.serverData?.fixe || entity?.serverData?.mobile) as string | undefined}
+                  url={entity?.serverData?.url as string | undefined}
+                />
+              </div>
             </div>
           </div>
 
-          <div className="mt-6 border-t border-border"></div>
         </div>
 
         <div className="px-4 py-4 sm:px-6 sm:py-6 md:px-8 md:py-8">
@@ -224,18 +228,6 @@ export default function ProfileTemplateDefault() {
                 {t("ProfileTemplateDefault.tabs.news")}
               </TabsTrigger>
               <TabsTrigger
-                value="coworking"
-                className="shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm text-foreground hover:text-foreground"
-              >
-                {t("ProfileTemplateDefault.tabs.coworking")}
-              </TabsTrigger>
-              <TabsTrigger
-                value="rooms"
-                className="shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm text-foreground hover:text-foreground"
-              >
-                {t("ProfileTemplateDefault.tabs.meetingRooms")}
-              </TabsTrigger>
-              <TabsTrigger
                 value="projects"
                 className="shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm text-foreground hover:text-foreground"
               >
@@ -246,12 +238,6 @@ export default function ProfileTemplateDefault() {
                 className="shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm text-foreground hover:text-foreground"
               >
                 {t("ProfileTemplateDefault.tabs.communities")}
-              </TabsTrigger>
-              <TabsTrigger
-                value="observatory"
-                className="shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm text-foreground hover:text-foreground"
-              >
-                {t("ProfileTemplateDefault.tabs.observatories")}
               </TabsTrigger>
               </TabsList>
             </div>
@@ -268,30 +254,6 @@ export default function ProfileTemplateDefault() {
               </LazyTabContent>
             </TabsContent>
 
-            <TabsContent value="coworking">
-              <div className="bg-card p-8 rounded-lg border border-border shadow-sm">
-                <div className="text-center py-16">
-                  <div className="text-muted-foreground mb-4">
-                    <Briefcase className="w-16 h-16 mx-auto" />
-                  </div>
-                  <p className="text-xl font-semibold text-foreground mb-2">{t("ProfileTemplateDefault.sectionLabel", undefined, { name: t("ProfileTemplateDefault.tabs.coworking") })}</p>
-                  <p className="text-muted-foreground">{t("ProfileTemplateDefault.comingSoon")}</p>
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="rooms">
-              <div className="bg-card p-8 rounded-lg border border-border shadow-sm">
-                <div className="text-center py-16">
-                  <div className="text-muted-foreground mb-4">
-                    <Users className="w-16 h-16 mx-auto" />
-                  </div>
-                  <p className="text-xl font-semibold text-foreground mb-2">{t("ProfileTemplateDefault.sectionLabel", undefined, { name: t("ProfileTemplateDefault.tabs.meetingRooms") })}</p>
-                  <p className="text-muted-foreground">{t("ProfileTemplateDefault.comingSoon")}</p>
-                </div>
-              </div>
-            </TabsContent>
-
             <TabsContent value="projects">
               <LazyTabContent value="projects">
                 <ProjectsTab />
@@ -302,18 +264,6 @@ export default function ProfileTemplateDefault() {
               <LazyTabContent value="communities">
                 <CommunitiesTab />
               </LazyTabContent>
-            </TabsContent>
-
-            <TabsContent value="observatory">
-              <div className="bg-card p-8 rounded-lg border border-border shadow-sm">
-                <div className="text-center py-16">
-                  <div className="text-muted-foreground mb-4">
-                    <Globe className="w-16 h-16 mx-auto" />
-                  </div>
-                  <p className="text-xl font-semibold text-foreground mb-2">{t("ProfileTemplateDefault.sectionLabel", undefined, { name: t("ProfileTemplateDefault.tabs.observatories") })}</p>
-                  <p className="text-muted-foreground">{t("ProfileTemplateDefault.comingSoon")}</p>
-                </div>
-              </div>
             </TabsContent>
           </Tabs>
         </div>
@@ -330,6 +280,59 @@ export default function ProfileTemplateDefault() {
         open={isEditBannerOpen}
         onOpenChange={setIsEditBannerOpen}
         currentImage={bannerUrl || undefined}
+      />
+
+      <EditProfileModal
+        open={isEditProfileOpen}
+        onOpenChange={setIsEditProfileOpen}
+        entityType={_entityType || "organizations"}
+        initialData={{
+          name: entity?.serverData?.name as string | undefined,
+          shortDescription: entity?.serverData?.shortDescription as string | undefined,
+          description: entity?.serverData?.description as string | undefined,
+          email: entity?.serverData?.email as string | undefined,
+          url: entity?.serverData?.url as string | undefined,
+          fixe: entity?.serverData?.fixe as string | undefined,
+          mobile: entity?.serverData?.mobile as string | undefined,
+          type: entity?.serverData?.type as string | undefined,
+          avancement: entity?.serverData?.avancement as string | undefined,
+          tags: entity?.serverData?.tags as string[] | undefined,
+          socialNetwork: entity?.serverData?.socialNetwork as {
+            facebook?: string;
+            instagram?: string;
+            twitter?: string;
+            github?: string;
+            gitlab?: string;
+            telegram?: string;
+            signal?: string;
+            mastodon?: string;
+            diaspora?: string;
+          } | undefined,
+          address: entity?.serverData?.address as {
+            "@type"?: "PostalAddress";
+            addressCountry?: string;
+            addressLocality?: string;
+            localityId?: string;
+            codeInsee?: string;
+            level1?: string;
+            level1Name?: string;
+            level2?: string;
+            level2Name?: string;
+            level3?: string;
+            level3Name?: string;
+            level4?: string;
+            level4Name?: string;
+            postalCode?: string;
+            streetAddress?: string;
+            geo?: { latitude: string | number; longitude: string | number };
+            geoPosition?: { type: string; coordinates: [number, number] };
+          } | null | undefined,
+          geo: entity?.serverData?.geo as { latitude: string | number; longitude: string | number } | null | undefined,
+          openingHours: entity?.serverData?.openingHours as Array<{
+            dayOfWeek: string;
+            hours?: Array<{ opens: string; closes: string }>;
+          }> | undefined,
+        }}
       />
     </div>
   );

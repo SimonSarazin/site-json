@@ -1,5 +1,6 @@
 import { useInfiniteQueryScroll } from "@/hooks/useInfiniteQueryScroll";
 import type { EntityTypes, Project } from "@communecter/cocolight-api-client";
+import { useState } from "react";
 
 interface UseProfilProjectsQueryProps {
   entity: EntityTypes;
@@ -19,6 +20,7 @@ export function useProfilProjectsQuery({
   searchQuery = "",
 }: UseProfilProjectsQueryProps) {
   const canFetchProjects = PROJECTS_SUPPORTED_TYPES.has(entityType);
+  const [totalCount, setTotalCount] = useState<number>(0);
 
   const {
     data,
@@ -29,9 +31,9 @@ export function useProfilProjectsQuery({
     error,
     refetch,
   } = useInfiniteQueryScroll<Project[]>({
-    queryKey: ["profile-projects", entity.id, searchQuery],
+    queryKey: ["profile-projects", entity?.id, searchQuery],
     queryFn: async ({ pageParam = 0 }) => {
-      if (!canFetchProjects) {
+      if (!canFetchProjects || !entity?.id) {
         return [];
       }
 
@@ -40,6 +42,11 @@ export function useProfilProjectsQuery({
         indexStep,
         ...(searchQuery ? { name: searchQuery } : {}),
       });
+
+      const resultWithCount = result as typeof result & { totalCount?: number };
+      if (resultWithCount.totalCount !== undefined) {
+        setTotalCount(resultWithCount.totalCount);
+      }
 
       return result.results || [];
     },
@@ -52,7 +59,7 @@ export function useProfilProjectsQuery({
       return currentIndex;
     },
     options: {
-      enabled: enabled && canFetchProjects,
+      enabled: enabled && canFetchProjects && !!entity?.id,
       staleTime: 5 * 60 * 1000,
       gcTime: 30 * 60 * 1000,
       initialPageParam: 0,
@@ -63,6 +70,7 @@ export function useProfilProjectsQuery({
 
   return {
     projects,
+    totalCount,
     isLoading,
     isFetchingNextPage,
     hasNextPage,

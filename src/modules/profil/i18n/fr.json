@@ -45,6 +45,7 @@
     "showAllPhotos": "Afficher toutes les photos",
     "sendEmail": "Envoyer un email",
     "reservationSpace": "Espace Réservation",
+    "editProfile": "Modifier le profil",
     "tabs": {
       "about": "À propos",
       "news": "Actualités",
@@ -519,7 +520,25 @@
     "noOpeningHours": "Aucun horaire défini",
     "addDay": "Ajouter un jour",
     "opens": "Ouverture",
-    "closes": "Fermeture"
+    "closes": "Fermeture",
+    "editProfile": "Modifier le profil",
+    "profileUpdated": "Profil mis à jour avec succès",
+    "tabs": {
+      "info": "Informations",
+      "contact": "Contact",
+      "social": "Réseaux sociaux",
+      "location": "Localisation",
+      "schedule": "Horaires"
+    },
+    "nameDescription": "Le nom qui sera affiché publiquement",
+    "organizationTypeDescription": "Le type juridique ou structurel de votre organisation",
+    "shortDescriptionHelp": "Résumé en quelques mots (max 500 caractères)",
+    "descriptionHelp": "Présentation complète et détaillée",
+    "contactInfo": "Coordonnées de contact",
+    "contactDescription": "Renseignez vos informations de contact principales",
+    "socialNetworks": "Réseaux sociaux",
+    "socialNetworksDescription": "Ajoutez vos liens vers les réseaux sociaux",
+    "scheduleDescription": "Définissez les horaires d'ouverture pour chaque jour de la semaine"
   },
   "EditImage": {
     "editProfileImage": "Modifier la photo de profil",
@@ -539,7 +558,138 @@
     "updateFailed": "Échec de la mise à jour de l'image",
     "zoom": "Zoom"
   },
+  "common": {
+    "loading": "Chargement..."
+  },
+  "SocialTab": {
+    "addFriend": "Ajouter un ami",
+    "searchFriends": "Rechercher parmi les amis...",
+    "privateProfile": "Profil privé",
+    "cannotViewFriends": "Vous ne pouvez pas voir les amis de cet utilisateur",
+    "tabs": {
+      "friends": "Amis",
+      "friendsShort": "Amis",
+      "pending": "En attente",
+      "pendingShort": "Attente",
+      "sent": "Envoyées",
+      "sentShort": "Envoyées"
+    },
+    "noFriendsFound": "Aucun ami trouvé",
+    "noFriendsYet": "Pas encore d'amis",
+    "tryDifferentSearch": "Essayez une recherche différente",
+    "startConnecting": "Commencez à vous connecter avec d'autres utilisateurs",
+    "removeFriend": "Retirer",
+    "noPendingRequests": "Aucune demande en attente",
+    "pendingRequestsInfo": "Les demandes d'amitié reçues apparaîtront ici",
+    "accept": "Accepter",
+    "reject": "Refuser",
+    "noSentRequests": "Aucune demande envoyée",
+    "sentRequestsInfo": "Vos demandes d'amitié envoyées apparaîtront ici",
+    "cancel": "Annuler",
+    "requestPending": "En attente de réponse"
+  },
+  "FriendRequestDialog": {
+    "title": "Ajouter un ami",
+    "searchPlaceholder": "Rechercher un utilisateur...",
+    "startTyping": "Commencez à taper pour rechercher",
+    "minimumChars": "Tapez au moins 2 caractères",
+    "searching": "Recherche...",
+    "noUsersFound": "Aucun utilisateur trouvé",
+    "tryDifferentSearch": "Essayez une recherche différente",
+    "sendRequest": "Ajouter"
+  },
+  "badges": {
+    "admin": "Administrateur",
+    "member": "Membre",
+    "contributor": "Contributeur",
+    "participant": "Participant",
+    "invitationPending": "Invitation en attente",
+    "validationPending": "Validation en attente",
+    "adminInvitationPending": "Invitation admin en attente",
+    "adminRequestPending": "Demande admin en attente"
+  },
+  "ProfileActions": {
+    "message": "Message",
+    "contact": "Contacter",
+    "addFriend": "Ajouter en ami",
+    "removeFriend": "Retirer des amis",
+    "acceptFriend": "Accepter",
+    "friendRequestPending": "En attente",
+    "follow": "Suivre",
+    "unfollow": "Ne plus suivre",
+    "join": "Rejoindre",
+    "contribute": "Contribuer",
+    "participate": "Participer",
+    "leaveOrganization": "Quitter l'organisation",
+    "leaveProject": "Quitter le projet",
+    "joinOrganization": "Rejoindre l'organisation",
+    "contributeProject": "Contribuer au projet",
+    "sendEmail": "Envoyer un email",
+    "call": "Appeler",
+    "visitWebsite": "Visiter le site web",
+    "share": "Partager",
+    "copyLink": "Copier le lien",
+    "linkCopied": "Lien copié !",
+    "copyError": "Impossible de copier le lien",
+    "report": "Signaler",
+    "featureComingSoon": "Fonctionnalité bientôt disponible"
+  },
+  "EntityStatusButton": {
+    "admin": "Admin",
+    "member": "Membre",
+    "contributor": "Contributeur",
+    "following": "Suivi",
+    "follow": "Suivre",
+    "unfollow": "Ne plus suivre",
+    "joinOrganization": "Rejoindre l'organisation",
+    "contributeProject": "Contribuer au projet",
+    "leaveOrganization": "Quitter l'organisation",
+    "leaveProject": "Quitter le projet",
+    "acceptInvitation": "Accepter l'invitation",
+    "acceptAdminInvitation": "Accepter (Admin)",
+    "rejectInvitation": "Refuser l'invitation",
+    "membershipPending": "Demande en attente",
+    "adminRequestPending": "Demande admin en attente",
+    "confirmLeaveOrgTitle": "Quitter l'organisation ?",
+    "confirmLeaveOrgDescription": "Vous êtes sur le point de quitter cette organisation. Vous perdrez vos accès et privilèges.",
+    "confirmLeaveProjectTitle": "Quitter le projet ?",
+    "confirmLeaveProjectDescription": "Vous êtes sur le point de quitter ce projet. Vous perdrez vos accès et privilèges.",
+    "cancel": "Annuler",
+    "confirmLeave": "Quitter"
+  },
   "toast": {
+    "relationship": {
+      "followSuccess": "Vous suivez maintenant",
+      "followError": "Impossible de suivre",
+      "unfollowSuccess": "Vous ne suivez plus",
+      "unfollowError": "Impossible de ne plus suivre",
+      "memberRequestSent": "Demande d'adhésion envoyée",
+      "memberRequestError": "Impossible d'envoyer la demande",
+      "adminRequestSent": "Demande admin envoyée",
+      "adminRequestError": "Impossible d'envoyer la demande admin",
+      "leaveSuccess": "Vous avez quitté avec succès",
+      "leaveError": "Impossible de quitter"
+    },
+    "invitation": {
+      "acceptSuccess": "Invitation acceptée",
+      "acceptError": "Impossible d'accepter l'invitation",
+      "rejectSuccess": "Invitation refusée",
+      "rejectError": "Impossible de refuser l'invitation"
+    },
+    "friend": {
+      "requestSent": "Demande d'ami envoyée",
+      "requestError": "Impossible d'envoyer la demande",
+      "removeSuccess": "Ami retiré",
+      "removeError": "Impossible de retirer l'ami",
+      "acceptSuccess": "Demande d'ami acceptée",
+      "acceptError": "Impossible d'accepter la demande",
+      "requestCancelled": "Demande d'ami annulée",
+      "cancelError": "Impossible d'annuler la demande"
+    },
+    "members": {
+      "requestPromoteSuccess": "Demande de promotion envoyée",
+      "requestPromoteError": "Impossible d'envoyer la demande de promotion"
+    },
     "comment": {
       "addSuccess": "Commentaire ajouté avec succès",
       "addError": "Impossible d'ajouter le commentaire",
@@ -583,6 +733,26 @@
       "editError": "Impossible de modifier l'organisation",
       "deleteSuccess": "Organisation supprimée avec succès",
       "deleteError": "Impossible de supprimer l'organisation"
+    },
+    "profile": {
+      "updateSuccess": "Profil mis à jour avec succès",
+      "updateError": "Impossible de mettre à jour le profil",
+      "imageUploadSuccess": "Image de profil mise à jour avec succès",
+      "imageUploadError": "Impossible de mettre à jour l'image de profil",
+      "bannerUploadSuccess": "Bannière mise à jour avec succès",
+      "bannerUploadError": "Impossible de mettre à jour la bannière"
+    },
+    "friends": {
+      "requestSent": "Demande d'amitié envoyée",
+      "sendRequestError": "Impossible d'envoyer la demande d'amitié",
+      "requestAccepted": "Demande d'amitié acceptée",
+      "acceptRequestError": "Impossible d'accepter la demande d'amitié",
+      "requestRejected": "Demande d'amitié refusée",
+      "rejectRequestError": "Impossible de refuser la demande d'amitié",
+      "friendRemoved": "Ami retiré",
+      "removeError": "Impossible de retirer l'ami",
+      "requestCancelled": "Demande d'amitié annulée",
+      "cancelError": "Impossible d'annuler la demande d'amitié"
     },
     "error": {
       "generic": "Une erreur est survenue"
