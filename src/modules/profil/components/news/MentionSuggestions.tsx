@@ -56,7 +56,7 @@ export function MentionSuggestions({ query, onSelect }: MentionSuggestionsProps)
                   {user.profilThumbImageUrl && (
                     <AvatarImage src={user.profilThumbImageUrl} alt={user.name} />
                   )}
-                  <AvatarFallback className="bg-gradient-to-br from-teal-400 to-teal-600 text-white text-xs font-bold">
+                  <AvatarFallback className="bg-linear-to-br from-primary/80 to-primary text-primary-foreground text-xs font-bold">
                     {user.name.substring(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>

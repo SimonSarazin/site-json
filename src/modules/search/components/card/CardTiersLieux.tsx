@@ -19,13 +19,13 @@ export default function CardTiersLieux({
   
   const getAvatarColorClasses = (color?: string) => {
     const colorMap: Record<string, string> = {
-      orange: 'bg-orange-50 text-orange-500',
-      blue: 'bg-blue-50 text-blue-500',
-      green: 'bg-green-50 text-green-500',
-      purple: 'bg-purple-50 text-purple-500',
-      red: 'bg-red-50 text-red-500',
-      yellow: 'bg-yellow-50 text-yellow-500',
-      teal: 'bg-teal-50 text-teal-500',
+      orange: 'bg-warning/10 text-warning',
+      blue: 'bg-info/10 text-info',
+      green: 'bg-success/10 text-success',
+      purple: 'bg-chart-2/10 text-chart-2',
+      red: 'bg-destructive/10 text-destructive',
+      yellow: 'bg-warning/10 text-warning',
+      teal: 'bg-primary/10 text-primary',
     };
     return colorMap[color || 'teal'] || colorMap.teal;
   };

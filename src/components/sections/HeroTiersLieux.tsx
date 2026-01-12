@@ -15,17 +15,17 @@ const getEntityIcon = (entity: SearchEntity) => {
 
   switch (type) {
     case "poi":
-      return <MapPin className="h-4 w-4 text-blue-500" />;
+      return <MapPin className="h-4 w-4 text-chart-3" />;
     case "organizations":
-      return <Building2 className="h-4 w-4 text-purple-500" />;
+      return <Building2 className="h-4 w-4 text-chart-2" />;
     case "events":
-      return <Calendar className="h-4 w-4 text-green-500" />;
+      return <Calendar className="h-4 w-4 text-success" />;
     case "citoyens":
-      return <User className="h-4 w-4 text-orange-500" />;
+      return <User className="h-4 w-4 text-warning" />;
     case "projects":
-      return <FolderOpen className="h-4 w-4 text-pink-500" />;
+      return <FolderOpen className="h-4 w-4 text-chart-1" />;
     default:
-      return <MapPin className="h-4 w-4 text-gray-500" />;
+      return <MapPin className="h-4 w-4 text-muted-foreground" />;
   }
 };
 
@@ -186,7 +186,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
           <div className="container mx-auto px-4 sm:px-6">
             <div className="max-w-6xl mx-auto">
               <div
-                className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-2xl sm:rounded-3xl shadow-2xl p-4 sm:p-6 md:p-8 border border-gray-200 dark:border-slate-700"
+                className="bg-card/80 backdrop-blur-md rounded-2xl sm:rounded-3xl shadow-2xl p-4 sm:p-6 md:p-8 border border-border"
                 style={{
                   backdropFilter: 'blur(12px)',
                   WebkitBackdropFilter: 'blur(12px)'
@@ -234,16 +234,16 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                           }
                         }}
                         placeholder={props.placeholder ? t(props.placeholder) : "Nom, ville, département ..."}
-                        className="w-full px-4 sm:px-6 py-3 sm:py-4 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 text-sm sm:text-base focus:outline-none"
+                        className="w-full px-4 sm:px-6 py-3 sm:py-4 bg-card text-foreground text-sm sm:text-base focus:outline-none"
                       />
                       {isLoading && (
                         <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                          <Loader2 className="h-4 w-5 sm:h-5 sm:w-5 animate-spin text-gray-400 dark:text-gray-500" />
+                          <Loader2 className="h-4 w-5 sm:h-5 sm:w-5 animate-spin text-muted-foreground" />
                         </div>
                       )}
                     </div>
 
-                    <button className="px-4 sm:px-8 py-3 sm:py-4 bg-[#0092a2] text-white text-sm sm:text-base font-semibold hover:bg-teal-600 transition flex items-center justify-center gap-2 rounded-b-2xl sm:rounded-none">
+                    <button className="px-4 sm:px-8 py-3 sm:py-4 bg-primary text-primary-foreground text-sm sm:text-base font-semibold hover:bg-primary/90 transition flex items-center justify-center gap-2 rounded-b-2xl sm:rounded-none">
                       <span className="hidden sm:inline">{props.searchButtonText ? t(props.searchButtonText) : "Rechercher"}</span>
                       <span className="sm:hidden">{props.searchButtonText ? t(props.searchButtonText) : "Rechercher"}</span>
                       <svg
@@ -265,7 +265,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                   {isAutocompleteOpen && suggestions.length > 0 && (
                     <div
                       ref={dropdownRef}
-                      className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 max-h-96 overflow-y-auto z-50"
+                      className="absolute top-full left-0 right-0 mt-2 bg-popover rounded-xl shadow-2xl border border-border max-h-96 overflow-y-auto z-50"
                     >
                       {suggestions.map((item, index) => {
                         const title = getEntityTitle(item);
@@ -278,18 +278,18 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                             onClick={() => handleSelectSuggestion(item)}
                             onMouseEnter={() => setHighlightedIndex(index)}
                             className={cn(
-                              "w-full px-4 py-3 flex items-start gap-3 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors text-left border-b border-gray-100 dark:border-gray-600 last:border-b-0",
-                              highlightedIndex === index && "bg-gray-50 dark:bg-slate-700"
+                              "w-full px-4 py-3 flex items-start gap-3 hover:bg-accent transition-colors text-left border-b border-border last:border-b-0",
+                              highlightedIndex === index && "bg-accent"
                             )}
                           >
                             <div className="mt-1">{getEntityIcon(item)}</div>
                             <Link to={`/profil/${item.slug}`}>
                               <div className="flex-1 min-w-0">
-                                <div className="font-medium text-gray-900 dark:text-white truncate">
+                                <div className="font-medium text-popover-foreground truncate">
                                   {title}
                                 </div>
                                 {address && (
-                                  <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                                  <div className="text-sm text-muted-foreground truncate">
                                     {address}
                                   </div>
                                 )}
@@ -325,7 +325,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
         <div className="container mx-auto px-4 sm:px-6">
           <div className="max-w-6xl mx-auto">
             <div
-              className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-2xl sm:rounded-3xl shadow-2xl p-2 sm:p-3 md:p-4 border border-gray-200 dark:border-slate-700"
+              className="bg-card/80 backdrop-blur-md rounded-2xl sm:rounded-3xl shadow-2xl p-2 sm:p-3 md:p-4 border border-border"
               style={{
                 backdropFilter: 'blur(12px)',
                 WebkitBackdropFilter: 'blur(12px)'
@@ -336,7 +336,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
               </h1>
 
               {props.subhead && (
-                <p className="text-center text-teal-500 font-light text-base sm:text-lg italic mb-4 sm:mb-6 px-4">
+                <p className="text-center text-primary font-light text-base sm:text-lg italic mb-4 sm:mb-6 px-4">
                   {t(props.subhead)}
                 </p>
               )}
@@ -347,8 +347,8 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                     key={idx}
                     onClick={() => setActiveTabIndex(idx)}
                     className={`px-3 sm:px-6 py-2 sm:py-3 font-semibold transition ${activeTabIndex === idx
-                      ? "border-b-4 border-teal-500 text-gray-50 bg-[#0092a2] rounded-t-md dark:bg-slate-800"
-                      : "hover:bg-gray-50 dark:hover:bg-slate-800"
+                      ? "border-b-4 border-primary text-primary-foreground bg-primary rounded-t-md"
+                      : "hover:bg-accent"
                       }`}
                   >
                     {t(btn.label)}
@@ -371,16 +371,16 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                         }
                       }}
                       placeholder={props.placeholder ? t(props.placeholder) : "Ville, département ..."}
-                      className="w-full px-4 sm:px-6 py-3 sm:py-4 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 text-sm sm:text-base focus:outline-none rounded-t-2xl sm:rounded-l-full sm:rounded-r-none"
+                      className="w-full px-4 sm:px-6 py-3 sm:py-4 bg-card text-foreground text-sm sm:text-base focus:outline-none rounded-t-2xl sm:rounded-l-full sm:rounded-r-none"
                     />
                     {isLoading && (
                       <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                        <Loader2 className="h-4 w-5 sm:h-5 sm:w-5 animate-spin text-gray-400 dark:text-gray-500" />
+                        <Loader2 className="h-4 w-5 sm:h-5 sm:w-5 animate-spin text-muted-foreground" />
                       </div>
                     )}
                   </div>
 
-                  <button className="px-4 sm:px-8 py-3 sm:py-4 bg-[#0092a2] text-white text-sm sm:text-base font-semibold hover:bg-teal-600 transition flex items-center justify-center gap-2 rounded-b-2xl sm:rounded-r-full sm:rounded-l-none">
+                  <button className="px-4 sm:px-8 py-3 sm:py-4 bg-primary text-primary-foreground text-sm sm:text-base font-semibold hover:bg-primary/90 transition flex items-center justify-center gap-2 rounded-b-2xl sm:rounded-r-full sm:rounded-l-none">
                     <span className="hidden sm:inline">{props.searchButtonText ? t(props.searchButtonText) : "Rechercher"}</span>
                     <span className="sm:hidden">{props.searchButtonText ? t(props.searchButtonText) : "Rechercher"}</span>
                     <svg
@@ -402,7 +402,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                 {isAutocompleteOpen && suggestions.length > 0 && (
                   <div
                     ref={dropdownRef}
-                    className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 max-h-96 overflow-y-auto z-50"
+                    className="absolute top-full left-0 right-0 mt-2 bg-popover rounded-xl shadow-2xl border border-border max-h-96 overflow-y-auto z-50"
                   >
                     {suggestions.map((item, index) => {
                       const title = getEntityTitle(item);
@@ -415,18 +415,18 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                           onClick={() => handleSelectSuggestion(item)}
                           onMouseEnter={() => setHighlightedIndex(index)}
                           className={cn(
-                            "w-full px-4 py-3 flex items-start gap-3 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors text-left border-b border-gray-100 dark:border-gray-600 last:border-b-0",
-                            highlightedIndex === index && "bg-gray-50 dark:bg-slate-700"
+                            "w-full px-4 py-3 flex items-start gap-3 hover:bg-accent transition-colors text-left border-b border-border last:border-b-0",
+                            highlightedIndex === index && "bg-accent"
                           )}
                         >
                           <div className="mt-1">{getEntityIcon(item)}</div>
                           <Link to={`/profil/${item.slug}`}>
                             <div className="flex-1 min-w-0">
-                              <div className="font-medium text-gray-900 dark:text-white truncate">
+                              <div className="font-medium text-popover-foreground truncate">
                                 {title}
                               </div>
                               {address && (
-                                <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                                <div className="text-sm text-muted-foreground truncate">
                                   {address}
                                 </div>
                               )}

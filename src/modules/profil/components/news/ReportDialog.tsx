@@ -96,7 +96,7 @@ export function ReportDialog({ type, item, open, onOpenChange }: ReportDialogPro
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-orange-500" />
+            <AlertTriangle className="w-5 h-5 text-warning" />
             {type === "news" ? t("NewsTab.reportDialog.title") : t("NewsTab.reportDialog.titleComment")}
           </DialogTitle>
           <DialogDescription>
@@ -107,7 +107,7 @@ export function ReportDialog({ type, item, open, onOpenChange }: ReportDialogPro
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="report-reason" className="text-sm font-semibold">
-              {t("NewsTab.reportDialog.reasonLabel")} <span className="text-red-500">*</span>
+              {t("NewsTab.reportDialog.reasonLabel")} <span className="text-destructive">*</span>
             </Label>
             <Select
               value={reason}
@@ -155,7 +155,7 @@ export function ReportDialog({ type, item, open, onOpenChange }: ReportDialogPro
             <Button
               type="submit"
               disabled={isReporting || !reason}
-              className="bg-orange-600 hover:bg-orange-700 text-white font-semibold text-xs sm:text-sm uppercase"
+              className="bg-warning hover:bg-warning/90 text-warning-foreground font-semibold text-xs sm:text-sm uppercase"
             >
               {isReporting ? (
                 <>

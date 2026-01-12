@@ -50,7 +50,7 @@ export default function ProfileOrganizer({ section }: ProfileOrganizerProps) {
                 {section.showLink !== false && org.slug && (
                   <a
                     href={`/profil/${org.slug}`}
-                    className="text-sm text-blue-600 hover:underline"
+                    className="text-sm text-info hover:underline"
                   >
                     {t("common.viewProfile")}
                   </a>

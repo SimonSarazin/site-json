@@ -20,14 +20,14 @@ export function NewsReactionsModal({ open, onOpenChange, voteCount, newsId }: Ne
 
   const getColorClasses = (color: string) => {
     const colorMap: Record<string, { bg: string; text: string; border: string }> = {
-      red: { bg: "bg-red-100 dark:bg-red-900/20", text: "text-red-500", border: "border-red-200 dark:border-red-800" },
-      blue: { bg: "bg-blue-100 dark:bg-blue-900/20", text: "text-blue-500", border: "border-blue-200 dark:border-blue-800" },
-      green: { bg: "bg-green-100 dark:bg-green-900/20", text: "text-green-500", border: "border-green-200 dark:border-green-800" },
-      teal: { bg: "bg-teal-100 dark:bg-teal-900/20", text: "text-teal-500", border: "border-teal-200 dark:border-teal-800" },
-      yellow: { bg: "bg-yellow-100 dark:bg-yellow-900/20", text: "text-yellow-500", border: "border-yellow-200 dark:border-yellow-800" },
-      gray: { bg: "bg-gray-100 dark:bg-gray-700", text: "text-gray-500 dark:text-gray-400", border: "border-gray-200 dark:border-gray-600" },
-      purple: { bg: "bg-purple-100 dark:bg-purple-900/20", text: "text-purple-500", border: "border-purple-200 dark:border-purple-800" },
-      indigo: { bg: "bg-indigo-100 dark:bg-indigo-900/20", text: "text-indigo-500", border: "border-indigo-200 dark:border-indigo-800" },
+      red: { bg: "bg-destructive/10", text: "text-destructive", border: "border-destructive/20" },
+      blue: { bg: "bg-info/10", text: "text-info", border: "border-info/20" },
+      green: { bg: "bg-success/10", text: "text-success", border: "border-success/20" },
+      teal: { bg: "bg-primary/10", text: "text-primary", border: "border-primary/20" },
+      yellow: { bg: "bg-warning/10", text: "text-warning", border: "border-warning/20" },
+      gray: { bg: "bg-muted", text: "text-muted-foreground", border: "border-border" },
+      purple: { bg: "bg-chart-2/10", text: "text-chart-2", border: "border-chart-2/20" },
+      indigo: { bg: "bg-chart-3/10", text: "text-chart-3", border: "border-chart-3/20" },
     };
     return colorMap[color] || colorMap.gray;
   };
@@ -137,7 +137,7 @@ export function NewsReactionsModal({ open, onOpenChange, voteCount, newsId }: Ne
                               className="w-10 h-10 rounded-full object-cover border-2 border-border flex-shrink-0"
                             />
                           ) : (
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white font-bold flex-shrink-0 border-2 border-border">
+                            <div className="w-10 h-10 rounded-full bg-linear-to-br from-primary/80 to-primary flex items-center justify-center text-primary-foreground font-bold flex-shrink-0 border-2 border-border">
                               {vote.name.charAt(0).toUpperCase()}
                             </div>
                           )}

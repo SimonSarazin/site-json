@@ -61,7 +61,7 @@ export function SubscriptionsTab({ enabled = true }: SubscriptionsTabProps) {
         />
       )}
       emptyIcon={<Heart className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 mx-auto" />}
-      endIcon={<Heart className="w-5 h-5 sm:w-6 sm:h-6 text-teal-600 dark:text-teal-400" />}
+      endIcon={<Heart className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />}
       emptyTitle={t("SubscriptionsTab.noSubscriptions")}
       emptyDescription={t("SubscriptionsTab.noSubscriptionsDescription")}
       loadingText={t("SubscriptionsTab.loadingSubscriptions")}

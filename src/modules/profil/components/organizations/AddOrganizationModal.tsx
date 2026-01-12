@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { NewsFormImageUpload } from "../news/NewsFormImageUpload";
-import { NewsFormTagsInput } from "../news/NewsFormTagsInput";
+import { TagsInput } from "@/components/form";
 import { useT } from "@/hooks/useT";
 import { useAddOrganization, OrganizationType, OrganizationRole } from "../../hooks/useOrganizationMutations";
 import { toast } from "sonner";
@@ -135,7 +135,7 @@ export function AddOrganizationModal({ open, onOpenChange }: AddOrganizationModa
 
           <div className="space-y-2">
             <Label htmlFor="organization-name" className="text-sm sm:text-base font-semibold">
-              {t("AddOrganizationModal.form.name.label")} <span className="text-red-500">*</span>
+              {t("AddOrganizationModal.form.name.label")} <span className="text-destructive">*</span>
             </Label>
             <Input
               id="organization-name"
@@ -168,7 +168,7 @@ export function AddOrganizationModal({ open, onOpenChange }: AddOrganizationModa
 
           <div className="space-y-2">
             <Label htmlFor="organization-role" className="text-sm sm:text-base font-semibold">
-              {t("AddOrganizationModal.form.role.label")} <span className="text-red-500">*</span>
+              {t("AddOrganizationModal.form.role.label")} <span className="text-destructive">*</span>
             </Label>
             <Select value={role} onValueChange={(value) => setRole(value as OrganizationRole)} disabled={isAddingOrganization}>
               <SelectTrigger className="w-full">
@@ -188,10 +188,17 @@ export function AddOrganizationModal({ open, onOpenChange }: AddOrganizationModa
             <Label htmlFor="organization-tags" className="text-sm sm:text-base font-semibold">
               {t("AddOrganizationModal.form.tags.label")}
             </Label>
-            <NewsFormTagsInput
+            <TagsInput
               tags={tags}
               onTagsChange={setTags}
               maxTags={10}
+              texts={{
+                placeholder: t("AddNewsModal.form.tags.placeholder"),
+                maxReached: t("AddNewsModal.form.tags.maxReached", undefined, { max: "{{max}}" }),
+                searching: t("tags.searching"),
+                noResults: t("tags.noResults"),
+                typeToSearch: t("tags.typeToSearch"),
+              }}
             />
           </div>
 
@@ -264,7 +271,7 @@ export function AddOrganizationModal({ open, onOpenChange }: AddOrganizationModa
             <Button
               type="submit"
               disabled={isAddingOrganization || !name.trim()}
-              className="bg-lime-700 hover:bg-lime-600 text-white font-semibold text-xs sm:text-sm uppercase"
+              className="bg-success hover:bg-success/90 text-success-foreground font-semibold text-xs sm:text-sm uppercase"
             >
               {isAddingOrganization ? (
                 <>

@@ -9,7 +9,7 @@ export default function FooterTiersLieux({ footer }: FooterTiersLieuxProps) {
   const { t } = useLocalization();
 
   return (
-    <footer className="bg-background pt-8 sm:pt-12 pb-4 sm:pb-6 border-t dark:border-(--themecolor)">
+    <footer className="bg-background pt-8 sm:pt-12 pb-4 sm:pb-6 border-t border-border">
       <div className="container mx-auto">
 
         <div className="flex justify-center mb-6 sm:mb-8">
@@ -31,21 +31,21 @@ export default function FooterTiersLieux({ footer }: FooterTiersLieuxProps) {
             <a
               key={idx}
               href={link.href}
-              className="hover:text-tl-cyan dark:hover:text-theme-color text-foreground dark:text-gray-400 transition-colors"
+              className="text-muted-foreground hover:text-primary transition-colors"
             >
               {t(link.label)}
             </a>
           ))}
         </nav>
 
-        <div className="flex flex-col sm:flex-row flex-wrap justify-between items-center gap-4 text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 border-t dark:border-(--themecolor) pt-6 sm:pt-8">
-          <p className="text-gray-500 dark:text-gray-400 text-center sm:text-left">{t(footer.copyright)}</p>
+        <div className="flex flex-col sm:flex-row flex-wrap justify-between items-center gap-4 text-[10px] sm:text-xs text-muted-foreground border-t border-border pt-6 sm:pt-8">
+          <p className="text-muted-foreground text-center sm:text-left">{t(footer.copyright)}</p>
           <div className="flex gap-4 sm:gap-6 flex-wrap justify-center">
             {footer.legalLinks?.map((link, idx: number) => (
               <a
                 key={idx}
                 href={link.href}
-                className="hover:text-tl-cyan dark:hover:text-theme-color text-gray-400 dark:text-gray-400 transition-colors"
+                className="text-muted-foreground hover:text-primary transition-colors"
               >
                 {t(link.label)}
               </a>

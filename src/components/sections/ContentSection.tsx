@@ -43,11 +43,11 @@ export function ContentSection({
               <p className="text-muted-foreground text-sm font-medium mb-4">{t(category)}</p>
             )}
             
-            <h2 className="text-4xl font-bold text-teal-500 mb-6 leading-tight">
+            <h2 className="text-4xl font-bold text-primary mb-6 leading-tight">
               {t(title)}
             </h2>
-            
-            <p className="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">
+
+            <p className="text-muted-foreground mb-8 leading-relaxed">
               {t(description)}
             </p>
 
@@ -57,7 +57,7 @@ export function ContentSection({
                 {tags.map((tag, idx) => (
                   <span
                     key={idx}
-                    className="px-4 py-2 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-full text-sm cursor-pointer transition"
+                    className="px-4 py-2 bg-secondary hover:bg-secondary/80 rounded-full text-sm cursor-pointer transition"
                   >
                     {t(tag)}
                   </span>
@@ -69,21 +69,21 @@ export function ContentSection({
             {iconCard && links && links.length > 0 && (
               <div className="flex items-start gap-4 mb-6">
                 {/* Icon */}
-                <div className="w-28 h-28 px-4 bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 flex items-center justify-center text-3xl shadow-lg flex-0">
+                <div className="w-28 h-28 px-4 bg-card rounded-2xl border border-border flex items-center justify-center text-3xl shadow-lg flex-0">
                   <div dangerouslySetInnerHTML={{ __html: iconCard.svg }} />
                 </div>
-                
+
                 {/* Links Card */}
-                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 border border-gray-100 dark:border-gray-700 flex-1">
+                <div className="bg-card rounded-2xl shadow-lg p-6 border border-border flex-1">
                   <div className="space-y-4">
                     {links.map((link, idx) => (
                       <div key={idx} className="flex items-center space-x-3">
-                        <svg className="w-3 h-3 text-gray-900 dark:text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <svg className="w-3 h-3 text-foreground" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
                         </svg>
                         <a
                           href={link.href}
-                          className="font-semibold text-gray-900 dark:text-white hover:text-teal-500 dark:hover:text-teal-400 transition"
+                          className="font-semibold text-foreground hover:text-primary transition"
                         >
                           {t(link.label)}
                         </a>
@@ -96,8 +96,8 @@ export function ContentSection({
 
             {/* Info Text */}
             {infoText && (
-              <div className="flex items-center space-x-2 text-sm text-gray-700 dark:text-gray-300">
-                <svg className="w-5 h-5 text-gray-900 dark:text-white" fill="currentColor" viewBox="0 0 20 20">
+              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                <svg className="w-5 h-5 text-foreground" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                 </svg>
                 <span className="mt-1" dangerouslySetInnerHTML={{ __html: t(infoText) }} />
@@ -119,21 +119,21 @@ export function ContentSection({
 
             {/* Decorative Elements */}
             {decorativeElements && decorativeElements.type === "corner-icon" && (
-              <div className="absolute bottom-0 right-0 w-32 h-32 bg-teal-400 rounded-tl-full flex items-center justify-center shadow-2xl">
-                <div className="text-white text-4xl mb-4 ml-4">
+              <div className="absolute bottom-0 right-0 w-32 h-32 bg-primary rounded-tl-full flex items-center justify-center shadow-2xl">
+                <div className="text-primary-foreground text-4xl mb-4 ml-4">
                   <div className="flex space-x-2 mb-1">
-                    <div className="w-2 h-2 bg-white rounded-full"></div>
-                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                    <div className="w-2 h-2 bg-primary-foreground rounded-full"></div>
+                    <div className="w-2 h-2 bg-primary-foreground rounded-full"></div>
                   </div>
-                  <div className="w-8 h-1 bg-white rounded-full"></div>
+                  <div className="w-8 h-1 bg-primary-foreground rounded-full"></div>
                 </div>
               </div>
             )}
 
             {decorativeElements && decorativeElements.type === "colored-squares" && (
               <div className="absolute bottom-8 left-8 flex gap-4">
-                <div className="w-24 h-24 bg-blue-500 transform -rotate-12 shadow-2xl rounded-lg"></div>
-                <div className="w-24 h-24 bg-yellow-400 transform rotate-12 shadow-2xl rounded-lg"></div>
+                <div className="w-24 h-24 bg-chart-2 transform -rotate-12 shadow-2xl rounded-lg"></div>
+                <div className="w-24 h-24 bg-chart-4 transform rotate-12 shadow-2xl rounded-lg"></div>
               </div>
             )}
           </div>

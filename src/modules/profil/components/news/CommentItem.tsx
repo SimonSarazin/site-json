@@ -122,7 +122,7 @@ export function CommentItem({
               alt={formattedComment.authorName}
             />
           ) : null}
-          <AvatarFallback className="bg-gradient-to-br from-teal-400 to-teal-600 text-white font-bold text-xs">
+          <AvatarFallback className="bg-linear-to-br from-primary/80 to-primary text-primary-foreground font-bold text-xs">
             {formattedComment.authorName.charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
@@ -147,7 +147,7 @@ export function CommentItem({
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => onDelete(formattedComment.id, commentItem)}
-                      className="text-red-600 focus:text-red-600"
+                      className="text-destructive focus:text-destructive"
                     >
                       <Trash2 className="mr-2 h-3.5 w-3.5" />
                       <span className="text-xs">{t("NewsTab.delete")}</span>
@@ -195,14 +195,14 @@ export function CommentItem({
                       const userReaction = getUserReactionIcon(formattedComment.userVoteType);
                       if (userReaction) {
                         const Icon = userReaction.Icon;
-                        const colorClass = userReaction.color === 'red' ? 'text-red-500' :
-                                         userReaction.color === 'blue' ? 'text-blue-500' :
-                                         userReaction.color === 'green' ? 'text-green-500' :
-                                         userReaction.color === 'teal' ? 'text-teal-500' :
-                                         userReaction.color === 'yellow' ? 'text-yellow-500' :
-                                         userReaction.color === 'purple' ? 'text-purple-500' :
-                                         userReaction.color === 'indigo' ? 'text-indigo-500' :
-                                         'text-gray-500';
+                        const colorClass = userReaction.color === 'red' ? 'text-destructive' :
+                                         userReaction.color === 'blue' ? 'text-info' :
+                                         userReaction.color === 'green' ? 'text-success' :
+                                         userReaction.color === 'teal' ? 'text-primary' :
+                                         userReaction.color === 'yellow' ? 'text-warning' :
+                                         userReaction.color === 'purple' ? 'text-chart-2' :
+                                         userReaction.color === 'indigo' ? 'text-chart-3' :
+                                         'text-muted-foreground';
                         return (
                           <>
                             <Icon className={`w-3 h-3 inline mr-1 ${colorClass}`} />

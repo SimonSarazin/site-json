@@ -9,16 +9,16 @@ export function NewsReactionPicker({ onSelect }: NewsReactionPickerProps) {
   const t = useT("modules/profil");
   const getColorClass = (color: string) => {
     const colorMap: Record<string, string> = {
-      red: "text-red-500",
-      blue: "text-blue-500",
-      green: "text-green-500",
-      teal: "text-teal-500",
-      yellow: "text-yellow-500",
-      gray: "text-gray-500",
-      purple: "text-purple-500",
-      indigo: "text-indigo-500",
+      red: "text-destructive",
+      blue: "text-info",
+      green: "text-success",
+      teal: "text-primary",
+      yellow: "text-warning",
+      gray: "text-muted-foreground",
+      purple: "text-chart-2",
+      indigo: "text-chart-3",
     };
-    return colorMap[color] || "text-gray-500";
+    return colorMap[color] || "text-muted-foreground";
   };
 
   return (

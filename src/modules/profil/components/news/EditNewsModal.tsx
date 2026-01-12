@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { NewsFormTagsInput } from "./NewsFormTagsInput";
+import { TagsInput } from "@/components/form";
 import { useT } from "@/hooks/useT";
 import { useEditNews } from "../../hooks/useNewsMutations";
 import type { News, EntityTypes } from "@communecter/cocolight-api-client";
@@ -114,7 +114,7 @@ export function EditNewsModal({ entity, news, open, onOpenChange }: EditNewsModa
           {/* Text area */}
           <div className="space-y-2">
             <Label htmlFor="edit-news-text" className="text-sm sm:text-base font-semibold">
-              {t("AddNewsModal.form.text.label")} <span className="text-red-500">*</span>
+              {t("AddNewsModal.form.text.label")} <span className="text-destructive">*</span>
             </Label>
             <Textarea
               id="edit-news-text"
@@ -131,10 +131,17 @@ export function EditNewsModal({ entity, news, open, onOpenChange }: EditNewsModa
             <Label className="text-sm sm:text-base font-semibold">
               {t("AddNewsModal.form.tags.label")}
             </Label>
-            <NewsFormTagsInput
+            <TagsInput
               tags={tags}
               onTagsChange={setTags}
               maxTags={10}
+              texts={{
+                placeholder: t("AddNewsModal.form.tags.placeholder"),
+                maxReached: t("AddNewsModal.form.tags.maxReached", undefined, { max: "{{max}}" }),
+                searching: t("tags.searching"),
+                noResults: t("tags.noResults"),
+                typeToSearch: t("tags.typeToSearch"),
+              }}
             />
           </div>
 
@@ -151,7 +158,7 @@ export function EditNewsModal({ entity, news, open, onOpenChange }: EditNewsModa
             <Button
               type="submit"
               disabled={isEditingNews || !text.trim()}
-              className="bg-lime-700 hover:bg-lime-600 text-white font-semibold text-xs sm:text-sm uppercase"
+              className="bg-success hover:bg-success/90 text-success-foreground font-semibold text-xs sm:text-sm uppercase"
             >
               {isEditingNews ? (
                 <>

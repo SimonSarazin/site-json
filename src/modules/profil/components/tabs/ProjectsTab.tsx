@@ -3,9 +3,9 @@ import { useState } from "react";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
 import { useLazyTab } from "@/hooks/useLazyTab";
 import { useProfilProjectsQuery } from "../../hooks/useProfilProjectsQuery";
+import { useProfileMutations } from "../../hooks/useProfileMutations";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
-import { useCocolight } from "@/hooks/useCocolight";
 import "@/modules/profil/i18n";
 import { ProjectItem } from "../projects/ProjectItem";
 import { ProjectItemDetailed } from "../projects/ProjectItemDetailed";
@@ -17,7 +17,7 @@ export function ProjectsTab() {
   const { entity, entityType } = useProfileEntity();
   useLoadNamespace("modules/profil");
   const t = useT("modules/profil");
-  const { me } = useCocolight();
+  const { canEdit } = useProfileMutations();
   const [showAddProjectModal, setShowAddProjectModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -36,8 +36,6 @@ export function ProjectsTab() {
     indexStep: 12,
     searchQuery,
   });
-
-  const canCreate = me?.isConnected;
 
   if (!shouldLoad) {
     return null;
@@ -67,7 +65,7 @@ export function ProjectsTab() {
           />
         )}
         emptyIcon={<Briefcase className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 mx-auto" />}
-        endIcon={<Briefcase className="w-5 h-5 sm:w-6 sm:h-6 text-teal-600 dark:text-teal-400" />}
+        endIcon={<Briefcase className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />}
         emptyTitle={t("ProjectsTab.noProjects")}
         emptyDescription={t("ProjectsTab.noProjectsDescription")}
         loadingText={t("ProjectsTab.loadingProjects")}
@@ -76,7 +74,7 @@ export function ProjectsTab() {
         gridViewLabel={t("ProjectsTab.gridView")}
         detailedViewLabel={t("ProjectsTab.detailedView")}
         createLabel={t("ProjectsTab.createProject")}
-        canCreate={canCreate}
+        canCreate={canEdit}
         onCreateClick={() => setShowAddProjectModal(true)}
         searchEnabled
         searchValue={searchQuery}

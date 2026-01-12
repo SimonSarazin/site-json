@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 import { NewsFormImageUpload } from "./NewsFormImageUpload";
 import { NewsFormDocumentUpload } from "./NewsFormDocumentUpload";
-import { NewsFormTagsInput } from "./NewsFormTagsInput";
+import { TagsInput } from "@/components/form";
 import { useT } from "@/hooks/useT";
 import { useAddNews, useAddNewsMention } from "../../hooks/useNewsMutations";
 import { EntityTypes } from "@communecter/cocolight-api-client";
@@ -200,7 +200,7 @@ export function AddNewsModal({ entity, open, onOpenChange }: AddNewsModalProps) 
           {/* Text area with mention support + emoji */}
           <div className="space-y-2">
             <Label htmlFor="news-text" className="text-sm sm:text-base font-semibold">
-              {t("AddNewsModal.form.text.label")} <span className="text-red-500">*</span>
+              {t("AddNewsModal.form.text.label")} <span className="text-destructive">*</span>
             </Label>
             <div className="relative">
               <MentionInput
@@ -268,10 +268,17 @@ export function AddNewsModal({ entity, open, onOpenChange }: AddNewsModalProps) 
               <Label htmlFor="news-tags" className="text-sm sm:text-base font-semibold">
                 {t("AddNewsModal.form.tags.label")}
               </Label>
-              <NewsFormTagsInput
+              <TagsInput
                 tags={tags}
                 onTagsChange={setTags}
                 maxTags={10}
+                texts={{
+                  placeholder: t("AddNewsModal.form.tags.placeholder"),
+                  maxReached: t("AddNewsModal.form.tags.maxReached", undefined, { max: "{{max}}" }),
+                  searching: t("tags.searching"),
+                  noResults: t("tags.noResults"),
+                  typeToSearch: t("tags.typeToSearch"),
+                }}
               />
             </div>
           </div>
@@ -289,7 +296,7 @@ export function AddNewsModal({ entity, open, onOpenChange }: AddNewsModalProps) 
             <Button
               type="submit"
               disabled={isAddingNews || !text.trim()}
-              className="bg-lime-700 hover:bg-lime-600 text-white font-semibold text-xs sm:text-sm uppercase"
+              className="bg-success hover:bg-success/90 text-success-foreground font-semibold text-xs sm:text-sm uppercase"
             >
               {isAddingNews ? (
                 <>

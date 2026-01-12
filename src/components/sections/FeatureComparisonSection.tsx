@@ -12,9 +12,9 @@ export function FeatureComparisonSection({ id, props }: { id?: string; props: Fe
   const renderFeatureValue = (value: boolean | string) => {
     if (typeof value === 'boolean') {
       return value ? (
-        <Check className="w-5 h-5 text-green-500 mx-auto" />
+        <Check className="w-5 h-5 text-success mx-auto" />
       ) : (
-        <X className="w-5 h-5 text-red-500 mx-auto" />
+        <X className="w-5 h-5 text-destructive mx-auto" />
       );
     }
     return <span className="text-sm">{value}</span>;

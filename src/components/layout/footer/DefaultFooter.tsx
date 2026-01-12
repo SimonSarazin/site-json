@@ -19,17 +19,17 @@ export function DefaultFooter() {
   const { footer } = config;
 
   return (
-    <footer className="border-t border-(--themecolor) bg-background dark:bg-slate-900 text-foreground">
+    <footer className="border-t border-border bg-background text-foreground">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Newsletter Section */}
         {footer.newsletter && (
-          <div className="mb-12 p-8 rounded-lg bg-linear-to-r from-primary/5 to-secondary/5 dark:from-primary/10 dark:to-secondary/10 border dark:border-gray-700">
+          <div className="mb-12 p-8 rounded-lg bg-linear-to-r from-primary/5 to-secondary/5 border border-border">
             <div className="max-w-2xl mx-auto text-center">
-              <h3 className="text-2xl font-bold mb-2 text-foreground dark:text-white">
+              <h3 className="text-2xl font-bold mb-2 text-foreground">
                 {t(footer.newsletter.props.headline)}
               </h3>
               {footer.newsletter.props.subhead && (
-                <p className="text-muted-foreground dark:text-gray-400 mb-6">
+                <p className="text-muted-foreground mb-6">
                   {t(footer.newsletter.props.subhead)}
                 </p>
               )}
@@ -61,13 +61,13 @@ export function DefaultFooter() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           {footer.columns.map((column, index) => (
             <div key={index}>
-              <h4 className="font-semibold mb-4 text-foreground dark:text-white">{t(column.title)}</h4>
+              <h4 className="font-semibold mb-4 text-foreground">{t(column.title)}</h4>
               <ul className="space-y-2">
                 {column.links.map((link, linkIndex) => (
                   <li key={linkIndex}>
                     <a
                       href={link.href}
-                      className="text-muted-foreground dark:text-gray-400 hover:text-foreground dark:hover:text-teal-400 transition-colors"
+                      className="text-muted-foreground hover:text-primary transition-colors"
                       target={link.external ? '_blank' : '_self'}
                       rel={link.external ? 'noopener noreferrer' : undefined}
                     >
@@ -81,8 +81,8 @@ export function DefaultFooter() {
         </div>
 
         {/* Bottom Section */}
-        <div className="pt-8 border-t dark:border-gray-700 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-muted-foreground dark:text-gray-400">
+        <div className="pt-8 border-t border-border flex flex-col sm:flex-row justify-between items-center gap-4">
+          <p className="text-sm text-muted-foreground">
             {t(footer.copyright)}
           </p>
 
@@ -115,7 +115,7 @@ export function DefaultFooter() {
 
         {/* Extra Content */}
         {footer.extra && (
-          <div className="mt-8 pt-8 border-t dark:border-gray-700 text-center text-sm text-muted-foreground dark:text-gray-400">
+          <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground">
             <div dangerouslySetInnerHTML={{ __html: footer.extra }} />
           </div>
         )}

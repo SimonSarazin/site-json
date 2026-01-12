@@ -100,7 +100,7 @@ export function ShareNewsDialog({ entity, news, open, onOpenChange }: ShareNewsD
           <Button
             onClick={handleShare}
             disabled={isSharingNews}
-            className="bg-lime-700 hover:bg-lime-600 text-white font-semibold text-xs sm:text-sm uppercase"
+            className="bg-success hover:bg-success/90 text-success-foreground font-semibold text-xs sm:text-sm uppercase"
           >
             {isSharingNews ? (
               <>

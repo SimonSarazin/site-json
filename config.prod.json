@@ -268,7 +268,7 @@
     "height": "lg",
     "utilities": {
       "themeSwitch": false,
-      "langSwitch": false,
+      "langSwitch": true,
       "search": false,
       "auth": true,
       "cart": false,
@@ -747,8 +747,8 @@
               "en": "Observe the data"
             },
             "description": {
-              "fr": "Add a concise value statements that explains how your metrics demonstrate success and growth. Focus on transformation and measurable outcomes while keeping it under 2 lines. Align with statistical data display.",
-              "en": "Add a concise value statements that explains how your metrics demonstrate success and growth. Focus on transformation and measurable outcomes while keeping it under 2 lines. Align with statistical data display."
+              "fr": "Découvrez comment nos indicateurs témoignent de notre impact et de notre croissance. Des résultats concrets qui illustrent la transformation des territoires.",
+              "en": "Discover how our metrics demonstrate success and growth. Concrete results that illustrate territorial transformation."
             },
             "links": [
               {
@@ -770,7 +770,7 @@
               "svg": "<svg width=\"52\" height=\"35\" viewBox=\"0 0 52 35\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M50.0147 10.2046C36.3404 -2.31298 15.186 -2.31298 1.51168 10.2046C0.845496 10.8177 0.483185 11.697 0.483185 12.5993V22.7568C5.81267 17.4814 12.3927 14.2305 19.2883 12.9811C15.6418 15.318 13.3511 19.5638 13.8887 24.2955C14.5082 29.6982 18.9377 34.0828 24.3958 34.6728C31.6069 35.4595 37.7195 29.8948 37.7195 22.9188C37.7195 18.754 35.5339 15.0866 32.2497 12.9811C39.1337 14.2305 45.7254 17.4814 51.0549 22.7568V12.5993C51.0549 11.697 50.6926 10.8177 50.0264 10.2046H50.0147Z\" fill=\"#FFD836\"></path></svg>"
             },
             "image": "images/tiersLieux/forum.png",
-            "imagePosition": "right",
+            "imagePosition": "left",
             "className": "",
             "decorativeElements": {
               "type": "none"
@@ -1226,23 +1226,7 @@
     }
   ],
   "theme": {
-    "defaultMode": "dark",
-    "colors": {
-      "light": {
-        "background": "#ffffff",
-        "foreground": "#000000",
-        "bordercolor": "#e5e7eb",
-        "themecolor": "#0092a2",
-        "text-secondary": "#4a5565"
-      },
-      "dark": {
-        "background": "#000000",
-        "foreground": "#ffffff",
-        "border": "#1e2939",
-        "themecolor": "#0092a2",
-        "text-secondary": "#99a1af"
-      }
-    }
+    "defaultMode": "dark"
   },
   "auth": {
     "login": {

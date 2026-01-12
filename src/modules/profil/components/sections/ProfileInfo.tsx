@@ -87,7 +87,7 @@ export default function ProfileInfo({ section }: ProfileInfoProps) {
                 href={url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-blue-600 hover:underline"
+                className="text-sm text-info hover:underline"
               >
                 {t("ProfileInfo.visitWebsite")}
               </a>
@@ -102,7 +102,7 @@ export default function ProfileInfo({ section }: ProfileInfoProps) {
               href={externalLinkRegistration}
               target="_blank"
               rel="noopener noreferrer"
-              className="block w-full text-center bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition"
+              className="block w-full text-center bg-primary text-primary-foreground py-2 px-4 rounded-lg hover:bg-primary/90 transition"
             >
               {t("ProfileInfo.registerEvent")}
             </a>

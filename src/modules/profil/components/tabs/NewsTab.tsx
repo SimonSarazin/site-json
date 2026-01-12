@@ -3,9 +3,9 @@ import { useState } from "react";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
 import { useLazyTab } from "@/hooks/useLazyTab";
 import { useProfilNewsQuery } from "../../hooks/useProfilNewsQuery";
+import { useProfileMutations } from "../../hooks/useProfileMutations";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
-import { useCocolight } from "@/hooks/useCocolight";
 import { Button } from "@/components/ui/button";
 import "@/modules/profil/i18n";
 import { NewsItem } from "../news/NewsItem";
@@ -15,7 +15,7 @@ export function NewsTab() {
   const { entity, entityType } = useProfileEntity();
   useLoadNamespace("modules/profil");
   const t = useT("modules/profil");
-  const { me } = useCocolight();
+  const { canEdit } = useProfileMutations();
 
   const { shouldLoad } = useLazyTab("news");
   const [showAddNewsModal, setShowAddNewsModal] = useState(false);
@@ -70,11 +70,11 @@ export function NewsTab() {
   return (
     <>
       <div className="space-y-4 sm:space-y-6">
-        {me?.isConnected && (
+        {canEdit && (
           <div className="flex justify-end">
             <Button
               onClick={() => setShowAddNewsModal(true)}
-              className="bg-teal-600 hover:bg-teal-700 text-xs sm:text-sm text-white"
+              className="bg-primary hover:bg-primary/90 text-xs sm:text-sm text-primary-foreground"
             >
               <Plus className="w-4 h-4 mr-2" />
               {t("NewsTab.createPost")}
@@ -95,7 +95,7 @@ export function NewsTab() {
       {isFetchingNextPage && (
         <div className="bg-background p-8 rounded-xl border border-border shadow-sm">
           <div className="text-center">
-            <Loader2 className="w-10 h-10 animate-spin mx-auto text-teal-600" />
+            <Loader2 className="w-10 h-10 animate-spin mx-auto text-primary" />
             <p className="text-sm text-muted-foreground mt-3 font-medium">
               {t("NewsTab.loadingNews")}
             </p>
@@ -106,8 +106,8 @@ export function NewsTab() {
         {!hasNextPage && news.length > 0 && (
           <div className="bg-background p-6 sm:p-8 rounded-xl border border-border shadow-sm">
             <div className="text-center">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-teal-100 dark:bg-teal-900/30 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3">
-                <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-teal-600 dark:text-teal-400" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3">
+                <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
               </div>
               <p className="text-sm sm:text-base text-foreground font-semibold mb-1">
                 {t("NewsTab.upToDate")}

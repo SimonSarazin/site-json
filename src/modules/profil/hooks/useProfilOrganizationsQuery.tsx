@@ -1,5 +1,6 @@
 import { useInfiniteQueryScroll } from "@/hooks/useInfiniteQueryScroll";
 import type { EntityTypes, Organization } from "@communecter/cocolight-api-client";
+import { useState } from "react";
 
 interface UseProfilOrganizationsQueryProps {
   entity: EntityTypes;
@@ -19,6 +20,7 @@ export function useProfilOrganizationsQuery({
   searchQuery = "",
 }: UseProfilOrganizationsQueryProps) {
   const canFetchOrganizations = ORGANIZATIONS_SUPPORTED_TYPES.has(entityType);
+  const [totalCount, setTotalCount] = useState<number>(0);
 
   const {
     data,
@@ -29,9 +31,9 @@ export function useProfilOrganizationsQuery({
     error,
     refetch,
   } = useInfiniteQueryScroll<Organization[]>({
-    queryKey: ["profile-organizations", entity.id, searchQuery],
+    queryKey: ["profile-organizations", entity?.id, searchQuery],
     queryFn: async ({ pageParam = 0 }) => {
-      if (!canFetchOrganizations) {
+      if (!canFetchOrganizations || !entity?.id) {
         return [];
       }
 
@@ -40,6 +42,11 @@ export function useProfilOrganizationsQuery({
         indexStep,
         ...(searchQuery ? { name: searchQuery } : {}),
       });
+
+      const resultWithCount = result as typeof result & { totalCount?: number };
+      if (resultWithCount.totalCount !== undefined) {
+        setTotalCount(resultWithCount.totalCount);
+      }
 
       return result.results || [];
     },
@@ -52,9 +59,9 @@ export function useProfilOrganizationsQuery({
       return currentIndex;
     },
     options: {
-      enabled: enabled && canFetchOrganizations,
+      enabled: enabled && canFetchOrganizations && !!entity?.id,
       staleTime: 5 * 60 * 1000,
-      gcTime: 30 * 60 * 1000, // Garder en cache 30 minutes même si démonté
+      gcTime: 30 * 60 * 1000,
       initialPageParam: 0,
     },
   });
@@ -63,6 +70,7 @@ export function useProfilOrganizationsQuery({
 
   return {
     organizations,
+    totalCount,
     isLoading,
     isFetchingNextPage,
     hasNextPage,

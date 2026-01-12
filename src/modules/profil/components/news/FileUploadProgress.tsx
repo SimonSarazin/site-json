@@ -22,13 +22,13 @@ export function FileUploadProgress({
   const getStatusIcon = () => {
     switch (status) {
       case "success":
-        return <CheckCircle2 className="w-4 h-4 text-green-500" />;
+        return <CheckCircle2 className="w-4 h-4 text-success" />;
       case "error":
-        return <XCircle className="w-4 h-4 text-red-500" />;
+        return <XCircle className="w-4 h-4 text-destructive" />;
       case "uploading":
       case "processing":
       case "compressing":
-        return <Loader2 className="w-4 h-4 animate-spin text-blue-500" />;
+        return <Loader2 className="w-4 h-4 animate-spin text-info" />;
       default:
         return null;
     }

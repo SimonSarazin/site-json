@@ -15,13 +15,13 @@ export function BannerSection({ id, props }: { id?: string; props: BannerSection
   const getVariantStyles = () => {
     switch (variant) {
       case 'success':
-        return 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200 border-green-200 dark:border-green-800';
+        return 'bg-success/10 text-success border-success/30';
       case 'warning':
-        return 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200 border-yellow-200 dark:border-yellow-800';
+        return 'bg-warning/10 text-warning border-warning/30';
       case 'error':
-        return 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 border-red-200 dark:border-red-800';
+        return 'bg-error/10 text-error border-error/30';
       default:
-        return 'bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-800';
+        return 'bg-info/10 text-info border-info/30';
     }
   };
 
