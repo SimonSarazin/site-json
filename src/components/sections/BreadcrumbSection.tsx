@@ -39,3 +39,4 @@ export function BreadcrumbSection({ id, props }: { id?: string; props: Breadcrum
     </section>
   );
 }
+export default BreadcrumbSection;

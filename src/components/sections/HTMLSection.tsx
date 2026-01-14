@@ -7,7 +7,8 @@ export function HTMLSection({ id, props }: { id?: string; props: HTMLSectionProp
 
   return (
     <section id={id}>
-      <div dangerouslySetInnerHTML={{ __html: safeHtml }} />
+      <div dangerouslySetInnerHTML={{ __html: safeHtml }} suppressHydrationWarning />
     </section>
   );
 }
+export default HTMLSection;

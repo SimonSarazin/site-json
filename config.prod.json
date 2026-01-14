@@ -359,7 +359,7 @@
         },
         {
           "type": "searchProStatic",
-          "id": "section-events-futur",
+          "id": "section-lieux",
           "props": {
             "customHeader": {
               "title": {
@@ -390,8 +390,8 @@
                 "xl": 5
               },
               "card": {
-                "type": "event",
-                "variant": "event",
+                "type": "tiers-lieux",
+                "variant": "tiers-lieux",
                 "detailsMode": "drawer"
               }
             }
@@ -435,7 +435,7 @@
                 "href": "/lieux"
               },
               {
-                "iconImage": "./TL_Icones.png",
+                "iconImage": "./images/tiersLieux/TL_Icones.png",
                 "iconClipPath": "polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)",
                 "iconColor": "text-yellow-500",
                 "title": {
@@ -507,7 +507,7 @@
           "type": "html",
           "id": "show-more-button",
           "props": {
-            "html": "<div class=\"container pb-5 mx-auto px-6\"><div class=\"text-center\"><button class=\"text-gray-700 font-light hover:text-teal-500 transition\">Afficher plus +</button></div></div>"
+            "html": "<div class=\"container pb-5 mx-auto px-6\"><div class=\"text-center\"><button class=\"text-gray-700 font-light hover:text-primary transition\">Afficher plus +</button></div></div>"
           }
         },
         {
@@ -1202,12 +1202,6 @@
       "en": "Copyright 2025"
     }
   },
-  "integrations": {
-    "analytics": {
-      "provider": "ga4",
-      "id": "G-XXXXXXX"
-    }
-  },
   "features": [
     {
       "key": "communityFeatures",
@@ -1226,7 +1220,138 @@
     }
   ],
   "theme": {
-    "defaultMode": "dark"
+    "colors": {
+      "light": {
+        "background": "#ffffff",
+        "foreground": "#0f172a",
+        "card": "#ffffff",
+        "cardForeground": "#0f172a",
+        "popover": "#ffffff",
+        "popoverForeground": "#0f172a",
+        "primary": "#1f7a73",
+        "primaryForeground": "#f9fafb",
+        "secondary": "#f1f5f9",
+        "secondaryForeground": "#0f172a",
+        "muted": "#f1f5f9",
+        "mutedForeground": "#64748b",
+        "accent": "#f1f5f9",
+        "accentForeground": "#0f172a",
+        "destructive": "#ef4444",
+        "destructiveForeground": "#f9fafb",
+        "border": "#e2e8f0",
+        "input": "#e2e8f0",
+        "ring": "#1f7a73",
+        "chart1": "#1f7a73",
+        "chart2": "#cc3373",
+        "chart3": "#f5e53d",
+        "chart4": "#3526d9",
+        "chart5": "#42ad1f",
+        "sidebar": "#ffffff",
+        "sidebarForeground": "#0f172a",
+        "sidebarPrimary": "#1f7a73",
+        "sidebarPrimaryForeground": "#f9fafb",
+        "sidebarAccent": "#f1f5f9",
+        "sidebarAccentForeground": "#0f172a",
+        "sidebarBorder": "#e2e8f0",
+        "sidebarRing": "#1f7a73",
+        "success": "oklch(0.6959 0.1491 162.4796)",
+        "successForeground": "oklch(1.0000 0.0000 0.0000)",
+        "warning": "oklch(0.7686 0.1647 70.0804)",
+        "warningForeground": "oklch(1.0000 0.0000 0.0000)",
+        "error": "oklch(0.6368 0.2078 25.3313)",
+        "errorForeground": "oklch(1.0000 0.0000 0.0000)",
+        "info": "oklch(0.6847 0.1479 237.3225)",
+        "infoForeground": "oklch(1.0000 0.0000 0.0000)",
+        "radius": "0.5rem",
+        "spacing": "0.25rem"
+      },
+      "dark": {
+        "background": "#0f172a",
+        "foreground": "#f9fafb",
+        "card": "#0f172a",
+        "cardForeground": "#f9fafb",
+        "popover": "#0f172a",
+        "popoverForeground": "#f9fafb",
+        "primary": "#1f7a73",
+        "primaryForeground": "#0f172a",
+        "secondary": "#1e293b",
+        "secondaryForeground": "#f9fafb",
+        "muted": "#1e293b",
+        "mutedForeground": "#94a3b8",
+        "accent": "#1e293b",
+        "accentForeground": "#f9fafb",
+        "destructive": "#7f1d1d",
+        "destructiveForeground": "#f9fafb",
+        "border": "#1e293b",
+        "input": "#1e293b",
+        "ring": "#1f7a73",
+        "chart1": "#1f7a73",
+        "chart2": "#cc3373",
+        "chart3": "#f5e53d",
+        "chart4": "#3526d9",
+        "chart5": "#42ad1f",
+        "sidebar": "#0f172a",
+        "sidebarForeground": "#f9fafb",
+        "sidebarPrimary": "#1f7a73",
+        "sidebarPrimaryForeground": "#0f172a",
+        "sidebarAccent": "#1e293b",
+        "sidebarAccentForeground": "#f9fafb",
+        "sidebarBorder": "#1e293b",
+        "sidebarRing": "#1f7a73",
+        "success": "oklch(0.6959 0.1491 162.4796)",
+        "successForeground": "oklch(1.0000 0.0000 0.0000)",
+        "warning": "oklch(0.7686 0.1647 70.0804)",
+        "warningForeground": "oklch(1.0000 0.0000 0.0000)",
+        "error": "oklch(0.6368 0.2078 25.3313)",
+        "errorForeground": "oklch(1.0000 0.0000 0.0000)",
+        "info": "oklch(0.6847 0.1479 237.3225)",
+        "infoForeground": "oklch(1.0000 0.0000 0.0000)",
+        "radius": "0.5rem"
+      }
+    },
+    "typography": {
+      "fontFamily": {
+        "sans": [
+          "Inter"
+        ],
+        "serif": [
+          "Roboto Slab"
+        ],
+        "mono": [
+          "Roboto Mono"
+        ]
+      },
+      "letterSpacing": "0em"
+    },
+    "spacing": {
+      "base": "0.25rem"
+    },
+    "borderRadius": {
+      "base": "0.5rem"
+    },
+    "shadows": {
+      "light": {
+        "shadow2xs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowXs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowSm": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowMd": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 2px 4px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowLg": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 4px 6px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowXl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 8px 10px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow2xl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.63)"
+      },
+      "dark": {
+        "shadow2xs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowXs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowSm": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowMd": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 2px 4px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowLg": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 4px 6px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowXl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 8px 10px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow2xl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.63)"
+      }
+    },
+    "customCSS": ""
   },
   "auth": {
     "login": {
@@ -1247,12 +1372,792 @@
       "hideFooter": false,
       "sections": [
         {
-          "type": "profile-template-default",
-          "showBackButton": true,
-          "showShareButton": true,
-          "showAddress": true,
-          "showMap": true,
-          "markdownEnabled": true
+          "type": "profile-header",
+          "variant": "complete"
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-about" },
+                { "type": "profile-organizer" },
+                { "type": "profile-event-dates" },
+                { "type": "profile-badges" },
+                { "type": "profile-tags" },
+                { "type": "profile-opening-hours" }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gallery",
+          "label": {
+            "fr": "Galerie",
+            "en": "Gallery"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-gallery" }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "map",
+          "label": {
+            "fr": "Localisation",
+            "en": "Location"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-map" }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showPhone": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "citoyens": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": true,
+          "addConfig": {
+            "organization": true,
+            "project": true,
+            "event": true,
+            "poi": true
+          }
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-event-dates" },
+                { "type": "profile-about" },
+                { "type": "profile-organizer" },
+                { "type": "profile-badges" },
+                { "type": "profile-tags" },
+                { "type": "profile-opening-hours" }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "news",
+          "label": {
+            "fr": "Actualités",
+            "en": "News"
+          },
+          "sections": [
+            {
+              "type": "news",
+              "props": {
+                "maxItems": 10,
+                "showAddButton": true,
+                "showComments": true,
+                "showReactions": true
+              }
+            }
+          ],
+          "subRoutes": [
+            {
+              "path": ":newsId",
+              "component": "NewsDetailPage"
+            }
+          ]
+        },
+        {
+          "id": "social",
+          "label": {
+            "fr": "Amis",
+            "en": "Friends"
+          },
+          "condition": {
+            "entityTypes": ["citoyens"],
+            "userContext": "own"
+          },
+          "component": "SocialTab"
+        },
+        {
+          "id": "membership",
+          "label": {
+            "fr": "Communautés",
+            "en": "Communities"
+          },
+          "condition": {
+            "entityTypes": ["citoyens"],
+            "userContext": "own"
+          },
+          "component": "MembershipTab"
+        }
+      ]
+    },
+    "organizations": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": true,
+          "addConfig": {
+            "organization": false,
+            "project": true,
+            "event": true,
+            "poi": true
+          }
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-about" },
+                { "type": "profile-organizer" },
+                { "type": "profile-badges" },
+                { "type": "profile-tags" },
+                { "type": "profile-opening-hours" }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "news",
+          "label": {
+            "fr": "Actualités",
+            "en": "News"
+          },
+          "sections": [
+            {
+              "type": "news",
+              "props": {
+                "maxItems": 10,
+                "showAddButton": true,
+                "showComments": true,
+                "showReactions": true
+              }
+            }
+          ],
+          "subRoutes": [
+            {
+              "path": ":newsId",
+              "component": "NewsDetailPage"
+            }
+          ]
+        },
+        {
+          "id": "members",
+          "label": {
+            "fr": "Membres",
+            "en": "Members"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-members", "showRole": true, "showManagement": true }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "projects",
+          "label": {
+            "fr": "Projets",
+            "en": "Projects"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-related", "relationType": "projects", "title": { "fr": "Projets", "en": "Projects" } }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "events",
+          "label": {
+            "fr": "Événements",
+            "en": "Events"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-related", "relationType": "events", "title": { "fr": "Événements", "en": "Events" } }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "projects": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": true,
+          "addConfig": {
+            "organization": false,
+            "project": false,
+            "event": true,
+            "poi": true
+          }
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-about" },
+                { "type": "profile-organizer" },
+                { "type": "profile-badges" },
+                { "type": "profile-tags" },
+                { "type": "profile-event-dates" }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "news",
+          "label": {
+            "fr": "Actualités",
+            "en": "News"
+          },
+          "sections": [
+            {
+              "type": "news",
+              "props": {
+                "maxItems": 10,
+                "showAddButton": true,
+                "showComments": true,
+                "showReactions": true
+              }
+            }
+          ],
+          "subRoutes": [
+            {
+              "path": ":newsId",
+              "component": "NewsDetailPage"
+            }
+          ]
+        },
+        {
+          "id": "contributors",
+          "label": {
+            "fr": "Contributeurs",
+            "en": "Contributors"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-members", "showRole": true, "showManagement": true }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "organizations",
+          "label": {
+            "fr": "Organisations",
+            "en": "Organizations"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-related", "relationType": "projects", "title": { "fr": "Organisations partenaires", "en": "Partner Organizations" } }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "events",
+          "label": {
+            "fr": "Événements",
+            "en": "Events"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-related", "relationType": "events", "title": { "fr": "Événements", "en": "Events" } }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "events": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": false
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-event-dates" },
+                { "type": "profile-about" },
+                { "type": "profile-organizer" },
+                { "type": "profile-badges" },
+                { "type": "profile-tags" }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "dates",
+          "label": {
+            "fr": "Dates & Horaires",
+            "en": "Dates & Schedule"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-event-dates" },
+                { "type": "profile-opening-hours" }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "location",
+          "label": {
+            "fr": "Lieu",
+            "en": "Location"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-map" }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showPhone": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "organizer",
+          "label": {
+            "fr": "Organisateur",
+            "en": "Organizer"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-organizer" },
+                { "type": "profile-related", "relationType": "events", "title": { "fr": "Autres événements", "en": "Other events" } }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showOrganizer": true,
+                  "showEmail": true,
+                  "showPhone": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gallery",
+          "label": {
+            "fr": "Galerie",
+            "en": "Gallery"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-gallery" }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "poi": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": false
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-about" },
+                { "type": "profile-badges" },
+                { "type": "profile-tags" }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "practicalInfo",
+          "label": {
+            "fr": "Infos pratiques",
+            "en": "Practical Info"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-opening-hours" },
+                { "type": "profile-about" }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showOpeningDate": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "map",
+          "label": {
+            "fr": "Carte",
+            "en": "Map"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-map" }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showPhone": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gallery",
+          "label": {
+            "fr": "Galerie",
+            "en": "Gallery"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-gallery" }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
         }
       ]
     }

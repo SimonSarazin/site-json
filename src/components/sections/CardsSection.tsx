@@ -1,4 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { T } from "@/components/ui/T";
 import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from '@/lib/utils';
 import type { SectionPropsMap } from '@/types/site';
@@ -36,13 +37,13 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
 
   const getAvatarColorClasses = (color?: string) => {
     const colorMap: Record<string, string> = {
-      orange: 'bg-warning/20 text-warning',
-      blue: 'bg-info/20 text-info',
-      green: 'bg-success/20 text-success',
-      purple: 'bg-chart-2/20 text-chart-2',
-      red: 'bg-destructive/20 text-destructive',
-      yellow: 'bg-chart-4/20 text-chart-4',
-      teal: 'bg-primary/20 text-primary',
+      orange: 'bg-orange-50 text-orange-500',
+      blue: 'bg-blue-50 text-blue-500',
+      green: 'bg-green-50 text-green-500',
+      purple: 'bg-purple-50 text-purple-500',
+      red: 'bg-red-50 text-red-500',
+      yellow: 'bg-yellow-50 text-yellow-500',
+      teal: 'bg-primary/10 text-primary',
     };
     return colorMap[color || 'teal'] || colorMap.teal;
   };
@@ -70,12 +71,9 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
     return (
       <div className="mb-8 flex items-center justify-between">
         <div>
-          {
-            props.headerTitle &&
-            <h2 className="text-2xl font-bold text-foreground">
-              {props.headerTitle ? t(props.headerTitle) : 'Cards'}
-            </h2>
-          }
+          {props.headerTitle && (
+            <T k={props.headerTitle} as="h2" className="text-2xl font-bold text-foreground" />
+          )}
 
           {showResultCount && (
             <p className="font-semibold text-foreground mt-1">
@@ -143,9 +141,7 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
                       </div>
                     )}
                     {item.eventTitle && (
-                      <div className="text-white font-semibold text-xs sm:text-sm drop-shadow-lg">
-                        {t(item.eventTitle)}
-                      </div>
+                      <T k={item.eventTitle} as="div" className="text-white font-semibold text-xs sm:text-sm drop-shadow-lg" />
                     )}
                   </div>
 
@@ -161,12 +157,10 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
 
                     <div className="flex-1 min-w-0">
                       <h3 className="font-bold text-gray-900 dark:text-white text-xs sm:text-sm mb-0.5 sm:mb-1 truncate">
-                        {item.organizerName ? t(item.organizerName) : t(item.title)}
+                        <T k={item.organizerName || item.title} />
                       </h3>
                       {item.location && (
-                        <p className="text-gray-500 dark:text-gray-400 text-[10px] sm:text-xs truncate">
-                          {t(item.location)}
-                        </p>
+                        <T k={item.location} as="p" className="text-gray-500 dark:text-gray-400 text-[10px] sm:text-xs truncate" />
                       )}
                     </div>
                   </div>
@@ -213,13 +207,9 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
                           )}
 
                           <div className="flex-1">
-                            <h3 className="font-bold text-gray-900 dark:text-white text-base mb-1">
-                              {t(item.title)}
-                            </h3>
+                            <T k={item.title} as="h3" className="font-bold text-gray-900 dark:text-white text-base mb-1" />
                             {item.location && (
-                              <p className="text-gray-500 dark:text-gray-400 text-sm">
-                                {t(item.location)}
-                              </p>
+                              <T k={item.location} as="p" className="text-gray-500 dark:text-gray-400 text-sm" />
                             )}
                           </div>
 
@@ -281,13 +271,9 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
                       )}
 
                       <div>
-                        <h3 className="font-bold text-gray-900 dark:text-white text-sm mb-1">
-                          {t(item.title)}
-                        </h3>
+                        <T k={item.title} as="h3" className="font-bold text-gray-900 dark:text-white text-sm mb-1" />
                         {item.location && (
-                          <p className="text-gray-500 dark:text-gray-400 text-xs">
-                            {t(item.location)}
-                          </p>
+                          <T k={item.location} as="p" className="text-gray-500 dark:text-gray-400 text-xs" />
                         )}
                       </div>
                     </div>
@@ -331,19 +317,15 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
                         />
                       </div>
                     ) : item.iconSvg ? (
-                      <div dangerouslySetInnerHTML={{ __html: item.iconSvg }} />
+                      <div dangerouslySetInnerHTML={{ __html: item.iconSvg }} suppressHydrationWarning />
                     ) : item.icon ? (
                       <DynamicIcon name={item.icon as IconName} className="w-16 h-16" />
                     ) : null}
                   </div>
 
-                  <h4 className="font-bold mb-2 text-card-foreground text-sm group-hover:text-primary transition-colors text-center">
-                    {t(item.title)}
-                  </h4>
+                  <T k={item.title} as="h4" className="font-bold mb-2 text-gray-900 dark:text-white text-sm group-hover:text-yellow-600 dark:group-hover:text-yellow-400 transition-colors text-center" />
 
-                  <p className="text-xs text-muted-foreground line-clamp-2 text-center">
-                    {t(item.text)}
-                  </p>
+                  <T k={item.text} as="p" className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 text-center" />
                 </div>
               </CardWrapper>
             ))}
@@ -384,12 +366,8 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
                     )}
 
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-xl font-semibold mb-2 text-foreground">
-                        {t(item.title)}
-                      </h3>
-                      <p className="text-base text-muted-foreground">
-                        {t(item.text)}
-                      </p>
+                      <T k={item.title} as="h3" className="text-xl font-semibold mb-2 text-foreground" />
+                      <T k={item.text} as="p" className="text-base text-muted-foreground" />
                     </div>
                   </div>
                 </Card>
@@ -429,13 +407,13 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
                     )}
 
                     <CardTitle className="text-xl mb-2 text-foreground">
-                      {t(item.title)}
+                      <T k={item.title} />
                     </CardTitle>
                   </CardHeader>
 
                   <CardContent>
                     <CardDescription className="text-base leading-relaxed text-muted-foreground">
-                      {t(item.text)}
+                      <T k={item.text} />
                     </CardDescription>
                   </CardContent>
                 </Card>
@@ -447,3 +425,4 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
     </section>
   );
 }
+export default CardsSection;

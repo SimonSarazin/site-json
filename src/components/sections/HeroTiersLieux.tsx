@@ -1,33 +1,16 @@
+import { T } from "@/components/ui/T";
 import { useLocalization } from "@/hooks/useLocalization";
 import { useState, useRef, useEffect, useMemo } from "react";
-import { Loader2, MapPin, Building2, Calendar, User, FolderOpen } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 import { HeroTiersLieuxProps as SchemaHeroTiersLieuxProps } from "@/types/site-schema";
 import { useAutocomplete } from "@/hooks/useAutocomplete";
-import { SearchEntity } from "@/modules/search/schema";
+import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { cn } from "@/lib/utils";
 import { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
 import { Link } from "react-router";
 import { usePageFiltersOptional } from "@/contexts/PageFiltersContext";
-
-const getEntityIcon = (entity: SearchEntity) => {
-  const type = entity?.getEntityType?.() || "";
-
-  switch (type) {
-    case "poi":
-      return <MapPin className="h-4 w-4 text-chart-3" />;
-    case "organizations":
-      return <Building2 className="h-4 w-4 text-chart-2" />;
-    case "events":
-      return <Calendar className="h-4 w-4 text-success" />;
-    case "citoyens":
-      return <User className="h-4 w-4 text-warning" />;
-    case "projects":
-      return <FolderOpen className="h-4 w-4 text-chart-1" />;
-    default:
-      return <MapPin className="h-4 w-4 text-muted-foreground" />;
-  }
-};
+import { getEntityIcon } from "@/lib/entityIcons";
 
 const getEntityTitle = (entity: SearchEntity): string => {
 
@@ -192,9 +175,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                   WebkitBackdropFilter: 'blur(12px)'
                 }}
               >
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-4 sm:mb-6 text-center px-2">
-                  {t(props.headline)}
-                </h1>
+                <T k={props.headline} as="h1" className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-4 sm:mb-6 text-center px-2" />
 
                 <div className="relative">
                   {/* Mobile: Stack vertically */}
@@ -282,7 +263,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                               highlightedIndex === index && "bg-accent"
                             )}
                           >
-                            <div className="mt-1">{getEntityIcon(item)}</div>
+                            <div className="mt-1">{getEntityIcon(item?.getEntityType?.() || "", { className: "h-4 w-4", withColor: true })}</div>
                             <Link to={`/profil/${item.slug}`}>
                               <div className="flex-1 min-w-0">
                                 <div className="font-medium text-popover-foreground truncate">
@@ -331,14 +312,10 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                 WebkitBackdropFilter: 'blur(12px)'
               }}
             >
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-4 sm:mb-6 text-center px-2">
-                {t(props.headline)}
-              </h1>
+              <T k={props.headline} as="h1" className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-4 sm:mb-6 text-center px-2" />
 
               {props.subhead && (
-                <p className="text-center text-primary font-light text-base sm:text-lg italic mb-4 sm:mb-6 px-4">
-                  {t(props.subhead)}
-                </p>
+                <T k={props.subhead} as="p" className="text-center text-primary font-light text-base sm:text-lg italic mb-4 sm:mb-6 px-4" />
               )}
 
               <div className="flex justify-center space-x-1 mb-4 sm:mb-6 text-xs sm:text-sm flex-wrap gap-y-2 px-2">
@@ -347,11 +324,11 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                     key={idx}
                     onClick={() => setActiveTabIndex(idx)}
                     className={`px-3 sm:px-6 py-2 sm:py-3 font-semibold transition ${activeTabIndex === idx
-                      ? "border-b-4 border-primary text-primary-foreground bg-primary rounded-t-md"
-                      : "hover:bg-accent"
+                      ? "border-b-4 border-primary text-primary-foreground bg-primary rounded-t-md dark:bg-slate-800"
+                      : "hover:bg-gray-50 dark:hover:bg-slate-800"
                       }`}
                   >
-                    {t(btn.label)}
+                    <T k={btn.label} />
                   </button>
                 ))}
               </div>
@@ -419,7 +396,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                             highlightedIndex === index && "bg-accent"
                           )}
                         >
-                          <div className="mt-1">{getEntityIcon(item)}</div>
+                          <div className="mt-1">{getEntityIcon(item?.getEntityType?.() || "", { className: "h-4 w-4", withColor: true })}</div>
                           <Link to={`/profil/${item.slug}`}>
                             <div className="flex-1 min-w-0">
                               <div className="font-medium text-popover-foreground truncate">
@@ -455,3 +432,4 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
     </section>
   );
 }
+export default HeroTiersLieux;

@@ -1,23 +1,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useFormatProfileEntity } from "../../hooks/useFormatProfileEntity";
-import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
-import "@/modules/profil/i18n";
+import type { ProfileOrganizerSection } from "../../schema";
 
 interface ProfileOrganizerProps {
-  section: {
-    type: "profile-organizer";
-    title?: { fr?: string; en?: string };
-    showLogo?: boolean;
-    showDescription?: boolean;
-    showLink?: boolean;
-  };
+  section: ProfileOrganizerSection;
 }
 
 export default function ProfileOrganizer({ section }: ProfileOrganizerProps) {
   const { entity } = useProfileEntity();
-  useLoadNamespace("modules/profil");
   const t = useT("modules/profil");
   const { organizers } = useFormatProfileEntity(entity);
 
@@ -46,11 +38,11 @@ export default function ProfileOrganizer({ section }: ProfileOrganizerProps) {
                 />
               )}
               <div className="flex-1">
-                <h3 className="font-semibold text-gray-900 dark:text-white">{org.name}</h3>
+                <h3 className="font-semibold text-foreground">{org.name}</h3>
                 {section.showLink !== false && org.slug && (
                   <a
                     href={`/profil/${org.slug}`}
-                    className="text-sm text-info hover:underline"
+                    className="text-sm text-primary hover:underline"
                   >
                     {t("common.viewProfile")}
                   </a>

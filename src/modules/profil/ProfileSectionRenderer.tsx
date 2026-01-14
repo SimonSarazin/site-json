@@ -1,7 +1,24 @@
-import { lazy } from "react";
-import type { ProfileAboutSection, ProfileGallerySection, ProfileHeaderSection, ProfileInfoSection, ProfileMapSection, ProfileMembersSection, ProfileOrganizerSection, ProfileRelatedSection, ProfileSection } from "@/modules/profil/schema";
+import { lazy } from "vite-preload";
+import type {
+  ProfileAboutSection,
+  ProfileGallerySection,
+  ProfileHeaderSection,
+  ProfileInfoSection,
+  ProfileMapSection,
+  ProfileMembersSection,
+  ProfileOrganizerSection,
+  ProfileRelatedSection,
+  ProfileActionsSection,
+  ProfileEventDatesSection,
+  ProfileBadgesSection,
+  ProfileTagsSection,
+  ProfileOpeningHoursSection,
+  ProfileTabLayoutSection,
+  ProfileSection
+} from "@/modules/profil/schema";
 import type { Section } from "@/types/site-schema";
 import { SectionRenderer } from "@/components/sections/SectionRenderer";
+import { useProfileEntity } from "./hooks/useProfileEntity";
 
 // Lazy load des sections
 const ProfileHeader = lazy(() => import("./components/sections/ProfileHeader"));
@@ -12,9 +29,15 @@ const ProfileOrganizer = lazy(() => import("./components/sections/ProfileOrganiz
 const ProfileMembers = lazy(() => import("./components/sections/ProfileMembers"));
 const ProfileGallery = lazy(() => import("./components/sections/ProfileGallery"));
 const ProfileRelated = lazy(() => import("./components/sections/ProfileRelated"));
+const ProfileActions = lazy(() => import("./components/sections/ProfileActions"));
+const ProfileEventDates = lazy(() => import("./components/sections/ProfileEventDates"));
+const ProfileBadges = lazy(() => import("./components/sections/ProfileBadges"));
+const ProfileTags = lazy(() => import("./components/sections/ProfileTags"));
+const ProfileOpeningHours = lazy(() => import("./components/sections/ProfileOpeningHours"));
+const ProfileTabLayout = lazy(() => import("./components/sections/ProfileTabLayout"));
 
 // Lazy load des templates
-const ProfileTemplateDefault = lazy(() => import("./components/templates/ProfileTemplateDefault"));
+const ProfileTemplateDynamic = lazy(() => import("./components/templates/ProfileTemplateDynamic"));
 
 interface ProfileSectionRendererProps {
   section: ProfileSection;
@@ -30,14 +53,36 @@ const PROFILE_SECTION_TYPES = [
   "profile-members",
   "profile-gallery",
   "profile-related",
-  "profile-template-default",
+  "profile-actions",
+  "profile-event-dates",
+  "profile-badges",
+  "profile-tags",
+  "profile-opening-hours",
+  "profile-tab-layout",
+  "profile-template-dynamic",
 ] as const;
 
 export function ProfileSectionRenderer({ section }: ProfileSectionRendererProps) {
+  const { entity } = useProfileEntity();
+
   // Check if it's a profile-specific section
   const isProfileSection = PROFILE_SECTION_TYPES.includes(section.type as typeof PROFILE_SECTION_TYPES[number]);
 
   if (!isProfileSection) {
+    // Special handling for news sections - inject profile entity
+    if (section.type === 'news') {
+      const newsSection = section as Section & { type: 'news' };
+      return <SectionRenderer
+        section={{
+          ...newsSection,
+          props: {
+            ...newsSection.props,
+            entitySlug: entity?.slug
+          }
+        }}
+      />;
+    }
+
     // It's a site section - use the SectionRenderer
     return <SectionRenderer section={section as Section} />;
   }
@@ -68,8 +113,26 @@ export function ProfileSectionRenderer({ section }: ProfileSectionRendererProps)
     case "profile-related":
       return <ProfileRelated section={section as ProfileRelatedSection} />;
 
-    case "profile-template-default":
-      return <ProfileTemplateDefault />;
+    case "profile-actions":
+      return <ProfileActions section={section as ProfileActionsSection} />;
+
+    case "profile-event-dates":
+      return <ProfileEventDates section={section as ProfileEventDatesSection} />;
+
+    case "profile-badges":
+      return <ProfileBadges section={section as ProfileBadgesSection} />;
+
+    case "profile-tags":
+      return <ProfileTags section={section as ProfileTagsSection} />;
+
+    case "profile-opening-hours":
+      return <ProfileOpeningHours section={section as ProfileOpeningHoursSection} />;
+
+    case "profile-tab-layout":
+      return <ProfileTabLayout section={section as ProfileTabLayoutSection} />;
+
+    case "profile-template-dynamic":
+      return <ProfileTemplateDynamic />;
 
     default: {
       const unknownSection = section as { type: string };

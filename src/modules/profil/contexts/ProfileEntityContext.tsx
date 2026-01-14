@@ -1,8 +1,8 @@
-import { SearchEntity } from '@/modules/search/schema';
+import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { createContext } from 'react';
 import { ProfileConfig } from '../schema';
 
-interface ProfileEntityContextType {
+export interface ProfileEntityContextType {
   entity: SearchEntity;
   config: ProfileConfig;
   entityType: string;

@@ -132,3 +132,4 @@ const mockPosts = Array.from({ length: limit }, (_, i) => {
     </section>
   );
 }
+export default SocialFeedSection;

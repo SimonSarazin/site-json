@@ -17,7 +17,10 @@ export default function FooterTiersLieux({ footer }: FooterTiersLieuxProps) {
             <img
               src={footer.logo.startsWith('/') ? footer.logo : `/${footer.logo}`}
               alt={footer.logoAlt ? t(footer.logoAlt) : ""}
+              width={207}
+              height={48}
               className="h-10 sm:h-12 object-contain"
+              style={{ aspectRatio: '207/48' }}
               onError={(e) => {
                 console.error('Footer logo failed to load:', footer.logo);
                 e.currentTarget.style.display = 'none';

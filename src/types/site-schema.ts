@@ -7,6 +7,7 @@
 //               et d'autocomplétion dans VS Code.
 // ------------------------------------------------------------
 import { SearchProSectionSchema, SearchProStaticSectionSchema } from "@/modules/search/schema";
+import { NewsSectionSchema } from "@/modules/news/schema";
 import { z } from "zod";
 import { LocalizedString, LOCALES } from "./locale-schema";
 import { ProfilesConfigSchema } from "../modules/profil/schema";
@@ -815,8 +816,8 @@ export type FiltersSection = z.infer<typeof FiltersSectionSchema>;
 export type FiltersSectionProps = z.infer<typeof FiltersSectionSchema>["props"];
 
 const GridLayoutSectionPropsSchema = z.object({
-  leftSection: z.any(),
-  rightSection: z.any(),
+  leftSection: z.lazy(() => SectionSchemaLazy).optional(),
+  rightSection: z.lazy(() => SectionSchemaLazy).optional(),
   leftColumns: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]).optional(),
   rightColumns: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]).optional(),
   gap: z.number().optional(),
@@ -910,7 +911,8 @@ export const Section = z.discriminatedUnion("type", [
   ContentSectionSchema,
   SearchProSectionSchema,
   SearchProStaticSectionSchema,
-  GridLayoutSectionSchema
+  GridLayoutSectionSchema,
+  NewsSectionSchema
 ]);
 export type Section = z.infer<typeof Section>;
 

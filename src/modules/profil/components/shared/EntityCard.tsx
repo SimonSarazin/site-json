@@ -1,130 +1,151 @@
-import { MapPin, ImageIcon } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { MapPin, Calendar, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useT } from "@/hooks/useT";
 import { Link } from "react-router";
+import type { EntityTypes } from "@communecter/cocolight-api-client";
+import { getEntityIcon } from "@/lib/entityIcons";
 
 interface EntityCardProps {
-  name: string;
-  description?: string;
-  imageUrl?: string;
-  slug?: string;
-
-  locality?: string;
-  postalCode?: string;
-
-  startDate?: Date;
-  endDate?: Date;
-  formatDate?: (date: Date) => string;
-
-  typeBadge?: ReactNode;
-
-  tags?: string[];
-  maxTags?: number;
-  moreTagsLabel?: string;
-
-  metadata?: ReactNode;
-
-  isLastItem?: boolean;
-  lastItemRef?: (node: HTMLAnchorElement) => void;
-
-  linkPrefix?: string;
+  entity: EntityTypes;
+  showRole?: boolean;
+  lastItemRef?: (node: HTMLDivElement | null) => void;
 }
 
 export function EntityCard({
-  name,
-  description,
-  imageUrl,
-  slug,
-  locality,
-  postalCode,
-  startDate,
-  endDate,
-  formatDate,
-  typeBadge,
-  tags,
-  maxTags = 2,
-  moreTagsLabel = "more",
-  metadata,
-  isLastItem,
+  entity,
+  showRole = false,
   lastItemRef,
-  linkPrefix = "/profil/",
 }: EntityCardProps) {
-  const linkTo = slug ? `${linkPrefix}${slug}` : "#";
-  const [imageError, setImageError] = useState(false);
+  const t = useT("modules/profil");
+  const type = entity.getEntityType?.() || "";
 
-  const showPlaceholder = !imageUrl || imageError;
+  const getTypeLabel = () => {
+    switch (type) {
+      case "organizations":
+        return t("MembershipTab.organization");
+      case "projects":
+        return t("MembershipTab.project");
+      case "poi":
+        return t("MembershipTab.poi");
+      case "events":
+        return t("MembershipTab.event");
+      default:
+        return type;
+    }
+  };
 
   return (
-    <Link
-      ref={isLastItem ? lastItemRef : undefined}
-      to={linkTo}
-      className="group bg-background rounded-lg border border-border shadow-sm hover:shadow-lg transition-all duration-200 overflow-hidden flex flex-col h-full"
+    <div
+      ref={lastItemRef}
+      className="bg-card border border-border rounded-lg p-4 hover:shadow-md transition-shadow"
     >
-      <div className="aspect-video w-full overflow-hidden bg-muted">
-        {showPlaceholder ? (
-          <div className="w-full h-full flex items-center justify-center bg-muted">
-            <ImageIcon className="w-12 h-12 text-muted-foreground/50" />
+      <div className="flex items-start gap-4">
+        {/* Image/Logo */}
+        <div className="w-16 h-16 rounded-lg border border-border overflow-hidden bg-muted flex-shrink-0">
+          {entity.serverData?.profilImageUrl ? (
+            <img
+              src={entity.serverData.profilImageUrl}
+              alt={entity.serverData?.name || ""}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              {getEntityIcon(type, { className: "w-5 h-5", withColor: true })}
+            </div>
+          )}
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-2">
+                <h3 className="font-semibold text-foreground truncate">
+                  {entity.serverData?.name || t("common.untitled")}
+                </h3>
+                <Badge variant="secondary" className="text-xs">
+                  {getTypeLabel()}
+                </Badge>
+              </div>
+
+              {entity.serverData?.shortDescription && (
+                <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                  {entity.serverData.shortDescription}
+                </p>
+              )}
+
+              {/* Localisation */}
+              {entity.serverData?.address?.addressLocality && (
+                <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
+                  <MapPin className="w-3 h-3" />
+                  <span>
+                    {entity.serverData.address.addressLocality}
+                    {entity.serverData.address.postalCode &&
+                      `, ${entity.serverData.address.postalCode}`}
+                  </span>
+                </div>
+              )}
+
+              {/* Date pour les événements */}
+              {type === "events" && entity.serverData?.startDate && (
+                <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
+                  <Calendar className="w-3 h-3" />
+                  <span>
+                    {new Date(entity.serverData.startDate).toLocaleDateString()}
+                  </span>
+                </div>
+              )}
+
+              {/* Rôle de l'utilisateur (optionnel) */}
+              {showRole && (
+                <div className="flex items-center gap-2 text-xs">
+                  {/* Admin badge - seulement pour organizations, projects, events */}
+                  {type !== "poi" && entity.isAdmin?.() && (
+                    <Badge
+                      variant="outline"
+                      className="text-primary border-primary"
+                    >
+                      {t("MembershipTab.admin")}
+                    </Badge>
+                  )}
+
+                  {/* Badges spécifiques selon le type d'entité */}
+                  {type === "organizations" && entity.isMember?.() && (
+                    <Badge variant="outline">{t("MembershipTab.member")}</Badge>
+                  )}
+                  {type === "projects" && entity.isContributor?.() && (
+                    <Badge variant="outline">
+                      {t("MembershipTab.contributor")}
+                    </Badge>
+                  )}
+                  {type === "events" && entity.isAttendee?.() && (
+                    <Badge variant="outline">
+                      {t("MembershipTab.participant")}
+                    </Badge>
+                  )}
+                  {type === "poi" && entity.isAuthor?.() && (
+                    <Badge variant="outline">{t("MembershipTab.author")}</Badge>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-2 ml-4">
+              <Button variant="outline" size="sm" asChild>
+                <Link to={`/profil/${entity.slug}`}>
+                  <ExternalLink className="w-4 h-4" />
+                  <span className="hidden sm:inline ml-1">
+                    {t("common.viewProfile")}
+                  </span>
+                </Link>
+              </Button>
+            </div>
           </div>
-        ) : (
-          <img
-            src={imageUrl}
-            alt={name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-            onError={() => setImageError(true)}
-          />
-        )}
+        </div>
       </div>
-
-      <div className="p-4 flex flex-col flex-grow">
-        {typeBadge && <div className="mb-2">{typeBadge}</div>}
-
-        <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2 mb-2">
-          {name}
-        </h3>
-
-        {locality && (
-          <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
-            <MapPin className="w-3 h-3" />
-            <span className="truncate">
-              {locality}
-              {postalCode && `, ${postalCode}`}
-            </span>
-          </div>
-        )}
-
-        {description && (
-          <p className="text-sm text-muted-foreground line-clamp-2 mb-3 flex-grow">
-            {description}
-          </p>
-        )}
-
-        {(startDate || endDate) && formatDate && (
-          <div className="text-xs text-muted-foreground mb-3">
-            {startDate && <span>{formatDate(startDate)}</span>}
-            {startDate && endDate && <span> - </span>}
-            {endDate && <span>{formatDate(endDate)}</span>}
-          </div>
-        )}
-
-        {metadata && <div className="mb-3">{metadata}</div>}
-
-        {tags && tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-auto pt-2 border-t border-border">
-            {tags.slice(0, maxTags).map((tag, idx) => (
-              <span
-                key={idx}
-                className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-primary/10 text-primary border border-primary/20"
-              >
-                {tag}
-              </span>
-            ))}
-            {tags.length > maxTags && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-muted text-muted-foreground">
-                +{tags.length - maxTags} {moreTagsLabel}
-              </span>
-            )}
-          </div>
-        )}
-      </div>
-    </Link>
+    </div>
   );
 }
+

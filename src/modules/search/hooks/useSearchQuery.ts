@@ -1,9 +1,10 @@
 import { useMemo } from "react";
 import { useCocolight } from "@/hooks/useCocolight";
-import { useInfiniteQueryScrollNext } from "@/hooks/useInfiniteQueryScroll";
-import { SearchEntity, SearchResultPage, SearchType } from "../schema";
-import type { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
-import { transformToEntityInstance } from "@/lib/entityTransform";
+import { useInfiniteQueryScrollNextWithTransform } from "@/hooks/useInfiniteQueryScroll";
+import { SearchType } from "../schema";
+import type { SearchEntity } from "@communecter/cocolight-api-client";
+import type { GlobalAutocompleteCostumData, PaginatorPage } from "@communecter/cocolight-api-client";
+import { SEARCH_QUERY_KEYS } from "../constants/queryKeys";
 
 export interface UseSearchQueryParams {
   queryKeyPrefix: string;
@@ -38,6 +39,16 @@ export function useSearchQuery({
 }: UseSearchQueryParams) {
   const { entity, helper } = useCocolight();
 
+  // Query key centralisée (single source of truth)
+  const queryKey = SEARCH_QUERY_KEYS.results({
+    queryKeyPrefix,
+    searchText,
+    searchTags,
+    searchType,
+    mapUsed,
+    baseParams,
+  });
+
   const {
     data,
     error,
@@ -46,16 +57,11 @@ export function useSearchQuery({
     isLoading,
     isPending,
     refetch,
-  } = useInfiniteQueryScrollNext({
-    queryKey: [
-      queryKeyPrefix,
-      searchText,
-      JSON.stringify(searchTags),
-      JSON.stringify(searchType),
-      mapUsed,
-      JSON.stringify(baseParams),
-    ],
-    queryFn: async ({ pageParam } = { pageParam: undefined }) => {
+    totalCount,
+    hasCount,
+  } = useInfiniteQueryScrollNextWithTransform<SearchEntity>({
+    queryKey,
+    queryFn: async ({ pageParam }) => {
       if (!entity) {
         throw new Error("API non initialisée - entity manquante");
       }
@@ -66,7 +72,7 @@ export function useSearchQuery({
           ? Object.values(searchType).flat()
           : [];
       const tags = Object.values(searchTags).flat() as string[];
-      const page = pageParam as SearchResultPage | undefined;
+      const page = pageParam as PaginatorPage<SearchEntity> | undefined;
 
       const {
         fediverse = false,
@@ -105,11 +111,11 @@ export function useSearchQuery({
       if (type && type.length > 0) param.searchType = type as GlobalAutocompleteCostumData["searchType"];
       if (!type && defaultTypes) param.searchType = defaultTypes;
       if (defaultTags && defaultTags.length > 0) {
-        param.defaultTags = defaultTags;
+        param.searchTags = defaultTags;
       }
 
       if (!param.searchType) {
-        return { results: [], count: {}, hasNext: false, pageNumber: 1 };
+        return { results: [], count: { total: 0 }, hasNext: false, hasPrev: false, pageNumber: 1, pageIndex: 0 };
       }
 
       try {
@@ -123,34 +129,33 @@ export function useSearchQuery({
           return result.next();
         }
         return result;
-      } catch (err) {
-        console.error("Error fetching search results:", err);
-        throw err;
+      } catch (error) {
+        console.error("Error fetching search results:", error);
+        if (error && typeof error === "object") {
+        console.error("Error details:", {
+          message: (error as Record<string, unknown>).message,
+          validationErrors: (error as Record<string, unknown>).validationErrors,
+          details: (error as Record<string, unknown>).details,
+          response: (error as Record<string, unknown>).response,
+          data: (error as Record<string, unknown>).data,
+        });
+      }
+        throw error;
       }
     },
     options: {
       enabled: !!entity,
       staleTime: 60 * 1000,
-      initialPageParam: [],
+      initialPageParam: undefined,
     },
+    // Transformation SSR automatique via le hook
+    transform: entity ? { entity, helper } : undefined,
   });
 
-  // Transformation des résultats
+  // Les résultats sont déjà transformés par le hook
   const transformedResults = useMemo(() => {
-    const results = data?.pages?.flatMap((p) => p?.results) ?? [];
-    if (!entity || !results.length) return results || [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return results.flatMap((d: any) => {
-      return transformToEntityInstance<SearchEntity>(d, helper, entity);
-    });
-  }, [data, entity, helper]);
-
-  const hasCount =
-    data?.pages?.[0]?.count && typeof data?.pages?.[0]?.count === "object";
-  const totalCount =
-    hasCount && data?.pages?.[0]?.count?.[("total")]
-      ? data?.pages?.[0]?.count?.[("total")]
-      : undefined;
+    return data?.pages?.flatMap((p) => p?.results) ?? [];
+  }, [data?.pages]);
 
   return {
     data,

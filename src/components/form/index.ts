@@ -4,12 +4,12 @@ export { default as SelectInput } from "./SelectInput";
 export { default as CheckboxInput } from "./CheckboxInput";
 export { default as RadioInput } from "./RadioInput";
 export { default as FileInput } from "./FileInput";
-export { default as DatePickerInput } from "./DatePickerInput";
-export { OpeningHoursPicker } from "./OpeningHoursPicker";
 export { TagsInput } from "./TagsInput";
 export { TagSuggestions } from "./TagSuggestions";
+export { DatePickerInput } from "./DatePickerInput";
 
 export type { TextInputProps } from "./TextInput";
+export type { DatePickerInputProps } from "./DatePickerInput";
 export type { TextareaInputProps } from "./TextareaInput";
 export type { SelectInputProps, SelectOption } from "./SelectInput";
 export type { CheckboxInputProps } from "./CheckboxInput";

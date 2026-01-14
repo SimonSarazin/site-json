@@ -68,3 +68,4 @@ export function VideoSection({ id, props }: { id?: string; props: VideoSectionPr
     </section>
   );
 }
+export default VideoSection;

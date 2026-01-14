@@ -1,0 +1,1 @@
+export { prefetchProfileQuery } from "./prefetchProfile";

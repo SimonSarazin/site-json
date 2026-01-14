@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Slider } from '@/components/ui/slider';
+import { T } from "@/components/ui/T";
 import { useLocalization } from "@/hooks/useLocalization";
 import { ComparisonSectionProps } from '@/types/site-schema';
 
@@ -22,16 +23,16 @@ export function ComparisonSection({ id, props }: { id?: string; props: Compariso
               />
               {beforeLabel && (
                 <div className="absolute top-4 left-4 bg-black/70 text-white px-3 py-1 rounded text-sm">
-                  {t(beforeLabel)}
+                  <T k={beforeLabel} />
                 </div>
               )}
             </div>
 
             {/* After Image */}
-            <div 
+            <div
               className="absolute inset-0 overflow-hidden"
               style={{
-                clipPath: orientation === 'horizontal' 
+                clipPath: orientation === 'horizontal'
                   ? `inset(0 ${100 - position[0]}% 0 0)`
                   : `inset(${position[0]}% 0 0 0)`
               }}
@@ -43,13 +44,13 @@ export function ComparisonSection({ id, props }: { id?: string; props: Compariso
               />
               {afterLabel && (
                 <div className="absolute top-4 right-4 bg-black/70 text-white px-3 py-1 rounded text-sm">
-                  {t(afterLabel)}
+                  <T k={afterLabel} />
                 </div>
               )}
             </div>
 
             {/* Divider Line */}
-            <div 
+            <div
               className="absolute bg-white shadow-lg"
               style={{
                 [orientation === 'horizontal' ? 'left' : 'top']: `${position[0]}%`,
@@ -60,7 +61,7 @@ export function ComparisonSection({ id, props }: { id?: string; props: Compariso
             />
 
             {/* Handle */}
-            <div 
+            <div
               className="absolute w-8 h-8 bg-white rounded-full shadow-lg border-2 border-primary cursor-pointer flex items-center justify-center"
               style={{
                 [orientation === 'horizontal' ? 'left' : 'top']: `${position[0]}%`,
@@ -87,3 +88,4 @@ export function ComparisonSection({ id, props }: { id?: string; props: Compariso
     </section>
   );
 }
+export default ComparisonSection;

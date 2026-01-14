@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import cocolightApiClient from "@communecter/cocolight-api-client";
 
 const { subscribeTo, isReactive } = cocolightApiClient;
 
 /**
  * Hook personnalisé pour s'abonner à une propriété réactive d'un objet Proxy de cocolight.
- * Utilise le système de réactivité natif de la lib (subscribeTo) pour forcer un re-render
- * React quand la valeur de la propriété change.
+ * Utilise useSyncExternalStore pour garantir l'absence de tearing en mode concurrent React
+ * et synchroniser le système de réactivité natif de cocolight avec React.
  *
  * @param obj - L'objet réactif (Proxy)
  * @param key - La clé de la propriété à surveiller
@@ -22,30 +22,39 @@ export function useReactiveProperty<T = unknown>(
   obj: Record<string, unknown> | null | undefined,
   key: string
 ): T | undefined {
-  // Récupérer la valeur initiale
-  const initialValue = obj?.[key] as T | undefined;
-  const [value, setValue] = useState<T | undefined>(initialValue);
-
-  useEffect(() => {
-    // Vérifier que l'objet est réactif
+  // Fonction de souscription : React appelle cette fonction pour s'abonner aux changements
+  const subscribe = (onStoreChange: () => void) => {
+    // Si l'objet n'est pas réactif, retourner une fonction de désabonnement vide
     if (!obj || !isReactive(obj)) {
-      // Si l'objet n'est pas réactif, utiliser la valeur directe
-      setValue(obj?.[key] as T | undefined);
-      return;
+      return () => {};
     }
 
     // S'abonner aux changements de la propriété via le système réactif de cocolight
-    const unsubscribe = subscribeTo(obj, key, (newValue: T) => {
-      setValue(newValue);
+    const unsubscribe = subscribeTo(obj, key, () => {
+      // Notifier React qu'un changement a eu lieu
+      onStoreChange();
     });
 
-    // Cleanup: se désabonner quand le composant démonte ou que les deps changent
-    return () => {
-      if (typeof unsubscribe === "function") {
-        unsubscribe();
-      }
-    };
-  }, [obj, key]);
+    // Retourner la fonction de désabonnement
+    return typeof unsubscribe === "function" ? unsubscribe : () => {};
+  };
 
-  return value;
+  // Fonction snapshot : React appelle cette fonction pour obtenir la valeur actuelle
+  const getSnapshot = (): T | undefined => {
+    return obj?.[key] as T | undefined;
+  };
+
+  // Fonction snapshot serveur : utilisée pendant le SSR
+  // Doit retourner la même valeur que getSnapshot pour éviter les hydration mismatches
+  const getServerSnapshot = (): T | undefined => {
+    return obj?.[key] as T | undefined;
+  };
+
+  // useSyncExternalStore gère automatiquement :
+  // - L'appel initial à getSnapshot pour obtenir la valeur
+  // - L'appel à subscribe pour s'abonner aux changements
+  // - Le re-render quand onStoreChange est appelé
+  // - L'appel à unsubscribe au démontage du composant
+  // - La prévention du tearing en mode concurrent
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }

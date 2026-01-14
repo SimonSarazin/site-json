@@ -8,7 +8,13 @@
     "organizedBy": "Organisé par",
     "viewProfile": "Voir le profil",
     "date": "Date",
-    "back": "Retour"
+    "back": "Retour",
+    "loading": "Chargement...",
+    "unknownUser": "Utilisateur Inconnu",
+    "untitled": "Sans titre",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "searchPlaceholder": "Rechercher..."
   },
   "ProfilePage": {
     "error": {
@@ -39,13 +45,127 @@
   "ProfileMap": {
     "title": "Localisation",
     "mapPlaceholder": "Carte à implémenter",
-    "coordinates": "Coordonnées"
+    "coordinates": "Coordonnées",
+    "loading": "Chargement de la carte..."
+  },
+  "ProfileOpeningHours": {
+    "closed": "Fermé",
+    "open": "Ouvert"
   },
   "ProfileTemplateDefault": {
     "showAllPhotos": "Afficher toutes les photos",
+    "editProfile": "Modifier le profil",
     "sendEmail": "Envoyer un email",
     "reservationSpace": "Espace Réservation",
-    "editProfile": "Modifier le profil",
+    "follow": "Suivre",
+    "following": "Suivi",
+    "unfollow": "Ne plus suivre",
+    "sendFriendRequest": "Envoyer une demande d'ami",
+    "removeFriend": "Retirer des amis",
+    "requestMembership": "Demander à devenir membre",
+    "member": "Membre",
+    "admin": "Administrateur",
+    "leaveOrganization": "Quitter l'organisation",
+    "unfollowDialog": {
+      "title": "Ne plus suivre cette organisation",
+      "description": "Êtes-vous sûr de vouloir ne plus suivre cette organisation ? Vous ne recevrez plus ses actualités.",
+      "cancel": "Annuler",
+      "confirm": "Ne plus suivre"
+    },
+    "membershipDialog": {
+      "title": "Demander à devenir membre",
+      "description": "Êtes-vous sûr de vouloir envoyer une demande pour devenir membre de cette organisation ? Les administrateurs recevront votre demande.",
+      "cancel": "Annuler",
+      "confirm": "Envoyer la demande"
+    },
+    "leaveDialog": {
+      "title": "Quitter cette organisation",
+      "description": "Êtes-vous sûr de vouloir quitter cette organisation ? Vous ne serez plus membre et perdrez l'accès aux ressources réservées aux membres.",
+      "cancel": "Annuler",
+      "confirm": "Quitter l'organisation"
+    },
+    "projectAdmin": "Admin du projet",
+    "contributor": "Contributeur",
+    "requestContributor": "Demander à contribuer",
+    "requestProjectAdmin": "Demander les droits admin",
+    "leaveProject": "Quitter le projet",
+    "contributorDialog": {
+      "title": "Demander à contribuer",
+      "description": "Êtes-vous sûr de vouloir envoyer une demande pour contribuer à ce projet ? Les administrateurs du projet recevront votre demande.",
+      "cancel": "Annuler",
+      "confirm": "Envoyer la demande"
+    },
+    "projectAdminDialog": {
+      "title": "Demander les droits admin",
+      "description": "Êtes-vous sûr de vouloir demander les droits d'administrateur pour ce projet ? Les administrateurs actuels recevront votre demande.",
+      "cancel": "Annuler",
+      "confirm": "Envoyer la demande"
+    },
+    "leaveProjectDialog": {
+      "title": "Quitter ce projet",
+      "description": "Êtes-vous sûr de vouloir quitter ce projet ? Vous ne serez plus contributeur et perdrez l'accès aux ressources du projet.",
+      "cancel": "Annuler",
+      "confirm": "Quitter le projet"
+    },
+    "eventAuthor": "Auteur de l'événement",
+    "participant": "Participant",
+    "participate": "Participer",
+    "leaveEvent": "Ne plus participer",
+    "participateDialog": {
+      "title": "Participer à cet événement",
+      "description": "Êtes-vous sûr de vouloir participer à cet événement ? L'organisateur sera notifié.",
+      "cancel": "Annuler",
+      "confirm": "Participer"
+    },
+    "leaveEventDialog": {
+      "title": "Ne plus participer",
+      "description": "Êtes-vous sûr de vouloir arrêter de participer à cet événement ? Vous ne recevrez plus les actualités de l'événement.",
+      "cancel": "Annuler",
+      "confirm": "Ne plus participer"
+    },
+    "membershipPending": "Demande en attente",
+    "contributorPending": "Demande en attente",
+    "participationPending": "Demande en attente",
+    "adminRequestPending": "Demande admin en attente",
+    "acceptInvitation": "Accepter l'invitation",
+    "acceptAdminInvitation": "Accepter l'invitation admin",
+    "rejectInvitation": "Refuser l'invitation",
+    "rejectInvitationDialog": {
+      "title": "Refuser l'invitation",
+      "description": "Êtes-vous sûr de vouloir refuser cette invitation ?",
+      "cancel": "Annuler",
+      "confirm": "Refuser"
+    },
+    "requestPromotion": "Devenir administrateur",
+    "promotionDialog": {
+      "title": "Demander à devenir administrateur",
+      "description": "Votre demande sera envoyée aux administrateurs du projet pour validation.",
+      "confirm": "Envoyer la demande",
+      "cancel": "Annuler"
+    },
+    "requestOrganizationAdmin": "Demander les droits admin",
+    "orgAdminDialog": {
+      "title": "Demander les droits admin",
+      "description": "Êtes-vous sûr de vouloir demander les droits d'administrateur pour cette organisation ? Les administrateurs actuels recevront votre demande.",
+      "confirm": "Envoyer la demande",
+      "cancel": "Annuler"
+    },
+    "friendRequestPending": "Demande envoyée",
+    "cancelFriendRequest": "Annuler la demande",
+    "acceptFriendRequest": "Accepter",
+    "rejectFriendRequest": "Refuser",
+    "cancelFriendDialog": {
+      "title": "Annuler la demande d'ami",
+      "description": "Êtes-vous sûr de vouloir annuler cette demande d'ami ?",
+      "confirm": "Annuler la demande",
+      "cancel": "Garder"
+    },
+    "rejectFriendDialog": {
+      "title": "Refuser la demande d'ami",
+      "description": "Êtes-vous sûr de vouloir refuser cette demande d'ami ?",
+      "confirm": "Refuser",
+      "cancel": "Annuler"
+    },
     "tabs": {
       "about": "À propos",
       "news": "Actualités",
@@ -53,7 +173,19 @@
       "meetingRooms": "Salles de réunions",
       "projects": "Projets",
       "communities": "Communautés",
-      "observatories": "Observatoires"
+      "observatories": "Observatoires",
+      "social": "Social",
+      "membership": "Mes Organisations",
+      "members": "Membres",
+      "projects": "Projets",
+      "events": "Événements",
+      "contributors": "Contributeurs",
+      "organizations": "Organisations",
+      "dates": "Dates & Horaires",
+      "location": "Lieu",
+      "organizer": "Organisateur",
+      "gallery": "Galerie",
+      "map": "Carte"
     },
     "description": "Description",
     "badges": "Badges",
@@ -67,261 +199,175 @@
     "comingSoon": "En construction",
     "sectionLabel": "Section {{name}}"
   },
-  "ProjectsTab": {
-    "noProjects": "Aucun projet",
-    "noProjectsDescription": "Les projets apparaîtront ici",
-    "loadingProjects": "Chargement des projets...",
-    "allProjectsLoaded": "Tous les projets chargés",
-    "allProjectsSeen": "Vous avez vu tous les projets",
-    "anonymousProject": "Projet anonyme",
-    "viewProject": "Voir le projet",
-    "createProject": "Créer un projet",
-    "gridView": "Grille",
-    "detailedView": "Détails",
-    "moreTags": "tags de plus"
-  },
-  "CommunitiesTab": {
-    "noCommunities": "Aucune communauté",
-    "noCommunitiesDescription": "Les communautés apparaîtront ici",
-    "comingSoon": "Bientôt disponible",
-    "comingSoonDescription": "Cette section sera disponible prochainement",
-    "friends": "Amis",
-    "organizations": "Organisations",
-    "subscriptions": "Abonnements",
-    "subscribers": "Abonnés",
-    "externalNetwork": "Réseau externe",
-    "contributors": "Contributeurs",
-    "contributorsToValidate": "Contributeurs à valider",
+  "ProfileMembers": {
+    "title": "Membres",
+    "member": "Membre",
     "members": "Membres",
-    "membersToValidate": "Membres à valider"
-  },
-  "OrganizationsTab": {
-    "noOrganizations": "Aucune organisation",
-    "noOrganizationsDescription": "Les organisations apparaîtront ici",
-    "loadingOrganizations": "Chargement des organisations...",
-    "allOrganizationsLoaded": "Toutes les organisations chargées",
-    "allOrganizationsSeen": "Vous avez vu toutes les organisations",
-    "anonymousOrganization": "Organisation anonyme",
-    "members": "membres",
-    "gridView": "Grille",
-    "detailedView": "Détails",
-    "createOrganization": "Créer une organisation",
-    "types": {
-      "ngo": "Association",
-      "cooperative": "Coopérative",
-      "localBusiness": "Entreprise locale",
-      "group": "Groupe",
-      "government": "Organisation gouvernementale",
-      "organization": "Organisation"
+    "admin": "Admin",
+    "pending": "En attente",
+    "invite": "Inviter",
+    "manage": "Gérer",
+    "noMembers": "Aucun membre pour le moment",
+    "loadingMore": "Chargement de plus de membres...",
+    "organization": {
+      "title": "Membres de l'organisation",
+      "member": "Membre",
+      "members": "Membres",
+      "admin": "Admin",
+      "pending": "Demandes en attente",
+      "invite": "Inviter un membre"
+    },
+    "project": {
+      "title": "Contributeurs du projet",
+      "contributor": "Contributeur",
+      "contributors": "Contributeurs",
+      "admin": "Admin",
+      "pending": "Demandes en attente",
+      "invite": "Inviter un contributeur"
+    },
+    "event": {
+      "title": "Participants à l'événement",
+      "participant": "Participant",
+      "participants": "Participants",
+      "author": "Auteur",
+      "pending": "Demandes en attente",
+      "invite": "Inviter un participant"
     }
   },
-  "SubscriptionsTab": {
-    "noSubscriptions": "Aucun abonnement",
-    "noSubscriptionsDescription": "Les abonnements apparaîtront ici",
-    "loadingSubscriptions": "Chargement des abonnements...",
-    "allSubscriptionsLoaded": "Tous les abonnements chargés",
-    "allSubscriptionsSeen": "Vous avez vu tous les abonnements",
-    "anonymousSubscription": "Abonnement anonyme",
-    "gridView": "Grille",
-    "detailedView": "Détails",
-    "types": {
-      "organization": "Organisation",
-      "project": "Projet",
-      "user": "Utilisateur",
-      "event": "Événement",
-      "other": "Autre"
-    }
-  },
-  "SubscribersTab": {
-    "noSubscribers": "Aucun abonné",
-    "noSubscribersDescription": "Les abonnés apparaîtront ici",
-    "loadingSubscribers": "Chargement des abonnés...",
-    "allSubscribersLoaded": "Tous les abonnés chargés",
-    "allSubscribersSeen": "Vous avez vu tous les abonnés",
-    "anonymousSubscriber": "Abonné anonyme",
-    "gridView": "Grille",
-    "detailedView": "Détails"
-  },
-  "FriendsTab": {
-    "noFriends": "Aucun ami",
-    "noFriendsDescription": "Les amis apparaîtront ici",
-    "loadingFriends": "Chargement des amis...",
-    "allFriendsLoaded": "Tous les amis chargés",
-    "allFriendsSeen": "Vous avez vu tous les amis",
-    "anonymousFriend": "Ami anonyme",
-    "gridView": "Grille",
-    "detailedView": "Détails"
-  },
-  "ContributorsTab": {
-    "noContributors": "Aucun contributeur",
-    "noContributorsDescription": "Les contributeurs apparaîtront ici",
-    "loadingContributors": "Chargement des contributeurs...",
-    "allContributorsLoaded": "Tous les contributeurs chargés",
-    "allContributorsSeen": "Vous avez vu tous les contributeurs",
-    "anonymousContributor": "Contributeur anonyme",
-    "gridView": "Grille",
-    "detailedView": "Détails"
-  },
-  "MembersTab": {
-    "noMembers": "Aucun membre",
-    "noMembersDescription": "Les membres apparaîtront ici",
-    "loadingMembers": "Chargement des membres...",
-    "allMembersLoaded": "Tous les membres chargés",
-    "allMembersSeen": "Vous avez vu tous les membres",
-    "anonymousMember": "Membre anonyme",
-    "gridView": "Grille",
-    "detailedView": "Détails"
-  },
-  "NewsTab": {
-    "noNews": "Aucune actualité",
-    "noNewsDescription": "Les publications apparaîtront ici",
-    "loadingNews": "Chargement des actualités...",
-    "upToDate": "Vous êtes à jour !",
-    "allNewsSeen": "Vous avez vu toutes les actualités",
-    "public": "Public",
-    "private": "Privé",
-    "restricted": "Restreint",
-    "sharedBy": "Partagé par",
-    "andOthers": "et {{count}} autre",
-    "andOthers_plural": "et {{count}} autres",
-    "comment": "Commenter",
-    "like": "Like",
-    "share": "Partager",
-    "reactions": "réaction",
-    "reactions_plural": "réactions",
-    "allReactions": "Toutes les réactions",
-    "reactorsList": "Liste des personnes ayant réagi (à venir)",
-    "noReactionsYet": "Aucune réaction pour le moment",
-    "comments": "Commentaires",
-    "noComments": "Aucun commentaire pour le moment",
-    "writeComment": "Écrire un commentaire...",
-    "writeReply": "Écrire une réponse...",
-    "reply": "Répondre",
-    "send": "Envoyer",
-    "loginToComment": "Connectez-vous pour commenter",
-    "edit": "Modifier",
-    "delete": "Supprimer",
-    "report": "Signaler un abus",
-    "createPost": "Créer une publication",
-    "maxDepthReached": "Profondeur maximale atteinte",
-    "collapseThread": "Réduire le fil",
-    "expandThread": "Développer le fil",
-    "repliesCount": "{{count}} réponse",
-    "repliesCount_plural": "{{count}} réponses",
-    "reportDialog": {
-      "title": "Signaler une actualité",
-      "titleComment": "Signaler un commentaire",
-      "description": "Merci de nous aider à maintenir une communauté respectueuse en signalant les contenus inappropriés.",
-      "reasonLabel": "Raison du signalement",
-      "reasonPlaceholder": "Sélectionnez une raison",
-      "commentLabel": "Détails supplémentaires (optionnel)",
-      "commentPlaceholder": "Ajoutez des détails sur ce signalement...",
-      "cancel": "Annuler",
-      "submit": "Envoyer le signalement",
-      "submitting": "Envoi...",
-      "reasons": {
-        "spam": "Spam ou contenu promotionnel",
-        "harassment": "Harcèlement ou intimidation",
-        "hateSpeech": "Discours haineux",
-        "violence": "Violence ou menaces",
-        "inappropriate": "Contenu inapproprié",
-        "misinformation": "Désinformation",
-        "other": "Autre"
-      }
+  "InviteMemberDialog": {
+    "title": "Inviter des membres",
+    "description": "Envoyez des invitations pour rejoindre cette communauté.",
+    "emailAddresses": "Adresses email",
+    "emailPlaceholder": "Saisir une adresse email",
+    "addEmail": "Ajouter",
+    "role": "Rôle",
+    "selectRole": "Sélectionner un rôle",
+    "sending": "Envoi...",
+    "sendInvitations": "Envoyer les invitations",
+    "noEmailsError": "Veuillez ajouter au moins une adresse email",
+    "organization": {
+      "title": "Inviter des membres",
+      "description": "Envoyez des invitations pour rejoindre cette organisation."
     },
-    "deleteConfirm": {
-      "title": "Supprimer la publication",
-      "description": "Êtes-vous sûr de vouloir supprimer cette publication ? Cette action est irréversible.",
-      "cancel": "Annuler",
-      "confirm": "Supprimer",
-      "deleting": "Suppression...",
-      "error": "Une erreur est survenue lors de la suppression"
+    "project": {
+      "title": "Inviter des contributeurs",
+      "description": "Envoyez des invitations pour contribuer à ce projet."
     },
-    "editComment": "Modifier le commentaire",
-    "deleteCommentTitle": "Supprimer le commentaire",
-    "deleteCommentDescription": "Êtes-vous sûr de vouloir supprimer ce commentaire ? Cette action est irréversible.",
-    "deleteNewsTitle": "Supprimer l'actualité",
-    "deleteNewsDescription": "Êtes-vous sûr de vouloir supprimer cette actualité ? Cette action est irréversible.",
+    "event": {
+      "title": "Inviter des participants",
+      "description": "Envoyez des invitations pour participer à cet événement."
+    },
+    "tabs": {
+      "searchUsers": "Rechercher des utilisateurs",
+      "inviteByEmail": "Inviter par email"
+    },
+    "searchUsers": "Rechercher des utilisateurs",
+    "searchPlaceholder": "Tapez pour rechercher...",
+    "startTyping": "Commencez à taper pour rechercher",
+    "minimumChars": "Tapez au moins 2 caractères",
+    "searching": "Recherche en cours...",
+    "noUsersFound": "Aucun utilisateur trouvé",
+    "tryDifferentSearch": "Essayez une recherche différente",
+    "emailInvitationsComingSoon": "Invitations par email bientôt disponibles",
+    "useSearchForNow": "Utilisez la recherche d'utilisateurs en attendant",
+    "demote": "Rétrograder",
+    "remove": "Supprimer",
+    "promoteToAdmin": "Promouvoir admin",
+    "validate": "Valider",
+    "validateAdmin": "Valider admin",
+    "reject": "Rejeter",
+    "inviteMember": "Inviter membre",
+    "inviteAdmin": "Inviter admin",
+    "inviteContributor": "Inviter contributeur",
+    "inviteParticipant": "Inviter participant",
+    "adminInvitationSent": "Invitation admin envoyée",
+    "invitationSent": "Invitation {{type}} envoyée",
+    "invited": "Invité",
+    "badges": {
+      "admin": "Admin",
+      "member": "Membre",
+      "contributor": "Contributeur",
+      "participant": "Participant",
+      "adminInvitationPending": "Invitation admin en cours",
+      "adminRequestPending": "Demande admin en attente",
+      "invitationPending": "Invitation en cours",
+      "validationPending": "En attente de validation"
+    },
     "cancel": "Annuler",
-    "deleting": "Suppression...",
-    "readMore": "Voir plus",
-    "readLess": "Voir moins",
-    "anonymous": "Anonyme",
-    "someone": "quelqu'un",
-    "reactionsTypes": {
-      "love": "J'adore",
-      "like": "J'aime",
-      "enjoy": "Content",
-      "glad": "Ravi",
-      "bothered": "Énervé",
-      "sad": "Triste",
-      "scared": "Inquiet",
-      "support": "Soutien"
+    "demoteDialog": {
+      "title": "Rétrograder l'administrateur",
+      "description": "Rétrograder {{name}} en tant que membre normal ?",
+      "cancel": "Annuler",
+      "confirm": "Rétrograder"
     },
-    "mentions": {
-      "searching": "Recherche...",
-      "noResults": "Aucun résultat trouvé",
-      "typeToSearch": "Tapez @ pour mentionner quelqu'un"
+    "removeDialog": {
+      "title": "Supprimer le membre",
+      "description": "Supprimer {{name}} de cette communauté ?",
+      "cancel": "Annuler",
+      "confirm": "Supprimer"
     },
-    "tags": {
-      "searching": "Recherche...",
-      "noResults": "Aucun tag trouvé",
-      "typeToSearch": "Tapez au moins 2 caractères pour rechercher"
+    "promoteDialog": {
+      "title": "Promouvoir en administrateur",
+      "description": "Promouvoir {{name}} en tant qu'administrateur ?",
+      "cancel": "Annuler",
+      "confirm": "Promouvoir"
+    },
+    "validateDialog": {
+      "title": "Valider la demande",
+      "description": "Valider la demande de {{name}} ?",
+      "cancel": "Annuler",
+      "confirm": "Valider"
+    },
+    "validateAdminDialog": {
+      "title": "Valider la demande d'admin",
+      "description": "Valider la demande d'administrateur de {{name}} ?",
+      "cancel": "Annuler",
+      "confirm": "Valider"
+    },
+    "rejectDialog": {
+      "title": "Rejeter la demande",
+      "description": "Rejeter la demande de {{name}} ?",
+      "cancel": "Annuler",
+      "confirm": "Rejeter"
     }
   },
-  "AddNewsModal": {
-    "title": "Créer une publication",
-    "form": {
-      "text": {
-        "label": "Contenu",
-        "placeholder": "Quoi de neuf ?"
-      },
-      "scope": {
-        "label": "Portée de la publication",
-        "public": "Public - Visible par tous",
-        "private": "Privé - Visible uniquement par moi",
-        "restricted": "Restreint - Visible par les membres du profil"
-      },
-      "tags": {
-        "label": "Tags",
-        "placeholder": "Ajouter des tags",
-        "hint": "Appuyez sur Entrée ou virgule pour ajouter",
-        "maxReached": "Maximum {{max}} tags"
-      },
-      "images": {
-        "label": "Images",
-        "button": "Ajouter des images",
-        "maxReached": "Maximum {{max}} images",
-        "remove": "Retirer"
-      },
-      "documents": {
-        "label": "Documents",
-        "button": "Ajouter des documents",
-        "maxReached": "Maximum {{max}} documents",
-        "remove": "Retirer"
-      },
-      "videoLink": {
-        "label": "Lien vidéo",
-        "placeholder": "URL de la vidéo (YouTube, Vimeo...)"
-      },
-      "status": {
-        "label": "Visibilité",
-        "public": "Public",
-        "private": "Privé",
-        "restricted": "Restreint"
-      }
+  "MemberManagementDialog": {
+    "title": "Gestion des membres",
+    "searchPlaceholder": "Rechercher des membres...",
+    "noMembers": "Aucun membre trouvé",
+    "noPending": "Aucune demande en attente",
+    "promote": "Promouvoir admin",
+    "demote": "Retirer le rôle admin",
+    "remove": "Exclure le membre",
+    "acceptDialog": {
+      "title": "Accepter la demande",
+      "description": "Accepter la demande de {{name}} ?"
     },
-    "actions": {
-      "cancel": "Annuler",
-      "publish": "Publier",
-      "publishing": "Publication..."
+    "rejectDialog": {
+      "title": "Rejeter la demande",
+      "description": "Rejeter la demande de {{name}} ?"
     },
-    "validation": {
-      "textRequired": "Le contenu est requis",
-      "textTooShort": "Le contenu doit contenir au moins 3 caractères"
+    "promoteDialog": {
+      "title": "Promouvoir le membre",
+      "description": "Promouvoir {{name}} administrateur ?"
     },
-    "success": "Publication créée avec succès !",
-    "error": "Une erreur est survenue lors de la création"
+    "demoteDialog": {
+      "title": "Retirer le rôle admin",
+      "description": "Retirer le rôle d'administrateur à {{name}} ?"
+    },
+    "removeDialog": {
+      "title": "Exclure le membre",
+      "description": "Exclure {{name}} de cette communauté ?"
+    },
+    "organization": {
+      "title": "Gestion de l'organisation"
+    },
+    "project": {
+      "title": "Gestion du projet"
+    },
+    "event": {
+      "title": "Gestion de l'événement"
+    }
   },
   "upload": {
     "errors": {
@@ -756,6 +802,429 @@
     },
     "error": {
       "generic": "Une erreur est survenue"
+    },
+    "profile": {
+      "updateSuccess": "Profil mis à jour avec succès",
+      "updateError": "Impossible de mettre à jour le profil",
+      "imageUploadSuccess": "Photo de profil uploadée avec succès",
+      "imageUploadError": "Impossible d'uploader la photo de profil",
+      "bannerUploadSuccess": "Bannière uploadée avec succès",
+      "bannerUploadError": "Impossible d'uploader la bannière"
+    },
+    "invitation": {
+      "acceptSuccess": "Invitation acceptée avec succès",
+      "acceptError": "Impossible d'accepter l'invitation",
+      "rejectSuccess": "Invitation refusée",
+      "rejectError": "Impossible de refuser l'invitation"
+    },
+    "relationship": {
+      "followSuccess": "Utilisateur suivi avec succès",
+      "followError": "Impossible de suivre l'utilisateur",
+      "unfollowSuccess": "Utilisateur retiré des abonnements",
+      "unfollowError": "Impossible de ne plus suivre l'utilisateur",
+      "friendRequestSent": "Demande d'ami envoyée",
+      "friendRequestError": "Impossible d'envoyer la demande d'ami",
+      "friendRequestAccepted": "Demande d'ami acceptée",
+      "friendRemoved": "Ami retiré",
+      "friendRemoveError": "Impossible de retirer l'ami",
+      "memberRequestSent": "Demande de membre envoyée avec succès",
+      "memberRequestError": "Impossible d'envoyer la demande de membre",
+      "memberLeftSuccess": "Vous avez quitté l'organisation avec succès",
+      "memberLeftError": "Impossible de quitter l'organisation",
+      "contributorRequestSent": "Demande de contribution envoyée avec succès",
+      "contributorRequestError": "Impossible d'envoyer la demande de contribution",
+      "projectAdminRequestSent": "Demande d'administration envoyée avec succès",
+      "projectAdminRequestError": "Impossible d'envoyer la demande d'administration",
+      "orgAdminRequestSent": "Demande d'administration envoyée avec succès",
+      "orgAdminRequestError": "Impossible d'envoyer la demande d'administration",
+      "projectLeftSuccess": "Vous avez quitté le projet avec succès",
+      "projectLeftError": "Impossible de quitter le projet",
+      "participationSuccess": "Vous participez maintenant à cet événement",
+      "participationError": "Impossible de participer à cet événement",
+      "participationLeftSuccess": "Vous ne participez plus à cet événement",
+      "participationLeftError": "Impossible d'arrêter la participation à cet événement"
+    },
+    "members": {
+      "demoteSuccess": "{{name}} a été rétrogradé avec succès",
+      "demoteError": "Impossible de rétrograder {{name}}",
+      "promoteSuccess": "{{name}} a été promu administrateur",
+      "promoteError": "Impossible de promouvoir {{name}}",
+      "requestPromoteSuccess": "Votre demande de devenir administrateur a été envoyée",
+      "requestPromoteError": "Impossible d'envoyer la demande de promotion",
+      "validateSuccess": "{{name}} a été validé avec succès",
+      "validateError": "Impossible de valider {{name}}",
+      "validateAdminSuccess": "{{name}} a été validé en tant qu'administrateur",
+      "validateAdminError": "Impossible de valider {{name}} en tant qu'administrateur",
+      "rejectSuccess": "La demande de {{name}} a été rejetée",
+      "rejectError": "Impossible de rejeter la demande de {{name}}",
+      "removeSuccess": "{{name}} a été supprimé avec succès",
+      "removeError": "Impossible de supprimer {{name}}",
+      "inviteSuccess": "Invitation envoyée à {{name}}",
+      "inviteError": "Impossible d'envoyer l'invitation à {{name}}",
+      "inviteAdminSuccess": "Invitation d'administrateur envoyée à {{name}}",
+      "inviteAdminError": "Impossible d'envoyer l'invitation d'administrateur à {{name}}"
+    },
+    "friends": {
+      "requestSent": "Demande d'amitié envoyée avec succès",
+      "sendRequestError": "Impossible d'envoyer la demande d'amitié",
+      "requestAccepted": "Demande d'amitié acceptée",
+      "acceptRequestError": "Impossible d'accepter la demande d'amitié",
+      "requestRejected": "Demande d'amitié rejetée",
+      "rejectRequestError": "Impossible de rejeter la demande d'amitié",
+      "friendRemoved": "Ami supprimé avec succès",
+      "removeError": "Impossible de supprimer l'ami",
+      "requestCancelled": "Demande d'amitié annulée",
+      "cancelError": "Impossible d'annuler la demande d'amitié"
+    },
+    "add": {
+      "organizationSuccess": "Organisation créée avec succès",
+      "organizationError": "Impossible de créer l'organisation",
+      "projectSuccess": "Projet créé avec succès",
+      "projectError": "Impossible de créer le projet",
+      "eventSuccess": "Événement créé avec succès",
+      "eventError": "Impossible de créer l'événement",
+      "poiSuccess": "Lieu créé avec succès",
+      "poiError": "Impossible de créer le lieu"
+    }
+  },
+  "ProfileEdit": {
+    "title": "Éditer le profil",
+    "profileImage": "Photo de profil",
+    "bannerImage": "Bannière",
+    "changeImage": "Changer",
+    "changeBanner": "Changer la bannière",
+    "changeAvatar": "Changer l'avatar",
+    "uploading": "Upload...",
+    "save": "Sauvegarder",
+    "saving": "Enregistrement...",
+    "cancel": "Annuler",
+    "tabs": {
+      "basic": "Informations",
+      "contact": "Contact",
+      "location": {
+        "label": "Localisation",
+        "description": "Indiquez votre adresse complète",
+        "resetAddress": "Effacer l'adresse"
+      },
+      "social": "Réseaux sociaux",
+      "schedule": {
+        "label": "Horaires",
+        "description": "Configurez vos horaires d'ouverture hebdomadaires"
+      },
+      "eventDates": {
+        "label": "Dates",
+        "description": "Configurez les dates et horaires de votre événement"
+      }
+    },
+    "loading": "Chargement...",
+    "fields": {
+      "name": {
+        "label": "Nom",
+        "placeholder": "Nom de l'entité",
+        "description": "Le nom qui sera affiché publiquement"
+      },
+      "slug": {
+        "label": "Identifiant URL (slug)",
+        "placeholder": "monprofil",
+        "description": "L'identifiant unique utilisé dans l'URL (lettres et chiffres uniquement, min 3 caractères)"
+      },
+      "birthDate": {
+        "label": "Date de naissance",
+        "placeholder": "Sélectionner une date",
+        "description": "Votre date de naissance (optionnel)"
+      },
+      "shortDescription": {
+        "label": "Description courte",
+        "placeholder": "Une brève description",
+        "description": "Résumé en quelques mots (max 200 caractères)"
+      },
+      "description": {
+        "label": "Description",
+        "placeholder": "Description détaillée",
+        "description": "Présentation complète et détaillée"
+      },
+      "email": {
+        "label": "Email",
+        "placeholder": "email@exemple.com",
+        "description": "Votre adresse email de contact"
+      },
+      "mobile": {
+        "label": "Téléphone mobile",
+        "placeholder": "+33 6 12 34 56 78",
+        "description": "Votre numéro de téléphone mobile"
+      },
+      "fixe": {
+        "label": "Téléphone fixe",
+        "placeholder": "+33 1 23 45 67 89",
+        "description": "Votre numéro de téléphone fixe"
+      },
+      "url": {
+        "label": "Site web",
+        "placeholder": "https://exemple.com",
+        "description": "L'URL de votre site personnel"
+      },
+      "addressCountry": {
+        "label": "Pays",
+        "placeholder": "Sélectionnez un pays"
+      },
+      "streetAddress": {
+        "label": "Adresse",
+        "placeholder": "12 rue de la Paix",
+        "searchPlaceholder": "Rechercher une adresse..."
+      },
+      "postalCode": {
+        "label": "Code postal",
+        "placeholder": "Sélectionnez un code postal"
+      },
+      "addressLocality": {
+        "label": "Ville",
+        "placeholder": "Paris",
+        "searchPlaceholder": "Rechercher une ville..."
+      },
+      "tags": {
+        "label": "Tags",
+        "placeholder": "Ajouter des tags...",
+        "maxReached": "Maximum {{max}} tags autorisés",
+        "searching": "Recherche...",
+        "noResults": "Aucun tag trouvé",
+        "typeToSearch": "Tapez au moins 2 caractères"
+      },
+      "type": {
+        "label": "Type d'organisation",
+        "placeholder": "Sélectionner un type",
+        "description": "Le type juridique ou structurel de votre organisation",
+        "options": {
+          "NGO": "Association",
+          "LocalBusiness": "Entreprise locale",
+          "Group": "Groupe",
+          "GovernmentOrganization": "Organisation gouvernementale",
+          "Cooperative": "Coopérative"
+        }
+      },
+      "eventType": {
+        "label": "Type d'événement",
+        "placeholder": "Sélectionner un type",
+        "description": "Le type de votre événement",
+        "options": {
+          "workshop": "Atelier",
+          "competition": "Compétition",
+          "concert": "Concert",
+          "contest": "Concours",
+          "conference": "Conférence",
+          "debate": "Débat",
+          "exhibition": "Exposition",
+          "festival": "Festival",
+          "crowdfunding": "Financement participatif",
+          "fair": "Foire",
+          "course": "Formation",
+          "protest": "Manifestation",
+          "market": "Marché",
+          "film": "Projection",
+          "getTogether": "Rencontre",
+          "meeting": "Réunion",
+          "spectacle": "Spectacle",
+          "internship": "Stage",
+          "stand": "Stand",
+          "others": "Autre"
+        }
+      },
+      "recurrency": {
+        "label": "Événement récurrent",
+        "description": "Activez si l'événement se répète chaque semaine selon des horaires fixes"
+      },
+      "startDate": {
+        "label": "Date de début",
+        "placeholder": "Sélectionner la date de début"
+      },
+      "endDate": {
+        "label": "Date de fin",
+        "placeholder": "Sélectionner la date de fin"
+      },
+      "parent": {
+        "label": "Entité parente",
+        "placeholder": "Sélectionner une entité parente...",
+        "description": "L'entité à laquelle cet élément est rattaché"
+      },
+      "organizer": {
+        "label": "Organisateur",
+        "placeholder": "Sélectionner l'organisateur...",
+        "description": "L'organisation ou la personne qui organise cet événement"
+      },
+      "parentEvent": {
+        "label": "Entité parente",
+        "placeholder": "Sélectionner une entité parente...",
+        "description": "L'organisation ou le projet auquel cet événement est rattaché"
+      }
+    },
+    "schedule": {
+      "openingHours": {
+        "label": "Horaires d'ouverture",
+        "title": "Horaires d'ouverture",
+        "description": "Définissez les horaires d'ouverture hebdomadaires",
+        "opens": "Ouverture",
+        "closes": "Fermeture",
+        "noDaysSelected": "Sélectionnez des jours pour définir les horaires"
+      }
+    },
+    "eventDates": {
+      "openingHours": {
+        "label": "Horaires de l'événement",
+        "title": "Horaires récurrents",
+        "description": "Définissez les jours et heures où l'événement a lieu chaque semaine",
+        "opens": "Début",
+        "closes": "Fin",
+        "noDaysSelected": "Sélectionnez des jours pour définir les horaires"
+      }
+    }
+  },
+  "SocialTab": {
+    "privateProfile": "Profil Privé",
+    "cannotViewFriends": "Vous ne pouvez pas voir la liste d'amis de cet utilisateur",
+    "searchFriends": "Rechercher des amis...",
+    "addFriend": "Ajouter un Ami",
+    "tabs": {
+      "friends": "Amis",
+      "friendsShort": "Amis",
+      "pending": "Demandes Reçues",
+      "pendingShort": "Reçues",
+      "sent": "Demandes Envoyées",
+      "sentShort": "Envoyées"
+    },
+    "noFriendsFound": "Aucun ami trouvé",
+    "noFriendsYet": "Pas encore d'amis",
+    "tryDifferentSearch": "Essayez un autre terme de recherche",
+    "startConnecting": "Commencez à vous connecter avec des personnes pour construire votre réseau",
+    "removeFriend": "Supprimer l'Ami",
+    "noPendingRequests": "Aucune demande en attente",
+    "pendingRequestsInfo": "Les demandes d'amitié en attente de votre réponse apparaîtront ici",
+    "accept": "Accepter",
+    "reject": "Rejeter",
+    "noSentRequests": "Aucune demande envoyée",
+    "sentRequestsInfo": "Les demandes d'amitié que vous avez envoyées apparaîtront ici",
+    "requestPending": "Demande en attente",
+    "cancel": "Annuler"
+  },
+  "FriendRequestDialog": {
+    "title": "Ajouter un Ami",
+    "searchPlaceholder": "Rechercher par nom ou nom d'utilisateur...",
+    "startTyping": "Commencez à taper pour rechercher des utilisateurs",
+    "noUsersFound": "Aucun utilisateur trouvé",
+    "tryDifferentSearch": "Essayez un autre terme de recherche",
+    "sendRequest": "Ajouter"
+  },
+  "MembershipTab": {
+    "privateProfile": "Profil Privé",
+    "cannotViewMemberships": "Vous ne pouvez pas voir les appartenances de cet utilisateur",
+    "searchMemberships": "Rechercher des appartenances...",
+    "tabs": {
+      "organizations": "Organisations",
+      "orgsShort": "Orgs",
+      "projects": "Projets",
+      "projectsShort": "Projets",
+      "pois": "Lieux",
+      "poisShort": "Lieux",
+      "events": "Événements",
+      "eventsShort": "Événements"
+    },
+    "organization": "Organisation",
+    "project": "Projet",
+    "poi": "Lieu",
+    "event": "Événement",
+    "admin": "Admin",
+    "member": "Membre",
+    "contributor": "Contributeur",
+    "participant": "Participant",
+    "author": "Auteur",
+    "noOrganizations": "Aucune organisation pour le moment",
+    "noProjects": "Aucun projet pour le moment",
+    "noPois": "Aucun lieu pour le moment",
+    "noEvents": "Aucun événement pour le moment",
+    "tryDifferentSearch": "Essayez un autre terme de recherche",
+    "startJoining": "Commencez à rejoindre des organisations et projets pour construire votre réseau",
+    "joinOrganization": "Rejoindre une Organisation",
+    "joinProject": "Rejoindre un Projet",
+    "addPoi": "Ajouter un Lieu",
+    "createEvent": "Créer un Événement"
+  },
+  "AddEntity": {
+    "create": "Créer",
+    "organization": "Organisation",
+    "project": "Projet",
+    "event": "Événement",
+    "poi": "Lieu",
+    "tabs": {
+      "info": "Informations",
+      "dates": "Dates",
+      "location": "Localisation"
+    },
+    "modal": {
+      "organization": {
+        "title": "Créer une organisation",
+        "description": "Renseignez les informations de votre organisation"
+      },
+      "project": {
+        "title": "Créer un projet",
+        "description": "Renseignez les informations de votre projet",
+        "public": "Projet public"
+      },
+      "event": {
+        "title": "Créer un événement",
+        "description": "Renseignez les informations de votre événement",
+        "public": "Événement public"
+      },
+      "poi": {
+        "title": "Ajouter un lieu",
+        "description": "Renseignez les informations du lieu"
+      }
+    }
+  },
+  "ProfileRelated": {
+    "empty": {
+      "projects": "Aucun projet lié",
+      "events": "Aucun événement lié",
+      "poi": "Aucun lieu lié"
+    },
+    "result": "résultat",
+    "results": "résultats",
+    "searchPlaceholder": "Rechercher...",
+    "tryDifferentSearch": "Essayez un autre terme de recherche",
+    "noRelatedEntities": "Aucune entité liée pour le moment"
+  },
+  "validation": {
+    "name": {
+      "required": "Le nom est requis",
+      "minLength": "Le nom doit contenir au moins 2 caractères"
+    },
+    "email": {
+      "invalid": "Email invalide"
+    },
+    "url": {
+      "invalid": "URL invalide"
+    },
+    "date": {
+      "invalid": "Date invalide"
+    },
+    "organizer": {
+      "required": "L'organisateur est obligatoire"
+    },
+    "startDate": {
+      "required": "La date de début est requise pour un événement ponctuel"
+    },
+    "endDate": {
+      "required": "La date de fin est requise pour un événement ponctuel",
+      "afterStart": "La date de fin doit être après la date de début"
+    },
+    "openingHours": {
+      "required": "Les horaires d'ouverture sont requis pour un événement récurrent",
+      "format": "Format HH:MM requis"
+    },
+    "slug": {
+      "minLength": "Le slug doit contenir au moins 3 caractères",
+      "maxLength": "Le slug ne peut pas dépasser 100 caractères",
+      "format": "Le slug ne peut contenir que des lettres et des chiffres"
+    },
+    "datetime": {
+      "invalid": "Format ISO 8601 requis"
     }
   }
 }

@@ -14,3 +14,4 @@ export function RecoverPasswordFormSection({ id }: { id?: string; props: Recover
         </section>
   );
 }
+export default RecoverPasswordFormSection;

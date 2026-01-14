@@ -1,7 +1,10 @@
-import { useInfiniteQueryScrollNext, type PageData } from "@/hooks/useInfiniteQueryScroll";
+import { useInfiniteQueryScrollNextWithTransform } from "@/hooks/useInfiniteQueryScroll";
 import { useMemo } from "react";
 import type { QueryKey } from "@tanstack/react-query";
-import type { PaginatorPage } from "@communecter/cocolight-api-client";
+import type { PaginatorPage, EntityTypes } from "@communecter/cocolight-api-client";
+import Cocolight from "@communecter/cocolight-api-client";
+
+type CocolightHelper = typeof Cocolight.helper;
 
 export interface InfiniteEntityQueryConfig<TEntity, TResult> {
   /**
@@ -39,10 +42,17 @@ export interface InfiniteEntityQueryConfig<TEntity, TResult> {
    * Temps de péremption du cache (défaut: 5 minutes)
    */
   staleTime?: number;
+
+  /**
+   * Helper Cocolight pour transformation SSR (optionnel)
+   * Si fourni, active la transformation automatique avec entity
+   */
+  helper?: CocolightHelper;
 }
 
 export interface InfiniteEntityQueryResult<TResult> {
   items: TResult[];
+  totalCount: number;
   isLoading: boolean;
   isFetchingNextPage: boolean;
   hasNextPage: boolean | undefined;
@@ -56,7 +66,7 @@ export interface InfiniteEntityQueryResult<TResult> {
  * Combine la pagination infinie avec le scroll automatique
  *
  * @example
- * const { items, isLoading, lastItemRef } = useInfiniteEntityQuery({
+ * const { items, totalCount, isLoading, lastItemRef } = useInfiniteEntityQuery({
  *   entity,
  *   typeCheck: isOrganization,
  *   queryKey: ["organization-members", entity?.slug],
@@ -86,18 +96,20 @@ export function useInfiniteEntityQuery<TEntity, TResult>({
   fetchFn,
   params,
   staleTime = 5 * 60 * 1000,
+  helper,
 }: InfiniteEntityQueryConfig<TEntity, TResult>): InfiniteEntityQueryResult<TResult> {
   const {
     data,
+    totalCount,
     isLoading,
     isFetchingNextPage,
     hasNextPage,
     lastItemRef,
     error,
     refetch,
-  } = useInfiniteQueryScrollNext<TResult[]>({
+  } = useInfiniteQueryScrollNextWithTransform<TResult>({
     queryKey,
-    queryFn: async (): Promise<PageData<TResult[]>> => {
+    queryFn: async () => {
       if (!entity || !typeCheck(entity)) {
         throw new Error("Invalid entity type");
       }
@@ -107,28 +119,15 @@ export function useInfiniteEntityQuery<TEntity, TResult>({
         indexStep: params?.indexStep || 20,
       };
 
-      const result = await fetchFn(entity, pagination);
-
-      return {
-        results: result.results,
-        hasNext: result.hasNext,
-        pageNumber: result.pageNumber,
-        next: result.next ? async () => {
-          const nextResult = await result.next!();
-          return {
-            results: nextResult.results,
-            hasNext: nextResult.hasNext,
-            pageNumber: nextResult.pageNumber,
-            next: nextResult.next,
-          };
-        } : undefined,
-      };
+      return fetchFn(entity, pagination);
     },
     options: {
       enabled: !!entity && typeCheck(entity),
       staleTime,
       initialPageParam: undefined,
     },
+    // Transformation SSR si helper est fourni
+    transform: helper && entity ? { entity: entity as unknown as EntityTypes, helper } : undefined,
   });
 
   const items = useMemo(() => {
@@ -138,6 +137,7 @@ export function useInfiniteEntityQuery<TEntity, TResult>({
 
   return {
     items,
+    totalCount,
     isLoading,
     isFetchingNextPage,
     hasNextPage,

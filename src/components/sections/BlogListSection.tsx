@@ -167,3 +167,4 @@ const navigate = useNavigate();
     </section>
   );
 }
+export default BlogListSection;

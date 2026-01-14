@@ -73,6 +73,13 @@
     - [5.5.34 `searchPro`](#5534-searchpro)
     - [Détails de `ListConfSchema`](#détails-de-listconfschema)
     - [Détails de `MapConfSchema`](#détails-de-mapconfschema)
+    - [5.5.35 `searchProStatic`](#5535-searchprostatic)
+    - [5.5.36 `hero-tiers-lieux`](#5536-hero-tiers-lieux)
+    - [5.5.37 `title`](#5537-title)
+    - [5.5.38 `content`](#5538-content)
+    - [5.5.39 `filters`](#5539-filters)
+    - [5.5.40 `gridLayout`](#5540-gridlayout)
+    - [5.5.41 `news`](#5541-news)
   - [5.6 `FooterSchema`](#56-footerschema)
   - [5.7 `IntegrationsSchema`](#57-integrationsschema)
   - [5.8 `FeatureFlagSchema`](#58-featureflagschema)
@@ -80,10 +87,18 @@
   - [5.10 `PerformanceConfigSchema`](#510-performanceconfigschema)
   - [5.11 `AdvancedSiteConfig`](#511-advancedsiteconfig)
 - [6. Sections dynamiques](#6-sections-dynamiques)
-  - [6.1 Vue d’ensemble de `SectionRenderer.tsx`](#61-vue-densemble-de-sectionrenderertsx)
-    - [Extrait simplifié](#extrait-simplifié)
+  - [6.1 Vue d'ensemble de `SectionRenderer.tsx`](#61-vue-densemble-de-sectionrenderertsx)
+    - [Code actuel](#code-actuel)
   - [6.2 Propriétés communes à toutes les sections](#62-propriétés-communes-à-toutes-les-sections)
   - [6.3 Description rapide des principaux types de section](#63-description-rapide-des-principaux-types-de-section)
+    - [Sections de contenu \& layout](#sections-de-contenu--layout)
+    - [Sections de données \& commerce](#sections-de-données--commerce)
+    - [Sections d'engagement](#sections-dengagement)
+    - [Sections de formulaires](#sections-de-formulaires)
+    - [Sections de liste \& événements](#sections-de-liste--événements)
+    - [Sections de recherche \& carte (depuis modules)](#sections-de-recherche--carte-depuis-modules)
+    - [Section news (depuis module news)](#section-news-depuis-module-news)
+    - [Autres](#autres)
   - [6.4 Comment ajouter ou personnaliser une nouvelle section](#64-comment-ajouter-ou-personnaliser-une-nouvelle-section)
 - [7. Modules fonctionnels](#7-modules-fonctionnels)
   - [7.1 Module Search (`src/modules/search`)](#71-module-search-srcmodulessearch)
@@ -109,7 +124,23 @@
     - [7.2.12 i18n et traductions](#7212-i18n-et-traductions)
     - [7.2.13 Configuration JSON dans site-config.json](#7213-configuration-json-dans-site-configjson)
     - [7.2.14 Flux d'exécution complet](#7214-flux-dexécution-complet)
-  - [7.3 Autres modules](#73-autres-modules)
+  - [7.3 Module News (`src/modules/news`)](#73-module-news-srcmodulesnews)
+    - [7.3.1 Architecture interne](#731-architecture-interne)
+    - [7.3.2 Schéma de configuration (`schema.ts`)](#732-schéma-de-configuration-schemats)
+    - [7.3.3 Hooks principaux](#733-hooks-principaux)
+    - [7.3.4 Exemple de configuration JSON](#734-exemple-de-configuration-json)
+    - [7.3.5 Préchargement SSR](#735-préchargement-ssr)
+  - [7.4 Récapitulatif des modules](#74-récapitulatif-des-modules)
+  - [7.5 Système de permissions modulaire (`src/lib/permissions`)](#75-système-de-permissions-modulaire-srclibpermissions)
+    - [7.5.1 Architecture](#751-architecture)
+    - [7.5.2 Types de base](#752-types-de-base)
+    - [7.5.3 Registre des calculateurs](#753-registre-des-calculateurs)
+    - [7.5.4 Hook générique `usePermissions`](#754-hook-générique-usepermissions)
+    - [7.5.5 Créer des permissions pour un module](#755-créer-des-permissions-pour-un-module)
+    - [7.5.6 Permissions du module Profil](#756-permissions-du-module-profil)
+    - [7.5.7 Permissions du module News](#757-permissions-du-module-news)
+    - [7.5.8 Hook rétrocompatible `useUserPermissions`](#758-hook-rétrocompatible-useuserpermissions)
+    - [7.5.9 Avantages de l'architecture modulaire](#759-avantages-de-larchitecture-modulaire)
 - [8. API Client \& Authentification](#8-api-client--authentification)
   - [8.1 Initialisation de l'API - Pattern Singleton (`apiClient.ts`)](#81-initialisation-de-lapi---pattern-singleton-apiclientts)
     - [8.1.1 Architecture du singleton](#811-architecture-du-singleton)
@@ -740,15 +771,23 @@ export function discoverModules(): DiscoveredModule[] {
 
 #### 4.4.4 Pattern factory de routes
 
-Les modules exportent une fonction factory `routes` qui reçoit un `QueryClient` optionnel pour SSR :
+Les modules exportent une fonction factory `routes` qui reçoit un `QueryClient` optionnel pour SSR et la `SiteConfig` :
+
+```typescript
+// src/lib/modules.ts
+export interface ModuleRouteFactory {
+  (queryClient?: QueryClient, config?: SiteConfig): RouteObject[];
+}
+```
 
 ```typescript
 // src/modules/profil/routes.tsx
 import type { ModuleRouteFactory } from "@/lib/modules";
 import type { QueryClient } from "@tanstack/react-query";
+import type { SiteConfig } from "@/types/site-schema";
 import type { RouteObject } from "react-router";
 
-export const routes: ModuleRouteFactory = (queryClient?: QueryClient): RouteObject[] => [
+export const routes: ModuleRouteFactory = (queryClient?: QueryClient, config?: SiteConfig): RouteObject[] => [
   {
     path: ":slug",                    // Route dynamique
     element: <ProfilePage />,
@@ -781,20 +820,21 @@ export const routes: ModuleRouteFactory = (queryClient?: QueryClient): RouteObje
 
 Deux fonctions récupèrent les routes des modules découverts :
 
-**`getModuleRoutesSync(modules, queryClient?)`** - Synchrone, client-side :
+**`getModuleRoutesSync(modules, queryClient?, config?)`** - Synchrone, client-side :
 
 ```typescript
-// src/lib/modules.ts (lignes 135-146)
+// src/lib/modules.ts
 export function getModuleRoutesSync(
   modules: DiscoveredModule[],
-  queryClient?: QueryClient
+  queryClient?: QueryClient,
+  config?: SiteConfig
 ): RouteObject[] {
   return modules.flatMap(module => {
     if (module.config.type === "core") {
       const coreModule = module as Extract<DiscoveredModule, { config: { type: "core" } }>;
-      return coreModule.routes(queryClient);
+      return coreModule.routes(queryClient, config);
     }
-    throw new Error(`getModuleRoutesSync ne supporte que les modules core`);
+    throw new Error(`getModuleRoutesSync ne supporte que les modules core. Module "${module.config.name}" est de type "${module.config.type}"`);
   });
 }
 ```
@@ -803,23 +843,24 @@ export function getModuleRoutesSync(
 - **Pas de loading flash** : tout est disponible immédiatement
 - Lance une erreur si un module optional est détecté
 
-**`getModuleRoutes(modules, queryClient?)`** - Asynchrone, server-side :
+**`getModuleRoutes(modules, queryClient?, config?)`** - Asynchrone, server-side :
 
 ```typescript
-// src/lib/modules.ts (lignes 158-177)
+// src/lib/modules.ts
 export async function getModuleRoutes(
   modules: DiscoveredModule[],
-  queryClient?: QueryClient
+  queryClient?: QueryClient,
+  config?: SiteConfig
 ): Promise<RouteObject[]> {
   const routePromises = modules.map(async (module): Promise<RouteObject[]> => {
     if (module.config.type === "core") {
       const coreModule = module as Extract<DiscoveredModule, { config: { type: "core" } }>;
-      return coreModule.routes(queryClient);
+      return coreModule.routes(queryClient, config);
     } else {
       // Module optional : routes chargées à la demande
       const optModule = module as Extract<DiscoveredModule, { config: { type: "optional" } }>;
       const loaded = await optModule.routes();
-      return loaded.routes(queryClient);
+      return loaded.routes(queryClient, config);
     }
   });
 
@@ -1117,16 +1158,50 @@ export const CardsSectionSchema = z.object({
   type: z.literal("cards"),
   id: z.string().optional(),
   props: z.object({
-    columns: z.number().int().min(1).max(6),
-    layout: z.enum(["grid","stack"]).default("grid"),
     items: z.array(z.object({
-      icon: z.string(),                       // nom d’icône
+      icon: z.string().optional(),
+      image: z.string().optional(),
       title: LocalizedString,
-      text: LocalizedString
-    }))
+      text: LocalizedString,
+      href: z.string().optional(),
+      target: z.enum(["_self", "_blank"]).optional(),
+      location: LocalizedString.optional(),
+      badges: z.array(z.object({
+        icon: z.string(),
+        label: z.string().optional()
+      })).optional(),
+      avatarIcon: z.string().optional(),
+      avatarColor: z.string().optional(),
+      date: z.string().optional(),
+      eventTitle: LocalizedString.optional(),
+      organizerName: LocalizedString.optional(),
+      iconSvg: z.string().optional(),
+      iconColor: z.string().optional(),
+      iconImage: z.string().optional(),
+      iconClipPath: z.string().optional(),
+    })),
+    columns: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5), z.literal(6)]).default(3),
+    layout: z.enum(["grid", "masonry", "carousel", "list"]).default("grid"),
+    variant: z.enum(["default", "tiers-lieux", "event", "icon-card"]).default("default"),
+    className: z.string().optional(),
+    showHeader: z.boolean().default(false),
+    headerTitle: LocalizedString.optional(),
+    showResultCount: z.boolean().default(false),
+    showViewToggle: z.boolean().default(false),
   })
 });
 ```
+
+| Propriété | Type | Description |
+| --------- | ---- | ----------- |
+| `items` | `array` | Liste des cartes à afficher |
+| `columns` | `1-6` | Nombre de colonnes (défaut: 3) |
+| `layout` | `"grid" \| "masonry" \| "carousel" \| "list"` | Mode d'affichage |
+| `variant` | `"default" \| "tiers-lieux" \| "event" \| "icon-card"` | Variante visuelle |
+| `showHeader` | `boolean` | Afficher l'en-tête de section |
+| `headerTitle` | `LocalizedString?` | Titre de l'en-tête |
+| `showResultCount` | `boolean` | Afficher le compteur de résultats |
+| `showViewToggle` | `boolean` | Afficher le toggle de vue |
 
 #### 5.5.3 `stats`
 
@@ -1172,17 +1247,23 @@ export const TestimonialsSectionSchema = z.object({
   type: z.literal("testimonials"),
   id: z.string().optional(),
   props: z.object({
-    style: z.enum(["carousel","grid"]).default("carousel"),
-    autoplay: z.boolean().default(false),
     items: z.array(z.object({
       quote: LocalizedString,
       author: LocalizedString,
-      role: LocalizedString,
-      avatar: z.string().url()
-    }))
+      role: LocalizedString.optional(),
+      avatar: z.string().optional()
+    })),
+    style: z.enum(["grid", "carousel", "ticker"]).default("carousel"),
+    autoplay: z.boolean().default(true),
   })
 });
 ```
+
+| Propriété | Type | Description |
+| --------- | ---- | ----------- |
+| `items` | `array` | Liste des témoignages |
+| `style` | `"grid" \| "carousel" \| "ticker"` | Mode d'affichage (ticker = défilement continu) |
+| `autoplay` | `boolean` | Lecture automatique du carousel/ticker |
 
 #### 5.5.6 `pricing`
 
@@ -1259,19 +1340,27 @@ export const BlogListSectionSchema = z.object({
       publishedAt: z.string(),                // ISO date
       author: z.object({
         name: LocalizedString,
-        avatar: z.string().url()
-      }),
-      featuredImage: z.string().url(),
-      tags: z.array(LocalizedString),
-      readTime: z.number().int().min(1)
+        avatar: z.string().optional()
+      }).optional(),
+      featuredImage: z.string().optional(),
+      tags: z.array(LocalizedString).optional(),
+      readTime: z.number().optional()
     })),
-    layout: z.enum(["grid","list"]).default("grid"),
-    columns: z.number().int().min(1).max(4).default(3),
-    pagination: z.boolean().default(false),
-    postsPerPage: z.number().int().min(1).optional()
+    layout: z.enum(["grid", "list", "masonry"]).default("grid"),
+    columns: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5), z.literal(6)]).default(3),
+    pagination: z.boolean().default(true),
+    postsPerPage: z.number().default(9)
   })
 });
 ```
+
+| Propriété | Type | Description |
+| --------- | ---- | ----------- |
+| `posts` | `array` | Liste des articles |
+| `layout` | `"grid" \| "list" \| "masonry"` | Mode d'affichage |
+| `columns` | `1-6` | Nombre de colonnes |
+| `pagination` | `boolean` | Activer la pagination |
+| `postsPerPage` | `number` | Articles par page |
 
 #### 5.5.10 `contactForm`
 
@@ -1313,8 +1402,8 @@ export const MarkdownSectionSchema = z.object({
   type: z.literal("markdown"),
   id: z.string().optional(),
   props: z.object({
-    md: z.string(),
-    sourceType: z.enum(["inline","url"]).default("inline"),
+    md: z.string(),                           // chemin .mdx ou contenu inline
+    sourceType: z.enum(["file", "inline"]).default("file"),
     animation: z.string().optional()
   })
 });
@@ -1328,12 +1417,12 @@ export const GallerySectionSchema = z.object({
   id: z.string().optional(),
   props: z.object({
     images: z.array(z.object({
-      src: z.string().url(),
-      alt: LocalizedString,
+      src: z.string(),
+      alt: LocalizedString.optional(),
       caption: LocalizedString.optional()
     })),
-    columns: z.number().int().min(1).max(4),
-    lightbox: z.boolean().default(false)
+    columns: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5), z.literal(6)]).default(3),
+    lightbox: z.boolean().default(true)
   })
 });
 ```
@@ -1346,13 +1435,23 @@ export const VideoSectionSchema = z.object({
   id: z.string().optional(),
   props: z.object({
     src: z.string(),
-    provider: z.enum(["youtube","vimeo"]).default("youtube"),
-    ratio: z.string().default("16/9"),
+    provider: z.enum(["youtube", "vimeo", "local", "loom"]).default("youtube"),
+    ratio: z.enum(["16/9", "4/3", "1/1", "9/16"]).default("16/9"),
+    autoplay: z.boolean().optional(),
     controls: z.boolean().default(true),
     loop: z.boolean().default(false)
   })
 });
 ```
+
+| Propriété | Type | Description |
+| --------- | ---- | ----------- |
+| `src` | `string` | URL ou ID de la vidéo |
+| `provider` | `"youtube" \| "vimeo" \| "local" \| "loom"` | Plateforme vidéo |
+| `ratio` | `"16/9" \| "4/3" \| "1/1" \| "9/16"` | Format d'affichage |
+| `autoplay` | `boolean?` | Lecture automatique |
+| `controls` | `boolean` | Afficher les contrôles |
+| `loop` | `boolean` | Lecture en boucle |
 
 #### 5.5.15 `table`
 
@@ -1363,9 +1462,9 @@ export const TableSectionSchema = z.object({
   props: z.object({
     headers: z.array(LocalizedString),
     rows: z.array(z.array(LocalizedString)),
-    sortable: z.boolean().default(false),
+    sortable: z.boolean().default(true),
     pagination: z.boolean().default(false),
-    perPage: z.number().int().optional()
+    perPage: z.number().int().default(10)
   })
 });
 ```
@@ -1377,14 +1476,26 @@ export const ChartSectionSchema = z.object({
   type: z.literal("chart"),
   id: z.string().optional(),
   props: z.object({
-    kind: z.enum(["bar","line","pie"]),
-    data: z.array(z.record(z.union([z.string(), z.number()]))),
+    kind: z.enum(["line", "bar", "pie", "area", "radar"]),
+    data: z.array(
+      z.record(z.string(), z.union([z.number(), z.string()]))
+    ),
     xKey: z.string(),
     yKeys: z.array(z.string()),
-    legend: z.boolean().default(false)
+    stacked: z.boolean().optional(),
+    legend: z.boolean().default(true)
   })
 });
 ```
+
+| Propriété | Type | Description |
+| --------- | ---- | ----------- |
+| `kind` | `"line" \| "bar" \| "pie" \| "area" \| "radar"` | Type de graphique |
+| `data` | `array` | Données à afficher |
+| `xKey` | `string` | Clé de l'axe X |
+| `yKeys` | `string[]` | Clés des séries Y |
+| `stacked` | `boolean?` | Graphique empilé (bar/area) |
+| `legend` | `boolean` | Afficher la légende |
 
 #### 5.5.17 `map`
 
@@ -1465,13 +1576,20 @@ export const SocialFeedSectionSchema = z.object({
   type: z.literal("socialFeed"),
   id: z.string().optional(),
   props: z.object({
-    platform: z.string(),                  // ex. "twitter"
-    feedId: z.string(),                    // ex. "siteforge"
-    limit: z.number().int().min(1).optional(),
-    layout: z.enum(["grid","list"]).default("grid")
+    platform: z.enum(["twitter", "instagram", "linkedin", "facebook"]),
+    feedId: z.string(),
+    limit: z.number().default(6),
+    layout: z.enum(["grid", "carousel", "masonry"]).default("grid")
   })
 });
 ```
+
+| Propriété | Type | Description |
+| --------- | ---- | ----------- |
+| `platform` | `"twitter" \| "instagram" \| "linkedin" \| "facebook"` | Plateforme sociale |
+| `feedId` | `string` | Identifiant du flux |
+| `limit` | `number` | Nombre d'éléments à afficher (défaut: 6) |
+| `layout` | `"grid" \| "carousel" \| "masonry"` | Mode d'affichage |
 
 #### 5.5.22 `search` (déprécié)
 
@@ -1490,18 +1608,24 @@ export const EventListSectionSchema = z.object({
       title: LocalizedString,
       description: LocalizedString,
       startDate: z.string(),
-      endDate: z.string(),
-      location: LocalizedString,
-      image: z.string().url().optional(),
+      endDate: z.string().optional(),
+      location: LocalizedString.optional(),
+      image: z.string().optional(),
       registrationUrl: z.string().optional(),
       price: z.string().optional(),
-      tags: z.array(LocalizedString)
+      tags: z.array(LocalizedString).optional()
     })),
-    layout: z.enum(["grid","list"]).default("grid"),
+    layout: z.enum(["list", "grid", "calendar"]).default("list"),
     showPastEvents: z.boolean().default(false)
   })
 });
 ```
+
+| Propriété | Type | Description |
+| --------- | ---- | ----------- |
+| `events` | `array` | Liste des événements |
+| `layout` | `"list" \| "grid" \| "calendar"` | Mode d'affichage |
+| `showPastEvents` | `boolean` | Afficher les événements passés |
 
 #### 5.5.24 `productShowcase`
 
@@ -1514,19 +1638,25 @@ export const ProductShowcaseSectionSchema = z.object({
       id: z.string(),
       name: LocalizedString,
       description: LocalizedString,
-      price: z.string(),
-      images: z.array(z.string().url()),
-      features: z.array(LocalizedString),
+      price: z.string().optional(),
+      images: z.array(z.string()),
+      features: z.array(LocalizedString).optional(),
       cta: z.object({
         label: LocalizedString,
         href: z.string()
-      })
+      }).optional()
     })),
-    layout: z.enum(["grid","carousel"]).default("grid"),
+    layout: z.enum(["grid", "carousel", "featured"]).default("grid"),
     showPrices: z.boolean().default(true)
   })
 });
 ```
+
+| Propriété | Type | Description |
+| --------- | ---- | ----------- |
+| `products` | `array` | Liste des produits |
+| `layout` | `"grid" \| "carousel" \| "featured"` | Mode d'affichage (featured = mise en avant) |
+| `showPrices` | `boolean` | Afficher les prix |
 
 #### 5.5.25 `cookieConsent`
 
@@ -1537,16 +1667,16 @@ export const CookieConsentSectionSchema = z.object({
   props: z.object({
     message: LocalizedString,
     acceptLabel: LocalizedString,
-    declineLabel: LocalizedString,
-    settingsLabel: LocalizedString,
-    policyUrl: z.string(),
-    position: z.enum(["bottom","top"]).default("bottom"),
+    declineLabel: LocalizedString.optional(),
+    settingsLabel: LocalizedString.optional(),
+    policyUrl: z.string().optional(),
+    position: z.enum(["bottom", "top", "bottom-left", "bottom-right"]).default("bottom"),
     categories: z.array(z.object({
       id: z.string(),
       label: LocalizedString,
       description: LocalizedString,
       required: z.boolean().default(false)
-    }))
+    })).optional()
   })
 });
 ```
@@ -1733,6 +1863,14 @@ export const SearchProSectionSchema = z.object({
     enableMap: z.boolean().default(true),
     showActiveFiltersTypes: z.boolean().default(true),
     showActiveFiltersTags: z.boolean().default(true),
+    disableInfiniteScroll: z.boolean().optional(),
+    showDetailedViewToggle: z.boolean().optional(),
+    customHeader: z.object({
+      title: LocalizedString.optional(),
+      linkText: LocalizedString.optional(),
+      linkHref: z.string().optional(),
+      showMapButton: z.boolean().default(true),
+    }).optional(),
 
     filters: z.record(z.string(), TagsFilterSchema).optional(),
 
@@ -1764,10 +1902,13 @@ export const SearchProSectionSchema = z.object({
 | `enableMap` | `boolean` | Charger les ressources cartographiques |
 | `showActiveFiltersTypes` | `boolean` | Afficher les types actifs |
 | `showActiveFiltersTags` | `boolean` | Afficher les tags actifs |
+| `disableInfiniteScroll` | `boolean?` | Désactiver le scroll infini |
+| `showDetailedViewToggle` | `boolean?` | Afficher le bouton vue détaillée |
+| `customHeader` | `object?` | Configuration de l'en-tête personnalisé |
 | `filters` | `Record<string, TagsFilterSchema>?` | Filtres personnalisés (tags, catégories) |
 | `baseParams` | `object?` | Paramètres de base pour la recherche avancée |
-| `list` | `ListConfSchema?` | Configuration de l’affichage en liste |
-| `map` | `MapConfSchema?` | Configuration de l’affichage sur la carte |
+| `list` | `ListConfSchema?` | Configuration de l'affichage en liste |
+| `map` | `MapConfSchema?` | Configuration de l'affichage sur la carte |
 
 #### Détails de `ListConfSchema`
 
@@ -1777,6 +1918,7 @@ const ListConfSchema = z.object({
     lg: z.number().int().min(1).max(6).optional(),
     md: z.number().int().min(1).max(6).optional(),
     sm: z.number().int().min(1).max(6).optional(),
+    xl: z.number().int().min(1).max(6).optional(),
   }).partial().optional(),
   card: z.object({
     tagLimit:        z.number().int().min(1).max(50).optional(),
@@ -1784,7 +1926,8 @@ const ListConfSchema = z.object({
     showAddress:     z.boolean().optional(),
     shareButton:     z.boolean().optional(),
     detailsMode:     z.enum(["drawer", "dialog"]).default("drawer"),
-    type:            z.enum(["overlay", "default"]).default("default"),
+    type:            z.enum(["overlay", "default", "tiers-lieux", "event"]).default("default"),
+    variant:         z.enum(["default", "tiers-lieux", "event"]).optional(),
   }).partial().optional(),
   preview: z.object({
     type: z.enum(["default"]).default("default"),
@@ -1792,7 +1935,8 @@ const ListConfSchema = z.object({
 }).partial();
 ```
 
-* **`card.type`** : `overlay` (texte sur l’image) ou `default`.
+* **`card.type`** : `overlay` (texte sur l'image), `default`, `tiers-lieux`, ou `event`.
+* **`card.variant`** : variante visuelle de la carte (`default`, `tiers-lieux`, `event`).
 * **`card.detailsMode`** : affichage des détails dans un `drawer` ou un `dialog`.
 * **`preview.type`** : type de prévisualisation (actuellement `default`).
 
@@ -1809,6 +1953,262 @@ const MapConfSchema = z.object({
 ```
 
 * **`popup.type`** : type de popup sur la carte (actuellement `default`).
+
+---
+
+#### 5.5.35 `searchProStatic`
+
+Version statique de `searchPro` sans synchronisation URL, conçue pour afficher plusieurs recherches sur une même page.
+
+```ts
+import { SearchProStaticSectionSchema } from "@/modules/search/schema";
+```
+
+```ts
+export const SearchProStaticSectionSchema = z.object({
+  type: z.literal("searchProStatic"),
+  id:   z.string().optional(),
+
+  props: z.object({
+    title: LocalizedString.optional(),
+    description: LocalizedString.optional(),
+    placeholder: LocalizedString.optional(),
+    useFilter:   z.boolean().default(false),
+    showMap:     z.boolean().default(false),
+    enableMap: z.boolean().default(true),
+    showActiveFiltersTypes: z.boolean().default(false),
+    showActiveFiltersTags: z.boolean().default(false),
+    disableInfiniteScroll: z.boolean().optional(),
+    showDetailedViewToggle: z.boolean().optional(),
+    customHeader: z.object({
+      title: LocalizedString.optional(),
+      linkText: LocalizedString.optional(),
+      linkHref: z.string().optional(),
+      showMapButton: z.boolean().default(true),
+    }).optional(),
+
+    filters: z.record(z.string(), TagsFilterSchema).optional(),
+    baseParams: z.object({ /* même structure que searchPro */ }).optional(),
+    list: ListConfSchema.optional(),
+    map:  MapConfSchema.optional(),
+  }),
+});
+```
+
+**Différences avec `searchPro`** :
+- **Pas de synchronisation URL** : les filtres ne modifient pas l'URL
+- **Defaults différents** : `useFilter: false`, `showActiveFiltersTypes: false`, `showActiveFiltersTags: false`
+- **Placeholder optionnel** : contrairement à `searchPro` où il est obligatoire
+- **Idéal pour** : intégrer plusieurs recherches sur une même page sans conflits de query params
+
+---
+
+#### 5.5.36 `hero-tiers-lieux`
+
+Hero spécialisé pour les sites Tiers-Lieux avec recherche intégrée.
+
+```ts
+export const HeroTiersLieuxSchema = z.object({
+  type: z.literal("hero-tiers-lieux"),
+  id: z.string().optional(),
+  props: z.object({
+    headline: LocalizedString,
+    subhead: LocalizedString.optional(),
+    backgroundImage: z.string().optional(),
+    ctaButtons: z.array(z.object({
+      label: LocalizedString,
+      variant: z.enum(["default", "secondary"]).optional(),
+    })).optional(),
+    placeholder: LocalizedString.optional(),
+    searchButtonText: LocalizedString.optional(),
+  }),
+});
+```
+
+| Propriété | Type | Description |
+| --------- | ---- | ----------- |
+| `headline` | `LocalizedString` | Titre principal |
+| `subhead` | `LocalizedString?` | Sous-titre |
+| `backgroundImage` | `string?` | Image de fond |
+| `ctaButtons` | `array?` | Boutons d'action |
+| `placeholder` | `LocalizedString?` | Placeholder du champ de recherche |
+| `searchButtonText` | `LocalizedString?` | Texte du bouton de recherche |
+
+---
+
+#### 5.5.37 `title`
+
+Section de titre centrée, idéale pour séparer les parties d'une page.
+
+```ts
+const TitleSectionSchema = z.object({
+  type: z.literal("title"),
+  id: z.string().optional(),
+  props: z.object({
+    title: LocalizedString,
+    subtitle: LocalizedString.optional(),
+    className: z.string().optional(),
+    align: z.enum(["left", "center", "right"]).default("center"),
+    size: z.enum(["sm", "md", "lg", "xl"]).default("lg"),
+  }),
+});
+```
+
+| Propriété | Type | Description |
+| --------- | ---- | ----------- |
+| `title` | `LocalizedString` | Titre principal |
+| `subtitle` | `LocalizedString?` | Sous-titre optionnel |
+| `align` | `"left" \| "center" \| "right"` | Alignement du texte |
+| `size` | `"sm" \| "md" \| "lg" \| "xl"` | Taille du titre |
+| `className` | `string?` | Classes CSS additionnelles |
+
+---
+
+#### 5.5.38 `content`
+
+Section de contenu riche avec image, texte, tags et liens.
+
+```ts
+const ContentSectionSchema = z.object({
+  type: z.literal("content"),
+  id: z.string().optional(),
+  props: z.object({
+    category: LocalizedString.optional(),
+    title: LocalizedString,
+    description: LocalizedString,
+    tags: z.array(LocalizedString).optional(),
+    image: z.string().optional(),
+    imagePosition: z.enum(["left", "right"]).default("right"),
+    links: z.array(z.object({
+      label: LocalizedString,
+      href: z.string(),
+    })).optional(),
+    iconCard: z.object({
+      svg: z.string(),
+    }).optional(),
+    infoText: LocalizedString.optional(),
+    decorativeElements: z.object({
+      type: z.enum(["corner-icon", "colored-squares", "none"]),
+    }).optional(),
+    className: z.string().optional(),
+    stats: z.array(z.object({
+      value: z.string(),
+      label: LocalizedString
+    })).optional(),
+  }),
+});
+```
+
+| Propriété | Type | Description |
+| --------- | ---- | ----------- |
+| `category` | `LocalizedString?` | Catégorie affichée au-dessus du titre |
+| `title` | `LocalizedString` | Titre de la section |
+| `description` | `LocalizedString` | Description principale |
+| `tags` | `LocalizedString[]?` | Liste de tags |
+| `image` | `string?` | URL de l'image |
+| `imagePosition` | `"left" \| "right"` | Position de l'image |
+| `links` | `array?` | Liens vers d'autres pages |
+| `iconCard` | `object?` | Carte avec icône SVG |
+| `stats` | `array?` | Statistiques à afficher |
+
+---
+
+#### 5.5.39 `filters`
+
+Section de filtres avec groupes dépliables.
+
+```ts
+const FiltersSectionSchema = z.object({
+  type: z.literal("filters"),
+  id: z.string().optional(),
+  props: z.object({
+    title: LocalizedString.optional(),
+    filterGroups: z.array(z.object({
+      id: z.string(),
+      label: LocalizedString,
+      options: z.array(z.object({
+        id: z.string(),
+        label: LocalizedString,
+        name: z.string().optional(),
+        defaultChecked: z.boolean().optional(),
+      })),
+    })),
+    defaultOpenGroups: z.array(z.string()).optional(),
+    className: z.string().optional(),
+  }),
+});
+```
+
+| Propriété | Type | Description |
+| --------- | ---- | ----------- |
+| `title` | `LocalizedString?` | Titre de la section filtres |
+| `filterGroups` | `array` | Groupes de filtres |
+| `defaultOpenGroups` | `string[]?` | IDs des groupes ouverts par défaut |
+
+---
+
+#### 5.5.40 `gridLayout`
+
+Layout en grille avec deux colonnes configurable.
+
+```ts
+const GridLayoutSectionSchema = z.object({
+  type: z.literal("gridLayout"),
+  id: z.string().optional(),
+  props: z.object({
+    leftSection: z.any(),
+    rightSection: z.any(),
+    leftColumns: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]).optional(),
+    rightColumns: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]).optional(),
+    gap: z.number().optional(),
+    className: z.string().optional(),
+  }),
+});
+```
+
+| Propriété | Type | Description |
+| --------- | ---- | ----------- |
+| `leftSection` | `Section` | Section à afficher à gauche |
+| `rightSection` | `Section` | Section à afficher à droite |
+| `leftColumns` | `1-4` | Nombre de colonnes pour la gauche |
+| `rightColumns` | `1-4` | Nombre de colonnes pour la droite |
+| `gap` | `number?` | Espacement entre les colonnes |
+
+---
+
+#### 5.5.41 `news`
+
+Section de flux d'actualités avec commentaires et réactions.
+
+```ts
+import { NewsSectionSchema } from "@/modules/news/schema";
+```
+
+```ts
+export const NewsSectionSchema = z.object({
+  type: z.literal("news"),
+  id: z.string().optional(),
+  props: z.object({
+    title: LocalizedString.optional(),
+    entitySlug: z.string().optional(),
+    maxItems: z.number().positive().optional().default(10),
+    showAddButton: z.boolean().optional().default(true),
+    showFilters: z.boolean().optional().default(false),
+    showComments: z.boolean().optional().default(true),
+    showReactions: z.boolean().optional().default(true),
+  }),
+});
+```
+
+| Propriété | Type | Description |
+| --------- | ---- | ----------- |
+| `title` | `LocalizedString?` | Titre de la section |
+| `entitySlug` | `string?` | Slug de l'entité pour filtrer les news |
+| `maxItems` | `number` | Nombre maximum d'éléments à afficher |
+| `showAddButton` | `boolean` | Afficher le bouton d'ajout |
+| `showFilters` | `boolean` | Afficher les filtres |
+| `showComments` | `boolean` | Afficher les commentaires |
+| `showReactions` | `boolean` | Afficher les réactions |
 
 ---
 
@@ -1966,38 +2366,91 @@ Cette partie explique comment SiteForge transforme votre configuration JSON en c
 
 ---
 
-### 6.1 Vue d’ensemble de `SectionRenderer.tsx`
+### 6.1 Vue d'ensemble de `SectionRenderer.tsx`
 
 Le fichier `src/components/sections/SectionRenderer.tsx` centralise le rendu de toutes les sections. Son principe :
 
-1. **Mapping** : il associe chaque `type` de section (ex. `"hero"`) à un composant React précis (`HeroSection`).
-2. **Validation** : avant le rendu, il valide le JSON via le schéma Zod correspondant.
-3. **Rendu** : il injecte les `props` validés dans le composant.
+1. **Mapping** : il associe chaque `type` de section (ex. `"hero"`) à un composant React lazy-loaded.
+2. **Lazy Loading** : utilise `lazy()` de **vite-preload** (pas `React.lazy`) pour tracer les chunks correctement.
+3. **Suspense + ErrorBoundary** : gère le chargement asynchrone et les erreurs.
+4. **Rendu** : injecte les `props` dans le composant avec fallbacks appropriés.
 
-#### Extrait simplifié
+#### Code actuel
 
 ```tsx
-import { HeroSection } from "./HeroSection";
-import { CardsSection } from "./CardsSection";
-// … import de tous les composants
+import { Suspense } from "react";
+import { lazy } from "vite-preload"; // Utiliser lazy de vite-preload pour tracer les chunks
+import type { PreloadableComponent } from "react-lazy-with-preload";
+import type { Section, SectionPropsMap } from "@/types/site";
+import { ErrorBoundary } from "../layout/ErrorBoundary";
 
-const sectionMap: Record<string, React.FC<any>> = {
-  hero: HeroSection,
-  cards: CardsSection,
-  stats: StatsSection,
-  gallery: GallerySection,
-  searchPro: SearchProSection,
-  // … tous les autres
+// vite-preload retourne PreloadableComponent au lieu de LazyExoticComponent
+type LazySectionComponent<T extends Section['type']> =
+  PreloadableComponent<
+    React.ComponentType<{ id?: string; props: SectionPropsMap[T] }>
+  >;
+
+// Mapping « type » → Composant lazy-loaded
+// Chaque entrée crée un CHUNK séparé (code‑splitting).
+// IMPORTANT: Tous les composants doivent avoir un export default.
+const LazySections: {
+  [K in keyof SectionPropsMap]: LazySectionComponent<K>;
+} = {
+  hero: lazy(() => import("./HeroSection")),
+  "hero-tiers-lieux": lazy(() => import("./HeroTiersLieux")),
+  markdown: lazy(() => import("./MarkdownSection")),
+  cards: lazy(() => import("./CardsSection")),
+  gallery: lazy(() => import("./GallerySection")),
+  // ... 41 types de sections au total
+  searchPro: lazy(() => import("@/modules/search/SearchProSection")),
+  searchProStatic: lazy(() => import("@/modules/search/SearchProStaticSection")),
+  news: lazy(() => import("@/modules/news/components/sections/NewsSection")),
 };
 
-export const SectionRenderer: React.FC<{
-  section: Section; // 타입 SiteConfig.pages[].sections[n]
-}> = ({ section }) => {
-  const Component = sectionMap[section.type];
-  if (!Component) return null;
-  return <Component {...section.props} />;
-};
+// Fallback skeleton pour les sections en cours de chargement
+function SectionLoadingFallback({ id, type }: { id?: string; type: string }) {
+  return (
+    <section id={id} className="py-8 animate-pulse" data-loading-section={type}>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="h-8 bg-muted/40 rounded-lg w-1/3 mb-4" />
+        <div className="h-4 bg-muted/30 rounded w-2/3 mb-2" />
+        <div className="h-4 bg-muted/30 rounded w-1/2" />
+      </div>
+    </section>
+  );
+}
+
+export function SectionRenderer({ section }: { section: Section }) {
+  const LazyComponent = LazySections[section.type];
+
+  if (!LazyComponent) {
+    console.warn(`[SectionRenderer] Unknown section type: "${section.type}"`);
+    return (
+      <section id={section.id} className="py-16 bg-muted/30 text-foreground">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-muted-foreground">
+            Section type "{section.type}" not implemented yet
+          </p>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <Suspense fallback={<SectionLoadingFallback id={section.id} type={section.type} />}>
+      <ErrorBoundary context={`Section[type=${section.type}]`}>
+        <LazyComponent id={section.id} props={section.props} />
+      </ErrorBoundary>
+    </Suspense>
+  );
+}
 ```
+
+**Points clés** :
+- **vite-preload** : remplace `React.lazy` pour un meilleur tracking des chunks SSR
+- **ErrorBoundary** : isole les erreurs de rendu par section
+- **SectionLoadingFallback** : skeleton animé pendant le chargement
+- **Types stricts** : `SectionPropsMap` assure la cohérence des props
 
 ---
 
@@ -2015,22 +2468,92 @@ Ces conventions garantissent que `SectionRenderer` peut traiter **toutes** les s
 
 ### 6.3 Description rapide des principaux types de section
 
-| Type            | Composant             | Usage principal                                                        |
-| --------------- | --------------------- | ---------------------------------------------------------------------- |
-| **hero**        | `HeroSection`         | Bandeau d’accueil avec titre, sous-titre, image de fond et boutons CTA |
-| **cards**       | `CardsSection`        | Grille de cartes illustratives                                         |
-| **stats**       | `StatsSection`        | Affichage chiffré (valeurs, icônes)                                    |
-| **gallery**     | `GallerySection`      | Galerie d’images avec lightbox                                         |
-| **searchPro**   | `SearchProSection`    | Module de recherche avancée avec filtres et carte                      |
-| **pricing**     | `PricingSection`      | Présentation des offres et tarifs                                      |
-| **faq**         | `FAQSection`          | Liste de questions/réponses accordéon                                  |
-| **blogList**    | `BlogListSection`     | Liste ou grille d’articles                                             |
-| **contactForm** | `ContactFormSection`  | Formulaire de contact configurable                                     |
-| **testimonial** | `TestimonialsSection` | Témoignages clients avec carousel                                      |
-| **map**         | `MapSection`          | Carte interactive (Leaflet)                                            |
-| …               | …                     | …                                                                      |
+Le système supporte actuellement **41 types de sections** :
 
-Chaque composant se trouve dans `src/components/sections/<Type>Section.tsx` et lit ses props typés.
+#### Sections de contenu & layout
+
+| Type               | Composant                | Usage principal                                                        |
+| ------------------ | ------------------------ | ---------------------------------------------------------------------- |
+| **hero**           | `HeroSection`            | Bandeau d'accueil avec titre, sous-titre, image de fond et boutons CTA |
+| **hero-tiers-lieux** | `HeroTiersLieux`       | Hero spécialisé pour Tiers-Lieux avec recherche intégrée               |
+| **cards**          | `CardsSection`           | Grille de cartes (grid/masonry/carousel/list)                          |
+| **content**        | `ContentSection`         | Bloc de contenu riche avec image, texte, tags et liens                 |
+| **title**          | `TitleSection`           | Titre centré pour séparer les parties d'une page                       |
+| **markdown**       | `MarkdownSection`        | Contenu Markdown/MDX                                                   |
+| **gallery**        | `GallerySection`         | Galerie d'images avec lightbox                                         |
+| **video**          | `VideoSection`           | YouTube/Vimeo/Loom/local video                                         |
+| **html**           | `HTMLSection`            | Injection HTML brut                                                    |
+| **gridLayout**     | `GridLayoutSection`      | Layout en grille deux colonnes configurable                            |
+
+#### Sections de données & commerce
+
+| Type                 | Composant                  | Usage principal                                   |
+| -------------------- | -------------------------- | ------------------------------------------------- |
+| **pricing**          | `PricingSection`           | Présentation des offres et tarifs                 |
+| **stats**            | `StatsSection`             | Affichage chiffré (valeurs, icônes, animation)    |
+| **table**            | `TableSection`             | Tableau de données sortable/paginable             |
+| **chart**            | `ChartSection`             | Visualisation Recharts (line/bar/pie/area/radar)  |
+| **productShowcase**  | `ProductShowcaseSection`   | Présentation de produits                          |
+| **comparison**       | `ComparisonSection`        | Comparaison avant/après d'images                  |
+| **featureComparison**| `FeatureComparisonSection` | Tableau comparatif de features                    |
+
+#### Sections d'engagement
+
+| Type             | Composant              | Usage principal                              |
+| ---------------- | ---------------------- | -------------------------------------------- |
+| **testimonials** | `TestimonialsSection`  | Témoignages clients (grid/carousel/ticker)   |
+| **faq**          | `FAQSection`           | Questions/réponses accordéon                 |
+| **accordion**    | `AccordionSection`     | Accordéon personnalisé (distinct de FAQ)     |
+| **tabs**         | `TabsSection`          | Contenu à onglets (support sections imbriquées) |
+| **steps**        | `StepsSection`         | Étapes/progression                           |
+| **timeline**     | `TimelineSection`      | Chronologie d'événements                     |
+| **team**         | `TeamSection`          | Présentation des membres d'équipe            |
+| **cta**          | `CTASection`           | Appel à l'action avec boutons                |
+| **banner**       | `BannerSection`        | Bandeau d'annonce (info/warning/error)       |
+| **logoCloud**    | `LogoCloudSection`     | Logos partenaires/clients                    |
+| **breadcrumb**   | `BreadcrumbSection`    | Navigation fil d'Ariane                      |
+
+#### Sections de formulaires
+
+| Type                   | Composant                    | Usage principal                    |
+| ---------------------- | ---------------------------- | ---------------------------------- |
+| **contactForm**        | `ContactFormSection`         | Formulaire de contact configurable |
+| **loginForm**          | `LoginFormSection`           | Formulaire de connexion            |
+| **registerForm**       | `RegisterFormSection`        | Formulaire d'inscription           |
+| **recoverPasswordForm**| `RecoverPasswordFormSection` | Récupération de mot de passe       |
+| **newsletter**         | `NewsletterSection`          | Inscription newsletter             |
+
+#### Sections de liste & événements
+
+| Type          | Composant           | Usage principal                         |
+| ------------- | ------------------- | --------------------------------------- |
+| **blogPost**  | `BlogPostSection`   | Article de blog individuel              |
+| **blogList**  | `BlogListSection`   | Liste/grille d'articles                 |
+| **eventList** | `EventListSection`  | Liste/grille/calendrier d'événements    |
+| **socialFeed**| `SocialFeedSection` | Widget flux réseaux sociaux             |
+
+#### Sections de recherche & carte (depuis modules)
+
+| Type              | Composant                  | Usage principal                                         |
+| ----------------- | -------------------------- | ------------------------------------------------------- |
+| **searchPro**     | `SearchProSection`         | Recherche avancée avec filtres, carte et liste          |
+| **searchProStatic** | `SearchProStaticSection` | Recherche statique (pas de sync URL, multi-instances)   |
+| **map**           | `MapSection`               | Carte interactive (Leaflet/Google/Mapbox)               |
+| **filters**       | `FiltersSection`           | Groupes de filtres dépliables                           |
+
+#### Section news (depuis module news)
+
+| Type     | Composant      | Usage principal                              |
+| -------- | -------------- | -------------------------------------------- |
+| **news** | `NewsSection`  | Flux d'actualités avec commentaires/réactions |
+
+#### Autres
+
+| Type              | Composant              | Usage principal                  |
+| ----------------- | ---------------------- | -------------------------------- |
+| **cookieConsent** | `CookieConsentSection` | Bandeau de consentement cookies  |
+
+Chaque composant se trouve dans `src/components/sections/<Type>Section.tsx` ou dans le module correspondant (ex: `@/modules/search/SearchProSection`) et lit ses props typés.
 
 ---
 
@@ -2125,55 +2648,76 @@ Ce module permet d’afficher une interface de recherche avancée avec filtres, 
 
 ```
 src/modules/search/
+├── SearchPro.tsx              # Composant principal avec synchronisation URL
+├── SearchProStatic.tsx        # Version sans synchronisation URL
+├── SearchProSection.tsx       # Section wrapper pour SearchPro
+├── SearchProStaticSection.tsx # Section wrapper pour SearchProStatic
 ├── components/
-│   ├── ActiveFiltersBar.tsx
-│   ├── FilterDropdown.tsx
-│   ├── SearchCard.tsx
-│   ├── SearchCardSkeleton.tsx
-│   ├── SearchFilters.tsx
-│   ├── SearchListView.tsx
-│   ├── SearchListSkeleton.tsx
-│   ├── SearchMap.tsx
-│   ├── SearchMapWrapper.tsx
-│   ├── SearchProSection.tsx
-│   ├── SwitchDetailsMode.tsx
+│   ├── ActiveFiltersBar.tsx   # Affichage des filtres actifs
+│   ├── FilterDropdown.tsx     # Dropdown de sélection de filtres
+│   ├── SearchCard.tsx         # Carte de résultat (dispatch vers variantes)
+│   ├── SearchCardDetailed.tsx # Vue détaillée d'une carte
+│   ├── SearchCardSkeleton.tsx # Skeleton pour chargement
+│   ├── SearchFilters.tsx      # Panneau de filtres
+│   ├── SearchListView.tsx     # Liste des résultats
+│   ├── SearchListSkeleton.tsx # Skeleton pour liste
+│   ├── SearchMap.tsx          # Carte Leaflet
+│   ├── SearchMapWrapper.tsx   # Wrapper avec lazy loading
+│   ├── SearchTextInput.tsx    # Champ de recherche
+│   ├── SwitchDetailsMode.tsx  # Switch drawer/dialog
+│   ├── Preview.tsx            # Prévisualisation
+│   ├── AddEntityModal.tsx     # Modal d'ajout d'entité
+│   ├── renderMapPopup.tsx     # Rendu des popups carte
 │   ├── card/
-│   │   ├── CardDefault.tsx
-│   │   └── CardOverlay.tsx
+│   │   ├── CardDefault.tsx    # Carte standard
+│   │   ├── CardOverlay.tsx    # Carte avec overlay
+│   │   ├── CardTiersLieux.tsx # Carte tiers-lieux
+│   │   └── CardEvent.tsx      # Carte événement
 │   ├── detailsMode/
-│   │   ├── DetailsModeDialog.tsx
-│   │   └── DetailsModeDrawer.tsx
+│   │   ├── DetailsModeDialog.tsx  # Modal détails
+│   │   └── DetailsModeDrawer.tsx  # Drawer détails
 │   ├── mapPopup/
-│   │   └── MapPopupDefault.tsx
-│   ├── preview/
-│   │   └── PreviewDefault.tsx
-│   └── renderMapPopup.tsx
+│   │   └── MapPopupDefault.tsx    # Popup carte par défaut
+│   └── preview/
+│       └── PreviewDefault.tsx     # Prévisualisation par défaut
 ├── contexts/
-│   └── SearchPropsContext.tsx
+│   ├── SearchPropsContext.tsx     # Context des props
+│   └── SearchPropsProvider.tsx    # Provider du context
 ├── hooks/
-│   ├── loadLeaflet.ts         // Chargement dynamique de Leaflet
-│   ├── useItem.tsx            // Fusion données serveur/valeurs par défaut
-│   └── useSearchFilters.ts    // Gestion des états de filtres
+│   ├── loadLeaflet.ts         # Chargement dynamique de Leaflet
+│   ├── useItem.tsx            # Fusion données serveur/valeurs par défaut
+│   ├── useSearchFilters.tsx   # Gestion des états de filtres
+│   ├── useSearchQuery.ts      # Query pour résultats de recherche
+│   └── useSearchProps.tsx     # Accès aux props du context
 ├── i18n/
-│   ├── en.json
-│   └── fr.json
-├── i18n.ts                    // Pont vers react-i18next
-├── schema.ts                  // Schéma Zod du module (SearchProSectionSchema)
-└── index.ts                   // Export centralisé
+│   ├── en.json                # Traductions anglaises
+│   └── fr.json                # Traductions françaises
+├── i18n.ts                    # Pont vers react-i18next
+├── schema.ts                  # Schémas Zod (SearchProSectionSchema, SearchProStaticSectionSchema)
+├── styles.css                 # Styles spécifiques au module
+└── index.ts                   # Exports: SearchSection, SearchProSectionSchema
 ```
 
 #### 7.1.2 Schéma de configuration (`schema.ts`)
 
-Le schéma `SearchProSectionSchema` (voir section 5.5.34) définit toutes les props configurables :
+Le module expose deux schémas principaux:
 
+**`SearchProSectionSchema`** (voir section 5.5.34) - avec synchronisation URL:
 * `title`, `description`: textes d'en-tête
 * `placeholder`: texte du champ
-* `useFilter`, `showMap`, `enableMap`: booléens d’activation
+* `useFilter`, `showMap`, `enableMap`: booléens d'activation
 * `showActiveFiltersTypes`, `showActiveFiltersTags`: affichage des filtres actifs
+* `disableInfiniteScroll`: désactiver le scroll infini
+* `showDetailedViewToggle`: bouton toggle vue détaillée
+* `customHeader`: en-tête personnalisé avec titre, lien et bouton carte
 * `filters`: structure des filtres (tags, type)
-* `baseParams`: paramètres initiaux (API)
- * `list`: configuration liste (colonnes, type de carte, mode de détails, prévisualisation)
- * `map`: configuration carte (zoom, cluster, type de popup)
+* `baseParams`: paramètres initiaux (API, defaultTypes, defaultTags, defaultSortBy, etc.)
+* `list`: configuration liste (colonnes, card type/variant, detailsMode, preview)
+* `map`: configuration carte (initialZoom, cluster, popup type)
+
+**`SearchProStaticSectionSchema`** (voir section 5.5.35) - sans synchronisation URL:
+* Même structure mais avec des defaults différents (useFilter: false, showMap: false)
+* Permet d'afficher plusieurs instances sur une même page sans conflit d'URL
 
 #### 7.1.3 Context et hooks
 
@@ -2184,20 +2728,33 @@ Le schéma `SearchProSectionSchema` (voir section 5.5.34) définit toutes les pr
 
 #### 7.1.4 Composants clés
 
-| Composant          | Rôle                                                 |
-| ------------------ | ---------------------------------------------------- |
-| `SearchProSection` | Point d’entrée : assemble filtres, liste, carte.     |
-| `ActiveFiltersBar` | Affiche les filtres actifs et permet de les retirer. |
-| `FilterDropdown`   | Dropdown pour sélectionner filtres.                  |
-| `SearchListView`   | Affiche la liste des résultats et gère `SwitchDetailsMode`. |
-| `SearchMapWrapper` | Conteneur Leaflet avec `renderMapPopup`.                   |
-| `SearchCard`       | Carte individuelle (`CardDefault` ou `CardOverlay`).        |
-| `SwitchDetailsMode`| Ouvre les détails en `drawer` ou `dialog`.                 |
-| `PreviewDefault`   | Prévisualisation standard des informations.               |
-| `MapPopupDefault`  | Popup par défaut pour les marqueurs de carte.             |
+| Composant              | Rôle                                                         |
+| ---------------------- | ------------------------------------------------------------ |
+| `SearchPro`            | Composant principal avec synchronisation URL (query params)  |
+| `SearchProStatic`      | Version sans synchronisation URL (pour multi-instances)      |
+| `SearchProSection`     | Section wrapper pour `SearchPro`                             |
+| `SearchProStaticSection` | Section wrapper pour `SearchProStatic`                     |
+| `ActiveFiltersBar`     | Affiche les filtres actifs avec boutons de suppression       |
+| `FilterDropdown`       | Dropdown de sélection de filtres (tags, types)               |
+| `SearchListView`       | Liste des résultats avec infinite scroll                     |
+| `SearchMapWrapper`     | Wrapper avec lazy loading de Leaflet                         |
+| `SearchMap`            | Carte Leaflet avec clusters et popups                        |
+| `SearchCard`           | Carte individuelle (dispatch vers variantes)                 |
+| `CardDefault`          | Variante carte standard                                      |
+| `CardOverlay`          | Variante carte avec image en overlay                         |
+| `CardTiersLieux`       | Variante carte tiers-lieux                                   |
+| `CardEvent`            | Variante carte événement                                     |
+| `SearchCardDetailed`   | Vue liste détaillée                                          |
+| `SwitchDetailsMode`    | Ouvre les détails en `drawer` ou `dialog`                    |
+| `DetailsModeDrawer`    | Drawer latéral pour détails                                  |
+| `DetailsModeDialog`    | Modal dialog pour détails                                    |
+| `PreviewDefault`       | Prévisualisation standard des informations                   |
+| `MapPopupDefault`      | Popup par défaut pour les marqueurs de carte                 |
+| `AddEntityModal`       | Modal d'ajout d'une nouvelle entité                          |
 
 #### 7.1.5 Exemple de configuration JSON
 
+**SearchPro** (avec synchronisation URL):
 ```json
 {
   "type": "searchPro",
@@ -2210,20 +2767,71 @@ Le schéma `SearchProSectionSchema` (voir section 5.5.34) définit toutes les pr
     "enableMap": true,
     "showActiveFiltersTypes": true,
     "showActiveFiltersTags": true,
+    "showDetailedViewToggle": true,
+    "customHeader": {
+      "title": { "fr": "Nos partenaires", "en": "Our partners" },
+      "linkText": { "fr": "Voir tout", "en": "See all" },
+      "linkHref": "/partners",
+      "showMapButton": true
+    },
     "filters": {
       "tags": {
         "type": "tags",
         "name": { "fr": "Thèmes", "en": "Topics" },
-        "list": [{ "fr": "Culture", "en": "Culture" }, { "fr": "Sport", "en": "Sport" }]
+        "list": ["Culture", "Sport", "Environnement"],
+        "active": true,
+        "previewVisible": true
+      },
+      "types": {
+        "type": "type",
+        "name": { "fr": "Type", "en": "Type" },
+        "list": {
+          "organizations": { "fr": "Organisations", "en": "Organizations" },
+          "projects": { "fr": "Projets", "en": "Projects" }
+        }
       }
     },
-    "baseParams": { "indexStepList": 12, "defaultTypes": ["event","project"] },
+    "baseParams": {
+      "indexStepList": 12,
+      "indexStepMap": 100,
+      "defaultTypes": ["organizations", "projects"],
+      "defaultTags": ["Culture"],
+      "defaultSortBy": { "name": 1 }
+    },
     "list": {
-      "columns": { "lg": 3 },
-      "card": { "type": "overlay", "detailsMode": "drawer" },
+      "columns": { "lg": 3, "md": 2, "sm": 1 },
+      "card": {
+        "type": "tiers-lieux",
+        "variant": "tiers-lieux",
+        "detailsMode": "drawer",
+        "showDescription": true,
+        "showAddress": true,
+        "tagLimit": 3
+      },
       "preview": { "type": "default" }
     },
-    "map": { "initialZoom": 10, "popup": { "type": "default" } }
+    "map": { "initialZoom": 10, "cluster": true, "popup": { "type": "default" } }
+  }
+}
+```
+
+**SearchProStatic** (sans synchronisation URL - pour multi-instances):
+```json
+{
+  "type": "searchProStatic",
+  "props": {
+    "title": { "fr": "Événements à venir", "en": "Upcoming Events" },
+    "placeholder": { "fr": "Rechercher un événement...", "en": "Search event..." },
+    "useFilter": false,
+    "showMap": false,
+    "baseParams": {
+      "defaultTypes": ["events"],
+      "indexStepList": 6
+    },
+    "list": {
+      "columns": { "lg": 3 },
+      "card": { "type": "event", "variant": "event" }
+    }
   }
 }
 ```
@@ -2238,6 +2846,22 @@ Le module **profil** gère l'affichage des pages de profil pour tous les types d
 
 ```
 src/modules/profil/
+├── actions/                        // Système d'actions refactorisé (config-driven)
+│   ├── config/                     // Configurations des actions
+│   │   ├── entityActionConfig.ts   // Config des actions d'entité (follow, join, etc.)
+│   │   ├── memberActionConfig.ts   // Config des actions de membres
+│   │   └── index.ts
+│   ├── hooks/                      // Hooks d'actions par type d'entité
+│   │   ├── useUserEntityActions.tsx
+│   │   ├── useOrgEntityActions.tsx
+│   │   ├── useProjectEntityActions.tsx
+│   │   └── useEventEntityActions.tsx
+│   ├── mutations/                  // Factories de mutations
+│   │   ├── createEntityMutation.ts
+│   │   └── createUserMutation.ts
+│   └── builders/                   // Builders d'objets action
+│       ├── buildEntityAction.tsx
+│       └── buildUserAction.tsx
 ├── components/
 │   ├── sections/
 │   │   ├── ProfileHeader.tsx       // En-tête du profil (hero, simple, cover, minimal)
@@ -2255,7 +2879,19 @@ src/modules/profil/
 │   └── ProfileEntityProvider.tsx   // Provider du context
 ├── hooks/
 │   ├── useProfileEntity.tsx        // Hook pour accéder à l'entité typée
-│   └── useFormatProfileEntity.tsx  // Hook pour formater les données
+│   ├── useFormatProfileEntity.tsx  // Hook pour formater les données
+│   └── useProfilPermissions.ts     // Hook local pour permissions profil (voir 7.5)
+├── permissions/                    // Système de permissions modulaire (voir 7.5)
+│   ├── types.ts                    // ProfilPermissions (48 champs)
+│   ├── defaults.ts                 // DEFAULT_PROFIL_PERMISSIONS
+│   ├── calculators/                // Calculateurs par type d'entité
+│   │   ├── user.ts                 // calculateOwnProfilePermissions, calculateOtherUserPermissions
+│   │   ├── organization.ts         // calculateOrganizationPermissions
+│   │   ├── project.ts              // calculateProjectPermissions
+│   │   ├── event.ts                // calculateEventPermissions
+│   │   └── poi.ts                  // calculatePoiPermissions
+│   ├── register.ts                 // Enregistrement namespace "profil"
+│   └── index.ts                    // Exports
 ├── pages/
 │   └── ProfilePage.tsx             // Page principale des profils
 ├── i18n/
@@ -2285,38 +2921,94 @@ Le module profil est **core** pour garantir qu'il est toujours disponible sans c
 
 #### 7.2.3 Routes dynamiques avec loader SSR
 
-Le fichier `routes.tsx` exporte une fonction `routes` (de type `ModuleRouteFactory`) qui crée la route dynamique `/:slug`:
+Le fichier `routes.tsx` exporte une fonction `routes` (de type `ModuleRouteFactory`) qui crée la route dynamique `/profil/:slug` avec génération automatique des sous-routes pour les tabs:
 
 ```ts
-export const routes: ModuleRouteFactory = (queryClient?: QueryClient): RouteObject[] => [
+export const routes: ModuleRouteFactory = (
+  queryClient?: QueryClient,
+  config?: SiteConfig
+): RouteObject[] => [
   {
-    path: ":slug",
+    path: "profil/:slug",
     element: <ProfilePage />,
-    loader: async ({ params }: LoaderFunctionArgs) => {
-      if (!queryClient) return null; // Côté client, skip pre-fetch
-
-      const slug = params.slug?.startsWith('@')
-        ? params.slug.slice(1)
-        : params.slug;
-
-      // Pré-charger les données côté serveur
-      return await queryClient.ensureQueryData({
-        queryKey: ["element-about", slug],
-        queryFn: async () => {
-          const { organization } = await initApi({ baseURL: getBaseUrl() });
-          return organization.entityBySlug(slug);
-        }
-      });
-    }
+    loader: (args) => profileLoader(args, queryClient, config),
+    children: generateTabRoutes(config),
   }
 ];
 ```
 
-**Convention**: Les profils sont accessibles via `/@username` ou `/:slug`.
+**Convention**: Les profils sont accessibles via `/profil/:slug`.
 
-**Loader SSR**:
-- Côté serveur (avec `queryClient`): pré-charge les données dans React Query
-- Côté client (sans `queryClient`): skip le pre-fetch, les données seront chargées par le hook
+**Loader SSR intelligent** (`profileLoader`):
+1. Pré-charge les données de l'entité via `entityBySlug(slug)`
+2. Détecte le tab actif depuis l'URL (`/profil/:slug/news` → tab "news")
+3. Pré-charge les données du tab si nécessaire (ex: news pour les types supportés)
+
+```ts
+const profileLoader = async (
+  { params, request }: LoaderFunctionArgs,
+  queryClient?: QueryClient,
+  config?: SiteConfig
+) => {
+  if (!queryClient) return null; // Côté client, skip
+
+  const slug = params.slug;
+  const url = new URL(request.url);
+  const pathSegments = url.pathname.split('/').filter(Boolean);
+  const activeTab = pathSegments.length > 2 ? pathSegments[2] : 'about';
+
+  // 1. Pré-charger l'entité
+  const entity = await queryClient.ensureQueryData({
+    queryKey: QUERY_KEYS.ELEMENT_ABOUT(slug),
+    queryFn: () => initApi({ baseURL: getBaseUrl() }).then(({ entity }) =>
+      entity.entityBySlug(slug)
+    )
+  });
+
+  // 2. Pré-charger les données du tab actif (si news)
+  if (entity && config?.profiles) {
+    const tabConfig = config.profiles[entityType]?.tabs?.find(t => t.id === activeTab);
+    if (tabConfig?.sections?.some(s => s.type === 'news')) {
+      await prefetchNewsQuery(queryClient, entity);
+    }
+  }
+
+  return { entity, activeTab };
+};
+```
+
+**Génération dynamique des routes de tabs** (`generateTabRoutes`):
+- Collecte tous les tabs configurés dans `config.profiles`
+- Génère les routes enfants: `/profil/:slug/{tabId}`
+- Support des sous-routes: `/profil/:slug/news/:newsId`
+
+```ts
+const generateTabRoutes = (config?: SiteConfig): RouteObject[] => {
+  if (!config?.profiles) return [{ index: true, element: null }];
+
+  const tabsMap = new Map<string, { subRoutes?: ProfileTabSubRoute[] }>();
+
+  // Collecter tous les tabs de tous les types de profils
+  Object.values(config.profiles).forEach(profileConfig => {
+    profileConfig.tabs?.forEach(tab => {
+      tabsMap.set(tab.id, { subRoutes: tab.subRoutes });
+    });
+  });
+
+  // Générer les routes
+  return [
+    { index: true, element: null },
+    ...Array.from(tabsMap.entries()).map(([tabId, data]) => ({
+      path: tabId,
+      element: null,
+      children: data.subRoutes?.map(sub => ({
+        path: sub.path,
+        element: null,
+      })),
+    })),
+  ];
+};
+```
 
 #### 7.2.4 Context et Provider
 
@@ -2348,43 +3040,31 @@ Le provider injecte ces valeurs dans le contexte:
 
 #### 7.2.5 Hook useProfileEntity
 
-Ce hook expose l'entité **automatiquement typée** grâce à `getTypedEntity()`:
+Ce hook expose l'entité et sa configuration depuis le contexte:
 
 ```ts
 export function useProfileEntity() {
   const context = useContext(ProfileEntityContext);
   if (!context) {
-    throw new Error('useProfileEntity must be used within ProfileEntityProvider');
+    throw new Error('useProfileEntity must be used within a ProfileEntityProvider');
   }
-
-  return {
-    entity: getTypedEntity(context.entity),  // ✅ Entité typée automatiquement
-    config: context.config,
-    entityType: context.entityType,
-  };
+  return context;
 }
 ```
 
-**Typage automatique**: L'entité retournée est de type `User | Organization | Project | EventType | Poi`, et TypeScript peut automatiquement faire le **narrowing** avec les **type guards**:
+**Usage**:
 
 ```tsx
-const { entity, entityType } = useProfileEntity();
-
-if (isUser(entity)) {
-  entity.isFriend();      // ✅ TypeScript sait que entity est User
-}
-
-if (isOrganization(entity)) {
-  entity.isMember();      // ✅ TypeScript sait que entity est Organization
+function MyProfileComponent() {
+  const { entity, config, entityType } = useProfileEntity();
+  return <div>{entity.serverData?.name}</div>;
 }
 ```
 
-Les **type guards** sont définis dans `src/lib/getTypedEntity.ts`:
-- `isUser(entity): entity is User`
-- `isOrganization(entity): entity is Organization`
-- `isProject(entity): entity is Project`
-- `isEvent(entity): entity is EventType`
-- `isPoi(entity): entity is Poi`
+**Retourne**:
+- `entity: SearchEntity` - L'entité brute du profil
+- `config: ProfileConfig` - Configuration des sections et tabs
+- `entityType: string` - Type d'entité ("organizations", "events", etc.)
 
 #### 7.2.6 Hook useFormatProfileEntity
 
@@ -2419,11 +3099,48 @@ export const ProfileTypeSchema = z.enum([
   "poi"
 ]);
 
+// Variantes de sections
+export const ProfileHeaderVariantSchema = z.enum([
+  "hero", "simple", "cover", "minimal", "banner-overlay", "complete"
+]);
+export const ProfileInfoVariantSchema = z.enum(["sidebar", "inline", "tabs"]);
+export const ProfileLayoutVariantSchema = z.enum([
+  "default", "modern", "compact", "full-width"
+]);
+
+// Schema pour les sous-routes d'un tab
+export const ProfileTabSubRouteSchema = z.object({
+  path: z.string(),           // ex: ":newsId" pour /profil/:slug/news/:newsId
+  component: z.string(),      // ex: "NewsDetailPage"
+  loader: z.string().optional(),
+});
+
+// Schema pour un tab de profil
+export const ProfileTabSchema = z.object({
+  id: z.string(),
+  label: LocalizedString,
+  path: z.string().optional(),    // chemin URL personnalisé (par défaut = id)
+  sections: z.array(ProfileSectionSchema).optional(), // Option 1: sections composables
+  component: z.enum(["SocialTab", "MembershipTab", "NewsTab"]).optional(), // Option 2: composant dédié
+  subRoutes: z.array(ProfileTabSubRouteSchema).optional(), // Sous-routes (ex: news/:newsId)
+  condition: ProfileTabConditionSchema, // Conditions d'affichage
+}).refine(
+  (data) => (data.sections && data.sections.length > 0) || data.component,
+  { message: "Un tab doit avoir soit 'sections' soit 'component'" }
+);
+
+// Conditions d'affichage des tabs
+export const ProfileTabConditionSchema = z.object({
+  entityTypes: z.array(ProfileTypeSchema).optional(), // Types d'entités compatibles
+  permissions: z.array(z.string()).optional(),         // Permissions requises
+  userContext: z.enum(["own", "other", "any"]).optional(), // Contexte utilisateur
+}).optional();
+
 // Configuration d'un type de profil
 export const ProfileConfigSchema = z.object({
-  layout: z.enum(["default", "modern", "compact", "full-width"])
-    .optional().default("default"),
-  sections: z.array(ProfileSectionSchema),
+  layout: ProfileLayoutVariantSchema.optional().default("default"),
+  tabs: z.array(ProfileTabSchema).optional(),     // NOUVEAU: tabs configurables
+  sections: z.array(ProfileSectionSchema),        // sections globales (hors tabs)
   hideHeader: z.boolean().optional().default(false),
   hideFooter: z.boolean().optional().default(false),
   seo: z.object({
@@ -2445,21 +3162,51 @@ export const ProfilesConfigSchema = z.object({
 
 #### 7.2.8 Sections de profil
 
-Le module profil propose 9 types de sections configurables:
+Le module profil propose **15 types de sections** configurables:
 
-| Section               | Type                       | Variantes                        | Description                          |
-| --------------------- | -------------------------- | -------------------------------- | ------------------------------------ |
-| `profile-header`      | ProfileHeaderSection       | hero, simple, cover, minimal     | En-tête avec bannière et logo        |
-| `profile-info`        | ProfileInfoSection         | sidebar, inline, tabs            | Informations générales               |
-| `profile-about`       | ProfileAboutSection        | —                                | Description et à propos              |
-| `profile-map`         | ProfileMapSection          | —                                | Carte de localisation (Leaflet)      |
-| `profile-organizer`   | ProfileOrganizerSection    | —                                | Organisateur/Porteur de projet       |
-| `profile-members`     | ProfileMembersSection      | —                                | Liste des membres                    |
-| `profile-gallery`     | ProfileGallerySection      | —                                | Galerie d'images avec lightbox       |
-| `profile-related`     | ProfileRelatedSection      | —                                | Entités liées (parent/children/etc.) |
-| `profile-template-default` | ProfileTemplateDefaultSection | —                     | Template complet (tout-en-un)        |
+| Section                    | Type                         | Variantes/Options                              | Description                               |
+| -------------------------- | ---------------------------- | ---------------------------------------------- | ----------------------------------------- |
+| `profile-header`           | ProfileHeaderSection         | hero, simple, cover, minimal, banner-overlay, complete | En-tête avec bannière et logo |
+| `profile-info`             | ProfileInfoSection           | sidebar, inline, tabs                          | Informations générales et contact         |
+| `profile-about`            | ProfileAboutSection          | layout: column, grid                           | Description et à propos                   |
+| `profile-map`              | ProfileMapSection            | height, zoom, showMarker                       | Carte de localisation (Leaflet)           |
+| `profile-organizer`        | ProfileOrganizerSection      | showLogo, showDescription, showLink            | Organisateur/Porteur de projet            |
+| `profile-members`          | ProfileMembersSection        | limit, showRole, showManagement                | Liste des membres                         |
+| `profile-gallery`          | ProfileGallerySection        | columns, lightbox                              | Galerie d'images avec lightbox            |
+| `profile-related`          | ProfileRelatedSection        | relationType, limit                            | Entités liées (projects, events, poi)     |
+| `profile-actions`          | ProfileActionsSectionSchema  | showEditButton, showAddDropdown, layout        | Boutons d'action (éditer, ajouter, email) |
+| `profile-event-dates`      | ProfileEventDatesSectionSchema | showType, dateFormat                         | Dates d'événement (start/end)             |
+| `profile-badges`           | ProfileBadgesSectionSchema   | layout (grid, flex, list), maxDisplay          | Badges et certifications                  |
+| `profile-tags`             | ProfileTagsSectionSchema     | maxDisplay, linkable, searchOnClick            | Tags et mots-clés                         |
+| `profile-opening-hours`    | ProfileOpeningHoursSectionSchema | format (table, list, compact), showCurrentStatus | Horaires d'ouverture          |
+| `profile-tab-layout`       | ProfileTabLayoutSectionSchema | leftSections, rightSections                   | Layout deux colonnes pour tabs            |
+| `profile-template-dynamic` | ProfileTemplateDynamicSchema | —                                              | Template dynamique basé sur config        |
 
-Chaque section a son propre schéma Zod avec des options configurables.
+Chaque section a son propre schéma Zod avec des options configurables. Exemple pour `profile-header`:
+
+```ts
+export const ProfileHeaderSectionSchema = z.object({
+  type: z.literal("profile-header"),
+  variant: ProfileHeaderVariantSchema.optional().default("hero"),
+  showBackButton: z.boolean().optional().default(true),
+  showShareButton: z.boolean().optional().default(true),
+  showEditButton: z.boolean().optional().default(false),
+  showBanner: z.boolean().optional().default(true),
+  showAvatar: z.boolean().optional().default(true),
+  bannerHeight: z.string().optional().default("384px"),
+  avatarSize: z.string().optional().default("160px"),
+  avatarOverlap: z.boolean().optional().default(true),
+  showLocation: z.boolean().optional().default(true),
+  allowUpload: z.boolean().optional().default(true),
+  showActions: z.boolean().optional().default(true),
+  showAddDropdown: z.boolean().optional().default(true),
+  addConfig: AddConfigSchema,
+  addDropdownLabel: LocalizedString.optional(),
+  showEmailButton: z.boolean().optional().default(true),
+  showReservationButton: z.boolean().optional().default(false),
+  showAllPhotosButton: z.boolean().optional().default(true),
+});
+```
 
 #### 7.2.9 ProfileRenderer
 
@@ -2555,7 +3302,7 @@ function ProfilePage() {
 
 #### 7.2.13 Configuration JSON dans site-config.json
 
-Exemple de configuration des profils dans `site-config.json`:
+Exemple de configuration des profils avec **tabs** dans `site-config.json`:
 
 ```json
 {
@@ -2563,9 +3310,38 @@ Exemple de configuration des profils dans `site-config.json`:
     "default": {
       "layout": "default",
       "sections": [
-        { "type": "profile-header", "variant": "hero" },
-        { "type": "profile-info", "variant": "sidebar" },
-        { "type": "profile-about" }
+        { "type": "profile-header", "variant": "complete" }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": { "fr": "À propos", "en": "About" },
+          "sections": [
+            { "type": "profile-about" },
+            { "type": "profile-map", "zoom": 15 }
+          ]
+        },
+        {
+          "id": "news",
+          "label": { "fr": "Actualités", "en": "News" },
+          "sections": [
+            { "type": "news", "props": { "maxItems": 20, "showAddButton": true } }
+          ],
+          "subRoutes": [
+            { "path": ":newsId", "component": "NewsDetailPage" }
+          ],
+          "condition": {
+            "entityTypes": ["organizations", "projects", "citoyens"]
+          }
+        },
+        {
+          "id": "members",
+          "label": { "fr": "Membres", "en": "Members" },
+          "component": "MembershipTab",
+          "condition": {
+            "entityTypes": ["organizations", "projects"]
+          }
+        }
       ],
       "hideHeader": false,
       "hideFooter": false
@@ -2573,7 +3349,24 @@ Exemple de configuration des profils dans `site-config.json`:
     "organizations": {
       "layout": "modern",
       "sections": [
-        { "type": "profile-template-default" }
+        { "type": "profile-header", "variant": "banner-overlay", "showAddDropdown": true }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": { "fr": "À propos", "en": "About" },
+          "sections": [
+            { "type": "profile-tab-layout",
+              "leftSections": [{ "type": "profile-about" }],
+              "rightSections": [{ "type": "profile-info" }]
+            }
+          ]
+        },
+        {
+          "id": "social",
+          "label": { "fr": "Réseau", "en": "Network" },
+          "component": "SocialTab"
+        }
       ],
       "seo": {
         "titleTemplate": "{name} - Organisation",
@@ -2584,15 +3377,28 @@ Exemple de configuration des profils dans `site-config.json`:
       "layout": "default",
       "sections": [
         { "type": "profile-header", "variant": "cover" },
-        { "type": "profile-info", "showDates": true },
-        { "type": "profile-about" },
-        { "type": "profile-organizer" },
-        { "type": "profile-map", "zoom": 15 }
+        { "type": "profile-event-dates", "showType": true }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": { "fr": "Détails", "en": "Details" },
+          "sections": [
+            { "type": "profile-about" },
+            { "type": "profile-organizer" },
+            { "type": "profile-map", "zoom": 15 }
+          ]
+        }
       ]
     }
   }
 }
 ```
+
+**Système de tabs**:
+- Chaque tab génère une route: `/profil/:slug/{tabId}`
+- Les sous-routes permettent des pages de détail: `/profil/:slug/news/:newsId`
+- `condition` contrôle l'affichage selon le type d'entité ou les permissions
 
 **Hiérarchie de configuration**:
 1. Configuration spécifique au type (`organizations`, `events`, etc.)
@@ -2601,18 +3407,19 @@ Exemple de configuration des profils dans `site-config.json`:
 
 #### 7.2.14 Flux d'exécution complet
 
-1. **URL**: Utilisateur accède à `/@username`
-2. **Route matching**: React Router match la route `/:slug` du module profil
+1. **URL**: Utilisateur accède à `/profil/mon-organisation`
+2. **Route matching**: React Router match la route `profil/:slug` du module profil
 3. **Loader SSR** (côté serveur uniquement):
-   - Appel API `entityBySlug(username)`
-   - Pre-fetch des données dans React Query
+   - Appel API `entityBySlug(slug)`
+   - Détection du tab actif depuis l'URL
+   - Pre-fetch des données de l'entité ET du tab actif (ex: news)
 4. **ProfilePage**:
    - Détection du type d'entité via `entity.getEntityType()`
    - Récupération de la config profil depuis `siteConfig.profiles[type]`
    - Injection dans ProfileEntityProvider
-5. **ProfileRenderer**:
+5. **ProfileRenderer / ProfileTemplateDynamic**:
    - Récupération entity + config via `useProfileEntity()`
-   - Rendu des sections via ProfileSectionRenderer
+   - Rendu des sections globales et des tabs via React Router Outlet
 6. **Sections individuelles**:
    - Accès à l'entité typée via `useProfileEntity()`
    - Utilisation des type guards si nécessaire
@@ -2620,26 +3427,551 @@ Exemple de configuration des profils dans `site-config.json`:
 
 ---
 
-### 7.3 Autres modules
+### 7.3 Module News (`src/modules/news`)
 
-D'autres modules suivent des patterns similaires:
+Le module News gère l'affichage des actualités avec système de commentaires, réactions et partage.
 
-* **EventList** (`src/modules/eventList`)
-  * Liste d'événements avec filtres
-* **ContactForm** (`src/modules/contactForm`)
-  * Formulaire de contact avec validation
-* **Blog** (`src/modules/blog`)
-  * Liste d'articles de blog
-* **Newsletter** (`src/modules/newsletter`)
-  * Inscription newsletter
+> **Note importante** : Ce module ne définit **pas de routes** propres, il expose uniquement une section `news` utilisable dans les pages JSON.
 
-Tous les modules suivent la même structure:
+#### 7.3.1 Architecture interne
+
+```
+src/modules/news/
+├── schema.ts                 # NewsSectionSchema, NewsConfigSchema
+├── types.ts                  # Types TypeScript dérivés
+├── i18n.ts                   # Pont vers react-i18next
+├── index.ts                  # Exports centralisés
+├── components/
+│   ├── sections/
+│   │   └── NewsSection.tsx   # Section principale (exportée dans SectionRenderer)
+│   ├── forms/
+│   │   ├── AddNewsModal.tsx  # Modal d'ajout de news
+│   │   ├── EditNewsModal.tsx # Modal d'édition
+│   │   ├── NewsFormImageUpload.tsx
+│   │   ├── NewsFormDocumentUpload.tsx
+│   │   ├── FileUploadProgress.tsx
+│   │   └── ImageCropDialog.tsx
+│   ├── comment/
+│   │   ├── NewsComments.tsx  # Liste des commentaires
+│   │   ├── CommentInput.tsx  # Saisie de commentaire
+│   │   ├── CommentItem.tsx   # Affichage d'un commentaire
+│   │   └── DeleteCommentDialog.tsx
+│   ├── interactions/
+│   │   ├── NewsReactionPicker.tsx  # Sélecteur de réactions
+│   │   ├── NewsReactionsModal.tsx  # Modal des réactions
+│   │   └── NewsVoteDisplay.tsx     # Affichage des votes
+│   ├── media/
+│   │   ├── NewsImageGrid.tsx  # Grille d'images
+│   │   └── NewsFileList.tsx   # Liste de fichiers joints
+│   ├── mention/
+│   │   ├── MentionInput.tsx       # Input avec mentions @user
+│   │   └── MentionSuggestions.tsx # Suggestions de mentions
+│   ├── NewsItem.tsx           # Élément de news individuel
+│   ├── NewsContent.tsx        # Contenu d'une news
+│   ├── NewsDetailPage.tsx     # Vue détaillée d'une news
+│   ├── DeleteNewsDialog.tsx   # Dialog de suppression
+│   ├── ReportDialog.tsx       # Dialog de signalement
+│   └── ShareNewsDialog.tsx    # Dialog de partage
+├── hooks/
+│   ├── useNewsQuery.tsx       # Query pour liste de news
+│   ├── useNewsByIdQuery.tsx   # Query pour une news par ID
+│   ├── useNewsMutations.tsx   # Mutations CRUD news
+│   ├── useNewsVotes.tsx       # Gestion des votes/réactions
+│   ├── useNewsCommentsQuery.tsx   # Query pour commentaires
+│   ├── useCommentMutations.tsx    # Mutations CRUD commentaires
+│   ├── useFormatNews.tsx      # Formatage des données news
+│   ├── useFormatComment.tsx   # Formatage des commentaires
+│   ├── useNewsEntity.tsx      # Accès à l'entité news
+│   ├── useNewsContext.tsx     # Accès au contexte news
+│   └── useNewsPermissions.ts  # Hook local pour permissions news (voir 7.5)
+├── permissions/              # Système de permissions modulaire (voir 7.5)
+│   ├── types.ts              # NewsPermissions (6 champs)
+│   ├── defaults.ts           # DEFAULT_NEWS_PERMISSIONS
+│   ├── calculators/
+│   │   └── news.ts           # calculateNewsPermissions
+│   ├── register.ts           # Enregistrement namespace "news"
+│   └── index.ts              # Exports
+├── contexts/
+│   ├── NewsContext.tsx        # Contexte React
+│   ├── NewsProvider.tsx       # Provider du contexte
+│   └── index.ts
+├── prefetch/
+│   ├── prefetchNews.ts        # Préchargement SSR des news
+│   └── index.ts
+├── constants/
+│   ├── queryKeys.ts           # Clés React Query
+│   ├── voteTypes.ts           # Types de votes/réactions
+│   ├── reportReasons.ts       # Raisons de signalement
+│   ├── supportedTypes.ts      # Types d'entités supportés
+│   └── index.ts
+└── utils/
+    ├── commentCacheUtils.ts   # Utilitaires cache commentaires
+    └── index.ts
+```
+
+#### 7.3.2 Schéma de configuration (`schema.ts`)
+
+```ts
+// Section News pour affichage dans les pages
+export const NewsSectionSchema = z.object({
+  type: z.literal("news"),
+  id: z.string().optional(),
+  props: z.object({
+    title: LocalizedString.optional(),
+    entitySlug: z.string().optional(),        // Filtrer par entité
+    maxItems: z.number().positive().optional().default(10),
+    showAddButton: z.boolean().optional().default(true),
+    showFilters: z.boolean().optional().default(false),
+    showComments: z.boolean().optional().default(true),
+    showReactions: z.boolean().optional().default(true),
+  }),
+});
+
+// Configuration globale du module
+export const NewsConfigSchema = z.object({
+  enabled: z.boolean().default(true),
+  maxFileSize: z.number().positive().default(10 * 1024 * 1024), // 10MB
+  allowedFileTypes: z.array(z.string()).default(["image/jpeg", "image/png", "image/webp"]),
+  maxImages: z.number().positive().default(5),
+  maxTextLength: z.number().positive().default(2000),
+  enableReactions: z.boolean().default(true),
+  enableComments: z.boolean().default(true),
+  enableSharing: z.boolean().default(true),
+  moderationEnabled: z.boolean().default(false),
+});
+```
+
+#### 7.3.3 Hooks principaux
+
+```ts
+// Liste des news avec pagination infinie (timestamp-based)
+const {
+  news,              // News[] transformées en instances Proxy
+  isLoading,
+  isFetchingNextPage,
+  hasNextPage,
+  lastItemRef,       // Ref pour infinite scroll
+  error,
+  refetch
+} = useNewsQuery({
+  entity,            // EntityTypes - l'entité parente
+  entityType,        // string - "organizations" | "projects" | "citoyens"
+  enabled: true,     // boolean - activer/désactiver la query
+  indexStep: 12      // number - items par page
+});
+
+// News par ID
+const { data: news, isLoading } = useNewsByIdQuery(newsId);
+
+// Accès à l'entité depuis le contexte
+const entity = useNewsEntity(); // EntityTypes
+
+// Mutations CRUD
+const { createNews, updateNews, deleteNews } = useNewsMutations();
+
+// Votes et réactions
+const { addVote, removeVote, hasVoted } = useNewsVotes(newsId);
+
+// Commentaires
+const { data: comments } = useNewsCommentsQuery(newsId);
+const { addComment, deleteComment } = useCommentMutations();
+
+// Context
+const { entity, entityType } = useNewsContext();
+const contextOrNull = useOptionalNewsContext(); // Version optionnelle
+```
+
+**Types d'entités supportés** (définies dans `constants/supportedTypes.ts`):
+```ts
+const NEWS_SUPPORTED_TYPES = new Set(["organizations", "projects", "citoyens"]);
+```
+
+#### 7.3.4 Exemple de configuration JSON
+
+```json
+{
+  "type": "news",
+  "id": "actualites",
+  "props": {
+    "title": { "fr": "Actualités", "en": "News" },
+    "entitySlug": "my-organization",
+    "maxItems": 15,
+    "showAddButton": true,
+    "showFilters": true,
+    "showComments": true,
+    "showReactions": true
+  }
+}
+```
+
+#### 7.3.5 Préchargement SSR
+
+Le module supporte le préchargement SSR via `prefetchNewsQuery`:
+
+```ts
+import { prefetchNewsQuery } from "@/modules/news";
+
+/**
+ * Pré-charge les news d'une entité dans React Query
+ * @param queryClient - Instance QueryClient
+ * @param entity - Entité parente (EntityTypes)
+ * @param indexStep - Nombre d'items par page (défaut: 12)
+ */
+export async function prefetchNewsQuery(
+  queryClient: QueryClient,
+  entity: EntityTypes,
+  indexStep = 12
+): Promise<void> {
+  await queryClient.prefetchInfiniteQuery({
+    queryKey: NEWS_QUERY_KEYS.NEWS(entity.id ?? null),
+    queryFn: async () => entity.getNews({ indexStep }),
+    initialPageParam: undefined,
+  });
+}
+```
+
+**Usage dans le loader du module profil** (routes.tsx):
+
+```ts
+// Le module profil pré-charge automatiquement les news si le tab actif contient une section news
+if (tabConfig?.sections?.some(s => s.type === 'news') && NEWS_SUPPORTED_TYPES.has(entityType)) {
+  await prefetchNewsQuery(queryClient, entity);
+}
+```
+
+---
+
+### 7.4 Récapitulatif des modules
+
+| Module | Type | Routes | Usage |
+|--------|------|--------|-------|
+| **profil** | `core` | Oui (`/profil/:slug` + tabs dynamiques) | Affichage profils entités (orga/projet/user/poi/event) |
+| **search** | - | Non | Sections `searchPro` et `searchProStatic` |
+| **news** | - | Non | Section `news` avec commentaires et réactions |
+
+> **Note** : `eventList`, `contactForm`, `blogList`, `newsletter` sont des **types de sections** (voir section 5.5), pas des modules avec leur propre structure.
+
+Tous les modules suivent la même structure :
 1. **Validation des props** avec Zod (`schema.ts`)
 2. **Context/Hooks** pour la logique métier
 3. **Composants** pour l'UI
 4. **i18n** pour textes multi-langues
-5. **Configuration** via `module.config.ts`
+5. **Configuration** via `module.config.ts` (si routes)
 6. **Routes** via `routes.tsx` (si nécessaire)
+7. **Permissions** via `permissions/` (si le module gère des permissions)
+
+---
+
+### 7.5 Système de permissions modulaire (`src/lib/permissions`)
+
+Le système de permissions de SiteForge est conçu pour être **extensible par module**. Chaque module peut enregistrer ses propres calculateurs de permissions sans modifier le code central.
+
+#### 7.5.1 Architecture
+
+```
+src/lib/permissions/
+├── types.ts           # Interfaces PermissionContext, PermissionCalculator
+├── registry.ts        # Registre central (Map) des calculateurs
+├── usePermissions.ts  # Hook générique pour calculer les permissions
+└── index.ts           # Exports publics
+```
+
+**Principe** : Chaque module enregistre un calculateur dans un **registre central** via `registerPermissions()`. Le hook `usePermissions()` agrège les résultats des calculateurs demandés.
+
+#### 7.5.2 Types de base
+
+```ts
+// src/lib/permissions/types.ts
+import type { EntityTypes, User } from "@communecter/cocolight-api-client";
+
+/**
+ * Contexte passé aux calculateurs de permissions
+ */
+export interface PermissionContext {
+  entity: EntityTypes | null;  // Entité concernée
+  me: User | null;             // Utilisateur connecté
+  data?: Record<string, unknown>; // Données additionnelles (news, etc.)
+}
+
+/**
+ * Interface pour un calculateur de permissions
+ */
+export interface PermissionCalculator<T = Record<string, unknown>> {
+  namespace: string;           // ex: "profil", "news"
+  calculate: (context: PermissionContext) => T;
+}
+```
+
+#### 7.5.3 Registre des calculateurs
+
+```ts
+// src/lib/permissions/registry.ts
+const calculators = new Map<string, PermissionCalculator>();
+
+/**
+ * Enregistre un calculateur de permissions pour un module
+ */
+export function registerPermissions<T>(calculator: PermissionCalculator<T>): void {
+  calculators.set(calculator.namespace, calculator);
+}
+
+export function getCalculator(namespace: string): PermissionCalculator | undefined {
+  return calculators.get(namespace);
+}
+
+export function hasCalculator(namespace: string): boolean {
+  return calculators.has(namespace);
+}
+```
+
+#### 7.5.4 Hook générique `usePermissions`
+
+```ts
+// src/lib/permissions/usePermissions.ts
+export function usePermissions<T extends Record<string, unknown>>(
+  namespaces: string[],
+  entity: EntityTypes | null,
+  data?: Record<string, unknown>
+): T {
+  const { me } = useCocolight();
+
+  return useMemo(() => {
+    const context: PermissionContext = { entity, me, data };
+    const result: Record<string, unknown> = {};
+
+    for (const ns of namespaces) {
+      const calculator = getCalculator(ns);
+      if (calculator) {
+        result[ns] = calculator.calculate(context);
+      }
+    }
+
+    return result as T;
+  }, [entity, me, data, namespaces]);
+}
+```
+
+**Usage** :
+
+```ts
+// Demander plusieurs namespaces
+const { profil, news } = usePermissions<{
+  profil: ProfilPermissions;
+  news: NewsPermissions;
+}>(["profil", "news"], entity, { news: currentNews });
+
+// Utiliser les permissions
+if (profil.canEditProfile) { /* ... */ }
+if (news.canAddNews) { /* ... */ }
+```
+
+#### 7.5.5 Créer des permissions pour un module
+
+**Étape 1 : Définir les types**
+
+```ts
+// src/modules/mymodule/permissions/types.ts
+export interface MyModulePermissions {
+  canDoSomething: boolean;
+  canDoOther: boolean;
+}
+```
+
+**Étape 2 : Définir les valeurs par défaut**
+
+```ts
+// src/modules/mymodule/permissions/defaults.ts
+export const DEFAULT_PERMISSIONS: MyModulePermissions = {
+  canDoSomething: false,
+  canDoOther: false,
+};
+```
+
+**Étape 3 : Créer le(s) calculateur(s)**
+
+```ts
+// src/modules/mymodule/permissions/calculators/main.ts
+import type { MyModulePermissions } from "../types";
+import { DEFAULT_PERMISSIONS } from "../defaults";
+
+export function calculateMyPermissions(entity: EntityTypes): MyModulePermissions {
+  // Logique de calcul selon le type d'entité
+  return {
+    canDoSomething: entity.userContext?.isAdmin ?? false,
+    canDoOther: true,
+  };
+}
+```
+
+**Étape 4 : Enregistrer dans le registre**
+
+```ts
+// src/modules/mymodule/permissions/register.ts
+import { registerPermissions } from "@/lib/permissions";
+import type { PermissionContext } from "@/lib/permissions";
+import type { MyModulePermissions } from "./types";
+import { DEFAULT_PERMISSIONS } from "./defaults";
+import { calculateMyPermissions } from "./calculators/main";
+
+function calculate(ctx: PermissionContext): MyModulePermissions {
+  if (!ctx.entity?.isConnected || !ctx.me?.isConnected) {
+    return DEFAULT_PERMISSIONS;
+  }
+  return calculateMyPermissions(ctx.entity);
+}
+
+// Enregistrement automatique à l'import
+registerPermissions<MyModulePermissions>({
+  namespace: "mymodule",
+  calculate,
+});
+```
+
+**Étape 5 : Créer un hook local (optionnel mais recommandé)**
+
+```ts
+// src/modules/mymodule/hooks/useMyModulePermissions.ts
+import type { EntityTypes } from "@communecter/cocolight-api-client";
+import { usePermissions } from "@/lib/permissions";
+import type { MyModulePermissions } from "../permissions";
+
+// Déclenche l'enregistrement du calculateur
+import "../permissions/register";
+
+export function useMyModulePermissions(entity: EntityTypes | null): MyModulePermissions {
+  const { mymodule } = usePermissions<{ mymodule: MyModulePermissions }>(
+    ["mymodule"],
+    entity
+  );
+  return mymodule;
+}
+```
+
+#### 7.5.6 Permissions du module Profil
+
+Le module profil enregistre le namespace `"profil"` avec **48 permissions** :
+
+```
+src/modules/profil/permissions/
+├── types.ts              # ProfilPermissions (48 champs)
+├── defaults.ts           # DEFAULT_PROFIL_PERMISSIONS
+├── calculators/
+│   ├── user.ts           # calculateOwnProfilePermissions, calculateOtherUserPermissions
+│   ├── organization.ts   # calculateOrganizationPermissions
+│   ├── project.ts        # calculateProjectPermissions
+│   ├── event.ts          # calculateEventPermissions
+│   └── poi.ts            # calculatePoiPermissions
+├── register.ts           # Enregistrement "profil"
+└── index.ts              # Exports
+```
+
+**Interface `ProfilPermissions`** :
+
+| Catégorie | Permissions |
+|-----------|------------|
+| **Profil** | `canEditProfile`, `editProfileReason` |
+| **Relations** | `canFollow`, `isFollowing`, `canSendFriendRequest`, `isFriend` |
+| **Organisation** | `canRequestMembership`, `canRequestOrganizationAdmin`, `isMember` |
+| **Projets** | `isContributor`, `canRequestContributor`, `canRequestProjectAdmin` |
+| **Admin** | `isAdmin`, `canRequestPromotion` |
+| **Événements** | `isAuthor`, `isParticipant`, `canParticipate` |
+| **Invitations** | `isToBeValidated`, `isInviting`, `isInvitingAdmin`, `isAdminPending` |
+| **Amis** | `hasSentFriendRequest`, `hasReceivedFriendRequest` |
+| **Création** | `canAddOrganization`, `canAddProject`, `canAddEvent`, `canAddPoi` |
+
+**Hook local** :
+
+```ts
+import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
+
+const { canEditProfile, isAdmin, isMember } = useProfilPermissions(entity);
+```
+
+#### 7.5.7 Permissions du module News
+
+Le module news enregistre le namespace `"news"` avec **6 permissions** :
+
+```
+src/modules/news/permissions/
+├── types.ts              # NewsPermissions (6 champs)
+├── defaults.ts           # DEFAULT_NEWS_PERMISSIONS
+├── calculators/
+│   └── news.ts           # calculateNewsPermissions
+├── register.ts           # Enregistrement "news"
+└── index.ts              # Exports
+```
+
+**Interface `NewsPermissions`** :
+
+```ts
+export interface NewsPermissions {
+  canAddNews: boolean;       // Peut créer une news
+  canEditNews: boolean;      // Peut éditer la news courante
+  canDeleteNews: boolean;    // Peut supprimer la news courante
+  canModerateNews: boolean;  // Peut modérer (admin)
+  canEditComment: boolean;   // Peut éditer un commentaire
+  canDeleteComment: boolean; // Peut supprimer un commentaire
+}
+```
+
+**Hook local** :
+
+```ts
+import { useNewsPermissions } from "@/modules/news/hooks/useNewsPermissions";
+
+const { canAddNews, canEditNews, canModerateNews } = useNewsPermissions(entity, news);
+```
+
+#### 7.5.8 Hook rétrocompatible `useUserPermissions`
+
+Pour la rétrocompatibilité, le hook global `useUserPermissions` agrège **tous** les namespaces :
+
+```ts
+// src/hooks/useUserPermissions.tsx
+import { usePermissions } from "@/lib/permissions";
+import "@/modules/profil/permissions/register";
+import "@/modules/news/permissions/register";
+
+export type UserPermissions = ProfilPermissions & NewsPermissions;
+
+export function useUserPermissions(
+  entity: EntityTypes | null,
+  news?: News | null
+): UserPermissions {
+  const permissions = usePermissions<{
+    profil: ProfilPermissions;
+    news: NewsPermissions;
+  }>(["profil", "news"], entity, { news });
+
+  // Flatten pour rétrocompatibilité
+  return {
+    ...permissions.profil,
+    ...permissions.news,
+  };
+}
+```
+
+**Usage** :
+
+```ts
+// Ancien code (toujours fonctionnel)
+const { canEditProfile, canAddNews } = useUserPermissions(entity);
+
+// Nouveau code recommandé (plus performant)
+const { canEditProfile } = useProfilPermissions(entity);
+const { canAddNews } = useNewsPermissions(entity);
+```
+
+#### 7.5.9 Avantages de l'architecture modulaire
+
+| Aspect | Avant | Après |
+|--------|-------|-------|
+| **Fichier principal** | 434 lignes monolithique | 63 lignes wrapper |
+| **Ajouter un module** | Modifier `useUserPermissions` | Créer `permissions/` dans le module |
+| **Ajouter un type d'entité** | Modifier `useUserPermissions` | Créer un calculateur |
+| **Testabilité** | Difficile (tout couplé) | Facile (fonctions pures isolées) |
+| **Couplage** | Fort (tout dans un fichier) | Faible (par module) |
+| **Performance** | Calcule tout | Ne calcule que les namespaces demandés |
 
 ---
 
@@ -3255,44 +4587,74 @@ Pour garantir une expérience utilisateur fluide et un chargement rapide, plusie
 
 #### 10.1.1 Chargement asynchrone des sections
 
-Le rendu des sections utilise désormais `React.lazy` et `Suspense` **dans** `SectionRenderer.tsx` :
+Le rendu des sections utilise **`vite-preload`** (et non `React.lazy`) pour un meilleur tracking SSR des chunks :
 
 ```tsx
 // src/components/sections/SectionRenderer.tsx
-import React, { Suspense, lazy } from "react";
-import type { Section } from "@/types/site";
+import { Suspense } from "react";
+import { lazy } from "vite-preload"; // ← vite-preload pour SSR
+import type { PreloadableComponent } from "react-lazy-with-preload";
+import type { Section, SectionPropsMap } from "@/types/site";
+import { ErrorBoundary } from "../layout/ErrorBoundary";
 
-// Import dynamique de chaque section
-const LazyHeroSection      = lazy(() => import("./HeroSection"));
-const LazyCardsSection     = lazy(() => import("./CardsSection"));
-const LazyStatsSection     = lazy(() => import("./StatsSection"));
-const LazyGallerySection   = lazy(() => import("./GallerySection"));
-const LazySearchProSection = lazy(() => import("./SearchProSection"));
-// … et ainsi de suite pour toutes les sections
+// Type pour les composants lazy avec préchargement
+type LazySectionComponent<T extends Section['type']> =
+  PreloadableComponent<
+    React.ComponentType<{ id?: string; props: SectionPropsMap[T] }>
+  >;
 
-const lazySectionMap: Record<string, React.LazyExoticComponent<React.FC<any>>> = {
-  hero: LazyHeroSection,
-  cards: LazyCardsSection,
-  stats: LazyStatsSection,
-  gallery: LazyGallerySection,
-  searchPro: LazySearchProSection,
-  // … toutes les autres sections
+// Mapping « type » → Composant lazy-loaded
+// IMPORTANT: Tous les composants doivent avoir un export default
+const LazySections: {
+  [K in keyof SectionPropsMap]: LazySectionComponent<K>;
+} = {
+  hero: lazy(() => import("./HeroSection")),
+  "hero-tiers-lieux": lazy(() => import("./HeroTiersLieux")),
+  cards: lazy(() => import("./CardsSection")),
+  // ... 41 types de sections au total
+  searchPro: lazy(() => import("@/modules/search/SearchProSection")),
+  searchProStatic: lazy(() => import("@/modules/search/SearchProStaticSection")),
+  news: lazy(() => import("@/modules/news/components/sections/NewsSection")),
 };
 
-export const SectionRenderer: React.FC<{ section: Section }> = ({ section }) => {
-  const Component = lazySectionMap[section.type];
-  if (!Component) return null;
+// Skeleton animé pendant le chargement
+function SectionLoadingFallback({ id, type }: { id?: string; type: string }) {
   return (
-    <Suspense fallback={<div>Chargement…</div>}>
-      <Component {...section.props} />
+    <section id={id} className="py-8 animate-pulse" data-loading-section={type}>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="h-8 bg-muted/40 rounded-lg w-1/3 mb-4" />
+        <div className="h-4 bg-muted/30 rounded w-2/3 mb-2" />
+        <div className="h-4 bg-muted/30 rounded w-1/2" />
+      </div>
+    </section>
+  );
+}
+
+export function SectionRenderer({ section }: { section: Section }) {
+  const LazyComponent = LazySections[section.type];
+  if (!LazyComponent) return null;
+
+  return (
+    <Suspense fallback={<SectionLoadingFallback id={section.id} type={section.type} />}>
+      <ErrorBoundary context={`Section[type=${section.type}]`}>
+        <LazyComponent id={section.id} props={section.props} />
+      </ErrorBoundary>
     </Suspense>
   );
-};
+}
 ```
 
-* Chaque section est packagée dans un chunk distinct.
-* Lors du rendu, seule la section visible est téléchargée.
-* Le fallback `<div>Chargement…</div>` garantit un affichage minimal pendant le chargement.
+**Avantages de vite-preload** :
+* **Tracking SSR** : les chunks sont correctement tracés pour le préchargement côté serveur
+* **Preload hints** : génération automatique de `<link rel="preload">` pour les chunks nécessaires
+* **Type-safe** : `PreloadableComponent` offre un typage précis
+* **ErrorBoundary** : isolation des erreurs par section, pas de crash global
+* **Skeleton animé** : feedback visuel pendant le chargement
+
+**Notes** :
+* Chaque section est packagée dans un chunk distinct (code-splitting automatique)
+* Les composants de sections **doivent** avoir un `export default`
+* Les sections des modules (search, news) sont importées depuis leurs chemins respectifs
 
 #### 10.1.2 Lazy loading des images
 

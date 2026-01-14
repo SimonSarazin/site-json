@@ -1,6 +1,5 @@
 import express from "express";
 import compression from "compression";
-import serveStatic from "serve-static";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -10,18 +9,12 @@ import serialize from "serialize-javascript";
 // dotenv.config();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const app = express();
-
-app.use(compression());   // gzip
-app.use(
-  serveStatic(path.resolve(__dirname, "../dist/client"), { index: false })
-);
 
 /* ----------------------------------------------------------------------
  *  Chargement obligatoire de la configuration en production
  * -------------------------------------------------------------------- */
-async function loadSiteConfig() {
-  // 1. JSON inline (variable d’environnement complète)
+function loadSiteConfig() {
+  // 1. JSON inline (variable d'environnement complète)
   if (process.env.SITE_CONFIG_JSON) {
     try {
       return JSON.parse(process.env.SITE_CONFIG_JSON);
@@ -44,19 +37,52 @@ async function loadSiteConfig() {
     }
   }
 
-  // Si nous sommes en production et rien n’a été fourni :
+  // Si nous sommes en production et rien n'a été fourni :
   throw new Error(
     "🛑  Aucune configuration trouvée : définissez SITE_CONFIG_JSON ou SITE_CONFIG_PATH (obligatoire en production)"
   );
 }
 
+/* ---- Charger la config UNE SEULE FOIS au démarrage -------------------- */
+const cachedConfig = loadSiteConfig();
+const configScript = `<script>window.__CONFIG__=${serialize(cachedConfig, { isJSON: true })}</script>`;
+console.log("Config chargée :", cachedConfig?.meta?.title?.fr || "Config OK");
+
+const app = express();
+
+// Compression gzip avec options optimisées
+app.use(compression({
+  level: 6,        // Bon compromis vitesse/compression
+  threshold: 1024, // Minimum 1KB pour compresser
+}));
+
+// ETag pour requêtes conditionnelles (304 Not Modified)
+app.set('etag', 'strong');
+
+// Cache long terme pour assets hashés Vite (1 an, immutable)
+app.use('/assets', (req, res, next) => {
+  res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  next();
+});
+
+// Cache moyen terme pour images statiques (1 jour + revalidation 7 jours)
+app.use('/images', (req, res, next) => {
+  res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
+  next();
+});
+
+// Servir les fichiers statiques avec ETag et Last-Modified
+app.use(
+  express.static(path.resolve(__dirname, "../dist/client"), {
+    index: false,
+    etag: true,
+    lastModified: true,
+  })
+);
+
+// 404 pour requêtes de fichiers statiques inexistants
 app.use((req, res, next) => {
-  if (
-    req.url.startsWith("/favicon") ||
-    req.url.startsWith("/sw") ||
-    req.url.startsWith("/manifest") ||
-    req.url.match(/\.(png|jpg|jpeg|gif|svg|css|js|json|ico|webp|mp4|woff2|woff|env|php|txt|py|properties|bak)$/)
-  ) {
+  if (req.url.match(/\.(png|jpg|jpeg|gif|svg|css|js|json|ico|webp|mp4|woff2|woff)$/)) {
     return res.status(404).end();
   }
   next();
@@ -72,13 +98,6 @@ app.use(['/{*all}'], async (req, res) => {
       path.resolve(__dirname, "../dist/client/index.html"),
       "utf-8"
     );
-
-      // --- Injection de la config -------------------------------------------------
-    // 2. Chargement + injection de la configuration
-    const siteConfig = await loadSiteConfig();
-    const configScript = `<script>window.__CONFIG__=${serialize(siteConfig, {
-      isJSON: true,
-    })}</script>`;
 
     let injectEnvScript = "";
 
@@ -109,15 +128,18 @@ app.use(['/{*all}'], async (req, res) => {
     await render(
       req,
       res,
-      siteConfig,
+      cachedConfig,
       // callback onHead : reçoit les balises Helmet
       (helmetHead, dehydratedState) => {
-        res.write(helmetHead);      // <title> / <meta> / <link>…
-        res.write(`<script>window.__REACT_QUERY_STATE__=${serialize(
+        const stateScript = `<script>window.__REACT_QUERY_STATE__=${serialize(
                             dehydratedState, { isJSON: true }
-                          )}</script>`);
+                          )}</script>`;
+
+        res.write(helmetHead);      // <title> / <meta> / <link>…
+        res.write(stateScript);
         res.write(beforeRoot);      // </head><body><div id="root">
       },
+      tail,  // closing tags from template
     );
 
   } catch (e) {

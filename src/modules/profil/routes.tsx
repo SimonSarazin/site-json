@@ -2,14 +2,12 @@ import type { RouteObject } from "react-router";
 import type { QueryClient } from "@tanstack/react-query";
 import type { LoaderFunctionArgs } from "react-router";
 import ProfilePage from "./pages/ProfilePage";
-import { getBaseUrl } from "@/lib/constant/common";
-import { initApi } from "@/lib/apiClient";
+import { ProfileErrorBoundary } from "./components/ProfileErrorBoundary";
 import type { ModuleRouteFactory } from "@/lib/modules";
-
-/**
- * Types d'entités supportant les actualités
- */
-const NEWS_SUPPORTED_TYPES = new Set(["organizations", "projects", "citoyens"]);
+import type { SiteConfig } from "@/types/site-schema";
+import type { ProfileTabSubRoute } from "./schema";
+import { prefetchProfileQuery } from "./prefetch";
+import { prefetchNewsQuery, NEWS_SUPPORTED_TYPES } from "@/modules/news";
 
 const PROJECTS_SUPPORTED_TYPES = new Set(["organizations", "citoyens"]);
 
@@ -18,7 +16,11 @@ const PROJECTS_SUPPORTED_TYPES = new Set(["organizations", "citoyens"]);
  * Pré-charge les données de l'entité côté serveur
  * Détecte le tab actif et pré-charge ses données si nécessaire
  */
-const profileLoader = async ({ params, request }: LoaderFunctionArgs, queryClient?: QueryClient) => {
+const profileLoader = async (
+  { params, request }: LoaderFunctionArgs,
+  queryClient?: QueryClient,
+  config?: SiteConfig
+) => {
   // Si pas de queryClient (côté client), on skip le pre-fetch
   if (!queryClient) return null;
 
@@ -34,56 +36,59 @@ const profileLoader = async ({ params, request }: LoaderFunctionArgs, queryClien
 
   try {
     // 1. Pré-charger les données du profil côté serveur
-    const entity = await queryClient.ensureQueryData({
-      queryKey: ["element-about", slug],
-      queryFn: async () => {
-        const { organization } = await initApi({
-          baseURL: getBaseUrl(),
-          debug: true
-        });
-        if (!organization) {
-          throw new Error("API non initialisée");
+    const entity = await prefetchProfileQuery(queryClient, slug);
+
+    // Collecter les images critiques pour le préchargement LCP
+    const preloadImages: string[] = [];
+    const serverData = entity.serverData;
+    if (serverData) {
+      // Image de profil (priorité haute - souvent visible en premier)
+      if (serverData.profilMediumImageUrl && typeof serverData.profilMediumImageUrl === 'string') {
+        preloadImages.push(serverData.profilMediumImageUrl);
+      } else if (serverData.profilImageUrl && typeof serverData.profilImageUrl === 'string') {
+        preloadImages.push(serverData.profilImageUrl);
+      }
+      if (serverData.profilThumbImageUrl && typeof serverData.profilThumbImageUrl === 'string') {
+        preloadImages.push(serverData.profilThumbImageUrl);
+      }
+      // Bannière (grande image visible en haut de page)
+      if (serverData.profilBannerUrl && typeof serverData.profilBannerUrl === 'string') {
+        preloadImages.push(serverData.profilBannerUrl);
+      } else if (serverData.profilRealBannerUrl && typeof serverData.profilRealBannerUrl === 'string') {
+        preloadImages.push(serverData.profilRealBannerUrl);
+      }
+    }
+
+    // 2. Pré-charger les données du tab actif selon sa configuration
+    if (entity && config && config.profiles) {
+      const entityType = entity.getEntityType?.() || "";
+      const profileConfig = config.profiles[entityType as keyof typeof config.profiles];
+
+      if (profileConfig?.tabs) {
+        const tabConfig = profileConfig.tabs.find((tab) => tab.id === activeTab);
+
+        // Pré-charger selon les sections du tab
+        if (tabConfig?.sections && NEWS_SUPPORTED_TYPES.has(entityType)) {
+          // Vérifier s'il y a des sections de type "news"
+          const hasNewsSection = tabConfig.sections.some((section) =>
+            section.type === 'news'
+          );
+
+          if (hasNewsSection) {
+            await prefetchNewsQuery(queryClient, entity);
+          }
         }
-        return organization.entityBySlug(slug);
-      }
-    });
 
-    // 2. Pré-charger les données du tab actif si nécessaire
-    const entityType = entity.getEntityType?.() || "";
-
-    if (activeTab === 'news' && entity) {
-      // Vérifier si ce type d'entité supporte les actualités
-      if (NEWS_SUPPORTED_TYPES.has(entityType)) {
-        await queryClient.prefetchInfiniteQuery({
-          queryKey: ["profile-news", entity.id],
-          queryFn: async () => {
-            return entity.getNews({
-              indexStep: 12,
-              dateLimit: Math.floor(Date.now() / 1000)
-            });
-          },
-          initialPageParam: Math.floor(Date.now() / 1000),
-        });
+        // Pré-charger selon le component du tab (legacy support)
+        if (tabConfig?.component === 'NewsTab' && NEWS_SUPPORTED_TYPES.has(entityType)) {
+          await prefetchNewsQuery(queryClient, entity);
+        }
+        // Ajouter d'autres pré-chargements ici selon les components
+        // ex: SocialTab, MembershipTab, etc.
       }
     }
 
-    if (activeTab === 'projects' && entity) {
-      if (PROJECTS_SUPPORTED_TYPES.has(entityType)) {
-        await queryClient.prefetchInfiniteQuery({
-          queryKey: ["profile-projects", entity.id],
-          queryFn: async () => {
-            const result = await entity.getProjects({
-              indexMin: 0,
-              indexStep: 12,
-            });
-            return result.results || [];
-          },
-          initialPageParam: 0,
-        });
-      }
-    }
-
-    return { entity, activeTab };
+    return { entity, activeTab, preloadImages };
   } catch (error) {
     console.error('Erreur lors du chargement du profil:', error);
     throw new Response('Not Found', { status: 404 });
@@ -91,57 +96,86 @@ const profileLoader = async ({ params, request }: LoaderFunctionArgs, queryClien
 };
 
 /**
+ * Génère les routes des tabs dynamiquement à partir de la config
+ */
+const generateTabRoutes = (config?: SiteConfig): RouteObject[] => {
+  if (!config?.profiles) {
+    return [{ index: true, element: null }];
+  }
+
+  // Collecter tous les tabs avec leurs sous-routes
+  const tabsMap = new Map<string, { subRoutes?: ProfileTabSubRoute[] }>();
+
+  Object.values(config.profiles).forEach(profileConfig => {
+    if (profileConfig.tabs) {
+      profileConfig.tabs.forEach(tab => {
+        if (!tabsMap.has(tab.id)) {
+          tabsMap.set(tab.id, { subRoutes: tab.subRoutes });
+        } else {
+          // Merger les subRoutes si le même tab existe dans plusieurs profils
+          const existing = tabsMap.get(tab.id)!;
+          if (tab.subRoutes && existing.subRoutes) {
+            existing.subRoutes = [...existing.subRoutes, ...tab.subRoutes];
+          } else if (tab.subRoutes) {
+            existing.subRoutes = tab.subRoutes;
+          }
+        }
+      });
+    }
+  });
+
+  // Créer les routes pour chaque tab unique avec leurs sous-routes
+  const tabRoutes: RouteObject[] = Array.from(tabsMap.entries()).map(([tabId, tabData]) => {
+    const tabRoute: RouteObject = {
+      path: tabId,
+      element: null, // Le contenu sera rendu par ProfileTemplateDynamic
+    };
+
+    // Ajouter les sous-routes si elles existent
+    if (tabData.subRoutes && tabData.subRoutes.length > 0) {
+      tabRoute.children = tabData.subRoutes.map(subRoute => ({
+        path: subRoute.path,
+        element: null, // Sera rendu par TabDetailRenderer
+      }));
+    }
+
+    return tabRoute;
+  });
+
+  // Ajouter la route index (par défaut)
+  return [
+    {
+      index: true,
+      element: null,
+    },
+    ...tabRoutes,
+  ];
+};
+
+/**
  * Routes du module profil
  *
- * Ces routes sont dynamiquement injectées dans le router principal
+ * Ces routes sont dynamiquement générées à partir de la configuration JSON
  * via le système de découverte de modules (src/lib/modules.ts)
  *
  * Convention : /profil/:slug pour les profils
- * Routes imbriquées pour les tabs : /profil/:slug/news, /profil/:slug/coworking, etc.
+ * Routes imbriquées pour les tabs : /profil/:slug/{tabId}
+ *
+ * Les tabs disponibles sont déterminés par config.profiles[entityType].tabs
  *
  * @param queryClient - Client React Query pour le pré-chargement SSR
+ * @param config - Configuration du site (optionnelle, pour SSR)
  * @returns Liste des routes du module profil
  */
-export const routes: ModuleRouteFactory = (queryClient?: QueryClient): RouteObject[] => [
+export const routes: ModuleRouteFactory = (
+  queryClient?: QueryClient,
+  config?: SiteConfig
+): RouteObject[] => [
   {
     path: "profil/:slug",
     element: <ProfilePage />,
-    loader: (args) => profileLoader(args, queryClient),
-    children: [
-      // Route index (par défaut) - Le contenu "about" est rendu directement dans ProfileTemplateDefault
-      {
-        index: true,
-        element: null, // Pas de composant séparé, le contenu est déjà dans le template
-      },
-      // Route pour le tab news
-      {
-        path: "news",
-        element: null, // Le contenu sera rendu via LazyTabContent dans le template
-      },
-      // Route pour le tab coworking
-      {
-        path: "coworking",
-        element: null,
-      },
-      // Route pour le tab rooms
-      {
-        path: "rooms",
-        element: null,
-      },
-      {
-        path: "projects",
-        element: null,
-      },
-      // Route pour le tab communities
-      {
-        path: "communities",
-        element: null,
-      },
-      // Route pour le tab observatory
-      {
-        path: "observatory",
-        element: null,
-      },
-    ],
+    errorElement: <ProfileErrorBoundary />,
+    loader: (args) => profileLoader(args, queryClient, config),
+    children: generateTabRoutes(config),
   }
 ];

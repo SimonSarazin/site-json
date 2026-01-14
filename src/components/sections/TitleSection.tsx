@@ -1,15 +1,14 @@
-import { useLocalization } from "@/hooks/useLocalization";
+import { T } from "@/components/ui/T";
 import { cn } from "@/lib/utils";
 import type { SectionPropsMap } from "@/types/site";
 
-export function TitleSection({ 
-  id, 
-  props 
-}: { 
-  id?: string; 
-  props: SectionPropsMap["title"] 
+export function TitleSection({
+  id,
+  props
+}: {
+  id?: string;
+  props: SectionPropsMap["title"]
 }) {
-  const { t } = useLocalization();
   const { title, subtitle, className, align = "center", size = "lg" } = props;
 
   const sizeClasses = {
@@ -28,24 +27,29 @@ export function TitleSection({
   return (
     <section id={id} className={cn("py-8", className)}>
       <div className="container mx-auto px-6">
-        <h2 className={cn(
-          sizeClasses[size],
-          alignClasses[align],
-          "font-bold mb-2"
-        )}>
-          {t(title)}
-        </h2>
-        
-        {subtitle && (
-          <h3 className={cn(
+        <T
+          k={title}
+          as="h2"
+          className={cn(
             sizeClasses[size],
             alignClasses[align],
-            "font-bold mb-12"
-          )}>
-            {t(subtitle)}
-          </h3>
+            "font-bold mb-2"
+          )}
+        />
+
+        {subtitle && (
+          <T
+            k={subtitle}
+            as="h3"
+            className={cn(
+              sizeClasses[size],
+              alignClasses[align],
+              "font-bold mb-12"
+            )}
+          />
         )}
       </div>
     </section>
   );
 }
+export default TitleSection;

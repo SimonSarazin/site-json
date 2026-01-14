@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar, MapPin, Clock, Users, ExternalLink } from 'lucide-react';
+import { T } from "@/components/ui/T";
 import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from '@/lib/utils';
 import { EventListSectionProps } from '@/types/site-schema';
@@ -13,11 +14,11 @@ export function EventListSection({ id, props }: { id?: string; props: EventListS
   const [filter, setFilter] = useState<'all' | 'upcoming' | 'past'>('upcoming');
 
   const now = new Date();
-  
+
   const filteredEvents = events.filter(event => {
     const eventDate = new Date(event.startDate);
     const isPast = eventDate < now;
-    
+
     if (filter === 'upcoming') return !isPast;
     if (filter === 'past') return isPast;
     return true;
@@ -50,18 +51,18 @@ export function EventListSection({ id, props }: { id?: string; props: EventListS
     )}>
       {event.image && (
         <div className="w-full h-48 overflow-hidden rounded-t-lg">
-          <img 
-            src={event.image} 
+          <img
+            src={event.image}
             alt={t(event.title)}
             className="w-full h-full object-cover"
           />
         </div>
       )}
-      
+
       <CardHeader>
         <div className="flex items-start justify-between gap-4">
           <CardTitle className="text-xl text-foreground">
-            {t(event.title)}
+            <T k={event.title} />
           </CardTitle>
           {event.price && (
             <Badge variant="secondary" className="shrink-0">
@@ -70,19 +71,19 @@ export function EventListSection({ id, props }: { id?: string; props: EventListS
           )}
         </div>
       </CardHeader>
-      
+
       <CardContent className="space-y-4">
         <p className="text-muted-foreground leading-relaxed">
-          {t(event.description)}
+          <T k={event.description} />
         </p>
-        
+
         {/* Event Details */}
         <div className="space-y-2 text-sm">
           <div className="flex items-center gap-2 text-muted-foreground">
             <Calendar className="w-4 h-4" />
             <span>{formatDate(event.startDate)}</span>
           </div>
-          
+
           <div className="flex items-center gap-2 text-muted-foreground">
             <Clock className="w-4 h-4" />
             <span>
@@ -90,26 +91,26 @@ export function EventListSection({ id, props }: { id?: string; props: EventListS
               {event.endDate && ` - ${formatTime(event.endDate)}`}
             </span>
           </div>
-          
+
           {event.location && (
             <div className="flex items-center gap-2 text-muted-foreground">
               <MapPin className="w-4 h-4" />
-              <span>{t(event.location)}</span>
+              <T k={event.location} />
             </div>
           )}
         </div>
-        
+
         {/* Tags */}
         {event.tags && event.tags.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {event.tags.map((tag: Partial<Record<"fr" | "en" | "es" | "de", string>>, index: Key | null | undefined) => (
               <Badge key={index} variant="outline" className="text-xs">
-                {t(tag)}
+                <T k={tag} />
               </Badge>
             ))}
           </div>
         )}
-        
+
         {/* Registration Button */}
         {event.registrationUrl && !isEventPast(event.startDate) && (
           <Button asChild className="w-full">
@@ -120,7 +121,7 @@ export function EventListSection({ id, props }: { id?: string; props: EventListS
             </a>
           </Button>
         )}
-        
+
         {isEventPast(event.startDate) && (
           <Badge variant="secondary" className="w-full justify-center">
             Événement passé
@@ -185,3 +186,4 @@ export function EventListSection({ id, props }: { id?: string; props: EventListS
     </section>
   );
 }
+export default EventListSection;

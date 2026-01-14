@@ -8,7 +8,7 @@ services:
     environment:
       VITE_BASE_URL_BACKEND: "https://www.communecter.org"
       VITE_SERVER_URL: "https://www.communecter.org"
-      VITE_SLUG: "laRosee"
+      VITE_SLUG: "franceTierslieux"
       SITE_CONFIG_PATH: "./config.prod.json"
     volumes:
       - ./config.prod.json:/app/config.prod.json

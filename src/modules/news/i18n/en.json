@@ -1,0 +1,212 @@
+{
+  "NewsTab": {
+    "comment": "Comment",
+    "createPost": "Create a post",
+    "delete": "Delete",
+    "edit": "Edit",
+    "like": "Like",
+    "noNews": "No news",
+    "noNewsDescription": "Posts will appear here",
+    "readLess": "Read less",
+    "readMore": "Read more",
+    "report": "Report",
+    "share": "Share",
+    "sharedBy": "Shared by",
+    "someone": "someone",
+    "upToDate": "You're up to date!",
+    "andOthers": "and {{count}} other",
+    "andOthers_plural": "and {{count}} others",
+    "loadingNews": "Loading news...",
+    "allNewsSeen": "You've seen all available news"
+  },
+  "NewsSection": {
+    "comment": "Comment",
+    "createPost": "Create a post",
+    "delete": "Delete",
+    "edit": "Edit",
+    "like": "Like",
+    "noNews": "No news",
+    "noNewsDescription": "Posts will appear here",
+    "readLess": "Read less",
+    "readMore": "Read more",
+    "report": "Report",
+    "share": "Share",
+    "sharedBy": "Shared by",
+    "someone": "someone",
+    "upToDate": "You're up to date!",
+    "loadingNews": "Loading news...",
+    "allNewsSeen": "You've seen all available news",
+    "entityError": "Loading error",
+    "entityErrorDescription": "Unable to load data for this entity",
+    "viewDetails": "View details"
+  },
+  "comments": {
+    "collapseThread": "Collapse thread",
+    "delete": "Delete",
+    "edit": "Edit",
+    "editComment": "Edit comment...",
+    "expandThread": "Expand thread",
+    "like": "Like",
+    "loginToComment": "Sign in to comment",
+    "noComments": "No comments",
+    "reply": "Reply",
+    "writeComment": "Write a comment...",
+    "writeReply": "Write a reply...",
+    "deleteDialog": {
+      "title": "Delete comment",
+      "description": "Are you sure you want to delete this comment? This action cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    }
+  },
+  "forms": {
+    "addNews": {
+      "title": "New news",
+      "textLabel": "Message",
+      "textPlaceholder": "What would you like to share?",
+      "cancel": "Cancel",
+      "post": "Publish",
+      "posting": "Publishing..."
+    },
+    "scope": {
+      "label": "Visibility",
+      "public": "Public",
+      "private": "Private",
+      "restricted": "Restricted"
+    },
+    "editNews": {
+      "title": "Edit news",
+      "textLabel": "Message",
+      "textPlaceholder": "Edit your message...",
+      "tagsLabel": "Tags",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving..."
+    },
+    "imageUpload": {
+      "label": "Images",
+      "upload": "Add images",
+      "uploading": "Uploading..."
+    },
+    "documentUpload": {
+      "label": "Documents",
+      "upload": "Add documents",
+      "uploading": "Uploading..."
+    },
+    "tagsInput": {
+      "label": "Tags",
+      "placeholder": "Add tags...",
+      "maxReached": "Maximum {{max}} tags allowed"
+    },
+    "imageCrop": {
+      "title": "Crop image",
+      "cancel": "Cancel",
+      "apply": "Apply"
+    }
+  },
+  "reportDialog": {
+    "title": "Report news",
+    "titleComment": "Report comment",
+    "description": "Help us maintain a respectful community by reporting inappropriate content.",
+    "reasonLabel": "Report reason",
+    "reasonPlaceholder": "Select a reason",
+    "commentLabel": "Additional details (optional)",
+    "commentPlaceholder": "Add details about this report...",
+    "cancel": "Cancel",
+    "submit": "Submit report",
+    "submitting": "Sending...",
+    "reasons": {
+      "spam": "Spam or promotional content",
+      "harassment": "Harassment or bullying",
+      "hateSpeech": "Hate speech",
+      "violence": "Violence or threats",
+      "inappropriate": "Inappropriate content",
+      "misinformation": "Misinformation",
+      "other": "Other"
+    }
+  },
+  "deleteDialog": {
+    "title": "Delete news",
+    "description": "Are you sure you want to delete this news? This action cannot be undone.",
+    "cancel": "Cancel",
+    "confirm": "Delete"
+  },
+  "shareDialog": {
+    "title": "Share this news",
+    "description": "Add your comment (optional)",
+    "messageLabel": "Your comment",
+    "messagePlaceholder": "What do you think about this post?",
+    "cancel": "Cancel",
+    "share": "Share",
+    "sharing": "Sharing..."
+  },
+  "mentions": {
+    "searching": "Searching...",
+    "noResults": "No results found",
+    "typeToSearch": "Type @ to mention someone"
+  },
+  "tags": {
+    "searching": "Searching...",
+    "noResults": "No tags found",
+    "typeToSearch": "Type at least 2 characters to search"
+  },
+  "reactions": {
+    "allReactions": "All reactions",
+    "noReactions": "No reactions",
+    "reactions": "reaction",
+    "reactions_plural": "reactions"
+  },
+  "reactionsTypes": {
+    "love": "Love",
+    "like": "Like",
+    "enjoy": "Happy",
+    "glad": "Glad",
+    "bothered": "Angry",
+    "sad": "Sad",
+    "scared": "Worried",
+    "support": "Support"
+  },
+  "validation": {
+    "textRequired": "Text is required",
+    "textTooShort": "Text must be at least 3 characters long"
+  },
+  "NewsDetailPage": {
+    "back": "Back",
+    "share": "Share",
+    "report": "Report",
+    "invalidNewsId": "Invalid news ID",
+    "newsNotFound": "News not found",
+    "newsNotFoundDescription": "This news doesn't exist or has been deleted"
+  },
+  "toast": {
+    "addSuccess": "News published successfully",
+    "addError": "Unable to publish news",
+    "editSuccess": "News updated successfully",
+    "editError": "Unable to update news",
+    "deleteSuccess": "News deleted successfully",
+    "deleteError": "Unable to delete news",
+    "voteSuccess": "Reaction added successfully",
+    "voteError": "Unable to add reaction",
+    "comment": {
+      "addSuccess": "Comment added successfully",
+      "addError": "Unable to add comment",
+      "editSuccess": "Comment updated successfully",
+      "editError": "Unable to update comment",
+      "deleteSuccess": "Comment deleted successfully",
+      "deleteError": "Unable to delete comment",
+      "voteSuccess": "Reaction added successfully",
+      "voteError": "Unable to add reaction"
+    },
+    "reply": {
+      "addSuccess": "Reply added successfully",
+      "addError": "Unable to add reply"
+    },
+    "report": {
+      "success": "Report sent successfully",
+      "error": "Unable to send report"
+    },
+    "error": {
+      "generic": "An error occurred"
+    }
+  }
+}
