@@ -79,7 +79,6 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef, onEdit, onDele
     mediaFiles,
     tags,
     voteCount,
-    userVoteType,
     hasVideo,
     videoEmbedUrl,
     sharedBy,
@@ -109,17 +108,6 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef, onEdit, onDele
     }
 
     addVoteNewsMutation.mutate({ news: item, voteType: reactionType });
-  };
-
-  const getUserReactionIcon = (userVoteType: string | null) => {
-    if (!userVoteType) return null;
-    const voteType = voteTypes.find(v => v.type === userVoteType);
-    if (!voteType) return null;
-    return {
-      Icon: voteType.icon,
-      color: voteType.color,
-      type: voteType.type
-    };
   };
 
   return (
@@ -167,7 +155,7 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef, onEdit, onDele
               <time dateTime={(date as Date)?.toISOString?.() || new Date().toISOString()}>
                 {formatDate((date as Date) || new Date())}
               </time>
-              <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-xs font-medium bg-lime-700 text-white dark:bg-lime-600">
+              <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-xs font-medium bg-success text-success-foreground">
                 {t(`forms.scope.${scope}`)}
               </span>
             </div>
@@ -317,36 +305,12 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef, onEdit, onDele
                 disabled={!me?.isConnected}
                 className={`flex items-center gap-2 transition-colors ${
                   me?.isConnected
-                    ? 'text-muted-foreground hover:text-info'
+                    ? 'text-muted-foreground hover:text-primary'
                     : 'text-muted-foreground/50 cursor-not-allowed'
                 }`}
               >
-                {(() => {
-                  const userReaction = getUserReactionIcon(userVoteType);
-                  if (userReaction) {
-                    const Icon = userReaction.Icon;
-                    const colorClass = userReaction.color === 'red' ? 'text-destructive' :
-                                     userReaction.color === 'blue' ? 'text-info' :
-                                     userReaction.color === 'green' ? 'text-success' :
-                                     userReaction.color === 'teal' ? 'text-primary' :
-                                     userReaction.color === 'yellow' ? 'text-warning' :
-                                     userReaction.color === 'purple' ? 'text-chart-2' :
-                                     userReaction.color === 'indigo' ? 'text-chart-3' :
-                                     'text-muted-foreground';
-                    return (
-                      <>
-                        <Icon className={`w-5 h-5 ${colorClass}`} />
-                        <span className="hidden md:inline">{t(`NewsTab.reactionsTypes.${userReaction.type}`)}</span>
-                      </>
-                    );
-                  }
-                  return (
-                    <>
-                      <ThumbsUp className="w-5 h-5" />
-                      <span className="hidden md:inline">{t("NewsTab.like")}</span>
-                    </>
-                  );
-                })()}
+                <ThumbsUp className="w-5 h-5" />
+                <span className="hidden md:inline">{t("NewsTab.like")}</span>
               </button>
             </HoverCardTrigger>
             {me?.isConnected && (

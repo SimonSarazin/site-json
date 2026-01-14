@@ -107,7 +107,7 @@ export function ReportDialog({ type, item, open, onOpenChange }: ReportDialogPro
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="report-reason" className="text-sm font-semibold">
-              {t("reportDialog.reasonLabel")} <span className="text-red-500">*</span>
+              {t("reportDialog.reasonLabel")} <span className="text-destructive">*</span>
             </Label>
             <Select
               value={reason}

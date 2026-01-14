@@ -28,13 +28,13 @@ export function FileUploadProgress({ uploads, onCancel, onRemove }: FileUploadPr
               <span className="text-sm font-medium truncate">{upload.file.name}</span>
               <div className="flex items-center gap-1">
                 {upload.status === 'uploading' && (
-                  <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+                  <Loader2 className="w-4 h-4 animate-spin text-primary" />
                 )}
                 {upload.status === 'completed' && (
-                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <CheckCircle className="w-4 h-4 text-success" />
                 )}
                 {upload.status === 'error' && (
-                  <AlertCircle className="w-4 h-4 text-red-500" />
+                  <AlertCircle className="w-4 h-4 text-destructive" />
                 )}
                 {(onCancel && upload.status === 'uploading') || (onRemove && upload.status !== 'uploading') ? (
                   <Button
@@ -60,7 +60,7 @@ export function FileUploadProgress({ uploads, onCancel, onRemove }: FileUploadPr
             )}
             
             {upload.status === 'error' && upload.error && (
-              <div className="text-xs text-red-600 mt-1">{upload.error}</div>
+              <div className="text-xs text-destructive mt-1">{upload.error}</div>
             )}
           </div>
         </div>

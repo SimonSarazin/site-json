@@ -10,14 +10,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
 import { CommentInput } from "./CommentInput";
 import { ReportDialog } from "../ReportDialog";
 import type { Comment, EntityTypes } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useFormatComment } from "../../hooks/useFormatComment";
 import { useAddCommentVote } from "../../hooks/useCommentMutations";
-import { voteTypes } from "./constants";
 
 interface CommentItemProps {
   commentItem: Comment;
@@ -77,25 +75,14 @@ export function CommentItem({
     }
   };
 
-  const handleCommentReaction = (comment: Comment, voteType: string) => {
+  const handleCommentLike = (comment: Comment) => {
     if (!isConnected) return;
-    addCommentVoteMutation.mutate({ comment, voteType });
+    addCommentVoteMutation.mutate({ comment, voteType: "like" });
   };
 
   const handleReportComment = (comment: Comment) => {
     setCommentToReport(comment);
     setReportDialogOpen(true);
-  };
-
-  const getUserReactionIcon = (userVoteType: string | null) => {
-    if (!userVoteType) return null;
-    const voteType = voteTypes.find(v => v.type === userVoteType);
-    if (!voteType) return null;
-    return {
-      Icon: voteType.icon,
-      color: voteType.color,
-      type: voteType.type
-    };
   };
 
   // Si le commentaire n'a pas pu être formaté, ne rien afficher
@@ -178,11 +165,6 @@ export function CommentItem({
             <p className="text-muted-foreground md:text-xs text-[9px] text-center justify-start">
               {formattedComment.formattedDate}
             </p>
-
-            {formattedComment.totalVotes > 0 && (
-              <CommentVoteDisplay voteCount={formattedComment.voteCount} commentId={formattedComment.id} />
-            )}
-
             <div className="flex divide-x-2 divide-border">
               <Button
                 variant="ghost"

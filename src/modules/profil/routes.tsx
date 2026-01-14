@@ -9,8 +9,6 @@ import type { ProfileTabSubRoute } from "./schema";
 import { prefetchProfileQuery } from "./prefetch";
 import { prefetchNewsQuery, NEWS_SUPPORTED_TYPES } from "@/modules/news";
 
-const PROJECTS_SUPPORTED_TYPES = new Set(["organizations", "citoyens"]);
-
 /**
  * Loader pour le profil principal
  * Pré-charge les données de l'entité côté serveur

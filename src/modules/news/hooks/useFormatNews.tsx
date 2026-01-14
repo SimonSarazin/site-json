@@ -44,7 +44,6 @@ export interface FormattedNews {
 
   // Votes calculés
   totalVotes: number;
-  userVoteType: string | null;
 
   // Scope
   scope: string;
@@ -143,8 +142,6 @@ export function useFormatNews(newsItem: News | null, entity: EntityTypes | null 
       : {};
     const totalVotes = calculateTotalVotes(voteCount);
 
-    const userVoteType = getUserVoteType(serverData as Record<string, unknown>, currentUserId);
-
     // Scope (public, private, restricted)
     const scope = serverData.scope && typeof serverData.scope === 'object'
       ? (serverData.scope as Record<string, unknown>).type as string || 'public'
@@ -172,7 +169,6 @@ export function useFormatNews(newsItem: News | null, entity: EntityTypes | null 
       hasVideo,
       videoEmbedUrl,
       totalVotes,
-      userVoteType,
       scope,
       mentions,
       canEdit: permissions.canEditNews,

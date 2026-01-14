@@ -109,13 +109,17 @@ export default defineConfig(({ mode, isSsrBuild }) => ({
     }
   },
   ssr: {
-    noExternal: true,
     external: [
-      // Deps serveur (utilisées par prod-server.js)
+      'react',
+      'react-dom',
+      'react/jsx-runtime',
+      'react/jsx-dev-runtime',
+      'react-router',
+      'cookie',
+      '@tanstack/react-query',
       'express',
       'compression',
       'serialize-javascript',
-      // Problèmes de bundling CommonJS
       'isomorphic-dompurify',
       '@communecter/cocolight-api-client'
     ]

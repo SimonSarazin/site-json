@@ -9,6 +9,47 @@ import "./index.css";
 import { HydrationBoundary, QueryClient, QueryClientProvider, type DehydratedState } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 
+function areStylesheetsLoaded(): boolean {
+  const stylesheets = document.querySelectorAll('link[rel="stylesheet"]');
+  for (const sheet of stylesheets) {
+    const linkEl = sheet as HTMLLinkElement;
+    if (linkEl.sheet === null) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function hideLoader() {
+  const loader = document.getElementById('app-loader');
+  const root = document.getElementById('root');
+
+  document.documentElement.classList.remove('loading-active');
+
+  if (loader) {
+    loader.classList.add('hidden');
+    setTimeout(() => {
+      loader.remove();
+      const criticalStyles = document.getElementById('critical-loader');
+      if (criticalStyles) criticalStyles.remove();
+    }, 300);
+  }
+
+  if (root) {
+    root.classList.add('loaded');
+  }
+}
+
+function waitForStylesAndHideLoader() {
+  if (areStylesheetsLoaded()) {
+    requestAnimationFrame(() => {
+      hideLoader();
+    });
+  } else {
+    setTimeout(waitForStylesAndHideLoader, 50);
+  }
+}
+
 
 // La config JSON sérialisée par le serveur est injectée dans le global
 declare global {
@@ -65,6 +106,12 @@ function Root() {
         .then(setRouter);
     }
   }, []);
+
+  useEffect(() => {
+    if (router) {
+      waitForStylesAndHideLoader();
+    }
+  }, [router]);
 
   if (!router) {
     // Modules optional en chargement : on garde le HTML SSR intact

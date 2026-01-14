@@ -60,15 +60,14 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
         <header className={`${header.transparent ? "bg-transparent" : "bg-background"} rounded-b-2xl border-b border-border ${header.sticky ? "sticky top-0 z-50" : ""}`}>
             <nav className="container mx-auto py-3 sm:py-4 px-4 sm:px-6">
                 <div className="flex items-center justify-between">
-                    <Link to={header.path || "/"} className="flex items-center space-x-2">
+                    <Link to={header.path || "/"} className="flex items-center shrink-0">
                         {header.logo && (
                             <img
                                 src={`/${header.logo}`}
                                 alt={header.logoAlt ? t(header.logoAlt) : ""}
                                 width={207}
                                 height={48}
-                                className="h-10 sm:h-12"
-                                style={{ aspectRatio: '207/48' }}
+                                className="h-8 xs:h-10 sm:h-12 w-auto max-w-35 xs:max-w-40 sm:max-w-none object-contain"
                             />
                         )}
                     </Link>
@@ -240,16 +239,16 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                         )}
                     </div>
 
-                    <div className="md:hidden flex items-center gap-2">
-                        <ClientOnly fallback={<div className="w-8 h-8" />}>
+                    <div className="md:hidden flex items-center gap-1 xs:gap-2 shrink-0">
+                        <ClientOnly fallback={<div className="w-7 h-7 xs:w-8 xs:h-8" />}>
                             {() => <ToggleButtonTheme />}
                         </ClientOnly>
                         {header.utilities?.langSwitch && availableLocales.length > 1 && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="gap-1 px-2">
-                                        <Globe className="h-4 w-4" />
-                                        {currentLocale.toUpperCase()}
+                                    <Button variant="ghost" size="sm" className="gap-0.5 xs:gap-1 px-1.5 xs:px-2 h-8">
+                                        <Globe className="h-3.5 w-3.5 xs:h-4 xs:w-4" />
+                                        <span className="text-xs xs:text-sm">{currentLocale.toUpperCase()}</span>
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent>
@@ -267,15 +266,15 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                         )}
                         <button
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                            className="text-foreground hover:text-primary transition relative z-50 p-2"
+                            className="text-foreground hover:text-primary transition relative z-50 p-1.5 xs:p-2"
                             aria-label="Toggle menu"
                         >
                             {mobileMenuOpen ? (
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5 xs:w-6 xs:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             ) : (
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5 xs:w-6 xs:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                                 </svg>
                             )}

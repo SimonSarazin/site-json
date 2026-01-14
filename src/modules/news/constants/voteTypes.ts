@@ -1,7 +1,6 @@
 import { Heart, ThumbsUp, Smile, Laugh, Angry, Frown, HandMetal } from "lucide-react";
 import { Frown as Scared } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { z } from "zod";
 
 export interface VoteType {
   type: string;

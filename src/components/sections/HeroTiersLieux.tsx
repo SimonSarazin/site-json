@@ -324,8 +324,8 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                     key={idx}
                     onClick={() => setActiveTabIndex(idx)}
                     className={`px-3 sm:px-6 py-2 sm:py-3 font-semibold transition ${activeTabIndex === idx
-                      ? "border-b-4 border-primary text-primary-foreground bg-primary rounded-t-md dark:bg-slate-800"
-                      : "hover:bg-gray-50 dark:hover:bg-slate-800"
+                      ? "border-b-4 border-primary text-primary-foreground bg-primary rounded-t-md"
+                      : "hover:bg-muted"
                       }`}
                   >
                     <T k={btn.label} />

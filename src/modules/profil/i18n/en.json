@@ -497,7 +497,10 @@
     "from": "From",
     "to": "To",
     "address": "Address",
-    "addressNotProvided": "Address not provided"
+    "addressNotProvided": "Address not provided",
+    "addAddress": "Add address",
+    "openInMaps": "Open in Google Maps",
+    "getDirections": "Get directions"
   },
   "ProfileBannerCarriedBy": {
     "carriedBy": "Carried by"
@@ -582,6 +585,24 @@
     "socialNetworks": "Social networks",
     "socialNetworksDescription": "Add your social network links",
     "scheduleDescription": "Define opening hours for each day of the week"
+  },
+  "EditImage": {
+    "editProfileImage": "Edit profile picture",
+    "editBannerImage": "Edit cover photo",
+    "dragOrClick": "Drag an image or click to select",
+    "dragToPosition": "Drag to position the crop area",
+    "selectImage": "Select an image",
+    "changeImage": "Change image",
+    "invalidFileType": "File must be an image (JPG, PNG, GIF, WebP)",
+    "fileTooLarge": "Image must not exceed 5 MB",
+    "imageRequirements": "Accepted formats: JPG, PNG, GIF, WebP. Max size: 5 MB",
+    "bannerRequirements": "Accepted formats: JPG, PNG, GIF, WebP. Max size: 10 MB. Recommended ratio: 16:9",
+    "success": "Success",
+    "error": "Error",
+    "profileImageUpdated": "Profile picture updated successfully",
+    "bannerImageUpdated": "Cover photo updated successfully",
+    "updateFailed": "Failed to update image",
+    "zoom": "Zoom"
   },
   "SocialTab": {
     "addFriend": "Add friend",

@@ -20,8 +20,5 @@ export { useDebounce } from "./useDebounce";
 export { useMutationWithToast } from "./useMutationWithToast";
 export { useFeatureFlag } from "./useFeatureFlag";
 
-// Toast
-export { useToast } from "./use-toast";
-
 // Localization
 export { useT } from "./useT";

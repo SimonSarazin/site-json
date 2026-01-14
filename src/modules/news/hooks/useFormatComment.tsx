@@ -17,8 +17,6 @@ export interface FormattedReply {
   authorName: string;
   authorPhoto: string | null;
   isAuthor: boolean;
-  voteCount: Record<string, number>;
-  userVoteType: string | null;
 
   // Permissions
   canEdit: boolean;
@@ -43,8 +41,6 @@ export interface FormattedComment {
   isAuthor: boolean;
   formattedDate: string;
   totalVotes: number;
-  voteCount: Record<string, number>;
-  userVoteType: string | null;
   replies: FormattedReply[];
   repliesCount: number;
 
@@ -96,8 +92,6 @@ export function useFormatComment(commentItem: Comment | null, entity: EntityType
       ? serverData.voteCount as Record<string, number>
       : {};
     const totalVotes = calculateTotalVotes(voteCount);
-
-    const userVoteType = getUserVoteType(serverData as Record<string, unknown>, currentUserId);
 
     // Formatage des replies (maintenant ce sont des objets Comment)
     const formattedReplies: FormattedReply[] = [];
@@ -156,8 +150,6 @@ export function useFormatComment(commentItem: Comment | null, entity: EntityType
       isAuthor: isCommentAuthor,
       formattedDate,
       totalVotes,
-      voteCount,
-      userVoteType,
       replies: formattedReplies,
       repliesCount: formattedReplies.length,
       canEdit: isCommentAuthor, // Peut éditer si auteur du commentaire

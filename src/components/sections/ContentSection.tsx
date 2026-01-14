@@ -46,7 +46,7 @@ export function ContentSection({
             
             <T k={title} as="h2" className="text-4xl font-bold text-primary mb-6 leading-tight" />
 
-            <T k={description} as="p" className="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed" />
+            <T k={description} as="p" className="text-muted-foreground mb-8 leading-relaxed" />
 
             {/* Tags */}
             {tags && tags.length > 0 && (
@@ -54,7 +54,7 @@ export function ContentSection({
                 {tags.map((tag, idx) => (
                   <span
                     key={idx}
-                    className="px-4 py-2 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-full text-sm cursor-pointer transition"
+                    className="px-4 py-2 bg-muted hover:bg-muted/80 rounded-full text-sm cursor-pointer transition"
                     suppressHydrationWarning
                   >
                     {t(tag)}
@@ -67,7 +67,7 @@ export function ContentSection({
             {iconCard && links && links.length > 0 && (
               <div className="flex items-start gap-4 mb-6">
                 {/* Icon */}
-                <div className="w-28 h-28 px-4 bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-gray-700 flex items-center justify-center text-3xl shadow-lg flex-0">
+                <div className="w-28 h-28 px-4 bg-card rounded-2xl border border-border flex items-center justify-center text-3xl shadow-lg flex-0">
                   <div dangerouslySetInnerHTML={{ __html: iconCard.svg }} suppressHydrationWarning />
                 </div>
 
@@ -81,7 +81,7 @@ export function ContentSection({
                         </svg>
                         <a
                           href={link.href}
-                          className="font-semibold text-gray-900 dark:text-white hover:text-primary dark:hover:text-primary transition"
+                          className="font-semibold text-foreground hover:text-primary transition"
                           suppressHydrationWarning
                         >
                           {t(link.label)}

@@ -54,7 +54,7 @@ export function ShareNewsDialog({ entity, news, open, onOpenChange }: ShareNewsD
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Share2 className="w-5 h-5 text-blue-500" />
+            <Share2 className="w-5 h-5 text-primary" />
             {t("shareDialog.title")}
           </DialogTitle>
           <DialogDescription>
@@ -91,7 +91,7 @@ export function ShareNewsDialog({ entity, news, open, onOpenChange }: ShareNewsD
           <Button
             onClick={handleShare}
             disabled={isSharingNews}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             {isSharingNews ? (
               <>

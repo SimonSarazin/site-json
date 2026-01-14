@@ -22,7 +22,7 @@ export function ComparisonSection({ id, props }: { id?: string; props: Compariso
                 className="w-full h-full object-cover"
               />
               {beforeLabel && (
-                <div className="absolute top-4 left-4 bg-black/70 text-white px-3 py-1 rounded text-sm">
+                <div className="absolute top-4 left-4 bg-foreground/70 text-background px-3 py-1 rounded text-sm">
                   <T k={beforeLabel} />
                 </div>
               )}
@@ -43,7 +43,7 @@ export function ComparisonSection({ id, props }: { id?: string; props: Compariso
                 className="w-full h-full object-cover"
               />
               {afterLabel && (
-                <div className="absolute top-4 right-4 bg-black/70 text-white px-3 py-1 rounded text-sm">
+                <div className="absolute top-4 right-4 bg-foreground/70 text-background px-3 py-1 rounded text-sm">
                   <T k={afterLabel} />
                 </div>
               )}
@@ -51,7 +51,7 @@ export function ComparisonSection({ id, props }: { id?: string; props: Compariso
 
             {/* Divider Line */}
             <div
-              className="absolute bg-white shadow-lg"
+              className="absolute bg-background shadow-lg"
               style={{
                 [orientation === 'horizontal' ? 'left' : 'top']: `${position[0]}%`,
                 [orientation === 'horizontal' ? 'width' : 'height']: '2px',
@@ -62,7 +62,7 @@ export function ComparisonSection({ id, props }: { id?: string; props: Compariso
 
             {/* Handle */}
             <div
-              className="absolute w-8 h-8 bg-white rounded-full shadow-lg border-2 border-primary cursor-pointer flex items-center justify-center"
+              className="absolute w-8 h-8 bg-background rounded-full shadow-lg border-2 border-primary cursor-pointer flex items-center justify-center"
               style={{
                 [orientation === 'horizontal' ? 'left' : 'top']: `${position[0]}%`,
                 [orientation === 'horizontal' ? 'top' : 'left']: '50%',

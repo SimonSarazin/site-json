@@ -83,9 +83,9 @@ export function FiltersSection({
           onClick={clearFilters}
           className={cn(
             "text-xs font-medium transition-colors",
-            hasActiveFilters 
-              ? "text-primary hover:text-primary/80" 
-              : "text-gray-400 cursor-not-allowed"
+            hasActiveFilters
+              ? "text-primary hover:text-primary/80"
+              : "text-muted-foreground/50 cursor-not-allowed"
           )}
           disabled={!hasActiveFilters}
         >
@@ -149,11 +149,11 @@ export function FiltersSection({
                           type="checkbox"
                           checked={isFilterSelected(group.id, filterName)}
                           onChange={() => toggleFilter(group.id, filterName)}
-                          className="w-4 h-4 border-2 border-gray-300 rounded cursor-pointer appearance-none checked:bg-primary checked:border-primary transition"
+                          className="w-4 h-4 border-2 border-border rounded cursor-pointer appearance-none checked:bg-primary checked:border-primary transition"
                         />
                         {isFilterSelected(group.id, filterName) && (
                           <svg
-                            className="w-3 h-3 text-white absolute pointer-events-none"
+                            className="w-3 h-3 text-primary-foreground absolute pointer-events-none"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
