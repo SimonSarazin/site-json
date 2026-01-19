@@ -1,9 +1,20 @@
-import type { SearchEntity } from '@/modules/search/schema';
+/**
+ * Types centralisés pour le module profil
+ *
+ * Ce fichier contient les types réutilisables du module profil.
+ * Les Props de composants spécifiques restent dans leurs fichiers respectifs.
+ */
+
 import type React from "react";
 import type { Project, Event, Poi } from "@communecter/cocolight-api-client";
 
-export type ProfileEntity = SearchEntity;
+// ============================================
+// Types d'actions (EntityActions)
+// ============================================
 
+/**
+ * Action disponible sur une entité (follow, unfollow, join, etc.)
+ */
 export interface EntityAction {
   id: string;
   type: "follow" | "unfollow" | "friend" | "unfriend" | "join" | "leave" | "pending" | "accept" | "reject";
@@ -22,6 +33,9 @@ export interface EntityAction {
   show: boolean;
 }
 
+/**
+ * Résultat du hook useEntityActions
+ */
 export interface EntityActionsResult {
   actions: EntityAction[];
   layout: "separate-buttons" | "status-dropdown";
@@ -30,6 +44,13 @@ export interface EntityActionsResult {
   statusVariant?: "default" | "outline";
 }
 
+// ============================================
+// Types d'actions utilisateur (UserActions)
+// ============================================
+
+/**
+ * Action disponible sur un utilisateur (membre, admin, etc.)
+ */
 export interface UserAction {
   id: string;
   label: string;
@@ -40,13 +61,26 @@ export interface UserAction {
   requiresConfirmation?: boolean;
 }
 
+// ============================================
+// Types de relations (RelatedEntities)
+// ============================================
+
+/**
+ * Types de relations supportés pour ProfileRelated
+ */
 export type RelationType = "projects" | "events" | "poi";
 
+/**
+ * Paramètres pour la requête d'entités liées
+ */
 export interface RelatedEntitiesParams {
   indexStep?: number;
   search?: string;
 }
 
+/**
+ * Résultat du hook useRelatedEntities
+ */
 export interface UseRelatedEntitiesResult {
   entities: (Project | Event | Poi)[];
   totalCount: number;
@@ -58,6 +92,13 @@ export interface UseRelatedEntitiesResult {
   refetch: () => void;
 }
 
+// ============================================
+// Types de query (Members, Friends)
+// ============================================
+
+/**
+ * Options de filtrage pour les requêtes de membres
+ */
 export interface MemberQueryOptions {
   toBeValidated?: boolean;
   isAdmin?: boolean;
@@ -66,17 +107,30 @@ export interface MemberQueryOptions {
   roles?: unknown[];
 }
 
+/**
+ * Paramètres de pagination pour les requêtes de membres
+ */
 export interface MemberQueryParams {
   indexStep?: number;
   search?: string;
 }
 
+/**
+ * Paramètres pour la requête d'amis
+ */
 export interface FriendsQueryParams {
   indexStep?: number;
   search?: string;
   status?: "all" | "pending" | "friends" | "sent";
 }
 
+// ============================================
+// Types d'état (Confirmation Dialog)
+// ============================================
+
+/**
+ * État d'un dialogue de confirmation
+ */
 export interface ConfirmationState {
   open: boolean;
   title: string;

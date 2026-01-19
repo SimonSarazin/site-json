@@ -14,8 +14,6 @@ export interface CocolightContextType {
   me: User | null
   /** API haut niveau REST, instanciée après login */
   api: Api | null
-  /** Organisation courante, déduite du slug */
-  organization: Organization | null
   /** Type de contexte résolu depuis le slug (organizations, projects, etc.) */
   contextType?: string
   /** ID du contexte résolu depuis le slug */

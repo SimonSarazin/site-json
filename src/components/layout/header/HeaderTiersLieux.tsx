@@ -21,6 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import LoginForm from "@/components/auth/LoginForm";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
+import { useReactiveProperty } from "@/hooks/useReactiveProperty";
 
 interface HeaderTiersLieuxProps {
     header: Header;
@@ -32,6 +33,11 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
     const { currentLocale, setLocale, availableLocales } = useLocalization();
     const navigate = useNavigate();
     const { me, api } = useCocolight();
+
+    const profilThumbImageUrl = useReactiveProperty<string>(me?.serverData, 'profilThumbImageUrl') ?? null;
+    const name = useReactiveProperty<string>(me?.serverData, 'name') ?? null;
+    const email = useReactiveProperty<string>(me?.serverData, 'email') ?? null;
+
     const [loginDialogOpen, setLoginDialogOpen] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -54,11 +60,14 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
         <header className={`${header.transparent ? "bg-transparent" : "bg-background"} rounded-b-2xl border-b border-border ${header.sticky ? "sticky top-0 z-50" : ""}`}>
             <nav className="container mx-auto py-3 sm:py-4 px-4 sm:px-6">
                 <div className="flex items-center justify-between">
-                    <Link to={header.path || "/"} className="flex items-center space-x-2">
+                    <Link to={header.path || "/"} className="flex items-center shrink-0">
                         {header.logo && (
                             <img
                                 src={`/${header.logo}`}
                                 alt={header.logoAlt ? t(header.logoAlt) : ""}
+                                width={207}
+                                height={48}
+                                className="h-8 xs:h-10 sm:h-12 w-auto max-w-35 xs:max-w-40 sm:max-w-none object-contain"
                             />
                         )}
                     </Link>
@@ -77,7 +86,7 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
 
 
                                     {hasChildren && item.children && (
-                                        <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-screen max-w-2xl bg-popover text-popover-foreground rounded-xl shadow-2xl border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-8 z-[60]">
+                                        <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-screen max-w-2xl bg-popover text-popover-foreground rounded-xl shadow-2xl border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-8 z-60">
                                             {t(item.label) === "Les lieux" ? (
                                                 <div className="grid grid-cols-3 gap-8">
                                                     <Link to="/lieux" className="text-primary font-semibold flex items-center gap-2">
@@ -174,20 +183,20 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
                                                         <button className="bg-background rounded-full px-3 lg:px-4 py-1.5 flex items-center gap-1.5 lg:gap-2 hover:bg-secondary/80 transition text-sm lg:text-base">
-                                                            {me.serverData?.profilThumbImageUrl ? (
+                                                            {profilThumbImageUrl ? (
                                                                 <img
-                                                                    src={me.serverData.profilThumbImageUrl}
-                                                                    alt={me.serverData?.name || 'Profile'}
+                                                                    src={profilThumbImageUrl}
+                                                                    alt={name || 'Profile'}
                                                                     className="w-6 h-6 lg:w-8 lg:h-8 rounded-full object-cover"
                                                                 />
                                                             ) : (
                                                                 <div className="font-medium rounded-full px-1.5 lg:px-2 py-0.5 lg:py-1 bg-background text-foreground text-[10px] lg:text-xs">
-                                                                    {me.serverData?.name ? me.serverData.name.substring(0, 2).toUpperCase() : 'CN'}
+                                                                    {name ? name.substring(0, 2).toUpperCase() : 'CN'}
                                                                 </div>
                                                             )}
                                                             <span className="text-muted-foreground hidden lg:inline">|</span>
-                                                            <span className="font-medium text-foreground truncate max-w-[70px] lg:max-w-[120px]">
-                                                                {me.serverData?.name || me.serverData?.email || t('Mon compte')}
+                                                            <span className="font-medium text-foreground truncate max-w-17.5 lg:max-w-30">
+                                                                {name || email || t('Mon compte')}
                                                             </span>
                                                             <ChevronDown className="w-3 h-3 text-foreground shrink-0" />
                                                         </button>
@@ -230,16 +239,16 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                         )}
                     </div>
 
-                    <div className="md:hidden flex items-center gap-2">
-                        <ClientOnly fallback={<div className="w-8 h-8" />}>
+                    <div className="md:hidden flex items-center gap-1 xs:gap-2 shrink-0">
+                        <ClientOnly fallback={<div className="w-7 h-7 xs:w-8 xs:h-8" />}>
                             {() => <ToggleButtonTheme />}
                         </ClientOnly>
                         {header.utilities?.langSwitch && availableLocales.length > 1 && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="gap-1 px-2">
-                                        <Globe className="h-4 w-4" />
-                                        {currentLocale.toUpperCase()}
+                                    <Button variant="ghost" size="sm" className="gap-0.5 xs:gap-1 px-1.5 xs:px-2 h-8">
+                                        <Globe className="h-3.5 w-3.5 xs:h-4 xs:w-4" />
+                                        <span className="text-xs xs:text-sm">{currentLocale.toUpperCase()}</span>
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent>
@@ -257,15 +266,15 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                         )}
                         <button
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                            className="text-foreground hover:text-primary transition relative z-[60] p-2"
+                            className="text-foreground hover:text-primary transition relative z-50 p-1.5 xs:p-2"
                             aria-label="Toggle menu"
                         >
                             {mobileMenuOpen ? (
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5 xs:w-6 xs:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             ) : (
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5 xs:w-6 xs:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                                 </svg>
                             )}
@@ -274,7 +283,7 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                 </div>
 
                 {mobileMenuOpen && (
-                    <div className="md:hidden absolute left-0 right-0 top-full bg-popover text-popover-foreground border-b border-border shadow-lg max-h-[calc(100vh-4rem)] overflow-y-auto z-[55]">
+                    <div className="md:hidden absolute left-0 right-0 top-full bg-popover text-popover-foreground border-b border-border shadow-lg max-h-[calc(100vh-4rem)] overflow-y-auto z-55">
                         <div className="px-4 py-4 space-y-4">
                             {header.nav.map((item, idx) => (
                                 <div key={idx} className="space-y-2">

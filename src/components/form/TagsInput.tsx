@@ -1,11 +1,7 @@
 import { useState, KeyboardEvent, useRef, useEffect } from "react";
 import { Tag, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverAnchor,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover";
 import { toast } from "sonner";
 import { TagSuggestions } from "./TagSuggestions";
 

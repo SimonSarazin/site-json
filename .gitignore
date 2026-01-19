@@ -27,3 +27,5 @@ commentaire/
 tsconfig.app.tsbuildinfo
 tsconfig.node.tsbuildinfo
 CLAUDE.md
+src/modules/profil/TODO.md
+ANALYSE_MODULE_PROFIL.md

@@ -8,7 +8,13 @@
     "organizedBy": "Organized by",
     "viewProfile": "View profile",
     "date": "Date",
-    "back": "Back"
+    "back": "Back",
+    "loading": "Loading...",
+    "unknownUser": "Unknown User",
+    "untitled": "Untitled",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "searchPlaceholder": "Search..."
   },
   "ProfilePage": {
     "error": {
@@ -39,13 +45,127 @@
   "ProfileMap": {
     "title": "Location",
     "mapPlaceholder": "Map to be implemented",
-    "coordinates": "Coordinates"
+    "coordinates": "Coordinates",
+    "loading": "Loading map..."
+  },
+  "ProfileOpeningHours": {
+    "closed": "Closed",
+    "open": "Open"
   },
   "ProfileTemplateDefault": {
     "showAllPhotos": "Show all photos",
+    "editProfile": "Edit profile",
     "sendEmail": "Send email",
     "reservationSpace": "Reservation Space",
-    "editProfile": "Edit profile",
+    "follow": "Follow",
+    "following": "Following",
+    "unfollow": "Unfollow",
+    "sendFriendRequest": "Send Friend Request",
+    "removeFriend": "Remove Friend",
+    "requestMembership": "Request to join",
+    "member": "Member",
+    "admin": "Administrator",
+    "leaveOrganization": "Leave organization",
+    "unfollowDialog": {
+      "title": "Unfollow this organization",
+      "description": "Are you sure you want to unfollow this organization? You will no longer receive its updates.",
+      "cancel": "Cancel",
+      "confirm": "Unfollow"
+    },
+    "membershipDialog": {
+      "title": "Request membership",
+      "description": "Are you sure you want to send a membership request to this organization? Administrators will receive your request.",
+      "cancel": "Cancel",
+      "confirm": "Send request"
+    },
+    "leaveDialog": {
+      "title": "Leave this organization",
+      "description": "Are you sure you want to leave this organization? You will no longer be a member and will lose access to member-only resources.",
+      "cancel": "Cancel",
+      "confirm": "Leave organization"
+    },
+    "projectAdmin": "Project Admin",
+    "contributor": "Contributor",
+    "requestContributor": "Request to contribute",
+    "requestProjectAdmin": "Request admin access",
+    "leaveProject": "Leave project",
+    "contributorDialog": {
+      "title": "Request to contribute",
+      "description": "Are you sure you want to send a contributor request to this project? Project administrators will receive your request.",
+      "cancel": "Cancel",
+      "confirm": "Send request"
+    },
+    "projectAdminDialog": {
+      "title": "Request admin access",
+      "description": "Are you sure you want to request admin access to this project? Current administrators will receive your request.",
+      "cancel": "Cancel",
+      "confirm": "Send request"
+    },
+    "leaveProjectDialog": {
+      "title": "Leave this project",
+      "description": "Are you sure you want to leave this project? You will no longer be a contributor and will lose access to project resources.",
+      "cancel": "Cancel",
+      "confirm": "Leave project"
+    },
+    "eventAuthor": "Event Author",
+    "participant": "Participant",
+    "participate": "Participate",
+    "leaveEvent": "Stop participating",
+    "participateDialog": {
+      "title": "Participate in this event",
+      "description": "Are you sure you want to participate in this event? The event organizer will be notified.",
+      "cancel": "Cancel",
+      "confirm": "Participate"
+    },
+    "leaveEventDialog": {
+      "title": "Stop participating",
+      "description": "Are you sure you want to stop participating in this event? You will no longer receive event updates.",
+      "cancel": "Cancel",
+      "confirm": "Stop participating"
+    },
+    "membershipPending": "Request pending",
+    "contributorPending": "Request pending",
+    "participationPending": "Request pending",
+    "adminRequestPending": "Admin request pending",
+    "acceptInvitation": "Accept invitation",
+    "acceptAdminInvitation": "Accept admin invitation",
+    "rejectInvitation": "Decline invitation",
+    "rejectInvitationDialog": {
+      "title": "Decline invitation",
+      "description": "Are you sure you want to decline this invitation?",
+      "cancel": "Cancel",
+      "confirm": "Decline"
+    },
+    "requestPromotion": "Become administrator",
+    "promotionDialog": {
+      "title": "Request to become administrator",
+      "description": "Your request will be sent to project administrators for approval.",
+      "confirm": "Send request",
+      "cancel": "Cancel"
+    },
+    "requestOrganizationAdmin": "Request admin rights",
+    "orgAdminDialog": {
+      "title": "Request admin rights",
+      "description": "Are you sure you want to request admin rights for this organization? Current administrators will receive your request.",
+      "confirm": "Send request",
+      "cancel": "Cancel"
+    },
+    "friendRequestPending": "Request sent",
+    "cancelFriendRequest": "Cancel request",
+    "acceptFriendRequest": "Accept",
+    "rejectFriendRequest": "Decline",
+    "cancelFriendDialog": {
+      "title": "Cancel friend request",
+      "description": "Are you sure you want to cancel this friend request?",
+      "confirm": "Cancel request",
+      "cancel": "Keep"
+    },
+    "rejectFriendDialog": {
+      "title": "Decline friend request",
+      "description": "Are you sure you want to decline this friend request?",
+      "confirm": "Decline",
+      "cancel": "Cancel"
+    },
     "tabs": {
       "about": "About",
       "news": "News",
@@ -53,7 +173,19 @@
       "meetingRooms": "Meeting rooms",
       "projects": "Projects",
       "communities": "Communities",
-      "observatories": "Observatories"
+      "observatories": "Observatories",
+      "social": "Social",
+      "membership": "My Organizations",
+      "members": "Members",
+      "projects": "Projects",
+      "events": "Events",
+      "contributors": "Contributors",
+      "organizations": "Organizations",
+      "dates": "Dates & Schedule",
+      "location": "Location",
+      "organizer": "Organizer",
+      "gallery": "Gallery",
+      "map": "Map"
     },
     "description": "Description",
     "badges": "Badges",
@@ -67,261 +199,175 @@
     "comingSoon": "Coming soon",
     "sectionLabel": "{{name}} Section"
   },
-  "ProjectsTab": {
-    "noProjects": "No projects",
-    "noProjectsDescription": "Projects will appear here",
-    "loadingProjects": "Loading projects...",
-    "allProjectsLoaded": "All projects loaded",
-    "allProjectsSeen": "You've seen all the projects",
-    "anonymousProject": "Anonymous project",
-    "viewProject": "View project",
-    "createProject": "Create project",
-    "gridView": "Grid",
-    "detailedView": "Details",
-    "moreTags": "more tags"
-  },
-  "CommunitiesTab": {
-    "noCommunities": "No communities",
-    "noCommunitiesDescription": "Communities will appear here",
-    "comingSoon": "Coming soon",
-    "comingSoonDescription": "This section will be available soon",
-    "friends": "Friends",
-    "organizations": "Organizations",
-    "subscriptions": "Subscriptions",
-    "subscribers": "Subscribers",
-    "externalNetwork": "External network",
-    "contributors": "Contributors",
-    "contributorsToValidate": "Contributors to validate",
+  "ProfileMembers": {
+    "title": "Members",
+    "member": "Member",
     "members": "Members",
-    "membersToValidate": "Members to validate"
-  },
-  "OrganizationsTab": {
-    "noOrganizations": "No organizations",
-    "noOrganizationsDescription": "Organizations will appear here",
-    "loadingOrganizations": "Loading organizations...",
-    "allOrganizationsLoaded": "All organizations loaded",
-    "allOrganizationsSeen": "You've seen all the organizations",
-    "anonymousOrganization": "Anonymous organization",
-    "members": "members",
-    "gridView": "Grid",
-    "detailedView": "Details",
-    "createOrganization": "Create organization",
-    "types": {
-      "ngo": "NGO",
-      "cooperative": "Cooperative",
-      "localBusiness": "Local Business",
-      "group": "Group",
-      "government": "Government Organization",
-      "organization": "Organization"
+    "admin": "Admin",
+    "pending": "Pending",
+    "invite": "Invite",
+    "manage": "Manage",
+    "noMembers": "No members yet",
+    "loadingMore": "Loading more members...",
+    "organization": {
+      "title": "Organization Members",
+      "member": "Member",
+      "members": "Members",
+      "admin": "Admin",
+      "pending": "Pending requests",
+      "invite": "Invite member"
+    },
+    "project": {
+      "title": "Project Contributors",
+      "contributor": "Contributor",
+      "contributors": "Contributors",
+      "admin": "Admin",
+      "pending": "Pending requests",
+      "invite": "Invite contributor"
+    },
+    "event": {
+      "title": "Event Participants",
+      "participant": "Participant",
+      "participants": "Participants",
+      "author": "Author",
+      "pending": "Pending requests",
+      "invite": "Invite participant"
     }
   },
-  "SubscriptionsTab": {
-    "noSubscriptions": "No subscriptions",
-    "noSubscriptionsDescription": "Subscriptions will appear here",
-    "loadingSubscriptions": "Loading subscriptions...",
-    "allSubscriptionsLoaded": "All subscriptions loaded",
-    "allSubscriptionsSeen": "You've seen all the subscriptions",
-    "anonymousSubscription": "Anonymous subscription",
-    "gridView": "Grid",
-    "detailedView": "Details",
-    "types": {
-      "organization": "Organization",
-      "project": "Project",
-      "user": "User",
-      "event": "Event",
-      "other": "Other"
-    }
-  },
-  "SubscribersTab": {
-    "noSubscribers": "No subscribers",
-    "noSubscribersDescription": "Subscribers will appear here",
-    "loadingSubscribers": "Loading subscribers...",
-    "allSubscribersLoaded": "All subscribers loaded",
-    "allSubscribersSeen": "You've seen all the subscribers",
-    "anonymousSubscriber": "Anonymous subscriber",
-    "gridView": "Grid",
-    "detailedView": "Details"
-  },
-  "FriendsTab": {
-    "noFriends": "No friends",
-    "noFriendsDescription": "Friends will appear here",
-    "loadingFriends": "Loading friends...",
-    "allFriendsLoaded": "All friends loaded",
-    "allFriendsSeen": "You've seen all the friends",
-    "anonymousFriend": "Anonymous friend",
-    "gridView": "Grid",
-    "detailedView": "Details"
-  },
-  "ContributorsTab": {
-    "noContributors": "No contributors",
-    "noContributorsDescription": "Contributors will appear here",
-    "loadingContributors": "Loading contributors...",
-    "allContributorsLoaded": "All contributors loaded",
-    "allContributorsSeen": "You've seen all the contributors",
-    "anonymousContributor": "Anonymous contributor",
-    "gridView": "Grid",
-    "detailedView": "Details"
-  },
-  "MembersTab": {
-    "noMembers": "No members",
-    "noMembersDescription": "Members will appear here",
-    "loadingMembers": "Loading members...",
-    "allMembersLoaded": "All members loaded",
-    "allMembersSeen": "You've seen all the members",
-    "anonymousMember": "Anonymous member",
-    "gridView": "Grid",
-    "detailedView": "Details"
-  },
-  "NewsTab": {
-    "noNews": "No news",
-    "noNewsDescription": "Posts will appear here",
-    "loadingNews": "Loading news...",
-    "upToDate": "You're up to date!",
-    "allNewsSeen": "You've seen all the news",
-    "public": "Public",
-    "private": "Private",
-    "restricted": "Restricted",
-    "sharedBy": "Shared by",
-    "andOthers": "and {{count}} other",
-    "andOthers_plural": "and {{count}} others",
-    "comment": "Comment",
-    "like": "Like",
-    "share": "Share",
-    "reactions": "reaction",
-    "reactions_plural": "reactions",
-    "allReactions": "All reactions",
-    "reactorsList": "List of people who reacted (coming soon)",
-    "noReactionsYet": "No reactions yet",
-    "comments": "Comments",
-    "noComments": "No comments yet",
-    "writeComment": "Write a comment...",
-    "writeReply": "Write a reply...",
-    "reply": "Reply",
-    "send": "Send",
-    "loginToComment": "Sign in to comment",
-    "edit": "Edit",
-    "delete": "Delete",
-    "report": "Report abuse",
-    "createPost": "Create a post",
-    "maxDepthReached": "Maximum depth reached",
-    "collapseThread": "Collapse thread",
-    "expandThread": "Expand thread",
-    "repliesCount": "{{count}} reply",
-    "repliesCount_plural": "{{count}} replies",
-    "reportDialog": {
-      "title": "Report news",
-      "titleComment": "Report comment",
-      "description": "Help us maintain a respectful community by reporting inappropriate content.",
-      "reasonLabel": "Report reason",
-      "reasonPlaceholder": "Select a reason",
-      "commentLabel": "Additional details (optional)",
-      "commentPlaceholder": "Add details about this report...",
-      "cancel": "Cancel",
-      "submit": "Submit report",
-      "submitting": "Sending...",
-      "reasons": {
-        "spam": "Spam or promotional content",
-        "harassment": "Harassment or bullying",
-        "hateSpeech": "Hate speech",
-        "violence": "Violence or threats",
-        "inappropriate": "Inappropriate content",
-        "misinformation": "Misinformation",
-        "other": "Other"
-      }
+  "InviteMemberDialog": {
+    "title": "Invite Members",
+    "description": "Send invitations to join this community.",
+    "emailAddresses": "Email addresses",
+    "emailPlaceholder": "Enter email address",
+    "addEmail": "Add",
+    "role": "Role",
+    "selectRole": "Select a role",
+    "sending": "Sending...",
+    "sendInvitations": "Send invitations",
+    "noEmailsError": "Please add at least one email address",
+    "organization": {
+      "title": "Invite Members",
+      "description": "Send invitations to join this organization."
     },
-    "deleteConfirm": {
-      "title": "Delete post",
-      "description": "Are you sure you want to delete this post? This action cannot be undone.",
-      "cancel": "Cancel",
-      "confirm": "Delete",
-      "deleting": "Deleting...",
-      "error": "An error occurred while deleting"
+    "project": {
+      "title": "Invite Contributors",
+      "description": "Send invitations to contribute to this project."
     },
-    "editComment": "Edit comment",
-    "deleteCommentTitle": "Delete comment",
-    "deleteCommentDescription": "Are you sure you want to delete this comment? This action cannot be undone.",
-    "deleteNewsTitle": "Delete news",
-    "deleteNewsDescription": "Are you sure you want to delete this news? This action cannot be undone.",
+    "event": {
+      "title": "Invite Participants",
+      "description": "Send invitations to participate in this event."
+    },
+    "tabs": {
+      "searchUsers": "Search users",
+      "inviteByEmail": "Invite by email"
+    },
+    "searchUsers": "Search users",
+    "searchPlaceholder": "Type to search...",
+    "startTyping": "Start typing to search",
+    "minimumChars": "Type at least 2 characters",
+    "searching": "Searching...",
+    "noUsersFound": "No users found",
+    "tryDifferentSearch": "Try a different search",
+    "emailInvitationsComingSoon": "Email invitations coming soon",
+    "useSearchForNow": "Use user search for now",
+    "demote": "Demote",
+    "remove": "Remove",
+    "promoteToAdmin": "Promote to admin",
+    "validate": "Validate",
+    "validateAdmin": "Validate admin",
+    "reject": "Reject",
+    "inviteMember": "Invite member",
+    "inviteAdmin": "Invite admin",
+    "inviteContributor": "Invite contributor",
+    "inviteParticipant": "Invite participant",
+    "adminInvitationSent": "Admin invitation sent",
+    "invitationSent": "{{type}} invitation sent",
+    "invited": "Invited",
+    "badges": {
+      "admin": "Admin",
+      "member": "Member",
+      "contributor": "Contributor",
+      "participant": "Participant",
+      "adminInvitationPending": "Admin invitation pending",
+      "adminRequestPending": "Admin request pending",
+      "invitationPending": "Invitation pending",
+      "validationPending": "Awaiting validation"
+    },
     "cancel": "Cancel",
-    "deleting": "Deleting...",
-    "readMore": "Read more",
-    "readLess": "Read less",
-    "anonymous": "Anonymous",
-    "someone": "someone",
-    "reactionsTypes": {
-      "love": "Love",
-      "like": "Like",
-      "enjoy": "Happy",
-      "glad": "Glad",
-      "bothered": "Angry",
-      "sad": "Sad",
-      "scared": "Worried",
-      "support": "Support"
+    "demoteDialog": {
+      "title": "Demote administrator",
+      "description": "Demote {{name}} to regular member?",
+      "cancel": "Cancel",
+      "confirm": "Demote"
     },
-    "mentions": {
-      "searching": "Searching...",
-      "noResults": "No results found",
-      "typeToSearch": "Type @ to mention someone"
+    "removeDialog": {
+      "title": "Remove member",
+      "description": "Remove {{name}} from this community?",
+      "cancel": "Cancel",
+      "confirm": "Remove"
     },
-    "tags": {
-      "searching": "Searching...",
-      "noResults": "No tags found",
-      "typeToSearch": "Type at least 2 characters to search"
+    "promoteDialog": {
+      "title": "Promote to administrator",
+      "description": "Promote {{name}} to administrator?",
+      "cancel": "Cancel",
+      "confirm": "Promote"
+    },
+    "validateDialog": {
+      "title": "Validate request",
+      "description": "Validate {{name}}'s request?",
+      "cancel": "Cancel",
+      "confirm": "Validate"
+    },
+    "validateAdminDialog": {
+      "title": "Validate admin request",
+      "description": "Validate {{name}}'s admin request?",
+      "cancel": "Cancel",
+      "confirm": "Validate"
+    },
+    "rejectDialog": {
+      "title": "Reject request",
+      "description": "Reject {{name}}'s request?",
+      "cancel": "Cancel",
+      "confirm": "Reject"
     }
   },
-  "AddNewsModal": {
-    "title": "Create a post",
-    "form": {
-      "text": {
-        "label": "Content",
-        "placeholder": "What's new?"
-      },
-      "scope": {
-        "label": "Post scope",
-        "public": "Public - Visible to everyone",
-        "private": "Private - Visible only to me",
-        "restricted": "Restricted - Visible to profile members"
-      },
-      "tags": {
-        "label": "Tags",
-        "placeholder": "Add tags",
-        "hint": "Press Enter or comma to add",
-        "maxReached": "Maximum {{max}} tags"
-      },
-      "images": {
-        "label": "Images",
-        "button": "Add images",
-        "maxReached": "Maximum {{max}} images",
-        "remove": "Remove"
-      },
-      "documents": {
-        "label": "Documents",
-        "button": "Add documents",
-        "maxReached": "Maximum {{max}} documents",
-        "remove": "Remove"
-      },
-      "videoLink": {
-        "label": "Video link",
-        "placeholder": "Video URL (YouTube, Vimeo...)"
-      },
-      "status": {
-        "label": "Visibility",
-        "public": "Public",
-        "private": "Private",
-        "restricted": "Restricted"
-      }
+  "MemberManagementDialog": {
+    "title": "Member Management",
+    "searchPlaceholder": "Search members...",
+    "noMembers": "No members found",
+    "noPending": "No pending requests",
+    "promote": "Promote to admin",
+    "demote": "Remove admin role",
+    "remove": "Remove member",
+    "acceptDialog": {
+      "title": "Accept Request",
+      "description": "Accept {{name}}'s request to join?"
     },
-    "actions": {
-      "cancel": "Cancel",
-      "publish": "Publish",
-      "publishing": "Publishing..."
+    "rejectDialog": {
+      "title": "Reject Request",
+      "description": "Reject {{name}}'s request to join?"
     },
-    "validation": {
-      "textRequired": "Content is required",
-      "textTooShort": "Content must be at least 3 characters"
+    "promoteDialog": {
+      "title": "Promote Member",
+      "description": "Promote {{name}} to administrator?"
     },
-    "success": "Post created successfully!",
-    "error": "An error occurred while creating the post"
+    "demoteDialog": {
+      "title": "Remove Admin Role",
+      "description": "Remove administrator role from {{name}}?"
+    },
+    "removeDialog": {
+      "title": "Remove Member",
+      "description": "Remove {{name}} from this community?"
+    },
+    "organization": {
+      "title": "Organization Management"
+    },
+    "project": {
+      "title": "Project Management"
+    },
+    "event": {
+      "title": "Event Management"
+    }
   },
   "upload": {
     "errors": {
@@ -451,7 +497,10 @@
     "from": "From",
     "to": "To",
     "address": "Address",
-    "addressNotProvided": "Address not provided"
+    "addressNotProvided": "Address not provided",
+    "addAddress": "Add address",
+    "openInMaps": "Open in Google Maps",
+    "getDirections": "Get directions"
   },
   "ProfileBannerCarriedBy": {
     "carriedBy": "Carried by"
@@ -536,6 +585,24 @@
     "socialNetworks": "Social networks",
     "socialNetworksDescription": "Add your social network links",
     "scheduleDescription": "Define opening hours for each day of the week"
+  },
+  "EditImage": {
+    "editProfileImage": "Edit profile picture",
+    "editBannerImage": "Edit cover photo",
+    "dragOrClick": "Drag an image or click to select",
+    "dragToPosition": "Drag to position the crop area",
+    "selectImage": "Select an image",
+    "changeImage": "Change image",
+    "invalidFileType": "File must be an image (JPG, PNG, GIF, WebP)",
+    "fileTooLarge": "Image must not exceed 5 MB",
+    "imageRequirements": "Accepted formats: JPG, PNG, GIF, WebP. Max size: 5 MB",
+    "bannerRequirements": "Accepted formats: JPG, PNG, GIF, WebP. Max size: 10 MB. Recommended ratio: 16:9",
+    "success": "Success",
+    "error": "Error",
+    "profileImageUpdated": "Profile picture updated successfully",
+    "bannerImageUpdated": "Cover photo updated successfully",
+    "updateFailed": "Failed to update image",
+    "zoom": "Zoom"
   },
   "SocialTab": {
     "addFriend": "Add friend",
@@ -732,6 +799,429 @@
     },
     "error": {
       "generic": "An error occurred"
+    },
+    "profile": {
+      "updateSuccess": "Profile updated successfully",
+      "updateError": "Unable to update profile",
+      "imageUploadSuccess": "Profile picture uploaded successfully",
+      "imageUploadError": "Unable to upload profile picture",
+      "bannerUploadSuccess": "Banner uploaded successfully",
+      "bannerUploadError": "Unable to upload banner"
+    },
+    "invitation": {
+      "acceptSuccess": "Invitation accepted successfully",
+      "acceptError": "Unable to accept invitation",
+      "rejectSuccess": "Invitation declined",
+      "rejectError": "Unable to decline invitation"
+    },
+    "relationship": {
+      "followSuccess": "User followed successfully",
+      "followError": "Unable to follow user",
+      "unfollowSuccess": "User unfollowed successfully",
+      "unfollowError": "Unable to unfollow user",
+      "friendRequestSent": "Friend request sent",
+      "friendRequestError": "Unable to send friend request",
+      "friendRequestAccepted": "Friend request accepted",
+      "friendRemoved": "Friend removed",
+      "friendRemoveError": "Unable to remove friend",
+      "memberRequestSent": "Membership request sent successfully",
+      "memberRequestError": "Unable to send membership request",
+      "memberLeftSuccess": "You have successfully left the organization",
+      "memberLeftError": "Unable to leave the organization",
+      "contributorRequestSent": "Contributor request sent successfully",
+      "contributorRequestError": "Unable to send contributor request",
+      "projectAdminRequestSent": "Admin request sent successfully",
+      "projectAdminRequestError": "Unable to send admin request",
+      "orgAdminRequestSent": "Admin request sent successfully",
+      "orgAdminRequestError": "Unable to send admin request",
+      "projectLeftSuccess": "You have successfully left the project",
+      "projectLeftError": "Unable to leave the project",
+      "participationSuccess": "You are now participating in this event",
+      "participationError": "Unable to join this event",
+      "participationLeftSuccess": "You have stopped participating in this event",
+      "participationLeftError": "Unable to stop participating in this event"
+    },
+    "members": {
+      "demoteSuccess": "{{name}} has been demoted successfully",
+      "demoteError": "Unable to demote {{name}}",
+      "promoteSuccess": "{{name}} has been promoted to administrator",
+      "promoteError": "Unable to promote {{name}}",
+      "requestPromoteSuccess": "Your request to become administrator has been sent",
+      "requestPromoteError": "Unable to send promotion request",
+      "validateSuccess": "{{name}} has been validated successfully",
+      "validateError": "Unable to validate {{name}}",
+      "validateAdminSuccess": "{{name}} has been validated as administrator",
+      "validateAdminError": "Unable to validate {{name}} as administrator",
+      "rejectSuccess": "{{name}}'s request has been rejected",
+      "rejectError": "Unable to reject {{name}}'s request",
+      "removeSuccess": "{{name}} has been removed successfully",
+      "removeError": "Unable to remove {{name}}",
+      "inviteSuccess": "Invitation sent to {{name}}",
+      "inviteError": "Unable to send invitation to {{name}}",
+      "inviteAdminSuccess": "Admin invitation sent to {{name}}",
+      "inviteAdminError": "Unable to send admin invitation to {{name}}"
+    },
+    "friends": {
+      "requestSent": "Friend request sent successfully",
+      "sendRequestError": "Failed to send friend request",
+      "requestAccepted": "Friend request accepted",
+      "acceptRequestError": "Failed to accept friend request",
+      "requestRejected": "Friend request rejected",
+      "rejectRequestError": "Failed to reject friend request",
+      "friendRemoved": "Friend removed successfully",
+      "removeError": "Failed to remove friend",
+      "requestCancelled": "Friend request cancelled",
+      "cancelError": "Failed to cancel friend request"
+    },
+    "add": {
+      "organizationSuccess": "Organization created successfully",
+      "organizationError": "Failed to create organization",
+      "projectSuccess": "Project created successfully",
+      "projectError": "Failed to create project",
+      "eventSuccess": "Event created successfully",
+      "eventError": "Failed to create event",
+      "poiSuccess": "Location created successfully",
+      "poiError": "Failed to create location"
+    }
+  },
+  "ProfileEdit": {
+    "title": "Edit profile",
+    "profileImage": "Profile picture",
+    "bannerImage": "Banner",
+    "changeImage": "Change",
+    "changeBanner": "Change banner",
+    "changeAvatar": "Change avatar",
+    "uploading": "Uploading...",
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "tabs": {
+      "basic": "Information",
+      "contact": "Contact",
+      "location": {
+        "label": "Location",
+        "description": "Specify your complete address",
+        "resetAddress": "Clear address"
+      },
+      "social": "Social networks",
+      "schedule": {
+        "label": "Opening Hours",
+        "description": "Configure your weekly opening hours"
+      },
+      "eventDates": {
+        "label": "Dates",
+        "description": "Configure your event dates and schedule"
+      }
+    },
+    "loading": "Loading...",
+    "fields": {
+      "name": {
+        "label": "Name",
+        "placeholder": "Entity name",
+        "description": "The name that will be publicly displayed"
+      },
+      "slug": {
+        "label": "URL identifier (slug)",
+        "placeholder": "myprofile",
+        "description": "The unique identifier used in the URL (letters and numbers only, min 3 characters)"
+      },
+      "birthDate": {
+        "label": "Birth date",
+        "placeholder": "Select a date",
+        "description": "Your birth date (optional)"
+      },
+      "shortDescription": {
+        "label": "Short description",
+        "placeholder": "A brief description",
+        "description": "Summary in a few words (max 200 characters)"
+      },
+      "description": {
+        "label": "Description",
+        "placeholder": "Detailed description",
+        "description": "Complete and detailed presentation"
+      },
+      "email": {
+        "label": "Email",
+        "placeholder": "email@example.com",
+        "description": "Your contact email address"
+      },
+      "mobile": {
+        "label": "Mobile phone",
+        "placeholder": "+1 123 456 7890",
+        "description": "Your mobile phone number"
+      },
+      "fixe": {
+        "label": "Landline",
+        "placeholder": "+1 123 456 7890",
+        "description": "Your landline phone number"
+      },
+      "url": {
+        "label": "Website",
+        "placeholder": "https://example.com",
+        "description": "The URL of your personal website"
+      },
+      "addressCountry": {
+        "label": "Country",
+        "placeholder": "Select a country"
+      },
+      "streetAddress": {
+        "label": "Address",
+        "placeholder": "123 Main Street",
+        "searchPlaceholder": "Search for an address..."
+      },
+      "postalCode": {
+        "label": "Postal code",
+        "placeholder": "Select a postal code"
+      },
+      "addressLocality": {
+        "label": "City",
+        "placeholder": "New York",
+        "searchPlaceholder": "Search for a city..."
+      },
+      "tags": {
+        "label": "Tags",
+        "placeholder": "Add tags...",
+        "maxReached": "Maximum {{max}} tags allowed",
+        "searching": "Searching...",
+        "noResults": "No tags found",
+        "typeToSearch": "Type at least 2 characters"
+      },
+      "type": {
+        "label": "Organization type",
+        "placeholder": "Select a type",
+        "description": "The legal or structural type of your organization",
+        "options": {
+          "NGO": "Non-profit organization",
+          "LocalBusiness": "Local business",
+          "Group": "Group",
+          "GovernmentOrganization": "Government organization",
+          "Cooperative": "Cooperative"
+        }
+      },
+      "eventType": {
+        "label": "Event type",
+        "placeholder": "Select a type",
+        "description": "The type of your event",
+        "options": {
+          "workshop": "Workshop",
+          "competition": "Competition",
+          "concert": "Concert",
+          "contest": "Contest",
+          "conference": "Conference",
+          "debate": "Debate",
+          "exhibition": "Exhibition",
+          "festival": "Festival",
+          "crowdfunding": "Crowdfunding",
+          "fair": "Fair",
+          "course": "Course",
+          "protest": "Protest",
+          "market": "Market",
+          "film": "Film screening",
+          "getTogether": "Get together",
+          "meeting": "Meeting",
+          "spectacle": "Show",
+          "internship": "Internship",
+          "stand": "Stand",
+          "others": "Other"
+        }
+      },
+      "recurrency": {
+        "label": "Recurring event",
+        "description": "Enable if the event repeats weekly with fixed schedules"
+      },
+      "startDate": {
+        "label": "Start date",
+        "placeholder": "Select start date"
+      },
+      "endDate": {
+        "label": "End date",
+        "placeholder": "Select end date"
+      },
+      "parent": {
+        "label": "Parent entity",
+        "placeholder": "Select a parent entity...",
+        "description": "The entity this element belongs to"
+      },
+      "organizer": {
+        "label": "Organizer",
+        "placeholder": "Select the organizer...",
+        "description": "The organization or person organizing this event"
+      },
+      "parentEvent": {
+        "label": "Parent entity",
+        "placeholder": "Select a parent entity...",
+        "description": "The organization or project this event belongs to"
+      }
+    },
+    "schedule": {
+      "openingHours": {
+        "label": "Opening Hours",
+        "title": "Opening Hours",
+        "description": "Define the weekly opening hours",
+        "opens": "Opens",
+        "closes": "Closes",
+        "noDaysSelected": "Select days to define opening hours"
+      }
+    },
+    "eventDates": {
+      "openingHours": {
+        "label": "Event schedule",
+        "title": "Recurring schedule",
+        "description": "Define the days and times when the event takes place each week",
+        "opens": "Start",
+        "closes": "End",
+        "noDaysSelected": "Select days to define the schedule"
+      }
+    }
+  },
+  "SocialTab": {
+    "privateProfile": "Private Profile",
+    "cannotViewFriends": "You cannot view this user's friends list",
+    "searchFriends": "Search friends...",
+    "addFriend": "Add Friend",
+    "tabs": {
+      "friends": "Friends",
+      "friendsShort": "Friends",
+      "pending": "Pending Requests",
+      "pendingShort": "Pending",
+      "sent": "Sent Requests",
+      "sentShort": "Sent"
+    },
+    "noFriendsFound": "No friends found",
+    "noFriendsYet": "No friends yet",
+    "tryDifferentSearch": "Try a different search term",
+    "startConnecting": "Start connecting with people to build your network",
+    "removeFriend": "Remove Friend",
+    "noPendingRequests": "No pending requests",
+    "pendingRequestsInfo": "Friend requests waiting for your response will appear here",
+    "accept": "Accept",
+    "reject": "Reject",
+    "noSentRequests": "No sent requests",
+    "sentRequestsInfo": "Friend requests you've sent will appear here",
+    "requestPending": "Request pending",
+    "cancel": "Cancel"
+  },
+  "FriendRequestDialog": {
+    "title": "Add Friend",
+    "searchPlaceholder": "Search users by name or username...",
+    "startTyping": "Start typing to search for users",
+    "noUsersFound": "No users found",
+    "tryDifferentSearch": "Try a different search term",
+    "sendRequest": "Add"
+  },
+  "MembershipTab": {
+    "privateProfile": "Private Profile",
+    "cannotViewMemberships": "You cannot view this user's memberships",
+    "searchMemberships": "Search memberships...",
+    "tabs": {
+      "organizations": "Organizations",
+      "orgsShort": "Orgs",
+      "projects": "Projects",
+      "projectsShort": "Projects",
+      "pois": "Places",
+      "poisShort": "Places",
+      "events": "Events",
+      "eventsShort": "Events"
+    },
+    "organization": "Organization",
+    "project": "Project",
+    "poi": "Place",
+    "event": "Event",
+    "admin": "Admin",
+    "member": "Member",
+    "contributor": "Contributor",
+    "participant": "Participant",
+    "author": "Author",
+    "noOrganizations": "No organizations yet",
+    "noProjects": "No projects yet",
+    "noPois": "No places yet",
+    "noEvents": "No events yet",
+    "tryDifferentSearch": "Try a different search term",
+    "startJoining": "Start joining organizations and projects to build your network",
+    "joinOrganization": "Join Organization",
+    "joinProject": "Join Project",
+    "addPoi": "Add Place",
+    "createEvent": "Create Event"
+  },
+  "AddEntity": {
+    "create": "Create",
+    "organization": "Organization",
+    "project": "Project",
+    "event": "Event",
+    "poi": "Place",
+    "tabs": {
+      "info": "Information",
+      "dates": "Dates",
+      "location": "Location"
+    },
+    "modal": {
+      "organization": {
+        "title": "Create an organization",
+        "description": "Fill in your organization details"
+      },
+      "project": {
+        "title": "Create a project",
+        "description": "Fill in your project details",
+        "public": "Public project"
+      },
+      "event": {
+        "title": "Create an event",
+        "description": "Fill in your event details",
+        "public": "Public event"
+      },
+      "poi": {
+        "title": "Add a place",
+        "description": "Fill in the place details"
+      }
+    }
+  },
+  "ProfileRelated": {
+    "empty": {
+      "projects": "No related projects",
+      "events": "No related events",
+      "poi": "No related places"
+    },
+    "result": "result",
+    "results": "results",
+    "searchPlaceholder": "Search...",
+    "tryDifferentSearch": "Try a different search term",
+    "noRelatedEntities": "No related entities yet"
+  },
+  "validation": {
+    "name": {
+      "required": "Name is required",
+      "minLength": "Name must be at least 2 characters"
+    },
+    "email": {
+      "invalid": "Invalid email"
+    },
+    "url": {
+      "invalid": "Invalid URL"
+    },
+    "date": {
+      "invalid": "Invalid date"
+    },
+    "organizer": {
+      "required": "Organizer is required"
+    },
+    "startDate": {
+      "required": "Start date is required for a one-time event"
+    },
+    "endDate": {
+      "required": "End date is required for a one-time event",
+      "afterStart": "End date must be after start date"
+    },
+    "openingHours": {
+      "required": "Opening hours are required for a recurring event",
+      "format": "HH:MM format required"
+    },
+    "slug": {
+      "minLength": "Slug must be at least 3 characters",
+      "maxLength": "Slug cannot exceed 100 characters",
+      "format": "Slug can only contain letters and numbers"
+    },
+    "datetime": {
+      "invalid": "ISO 8601 format required"
     }
   }
 }

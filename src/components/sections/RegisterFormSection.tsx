@@ -14,3 +14,4 @@ export function RegisterFormSection({ id }: { id?: string; props: RegisterFormSe
         </section>
   );
 }
+export default RegisterFormSection;

@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, ShoppingCart, Eye } from 'lucide-react';
+import { T } from "@/components/ui/T";
 import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from '@/lib/utils';
 import { ProductShowcaseSectionProps } from '@/types/site-schema';
@@ -28,7 +29,7 @@ export function ProductShowcaseSection({ id, props }: { id?: string; props: Prod
 
   const ProductCard = ({ product, featured = false }: { product: ProductShowcaseSectionProps['products'][number]; featured?: boolean }) => {
     const currentIndex = currentImageIndex[product.id] || 0;
-    
+
     return (
       <Card className={cn(
         "transition-all duration-200 hover:shadow-lg",
@@ -44,29 +45,29 @@ export function ProductShowcaseSection({ id, props }: { id?: string; props: Prod
             alt={t(product.name)}
             className="w-full h-full object-cover"
           />
-          
+
           {product.images.length > 1 && (
             <>
               <Button
                 variant="ghost"
                 size="sm"
                 aria-label="Image précédente"
-                className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white"
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background"
                 onClick={() => prevImage(product.id, product.images.length)}
               >
                 <ChevronLeft className="w-4 h-4" />
               </Button>
-              
+
               <Button
                 variant="ghost"
                 size="sm"
                 aria-label="Image suivante"
-                className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white"
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background"
                 onClick={() => nextImage(product.id, product.images.length)}
               >
                 <ChevronRight className="w-4 h-4" />
               </Button>
-              
+
               {/* Image Indicators */}
               <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
                 {product.images.map((_, index) => (
@@ -75,7 +76,7 @@ export function ProductShowcaseSection({ id, props }: { id?: string; props: Prod
                     aria-label={`Afficher l'image ${index + 1}`}
                     className={cn(
                       "w-2 h-2 rounded-full transition-colors",
-                      index === currentIndex ? "bg-white" : "bg-white/50"
+                      index === currentIndex ? "bg-background" : "bg-background/50"
                     )}
                     onClick={() =>
                       setCurrentImageIndex(prev => ({ ...prev, [product.id]: index }))
@@ -86,14 +87,14 @@ export function ProductShowcaseSection({ id, props }: { id?: string; props: Prod
             </>
           )}
         </div>
-        
+
         <CardHeader>
           <div className="flex items-start justify-between gap-4">
             <CardTitle className={cn(
               "text-foreground",
               featured ? "text-2xl" : "text-xl"
             )}>
-              {t(product.name)}
+              <T k={product.name} />
             </CardTitle>
             {showPrices && product.price && (
               <Badge variant="secondary" className="shrink-0 text-lg font-bold">
@@ -102,15 +103,15 @@ export function ProductShowcaseSection({ id, props }: { id?: string; props: Prod
             )}
           </div>
         </CardHeader>
-        
+
         <CardContent className="space-y-4">
           <p className={cn(
             "text-muted-foreground leading-relaxed",
             featured && "text-lg"
           )}>
-            {t(product.description)}
+            <T k={product.description} />
           </p>
-          
+
           {/* Features */}
           {product.features && product.features.length > 0 && (
             <div className="space-y-2">
@@ -119,20 +120,20 @@ export function ProductShowcaseSection({ id, props }: { id?: string; props: Prod
                 {product.features.slice(0, featured ? 6 : 3).map((feature, index) => (
                   <li key={index} className="text-sm text-muted-foreground flex items-center gap-2">
                     <div className="w-1.5 h-1.5 bg-primary rounded-full" />
-                    {t(feature)}
+                    <T k={feature} />
                   </li>
                 ))}
               </ul>
             </div>
           )}
-          
+
           {/* CTA Buttons */}
           <div className="flex gap-2 pt-2">
             {product.cta && (
               <Button asChild className="flex-1">
                 <a href={product.cta.href}>
                   <ShoppingCart className="w-4 h-4 mr-2" />
-                  {t(product.cta.label)}
+                  <T k={product.cta.label} />
                 </a>
               </Button>
             )}
@@ -168,9 +169,9 @@ export function ProductShowcaseSection({ id, props }: { id?: string; props: Prod
           {layout === 'featured' && (
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
               {products.map((product, index) => (
-                <ProductCard 
-                  key={product.id} 
-                  product={product} 
+                <ProductCard
+                  key={product.id}
+                  product={product}
                   featured={index === 0}
                 />
               ))}
@@ -181,3 +182,4 @@ export function ProductShowcaseSection({ id, props }: { id?: string; props: Prod
     </section>
   );
 }
+export default ProductShowcaseSection;

@@ -1,3 +1,4 @@
+import { T } from "@/components/ui/T";
 import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from "@/lib/utils";
 import type { SectionPropsMap } from "@/types/site";
@@ -30,7 +31,7 @@ export function ContentSection({
     <section id={id} className={cn("py-16", className)}>
       <div className="container mx-auto px-6">
         {category && !isImageLeft && (
-          <p className="text-muted-foreground text-sm font-medium mb-2">{t(category)}</p>
+          <T k={category} as="p" className="text-muted-foreground text-sm font-medium mb-2" />
         )}
         
         <div className={cn(
@@ -40,16 +41,12 @@ export function ContentSection({
           {/* Content Column */}
           <div className={cn(isImageLeft && "lg:order-2")}>
             {category && isImageLeft && (
-              <p className="text-muted-foreground text-sm font-medium mb-4">{t(category)}</p>
+              <T k={category} as="p" className="text-muted-foreground text-sm font-medium mb-4" />
             )}
             
-            <h2 className="text-4xl font-bold text-primary mb-6 leading-tight">
-              {t(title)}
-            </h2>
+            <T k={title} as="h2" className="text-4xl font-bold text-primary mb-6 leading-tight" />
 
-            <p className="text-muted-foreground mb-8 leading-relaxed">
-              {t(description)}
-            </p>
+            <T k={description} as="p" className="text-muted-foreground mb-8 leading-relaxed" />
 
             {/* Tags */}
             {tags && tags.length > 0 && (
@@ -57,7 +54,8 @@ export function ContentSection({
                 {tags.map((tag, idx) => (
                   <span
                     key={idx}
-                    className="px-4 py-2 bg-secondary hover:bg-secondary/80 rounded-full text-sm cursor-pointer transition"
+                    className="px-4 py-2 bg-muted hover:bg-muted/80 rounded-full text-sm cursor-pointer transition"
+                    suppressHydrationWarning
                   >
                     {t(tag)}
                   </span>
@@ -70,7 +68,7 @@ export function ContentSection({
               <div className="flex items-start gap-4 mb-6">
                 {/* Icon */}
                 <div className="w-28 h-28 px-4 bg-card rounded-2xl border border-border flex items-center justify-center text-3xl shadow-lg flex-0">
-                  <div dangerouslySetInnerHTML={{ __html: iconCard.svg }} />
+                  <div dangerouslySetInnerHTML={{ __html: iconCard.svg }} suppressHydrationWarning />
                 </div>
 
                 {/* Links Card */}
@@ -84,6 +82,7 @@ export function ContentSection({
                         <a
                           href={link.href}
                           className="font-semibold text-foreground hover:text-primary transition"
+                          suppressHydrationWarning
                         >
                           {t(link.label)}
                         </a>
@@ -100,7 +99,7 @@ export function ContentSection({
                 <svg className="w-5 h-5 text-foreground" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                 </svg>
-                <span className="mt-1" dangerouslySetInnerHTML={{ __html: t(infoText) }} />
+                <span className="mt-1" dangerouslySetInnerHTML={{ __html: t(infoText) }} suppressHydrationWarning />
               </div>
             )}
           </div>
@@ -113,6 +112,7 @@ export function ContentSection({
                   src={image} 
                   className="w-full h-full object-cover rounded-xl" 
                   alt={t(title)}
+                  suppressHydrationWarning
                 />
               )}
             </div>
@@ -120,7 +120,7 @@ export function ContentSection({
             {/* Decorative Elements */}
             {decorativeElements && decorativeElements.type === "corner-icon" && (
               <div className="absolute bottom-0 right-0 w-32 h-32 bg-primary rounded-tl-full flex items-center justify-center shadow-2xl">
-                <div className="text-primary-foreground text-4xl mb-4 ml-4">
+                <div className="text-white text-4xl mb-4 ml-4">
                   <div className="flex space-x-2 mb-1">
                     <div className="w-2 h-2 bg-primary-foreground rounded-full"></div>
                     <div className="w-2 h-2 bg-primary-foreground rounded-full"></div>
@@ -142,3 +142,5 @@ export function ContentSection({
     </section>
   );
 }
+
+export default ContentSection;

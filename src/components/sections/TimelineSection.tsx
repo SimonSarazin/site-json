@@ -1,10 +1,9 @@
 import { Calendar } from 'lucide-react';
-import { useLocalization } from "@/hooks/useLocalization";
+import { T } from "@/components/ui/T";
 import { cn } from '@/lib/utils';
 import { TimelineSectionProps } from '@/types/site-schema';
 
 export function TimelineSection({ id, props }: { id?: string; props: TimelineSectionProps }) {
-  const { t } = useLocalization();
   const { events, alternating = true } = props;
 
   const formatDate = (dateString: string) => {
@@ -24,7 +23,7 @@ export function TimelineSection({ id, props }: { id?: string; props: TimelineSec
             <div className="absolute left-1/2 transform -translate-x-1/2 w-0.5 h-full bg-border" />
 
             {events.map((event, index) => (
-              <div 
+              <div
                 key={index}
                 className={cn(
                   "relative flex items-center mb-12 last:mb-0",
@@ -40,14 +39,10 @@ export function TimelineSection({ id, props }: { id?: string; props: TimelineSec
                     <Calendar className="w-4 h-4" />
                     <span>{formatDate(event.date)}</span>
                   </div>
-                  
-                  <h3 className="text-xl font-bold text-foreground mb-3">
-                    {t(event.title)}
-                  </h3>
-                  
-                  <p className="text-muted-foreground leading-relaxed">
-                    {t(event.text)}
-                  </p>
+
+                  <T k={event.title} as="h3" className="text-xl font-bold text-foreground mb-3" />
+
+                  <T k={event.text} as="p" className="text-muted-foreground leading-relaxed" />
                 </div>
 
                 {/* Timeline Dot */}
@@ -60,3 +55,4 @@ export function TimelineSection({ id, props }: { id?: string; props: TimelineSec
     </section>
   );
 }
+export default TimelineSection;

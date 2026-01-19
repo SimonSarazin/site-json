@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useLocalization } from "@/hooks/useLocalization";
+import { T } from "@/components/ui/T";
 import { cn } from '@/lib/utils';
 import { DynamicIcon, type IconName } from 'lucide-react/dynamic';
 import { StatsSectionProps } from '@/types/site-schema';
 
 export function StatsSection({ id, props }: { id?: string; props: StatsSectionProps }) {
-  const { t } = useLocalization();
   const { items, layout = 'horizontal', animated = true } = props;
   const [isVisible, setIsVisible] = useState(false);
 
@@ -98,7 +97,7 @@ export function StatsSection({ id, props }: { id?: string; props: StatsSectionPr
               />
                 </div>
               )}
-              
+
               <div className={layout === 'vertical' ? 'flex-1' : ''}>
                 <div className={cn(
                   "text-4xl md:text-5xl font-bold text-foreground mb-2",
@@ -106,15 +105,11 @@ export function StatsSection({ id, props }: { id?: string; props: StatsSectionPr
                 )}>
                   <AnimatedNumber value={item.value} isVisible={isVisible} />
                 </div>
-                
-                <h3 className="text-lg font-semibold text-foreground mb-1">
-                  {t(item.label)}
-                </h3>
-                
+
+                <T k={item.label} as="h3" className="text-lg font-semibold text-foreground mb-1" />
+
                 {item.description && (
-                  <p className="text-muted-foreground text-sm">
-                    {t(item.description)}
-                  </p>
+                  <T k={item.description} as="p" className="text-muted-foreground text-sm" />
                 )}
               </div>
             </div>
@@ -124,3 +119,4 @@ export function StatsSection({ id, props }: { id?: string; props: StatsSectionPr
     </section>
   );
 }
+export default StatsSection;

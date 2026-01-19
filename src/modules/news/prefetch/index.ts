@@ -1,0 +1,1 @@
+export { prefetchNewsQuery } from "./prefetchNews";

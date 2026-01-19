@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import React, { type ReactNode } from 'react';
 import { useHydrated } from "@/hooks/useHydrated";
 
 interface ClientOnlyProps {
@@ -6,6 +6,6 @@ interface ClientOnlyProps {
   fallback?: ReactNode;
 }
 
-export function ClientOnly({ children, fallback = null }: ClientOnlyProps): JSX.Element {
+export function ClientOnly({ children, fallback = null }: ClientOnlyProps): React.ReactNode {
   return useHydrated() ? <>{children()}</> : <>{fallback}</>;
 }

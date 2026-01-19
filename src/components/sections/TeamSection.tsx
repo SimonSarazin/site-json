@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Globe, Mail, Linkedin }from 'lucide-react';
 import { SiX, SiInstagram, SiFacebook, SiGithub, SiYoutube } from '@icons-pack/react-simple-icons';
+import { T } from "@/components/ui/T";
 import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from '@/lib/utils';
 import { TeamSectionProps } from '@/types/site-schema';
@@ -57,23 +58,17 @@ export function TeamSection({ id, props }: { id?: string; props: TeamSectionProp
                     </AvatarFallback>
                   </Avatar>
                 </div>
-                
-                <h3 className="text-xl font-bold text-foreground mb-1">
-                  {t(member.name)}
-                </h3>
-                
-                <p className="text-primary font-medium">
-                  {t(member.role)}
-                </p>
+
+                <T k={member.name} as="h3" className="text-xl font-bold text-foreground mb-1" />
+
+                <T k={member.role} as="p" className="text-primary font-medium" />
               </CardHeader>
-              
+
               <CardContent>
                 {member.bio && (
-                  <p className="text-muted-foreground text-sm leading-relaxed mb-4">
-                    {t(member.bio)}
-                  </p>
+                  <T k={member.bio} as="p" className="text-muted-foreground text-sm leading-relaxed mb-4" />
                 )}
-                
+
                 {member.socials && member.socials.length > 0 && (
                   <div className="flex justify-center gap-2">
                     {member.socials.map((social, socialIndex) => (
@@ -104,3 +99,4 @@ export function TeamSection({ id, props }: { id?: string; props: TeamSectionProp
     </section>
   );
 }
+export default TeamSection;

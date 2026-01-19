@@ -135,3 +135,4 @@ export function ChartSection({ id, props }: { id?: string; props: ChartSectionPr
     </section>
   );
 }
+export default ChartSection;

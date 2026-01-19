@@ -85,7 +85,7 @@ export function FiltersSection({
             "text-xs font-medium transition-colors",
             hasActiveFilters
               ? "text-primary hover:text-primary/80"
-              : "text-muted-foreground cursor-not-allowed"
+              : "text-muted-foreground/50 cursor-not-allowed"
           )}
           disabled={!hasActiveFilters}
         >
@@ -100,7 +100,7 @@ export function FiltersSection({
             placeholder={t({ fr: "Rechercher par nom...", en: "Search by name..." })}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-2 pl-10 border border-input bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent text-sm"
+            className="w-full px-4 py-2 pl-10 border border-input bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
           />
           <svg
             className="w-5 h-5 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
@@ -149,11 +149,11 @@ export function FiltersSection({
                           type="checkbox"
                           checked={isFilterSelected(group.id, filterName)}
                           onChange={() => toggleFilter(group.id, filterName)}
-                          className="w-4 h-4 border-2 border-input rounded cursor-pointer appearance-none checked:bg-primary checked:border-primary transition"
+                          className="w-4 h-4 border-2 border-border rounded cursor-pointer appearance-none checked:bg-primary checked:border-primary transition"
                         />
                         {isFilterSelected(group.id, filterName) && (
                           <svg
-                            className="w-3 h-3 text-white absolute pointer-events-none"
+                            className="w-3 h-3 text-primary-foreground absolute pointer-events-none"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -177,3 +177,4 @@ export function FiltersSection({
     </aside>
   );
 }
+export default FiltersSection;

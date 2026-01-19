@@ -1,16 +1,16 @@
 import { Helmet } from "@dr.pogodin/react-helmet";
 import { useSite } from "@/hooks/useSite";
 import { useLocalization } from "@/hooks/useLocalization";
-import type { SearchEntity } from "@/modules/search/schema";
-import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { useT } from "@/hooks/useT";
-import "@/modules/profil/i18n";
+import type { ProfileConfig } from "./schema";
 
 interface ProfileSeoProps {
   entity: SearchEntity | null;
   isLoading: boolean;
   entityType: string;
   activeTab?: string;
+  profileConfig?: ProfileConfig | null;
 }
 
 /**
@@ -18,24 +18,37 @@ interface ProfileSeoProps {
  * basées sur les données de l'entité chargée depuis l'API.
  * Les meta tags s'adaptent au tab actif pour améliorer le SEO.
  */
-export function ProfileSeo({ entity, isLoading, entityType, activeTab = 'about' }: ProfileSeoProps) {
+export function ProfileSeo({ entity, isLoading, entityType, activeTab, profileConfig }: ProfileSeoProps) {
   const { config } = useSite();
-  const { currentLocale, t: tLocale } = useLocalization();
-  useLoadNamespace("modules/profil");
+  const { currentLocale } = useLocalization();
   const t = useT("modules/profil");
+
+  // Obtenir le premier tab de la config ou 'about' par défaut
+  const firstTabId = profileConfig?.tabs?.[0]?.id || 'about';
+  const currentTab = activeTab || firstTabId;
 
   /**
    * Obtenir le label i18n d'un tab
+   * Vérifie d'abord dans la config des tabs, puis fallback sur les clés i18n
    */
   const getTabLabel = (tab: string): string => {
+    // Chercher dans la config des tabs
+    const tabConfig = profileConfig?.tabs?.find(tc => tc.id === tab);
+    if (tabConfig?.label) {
+      return t(tabConfig.label);
+    }
+
+    // Fallback sur les clés i18n hardcodées
     const tabKeys: Record<string, string> = {
       about: "ProfileTemplateDefault.tabs.about",
       news: "ProfileTemplateDefault.tabs.news",
       coworking: "ProfileTemplateDefault.tabs.coworking",
-      rooms: "ProfileTemplateDefault.tabs.meetingRooms",
-      projects: "ProfileTemplateDefault.tabs.projects",
+      meetingRooms: "ProfileTemplateDefault.tabs.meetingRooms",
+      practicalInfo: "ProfileTemplateDefault.tabs.practicalInfo",
       communities: "ProfileTemplateDefault.tabs.communities",
-      observatory: "ProfileTemplateDefault.tabs.observatories",
+      observatories: "ProfileTemplateDefault.tabs.observatories",
+      social: "ProfileTemplateDefault.tabs.social",
+      membership: "ProfileTemplateDefault.tabs.membership",
     };
     return tabKeys[tab] ? t(tabKeys[tab]) : "";
   };
@@ -45,9 +58,16 @@ export function ProfileSeo({ entity, isLoading, entityType, activeTab = 'about' 
    */
   const getTabDescription = (tab: string, entityData: SearchEntity): string => {
     const entityName = entityData.serverData?.name || "";
-    const baseDescription = entityData.serverData?.description || entityData.serverData?.shortDescription || "";
+    const baseDescription = (entityData.serverData?.description || entityData.serverData?.shortDescription || "") as string;
 
-    if (tab === "about") {
+    // Si c'est le premier tab (par défaut), utiliser la description de base
+    if (tab === firstTabId) {
+      return baseDescription;
+    }
+
+    // Vérifier que le tab existe dans la config
+    const tabExists = profileConfig?.tabs?.some(t => t.id === tab);
+    if (!tabExists) {
       return baseDescription;
     }
 
@@ -61,9 +81,7 @@ export function ProfileSeo({ entity, isLoading, entityType, activeTab = 'about' 
 
   // Pendant le chargement ou si pas d'entité, afficher un titre par défaut
   if (isLoading || !entity) {
-    const defaultTitle = (config.meta?.title && typeof config.meta.title === 'string')
-      ? tLocale(config.meta.title)
-      : "Profil";
+    const defaultTitle = config.meta?.title ? t(config.meta.title) : "Profil";
     return (
       <Helmet htmlAttributes={{ lang: currentLocale }}>
         <title>{defaultTitle}</title>
@@ -82,22 +100,20 @@ export function ProfileSeo({ entity, isLoading, entityType, activeTab = 'about' 
   // Construction de l'URL canonique avec le tab actif
   const slug = entity.serverData?.slug || "";
   const canonicalUrl = typeof window !== 'undefined' && slug
-    ? activeTab !== 'about'
-      ? `${window.location.origin}/profil/${slug}/${activeTab}`
+    ? currentTab !== firstTabId
+      ? `${window.location.origin}/profil/${slug}/${currentTab}`
       : `${window.location.origin}/profil/${slug}`
     : "";
 
   // Titre de la page dynamique selon le tab actif
-  const siteTitle = (config.meta?.title && typeof config.meta.title === 'string')
-    ? tLocale(config.meta.title)
-    : "";
+  const siteTitle = config.meta?.title ? t(config.meta.title) : "";
 
-  const pageTitle = activeTab !== 'about'
-    ? `${getTabLabel(activeTab)} - ${entityName}${siteTitle ? ` - ${siteTitle}` : ''}`
+  const pageTitle = currentTab !== firstTabId
+    ? `${getTabLabel(currentTab)} - ${entityName}${siteTitle ? ` - ${siteTitle}` : ''}`
     : (siteTitle ? `${entityName} - ${siteTitle}` : entityName);
 
   // Description dynamique selon le tab actif
-  const description = getTabDescription(activeTab, entity);
+  const description = getTabDescription(currentTab, entity);
 
   // Type schema.org basé sur entityType
   const getSchemaType = (type: string): string => {
@@ -112,6 +128,7 @@ export function ProfileSeo({ entity, isLoading, entityType, activeTab = 'about' 
   };
 
   // Données structurées schema.org
+  const entityUrl = entity.serverData?.url as string[] | undefined;
   const structuredData = {
     "@context": "https://schema.org",
     "@type": getSchemaType(entityType),
@@ -127,7 +144,7 @@ export function ProfileSeo({ entity, isLoading, entityType, activeTab = 'about' 
         addressLocality: entity.serverData.address.addressLocality,
       },
     }),
-    ...(entity.serverData?.url && entity.serverData.url.length > 0 && { sameAs: entity.serverData.url }),
+    ...(entityUrl && entityUrl.length > 0 && { sameAs: entityUrl }),
   };
 
   return (

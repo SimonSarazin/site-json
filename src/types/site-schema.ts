@@ -7,8 +7,10 @@
 //               et d'autocomplétion dans VS Code.
 // ------------------------------------------------------------
 import { SearchProSectionSchema, SearchProStaticSectionSchema } from "@/modules/search/schema";
+import { NewsSectionSchema } from "@/modules/news/schema";
 import { z } from "zod";
 import { LocalizedString, LOCALES } from "./locale-schema";
+export { LocalizedString, LOCALES };
 import { ProfilesConfigSchema } from "../modules/profil/schema";
 import { AmpliConfigSchema } from "@/modules/ampli/schema";
 
@@ -146,6 +148,171 @@ export const HeroTiersLieuxSchema = z.object({
 export type HeroTiersLieux = z.infer<typeof HeroTiersLieuxSchema>;
 
 export type HeroTiersLieuxProps = z.infer<typeof HeroTiersLieuxSchema>["props"];
+
+//──────────────── Hero Rézo la Mer
+export const HeroRezoLaMerSchema = z.object({
+  type: z.literal("hero-rezo-la-mer"),
+  id: z.string().optional(),
+  props: z.object({
+    headline: LocalizedString,
+    subhead: LocalizedString.optional(),
+    logoIcon: z.string().optional(),
+    backgroundImage: z.string().optional(),
+    backgroundImageAlt: LocalizedString.optional(),
+    badges: z
+      .array(
+        z.object({
+          label: LocalizedString,
+          icon: z.string().optional(),
+        })
+      )
+      .optional(),
+    ctaButtons: z
+      .array(
+        z.object({
+          label: LocalizedString,
+          path: z.string().optional(),
+          variant: z.enum(["default", "secondary"]).optional(),
+        })
+      )
+      .optional(),
+    showScrollIndicator: z.boolean().optional(),
+  }),
+});
+
+export type HeroRezoLaMer = z.infer<typeof HeroRezoLaMerSchema>;
+
+export type HeroRezoLaMerProps = z.infer<typeof HeroRezoLaMerSchema>["props"];
+
+//──────────────── Features Rézo la Mer
+export const FeaturesRezoLaMerSchema = z.object({
+  type: z.literal("features-rezo-la-mer"),
+  id: z.string().optional(),
+  props: z.object({
+    headline: LocalizedString,
+    subhead: LocalizedString.optional(),
+    features: z.array(
+      z.object({
+        icon: z.string(),
+        title: LocalizedString,
+        description: LocalizedString,
+        color: z.enum(["turquoise", "cyan-bright", "primary", "turquoise-light"]).optional(),
+      })
+    ),
+  }),
+});
+
+export type FeaturesRezoLaMer = z.infer<typeof FeaturesRezoLaMerSchema>;
+export type FeaturesRezoLaMerProps = z.infer<typeof FeaturesRezoLaMerSchema>["props"];
+
+//──────────────── Action Buttons Rézo la Mer
+export const ActionButtonsRezoLaMerSchema = z.object({
+  type: z.literal("action-buttons-rezo-la-mer"),
+  id: z.string().optional(),
+  props: z.object({
+    headline: LocalizedString,
+    subhead: LocalizedString.optional(),
+    actions: z.array(
+      z.object({
+        icon: z.string(),
+        title: LocalizedString,
+        subtitle: LocalizedString.optional(),
+        href: z.string(),
+        color: z.enum(["primary", "turquoise", "amber", "cyan-bright"]).optional(),
+      })
+    ),
+  }),
+});
+
+export type ActionButtonsRezoLaMer = z.infer<typeof ActionButtonsRezoLaMerSchema>;
+export type ActionButtonsRezoLaMerProps = z.infer<typeof ActionButtonsRezoLaMerSchema>["props"];
+
+//──────────────── Community Rézo la Mer
+export const CommunityRezoLaMerSchema = z.object({
+  type: z.literal("community-rezo-la-mer"),
+  id: z.string().optional(),
+  props: z.object({
+    headline: LocalizedString,
+    subhead: LocalizedString.optional(),
+    image: z.string().optional(),
+    imageAlt: LocalizedString.optional(),
+    actions: z.array(
+      z.object({
+        icon: z.string(),
+        title: LocalizedString,
+        description: LocalizedString,
+        ctaLabel: LocalizedString,
+        href: z.string(),
+      })
+    ),
+    stats: z
+      .array(
+        z.object({
+          value: z.string(),
+          label: LocalizedString,
+          color: z.enum(["primary", "turquoise", "cyan-bright"]).optional(),
+        })
+      )
+      .optional(),
+  }),
+});
+
+export type CommunityRezoLaMer = z.infer<typeof CommunityRezoLaMerSchema>;
+export type CommunityRezoLaMerProps = z.infer<typeof CommunityRezoLaMerSchema>["props"];
+
+//──────────────── Call To Action Rézo la Mer
+export const CallToActionRezoLaMerSchema = z.object({
+  type: z.literal("cta-rezo-la-mer"),
+  id: z.string().optional(),
+  props: z.object({
+    headline: LocalizedString,
+    subhead: LocalizedString.optional(),
+    newsletterPlaceholder: LocalizedString.optional(),
+    newsletterButtonLabel: LocalizedString.optional(),
+    newsletterDisclaimer: LocalizedString.optional(),
+    buttons: z
+      .array(
+        z.object({
+          label: LocalizedString,
+          href: z.string(),
+          variant: z.enum(["default", "outline"]).optional(),
+        })
+      )
+      .optional(),
+  }),
+});
+
+export type CallToActionRezoLaMer = z.infer<typeof CallToActionRezoLaMerSchema>;
+export type CallToActionRezoLaMerProps = z.infer<typeof CallToActionRezoLaMerSchema>["props"];
+
+//──────────────── Title With Filters Rézo la Mer
+const ActionButtonSchema = z.object({
+  label: LocalizedString,
+  icon: z.string().optional(),
+  href: z.string().optional(),
+  variant: z.enum(["default", "outline", "primary", "turquoise"]).optional(),
+});
+
+export const TitleWithFiltersRezoLaMerSchema = z.object({
+  type: z.literal("title-with-filters-rezo-la-mer"),
+  id: z.string().optional(),
+  props: z.object({
+    headline: LocalizedString,
+    subhead: LocalizedString.optional(),
+    categories: z.array(
+      z.object({
+        id: z.string(),
+        label: LocalizedString,
+      })
+    ).optional(),
+    buttons: z.array(ActionButtonSchema).optional(),
+    showSearch: z.boolean().optional(),
+    searchPlaceholder: LocalizedString.optional(),
+  }),
+});
+
+export type TitleWithFiltersRezoLaMer = z.infer<typeof TitleWithFiltersRezoLaMerSchema>;
+export type TitleWithFiltersRezoLaMerProps = z.infer<typeof TitleWithFiltersRezoLaMerSchema>["props"];
 
 // ──────────────── Meeteem Props
 
@@ -873,8 +1040,8 @@ export type FiltersSection = z.infer<typeof FiltersSectionSchema>;
 export type FiltersSectionProps = z.infer<typeof FiltersSectionSchema>["props"];
 
 const GridLayoutSectionPropsSchema = z.object({
-  leftSection: z.any(),
-  rightSection: z.any(),
+  leftSection: z.lazy(() => SectionSchemaLazy).optional(),
+  rightSection: z.lazy(() => SectionSchemaLazy).optional(),
   leftColumns: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]).optional(),
   rightColumns: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]).optional(),
   gap: z.number().optional(),
@@ -930,6 +1097,12 @@ export const Section = z.discriminatedUnion("type", [
   HeroSectionSchema,
   HeroWithIconSectionSchema,
   HeroTiersLieuxSchema,
+  HeroRezoLaMerSchema,
+  FeaturesRezoLaMerSchema,
+  ActionButtonsRezoLaMerSchema,
+  CommunityRezoLaMerSchema,
+  CallToActionRezoLaMerSchema,
+  TitleWithFiltersRezoLaMerSchema,
   MarkdownSectionSchema,
   CardsSectionSchema,
   GallerySectionSchema,
@@ -970,7 +1143,8 @@ export const Section = z.discriminatedUnion("type", [
   SearchProSectionSchema,
   SearchProStaticSectionSchema,
   MeeteemSectionSchema,
-  GridLayoutSectionSchema
+  GridLayoutSectionSchema,
+  NewsSectionSchema
 ]);
 export type Section = z.infer<typeof Section>;
 
@@ -1064,7 +1238,7 @@ const EnhancedNavItem: z.ZodType<EnhancedNavItemType> = z.lazy(() =>
 );
 
 export const Header = z.object({
-  type: z.enum(["tiers-lieux", "default"]).default("default"),
+  type: z.enum(["tiers-lieux", "rezo-la-mer", "default"]).default("default"),
   logo: z.string(),
   logoAlt: LocalizedString.optional(),
   path: z.string().min(1).optional(),
@@ -1100,16 +1274,22 @@ const FooterColumn = z.object({
 });
 
 export const Footer = z.object({
-  type: z.enum(["tiers-lieux", "default"]).default("default"),
+  type: z.enum(["tiers-lieux", "rezo-la-mer", "default"]).default("default"),
   columns: z.array(FooterColumn),
   socials: z.array(z.object({ platform: z.string(), url: z.string() })).optional(),
   extra: z.string().optional(),
   newsletter: NewsletterSectionSchema.optional(),
   copyright: LocalizedString,
   logo: z.string().optional(),
+  logoIcon: z.string().optional(),
+  logoTitle: LocalizedString.optional(),
   logoAlt: LocalizedString.optional(),
   description: LocalizedString.optional(),
   legalLinks: z.array(z.object({
+    href: z.string(),
+    label: LocalizedString,
+  })).optional(),
+  bottomLinks: z.array(z.object({
     href: z.string(),
     label: LocalizedString,
   })).optional(),

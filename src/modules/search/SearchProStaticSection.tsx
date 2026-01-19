@@ -1,7 +1,7 @@
-import { Suspense } from "react";
+// import { Suspense } from "react";
 import SearchProStatic from "@/modules/search/SearchProStatic";
 import { SearchProStaticSectionProps } from "@/modules/search/schema";
-import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
+// import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
 import { SearchPropsProvider } from "./contexts/SearchPropsProvider";
 import useInSections from "@/hooks/useInSection";
 
@@ -27,22 +27,10 @@ export function SearchProStaticSection({
       className="relative flex flex-col items-center justify-center w-full"
     >
       <SearchPropsProvider props={props} inSection={inSection}>
-        <Suspense
-          fallback={
-            <div className="w-full h-64 flex items-center justify-center">
-              <div className="text-center text-muted-foreground">
-                Chargement...
-              </div>
-            </div>
-          }
-        >
-          <ErrorBoundary fallback={<section className="p-4 bg-destructive/10 text-destructive">
-              <p>Erreur lors du chargement de la section</p>
-            </section>}>
-            <SearchProStatic props={props} />
-          </ErrorBoundary>
-        </Suspense>
+        <SearchProStatic props={props} />
       </SearchPropsProvider>
     </section>
   );
 }
+
+export default SearchProStaticSection;

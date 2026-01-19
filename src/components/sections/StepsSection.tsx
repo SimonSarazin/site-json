@@ -1,12 +1,11 @@
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle } from 'lucide-react';
-import { useLocalization } from "@/hooks/useLocalization";
+import { T } from "@/components/ui/T";
 import { cn } from '@/lib/utils';
 import { DynamicIcon, type IconName } from 'lucide-react/dynamic';
 import { StepsSectionProps } from '@/types/site-schema';
 
 export function StepsSection({ id, props }: { id?: string; props: StepsSectionProps }) {
-  const { t } = useLocalization();
   const { steps, orientation = 'horizontal', showProgress = true } = props;
 
   const completedSteps = steps.filter(step => step.completed).length;
@@ -20,8 +19,8 @@ export function StepsSection({ id, props }: { id?: string; props: StepsSectionPr
       {/* Step Circle */}
       <div className={cn(
         "relative flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all duration-200",
-        step.completed 
-          ? "bg-primary border-primary text-primary-foreground" 
+        step.completed
+          ? "bg-primary border-primary text-primary-foreground"
           : "bg-background border-muted-foreground text-muted-foreground"
       )}>
         {step.completed ? (
@@ -40,8 +39,8 @@ export function StepsSection({ id, props }: { id?: string; props: StepsSectionPr
       {!isLast && (
         <div className={cn(
           "bg-muted-foreground/30",
-          orientation === 'horizontal' 
-            ? "h-0.5 flex-1 mx-4" 
+          orientation === 'horizontal'
+            ? "h-0.5 flex-1 mx-4"
             : "w-0.5 h-16 my-4"
         )} />
       )}
@@ -68,26 +67,26 @@ export function StepsSection({ id, props }: { id?: string; props: StepsSectionPr
           {/* Steps */}
           <div className={cn(
             "flex",
-            orientation === 'horizontal' 
-              ? "flex-row items-start justify-between" 
+            orientation === 'horizontal'
+              ? "flex-row items-start justify-between"
               : "flex-col space-y-8"
           )}>
             {steps.map((step, index) => (
-              <div 
+              <div
                 key={index}
                 className={cn(
                   "flex",
-                  orientation === 'horizontal' 
-                    ? "flex-col items-center text-center max-w-xs" 
+                  orientation === 'horizontal'
+                    ? "flex-col items-center text-center max-w-xs"
                     : "flex-row items-start gap-6"
                 )}
               >
-                <StepIndicator 
-                  step={step} 
-                  index={index} 
-                  isLast={index === steps.length - 1} 
+                <StepIndicator
+                  step={step}
+                  index={index}
+                  isLast={index === steps.length - 1}
                 />
-                
+
                 <div className={cn(
                   orientation === 'horizontal' ? "mt-4" : "flex-1"
                 )}>
@@ -95,11 +94,11 @@ export function StepsSection({ id, props }: { id?: string; props: StepsSectionPr
                     "font-semibold mb-2",
                     step.completed ? "text-foreground" : "text-muted-foreground"
                   )}>
-                    {t(step.title)}
+                    <T k={step.title} />
                   </h3>
-                  
+
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    {t(step.description)}
+                    <T k={step.description} />
                   </p>
                 </div>
               </div>
@@ -110,3 +109,4 @@ export function StepsSection({ id, props }: { id?: string; props: StepsSectionPr
     </section>
   );
 }
+export default StepsSection;

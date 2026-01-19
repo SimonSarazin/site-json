@@ -11,11 +11,11 @@ export type DayOfWeek = typeof DAYS[number];
  * Garantit toujours 7 entrées (une par jour)
  */
 export const widgetFormatters = {
-  openingHours: (value: unknown) => {
+  openingHours: (value: any) => {
     // Toujours 7 entrées Mo→Su
     const arr = Array.isArray(value) ? value : [];
     return DAYS.map((day) => {
-      const match = arr.find((o: { dayOfWeek?: string }) => o.dayOfWeek === day);
+      const match = arr.find((o: any) => o.dayOfWeek === day);
       return match
         ? {
             dayOfWeek: day,

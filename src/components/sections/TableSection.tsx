@@ -141,3 +141,4 @@ export function TableSection({ id, props }: { id?: string; props: TableSectionPr
     </section>
   );
 }
+export default TableSection;

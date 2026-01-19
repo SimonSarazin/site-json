@@ -1,4 +1,4 @@
-import { SearchEntity } from "@/modules/search/schema";
+import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { ProfileEntityContext } from "./ProfileEntityContext";
 import { ProfileConfig } from "../schema";
 

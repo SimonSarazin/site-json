@@ -1,5 +1,7 @@
 import { useMemo } from "react";
+import { format } from "date-fns";
 import type { Organization, Poi, Project, User, Event as EventType} from "@communecter/cocolight-api-client";
+import getDateFnsLocale from "@/dateFns";
 
 /**
  * Convertit une valeur de type `Date | string | null | undefined` en `Date | null`.
@@ -42,7 +44,12 @@ const useItem = (item: User | Organization | Project | Poi | EventType) => {
       updated: null as Date | null,
       links: {} as Record<string, unknown>,
       collection: null as string | null,
-      slug: null as string | null
+      slug: null as string | null,
+      // Champs spécifiques Event
+      startDate: null as Date | null,
+      endDate: null as Date | null,
+      eventDate: null as string | null,
+      organizerName: null as string | null,
     };
 
     /** Données brutes sécurisées */
@@ -86,6 +93,24 @@ const useItem = (item: User | Organization | Project | Poi | EventType) => {
       merged.image = merged.profilMediumImageUrl;
     } else if (merged.profilThumbImageUrl) {
       merged.image = merged.profilThumbImageUrl;
+    }
+
+    // Champs spécifiques Event
+    if (raw.startDate) {
+      merged.startDate = toDate(raw.startDate);
+      if (merged.startDate) {
+        merged.eventDate = format(merged.startDate, 'P', { locale: getDateFnsLocale() });
+      }
+    }
+
+    if (raw.endDate) {
+      merged.endDate = toDate(raw.endDate);
+    }
+
+    // Extraire le nom de l'organisateur
+    if (raw.organizer && typeof raw.organizer === 'object') {
+      const firstOrg = Object.values(raw.organizer)[0] as { name?: string } | undefined;
+      merged.organizerName = firstOrg?.name || null;
     }
 
     return merged;

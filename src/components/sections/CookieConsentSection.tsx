@@ -216,3 +216,4 @@ export function CookieConsentSection({ props }: { id?: string; props: CookieCons
     </div>
   );
 }
+export default CookieConsentSection;

@@ -1,3 +1,4 @@
+import { T } from "@/components/ui/T";
 import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from '@/lib/utils';
 import { LogoCloudSectionProps } from "@/types/site-schema";
@@ -43,9 +44,7 @@ export function LogoCloudSection({ id, props }: { id?: string; props: LogoCloudS
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {title && (
           <div className="text-center mb-12">
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground">
-              {t(title)}
-            </h2>
+            <T k={title} as="h2" className="text-2xl md:text-3xl font-bold text-foreground" />
           </div>
         )}
 
@@ -70,3 +69,4 @@ export function LogoCloudSection({ id, props }: { id?: string; props: LogoCloudS
     </section>
   );
 }
+export default LogoCloudSection;

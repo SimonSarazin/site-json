@@ -14,14 +14,14 @@ import {
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 
-import { useDebounce } from "@/hooks/useDebounce";
+import { useDebounce } from "../../hooks/useDebounce";
 
 export interface Option {
   value: string;
   label: string;
   disable?: boolean;
   fixed?: boolean;
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 interface GroupOption {
@@ -208,11 +208,13 @@ function MultipleSelector({
           if (e.key === "Delete" || e.key === "Backspace") {
             if (input.value === "" && selected.length > 0) {
               const lastSelectOption = selected[selected.length - 1];
+              // If last item is fixed, we should not remove it.
               if (!lastSelectOption.fixed) {
                 handleUnselect(selected[selected.length - 1]);
               }
             }
           }
+          // This is not a default behavior of the <input /> field
           if (e.key === "Escape") {
             input.blur();
           }
@@ -243,6 +245,7 @@ function MultipleSelector({
     }, [value]);
 
     useEffect(() => {
+      /** If `onSearch` is provided, do not trigger options updated. */
       if (!arrayOptions || onSearch) {
         return;
       }
@@ -253,6 +256,8 @@ function MultipleSelector({
     }, [arrayDefaultOptions, arrayOptions, groupBy, onSearch, options]);
 
     useEffect(() => {
+      /** sync search */
+
       const doSearchSync = () => {
         const res = onSearchSync?.(debouncedSearchTerm);
         setOptions(transToGroupOption(res || [], groupBy));
@@ -271,9 +276,12 @@ function MultipleSelector({
       };
 
       void exec();
-    }, [debouncedSearchTerm, groupBy, open, triggerSearchOnFocus, onSearchSync]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [debouncedSearchTerm, groupBy, open, triggerSearchOnFocus]);
 
     useEffect(() => {
+      /** async search */
+
       const doSearch = async () => {
         setIsLoading(true);
         const res = await onSearch?.(debouncedSearchTerm);
@@ -294,7 +302,8 @@ function MultipleSelector({
       };
 
       void exec();
-    }, [debouncedSearchTerm, groupBy, open, triggerSearchOnFocus, onSearch]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [debouncedSearchTerm, groupBy, open, triggerSearchOnFocus]);
 
     const CreatableItem = (): React.ReactNode => {
       if (!creatable) return undefined;
@@ -328,10 +337,12 @@ function MultipleSelector({
         </CommandItem>
       );
 
+      // For normal creatable
       if (!onSearch && inputValue.length > 0) {
         return Item;
       }
 
+      // For async search creatable. avoid showing creatable item before loading at first.
       if (onSearch && debouncedSearchTerm.length > 0 && !isLoading) {
         return Item;
       }
@@ -342,6 +353,7 @@ function MultipleSelector({
     const EmptyItem = React.useCallback((): React.ReactNode => {
       if (!emptyIndicator) return undefined;
 
+      // For async search that showing emptyIndicator
       if (onSearch && !creatable && Object.keys(options).length === 0) {
         return (
           <CommandItem value="-" disabled>
@@ -358,6 +370,7 @@ function MultipleSelector({
       [options, selected]
     );
 
+    /** Avoid Creatable Selector freezing or lagging when paste a long string. */
     const commandFilter = React.useCallback((): ((value: string, search: string) => number) | undefined => {
       if (commandProps?.filter) {
         return commandProps.filter;
@@ -368,6 +381,7 @@ function MultipleSelector({
           return value.toLowerCase().includes(search.toLowerCase()) ? 1 : -1;
         };
       }
+      // Using default filter in `cmdk`. We don't have to provide it.
       return undefined;
     }, [creatable, commandProps?.filter]);
 
@@ -383,6 +397,7 @@ function MultipleSelector({
           "h-auto overflow-visible bg-transparent",
           commandProps?.className
         )}
+        // When onSearch is provided, we don't want to filter the options. You can still override it.
         shouldFilter={
           commandProps?.shouldFilter !== undefined
             ? commandProps.shouldFilter
@@ -440,6 +455,7 @@ function MultipleSelector({
                 </Badge>
               );
             })}
+            {/* Avoid having the "Search" Icon */}
             <CommandPrimitive.Input
               {...inputProps}
               ref={inputRef}

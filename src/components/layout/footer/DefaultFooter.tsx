@@ -67,7 +67,7 @@ export function DefaultFooter() {
                   <li key={linkIndex}>
                     <a
                       href={link.href}
-                      className="text-muted-foreground hover:text-primary transition-colors"
+                      className="text-muted-foreground dark:text-gray-400 hover:text-foreground dark:hover:text-primary transition-colors"
                       target={link.external ? '_blank' : '_self'}
                       rel={link.external ? 'noopener noreferrer' : undefined}
                     >

@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { DAYS } from "@/constants/DAYS";
-import { TimePicker } from "@/components/ui/datetime-picker";
+import { TimePicker } from "../ui/datetime-picker";
 
 interface OpeningHoursEntry {
   dayOfWeek: string;
@@ -23,14 +23,14 @@ interface OpeningHoursPickerProps {
 }
 
 const getDayName = (dayKey: string) => {
-  const idx = DAYS.indexOf(dayKey as (typeof DAYS)[number]) + 1;
+  const idx = DAYS.indexOf(dayKey as typeof DAYS[number]) + 1;
   const locale = getDateFnsLocale();
   // Créer une date pour le jour de la semaine spécifié
   const baseDate = startOfWeek(new Date(), { locale });
   const d = setDay(baseDate, idx % 7, { locale });
   return {
     full: format(d, "EEEE", { locale }), // Jour complet (ex: "Monday")
-    abbr: format(d, "EEEEEE", { locale }), // Jour abrégé (ex: "Mo")
+    abbr: format(d, "EEEEEE", { locale }) // Jour abrégé (ex: "Mo")
   };
 };
 
@@ -150,15 +150,7 @@ export function OpeningHoursPicker({
                   <TimePicker
                     date={
                       opens
-                        ? new Date(
-                            0,
-                            0,
-                            0,
-                            ...(opens.split(":").map(Number) as [
-                              number,
-                              number,
-                            ])
-                          )
+                        ? new Date(0, 0, 0, ...opens.split(":").map(Number))
                         : undefined
                     }
                     onChange={(d) => {
@@ -179,15 +171,7 @@ export function OpeningHoursPicker({
                   <TimePicker
                     date={
                       closes
-                        ? new Date(
-                            0,
-                            0,
-                            0,
-                            ...(closes.split(":").map(Number) as [
-                              number,
-                              number,
-                            ])
-                          )
+                        ? new Date(0, 0, 0, ...closes.split(":").map(Number))
                         : undefined
                     }
                     onChange={(d) => {
@@ -207,5 +191,3 @@ export function OpeningHoursPicker({
     </Card>
   );
 }
-
-export type { OpeningHoursEntry, OpeningHoursPickerProps };

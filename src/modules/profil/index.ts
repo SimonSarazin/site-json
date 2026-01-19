@@ -19,11 +19,26 @@ export { ProfileSeo } from "./ProfileSeo";
 
 // Contexts & Hooks
 export { ProfileEntityProvider } from "./contexts/ProfileEntityProvider";
-export { ProfileEntityContext } from "./contexts/ProfileEntityContext";
-export { useProfileEntity } from "./hooks/useProfileEntity";
+export { ProfileEntityContext, type ProfileEntityContextType } from "./contexts/ProfileEntityContext";
+export { useProfileEntity, useOptionalProfileEntity } from "./hooks/useProfileEntity";
 export { useFormatProfileEntity } from "./hooks/useFormatProfileEntity";
-export { useProfilNewsQuery } from "./hooks/useProfilNewsQuery";
-export { useEntityBySlugQuery } from "./hooks/useEntityBySlugQuery";
+
+// Prefetch
+export { prefetchProfileQuery } from "./prefetch";
+
+// Types centralisés
+export type {
+  EntityAction,
+  EntityActionsResult,
+  UserAction,
+  RelationType,
+  RelatedEntitiesParams,
+  UseRelatedEntitiesResult,
+  MemberQueryOptions,
+  MemberQueryParams,
+  FriendsQueryParams,
+  ConfirmationState,
+} from "./types";
 
 // Schemas & Types
 export type {
@@ -31,6 +46,8 @@ export type {
   ProfilesConfig,
   ProfileType,
   ProfileSection,
+  ProfileTab,
+  ProfileTabCondition,
   ProfileHeaderSection,
   ProfileInfoSection,
   ProfileAboutSection,
@@ -39,7 +56,12 @@ export type {
   ProfileMembersSection,
   ProfileGallerySection,
   ProfileRelatedSection,
-  ProfileTemplateDefaultSection,
+  ProfileActionsSection,
+  ProfileEventDatesSection,
+  ProfileBadgesSection,
+  ProfileTagsSection,
+  ProfileOpeningHoursSection,
+  ProfileTabLayoutSection,
 } from "./schema";
 
 export {
@@ -47,6 +69,8 @@ export {
   ProfilesConfigSchema,
   ProfileTypeSchema,
   ProfileSectionSchema,
+  ProfileTabSchema,
+  ProfileTabConditionSchema,
   ProfileHeaderVariantSchema,
   ProfileInfoVariantSchema,
   ProfileLayoutVariantSchema,
@@ -58,5 +82,10 @@ export {
   ProfileMembersSectionSchema,
   ProfileGallerySectionSchema,
   ProfileRelatedSectionSchema,
-  ProfileTemplateDefaultSchema,
+  ProfileActionsSectionSchema,
+  ProfileEventDatesSectionSchema,
+  ProfileBadgesSectionSchema,
+  ProfileTagsSectionSchema,
+  ProfileOpeningHoursSectionSchema,
+  ProfileTabLayoutSectionSchema,
 } from "./schema";

@@ -1,4 +1,4 @@
-import type { SearchEntity } from "@/modules/search/schema";
+import type { SearchEntity } from "@communecter/cocolight-api-client";
 
 /**
  * Type guard pour vérifier si les données sont une instance d'entité

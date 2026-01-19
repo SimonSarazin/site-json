@@ -13,7 +13,7 @@ import { ProfileEntityProvider } from "../contexts/ProfileEntityProvider";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import "@/modules/profil/i18n";
-import { useEntityBySlugQuery } from "../hooks/useEntityBySlugQuery";
+import { useEntityBySlugQuery } from "@/hooks/useEntityBySlugQuery";
 
 /**
  * Type guard pour vérifier si entityType est une clé valide de ProfilesConfig
@@ -138,7 +138,7 @@ export default function ProfilePage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col">
-        <ProfileSeo entity={null} isLoading={true} entityType="default" activeTab={activeTab} />
+        <ProfileSeo entity={null} isLoading={true} entityType="default" activeTab={activeTab} profileConfig={null} />
         <SiteHeader />
         <main className="flex-1">
           <div className="container mx-auto px-4 py-8">
@@ -153,7 +153,7 @@ export default function ProfilePage() {
   if (isError) {
     return (
       <>
-        <ProfileSeo entity={null} isLoading={false} entityType="default" activeTab={activeTab} />
+        <ProfileSeo entity={null} isLoading={false} entityType="default" activeTab={activeTab} profileConfig={null} />
         <div className="container mx-auto px-4 py-8">
           <Card className="border-destructive">
             <CardHeader>
@@ -175,7 +175,7 @@ export default function ProfilePage() {
   if (!entity) {
     return (
       <>
-        <ProfileSeo entity={null} isLoading={false} entityType="default" activeTab={activeTab} />
+        <ProfileSeo entity={null} isLoading={false} entityType="default" activeTab={activeTab} profileConfig={null} />
         <div className="container mx-auto px-4 py-8">
           <Card>
             <CardHeader>
@@ -232,7 +232,7 @@ export default function ProfilePage() {
 
   return (
     <div className={`min-h-screen flex flex-col ${getLayoutClasses(layout)}`}>
-      <ProfileSeo entity={entity} isLoading={false} entityType={entityType} activeTab={activeTab} />
+      <ProfileSeo entity={entity} isLoading={false} entityType={entityType} activeTab={activeTab} profileConfig={profileConfig} />
       {!profileConfig.hideHeader && <SiteHeader />}
 
       <main className="flex-1 mt-1">
