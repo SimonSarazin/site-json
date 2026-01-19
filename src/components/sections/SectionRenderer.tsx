@@ -22,6 +22,12 @@ const LazySections: {
 } = {
   hero: lazy(() => import("./HeroSection")),
   "hero-tiers-lieux": lazy(() => import("./HeroTiersLieux")),
+  "hero-rezo-la-mer": lazy(() => import("./HeroRezoLaMer")),
+  "features-rezo-la-mer": lazy(() => import("./FeaturesRezoLaMer")),
+  "action-buttons-rezo-la-mer": lazy(() => import("./ActionButtonsRezoLaMer")),
+  "community-rezo-la-mer": lazy(() => import("./CommunityRezoLaMer")),
+  "cta-rezo-la-mer": lazy(() => import("./CallToActionRezoLaMer")),
+  "title-with-filters-rezo-la-mer": lazy(() => import("./TitleWithFiltersRezoLaMer")),
   markdown: lazy(() => import("./MarkdownSection")),
   cards: lazy(() => import("./CardsSection")),
   gallery: lazy(() => import("./GallerySection")),

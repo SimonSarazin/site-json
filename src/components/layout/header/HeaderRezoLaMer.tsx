@@ -1,0 +1,372 @@
+import { useState, useEffect } from "react";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { useT } from "@/hooks/useT";
+import { useLocalization } from "@/hooks/useLocalization";
+import { Header, LocalizedString } from "@/types/site-schema";
+import { ChevronDown, User, LogOut, Globe, Bell, Menu, X } from "lucide-react";
+import { Link, useNavigate, useLocation } from "react-router";
+import { useCocolight } from "@/hooks/useCocolight";
+import { ClientOnly } from "../ClientOnly";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+    Dialog,
+    DialogContent,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import LoginForm from "@/components/auth/LoginForm";
+import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
+import { useReactiveProperty } from "@/hooks/useReactiveProperty";
+
+interface HeaderRezoLaMerProps {
+    header: Header & {
+        logoTitle?: LocalizedString;
+        logoIcon?: string;
+        ctaButton?: {
+            label: LocalizedString;
+            path?: string;
+        };
+        piggyBank?: {
+            amount?: string;
+            icon?: string;
+            path?: string;
+        };
+    };
+}
+
+export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
+    useLoadNamespace("components/layout");
+    const t = useT("components/layout");
+    const { currentLocale, setLocale, availableLocales } = useLocalization();
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { me, api } = useCocolight();
+
+    const isNavItemActive = (itemPath?: string) => {
+        if (!itemPath) return false;
+        if (itemPath === "/" && location.pathname === "/") return true;
+        if (itemPath !== "/" && location.pathname.startsWith(itemPath)) return true;
+        return false;
+    };
+
+    useEffect(() => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    }, [location.pathname]);
+
+    const profilThumbImageUrl = useReactiveProperty<string>(me?.serverData, 'profilThumbImageUrl') ?? null;
+    const name = useReactiveProperty<string>(me?.serverData, 'name') ?? null;
+    const email = useReactiveProperty<string>(me?.serverData, 'email') ?? null;
+
+    const [loginDialogOpen, setLoginDialogOpen] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [isScrolled, setIsScrolled] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 50);
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        handleScroll();
+
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    const handleLogout = () => {
+        if (!api) return;
+        try {
+            api.logout();
+            navigate('/');
+        } catch (err) {
+            console.error('Logout error', err);
+        }
+    };
+
+    const getProfileUrl = () => {
+        if (!me?.serverData?.slug) return '/profile';
+        return `/profil/${me.serverData.slug}`;
+    };
+
+    return (
+        <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-ocean-deep/90 backdrop-blur-ocean shadow-ocean' : 'bg-transparent'}`}>
+            <div className="container mx-auto px-4">
+                <div className="flex items-center justify-between h-20">
+                    <Link to={header.path || "/"} className="flex items-center gap-3 cursor-pointer group">
+                        {header.logo ? (
+                            <img
+                                src={`/${header.logo}`}
+                                alt={header.logoAlt ? t(header.logoAlt) : ""}
+                                className="h-8 w-8 object-contain group-hover:scale-110 transition-transform"
+                            />
+                        ) : header.logoIcon ? (
+                            <span
+                                className="w-8 h-8 text-turquoise group-hover:scale-110 transition-transform flex items-center justify-center [&>svg]:w-8 [&>svg]:h-8"
+                                dangerouslySetInnerHTML={{ __html: header.logoIcon }}
+                            />
+                        ) : null}
+                        {header.logoTitle && (
+                            <span className="text-xl font-bold text-ocean-text-light">{t(header.logoTitle)}</span>
+                        )}
+                    </Link>
+
+                    <div className="hidden md:flex items-center gap-8">
+                        {header.nav.map((item, idx) => {
+                            const isActive = isNavItemActive(item.path);
+                            return (
+                                <Link
+                                    key={idx}
+                                    to={item.path || "#"}
+                                    className={`transition-colors font-medium relative group ${isActive ? 'text-turquoise' : 'text-ocean-text-muted hover:text-turquoise'}`}
+                                >
+                                    {t(item.label)}
+                                    <span className={`absolute -bottom-1 left-0 h-0.5 bg-turquoise transition-all ${isActive ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
+                                </Link>
+                            );
+                        })}
+
+                        {header.piggyBank && (
+                            <Link
+                                to={header.piggyBank.path || "#"}
+                                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-turquoise/20 hover:bg-turquoise/30 text-turquoise transition-all group"
+                            >
+                                {header.piggyBank.icon ? (
+                                    <span
+                                        className="w-5 h-5 group-hover:scale-110 transition-transform flex items-center justify-center [&>svg]:w-5 [&>svg]:h-5"
+                                        dangerouslySetInnerHTML={{ __html: header.piggyBank.icon }}
+                                    />
+                                ) : null}
+                                {header.piggyBank.amount && (
+                                    <span className="font-semibold text-sm">{header.piggyBank.amount}</span>
+                                )}
+                            </Link>
+                        )}
+
+                        {header.utilities?.notifications && (
+                            <button
+                                className="relative p-2 text-ocean-text-muted hover:text-turquoise transition-colors"
+                                aria-label="Notifications"
+                            >
+                                <Bell className="w-5 h-5" />
+                                <span className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center rounded-full bg-turquoise text-ocean-deep text-xs font-semibold pulse">
+                                    3
+                                </span>
+                            </button>
+                        )}
+
+                        <ClientOnly fallback={<div className="w-10 h-10" />}>
+                            {() => <ToggleButtonTheme />}
+                        </ClientOnly>
+
+                        {header.utilities?.langSwitch && availableLocales.length > 1 && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="gap-2 text-ocean-text-muted hover:text-turquoise hover:bg-turquoise/10">
+                                        <Globe className="h-4 w-4" />
+                                        {currentLocale.toUpperCase()}
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="bg-ocean-deep border-ocean-mid">
+                                    {availableLocales.map(loc => (
+                                        <DropdownMenuItem
+                                            key={loc}
+                                            onClick={() => setLocale(loc)}
+                                            className={`text-ocean-text-muted hover:text-turquoise hover:bg-ocean-mid/50 ${loc === currentLocale ? 'bg-ocean-mid/30' : ''}`}
+                                        >
+                                            {loc.toUpperCase()}
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
+                    </div>
+
+                    <div className="hidden md:block">
+                        {header.utilities?.auth && (
+                            <ClientOnly fallback={<Button variant="ghost" disabled size="sm">…</Button>}>
+                                {() => (
+                                    <>
+                                        {me?.isConnected ? (
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <button className="flex items-center gap-2 px-4 py-2 bg-turquoise hover:bg-turquoise/90 text-ocean-deep rounded-md font-medium shadow-glow transition-all">
+                                                        {profilThumbImageUrl ? (
+                                                            <img
+                                                                src={profilThumbImageUrl}
+                                                                alt={name || 'Profile'}
+                                                                className="w-6 h-6 rounded-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <User className="w-4 h-4" />
+                                                        )}
+                                                        <span className="truncate max-w-25">
+                                                            {name || email || t('Mon compte')}
+                                                        </span>
+                                                        <ChevronDown className="w-3 h-3" />
+                                                    </button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end" className="w-56 bg-ocean-deep border-ocean-mid">
+                                                    <DropdownMenuItem onClick={() => navigate(getProfileUrl())} className="text-ocean-text-muted hover:text-turquoise hover:bg-ocean-mid/50">
+                                                        <User className="mr-2 h-4 w-4" />
+                                                        {t('Profil')}
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={handleLogout} className="text-ocean-text-muted hover:text-turquoise hover:bg-ocean-mid/50">
+                                                        <LogOut className="mr-2 h-4 w-4" />
+                                                        {t('Se déconnecter')}
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        ) : (
+                                            <button
+                                                className="px-4 py-2 bg-turquoise hover:bg-turquoise/90 text-ocean-deep rounded-md font-medium shadow-glow transition-all"
+                                                onClick={() => setLoginDialogOpen(true)}
+                                            >
+                                                {header.ctaButton ? t(header.ctaButton.label) : t('Rejoindre')}
+                                            </button>
+                                        )}
+                                    </>
+                                )}
+                            </ClientOnly>
+                        )}
+                        {!header.utilities?.auth && header.ctaButton && (
+                            <Link
+                                to={header.ctaButton.path || "#"}
+                                className="px-4 py-2 bg-turquoise hover:bg-turquoise/90 text-ocean-deep rounded-md font-medium shadow-glow transition-all"
+                            >
+                                {t(header.ctaButton.label)}
+                            </Link>
+                        )}
+                    </div>
+
+                    <div className="md:hidden flex items-center gap-2">
+                        <ClientOnly fallback={<div className="w-8 h-8" />}>
+                            {() => <ToggleButtonTheme />}
+                        </ClientOnly>
+                        <button
+                            className="p-2 text-ocean-text-muted hover:text-turquoise"
+                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                            aria-label="Toggle menu"
+                        >
+                            {mobileMenuOpen ? (
+                                <X className="w-6 h-6" />
+                            ) : (
+                                <Menu className="w-6 h-6" />
+                            )}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {mobileMenuOpen && (
+            <div className="md:hidden bg-ocean-deep/95 backdrop-blur-ocean border-t border-ocean-mid/50 animate-fade-in-up">
+                <div className="container mx-auto px-4 py-4 space-y-3">
+                    {header.nav.map((item, idx) => {
+                        const isActive = isNavItemActive(item.path);
+                        return (
+                            <Link
+                                key={idx}
+                                to={item.path || "#"}
+                                className={`block py-2 transition-colors ${isActive ? 'text-turquoise font-medium' : 'text-ocean-text-muted hover:text-turquoise'}`}
+                                onClick={() => setMobileMenuOpen(false)}
+                            >
+                                {t(item.label)}
+                            </Link>
+                        );
+                    })}
+
+                    {header.utilities?.langSwitch && availableLocales.length > 1 && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="gap-2 w-full justify-start text-ocean-text-muted hover:text-turquoise hover:bg-turquoise/10">
+                                    <Globe className="h-4 w-4" />
+                                    {currentLocale.toUpperCase()}
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="bg-ocean-deep border-ocean-mid">
+                                {availableLocales.map(loc => (
+                                    <DropdownMenuItem
+                                        key={loc}
+                                        onClick={() => setLocale(loc)}
+                                        className={`text-ocean-text-muted hover:text-turquoise hover:bg-ocean-mid/50 ${loc === currentLocale ? 'bg-ocean-mid/30' : ''}`}
+                                    >
+                                        {loc.toUpperCase()}
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
+
+                    {header.utilities?.auth && (
+                        <ClientOnly fallback={<div className="h-10" />}>
+                            {() => (
+                                <>
+                                    {me?.isConnected ? (
+                                        <div className="space-y-2 pt-2 border-t border-ocean-mid/30">
+                                            <button
+                                                onClick={() => {
+                                                    navigate(getProfileUrl());
+                                                    setMobileMenuOpen(false);
+                                                }}
+                                                className="w-full text-left py-2 text-ocean-text-muted hover:text-turquoise flex items-center gap-2"
+                                            >
+                                                <User className="w-4 h-4" />
+                                                {t('Profil')}
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    handleLogout();
+                                                    setMobileMenuOpen(false);
+                                                }}
+                                                className="w-full text-left py-2 text-ocean-text-muted hover:text-turquoise flex items-center gap-2"
+                                            >
+                                                <LogOut className="w-4 h-4" />
+                                                {t('Se déconnecter')}
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <button
+                                            className="w-full mt-4 px-4 py-2 bg-turquoise text-ocean-deep rounded-md font-medium"
+                                            onClick={() => {
+                                                setLoginDialogOpen(true);
+                                                setMobileMenuOpen(false);
+                                            }}
+                                        >
+                                            {header.ctaButton ? t(header.ctaButton.label) : t('Rejoindre')}
+                                        </button>
+                                    )}
+                                </>
+                            )}
+                        </ClientOnly>
+                    )}
+                    {!header.utilities?.auth && header.ctaButton && (
+                        <Link
+                            to={header.ctaButton.path || "#"}
+                            className="w-full mt-4 px-4 py-2 bg-turquoise text-ocean-deep rounded-md font-medium text-center block"
+                            onClick={() => setMobileMenuOpen(false)}
+                        >
+                            {t(header.ctaButton.label)}
+                        </Link>
+                    )}
+                </div>
+            </div>
+            )}
+
+            <Dialog open={loginDialogOpen} onOpenChange={setLoginDialogOpen}>
+                <DialogContent className="sm:max-w-md bg-card border-border">
+                    <DialogTitle className="sr-only">{t('Se connecter')}</DialogTitle>
+                    <LoginForm
+                        onSuccess={() => setLoginDialogOpen(false)}
+                        hideBackButton={true}
+                    />
+                </DialogContent>
+            </Dialog>
+        </nav>
+    );
+}

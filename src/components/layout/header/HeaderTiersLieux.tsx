@@ -86,7 +86,7 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
 
 
                                     {hasChildren && item.children && (
-                                        <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-screen max-w-2xl bg-popover text-popover-foreground rounded-xl shadow-2xl border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-8 z-[60]">
+                                        <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-screen max-w-2xl bg-popover text-popover-foreground rounded-xl shadow-2xl border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-8 z-60">
                                             {t(item.label) === "Les lieux" ? (
                                                 <div className="grid grid-cols-3 gap-8">
                                                     <Link to="/lieux" className="text-primary font-semibold flex items-center gap-2">
@@ -195,7 +195,7 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                                                                 </div>
                                                             )}
                                                             <span className="text-muted-foreground hidden lg:inline">|</span>
-                                                            <span className="font-medium text-foreground truncate max-w-[70px] lg:max-w-[120px]">
+                                                            <span className="font-medium text-foreground truncate max-w-17.5 lg:max-w-30">
                                                                 {name || email || t('Mon compte')}
                                                             </span>
                                                             <ChevronDown className="w-3 h-3 text-foreground shrink-0" />
@@ -283,7 +283,7 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                 </div>
 
                 {mobileMenuOpen && (
-                    <div className="md:hidden absolute left-0 right-0 top-full bg-popover text-popover-foreground border-b border-border shadow-lg max-h-[calc(100vh-4rem)] overflow-y-auto z-[55]">
+                    <div className="md:hidden absolute left-0 right-0 top-full bg-popover text-popover-foreground border-b border-border shadow-lg max-h-[calc(100vh-4rem)] overflow-y-auto z-55">
                         <div className="px-4 py-4 space-y-4">
                             {header.nav.map((item, idx) => (
                                 <div key={idx} className="space-y-2">

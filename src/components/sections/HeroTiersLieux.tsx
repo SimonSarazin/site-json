@@ -164,7 +164,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
 
   if (!isFullStyle) {
     return (
-      <section className="relative min-h-[450px] md:min-h-[500px] flex flex-col -mt-10">
+      <section className="relative min-h-112.5 md:min-h-125 flex flex-col -mt-10">
         <div className="relative z-10 flex-1 flex items-center justify-center">
           <div className="container mx-auto px-4 sm:px-6">
             <div className="max-w-6xl mx-auto">
@@ -178,7 +178,6 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                 <T k={props.headline} as="h1" className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-4 sm:mb-6 text-center px-2" />
 
                 <div className="relative">
-                  {/* Mobile: Stack vertically */}
                   <div className="flex flex-col sm:flex-row gap-2 sm:gap-0 shadow-xl rounded-2xl sm:rounded-full overflow-hidden">
                     <div className="relative w-full sm:w-auto">
                       <select
@@ -301,7 +300,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
   }
 
   return (
-    <section className="relative min-h-[450px] md:min-h-[500px] flex flex-col -mt-10">
+    <section className="relative min-h-112.5 md:min-h-125 flex flex-col -mt-10">
       <div className="relative z-10 flex-1 flex items-center justify-center">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="max-w-6xl mx-auto">
