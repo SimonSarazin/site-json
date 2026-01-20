@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocalization } from "@/hooks/useLocalization";
 import { LocalizedString } from "@/types/site-schema";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { Link } from "react-router";
+import { usePageFiltersOptional } from "@/contexts/PageFiltersContext";
 
 export interface ActionButton {
     label: LocalizedString;
@@ -46,10 +47,29 @@ const getButtonClasses = (variant?: string) => {
 export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaMerSectionProps) {
     const { t } = useLocalization();
     const [activeCategory, setActiveCategory] = useState("all");
-    const [searchQuery, setSearchQuery] = useState("");
+    const pageFilters = usePageFiltersOptional();
+    const setSearchQuery = pageFilters?.setSearchQuery ?? (() => {});
+
+    const [localSearchQuery, setLocalSearchQuery] = useState(pageFilters?.searchQuery ?? "");
+    const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useEffect(() => {
+        if (debounceRef.current) {
+            clearTimeout(debounceRef.current);
+        }
+        debounceRef.current = setTimeout(() => {
+            setSearchQuery(localSearchQuery);
+        }, 1000);
+
+        return () => {
+            if (debounceRef.current) {
+                clearTimeout(debounceRef.current);
+            }
+        };
+    }, [localSearchQuery, setSearchQuery]);
 
     return (
-        <section id={id} className="relative py-20 px-4 bg-ocean-gradient overflow-hidden">
+        <section id={id} className="relative pt-10 px-4 bg-ocean-gradient overflow-hidden">
             <div className="absolute inset-0 opacity-10">
                 <div className="absolute top-10 left-10 w-64 h-64 bg-primary rounded-full blur-3xl animate-float" />
                 <div
@@ -108,8 +128,8 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
                         <Input
                             type="search"
                             placeholder={props.searchPlaceholder ? t(props.searchPlaceholder) : "Rechercher..."}
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
+                            value={localSearchQuery}
+                            onChange={(e) => setLocalSearchQuery(e.target.value)}
                             className="pl-12 h-12 bg-secondary/40 backdrop-blur-ocean border-primary/30 focus:border-primary text-foreground placeholder:text-muted-foreground"
                         />
                     </div>

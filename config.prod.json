@@ -187,38 +187,74 @@
             "features": [
               {
                 "icon": "network",
-                "title": { "fr": "Connecter la communauté", "en": "Connect the community" },
-                "description": { "fr": "Un réseau vivant qui relie citoyens et associations autour de la passion commune de l'océan", "en": "A living network connecting citizens and associations around a shared passion for the ocean" },
+                "title": {
+                  "fr": "Connecter la communauté",
+                  "en": "Connect the community"
+                },
+                "description": {
+                  "fr": "Un réseau vivant qui relie citoyens et associations autour de la passion commune de l'océan",
+                  "en": "A living network connecting citizens and associations around a shared passion for the ocean"
+                },
                 "color": "primary"
               },
               {
                 "icon": "trending-up",
-                "title": { "fr": "Valoriser les projets", "en": "Promote projects" },
-                "description": { "fr": "Mettre en lumière les initiatives, leurs impacts réels et les actions de chacun·e", "en": "Highlight initiatives, their real impacts and everyone's actions" },
+                "title": {
+                  "fr": "Valoriser les projets",
+                  "en": "Promote projects"
+                },
+                "description": {
+                  "fr": "Mettre en lumière les initiatives, leurs impacts réels et les actions de chacun·e",
+                  "en": "Highlight initiatives, their real impacts and everyone's actions"
+                },
                 "color": "chart-2"
               },
               {
                 "icon": "users",
-                "title": { "fr": "Mobiliser les bénévoles", "en": "Mobilize volunteers" },
-                "description": { "fr": "Proposer des actions concrètes et fédérer une communauté volontaire et engagée", "en": "Offer concrete actions and unite a willing and engaged community" },
+                "title": {
+                  "fr": "Mobiliser les bénévoles",
+                  "en": "Mobilize volunteers"
+                },
+                "description": {
+                  "fr": "Proposer des actions concrètes et fédérer une communauté volontaire et engagée",
+                  "en": "Offer concrete actions and unite a willing and engaged community"
+                },
                 "color": "primary"
               },
               {
                 "icon": "database",
-                "title": { "fr": "Science participative", "en": "Citizen science" },
-                "description": { "fr": "Collecter et partager des données pour créer un jumeau numérique océanique", "en": "Collect and share data to create an oceanic digital twin" },
+                "title": {
+                  "fr": "Science participative",
+                  "en": "Citizen science"
+                },
+                "description": {
+                  "fr": "Collecter et partager des données pour créer un jumeau numérique océanique",
+                  "en": "Collect and share data to create an oceanic digital twin"
+                },
                 "color": "accent"
               },
               {
                 "icon": "share-2",
-                "title": { "fr": "Mutualiser les ressources", "en": "Pool resources" },
-                "description": { "fr": "Créer un commun de connaissances, d'outils et de ressources partagées", "en": "Create a commons of shared knowledge, tools and resources" },
+                "title": {
+                  "fr": "Mutualiser les ressources",
+                  "en": "Pool resources"
+                },
+                "description": {
+                  "fr": "Créer un commun de connaissances, d'outils et de ressources partagées",
+                  "en": "Create a commons of shared knowledge, tools and resources"
+                },
                 "color": "chart-2"
               },
               {
                 "icon": "vote",
-                "title": { "fr": "Gouvernance ouverte", "en": "Open governance" },
-                "description": { "fr": "Une approche démocratique et participative pour toutes les décisions", "en": "A democratic and participatory approach to all decisions" },
+                "title": {
+                  "fr": "Gouvernance ouverte",
+                  "en": "Open governance"
+                },
+                "description": {
+                  "fr": "Une approche démocratique et participative pour toutes les décisions",
+                  "en": "A democratic and participatory approach to all decisions"
+                },
                 "color": "primary"
               }
             ]
@@ -239,29 +275,53 @@
             "actions": [
               {
                 "icon": "plus-circle",
-                "title": { "fr": "Soumettre un projet", "en": "Submit a project" },
-                "subtitle": { "fr": "Proposez votre initiative", "en": "Propose your initiative" },
+                "title": {
+                  "fr": "Soumettre un projet",
+                  "en": "Submit a project"
+                },
+                "subtitle": {
+                  "fr": "Proposez votre initiative",
+                  "en": "Propose your initiative"
+                },
                 "href": "/proposer-projet",
                 "color": "primary"
               },
               {
                 "icon": "users",
-                "title": { "fr": "Participer", "en": "Participate" },
-                "subtitle": { "fr": "Études participatives", "en": "Participatory studies" },
+                "title": {
+                  "fr": "Participer",
+                  "en": "Participate"
+                },
+                "subtitle": {
+                  "fr": "Études participatives",
+                  "en": "Participatory studies"
+                },
                 "href": "/participer",
                 "color": "primary"
               },
               {
                 "icon": "alert-triangle",
-                "title": { "fr": "Actions", "en": "Actions" },
-                "subtitle": { "fr": "Actions prioritaires", "en": "Priority actions" },
+                "title": {
+                  "fr": "Actions",
+                  "en": "Actions"
+                },
+                "subtitle": {
+                  "fr": "Actions prioritaires",
+                  "en": "Priority actions"
+                },
                 "href": "/actions",
                 "color": "amber"
               },
               {
                 "icon": "coins",
-                "title": { "fr": "Co-financer", "en": "Co-finance" },
-                "subtitle": { "fr": "Soutenez un projet", "en": "Support a project" },
+                "title": {
+                  "fr": "Co-financer",
+                  "en": "Co-finance"
+                },
+                "subtitle": {
+                  "fr": "Soutenez un projet",
+                  "en": "Support a project"
+                },
                 "href": "/projets",
                 "color": "chart-2"
               }
@@ -288,38 +348,102 @@
             "actions": [
               {
                 "icon": "anchor",
-                "title": { "fr": "Proposer un projet", "en": "Propose a project" },
-                "description": { "fr": "Partagez votre initiative et trouvez du soutien", "en": "Share your initiative and find support" },
-                "ctaLabel": { "fr": "Soumettre un projet", "en": "Submit a project" },
+                "title": {
+                  "fr": "Proposer un projet",
+                  "en": "Propose a project"
+                },
+                "description": {
+                  "fr": "Partagez votre initiative et trouvez du soutien",
+                  "en": "Share your initiative and find support"
+                },
+                "ctaLabel": {
+                  "fr": "Soumettre un projet",
+                  "en": "Submit a project"
+                },
                 "href": "/proposer-projet"
               },
               {
                 "icon": "lightbulb",
-                "title": { "fr": "Contribuer aux données", "en": "Contribute data" },
-                "description": { "fr": "Participez à la science citoyenne océanique", "en": "Participate in ocean citizen science" },
-                "ctaLabel": { "fr": "Participer", "en": "Participate" },
+                "title": {
+                  "fr": "Contribuer aux données",
+                  "en": "Contribute data"
+                },
+                "description": {
+                  "fr": "Participez à la science citoyenne océanique",
+                  "en": "Participate in ocean citizen science"
+                },
+                "ctaLabel": {
+                  "fr": "Participer",
+                  "en": "Participate"
+                },
                 "href": "/participer"
               },
               {
                 "icon": "heart-handshake",
-                "title": { "fr": "Rejoindre une action", "en": "Join an action" },
-                "description": { "fr": "Trouvez des missions bénévoles près de vous", "en": "Find volunteer missions near you" },
-                "ctaLabel": { "fr": "Voir les actions", "en": "See actions" },
+                "title": {
+                  "fr": "Rejoindre une action",
+                  "en": "Join an action"
+                },
+                "description": {
+                  "fr": "Trouvez des missions bénévoles près de vous",
+                  "en": "Find volunteer missions near you"
+                },
+                "ctaLabel": {
+                  "fr": "Voir les actions",
+                  "en": "See actions"
+                },
                 "href": "/actions"
               },
               {
                 "icon": "git-branch",
-                "title": { "fr": "Co-financer", "en": "Co-finance" },
-                "description": { "fr": "Soutenez les projets qui vous inspirent", "en": "Support projects that inspire you" },
-                "ctaLabel": { "fr": "Découvrir", "en": "Discover" },
+                "title": {
+                  "fr": "Co-financer",
+                  "en": "Co-finance"
+                },
+                "description": {
+                  "fr": "Soutenez les projets qui vous inspirent",
+                  "en": "Support projects that inspire you"
+                },
+                "ctaLabel": {
+                  "fr": "Découvrir",
+                  "en": "Discover"
+                },
                 "href": "/projets"
               }
             ],
             "stats": [
-              { "value": "2.5K+", "label": { "fr": "Membres actifs", "en": "Active members" }, "color": "primary" },
-              { "value": "150+", "label": { "fr": "Projets en cours", "en": "Ongoing projects" }, "color": "primary" },
-              { "value": "85+", "label": { "fr": "Associations", "en": "Associations" }, "color": "chart-2" },
-              { "value": "12K+", "label": { "fr": "Données collectées", "en": "Data collected" }, "color": "primary" }
+              {
+                "value": "2.5K+",
+                "label": {
+                  "fr": "Membres actifs",
+                  "en": "Active members"
+                },
+                "color": "primary"
+              },
+              {
+                "value": "150+",
+                "label": {
+                  "fr": "Projets en cours",
+                  "en": "Ongoing projects"
+                },
+                "color": "primary"
+              },
+              {
+                "value": "85+",
+                "label": {
+                  "fr": "Associations",
+                  "en": "Associations"
+                },
+                "color": "chart-2"
+              },
+              {
+                "value": "12K+",
+                "label": {
+                  "fr": "Données collectées",
+                  "en": "Data collected"
+                },
+                "color": "primary"
+              }
             ]
           }
         },
@@ -349,12 +473,18 @@
             },
             "buttons": [
               {
-                "label": { "fr": "Explorer la plateforme", "en": "Explore the platform" },
+                "label": {
+                  "fr": "Explorer la plateforme",
+                  "en": "Explore the platform"
+                },
                 "href": "/explorer",
                 "variant": "outline"
               },
               {
-                "label": { "fr": "Contacter l'équipe", "en": "Contact the team" },
+                "label": {
+                  "fr": "Contacter l'équipe",
+                  "en": "Contact the team"
+                },
                 "href": "/contact",
                 "variant": "outline"
               }
@@ -385,19 +515,51 @@
             },
             "buttons": [
               {
-                "label": { "fr": "Proposer un projet", "en": "Submit a project" },
+                "label": {
+                  "fr": "Proposer un projet",
+                  "en": "Submit a project"
+                },
                 "icon": "plus",
                 "href": "/proposer-projet",
                 "variant": "primary"
               }
             ],
-            "categories": [
-              { "id": "all", "label": { "fr": "Tous", "en": "All" } },
-              { "id": "protection", "label": { "fr": "Protection", "en": "Protection" } },
-              { "id": "recherche", "label": { "fr": "Recherche", "en": "Research" } },
-              { "id": "innovation", "label": { "fr": "Innovation", "en": "Innovation" } },
-              { "id": "education", "label": { "fr": "Éducation", "en": "Education" } }
-            ]
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher...",
+              "en": "Search..."
+            }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "section-project-list",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "baseParams": {
+              "defaultTypes": [
+                "projects"
+              ],
+              "indexStepList": 5
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3,
+                "xl": 4
+              },
+              "card": {
+                "type": "rezo-la-mer",
+                "variant": "rezo-la-mer",
+                "detailsMode": "drawer"
+              }
+            }
           }
         }
       ]
@@ -438,7 +600,10 @@
             },
             "buttons": [
               {
-                "label": { "fr": "Proposer un événement", "en": "Submit an event" },
+                "label": {
+                  "fr": "Proposer un événement",
+                  "en": "Submit an event"
+                },
                 "icon": "calendar-plus",
                 "href": "/proposer-evenement",
                 "variant": "primary"
@@ -470,13 +635,19 @@
             },
             "buttons": [
               {
-                "label": { "fr": "Rejoindre la communauté", "en": "Join the community" },
+                "label": {
+                  "fr": "Rejoindre la communauté",
+                  "en": "Join the community"
+                },
                 "icon": "user",
                 "href": "/rejoindre",
                 "variant": "primary"
               },
               {
-                "label": { "fr": "Inscrire mon organisation", "en": "Register my organization" },
+                "label": {
+                  "fr": "Inscrire mon organisation",
+                  "en": "Register my organization"
+                },
                 "icon": "building-2",
                 "href": "/inscrire-organisation",
                 "variant": "outline"
@@ -508,7 +679,10 @@
             },
             "buttons": [
               {
-                "label": { "fr": "Proposer une ressource", "en": "Propose a resource" },
+                "label": {
+                  "fr": "Proposer une ressource",
+                  "en": "Propose a resource"
+                },
                 "icon": "anchor",
                 "href": "/proposer-ressource",
                 "variant": "primary"
@@ -520,11 +694,41 @@
               "en": "Search for a resource..."
             },
             "categories": [
-              { "id": "all", "label": { "fr": "Toutes", "en": "All" } },
-              { "id": "embarcation", "label": { "fr": "Embarcation", "en": "Boat" } },
-              { "id": "scientifique", "label": { "fr": "Matériel scientifique", "en": "Scientific equipment" } },
-              { "id": "video", "label": { "fr": "Équipement vidéo", "en": "Video equipment" } },
-              { "id": "documentation", "label": { "fr": "Documentation", "en": "Documentation" } }
+              {
+                "id": "all",
+                "label": {
+                  "fr": "Toutes",
+                  "en": "All"
+                }
+              },
+              {
+                "id": "embarcation",
+                "label": {
+                  "fr": "Embarcation",
+                  "en": "Boat"
+                }
+              },
+              {
+                "id": "scientifique",
+                "label": {
+                  "fr": "Matériel scientifique",
+                  "en": "Scientific equipment"
+                }
+              },
+              {
+                "id": "video",
+                "label": {
+                  "fr": "Équipement vidéo",
+                  "en": "Video equipment"
+                }
+              },
+              {
+                "id": "documentation",
+                "label": {
+                  "fr": "Documentation",
+                  "en": "Documentation"
+                }
+              }
             ]
           }
         }
@@ -865,12 +1069,24 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-about" },
-                { "type": "profile-organizer" },
-                { "type": "profile-event-dates" },
-                { "type": "profile-badges" },
-                { "type": "profile-tags" },
-                { "type": "profile-opening-hours" }
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-event-dates"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                },
+                {
+                  "type": "profile-opening-hours"
+                }
               ],
               "rightSections": [
                 {
@@ -901,7 +1117,9 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-gallery" }
+                {
+                  "type": "profile-gallery"
+                }
               ],
               "rightSections": [
                 {
@@ -925,7 +1143,9 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-map" }
+                {
+                  "type": "profile-map"
+                }
               ],
               "rightSections": [
                 {
@@ -973,12 +1193,24 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-event-dates" },
-                { "type": "profile-about" },
-                { "type": "profile-organizer" },
-                { "type": "profile-badges" },
-                { "type": "profile-tags" },
-                { "type": "profile-opening-hours" }
+                {
+                  "type": "profile-event-dates"
+                },
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                },
+                {
+                  "type": "profile-opening-hours"
+                }
               ],
               "rightSections": [
                 {
@@ -1030,7 +1262,9 @@
             "en": "Friends"
           },
           "condition": {
-            "entityTypes": ["citoyens"],
+            "entityTypes": [
+              "citoyens"
+            ],
             "userContext": "own"
           },
           "component": "SocialTab"
@@ -1042,7 +1276,9 @@
             "en": "Communities"
           },
           "condition": {
-            "entityTypes": ["citoyens"],
+            "entityTypes": [
+              "citoyens"
+            ],
             "userContext": "own"
           },
           "component": "MembershipTab"
@@ -1080,11 +1316,21 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-about" },
-                { "type": "profile-organizer" },
-                { "type": "profile-badges" },
-                { "type": "profile-tags" },
-                { "type": "profile-opening-hours" }
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                },
+                {
+                  "type": "profile-opening-hours"
+                }
               ],
               "rightSections": [
                 {
@@ -1139,7 +1385,11 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-members", "showRole": true, "showManagement": true }
+                {
+                  "type": "profile-members",
+                  "showRole": true,
+                  "showManagement": true
+                }
               ],
               "rightSections": [
                 {
@@ -1164,7 +1414,14 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-related", "relationType": "projects", "title": { "fr": "Projets", "en": "Projects" } }
+                {
+                  "type": "profile-related",
+                  "relationType": "projects",
+                  "title": {
+                    "fr": "Projets",
+                    "en": "Projects"
+                  }
+                }
               ],
               "rightSections": [
                 {
@@ -1188,7 +1445,14 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-related", "relationType": "events", "title": { "fr": "Événements", "en": "Events" } }
+                {
+                  "type": "profile-related",
+                  "relationType": "events",
+                  "title": {
+                    "fr": "Événements",
+                    "en": "Events"
+                  }
+                }
               ],
               "rightSections": [
                 {
@@ -1235,11 +1499,21 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-about" },
-                { "type": "profile-organizer" },
-                { "type": "profile-badges" },
-                { "type": "profile-tags" },
-                { "type": "profile-event-dates" }
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                },
+                {
+                  "type": "profile-event-dates"
+                }
               ],
               "rightSections": [
                 {
@@ -1294,7 +1568,11 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-members", "showRole": true, "showManagement": true }
+                {
+                  "type": "profile-members",
+                  "showRole": true,
+                  "showManagement": true
+                }
               ],
               "rightSections": [
                 {
@@ -1319,7 +1597,14 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-related", "relationType": "projects", "title": { "fr": "Organisations partenaires", "en": "Partner Organizations" } }
+                {
+                  "type": "profile-related",
+                  "relationType": "projects",
+                  "title": {
+                    "fr": "Organisations partenaires",
+                    "en": "Partner Organizations"
+                  }
+                }
               ],
               "rightSections": [
                 {
@@ -1343,7 +1628,14 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-related", "relationType": "events", "title": { "fr": "Événements", "en": "Events" } }
+                {
+                  "type": "profile-related",
+                  "relationType": "events",
+                  "title": {
+                    "fr": "Événements",
+                    "en": "Events"
+                  }
+                }
               ],
               "rightSections": [
                 {
@@ -1384,11 +1676,21 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-event-dates" },
-                { "type": "profile-about" },
-                { "type": "profile-organizer" },
-                { "type": "profile-badges" },
-                { "type": "profile-tags" }
+                {
+                  "type": "profile-event-dates"
+                },
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                }
               ],
               "rightSections": [
                 {
@@ -1419,8 +1721,12 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-event-dates" },
-                { "type": "profile-opening-hours" }
+                {
+                  "type": "profile-event-dates"
+                },
+                {
+                  "type": "profile-opening-hours"
+                }
               ],
               "rightSections": [
                 {
@@ -1445,7 +1751,9 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-map" }
+                {
+                  "type": "profile-map"
+                }
               ],
               "rightSections": [
                 {
@@ -1470,8 +1778,17 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-organizer" },
-                { "type": "profile-related", "relationType": "events", "title": { "fr": "Autres événements", "en": "Other events" } }
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-related",
+                  "relationType": "events",
+                  "title": {
+                    "fr": "Autres événements",
+                    "en": "Other events"
+                  }
+                }
               ],
               "rightSections": [
                 {
@@ -1496,7 +1813,9 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-gallery" }
+                {
+                  "type": "profile-gallery"
+                }
               ],
               "rightSections": [
                 {
@@ -1536,9 +1855,15 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-about" },
-                { "type": "profile-badges" },
-                { "type": "profile-tags" }
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                }
               ],
               "rightSections": [
                 {
@@ -1568,8 +1893,12 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-opening-hours" },
-                { "type": "profile-about" }
+                {
+                  "type": "profile-opening-hours"
+                },
+                {
+                  "type": "profile-about"
+                }
               ],
               "rightSections": [
                 {
@@ -1595,7 +1924,9 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-map" }
+                {
+                  "type": "profile-map"
+                }
               ],
               "rightSections": [
                 {
@@ -1620,7 +1951,9 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-gallery" }
+                {
+                  "type": "profile-gallery"
+                }
               ],
               "rightSections": [
                 {
