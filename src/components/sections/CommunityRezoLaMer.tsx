@@ -8,6 +8,7 @@ import { Link } from "react-router";
 export interface CommunityRezoLaMerProps {
     headline: LocalizedString;
     subhead?: LocalizedString;
+    variant?: "ocean" | "cyber";
     image?: string;
     imageAlt?: LocalizedString;
     actions: Array<{
@@ -31,6 +32,8 @@ interface CommunityRezoLaMerSectionProps {
 
 export function CommunityRezoLaMer({ id, props }: CommunityRezoLaMerSectionProps) {
     const { t } = useLocalization();
+    const variant = props.variant || "ocean";
+    const isCyber = variant === "cyber";
 
     const getStatColorClass = (color?: string) => {
         switch (color) {
@@ -43,6 +46,16 @@ export function CommunityRezoLaMer({ id, props }: CommunityRezoLaMerSectionProps
                 return "text-primary";
         }
     };
+
+    const cardClasses = isCyber
+        ? "p-6 bg-card/40 backdrop-blur-sm border-border/50 hover:bg-card/60 transition-all duration-300 hover:shadow-lg hover:-translate-y-2 animate-fade-in-up group"
+        : "p-6 bg-secondary/30 backdrop-blur-ocean border-primary/20 hover:bg-secondary/50 transition-all duration-300 hover:shadow-ocean hover:-translate-y-2 animate-fade-in-up group";
+
+    const statClasses = isCyber
+        ? "text-center p-6 rounded-lg bg-card/30 backdrop-blur-sm border border-border/30"
+        : "text-center p-6 rounded-lg bg-secondary/30 backdrop-blur-ocean border border-primary/20";
+
+    const imageShadow = isCyber ? "shadow-lg" : "shadow-ocean";
 
     return (
         <section id={id} className="relative py-24 px-4">
@@ -63,7 +76,7 @@ export function CommunityRezoLaMer({ id, props }: CommunityRezoLaMerSectionProps
                 </div>
 
                 {props.image && (
-                    <div className="mb-16 rounded-2xl overflow-hidden shadow-ocean animate-fade-in">
+                    <div className={`mb-16 rounded-2xl overflow-hidden ${imageShadow} animate-fade-in`}>
                         <img
                             src={props.image}
                             alt={props.imageAlt ? t(props.imageAlt) : ""}
@@ -76,7 +89,7 @@ export function CommunityRezoLaMer({ id, props }: CommunityRezoLaMerSectionProps
                     {props.actions.map((action, index) => (
                         <Card
                             key={index}
-                            className="p-6 bg-secondary/30 backdrop-blur-ocean border-primary/20 hover:bg-secondary/50 transition-all duration-300 hover:shadow-ocean hover:-translate-y-2 animate-fade-in-up group"
+                            className={cardClasses}
                             style={{ animationDelay: `${index * 100}ms` }}
                         >
                             <div className="text-center space-y-4">
@@ -112,7 +125,7 @@ export function CommunityRezoLaMer({ id, props }: CommunityRezoLaMerSectionProps
                         {props.stats.map((stat, index) => (
                             <div
                                 key={index}
-                                className="text-center p-6 rounded-lg bg-secondary/30 backdrop-blur-ocean border border-primary/20"
+                                className={statClasses}
                             >
                                 <div className={`text-4xl font-bold mb-2 ${getStatColorClass(stat.color)}`}>
                                     {stat.value}

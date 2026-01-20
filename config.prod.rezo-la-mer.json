@@ -654,6 +654,107 @@
               }
             ]
           }
+        },
+        {
+          "type": "tabs",
+          "id": "community-tabs",
+          "props": {
+            "defaultTab": "members",
+            "tabs": [
+              {
+                "id": "members",
+                "label": {
+                  "fr": "Membres",
+                  "en": "Members"
+                },
+                "icon": "users",
+                "content": [
+                  {
+                    "type": "searchProStatic",
+                    "id": "search-members",
+                    "props": {
+                      "useFilter": false,
+                      "showMap": false,
+                      "enableMap": false,
+                      "disableInfiniteScroll": false,
+                      "baseParams": {
+                        "defaultTypes": [
+                          "citoyens",
+                          "NGO",
+                          "LocalBusiness",
+                          "Group",
+                          "GovernmentOrganization",
+                          "Cooperative"
+                        ],
+                        "filters[preferences.toBeValidated.rezoLaMer][$exists]": false,
+                        "filters[links.memberOf.5a8d040040bb4eba04d62bdf][$exists]": true,
+                        "notSourceKey": 30
+                      },
+                      "list": {
+                        "columns": {
+                          "sm": 1,
+                          "md": 2,
+                          "lg": 3,
+                          "xl": 4
+                        },
+                        "card": {
+                          "type": "event",
+                          "variant": "event",
+                          "detailsMode": "drawer"
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "organizations",
+                "label": {
+                  "fr": "Organisations",
+                  "en": "Organizations"
+                },
+                "icon": "building-2",
+                "content": [
+                  {
+                    "type": "searchProStatic",
+                    "id": "search-organizations",
+                    "props": {
+                      "useFilter": true,
+                      "showMap": false,
+                      "enableMap": false,
+                      "disableInfiniteScroll": false,
+                      "showDetailedViewToggle": true,
+                      "baseParams": {
+                        "defaultTypes": [
+                          "NGO",
+                          "LocalBusiness",
+                          "Group",
+                          "GovernmentOrganization",
+                          "Cooperative"
+                        ],
+                        "filters[preferences.toBeValidated.rezoLaMer][$exists]": false,
+                        "filters[links.members.5a8d040040bb4eba04d62bdf][$exists]": true,
+                        "notSourceKey": true
+                      },
+                      "list": {
+                        "columns": {
+                          "sm": 1,
+                          "md": 2,
+                          "lg": 3,
+                          "xl": 4
+                        },
+                        "card": {
+                          "type": "event",
+                          "variant": "event",
+                          "detailsMode": "drawer"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
         }
       ]
     },

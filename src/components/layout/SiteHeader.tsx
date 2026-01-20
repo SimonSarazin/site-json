@@ -11,6 +11,7 @@ export function SiteHeader() {
     case "tiers-lieux":
       return <HeaderTiersLieux header={header} />;
     case "rezo-la-mer":
+    case "cyber-reunion":
       return <HeaderRezoLaMer header={header} />;
     case "default":
     default:

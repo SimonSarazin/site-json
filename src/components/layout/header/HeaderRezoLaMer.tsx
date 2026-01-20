@@ -36,6 +36,11 @@ interface HeaderRezoLaMerProps {
             icon?: string;
             path?: string;
         };
+        urgenceButton?: {
+            label: LocalizedString;
+            icon?: string;
+            path?: string;
+        };
     };
 }
 
@@ -146,6 +151,21 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                                 {header.piggyBank.amount && (
                                     <span className="font-semibold text-sm">{header.piggyBank.amount}</span>
                                 )}
+                            </Link>
+                        )}
+
+                        {header.urgenceButton && (
+                            <Link
+                                to={header.urgenceButton.path || "#"}
+                                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 text-accent transition-all group"
+                            >
+                                {header.urgenceButton.icon ? (
+                                    <span
+                                        className="w-5 h-5 group-hover:scale-110 transition-transform flex items-center justify-center [&>svg]:w-5 [&>svg]:h-5"
+                                        dangerouslySetInnerHTML={{ __html: header.urgenceButton.icon }}
+                                    />
+                                ) : null}
+                                <span className="font-semibold text-sm">{t(header.urgenceButton.label)}</span>
                             </Link>
                         )}
 
@@ -280,6 +300,24 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                             </Link>
                         );
                     })}
+
+                    {header.urgenceButton && (
+                        <Link
+                            to={header.urgenceButton.path || "#"}
+                            className="w-full flex items-center justify-between p-3 rounded-lg bg-accent/20 border border-accent/30 text-accent hover:bg-accent/30 transition-colors"
+                            onClick={() => setMobileMenuOpen(false)}
+                        >
+                            <span className="flex items-center gap-2">
+                                {header.urgenceButton.icon ? (
+                                    <span
+                                        className="w-5 h-5 flex items-center justify-center [&>svg]:w-5 [&>svg]:h-5"
+                                        dangerouslySetInnerHTML={{ __html: header.urgenceButton.icon }}
+                                    />
+                                ) : null}
+                                <span className="font-medium">{t(header.urgenceButton.label)}</span>
+                            </span>
+                        </Link>
+                    )}
 
                     {header.utilities?.langSwitch && availableLocales.length > 1 && (
                         <DropdownMenu>

@@ -11,12 +11,24 @@ interface HeroRezoLaMerProps {
 export function HeroRezoLaMer({ props }: HeroRezoLaMerProps) {
     const { t } = useLocalization();
     const [scrollY, setScrollY] = useState(0);
+    const variant = props.variant || "ocean";
+    const isCyber = variant === "cyber";
 
     useEffect(() => {
         const handleScroll = () => setScrollY(window.scrollY);
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
+
+    const getButtonClasses = (btnVariant?: "default" | "secondary" | "accent") => {
+        if (btnVariant === "secondary") {
+            return "px-8 py-4 text-lg font-medium border-2 border-foreground/50 bg-secondary/20 backdrop-blur-sm hover:bg-secondary/40 text-foreground rounded-md transition-all";
+        }
+        if (btnVariant === "accent") {
+            return "px-8 py-4 text-lg font-medium bg-accent hover:bg-accent/90 text-accent-foreground rounded-md shadow-lg hover:shadow-xl transition-all";
+        }
+        return "px-8 py-4 text-lg font-medium bg-primary hover:bg-primary/90 text-primary-foreground rounded-md shadow-lg hover:shadow-xl transition-all";
+    };
 
     return (
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background">
@@ -47,7 +59,7 @@ export function HeroRezoLaMer({ props }: HeroRezoLaMerProps) {
                                     dangerouslySetInnerHTML={{ __html: props.logoIcon }}
                                 />
                                 <span
-                                    className="absolute inset-0 animate-pulse-glow opacity-50 text-chart-2 flex items-center justify-center [&>svg]:w-20 [&>svg]:h-20"
+                                    className={`absolute inset-0 animate-pulse-glow opacity-50 flex items-center justify-center [&>svg]:w-20 [&>svg]:h-20 ${isCyber ? "text-accent" : "text-chart-2"}`}
                                     dangerouslySetInnerHTML={{ __html: props.logoIcon }}
                                 />
                             </div>
@@ -69,11 +81,11 @@ export function HeroRezoLaMer({ props }: HeroRezoLaMerProps) {
                             {props.badges.map((badge, idx) => (
                                 <div
                                     key={idx}
-                                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/30 backdrop-blur-ocean border border-primary/20"
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm border ${isCyber ? "bg-secondary/30 border-accent/30" : "bg-secondary/30 border-primary/20"}`}
                                 >
                                     {badge.icon && (
                                         <span
-                                            className="w-5 h-5 text-primary flex items-center justify-center [&>svg]:w-5 [&>svg]:h-5"
+                                            className={`w-5 h-5 flex items-center justify-center [&>svg]:w-5 [&>svg]:h-5 ${isCyber ? "text-accent" : "text-primary"}`}
                                             dangerouslySetInnerHTML={{ __html: badge.icon }}
                                         />
                                     )}
@@ -89,11 +101,7 @@ export function HeroRezoLaMer({ props }: HeroRezoLaMerProps) {
                                 <Link
                                     key={idx}
                                     to={btn.path || "#"}
-                                    className={
-                                        btn.variant === "secondary"
-                                            ? "px-8 py-4 text-lg font-medium border-2 border-foreground/50 bg-secondary/20 backdrop-blur-ocean hover:bg-secondary/40 text-foreground rounded-md transition-all"
-                                            : "px-8 py-4 text-lg font-medium bg-primary hover:bg-primary/90 text-primary-foreground rounded-md shadow-ocean hover:shadow-glow transition-all"
-                                    }
+                                    className={getButtonClasses(btn.variant)}
                                 >
                                     {t(btn.label)}
                                 </Link>

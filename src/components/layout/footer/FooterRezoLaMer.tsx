@@ -1,6 +1,6 @@
 import { useLocalization } from "@/hooks/useLocalization";
 import { Footer } from "@/types/site-schema";
-import { Waves, Facebook, Twitter, Instagram, Linkedin, Mail, Youtube } from "lucide-react";
+import { Waves, Shield, Facebook, Twitter, Instagram, Linkedin, Mail, Youtube, ExternalLink } from "lucide-react";
 import { Link } from "react-router";
 
 interface FooterRezoLaMerProps {
@@ -18,9 +18,24 @@ const socialIcons: Record<string, React.ComponentType<{ className?: string }>> =
 
 export default function FooterRezoLaMer({ footer }: FooterRezoLaMerProps) {
     const { t } = useLocalization();
+    const isCyber = footer.type === "cyber-reunion";
+
+    const footerClasses = isCyber
+        ? "bg-card border-t border-border/30"
+        : "bg-background border-t border-secondary/30";
+
+    const socialClasses = isCyber
+        ? "p-2 rounded-full bg-card hover:bg-primary/20 text-muted-foreground hover:text-primary transition-colors border border-border/50"
+        : "p-2 rounded-full bg-secondary/30 hover:bg-primary/20 text-muted-foreground hover:text-primary transition-colors";
+
+    const borderClasses = isCyber
+        ? "border-border/30"
+        : "border-secondary/30";
+
+    const DefaultIcon = isCyber ? Shield : Waves;
 
     return (
-        <footer className="bg-background border-t border-secondary/30">
+        <footer className={footerClasses}>
             <div className="container mx-auto px-4 py-16">
                 <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
                     <div className="lg:col-span-1">
@@ -37,7 +52,7 @@ export default function FooterRezoLaMer({ footer }: FooterRezoLaMerProps) {
                                     dangerouslySetInnerHTML={{ __html: footer.logoIcon }}
                                 />
                             ) : (
-                                <Waves className="w-8 h-8 text-primary" />
+                                <DefaultIcon className="w-8 h-8 text-primary" />
                             )}
                             {footer.logoTitle && (
                                 <span className="text-xl font-bold text-foreground">{t(footer.logoTitle)}</span>
@@ -45,13 +60,25 @@ export default function FooterRezoLaMer({ footer }: FooterRezoLaMerProps) {
                         </Link>
 
                         {footer.description && (
-                            <p className="text-muted-foreground mb-6">
+                            <p className="text-muted-foreground mb-4">
                                 {t(footer.description)}
                             </p>
                         )}
 
+                        {isCyber && footer.website && (
+                            <a
+                                href={footer.website}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 text-primary hover:underline text-sm mb-6"
+                            >
+                                {footer.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                                <ExternalLink className="w-4 h-4" />
+                            </a>
+                        )}
+
                         {footer.socials && footer.socials.length > 0 && (
-                            <div className="flex gap-3">
+                            <div className={`flex gap-3 ${isCyber ? 'mt-6' : ''}`}>
                                 {footer.socials.map((social, idx) => {
                                     const IconComponent = socialIcons[social.platform.toLowerCase()];
                                     return (
@@ -60,7 +87,7 @@ export default function FooterRezoLaMer({ footer }: FooterRezoLaMerProps) {
                                             href={social.url}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="p-2 rounded-full bg-secondary/30 hover:bg-primary/20 text-muted-foreground hover:text-primary transition-colors"
+                                            className={socialClasses}
                                             aria-label={social.platform}
                                         >
                                             {IconComponent ? (
@@ -94,7 +121,7 @@ export default function FooterRezoLaMer({ footer }: FooterRezoLaMerProps) {
                     ))}
                 </div>
 
-                <div className="pt-8 border-t border-secondary/30 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className={`pt-8 border-t ${borderClasses} flex flex-col md:flex-row justify-between items-center gap-4`}>
                     <p className="text-sm text-muted-foreground">
                         {t(footer.copyright)}
                     </p>
