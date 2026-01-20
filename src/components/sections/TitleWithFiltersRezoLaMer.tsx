@@ -36,10 +36,10 @@ const getButtonClasses = (variant?: string) => {
         case "primary":
             return "bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow";
         case "outline":
-            return "border-2 border-ocean-text-light/50 bg-ocean-deep/20 backdrop-blur-ocean hover:bg-ocean-deep/40 text-ocean-text-light";
+            return "border-2 border-foreground/50 bg-background/20 backdrop-blur-ocean hover:bg-background/40 text-foreground";
         case "turquoise":
         default:
-            return "bg-turquoise hover:bg-turquoise/90 text-ocean-deep shadow-glow";
+            return "bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow";
     }
 };
 
@@ -51,19 +51,19 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
     return (
         <section id={id} className="relative py-20 px-4 bg-ocean-gradient overflow-hidden">
             <div className="absolute inset-0 opacity-10">
-                <div className="absolute top-10 left-10 w-64 h-64 bg-turquoise rounded-full blur-3xl animate-float" />
+                <div className="absolute top-10 left-10 w-64 h-64 bg-primary rounded-full blur-3xl animate-float" />
                 <div
-                    className="absolute bottom-10 right-10 w-96 h-96 bg-cyan-bright rounded-full blur-3xl animate-float"
+                    className="absolute bottom-10 right-10 w-96 h-96 bg-chart-2 rounded-full blur-3xl animate-float"
                     style={{ animationDelay: "2s" }}
                 />
             </div>
 
             <div className="relative z-10 container mx-auto max-w-6xl text-center py-12 px-4">
-                <h1 className="text-4xl md:text-6xl font-bold mb-6 text-ocean-text-light animate-fade-in">
+                <h1 className="text-4xl md:text-6xl font-bold mb-6 text-foreground animate-fade-in">
                     {t(props.headline)}
                 </h1>
                 {props.subhead && (
-                    <p className="text-xl text-ocean-foam max-w-2xl mx-auto animate-fade-in">
+                    <p className="text-xl text-white/80 max-w-2xl mx-auto animate-fade-in">
                         {t(props.subhead)}
                     </p>
                 )}
@@ -103,14 +103,14 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
                     <div className="relative">
                         <DynamicIcon
                             name="search"
-                            className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-ocean-text-muted"
+                            className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground"
                         />
                         <Input
                             type="search"
                             placeholder={props.searchPlaceholder ? t(props.searchPlaceholder) : "Rechercher..."}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-12 h-12 bg-ocean-mid/40 backdrop-blur-ocean border-turquoise/30 focus:border-turquoise text-ocean-text-light placeholder:text-ocean-text-muted"
+                            className="pl-12 h-12 bg-secondary/40 backdrop-blur-ocean border-primary/30 focus:border-primary text-foreground placeholder:text-muted-foreground"
                         />
                     </div>
                 </div>
@@ -126,7 +126,7 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
                                     variant="outline"
                                     className={`px-4 py-2 cursor-pointer transition-all ${activeCategory === category.id
                                         ? "bg-primary text-primary-foreground border-primary"
-                                        : "bg-ocean-mid/30 text-ocean-text-light border-turquoise/30 hover:bg-primary hover:text-primary-foreground hover:border-primary"
+                                        : "bg-secondary/30 text-foreground border-primary/30 hover:bg-primary hover:text-primary-foreground hover:border-primary"
                                         }`}
                                     onClick={() => setActiveCategory(category.id)}
                                 >

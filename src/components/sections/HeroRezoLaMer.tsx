@@ -19,7 +19,7 @@ export function HeroRezoLaMer({ props }: HeroRezoLaMerProps) {
     }, []);
 
     return (
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-ocean-deep">
+        <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background">
             {props.backgroundImage && (
                 <div
                     className="absolute inset-0 z-0"
@@ -33,7 +33,7 @@ export function HeroRezoLaMer({ props }: HeroRezoLaMerProps) {
                         alt={props.backgroundImageAlt ? t(props.backgroundImageAlt) : ""}
                         className="w-full h-[120vh] object-cover"
                     />
-                    <div className="absolute inset-0 bg-linear-to-b from-ocean-deep/80 via-ocean-deep/60 to-ocean-deep" />
+                    <div className="absolute inset-0 bg-linear-to-b from-background/80 via-background/60 to-background" />
                 </div>
             )}
 
@@ -43,23 +43,23 @@ export function HeroRezoLaMer({ props }: HeroRezoLaMerProps) {
                         <div className="flex justify-center mb-6">
                             <div className="relative">
                                 <span
-                                    className="w-20 h-20 text-turquoise animate-float flex items-center justify-center [&>svg]:w-20 [&>svg]:h-20"
+                                    className="w-20 h-20 text-primary animate-float flex items-center justify-center [&>svg]:w-20 [&>svg]:h-20"
                                     dangerouslySetInnerHTML={{ __html: props.logoIcon }}
                                 />
                                 <span
-                                    className="absolute inset-0 animate-pulse-glow opacity-50 text-cyan-bright flex items-center justify-center [&>svg]:w-20 [&>svg]:h-20"
+                                    className="absolute inset-0 animate-pulse-glow opacity-50 text-chart-2 flex items-center justify-center [&>svg]:w-20 [&>svg]:h-20"
                                     dangerouslySetInnerHTML={{ __html: props.logoIcon }}
                                 />
                             </div>
                         </div>
                     )}
 
-                    <h1 className="text-5xl md:text-7xl font-bold text-ocean-text-light mb-6 leading-tight text-glow">
+                    <h1 className="text-5xl md:text-7xl font-bold text-foreground mb-6 leading-tight text-glow">
                         {t(props.headline)}
                     </h1>
 
                     {props.subhead && (
-                        <p className="text-xl md:text-2xl text-ocean-text-muted max-w-3xl mx-auto leading-relaxed">
+                        <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
                             {t(props.subhead)}
                         </p>
                     )}
@@ -69,15 +69,15 @@ export function HeroRezoLaMer({ props }: HeroRezoLaMerProps) {
                             {props.badges.map((badge, idx) => (
                                 <div
                                     key={idx}
-                                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-ocean-mid/30 backdrop-blur-ocean border border-turquoise/20"
+                                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/30 backdrop-blur-ocean border border-primary/20"
                                 >
                                     {badge.icon && (
                                         <span
-                                            className="w-5 h-5 text-turquoise flex items-center justify-center [&>svg]:w-5 [&>svg]:h-5"
+                                            className="w-5 h-5 text-primary flex items-center justify-center [&>svg]:w-5 [&>svg]:h-5"
                                             dangerouslySetInnerHTML={{ __html: badge.icon }}
                                         />
                                     )}
-                                    <span className="text-sm font-medium text-ocean-text-muted">{t(badge.label)}</span>
+                                    <span className="text-sm font-medium text-muted-foreground">{t(badge.label)}</span>
                                 </div>
                             ))}
                         </div>
@@ -91,8 +91,8 @@ export function HeroRezoLaMer({ props }: HeroRezoLaMerProps) {
                                     to={btn.path || "#"}
                                     className={
                                         btn.variant === "secondary"
-                                            ? "px-8 py-4 text-lg font-medium border-2 border-ocean-text-light/50 bg-ocean-mid/20 backdrop-blur-ocean hover:bg-ocean-mid/40 text-ocean-text-light rounded-md transition-all"
-                                            : "px-8 py-4 text-lg font-medium bg-turquoise hover:bg-turquoise/90 text-ocean-deep rounded-md shadow-ocean hover:shadow-glow transition-all"
+                                            ? "px-8 py-4 text-lg font-medium border-2 border-foreground/50 bg-secondary/20 backdrop-blur-ocean hover:bg-secondary/40 text-foreground rounded-md transition-all"
+                                            : "px-8 py-4 text-lg font-medium bg-primary hover:bg-primary/90 text-primary-foreground rounded-md shadow-ocean hover:shadow-glow transition-all"
                                     }
                                 >
                                     {t(btn.label)}
@@ -105,8 +105,8 @@ export function HeroRezoLaMer({ props }: HeroRezoLaMerProps) {
 
             {props.showScrollIndicator && (
                 <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 animate-bounce">
-                    <div className="w-6 h-10 border-2 border-turquoise/50 rounded-full flex items-start justify-center p-2">
-                        <div className="w-1 h-3 bg-turquoise rounded-full animate-pulse"></div>
+                    <div className="w-6 h-10 border-2 border-primary/50 rounded-full flex items-start justify-center p-2">
+                        <div className="w-1 h-3 bg-primary rounded-full animate-pulse"></div>
                     </div>
                 </div>
             )}

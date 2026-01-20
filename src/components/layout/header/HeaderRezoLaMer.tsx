@@ -96,7 +96,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
     };
 
     return (
-        <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-ocean-deep/90 backdrop-blur-ocean shadow-ocean' : 'bg-transparent'}`}>
+        <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-background/90 backdrop-blur-ocean shadow-ocean' : 'bg-transparent'}`}>
             <div className="container mx-auto px-4">
                 <div className="flex items-center justify-between h-20">
                     <Link to={header.path || "/"} className="flex items-center gap-3 cursor-pointer group">
@@ -108,12 +108,12 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                             />
                         ) : header.logoIcon ? (
                             <span
-                                className="w-8 h-8 text-turquoise group-hover:scale-110 transition-transform flex items-center justify-center [&>svg]:w-8 [&>svg]:h-8"
+                                className="w-8 h-8 text-primary group-hover:scale-110 transition-transform flex items-center justify-center [&>svg]:w-8 [&>svg]:h-8"
                                 dangerouslySetInnerHTML={{ __html: header.logoIcon }}
                             />
                         ) : null}
                         {header.logoTitle && (
-                            <span className="text-xl font-bold text-ocean-text-light">{t(header.logoTitle)}</span>
+                            <span className="text-xl font-bold text-foreground">{t(header.logoTitle)}</span>
                         )}
                     </Link>
 
@@ -124,10 +124,10 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                                 <Link
                                     key={idx}
                                     to={item.path || "#"}
-                                    className={`transition-colors font-medium relative group ${isActive ? 'text-turquoise' : 'text-ocean-text-muted hover:text-turquoise'}`}
+                                    className={`transition-colors font-medium relative group ${isActive ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
                                 >
                                     {t(item.label)}
-                                    <span className={`absolute -bottom-1 left-0 h-0.5 bg-turquoise transition-all ${isActive ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
+                                    <span className={`absolute -bottom-1 left-0 h-0.5 bg-primary transition-all ${isActive ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
                                 </Link>
                             );
                         })}
@@ -135,7 +135,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                         {header.piggyBank && (
                             <Link
                                 to={header.piggyBank.path || "#"}
-                                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-turquoise/20 hover:bg-turquoise/30 text-turquoise transition-all group"
+                                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/20 hover:bg-primary/30 text-primary transition-all group"
                             >
                                 {header.piggyBank.icon ? (
                                     <span
@@ -151,11 +151,11 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
 
                         {header.utilities?.notifications && (
                             <button
-                                className="relative p-2 text-ocean-text-muted hover:text-turquoise transition-colors"
+                                className="relative p-2 text-muted-foreground hover:text-primary transition-colors"
                                 aria-label="Notifications"
                             >
                                 <Bell className="w-5 h-5" />
-                                <span className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center rounded-full bg-turquoise text-ocean-deep text-xs font-semibold pulse">
+                                <span className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold pulse">
                                     3
                                 </span>
                             </button>
@@ -168,17 +168,17 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                         {header.utilities?.langSwitch && availableLocales.length > 1 && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="gap-2 text-ocean-text-muted hover:text-turquoise hover:bg-turquoise/10">
+                                    <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-primary hover:bg-primary/10">
                                         <Globe className="h-4 w-4" />
                                         {currentLocale.toUpperCase()}
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent className="bg-ocean-deep border-ocean-mid">
+                                <DropdownMenuContent className="bg-background border-secondary">
                                     {availableLocales.map(loc => (
                                         <DropdownMenuItem
                                             key={loc}
                                             onClick={() => setLocale(loc)}
-                                            className={`text-ocean-text-muted hover:text-turquoise hover:bg-ocean-mid/50 ${loc === currentLocale ? 'bg-ocean-mid/30' : ''}`}
+                                            className={`text-muted-foreground hover:text-primary hover:bg-secondary/50 ${loc === currentLocale ? 'bg-secondary/30' : ''}`}
                                         >
                                             {loc.toUpperCase()}
                                         </DropdownMenuItem>
@@ -196,7 +196,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                                         {me?.isConnected ? (
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <button className="flex items-center gap-2 px-4 py-2 bg-turquoise hover:bg-turquoise/90 text-ocean-deep rounded-md font-medium shadow-glow transition-all">
+                                                    <button className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md font-medium shadow-glow transition-all">
                                                         {profilThumbImageUrl ? (
                                                             <img
                                                                 src={profilThumbImageUrl}
@@ -212,12 +212,12 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                                                         <ChevronDown className="w-3 h-3" />
                                                     </button>
                                                 </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="w-56 bg-ocean-deep border-ocean-mid">
-                                                    <DropdownMenuItem onClick={() => navigate(getProfileUrl())} className="text-ocean-text-muted hover:text-turquoise hover:bg-ocean-mid/50">
+                                                <DropdownMenuContent align="end" className="w-56 bg-background border-secondary">
+                                                    <DropdownMenuItem onClick={() => navigate(getProfileUrl())} className="text-muted-foreground hover:text-primary hover:bg-secondary/50">
                                                         <User className="mr-2 h-4 w-4" />
                                                         {t('Profil')}
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={handleLogout} className="text-ocean-text-muted hover:text-turquoise hover:bg-ocean-mid/50">
+                                                    <DropdownMenuItem onClick={handleLogout} className="text-muted-foreground hover:text-primary hover:bg-secondary/50">
                                                         <LogOut className="mr-2 h-4 w-4" />
                                                         {t('Se déconnecter')}
                                                     </DropdownMenuItem>
@@ -225,7 +225,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                                             </DropdownMenu>
                                         ) : (
                                             <button
-                                                className="px-4 py-2 bg-turquoise hover:bg-turquoise/90 text-ocean-deep rounded-md font-medium shadow-glow transition-all"
+                                                className="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md font-medium shadow-glow transition-all"
                                                 onClick={() => setLoginDialogOpen(true)}
                                             >
                                                 {header.ctaButton ? t(header.ctaButton.label) : t('Rejoindre')}
@@ -238,7 +238,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                         {!header.utilities?.auth && header.ctaButton && (
                             <Link
                                 to={header.ctaButton.path || "#"}
-                                className="px-4 py-2 bg-turquoise hover:bg-turquoise/90 text-ocean-deep rounded-md font-medium shadow-glow transition-all"
+                                className="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md font-medium shadow-glow transition-all"
                             >
                                 {t(header.ctaButton.label)}
                             </Link>
@@ -250,7 +250,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                             {() => <ToggleButtonTheme />}
                         </ClientOnly>
                         <button
-                            className="p-2 text-ocean-text-muted hover:text-turquoise"
+                            className="p-2 text-muted-foreground hover:text-primary"
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                             aria-label="Toggle menu"
                         >
@@ -265,7 +265,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
             </div>
 
             {mobileMenuOpen && (
-            <div className="md:hidden bg-ocean-deep/95 backdrop-blur-ocean border-t border-ocean-mid/50 animate-fade-in-up">
+            <div className="md:hidden bg-background/95 backdrop-blur-ocean border-t border-secondary/50 animate-fade-in-up">
                 <div className="container mx-auto px-4 py-4 space-y-3">
                     {header.nav.map((item, idx) => {
                         const isActive = isNavItemActive(item.path);
@@ -273,7 +273,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                             <Link
                                 key={idx}
                                 to={item.path || "#"}
-                                className={`block py-2 transition-colors ${isActive ? 'text-turquoise font-medium' : 'text-ocean-text-muted hover:text-turquoise'}`}
+                                className={`block py-2 transition-colors ${isActive ? 'text-primary font-medium' : 'text-muted-foreground hover:text-primary'}`}
                                 onClick={() => setMobileMenuOpen(false)}
                             >
                                 {t(item.label)}
@@ -284,17 +284,17 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                     {header.utilities?.langSwitch && availableLocales.length > 1 && (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="gap-2 w-full justify-start text-ocean-text-muted hover:text-turquoise hover:bg-turquoise/10">
+                                <Button variant="ghost" size="sm" className="gap-2 w-full justify-start text-muted-foreground hover:text-primary hover:bg-primary/10">
                                     <Globe className="h-4 w-4" />
                                     {currentLocale.toUpperCase()}
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent className="bg-ocean-deep border-ocean-mid">
+                            <DropdownMenuContent className="bg-background border-secondary">
                                 {availableLocales.map(loc => (
                                     <DropdownMenuItem
                                         key={loc}
                                         onClick={() => setLocale(loc)}
-                                        className={`text-ocean-text-muted hover:text-turquoise hover:bg-ocean-mid/50 ${loc === currentLocale ? 'bg-ocean-mid/30' : ''}`}
+                                        className={`text-muted-foreground hover:text-primary hover:bg-secondary/50 ${loc === currentLocale ? 'bg-secondary/30' : ''}`}
                                     >
                                         {loc.toUpperCase()}
                                     </DropdownMenuItem>
@@ -308,13 +308,13 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                             {() => (
                                 <>
                                     {me?.isConnected ? (
-                                        <div className="space-y-2 pt-2 border-t border-ocean-mid/30">
+                                        <div className="space-y-2 pt-2 border-t border-secondary/30">
                                             <button
                                                 onClick={() => {
                                                     navigate(getProfileUrl());
                                                     setMobileMenuOpen(false);
                                                 }}
-                                                className="w-full text-left py-2 text-ocean-text-muted hover:text-turquoise flex items-center gap-2"
+                                                className="w-full text-left py-2 text-muted-foreground hover:text-primary flex items-center gap-2"
                                             >
                                                 <User className="w-4 h-4" />
                                                 {t('Profil')}
@@ -324,7 +324,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                                                     handleLogout();
                                                     setMobileMenuOpen(false);
                                                 }}
-                                                className="w-full text-left py-2 text-ocean-text-muted hover:text-turquoise flex items-center gap-2"
+                                                className="w-full text-left py-2 text-muted-foreground hover:text-primary flex items-center gap-2"
                                             >
                                                 <LogOut className="w-4 h-4" />
                                                 {t('Se déconnecter')}
@@ -332,7 +332,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                                         </div>
                                     ) : (
                                         <button
-                                            className="w-full mt-4 px-4 py-2 bg-turquoise text-ocean-deep rounded-md font-medium"
+                                            className="w-full mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md font-medium"
                                             onClick={() => {
                                                 setLoginDialogOpen(true);
                                                 setMobileMenuOpen(false);
@@ -348,7 +348,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                     {!header.utilities?.auth && header.ctaButton && (
                         <Link
                             to={header.ctaButton.path || "#"}
-                            className="w-full mt-4 px-4 py-2 bg-turquoise text-ocean-deep rounded-md font-medium text-center block"
+                            className="w-full mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md font-medium text-center block"
                             onClick={() => setMobileMenuOpen(false)}
                         >
                             {t(header.ctaButton.label)}

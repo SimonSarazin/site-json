@@ -169,7 +169,7 @@
           "type": "html",
           "id": "mission",
           "props": {
-            "html": "<section class=\"relative py-32 px-4 overflow-hidden\"><div class=\"absolute inset-0 z-0\"><img src=\"/images/rezoLaMer/whale-ocean.jpg\" alt=\"Baleine nageant paisiblement dans l'océan\" class=\"w-full h-full object-cover\" /><div class=\"absolute inset-0 bg-gradient-to-r from-ocean-deep via-ocean-deep/80 to-ocean-deep/60\"></div></div><div class=\"relative z-10 container mx-auto max-w-4xl\"><div class=\"space-y-8\"><h2 class=\"text-4xl md:text-5xl font-bold mb-6 text-ocean-text-light\">Notre mission</h2><div class=\"space-y-6 text-lg md:text-xl leading-relaxed\"><p class=\"text-ocean-text-muted\"><span class=\"text-primary font-semibold\">Rézo la mer</span> est bien plus qu'une plateforme : c'est un <span class=\"text-turquoise font-medium\">mouvement collectif</span> pour reconnecter l'humanité avec l'océan.</p><p class=\"text-ocean-text-muted\">Nous créons un <span class=\"text-cyan-bright font-medium\">espace numérique ouvert</span> où citoyens, associations, scientifiques et passionné·es peuvent se rencontrer, collaborer et agir ensemble pour la protection et la valorisation de nos océans.</p><div class=\"grid md:grid-cols-2 gap-6 pt-8\"><div class=\"p-6 rounded-lg bg-ocean-mid/30 backdrop-blur-ocean border border-turquoise/20\"><h3 class=\"text-2xl font-semibold mb-3 text-turquoise\">Approche collaborative</h3><p class=\"text-ocean-text-muted\">Construire ensemble les solutions de demain à travers le partage, la mutualisation et l'intelligence collective</p></div><div class=\"p-6 rounded-lg bg-ocean-mid/30 backdrop-blur-ocean border border-turquoise/20\"><h3 class=\"text-2xl font-semibold mb-3 text-cyan-bright\">Démocratie participative</h3><p class=\"text-ocean-text-muted\">Une gouvernance transparente et ouverte où chaque voix compte dans les décisions importantes</p></div></div></div></div></div></section>"
+            "html": "<section class=\"relative py-32 px-4 overflow-hidden\"><div class=\"absolute inset-0 z-0\"><img src=\"/images/rezoLaMer/whale-ocean.jpg\" alt=\"Baleine nageant paisiblement dans l'océan\" class=\"w-full h-full object-cover\" /><div class=\"absolute inset-0 bg-linear-to-r from-background via-background/80 to-background/60\"></div></div><div class=\"relative z-10 container mx-auto max-w-4xl\"><div class=\"space-y-8\"><h2 class=\"text-4xl md:text-5xl font-bold mb-6 text-foreground\">Notre mission</h2><div class=\"space-y-6 text-lg md:text-xl leading-relaxed\"><p class=\"text-muted-foreground\"><span class=\"text-primary font-semibold\">Rézo la mer</span> est bien plus qu'une plateforme : c'est un <span class=\"text-primary font-medium\">mouvement collectif</span> pour reconnecter l'humanité avec l'océan.</p><p class=\"text-muted-foreground\">Nous créons un <span class=\"text-chart-2 font-medium\">espace numérique ouvert</span> où citoyens, associations, scientifiques et passionné·es peuvent se rencontrer, collaborer et agir ensemble pour la protection et la valorisation de nos océans.</p><div class=\"grid md:grid-cols-2 gap-6 pt-8\"><div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-ocean border border-primary/20\"><h3 class=\"text-2xl font-semibold mb-3 text-primary\">Approche collaborative</h3><p class=\"text-muted-foreground\">Construire ensemble les solutions de demain à travers le partage, la mutualisation et l'intelligence collective</p></div><div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-ocean border border-primary/20\"><h3 class=\"text-2xl font-semibold mb-3 text-chart-2\">Démocratie participative</h3><p class=\"text-muted-foreground\">Une gouvernance transparente et ouverte où chaque voix compte dans les décisions importantes</p></div></div></div></div></div></section>"
           }
         },
         {
@@ -189,13 +189,13 @@
                 "icon": "network",
                 "title": { "fr": "Connecter la communauté", "en": "Connect the community" },
                 "description": { "fr": "Un réseau vivant qui relie citoyens et associations autour de la passion commune de l'océan", "en": "A living network connecting citizens and associations around a shared passion for the ocean" },
-                "color": "turquoise"
+                "color": "primary"
               },
               {
                 "icon": "trending-up",
                 "title": { "fr": "Valoriser les projets", "en": "Promote projects" },
                 "description": { "fr": "Mettre en lumière les initiatives, leurs impacts réels et les actions de chacun·e", "en": "Highlight initiatives, their real impacts and everyone's actions" },
-                "color": "cyan-bright"
+                "color": "chart-2"
               },
               {
                 "icon": "users",
@@ -207,13 +207,13 @@
                 "icon": "database",
                 "title": { "fr": "Science participative", "en": "Citizen science" },
                 "description": { "fr": "Collecter et partager des données pour créer un jumeau numérique océanique", "en": "Collect and share data to create an oceanic digital twin" },
-                "color": "turquoise-light"
+                "color": "accent"
               },
               {
                 "icon": "share-2",
                 "title": { "fr": "Mutualiser les ressources", "en": "Pool resources" },
                 "description": { "fr": "Créer un commun de connaissances, d'outils et de ressources partagées", "en": "Create a commons of shared knowledge, tools and resources" },
-                "color": "cyan-bright"
+                "color": "chart-2"
               },
               {
                 "icon": "vote",
@@ -249,7 +249,7 @@
                 "title": { "fr": "Participer", "en": "Participate" },
                 "subtitle": { "fr": "Études participatives", "en": "Participatory studies" },
                 "href": "/participer",
-                "color": "turquoise"
+                "color": "primary"
               },
               {
                 "icon": "alert-triangle",
@@ -263,7 +263,7 @@
                 "title": { "fr": "Co-financer", "en": "Co-finance" },
                 "subtitle": { "fr": "Soutenez un projet", "en": "Support a project" },
                 "href": "/projets",
-                "color": "cyan-bright"
+                "color": "chart-2"
               }
             ]
           }
@@ -317,8 +317,8 @@
             ],
             "stats": [
               { "value": "2.5K+", "label": { "fr": "Membres actifs", "en": "Active members" }, "color": "primary" },
-              { "value": "150+", "label": { "fr": "Projets en cours", "en": "Ongoing projects" }, "color": "turquoise" },
-              { "value": "85+", "label": { "fr": "Associations", "en": "Associations" }, "color": "cyan-bright" },
+              { "value": "150+", "label": { "fr": "Projets en cours", "en": "Ongoing projects" }, "color": "primary" },
+              { "value": "85+", "label": { "fr": "Associations", "en": "Associations" }, "color": "chart-2" },
               { "value": "12K+", "label": { "fr": "Données collectées", "en": "Data collected" }, "color": "primary" }
             ]
           }
@@ -388,7 +388,7 @@
                 "label": { "fr": "Proposer un projet", "en": "Submit a project" },
                 "icon": "plus",
                 "href": "/proposer-projet",
-                "variant": "turquoise"
+                "variant": "primary"
               }
             ],
             "categories": [
@@ -441,7 +441,7 @@
                 "label": { "fr": "Proposer un événement", "en": "Submit an event" },
                 "icon": "calendar-plus",
                 "href": "/proposer-evenement",
-                "variant": "turquoise"
+                "variant": "primary"
               }
             ]
           }
