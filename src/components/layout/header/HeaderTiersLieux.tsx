@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
+import { useLocalization } from "@/hooks/useLocalization";
 import { Header } from "@/types/site-schema";
-import { ChevronDown, User, LogOut, Settings } from "lucide-react";
+import { ChevronDown, User, LogOut, Settings, Globe } from "lucide-react";
 import { Link, useNavigate } from "react-router";
 import { useCocolight } from "@/hooks/useCocolight";
 import { ClientOnly } from "../ClientOnly";
@@ -29,6 +30,7 @@ interface HeaderTiersLieuxProps {
 export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
     useLoadNamespace("components/layout");
     const t = useT("components/layout");
+    const { currentLocale, setLocale, availableLocales } = useLocalization();
     const navigate = useNavigate();
     const { me, api } = useCocolight();
 
@@ -55,18 +57,17 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
     };
 
     return (
-        <header className={`${header.transparent ? "bg-transparent" : "bg-background"} rounded-b-2xl border-b border-border ${header.sticky ? "sticky top-0 z-30" : ""}`}>
+        <header className={`${header.transparent ? "bg-transparent" : "bg-background"} rounded-b-2xl border-b border-border ${header.sticky ? "sticky top-0 z-50" : ""}`}>
             <nav className="container mx-auto py-3 sm:py-4 px-4 sm:px-6">
                 <div className="flex items-center justify-between">
-                    <Link to={header.path || "/"} className="flex items-center space-x-2">
+                    <Link to={header.path || "/"} className="flex items-center shrink-0">
                         {header.logo && (
                             <img
                                 src={`/${header.logo}`}
                                 alt={header.logoAlt ? t(header.logoAlt) : ""}
                                 width={207}
                                 height={48}
-                                className="h-10 sm:h-12"
-                                style={{ aspectRatio: '207/48' }}
+                                className="h-8 xs:h-10 sm:h-12 w-auto max-w-35 xs:max-w-40 sm:max-w-none object-contain"
                             />
                         )}
                     </Link>
@@ -85,13 +86,13 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
 
 
                                     {hasChildren && item.children && (
-                                        <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-screen max-w-2xl bg-background rounded-xl shadow-2xl border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-8 z-50">
+                                        <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-screen max-w-2xl bg-popover text-popover-foreground rounded-xl shadow-2xl border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-8 z-60">
                                             {t(item.label) === "Les lieux" ? (
                                                 <div className="grid grid-cols-3 gap-8">
                                                     <Link to="/lieux" className="text-primary font-semibold flex items-center gap-2">
                                                         <div className="flex flex-col items-center justify-center border-r border-border pr-6">
-                                                            <div className="w-20 h-20 bg-yellow-400 rounded-full flex items-center justify-center mb-4">
-                                                                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <div className="w-20 h-20 bg-accent rounded-full flex items-center justify-center mb-4">
+                                                                <svg className="w-8 h-8 text-accent-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                                                 </svg>
                                                             </div>
@@ -151,6 +152,28 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                             {() => <ToggleButtonTheme />}
                         </ClientOnly>
 
+                        {header.utilities?.langSwitch && availableLocales.length > 1 && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="gap-2">
+                                        <Globe className="h-4 w-4" />
+                                        {currentLocale.toUpperCase()}
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    {availableLocales.map(loc => (
+                                        <DropdownMenuItem
+                                            key={loc}
+                                            onClick={() => setLocale(loc)}
+                                            className={loc === currentLocale ? 'bg-accent' : ''}
+                                        >
+                                            {loc.toUpperCase()}
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
+
                         {header.utilities?.auth && (
                             <ClientOnly fallback={<Button variant="ghost" disabled size="sm">…</Button>}>
                                 {() => (
@@ -172,7 +195,7 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                                                                 </div>
                                                             )}
                                                             <span className="text-muted-foreground hidden lg:inline">|</span>
-                                                            <span className="font-medium text-foreground truncate max-w-[70px] lg:max-w-[120px]">
+                                                            <span className="font-medium text-foreground truncate max-w-17.5 lg:max-w-30">
                                                                 {name || email || t('Mon compte')}
                                                             </span>
                                                             <ChevronDown className="w-3 h-3 text-foreground shrink-0" />
@@ -216,21 +239,42 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                         )}
                     </div>
 
-                    <div className="md:hidden flex items-center gap-2">
-                        <ClientOnly fallback={<div className="w-8 h-8" />}>
+                    <div className="md:hidden flex items-center gap-1 xs:gap-2 shrink-0">
+                        <ClientOnly fallback={<div className="w-7 h-7 xs:w-8 xs:h-8" />}>
                             {() => <ToggleButtonTheme />}
                         </ClientOnly>
+                        {header.utilities?.langSwitch && availableLocales.length > 1 && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="gap-0.5 xs:gap-1 px-1.5 xs:px-2 h-8">
+                                        <Globe className="h-3.5 w-3.5 xs:h-4 xs:w-4" />
+                                        <span className="text-xs xs:text-sm">{currentLocale.toUpperCase()}</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    {availableLocales.map(loc => (
+                                        <DropdownMenuItem
+                                            key={loc}
+                                            onClick={() => setLocale(loc)}
+                                            className={loc === currentLocale ? 'bg-accent' : ''}
+                                        >
+                                            {loc.toUpperCase()}
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
                         <button
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                            className="text-foreground hover:text-primary transition relative z-50 p-2"
+                            className="text-foreground hover:text-primary transition relative z-50 p-1.5 xs:p-2"
                             aria-label="Toggle menu"
                         >
                             {mobileMenuOpen ? (
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5 xs:w-6 xs:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             ) : (
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5 xs:w-6 xs:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                                 </svg>
                             )}
@@ -239,7 +283,7 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                 </div>
 
                 {mobileMenuOpen && (
-                    <div className="md:hidden absolute left-0 right-0 top-full bg-background border-b border-border shadow-lg max-h-[calc(100vh-4rem)] overflow-y-auto z-40">
+                    <div className="md:hidden absolute left-0 right-0 top-full bg-popover text-popover-foreground border-b border-border shadow-lg max-h-[calc(100vh-4rem)] overflow-y-auto z-55">
                         <div className="px-4 py-4 space-y-4">
                             {header.nav.map((item, idx) => (
                                 <div key={idx} className="space-y-2">
