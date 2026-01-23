@@ -1033,6 +1033,25 @@ export type ContentSection = z.infer<typeof ContentSectionSchema>;
 export type ContentSectionProps = z.infer<typeof ContentSectionSchema>["props"];
 
 //───────────────────────────────────────────────────────────────
+// Section Contributor
+//───────────────────────────────────────────────────────────────
+const ContributorSectionSchema = z.object({
+  type: z.literal("contributor"),
+  id: z.string().optional(),
+  props: z.object({
+    projectId: z.string(),
+    title: LocalizedString.optional(),
+    showRole: z.boolean().optional().default(true),
+    showManagement: z.boolean().optional().default(false),
+    showCard: z.boolean().optional().default(true), 
+    limit: z.number().optional(),
+  }),
+});
+
+export type ContributorSection = z.infer<typeof ContributorSectionSchema>;
+export type ContributorSectionProps = z.infer<typeof ContributorSectionSchema>["props"];
+
+//───────────────────────────────────────────────────────────────
 // Union de toutes les sections
 //───────────────────────────────────────────────────────────────
 export const Section = z.discriminatedUnion("type", [
@@ -1084,7 +1103,8 @@ export const Section = z.discriminatedUnion("type", [
   SearchProSectionSchema,
   SearchProStaticSectionSchema,
   GridLayoutSectionSchema,
-  NewsSectionSchema
+  NewsSectionSchema,
+  ContributorSectionSchema
 ]);
 export type Section = z.infer<typeof Section>;
 
@@ -1472,6 +1492,16 @@ export const SiteConfig = z.object({
     }).optional(),
   }).optional(),
   profiles: ProfilesConfigSchema,
+  floatingQRCode: z.object({
+    enabled: z.boolean().default(false),
+    url: z.string().optional(), 
+    position: z.enum(["bottom-right", "bottom-left", "top-right", "top-left"]).default("bottom-right"),
+    size: z.number().optional().default(80), 
+    expandedSize: z.number().optional().default(200), 
+    includeFavicon: z.boolean().optional().default(true),
+    bgColor: z.string().optional().default("#ffffff"), 
+    fgColor: z.string().optional().default("#000000"), 
+  }).optional(),
 });
 export type SiteConfig = z.infer<typeof SiteConfig>;
 

@@ -630,44 +630,17 @@
                 "icon": "users",
                 "content": [
                   {
-                    "type": "searchProStatic",
-                    "id": "search-contributeur",
+                    "type": "contributor",
+                    "id": "section-contributeurs",
                     "props": {
-                      "useFilter": false,
-                      "showMap": false,
-                      "enableMap": false,
-                      "disableInfiniteScroll": false,
-                      "baseParams": {
-                        "defaultTypes": [
-                          "citoyens",
-                          "NGO",
-                          "LocalBusiness",
-                          "Group",
-                          "GovernmentOrganization",
-                          "Cooperative"
-                        ],
-                        "contextType": "projects",
-                        "indexStep": 30,
-                        "notSourceKey": true,
-                        "defaultFilters": {
-                          "links.projects.6960bc282147791a69715b6b": {
-                            "$exists": true
-                          }
-                        }
+                      "projectId": "6960bc282147791a69715b6b",
+                      "title": {
+                        "fr": "Contributeurs du projet Cyber Réunion",
+                        "en": "Cyber Réunion Project Contributors"
                       },
-                      "list": {
-                        "columns": {
-                          "sm": 1,
-                          "md": 2,
-                          "lg": 3,
-                          "xl": 4
-                        },
-                        "card": {
-                          "type": "event",
-                          "variant": "event",
-                          "detailsMode": "drawer"
-                        }
-                      }
+                      "showRole": true,
+                      "showManagement": true,
+                      "showCard": false
                     }
                   }
                 ]
@@ -1952,5 +1925,15 @@
         }
       ]
     }
+  },
+  "floatingQRCode": {
+    "enabled": true,
+    "url": "https://cyber-reunion.communecter.org",
+    "position": "bottom-right",
+    "size": 80,
+    "expandedSize": 200,
+    "includeFavicon": true,
+    "bgColor": "#ffffff",
+    "fgColor": "#000000"
   }
 }
