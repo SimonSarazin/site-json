@@ -17,6 +17,8 @@ import { Link } from "react-router";
 import { usePageFiltersOptional } from "@/contexts/PageFiltersContext";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useRequestToJoin, useRequestToJoinAdmin } from "@/modules/profil/actions/mutations/relationship";
+import { AddProjectModal } from "@/modules/profil/components/add/AddProjectModal";
+import { AddEventModal } from "@/modules/profil/components/add/AddEventModal";
 import { toast } from "sonner";
 
 export interface ActionButton {
@@ -24,7 +26,7 @@ export interface ActionButton {
     icon?: string;
     href?: string;
     variant?: "default" | "outline" | "primary" | "turquoise";
-    action?: "join-dropdown";
+    action?: "join-dropdown" | "add-project" | "add-event";
 }
 
 export interface TitleWithFiltersRezoLaMerProps {
@@ -55,6 +57,96 @@ const getButtonClasses = (variant?: string) => {
             return "bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow";
     }
 };
+
+function AddEventButton({
+    button,
+    tLocalized,
+    tKey,
+    getButtonClasses,
+}: {
+    button: ActionButton;
+    tLocalized: (str: LocalizedString) => string;
+    tKey: (key: string) => string;
+    getButtonClasses: (variant?: string) => string;
+}) {
+    const { me, entity } = useCocolight();
+    const isConnected = !!me;
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const handleClick = () => {
+        if (!isConnected) {
+            toast.error(tKey("Vous devez être connecté pour proposer un événement"));
+            return;
+        }
+        setIsModalOpen(true);
+    };
+
+    return (
+        <>
+            <Button
+                size="lg"
+                className={getButtonClasses(button.variant)}
+                onClick={handleClick}
+                disabled={!isConnected}
+            >
+                {button.icon && (
+                    <DynamicIcon name={button.icon as IconName} className="w-5 h-5 mr-2" />
+                )}
+                {tLocalized(button.label)}
+            </Button>
+            <AddEventModal
+                open={isModalOpen}
+                onOpenChange={setIsModalOpen}
+                parent={entity}
+            />
+        </>
+    );
+}
+
+function AddProjectButton({
+    button,
+    tLocalized,
+    tKey,
+    getButtonClasses,
+}: {
+    button: ActionButton;
+    tLocalized: (str: LocalizedString) => string;
+    tKey: (key: string) => string;
+    getButtonClasses: (variant?: string) => string;
+}) {
+    const { me, entity } = useCocolight();
+    const isConnected = !!me;
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const handleClick = () => {
+        if (!isConnected) {
+            toast.error(tKey("Vous devez être connecté pour proposer un projet"));
+            return;
+        }
+        setIsModalOpen(true);
+    };
+
+    return (
+        <>
+            <Button
+                size="lg"
+                className={getButtonClasses(button.variant)}
+                onClick={handleClick}
+                disabled={!isConnected}
+            >
+                {button.icon && (
+                    <DynamicIcon name={button.icon as IconName} className="w-5 h-5 mr-2" />
+                )}
+                {tLocalized(button.label)}
+            </Button>
+            <AddProjectModal
+                open={isModalOpen}
+                onOpenChange={setIsModalOpen}
+                parent={entity}
+            />
+        </>
+    );
+}
 
 function JoinDropdownButton({
     button,
@@ -226,6 +318,30 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
                             if (button.action === "join-dropdown") {
                                 return (
                                     <JoinDropdownButton
+                                        key={index}
+                                        button={button}
+                                        tLocalized={tLocalized}
+                                        tKey={tKey}
+                                        getButtonClasses={getButtonClasses}
+                                    />
+                                );
+                            }
+
+                            if (button.action === "add-project") {
+                                return (
+                                    <AddProjectButton
+                                        key={index}
+                                        button={button}
+                                        tLocalized={tLocalized}
+                                        tKey={tKey}
+                                        getButtonClasses={getButtonClasses}
+                                    />
+                                );
+                            }
+
+                            if (button.action === "add-event") {
+                                return (
+                                    <AddEventButton
                                         key={index}
                                         button={button}
                                         tLocalized={tLocalized}
