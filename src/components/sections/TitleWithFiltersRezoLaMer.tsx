@@ -36,6 +36,10 @@ export interface TitleWithFiltersRezoLaMerProps {
         id: string;
         label: LocalizedString;
     }>;
+    types?: Array<{
+        id: string;
+        label: LocalizedString;
+    }>;
     buttons?: ActionButton[];
     searchPlaceholder?: LocalizedString;
     showSearch?: boolean;
@@ -271,8 +275,13 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
     const { t: tLocalized } = useLocalization();
     const tKey = useT("modules/search");
     const [activeCategory, setActiveCategory] = useState("all");
+    
     const pageFilters = usePageFiltersOptional();
     const setSearchQuery = pageFilters?.setSearchQuery ?? (() => {});
+    const setSelectedFilters = pageFilters?.setSelectedFilters ?? (() => {});
+    const selectedFilters = pageFilters?.selectedFilters ?? {};
+
+    const activeType = selectedFilters['type']?.[0] ?? "all";
 
     const [localSearchQuery, setLocalSearchQuery] = useState(pageFilters?.searchQuery ?? "");
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -292,9 +301,24 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
         };
     }, [localSearchQuery, setSearchQuery]);
 
+    const handleTypeChange = (typeId: string) => {
+        if (typeId === "all") {
+            setSelectedFilters(prev => {
+                const newFilters = { ...prev };
+                delete newFilters['type'];
+                return newFilters;
+            });
+        } else {
+            setSelectedFilters(prev => ({
+                ...prev,
+                type: [typeId]
+            }));
+        }
+    };
+
     return (
         <section id={id} className="relative pt-10 px-4 bg-ocean-gradient overflow-hidden">
-            <div className="absolute inset-0 opacity-10">
+            <div className="inset-0 opacity-10">
                 <div className="absolute top-10 left-10 w-64 h-64 bg-primary rounded-full blur-3xl animate-float" />
                 <div
                     className="absolute bottom-10 right-10 w-96 h-96 bg-chart-2 rounded-full blur-3xl animate-float"
@@ -306,6 +330,7 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
                 <h1 className="text-4xl md:text-6xl font-bold mb-6 text-foreground animate-fade-in">
                     {tLocalized(props.headline)}
                 </h1>
+                
                 {props.subhead && (
                     <p className="text-xl text-white/80 max-w-2xl mx-auto animate-fade-in">
                         {tLocalized(props.subhead)}
@@ -411,6 +436,27 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
                                     onClick={() => setActiveCategory(category.id)}
                                 >
                                     {tLocalized(category.label)}
+                                </Badge>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+            {props.types && props.types.length > 0 && (
+                <div className="px-4">
+                    <div className="container mx-auto max-w-6xl">
+                        <div className="flex flex-wrap gap-3 justify-center">
+                            {props.types.map((type) => (
+                                <Badge
+                                    key={type.id}
+                                    variant="outline"
+                                    className={`px-4 py-2 cursor-pointer transition-all ${activeType === type.id
+                                        ? "bg-primary text-primary-foreground border-primary"
+                                        : "bg-secondary/30 text-foreground border-primary/30 hover:bg-primary hover:text-primary-foreground hover:border-primary"
+                                        }`}
+                                    onClick={() => handleTypeChange(type.id)}
+                                >
+                                    {t(type.label)}
                                 </Badge>
                             ))}
                         </div>

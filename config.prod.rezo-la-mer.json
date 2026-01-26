@@ -608,7 +608,81 @@
                 "href": "/proposer-evenement",
                 "variant": "primary"
               }
+            ],
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher un événement...",
+              "en": "Search for an event..."
+            },
+            "types": [
+              {
+                "id": "all",
+                "label": {
+                  "fr": "Toutes",
+                  "en": "All"
+                }
+              },
+              {
+                "id": "conference",
+                "label": {
+                  "fr": "Conférence",
+                  "en": "Conference"
+                }
+              },
+              {
+                "id": "others",
+                "label": {
+                  "fr": "Autres",
+                  "en": "Others"
+                }
+              },
+              {
+                "id": "market",
+                "label": {
+                  "fr": "Marché",
+                  "en": "Market"
+                }
+              },
+              {
+                "id": "festival",
+                "label": {
+                  "fr": "Festival",
+                  "en": "Festival"
+                }
+              }
             ]
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "section-event-list",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "showDetailedViewToggle": true,
+            "baseParams": {
+              "defaultTypes": [
+                "events"
+              ],
+              "indexStepList": 3
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3,
+                "xl": 4
+              },
+              "card": {
+                "type": "event-rezo-la-mer",
+                "variant": "event-rezo-la-mer",
+                "detailsMode": "drawer"
+              }
+            }
           }
         }
       ]
@@ -794,7 +868,7 @@
               "fr": "Rechercher une ressource...",
               "en": "Search for a resource..."
             },
-            "categories": [
+            "types": [
               {
                 "id": "all",
                 "label": {
@@ -803,34 +877,51 @@
                 }
               },
               {
-                "id": "embarcation",
+                "id": "tags",
                 "label": {
-                  "fr": "Embarcation",
-                  "en": "Boat"
+                  "fr": "tags",
+                  "en": "tags"
                 }
               },
               {
-                "id": "scientifique",
+                "id": "test",
                 "label": {
-                  "fr": "Matériel scientifique",
-                  "en": "Scientific equipment"
-                }
-              },
-              {
-                "id": "video",
-                "label": {
-                  "fr": "Équipement vidéo",
-                  "en": "Video equipment"
-                }
-              },
-              {
-                "id": "documentation",
-                "label": {
-                  "fr": "Documentation",
-                  "en": "Documentation"
+                  "fr": "test",
+                  "en": "test"
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "section-poi-list",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "baseParams": {
+              "defaultTypes": [
+                "poi"
+              ],
+              "indexStepList": 3
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3,
+                "xl": 4
+              },
+              "card": {
+                "type": "poi-rezo-la-mer",
+                "variant": "poi-rezo-la-mer",
+                "detailsMode": "drawer"
+              }
+            }
           }
         }
       ]

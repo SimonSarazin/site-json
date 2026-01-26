@@ -31,13 +31,14 @@ export default function SearchCardDetailed({
     shortDescription,
     description,
     tags = [],
-    image,
     email,
     phone,
     startDate,
     endDate,
+    type
   } = data;
-
+  const serverData = item?.serverData;
+  const image = serverData?.profilImageUrl;
   const initials = useMemo(
     () =>
       name
@@ -58,7 +59,7 @@ export default function SearchCardDetailed({
       <CardContent className="p-0">
         <div className="flex flex-col sm:flex-row">
           {/* Image section */}
-          <div className="w-full sm:w-64 h-48 sm:h-auto flex-shrink-0 relative overflow-hidden">
+          <div className="w-full sm:w-64 h-48 sm:h-auto flex-shrink-0 relative overflow-hidden ml-4 rounded-lg">
             {image ? (
               <img
                 src={image.startsWith('http') ? image : `${getBaseUrl()}${image}`}
@@ -81,6 +82,13 @@ export default function SearchCardDetailed({
           <div className="flex-1 p-6">
             <div className="flex justify-between items-start mb-4">
               <div className="flex-1">
+                {type && (
+                  <Badge
+                    className="top-4 left-4"
+                  >
+                    {type}
+                  </Badge>
+                )}
                 <h3 className="text-2xl font-bold text-primary group-hover:text-primary/80 transition-colors mb-2">
                   {name}
                 </h3>

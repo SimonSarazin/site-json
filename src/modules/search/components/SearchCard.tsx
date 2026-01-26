@@ -4,6 +4,8 @@ import CardEvent from "./card/CardEvent";
 import CardOverlay from "./card/CardOverlay";
 import CardTiersLieux from "./card/CardTiersLieux";
 import CardRezoLaMer from "./card/CardRezoLaMer";
+import CardEventRezoLaMer from "./card/CardEventRezoLaMer";
+import CardPoiRezoLaMer from "./card/CardPoiRezoLaMer";
 
 export default function SearchCard({
   item,
@@ -29,6 +31,10 @@ export default function SearchCard({
       return <CardEvent item={item} onClick={onClick} card={card} />;
     case "rezo-la-mer":
       return <CardRezoLaMer item={item} onClick={onClick} card={card} />;
+    case "event-rezo-la-mer":
+      return <CardEventRezoLaMer item={item} onClick={onClick} card={card} />;
+    case "poi-rezo-la-mer":
+      return <CardPoiRezoLaMer item={item} onClick={onClick} card={card} />;
     case "default":
       return <CardDefault item={item} onClick={onClick} card={card} />;
     default:
