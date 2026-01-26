@@ -3,7 +3,7 @@ import { useT } from "@/hooks/useT";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Users, UserPlus, Settings } from "lucide-react";
+import { Users, UserPlus, Settings, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ContributorSection as ContributorSectionType } from "@/types/site-schema";
 import type { Project, User, Organization } from "@communecter/cocolight-api-client";
@@ -12,13 +12,115 @@ import { MemberManagementDialog } from "@/modules/profil/components/members/Memb
 import { InviteMemberDialog } from "@/modules/profil/components/members/InviteMemberDialog";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
 import { useEntityLabels } from "@/modules/profil/hooks/useEntityLabels";
-import { useQuery, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { useProjectContributors } from "@/modules/profil/hooks/useMembersQuery";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { isProject } from "@/lib/getTypedEntity";
 import { useCocolight } from "@/hooks/useCocolight";
+import CardProfile from "@/modules/search/components/card/CardProfile";
+import { SwitchDetailsMode } from "@/modules/search/components/SwitchDetailsMode";
 
 interface ContributorSectionProps {
   id?: string;
   props: ContributorSectionType["props"];
+}
+
+function ProfileCardListRenderer({
+  members,
+  isLoading,
+  isFetchingNextPage,
+  showBadges,
+  isPending,
+  cardConfig,
+  lastItemRef,
+}: {
+  members: (User | Organization)[];
+  isLoading?: boolean;
+  isFetchingNextPage?: boolean;
+  showBadges?: boolean;
+  isPending?: boolean;
+  cardConfig?: ContributorSectionType["props"]["card"];
+  lastItemRef?: (node: HTMLElement | null) => void;
+}) {
+  const [openDetails, setOpenDetails] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<User | Organization | null>(null);
+
+  const detailsMode = cardConfig?.detailsMode || "link";
+
+  const handleOpenDetails = (member: User | Organization) => {
+    if (detailsMode === "link") {
+      return;
+    }
+    setSelectedItem(member);
+    setOpenDetails(true);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (members.length === 0) {
+    return (
+      <div className="text-center py-12 text-muted-foreground">
+        Aucun membre trouvé
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {members.map((member, index) => {
+          const isLastItem = index === members.length - 1;
+
+          const cardElement = (
+            <CardProfile
+              key={member.id || index}
+              item={member}
+              index={index}
+              showBadges={showBadges}
+              isPending={isPending}
+              card={{
+                showDescription: cardConfig?.showDescription,
+                showAddress: cardConfig?.showAddress,
+                detailsMode: detailsMode === "link" ? "link" : undefined,
+              }}
+              onClick={detailsMode !== "link" ? () => handleOpenDetails(member) : undefined}
+            />
+          );
+
+          if (isLastItem && lastItemRef) {
+            return (
+              <div key={member.id || index} ref={lastItemRef as (node: HTMLDivElement | null) => void}>
+                {cardElement}
+              </div>
+            );
+          }
+
+          return cardElement;
+        })}
+      </div>
+
+      {isFetchingNextPage && (
+        <div className="flex items-center justify-center py-4">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          <span className="ml-2 text-sm text-muted-foreground">Chargement...</span>
+        </div>
+      )}
+
+      {selectedItem && detailsMode !== "link" && (
+        <SwitchDetailsMode
+          openDetails={openDetails}
+          setOpenDetails={setOpenDetails}
+          item={selectedItem as any}
+          card={{ detailsMode: detailsMode === "drawer" ? "drawer" : "dialog" }}
+        />
+      )}
+    </div>
+  );
 }
 
 export default function ContributorSection({ id, props }: ContributorSectionProps) {
@@ -33,6 +135,7 @@ export default function ContributorSection({ id, props }: ContributorSectionProp
   const refreshContributors = () => {
     queryClient.invalidateQueries({ queryKey: ["project-contributors", props.projectId] });
   };
+
   const { data: project, error: projectError } = useQuery({
     queryKey: ["project", props.projectId, me?.id],
     queryFn: async () => {
@@ -54,123 +157,18 @@ export default function ContributorSection({ id, props }: ContributorSectionProp
     },
     enabled: !!props.projectId && (!!me?.isConnected || !!api),
   });
+
   const permissions = useProfilPermissions(project || null);
   const labels = useEntityLabels(project || null);
-  const {
-    data: allContributorsData,
-    fetchNextPage: fetchNextAll,
-    hasNextPage: hasNextAll,
-    isFetchingNextPage: isFetchingNextAll,
-    isLoading: isLoadingAll,
-  } = useInfiniteQuery({
-    queryKey: ["project-contributors", props.projectId, "all"],
-    queryFn: async ({ pageParam = 0 }) => {
-      if (!project) return { results: [], totalCount: 0 };
 
-      const result = await project.getContributors(
-        { indexMin: pageParam, indexStep: 20 },
-        { toBeValidated: false }
-      );
+  // Utiliser useProjectContributors pour les différentes listes
+  const allContributors = useProjectContributors(project || null, { toBeValidated: false });
+  const pendingContributors = useProjectContributors(project || null, { toBeValidated: true });
+  const adminContributors = useProjectContributors(project || null, { isAdmin: true });
 
-      return {
-        results: result.results || [],
-        totalCount: result.count?.total || 0,
-        nextPage: pageParam + 20,
-      };
-    },
-    getNextPageParam: (lastPage, pages) => {
-      const totalFetched = pages.reduce((sum, page) => sum + page.results.length, 0);
-      return totalFetched < lastPage.totalCount ? lastPage.nextPage : undefined;
-    },
-    enabled: !!project,
-    initialPageParam: 0,
-  });
-
-  const {
-    data: pendingContributorsData,
-    fetchNextPage: fetchNextPending,
-    hasNextPage: hasNextPending,
-    isFetchingNextPage: isFetchingNextPending,
-    isLoading: isLoadingPending,
-  } = useInfiniteQuery({
-    queryKey: ["project-contributors", props.projectId, "pending"],
-    queryFn: async ({ pageParam = 0 }) => {
-      if (!project) return { results: [], totalCount: 0 };
-
-      const result = await project.getContributors(
-        { indexMin: pageParam, indexStep: 20 },
-        { toBeValidated: true }
-      );
-
-      return {
-        results: result.results || [],
-        totalCount: result.count?.total || 0,
-        nextPage: pageParam + 20,
-      };
-    },
-    getNextPageParam: (lastPage, pages) => {
-      const totalFetched = pages.reduce((sum, page) => sum + page.results.length, 0);
-      return totalFetched < lastPage.totalCount ? lastPage.nextPage : undefined;
-    },
-    enabled: !!project,
-    initialPageParam: 0,
-  });
-
-  const {
-    data: adminContributorsData,
-    fetchNextPage: fetchNextAdmin,
-    hasNextPage: hasNextAdmin,
-    isFetchingNextPage: isFetchingNextAdmin,
-    isLoading: isLoadingAdmin,
-  } = useInfiniteQuery({
-    queryKey: ["project-contributors", props.projectId, "admin"],
-    queryFn: async ({ pageParam = 0 }) => {
-      if (!project) return { results: [], totalCount: 0 };
-
-      const result = await project.getContributors(
-        { indexMin: pageParam, indexStep: 20 },
-        { isAdmin: true }
-      );
-
-      return {
-        results: result.results || [],
-        totalCount: result.count?.total || 0,
-        nextPage: pageParam + 20,
-      };
-    },
-    getNextPageParam: (lastPage, pages) => {
-      const totalFetched = pages.reduce((sum, page) => sum + page.results.length, 0);
-      return totalFetched < lastPage.totalCount ? lastPage.nextPage : undefined;
-    },
-    enabled: !!project,
-    initialPageParam: 0,
-  });
-
-  const createObserver = (fetchNext: () => void, hasNext: boolean) => {
-    return (node: HTMLElement | null) => {
-      if (!node || !hasNext) return;
-
-      const observer = new IntersectionObserver(
-        (entries) => {
-          if (entries[0].isIntersecting && hasNext) {
-            fetchNext();
-          }
-        },
-        { threshold: 0.1 }
-      );
-
-      observer.observe(node);
-      return () => observer.disconnect();
-    };
-  };
-
-  const allMembers = allContributorsData?.pages.flatMap((page) => page.results) || [];
-  const pendingMembers = pendingContributorsData?.pages.flatMap((page) => page.results) || [];
-  const adminMembers = adminContributorsData?.pages.flatMap((page) => page.results) || [];
-
-  const allTotalCount = allContributorsData?.pages[0]?.totalCount || 0;
-  const pendingTotalCount = pendingContributorsData?.pages[0]?.totalCount || 0;
-  const adminTotalCount = adminContributorsData?.pages[0]?.totalCount || 0;
+  // Type de card à utiliser (default = MemberListRenderer, profile = CardProfile)
+  const cardType = props.card?.type || "default";
+  const useProfileCard = cardType === "profile";
 
   if (projectError) {
     return (
@@ -235,6 +233,41 @@ export default function ContributorSection({ id, props }: ContributorSectionProp
     </div>
   );
 
+  const renderMemberList = (
+    members: (User | Organization)[],
+    isLoading: boolean,
+    isFetchingNextPage: boolean,
+    isPending: boolean,
+    lastItemRef: (node: HTMLElement | null) => void
+  ) => {
+    if (useProfileCard) {
+      return (
+        <ProfileCardListRenderer
+          members={members}
+          isLoading={isLoading}
+          isFetchingNextPage={isFetchingNextPage}
+          showBadges={props.showRole}
+          isPending={isPending}
+          cardConfig={props.card}
+          lastItemRef={lastItemRef}
+        />
+      );
+    }
+
+    return (
+      <MemberListRenderer
+        members={members}
+        entity={project}
+        isLoading={isLoading}
+        showActions={false}
+        showBadges={props.showRole}
+        isPending={isPending}
+        lastItemRef={lastItemRef}
+        isFetchingNextPage={isFetchingNextPage}
+      />
+    );
+  };
+
   // Contenu des tabs
   const tabsContent = (
     <Tabs value={selectedTab} onValueChange={setSelectedTab}>
@@ -243,57 +276,48 @@ export default function ContributorSection({ id, props }: ContributorSectionProp
         permissions.isAdmin ? "grid-cols-3" : "grid-cols-2"
       )}>
         <TabsTrigger value="all" className={cn("text-xs sm:text-sm")}>
-          {labels.members} ({allTotalCount})
+          {labels.members} ({allContributors.totalCount})
         </TabsTrigger>
         {permissions.isAdmin && (
           <TabsTrigger value="pending" className={cn("text-xs sm:text-sm")}>
-            {labels.pending} ({pendingTotalCount})
+            {labels.pending} ({pendingContributors.totalCount})
           </TabsTrigger>
         )}
         <TabsTrigger value="admins" className={cn("text-xs sm:text-sm")}>
-          {labels.admin}s ({adminTotalCount})
+          {labels.admin}s ({adminContributors.totalCount})
         </TabsTrigger>
       </TabsList>
 
       <TabsContent value="all" className="mt-4">
-        <MemberListRenderer
-          members={allMembers as (User | Organization)[]}
-          entity={project}
-          isLoading={isLoadingAll}
-          showActions={false}
-          showBadges={props.showRole}
-          isPending={false}
-          lastItemRef={createObserver(() => fetchNextAll(), !!hasNextAll)}
-          isFetchingNextPage={isFetchingNextAll}
-        />
+        {renderMemberList(
+          allContributors.contributors as (User | Organization)[],
+          allContributors.isLoading,
+          allContributors.isFetchingNextPage,
+          false,
+          allContributors.lastItemRef
+        )}
       </TabsContent>
 
       {permissions.isAdmin && (
         <TabsContent value="pending" className="mt-4">
-          <MemberListRenderer
-            members={pendingMembers as (User | Organization)[]}
-            entity={project}
-            isLoading={isLoadingPending}
-            showActions={false}
-            showBadges={props.showRole}
-            isPending={true}
-            lastItemRef={createObserver(() => fetchNextPending(), !!hasNextPending)}
-            isFetchingNextPage={isFetchingNextPending}
-          />
+          {renderMemberList(
+            pendingContributors.contributors as (User | Organization)[],
+            pendingContributors.isLoading,
+            pendingContributors.isFetchingNextPage,
+            true,
+            pendingContributors.lastItemRef
+          )}
         </TabsContent>
       )}
 
       <TabsContent value="admins" className="mt-4">
-        <MemberListRenderer
-          members={adminMembers as (User | Organization)[]}
-          entity={project}
-          isLoading={isLoadingAdmin}
-          showActions={false}
-          showBadges={props.showRole}
-          isPending={false}
-          lastItemRef={createObserver(() => fetchNextAdmin(), !!hasNextAdmin)}
-          isFetchingNextPage={isFetchingNextAdmin}
-        />
+        {renderMemberList(
+          adminContributors.contributors as (User | Organization)[],
+          adminContributors.isLoading,
+          adminContributors.isFetchingNextPage,
+          false,
+          adminContributors.lastItemRef
+        )}
       </TabsContent>
     </Tabs>
   );
@@ -308,7 +332,6 @@ export default function ContributorSection({ id, props }: ContributorSectionProp
           onOpenChange={(open) => {
             setShowManagement(open);
             if (!open) {
-              // Rafraîchir la liste quand le dialogue se ferme
               refreshContributors();
             }
           }}
@@ -322,7 +345,6 @@ export default function ContributorSection({ id, props }: ContributorSectionProp
           onOpenChange={(open) => {
             setShowInvite(open);
             if (!open) {
-              // Rafraîchir la liste quand le dialogue se ferme
               refreshContributors();
             }
           }}
@@ -331,7 +353,6 @@ export default function ContributorSection({ id, props }: ContributorSectionProp
     </>
   );
 
-  // Rendu avec ou sans Card selon la config
   if (props.showCard === false) {
     return (
       <div id={id}>

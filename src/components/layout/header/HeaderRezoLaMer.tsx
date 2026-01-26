@@ -181,9 +181,11 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                             </button>
                         )}
 
-                        <ClientOnly fallback={<div className="w-10 h-10" />}>
-                            {() => <ToggleButtonTheme />}
-                        </ClientOnly>
+                        {header.utilities?.themeSwitch !== false && (
+                            <ClientOnly fallback={<div className="w-10 h-10" />}>
+                                {() => <ToggleButtonTheme />}
+                            </ClientOnly>
+                        )}
 
                         {header.utilities?.langSwitch && availableLocales.length > 1 && (
                             <DropdownMenu>
@@ -266,9 +268,11 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                     </div>
 
                     <div className="md:hidden flex items-center gap-2">
-                        <ClientOnly fallback={<div className="w-8 h-8" />}>
-                            {() => <ToggleButtonTheme />}
-                        </ClientOnly>
+                        {header.utilities?.themeSwitch !== false && (
+                            <ClientOnly fallback={<div className="w-8 h-8" />}>
+                                {() => <ToggleButtonTheme />}
+                            </ClientOnly>
+                        )}
                         <button
                             className="p-2 text-muted-foreground hover:text-primary"
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

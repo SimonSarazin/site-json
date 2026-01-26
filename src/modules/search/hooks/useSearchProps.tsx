@@ -8,3 +8,7 @@ export function useSearchProps() {
   }
   return context;
 }
+
+export function useSearchPropsOptional() {
+  return useContext(SearchPropsContext);
+}

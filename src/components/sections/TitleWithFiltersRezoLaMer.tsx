@@ -1,18 +1,30 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocalization } from "@/hooks/useLocalization";
+import { useT } from "@/hooks/useT";
 import { LocalizedString } from "@/types/site-schema";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
+import { ChevronDown, UserPlus, Crown, Loader2, Clock } from "lucide-react";
 import { Link } from "react-router";
 import { usePageFiltersOptional } from "@/contexts/PageFiltersContext";
+import { useCocolight } from "@/hooks/useCocolight";
+import { useRequestToJoin, useRequestToJoinAdmin } from "@/modules/profil/actions/mutations/relationship";
+import { toast } from "sonner";
 
 export interface ActionButton {
     label: LocalizedString;
     icon?: string;
     href?: string;
     variant?: "default" | "outline" | "primary" | "turquoise";
+    action?: "join-dropdown";
 }
 
 export interface TitleWithFiltersRezoLaMerProps {
@@ -44,8 +56,128 @@ const getButtonClasses = (variant?: string) => {
     }
 };
 
+function JoinDropdownButton({
+    button,
+    tLocalized,
+    tKey,
+    getButtonClasses,
+}: {
+    button: ActionButton;
+    tLocalized: (str: LocalizedString) => string;
+    tKey: (key: string) => string;
+    getButtonClasses: (variant?: string) => string;
+}) {
+    const { me, entity } = useCocolight();
+    const isConnected = !!me;
+
+    const requestToJoinMutation = useRequestToJoin(entity);
+    const requestToJoinAdminMutation = useRequestToJoinAdmin(entity);
+
+    const isLoading = requestToJoinMutation.isPending || requestToJoinAdminMutation.isPending;
+
+    const isContributor = entity?.isContributor?.() || false;
+    const isAdmin = entity?.isAdmin?.() || false;
+    const isToBeValidated = entity?.isToBeValidated?.() || false;
+    const isAdminPending = entity?.isAdminPending?.() || false;
+
+    const handleRequestContributor = () => {
+        if (!isConnected) {
+            toast.error(tKey("Vous devez être connecté pour rejoindre"));
+            return;
+        }
+        requestToJoinMutation.mutate();
+    };
+
+    const handleRequestAdmin = () => {
+        if (!isConnected) {
+            toast.error(tKey("Vous devez être connecté pour demander les droits admin"));
+            return;
+        }
+        requestToJoinAdminMutation.mutate();
+    };
+
+    if (isAdmin) {
+        return null;
+    }
+
+    if (isContributor) {
+        return (
+            <Button
+                size="lg"
+                className={getButtonClasses("outline")}
+                disabled
+            >
+                <UserPlus className="w-5 h-5 mr-2" />
+                {tKey("Contributeur")}
+            </Button>
+        );
+    }
+
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button
+                    size="lg"
+                    className={getButtonClasses(button.variant)}
+                    disabled={isLoading || !isConnected}
+                >
+                    {isLoading ? (
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    ) : button.icon ? (
+                        <DynamicIcon name={button.icon as IconName} className="w-5 h-5 mr-2" />
+                    ) : (
+                        <UserPlus className="w-5 h-5 mr-2" />
+                    )}
+                    {tLocalized(button.label)}
+                    <ChevronDown className="w-4 h-4 ml-2" />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center" className="w-56">
+                {isToBeValidated ? (
+                    <DropdownMenuItem disabled className="opacity-70">
+                        <Clock className="w-4 h-4 mr-2" />
+                        {tKey("Demande en attente")}
+                    </DropdownMenuItem>
+                ) : (
+                    <DropdownMenuItem
+                        onClick={handleRequestContributor}
+                        disabled={requestToJoinMutation.isPending}
+                    >
+                        {requestToJoinMutation.isPending ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                            <UserPlus className="w-4 h-4 mr-2" />
+                        )}
+                        {tKey("Demander à contribuer")}
+                    </DropdownMenuItem>
+                )}
+
+                {isAdminPending ? (
+                    <DropdownMenuItem disabled className="opacity-70">
+                        <Clock className="w-4 h-4 mr-2" />
+                        {tKey("Demande admin en attente")}
+                    </DropdownMenuItem>
+                ) : (
+                    <DropdownMenuItem
+                        onClick={handleRequestAdmin}
+                        disabled={requestToJoinAdminMutation.isPending}
+                    >
+                        {requestToJoinAdminMutation.isPending ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                            <Crown className="w-4 h-4 mr-2" />
+                        )}
+                        {tKey("Demander droits admin")}
+                    </DropdownMenuItem>
+                )}
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+}
+
 export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaMerSectionProps) {
-    const { t } = useLocalization();
+    const { t: tLocalized } = useLocalization();
+    const tKey = useT("modules/search");
     const [activeCategory, setActiveCategory] = useState("all");
     const pageFilters = usePageFiltersOptional();
     const setSearchQuery = pageFilters?.setSearchQuery ?? (() => {});
@@ -80,17 +212,29 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
 
             <div className="relative z-10 container mx-auto max-w-6xl text-center py-12 px-4">
                 <h1 className="text-4xl md:text-6xl font-bold mb-6 text-foreground animate-fade-in">
-                    {t(props.headline)}
+                    {tLocalized(props.headline)}
                 </h1>
                 {props.subhead && (
                     <p className="text-xl text-white/80 max-w-2xl mx-auto animate-fade-in">
-                        {t(props.subhead)}
+                        {tLocalized(props.subhead)}
                     </p>
                 )}
 
                 {props.buttons && props.buttons.length > 0 && (
                     <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center animate-fade-in">
                         {props.buttons.map((button, index) => {
+                            if (button.action === "join-dropdown") {
+                                return (
+                                    <JoinDropdownButton
+                                        key={index}
+                                        button={button}
+                                        tLocalized={tLocalized}
+                                        tKey={tKey}
+                                        getButtonClasses={getButtonClasses}
+                                    />
+                                );
+                            }
+
                             const buttonElement = (
                                 <Button
                                     key={index}
@@ -100,7 +244,7 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
                                     {button.icon && (
                                         <DynamicIcon name={button.icon as IconName} className="w-5 h-5 mr-2" />
                                     )}
-                                    {t(button.label)}
+                                    {tLocalized(button.label)}
                                 </Button>
                             );
 
@@ -127,7 +271,7 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
                         />
                         <Input
                             type="search"
-                            placeholder={props.searchPlaceholder ? t(props.searchPlaceholder) : "Rechercher..."}
+                            placeholder={props.searchPlaceholder ? tLocalized(props.searchPlaceholder) : tKey("Rechercher...")}
                             value={localSearchQuery}
                             onChange={(e) => setLocalSearchQuery(e.target.value)}
                             className="pl-12 h-12 bg-secondary/40 backdrop-blur-ocean border-primary/30 focus:border-primary text-foreground placeholder:text-muted-foreground"
@@ -150,7 +294,7 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
                                         }`}
                                     onClick={() => setActiveCategory(category.id)}
                                 >
-                                    {t(category.label)}
+                                    {tLocalized(category.label)}
                                 </Badge>
                             ))}
                         </div>

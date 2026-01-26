@@ -1035,6 +1035,15 @@ export type ContentSectionProps = z.infer<typeof ContentSectionSchema>["props"];
 //───────────────────────────────────────────────────────────────
 // Section Contributor
 //───────────────────────────────────────────────────────────────
+const ContributorCardConfSchema = z.object({
+  type: z.enum(["default", "profile"]).default("default"),
+  showDescription: z.boolean().optional().default(true),
+  showAddress: z.boolean().optional().default(true),
+  detailsMode: z.enum(["drawer", "dialog", "link"]).default("link"),
+}).partial();
+
+export type ContributorCardConf = z.infer<typeof ContributorCardConfSchema>;
+
 const ContributorSectionSchema = z.object({
   type: z.literal("contributor"),
   id: z.string().optional(),
@@ -1043,8 +1052,9 @@ const ContributorSectionSchema = z.object({
     title: LocalizedString.optional(),
     showRole: z.boolean().optional().default(true),
     showManagement: z.boolean().optional().default(false),
-    showCard: z.boolean().optional().default(true), 
+    showCard: z.boolean().optional().default(true),
     limit: z.number().optional(),
+    card: ContributorCardConfSchema.optional(),
   }),
 });
 

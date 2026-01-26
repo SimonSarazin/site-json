@@ -76,7 +76,7 @@
     "transparent": false,
     "height": "lg",
     "utilities": {
-      "themeSwitch": true,
+      "themeSwitch": false,
       "langSwitch": true,
       "search": false,
       "auth": true,
@@ -600,7 +600,7 @@
                   "en": "Join"
                 },
                 "icon": "user-plus",
-                "href": "/rejoindre",
+                "action": "join-dropdown",
                 "variant": "primary"
               },
               {
@@ -640,7 +640,13 @@
                       },
                       "showRole": true,
                       "showManagement": true,
-                      "showCard": false
+                      "showCard": false,
+                      "card": {
+                        "type": "profile",
+                        "showDescription": true,
+                        "showAddress": true,
+                        "detailsMode": "drawer"
+                      }
                     }
                   }
                 ]
@@ -668,8 +674,7 @@
                           "Group",
                           "GovernmentOrganization",
                           "Cooperative"
-                        ],
-                        "notSourceKey": true
+                        ]
                       },
                       "list": {
                         "columns": {
@@ -944,6 +949,7 @@
     }
   ],
   "theme": {
+    "defaultMode": "dark",
     "typography": {
       "fontFamily": {
         "sans": [
