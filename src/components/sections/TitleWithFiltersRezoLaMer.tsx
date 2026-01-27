@@ -19,6 +19,7 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { useRequestToJoin, useRequestToJoinAdmin } from "@/modules/profil/actions/mutations/relationship";
 import { AddProjectModal } from "@/modules/profil/components/add/AddProjectModal";
 import { AddEventModal } from "@/modules/profil/components/add/AddEventModal";
+import { AddPoiModal } from "@/modules/profil/components/add/AddPoiModal";
 import { toast } from "sonner";
 
 export interface ActionButton {
@@ -144,6 +145,51 @@ function AddProjectButton({
                 {tLocalized(button.label)}
             </Button>
             <AddProjectModal
+                open={isModalOpen}
+                onOpenChange={setIsModalOpen}
+                parent={entity}
+            />
+        </>
+    );
+}
+
+function AddPoiButton({
+    button,
+    tLocalized,
+    tKey,
+    getButtonClasses,
+}: {
+    button: ActionButton;
+    tLocalized: (str: LocalizedString) => string;
+    tKey: (key: string) => string;
+    getButtonClasses: (variant?: string) => string;
+}) {
+    const { me, entity } = useCocolight();
+    const isConnected = !!me;
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const handleClick = () => {
+        if (!isConnected) {
+            toast.error(tKey("Vous devez être connecté pour proposer un point d'intérêt"));
+            return;
+        }
+        setIsModalOpen(true);
+    };
+
+    return (
+        <>
+            <Button
+                size="lg"
+                className={getButtonClasses(button.variant)}
+                onClick={handleClick}
+                disabled={!isConnected}
+            >
+                {button.icon && (
+                    <DynamicIcon name={button.icon as IconName} className="w-5 h-5 mr-2" />
+                )}
+                {tLocalized(button.label)}
+            </Button>
+            <AddPoiModal
                 open={isModalOpen}
                 onOpenChange={setIsModalOpen}
                 parent={entity}
@@ -327,10 +373,11 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
             </div>
 
             <div className="relative z-10 container mx-auto max-w-6xl text-center py-12 px-4">
-                <h1 className="text-4xl md:text-6xl font-bold mb-6 text-foreground animate-fade-in">
-                    {tLocalized(props.headline)}
-                </h1>
-                
+                {props.headline && (
+                    <h1 className="text-4xl md:text-6xl font-bold mb-6 text-foreground animate-fade-in">
+                        {tLocalized(props.headline)}
+                    </h1>
+                )}
                 {props.subhead && (
                     <p className="text-xl text-white/80 max-w-2xl mx-auto animate-fade-in">
                         {tLocalized(props.subhead)}
@@ -367,6 +414,18 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
                             if (button.action === "add-event") {
                                 return (
                                     <AddEventButton
+                                        key={index}
+                                        button={button}
+                                        tLocalized={tLocalized}
+                                        tKey={tKey}
+                                        getButtonClasses={getButtonClasses}
+                                    />
+                                );
+                            }
+
+                            if (button.action === "add-poi") {
+                                return (
+                                    <AddPoiButton
                                         key={index}
                                         button={button}
                                         tLocalized={tLocalized}
@@ -456,7 +515,7 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
                                         }`}
                                     onClick={() => handleTypeChange(type.id)}
                                 >
-                                    {t(type.label)}
+                                    {tLocalized(type.label)}
                                 </Badge>
                             ))}
                         </div>
