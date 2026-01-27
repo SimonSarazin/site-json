@@ -38,12 +38,13 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
 
   const customHeader = props.customHeader;
   const showDetailedViewToggle = props.showDetailedViewToggle ?? false;
+  const defaultDetailedView = props.defaultDetailedView ?? false;
 
   const contextFilters = usePageFiltersOptional();
 
   // État local (pas de sync URL)
   const [mapUsed, setMapUsed] = useState(showMap);
-  const [isDetailedView, setIsDetailedView] = useState(false);
+  const [isDetailedView, setIsDetailedView] = useState(defaultDetailedView);
 
   const filterNames = contextFilters?.filterNames;
   const searchQuery = contextFilters?.searchQuery;

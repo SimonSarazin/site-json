@@ -663,7 +663,8 @@
             "showActiveFiltersTypes": true,
             "showActiveFiltersTags": true,
             "disableInfiniteScroll": false,
-            "showDetailedViewToggle": true,
+            "showDetailedViewToggle": false,
+            "defaultDetailedView": true,
             "baseParams": {
               "defaultTypes": [
                 "events"
