@@ -22,6 +22,10 @@ export interface UseSearchQueryParams {
     defaultFields?: string[];
     defaultSortBy?: Record<string, 1 | -1>;
     notSourceKey?: boolean;
+    locality?: Record<string, {
+      id: string;
+      type: "cities" | "level1" | "level2" | "level3" | "level4" | "level5";
+    }>;
   };
 }
 
@@ -84,6 +88,7 @@ export function useSearchQuery({
         defaultFields,
         defaultSortBy,
         notSourceKey,
+        locality,
       } = baseParams;
 
       const param: Partial<GlobalAutocompleteCostumData> = {
@@ -105,8 +110,10 @@ export function useSearchQuery({
         ...(defaultSortBy && Object.keys(defaultSortBy).length > 0 && {
           sortBy: defaultSortBy,
         }),
+        ...(locality && Object.keys(locality).length > 0 && { locality }),
         ...(notSourceKey ? { notSourceKey: true } : {}),
       };
+      console.log("Search params:", param);
 
       if (type && type.length > 0) param.searchType = type as GlobalAutocompleteCostumData["searchType"];
       if (!type && defaultTypes) param.searchType = defaultTypes;

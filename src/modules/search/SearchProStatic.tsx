@@ -66,6 +66,38 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     baseParams?.defaultTypes ? { type: baseParams.defaultTypes } : null
   );
 
+  const filters = useMemo<Record<string, any>>(() => {
+    if (contextFilters?.searchByFields) {
+      const obj: Record<string, any> = {};
+      for (const { field, type, value } of Object.values(contextFilters.searchByFields)) {
+        if(type && type === "scopeList") continue;
+        if (value && value.length > 0) {
+          if(!obj[field]) {
+            obj[field] = { "$in": value };
+          }else{
+            obj[field]["$in"] = Array.from(new Set([...obj[field]["$in"], ...value]));
+          }
+        };
+      }
+      return obj;
+    }
+    return {};
+  }, [contextFilters?.searchByFields]);
+
+  const locality = useMemo<Record<string, any>>(() => {
+    if (contextFilters?.searchByFields) {
+      const obj: Record<string, any> = {};
+      for (const { field, type, value } of Object.values(contextFilters.searchByFields)) {
+        if(type && type === "scopeList") {
+          if(!obj[field]) {
+            obj[field] = value;
+          }
+        }
+      }
+      return obj;
+    }
+    return {};
+  }, [contextFilters?.searchByFields]);
   // Utilisation du hook de recherche partagé
   const {
     error,
@@ -82,7 +114,14 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     searchTags,
     searchType,
     mapUsed,
-    baseParams,
+    baseParams: {
+      ...baseParams,
+      defaultFilters: {
+        ...baseParams.defaultFilters,
+        ...filters,
+      },
+      locality: locality
+    },
   });
 
   if (!loaded) {

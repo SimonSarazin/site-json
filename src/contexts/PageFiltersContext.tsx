@@ -5,7 +5,16 @@ interface PageFiltersContextType {
   setSelectedFilters: React.Dispatch<React.SetStateAction<Record<string, string[]>>>;
   filterNames: string[];
   searchQuery: string;
+  searchByFields: Record<string, {
+    field: string;
+    type?: string;
+    value: any;
+  }>;
   setSearchQuery: (query: string) => void;
+  setSearchByFields: React.Dispatch<React.SetStateAction<Record<string, {
+    field: string;
+    value: any[];
+  }>>>;
   clearFilters: () => void;
 }
 
@@ -14,13 +23,17 @@ const PageFiltersContext = createContext<PageFiltersContextType | undefined>(und
 export function PageFiltersProvider({ children }: { children: ReactNode }) {
   const [selectedFilters, setSelectedFilters] = useState<Record<string, string[]>>({});
   const [searchQuery, setSearchQuery] = useState<string>("");
-
+  const [searchByFields, setSearchByFields] = useState<Record<string, {
+    field: string;
+    value: any[];
+  }>>({});
   // Calculer les noms de filtres à partir des IDs sélectionnés
   const filterNames = Object.values(selectedFilters).flat();
 
   const clearFilters = () => {
     setSelectedFilters({});
     setSearchQuery("");
+    setSearchByFields({});
   };
 
   return (
@@ -31,7 +44,9 @@ export function PageFiltersProvider({ children }: { children: ReactNode }) {
         filterNames,
         searchQuery,
         setSearchQuery,
-        clearFilters
+        searchByFields,
+        clearFilters,
+        setSearchByFields
       }}
     >
       {children}
