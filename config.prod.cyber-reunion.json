@@ -544,14 +544,14 @@
               "notSourceKey": true,
               "defaultFilters": {
                 "$or": {
-                  "links.projects.6960bc282147791a69715b6b": {
+                  "links.projects.555eba56c655675cdd65bf19": {
                     "$exists": true
                   },
-                  "parent.6960bc282147791a69715b6b": {
+                  "parent.555eba56c655675cdd65bf19": {
                     "$exists": true
                   }
                 },
-                "links.projects.6960bc282147791a69715b6b": {
+                "links.projects.555eba56c655675cdd65bf19": {
                   "$exists": true
                 }
               }
@@ -619,24 +619,24 @@
           "type": "tabs",
           "id": "community-tabs",
           "props": {
-            "defaultTab": "contributeur",
+            "defaultTab": "membres",
             "tabs": [
               {
-                "id": "contributeur",
+                "id": "membres",
                 "label": {
-                  "fr": "Contributeur",
-                  "en": "Contributor"
+                  "fr": "Membres",
+                  "en": "Members"
                 },
                 "icon": "users",
                 "content": [
                   {
-                    "type": "contributor",
-                    "id": "section-contributeurs",
+                    "type": "member",
+                    "id": "section-membres",
                     "props": {
-                      "projectId": "6960bc282147791a69715b6b",
+                      "organizationId": "555eba56c655675cdd65bf19",
                       "title": {
-                        "fr": "Contributeurs du projet Cyber Réunion",
-                        "en": "Cyber Réunion Project Contributors"
+                        "fr": "Membres de Cyber Réunion",
+                        "en": "Cyber Réunion Members"
                       },
                       "showRole": true,
                       "showManagement": true,
@@ -661,11 +661,13 @@
                 "content": [
                   {
                     "type": "searchProStatic",
-                    "id": "search-organizations",
+                    "id": "section-organisation-list",
                     "props": {
-                      "useFilter": false,
+                      "useFilter": true,
                       "showMap": false,
                       "enableMap": false,
+                      "showActiveFiltersTypes": true,
+                      "showActiveFiltersTags": true,
                       "disableInfiniteScroll": false,
                       "baseParams": {
                         "defaultTypes": [
@@ -674,7 +676,16 @@
                           "Group",
                           "GovernmentOrganization",
                           "Cooperative"
-                        ]
+                        ],
+                        "notSourceKey": true,
+                        "defaultFilters": {
+                          "preferences.toBeValidated.openAtlas": {
+                            "$exists": false
+                          },
+                          "links.members.555eba56c655675cdd65bf19": {
+                            "$exists": true
+                          }
+                        }
                       },
                       "list": {
                         "columns": {
@@ -684,8 +695,8 @@
                           "xl": 4
                         },
                         "card": {
-                          "type": "event",
-                          "variant": "event",
+                          "type": "profile",
+                          "variant": "profile",
                           "detailsMode": "drawer"
                         }
                       }

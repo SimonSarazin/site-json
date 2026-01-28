@@ -4,13 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { MapPin, MessageCircle, Heart, Shield, User as UserIcon, Loader2 } from "lucide-react";
-import type { User, Organization } from "@communecter/cocolight-api-client";
+import type { User, Organization, SearchEntity } from "@communecter/cocolight-api-client";
 import { Link } from "react-router";
 import { useMemo, useState } from "react";
 import { useCocolight } from "@/hooks/useCocolight";
 import { toast } from "sonner";
 import { useFollowEntity, useUnfollowEntity } from "@/modules/profil/actions/mutations/relationship";
 import { useT } from "@/hooks/useT";
+import type { SearchCardProps } from "../../schema";
 
 export interface CardProfileCardConfig {
   showDescription?: boolean;
@@ -19,11 +20,11 @@ export interface CardProfileCardConfig {
 }
 
 export interface CardProfileProps {
-  item: User | Organization;
+  item: User | Organization | SearchEntity;
   index?: number;
   showBadges?: boolean;
   isPending?: boolean;
-  card?: CardProfileCardConfig;
+  card?: CardProfileCardConfig | SearchCardProps["card"];
   onClick?: () => void;
 }
 
@@ -49,9 +50,10 @@ export default function CardProfile({
   const { me } = useCocolight();
   const serverData = item?.serverData;
 
-  const name = serverData?.name || t("Anonyme");
+  const name = serverData?.name || String(t("Anonyme"));
   const profilImage = serverData?.profilImageUrl || serverData?.profilMediumImageUrl;
-  const description = serverData?.shortDescription || serverData?.description;
+  const rawDescription = serverData?.shortDescription || serverData?.description;
+  const description = typeof rawDescription === "string" ? rawDescription : null;
   const address = serverData?.address;
   const tags = serverData?.tags || [];
   const isAdmin = item?.isAdmin?.() || false;
@@ -147,7 +149,7 @@ export default function CardProfile({
 
             {showDescription && (
               <p className="text-sm text-muted-foreground line-clamp-1">
-                {description || t("Aucune description")}
+                {description ?? String(t("Aucune description"))}
               </p>
             )}
           </div>

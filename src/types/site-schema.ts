@@ -1054,33 +1054,34 @@ export type ContentSection = z.infer<typeof ContentSectionSchema>;
 export type ContentSectionProps = z.infer<typeof ContentSectionSchema>["props"];
 
 //───────────────────────────────────────────────────────────────
-// Section Contributor
+// Section Member (for organizations and projects)
 //───────────────────────────────────────────────────────────────
-const ContributorCardConfSchema = z.object({
+const MemberCardConfSchema = z.object({
   type: z.enum(["default", "profile"]).default("default"),
   showDescription: z.boolean().optional().default(true),
   showAddress: z.boolean().optional().default(true),
   detailsMode: z.enum(["drawer", "dialog", "link"]).default("link"),
 }).partial();
 
-export type ContributorCardConf = z.infer<typeof ContributorCardConfSchema>;
+export type MemberCardConf = z.infer<typeof MemberCardConfSchema>;
 
-const ContributorSectionSchema = z.object({
-  type: z.literal("contributor"),
+const MemberSectionSchema = z.object({
+  type: z.literal("member"),
   id: z.string().optional(),
   props: z.object({
-    projectId: z.string(),
+    organizationId: z.string().optional(),
+    projectId: z.string().optional(),
     title: LocalizedString.optional(),
     showRole: z.boolean().optional().default(true),
     showManagement: z.boolean().optional().default(false),
     showCard: z.boolean().optional().default(true),
     limit: z.number().optional(),
-    card: ContributorCardConfSchema.optional(),
+    card: MemberCardConfSchema.optional(),
   }),
 });
 
-export type ContributorSection = z.infer<typeof ContributorSectionSchema>;
-export type ContributorSectionProps = z.infer<typeof ContributorSectionSchema>["props"];
+export type MemberSection = z.infer<typeof MemberSectionSchema>;
+export type MemberSectionProps = z.infer<typeof MemberSectionSchema>["props"];
 
 //───────────────────────────────────────────────────────────────
 // Union de toutes les sections
@@ -1135,7 +1136,7 @@ export const Section = z.discriminatedUnion("type", [
   SearchProStaticSectionSchema,
   GridLayoutSectionSchema,
   NewsSectionSchema,
-  ContributorSectionSchema
+  MemberSectionSchema,
 ]);
 export type Section = z.infer<typeof Section>;
 

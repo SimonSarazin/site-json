@@ -9,18 +9,22 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
-import { ChevronDown, UserPlus, Crown, Loader2, Clock } from "lucide-react";
+import { ChevronDown, ExternalLink } from "lucide-react";
 import { Link } from "react-router";
 import { usePageFiltersOptional } from "@/contexts/PageFiltersContext";
 import { useCocolight } from "@/hooks/useCocolight";
-import { useRequestToJoin, useRequestToJoinAdmin } from "@/modules/profil/actions/mutations/relationship";
+import { useOrgEntityActions } from "@/modules/profil/actions/hooks/useOrgEntityActions";
+import { ConfirmationDialog } from "@/modules/profil/components/action-buttons/ConfirmationDialog";
 import { AddProjectModal } from "@/modules/profil/components/add/AddProjectModal";
 import { AddEventModal } from "@/modules/profil/components/add/AddEventModal";
 import { AddPoiModal } from "@/modules/profil/components/add/AddPoiModal";
 import { toast } from "sonner";
+import type { Organization } from "@communecter/cocolight-api-client";
+import type { EntityAction } from "@/modules/profil/types";
 
 export interface ActionButton {
     label: LocalizedString;
@@ -205,109 +209,149 @@ function JoinDropdownButton({
 }) {
     const { me, entity } = useCocolight();
     const isConnected = !!me;
+    const [confirmationAction, setConfirmationAction] = useState<EntityAction | null>(null);
 
-    const requestToJoinMutation = useRequestToJoin(entity);
-    const requestToJoinAdminMutation = useRequestToJoinAdmin(entity);
+    const orgActions = useOrgEntityActions(entity as Organization | null);
 
-    const isLoading = requestToJoinMutation.isPending || requestToJoinAdminMutation.isPending;
+    const entitySlug = entity?.slug;
+    const profileUrl = entitySlug ? `/@${entitySlug}` : null;
 
-    const isContributor = entity?.isContributor?.() || false;
-    const isAdmin = entity?.isAdmin?.() || false;
-    const isToBeValidated = entity?.isToBeValidated?.() || false;
-    const isAdminPending = entity?.isAdminPending?.() || false;
-
-    const handleRequestContributor = () => {
-        if (!isConnected) {
-            toast.error(tKey("Vous devez être connecté pour rejoindre"));
-            return;
-        }
-        requestToJoinMutation.mutate();
-    };
-
-    const handleRequestAdmin = () => {
-        if (!isConnected) {
-            toast.error(tKey("Vous devez être connecté pour demander les droits admin"));
-            return;
-        }
-        requestToJoinAdminMutation.mutate();
-    };
-
-    if (isAdmin) {
-        return null;
-    }
-
-    if (isContributor) {
+    if (!orgActions || !isConnected) {
         return (
             <Button
                 size="lg"
-                className={getButtonClasses("outline")}
-                disabled
+                className={getButtonClasses(button.variant)}
+                disabled={!isConnected}
+                onClick={() => {
+                    if (!isConnected) {
+                        toast.error(tKey("Vous devez être connecté pour rejoindre"));
+                    }
+                }}
             >
-                <UserPlus className="w-5 h-5 mr-2" />
-                {tKey("Contributeur")}
+                {button.icon && (
+                    <DynamicIcon name={button.icon as IconName} className="w-5 h-5 mr-2" />
+                )}
+                {tLocalized(button.label)}
             </Button>
         );
     }
 
-    return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button
-                    size="lg"
-                    className={getButtonClasses(button.variant)}
-                    disabled={isLoading || !isConnected}
-                >
-                    {isLoading ? (
-                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    ) : button.icon ? (
-                        <DynamicIcon name={button.icon as IconName} className="w-5 h-5 mr-2" />
-                    ) : (
-                        <UserPlus className="w-5 h-5 mr-2" />
-                    )}
-                    {tLocalized(button.label)}
-                    <ChevronDown className="w-4 h-4 ml-2" />
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="center" className="w-56">
-                {isToBeValidated ? (
-                    <DropdownMenuItem disabled className="opacity-70">
-                        <Clock className="w-4 h-4 mr-2" />
-                        {tKey("Demande en attente")}
-                    </DropdownMenuItem>
-                ) : (
-                    <DropdownMenuItem
-                        onClick={handleRequestContributor}
-                        disabled={requestToJoinMutation.isPending}
-                    >
-                        {requestToJoinMutation.isPending ? (
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        ) : (
-                            <UserPlus className="w-4 h-4 mr-2" />
-                        )}
-                        {tKey("Demander à contribuer")}
-                    </DropdownMenuItem>
-                )}
+    const { actions, statusLabel, statusIcon, statusVariant } = orgActions;
 
-                {isAdminPending ? (
-                    <DropdownMenuItem disabled className="opacity-70">
-                        <Clock className="w-4 h-4 mr-2" />
-                        {tKey("Demande admin en attente")}
-                    </DropdownMenuItem>
-                ) : (
-                    <DropdownMenuItem
-                        onClick={handleRequestAdmin}
-                        disabled={requestToJoinAdminMutation.isPending}
+    const handleActionClick = (action: EntityAction) => {
+        if (action.requiresConfirmation) {
+            setConfirmationAction(action);
+        } else {
+            action.onClick();
+        }
+    };
+
+    const handleConfirm = () => {
+        if (confirmationAction) {
+            confirmationAction.onClick();
+            setConfirmationAction(null);
+        }
+    };
+
+    const followActions = actions.filter((a) => a.type === "follow" || a.type === "unfollow");
+    const membershipActions = actions.filter((a) => a.type === "join" || a.type === "leave");
+    const invitationActions = actions.filter((a) => a.type === "accept" || a.type === "reject");
+    const pendingActions = actions.filter((a) => a.type === "pending");
+
+    const hasFollow = followActions.length > 0;
+    const hasMembership = membershipActions.length > 0;
+    const hasInvitation = invitationActions.length > 0;
+    const hasPending = pendingActions.length > 0;
+
+    return (
+        <>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button
+                        size="lg"
+                        className={getButtonClasses(statusVariant === "default" ? "primary" : "outline")}
                     >
-                        {requestToJoinAdminMutation.isPending ? (
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        ) : (
-                            <Crown className="w-4 h-4 mr-2" />
-                        )}
-                        {tKey("Demander droits admin")}
-                    </DropdownMenuItem>
-                )}
-            </DropdownMenuContent>
-        </DropdownMenu>
+                        {statusIcon}
+                        {statusLabel}
+                        <ChevronDown className="w-4 h-4 ml-2" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="center" className="w-56">
+                    {profileUrl && (
+                        <>
+                            <DropdownMenuItem asChild>
+                                <Link to={profileUrl}>
+                                    <ExternalLink className="w-4 h-4 mr-2" />
+                                    {tKey("Voir le profil")}
+                                </Link>
+                            </DropdownMenuItem>
+                            {(hasFollow || hasMembership || hasInvitation || hasPending) && (
+                                <DropdownMenuSeparator />
+                            )}
+                        </>
+                    )}
+
+                    {followActions.filter((a) => a.show).map((action) => (
+                        <DropdownMenuItem key={action.id} onClick={() => handleActionClick(action)}>
+                            {action.icon}
+                            {action.label}
+                        </DropdownMenuItem>
+                    ))}
+
+                    {hasFollow && (hasMembership || hasInvitation || hasPending) && <DropdownMenuSeparator />}
+
+                    {invitationActions.filter((a) => a.show).map((action) => (
+                        <DropdownMenuItem
+                            key={action.id}
+                            onClick={() => handleActionClick(action)}
+                            className={action.type === "reject" ? "text-destructive focus:text-destructive" : ""}
+                        >
+                            {action.icon}
+                            {action.label}
+                        </DropdownMenuItem>
+                    ))}
+
+                    {hasInvitation && (hasMembership || hasPending) && <DropdownMenuSeparator />}
+
+                    {pendingActions.filter((a) => a.show).map((action) => (
+                        <DropdownMenuItem
+                            key={action.id}
+                            disabled
+                            className="opacity-70 cursor-default"
+                        >
+                            {action.icon}
+                            {action.label}
+                        </DropdownMenuItem>
+                    ))}
+
+                    {hasPending && hasMembership && <DropdownMenuSeparator />}
+
+                    {membershipActions.filter((a) => a.show).map((action) => (
+                        <DropdownMenuItem
+                            key={action.id}
+                            onClick={() => handleActionClick(action)}
+                            className={action.isDestructive ? "text-destructive focus:text-destructive" : ""}
+                        >
+                            {action.icon}
+                            {action.label}
+                        </DropdownMenuItem>
+                    ))}
+                </DropdownMenuContent>
+            </DropdownMenu>
+
+            {confirmationAction && (
+                <ConfirmationDialog
+                    open={!!confirmationAction}
+                    onOpenChange={(open) => !open && setConfirmationAction(null)}
+                    title={confirmationAction.confirmationTitle || ""}
+                    description={confirmationAction.confirmationDescription || ""}
+                    confirmLabel={confirmationAction.confirmationConfirm || tKey("Confirmer")}
+                    cancelLabel={confirmationAction.confirmationCancel || tKey("Annuler")}
+                    onConfirm={handleConfirm}
+                    isDestructive={confirmationAction.isDestructive}
+                />
+            )}
+        </>
     );
 }
 

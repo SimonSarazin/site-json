@@ -5,23 +5,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Users, UserPlus, Settings, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { ContributorSection as ContributorSectionType } from "@/types/site-schema";
-import type { Project, User, Organization } from "@communecter/cocolight-api-client";
+import type { MemberSection as MemberSectionType } from "@/types/site-schema";
+import type { Organization, Project, User } from "@communecter/cocolight-api-client";
 import { MemberListRenderer } from "@/modules/profil/components/members/MemberListRenderer";
 import { MemberManagementDialog } from "@/modules/profil/components/members/MemberManagementDialog";
 import { InviteMemberDialog } from "@/modules/profil/components/members/InviteMemberDialog";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
 import { useEntityLabels } from "@/modules/profil/hooks/useEntityLabels";
-import { useProjectContributors } from "@/modules/profil/hooks/useMembersQuery";
+import { useOrganizationMembers, useProjectContributors } from "@/modules/profil/hooks/useMembersQuery";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { isProject } from "@/lib/getTypedEntity";
+import { isOrganization, isProject } from "@/lib/getTypedEntity";
 import { useCocolight } from "@/hooks/useCocolight";
 import CardProfile from "@/modules/search/components/card/CardProfile";
 import { SwitchDetailsMode } from "@/modules/search/components/SwitchDetailsMode";
 
-interface ContributorSectionProps {
+interface MemberSectionProps {
   id?: string;
-  props: ContributorSectionType["props"];
+  props: MemberSectionType["props"];
 }
 
 function ProfileCardListRenderer({
@@ -38,7 +38,7 @@ function ProfileCardListRenderer({
   isFetchingNextPage?: boolean;
   showBadges?: boolean;
   isPending?: boolean;
-  cardConfig?: ContributorSectionType["props"]["card"];
+  cardConfig?: MemberSectionType["props"]["card"];
   lastItemRef?: (node: HTMLElement | null) => void;
 }) {
   const [openDetails, setOpenDetails] = useState(false);
@@ -123,7 +123,7 @@ function ProfileCardListRenderer({
   );
 }
 
-export default function ContributorSection({ id, props }: ContributorSectionProps) {
+export default function MemberSection({ id, props }: MemberSectionProps) {
   const t = useT("modules/profil");
   const queryClient = useQueryClient();
 
@@ -132,62 +132,143 @@ export default function ContributorSection({ id, props }: ContributorSectionProp
   const [showManagement, setShowManagement] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
 
-  const refreshContributors = () => {
-    queryClient.invalidateQueries({ queryKey: ["project-contributors", props.projectId] });
+  const entityType = props.projectId ? "project" : "organization";
+  const entityId = props.projectId || props.organizationId;
+
+  const refreshMembers = () => {
+    if (entityType === "project") {
+      queryClient.invalidateQueries({ queryKey: ["project-contributors", entityId] });
+    } else {
+      queryClient.invalidateQueries({ queryKey: ["organization-members", entityId] });
+    }
   };
 
-  const { data: project, error: projectError } = useQuery({
-    queryKey: ["project", props.projectId, me?.id],
-    queryFn: async () => {
-      if (me?.isConnected) {
-        const projectEntity = await me.project({ id: props.projectId });
-        if (!projectEntity || !isProject(projectEntity)) {
-          throw new Error("L'entité n'est pas un projet");
-        }
-        return projectEntity as Project;
-      } else {
-        if (!api) throw new Error("API non initialisée");
+  const canFetch = !!entityId && (me?.isConnected || !!api);
 
-        const projectEntity = await api.project({ id: props.projectId });
-        if (!projectEntity || !isProject(projectEntity)) {
-          throw new Error("L'entité n'est pas un projet");
+  const { data: entity, error: entityError, isLoading: isEntityLoading } = useQuery({
+    queryKey: [entityType, entityId, me?.id],
+    queryFn: async () => {
+      if (entityType === "project") {
+        if (me?.isConnected) {
+          const projectEntity = await me.project({ id: entityId! });
+          if (!projectEntity || !isProject(projectEntity)) {
+            throw new Error("L'entité n'est pas un projet");
+          }
+          return projectEntity as Project;
+        } else {
+          if (!api) throw new Error("API non initialisée");
+          const projectEntity = await api.project({ id: entityId! });
+          if (!projectEntity || !isProject(projectEntity)) {
+            throw new Error("L'entité n'est pas un projet");
+          }
+          return projectEntity as Project;
         }
-        return projectEntity as Project;
+      } else {
+        if (me?.isConnected) {
+          const orgEntity = await me.organization({ id: entityId! });
+          if (!orgEntity || !isOrganization(orgEntity)) {
+            throw new Error("L'entité n'est pas une organisation");
+          }
+          return orgEntity as Organization;
+        } else {
+          if (!api) throw new Error("API non initialisée");
+          const orgEntity = await api.organization({ id: entityId! });
+          if (!orgEntity || !isOrganization(orgEntity)) {
+            throw new Error("L'entité n'est pas une organisation");
+          }
+          return orgEntity as Organization;
+        }
       }
     },
-    enabled: !!props.projectId && (!!me?.isConnected || !!api),
+    enabled: canFetch,
   });
 
-  const permissions = useProfilPermissions(project || null);
-  const labels = useEntityLabels(project || null);
+  const permissions = useProfilPermissions(entity || null);
+  const labels = useEntityLabels(entity || null);
 
-  // Utiliser useProjectContributors pour les différentes listes
-  const allContributors = useProjectContributors(project || null, { toBeValidated: false });
-  const pendingContributors = useProjectContributors(project || null, { toBeValidated: true });
-  const adminContributors = useProjectContributors(project || null, { isAdmin: true });
+  const orgEntity = entityType === "organization" && entity ? (entity as Organization) : null;
+  const projectEntity = entityType === "project" && entity ? (entity as Project) : null;
 
-  // Type de card à utiliser (default = MemberListRenderer, profile = CardProfile)
+  const orgMembers = useOrganizationMembers(orgEntity, { toBeValidated: false });
+  const orgPendingMembers = useOrganizationMembers(orgEntity, { toBeValidated: true });
+  const orgAdminMembers = useOrganizationMembers(orgEntity, { isAdmin: true });
+
+  const projectContributors = useProjectContributors(projectEntity, { toBeValidated: false });
+  const projectPendingContributors = useProjectContributors(projectEntity, { toBeValidated: true });
+  const projectAdminContributors = useProjectContributors(projectEntity, { isAdmin: true });
+
+  const allMembers = entityType === "project"
+    ? {
+        members: projectContributors.contributors || [],
+        totalCount: projectContributors.totalCount || 0,
+        isLoading: projectContributors.isLoading,
+        isFetchingNextPage: projectContributors.isFetchingNextPage,
+        lastItemRef: projectContributors.lastItemRef,
+      }
+    : {
+        members: orgMembers.members || [],
+        totalCount: orgMembers.totalCount || 0,
+        isLoading: orgMembers.isLoading,
+        isFetchingNextPage: orgMembers.isFetchingNextPage,
+        lastItemRef: orgMembers.lastItemRef,
+      };
+  const pendingMembers = entityType === "project"
+    ? {
+        members: projectPendingContributors.contributors || [],
+        totalCount: projectPendingContributors.totalCount || 0,
+        isLoading: projectPendingContributors.isLoading,
+        isFetchingNextPage: projectPendingContributors.isFetchingNextPage,
+        lastItemRef: projectPendingContributors.lastItemRef,
+      }
+    : {
+        members: orgPendingMembers.members || [],
+        totalCount: orgPendingMembers.totalCount || 0,
+        isLoading: orgPendingMembers.isLoading,
+        isFetchingNextPage: orgPendingMembers.isFetchingNextPage,
+        lastItemRef: orgPendingMembers.lastItemRef,
+      };
+  const adminMembers = entityType === "project"
+    ? {
+        members: projectAdminContributors.contributors || [],
+        totalCount: projectAdminContributors.totalCount || 0,
+        isLoading: projectAdminContributors.isLoading,
+        isFetchingNextPage: projectAdminContributors.isFetchingNextPage,
+        lastItemRef: projectAdminContributors.lastItemRef,
+      }
+    : {
+        members: orgAdminMembers.members || [],
+        totalCount: orgAdminMembers.totalCount || 0,
+        isLoading: orgAdminMembers.isLoading,
+        isFetchingNextPage: orgAdminMembers.isFetchingNextPage,
+        lastItemRef: orgAdminMembers.lastItemRef,
+      };
+
   const cardType = props.card?.type || "default";
   const useProfileCard = cardType === "profile";
 
-  if (projectError) {
+  if (entityError) {
     return (
       <Card id={id}>
         <CardContent className="p-8">
           <div className="text-center text-destructive">
-            Erreur lors du chargement du projet: {projectError.message}
+            Erreur lors du chargement: {entityError.message}
           </div>
         </CardContent>
       </Card>
     );
   }
 
-  if (!project) {
+  if (!entity || isEntityLoading) {
     return (
       <Card id={id}>
         <CardContent className="p-8">
-          <div className="text-center text-muted-foreground">
-            {t("ProfileMembers.loadingProject")}
+          <div className="flex flex-col items-center justify-center gap-2">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <div className="text-center text-muted-foreground">
+              {entityType === "project"
+                ? t("ProfileMembers.loadingProject")
+                : t("ProfileMembers.loadingOrganization")}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -197,7 +278,7 @@ export default function ContributorSection({ id, props }: ContributorSectionProp
   const title = props.title
     ? typeof props.title === "string"
       ? props.title
-      : props.title.fr || props.title.en || "Contributeurs"
+      : props.title.fr || props.title.en || (entityType === "project" ? "Contributeurs" : "Membres")
     : labels.title;
 
   const headerContent = (
@@ -257,7 +338,7 @@ export default function ContributorSection({ id, props }: ContributorSectionProp
     return (
       <MemberListRenderer
         members={members}
-        entity={project}
+        entity={entity}
         isLoading={isLoading}
         showActions={false}
         showBadges={props.showRole}
@@ -268,7 +349,6 @@ export default function ContributorSection({ id, props }: ContributorSectionProp
     );
   };
 
-  // Contenu des tabs
   const tabsContent = (
     <Tabs value={selectedTab} onValueChange={setSelectedTab}>
       <TabsList className={cn(
@@ -276,63 +356,62 @@ export default function ContributorSection({ id, props }: ContributorSectionProp
         permissions.isAdmin ? "grid-cols-3" : "grid-cols-2"
       )}>
         <TabsTrigger value="all" className={cn("text-xs sm:text-sm")}>
-          {labels.members} ({allContributors.totalCount})
+          {labels.members} ({allMembers.totalCount})
         </TabsTrigger>
         {permissions.isAdmin && (
           <TabsTrigger value="pending" className={cn("text-xs sm:text-sm")}>
-            {labels.pending} ({pendingContributors.totalCount})
+            {labels.pending} ({pendingMembers.totalCount})
           </TabsTrigger>
         )}
         <TabsTrigger value="admins" className={cn("text-xs sm:text-sm")}>
-          {labels.admin}s ({adminContributors.totalCount})
+          {labels.admin}s ({adminMembers.totalCount})
         </TabsTrigger>
       </TabsList>
 
       <TabsContent value="all" className="mt-4">
         {renderMemberList(
-          allContributors.contributors as (User | Organization)[],
-          allContributors.isLoading,
-          allContributors.isFetchingNextPage,
+          allMembers.members as (User | Organization)[],
+          allMembers.isLoading,
+          allMembers.isFetchingNextPage,
           false,
-          allContributors.lastItemRef
+          allMembers.lastItemRef
         )}
       </TabsContent>
 
       {permissions.isAdmin && (
         <TabsContent value="pending" className="mt-4">
           {renderMemberList(
-            pendingContributors.contributors as (User | Organization)[],
-            pendingContributors.isLoading,
-            pendingContributors.isFetchingNextPage,
+            pendingMembers.members as (User | Organization)[],
+            pendingMembers.isLoading,
+            pendingMembers.isFetchingNextPage,
             true,
-            pendingContributors.lastItemRef
+            pendingMembers.lastItemRef
           )}
         </TabsContent>
       )}
 
       <TabsContent value="admins" className="mt-4">
         {renderMemberList(
-          adminContributors.contributors as (User | Organization)[],
-          adminContributors.isLoading,
-          adminContributors.isFetchingNextPage,
+          adminMembers.members as (User | Organization)[],
+          adminMembers.isLoading,
+          adminMembers.isFetchingNextPage,
           false,
-          adminContributors.lastItemRef
+          adminMembers.lastItemRef
         )}
       </TabsContent>
     </Tabs>
   );
 
-  // Dialogs avec rafraîchissement après fermeture
   const dialogs = (
     <>
       {showManagement && (
         <MemberManagementDialog
-          entity={project}
+          entity={entity}
           open={showManagement}
           onOpenChange={(open) => {
             setShowManagement(open);
             if (!open) {
-              refreshContributors();
+              refreshMembers();
             }
           }}
         />
@@ -340,12 +419,12 @@ export default function ContributorSection({ id, props }: ContributorSectionProp
 
       {showInvite && (
         <InviteMemberDialog
-          entity={project}
+          entity={entity}
           open={showInvite}
           onOpenChange={(open) => {
             setShowInvite(open);
             if (!open) {
-              refreshContributors();
+              refreshMembers();
             }
           }}
         />
