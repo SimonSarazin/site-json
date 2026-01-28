@@ -138,6 +138,7 @@ export const SearchProStaticSectionSchema = z.object({
     showActiveFiltersTags: z.boolean().default(false),
     disableInfiniteScroll: z.boolean().optional(),
     showDetailedViewToggle: z.boolean().optional(),
+    width: z.enum(["container"]).optional(),
     defaultDetailedView: z.boolean().optional(),
     customHeader: z.object({
       title: LocalizedString.optional(),

@@ -20,11 +20,12 @@ export function SearchProStaticSection({
   props,
 }: SearchSectionStaticWrapperProps) {
   const inSection = useInSections(id || "");
+  const widthClass = props.width === "container" ? "mx-auto max-w-6xl" : "w-full";
 
   return (
     <section
       id={id}
-      className="relative flex flex-col items-center justify-center w-full"
+      className={`relative flex flex-col items-center justify-center ${widthClass}`}
     >
       <SearchPropsProvider props={props} inSection={inSection}>
         <SearchProStatic props={props} />
