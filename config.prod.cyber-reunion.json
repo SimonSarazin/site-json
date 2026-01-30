@@ -36,8 +36,8 @@
     },
     "ctaButton": {
       "label": {
-        "fr": "Mon Aide Cyber",
-        "en": "My Cyber Help"
+        "fr": "Se connecter",
+        "en": "Log in"
       },
       "path": "/aide-cyber"
     },
