@@ -542,18 +542,18 @@
               ],
               "notSourceKey": true,
               "defaultFilters": {
-                "links.preferences.toBeValidated.cyberReunion": {
+                "links.preferences.toBeValidated.openAtlas": {
                   "$exists": false
                 },
                 "$or": {
-                  "links.contributors.695b58ca8693fc2c121208e4": {
+                  "links.contributors.555eba56c655675cdd65bf19": {
                     "$exists": true
                   },
-                  "parent.695b58ca8693fc2c121208e4": {
+                  "parent.555eba56c655675cdd65bf19": {
                     "$exists": true
                   }
                 },
-                "links.contributors.695b58ca8693fc2c121208e4": {
+                "links.contributors.555eba56c655675cdd65bf19": {
                   "$exists": true
                 }
               }
@@ -635,7 +635,7 @@
                     "type": "member",
                     "id": "section-membres",
                     "props": {
-                      "organizationId": "695b58ca8693fc2c121208e4",
+                      "organizationId": "555eba56c655675cdd65bf19",
                       "title": {
                         "fr": "Membres de Cyber Réunion",
                         "en": "Cyber Réunion Members"
@@ -681,10 +681,10 @@
                         ],
                         "notSourceKey": true,
                         "defaultFilters": {
-                          "preferences.toBeValidated.cyberReunion": {
+                          "preferences.toBeValidated.openAtlas": {
                             "$exists": false
                           },
-                          "links.members.695b58ca8693fc2c121208e4": {
+                          "links.members.555eba56c655675cdd65bf19": {
                             "$exists": true
                           }
                         }

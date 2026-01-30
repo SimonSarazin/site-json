@@ -3,51 +3,44 @@
   "generated": "2025-09-08T10:30:00.000Z",
   "meta": {
     "title": {
-      "fr": "EDIH - Cyber Réunion",
-      "en": "EDIH - Cyber Réunion"
+      "fr": "Sport Santé Bien-être - La Réunion",
+      "en": "Sport Health Wellness - Réunion"
     },
     "description": {
-      "fr": "EDIH - Cyber Réunion - Pôle européen d'innovation numérique pour la cybersécurité à La Réunion",
-      "en": "EDIH - Cyber Réunion - European Digital Innovation Hub for cybersecurity in Réunion"
+      "fr": "Sport Santé Bien-être - Plateforme dédiée à la promotion du sport santé et du bien-être à La Réunion",
+      "en": "Sport Health Wellness - Platform dedicated to promoting sport health and wellness in Réunion"
     },
     "defaultLang": "fr",
     "languages": [
       "fr",
       "en"
     ],
-    "favicon": "/images/cyberReunion/logo.png",
-    "themeColor": "#d4a520",
+    "favicon": "/images/sportSanteBienetre/logo.png",
+    "themeColor": "#4CAF50",
     "keywords": [
-      "cybersécurité",
-      "EDIH",
-      "innovation",
-      "numérique",
+      "sport santé",
+      "bien-être",
+      "activité physique",
       "La Réunion",
-      "sécurité informatique"
+      "santé",
+      "fitness",
+      "prévention"
     ]
   },
   "header": {
     "type": "cyber-reunion",
     "path": "/",
-    "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10\"></path></svg>",
+    "logo": "images/sportSanteBienetre/logo.png",
     "logoTitle": {
-      "fr": "Cyber Réunion",
-      "en": "Cyber Réunion"
+      "fr": "Sport Santé Bien-être",
+      "en": "Sport Health Wellness"
     },
     "ctaButton": {
       "label": {
-        "fr": "Mon Aide Cyber",
-        "en": "My Cyber Help"
+        "fr": "Se connecter",
+        "en": "Log in"
       },
-      "path": "/aide-cyber"
-    },
-    "urgenceButton": {
-      "label": {
-        "fr": "Urgence",
-        "en": "Emergency"
-      },
-      "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3\"></path><path d=\"M12 9v4\"></path><path d=\"M12 17h.01\"></path></svg>",
-      "path": "/urgence-cyber"
+      "path": "/activites"
     },
     "nav": [
       {
@@ -88,68 +81,68 @@
     {
       "path": "/",
       "title": {
-        "fr": "Accueil - Cyber Réunion",
-        "en": "Home - Cyber Réunion"
+        "fr": "Accueil - Sport Santé Bien-être",
+        "en": "Home - Sport Health Wellness"
       },
       "layout": "fullwidth",
       "sections": [
         {
           "type": "hero-rezo-la-mer",
-          "id": "hero-cyber-reunion",
+          "id": "hero-sport-sante",
           "props": {
             "variant": "cyber",
             "headline": {
-              "fr": "Cyber Réunion",
-              "en": "Cyber Réunion"
+              "fr": "Sport Santé Bien-être",
+              "en": "Sport Health Wellness"
             },
             "subhead": {
-              "fr": "Pôle européen d'innovation numérique pour la cybersécurité à La Réunion. Accompagnement, formation et sensibilisation pour protéger vos données.",
-              "en": "European Digital Innovation Hub for cybersecurity in Réunion. Support, training and awareness to protect your data."
+              "fr": "Bienvenue sur le site du Sport Santé à La Réunion. Découvrez les activités physiques adaptées, les structures partenaires et les ressources pour améliorer votre bien-être.",
+              "en": "Welcome to the Sport Health site in Réunion. Discover adapted physical activities, partner structures and resources to improve your well-being."
             },
-            "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10\"></path></svg>",
-            "backgroundImage": "/images/cyberReunion/hero.png",
+            "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 8h1a4 4 0 0 1 0 8h-1\"></path><path d=\"M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z\"></path><line x1=\"6\" y1=\"1\" x2=\"6\" y2=\"4\"></line><line x1=\"10\" y1=\"1\" x2=\"10\" y2=\"4\"></line><line x1=\"14\" y1=\"1\" x2=\"14\" y2=\"4\"></line></svg>",
+            "backgroundImage": "/images/sportSanteBienetre/hero.png",
             "backgroundImageAlt": {
-              "fr": "Fond cybersécurité Cyber Réunion",
-              "en": "Cyber Réunion cybersecurity background"
+              "fr": "Sport Santé Bien-être La Réunion",
+              "en": "Sport Health Wellness Réunion"
             },
             "badges": [
               {
                 "label": {
-                  "fr": "Protection des données",
-                  "en": "Data protection"
+                  "fr": "Activité physique adaptée",
+                  "en": "Adapted physical activity"
                 },
-                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\"></rect><path d=\"M7 11V7a5 5 0 0 1 10 0v4\"></path></svg>"
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"12\" cy=\"5\" r=\"3\"></circle><path d=\"m6.5 10 1.5 2h8l1.5-2\"></path><path d=\"M12 12v4\"></path><path d=\"m7 22 3-8 2 2 2-2 3 8\"></path></svg>"
               },
               {
                 "label": {
-                  "fr": "Formation cyber",
-                  "en": "Cyber training"
+                  "fr": "Prévention santé",
+                  "en": "Health prevention"
                 },
-                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M22 10v6M2 10l10-5 10 5-10 5z\"></path><path d=\"M6 12v5c3 3 9 3 12 0v-5\"></path></svg>"
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\"></path></svg>"
               },
               {
                 "label": {
-                  "fr": "Innovation EDIH",
-                  "en": "EDIH Innovation"
+                  "fr": "Bien-être",
+                  "en": "Wellness"
                 },
-                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83\"></path></svg>"
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"M8 14s1.5 2 4 2 4-2 4-2\"></path><line x1=\"9\" y1=\"9\" x2=\"9.01\" y2=\"9\"></line><line x1=\"15\" y1=\"9\" x2=\"15.01\" y2=\"9\"></line></svg>"
               }
             ],
             "ctaButtons": [
               {
                 "label": {
-                  "fr": "Mon Aide Cyber",
-                  "en": "My Cyber Help"
+                  "fr": "Trouver une activité",
+                  "en": "Find an activity"
                 },
-                "path": "/aide-cyber",
+                "path": "/activites",
                 "variant": "default"
               },
               {
                 "label": {
-                  "fr": "Signaler une urgence",
-                  "en": "Report emergency"
+                  "fr": "Rejoindre la communauté",
+                  "en": "Join the community"
                 },
-                "path": "/hero.png",
+                "path": "/communaute",
                 "variant": "accent"
               }
             ],
@@ -160,7 +153,7 @@
           "type": "html",
           "id": "mission",
           "props": {
-            "html": "<section class=\"relative py-32 px-4 overflow-hidden\"><div class=\"absolute inset-0 z-0\"><img src=\"/images/cyberReunion/mission.png\" alt=\"Mission Cyber Réunion\" class=\"w-full h-full object-cover\" /><div class=\"absolute inset-0 bg-linear-to-r from-background via-background/80 to-background/60\"></div></div><div class=\"relative z-10 container mx-auto max-w-4xl\"><div class=\"space-y-8\"><h2 class=\"text-4xl md:text-5xl font-bold mb-6 text-foreground\">Notre mission</h2><div class=\"space-y-6 text-lg md:text-xl leading-relaxed\"><p class=\"text-muted-foreground\"><span class=\"text-primary font-semibold\">Cyber Réunion</span> est le pôle européen d'innovation numérique (EDIH) dédié à la <span class=\"text-primary font-medium\">cybersécurité</span> pour les entreprises et collectivités de La Réunion.</p><p class=\"text-muted-foreground\">Nous accompagnons la <span class=\"text-accent font-medium\">transformation numérique sécurisée</span> de notre territoire en proposant des services d'évaluation, de formation et de mise en relation avec l'écosystème cyber régional et européen.</p><div class=\"grid md:grid-cols-2 gap-6 pt-8\"><div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-sm border border-primary/20\"><h3 class=\"text-2xl font-semibold mb-3 text-primary\">Accompagnement personnalisé</h3><p class=\"text-muted-foreground\">Diagnostic cyber, plan d'action sur mesure et suivi pour renforcer votre posture de sécurité informatique</p></div><div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-sm border border-accent/20\"><h3 class=\"text-2xl font-semibold mb-3 text-accent\">Réponse aux incidents</h3><p class=\"text-muted-foreground\">En cas d'urgence cyber, notre équipe vous guide dans les premières actions et vous oriente vers les bons interlocuteurs</p></div></div></div></div></div></section>"
+            "html": "<section class=\"relative py-32 px-4 overflow-hidden\"><div class=\"absolute inset-0 z-0\"><img src=\"/images/sportSanteBienetre/mission.png\" alt=\"Mission Sport Santé Bien-être\" class=\"w-full h-full object-cover\" /><div class=\"absolute inset-0 bg-linear-to-r from-background via-background/80 to-background/60\"></div></div><div class=\"relative z-10 container mx-auto max-w-4xl\"><div class=\"space-y-8\"><h2 class=\"text-4xl md:text-5xl font-bold mb-6 text-foreground\">Notre mission</h2><div class=\"space-y-6 text-lg md:text-xl leading-relaxed\"><p class=\"text-muted-foreground\"><span class=\"text-primary font-semibold\">Sport Santé Bien-être</span> est la plateforme dédiée à la promotion de l'<span class=\"text-primary font-medium\">activité physique adaptée</span> et du bien-être pour tous les Réunionnais.</p><p class=\"text-muted-foreground\">Nous accompagnons les habitants de La Réunion dans leur <span class=\"text-accent font-medium\">parcours vers une meilleure santé</span> en proposant des ressources, des activités et un réseau de professionnels qualifiés.</p><div class=\"grid md:grid-cols-2 gap-6 pt-8\"><div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-sm border border-primary/20\"><h3 class=\"text-2xl font-semibold mb-3 text-primary\">Activités adaptées</h3><p class=\"text-muted-foreground\">Des programmes d'activités physiques adaptées à chaque profil : seniors, personnes en situation de handicap, maladies chroniques</p></div><div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-sm border border-accent/20\"><h3 class=\"text-2xl font-semibold mb-3 text-accent\">Réseau de professionnels</h3><p class=\"text-muted-foreground\">Un réseau de coachs, kinésithérapeutes et structures partenaires pour vous accompagner dans votre démarche santé</p></div></div></div></div></div></section>"
           }
         },
         {
@@ -169,83 +162,83 @@
           "props": {
             "variant": "cyber",
             "headline": {
-              "fr": "Nos domaines d'expertise",
-              "en": "Our areas of expertise"
+              "fr": "Nos domaines d'action",
+              "en": "Our areas of action"
             },
             "subhead": {
-              "fr": "Des prestataires certifiés pour couvrir tous les aspects de votre cybersécurité",
-              "en": "Certified providers to cover all aspects of your cybersecurity"
+              "fr": "Des solutions adaptées pour améliorer votre santé par l'activité physique",
+              "en": "Adapted solutions to improve your health through physical activity"
             },
             "features": [
               {
-                "icon": "shield",
+                "icon": "heart",
                 "title": {
-                  "fr": "Gouvernance",
-                  "en": "Governance"
+                  "fr": "Prévention santé",
+                  "en": "Health prevention"
                 },
                 "description": {
-                  "fr": "Politique de sécurité, analyse de risques, conformité RGPD et stratégie cyber adaptée à votre entreprise",
-                  "en": "Security policy, risk analysis, GDPR compliance and cyber strategy tailored to your business"
-                },
-                "color": "primary"
-              },
-              {
-                "icon": "server",
-                "title": {
-                  "fr": "Sécurité des infrastructures",
-                  "en": "Infrastructure security"
-                },
-                "description": {
-                  "fr": "Protection de vos serveurs, réseaux, cloud et systèmes critiques contre les cybermenaces",
-                  "en": "Protection of your servers, networks, cloud and critical systems against cyber threats"
-                },
-                "color": "accent"
-              },
-              {
-                "icon": "lock",
-                "title": {
-                  "fr": "Sécurité des accès",
-                  "en": "Access security"
-                },
-                "description": {
-                  "fr": "Gestion des identités, authentification forte, contrôle d'accès et protection des données sensibles",
-                  "en": "Identity management, strong authentication, access control and sensitive data protection"
-                },
-                "color": "primary"
-              },
-              {
-                "icon": "eye",
-                "title": {
-                  "fr": "Sécurité des postes",
-                  "en": "Endpoint security"
-                },
-                "description": {
-                  "fr": "Antivirus, EDR, protection des endpoints et sécurisation des équipements de travail",
-                  "en": "Antivirus, EDR, endpoint protection and securing work equipment"
-                },
-                "color": "accent"
-              },
-              {
-                "icon": "graduation-cap",
-                "title": {
-                  "fr": "Sensibilisation",
-                  "en": "Awareness"
-                },
-                "description": {
-                  "fr": "Formation des collaborateurs aux bonnes pratiques et tests de phishing pour renforcer la vigilance",
-                  "en": "Training employees on best practices and phishing tests to strengthen vigilance"
+                  "fr": "Programmes de prévention des maladies chroniques par l'activité physique régulière et adaptée",
+                  "en": "Chronic disease prevention programs through regular and adapted physical activity"
                 },
                 "color": "primary"
               },
               {
                 "icon": "users",
                 "title": {
-                  "fr": "Réaction cyberattaque",
-                  "en": "Cyber attack response"
+                  "fr": "Sport pour tous",
+                  "en": "Sport for all"
                 },
                 "description": {
-                  "fr": "Réponse aux incidents, forensic, plan de continuité d'activité et gestion de crise cyber",
-                  "en": "Incident response, forensics, business continuity plan and cyber crisis management"
+                  "fr": "Activités accessibles à tous les publics : seniors, personnes en situation de handicap, débutants",
+                  "en": "Activities accessible to all audiences: seniors, people with disabilities, beginners"
+                },
+                "color": "accent"
+              },
+              {
+                "icon": "activity",
+                "title": {
+                  "fr": "Activité physique adaptée",
+                  "en": "Adapted physical activity"
+                },
+                "description": {
+                  "fr": "Des programmes sur mesure encadrés par des professionnels diplômés en APA",
+                  "en": "Tailored programs supervised by professionals with APA degrees"
+                },
+                "color": "primary"
+              },
+              {
+                "icon": "smile",
+                "title": {
+                  "fr": "Bien-être mental",
+                  "en": "Mental wellness"
+                },
+                "description": {
+                  "fr": "Yoga, méditation, relaxation : des activités pour prendre soin de votre santé mentale",
+                  "en": "Yoga, meditation, relaxation: activities to take care of your mental health"
+                },
+                "color": "accent"
+              },
+              {
+                "icon": "apple",
+                "title": {
+                  "fr": "Nutrition",
+                  "en": "Nutrition"
+                },
+                "description": {
+                  "fr": "Conseils nutritionnels et accompagnement diététique pour une approche globale de la santé",
+                  "en": "Nutritional advice and dietary support for a comprehensive health approach"
+                },
+                "color": "primary"
+              },
+              {
+                "icon": "map-pin",
+                "title": {
+                  "fr": "Structures partenaires",
+                  "en": "Partner structures"
+                },
+                "description": {
+                  "fr": "Un réseau de salles, associations et clubs partenaires sur toute l'île de La Réunion",
+                  "en": "A network of gyms, associations and partner clubs throughout Réunion Island"
                 },
                 "color": "accent"
               }
@@ -262,19 +255,19 @@
               "en": "Take action"
             },
             "subhead": {
-              "fr": "Engagez-vous concrètement pour la transition selon vos envies et disponibilités",
-              "en": "Get involved in the transition according to your desires and availability"
+              "fr": "Commencez votre parcours vers une meilleure santé dès aujourd'hui",
+              "en": "Start your journey to better health today"
             },
             "actions": [
               {
                 "icon": "plus-circle",
                 "title": {
-                  "fr": "Soumettre une initiative",
-                  "en": "Submit an initiative"
+                  "fr": "Proposer une activité",
+                  "en": "Propose an activity"
                 },
                 "subtitle": {
-                  "fr": "Proposez votre projet",
-                  "en": "Propose your project"
+                  "fr": "Partagez votre projet",
+                  "en": "Share your project"
                 },
                 "href": "/proposer-projet",
                 "color": "primary"
@@ -282,40 +275,40 @@
               {
                 "icon": "users",
                 "title": {
-                  "fr": "Participer",
-                  "en": "Participate"
+                  "fr": "Rejoindre un groupe",
+                  "en": "Join a group"
                 },
                 "subtitle": {
-                  "fr": "Ateliers collectifs",
-                  "en": "Collective workshops"
+                  "fr": "Activités collectives",
+                  "en": "Group activities"
                 },
-                "href": "/participer",
+                "href": "/communaute",
                 "color": "teal"
               },
               {
-                "icon": "alert-triangle",
+                "icon": "calendar",
                 "title": {
-                  "fr": "Actions urgentes",
-                  "en": "Urgent actions"
+                  "fr": "Événements",
+                  "en": "Events"
                 },
                 "subtitle": {
-                  "fr": "Priorités du moment",
-                  "en": "Current priorities"
+                  "fr": "Agenda santé",
+                  "en": "Health agenda"
                 },
-                "href": "/urgence-cyber",
+                "href": "/evenements",
                 "color": "amber"
               },
               {
-                "icon": "coins",
+                "icon": "heart",
                 "title": {
-                  "fr": "Co-financer",
-                  "en": "Co-finance"
+                  "fr": "Devenir partenaire",
+                  "en": "Become a partner"
                 },
                 "subtitle": {
-                  "fr": "Soutenez une initiative",
-                  "en": "Support an initiative"
+                  "fr": "Rejoignez le réseau",
+                  "en": "Join the network"
                 },
-                "href": "/projets",
+                "href": "/devenir-partenaire",
                 "color": "eco"
               }
             ]
@@ -327,17 +320,17 @@
           "props": {
             "variant": "cyber",
             "headline": {
-              "fr": "L'écosystème cyber réunionnais",
-              "en": "The Réunion cyber ecosystem"
+              "fr": "La communauté Sport Santé",
+              "en": "The Sport Health Community"
             },
             "subhead": {
-              "fr": "Un réseau d'experts locaux pour accompagner la transformation numérique sécurisée de nos entreprises",
-              "en": "A network of local experts to support the secure digital transformation of our businesses"
+              "fr": "Un réseau de professionnels et de structures engagés pour votre bien-être à La Réunion",
+              "en": "A network of professionals and structures committed to your well-being in Réunion"
             },
-            "image": "/images/cyberReunion/community.png",
+            "image": "/images/sportSanteBienetre/community.png",
             "imageAlt": {
-              "fr": "Événement cybersécurité à La Réunion",
-              "en": "Cybersecurity event in Réunion"
+              "fr": "Communauté Sport Santé à La Réunion",
+              "en": "Sport Health Community in Réunion"
             },
             "actions": [
               {
@@ -347,8 +340,8 @@
                   "en": "Discover projects"
                 },
                 "description": {
-                  "fr": "Explorez les projets cybersécurité en cours à La Réunion",
-                  "en": "Explore ongoing cybersecurity projects in Réunion"
+                  "fr": "Explorez les initiatives sport santé en cours à La Réunion",
+                  "en": "Explore ongoing sport health initiatives in Réunion"
                 },
                 "ctaLabel": {
                   "fr": "Voir les projets",
@@ -359,82 +352,82 @@
               {
                 "icon": "clipboard-check",
                 "title": {
-                  "fr": "Diagnostic cyber",
-                  "en": "Cyber assessment"
+                  "fr": "Bilan de forme",
+                  "en": "Fitness assessment"
                 },
                 "description": {
-                  "fr": "Évaluez gratuitement le niveau de sécurité de votre entreprise",
-                  "en": "Assess your company's security level for free"
+                  "fr": "Évaluez votre condition physique et recevez des recommandations personnalisées",
+                  "en": "Assess your fitness level and receive personalized recommendations"
                 },
                 "ctaLabel": {
-                  "fr": "Faire le diagnostic",
+                  "fr": "Faire le bilan",
                   "en": "Start assessment"
                 },
-                "href": "/aide-cyber"
+                "href": "/bilan-forme"
               },
               {
                 "icon": "badge-check",
                 "title": {
-                  "fr": "Devenir prestataire",
-                  "en": "Become a provider"
+                  "fr": "Devenir partenaire",
+                  "en": "Become a partner"
                 },
                 "description": {
-                  "fr": "Rejoignez le réseau des experts cyber de La Réunion",
-                  "en": "Join the network of cyber experts in Réunion"
+                  "fr": "Rejoignez le réseau des professionnels du sport santé à La Réunion",
+                  "en": "Join the network of sport health professionals in Réunion"
                 },
                 "ctaLabel": {
                   "fr": "Rejoindre",
                   "en": "Join"
                 },
-                "href": "/rejoindre"
+                "href": "/devenir-partenaire"
               },
               {
-                "icon": "alert-triangle",
+                "icon": "phone",
                 "title": {
-                  "fr": "Urgence Cyber",
-                  "en": "Cyber Emergency"
+                  "fr": "Contact",
+                  "en": "Contact"
                 },
                 "description": {
-                  "fr": "Victime d'une cyberattaque ? Obtenez de l'aide immédiatement",
-                  "en": "Victim of a cyber attack? Get help immediately"
+                  "fr": "Une question ? Contactez notre équipe pour plus d'informations",
+                  "en": "Have a question? Contact our team for more information"
                 },
                 "ctaLabel": {
-                  "fr": "Appel urgence",
-                  "en": "Emergency call"
+                  "fr": "Nous contacter",
+                  "en": "Contact us"
                 },
-                "href": "/urgence-cyber"
+                "href": "/contact"
               }
             ],
             "stats": [
               {
+                "value": "100+",
+                "label": {
+                  "fr": "Structures partenaires",
+                  "en": "Partner structures"
+                },
+                "color": "primary"
+              },
+              {
+                "value": "500+",
+                "label": {
+                  "fr": "Participants actifs",
+                  "en": "Active participants"
+                },
+                "color": "primary"
+              },
+              {
                 "value": "50+",
                 "label": {
-                  "fr": "Prestataires certifiés",
-                  "en": "Certified providers"
-                },
-                "color": "primary"
-              },
-              {
-                "value": "200+",
-                "label": {
-                  "fr": "Entreprises accompagnées",
-                  "en": "Companies supported"
-                },
-                "color": "primary"
-              },
-              {
-                "value": "6",
-                "label": {
-                  "fr": "Domaines d'expertise",
-                  "en": "Areas of expertise"
+                  "fr": "Activités proposées",
+                  "en": "Activities offered"
                 },
                 "color": "accent"
               },
               {
-                "value": "24/7",
+                "value": "24",
                 "label": {
-                  "fr": "Assistance disponible",
-                  "en": "Support available"
+                  "fr": "Communes couvertes",
+                  "en": "Municipalities covered"
                 },
                 "color": "primary"
               }
@@ -447,24 +440,24 @@
           "props": {
             "variant": "cyber",
             "headline": {
-              "fr": "Protégez votre entreprise dès aujourd'hui",
-              "en": "Protect your business today"
+              "fr": "Prenez soin de votre santé dès aujourd'hui",
+              "en": "Take care of your health today"
             },
             "subhead": {
-              "fr": "Rejoignez l'écosystème Cyber Réunion et bénéficiez de l'accompagnement EDIH pour sécuriser votre transformation numérique",
-              "en": "Join the Cyber Réunion ecosystem and benefit from EDIH support to secure your digital transformation"
+              "fr": "Rejoignez la communauté Sport Santé Bien-être et découvrez toutes les ressources pour améliorer votre qualité de vie",
+              "en": "Join the Sport Health Wellness community and discover all the resources to improve your quality of life"
             },
             "newsletterPlaceholder": {
-              "fr": "Votre email professionnel",
-              "en": "Your professional email"
+              "fr": "Votre email",
+              "en": "Your email"
             },
             "newsletterButtonLabel": {
-              "fr": "S'abonner",
+              "fr": "S'inscrire",
               "en": "Subscribe"
             },
             "newsletterDisclaimer": {
-              "fr": "Recevez les alertes cyber et actualités EDIH Cyber Réunion",
-              "en": "Receive cyber alerts and EDIH Cyber Réunion news"
+              "fr": "Recevez nos conseils santé et les actualités du réseau Sport Santé Bien-être",
+              "en": "Receive our health tips and Sport Health Wellness network news"
             },
             "buttons": [
               {
@@ -477,10 +470,10 @@
               },
               {
                 "label": {
-                  "fr": "Signaler un incident",
-                  "en": "Report an incident"
+                  "fr": "Nous contacter",
+                  "en": "Contact us"
                 },
-                "href": "/urgence-cyber",
+                "href": "/contact",
                 "variant": "accent"
               }
             ]
@@ -491,22 +484,22 @@
     {
       "path": "/projets",
       "title": {
-        "fr": "Projets - Cyber Réunion",
-        "en": "Projects - Cyber Réunion"
+        "fr": "Projets - Sport Santé Bien-être",
+        "en": "Projects - Sport Health Wellness"
       },
       "layout": "fullwidth",
       "sections": [
         {
           "type": "title-with-filters-rezo-la-mer",
-          "id": "projets-cyber",
+          "id": "projets-sport-sante",
           "props": {
             "headline": {
               "fr": "Projets",
               "en": "Projects"
             },
             "subhead": {
-              "fr": "Découvrez les projets cybersécurité à La Réunion",
-              "en": "Discover cybersecurity projects in Réunion"
+              "fr": "Découvrez les projets sport santé à La Réunion",
+              "en": "Discover sport health projects in Réunion"
             },
             "buttons": [
               {
@@ -542,18 +535,18 @@
               ],
               "notSourceKey": true,
               "defaultFilters": {
-                "links.preferences.toBeValidated.cyberReunion": {
+                "links.preferences.toBeValidated.sportSanteBienetre": {
                   "$exists": false
                 },
                 "$or": {
-                  "links.contributors.695b58ca8693fc2c121208e4": {
+                  "links.contributors.682b2ac5e05a1d45844340e7": {
                     "$exists": true
                   },
-                  "parent.695b58ca8693fc2c121208e4": {
+                  "parent.682b2ac5e05a1d45844340e7": {
                     "$exists": true
                   }
                 },
-                "links.contributors.695b58ca8693fc2c121208e4": {
+                "links.contributors.682b2ac5e05a1d45844340e7": {
                   "$exists": true
                 }
               }
@@ -578,8 +571,8 @@
     {
       "path": "/communaute",
       "title": {
-        "fr": "Communauté cyber - Cyber Réunion",
-        "en": "Cyber Community - Cyber Réunion"
+        "fr": "Communauté - Sport Santé Bien-être",
+        "en": "Community - Sport Health Wellness"
       },
       "layout": "fullwidth",
       "sections": [
@@ -588,12 +581,12 @@
           "id": "communaute-header",
           "props": {
             "headline": {
-              "fr": "Communauté cyber",
-              "en": "Cyber Community"
+              "fr": "Communauté Sport Santé",
+              "en": "Sport Health Community"
             },
             "subhead": {
-              "fr": "Rejoignez le réseau des acteurs de la cybersécurité à La Réunion",
-              "en": "Join the cybersecurity network in Réunion"
+              "fr": "Rejoignez le réseau des acteurs du sport santé à La Réunion",
+              "en": "Join the sport health network in Réunion"
             },
             "buttons": [
               {
@@ -607,8 +600,8 @@
               },
               {
                 "label": {
-                  "fr": "Inscrire mon entreprise",
-                  "en": "Register my company"
+                  "fr": "Inscrire ma structure",
+                  "en": "Register my structure"
                 },
                 "icon": "building-2",
                 "href": "/inscrire-organisation",
@@ -635,10 +628,10 @@
                     "type": "member",
                     "id": "section-membres",
                     "props": {
-                      "organizationId": "695b58ca8693fc2c121208e4",
+                      "organizationId": "682b2ac5e05a1d45844340e7",
                       "title": {
-                        "fr": "Membres de Cyber Réunion",
-                        "en": "Cyber Réunion Members"
+                        "fr": "Membres Sport Santé Bien-être",
+                        "en": "Sport Health Wellness Members"
                       },
                       "showRole": true,
                       "showManagement": true,
@@ -681,10 +674,10 @@
                         ],
                         "notSourceKey": true,
                         "defaultFilters": {
-                          "preferences.toBeValidated.cyberReunion": {
+                          "preferences.toBeValidated.sportSanteBienetre": {
                             "$exists": false
                           },
-                          "links.members.695b58ca8693fc2c121208e4": {
+                          "links.members.682b2ac5e05a1d45844340e7": {
                             "$exists": true
                           }
                         }
@@ -714,16 +707,16 @@
   ],
   "footer": {
     "type": "cyber-reunion",
-    "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10\"></path></svg>",
+    "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 8h1a4 4 0 0 1 0 8h-1\"></path><path d=\"M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z\"></path><line x1=\"6\" y1=\"1\" x2=\"6\" y2=\"4\"></line><line x1=\"10\" y1=\"1\" x2=\"10\" y2=\"4\"></line><line x1=\"14\" y1=\"1\" x2=\"14\" y2=\"4\"></line></svg>",
     "logoTitle": {
-      "fr": "Cyber Réunion",
-      "en": "Cyber Réunion"
+      "fr": "Sport Santé Bien-être",
+      "en": "Sport Health Wellness"
     },
     "description": {
-      "fr": "EDIH La Réunion - Hub Européen d'Innovation Numérique en Cybersécurité",
-      "en": "EDIH Réunion - European Digital Innovation Hub for Cybersecurity"
+      "fr": "Plateforme dédiée à la promotion du sport santé et du bien-être à La Réunion",
+      "en": "Platform dedicated to promoting sport health and wellness in Réunion"
     },
-    "website": "https://www.cyber-reunion.fr",
+    "website": "https://www.sport-sante-bien-etre.re",
     "columns": [
       {
         "title": {
@@ -739,24 +732,24 @@
             }
           },
           {
-            "href": "/aide-cyber",
+            "href": "/activites",
             "label": {
-              "fr": "Mon Aide Cyber",
-              "en": "My Cyber Help"
+              "fr": "Trouver une activité",
+              "en": "Find an activity"
             }
           },
           {
-            "href": "/diagnostic",
+            "href": "/bilan-forme",
             "label": {
-              "fr": "Diagnostic gratuit",
-              "en": "Free assessment"
+              "fr": "Bilan de forme",
+              "en": "Fitness assessment"
             }
           },
           {
-            "href": "/urgence-cyber",
+            "href": "/evenements",
             "label": {
-              "fr": "Urgence Cyber",
-              "en": "Cyber Emergency"
+              "fr": "Événements",
+              "en": "Events"
             }
           },
           {
@@ -770,58 +763,58 @@
       },
       {
         "title": {
-          "fr": "Domaines",
-          "en": "Domains"
+          "fr": "Activités",
+          "en": "Activities"
         },
         "links": [
           {
-            "href": "/domaines/gouvernance",
+            "href": "/activites/sport-adapte",
             "label": {
-              "fr": "Gouvernance",
-              "en": "Governance"
+              "fr": "Sport adapté",
+              "en": "Adapted sport"
             }
           },
           {
-            "href": "/domaines/infrastructures",
+            "href": "/activites/seniors",
             "label": {
-              "fr": "Sécurité infrastructures",
-              "en": "Infrastructure security"
+              "fr": "Activités seniors",
+              "en": "Senior activities"
             }
           },
           {
-            "href": "/domaines/acces",
+            "href": "/activites/bien-etre",
             "label": {
-              "fr": "Sécurité accès",
-              "en": "Access security"
+              "fr": "Bien-être",
+              "en": "Wellness"
             }
           },
           {
-            "href": "/domaines/postes",
+            "href": "/activites/nutrition",
             "label": {
-              "fr": "Sécurité postes",
-              "en": "Endpoint security"
+              "fr": "Nutrition",
+              "en": "Nutrition"
             }
           },
           {
-            "href": "/domaines/sensibilisation",
+            "href": "/activites/plein-air",
             "label": {
-              "fr": "Sensibilisation",
-              "en": "Awareness"
+              "fr": "Plein air",
+              "en": "Outdoor"
             }
           }
         ]
       },
       {
         "title": {
-          "fr": "EDIH",
-          "en": "EDIH"
+          "fr": "À propos",
+          "en": "About"
         },
         "links": [
           {
             "href": "/a-propos",
             "label": {
-              "fr": "À propos",
-              "en": "About"
+              "fr": "Qui sommes-nous",
+              "en": "About us"
             }
           },
           {
@@ -832,10 +825,10 @@
             }
           },
           {
-            "href": "/rejoindre",
+            "href": "/devenir-partenaire",
             "label": {
-              "fr": "Devenir prestataire",
-              "en": "Become a provider"
+              "fr": "Devenir partenaire",
+              "en": "Become a partner"
             }
           },
           {
@@ -868,17 +861,17 @@
             }
           },
           {
-            "href": "/ressources/alertes",
+            "href": "/ressources/conseils",
             "label": {
-              "fr": "Alertes ANSSI",
-              "en": "ANSSI alerts"
+              "fr": "Conseils santé",
+              "en": "Health tips"
             }
           },
           {
-            "href": "/ressources/bonnes-pratiques",
+            "href": "/ressources/videos",
             "label": {
-              "fr": "Bonnes pratiques",
-              "en": "Best practices"
+              "fr": "Vidéos",
+              "en": "Videos"
             }
           },
           {
@@ -901,19 +894,19 @@
     "socials": [
       {
         "platform": "facebook",
-        "url": "https://facebook.com/cyberreunion"
+        "url": "https://facebook.com/sportsantebienetre"
       },
       {
-        "platform": "twitter",
-        "url": "https://twitter.com/cyberreunion"
+        "platform": "instagram",
+        "url": "https://instagram.com/sportsantebienetre"
       },
       {
         "platform": "linkedin",
-        "url": "https://linkedin.com/company/cyber-reunion"
+        "url": "https://linkedin.com/company/sport-sante-bien-etre"
       },
       {
         "platform": "mail",
-        "url": "mailto:contact@cyber-reunion.fr"
+        "url": "mailto:contact@sport-sante-bien-etre.re"
       }
     ],
     "legalLinks": [
@@ -940,8 +933,8 @@
       }
     ],
     "copyright": {
-      "fr": "© 2025 Cyber Réunion - EDIH La Réunion. Projet cofinancé par l'Union européenne.",
-      "en": "© 2025 Cyber Réunion - EDIH Réunion. Project co-financed by the European Union."
+      "fr": "© 2025 Sport Santé Bien-être - La Réunion. Tous droits réservés.",
+      "en": "© 2025 Sport Health Wellness - Réunion. All rights reserved."
     }
   },
   "features": [
@@ -1014,8 +1007,8 @@
         "en": "Sign in"
       },
       "subtitle": {
-        "fr": "Accédez au réseau des passionné·es de la mer",
-        "en": "Access the network for ocean enthusiasts"
+        "fr": "Accédez à la communauté Sport Santé Bien-être",
+        "en": "Access the Sport Health Wellness community"
       }
     }
   },
@@ -1576,8 +1569,8 @@
                   "type": "profile-related",
                   "relationType": "projects",
                   "title": {
-                    "fr": "Organisations partenaires",
-                    "en": "Partner Organizations"
+                    "fr": "Structures partenaires",
+                    "en": "Partner Structures"
                   }
                 }
               ],
@@ -1947,7 +1940,7 @@
   },
   "floatingQRCode": {
     "enabled": true,
-    "url": "https://cyber-reunion.communecter.org",
+    "url": "https://sport-sante-bien-etre.communecter.org",
     "position": "bottom-right",
     "size": 80,
     "expandedSize": 200,
