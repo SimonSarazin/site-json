@@ -19,12 +19,11 @@ import { usePageFiltersOptional } from "@/contexts/PageFiltersContext";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useOrgEntityActions } from "@/modules/profil/actions/hooks/useOrgEntityActions";
 import { ConfirmationDialog } from "@/modules/profil/components/action-buttons/ConfirmationDialog";
-import { AddProjectModal } from "@/modules/profil/components/add/AddProjectModal";
-import { AddEventModal } from "@/modules/profil/components/add/AddEventModal";
-import { AddPoiModal } from "@/modules/profil/components/add/AddPoiModal";
+import { DynamicModal } from "@/modules/profil/components/add/ModalRegistry";
 import { toast } from "sonner";
 import type { Organization } from "@communecter/cocolight-api-client";
 import type { EntityAction } from "@/modules/profil/types";
+import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
 
 export interface ActionButton {
     label: LocalizedString;
@@ -32,6 +31,8 @@ export interface ActionButton {
     href?: string;
     variant?: "default" | "outline" | "primary" | "turquoise";
     action?: "join-dropdown" | "add-project" | "add-event" | "add-poi";
+    modal?: string;
+    requiresAdmin?: boolean;
 }
 
 export interface TitleWithFiltersRezoLaMerProps {
@@ -63,67 +64,36 @@ const getButtonClasses = (variant?: string) => {
     }
 };
 
-function AddPoiButton({
+/**
+ * Composant générique pour les boutons qui ouvrent un modal dynamique
+ * Remplace AddPoiButton, AddEventButton, AddProjectButton
+ */
+function DynamicModalButton({
     button,
-    tLocalized,
-    getButtonClasses,
-}: {
-    button: ActionButton;
-    tLocalized: (str: LocalizedString) => string;
-    getButtonClasses: (variant?: string) => string;
-}) {
-    const { me, entity } = useCocolight();
-    const isConnected = !!me;
-    const [isModalOpen, setIsModalOpen] = useState(false);
-
-    const handleClick = () => {
-        if (!isConnected) {
-            toast.error("Vous devez être connecté pour ajouter un lieu");
-            return;
-        }
-        setIsModalOpen(true);
-    };
-
-    return (
-        <>
-            <Button
-                size="lg"
-                className={getButtonClasses(button.variant)}
-                onClick={handleClick}
-                disabled={!isConnected}
-            >
-                {button.icon && (
-                    <DynamicIcon name={button.icon as IconName} className="w-5 h-5 mr-2" />
-                )}
-                {tLocalized(button.label)}
-            </Button>
-            <AddPoiModal
-                open={isModalOpen}
-                onOpenChange={setIsModalOpen}
-                parent={entity}
-            />
-        </>
-    );
-}
-
-function AddEventButton({
-    button,
+    modalName,
     tLocalized,
     tKey,
     getButtonClasses,
 }: {
     button: ActionButton;
+    modalName: string;
     tLocalized: (str: LocalizedString) => string;
     tKey: (key: string) => string;
     getButtonClasses: (variant?: string) => string;
 }) {
     const { me, entity } = useCocolight();
     const isConnected = !!me;
+    const permissions = useProfilPermissions(entity || null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const requiresAdmin = button.requiresAdmin !== false;
+    if (requiresAdmin && !permissions.isAdmin) {
+        return null;
+    }
 
     const handleClick = () => {
         if (!isConnected) {
-            toast.error(tKey("Vous devez être connecté pour proposer un événement"));
+            toast.error(tKey("Vous devez être connecté"));
             return;
         }
         setIsModalOpen(true);
@@ -135,59 +105,14 @@ function AddEventButton({
                 size="lg"
                 className={getButtonClasses(button.variant)}
                 onClick={handleClick}
-                disabled={!isConnected}
             >
                 {button.icon && (
                     <DynamicIcon name={button.icon as IconName} className="w-5 h-5 mr-2" />
                 )}
                 {tLocalized(button.label)}
             </Button>
-            <AddEventModal
-                open={isModalOpen}
-                onOpenChange={setIsModalOpen}
-                parent={entity}
-            />
-        </>
-    );
-}
-
-function AddProjectButton({
-    button,
-    tLocalized,
-    tKey,
-    getButtonClasses,
-}: {
-    button: ActionButton;
-    tLocalized: (str: LocalizedString) => string;
-    tKey: (key: string) => string;
-    getButtonClasses: (variant?: string) => string;
-}) {
-    const { me, entity } = useCocolight();
-    const isConnected = !!me;
-    const [isModalOpen, setIsModalOpen] = useState(false);
-
-    const handleClick = () => {
-        if (!isConnected) {
-            toast.error(tKey("Vous devez être connecté pour proposer un projet"));
-            return;
-        }
-        setIsModalOpen(true);
-    };
-
-    return (
-        <>
-            <Button
-                size="lg"
-                className={getButtonClasses(button.variant)}
-                onClick={handleClick}
-                disabled={!isConnected}
-            >
-                {button.icon && (
-                    <DynamicIcon name={button.icon as IconName} className="w-5 h-5 mr-2" />
-                )}
-                {tLocalized(button.label)}
-            </Button>
-            <AddProjectModal
+            <DynamicModal
+                modalName={modalName}
                 open={isModalOpen}
                 onOpenChange={setIsModalOpen}
                 parent={entity}
@@ -221,7 +146,6 @@ function JoinDropdownButton({
             <Button
                 size="lg"
                 className={getButtonClasses(button.variant)}
-                disabled={!isConnected}
                 onClick={() => {
                     if (!isConnected) {
                         toast.error(tKey("Vous devez être connecté pour rejoindre"));
@@ -316,7 +240,6 @@ function JoinDropdownButton({
                     {pendingActions.filter((a) => a.show).map((action) => (
                         <DropdownMenuItem
                             key={action.id}
-                            disabled
                             className="opacity-70 cursor-default"
                         >
                             {action.icon}
@@ -415,11 +338,25 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
                                 );
                             }
 
-                            if (button.action === "add-project") {
+                            if (button.modal) {
                                 return (
-                                    <AddProjectButton
+                                    <DynamicModalButton
                                         key={index}
                                         button={button}
+                                        modalName={button.modal}
+                                        tLocalized={tLocalized}
+                                        tKey={tKey}
+                                        getButtonClasses={getButtonClasses}
+                                    />
+                                );
+                            }
+
+                            if (button.action === "add-project") {
+                                return (
+                                    <DynamicModalButton
+                                        key={index}
+                                        button={button}
+                                        modalName="add-project"
                                         tLocalized={tLocalized}
                                         tKey={tKey}
                                         getButtonClasses={getButtonClasses}
@@ -429,9 +366,10 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
 
                             if (button.action === "add-event") {
                                 return (
-                                    <AddEventButton
+                                    <DynamicModalButton
                                         key={index}
                                         button={button}
+                                        modalName="add-event"
                                         tLocalized={tLocalized}
                                         tKey={tKey}
                                         getButtonClasses={getButtonClasses}
@@ -441,10 +379,12 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
 
                             if (button.action === "add-poi") {
                                 return (
-                                    <AddPoiButton
+                                    <DynamicModalButton
                                         key={index}
                                         button={button}
+                                        modalName="add-poi"
                                         tLocalized={tLocalized}
+                                        tKey={tKey}
                                         getButtonClasses={getButtonClasses}
                                     />
                                 );

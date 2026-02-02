@@ -122,6 +122,18 @@ export const SearchProSectionSchema = z.object({
 export type SearchProSection = z.infer<typeof SearchProSectionSchema>;
 export type SearchProSectionProps = z.infer<typeof SearchProSectionSchema>["props"]
 
+const AddButtonConfigSchema = z.object({
+  show: z.boolean().default(false),
+  label: LocalizedString.optional(),
+  modal: z.string().optional(),
+  organization: z.boolean().optional().default(true),
+  project: z.boolean().optional().default(true),
+  event: z.boolean().optional().default(true),
+  poi: z.boolean().optional().default(true),
+}).optional();
+
+export type AddButtonConfig = z.infer<typeof AddButtonConfigSchema>;
+
 // SearchProStatic: Version sans synchronisation URL pour affichage multiple par page
 export const SearchProStaticSectionSchema = z.object({
   type: z.literal("searchProStatic"),
@@ -129,8 +141,10 @@ export const SearchProStaticSectionSchema = z.object({
 
   props: z.object({
     title: LocalizedString.optional(),
+    icon: z.string().optional(),
     description: LocalizedString.optional(),
     placeholder: LocalizedString.optional(),
+    showSearch:  z.boolean().default(false),
     useFilter:   z.boolean().default(false),
     showMap:     z.boolean().default(false),
     enableMap: z.boolean().default(true),
@@ -139,6 +153,7 @@ export const SearchProStaticSectionSchema = z.object({
     disableInfiniteScroll: z.boolean().optional(),
     showDetailedViewToggle: z.boolean().optional(),
     defaultDetailedView: z.boolean().optional(),
+    addButton: AddButtonConfigSchema,
     customHeader: z.object({
       title: LocalizedString.optional(),
       linkText: LocalizedString.optional(),

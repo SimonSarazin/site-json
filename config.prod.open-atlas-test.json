@@ -532,7 +532,7 @@
           "props": {
             "useFilter": true,
             "showMap": false,
-            "enableMap": false,
+            "enableMap": true,
             "showActiveFiltersTypes": true,
             "showActiveFiltersTags": true,
             "disableInfiniteScroll": false,
@@ -607,12 +607,13 @@
               },
               {
                 "label": {
-                  "fr": "Inscrire mon entreprise",
-                  "en": "Register my company"
+                  "fr": "Inscrire mon organisation",
+                  "en": "Register my organization"
                 },
                 "icon": "building-2",
-                "href": "/inscrire-organisation",
-                "variant": "outline"
+                "modal": "register-cyber-reunion",
+                "variant": "outline",
+                "requiresAdmin": false
               }
             ]
           }
@@ -643,6 +644,7 @@
                       "showRole": true,
                       "showManagement": true,
                       "showCard": false,
+                      "enableMap": true,
                       "card": {
                         "type": "profile",
                         "showDescription": true,
@@ -665,9 +667,27 @@
                     "type": "searchProStatic",
                     "id": "section-organisation-list",
                     "props": {
+                      "title": {
+                        "fr": "Organisations",
+                        "en": "Organizations"
+                      },
+                      "icon": "building-2",
+                      "showSearch": true,
+                      "placeholder": {
+                        "fr": "Rechercher une organisation...",
+                        "en": "Search for an organization..."
+                      },
+                      "addButton": {
+                        "show": true,
+                        "label": {
+                          "fr": "Ajouter",
+                          "en": "Add"
+                        },
+                        "modal": "add-organization"
+                      },
                       "useFilter": true,
                       "showMap": false,
-                      "enableMap": false,
+                      "enableMap": true,
                       "showActiveFiltersTypes": true,
                       "showActiveFiltersTags": true,
                       "disableInfiniteScroll": false,

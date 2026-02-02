@@ -1,7 +1,10 @@
-import { Loader2, Map, List, LayoutGrid } from "lucide-react";
+import { Loader2, Map, List, LayoutGrid, Search } from "lucide-react";
+import * as LucideIcons from "lucide-react";
 import React, { useState, useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useDebounce } from "@/hooks/useDebounce";
 import SearchListView from "./components/SearchListView";
 import SearchListSkeleton from "./components/SearchListSkeleton";
 import SearchMapWrapper from "./components/SearchMapWrapper";
@@ -15,6 +18,11 @@ import "@/modules/search/styles.css";
 import { SearchProStaticSectionProps } from "./schema";
 import { useSearchQuery } from "./hooks/useSearchQuery";
 import { usePageFiltersOptional } from "@/contexts/PageFiltersContext";
+import { useCocolight } from "@/hooks/useCocolight";
+import { Plus } from "lucide-react";
+import { DynamicModal } from "@/modules/profil/components/add/ModalRegistry";
+import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
+import { toast } from "sonner";
 
 /**
  * SearchProStatic: Version statique sans synchronisation URL
@@ -28,13 +36,23 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   // Extraction des props
   const {
     title,
+    icon,
     description,
+    placeholder,
+    showSearch = false,
     showMap = false,
     enableMap = true,
     disableInfiniteScroll = false,
+    addButton,
     baseParams = {},
     list,
   } = props;
+
+  const { me, entity } = useCocolight();
+  const isConnected = !!me;
+  const permissions = useProfilPermissions(entity || null);
+
+  const IconComponent = icon ? (LucideIcons as any)[icon.charAt(0).toUpperCase() + icon.slice(1).replace(/-./g, x => x[1].toUpperCase())] : null;
 
   const customHeader = props.customHeader;
   const showDetailedViewToggle = props.showDetailedViewToggle ?? false;
@@ -45,13 +63,36 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   // État local (pas de sync URL)
   const [mapUsed, setMapUsed] = useState(showMap);
   const [isDetailedView, setIsDetailedView] = useState(defaultDetailedView);
+  const [localSearchInput, setLocalSearchInput] = useState("");
+  const debouncedLocalSearch = useDebounce(localSearchInput, 500);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const getModalName = (): string | null => {
+    if (addButton?.modal) return addButton.modal;
+    if (addButton?.organization) return "add-organization";
+    if (addButton?.project) return "add-project";
+    if (addButton?.poi) return "add-poi";
+    return null;
+  };
+
+  const modalName = getModalName();
+
+  const handleAddClick = () => {
+    if (!isConnected) {
+      toast.error(t("Vous devez être connecté pour ajouter"));
+      return;
+    }
+    if (modalName) {
+      setIsModalOpen(true);
+    }
+  };
 
   const filterNames = contextFilters?.filterNames;
   const searchQuery = contextFilters?.searchQuery;
 
   const searchText = useMemo(
-    () => searchQuery || "",
-    [searchQuery]
+    () => showSearch ? debouncedLocalSearch : (searchQuery || ""),
+    [showSearch, debouncedLocalSearch, searchQuery]
   );
 
   const searchTags = useMemo<Record<string, string[]>>(
@@ -155,19 +196,58 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
 
       <div className="flex flex-col flex-1 w-full h-full overflow-hidden">
         {/* Header */}
-        {(title || description) && (
-          <div className="p-4 flex items-center justify-center">
-            <div className="flex flex-col items-center text-center space-y-1">
-              {title && (
-                <h1 className="text-2xl font-bold">
-                  {t(title)}{" "}
-                  {totalCount ? (
-                    <span className="text-sm font-normal">({totalCount})</span>
-                  ) : null}
-                </h1>
-              )}
-              {description && <p className="text-sm">{t(description)}</p>}
+        {(title || description || showSearch || enableMap) && (
+          <div className="flex flex-col gap-4 p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                {IconComponent && <IconComponent className="h-5 w-5" />}
+                {title && (
+                  <span className="text-xl font-semibold">
+                    {t(title)}{" "}
+                    {totalCount ? (
+                      <span className="text-sm font-normal">({totalCount})</span>
+                    ) : null}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center space-x-2">
+                {showSearch && (
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="search"
+                      placeholder={placeholder ? t(placeholder) : t("Rechercher...")}
+                      value={localSearchInput}
+                      onChange={(e) => setLocalSearchInput(e.target.value)}
+                      className="pl-9 w-48 sm:w-64 h-9"
+                    />
+                  </div>
+                )}
+                {enableMap && (
+                  <Button
+                    variant={mapUsed ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setMapUsed(!mapUsed)}
+                  >
+                    <Map className="h-4 w-4 sm:mr-1" />
+                    <span className="hidden sm:inline">{t("Carte")}</span>
+                  </Button>
+                )}
+                {addButton?.show && permissions.isAdmin && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAddClick}
+                  >
+                    <Plus className="h-4 w-4 sm:mr-1" />
+                    <span className="hidden sm:inline">
+                      {addButton.label ? t(addButton.label) : t("Ajouter")}
+                    </span>
+                  </Button>
+                )}
+              </div>
             </div>
+            {description && <p className="text-sm text-muted-foreground">{t(description)}</p>}
           </div>
         )}
 
@@ -215,7 +295,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
           </div>
         ) : (
           <div className="p-4 overflow-y-auto">
-            {customHeader ? (
+            {customHeader && (
               <div className="container flex justify-between mx-auto px-4 sm:px-6 lg:px-8 mb-6">
                 <div className="flex justify-between items-center">
                   {customHeader.title && (
@@ -226,33 +306,6 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                     </h2>
                   )}
                 </div>
-                <div className="flex gap-2">
-                  {showDetailedViewToggle && (
-                    <Button
-                      variant={isDetailedView ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setIsDetailedView(!isDetailedView)}
-                    >
-                      {isDetailedView ? (
-                        <><LayoutGrid className="mr-2 h-4 w-4" /> Grille</>
-                      ) : (
-                        <><List className="mr-2 h-4 w-4" /> Détails</>
-                      )}
-                    </Button>
-                  )}
-                  {enableMap && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setMapUsed(true)}
-                    >
-                      <Map className="mr-2 h-4 w-4 text-primary" /> {t("Carte")}
-                    </Button>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="flex justify-end mb-4 gap-2">
                 {showDetailedViewToggle && (
                   <Button
                     variant={isDetailedView ? "default" : "outline"}
@@ -264,15 +317,6 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                     ) : (
                       <><List className="mr-2 h-4 w-4" /> Détails</>
                     )}
-                  </Button>
-                )}
-                {enableMap && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setMapUsed(true)}
-                  >
-                    <Map className="mr-2 h-4 w-4 text-primary" /> {t("Carte")}
                   </Button>
                 )}
               </div>
@@ -306,6 +350,15 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
           </div>
         )}
       </div>
+
+      {modalName && (
+        <DynamicModal
+          modalName={modalName}
+          open={isModalOpen}
+          onOpenChange={setIsModalOpen}
+          parent={entity}
+        />
+      )}
     </div>
   );
 };

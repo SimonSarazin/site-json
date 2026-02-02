@@ -209,6 +209,9 @@
     "manage": "Gérer",
     "noMembers": "Aucun membre pour le moment",
     "loadingMore": "Chargement de plus de membres...",
+    "searchPlaceholder": "Rechercher un membre...",
+    "loadingOrganization": "Chargement de l'organisation...",
+    "loadingProject": "Chargement du projet...",
     "organization": {
       "title": "Membres de l'organisation",
       "member": "Membre",

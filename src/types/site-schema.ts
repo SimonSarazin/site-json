@@ -1075,6 +1075,8 @@ const MemberSectionSchema = z.object({
     showRole: z.boolean().optional().default(true),
     showManagement: z.boolean().optional().default(false),
     showCard: z.boolean().optional().default(true),
+    showMap: z.boolean().optional().default(false),
+    enableMap: z.boolean().optional().default(false),
     limit: z.number().optional(),
     card: MemberCardConfSchema.optional(),
   }),
