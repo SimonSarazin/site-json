@@ -41,14 +41,6 @@
       },
       "path": "/aide-cyber"
     },
-    "urgenceButton": {
-      "label": {
-        "fr": "Urgence",
-        "en": "Emergency"
-      },
-      "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3\"></path><path d=\"M12 9v4\"></path><path d=\"M12 17h.01\"></path></svg>",
-      "path": "/urgence-cyber"
-    },
     "nav": [
       {
         "label": {
@@ -70,6 +62,20 @@
           "en": "Community"
         },
         "path": "/communaute"
+      },
+      {
+        "label": {
+          "fr": "Annuaire",
+          "en": "Directory"
+        },
+        "path": "/annuaire"
+      },
+      {
+        "label": {
+          "fr": "Mapping",
+          "en": "Mapping"
+        },
+        "path": "/mapping"
       }
     ],
     "sticky": true,
@@ -542,7 +548,7 @@
               ],
               "notSourceKey": true,
               "defaultFilters": {
-                "links.preferences.toBeValidated.cyberReunion": {
+                "links.preferences.toBeValidated.openAtlas": {
                   "$exists": false
                 },
                 "$or": {
@@ -566,8 +572,8 @@
                 "xl": 4
               },
               "card": {
-                "type": "rezo-la-mer",
-                "variant": "rezo-la-mer",
+                "type": "profile",
+                "variant": "profile",
                 "detailsMode": "drawer"
               }
             }
@@ -667,6 +673,24 @@
                     "type": "searchProStatic",
                     "id": "section-organisation-list",
                     "props": {
+                      "title": {
+                        "fr": "Organisations",
+                        "en": "Organizations"
+                      },
+                      "icon": "building-2",
+                      "showSearch": true,
+                      "placeholder": {
+                        "fr": "Rechercher une organisation...",
+                        "en": "Search for an organization..."
+                      },
+                      "addButton": {
+                        "show": true,
+                        "label": {
+                          "fr": "Ajouter",
+                          "en": "Add"
+                        },
+                        "modal": "add-organization"
+                      },
                       "useFilter": true,
                       "showMap": false,
                       "enableMap": true,
@@ -683,7 +707,7 @@
                         ],
                         "notSourceKey": true,
                         "defaultFilters": {
-                          "preferences.toBeValidated.cyberReunion": {
+                          "preferences.toBeValidated.openAtlas": {
                             "$exists": false
                           },
                           "links.members.695b58ca8693fc2c121208e4": {
@@ -709,6 +733,198 @@
                 ]
               }
             ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/annuaire",
+      "title": {
+        "fr": "Annuaire - Cyber Réunion",
+        "en": "Directory - Cyber Réunion"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "annuaire-header",
+          "props": {
+            "headline": {
+              "fr": "Cyber Sécurité Réunion",
+              "en": "Cyber Security Réunion"
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Inscrire mon organisation",
+                  "en": "Register my organization"
+                },
+                "icon": "building-2",
+                "modal": "register-cyber-reunion",
+                "variant": "primary",
+                "requiresAdmin": false
+              }
+            ]
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "section-annuaire-list",
+          "props": {
+            "title": {
+              "fr": "Annuaire",
+              "en": "Directory"
+            },
+            "icon": "building-1",
+            "showSearch": true,
+            "placeholder": {
+              "fr": "Rechercher un annuaire ...",
+              "en": "Search for a directory..."
+            },
+            "tagSelector": {
+              "show": true,
+              "placeholder": {
+                "fr": "Filtrer par typologie...",
+                "en": "Filter by typology..."
+              },
+              "options": {
+                "Entreprises(produits/solutions et services)": "Entreprises (produits/solutions et services)",
+                "CERT/CSIRT": "CERT/CSIRT",
+                "Organismes de formation": "Organismes de formation",
+                "Laboratoires/recherche": "Laboratoires/recherche",
+                "Structure d'accompagnement et financement": "Structure d'accompagnement et financement",
+                "Réseaux/cluster": "Réseaux/cluster",
+                "Services défense/intérieur": "Services défense/intérieur",
+                "Association/ONG": "Association/ONG"
+              }
+            },
+            "zoneSelector": {
+              "show": true,
+              "placeholder": {
+                "fr": "Filtrer par zone...",
+                "en": "Filter by zone..."
+              },
+              "countryCode": ["RE", "AU", "ZA", "KE", "MG", "MZ", "TZ", "SC", "LK", "IN", "MU"],
+              "level": [1],
+              "sortBy": "name",
+              "costumSlug": "cyberReunion",
+              "costumEditMode": false,
+              "costumId": "695b58ca8693fc2c121208e4",
+              "costumType": "organizations"
+            },
+            "csvButton": {
+              "show": true,
+              "label": {
+                "fr": "CSV",
+                "en": "CSV"
+              }
+            },
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": true,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "baseParams": {
+              "defaultTypes": [
+                "organizations"
+              ],
+              "notSourceKey": true,
+              "defaultFilters": {
+                "$or": {
+                  "source.key": "cyberReunion",
+                  "source.keys": "cyberReunion",
+                  "reference.costum": "cyberReunion",
+                  "links.contributors.695b58ca8693fc2c121208e4": {
+                    "$exists": true
+                  },
+                  "links.projects.695b58ca8693fc2c121208e4": {
+                    "$exists": true
+                  },
+                  "links.memberOf.695b58ca8693fc2c121208e4": {
+                    "$exists": true
+                  }
+                }
+              }
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3,
+                "xl": 4
+              },
+              "card": {
+                "type": "profile",
+                "variant": "profile",
+                "detailsMode": "drawer"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/mapping",
+      "title": {
+        "fr": "Mapping - Cyber Réunion",
+        "en": "Mapping - Cyber Réunion"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "mapping-header",
+          "props": {
+            "headline": {
+              "fr": "Mapping",
+              "en": "Mapping"
+            }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "mapping-search",
+          "props": {
+            "title": {
+              "fr": "Mapping",
+              "en": "Mapping"
+            },
+            "showSearch": true,
+            "placeholder": {
+              "fr": "Rechercher...",
+              "en": "Search..."
+            },
+            "useFilter": false,
+            "showMap": false,
+            "enableMap": true,
+            "baseParams": {
+              "defaultTypes": ["organizations"],
+              "defaultFilters": {
+                "$or": {
+                  "parent.695b58ca8693fc2c121208e4": { "$exists": true },
+                  "source.keys": "cyberReunion",
+                  "reference.costum": "cyberReunion",
+                  "links.projects.695b58ca8693fc2c121208e4": { "$exists": true },
+                  "links.memberOf.695b58ca8693fc2c121208e4": { "$exists": true }
+                },
+                "toBeValidated": { "$exists": false }
+              },
+              "notSourceKey": true
+            },
+            "list": {
+              "columns": {
+                "lg": 3,
+                "md": 2,
+                "sm": 1
+              },
+              "card": {
+                "type": "profile",
+                "showDescription": true,
+                "showAddress": true,
+                "detailsMode": "drawer"
+              }
+            }
           }
         }
       ]
@@ -1949,7 +2165,7 @@
   },
   "floatingQRCode": {
     "enabled": true,
-    "url": "https://cyber-reunion.communecter.org",
+    "url": "https://test.com",
     "position": "bottom-right",
     "size": 80,
     "expandedSize": 200,

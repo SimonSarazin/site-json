@@ -23,8 +23,13 @@ export interface UseSearchQueryParams {
     defaultSortBy?: Record<string, 1 | -1>;
     notSourceKey?: boolean;
     locality?: Record<string, {
+      name?: string;
+      active?: boolean;
       id: string;
-      type: "cities" | "level1" | "level2" | "level3" | "level4" | "level5";
+      countryCode?: string;
+      level?: string | number;
+      type: string;
+      key?: string;
     }>;
   };
 }

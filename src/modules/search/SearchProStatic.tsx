@@ -1,9 +1,11 @@
-import { Loader2, Map, List, LayoutGrid, Search } from "lucide-react";
+import { Loader2, Map, List, LayoutGrid, Search, MapPin, Download } from "lucide-react";
 import * as LucideIcons from "lucide-react";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+
 import { useDebounce } from "@/hooks/useDebounce";
 import SearchListView from "./components/SearchListView";
 import SearchListSkeleton from "./components/SearchListSkeleton";
@@ -23,6 +25,28 @@ import { Plus } from "lucide-react";
 import { DynamicModal } from "@/modules/profil/components/add/ModalRegistry";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
 import { toast } from "sonner";
+
+interface Zone {
+  id: string;
+  _id: { _str: string } | { $id: string } | string;
+  name: string;
+  countryCode: string;
+  level?: string[];
+  geo?: {
+    latitude: string | number;
+    longitude: string | number;
+  };
+}
+
+function getZoneId(zone: Zone): string {
+  if (zone.id) return zone.id;
+  if (typeof zone._id === "object") {
+    if ("_str" in zone._id) return zone._id._str;
+    if ("$id" in zone._id) return zone._id.$id;
+  }
+  if (typeof zone._id === "string") return zone._id;
+  return "";
+}
 
 /**
  * SearchProStatic: Version statique sans synchronisation URL
@@ -44,11 +68,14 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     enableMap = true,
     disableInfiniteScroll = false,
     addButton,
+    zoneSelector,
+    tagSelector,
+    csvButton,
     baseParams = {},
     list,
   } = props;
 
-  const { me, entity } = useCocolight();
+  const { me, entity, apiClient } = useCocolight();
   const isConnected = !!me;
   const permissions = useProfilPermissions(entity || null);
 
@@ -66,6 +93,72 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   const [localSearchInput, setLocalSearchInput] = useState("");
   const debouncedLocalSearch = useDebounce(localSearchInput, 500);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedZoneId, setSelectedZoneId] = useState<string>("");
+  const [selectedTagValue, setSelectedTagValue] = useState<string>("");
+
+  const { data: zones, isLoading: zonesLoading } = useQuery({
+    queryKey: [
+      "zones-selector",
+      zoneSelector?.countryCode,
+      zoneSelector?.level,
+      zoneSelector?.sortBy,
+      zoneSelector?.costumSlug,
+      zoneSelector?.costumId,
+      zoneSelector?.costumType,
+    ],
+    queryFn: async () => {
+      if (!apiClient) {
+        return [];
+      }
+      if (!zoneSelector?.show) {
+        return [];
+      }
+
+      try {
+        const response = await apiClient.callEndpoint("SEARCH_GET_ZONE", {
+          countryCode: zoneSelector.countryCode || ["RE"],
+          level: zoneSelector.level || [1],
+          sortBy: zoneSelector.sortBy || "name",
+          ...(zoneSelector.costumSlug && { costumSlug: zoneSelector.costumSlug }),
+          ...(zoneSelector.costumEditMode !== undefined && { costumEditMode: zoneSelector.costumEditMode }),
+          ...(zoneSelector.costumId && { costumId: zoneSelector.costumId }),
+          ...(zoneSelector.costumType && { costumType: zoneSelector.costumType }),
+        });
+
+        return response.data as Zone[];
+      } catch (err) {
+        throw err;
+      }
+    },
+    enabled: !!apiClient && !!zoneSelector?.show,
+  });
+
+  const selectedZone = useMemo(() => {
+    if (!selectedZoneId || selectedZoneId === "__all__" || !zones) {
+      return null;
+    }
+    const found = zones.find((z) => getZoneId(z) === selectedZoneId);
+    return found;
+  }, [selectedZoneId, zones]);
+
+  const zoneLocality = useMemo<Record<string, { id: string; type: "cities" | "level1" }>>(() => {
+    if (!selectedZone) {
+      return {};
+    }
+
+    const zoneId = getZoneId(selectedZone);
+    const levelValue = selectedZone.level?.[0] || "1";
+    const key = `${zoneId}level${levelValue}`;
+    const zoneType: "cities" | "level1" = levelValue === "4" || parseInt(levelValue) >= 4 ? "cities" : "level1";
+
+    const result = {
+      [key]: {
+        id: zoneId,
+        type: zoneType,
+      },
+    };
+    return result;
+  }, [selectedZone]);
 
   const getModalName = (): string | null => {
     if (addButton?.modal) return addButton.modal;
@@ -95,13 +188,19 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     [showSearch, debouncedLocalSearch, searchQuery]
   );
 
-  const searchTags = useMemo<Record<string, string[]>>(
-    () =>
-      filterNames && filterNames.length > 0
-        ? { tags: filterNames }
-        : {} as Record<string, string[]>,
-    [filterNames]
-  );
+  const searchTags = useMemo<Record<string, string[]>>(() => {
+    const tags: string[] = [];
+
+    if (filterNames && filterNames.length > 0) {
+      tags.push(...filterNames);
+    }
+
+    if (selectedTagValue && selectedTagValue !== "__all__") {
+      tags.push(selectedTagValue);
+    }
+
+    return tags.length > 0 ? { tags } : {} as Record<string, string[]>;
+  }, [filterNames, selectedTagValue]);
 
   const [searchType] = useState<Record<string, string[]> | null>(
     baseParams?.defaultTypes ? { type: baseParams.defaultTypes } : null
@@ -111,11 +210,11 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     if (contextFilters?.searchByFields) {
       const obj: Record<string, any> = {};
       for (const { field, type, value } of Object.values(contextFilters.searchByFields)) {
-        if(type && type === "scopeList") continue;
+        if (type && type === "scopeList") continue;
         if (value && value.length > 0) {
-          if(!obj[field]) {
+          if (!obj[field]) {
             obj[field] = { "$in": value };
-          }else{
+          } else {
             obj[field]["$in"] = Array.from(new Set([...obj[field]["$in"], ...value]));
           }
         };
@@ -125,12 +224,12 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     return {};
   }, [contextFilters?.searchByFields]);
 
-  const locality = useMemo<Record<string, any>>(() => {
+  const contextLocality = useMemo<Record<string, any>>(() => {
     if (contextFilters?.searchByFields) {
       const obj: Record<string, any> = {};
       for (const { field, type, value } of Object.values(contextFilters.searchByFields)) {
-        if(type && type === "scopeList") {
-          if(!obj[field]) {
+        if (type && type === "scopeList") {
+          if (!obj[field]) {
             obj[field] = value;
           }
         }
@@ -139,7 +238,19 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     }
     return {};
   }, [contextFilters?.searchByFields]);
-  // Utilisation du hook de recherche partagé
+
+  const locality = useMemo<Record<string, any>>(() => {
+    const combined = {
+      ...contextLocality,
+      ...zoneLocality,
+    };
+    return combined;
+  }, [contextLocality, zoneLocality]);
+
+  useEffect(() => {
+    if (Object.keys(zoneLocality).length > 0) {
+    }
+  }, [locality, zoneLocality]);
   const {
     error,
     lastItemRef,
@@ -211,6 +322,61 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                 )}
               </div>
               <div className="flex items-center space-x-2">
+                {tagSelector?.show && tagSelector.options && (
+                  <div className="relative">
+                    <select
+                      value={selectedTagValue}
+                      onChange={(e) => setSelectedTagValue(e.target.value)}
+                      className="h-9 px-3 rounded-md border border-input bg-background text-sm min-w-[180px] appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring"
+                    >
+                      <option value="">
+                        {tagSelector.placeholder
+                          ? t(tagSelector.placeholder)
+                          : t("Toutes les catégories")}
+                      </option>
+                      <option value="__all__">{t("Toutes les catégories")}</option>
+                      {Object.entries(tagSelector.options).map(([value, label]) => (
+                        <option key={value} value={value}>
+                          {typeof label === "string" ? label : t(label)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                {zoneSelector?.show && (
+                  <div className="flex items-center gap-2">
+                    {zonesLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+                    <div className="relative">
+                      <MapPin className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                      <select
+                        value={selectedZoneId}
+                        onChange={(e) => {
+                          const newValue = e.target.value;
+                          setSelectedZoneId(newValue);
+                        }}
+                        className="h-9 pl-8 pr-3 rounded-md border border-input bg-background text-sm min-w-[200px] appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring"
+                        disabled={zonesLoading}
+                      >
+                        <option value="">
+                          {zonesLoading
+                            ? t("Chargement...")
+                            : zoneSelector.placeholder
+                              ? t(zoneSelector.placeholder)
+                              : t("Sélectionner une zone")}
+                        </option>
+                        <option value="__all__">{t("Toutes les zones")}</option>
+                        {zones && zones.length > 0 && zones.map((zone, index) => {
+                          const zoneId = getZoneId(zone);
+                          return (
+                            <option key={zoneId} value={zoneId}>
+                              {zone.name} ({zone.countryCode})
+                            </option>
+                          );
+                        })}
+                      </select>
+                    </div>
+                  </div>
+                )}
                 {showSearch && (
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -231,6 +397,20 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                   >
                     <Map className="h-4 w-4 sm:mr-1" />
                     <span className="hidden sm:inline">{t("Carte")}</span>
+                  </Button>
+                )}
+                {csvButton?.show && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      
+                    }}
+                  >
+                    <Download className="h-4 w-4 sm:mr-1" />
+                    <span className="hidden sm:inline">
+                      {csvButton.label ? t(csvButton.label) : t("CSV")}
+                    </span>
                   </Button>
                 )}
                 {addButton?.show && permissions.isAdmin && (

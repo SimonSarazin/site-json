@@ -134,6 +134,37 @@ const AddButtonConfigSchema = z.object({
 
 export type AddButtonConfig = z.infer<typeof AddButtonConfigSchema>;
 
+const ZoneSelectorConfigSchema = z.object({
+  show: z.boolean().default(false),
+  label: LocalizedString.optional(),
+  placeholder: LocalizedString.optional(),
+  countryCode: z.array(z.string()).optional().default(["RE"]),
+  level: z.array(z.union([z.number(), z.string()])).optional().default([1]),
+  sortBy: z.string().optional().default("name"),
+  costumSlug: z.string().optional(),
+  costumEditMode: z.union([z.boolean(), z.string(), z.number()]).optional().default(false),
+  costumId: z.string().optional(),
+  costumType: z.string().optional(),
+}).optional();
+
+export type ZoneSelectorConfig = z.infer<typeof ZoneSelectorConfigSchema>;
+
+const CsvButtonConfigSchema = z.object({
+  show: z.boolean().default(false),
+  label: LocalizedString.optional(),
+}).optional();
+
+export type CsvButtonConfig = z.infer<typeof CsvButtonConfigSchema>;
+
+const TagSelectorConfigSchema = z.object({
+  show: z.boolean().default(false),
+  label: LocalizedString.optional(),
+  placeholder: LocalizedString.optional(),
+  options: z.record(z.string(), LocalizedString.or(z.string())),
+}).optional();
+
+export type TagSelectorConfig = z.infer<typeof TagSelectorConfigSchema>;
+
 // SearchProStatic: Version sans synchronisation URL pour affichage multiple par page
 export const SearchProStaticSectionSchema = z.object({
   type: z.literal("searchProStatic"),
@@ -154,6 +185,9 @@ export const SearchProStaticSectionSchema = z.object({
     showDetailedViewToggle: z.boolean().optional(),
     defaultDetailedView: z.boolean().optional(),
     addButton: AddButtonConfigSchema,
+    zoneSelector: ZoneSelectorConfigSchema,
+    tagSelector: TagSelectorConfigSchema,
+    csvButton: CsvButtonConfigSchema,
     customHeader: z.object({
       title: LocalizedString.optional(),
       linkText: LocalizedString.optional(),
