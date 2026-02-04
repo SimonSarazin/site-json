@@ -9,6 +9,7 @@ export interface SearchQueryKeyParams {
   searchTags: Record<string, string[]>;
   searchType: Record<string, string[]> | null;
   mapUsed: boolean;
+  graphUsed?: boolean;
   baseParams: Record<string, unknown>;
 }
 
@@ -23,6 +24,7 @@ export const SEARCH_QUERY_KEYS = {
     JSON.stringify(params.searchTags),
     JSON.stringify(params.searchType),
     params.mapUsed,
+    params.graphUsed ?? false,
     JSON.stringify(params.baseParams),
   ] as const,
 } as const;

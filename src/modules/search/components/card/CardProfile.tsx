@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { MapPin, MessageCircle, Heart, Shield, User as UserIcon, Loader2 } from "lucide-react";
-import type { User, Organization, SearchEntity } from "@communecter/cocolight-api-client";
+import type { User, Organization } from "@communecter/cocolight-api-client";
 import { Link } from "react-router";
 import { useMemo, useState } from "react";
 import { useCocolight } from "@/hooks/useCocolight";
@@ -20,7 +20,7 @@ export interface CardProfileCardConfig {
 }
 
 export interface CardProfileProps {
-  item: User | Organization | SearchEntity;
+  item: User | Organization;
   index?: number;
   showBadges?: boolean;
   isPending?: boolean;

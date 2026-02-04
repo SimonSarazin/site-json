@@ -1,7 +1,6 @@
-import { Loader2, Map, List, LayoutGrid, Search, MapPin, Download } from "lucide-react";
+import { Loader2, Map, List, LayoutGrid, Search, MapPin, Download, Plus, GitBranch } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import React, { useState, useMemo, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +9,10 @@ import { useDebounce } from "@/hooks/useDebounce";
 import SearchListView from "./components/SearchListView";
 import SearchListSkeleton from "./components/SearchListSkeleton";
 import SearchMapWrapper from "./components/SearchMapWrapper";
+import SearchBubbleChart from "./components/SearchBubbleChart";
+import { SwitchDetailsMode } from "./components/SwitchDetailsMode";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { SearchEntity } from "@communecter/cocolight-api-client";
 
 import { ClientOnly } from "@/components/layout/ClientOnly";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -19,34 +21,13 @@ import "@/modules/search/i18n"; // Required: registers i18n resources
 import "@/modules/search/styles.css";
 import { SearchProStaticSectionProps } from "./schema";
 import { useSearchQuery } from "./hooks/useSearchQuery";
+import { useZonesQuery, getZoneId, getZoneName } from "./hooks/useZonesQuery";
 import { usePageFiltersOptional } from "@/contexts/PageFiltersContext";
 import { useCocolight } from "@/hooks/useCocolight";
-import { Plus } from "lucide-react";
+import { useLocalization } from "@/hooks/useLocalization";
 import { DynamicModal } from "@/modules/profil/components/add/ModalRegistry";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
 import { toast } from "sonner";
-
-interface Zone {
-  id: string;
-  _id: { _str: string } | { $id: string } | string;
-  name: string;
-  countryCode: string;
-  level?: string[];
-  geo?: {
-    latitude: string | number;
-    longitude: string | number;
-  };
-}
-
-function getZoneId(zone: Zone): string {
-  if (zone.id) return zone.id;
-  if (typeof zone._id === "object") {
-    if ("_str" in zone._id) return zone._id._str;
-    if ("$id" in zone._id) return zone._id.$id;
-  }
-  if (typeof zone._id === "string") return zone._id;
-  return "";
-}
 
 /**
  * SearchProStatic: Version statique sans synchronisation URL
@@ -56,6 +37,7 @@ function getZoneId(zone: Zone): string {
 const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ props }) => {
   const { loaded } = useLoadNamespace("modules/search");
   const t = useT("modules/search");
+  const { currentLocale } = useLocalization();
 
   // Extraction des props
   const {
@@ -75,7 +57,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     list,
   } = props;
 
-  const { me, entity, apiClient } = useCocolight();
+  const { me, entity } = useCocolight();
   const isConnected = !!me;
   const permissions = useProfilPermissions(entity || null);
 
@@ -88,7 +70,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   const contextFilters = usePageFiltersOptional();
 
   // État local (pas de sync URL)
-  const [mapUsed, setMapUsed] = useState(showMap);
+  const [viewMode, setViewMode] = useState<"list" | "map" | "graph">(showMap ? "map" : "list");
   const [isDetailedView, setIsDetailedView] = useState(defaultDetailedView);
   const [localSearchInput, setLocalSearchInput] = useState("");
   const debouncedLocalSearch = useDebounce(localSearchInput, 500);
@@ -96,42 +78,26 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   const [selectedZoneId, setSelectedZoneId] = useState<string>("");
   const [selectedTagValue, setSelectedTagValue] = useState<string>("");
 
-  const { data: zones, isLoading: zonesLoading } = useQuery({
-    queryKey: [
-      "zones-selector",
-      zoneSelector?.countryCode,
-      zoneSelector?.level,
-      zoneSelector?.sortBy,
-      zoneSelector?.costumSlug,
-      zoneSelector?.costumId,
-      zoneSelector?.costumType,
-    ],
-    queryFn: async () => {
-      if (!apiClient) {
-        return [];
-      }
-      if (!zoneSelector?.show) {
-        return [];
-      }
+  const enableGraph = props.enableGraph ?? false;
+  const graphCategories = props.graphCategories;
+  const graphDetailsMode = props.graphDetailsMode ?? "drawer";
 
-      try {
-        const response = await apiClient.callEndpoint("SEARCH_GET_ZONE", {
-          countryCode: zoneSelector.countryCode || ["RE"],
-          level: zoneSelector.level || [1],
-          sortBy: zoneSelector.sortBy || "name",
-          ...(zoneSelector.costumSlug && { costumSlug: zoneSelector.costumSlug }),
-          ...(zoneSelector.costumEditMode !== undefined && { costumEditMode: zoneSelector.costumEditMode }),
-          ...(zoneSelector.costumId && { costumId: zoneSelector.costumId }),
-          ...(zoneSelector.costumType && { costumType: zoneSelector.costumType }),
-        });
+  const [graphOpenDetails, setGraphOpenDetails] = useState(false);
+  const [graphSelectedItem, setGraphSelectedItem] = useState<SearchEntity | null>(null);
 
-        return response.data as Zone[];
-      } catch (err) {
-        throw err;
+  const handleGraphItemClick = (item: any) => {
+    if (graphDetailsMode === "link") {
+      const data = item.serverData || item;
+      if (data.slug) {
+        window.location.href = `/@${data.slug}`;
       }
-    },
-    enabled: !!apiClient && !!zoneSelector?.show,
-  });
+      return;
+    }
+    setGraphSelectedItem(item as SearchEntity);
+    setGraphOpenDetails(true);
+  };
+
+  const { zones, isLoading: zonesLoading } = useZonesQuery({ zoneSelector });
 
   const selectedZone = useMemo(() => {
     if (!selectedZoneId || selectedZoneId === "__all__" || !zones) {
@@ -147,9 +113,11 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     }
 
     const zoneId = getZoneId(selectedZone);
-    const levelValue = selectedZone.level?.[0] || "1";
+    const levelRaw = selectedZone.level?.[0];
+    const levelValue = String(levelRaw || "1");
+    const levelNum = parseInt(levelValue, 10);
     const key = `${zoneId}level${levelValue}`;
-    const zoneType: "cities" | "level1" = levelValue === "4" || parseInt(levelValue) >= 4 ? "cities" : "level1";
+    const zoneType: "cities" | "level1" = levelNum >= 4 ? "cities" : "level1";
 
     const result = {
       [key]: {
@@ -265,7 +233,8 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     searchText,
     searchTags,
     searchType,
-    mapUsed,
+    mapUsed: viewMode === "map",
+    graphUsed: viewMode === "graph",
     baseParams: {
       ...baseParams,
       defaultFilters: {
@@ -365,11 +334,12 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                               : t("Sélectionner une zone")}
                         </option>
                         <option value="__all__">{t("Toutes les zones")}</option>
-                        {zones && zones.length > 0 && zones.map((zone, index) => {
+                        {zones && zones.length > 0 && zones.map((zone) => {
                           const zoneId = getZoneId(zone);
+                          const zoneName = getZoneName(zone, currentLocale);
                           return (
                             <option key={zoneId} value={zoneId}>
-                              {zone.name} ({zone.countryCode})
+                              {zoneName}
                             </option>
                           );
                         })}
@@ -391,12 +361,22 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                 )}
                 {enableMap && (
                   <Button
-                    variant={mapUsed ? "default" : "outline"}
+                    variant={viewMode === "map" ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setMapUsed(!mapUsed)}
+                    onClick={() => setViewMode(viewMode === "map" ? "list" : "map")}
                   >
                     <Map className="h-4 w-4 sm:mr-1" />
                     <span className="hidden sm:inline">{t("Carte")}</span>
+                  </Button>
+                )}
+                {enableGraph && (
+                  <Button
+                    variant={viewMode === "graph" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setViewMode(viewMode === "graph" ? "list" : "graph")}
+                  >
+                    <GitBranch className="h-4 w-4 sm:mr-1" />
+                    <span className="hidden sm:inline">{t("Graphe")}</span>
                   </Button>
                 )}
                 {csvButton?.show && (
@@ -431,7 +411,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
           </div>
         )}
 
-        {enableMap && mapUsed ? (
+        {viewMode === "map" && enableMap ? (
           <div className="relative flex-1 h-full w-full overflow-hidden">
             {loadingMap && (
               <div className="absolute inset-0 z-10 bg-background/80 flex flex-col items-center justify-center">
@@ -446,7 +426,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
               variant="secondary"
               size="icon"
               className="absolute top-2 right-2 z-50"
-              onClick={() => setMapUsed(false)}
+              onClick={() => setViewMode("list")}
               aria-label={t("Voir en liste")}
             >
               <Map className="h-5 w-5 text-primary" />
@@ -472,6 +452,56 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                   )}
                 </ClientOnly>
               )}
+          </div>
+        ) : viewMode === "graph" && enableGraph ? (
+          <div className="relative flex-1 h-full w-full overflow-hidden p-4">
+            {loadingMap && (
+              <div className="absolute inset-0 z-10 bg-background/80 flex flex-col items-center justify-center">
+                <Loader2 className="animate-spin h-10 w-10 text-primary-foreground" />
+                <p className="text-sm text-secondary-foreground mt-2">
+                  {t("Chargement du graphe…")}
+                </p>
+              </div>
+            )}
+
+            <Button
+              variant="secondary"
+              size="icon"
+              className="absolute top-2 right-2 z-50"
+              onClick={() => setViewMode("list")}
+              aria-label={t("Voir en liste")}
+            >
+              <GitBranch className="h-5 w-5 text-primary" />
+            </Button>
+
+            {Array.isArray(transformedResults) && transformedResults.length > 0 && (
+              <ClientOnly
+                fallback={
+                  <div className="flex items-center justify-center h-64">
+                    <Skeleton className="w-3/4 h-64" />
+                  </div>
+                }
+              >
+                {() => (
+                  <SearchBubbleChart
+                    results={transformedResults}
+                    categories={graphCategories}
+                    onItemClick={handleGraphItemClick}
+                    height={450}
+                  />
+                )}
+              </ClientOnly>
+            )}
+
+            {graphSelectedItem && (
+              <SwitchDetailsMode
+                openDetails={graphOpenDetails}
+                setOpenDetails={setGraphOpenDetails}
+                item={graphSelectedItem}
+                card={{ detailsMode: graphDetailsMode === "link" ? "drawer" : graphDetailsMode }}
+                preview={list?.preview}
+              />
+            )}
           </div>
         ) : (
           <div className="p-4 overflow-y-auto">

@@ -610,16 +610,6 @@
                 "icon": "user-plus",
                 "action": "join-dropdown",
                 "variant": "primary"
-              },
-              {
-                "label": {
-                  "fr": "Inscrire mon organisation",
-                  "en": "Register my organization"
-                },
-                "icon": "building-2",
-                "modal": "register-cyber-reunion",
-                "variant": "outline",
-                "requiresAdmin": false
               }
             ]
           }
@@ -897,7 +887,18 @@
             },
             "useFilter": false,
             "showMap": false,
-            "enableMap": true,
+            "enableMap": false,
+            "enableGraph": true,
+            "graphCategories": [
+              "Entreprises(produits/solutions et services)",
+              "CERT/CSIRT",
+              "Organismes de formation",
+              "Laboratoires/recherche",
+              "Structure d'accompagnement et financement",
+              "Réseaux/cluster",
+              "Services défense/intérieur",
+              "Association/ONG"
+            ],
             "baseParams": {
               "defaultTypes": ["organizations"],
               "defaultFilters": {

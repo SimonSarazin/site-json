@@ -12,6 +12,7 @@ export interface UseSearchQueryParams {
   searchTags: Record<string, string[]>;
   searchType: Record<string, string[]> | null;
   mapUsed: boolean;
+  graphUsed?: boolean;
   baseParams?: {
     fediverse?: boolean;
     indexStepList?: number;
@@ -44,6 +45,7 @@ export function useSearchQuery({
   searchTags,
   searchType,
   mapUsed,
+  graphUsed = false,
   baseParams = {},
 }: UseSearchQueryParams) {
   const { entity, helper } = useCocolight();
@@ -55,6 +57,7 @@ export function useSearchQuery({
     searchTags,
     searchType,
     mapUsed,
+    graphUsed,
     baseParams,
   });
 
@@ -96,12 +99,16 @@ export function useSearchQuery({
         locality,
       } = baseParams;
 
+      const graphIndexStep = 500;
+
       const param: Partial<GlobalAutocompleteCostumData> = {
         name: searchText,
         fediverse,
-        ...(mapUsed
-          ? { mapUsed: true, indexMin: 0, indexStep: indexStepMap }
-          : { indexMin: 0, indexStep: indexStepList }),
+        ...(graphUsed
+          ? { indexMin: 0, indexStep: graphIndexStep }
+          : mapUsed
+            ? { mapUsed: true, indexMin: 0, indexStep: indexStepMap }
+            : { indexMin: 0, indexStep: indexStepList }),
         ...(tags.length > 0 && {
           searchTags: tags,
           options: { tags: { verb: "$all" } },
