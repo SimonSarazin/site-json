@@ -152,6 +152,9 @@ export type ZoneSelectorConfig = z.infer<typeof ZoneSelectorConfigSchema>;
 const CsvButtonConfigSchema = z.object({
   show: z.boolean().default(false),
   label: LocalizedString.optional(),
+  fields: z.array(z.string()).optional(),
+  labels: z.array(z.string()).optional(),
+  costumSlug: z.string().optional(),
 }).optional();
 
 export type CsvButtonConfig = z.infer<typeof CsvButtonConfigSchema>;

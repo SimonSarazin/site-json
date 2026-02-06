@@ -56,10 +56,21 @@ export default function CardProfile({
   const description = typeof rawDescription === "string" ? rawDescription : null;
   const address = serverData?.address;
   const tags = serverData?.tags || [];
-  const isAdmin = item?.isAdmin?.() || false;
-  const isContributor = item?.isContributor?.() || false;
+
+  let isAdmin = false;
+  let isContributor = false;
+  let isFollowing = false;
+  try {
+    isAdmin = item?.isAdmin?.() || false;
+  } catch {  }
+  try {
+    isContributor = item?.isContributor?.() || false;
+  } catch {  }
+  try {
+    isFollowing = item?.isFollowing?.() || false;
+  } catch {  }
+
   const slug = item?.slug;
-  const isFollowing = item?.isFollowing?.() || false;
 
   const isConnected = !!me;
 

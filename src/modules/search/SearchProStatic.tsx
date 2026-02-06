@@ -21,6 +21,7 @@ import "@/modules/search/i18n"; // Required: registers i18n resources
 import "@/modules/search/styles.css";
 import { SearchProStaticSectionProps } from "./schema";
 import { useSearchQuery } from "./hooks/useSearchQuery";
+import { useCsvExport } from "./hooks/useCsvExport";
 import { useZonesQuery, getZoneId, getZoneName } from "./hooks/useZonesQuery";
 import { usePageFiltersOptional } from "@/contexts/PageFiltersContext";
 import { useCocolight } from "@/hooks/useCocolight";
@@ -219,6 +220,23 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     if (Object.keys(zoneLocality).length > 0) {
     }
   }, [locality, zoneLocality]);
+
+  const { exportCsv } = useCsvExport({
+    csvButton,
+    baseParams: {
+      searchText,
+      searchTags: Object.values(searchTags).flat(),
+      searchType: baseParams?.defaultTypes,
+      filters: {
+        ...baseParams.defaultFilters,
+        ...filters,
+      },
+      locality,
+      notSourceKey: baseParams?.notSourceKey,
+      costumSlug: csvButton?.costumSlug || zoneSelector?.costumSlug,
+    },
+  });
+
   const {
     error,
     lastItemRef,
@@ -383,9 +401,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      
-                    }}
+                    onClick={() => exportCsv()}
                   >
                     <Download className="h-4 w-4 sm:mr-1" />
                     <span className="hidden sm:inline">
