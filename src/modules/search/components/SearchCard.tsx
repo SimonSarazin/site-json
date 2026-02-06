@@ -5,6 +5,8 @@ import CardOverlay from "./card/CardOverlay";
 import CardTiersLieux from "./card/CardTiersLieux";
 import CardRezoLaMer from "./card/CardRezoLaMer";
 import CardProfile from "./card/CardProfile";
+import CardEventRezoLaMer from "./card/CardEventRezoLaMer";
+import CardPoiRezoLaMer from "./card/CardPoiRezoLaMer";
 
 export default function SearchCard({
   item,
@@ -13,6 +15,7 @@ export default function SearchCard({
     tagLimit: 5,
     showDescription: false,
     showAddress: true,
+    showStar: false,
     shareButton: false,
     type: "overlay"
   },
@@ -32,6 +35,10 @@ export default function SearchCard({
       return <CardRezoLaMer item={item} onClick={onClick} card={card} />;
     case "profile":
       return <CardProfile item={item} onClick={onClick} card={card} />;
+    case "event-rezo-la-mer":
+      return <CardEventRezoLaMer item={item} onClick={onClick} card={card} />;
+    case "poi-rezo-la-mer":
+      return <CardPoiRezoLaMer item={item} onClick={onClick} card={card} />;
     case "default":
       return <CardDefault item={item} onClick={onClick} card={card} />;
     default:

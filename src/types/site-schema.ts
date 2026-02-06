@@ -260,9 +260,15 @@ export const TitleWithFiltersRezoLaMerSchema = z.object({
   type: z.literal("title-with-filters-rezo-la-mer"),
   id: z.string().optional(),
   props: z.object({
-    headline: LocalizedString,
+    headline: LocalizedString.optional(),
     subhead: LocalizedString.optional(),
     categories: z.array(
+      z.object({
+        id: z.string(),
+        label: LocalizedString,
+      })
+    ).optional(),
+    types: z.array(
       z.object({
         id: z.string(),
         label: LocalizedString,

@@ -520,7 +520,7 @@
                   "en": "Submit a project"
                 },
                 "icon": "plus",
-                "href": "/proposer-projet",
+                "action": "add-project",
                 "variant": "primary"
               }
             ],
@@ -583,20 +583,6 @@
             "subhead": {
               "fr": "Retrouvez tous les événements, rencontres et actions pour vivre votre passion de l'océan",
               "en": "Find all the events, meetings and actions to live your passion for the ocean"
-            }
-          }
-        },
-        {
-          "type": "title-with-filters-rezo-la-mer",
-          "id": "evenements-cta",
-          "props": {
-            "headline": {
-              "fr": "Vous organisez un événement ?",
-              "en": "Are you organizing an event?"
-            },
-            "subhead": {
-              "fr": "Partagez votre événement avec la communauté Rézo la mer et touchez des milliers de passionnés",
-              "en": "Share your event with the Rézo la mer community and reach thousands of enthusiasts"
             },
             "buttons": [
               {
@@ -605,10 +591,108 @@
                   "en": "Submit an event"
                 },
                 "icon": "calendar-plus",
-                "href": "/proposer-evenement",
+                "action": "add-event",
                 "variant": "primary"
               }
             ]
+          }
+        },
+        {
+          "type": "title",
+          "id": "evenements-subtitle",
+          "props": {
+            "title": {
+              "fr": "Événements à la une",
+              "en": "Featured Events"
+            },
+            "align" : "center",
+            "size": "md"
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "section-event-featured",
+          "props": {
+            "useFilter": false,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": false,
+            "showActiveFiltersTags": false,
+            "disableInfiniteScroll": false,
+            "width": "container",
+            "baseParams": {
+              "defaultTypes": [
+                "events"
+              ],
+              "indexStepList": 3,
+              "defaultFilters": {
+                "isStarred": true
+              }
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3,
+                "xl": 4
+              },
+              "card": {
+                "type": "event-rezo-la-mer",
+                "variant": "event-rezo-la-mer",
+                "detailsMode": "drawer"
+              }
+            }
+          }
+        },
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "events-filter",
+          "props": {
+            "subhead": {
+              "fr": "Tous les événements",
+              "en": "All events"
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher un événement...",
+              "en": "Search for an event..."
+            }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "section-event-list",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "showDetailedViewToggle": false,
+            "defaultDetailedView": true,
+            "width": "container",
+            "baseParams": {
+              "defaultTypes": [
+                "events"
+              ],
+              "indexStepList": 3
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 1,
+                "lg": 1,
+                "xl": 1
+              },
+              "card": {
+                "showStar": true,
+                "type": "event-rezo-la-mer",
+                "variant": "event-rezo-la-mer",
+                "detailsMode": "drawer",
+                "viewDetail": true 
+              }
+            }
           }
         }
       ]
@@ -785,7 +869,7 @@
                   "en": "Propose a resource"
                 },
                 "icon": "anchor",
-                "href": "/proposer-ressource",
+                "action": "add-poi",
                 "variant": "primary"
               }
             ],
@@ -794,7 +878,7 @@
               "fr": "Rechercher une ressource...",
               "en": "Search for a resource..."
             },
-            "categories": [
+            "types": [
               {
                 "id": "all",
                 "label": {
@@ -803,34 +887,51 @@
                 }
               },
               {
-                "id": "embarcation",
+                "id": "tags",
                 "label": {
-                  "fr": "Embarcation",
-                  "en": "Boat"
+                  "fr": "tags",
+                  "en": "tags"
                 }
               },
               {
-                "id": "scientifique",
+                "id": "test",
                 "label": {
-                  "fr": "Matériel scientifique",
-                  "en": "Scientific equipment"
-                }
-              },
-              {
-                "id": "video",
-                "label": {
-                  "fr": "Équipement vidéo",
-                  "en": "Video equipment"
-                }
-              },
-              {
-                "id": "documentation",
-                "label": {
-                  "fr": "Documentation",
-                  "en": "Documentation"
+                  "fr": "test",
+                  "en": "test"
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "section-poi-list",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "baseParams": {
+              "defaultTypes": [
+                "poi"
+              ],
+              "indexStepList": 3
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3,
+                "xl": 4
+              },
+              "card": {
+                "type": "poi-rezo-la-mer",
+                "variant": "poi-rezo-la-mer",
+                "detailsMode": "drawer"
+              }
+            }
           }
         }
       ]
