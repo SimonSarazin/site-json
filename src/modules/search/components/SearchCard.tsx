@@ -14,6 +14,7 @@ export default function SearchCard({
     tagLimit: 5,
     showDescription: false,
     showAddress: true,
+    showStar: false,
     shareButton: false,
     type: "overlay"
   },
