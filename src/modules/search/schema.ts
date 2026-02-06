@@ -28,6 +28,7 @@ const ListConfSchema = z.object({
     showDescription: z.boolean().optional(),
     showAddress:     z.boolean().optional(),
     shareButton:     z.boolean().optional(),
+    showStar:        z.boolean().optional(),
     detailsMode: z.enum(["drawer", "dialog"]).default("drawer"),
     type: z.enum(["overlay", "default", "tiers-lieux", "event", "rezo-la-mer","event-rezo-la-mer","poi-rezo-la-mer"]).default("default"),
     variant: z.enum(["default", "tiers-lieux", "event", "rezo-la-mer","event-rezo-la-mer","poi-rezo-la-mer"]).optional(),

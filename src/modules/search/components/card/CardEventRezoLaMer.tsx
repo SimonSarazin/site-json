@@ -5,25 +5,67 @@ import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { getEntityIconName } from "@/lib/entityIcons";
 import { Badge } from "@/components/ui/badge";
 import useItem from "../../hooks/useItem";
-import { Calendar, MapPin } from "lucide-react";
+import { Calendar, MapPin, Star } from "lucide-react";
+import { useState } from "react";
+import { useCocolight } from "@/hooks/useCocolight";
+import { Button } from "@/components/ui/button";
 
 export default function CardEventRezoLaMer({
   item,
   onClick
 }: SearchCardProps) {
   const data = useItem(item);
+  const { entity } = useCocolight();
 
   const {
     name,
     eventDate,
     type,
     organizerName,
+    isStarred
   } = data
     const serverData = item?.serverData;
     const entityType = item?.getEntityType?.() || "";
     const avatarIcon = getEntityIconName(entityType);
     const image = serverData?.profilImageUrl;
     const location = getLocation(item);
+
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [localIsStarred, setLocalIsStarred] = useState(isStarred);
+
+  const handleToggleStar = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (!entity || !item?.id || isUpdating || localIsStarred === undefined) return;
+
+    try {
+      setIsUpdating(true);
+      const newStarredValue = !localIsStarred;
+
+      await entity.endpointApi.updatePathValue({
+        id: item.id,
+        collection: "events",
+        path: "isStarred",
+        value: newStarredValue as unknown as { [k: string]: unknown }
+      });
+
+      setLocalIsStarred(newStarredValue);
+
+      if (item.reload) {
+        await item.reload();
+      }
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour de l'étoile:", error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  // Cacher la carte si isStarred est false
+  if (localIsStarred === false) {
+    return null;
+  }
+  
   return (
     <article
       onClick={onClick}
@@ -48,6 +90,27 @@ export default function CardEventRezoLaMer({
         >
           {type}
         </Badge>
+        
+        {localIsStarred !== undefined && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleToggleStar}
+            disabled={isUpdating}
+            className={cn(
+              "absolute top-4 right-4 bg-white/90 hover:bg-white transition-all",
+              isUpdating && "opacity-50 cursor-not-allowed"
+            )}
+            aria-label={localIsStarred ? "Retirer des favoris" : "Ajouter aux favoris"}
+          >
+            <Star 
+              className={cn(
+                "w-5 h-5 transition-all",
+                localIsStarred ? "fill-yellow-400 text-yellow-400" : "text-gray-600"
+              )} 
+            />
+          </Button>
+        )}
       </div>
 
       <div className="p-6">
