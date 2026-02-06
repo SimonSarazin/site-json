@@ -893,6 +893,19 @@
                     ]
                   },
                   {
+                    "id": "pays",
+                    "type": "scopeList",
+                    "label": {
+                      "fr": "Pays",
+                      "en": "Countries"
+                    },
+                    "config": {
+                      "countryCode": ["FR", "BE", "CH", "GP", "GF", "MQ", "YT", "RE"],
+                      "level": ["1"],
+                      "sortBy": "name"
+                    }
+                  },
+                  {
                     "id": "reseaux",
                     "label": {
                       "fr": "Réseaux thématiques",
@@ -931,86 +944,16 @@
                   },
                   {
                     "id": "regions",
+                    "type": "scopeList",
                     "label": {
                       "fr": "Régions",
                       "en": "Regions"
                     },
-                    "options": [
-                      {
-                        "id": "idf",
-                        "label": {
-                          "fr": "Île-de-France",
-                          "en": "Île-de-France"
-                        }
-                      },
-                      {
-                        "id": "aura",
-                        "label": {
-                          "fr": "Auvergne-Rhône-Alpes",
-                          "en": "Auvergne-Rhône-Alpes"
-                        }
-                      },
-                      {
-                        "id": "occitanie",
-                        "label": {
-                          "fr": "Occitanie",
-                          "en": "Occitanie"
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "id": "equipement",
-                    "label": {
-                      "fr": "Équipement",
-                      "en": "Equipment"
-                    },
-                    "options": [
-                      {
-                        "id": "wifi",
-                        "label": {
-                          "fr": "WiFi",
-                          "en": "WiFi"
-                        }
-                      },
-                      {
-                        "id": "imprimante",
-                        "label": {
-                          "fr": "Imprimante 3D",
-                          "en": "3D Printer"
-                        }
-                      },
-                      {
-                        "id": "cuisine",
-                        "label": {
-                          "fr": "Cuisine équipée",
-                          "en": "Equipped kitchen"
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "id": "activites",
-                    "label": {
-                      "fr": "Activités",
-                      "en": "Activities"
-                    },
-                    "options": [
-                      {
-                        "id": "ateliers",
-                        "label": {
-                          "fr": "Ateliers",
-                          "en": "Workshops"
-                        }
-                      },
-                      {
-                        "id": "conferences",
-                        "label": {
-                          "fr": "Conférences",
-                          "en": "Conferences"
-                        }
-                      }
-                    ]
+                    "config": {
+                      "countryCode": ["FR", "BE", "CH"],
+                      "level": ["3"],
+                      "sortBy": "name"
+                    }
                   },
                   {
                     "id": "partage",
@@ -1066,6 +1009,60 @@
                     ]
                   }
                 ],
+                "filtersByAnswers": {
+                  "activités": {
+                    "label": {
+                      "fr": "Activités",
+                      "en": "Activities"
+                    },
+                    "domGroup": ".domGroupFilters",
+                    "forms": "6486d24e9cad105cbf29a777",
+                    "path": "lesCommunsDesTierslieux1262023_1215_0.multiCheckboxPluslesCommunsDesTierslieux1262023_1215_0liu3d5bbs2lwwdpiosq",
+                    "finderPath": "answers.lesCommunsDesTierslieux1262023_1215_0.finderlesCommunsDesTierslieux1262023_1215_0lix46h1uhnukfgtzj6s"
+                  },
+                  "équipement": {
+                    "label": {
+                      "fr": "Équipements",
+                      "en": "Equipment"
+                    },
+                    "domGroup": ".domGroupFilters",
+                    "forms": "645b300b6d70bb35426fc0e3",
+                    "path": "lesCommunsDesTierslieux1052023_949_0.multiCheckboxPluslesCommunsDesTierslieux1052023_949_0lhi0h2l1gjvac3zpbcw",
+                    "finderPath": "answers.lesCommunsDesTierslieux1052023_949_0.finderlesCommunsDesTierslieux1052023_949_0lat3sl0xwwg06k856jc"
+                  },
+                  "services": {
+                    "label": {
+                      "fr": "Service",
+                      "en": "Service"
+                    },
+                    "domGroup": ".domGroupFilters",
+                    "type": "form",
+                    "value": {
+                      "Coworking": {
+                        "id": "6925e2b05dd63b02ca70d6d9",
+                        "finder": "answers.navigatorDesTierslieux25112025_209_0.findernavigatorDesTierslieux25112025_209_0miem3epsztzcm9dgim"
+                      },
+                      "Salle de Réunion": {
+                        "id": "6925869ad76aaf6c5a2b2f8a",
+                        "finder": "answers.navigatorDesTierslieux25112025_1436_0.findernavigatorDesTierslieux25112025_1436_0miem3epsztzcm9dgim"
+                      },
+                      "Hébérgement": {
+                        "id": "6925ee8ac537f8056114aec7",
+                        "finder": "answers.navigatorDesTierslieux25112025_2059_0.findernavigatorDesTierslieux25112025_2059_0miem3epsztzcm9dgim"
+                      }
+                    }
+                  },
+                  "licoop": {
+                    "label": {
+                      "fr": "Licoop",
+                      "en": "Licoop"
+                    },
+                    "domGroup": ".domGroupFilters",
+                    "forms": "6876c3e58fa8df3c7f024253",
+                    "path": "navigatorDesTierslieux1572025_2311_0.findernavigatorDesTierslieux1572025_2311_0md5u4tkmsz33mya3xvb",
+                    "finderPath": "answers.navigatorDesTierslieux1572025_2311_0.findernavigatorDesTierslieux1572025_2311_0md5u4tkmsz33mya3xvb"
+                  }
+                },
                 "className": "sticky top-20"
               }
             },

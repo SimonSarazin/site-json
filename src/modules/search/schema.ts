@@ -30,8 +30,8 @@ const ListConfSchema = z.object({
     shareButton:     z.boolean().optional(),
     showStar:        z.boolean().optional(),
     detailsMode: z.enum(["drawer", "dialog"]).default("drawer"),
-    type: z.enum(["overlay", "default", "tiers-lieux", "event", "rezo-la-mer","event-rezo-la-mer","poi-rezo-la-mer"]).default("default"),
-    variant: z.enum(["default", "tiers-lieux", "event", "rezo-la-mer","event-rezo-la-mer","poi-rezo-la-mer"]).optional(),
+    type: z.enum(["overlay", "default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer"]).default("default"),
+    variant: z.enum(["default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer"]).optional(),
   }).partial().optional(),
   preview: z.object({
     type: z.enum(["default"]).default("default"),
@@ -123,6 +123,52 @@ export const SearchProSectionSchema = z.object({
 export type SearchProSection = z.infer<typeof SearchProSectionSchema>;
 export type SearchProSectionProps = z.infer<typeof SearchProSectionSchema>["props"]
 
+const AddButtonConfigSchema = z.object({
+  show: z.boolean().default(false),
+  label: LocalizedString.optional(),
+  modal: z.string().optional(),
+  organization: z.boolean().optional().default(true),
+  project: z.boolean().optional().default(true),
+  event: z.boolean().optional().default(true),
+  poi: z.boolean().optional().default(true),
+}).optional();
+
+export type AddButtonConfig = z.infer<typeof AddButtonConfigSchema>;
+
+const ZoneSelectorConfigSchema = z.object({
+  show: z.boolean().default(false),
+  label: LocalizedString.optional(),
+  placeholder: LocalizedString.optional(),
+  countryCode: z.array(z.string()).optional().default(["RE"]),
+  level: z.array(z.union([z.number(), z.string()])).optional().default([1]),
+  sortBy: z.string().optional().default("name"),
+  costumSlug: z.string().optional(),
+  costumEditMode: z.union([z.boolean(), z.string(), z.number()]).optional().default(false),
+  costumId: z.string().optional(),
+  costumType: z.string().optional(),
+}).optional();
+
+export type ZoneSelectorConfig = z.infer<typeof ZoneSelectorConfigSchema>;
+
+const CsvButtonConfigSchema = z.object({
+  show: z.boolean().default(false),
+  label: LocalizedString.optional(),
+  fields: z.array(z.string()).optional(),
+  labels: z.array(z.string()).optional(),
+  costumSlug: z.string().optional(),
+}).optional();
+
+export type CsvButtonConfig = z.infer<typeof CsvButtonConfigSchema>;
+
+const TagSelectorConfigSchema = z.object({
+  show: z.boolean().default(false),
+  label: LocalizedString.optional(),
+  placeholder: LocalizedString.optional(),
+  options: z.record(z.string(), LocalizedString.or(z.string())),
+}).optional();
+
+export type TagSelectorConfig = z.infer<typeof TagSelectorConfigSchema>;
+
 // SearchProStatic: Version sans synchronisation URL pour affichage multiple par page
 export const SearchProStaticSectionSchema = z.object({
   type: z.literal("searchProStatic"),
@@ -130,17 +176,26 @@ export const SearchProStaticSectionSchema = z.object({
 
   props: z.object({
     title: LocalizedString.optional(),
+    icon: z.string().optional(),
     description: LocalizedString.optional(),
     placeholder: LocalizedString.optional(),
+    showSearch:  z.boolean().default(false),
     useFilter:   z.boolean().default(false),
     showMap:     z.boolean().default(false),
     enableMap: z.boolean().default(true),
+    enableGraph: z.boolean().default(false),
+    graphCategories: z.array(z.string()).optional(),
+    graphDetailsMode: z.enum(["drawer", "dialog", "link"]).default("drawer"),
     showActiveFiltersTypes: z.boolean().default(false),
     showActiveFiltersTags: z.boolean().default(false),
     disableInfiniteScroll: z.boolean().optional(),
     showDetailedViewToggle: z.boolean().optional(),
     width: z.enum(["container"]).optional(),
     defaultDetailedView: z.boolean().optional(),
+    addButton: AddButtonConfigSchema,
+    zoneSelector: ZoneSelectorConfigSchema,
+    tagSelector: TagSelectorConfigSchema,
+    csvButton: CsvButtonConfigSchema,
     customHeader: z.object({
       title: LocalizedString.optional(),
       linkText: LocalizedString.optional(),

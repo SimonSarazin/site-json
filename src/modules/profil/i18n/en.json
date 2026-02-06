@@ -209,6 +209,9 @@
     "manage": "Manage",
     "noMembers": "No members yet",
     "loadingMore": "Loading more members...",
+    "searchPlaceholder": "Search member...",
+    "loadingOrganization": "Loading organization...",
+    "loadingProject": "Loading project...",
     "organization": {
       "title": "Organization Members",
       "member": "Member",

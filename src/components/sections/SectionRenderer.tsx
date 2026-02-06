@@ -69,7 +69,7 @@ const LazySections: {
   filters: lazy(() => import("./FiltersSection")),
   gridLayout: lazy(() => import("./GridLayoutSection")),
   news: lazy(() => import("@/modules/news/components/sections/NewsSection")),
-  contributor: lazy(() => import("./ContributorSection")),
+  member: lazy(() => import("./MemberSection")),
 };
 
 // Fallback skeleton pour les sections en cours de chargement

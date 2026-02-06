@@ -971,13 +971,34 @@ const FiltersSectionSchema = z.object({
     filterGroups: z.array(z.object({
       id: z.string(),
       label: LocalizedString,
+      type: z.enum(['scopeList', "filters"]).default("filters"),
+      field: z.string().optional(),
       options: z.array(z.object({
         id: z.string(),
         label: LocalizedString,
+        level: z.string().optional(),
         name: z.string().optional(),
         defaultChecked: z.boolean().optional(),
       })),
+      config: z.object({
+        countryCode: z.array(z.string()).optional(),
+        level: z.array(z.string()).optional(),
+        upperLevelId: z.string().optional(),
+        sortBy: z.string().optional(),
+      }).optional(),
     })),
+    filtersByAnswers: z.record(z.string() , z.object({
+      id: z.string(),
+      label: LocalizedString,
+      type: z.enum(["form", 'answers']).default("answers"),
+      path: z.string().optional(),
+      forms: z.string().optional(),
+      finderPath: z.string().optional(),
+      value: z.record(z.string(), z.object({
+        id: z.string(),
+        finder: LocalizedString,
+      })).optional(),
+    })).optional(),
     defaultOpenGroups: z.array(z.string()).optional(),
     className: z.string().optional(),
   }),
@@ -1039,33 +1060,36 @@ export type ContentSection = z.infer<typeof ContentSectionSchema>;
 export type ContentSectionProps = z.infer<typeof ContentSectionSchema>["props"];
 
 //───────────────────────────────────────────────────────────────
-// Section Contributor
+// Section Member (for organizations and projects)
 //───────────────────────────────────────────────────────────────
-const ContributorCardConfSchema = z.object({
+const MemberCardConfSchema = z.object({
   type: z.enum(["default", "profile"]).default("default"),
   showDescription: z.boolean().optional().default(true),
   showAddress: z.boolean().optional().default(true),
   detailsMode: z.enum(["drawer", "dialog", "link"]).default("link"),
 }).partial();
 
-export type ContributorCardConf = z.infer<typeof ContributorCardConfSchema>;
+export type MemberCardConf = z.infer<typeof MemberCardConfSchema>;
 
-const ContributorSectionSchema = z.object({
-  type: z.literal("contributor"),
+const MemberSectionSchema = z.object({
+  type: z.literal("member"),
   id: z.string().optional(),
   props: z.object({
-    projectId: z.string(),
+    organizationId: z.string().optional(),
+    projectId: z.string().optional(),
     title: LocalizedString.optional(),
     showRole: z.boolean().optional().default(true),
     showManagement: z.boolean().optional().default(false),
     showCard: z.boolean().optional().default(true),
+    showMap: z.boolean().optional().default(false),
+    enableMap: z.boolean().optional().default(false),
     limit: z.number().optional(),
-    card: ContributorCardConfSchema.optional(),
+    card: MemberCardConfSchema.optional(),
   }),
 });
 
-export type ContributorSection = z.infer<typeof ContributorSectionSchema>;
-export type ContributorSectionProps = z.infer<typeof ContributorSectionSchema>["props"];
+export type MemberSection = z.infer<typeof MemberSectionSchema>;
+export type MemberSectionProps = z.infer<typeof MemberSectionSchema>["props"];
 
 //───────────────────────────────────────────────────────────────
 // Union de toutes les sections
@@ -1120,7 +1144,7 @@ export const Section = z.discriminatedUnion("type", [
   SearchProStaticSectionSchema,
   GridLayoutSectionSchema,
   NewsSectionSchema,
-  ContributorSectionSchema
+  MemberSectionSchema,
 ]);
 export type Section = z.infer<typeof Section>;
 

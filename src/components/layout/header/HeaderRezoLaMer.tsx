@@ -157,7 +157,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                         {header.urgenceButton && (
                             <Link
                                 to={header.urgenceButton.path || "#"}
-                                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 text-accent transition-all group"
+                                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 text-primary transition-all group"
                             >
                                 {header.urgenceButton.icon ? (
                                     <span

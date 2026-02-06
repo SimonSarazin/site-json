@@ -1,5 +1,5 @@
 import { useInfiniteQueryScroll } from "@/hooks/useInfiniteQueryScroll";
-import type { EntityTypes, Organization } from "@communecter/cocolight-api-client";
+import type { EntityTypes, Organization, GetMembersNoAdminData } from "@communecter/cocolight-api-client";
 import { useState } from "react";
 
 interface UseProfilOrganizationsQueryProps {
@@ -10,7 +10,15 @@ interface UseProfilOrganizationsQueryProps {
   searchQuery?: string;
 }
 
-const ORGANIZATIONS_SUPPORTED_TYPES = new Set(["citoyens"]);
+const ORGANIZATIONS_SUPPORTED_TYPES = new Set(["citoyens", "organizations"]);
+
+const ORGANIZATION_SEARCH_TYPE: GetMembersNoAdminData["searchType"] = [
+  "NGO",
+  "LocalBusiness",
+  "Group",
+  "GovernmentOrganization",
+  "Cooperative"
+];
 
 export function useProfilOrganizationsQuery({
   entity,
@@ -20,6 +28,7 @@ export function useProfilOrganizationsQuery({
   searchQuery = "",
 }: UseProfilOrganizationsQueryProps) {
   const canFetchOrganizations = ORGANIZATIONS_SUPPORTED_TYPES.has(entityType);
+  const isOrganizationEntity = entityType === "organizations";
   const [totalCount, setTotalCount] = useState<number>(0);
 
   const {
@@ -31,10 +40,37 @@ export function useProfilOrganizationsQuery({
     error,
     refetch,
   } = useInfiniteQueryScroll<Organization[]>({
-    queryKey: ["profile-organizations", entity?.id, searchQuery],
+    queryKey: ["profile-organizations", entity?.id, entityType, searchQuery],
     queryFn: async ({ pageParam = 0 }) => {
       if (!canFetchOrganizations || !entity?.id) {
         return [];
+      }
+
+      if (isOrganizationEntity) {
+        const orgEntity = entity as Organization;
+        const params: GetMembersNoAdminData = {
+          indexMin: pageParam as number,
+          indexStep,
+          searchType: ORGANIZATION_SEARCH_TYPE,
+          initType: "",
+          count: true,
+          countType: ORGANIZATION_SEARCH_TYPE,
+          notSourceKey: true,
+          locality: "",
+          fediverse: false,
+          filters: {
+            [`links.memberOf.${entity.id}`]: { "$exists": true },
+            [`links.memberOf.${entity.id}.toBeValidated`]: { "$exists": false },
+            [`links.memberOf.${entity.id}.isInviting`]: { "$exists": false }
+          },
+          ...(searchQuery ? { name: searchQuery } : {}),
+        };
+
+        const result = await orgEntity.endpointApi.getMembersNoAdmin(params);
+        const organizations = (result?.data?.results || []) as Organization[];
+        const total = result?.data?.count?.total || organizations.length;
+        setTotalCount(total);
+        return organizations;
       }
 
       const result = await entity.getOrganizations({

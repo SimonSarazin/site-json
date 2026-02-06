@@ -552,14 +552,14 @@
                   "$exists": false
                 },
                 "$or": {
-                  "links.contributors.695b58ca8693fc2c121208e4": {
+                  "links.contributors.555eba56c655675cdd65bf19": {
                     "$exists": true
                   },
-                  "parent.695b58ca8693fc2c121208e4": {
+                  "parent.555eba56c655675cdd65bf19": {
                     "$exists": true
                   }
                 },
-                "links.contributors.695b58ca8693fc2c121208e4": {
+                "links.contributors.555eba56c655675cdd65bf19": {
                   "$exists": true
                 }
               }
@@ -610,6 +610,16 @@
                 "icon": "user-plus",
                 "action": "join-dropdown",
                 "variant": "primary"
+              },
+              {
+                "label": {
+                  "fr": "Inscrire mon organisation",
+                  "en": "Register my organization"
+                },
+                "icon": "building-2",
+                "modal": "register-cyber-reunion",
+                "variant": "outline",
+                "requiresAdmin": false
               }
             ]
           }
@@ -632,7 +642,7 @@
                     "type": "member",
                     "id": "section-membres",
                     "props": {
-                      "organizationId": "695b58ca8693fc2c121208e4",
+                      "organizationId": "555eba56c655675cdd65bf19",
                       "title": {
                         "fr": "Membres de Cyber Réunion",
                         "en": "Cyber Réunion Members"
@@ -700,7 +710,7 @@
                           "preferences.toBeValidated.openAtlas": {
                             "$exists": false
                           },
-                          "links.members.695b58ca8693fc2c121208e4": {
+                          "links.members.555eba56c655675cdd65bf19": {
                             "$exists": true
                           }
                         }
@@ -887,18 +897,7 @@
             },
             "useFilter": false,
             "showMap": false,
-            "enableMap": false,
-            "enableGraph": true,
-            "graphCategories": [
-              "Entreprises(produits/solutions et services)",
-              "CERT/CSIRT",
-              "Organismes de formation",
-              "Laboratoires/recherche",
-              "Structure d'accompagnement et financement",
-              "Réseaux/cluster",
-              "Services défense/intérieur",
-              "Association/ONG"
-            ],
+            "enableMap": true,
             "baseParams": {
               "defaultTypes": ["organizations"],
               "defaultFilters": {
@@ -2166,7 +2165,7 @@
   },
   "floatingQRCode": {
     "enabled": true,
-    "url": "https://test.com",
+    "url": "https://cyber-reunion.communecter.org",
     "position": "bottom-right",
     "size": 80,
     "expandedSize": 200,

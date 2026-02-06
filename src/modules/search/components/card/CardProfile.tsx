@@ -11,6 +11,7 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { toast } from "sonner";
 import { useFollowEntity, useUnfollowEntity } from "@/modules/profil/actions/mutations/relationship";
 import { useT } from "@/hooks/useT";
+import type { SearchCardProps } from "../../schema";
 
 export interface CardProfileCardConfig {
   showDescription?: boolean;
@@ -23,7 +24,7 @@ export interface CardProfileProps {
   index?: number;
   showBadges?: boolean;
   isPending?: boolean;
-  card?: CardProfileCardConfig;
+  card?: CardProfileCardConfig | SearchCardProps["card"];
   onClick?: () => void;
 }
 
@@ -49,15 +50,27 @@ export default function CardProfile({
   const { me } = useCocolight();
   const serverData = item?.serverData;
 
-  const name = serverData?.name || t("Anonyme");
+  const name = serverData?.name || String(t("Anonyme"));
   const profilImage = serverData?.profilImageUrl || serverData?.profilMediumImageUrl;
-  const description = serverData?.shortDescription || serverData?.description;
+  const rawDescription = serverData?.shortDescription || serverData?.description;
+  const description = typeof rawDescription === "string" ? rawDescription : null;
   const address = serverData?.address;
   const tags = serverData?.tags || [];
-  const isAdmin = item?.isAdmin?.() || false;
-  const isContributor = item?.isContributor?.() || false;
+
+  let isAdmin = false;
+  let isContributor = false;
+  let isFollowing = false;
+  try {
+    isAdmin = item?.isAdmin?.() || false;
+  } catch {  }
+  try {
+    isContributor = item?.isContributor?.() || false;
+  } catch {  }
+  try {
+    isFollowing = item?.isFollowing?.() || false;
+  } catch {  }
+
   const slug = item?.slug;
-  const isFollowing = item?.isFollowing?.() || false;
 
   const isConnected = !!me;
 
@@ -147,7 +160,7 @@ export default function CardProfile({
 
             {showDescription && (
               <p className="text-sm text-muted-foreground line-clamp-1">
-                {description || t("Aucune description")}
+                {description ?? String(t("Aucune description"))}
               </p>
             )}
           </div>
