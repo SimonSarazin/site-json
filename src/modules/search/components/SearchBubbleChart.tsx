@@ -4,7 +4,7 @@ import { getBaseUrl } from "@/lib/constant/common";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, ListFilter } from "lucide-react";
 
 interface ServerData {
   _id: { $id: string } | string;
@@ -54,10 +54,12 @@ interface BubbleNode {
   value: number;
 }
 
-interface CategoryNode {
+interface GroupNode {
   name: string;
   children: BubbleNode[];
 }
+
+type GroupMode = "country" | "category";
 
 const CATEGORY_COLORS: Record<string, string> = {
   "Entreprises(produits/solutions et services)": "#6366f1",
@@ -70,10 +72,19 @@ const CATEGORY_COLORS: Record<string, string> = {
   "Association/ONG": "#22c55e",
 };
 
+const COUNTRY_COLORS: string[] = [
+  "#6366f1", "#ec4899", "#10b981", "#f59e0b", "#8b5cf6",
+  "#06b6d4", "#ef4444", "#22c55e", "#f97316", "#14b8a6",
+  "#a855f7", "#eab308", "#3b82f6", "#e11d48",
+];
+
 const DEFAULT_COLOR = "#94a3b8";
 
-function getCategoryColor(category: string): string {
-  return CATEGORY_COLORS[category] || DEFAULT_COLOR;
+function getGroupColor(name: string, mode: GroupMode, index?: number): string {
+  if (mode === "category") {
+    return CATEGORY_COLORS[name] || DEFAULT_COLOR;
+  }
+  return COUNTRY_COLORS[(index ?? 0) % COUNTRY_COLORS.length];
 }
 
 function getData(item: SearchResult): ServerData {
@@ -111,6 +122,11 @@ function getItemCategory(item: SearchResult, categories?: string[]): string | nu
   return null;
 }
 
+function getItemCountry(item: SearchResult): string | null {
+  const data = getData(item);
+  return data.address?.level1Name || data.address?.addressCountry || null;
+}
+
 function getItemId(item: SearchResult): string {
   const data = getData(item);
   const id = data._id;
@@ -139,8 +155,10 @@ export default function SearchBubbleChart({
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height });
   const [tooltip, setTooltip] = useState<{ x: number; y: number; item: SearchResult } | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+  const [groupMode, setGroupMode] = useState<GroupMode>("country");
   const [isZoomed, setIsZoomed] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false);
   const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
   const baseUrl = getBaseUrl();
 
@@ -167,31 +185,71 @@ export default function SearchBubbleChart({
     });
   }, [results, categories]);
 
+  const groupsWithCount = useMemo(() => {
+    const groupMap = new Map<string, number>();
+
+    filteredResults.forEach((item) => {
+      let groupKey: string | null = null;
+      if (groupMode === "country") {
+        groupKey = getItemCountry(item);
+      } else {
+        groupKey = getItemCategory(item, categories);
+      }
+      if (groupKey) {
+        groupMap.set(groupKey, (groupMap.get(groupKey) || 0) + 1);
+      }
+    });
+
+    if (groupMode === "category" && categories && categories.length > 0) {
+      return categories
+        .filter(cat => groupMap.has(cat))
+        .map(name => ({ name, count: groupMap.get(name) || 0 }));
+    }
+
+    return Array.from(groupMap.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
+  }, [filteredResults, categories, groupMode]);
+
+  const groupColorMap = useMemo(() => {
+    const map = new Map<string, string>();
+    groupsWithCount.forEach(({ name }, index) => {
+      map.set(name, getGroupColor(name, groupMode, index));
+    });
+    return map;
+  }, [groupsWithCount, groupMode]);
+
   const hierarchyData = useMemo(() => {
-    const categoryMap = new Map<string, BubbleNode[]>();
+    const groupMap = new Map<string, BubbleNode[]>();
 
     filteredResults.forEach((item) => {
       const data = getData(item);
-      const category = getItemCategory(item, categories);
-      if (!category) return;
+
+      let groupKey: string | null = null;
+      if (groupMode === "country") {
+        groupKey = getItemCountry(item);
+      } else {
+        groupKey = getItemCategory(item, categories);
+      }
+      if (!groupKey) return;
 
       const node: BubbleNode = {
         id: getItemId(item),
         name: data.name,
         slug: data.slug,
-        category,
+        category: getItemCategory(item, categories) || "",
         imageUrl: getImageUrl(item, baseUrl),
         data: item,
         value: 1,
       };
 
-      if (!categoryMap.has(category)) {
-        categoryMap.set(category, []);
+      if (!groupMap.has(groupKey)) {
+        groupMap.set(groupKey, []);
       }
-      categoryMap.get(category)!.push(node);
+      groupMap.get(groupKey)!.push(node);
     });
 
-    const children: CategoryNode[] = Array.from(categoryMap.entries()).map(
+    const children: GroupNode[] = Array.from(groupMap.entries()).map(
       ([name, items]) => ({
         name,
         children: items,
@@ -199,7 +257,7 @@ export default function SearchBubbleChart({
     );
 
     return { name: "root", children };
-  }, [filteredResults, categories, baseUrl]);
+  }, [filteredResults, categories, baseUrl, groupMode]);
 
   useEffect(() => {
     if (!svgRef.current || filteredResults.length === 0) return;
@@ -238,40 +296,41 @@ export default function SearchBubbleChart({
     svg.call(zoom);
     zoomRef.current = zoom;
 
-    const categoryNodes = nodes.filter((d) => d.depth === 1);
+    const groupNodes = nodes.filter((d) => d.depth === 1);
 
-    g.selectAll(".category-circle")
-      .data(categoryNodes)
+    g.selectAll(".group-circle")
+      .data(groupNodes)
       .join("circle")
-      .attr("class", "category-circle")
+      .attr("class", "group-circle")
       .attr("cx", (d) => d.x)
       .attr("cy", (d) => d.y)
       .attr("r", (d) => d.r)
-      .attr("fill", (d: any) => `${getCategoryColor(d.data.name)}15`)
-      .attr("stroke", (d: any) => getCategoryColor(d.data.name))
+      .attr("fill", (d: any) => `${groupColorMap.get(d.data.name) || DEFAULT_COLOR}15`)
+      .attr("stroke", (d: any) => groupColorMap.get(d.data.name) || DEFAULT_COLOR)
       .attr("stroke-width", 2)
       .attr("stroke-dasharray", "5,5")
       .attr("opacity", 0.8);
 
-    g.selectAll(".category-label")
-      .data(categoryNodes)
-      .join("text")
-      .attr("class", "category-label")
-      .attr("x", (d) => d.x)
-      .attr("y", (d) => d.y - d.r + 18)
-      .attr("text-anchor", "middle")
-      .attr("fill", (d: any) => getCategoryColor(d.data.name))
-      .attr("font-size", "11px")
-      .attr("font-weight", "600")
-      .attr("paint-order", "stroke")
-      .attr("stroke", "white")
-      .attr("stroke-width", 3)
-      .text((d: any) => {
-        const name = d.data.name;
-        const maxLen = Math.max(12, Math.floor(d.r / 4));
-        return name.length > maxLen ? name.substring(0, maxLen) + "..." : name;
-      });
+    groupNodes.forEach((d: any) => {
+      const name: string = d.data.name;
+      const color = groupColorMap.get(name) || DEFAULT_COLOR;
+      const fontSize = Math.max(10, Math.min(14, d.r / 5));
 
+      g.append("text")
+        .attr("class", "group-label")
+        .attr("x", d.x)
+        .attr("y", d.y - d.r - 5)
+        .attr("text-anchor", "middle")
+        .attr("fill", color)
+        .attr("font-size", `${fontSize}px`)
+        .attr("font-weight", "700")
+        .attr("paint-order", "stroke")
+        .attr("stroke", "white")
+        .attr("stroke-width", 4)
+        .text(name);
+    });
+
+    // Item nodes (depth 2)
     const itemNodes = nodes.filter((d) => d.depth === 2);
 
     const defs = svg.append("defs");
@@ -315,7 +374,7 @@ export default function SearchBubbleChart({
       .append("circle")
       .attr("r", (d) => d.r)
       .attr("fill", "white")
-      .attr("stroke", (d: any) => getCategoryColor(d.parent?.data.name || ""))
+      .attr("stroke", (d: any) => groupColorMap.get(d.parent?.data.name || "") || DEFAULT_COLOR)
       .attr("stroke-width", 2);
 
     itemGroups
@@ -344,7 +403,7 @@ export default function SearchBubbleChart({
           .append("text")
           .attr("text-anchor", "middle")
           .attr("dominant-baseline", "central")
-          .attr("fill", getCategoryColor(d.parent?.data.name || ""))
+          .attr("fill", groupColorMap.get(d.parent?.data.name || "") || DEFAULT_COLOR)
           .attr("font-size", `${Math.max(8, d.r / 2)}px`)
           .attr("font-weight", "600")
           .text(initials);
@@ -353,40 +412,20 @@ export default function SearchBubbleChart({
     return () => {
       zoomRef.current = null;
     };
-  }, [hierarchyData, dimensions, filteredResults, onItemClick, baseUrl]);
+  }, [hierarchyData, dimensions, filteredResults, onItemClick, baseUrl, groupColorMap]);
 
-  const categoriesWithCount = useMemo(() => {
-    const catMap = new Map<string, number>();
-    filteredResults.forEach((item) => {
-      const cat = getItemCategory(item, categories);
-      if (cat) {
-        catMap.set(cat, (catMap.get(cat) || 0) + 1);
-      }
-    });
-
-    if (categories && categories.length > 0) {
-      return categories
-        .filter(cat => catMap.has(cat))
-        .map(name => ({ name, count: catMap.get(name) || 0 }));
-    }
-
-    return Array.from(catMap.entries())
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count);
-  }, [filteredResults, categories]);
-
-  const zoomToCategory = useCallback((categoryName: string | null) => {
+  const zoomToGroup = useCallback((groupName: string | null) => {
     if (!svgRef.current || !zoomRef.current) return;
 
     const svg = d3.select(svgRef.current);
     const { width, height: h } = dimensions;
     const margin = 40;
 
-    if (categoryName === null) {
+    if (groupName === null) {
       svg.transition()
         .duration(750)
         .call(zoomRef.current.transform as any, d3.zoomIdentity);
-      setSelectedCategory(null);
+      setSelectedGroup(null);
       return;
     }
 
@@ -400,16 +439,16 @@ export default function SearchBubbleChart({
       .padding(12);
 
     const nodes = pack(root as any).descendants();
-    const categoryNode = nodes.find((d: any) => d.depth === 1 && d.data.name === categoryName);
+    const groupNode = nodes.find((d: any) => d.depth === 1 && d.data.name === groupName);
 
-    if (categoryNode) {
+    if (groupNode) {
       const scale = Math.min(
-        (width - margin * 2) / (categoryNode.r * 2.5),
-        (h - margin * 2) / (categoryNode.r * 2.5),
+        (width - margin * 2) / (groupNode.r * 2.5),
+        (h - margin * 2) / (groupNode.r * 2.5),
         3
       );
-      const translateX = width / 2 - categoryNode.x * scale - margin * scale;
-      const translateY = h / 2 - categoryNode.y * scale - margin * scale;
+      const translateX = width / 2 - groupNode.x * scale - margin * scale;
+      const translateY = h / 2 - groupNode.y * scale - margin * scale;
 
       const newTransform = d3.zoomIdentity
         .translate(translateX, translateY)
@@ -419,9 +458,19 @@ export default function SearchBubbleChart({
         .duration(750)
         .call(zoomRef.current.transform as any, newTransform);
 
-      setSelectedCategory(categoryName);
+      setSelectedGroup(groupName);
     }
   }, [dimensions, hierarchyData]);
+
+  const handleGroupModeChange = useCallback((mode: GroupMode) => {
+    setGroupMode(mode);
+    setSelectedGroup(null);
+    setIsZoomed(false);
+    if (svgRef.current && zoomRef.current) {
+      const svg = d3.select(svgRef.current);
+      svg.call(zoomRef.current.transform as any, d3.zoomIdentity);
+    }
+  }, []);
 
   if (filteredResults.length === 0) {
     return (
@@ -433,16 +482,44 @@ export default function SearchBubbleChart({
 
   return (
     <div ref={containerRef} className="relative w-full">
-      {/* Layout horizontal: boutons à gauche, graphe à droite */}
+      <div className="flex items-center gap-2 mb-4">
+        <Button
+          variant={groupMode === "country" ? "default" : "outline"}
+          size="sm"
+          onClick={() => handleGroupModeChange("country")}
+          className="text-xs font-semibold"
+        >
+          Par pays
+        </Button>
+        <Button
+          variant={groupMode === "category" ? "default" : "outline"}
+          size="sm"
+          onClick={() => handleGroupModeChange("category")}
+          className="text-xs font-semibold"
+        >
+          Par type d&apos;acteur
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowSidebar(!showSidebar)}
+          className={cn("text-xs gap-1 sm:hidden", showSidebar && "bg-accent")}
+        >
+          <ListFilter className="h-3.5 w-3.5" />
+          Filtres
+        </Button>
+      </div>
+
       <div className="flex gap-4">
-        {/* Boutons de catégories - colonne à gauche */}
-        <div className="flex flex-col gap-2 shrink-0 w-55 z-10">
-          {/* Bouton réinitialiser le zoom */}
-          {(isZoomed || selectedCategory) && (
+        <div className={cn(
+          "flex flex-col gap-2 shrink-0 w-55 z-10 overflow-y-auto overflow-x-hidden p-2",
+          showSidebar ? "flex" : "hidden sm:flex"
+        )} style={{ maxHeight: height }}>
+          {(isZoomed || selectedGroup) && (
             <Button
               variant="outline"
               size="sm"
-              onClick={() => zoomToCategory(null)}
+              onClick={() => zoomToGroup(null)}
               className="text-xs gap-1 w-full justify-start"
             >
               <RotateCcw className="h-3 w-3" />
@@ -451,38 +528,41 @@ export default function SearchBubbleChart({
           )}
 
           {/* Séparateur */}
-          {(isZoomed || selectedCategory) && <div className="border-b my-1" />}
+          {(isZoomed || selectedGroup) && <div className="border-b my-1" />}
 
-          {categoriesWithCount.map(({ name, count }) => (
-            <Button
-              key={name}
-              variant={selectedCategory === name ? "default" : "outline"}
-              size="sm"
-              onClick={() => zoomToCategory(name)}
-              className={cn(
-                "text-xs gap-1.5 transition-all w-full justify-start",
-                selectedCategory === name && "ring-2 ring-offset-2"
-              )}
-              style={{
-                borderColor: getCategoryColor(name),
-                ...(selectedCategory === name
-                  ? { backgroundColor: getCategoryColor(name), color: "white" }
-                  : { color: getCategoryColor(name) }),
-              }}
-            >
-              <span
-                className="w-2.5 h-2.5 rounded-full shrink-0"
-                style={{ backgroundColor: getCategoryColor(name) }}
-              />
-              <span className="truncate flex-1 text-left">{name}</span>
-              <Badge
-                variant="secondary"
-                className="ml-auto px-1.5 py-0 text-[10px] font-semibold"
+          {groupsWithCount.map(({ name, count }) => {
+            const color = groupColorMap.get(name) || DEFAULT_COLOR;
+            return (
+              <Button
+                key={name}
+                variant={selectedGroup === name ? "default" : "outline"}
+                size="sm"
+                onClick={() => zoomToGroup(selectedGroup === name ? null : name)}
+                className={cn(
+                  "text-xs gap-1.5 transition-all w-full justify-start",
+                  selectedGroup === name && "ring-2 ring-offset-2"
+                )}
+                style={{
+                  borderColor: color,
+                  ...(selectedGroup === name
+                    ? { backgroundColor: color, color: "white" }
+                    : { color }),
+                }}
               >
-                {count}
-              </Badge>
-            </Button>
-          ))}
+                <span
+                  className="w-2.5 h-2.5 rounded-full shrink-0"
+                  style={{ backgroundColor: color }}
+                />
+                <span className="truncate flex-1 text-left">{name}</span>
+                <Badge
+                  variant="secondary"
+                  className="ml-auto px-1.5 py-0 text-[10px] font-semibold"
+                >
+                  {count}
+                </Badge>
+              </Button>
+            );
+          })}
         </div>
 
         {/* SVG - graphe à droite */}
@@ -521,6 +601,7 @@ export default function SearchBubbleChart({
                 {(tooltipData.address?.addressLocality || tooltipData.address?.level1Name) && (
                   <div className="text-xs text-muted-foreground">
                     {tooltipData.address.addressLocality || tooltipData.address.level1Name}
+                    {tooltipData.address?.addressCountry && ` · ${tooltipData.address.addressCountry}`}
                   </div>
                 )}
               </div>

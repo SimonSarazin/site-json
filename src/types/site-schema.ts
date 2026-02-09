@@ -248,12 +248,53 @@ export const CallToActionRezoLaMerSchema = z.object({
 export type CallToActionRezoLaMer = z.infer<typeof CallToActionRezoLaMerSchema>;
 export type CallToActionRezoLaMerProps = z.infer<typeof CallToActionRezoLaMerSchema>["props"];
 
+const JsonFormModalFieldSchema = z.object({
+  name: z.string(),
+  label: LocalizedString,
+  type: z.enum(["text", "email", "tel", "number", "textarea", "select", "multiselect", "checkbox", "radio", "date", "url", "location", "file"]).default("text"),
+  required: z.boolean().default(false),
+  placeholder: LocalizedString.optional(),
+  options: z.array(z.object({ value: z.string(), label: LocalizedString })).optional(),
+  validation: z.string().optional(),
+});
+
+const JsonFormModalStepSchema = z.object({
+  title: LocalizedString,
+  description: LocalizedString.optional(),
+  icon: z.string().optional(),
+  fields: z.array(JsonFormModalFieldSchema),
+});
+
+export const JsonFormModalConfigSchema = z.object({
+  title: LocalizedString,
+  icon: z.string().optional(),
+  steps: z.array(JsonFormModalStepSchema).optional(),
+  fields: z.array(JsonFormModalFieldSchema).optional(),
+  submitLabel: LocalizedString,
+  submitMode: z.enum(["fetch", "sdk"]).default("fetch"),
+  entityType: z.enum(["organization", "project", "event", "poi"]).optional(),
+  action: z.string().optional(),
+  method: z.enum(["GET", "POST"]).default("POST"),
+  successMessage: LocalizedString.optional(),
+  errorMessage: LocalizedString.optional(),
+  tagsFrom: z.array(z.string()).optional(),
+  extraData: z.record(z.string(), z.unknown()).optional(),
+});
+
+export type JsonFormModalConfig = z.infer<typeof JsonFormModalConfigSchema>;
+export type JsonFormModalField = z.infer<typeof JsonFormModalFieldSchema>;
+export type JsonFormModalStep = z.infer<typeof JsonFormModalStepSchema>;
+
 //──────────────── Title With Filters Rézo la Mer
 const ActionButtonSchema = z.object({
   label: LocalizedString,
   icon: z.string().optional(),
   href: z.string().optional(),
   variant: z.enum(["default", "outline", "primary", "turquoise"]).optional(),
+  action: z.enum(["join-dropdown", "add-project", "add-event", "add-poi"]).optional(),
+  modal: z.string().optional(),
+  formConfig: JsonFormModalConfigSchema.optional(),
+  requiresAdmin: z.boolean().optional(),
 });
 
 export const TitleWithFiltersRezoLaMerSchema = z.object({

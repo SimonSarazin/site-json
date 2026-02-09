@@ -244,23 +244,13 @@ export default function MemberSection({ id, props }: MemberSectionProps) {
     : labels.title;
 
   const headerContent = (
-    <div className="flex flex-col gap-4 mb-6">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col gap-3 my-5 px-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center space-x-2">
           <Users className="h-5 w-5" />
           <span className="text-xl font-semibold">{title}</span>
         </div>
-        <div className="flex items-center space-x-2">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder={t("ProfileMembers.searchPlaceholder") || "Rechercher..."}
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              className="pl-9 w-48 sm:w-64 h-9"
-            />
-          </div>
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             variant={mapUsed ? "default" : "outline"}
             size="sm"
@@ -294,6 +284,16 @@ export default function MemberSection({ id, props }: MemberSectionProps) {
             </>
           )}
         </div>
+      </div>
+      <div className="relative w-full sm:w-auto sm:max-w-xs">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          type="search"
+          placeholder={t("ProfileMembers.searchPlaceholder") || "Rechercher..."}
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          className="pl-9 w-full h-9"
+        />
       </div>
     </div>
   );
@@ -352,7 +352,7 @@ export default function MemberSection({ id, props }: MemberSectionProps) {
         </TabsTrigger>
       </TabsList>
 
-      <TabsContent value="all" className="mt-4">
+      <TabsContent value="all" className="mt-4 px-5">
         {renderMemberList(
           allMembers.members as (User | Organization)[],
           allMembers.isLoading,
@@ -467,23 +467,13 @@ export default function MemberSection({ id, props }: MemberSectionProps) {
 
   return (
     <Card id={id}>
-      <CardHeader>
-        <div className="flex items-center justify-between">
+      <CardHeader className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle className="flex items-center space-x-2">
             <Users className="h-5 w-5" />
             <span>{title}</span>
           </CardTitle>
-          <div className="flex items-center space-x-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder={t("ProfileMembers.searchPlaceholder") || "Rechercher..."}
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                className="pl-9 w-48 sm:w-64 h-9"
-              />
-            </div>
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               variant={mapUsed ? "default" : "outline"}
               size="sm"
@@ -517,6 +507,16 @@ export default function MemberSection({ id, props }: MemberSectionProps) {
               </>
             )}
           </div>
+        </div>
+        <div className="relative w-full sm:max-w-xs">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder={t("ProfileMembers.searchPlaceholder") || "Rechercher..."}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            className="pl-9 w-full h-9"
+          />
         </div>
       </CardHeader>
       <CardContent>

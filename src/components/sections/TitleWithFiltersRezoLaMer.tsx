@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import type { Organization } from "@communecter/cocolight-api-client";
 import type { EntityAction } from "@/modules/profil/types";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
+import type { JsonFormModalConfig } from "@/types/site-schema";
 
 export interface ActionButton {
     label: LocalizedString;
@@ -32,6 +33,7 @@ export interface ActionButton {
     variant?: "default" | "outline" | "primary" | "turquoise";
     action?: "join-dropdown" | "add-project" | "add-event" | "add-poi";
     modal?: string;
+    formConfig?: JsonFormModalConfig;
     requiresAdmin?: boolean;
 }
 
@@ -120,6 +122,7 @@ function DynamicModalButton({
                 open={isModalOpen}
                 onOpenChange={setIsModalOpen}
                 parent={entity}
+                formConfig={button.formConfig}
             />
         </>
     );

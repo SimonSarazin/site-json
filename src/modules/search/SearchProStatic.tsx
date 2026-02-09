@@ -71,7 +71,8 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   const contextFilters = usePageFiltersOptional();
 
   // État local (pas de sync URL)
-  const [viewMode, setViewMode] = useState<"list" | "map" | "graph">(showMap ? "map" : "list");
+  const defaultViewMode = props.defaultViewMode || (showMap ? "map" : "list");
+  const [viewMode, setViewMode] = useState<"list" | "map" | "graph">(defaultViewMode);
   const [isDetailedView, setIsDetailedView] = useState(defaultDetailedView);
   const [localSearchInput, setLocalSearchInput] = useState("");
   const debouncedLocalSearch = useDebounce(localSearchInput, 500);
@@ -295,8 +296,8 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
       <div className="flex flex-col flex-1 w-full h-full overflow-hidden">
         {/* Header */}
         {(title || description || showSearch || enableMap) && (
-          <div className="flex flex-col gap-4 p-4">
-            <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center space-x-2">
                 {IconComponent && <IconComponent className="h-5 w-5" />}
                 {title && (
@@ -309,74 +310,6 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                 )}
               </div>
               <div className="flex items-center space-x-2">
-                {tagSelector?.show && tagSelector.options && (
-                  <div className="relative">
-                    <select
-                      value={selectedTagValue}
-                      onChange={(e) => setSelectedTagValue(e.target.value)}
-                      className="h-9 px-3 rounded-md border border-input bg-background text-sm min-w-[180px] appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring"
-                    >
-                      <option value="">
-                        {tagSelector.placeholder
-                          ? t(tagSelector.placeholder)
-                          : t("Toutes les catégories")}
-                      </option>
-                      <option value="__all__">{t("Toutes les catégories")}</option>
-                      {Object.entries(tagSelector.options).map(([value, label]) => (
-                        <option key={value} value={value}>
-                          {typeof label === "string" ? label : t(label)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-                {zoneSelector?.show && (
-                  <div className="flex items-center gap-2">
-                    {zonesLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-                    <div className="relative">
-                      <MapPin className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                      <select
-                        value={selectedZoneId}
-                        onChange={(e) => {
-                          const newValue = e.target.value;
-                          setSelectedZoneId(newValue);
-                        }}
-                        className="h-9 pl-8 pr-3 rounded-md border border-input bg-background text-sm min-w-[200px] appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring"
-                        disabled={zonesLoading}
-                      >
-                        <option value="">
-                          {zonesLoading
-                            ? t("Chargement...")
-                            : zoneSelector.placeholder
-                              ? t(zoneSelector.placeholder)
-                              : t("Sélectionner une zone")}
-                        </option>
-                        <option value="__all__">{t("Toutes les zones")}</option>
-                        {zones && zones.length > 0 && zones.map((zone) => {
-                          const zoneId = getZoneId(zone);
-                          const zoneName = getZoneName(zone, currentLocale);
-                          return (
-                            <option key={zoneId} value={zoneId}>
-                              {zoneName}
-                            </option>
-                          );
-                        })}
-                      </select>
-                    </div>
-                  </div>
-                )}
-                {showSearch && (
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      type="search"
-                      placeholder={placeholder ? t(placeholder) : t("Rechercher...")}
-                      value={localSearchInput}
-                      onChange={(e) => setLocalSearchInput(e.target.value)}
-                      className="pl-9 w-48 sm:w-64 h-9"
-                    />
-                  </div>
-                )}
                 {enableMap && (
                   <Button
                     variant={viewMode === "map" ? "default" : "outline"}
@@ -423,6 +356,78 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                 )}
               </div>
             </div>
+            {(showSearch || (tagSelector?.show && tagSelector.options) || zoneSelector?.show) && (
+              <div className="flex flex-col gap-2 items-center sm:flex-row sm:items-center sm:justify-center">
+                {showSearch && (
+                  <div className="relative w-full sm:w-auto">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="search"
+                      placeholder={placeholder ? t(placeholder) : t("Rechercher...")}
+                      value={localSearchInput}
+                      onChange={(e) => setLocalSearchInput(e.target.value)}
+                      className="pl-9 w-full sm:w-64 h-9"
+                    />
+                  </div>
+                )}
+                {tagSelector?.show && tagSelector.options && (
+                  <div className="relative w-full sm:w-auto">
+                    <select
+                      value={selectedTagValue}
+                      onChange={(e) => setSelectedTagValue(e.target.value)}
+                      className="h-9 px-3 rounded-md border border-input bg-background text-sm w-full sm:min-w-45 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring"
+                    >
+                      <option value="">
+                        {tagSelector.placeholder
+                          ? t(tagSelector.placeholder)
+                          : t("Toutes les catégories")}
+                      </option>
+                      <option value="__all__">{t("Toutes les catégories")}</option>
+                      {Object.entries(tagSelector.options).map(([value, label]) => (
+                        <option key={value} value={value}>
+                          {typeof label === "string" ? label : t(label)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                {zoneSelector?.show && (
+                  <div className="relative w-full sm:w-auto flex items-center gap-2">
+                    {zonesLoading && <Loader2 className="h-4 w-4 animate-spin shrink-0" />}
+                    <div className="relative w-full sm:w-auto">
+                      <MapPin className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                      <select
+                        value={selectedZoneId}
+                        onChange={(e) => {
+                          const newValue = e.target.value;
+                          setSelectedZoneId(newValue);
+                        }}
+                        className="h-9 pl-8 pr-3 rounded-md border border-input bg-background text-sm w-full sm:min-w-50 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring"
+                        disabled={zonesLoading}
+                      >
+                        <option value="">
+                          {zonesLoading
+                            ? t("Chargement...")
+                            : zoneSelector.placeholder
+                              ? t(zoneSelector.placeholder)
+                              : t("Sélectionner une zone")}
+                        </option>
+                        <option value="__all__">{t("Toutes les zones")}</option>
+                        {zones && zones.length > 0 && zones.map((zone) => {
+                          const zoneId = getZoneId(zone);
+                          const zoneName = getZoneName(zone, currentLocale);
+                          return (
+                            <option key={zoneId} value={zoneId}>
+                              {zoneName}
+                            </option>
+                          );
+                        })}
+                      </select>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
             {description && <p className="text-sm text-muted-foreground">{t(description)}</p>}
           </div>
         )}
@@ -583,6 +588,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
           open={isModalOpen}
           onOpenChange={setIsModalOpen}
           parent={entity}
+          formConfig={addButton?.formConfig}
         />
       )}
     </div>

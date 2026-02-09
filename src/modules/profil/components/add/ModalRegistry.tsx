@@ -1,11 +1,13 @@
 import { lazy, Suspense, ComponentType } from "react";
 import { Loader2 } from "lucide-react";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
+import type { JsonFormModalConfig } from "@/types/site-schema";
 
 export interface ModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   parent?: EntityTypes | null;
+  formConfig?: JsonFormModalConfig;
 }
 
 const modalRegistry: Record<string, () => Promise<{ default: ComponentType<ModalProps> }>> = {
@@ -14,6 +16,7 @@ const modalRegistry: Record<string, () => Promise<{ default: ComponentType<Modal
   "add-event": () => import("./AddEventModal").then(m => ({ default: m.AddEventModal })),
   "add-poi": () => import("./AddPoiModal").then(m => ({ default: m.AddPoiModal })),
   "register-cyber-reunion": () => import("./RegisterCyberReunionModal").then(m => ({ default: m.RegisterCyberReunionModal })),
+  "json-form": () => import("./JsonFormModal").then(m => ({ default: m.JsonFormModal })),
 };
 
 const lazyComponents: Record<string, ComponentType<ModalProps>> = {};
@@ -36,11 +39,13 @@ export function DynamicModal({
   open,
   onOpenChange,
   parent,
+  formConfig,
 }: {
   modalName: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   parent?: EntityTypes | null;
+  formConfig?: JsonFormModalConfig;
 }) {
   const ModalComponent = getLazyModal(modalName);
 
@@ -56,7 +61,7 @@ export function DynamicModal({
         </div>
       }
     >
-      <ModalComponent open={open} onOpenChange={onOpenChange} parent={parent} />
+      <ModalComponent open={open} onOpenChange={onOpenChange} parent={parent} formConfig={formConfig} />
     </Suspense>
   );
 }
