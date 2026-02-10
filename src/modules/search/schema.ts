@@ -151,12 +151,17 @@ const ZoneSelectorConfigSchema = z.object({
 
 export type ZoneSelectorConfig = z.infer<typeof ZoneSelectorConfigSchema>;
 
+const CsvColumnSchema = z.object({
+  header: z.string(),
+  path: z.string(),
+});
+
 const CsvButtonConfigSchema = z.object({
   show: z.boolean().default(false),
   label: LocalizedString.optional(),
-  fields: z.array(z.string()).optional(),
-  labels: z.array(z.string()).optional(),
-  costumSlug: z.string().optional(),
+  separator: z.string().default(";"),
+  filename: z.string().optional(),
+  columns: z.array(CsvColumnSchema).optional(),
 }).optional();
 
 export type CsvButtonConfig = z.infer<typeof CsvButtonConfigSchema>;

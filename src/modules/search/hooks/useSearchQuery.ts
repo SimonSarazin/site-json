@@ -99,7 +99,7 @@ export function useSearchQuery({
         locality,
       } = baseParams;
 
-      const graphIndexStep = 500;
+      const graphIndexStep = 0;
 
       const param: Partial<GlobalAutocompleteCostumData> = {
         name: searchText,

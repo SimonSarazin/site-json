@@ -58,7 +58,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     list,
   } = props;
 
-  const { me, entity } = useCocolight();
+  const { me, entity, helper } = useCocolight();
   const isConnected = !!me;
   const permissions = useProfilPermissions(entity || null);
 
@@ -222,20 +222,27 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     }
   }, [locality, zoneLocality]);
 
-  const { exportCsv } = useCsvExport({
-    csvButton,
-    baseParams: {
-      searchText,
-      searchTags: Object.values(searchTags).flat(),
-      searchType: baseParams?.defaultTypes,
-      filters: {
-        ...baseParams.defaultFilters,
-        ...filters,
-      },
-      locality,
-      notSourceKey: baseParams?.notSourceKey,
-      costumSlug: csvButton?.costumSlug || zoneSelector?.costumSlug,
+  const mergedBaseParams = useMemo(() => ({
+    ...baseParams,
+    defaultFilters: {
+      ...baseParams.defaultFilters,
+      ...filters,
     },
+    locality: locality,
+  }), [baseParams, filters, locality]);
+
+  const csvSearchParams = useMemo(() => ({
+    searchText,
+    searchTags,
+    searchType,
+    baseParams: mergedBaseParams,
+  }), [searchText, searchTags, searchType, mergedBaseParams]);
+
+  const { exportCsv, isExporting } = useCsvExport({
+    csvButton,
+    entity,
+    searchParams: csvSearchParams,
+    helper,
   });
 
   const {
@@ -254,14 +261,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     searchType,
     mapUsed: viewMode === "map",
     graphUsed: viewMode === "graph",
-    baseParams: {
-      ...baseParams,
-      defaultFilters: {
-        ...baseParams.defaultFilters,
-        ...filters,
-      },
-      locality: locality
-    },
+    baseParams: mergedBaseParams,
   });
 
   if (!loaded) {
@@ -335,8 +335,13 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                     variant="outline"
                     size="sm"
                     onClick={() => exportCsv()}
+                    disabled={isExporting}
                   >
-                    <Download className="h-4 w-4 sm:mr-1" />
+                    {isExporting ? (
+                      <Loader2 className="h-4 w-4 animate-spin sm:mr-1" />
+                    ) : (
+                      <Download className="h-4 w-4 sm:mr-1" />
+                    )}
                     <span className="hidden sm:inline">
                       {csvButton.label ? t(csvButton.label) : t("CSV")}
                     </span>

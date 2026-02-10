@@ -890,7 +890,21 @@
               "label": {
                 "fr": "CSV",
                 "en": "CSV"
-              }
+              },
+              "columns": [
+                { "header": "Nom", "path": "name" },
+                { "header": "SIREN", "path": "siren" },
+                { "header": "Email", "path": "email" },
+                { "header": "Type d'acteur", "path": "typologie" },
+                { "header": "Domaines/sous-domaines", "path": "domains" },
+                { "header": "Spécialités", "path": "specialities" },
+                { "header": "offre(matériels/logiciels/services)", "path": "offer" },
+                { "header": "Contact", "path": "contact" },
+                { "header": "Partenariats/affiliations", "path": "partners" },
+                { "header": "Source(URL)", "path": "link" },
+                { "header": "Date de vérification", "path": "date" },
+                { "header": "Adresse", "path": "address" }
+              ]
             },
             "useFilter": true,
             "showMap": false,
@@ -901,6 +915,22 @@
             "baseParams": {
               "defaultTypes": [
                 "organizations"
+              ],
+              "defaultFields": [
+                "name",
+                "shortDescription",
+                "siren",
+                "collection",
+                "email",
+                "typologie",
+                "domains",
+                "specialities",
+                "offer",
+                "contact",
+                "partners",
+                "link",
+                "date",
+                "address"
               ],
               "notSourceKey": true,
               "defaultFilters": {
