@@ -5,7 +5,11 @@ import { createBrowserRouter, RouterProvider, type RouterState } from "react-rou
 import { HelmetProvider } from "@dr.pogodin/react-helmet";
 import { buildRoutes } from "@/lib/buildRoutes";
 import { type SiteConfig } from '@/types/site';
-import "./index.css";
+// import "./index-rezo-la-mer.css";
+// import "./index-cyber-reunion.css";
+// import "./index-tiers-lieux.css";
+// import "./index-sport-sante-bien-etre.css";
+import "./index-julie-pot-vin.css";
 import { HydrationBoundary, QueryClient, QueryClientProvider, type DehydratedState } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 

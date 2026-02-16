@@ -12,6 +12,7 @@ import { CocolightProvider } from "@/contexts/CocolightProvider";
 import { getBaseUrl } from "@/lib/constant/common";
 import { GoogleFontsLoader } from "@/components/layout/GoogleFontsLoader";
 import { SiteProvider } from "@/contexts/SiteProvider";
+import { FloatingQRCode } from "@/components/layout/FloatingQRCode";
 
 interface Props {
   config: SiteConfig; // 👈 nouvelle prop
@@ -40,6 +41,18 @@ function RootLayout({ config }: Props) {
                   <Outlet />
                   <IntegrationsLoader />
                   <Toaster />
+
+                  {config.floatingQRCode?.enabled && (
+                    <FloatingQRCode
+                      url={config.floatingQRCode.url}
+                      position={config.floatingQRCode.position}
+                      size={config.floatingQRCode.size}
+                      expandedSize={config.floatingQRCode.expandedSize}
+                      includeFavicon={config.floatingQRCode.includeFavicon}
+                      bgColor={config.floatingQRCode.bgColor}
+                      fgColor={config.floatingQRCode.fgColor}
+                    />
+                  )}
                 </I18nBridge>
               </LocalizationProvider>
             </SiteProvider>

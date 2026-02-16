@@ -9,7 +9,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import LazyImage from "@/components/layout/LazyImage";
 import { useT } from "@/hooks/useT";
-import { useSearchProps } from "@/modules/search/hooks/useSearchProps";
+import { useSearchPropsOptional } from "@/modules/search/hooks/useSearchProps";
 import { DynamicIcon, IconName } from "lucide-react/dynamic";
 import useItem from "@/modules/search/hooks/useItem";
 import { PreviewProps } from "@/modules/search/schema";
@@ -19,7 +19,8 @@ import { PreviewProps } from "@/modules/search/schema";
  * ---------------------------------------------------------------------*/
 const PreviewDefault: React.FC<PreviewProps> = ({ item }) => {
   const t = useT("modules/search");
-  const { props } = useSearchProps();
+  const searchContext = useSearchPropsOptional();
+  const props = searchContext?.props;
   const data = useItem(item);
 
   const {
@@ -85,7 +86,7 @@ const PreviewDefault: React.FC<PreviewProps> = ({ item }) => {
           icon,
         } as Characteristic;
       });
-  }, [props.filters, tags, type, t]);
+  }, [props?.filters, tags, type, t]);
 
   // ------------------------------------------------------ Tags (affichage séparé)
   const displayedTags = React.useMemo(() => {

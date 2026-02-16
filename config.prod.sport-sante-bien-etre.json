@@ -1,0 +1,1951 @@
+{
+  "version": "1.0.0",
+  "generated": "2025-09-08T10:30:00.000Z",
+  "meta": {
+    "title": {
+      "fr": "Sport Santé Bien-être - La Réunion",
+      "en": "Sport Health Wellness - Réunion"
+    },
+    "description": {
+      "fr": "Sport Santé Bien-être - Plateforme dédiée à la promotion du sport santé et du bien-être à La Réunion",
+      "en": "Sport Health Wellness - Platform dedicated to promoting sport health and wellness in Réunion"
+    },
+    "defaultLang": "fr",
+    "languages": [
+      "fr",
+      "en"
+    ],
+    "favicon": "/images/sportSanteBienetre/logo.png",
+    "themeColor": "#4CAF50",
+    "keywords": [
+      "sport santé",
+      "bien-être",
+      "activité physique",
+      "La Réunion",
+      "santé",
+      "fitness",
+      "prévention"
+    ]
+  },
+  "header": {
+    "type": "cyber-reunion",
+    "path": "/",
+    "logo": "images/sportSanteBienetre/logo.png",
+    "logoTitle": {
+      "fr": "Sport Santé Bien-être",
+      "en": "Sport Health Wellness"
+    },
+    "ctaButton": {
+      "label": {
+        "fr": "Se connecter",
+        "en": "Log in"
+      },
+      "path": "/activites"
+    },
+    "nav": [
+      {
+        "label": {
+          "fr": "Accueil",
+          "en": "Home"
+        },
+        "path": "/"
+      },
+      {
+        "label": {
+          "fr": "Projets",
+          "en": "Projects"
+        },
+        "path": "/projets"
+      },
+      {
+        "label": {
+          "fr": "Communauté",
+          "en": "Community"
+        },
+        "path": "/communaute"
+      }
+    ],
+    "sticky": true,
+    "transparent": false,
+    "height": "lg",
+    "utilities": {
+      "themeSwitch": false,
+      "langSwitch": true,
+      "search": false,
+      "auth": true,
+      "cart": false,
+      "notifications": true
+    }
+  },
+  "pages": [
+    {
+      "path": "/",
+      "title": {
+        "fr": "Accueil - Sport Santé Bien-être",
+        "en": "Home - Sport Health Wellness"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "hero-rezo-la-mer",
+          "id": "hero-sport-sante",
+          "props": {
+            "variant": "cyber",
+            "headline": {
+              "fr": "Sport Santé Bien-être",
+              "en": "Sport Health Wellness"
+            },
+            "subhead": {
+              "fr": "Bienvenue sur le site du Sport Santé à La Réunion. Découvrez les activités physiques adaptées, les structures partenaires et les ressources pour améliorer votre bien-être.",
+              "en": "Welcome to the Sport Health site in Réunion. Discover adapted physical activities, partner structures and resources to improve your well-being."
+            },
+            "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 8h1a4 4 0 0 1 0 8h-1\"></path><path d=\"M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z\"></path><line x1=\"6\" y1=\"1\" x2=\"6\" y2=\"4\"></line><line x1=\"10\" y1=\"1\" x2=\"10\" y2=\"4\"></line><line x1=\"14\" y1=\"1\" x2=\"14\" y2=\"4\"></line></svg>",
+            "backgroundImage": "/images/sportSanteBienetre/hero.png",
+            "backgroundImageAlt": {
+              "fr": "Sport Santé Bien-être La Réunion",
+              "en": "Sport Health Wellness Réunion"
+            },
+            "badges": [
+              {
+                "label": {
+                  "fr": "Activité physique adaptée",
+                  "en": "Adapted physical activity"
+                },
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"12\" cy=\"5\" r=\"3\"></circle><path d=\"m6.5 10 1.5 2h8l1.5-2\"></path><path d=\"M12 12v4\"></path><path d=\"m7 22 3-8 2 2 2-2 3 8\"></path></svg>"
+              },
+              {
+                "label": {
+                  "fr": "Prévention santé",
+                  "en": "Health prevention"
+                },
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\"></path></svg>"
+              },
+              {
+                "label": {
+                  "fr": "Bien-être",
+                  "en": "Wellness"
+                },
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"M8 14s1.5 2 4 2 4-2 4-2\"></path><line x1=\"9\" y1=\"9\" x2=\"9.01\" y2=\"9\"></line><line x1=\"15\" y1=\"9\" x2=\"15.01\" y2=\"9\"></line></svg>"
+              }
+            ],
+            "ctaButtons": [
+              {
+                "label": {
+                  "fr": "Trouver une activité",
+                  "en": "Find an activity"
+                },
+                "path": "/activites",
+                "variant": "default"
+              },
+              {
+                "label": {
+                  "fr": "Rejoindre la communauté",
+                  "en": "Join the community"
+                },
+                "path": "/communaute",
+                "variant": "accent"
+              }
+            ],
+            "showScrollIndicator": true
+          }
+        },
+        {
+          "type": "html",
+          "id": "mission",
+          "props": {
+            "html": "<section class=\"relative py-32 px-4 overflow-hidden\"><div class=\"absolute inset-0 z-0\"><img src=\"/images/sportSanteBienetre/mission.png\" alt=\"Mission Sport Santé Bien-être\" class=\"w-full h-full object-cover\" /><div class=\"absolute inset-0 bg-linear-to-r from-background via-background/80 to-background/60\"></div></div><div class=\"relative z-10 container mx-auto max-w-4xl\"><div class=\"space-y-8\"><h2 class=\"text-4xl md:text-5xl font-bold mb-6 text-foreground\">Notre mission</h2><div class=\"space-y-6 text-lg md:text-xl leading-relaxed\"><p class=\"text-muted-foreground\"><span class=\"text-primary font-semibold\">Sport Santé Bien-être</span> est la plateforme dédiée à la promotion de l'<span class=\"text-primary font-medium\">activité physique adaptée</span> et du bien-être pour tous les Réunionnais.</p><p class=\"text-muted-foreground\">Nous accompagnons les habitants de La Réunion dans leur <span class=\"text-accent font-medium\">parcours vers une meilleure santé</span> en proposant des ressources, des activités et un réseau de professionnels qualifiés.</p><div class=\"grid md:grid-cols-2 gap-6 pt-8\"><div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-sm border border-primary/20\"><h3 class=\"text-2xl font-semibold mb-3 text-primary\">Activités adaptées</h3><p class=\"text-muted-foreground\">Des programmes d'activités physiques adaptées à chaque profil : seniors, personnes en situation de handicap, maladies chroniques</p></div><div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-sm border border-accent/20\"><h3 class=\"text-2xl font-semibold mb-3 text-accent\">Réseau de professionnels</h3><p class=\"text-muted-foreground\">Un réseau de coachs, kinésithérapeutes et structures partenaires pour vous accompagner dans votre démarche santé</p></div></div></div></div></div></section>"
+          }
+        },
+        {
+          "type": "features-rezo-la-mer",
+          "id": "features",
+          "props": {
+            "variant": "cyber",
+            "headline": {
+              "fr": "Nos domaines d'action",
+              "en": "Our areas of action"
+            },
+            "subhead": {
+              "fr": "Des solutions adaptées pour améliorer votre santé par l'activité physique",
+              "en": "Adapted solutions to improve your health through physical activity"
+            },
+            "features": [
+              {
+                "icon": "heart",
+                "title": {
+                  "fr": "Prévention santé",
+                  "en": "Health prevention"
+                },
+                "description": {
+                  "fr": "Programmes de prévention des maladies chroniques par l'activité physique régulière et adaptée",
+                  "en": "Chronic disease prevention programs through regular and adapted physical activity"
+                },
+                "color": "primary"
+              },
+              {
+                "icon": "users",
+                "title": {
+                  "fr": "Sport pour tous",
+                  "en": "Sport for all"
+                },
+                "description": {
+                  "fr": "Activités accessibles à tous les publics : seniors, personnes en situation de handicap, débutants",
+                  "en": "Activities accessible to all audiences: seniors, people with disabilities, beginners"
+                },
+                "color": "accent"
+              },
+              {
+                "icon": "activity",
+                "title": {
+                  "fr": "Activité physique adaptée",
+                  "en": "Adapted physical activity"
+                },
+                "description": {
+                  "fr": "Des programmes sur mesure encadrés par des professionnels diplômés en APA",
+                  "en": "Tailored programs supervised by professionals with APA degrees"
+                },
+                "color": "primary"
+              },
+              {
+                "icon": "smile",
+                "title": {
+                  "fr": "Bien-être mental",
+                  "en": "Mental wellness"
+                },
+                "description": {
+                  "fr": "Yoga, méditation, relaxation : des activités pour prendre soin de votre santé mentale",
+                  "en": "Yoga, meditation, relaxation: activities to take care of your mental health"
+                },
+                "color": "accent"
+              },
+              {
+                "icon": "apple",
+                "title": {
+                  "fr": "Nutrition",
+                  "en": "Nutrition"
+                },
+                "description": {
+                  "fr": "Conseils nutritionnels et accompagnement diététique pour une approche globale de la santé",
+                  "en": "Nutritional advice and dietary support for a comprehensive health approach"
+                },
+                "color": "primary"
+              },
+              {
+                "icon": "map-pin",
+                "title": {
+                  "fr": "Structures partenaires",
+                  "en": "Partner structures"
+                },
+                "description": {
+                  "fr": "Un réseau de salles, associations et clubs partenaires sur toute l'île de La Réunion",
+                  "en": "A network of gyms, associations and partner clubs throughout Réunion Island"
+                },
+                "color": "accent"
+              }
+            ]
+          }
+        },
+        {
+          "type": "action-buttons-rezo-la-mer",
+          "id": "actions",
+          "props": {
+            "variant": "cyber",
+            "headline": {
+              "fr": "Passez à l'action",
+              "en": "Take action"
+            },
+            "subhead": {
+              "fr": "Commencez votre parcours vers une meilleure santé dès aujourd'hui",
+              "en": "Start your journey to better health today"
+            },
+            "actions": [
+              {
+                "icon": "plus-circle",
+                "title": {
+                  "fr": "Proposer une activité",
+                  "en": "Propose an activity"
+                },
+                "subtitle": {
+                  "fr": "Partagez votre projet",
+                  "en": "Share your project"
+                },
+                "href": "/proposer-projet",
+                "color": "primary"
+              },
+              {
+                "icon": "users",
+                "title": {
+                  "fr": "Rejoindre un groupe",
+                  "en": "Join a group"
+                },
+                "subtitle": {
+                  "fr": "Activités collectives",
+                  "en": "Group activities"
+                },
+                "href": "/communaute",
+                "color": "teal"
+              },
+              {
+                "icon": "calendar",
+                "title": {
+                  "fr": "Événements",
+                  "en": "Events"
+                },
+                "subtitle": {
+                  "fr": "Agenda santé",
+                  "en": "Health agenda"
+                },
+                "href": "/evenements",
+                "color": "amber"
+              },
+              {
+                "icon": "heart",
+                "title": {
+                  "fr": "Devenir partenaire",
+                  "en": "Become a partner"
+                },
+                "subtitle": {
+                  "fr": "Rejoignez le réseau",
+                  "en": "Join the network"
+                },
+                "href": "/devenir-partenaire",
+                "color": "eco"
+              }
+            ]
+          }
+        },
+        {
+          "type": "community-rezo-la-mer",
+          "id": "community",
+          "props": {
+            "variant": "cyber",
+            "headline": {
+              "fr": "La communauté Sport Santé",
+              "en": "The Sport Health Community"
+            },
+            "subhead": {
+              "fr": "Un réseau de professionnels et de structures engagés pour votre bien-être à La Réunion",
+              "en": "A network of professionals and structures committed to your well-being in Réunion"
+            },
+            "image": "/images/sportSanteBienetre/community.png",
+            "imageAlt": {
+              "fr": "Communauté Sport Santé à La Réunion",
+              "en": "Sport Health Community in Réunion"
+            },
+            "actions": [
+              {
+                "icon": "folder-open",
+                "title": {
+                  "fr": "Découvrir les projets",
+                  "en": "Discover projects"
+                },
+                "description": {
+                  "fr": "Explorez les initiatives sport santé en cours à La Réunion",
+                  "en": "Explore ongoing sport health initiatives in Réunion"
+                },
+                "ctaLabel": {
+                  "fr": "Voir les projets",
+                  "en": "View projects"
+                },
+                "href": "/projets"
+              },
+              {
+                "icon": "clipboard-check",
+                "title": {
+                  "fr": "Bilan de forme",
+                  "en": "Fitness assessment"
+                },
+                "description": {
+                  "fr": "Évaluez votre condition physique et recevez des recommandations personnalisées",
+                  "en": "Assess your fitness level and receive personalized recommendations"
+                },
+                "ctaLabel": {
+                  "fr": "Faire le bilan",
+                  "en": "Start assessment"
+                },
+                "href": "/bilan-forme"
+              },
+              {
+                "icon": "badge-check",
+                "title": {
+                  "fr": "Devenir partenaire",
+                  "en": "Become a partner"
+                },
+                "description": {
+                  "fr": "Rejoignez le réseau des professionnels du sport santé à La Réunion",
+                  "en": "Join the network of sport health professionals in Réunion"
+                },
+                "ctaLabel": {
+                  "fr": "Rejoindre",
+                  "en": "Join"
+                },
+                "href": "/devenir-partenaire"
+              },
+              {
+                "icon": "phone",
+                "title": {
+                  "fr": "Contact",
+                  "en": "Contact"
+                },
+                "description": {
+                  "fr": "Une question ? Contactez notre équipe pour plus d'informations",
+                  "en": "Have a question? Contact our team for more information"
+                },
+                "ctaLabel": {
+                  "fr": "Nous contacter",
+                  "en": "Contact us"
+                },
+                "href": "/contact"
+              }
+            ],
+            "stats": [
+              {
+                "value": "100+",
+                "label": {
+                  "fr": "Structures partenaires",
+                  "en": "Partner structures"
+                },
+                "color": "primary"
+              },
+              {
+                "value": "500+",
+                "label": {
+                  "fr": "Participants actifs",
+                  "en": "Active participants"
+                },
+                "color": "primary"
+              },
+              {
+                "value": "50+",
+                "label": {
+                  "fr": "Activités proposées",
+                  "en": "Activities offered"
+                },
+                "color": "accent"
+              },
+              {
+                "value": "24",
+                "label": {
+                  "fr": "Communes couvertes",
+                  "en": "Municipalities covered"
+                },
+                "color": "primary"
+              }
+            ]
+          }
+        },
+        {
+          "type": "cta-rezo-la-mer",
+          "id": "cta",
+          "props": {
+            "variant": "cyber",
+            "headline": {
+              "fr": "Prenez soin de votre santé dès aujourd'hui",
+              "en": "Take care of your health today"
+            },
+            "subhead": {
+              "fr": "Rejoignez la communauté Sport Santé Bien-être et découvrez toutes les ressources pour améliorer votre qualité de vie",
+              "en": "Join the Sport Health Wellness community and discover all the resources to improve your quality of life"
+            },
+            "newsletterPlaceholder": {
+              "fr": "Votre email",
+              "en": "Your email"
+            },
+            "newsletterButtonLabel": {
+              "fr": "S'inscrire",
+              "en": "Subscribe"
+            },
+            "newsletterDisclaimer": {
+              "fr": "Recevez nos conseils santé et les actualités du réseau Sport Santé Bien-être",
+              "en": "Receive our health tips and Sport Health Wellness network news"
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Voir les projets",
+                  "en": "View projects"
+                },
+                "href": "/projets",
+                "variant": "outline"
+              },
+              {
+                "label": {
+                  "fr": "Nous contacter",
+                  "en": "Contact us"
+                },
+                "href": "/contact",
+                "variant": "accent"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/projets",
+      "title": {
+        "fr": "Projets - Sport Santé Bien-être",
+        "en": "Projects - Sport Health Wellness"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "projets-sport-sante",
+          "props": {
+            "headline": {
+              "fr": "Projets",
+              "en": "Projects"
+            },
+            "subhead": {
+              "fr": "Découvrez les projets sport santé à La Réunion",
+              "en": "Discover sport health projects in Réunion"
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Proposer un projet",
+                  "en": "Submit a project"
+                },
+                "icon": "plus",
+                "action": "add-project",
+                "variant": "primary"
+              }
+            ],
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher un projet...",
+              "en": "Search for a project..."
+            }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "section-project-list",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "baseParams": {
+              "defaultTypes": [
+                "projects"
+              ],
+              "notSourceKey": true,
+              "defaultFilters": {
+                "links.preferences.toBeValidated.sportSanteBienetre": {
+                  "$exists": false
+                },
+                "$or": {
+                  "links.contributors.682b2ac5e05a1d45844340e7": {
+                    "$exists": true
+                  },
+                  "parent.682b2ac5e05a1d45844340e7": {
+                    "$exists": true
+                  }
+                },
+                "links.contributors.682b2ac5e05a1d45844340e7": {
+                  "$exists": true
+                }
+              }
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3,
+                "xl": 4
+              },
+              "card": {
+                "type": "rezo-la-mer",
+                "variant": "rezo-la-mer",
+                "detailsMode": "drawer"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/communaute",
+      "title": {
+        "fr": "Communauté - Sport Santé Bien-être",
+        "en": "Community - Sport Health Wellness"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "communaute-header",
+          "props": {
+            "headline": {
+              "fr": "Communauté Sport Santé",
+              "en": "Sport Health Community"
+            },
+            "subhead": {
+              "fr": "Rejoignez le réseau des acteurs du sport santé à La Réunion",
+              "en": "Join the sport health network in Réunion"
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Rejoindre",
+                  "en": "Join"
+                },
+                "icon": "user-plus",
+                "action": "join-dropdown",
+                "variant": "primary"
+              },
+              {
+                "label": {
+                  "fr": "Inscrire ma structure",
+                  "en": "Register my structure"
+                },
+                "icon": "building-2",
+                "href": "/inscrire-organisation",
+                "variant": "outline"
+              }
+            ]
+          }
+        },
+        {
+          "type": "tabs",
+          "id": "community-tabs",
+          "props": {
+            "defaultTab": "membres",
+            "tabs": [
+              {
+                "id": "membres",
+                "label": {
+                  "fr": "Membres",
+                  "en": "Members"
+                },
+                "icon": "users",
+                "content": [
+                  {
+                    "type": "member",
+                    "id": "section-membres",
+                    "props": {
+                      "organizationId": "682b2ac5e05a1d45844340e7",
+                      "title": {
+                        "fr": "Membres Sport Santé Bien-être",
+                        "en": "Sport Health Wellness Members"
+                      },
+                      "showRole": true,
+                      "showManagement": true,
+                      "showCard": false,
+                      "card": {
+                        "type": "profile",
+                        "showDescription": true,
+                        "showAddress": true,
+                        "detailsMode": "drawer"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "organizations",
+                "label": {
+                  "fr": "Organisations",
+                  "en": "Organizations"
+                },
+                "icon": "building-2",
+                "content": [
+                  {
+                    "type": "searchProStatic",
+                    "id": "section-organisation-list",
+                    "props": {
+                      "useFilter": true,
+                      "showMap": false,
+                      "enableMap": false,
+                      "showActiveFiltersTypes": true,
+                      "showActiveFiltersTags": true,
+                      "disableInfiniteScroll": false,
+                      "baseParams": {
+                        "defaultTypes": [
+                          "NGO",
+                          "LocalBusiness",
+                          "Group",
+                          "GovernmentOrganization",
+                          "Cooperative"
+                        ],
+                        "notSourceKey": true,
+                        "defaultFilters": {
+                          "preferences.toBeValidated.sportSanteBienetre": {
+                            "$exists": false
+                          },
+                          "links.members.682b2ac5e05a1d45844340e7": {
+                            "$exists": true
+                          }
+                        }
+                      },
+                      "list": {
+                        "columns": {
+                          "sm": 1,
+                          "md": 2,
+                          "lg": 3,
+                          "xl": 4
+                        },
+                        "card": {
+                          "type": "profile",
+                          "variant": "profile",
+                          "detailsMode": "drawer"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "type": "cyber-reunion",
+    "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 8h1a4 4 0 0 1 0 8h-1\"></path><path d=\"M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z\"></path><line x1=\"6\" y1=\"1\" x2=\"6\" y2=\"4\"></line><line x1=\"10\" y1=\"1\" x2=\"10\" y2=\"4\"></line><line x1=\"14\" y1=\"1\" x2=\"14\" y2=\"4\"></line></svg>",
+    "logoTitle": {
+      "fr": "Sport Santé Bien-être",
+      "en": "Sport Health Wellness"
+    },
+    "description": {
+      "fr": "Plateforme dédiée à la promotion du sport santé et du bien-être à La Réunion",
+      "en": "Platform dedicated to promoting sport health and wellness in Réunion"
+    },
+    "website": "https://www.sport-sante-bien-etre.re",
+    "columns": [
+      {
+        "title": {
+          "fr": "Services",
+          "en": "Services"
+        },
+        "links": [
+          {
+            "href": "/projets",
+            "label": {
+              "fr": "Projets",
+              "en": "Projects"
+            }
+          },
+          {
+            "href": "/activites",
+            "label": {
+              "fr": "Trouver une activité",
+              "en": "Find an activity"
+            }
+          },
+          {
+            "href": "/bilan-forme",
+            "label": {
+              "fr": "Bilan de forme",
+              "en": "Fitness assessment"
+            }
+          },
+          {
+            "href": "/evenements",
+            "label": {
+              "fr": "Événements",
+              "en": "Events"
+            }
+          },
+          {
+            "href": "/formations",
+            "label": {
+              "fr": "Formations",
+              "en": "Training"
+            }
+          }
+        ]
+      },
+      {
+        "title": {
+          "fr": "Activités",
+          "en": "Activities"
+        },
+        "links": [
+          {
+            "href": "/activites/sport-adapte",
+            "label": {
+              "fr": "Sport adapté",
+              "en": "Adapted sport"
+            }
+          },
+          {
+            "href": "/activites/seniors",
+            "label": {
+              "fr": "Activités seniors",
+              "en": "Senior activities"
+            }
+          },
+          {
+            "href": "/activites/bien-etre",
+            "label": {
+              "fr": "Bien-être",
+              "en": "Wellness"
+            }
+          },
+          {
+            "href": "/activites/nutrition",
+            "label": {
+              "fr": "Nutrition",
+              "en": "Nutrition"
+            }
+          },
+          {
+            "href": "/activites/plein-air",
+            "label": {
+              "fr": "Plein air",
+              "en": "Outdoor"
+            }
+          }
+        ]
+      },
+      {
+        "title": {
+          "fr": "À propos",
+          "en": "About"
+        },
+        "links": [
+          {
+            "href": "/a-propos",
+            "label": {
+              "fr": "Qui sommes-nous",
+              "en": "About us"
+            }
+          },
+          {
+            "href": "/partenaires",
+            "label": {
+              "fr": "Nos partenaires",
+              "en": "Our partners"
+            }
+          },
+          {
+            "href": "/devenir-partenaire",
+            "label": {
+              "fr": "Devenir partenaire",
+              "en": "Become a partner"
+            }
+          },
+          {
+            "href": "/actualites",
+            "label": {
+              "fr": "Actualités",
+              "en": "News"
+            }
+          },
+          {
+            "href": "/contact",
+            "label": {
+              "fr": "Contact",
+              "en": "Contact"
+            }
+          }
+        ]
+      },
+      {
+        "title": {
+          "fr": "Ressources",
+          "en": "Resources"
+        },
+        "links": [
+          {
+            "href": "/ressources/guides",
+            "label": {
+              "fr": "Guides pratiques",
+              "en": "Practical guides"
+            }
+          },
+          {
+            "href": "/ressources/conseils",
+            "label": {
+              "fr": "Conseils santé",
+              "en": "Health tips"
+            }
+          },
+          {
+            "href": "/ressources/videos",
+            "label": {
+              "fr": "Vidéos",
+              "en": "Videos"
+            }
+          },
+          {
+            "href": "/faq",
+            "label": {
+              "fr": "FAQ",
+              "en": "FAQ"
+            }
+          },
+          {
+            "href": "/ressources/glossaire",
+            "label": {
+              "fr": "Glossaire",
+              "en": "Glossary"
+            }
+          }
+        ]
+      }
+    ],
+    "socials": [
+      {
+        "platform": "facebook",
+        "url": "https://facebook.com/sportsantebienetre"
+      },
+      {
+        "platform": "instagram",
+        "url": "https://instagram.com/sportsantebienetre"
+      },
+      {
+        "platform": "linkedin",
+        "url": "https://linkedin.com/company/sport-sante-bien-etre"
+      },
+      {
+        "platform": "mail",
+        "url": "mailto:contact@sport-sante-bien-etre.re"
+      }
+    ],
+    "legalLinks": [
+      {
+        "href": "/mentions-legales",
+        "label": {
+          "fr": "Mentions légales",
+          "en": "Legal notice"
+        }
+      },
+      {
+        "href": "/confidentialite",
+        "label": {
+          "fr": "Politique de confidentialité",
+          "en": "Privacy policy"
+        }
+      },
+      {
+        "href": "/accessibilite",
+        "label": {
+          "fr": "Accessibilité",
+          "en": "Accessibility"
+        }
+      }
+    ],
+    "copyright": {
+      "fr": "© 2025 Sport Santé Bien-être - La Réunion. Tous droits réservés.",
+      "en": "© 2025 Sport Health Wellness - Réunion. All rights reserved."
+    }
+  },
+  "features": [
+    {
+      "key": "communityFeatures",
+      "enabled": true,
+      "rolloutPercentage": 100
+    },
+    {
+      "key": "lightMode",
+      "enabled": true,
+      "rolloutPercentage": 100
+    },
+    {
+      "key": "multiLanguage",
+      "enabled": true,
+      "rolloutPercentage": 100
+    }
+  ],
+  "theme": {
+    "defaultMode": "dark",
+    "typography": {
+      "fontFamily": {
+        "sans": [
+          "Inter"
+        ],
+        "serif": [
+          "Roboto Slab"
+        ],
+        "mono": [
+          "Roboto Mono"
+        ]
+      },
+      "letterSpacing": "0em"
+    },
+    "spacing": {
+      "base": "0.25rem"
+    },
+    "borderRadius": {
+      "base": "0.5rem"
+    },
+    "shadows": {
+      "light": {
+        "shadow2xs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowXs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowSm": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowMd": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 2px 4px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowLg": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 4px 6px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowXl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 8px 10px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow2xl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.63)"
+      },
+      "dark": {
+        "shadow2xs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowXs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowSm": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowMd": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 2px 4px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowLg": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 4px 6px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowXl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 8px 10px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow2xl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.63)"
+      }
+    },
+    "customCSS": ""
+  },
+  "auth": {
+    "login": {
+      "title": {
+        "fr": "Se connecter",
+        "en": "Sign in"
+      },
+      "subtitle": {
+        "fr": "Accédez à la communauté Sport Santé Bien-être",
+        "en": "Access the Sport Health Wellness community"
+      }
+    }
+  },
+  "profiles": {
+    "default": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete"
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-event-dates"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                },
+                {
+                  "type": "profile-opening-hours"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gallery",
+          "label": {
+            "fr": "Galerie",
+            "en": "Gallery"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-gallery"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "map",
+          "label": {
+            "fr": "Localisation",
+            "en": "Location"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-map"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showPhone": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "citoyens": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": true,
+          "addConfig": {
+            "organization": true,
+            "project": true,
+            "event": true,
+            "poi": true
+          }
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-event-dates"
+                },
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                },
+                {
+                  "type": "profile-opening-hours"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "news",
+          "label": {
+            "fr": "Actualités",
+            "en": "News"
+          },
+          "sections": [
+            {
+              "type": "news",
+              "props": {
+                "maxItems": 10,
+                "showAddButton": true,
+                "showComments": true,
+                "showReactions": true
+              }
+            }
+          ],
+          "subRoutes": [
+            {
+              "path": ":newsId",
+              "component": "NewsDetailPage"
+            }
+          ]
+        },
+        {
+          "id": "social",
+          "label": {
+            "fr": "Amis",
+            "en": "Friends"
+          },
+          "condition": {
+            "entityTypes": [
+              "citoyens"
+            ],
+            "userContext": "own"
+          },
+          "component": "SocialTab"
+        },
+        {
+          "id": "membership",
+          "label": {
+            "fr": "Communautés",
+            "en": "Communities"
+          },
+          "condition": {
+            "entityTypes": [
+              "citoyens"
+            ],
+            "userContext": "own"
+          },
+          "component": "MembershipTab"
+        }
+      ]
+    },
+    "organizations": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": true,
+          "addConfig": {
+            "organization": false,
+            "project": true,
+            "event": true,
+            "poi": true
+          }
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                },
+                {
+                  "type": "profile-opening-hours"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "news",
+          "label": {
+            "fr": "Actualités",
+            "en": "News"
+          },
+          "sections": [
+            {
+              "type": "news",
+              "props": {
+                "maxItems": 10,
+                "showAddButton": true,
+                "showComments": true,
+                "showReactions": true
+              }
+            }
+          ],
+          "subRoutes": [
+            {
+              "path": ":newsId",
+              "component": "NewsDetailPage"
+            }
+          ]
+        },
+        {
+          "id": "members",
+          "label": {
+            "fr": "Membres",
+            "en": "Members"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-members",
+                  "showRole": true,
+                  "showManagement": true
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "projects",
+          "label": {
+            "fr": "Projets",
+            "en": "Projects"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-related",
+                  "relationType": "projects",
+                  "title": {
+                    "fr": "Projets",
+                    "en": "Projects"
+                  }
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "events",
+          "label": {
+            "fr": "Événements",
+            "en": "Events"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-related",
+                  "relationType": "events",
+                  "title": {
+                    "fr": "Événements",
+                    "en": "Events"
+                  }
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "projects": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": true,
+          "addConfig": {
+            "organization": false,
+            "project": false,
+            "event": true,
+            "poi": true
+          }
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                },
+                {
+                  "type": "profile-event-dates"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "news",
+          "label": {
+            "fr": "Actualités",
+            "en": "News"
+          },
+          "sections": [
+            {
+              "type": "news",
+              "props": {
+                "maxItems": 10,
+                "showAddButton": true,
+                "showComments": true,
+                "showReactions": true
+              }
+            }
+          ],
+          "subRoutes": [
+            {
+              "path": ":newsId",
+              "component": "NewsDetailPage"
+            }
+          ]
+        },
+        {
+          "id": "contributors",
+          "label": {
+            "fr": "Contributeurs",
+            "en": "Contributors"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-members",
+                  "showRole": true,
+                  "showManagement": true
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "organizations",
+          "label": {
+            "fr": "Organisations",
+            "en": "Organizations"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-related",
+                  "relationType": "projects",
+                  "title": {
+                    "fr": "Structures partenaires",
+                    "en": "Partner Structures"
+                  }
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "events",
+          "label": {
+            "fr": "Événements",
+            "en": "Events"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-related",
+                  "relationType": "events",
+                  "title": {
+                    "fr": "Événements",
+                    "en": "Events"
+                  }
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "events": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": false
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-event-dates"
+                },
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "dates",
+          "label": {
+            "fr": "Dates & Horaires",
+            "en": "Dates & Schedule"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-event-dates"
+                },
+                {
+                  "type": "profile-opening-hours"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "location",
+          "label": {
+            "fr": "Lieu",
+            "en": "Location"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-map"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showPhone": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "organizer",
+          "label": {
+            "fr": "Organisateur",
+            "en": "Organizer"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-related",
+                  "relationType": "events",
+                  "title": {
+                    "fr": "Autres événements",
+                    "en": "Other events"
+                  }
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showOrganizer": true,
+                  "showEmail": true,
+                  "showPhone": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gallery",
+          "label": {
+            "fr": "Galerie",
+            "en": "Gallery"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-gallery"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "poi": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": false
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "practicalInfo",
+          "label": {
+            "fr": "Infos pratiques",
+            "en": "Practical Info"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-opening-hours"
+                },
+                {
+                  "type": "profile-about"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showOpeningDate": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "map",
+          "label": {
+            "fr": "Carte",
+            "en": "Map"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-map"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showPhone": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gallery",
+          "label": {
+            "fr": "Galerie",
+            "en": "Gallery"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-gallery"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "floatingQRCode": {
+    "enabled": true,
+    "url": "https://sport-sante-bien-etre.communecter.org",
+    "position": "bottom-right",
+    "size": 80,
+    "expandedSize": 200,
+    "includeFavicon": true,
+    "bgColor": "#ffffff",
+    "fgColor": "#000000"
+  }
+}

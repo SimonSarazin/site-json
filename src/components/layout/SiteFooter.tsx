@@ -11,6 +11,7 @@ export function SiteFooter() {
     case "tiers-lieux":
       return <FooterTiersLieux footer={footer} />;
     case "rezo-la-mer":
+    case "cyber-reunion":
       return <FooterRezoLaMer footer={footer} />;
     case "default":
     default:

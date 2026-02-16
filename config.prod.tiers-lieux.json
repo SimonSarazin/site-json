@@ -1,0 +1,2073 @@
+{
+  "version": "1.0.0",
+  "generated": "2025-09-08T10:30:00.000Z",
+  "meta": {
+    "title": {
+      "fr": "Tiers Lieux",
+      "en": "Tiers Lieux"
+    },
+    "description": {
+      "fr": "Le réseau social des tiers-lieux",
+      "en": "Le réseau social des tiers-lieux"
+    },
+    "defaultLang": "fr",
+    "languages": [
+      "fr",
+      "en"
+    ],
+    "favicon": "images/tiersLieux/Logo_Tl_Temp2.png",
+    "themeColor": "#3b82f6",
+    "keywords": [
+      "communauté",
+      "POI",
+      "collaboration",
+      "territoire"
+    ]
+  },
+  "header": {
+    "type": "tiers-lieux",
+    "logo": "images/tiersLieux/Logo_Tl_Temp2.png",
+    "logoAlt": {
+      "fr": "Tiers Lieux",
+      "en": "Tiers Lieux"
+    },
+    "path": "/",
+    "nav": [
+      {
+        "label": {
+          "fr": "Les lieux",
+          "en": "Places"
+        },
+        "icon": "map",
+        "children": [
+          {
+            "label": {
+              "fr": "Afficher tous les tiers-lieux",
+              "en": "Show all third places"
+            },
+            "description": {
+              "fr": "Découvrez tous les lieux disponibles pour coworking, événements et plus.",
+              "en": "Discover all places available for coworking, events, and more."
+            },
+            "path": "/lieux",
+            "icon": "arrow-right"
+          },
+          {
+            "label": {
+              "fr": "Se réunir",
+              "en": "Meet"
+            },
+            "description": {
+              "fr": "Espaces adaptés pour les réunions et rencontres professionnelles.",
+              "en": "Spaces suitable for meetings and professional gatherings."
+            },
+            "path": "#"
+          },
+          {
+            "label": {
+              "fr": "Manger",
+              "en": "Eat"
+            },
+            "description": {
+              "fr": "Restaurants, cafés et espaces de restauration à disposition.",
+              "en": "Restaurants, cafes, and dining spaces available."
+            },
+            "path": "#"
+          },
+          {
+            "label": {
+              "fr": "Coworker",
+              "en": "Coworking"
+            },
+            "description": {
+              "fr": "Espaces de coworking pour travailler et collaborer.",
+              "en": "Coworking spaces to work and collaborate."
+            },
+            "path": "#"
+          },
+          {
+            "label": {
+              "fr": "S'instruire",
+              "en": "Learn"
+            },
+            "description": {
+              "fr": "Ateliers, formations et ressources pour apprendre.",
+              "en": "Workshops, training, and resources to learn."
+            },
+            "path": "#"
+          },
+          {
+            "label": {
+              "fr": "Fabriquer",
+              "en": "Make"
+            },
+            "description": {
+              "fr": "FabLabs et ateliers pour créer et fabriquer.",
+              "en": "Fablabs and workshops to create and make."
+            },
+            "path": "#"
+          },
+          {
+            "label": {
+              "fr": "Séjourner",
+              "en": "Stay"
+            },
+            "description": {
+              "fr": "Hébergements et espaces pour passer la nuit.",
+              "en": "Accommodations and spaces to stay overnight."
+            },
+            "path": "#"
+          }
+        ]
+      },
+      {
+        "label": {
+          "fr": "Outils et ressources",
+          "en": "Tools & Resources"
+        },
+        "icon": "tool",
+        "children": [
+          {
+            "label": {
+              "fr": "Le Forum",
+              "en": "Forum"
+            },
+            "description": {
+              "fr": "Partagez et discutez avec la communauté.",
+              "en": "Share and discuss with the community."
+            },
+            "path": "#"
+          },
+          {
+            "label": {
+              "fr": "Usages et logiciels",
+              "en": "Tools and Software"
+            },
+            "description": {
+              "fr": "Accédez aux logiciels et outils recommandés.",
+              "en": "Access recommended software and tools."
+            },
+            "path": "#"
+          },
+          {
+            "label": {
+              "fr": "Le Chat",
+              "en": "Chat"
+            },
+            "description": {
+              "fr": "Communiquez rapidement avec d’autres membres.",
+              "en": "Quickly communicate with other members."
+            },
+            "path": "#"
+          },
+          {
+            "label": {
+              "fr": "API et données ouvertes",
+              "en": "Open API & Data"
+            },
+            "description": {
+              "fr": "Consultez et utilisez nos API et données ouvertes.",
+              "en": "Browse and use our APIs and open data."
+            },
+            "path": "#"
+          },
+          {
+            "label": {
+              "fr": "Wiki Movilab",
+              "en": "Movilab Wiki"
+            },
+            "description": {
+              "fr": "Documentation et informations sur nos initiatives.",
+              "en": "Documentation and information on our initiatives."
+            },
+            "path": "#"
+          }
+        ]
+      },
+      {
+        "label": {
+          "fr": "S'entraider",
+          "en": "Help Each Other"
+        },
+        "icon": "handshake",
+        "children": [
+          {
+            "label": {
+              "fr": "Cofinancer",
+              "en": "Co-fund"
+            },
+            "description": {
+              "fr": "Participez au financement de projets communs.",
+              "en": "Participate in funding joint projects."
+            },
+            "path": "#"
+          },
+          {
+            "label": {
+              "fr": "S'entre accompagner",
+              "en": "Support each other"
+            },
+            "description": {
+              "fr": "Recevez et apportez du soutien à la communauté.",
+              "en": "Give and receive support from the community."
+            },
+            "path": "#"
+          }
+        ]
+      },
+      {
+        "label": {
+          "fr": "Observatoire",
+          "en": "Observatory"
+        },
+        "icon": "eye",
+        "children": [
+          {
+            "label": {
+              "fr": "Réseaux Régionaux",
+              "en": "Regional Networks"
+            },
+            "description": {
+              "fr": "Analyse et suivi des réseaux régionaux.",
+              "en": "Analysis and monitoring of regional networks."
+            },
+            "path": "#"
+          },
+          {
+            "label": {
+              "fr": "Réseaux Thématiques",
+              "en": "Thematic Networks"
+            },
+            "description": {
+              "fr": "Étude des réseaux thématiques en cours.",
+              "en": "Study of ongoing thematic networks."
+            },
+            "path": "#"
+          }
+        ]
+      },
+      {
+        "label": {
+          "fr": "Événements",
+          "en": "Events"
+        },
+        "path": "#",
+        "icon": "calendar"
+      },
+      {
+        "label": {
+          "fr": "Les marques",
+          "en": "Brands"
+        },
+        "path": "#",
+        "icon": "tag"
+      }
+    ],
+    "sticky": true,
+    "transparent": false,
+    "height": "lg",
+    "utilities": {
+      "themeSwitch": false,
+      "langSwitch": true,
+      "search": false,
+      "auth": true,
+      "cart": false,
+      "notifications": false
+    }
+  },
+  "pages": [
+    {
+      "path": "/",
+      "title": {
+        "fr": "Accueil - Le réseau social des tiers-lieux",
+        "en": "Home - Le réseau social des tiers-lieux"
+      },
+      "layout": "default",
+      "sections": [
+        {
+          "type": "hero-tiers-lieux",
+          "id": "hero-complet",
+          "props": {
+            "headline": {
+              "fr": "Le réseau social des tiers-lieux",
+              "en": "The third places social network"
+            },
+            "subhead": {
+              "fr": "Trouvez le lieu pour ...",
+              "en": "Find the place for ..."
+            },
+            "ctaButtons": [
+              {
+                "label": {
+                  "fr": "Découvrir",
+                  "en": "Discover"
+                }
+              },
+              {
+                "label": {
+                  "fr": "Se réunir",
+                  "en": "Meet"
+                }
+              },
+              {
+                "label": {
+                  "fr": "Coworker",
+                  "en": "Cowork"
+                }
+              },
+              {
+                "label": {
+                  "fr": "Fabriquer",
+                  "en": "Make"
+                }
+              },
+              {
+                "label": {
+                  "fr": "Manger",
+                  "en": "Eat"
+                }
+              },
+              {
+                "label": {
+                  "fr": "S'instruire",
+                  "en": "Learn"
+                }
+              },
+              {
+                "label": {
+                  "fr": "Séjourner",
+                  "en": "Stay"
+                }
+              },
+              {
+                "label": {
+                  "fr": "+",
+                  "en": "+"
+                }
+              }
+            ],
+            "placeholder": {
+              "fr": "Ville, département, code postal ...",
+              "en": "City, ZIP code ..."
+            },
+            "searchButtonText": {
+              "fr": "Rechercher",
+              "en": "Search"
+            },
+            "backgroundImage": "images/tiersLieux/BG_Illus.png"
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "section-lieux",
+          "props": {
+            "customHeader": {
+              "title": {
+                "fr": "Découvrir les lieux"
+              },
+              "linkText": {
+                "fr": "Cartographie des lieux"
+              },
+              "showMapButton": true
+            },
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": true,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": true,
+            "baseParams": {
+              "defaultTypes": [
+                "organizations"
+              ],
+              "indexStepList": 5
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 5,
+                "xl": 5
+              },
+              "card": {
+                "type": "tiers-lieux",
+                "variant": "tiers-lieux",
+                "detailsMode": "drawer"
+              }
+            }
+          }
+        },
+        {
+          "type": "title",
+          "id": "title-outillage",
+          "props": {
+            "title": {
+              "fr": "Outillage pour nos lieux",
+              "en": "Tools for our places"
+            },
+            "subtitle": {
+              "fr": "de sociabilité et leurs réseaux",
+              "en": "of sociability and their networks"
+            },
+            "className": "pb-0 mt-5"
+          }
+        },
+        {
+          "type": "cards",
+          "id": "actions-principales",
+          "props": {
+            "variant": "icon-card",
+            "columns": 6,
+            "layout": "grid",
+            "className": "pb-5 pt-5",
+            "items": [
+              {
+                "iconSvg": "<svg width=\"72\" height=\"72\" viewBox=\"0 0 72 72\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M62.3297 8.86933C50.5191 -2.94123 31.372 -2.94123 19.5614 8.86933C8.66082 19.7699 7.84564 36.9265 17.078 48.794L13.8552 52.0167L12.9452 51.1068L1.51382 62.5382C-0.457771 64.5098 -0.457771 67.7136 1.51382 69.6852C3.4854 71.6568 6.68923 71.6568 8.66081 69.6852L20.0922 58.2538L19.1823 57.3438L22.405 54.121C34.2725 63.3534 51.4291 62.5571 62.3297 51.6376C74.1402 39.827 74.1402 20.6799 62.3297 8.86933Z\" fill=\"#FFD836\"></path></svg>",
+                "iconColor": "text-yellow-500",
+                "title": {
+                  "fr": "Explorer",
+                  "en": "Explore"
+                },
+                "text": {
+                  "fr": "La cartographie des lieux",
+                  "en": "The map of places"
+                },
+                "href": "/lieux"
+              },
+              {
+                "iconImage": "./images/tiersLieux/TL_Icones.png",
+                "iconClipPath": "polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)",
+                "iconColor": "text-yellow-500",
+                "title": {
+                  "fr": "Se réunir",
+                  "en": "Meet"
+                },
+                "text": {
+                  "fr": "Trouver une salle de réunion",
+                  "en": "Find a meeting room"
+                },
+                "href": "/se-reunir"
+              },
+              {
+                "iconSvg": "<svg width=\"80\" height=\"66\" viewBox=\"0 0 80 66\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M51.9856 22.8031L55.7558 0.376221H11.5726C8.66415 0.376221 6.18658 2.48211 5.70184 5.34397L0.603088 35.6544H11.3572L10.1184 43.088L22.4882 35.6544H28.4847L24.7683 57.9913H52.0933L63.2424 65.4249L64.4991 57.9913H68.9695C71.8779 57.9913 74.3555 55.8854 74.8402 53.0235L79.8851 22.8031H51.9856Z\" fill=\"#FFD836\"></path></svg>",
+                "iconColor": "text-yellow-500",
+                "title": {
+                  "fr": "Discuter",
+                  "en": "Discuss"
+                },
+                "text": {
+                  "fr": "Sur le Forum des Tiers-lieux",
+                  "en": "On the Third Places Forum"
+                },
+                "href": "/forum"
+              },
+              {
+                "iconSvg": "<svg width=\"72\" height=\"72\" viewBox=\"0 0 72 72\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M59.5288 10.6815V3.20389C54.6098 3.75926 50.7421 5.46504 47.6875 7.74602V0.189026C40.2099 2.31133 37.0165 8.06338 35.7868 13.3196C34.557 8.08321 31.3636 2.31133 23.886 0.189026V7.74602C20.8314 5.46504 16.9637 3.75926 12.0447 3.20389V10.6815C6.51084 8.14271 2.10755 7.25016 0.183594 7.07164V55.6268C14.4844 59.6334 25.2942 65.8813 31.2645 69.9474C32.5934 70.8598 34.1603 71.3557 35.7669 71.3557C37.3735 71.3557 38.9405 70.8598 40.2694 69.9474C46.2396 65.8615 57.0693 59.6334 71.3503 55.6268V7.07164C69.4263 7.25016 65.023 8.14271 59.4892 10.6815H59.5288Z\" fill=\"#FFD836\"></path></svg>",
+                "iconColor": "text-yellow-500",
+                "title": {
+                  "fr": "Se documenter",
+                  "en": "Get documentation"
+                },
+                "text": {
+                  "fr": "Via le Wiki Movilab",
+                  "en": "Via the Movilab Wiki"
+                },
+                "href": "/wiki"
+              },
+              {
+                "iconSvg": "<svg width=\"83\" height=\"66\" viewBox=\"0 0 83 66\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M31.0566 56.2516L82.2582 56.1904L68.1168 0.24408L2.97698 35.6441C1.41249 36.501 0.599767 38.317 1.04676 40.0512L4.39925 53.3135C4.84625 55.0478 6.41074 56.272 8.19873 56.272H17.7279L16.265 65.3311L31.0566 56.2516Z\" fill=\"#FFD836\"></path></svg>",
+                "iconColor": "text-yellow-500",
+                "title": {
+                  "fr": "Cofinancer",
+                  "en": "Co-finance"
+                },
+                "text": {
+                  "fr": "Via l'appel à commun",
+                  "en": "Via the common call"
+                },
+                "href": "/cofinancement"
+              },
+              {
+                "iconSvg": "<svg width=\"81\" height=\"55\" viewBox=\"0 0 81 55\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M79.3151 15.4503C57.5928 -4.43436 23.9883 -4.43436 2.26601 15.4503C1.20775 16.4243 0.632202 17.821 0.632202 19.2545V35.3901C9.09831 27.0098 19.551 21.8457 30.505 19.8609C24.7123 23.5732 21.0734 30.3178 21.9274 37.8343C22.9114 46.4167 29.948 53.3818 38.6183 54.3191C50.0735 55.5687 59.7836 46.7291 59.7836 35.6473C59.7836 29.0314 56.3117 23.2057 51.0947 19.8609C62.0301 21.8457 72.5013 27.0098 80.9674 35.3901V19.2545C80.9674 17.821 80.3919 16.4243 79.3336 15.4503H79.3151Z\" fill=\"#FFD836\"></path></svg>",
+                "iconColor": "text-yellow-500",
+                "title": {
+                  "fr": "Observer",
+                  "en": "Observe"
+                },
+                "text": {
+                  "fr": "Les données des lieux et leurs réseaux",
+                  "en": "Data on places and their networks"
+                },
+                "href": "/observatoire"
+              }
+            ]
+          }
+        },
+        {
+          "type": "html",
+          "id": "show-more-button",
+          "props": {
+            "html": "<div class=\"container pb-5 mx-auto px-6\"><div class=\"text-center\"><button class=\"text-gray-700 font-light hover:text-primary transition\">Afficher plus +</button></div></div>"
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "section-events",
+          "props": {
+            "customHeader": {
+              "title": {
+                "fr": "Événements à venir"
+              },
+              "linkText": {
+                "fr": "Cartographie des tiers-lieux"
+              },
+              "showMapButton": true
+            },
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": true,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": true,
+            "baseParams": {
+              "defaultTypes": [
+                "events"
+              ],
+              "indexStepList": 4
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 4,
+                "xl": 4
+              },
+              "card": {
+                "type": "event",
+                "variant": "event",
+                "detailsMode": "drawer"
+              }
+            }
+          }
+        },
+        {
+          "type": "content",
+          "id": "les-lieux",
+          "props": {
+            "category": {
+              "fr": "Les lieux",
+              "en": "The places"
+            },
+            "title": {
+              "fr": "Découvrez les tiers-lieux, explorez leurs spécificités et contribuez à la vie d'un lieu.",
+              "en": "Discover third places, explore their specificities and contribute to the life of a place."
+            },
+            "description": {
+              "fr": "Les tiers-lieux sont des espaces hybrides de rencontre et de partage. Ils favorisent la coopération, l'innovation sociale et le développement local. Découvrez la diversité de ces lieux qui réinventent notre façon de travailler, d'apprendre et de vivre ensemble.",
+              "en": "Third places are hybrid spaces for meeting and sharing. They promote cooperation, social innovation and local development. Discover the diversity of these places that reinvent the way we work, learn and live together."
+            },
+            "tags": [
+              {
+                "fr": "Atelier artisanaux partagés",
+                "en": "Shared craft workshops"
+              },
+              {
+                "fr": "Bureaux partagés / Coworking",
+                "en": "Shared offices / Coworking"
+              },
+              {
+                "fr": "Cuisine partagée / Foodlab",
+                "en": "Shared kitchen / Foodlab"
+              },
+              {
+                "fr": "Fablab / Makerspace / Hackerspace",
+                "en": "Fablab / Makerspace / Hackerspace"
+              },
+              {
+                "fr": "Livinglab / Laboratoire d'innovation sociale",
+                "en": "Livinglab / Social innovation lab"
+              },
+              {
+                "fr": "Tiers-lieu nourricier",
+                "en": "Nurturing third place"
+              },
+              {
+                "fr": "Tiers-lieu culturel / Indépendants",
+                "en": "Cultural third place / Independents"
+              },
+              {
+                "fr": "Autres",
+                "en": "Others"
+              }
+            ],
+            "image": "images/tiersLieux/image1.png",
+            "imagePosition": "right"
+          }
+        },
+        {
+          "type": "html",
+          "id": "tiers-lieux-actions",
+          "props": {
+            "html": "<div class=\"grid md:grid-cols-3 gap-8\">\n  <div class=\"bg-white dark:bg-slate-800 p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100 dark:border-gray-700 flex items-center gap-4\">\n    <div class=\"w-14 h-14 bg-yellow-400 rounded-full flex items-center justify-center flex-shrink-0 shadow-md transform rotate-y-180\">\n      <i class=\"fa-solid fa-magnifying-glass text-white text-xl transform scale-x-[-1]\"></i>\n    </div>\n    <div class=\"flex-1\">\n      <h3 class=\"text-lg font-bold mb-1 text-gray-900 dark:text-white\">Découvrir</h3>\n      <p class=\"text-gray-600 dark:text-gray-400 text-sm leading-relaxed\">Explorez la carte des lieux et découvrez leur diversité.</p>\n    </div>\n    <div class=\"flex-shrink-0\">\n      <i class=\"fa-solid fa-arrow-right text-gray-900 dark:text-gray-300 text-xl\"></i>\n    </div>\n  </div>\n\n  <div class=\"bg-white dark:bg-slate-800 p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100 dark:border-gray-700 flex items-center gap-4\">\n    <div class=\"w-14 h-14 bg-yellow-400 flex items-center justify-center flex-shrink-0 shadow-md\" style=\"clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)\">\n      <i class=\"fa-solid fa-gear text-white text-xl\"></i>\n    </div>\n    <div class=\"flex-1\">\n      <h3 class=\"text-lg font-bold mb-1 text-gray-900 dark:text-white\">Se réunir</h3>\n      <p class=\"text-gray-600 dark:text-gray-400 text-sm leading-relaxed\">Trouvez la salle de réunion idéale pour organiser votre rencontre.</p>\n    </div>\n    <div class=\"flex-shrink-0\">\n      <i class=\"fa-solid fa-arrow-right text-gray-900 dark:text-gray-300 text-xl\"></i>\n    </div>\n  </div>\n\n  <div class=\"bg-white dark:bg-slate-800 p-6 rounded-2xl shadow hover:shadow-lg transition cursor-pointer border border-gray-100 dark:border-gray-700 flex items-center gap-4\">\n    <div class=\"w-14 h-14 bg-yellow-400 rounded-full flex items-center justify-center flex-shrink-0 shadow-md\">\n      <i class=\"fa-solid fa-heart text-white text-xl\"></i>\n    </div>\n    <div class=\"flex-1\">\n      <h3 class=\"text-lg font-bold mb-1 text-gray-900 dark:text-white\">Se reconnaître</h3>\n      <p class=\"text-gray-600 dark:text-gray-400 text-sm leading-relaxed\">Via les marques collectives, identifiez les lieux qui vous inspirent.</p>\n    </div>\n    <div class=\"flex-shrink-0\">\n      <i class=\"fa-solid fa-arrow-right text-gray-900 dark:text-gray-300 text-xl\"></i>\n    </div>\n  </div>\n</div>"
+          }
+        },
+        {
+          "type": "content",
+          "id": "outils-ressources",
+          "props": {
+            "category": {
+              "fr": "Outils et ressources",
+              "en": "Tools and resources"
+            },
+            "title": {
+              "fr": "Se mettre en lien, discuter, proposer et diffuser des informations sur les tiers-lieux.",
+              "en": "Connect, discuss, propose and disseminate information about third places."
+            },
+            "description": {
+              "fr": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris et aliquip ex ea commodo consequat.",
+              "en": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+            },
+            "image": "images/tiersLieux/forum.png",
+            "imagePosition": "right",
+            "iconCard": {
+              "svg": "<svg width=\"50\" height=\"42\" viewBox=\"0 0 50 42\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M32.4401 14.686L34.8135 0.568115H6.99978C5.16889 0.568115 3.60925 1.89379 3.3041 3.69535L0.0943909 22.776H6.86416L6.08434 27.4555L13.8713 22.776H17.6461L15.3066 36.8373H32.5079L39.5263 41.5168L40.3175 36.8373H43.1316C44.9625 36.8373 46.5221 35.5116 46.8273 33.71L50.0031 14.686H32.4401Z\" fill=\"#FFD836\"></path></svg>"
+            },
+            "links": [
+              {
+                "label": {
+                  "fr": "Le Forum des Tiers-lieux",
+                  "en": "The Third Places Forum"
+                },
+                "href": "/forum"
+              },
+              {
+                "label": {
+                  "fr": "Le Chat",
+                  "en": "The Chat"
+                },
+                "href": "/chat"
+              }
+            ],
+            "infoText": {
+              "fr": "Pour se connecter, un seul compte : <span class=\"font-bold\">Le SSO tiers-lieux.org</span>",
+              "en": "To connect, one account: <span class=\"font-bold\">The SSO tiers-lieux.org</span>"
+            },
+            "decorativeElements": {
+              "type": "corner-icon"
+            }
+          }
+        },
+        {
+          "type": "content",
+          "id": "documentation",
+          "props": {
+            "title": {
+              "fr": "Documentation et liste d'outils pour organiser et coordonner la vie d'un tiers-lieu.",
+              "en": "Documentation and list of tools to organize and coordinate the life of a third place."
+            },
+            "description": {
+              "fr": "Accédez à une base de connaissances collaborative et découvrez les meilleurs outils pour gérer votre tiers-lieu. Ressources pratiques, guides méthodologiques et retours d'expérience sont à votre disposition.",
+              "en": "Access a collaborative knowledge base and discover the best tools to manage your third place. Practical resources, methodological guides and feedback are at your disposal."
+            },
+            "image": "images/tiersLieux/docs.png",
+            "imagePosition": "left",
+            "iconCard": {
+              "svg": "<svg width=\"46\" height=\"46\" viewBox=\"0 0 46 46\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M37.9165 7.16665V2.45941C34.82 2.80902 32.3852 3.88282 30.4624 5.31871V0.561523C25.7551 1.89753 23.7449 5.51849 22.9707 8.8273C22.1966 5.53098 20.1863 1.89753 15.4791 0.561523V5.31871C13.5562 3.88282 11.1214 2.80902 8.02489 2.45941V7.16665C4.54128 5.56844 1.76938 5.00656 0.558228 4.89419V35.4601C9.56068 37.9823 16.3656 41.9154 20.1239 44.475C20.9605 45.0494 21.9469 45.3615 22.9582 45.3615C23.9696 45.3615 24.956 45.0494 25.7926 44.475C29.5509 41.9029 36.3683 37.9823 45.3582 35.4601V4.89419C44.1471 5.00656 41.3752 5.56844 37.8916 7.16665H37.9165Z\" fill=\"#FFD836\"></path></svg>"
+            },
+            "links": [
+              {
+                "label": {
+                  "fr": "Le Wiki Movilab",
+                  "en": "The Movilab Wiki"
+                },
+                "href": "/wiki"
+              },
+              {
+                "label": {
+                  "fr": "Les logiciels et leurs usages",
+                  "en": "Software and their uses"
+                },
+                "href": "/tools"
+              }
+            ]
+          }
+        },
+        {
+          "type": "content",
+          "id": "sentraider",
+          "props": {
+            "category": {
+              "fr": "S'entraider",
+              "en": "Help each other"
+            },
+            "title": {
+              "fr": "Cofinancer nos infrastructures communes et accompagner les nouveaux projets.",
+              "en": "Co-finance our common infrastructures and support new projects."
+            },
+            "description": {
+              "fr": "Participez à l'économie solidaire des tiers-lieux en contribuant au financement des infrastructures partagées. Soutenez les nouveaux projets et bénéficiez de l'accompagnement de la communauté pour développer le vôtre.",
+              "en": "Participate in the solidarity economy of third places by contributing to the financing of shared infrastructures. Support new projects and benefit from community support to develop yours."
+            },
+            "image": "images/tiersLieux/sentraider.png",
+            "imagePosition": "right",
+            "iconCard": {
+              "svg": "<svg width=\"52\" height=\"42\" viewBox=\"0 0 52 42\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M19.4258 35.7421L51.6576 35.7035L42.7555 0.484863L1.74944 22.7695C0.764583 23.3089 0.252966 24.4521 0.534355 25.5438L2.64477 33.8925C2.92616 34.9843 3.91102 35.7549 5.03658 35.7549H11.0353L10.1144 41.4577L19.4258 35.7421Z\" fill=\"#FFD836\"></path></svg>"
+            },
+            "links": [
+              {
+                "label": {
+                  "fr": "L'appel à cofinancement",
+                  "en": "The call for co-financing"
+                },
+                "href": "/cofinancement"
+              },
+              {
+                "label": {
+                  "fr": "La plateforme de recommandation collaborative",
+                  "en": "The collaborative recommendation platform"
+                },
+                "href": "/recommandations"
+              }
+            ],
+            "decorativeElements": {
+              "type": "colored-squares"
+            }
+          }
+        },
+        {
+          "type": "content",
+          "id": "observatoire-section",
+          "props": {
+            "category": {
+              "fr": "Observatoire",
+              "en": "Observatory"
+            },
+            "title": {
+              "fr": "Observer les données",
+              "en": "Observe the data"
+            },
+            "description": {
+              "fr": "Découvrez comment nos indicateurs témoignent de notre impact et de notre croissance. Des résultats concrets qui illustrent la transformation des territoires.",
+              "en": "Discover how our metrics demonstrate success and growth. Concrete results that illustrate territorial transformation."
+            },
+            "links": [
+              {
+                "label": {
+                  "fr": "Les réseaux régionaux",
+                  "en": "Regional networks"
+                },
+                "href": "#"
+              },
+              {
+                "label": {
+                  "fr": "Les réseaux thématiques",
+                  "en": "Thematic networks"
+                },
+                "href": "#"
+              }
+            ],
+            "iconCard": {
+              "svg": "<svg width=\"52\" height=\"35\" viewBox=\"0 0 52 35\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M50.0147 10.2046C36.3404 -2.31298 15.186 -2.31298 1.51168 10.2046C0.845496 10.8177 0.483185 11.697 0.483185 12.5993V22.7568C5.81267 17.4814 12.3927 14.2305 19.2883 12.9811C15.6418 15.318 13.3511 19.5638 13.8887 24.2955C14.5082 29.6982 18.9377 34.0828 24.3958 34.6728C31.6069 35.4595 37.7195 29.8948 37.7195 22.9188C37.7195 18.754 35.5339 15.0866 32.2497 12.9811C39.1337 14.2305 45.7254 17.4814 51.0549 22.7568V12.5993C51.0549 11.697 50.6926 10.8177 50.0264 10.2046H50.0147Z\" fill=\"#FFD836\"></path></svg>"
+            },
+            "image": "images/tiersLieux/forum.png",
+            "imagePosition": "left",
+            "className": "",
+            "decorativeElements": {
+              "type": "none"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/lieux",
+      "title": {
+        "fr": "Accueil - Le réseau social des tiers-lieux",
+        "en": "Home - Le réseau social des tiers-lieux"
+      },
+      "layout": "default",
+      "sections": [
+        {
+          "type": "hero-tiers-lieux",
+          "id": "hero-tiers-lieux",
+          "props": {
+            "headline": {
+              "fr": "Le réseau social des tiers-lieux",
+              "en": "The third places social network"
+            },
+            "placeholder": {
+              "fr": "Ville, département, code postal ...",
+              "en": "City, ZIP code ..."
+            },
+            "searchButtonText": {
+              "fr": "Rechercher",
+              "en": "Search"
+            },
+            "backgroundImage": "images/tiersLieux/calc1.svg"
+          }
+        },
+        {
+          "type": "gridLayout",
+          "id": "lieux-grid",
+          "props": {
+            "leftColumns": 1,
+            "rightColumns": 3,
+            "gap": 4,
+            "leftSection": {
+              "type": "filters",
+              "id": "lieux-filters",
+              "props": {
+                "title": {
+                  "fr": "Filtres",
+                  "en": "Filters"
+                },
+                "defaultOpenGroups": [
+                  "typologies",
+                  "reseaux"
+                ],
+                "filterGroups": [
+                  {
+                    "id": "typologies",
+                    "label": {
+                      "fr": "Typologies",
+                      "en": "Types"
+                    },
+                    "options": [
+                      {
+                        "id": "tous",
+                        "label": {
+                          "fr": "Tous les lieux",
+                          "en": "All places"
+                        },
+                        "name": "",
+                        "defaultChecked": false
+                      },
+                      {
+                        "id": "coworking",
+                        "label": {
+                          "fr": "Coworking",
+                          "en": "Coworking"
+                        },
+                        "name": "Bureaux partagés / Coworking"
+                      },
+                      {
+                        "id": "reunion",
+                        "label": {
+                          "fr": "Salles de réunion",
+                          "en": "Meeting rooms"
+                        },
+                        "name": "Salle de réunion"
+                      },
+                      {
+                        "id": "bureaux",
+                        "label": {
+                          "fr": "Bureaux privatifs",
+                          "en": "Private offices"
+                        },
+                        "name": "Bureau privatif"
+                      },
+                      {
+                        "id": "fablab",
+                        "label": {
+                          "fr": "FabLab",
+                          "en": "FabLab"
+                        },
+                        "name": "Fablab / Makerspace / Hackerspace"
+                      },
+                      {
+                        "id": "restaurant",
+                        "label": {
+                          "fr": "Restaurant",
+                          "en": "Restaurant"
+                        },
+                        "name": "Restaurant"
+                      },
+                      {
+                        "id": "bar",
+                        "label": {
+                          "fr": "Bar",
+                          "en": "Bar"
+                        },
+                        "name": "Bar"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "pays",
+                    "type": "scopeList",
+                    "label": {
+                      "fr": "Pays",
+                      "en": "Countries"
+                    },
+                    "config": {
+                      "countryCode": ["FR", "BE", "CH", "GP", "GF", "MQ", "YT", "RE"],
+                      "level": ["1"],
+                      "sortBy": "name"
+                    }
+                  },
+                  {
+                    "id": "reseaux",
+                    "label": {
+                      "fr": "Réseaux thématiques",
+                      "en": "Thematic networks"
+                    },
+                    "options": [
+                      {
+                        "id": "basqinterlieux",
+                        "label": {
+                          "fr": "Le BâL (Basq inter-lieux)",
+                          "en": "Le BâL (Basq inter-lieux)"
+                        }
+                      },
+                      {
+                        "id": "cerclelittoral",
+                        "label": {
+                          "fr": "Cercle littoral des Hauts-de-Fr...",
+                          "en": "Hauts-de-France coastal circle"
+                        }
+                      },
+                      {
+                        "id": "rflabs",
+                        "label": {
+                          "fr": "RFFLabs",
+                          "en": "RFFLabs"
+                        }
+                      },
+                      {
+                        "id": "lieux-intermediaires",
+                        "label": {
+                          "fr": "Lieux intermédiaires et indépen...",
+                          "en": "Intermediate and independent..."
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "regions",
+                    "type": "scopeList",
+                    "label": {
+                      "fr": "Régions",
+                      "en": "Regions"
+                    },
+                    "config": {
+                      "countryCode": ["FR", "BE", "CH"],
+                      "level": ["3"],
+                      "sortBy": "name"
+                    }
+                  },
+                  {
+                    "id": "partage",
+                    "label": {
+                      "fr": "Partage",
+                      "en": "Sharing"
+                    },
+                    "options": [
+                      {
+                        "id": "openspace",
+                        "label": {
+                          "fr": "Open space",
+                          "en": "Open space"
+                        }
+                      },
+                      {
+                        "id": "prive",
+                        "label": {
+                          "fr": "Espace privé",
+                          "en": "Private space"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "taille",
+                    "label": {
+                      "fr": "Taille",
+                      "en": "Size"
+                    },
+                    "options": [
+                      {
+                        "id": "petit",
+                        "label": {
+                          "fr": "< 100m²",
+                          "en": "< 100m²"
+                        }
+                      },
+                      {
+                        "id": "moyen",
+                        "label": {
+                          "fr": "100-500m²",
+                          "en": "100-500m²"
+                        }
+                      },
+                      {
+                        "id": "grand",
+                        "label": {
+                          "fr": "> 500m²",
+                          "en": "> 500m²"
+                        }
+                      }
+                    ]
+                  }
+                ],
+                "filtersByAnswers": {
+                  "activités": {
+                    "label": {
+                      "fr": "Activités",
+                      "en": "Activities"
+                    },
+                    "domGroup": ".domGroupFilters",
+                    "forms": "6486d24e9cad105cbf29a777",
+                    "path": "lesCommunsDesTierslieux1262023_1215_0.multiCheckboxPluslesCommunsDesTierslieux1262023_1215_0liu3d5bbs2lwwdpiosq",
+                    "finderPath": "answers.lesCommunsDesTierslieux1262023_1215_0.finderlesCommunsDesTierslieux1262023_1215_0lix46h1uhnukfgtzj6s"
+                  },
+                  "équipement": {
+                    "label": {
+                      "fr": "Équipements",
+                      "en": "Equipment"
+                    },
+                    "domGroup": ".domGroupFilters",
+                    "forms": "645b300b6d70bb35426fc0e3",
+                    "path": "lesCommunsDesTierslieux1052023_949_0.multiCheckboxPluslesCommunsDesTierslieux1052023_949_0lhi0h2l1gjvac3zpbcw",
+                    "finderPath": "answers.lesCommunsDesTierslieux1052023_949_0.finderlesCommunsDesTierslieux1052023_949_0lat3sl0xwwg06k856jc"
+                  },
+                  "services": {
+                    "label": {
+                      "fr": "Service",
+                      "en": "Service"
+                    },
+                    "domGroup": ".domGroupFilters",
+                    "type": "form",
+                    "value": {
+                      "Coworking": {
+                        "id": "6925e2b05dd63b02ca70d6d9",
+                        "finder": "answers.navigatorDesTierslieux25112025_209_0.findernavigatorDesTierslieux25112025_209_0miem3epsztzcm9dgim"
+                      },
+                      "Salle de Réunion": {
+                        "id": "6925869ad76aaf6c5a2b2f8a",
+                        "finder": "answers.navigatorDesTierslieux25112025_1436_0.findernavigatorDesTierslieux25112025_1436_0miem3epsztzcm9dgim"
+                      },
+                      "Hébérgement": {
+                        "id": "6925ee8ac537f8056114aec7",
+                        "finder": "answers.navigatorDesTierslieux25112025_2059_0.findernavigatorDesTierslieux25112025_2059_0miem3epsztzcm9dgim"
+                      }
+                    }
+                  },
+                  "licoop": {
+                    "label": {
+                      "fr": "Licoop",
+                      "en": "Licoop"
+                    },
+                    "domGroup": ".domGroupFilters",
+                    "forms": "6876c3e58fa8df3c7f024253",
+                    "path": "navigatorDesTierslieux1572025_2311_0.findernavigatorDesTierslieux1572025_2311_0md5u4tkmsz33mya3xvb",
+                    "finderPath": "answers.navigatorDesTierslieux1572025_2311_0.findernavigatorDesTierslieux1572025_2311_0md5u4tkmsz33mya3xvb"
+                  }
+                },
+                "className": "sticky top-20"
+              }
+            },
+            "rightSection": {
+              "type": "searchProStatic",
+              "id": "section-events",
+              "props": {
+                "customHeader": {
+                  "title": {
+                    "fr": "Tous les tiers-lieux"
+                  },
+                  "linkText": {
+                    "fr": "Cartographie des événements"
+                  },
+                  "showMapButton": true
+                },
+                "useFilter": true,
+                "showMap": false,
+                "enableMap": true,
+                "showActiveFiltersTypes": true,
+                "showActiveFiltersTags": true,
+                "disableInfiniteScroll": false,
+                "showDetailedViewToggle": true,
+                "baseParams": {
+                  "defaultTypes": [
+                    "organizations"
+                  ],
+                  "indexStepList": 20
+                },
+                "list": {
+                  "columns": {
+                    "sm": 1,
+                    "md": 2,
+                    "lg": 4,
+                    "xl": 4
+                  },
+                  "card": {
+                    "type": "event",
+                    "variant": "event",
+                    "detailsMode": "drawer"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "type": "tiers-lieux",
+    "logo": "images/tiersLieux/Logo_Tl_Temp2.png",
+    "logoAlt": {
+      "fr": "Tiers Lieux",
+      "en": "Tiers Lieux"
+    },
+    "columns": [
+      {
+        "title": {
+          "fr": "Navigation",
+          "en": "Navigation"
+        },
+        "links": [
+          {
+            "href": "/lieux",
+            "label": {
+              "fr": "Les lieux",
+              "en": "Places"
+            }
+          },
+          {
+            "href": "/outils",
+            "label": {
+              "fr": "Outils et ressources",
+              "en": "Tools & resources"
+            }
+          },
+          {
+            "href": "/entraide",
+            "label": {
+              "fr": "S'entraider",
+              "en": "Help each other"
+            }
+          },
+          {
+            "href": "/observatoire",
+            "label": {
+              "fr": "Observatoire",
+              "en": "Observatory"
+            }
+          },
+          {
+            "href": "/evenements",
+            "label": {
+              "fr": "Événements",
+              "en": "Events"
+            }
+          },
+          {
+            "href": "/marques",
+            "label": {
+              "fr": "Les marques",
+              "en": "Brands"
+            }
+          }
+        ]
+      }
+    ],
+    "bottomLinks": [
+      {
+        "href": "/privacy",
+        "label": {
+          "fr": "Politique de confidentialité",
+          "en": "Privacy Policy"
+        }
+      },
+      {
+        "href": "/terms",
+        "label": {
+          "fr": "Conditions d'utilisation",
+          "en": "Terms of Service"
+        }
+      },
+      {
+        "href": "/cookies",
+        "label": {
+          "fr": "Paramètres des cookies",
+          "en": "Cookies Settings"
+        }
+      }
+    ],
+    "copyright": {
+      "fr": "Copyright 2025",
+      "en": "Copyright 2025"
+    }
+  },
+  "features": [
+    {
+      "key": "communityFeatures",
+      "enabled": true,
+      "rolloutPercentage": 100
+    },
+    {
+      "key": "lightMode",
+      "enabled": true,
+      "rolloutPercentage": 100
+    },
+    {
+      "key": "multiLanguage",
+      "enabled": true,
+      "rolloutPercentage": 100
+    }
+  ],
+  "theme": {
+    "typography": {
+      "fontFamily": {
+        "sans": [
+          "Inter"
+        ],
+        "serif": [
+          "Roboto Slab"
+        ],
+        "mono": [
+          "Roboto Mono"
+        ]
+      },
+      "letterSpacing": "0em"
+    },
+    "spacing": {
+      "base": "0.25rem"
+    },
+    "borderRadius": {
+      "base": "0.5rem"
+    },
+    "shadows": {
+      "light": {
+        "shadow2xs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowXs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowSm": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowMd": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 2px 4px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowLg": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 4px 6px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowXl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 8px 10px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow2xl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.63)"
+      },
+      "dark": {
+        "shadow2xs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowXs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowSm": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowMd": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 2px 4px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowLg": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 4px 6px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowXl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 8px 10px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow2xl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.63)"
+      }
+    },
+    "customCSS": ""
+  },
+  "auth": {
+    "login": {
+      "title": {
+        "fr": "Se connecter",
+        "en": "Sign in"
+      },
+      "subtitle": {
+        "fr": "Accédez à votre réseau des tiers-lieux",
+        "en": "Access your third places network"
+      }
+    }
+  },
+  "profiles": {
+    "default": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete"
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-about" },
+                { "type": "profile-organizer" },
+                { "type": "profile-event-dates" },
+                { "type": "profile-badges" },
+                { "type": "profile-tags" },
+                { "type": "profile-opening-hours" }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gallery",
+          "label": {
+            "fr": "Galerie",
+            "en": "Gallery"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-gallery" }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "map",
+          "label": {
+            "fr": "Localisation",
+            "en": "Location"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-map" }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showPhone": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "citoyens": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": true,
+          "addConfig": {
+            "organization": true,
+            "project": true,
+            "event": true,
+            "poi": true
+          }
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-event-dates" },
+                { "type": "profile-about" },
+                { "type": "profile-organizer" },
+                { "type": "profile-badges" },
+                { "type": "profile-tags" },
+                { "type": "profile-opening-hours" }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "news",
+          "label": {
+            "fr": "Actualités",
+            "en": "News"
+          },
+          "sections": [
+            {
+              "type": "news",
+              "props": {
+                "maxItems": 10,
+                "showAddButton": true,
+                "showComments": true,
+                "showReactions": true
+              }
+            }
+          ],
+          "subRoutes": [
+            {
+              "path": ":newsId",
+              "component": "NewsDetailPage"
+            }
+          ]
+        },
+        {
+          "id": "social",
+          "label": {
+            "fr": "Amis",
+            "en": "Friends"
+          },
+          "condition": {
+            "entityTypes": ["citoyens"],
+            "userContext": "own"
+          },
+          "component": "SocialTab"
+        },
+        {
+          "id": "membership",
+          "label": {
+            "fr": "Communautés",
+            "en": "Communities"
+          },
+          "condition": {
+            "entityTypes": ["citoyens"],
+            "userContext": "own"
+          },
+          "component": "MembershipTab"
+        }
+      ]
+    },
+    "organizations": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": true,
+          "addConfig": {
+            "organization": false,
+            "project": true,
+            "event": true,
+            "poi": true
+          }
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-about" },
+                { "type": "profile-organizer" },
+                { "type": "profile-badges" },
+                { "type": "profile-tags" },
+                { "type": "profile-opening-hours" }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "news",
+          "label": {
+            "fr": "Actualités",
+            "en": "News"
+          },
+          "sections": [
+            {
+              "type": "news",
+              "props": {
+                "maxItems": 10,
+                "showAddButton": true,
+                "showComments": true,
+                "showReactions": true
+              }
+            }
+          ],
+          "subRoutes": [
+            {
+              "path": ":newsId",
+              "component": "NewsDetailPage"
+            }
+          ]
+        },
+        {
+          "id": "members",
+          "label": {
+            "fr": "Membres",
+            "en": "Members"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-members", "showRole": true, "showManagement": true }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "projects",
+          "label": {
+            "fr": "Projets",
+            "en": "Projects"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-related", "relationType": "projects", "title": { "fr": "Projets", "en": "Projects" } }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "events",
+          "label": {
+            "fr": "Événements",
+            "en": "Events"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-related", "relationType": "events", "title": { "fr": "Événements", "en": "Events" } }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "projects": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": true,
+          "addConfig": {
+            "organization": false,
+            "project": false,
+            "event": true,
+            "poi": true
+          }
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-about" },
+                { "type": "profile-organizer" },
+                { "type": "profile-badges" },
+                { "type": "profile-tags" },
+                { "type": "profile-event-dates" }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "news",
+          "label": {
+            "fr": "Actualités",
+            "en": "News"
+          },
+          "sections": [
+            {
+              "type": "news",
+              "props": {
+                "maxItems": 10,
+                "showAddButton": true,
+                "showComments": true,
+                "showReactions": true
+              }
+            }
+          ],
+          "subRoutes": [
+            {
+              "path": ":newsId",
+              "component": "NewsDetailPage"
+            }
+          ]
+        },
+        {
+          "id": "contributors",
+          "label": {
+            "fr": "Contributeurs",
+            "en": "Contributors"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-members", "showRole": true, "showManagement": true }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "organizations",
+          "label": {
+            "fr": "Organisations",
+            "en": "Organizations"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-related", "relationType": "projects", "title": { "fr": "Organisations partenaires", "en": "Partner Organizations" } }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "events",
+          "label": {
+            "fr": "Événements",
+            "en": "Events"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-related", "relationType": "events", "title": { "fr": "Événements", "en": "Events" } }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "events": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": false
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-event-dates" },
+                { "type": "profile-about" },
+                { "type": "profile-organizer" },
+                { "type": "profile-badges" },
+                { "type": "profile-tags" }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "dates",
+          "label": {
+            "fr": "Dates & Horaires",
+            "en": "Dates & Schedule"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-event-dates" },
+                { "type": "profile-opening-hours" }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "location",
+          "label": {
+            "fr": "Lieu",
+            "en": "Location"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-map" }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showPhone": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "organizer",
+          "label": {
+            "fr": "Organisateur",
+            "en": "Organizer"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-organizer" },
+                { "type": "profile-related", "relationType": "events", "title": { "fr": "Autres événements", "en": "Other events" } }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showOrganizer": true,
+                  "showEmail": true,
+                  "showPhone": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gallery",
+          "label": {
+            "fr": "Galerie",
+            "en": "Gallery"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-gallery" }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "poi": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": false
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-about" },
+                { "type": "profile-badges" },
+                { "type": "profile-tags" }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "practicalInfo",
+          "label": {
+            "fr": "Infos pratiques",
+            "en": "Practical Info"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-opening-hours" },
+                { "type": "profile-about" }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showOpeningDate": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "map",
+          "label": {
+            "fr": "Carte",
+            "en": "Map"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-map" }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showPhone": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gallery",
+          "label": {
+            "fr": "Galerie",
+            "en": "Gallery"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                { "type": "profile-gallery" }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

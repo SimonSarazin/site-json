@@ -69,6 +69,7 @@ const LazySections: {
   filters: lazy(() => import("./FiltersSection")),
   gridLayout: lazy(() => import("./GridLayoutSection")),
   news: lazy(() => import("@/modules/news/components/sections/NewsSection")),
+  member: lazy(() => import("./MemberSection")),
   heroWithIcon: lazyNamed(() => import("./HeroWithIconSection"), "HeroWithIconSection"),
 };
 
