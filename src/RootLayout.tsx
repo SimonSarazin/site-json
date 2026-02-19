@@ -7,12 +7,16 @@ import { IntegrationsLoader } from "@/components/layout/IntegrationsLoader";
 import type { SiteConfig } from "@/types/site";
 import { I18nBridge } from "@/contexts/I18nBridge";
 import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
-import { Suspense } from "react";
+import { Suspense, lazy } from "react";
 import { CocolightProvider } from "@/contexts/CocolightProvider";
 import { getBaseUrl } from "@/lib/constant/common";
 import { GoogleFontsLoader } from "@/components/layout/GoogleFontsLoader";
 import { SiteProvider } from "@/contexts/SiteProvider";
 import { FloatingQRCode } from "@/components/layout/FloatingQRCode";
+
+const AdminPanel = import.meta.env.DEV
+  ? lazy(() => import("@/components/admin/AdminPanel"))
+  : null;
 
 interface Props {
   config: SiteConfig; // 👈 nouvelle prop
@@ -41,6 +45,12 @@ function RootLayout({ config }: Props) {
                   <Outlet />
                   <IntegrationsLoader />
                   <Toaster />
+
+                  {AdminPanel && (
+                    <Suspense fallback={null}>
+                      <AdminPanel />
+                    </Suspense>
+                  )}
 
                   {config.floatingQRCode?.enabled && (
                     <FloatingQRCode

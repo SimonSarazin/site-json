@@ -6,10 +6,10 @@ import { HelmetProvider } from "@dr.pogodin/react-helmet";
 import { buildRoutes } from "@/lib/buildRoutes";
 import { type SiteConfig } from '@/types/site';
 // import "./index-rezo-la-mer.css";
-// import "./index-cyber-reunion.css";
+import "./index-cyber-reunion.css";
 // import "./index-tiers-lieux.css";
 // import "./index-sport-sante-bien-etre.css";
-import "./index-julie-pot-vin.css";
+// import "./index-julie-pot-vin.css";
 import { HydrationBoundary, QueryClient, QueryClientProvider, type DehydratedState } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 
@@ -68,6 +68,14 @@ declare global {
 
 const siteConfig = window.__CONFIG__;
 const dehydratedState = window.__REACT_QUERY_STATE__ ?? null;
+
+if (import.meta.hot) {
+  import.meta.hot.on('config-update', (newConfig: SiteConfig) => {
+    console.log('load...');
+    window.__CONFIG__ = newConfig;
+    window.dispatchEvent(new CustomEvent('site-config-update', { detail: newConfig }));
+  });
+}
 
 // buildRoutes retourne RouteObject[] (sync) ou Promise<RouteObject[]> (async)
 // Sync : côté client avec modules core uniquement → pas de flash loading

@@ -53,7 +53,7 @@ function getLayoutClasses(layout: string) {
           <PageFiltersProvider>
             <PageProvider page={currentPage}>
               {currentPage.sections.map((s, i) => (
-                <SectionRenderer key={i} section={s} />
+                <SectionRenderer key={s.id ?? `section-${i}`} section={s} />
               ))}
             </PageProvider>
           </PageFiltersProvider>

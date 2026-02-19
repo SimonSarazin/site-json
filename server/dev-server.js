@@ -55,6 +55,46 @@ async function createServer() {
   }
   console.log("Config chargée :", cachedConfig?.meta?.title?.fr || "Config OK");
 
+  if (process.env.SITE_CONFIG_PATH) {
+    const envPath = process.env.SITE_CONFIG_PATH;
+    const configPath = path.isAbsolute(envPath)
+      ? envPath
+      : path.resolve(process.cwd(), envPath);
+
+    fs.watchFile(configPath, { interval: 500 }, () => {
+      try {
+        const raw = fs.readFileSync(configPath, "utf-8");
+        const newConfig = JSON.parse(raw);
+        cachedConfig = newConfig;
+        console.log("[HMR] Config reloaded, sending to clients...");
+        vite.ws.send({ type: "custom", event: "config-update", data: newConfig });
+      } catch (e) {
+        console.error("[HMR] Config reload error:", e.message);
+      }
+    });
+    console.log(`[HMR] Watching config: ${configPath}`);
+  }
+
+  vite.ws.on("config-save", (data) => {
+    if (!process.env.SITE_CONFIG_PATH) {
+      console.error("[Admin] SITE_CONFIG_PATH non défini, impossible de sauvegarder");
+      return;
+    }
+    const envPath = process.env.SITE_CONFIG_PATH;
+    const configPath = path.isAbsolute(envPath)
+      ? envPath
+      : path.resolve(process.cwd(), envPath);
+
+    try {
+      const json = JSON.stringify(data, null, 2) + "\n";
+      fs.writeFileSync(configPath, json, "utf-8");
+      cachedConfig = data;
+      console.log("[Admin] Config saved to", configPath);
+    } catch (e) {
+      console.error("[Admin] Save error:", e.message);
+    }
+  });
+
   app.use((req, res, next) => {
   if (
     req.url.startsWith("/favicon") ||
