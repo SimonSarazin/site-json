@@ -29,3 +29,10 @@ tsconfig.node.tsbuildinfo
 CLAUDE.md
 src/modules/profil/TODO.md
 ANALYSE_MODULE_PROFIL.md
+
+# Test artifacts
+playwright-report/
+test-results/
+
+# Test credentials
+.env.test

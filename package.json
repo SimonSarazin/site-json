@@ -14,7 +14,14 @@
     "lint": "eslint .",
     "preview": "cross-env NODE_ENV=production SITE_CONFIG_PATH=$PWD/config.prod.json node server/prod-server.js",
     "preview:ssr": "npm run build:ssr && npm preview",
-    "start": "node server/prod-server.js"
+    "start": "node server/prod-server.js",
+    "test": "vitest run",
+    "test:unit": "vitest run -c vitest.config.unit.ts",
+    "test:integration": "vitest run -c vitest.config.integration.ts",
+    "test:e2e": "playwright test",
+    "test:preflight": "vitest run -c vitest.config.unit.ts tests/preflight/",
+    "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e",
+    "test:watch": "vitest --watch"
   },
   "resolutions": {
     "react": "19.2.1",
@@ -92,6 +99,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.11.1",
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4.1.11",
     "@tailwindcss/vite": "^4.1.11",
     "@types/compression": "^1.7.2",
@@ -118,6 +126,7 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.7.0",
     "vite": "^7.2.6",
-    "vite-plugin-cjs-interop": "^2.2.0"
+    "vite-plugin-cjs-interop": "^2.2.0",
+    "vitest": "^4.0.18"
   }
 }
