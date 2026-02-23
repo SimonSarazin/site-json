@@ -109,13 +109,13 @@ export default defineConfig(({ mode, isSsrBuild }) => ({
     }
   },
   ssr: {
-    noExternal: true,
+    // Bundler uniquement les packages qui en ont besoin (ESM/CSS)
+    // Tout le reste est chargé par Node directement (CJS compatible)
+    noExternal: ['@radix-ui/', 'lucide-react'],
     external: [
-      // Deps serveur (utilisées par prod-server.js)
       'express',
       'compression',
       'serialize-javascript',
-      // Problèmes de bundling CommonJS
       'isomorphic-dompurify',
       '@communecter/cocolight-api-client'
     ]
