@@ -1,10 +1,9 @@
 import { test, expect } from "@playwright/test";
-import { loadSiteConfig, findSecondaryPage, getAllNavPaths } from "./helpers/config";
+import { loadSiteConfig, findSecondaryPage } from "./helpers/config";
 
 const config = loadSiteConfig();
 const secondaryPage = findSecondaryPage(config);
 const secondaryPath = secondaryPage?.path ?? "/lieux"; // ultimate fallback
-const navPaths = getAllNavPaths(config);
 
 test.describe("Hydration (Level 3)", () => {
   test("SSR renders content without JS enabled", async ({ browser }) => {

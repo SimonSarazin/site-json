@@ -69,10 +69,6 @@ test.describe("Search Module (E2E)", () => {
       const value = await input.inputValue();
       expect(value).toBe("test");
 
-      // Check for a search/submit button nearby
-      const searchButton = page.locator(
-        'button[type="submit"], button[aria-label*="echerch" i], button[aria-label*="earch" i]'
-      );
       // Button may or may not exist — just verify the input works
       expect(true).toBe(true);
     } else {

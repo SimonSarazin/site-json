@@ -27,7 +27,6 @@ function extractReactQueryState(html: string): unknown | null {
 
   try {
     // serialize-javascript output may contain `undefined` literals
-    // eslint-disable-next-line no-new-func
     return new Function(`return (${match[1]})`)();
   } catch {
     return null;
@@ -130,7 +129,6 @@ describe("SSR Concurrency (Level 1)", () => {
 
   it("no cross-route leakage between config pages in parallel", async () => {
     // Use first two distinct routes from config
-    const homePath = "/";
     const secondaryPath = configRoutes.find((r) => r !== "/") ?? "/page-inexistante";
 
     const [homeRes, secondaryRes] = await Promise.all([

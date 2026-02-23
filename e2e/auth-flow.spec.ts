@@ -177,14 +177,6 @@ test.describe("Auth Flow (Level 4)", () => {
 
       await page.waitForTimeout(2000);
 
-      const postLoginButton = page.getByRole("button", {
-        name: /Se connecter$/i,
-      });
-
-      const buttonStillVisible =
-        (await postLoginButton.count()) > 0 &&
-        (await postLoginButton.first().isVisible().catch(() => false));
-
       if (loginPath && page.url().includes(loginPath)) {
         expect(page.url()).not.toContain(loginPath);
       } else {
