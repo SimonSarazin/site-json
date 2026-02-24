@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ImageIcon, X } from "lucide-react";
 import { Modal, ModalContent } from "@/components/ui/modal";
 import type { NewsImageItem } from "../../types";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 interface NewsImageGridProps {
   images: NewsImageItem[];
@@ -43,9 +44,10 @@ export function NewsImageGrid({ images }: NewsImageGridProps) {
               >
                 {imagePath ? (
                   <>
-                    <img
+                    <OptimizedImage
                       src={imagePath}
                       alt={img.name || `Image ${imgIndex + 1}`}
+                      width={300}
                       className="w-full h-full object-cover group-hover:scale-110 group-hover:brightness-90 transition-all duration-300"
                     />
                     <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
@@ -79,9 +81,10 @@ export function NewsImageGrid({ images }: NewsImageGridProps) {
               <X className="w-8 h-8" />
             </button>
             {selectedImage && (
-              <img
+              <OptimizedImage
                 src={selectedImage}
                 alt="Image agrandie"
+                width={1200}
                 className="max-w-full max-h-[95vh] object-contain rounded-lg shadow-2xl"
               />
             )}

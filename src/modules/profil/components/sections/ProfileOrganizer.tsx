@@ -3,6 +3,7 @@ import { useFormatProfileEntity } from "../../hooks/useFormatProfileEntity";
 import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
 import type { ProfileOrganizerSection } from "../../schema";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 interface ProfileOrganizerProps {
   section: ProfileOrganizerSection;
@@ -31,9 +32,10 @@ export default function ProfileOrganizer({ section }: ProfileOrganizerProps) {
           {organizersList.map(([id, org]) => (
             <div key={id} className="flex items-start gap-4">
               {section.showLogo !== false && org.profilThumbImageUrl && (
-                <img
-                  src={org.profilThumbImageUrl}
-                  alt={org.name}
+                <OptimizedImage
+                  src={org.profilThumbImageUrl!}
+                  alt={org.name || ""}
+                  width={64}
                   className="w-16 h-16 rounded-lg object-cover"
                 />
               )}

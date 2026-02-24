@@ -5,6 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import serialize from "serialize-javascript";
 import dotenv from "dotenv";
+import { createImageOptimizer } from "./middleware/imageOptimizer.js";
 
 dotenv.config();
 
@@ -44,6 +45,12 @@ async function createServer() {
     appType: "custom",
     ssr: { noExternal: ["@radix-ui/*", "lucide-react", "@communecter/cocolight-api-client"] },
   });
+  // Image optimizer — must be before Vite middlewares to intercept /img
+  app.use("/img", createImageOptimizer({
+    staticRoot: path.resolve(__dirname, "../public"),
+    cacheDir: path.resolve(__dirname, "../.cache/images"),
+  }));
+
   app.use(vite.middlewares);
 
   /* ---- Charger la config UNE SEULE FOIS au démarrage ---------------- */

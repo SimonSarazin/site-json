@@ -7,6 +7,7 @@ import { T } from "@/components/ui/T";
 import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from '@/lib/utils';
 import { ProductShowcaseSectionProps } from '@/types/site-schema';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
 
 export function ProductShowcaseSection({ id, props }: { id?: string; props: ProductShowcaseSectionProps }) {
   const { t } = useLocalization();
@@ -40,9 +41,10 @@ export function ProductShowcaseSection({ id, props }: { id?: string; props: Prod
           "relative overflow-hidden rounded-t-lg bg-muted",
           featured ? "h-64 md:h-96" : "h-48"
         )}>
-          <img
+          <OptimizedImage
             src={product.images[currentIndex]}
             alt={t(product.name)}
+            width={600}
             className="w-full h-full object-cover"
           />
 

@@ -3,6 +3,7 @@ import { Slider } from '@/components/ui/slider';
 import { T } from "@/components/ui/T";
 import { useLocalization } from "@/hooks/useLocalization";
 import { ComparisonSectionProps } from '@/types/site-schema';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
 
 export function ComparisonSection({ id, props }: { id?: string; props: ComparisonSectionProps }) {
   const { t } = useLocalization();
@@ -16,9 +17,10 @@ export function ComparisonSection({ id, props }: { id?: string; props: Compariso
           <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
             {/* Before Image */}
             <div className="absolute inset-0">
-              <img
+              <OptimizedImage
                 src={beforeImage}
                 alt={beforeLabel ? t(beforeLabel) : 'Before'}
+                width={800}
                 className="w-full h-full object-cover"
               />
               {beforeLabel && (
@@ -37,9 +39,10 @@ export function ComparisonSection({ id, props }: { id?: string; props: Compariso
                   : `inset(${position[0]}% 0 0 0)`
               }}
             >
-              <img
+              <OptimizedImage
                 src={afterImage}
                 alt={afterLabel ? t(afterLabel) : 'After'}
+                width={800}
                 className="w-full h-full object-cover"
               />
               {afterLabel && (

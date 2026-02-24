@@ -1,5 +1,6 @@
 import { Modal, ModalContent, ModalHeader, ModalTitle } from "@/components/ui/modal";
 import { Loader2 } from "lucide-react";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { useT } from "@/hooks/useT";
 import { useNewsVotes } from "../../hooks/useNewsVotes";
 import { useState } from "react";
@@ -99,9 +100,10 @@ export function NewsReactionsModal({ open, onOpenChange, voteCount, newsId }: Ne
                     <div key={vote.id} className="flex items-center space-x-3">
                       <div className="flex-shrink-0">
                         {vote.photo ? (
-                          <img
+                          <OptimizedImage
                             src={vote.photo}
                             alt={vote.name}
+                            width={40}
                             className="w-10 h-10 rounded-full object-cover"
                           />
                         ) : (

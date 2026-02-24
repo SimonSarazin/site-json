@@ -117,7 +117,8 @@ export default defineConfig(({ mode, isSsrBuild }) => ({
       'compression',
       'serialize-javascript',
       'isomorphic-dompurify',
-      '@communecter/cocolight-api-client'
+      '@communecter/cocolight-api-client',
+      'sharp'
     ]
   }
 }));

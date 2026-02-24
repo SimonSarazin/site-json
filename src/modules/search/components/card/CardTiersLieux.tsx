@@ -3,6 +3,7 @@ import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { cn } from "@/lib/utils";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { getEntityIconName, getEntityColorClasses } from "@/lib/entityIcons";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 export default function CardTiersLieux({
   item,
@@ -27,9 +28,10 @@ export default function CardTiersLieux({
     >
       {/* Image de fond */}
       {image && (
-        <img
+        <OptimizedImage
           src={image}
-          alt={title}
+          alt={title || ""}
+          width={400}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
       )}

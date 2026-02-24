@@ -7,6 +7,7 @@ import useItem from "../hooks/useItem";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useMemo } from "react";
 import { getBaseUrl } from "@/lib/constant/common";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 function shortenTag(tag: string, maxLength = 20): string {
   if (tag.length <= maxLength) return tag;
@@ -60,9 +61,10 @@ export default function SearchCardDetailed({
           {/* Image section */}
           <div className="w-full sm:w-64 h-48 sm:h-auto flex-shrink-0 relative overflow-hidden">
             {image ? (
-              <img
+              <OptimizedImage
                 src={image.startsWith('http') ? image : `${getBaseUrl()}${image}`}
                 alt={name}
+                width={256}
                 className="w-full h-full object-cover"
               />
             ) : (

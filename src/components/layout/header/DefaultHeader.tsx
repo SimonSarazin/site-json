@@ -36,6 +36,7 @@ import { EnhancedNavItemType } from "@/types/site";
 import { cn } from "@/lib/utils";
 import { AnnouncementBanner } from "../AnnouncementBanner";
 import ToggleButtonTheme from "../ToggleButtonTheme";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { ClientOnly } from "../ClientOnly";
 
 interface NavItemProps {
@@ -82,7 +83,7 @@ function MegaMenuContent({ megaMenu, onNavigate }: { megaMenu: EnhancedNavItemTy
           </ul>
           {col.featured && (
             <Card className="mt-4">
-              {col.featured.image && <img src={col.featured.image} alt={t(col.featured.title)} className="w-full h-32 object-cover rounded-t" />}
+              {col.featured.image && <OptimizedImage src={col.featured.image} alt={t(col.featured.title)} width={400} className="w-full h-32 object-cover rounded-t" />}
               <CardContent>
                 <CardTitle>{t(col.featured.title)}</CardTitle>
                 <CardDescription>{t(col.featured.description)}</CardDescription>
@@ -229,7 +230,7 @@ export function DefaultHeader() {
         <div className="flex items-center justify-between h-full">
           {/* Logo */}
           <button onClick={handleLogoClick} className="flex items-center gap-2">
-            <img src={header.logo} alt={header.logoAlt ? t(header.logoAlt) : 'Logo'} className="h-8 w-auto rounded" />
+            <OptimizedImage src={header.logo} alt={header.logoAlt ? t(header.logoAlt) : 'Logo'} height={32} className="h-8 w-auto rounded" />
           </button>
 
           {/* Desktop Nav */}

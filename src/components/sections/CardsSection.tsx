@@ -7,6 +7,7 @@ import { DynamicIcon, type IconName } from 'lucide-react/dynamic';
 import { Grid, List } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
 
 function CardsHeaderSection({
   props,
@@ -132,9 +133,10 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
               <CardWrapper key={index} href={item.href} target={item.target}>
                 <div className="relative w-full h-64 sm:h-80 md:h-96 rounded-xl overflow-hidden shadow-lg group cursor-pointer">
                   {item.image && (
-                    <img
+                    <OptimizedImage
                       src={item.image}
                       alt={item.eventTitle ? t(item.eventTitle) : t(item.title)}
+                      width={400}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   )}
@@ -195,9 +197,10 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
                     <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 p-3 sm:p-4">
                       {item.image && (
                         <div className="w-full sm:w-48 h-32 sm:h-32 flex-shrink-0 rounded-lg overflow-hidden">
-                          <img
+                          <OptimizedImage
                             src={item.image}
                             alt={t(item.title)}
+                            width={192}
                             className="w-full h-full object-cover"
                           />
                         </div>
@@ -247,9 +250,10 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
                 <CardWrapper key={index} href={item.href} target={item.target}>
                   <div className="relative bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow hover:shadow-lg transition group cursor-pointer">
                     {item.image && (
-                      <img
+                      <OptimizedImage
                         src={item.image}
                         alt={t(item.title)}
+                        width={400}
                         className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     )}
@@ -318,9 +322,10 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
                           WebkitClipPath: item.iconClipPath || 'none'
                         }}
                       >
-                        <img
+                        <OptimizedImage
                           src={item.iconImage}
                           alt={t(item.title)}
+                          width={64}
                           className="w-full h-full object-cover"
                         />
                       </div>
@@ -359,9 +364,10 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
                   <div className="flex items-start gap-4 p-6">
                     {item.image && (
                       <div className="w-32 h-32 shrink-0 rounded-lg overflow-hidden">
-                        <img
+                        <OptimizedImage
                           src={item.image}
                           alt={t(item.title)}
+                          width={128}
                           className="w-full h-full object-cover"
                         />
                       </div>
@@ -400,9 +406,10 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
                   <CardHeader>
                     {item.image && (
                       <div className="w-full h-48 mb-4 rounded-lg overflow-hidden">
-                        <img
+                        <OptimizedImage
                           src={item.image}
                           alt={t(item.title)}
+                          width={400}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       </div>

@@ -11,6 +11,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -377,9 +378,10 @@ export function EditNewsModal({ entity, news, open, onOpenChange }: EditNewsModa
                     .map((image: NewsImageItem) => (
                     <div key={image.id} className="relative group">
                       <div className="aspect-square relative">
-                        <img
-                          src={image.imageThumbPath || image.imagePath}
+                        <OptimizedImage
+                          src={image.imageThumbPath || image.imagePath || ""}
                           alt={image.name || 'Image'}
+                          width={200}
                           className="w-full h-full object-cover rounded-lg border border-border"
                         />
                         <button

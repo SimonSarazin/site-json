@@ -1,4 +1,5 @@
 import { useLocalization } from "@/hooks/useLocalization";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { Footer } from "@/types/site-schema";
 
 interface FooterTiersLieuxProps {
@@ -14,7 +15,7 @@ export default function FooterTiersLieux({ footer }: FooterTiersLieuxProps) {
 
         <div className="flex justify-center mb-6 sm:mb-8">
           {footer.logo && (
-            <img
+            <OptimizedImage
               src={footer.logo.startsWith('/') ? footer.logo : `/${footer.logo}`}
               alt={footer.logoAlt ? t(footer.logoAlt) : ""}
               width={207}

@@ -10,6 +10,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLocalization } from "@/hooks/useLocalization";
 import { GallerySectionProps } from "@/types/site-schema";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 /* ---------- Composant ---------- */
 export function GallerySection({ id, props }: { id?: string; props: GallerySectionProps }) {
@@ -51,9 +52,10 @@ export function GallerySection({ id, props }: { id?: string; props: GallerySecti
     const card = (
       <div className="group relative overflow-hidden rounded-lg cursor-pointer">
         <AspectRatio ratio={1}>
-          <img
+          <OptimizedImage
             src={image.src}
             alt={alt}
+            width={400}
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         </AspectRatio>
@@ -135,9 +137,10 @@ export function GallerySection({ id, props }: { id?: string; props: GallerySecti
                 )}
 
                 {/* Image */}
-                <img
+                <OptimizedImage
                   src={current.src}
                   alt={current.alt ? t(current.alt) : ""}
+                  width={1200}
                   className="h-auto w-auto max-h-[90vh] max-w-full object-contain"
                 />
 

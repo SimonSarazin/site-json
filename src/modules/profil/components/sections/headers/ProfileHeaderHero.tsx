@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Share2, Edit } from "lucide-react";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { useFormatProfileEntity } from "../../../hooks/useFormatProfileEntity";
 import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../../hooks/useProfileEntity";
@@ -34,9 +35,11 @@ export function ProfileHeaderHero({ section }: ProfileHeaderHeroProps) {
       <div className="relative w-full group">
         {coverImage ? (
           <div className="relative h-64 md:h-96 w-full overflow-hidden">
-            <img
+            <OptimizedImage
               src={coverImage}
               alt={entityName}
+              width={1200}
+              priority
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />

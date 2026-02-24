@@ -3,6 +3,7 @@ import { Calendar, Share2, Tag, ThumbsUp, MessageCircle, Trash2, Edit, Flag, Ext
 import { useT } from "@/hooks/useT";
 import { formatDate } from "@/helpers/formatDate";
 import { useCocolight } from "@/hooks/useCocolight";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { useFormatNews } from "../hooks/useFormatNews";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
 import { useAddVoteNews } from "../hooks/useNewsMutations";
@@ -119,9 +120,10 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef, onEdit, onDele
         <div className="flex items-start gap-2 sm:gap-4">
           <div className="shrink-0 cursor-pointer">
             {authorPhoto ? (
-              <img
+              <OptimizedImage
                 src={authorPhoto}
                 alt={authorName}
+                width={56}
                 className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full object-cover border-2 border-border hover:scale-105 transition-transform cursor-pointer"
               />
             ) : (
@@ -260,11 +262,12 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef, onEdit, onDele
             <div className="flex -space-x-2">
               {sharedBy.slice(0, 3).map((share, idx) => {
                 return share.photo ? (
-                  <img
+                  <OptimizedImage
                     key={idx}
                     src={share.photo}
                     alt={share.name}
                     title={share.name}
+                    width={28}
                     className="w-7 h-7 rounded-full border-2 border-background hover:scale-110 transition-transform cursor-pointer"
                   />
                 ) : (

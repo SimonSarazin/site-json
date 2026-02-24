@@ -2,6 +2,7 @@ import { CheckIcon, Loader2Icon, X as XIcon, Frown } from "lucide-react";
 import { useId, useState, useEffect, ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import {
   Command,
   CommandEmpty,
@@ -223,7 +224,7 @@ export function SelectObject({
                       className={itemClassName}
                     >
                       {opt.thumb && (
-                        <img src={opt.thumb} alt={opt.label} className={thumbClassName} />
+                        <OptimizedImage src={opt.thumb} alt={opt.label} width={32} className={thumbClassName} />
                       )}
                       <div className="flex-1 flex flex-col">
                         <span className={itemLabelClassName}>{opt.label}</span>
