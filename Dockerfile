@@ -19,7 +19,7 @@ COPY --from=builder /app/server/middleware ./server/middleware
 
 # Package.json minimal (juste pour ESM) + deps externalisées
 RUN echo '{"type":"module"}' > package.json && \
-    npm install express@5 compression serialize-javascript isomorphic-dompurify @communecter/cocolight-api-client sharp react react-dom && \
+    npm install express@5 compression serialize-javascript isomorphic-dompurify @communecter/cocolight-api-client sharp && \
     npm cache clean --force
 
 # Volume pour le cache d'images optimisées (persiste entre les redémarrages)

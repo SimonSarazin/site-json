@@ -109,15 +109,16 @@ export default defineConfig(({ mode, isSsrBuild }) => ({
     }
   },
   ssr: {
-    // Bundler uniquement les packages qui en ont besoin (ESM/CSS)
-    // Tout le reste est chargé par Node directement (CJS compatible)
-    noExternal: ['@radix-ui/', 'lucide-react'],
+    // Bundle tout dans le build SSR par défaut (image Docker légère)
+    // Seuls les packages serveur/natifs restent externes
+    noExternal: true,
     external: [
       'express',
       'compression',
       'serialize-javascript',
       'isomorphic-dompurify',
-      '@communecter/cocolight-api-client'
+      '@communecter/cocolight-api-client',
+      'sharp'
     ]
   }
 }));
