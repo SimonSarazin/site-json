@@ -40,6 +40,7 @@ export default function ProfileTags({ section }: ProfileTagsProps) {
     : t("ProfileTemplateDefault.tags");
 
   // TODO: Implémenter la recherche par tag
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleTagClick = (_tag: string) => {
     // À implémenter : rediriger vers la recherche par tag
   };

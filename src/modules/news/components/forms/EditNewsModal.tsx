@@ -29,6 +29,7 @@ import type { News, EntityTypes } from "@communecter/cocolight-api-client";
 import { toast } from "sonner";
 import { useCocolight } from "@/hooks/useCocolight";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import type { NewsImageItem, NewsDocumentItem } from "../../types";
 
 interface EditNewsModalProps {
   entity: EntityTypes;
@@ -114,7 +115,8 @@ export function EditNewsModal({ entity, news, open, onOpenChange }: EditNewsModa
       setImagesToDelete([]);
       setDocumentsToDelete([]);
     }
-  }, [news?.id]); // Only depend on news ID
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [news?.id]); // Only depend on news ID to avoid re-runs when news object reference changes
 
   const userAvatar = me?.serverData?.profilThumbImageUrl || me?.serverData?.profilImageUrl;
   const userName = me?.serverData?.name || "User";
@@ -167,32 +169,37 @@ export function EditNewsModal({ entity, news, open, onOpenChange }: EditNewsModa
     }
 
     // Handle file deletions before saving
+    // Clone draftData to avoid mutating the original news object directly
+    const draftData = { ...news.draftData };
+
     if (imagesToDelete.length > 0 || documentsToDelete.length > 0) {
       // Remove deleted images from data.mediaImg.images
-      if (imagesToDelete.length > 0 && news.draftData.mediaImg?.images) {
-        news.draftData.mediaImg.images = news.draftData.mediaImg.images.filter(
+      if (imagesToDelete.length > 0 && draftData.mediaImg?.images) {
+        const filteredImages = draftData.mediaImg.images.filter(
           (imageId: string) => !imagesToDelete.includes(imageId)
         );
-        if(news.draftData.mediaImg.images.length === 0){
-          news.draftData.mediaImg.countImages = 0;
-        } else {
-          news.draftData.mediaImg.countImages = news.draftData.mediaImg.images.length;
-        }
+        draftData.mediaImg = {
+          ...draftData.mediaImg,
+          images: filteredImages,
+          countImages: filteredImages.length,
+        };
       }
 
       // Remove deleted documents from data.mediaFile
-      if (documentsToDelete.length > 0 && news.draftData.mediaFile?.files) {
-        news.draftData.mediaFile.files = news.draftData.mediaFile.files.filter(
+      if (documentsToDelete.length > 0 && draftData.mediaFile?.files) {
+        const filteredFiles = draftData.mediaFile.files.filter(
           (docId: string) => !documentsToDelete.includes(docId)
         );
-        if(news.draftData.mediaFile.files.length === 0){
-          news.draftData.mediaFile.countFiles = 0;
-        } else {
-          news.draftData.mediaFile.countFiles = news.draftData.mediaFile.files.length;
-        }
+        draftData.mediaFile = {
+          ...draftData.mediaFile,
+          files: filteredFiles,
+          countFiles: filteredFiles.length,
+        };
       }
-    }
 
+      // Apply cloned draftData back to news
+      Object.assign(news.draftData, draftData);
+    }
 
     editNewsMutation.mutate(
       {
@@ -366,8 +373,8 @@ export function EditNewsModal({ entity, news, open, onOpenChange }: EditNewsModa
                 </Label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {news.serverData.mediaImg.images
-                    .filter((image: any) => !imagesToDelete.includes(image.id))
-                    .map((image: any) => (
+                    .filter((image: NewsImageItem) => !image.id || !imagesToDelete.includes(image.id))
+                    .map((image: NewsImageItem) => (
                     <div key={image.id} className="relative group">
                       <div className="aspect-square relative">
                         <img
@@ -377,7 +384,7 @@ export function EditNewsModal({ entity, news, open, onOpenChange }: EditNewsModa
                         />
                         <button
                           type="button"
-                          onClick={() => setImagesToDelete([...imagesToDelete, image.id])}
+                          onClick={() => image.id && setImagesToDelete([...imagesToDelete, image.id])}
                           className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                           title="Supprimer"
                         >
@@ -398,8 +405,8 @@ export function EditNewsModal({ entity, news, open, onOpenChange }: EditNewsModa
                 </Label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {news.serverData.mediaFile.files
-                    .filter((document: any) => !documentsToDelete.includes(document.id))
-                    .map((document: any) => (
+                    .filter((document: NewsDocumentItem) => !document.id || !documentsToDelete.includes(document.id))
+                    .map((document: NewsDocumentItem) => (
                     <div key={document.id} className="relative group">
                       <div className="p-3 border border-border rounded-lg bg-muted/50 relative">
                         <div className="flex items-center gap-2">
@@ -419,7 +426,7 @@ export function EditNewsModal({ entity, news, open, onOpenChange }: EditNewsModa
                         </div>
                         <button
                           type="button"
-                          onClick={() => setDocumentsToDelete([...documentsToDelete, document.id])}
+                          onClick={() => document.id && setDocumentsToDelete([...documentsToDelete, document.id])}
                           className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                           title="Supprimer"
                         >

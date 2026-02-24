@@ -11,6 +11,7 @@ import { SocialTab } from "../tabs/SocialTab";
 import { MembershipTab } from "../tabs/MembershipTab";
 import { NewsTab } from "../tabs/NewsTab";
 import { useLocalization } from "@/hooks/useLocalization";
+import type { ProfileType } from "../../schema";
 
 /**
  * Template dynamique de profil avec tabs configurables
@@ -48,7 +49,7 @@ export default function ProfileTemplateDynamic() {
       // Vérifier le type d'entité
       if (tab.condition.entityTypes) {
         const entityType = entity?.getEntityType?.();
-        if (entityType && !tab.condition.entityTypes.includes(entityType as any)) {
+        if (entityType && !tab.condition.entityTypes.includes(entityType as ProfileType)) {
           return false;
         }
       }

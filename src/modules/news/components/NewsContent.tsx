@@ -53,8 +53,9 @@ export function NewsContent({ text, mentions, maxLength = 300 }: NewsContentProp
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           components={{
-            a: ({ node, ...props }) => (
-              <a {...props} target="_blank" rel="noopener noreferrer" />
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            a: ({ node: _node, ...rest }) => (
+              <a {...rest} target="_blank" rel="noopener noreferrer" />
             ),
           }}
         >

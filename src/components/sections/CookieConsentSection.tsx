@@ -27,10 +27,11 @@ export function CookieConsentSection({ props }: { id?: string; props: CookieCons
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    
+
     // Check if user has already made a choice
     const consent = localStorage.getItem('cookie-consent');
     if (!consent) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- initializes UI from localStorage after SSR hydration
       setIsVisible(true);
     }
 

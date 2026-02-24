@@ -6,16 +6,21 @@ export const DAYS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"] as const;
 
 export type DayOfWeek = typeof DAYS[number];
 
+interface OpeningHoursEntry {
+  dayOfWeek: string;
+  hours?: Array<{ opens: string; closes: string }>;
+}
+
 /**
  * Formatter pour normaliser les horaires d'ouverture
  * Garantit toujours 7 entrées (une par jour)
  */
 export const widgetFormatters = {
-  openingHours: (value: any) => {
+  openingHours: (value: unknown) => {
     // Toujours 7 entrées Mo→Su
-    const arr = Array.isArray(value) ? value : [];
+    const arr = Array.isArray(value) ? (value as OpeningHoursEntry[]) : [];
     return DAYS.map((day) => {
-      const match = arr.find((o: any) => o.dayOfWeek === day);
+      const match = arr.find((o) => o.dayOfWeek === day);
       return match
         ? {
             dayOfWeek: day,

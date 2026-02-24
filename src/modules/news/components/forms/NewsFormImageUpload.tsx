@@ -385,7 +385,7 @@ export function NewsFormImageUpload({
       {cropImageData && (
         <ImageCropDialog
           imageUrl={cropImageData.preview}
-          onCrop={(blob, _cropArea) => {
+          onCrop={(blob) => {
             // Convert blob to file
             const file = new File([blob], cropImageData.fileName, { type: blob.type });
             handleCropComplete(file);

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useLocation } from "react-router";
 
 /**
@@ -39,11 +39,9 @@ export function useLazyTab(tabValue: string) {
 
   const isActive = currentValue === tabValue;
 
-  useEffect(() => {
-    if (isActive && !hasBeenActive) {
-      setHasBeenActive(true);
-    }
-  }, [isActive, hasBeenActive]);
+  if (isActive && !hasBeenActive) {
+    setHasBeenActive(true);
+  }
 
   return {
     /** L'onglet est-il actuellement actif ? */

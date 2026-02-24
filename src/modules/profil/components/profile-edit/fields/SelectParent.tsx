@@ -80,6 +80,7 @@ export function SelectParent({
   useEffect(() => {
     // Si value a changé depuis l'extérieur et on n'a pas de changement local en cours
     if (!hasLocalChangeRef.current) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- syncs display state with controlled value prop
       setDisplayValue(value);
     }
     prevValueRef.current = value;
@@ -207,7 +208,8 @@ export function SelectParent({
   // Convertir array → Record pour onChange
   // SelectObject retourne opt.value qui est SelectOptionBase
   const handleChange = useCallback(
-    (arr: SelectOptionBase | SelectOptionBase[] | null) => {
+    (value: unknown) => {
+      const arr = value as SelectOptionBase | SelectOptionBase[] | null;
       // Marquer qu'on a fait un changement local
       hasLocalChangeRef.current = true;
 

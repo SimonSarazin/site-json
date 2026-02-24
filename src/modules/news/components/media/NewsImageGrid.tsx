@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { ImageIcon, X } from "lucide-react";
 import { Modal, ModalContent } from "@/components/ui/modal";
+import type { NewsImageItem } from "../../types";
 
 interface NewsImageGridProps {
-  images: any[];
+  images: NewsImageItem[];
 }
 
 export function NewsImageGrid({ images }: NewsImageGridProps) {
@@ -31,7 +32,7 @@ export function NewsImageGrid({ images }: NewsImageGridProps) {
     <>
       <div className="px-6 pb-4">
         <div className={`grid ${getGridClass()} gap-2`}>
-          {images.slice(0, 6).map((img: any, imgIndex: number) => {
+          {images.slice(0, 6).map((img: NewsImageItem, imgIndex: number) => {
             const imagePath = img.imagePath || img.imageThumbPath;
 
             return (

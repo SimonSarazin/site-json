@@ -16,12 +16,12 @@ import { useDebounce } from "../../hooks/useDebounce";
 interface SelectOption {
   id: string;
   label: string;
-  value: any;
+  value: unknown;
   type?: string;
   thumb?: string;
 }
 
-function isSameValue(a: any, b: any): boolean {
+function isSameValue(a: unknown, b: unknown): boolean {
   if (a == null || b == null) return false;
   if (typeof a === "object" && typeof b === "object") {
     return "id" in a && "id" in b && a.id === b.id;
@@ -30,8 +30,8 @@ function isSameValue(a: any, b: any): boolean {
 }
 
 interface SelectObjectProps {
-  value: any | any[];
-  onChange: (value: any) => void;
+  value: unknown | unknown[];
+  onChange: (value: unknown) => void;
   options?: SelectOption[];
   delay?: number;
   onSearch?: (query: string) => Promise<SelectOption[]>;
@@ -119,15 +119,15 @@ export function SelectObject({
     return () => { active = false; };
   }, [debSearch, onSearch]);
 
-  const isSelected = (optVal: any): boolean => multiple
-    ? (Array.isArray(value) ? value : []).some((v: any) => isSameValue(v, optVal))
+  const isSelected = (optVal: unknown): boolean => multiple
+    ? (Array.isArray(value) ? value : []).some((v: unknown) => isSameValue(v, optVal))
     : isSameValue(value, optVal);
 
-  const toggleVal = (optVal: any): void => {
+  const toggleVal = (optVal: unknown): void => {
     if (multiple) {
       const current = Array.isArray(value) ? value : [];
-      const exists = current.some((v: any) => isSameValue(v, optVal));
-      onChange(exists ? current.filter((v: any) => !isSameValue(v, optVal)) : [...current, optVal]);
+      const exists = current.some((v: unknown) => isSameValue(v, optVal));
+      onChange(exists ? current.filter((v: unknown) => !isSameValue(v, optVal)) : [...current, optVal]);
     } else {
       onChange(optVal);
       setOpen(false);
@@ -148,12 +148,12 @@ export function SelectObject({
             <div className={pillContainerClassName}>
               {multiple ? (
                 Array.isArray(value) && value.length > 0 ? (
-                  value.map((v: any) => {
+                  value.map((v: unknown) => {
                     const opt = options.find((o: SelectOption) => isSameValue(o.value ?? o, v));
-                    const label = opt?.label ?? (typeof v === "object" ? v.name : v);
-                    const type = opt?.type ?? (typeof v === "object" ? v.type : v);
+                    const label = String(opt?.label ?? (typeof v === "object" && v !== null && "name" in v ? (v as Record<string, unknown>).name : v));
+                    const type = opt?.type ?? (typeof v === "object" && v !== null && "type" in v ? String((v as Record<string, unknown>).type) : undefined);
                     return (
-                      <div key={opt?.id ?? label} className={pillClassName}>
+                      <div key={opt?.id ?? String(label)} className={pillClassName}>
                         <div className="flex flex-col">
                           <span className={pillLabelClassName}>{label}</span>
                           {type && <span className={pillTypeClassName}>{type}</span>}
@@ -175,7 +175,7 @@ export function SelectObject({
                 )
               ) : (
                 (() => {
-                  const opt = options.find((o: SelectOption) => isSameValue(o.value ?? o, value?.[0]));
+                  const opt = options.find((o: SelectOption) => isSameValue(o.value ?? o, Array.isArray(value) ? value[0] : value));
                   if (!opt) return <span className={placeholderClassName}>{placeholder}</span>;
                   const label = opt.label;
                   const type = opt.type;
@@ -218,7 +218,7 @@ export function SelectObject({
                   const val = opt.value ?? opt;
                   return (
                     <CommandItem
-                      key={opt.id ?? opt.value ?? opt.label}
+                      key={opt.id ?? String(opt.value ?? opt.label)}
                       onSelect={() => toggleVal(val)}
                       className={itemClassName}
                     >

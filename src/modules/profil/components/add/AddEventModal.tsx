@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { Loader2, AlertCircle } from "lucide-react";
-import type { FieldErrors, Resolver } from "react-hook-form";
+import type { FieldErrors, FieldValues, Resolver, UseFormReturn } from "react-hook-form";
 import { useT } from "@/hooks/useT";
 import {
   Dialog,
@@ -243,12 +243,12 @@ export function AddEventModal({ open, onOpenChange, parent }: AddEventModalProps
 
               {/* Tab Dates */}
               <TabsContent value="dates">
-                <EditEventDatesTab form={form} />
+                <EditEventDatesTab form={form as unknown as UseFormReturn<FieldValues>} />
               </TabsContent>
 
               {/* Tab Localisation */}
               <TabsContent value="location">
-                <EditLocationTab form={form} />
+                <EditLocationTab form={form as unknown as UseFormReturn<FieldValues>} />
               </TabsContent>
               </div>
             </Tabs>

@@ -50,7 +50,7 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef, onEdit, onDele
   const detailUrl = useMemo(() => {
     if (detailMode || !newsContext?.detailUrlGenerator || !item.id) return null;
     return newsContext.detailUrlGenerator(item.id);
-  }, [detailMode, newsContext?.detailUrlGenerator, item.id]);
+  }, [detailMode, newsContext, item.id]);
 
   const [openComments, setOpenComments] = useState(false);
 

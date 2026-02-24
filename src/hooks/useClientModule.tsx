@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
+import { useIsMounted } from "@/hooks/useIsMounted";
 
 // Define a more specific type for the loader function and its return value
 export function useClientModule<T>(loader: () => Promise<T>): [boolean, T | null] {
-  const [mounted, setMounted] = useState<boolean>(false);
+  const mounted = useIsMounted();
   const [mod, setMod] = useState<T | null>(null);
 
   useEffect(() => {
-    setMounted(true);
+    if (!mounted) return;
     loader().then(setMod);
-  }, [loader]);
+  }, [loader, mounted]);
 
   return [mounted, mod];
 }

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { UseFormReturn } from "react-hook-form";
+import { type FieldValues, type UseFormReturn } from "react-hook-form";
 import { useT } from "@/hooks/useT";
 import {
   FormField,
@@ -22,7 +22,7 @@ import {
 } from "./fields";
 
 interface EditBasicInfoTabProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<FieldValues>;
   entityType: string;
 }
 
