@@ -399,6 +399,7 @@ La configuration de SiteForge se fait principalement via :
 | `VITE_SLUG`             | « Slug » à utiliser pour les requêtes par défaut (injecté en tant que `import.meta.env`).  | `default`                      |
 | `NODE_ENV`              | Mode d’exécution Node.js (`development` ou `production`).                                  | Défini par Vite ou `npm run …` |
 | `PORT`                  | Port sur lequel le serveur écoute en mode dev ou preview.                                  | `5173` en dev, `3000` en prod  |
+| `IMAGE_OPTIMIZER_ALLOWED_DOMAINS` | Domaines distants autorisés pour l'optimisation d'images (séparés par des virgules). | `localhost,127.0.0.1` + hostname de `VITE_BASE_URL_BACKEND` |
 
 > **En production**, au moins `SITE_CONFIG_JSON` **ou** `SITE_CONFIG_PATH` doit être défini — sinon le serveur arrête le démarrage avec une erreur.
 
@@ -490,7 +491,7 @@ export default defineConfig(({ mode, isSsrBuild }) => ({
   define: { 'process.env.NODE_ENV': JSON.stringify(mode) },
   ssr: {
     noExternal: ['@radix-ui/', 'lucide-react'],
-    external: ['express', 'compression', '@communecter/cocolight-api-client']
+    external: ['express', 'compression', '@communecter/cocolight-api-client', 'sharp']
   },
   build: isSsrBuild ? { rollupOptions: { /* … */ } } : undefined
 }))
@@ -511,6 +512,8 @@ Cette section décrit l’organisation générale du code, le flux d’exécutio
 ├── .bolt/                 # Scripts et configurations d’alerte/ignore interne
 ├── scripts/               # Outils de génération automatique (ex. génération de config)
 ├── server/                # Serveurs Express (dev et prod)
+│   ├── middleware/         # Middlewares Express
+│   │   └── imageOptimizer.js  # Optimisation d'images à la volée (sharp, cache disque)
 │   ├── dev-server.js      # Serveur de dev avec middleware Vite (SSR + HMR)
 │   └── prod-server.js     # Serveur de prod (compression, serveStatic, SSR streaming)
 ├── src/                   # Code source principal
@@ -522,12 +525,13 @@ Cette section décrit l’organisation générale du code, le flux d’exécutio
 │   ├── data/              # Exemplaires de config (demo-site.ts)
 │   ├── helpers/           # Fonctions utilitaires (ex. email validation)
 │   ├── hooks/             # Hooks React (useToast, useInfiniteQueryScroll…)
-│   ├── lib/               # Bibliothèques internes (apiClient, buildRoutes, sanitize)
+│   ├── lib/               # Bibliothèques internes (apiClient, buildRoutes, sanitize, imageUtils)
 │   ├── modules/           # Modules fonctionnels (search, events, contactForm…)
 │   ├── types/             # Schémas Zod & types TS (site-schema, locale-schema…)
 │   ├── entry-client.tsx   # Point d’entrée bundler client (hydrate React)
 │   ├── entry-server.tsx   # Point d’entrée SSR (renderToPipeableStream)
 │   └── RootLayout.tsx     # Layout global avec providers et React Router Outlet
+├── .cache/                # Cache d'images optimisées (gitignored)
 ├── config.prod.json       # Configuration JSON structurée du site
 ├── package.json           # Dépendances, scripts, résolutions
 ├── tsconfig*.json         # Config TypeScript
@@ -4734,45 +4738,44 @@ export function SectionRenderer({ section }: { section: Section }) {
 * Les composants de sections **doivent** avoir un `export default`
 * Les sections des modules (search, news) sont importées depuis leurs chemins respectifs
 
-#### 10.1.2 Lazy loading des images
+#### 10.1.2 Optimisation et lazy loading des images
 
-Le composant `LazyImage` (dans `src/components/layout/LazyImage.tsx`) combine l’API `IntersectionObserver` et l’attribut natif `loading="lazy"` :
+Le composant `OptimizedImage` (dans `src/components/ui/OptimizedImage.tsx`) gère automatiquement l’optimisation et le lazy loading de toutes les images :
 
 ```tsx
-import React, { useState, useRef, useEffect } from "react";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
-export const LazyImage: React.FC<{ src: string; alt: string }> = ({ src, alt }) => {
-  const [visible, setVisible] = useState(false);
-  const imgRef = useRef<HTMLImageElement>(null);
+// Image standard (lazy par defaut, format auto WebP/AVIF)
+<OptimizedImage src="/images/photo.jpg" alt="Photo" width={400} />
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.1 }
-    );
-    if (imgRef.current) observer.observe(imgRef.current);
-    return () => observer.disconnect();
-  }, []);
+// Image prioritaire (LCP) — eager + fetchPriority="high"
+<OptimizedImage src={bannerUrl} alt="Banner" width={1200} priority />
 
-  return (
-    <img
-      ref={imgRef}
-      src={visible ? src : undefined}
-      data-src={src}
-      alt={alt}
-      loading="lazy"
-    />
-  );
-};
+// Avec gestion d’erreur
+<OptimizedImage src={avatarUrl} alt="Avatar" width={96} onError={() => setError(true)} />
 ```
 
-* **IntersectionObserver** déclenche le chargement lorsque l’image entre dans le viewport.
-* `loading="lazy"` active le lazy loading natif sur les navigateurs compatibles.
+**Props disponibles** :
+
+| Prop | Type | Defaut | Description |
+|------|------|--------|-------------|
+| `src` | `string` | — | URL source (locale ou distante) |
+| `alt` | `string` | — | Texte alternatif (obligatoire) |
+| `width` | `number` | — | Largeur souhaitee (genere srcSet 1x/2x) |
+| `height` | `number` | — | Hauteur (optionnel, ratio preserve) |
+| `quality` | `number` | `80` | Qualite 1-100 |
+| `format` | `string` | `"auto"` | `webp`, `avif`, `jpeg`, `png`, `auto` |
+| `priority` | `boolean` | `false` | `true` = eager + fetchPriority="high" |
+| `className` | `string` | — | Classes CSS |
+| `title` | `string` | — | Attribut title (tooltip) |
+| `style` | `CSSProperties` | — | Styles inline |
+| `onError` | `function` | — | Callback en cas d’erreur de chargement |
+
+**Comportement** :
+* Genere automatiquement un `srcSet` 1x/2x quand `width` est fourni
+* `loading="lazy"` par defaut, `loading="eager"` + `fetchPriority="high"` si `priority`
+* Bypass automatique pour SVG, data URIs et blob URLs (rendu `<img>` classique)
+* Les chemins relatifs (`images/foo.png`) sont normalises en `/images/foo.png`
 
 ---
 
@@ -4783,7 +4786,7 @@ export const LazyImage: React.FC<{ src: string; alt: string }> = ({ src, alt }) 
 * **Configuration Vite** (`vite.config.ts`) :
 
   ```ts
-  ssr: { noExternal: ["@radix-ui/", "lucide-react"] },
+  ssr: { noExternal: ["@radix-ui/", "lucide-react"], external: ["sharp"] },
   build: {
     rollupOptions: {
       output: { manualChunks: { /* grouping spécifique */ } }
@@ -4793,17 +4796,64 @@ export const LazyImage: React.FC<{ src: string; alt: string }> = ({ src, alt }) 
 
 ---
 
-### 10.3 Optimisation des images
+### 10.3 Optimisation des images — Middleware sharp
 
-* **Composant `Image.tsx`** génère automatiquement un `srcSet` pour plusieurs résolutions :
+Le middleware Express `/img` optimise les images a la volee avec **sharp** (resize + conversion de format) et les met en cache sur disque.
 
-  ```tsx
-  export function Image({ src, alt, sizes }: { src: string; alt: string; sizes?: string }) {
-    const srcSet = `${src}?w=300 300w, ${src}?w=600 600w, ${src}?w=900 900w`;
-    return <img src={src} srcSet={srcSet} sizes={sizes} alt={alt} />;
-  }
-  ```
-* Intégration possible de **plugins Vite** (ex. `vite-imagetools`) pour transformer et optimiser les images à la volée.
+#### Architecture
+
+```
+Navigateur  →  GET /img?url=/images/bg.jpg&w=800&f=auto
+                    ↓
+            [Middleware imageOptimizer]
+                    ↓
+            Cache disque (.cache/images/)
+            ├── HIT  → stream le fichier cache (immutable, 1 an)
+            └── MISS → fetch source → sharp(resize+format) → cache + reponse
+```
+
+#### Route API
+
+`GET /img?url=<source>&w=<width>&h=<height>&q=<quality>&f=<format>`
+
+| Param | Requis | Defaut | Validation |
+|-------|--------|--------|------------|
+| `url` | Oui | — | String, domaine dans allowlist ou chemin local (`/...`) |
+| `w` | Non | original | Entier 16..4096 |
+| `h` | Non | original | Entier 16..4096 |
+| `q` | Non | 80 | Entier 1..100 |
+| `f` | Non | `auto` | `webp`, `avif`, `jpeg`, `png`, `auto` |
+
+* **Format `auto`** : negocie via le header `Accept` du navigateur (AVIF > WebP > JPEG)
+* **Cache** : cle SHA-256 de `url:w:h:q:format`, header `Cache-Control: public, max-age=31536000, immutable`
+* **Header `X-Image-Cache`** : `HIT`, `MISS` ou `ERROR` (fallback vers l'image originale)
+
+#### Securite
+
+* **Allowlist de domaines** pour les URLs distantes (construit depuis `VITE_BASE_URL_BACKEND` + `IMAGE_OPTIMIZER_ALLOWED_DOMAINS`)
+* **Protection path traversal** pour les fichiers locaux (`path.resolve` verifie que le chemin reste dans `staticRoot`)
+* Les chemins locaux doivent commencer par `/`
+
+#### Utilitaire `buildOptimizedUrl`
+
+```ts
+import { buildOptimizedUrl } from "@/lib/imageUtils";
+
+buildOptimizedUrl("/images/bg.jpg", { w: 800, q: 80, f: "auto" });
+// → "/img?url=%2Fimages%2Fbg.jpg&w=800&q=80&f=auto"
+```
+
+Bypass automatique pour SVG, data URIs et blob URLs (retourne `src` tel quel).
+
+#### Docker
+
+Le cache d'images est persiste via un volume Docker :
+
+```yaml
+# docker-compose.yml
+volumes:
+  - image-cache:/app/.cache/images
+```
 
 ---
 
@@ -5076,7 +5126,20 @@ Cette section décrit en détail le fonctionnement des fichiers responsables du 
    dotenv.config();
    ```
 
-2. **Création du serveur Express + Vite middleware**
+2. **Middleware d'optimisation d'images**
+
+   ```js
+   import { createImageOptimizer } from "./middleware/imageOptimizer.js";
+   app.use("/img", createImageOptimizer({
+     staticRoot: path.resolve(__dirname, "../public"),
+     cacheDir: path.resolve(__dirname, "../.cache/images"),
+   }));
+   ```
+
+   * Monte **avant** les middlewares Vite pour intercepter les requetes `/img`
+   * `staticRoot` pointe vers `public/` en dev
+
+3. **Création du serveur Express + Vite middleware**
 
    ```js
    const vite = await createViteServer({
@@ -5126,7 +5189,20 @@ Cette section décrit en détail le fonctionnement des fichiers responsables du 
 
 ### 12.2 `server/prod-server.js`&#x20;
 
-1. **Compression et static serving**
+1. **Middleware d'optimisation d'images**
+
+   ```js
+   import { createImageOptimizer } from "./middleware/imageOptimizer.js";
+   app.use("/img", createImageOptimizer({
+     staticRoot: path.resolve(__dirname, "../dist/client"),
+     cacheDir: path.resolve(__dirname, "../.cache/images"),
+   }));
+   ```
+
+   * Monte **avant** `compression` et `serveStatic`
+   * `staticRoot` pointe vers `dist/client/` en prod
+
+2. **Compression et static serving**
 
    ```js
    app.use(compression());
