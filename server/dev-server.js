@@ -10,6 +10,28 @@ dotenv.config();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+function resolveSiteConfigPath() {
+  if (process.env.SITE_CONFIG_PATH) return process.env.SITE_CONFIG_PATH;
+
+  const slug = process.env.VITE_SLUG;
+  if (!slug) return null;
+
+  const sitesPath = path.resolve(process.cwd(), "sites.json");
+  if (!fs.existsSync(sitesPath)) return null;
+
+  const sites = JSON.parse(fs.readFileSync(sitesPath, "utf-8"));
+  const site = sites.find((s) => s.slug === slug);
+  if (!site) {
+    console.warn(`[sites.json] Slug "${slug}" non trouvé, slugs disponibles : ${sites.map((s) => s.slug).join(", ")}`);
+    return null;
+  }
+
+  const configPath = `./${site.config}`;
+  process.env.SITE_CONFIG_PATH = configPath;
+  console.log(`[sites.json] Slug "${slug}" → ${site.config}`);
+  return configPath;
+}
+
 async function loadSiteConfig() {
   // 1. JSON inline (variable d’environnement complète)
   if (process.env.SITE_CONFIG_JSON) {
@@ -20,21 +42,20 @@ async function loadSiteConfig() {
     }
   }
 
-  // 2. Chemin vers un fichier JSON
-  if (process.env.SITE_CONFIG_PATH) {
+  const configRelPath = resolveSiteConfigPath();
+  if (configRelPath) {
     try {
-      const envPath   = process.env.SITE_CONFIG_PATH;
-      const filePath  = path.isAbsolute(envPath)
-        ? envPath
-        : path.resolve(process.cwd(), envPath);
-      const raw      = fs.readFileSync(filePath, "utf-8");
+      const filePath = path.isAbsolute(configRelPath)
+        ? configRelPath
+        : path.resolve(process.cwd(), configRelPath);
+      const raw = fs.readFileSync(filePath, "utf-8");
       return JSON.parse(raw);
     } catch (e) {
-      throw new Error(`Impossible de lire SITE_CONFIG_PATH : ${e.message}`);
+      throw new Error(`Impossible de lire ${configRelPath} : ${e.message}`);
     }
   }
 
-  return null; // Pas d'erreur, mais pas de config non plus
+  return null;
 }
 
 async function createServer() {

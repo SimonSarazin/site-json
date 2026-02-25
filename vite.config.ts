@@ -1,12 +1,58 @@
 import path from 'path';
+import fs from 'fs';
 import tailwindcss from "@tailwindcss/vite"
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv, type Plugin } from 'vite';
 import { visualizer } from 'rollup-plugin-visualizer';
 import preloadPlugin from 'vite-preload/plugin';
 
+function siteCssPlugin(): Plugin {
+  const virtualId = 'virtual:site-css';
+  const resolvedId = '\0' + virtualId;
+  let cssFile: string | null = null;
+
+  return {
+    name: 'site-css-resolver',
+    configResolved(config) {
+      const env = loadEnv(config.mode, config.root, '');
+      const slug = env.VITE_SLUG;
+
+      if (!slug) {
+        console.warn('[site-css] VITE_SLUG non défini dans .env');
+        return;
+      }
+
+      const sitesPath = path.resolve(config.root, 'sites.json');
+      if (!fs.existsSync(sitesPath)) {
+        console.warn('[site-css] sites.json non trouvé');
+        return;
+      }
+
+      const sites = JSON.parse(fs.readFileSync(sitesPath, 'utf-8'));
+      const site = sites.find((s: { slug: string }) => s.slug === slug);
+      if (!site?.css) {
+        console.warn(`[site-css] Pas de CSS pour le slug "${slug}"`);
+        return;
+      }
+
+      cssFile = path.resolve(config.root, 'src', `${site.css}.css`);
+      console.log(`[site-css] ${slug} → src/${site.css}.css`);
+    },
+    resolveId(id) {
+      if (id === virtualId) return resolvedId;
+    },
+    load(id) {
+      if (id === resolvedId) {
+        if (!cssFile) return '/* no site css */';
+        return `import "${cssFile}";`;
+      }
+    },
+  };
+}
+
 export default defineConfig(({ mode, isSsrBuild }) => ({
   plugins: [
+    siteCssPlugin(),
     preloadPlugin(), // Doit être AVANT react() pour tracer les lazy imports
     react(),
     tailwindcss(),

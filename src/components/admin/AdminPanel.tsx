@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { useSite } from "@/hooks/useSite";
 import type { Section, SiteConfig } from "@/types/site-schema";
@@ -16,9 +16,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
-import {
   Settings, Trash2, Pencil, Plus, ArrowLeft, Save,
   FileText, Layers, Navigation, PanelBottom, Link as LinkIcon,
 } from "lucide-react";
@@ -27,12 +24,14 @@ import ZodAutoForm from "./zod-auto-form/ZodAutoForm";
 import { getSectionPropsSchema, createDefaultValue, resolveType } from "./zod-auto-form/schema-utils";
 import { Section as SectionSchema, SiteConfig as SiteConfigSchema } from "@/types/site-schema";
 import { SortableList } from "./SortableList";
+import SECTION_META from "./section-meta";
 
-const ADDABLE_SECTIONS: { type: string; label: string }[] = SectionSchema.options
+const ADDABLE_SECTIONS: { type: string; label: string; desc: string; image: string }[] = SectionSchema.options
   .map((opt: import("zod").ZodTypeAny) => {
     const d = opt._def as any;
     const type = (d.shape.type as import("zod").ZodLiteral<string>).value;
-    return { type, label: type };
+    const meta = SECTION_META[type];
+    return { type, label: meta?.label ?? type, desc: meta?.desc ?? "", image: meta?.image ?? "" };
   })
   .sort((a: { label: string }, b: { label: string }) => a.label.localeCompare(b.label));
 
@@ -64,6 +63,85 @@ type NavItem = any;
 type FooterColumn = any;
 type FooterLink = any;
 
+function SectionPicker({ value, onChange, onAdd }: { value: string; onChange: (v: string) => void; onAdd: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [hovered, setHovered] = useState<typeof ADDABLE_SECTIONS[number] | null>(null);
+  const [search, setSearch] = useState("");
+
+  const filtered = search
+    ? ADDABLE_SECTIONS.filter((s) =>
+      s.label.toLowerCase().includes(search.toLowerCase()) ||
+      s.type.toLowerCase().includes(search.toLowerCase()) ||
+      s.desc.toLowerCase().includes(search.toLowerCase())
+    )
+    : ADDABLE_SECTIONS;
+
+  return (
+    <div className="relative">
+      {open && (
+        <div className="absolute bottom-full left-0 right-0 mb-1 z-50">
+          <div className="bg-popover border rounded-md shadow-lg flex flex-col max-h-[60vh]">
+            <div className="p-2 border-b">
+              <Input
+                placeholder="Rechercher..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="h-7 text-xs"
+                autoFocus
+              />
+            </div>
+            <div className="overflow-y-auto flex-1 p-1">
+              {filtered.map((s) => (
+                <button
+                  key={s.type}
+                  className={`w-full text-left px-3 py-1.5 rounded text-xs hover:bg-accent transition-colors flex items-center gap-2 ${value === s.type ? "bg-accent font-medium" : ""
+                    }`}
+                  onMouseEnter={() => setHovered(s)}
+                  onMouseLeave={() => setHovered(null)}
+                  onClick={() => { onChange(s.type); setOpen(false); setSearch(""); }}
+                >
+                  {s.image && <img src={s.image} alt="" className="w-8 h-5 rounded object-cover shrink-0" />}
+                  <span className="truncate">{s.label}</span>
+                </button>
+              ))}
+              {filtered.length === 0 && (
+                <p className="text-xs text-muted-foreground text-center py-4">Aucun résultat</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {open && hovered && (
+        <div className="fixed z-50 w-96 bg-popover border rounded-md shadow-xl overflow-hidden"
+          style={{ right: 508, bottom: 80 }}>
+          {hovered.image && (
+            <img src={hovered.image} alt={hovered.label} className="w-full h-60 object-cover" />
+          )}
+          <div className="p-3">
+            <div className="text-sm font-semibold">{hovered.label}</div>
+            <div className="text-xs text-muted-foreground leading-tight mt-1">{hovered.desc}</div>
+          </div>
+        </div>
+      )}
+
+      {/* Bouton unique : sélection + ajout */}
+      <div className="flex gap-2">
+        <Button
+          variant="outline"
+          className="flex-1 justify-start text-left font-normal"
+          onClick={() => setOpen(!open)}
+        >
+          {value ? <Badge variant="secondary">{value}</Badge> : <span className="text-muted-foreground">Type de section...</span>}
+        </Button>
+        <Button size="icon" onClick={() => { onAdd(); setOpen(false); }} disabled={!value}>
+          <Plus className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminPanel() {
   const { config, setConfig } = useSite();
   const { pathname } = useLocation();
@@ -71,6 +149,7 @@ export default function AdminPanel() {
   const [addType, setAddType] = useState<string>("");
   const [newPagePath, setNewPagePath] = useState("/nouvelle-page");
   const [newPageTitle, setNewPageTitle] = useState("");
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   const currentPageIndex = Math.max(
     config.pages.findIndex((p) => p.path === pathname),
@@ -78,6 +157,47 @@ export default function AdminPanel() {
   );
   const [view, setView] = useState<View>({ mode: "sections", pageIndex: currentPageIndex });
 
+  useEffect(() => {
+    if (!sheetOpen) return;
+    const style = document.createElement("style");
+    style.id = "admin-hover-highlight";
+    style.textContent = `
+      [data-section-index].admin-highlight {
+        outline: 2px dashed var(--primary);
+        outline-offset: 4px;
+        margin-top: 6px;
+        margin-bottom: 6px;
+        position: relative;
+        z-index: 10;
+      }
+      [data-section-index].admin-highlight::after {
+        content: attr(data-section-type) " #" attr(data-section-index);
+        position: absolute;
+        top: -14px;
+        left: 8px;
+        background: var(--primary);
+        color: var(--primary-foreground);
+        font-size: 11px;
+        font-weight: 500;
+        padding: 2px 8px;
+        border-radius: 4px;
+        z-index: 50;
+        pointer-events: none;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => { style.remove(); };
+  }, [sheetOpen]);
+
+  function highlightSection(index: number | null) {
+    document.querySelectorAll("[data-section-index].admin-highlight").forEach((el) => el.classList.remove("admin-highlight"));
+    if (index === null) return;
+    const el = document.querySelector<HTMLElement>(`[data-section-index="${index}"]`);
+    if (el) {
+      el.classList.add("admin-highlight");
+      el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }
 
   function patch(partial: Partial<SiteConfig>) {
     setConfig({ ...config, ...partial });
@@ -373,7 +493,9 @@ export default function AdminPanel() {
                 updateSections(pageIdx, () => newSections)
               }
               renderItem={(section, idx) => (
-                <div className="flex items-center gap-1 p-2 rounded-md border bg-card">
+                <div className="flex items-center gap-1 p-2 rounded-md border bg-card hover:border-primary/50 transition-colors"
+                  onMouseEnter={() => highlightSection(idx)}
+                  onMouseLeave={() => highlightSection(null)}>
                   <div className="flex-1 min-w-0">
                     <Badge variant="secondary" className="text-xs">{section.type}</Badge>
                     {section.id && <span className="text-xs text-muted-foreground ml-1">#{section.id}</span>}
@@ -406,19 +528,7 @@ export default function AdminPanel() {
         </ScrollArea>
 
         <div className="p-4 border-t space-y-2 shrink-0">
-          <div className="flex gap-2">
-            <Select value={addType} onValueChange={setAddType}>
-              <SelectTrigger className="flex-1"><SelectValue placeholder="Type de section..." /></SelectTrigger>
-              <SelectContent>
-                {ADDABLE_SECTIONS.map((s) => (
-                  <SelectItem key={s.type} value={s.type}>{s.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button size="icon" onClick={() => addSection(pageIdx)} disabled={!addType}>
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
+          <SectionPicker value={addType} onChange={setAddType} onAdd={() => addSection(pageIdx)} />
           <Button className="w-full" onClick={saveConfig}>
             <Save className="h-4 w-4 mr-2" /> Sauvegarder
           </Button>
@@ -446,14 +556,14 @@ export default function AdminPanel() {
             </SheetTitle>
           </div>
         </SheetHeader>
-        <ScrollArea className="flex-1 min-h-0 p-4">
+        <div className="flex-1 min-h-0 p-4 overflow-y-auto">
           {propsSchema ? (
             <ZodAutoForm schema={propsSchema} value={section.props as Record<string, unknown>}
               onChange={(newProps) => updateSectionProps(pageIdx, sectionIdx, newProps)} />
           ) : (
             <p className="text-xs text-muted-foreground">Aucun schéma trouvé pour "{section.type}".</p>
           )}
-        </ScrollArea>
+        </div>
       </div>
     );
   }
@@ -793,7 +903,7 @@ export default function AdminPanel() {
           </div>
         </SheetHeader>
 
-        <ScrollArea className="flex-1 min-h-0">
+        <div className="flex-1 min-h-0 overflow-y-auto">
           <div className="p-4">
             {isObject ? (
               <ZodAutoForm
@@ -809,7 +919,7 @@ export default function AdminPanel() {
               />
             )}
           </div>
-        </ScrollArea>
+        </div>
 
         <div className="p-4 border-t shrink-0">
           <Button className="w-full" onClick={saveConfig}>
@@ -822,14 +932,14 @@ export default function AdminPanel() {
 
 
   return (
-    <Sheet modal={false}>
+    <Sheet modal={false} open={sheetOpen} onOpenChange={setSheetOpen}>
       <SheetTrigger asChild>
         <Button size="icon" variant="outline"
           className="fixed bottom-4 right-4 z-[9999] h-12 w-12 rounded-full shadow-lg bg-background border-2">
           <Settings className="h-5 w-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-[400px] sm:max-w-[400px] p-0 h-full flex flex-col overflow-hidden" noOverlay>
+      <SheetContent side="right" className="w-[500px] sm:max-w-[500px] p-0 h-full flex flex-col overflow-hidden" noOverlay>
         {renderContent()}
       </SheetContent>
     </Sheet>

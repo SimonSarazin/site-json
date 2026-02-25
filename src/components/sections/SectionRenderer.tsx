@@ -90,7 +90,7 @@ function SectionLoadingFallback({ id, type }: { id?: string; type: string }) {
   );
 }
 
-export function SectionRenderer({ section }: { section: Section }) {
+export function SectionRenderer({ section, index }: { section: Section; index?: number }) {
   const sectionContext = `Section[type=${section.type}, id=${section.id || "none"}]`;
   const LazyComponent = LazySections[section.type] as React.ComponentType<{ id?: string; props: typeof section.props }>;
 
@@ -108,19 +108,21 @@ export function SectionRenderer({ section }: { section: Section }) {
   }
 
   return (
-    <Suspense fallback={<SectionLoadingFallback id={section.id} type={section.type} />}>
-      <ErrorBoundary
-        context={sectionContext}
-        fallback={
-          <section id={section.id} className="py-8 bg-destructive/10">
-            <div className="container mx-auto px-4 text-center text-destructive">
-              Failed to load section: {section.type}
-            </div>
-          </section>
-        }
-      >
-        <LazyComponent id={section.id} props={section.props} />
-      </ErrorBoundary>
-    </Suspense>
+    <div data-section-index={index} data-section-type={section.type}>
+      <Suspense fallback={<SectionLoadingFallback id={section.id} type={section.type} />}>
+        <ErrorBoundary
+          context={sectionContext}
+          fallback={
+            <section id={section.id} className="py-8 bg-destructive/10">
+              <div className="container mx-auto px-4 text-center text-destructive">
+                Failed to load section: {section.type}
+              </div>
+            </section>
+          }
+        >
+          <LazyComponent id={section.id} props={section.props} />
+        </ErrorBoundary>
+      </Suspense>
+    </div>
   );
 }
