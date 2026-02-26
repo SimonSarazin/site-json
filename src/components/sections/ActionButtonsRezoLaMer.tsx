@@ -13,7 +13,7 @@ export interface ActionButtonsRezoLaMerProps {
         title: LocalizedString;
         subtitle?: LocalizedString;
         href: string;
-        color?: "primary" | "accent" | "amber" | "chart-2" | "teal" | "eco";
+        color?: string;
     }>;
 }
 

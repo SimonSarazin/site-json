@@ -11,7 +11,7 @@ export interface FeaturesRezoLaMerProps {
         icon: string;
         title: LocalizedString;
         description: LocalizedString;
-        color?: "primary" | "accent" | "chart-2" | "chart-3";
+        color?: string;
     }>;
 }
 

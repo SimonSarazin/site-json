@@ -38,7 +38,7 @@ export interface ActionButton {
 }
 
 export interface TitleWithFiltersRezoLaMerProps {
-    headline: LocalizedString;
+    headline?: LocalizedString;
     subhead?: LocalizedString;
     categories?: Array<{
         id: string;

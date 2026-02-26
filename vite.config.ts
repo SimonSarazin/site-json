@@ -75,6 +75,10 @@ export default defineConfig(({ mode, isSsrBuild }) => ({
   define: {
     'process.env.NODE_ENV': JSON.stringify(mode),
   },
+  esbuild: {
+    jsx: 'automatic',
+    jsxDev: false,
+  },
   build: {
     manifest: true, // Génère le manifest.json pour vite-preload
     rollupOptions: isSsrBuild ? {
@@ -155,16 +159,26 @@ export default defineConfig(({ mode, isSsrBuild }) => ({
     }
   },
   ssr: {
-    // Bundle tout dans le build SSR par défaut (image Docker légère)
-    // Seuls les packages serveur/natifs restent externes
-    noExternal: true,
-    external: [
-      'express',
-      'compression',
-      'serialize-javascript',
-      'isomorphic-dompurify',
-      '@communecter/cocolight-api-client',
-      'sharp'
-    ]
+    noExternal: isSsrBuild ? true : undefined,
+    external: isSsrBuild
+      ? [
+          'express',
+          'compression',
+          'serialize-javascript',
+          'isomorphic-dompurify',
+          '@communecter/cocolight-api-client',
+          'sharp',
+          'pino',
+          'pino-pretty',
+          'react',
+          'react-dom',
+          'react/jsx-runtime',
+          'react/jsx-dev-runtime',
+        ]
+      : [
+          '@communecter/cocolight-api-client',
+          'pino',
+          'pino-pretty',
+        ],
   }
 }));

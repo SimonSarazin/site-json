@@ -21,7 +21,7 @@ export interface CommunityRezoLaMerProps {
     stats?: Array<{
         value: string;
         label: LocalizedString;
-        color?: "primary" | "accent" | "chart-2";
+        color?: string;
     }>;
 }
 

@@ -345,7 +345,7 @@ export function RegisterCyberReunionModal({ open, onOpenChange }: ModalProps) {
                     <p className="text-sm text-muted-foreground">{currentStepConfig.description}</p>
                   </div>
 
-                  <EditLocationTab form={form} />
+                  <EditLocationTab form={form as any} />
                 </div>
               )}
             </div>

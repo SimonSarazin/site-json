@@ -24,7 +24,6 @@ export default function CardPoiRezoLaMer({
     const serverData = item?.serverData;
     const entityType = item?.getEntityType?.() || "";
     const avatarIcon = getEntityIconName(entityType);
-    const image = serverData?.profilImageUrl;
     const location = getLocation(item);
     const status = serverData?.status || "Disponible";
   
@@ -83,7 +82,7 @@ export default function CardPoiRezoLaMer({
       <div className="px-6 pb-5 space-y-2 text-sm">
         <div className="flex justify-between">
           <span className="text-[#708090]">Prix d'usage:</span>
-          <span className="text-white font-semibold">{price || "N/A"}</span>
+          <span className="text-white font-semibold">{String(price || "N/A")}</span>
         </div>
         <div className="flex justify-between">
           <span className="text-[#708090]">Localisation:</span>
@@ -91,7 +90,7 @@ export default function CardPoiRezoLaMer({
         </div>
         <div className="flex justify-between">
           <span className="text-[#708090]">Propriétaire:</span>
-          <span className="text-white font-semibold">{proprietaire || "N/A"}</span>
+          <span className="text-white font-semibold">{String(proprietaire || "N/A")}</span>
         </div>
       </div>
 

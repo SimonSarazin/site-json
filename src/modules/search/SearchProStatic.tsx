@@ -510,7 +510,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
               >
                 {() => (
                   <SearchBubbleChart
-                    results={transformedResults}
+                    results={transformedResults as any}
                     categories={graphCategories}
                     onItemClick={handleGraphItemClick}
                     height={450}

@@ -5,6 +5,11 @@
     "css": "index-cyber-reunion"
   },
   {
+    "slug": "cocolight",
+    "config": "config.prod.cyber-reunion.json",
+    "css": "index-cyber-reunion"
+  },
+  {
     "slug": "rezoLaMer",
     "config": "config.prod.rezo-la-mer.json",
     "css": "index-rezo-la-mer"
@@ -30,7 +35,7 @@
     "css": "index-julie-pot-vin"
   },
   {
-    "slug": "openAtlasTest",
+    "slug": "openAtlas",
     "config": "config.prod.open-atlas-test.json",
     "css": null
   }

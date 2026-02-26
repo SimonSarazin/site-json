@@ -8,6 +8,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useMemo, useState } from "react";
 import { getBaseUrl } from "@/lib/constant/common";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import { useCocolight } from "@/hooks/useCocolight";
+import { cn } from "@/lib/utils";
 
 function shortenTag(tag: string, maxLength = 20): string {
   if (tag.length <= maxLength) return tag;
@@ -69,15 +71,15 @@ export default function SearchCardDetailed({
 
       await entity.endpointApi.updatePathValue({
         id: item.id,
-        collection: entityType || "events",
+        collection: (entityType || "events") as any,
         path: "isStarred",
         value: newStarredValue as unknown as { [k: string]: unknown }
       });
 
       setLocalIsStarred(newStarredValue);
 
-      if (item.reload) {
-        await item.reload();
+      if ((item as any).reload) {
+        await (item as any).reload();
       }
     } catch (error) {
       console.error("Erreur lors de la mise à jour de l'étoile:", error);

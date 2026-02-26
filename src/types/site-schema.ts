@@ -140,6 +140,7 @@ export const HeroRezoLaMerSchema = z.object({
       )
       .optional(),
     showScrollIndicator: z.boolean().optional(),
+    variant: z.enum(["ocean", "cyber"]).optional(),
   }),
 });
 
@@ -154,12 +155,13 @@ export const FeaturesRezoLaMerSchema = z.object({
   props: z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
+    variant: z.enum(["ocean", "cyber"]).optional(),
     features: z.array(
       z.object({
         icon: z.string(),
         title: LocalizedString,
         description: LocalizedString,
-        color: z.enum(["turquoise", "cyan-bright", "primary", "turquoise-light"]).optional(),
+        color: z.enum(["turquoise", "cyan-bright", "primary", "turquoise-light", "accent", "chart-2", "chart-3"]).optional(),
       })
     ),
   }),
@@ -1279,7 +1281,7 @@ const EnhancedNavItem: z.ZodType<EnhancedNavItemType> = z.lazy(() =>
 );
 
 export const Header = z.object({
-  type: z.enum(["tiers-lieux", "rezo-la-mer", "default"]).default("default"),
+  type: z.enum(["tiers-lieux", "rezo-la-mer", "cyber-reunion", "julie-pot-vin", "default"]).default("default"),
   logo: z.string(),
   logoAlt: LocalizedString.optional(),
   path: z.string().min(1).optional(),
@@ -1315,7 +1317,7 @@ const FooterColumn = z.object({
 });
 
 export const Footer = z.object({
-  type: z.enum(["tiers-lieux", "rezo-la-mer", "default"]).default("default"),
+  type: z.enum(["tiers-lieux", "rezo-la-mer", "cyber-reunion", "default"]).default("default"),
   columns: z.array(FooterColumn),
   socials: z.array(z.object({ platform: z.string(), url: z.string() })).optional(),
   extra: z.string().optional(),
@@ -1335,6 +1337,7 @@ export const Footer = z.object({
     label: LocalizedString,
   })).optional(),
   paymentMethods: z.array(z.string()).optional(), // Array of payment method icons
+  website: z.string().optional(),
 });
 export type Footer = z.infer<typeof Footer>;
 

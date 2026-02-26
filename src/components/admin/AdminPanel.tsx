@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { useSite } from "@/hooks/useSite";
+import { useCocolight } from "@/hooks/useCocolight";
 import type { Section, SiteConfig } from "@/types/site-schema";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,
@@ -143,6 +144,9 @@ function SectionPicker({ value, onChange, onAdd }: { value: string; onChange: (v
 }
 
 export default function AdminPanel() {
+  const { me, entity } = useCocolight();
+  const isAdmin = me?.isConnected && entity?.isAdmin?.();
+
   const { config, setConfig } = useSite();
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -188,6 +192,9 @@ export default function AdminPanel() {
     document.head.appendChild(style);
     return () => { style.remove(); };
   }, [sheetOpen]);
+
+  // Ne pas afficher le panneau admin si l'utilisateur n'est pas admin
+  if (!isAdmin) return null;
 
   function highlightSection(index: number | null) {
     document.querySelectorAll("[data-section-index].admin-highlight").forEach((el) => el.classList.remove("admin-highlight"));
@@ -309,12 +316,22 @@ export default function AdminPanel() {
   }
 
 
-  function saveConfig() {
+  async function saveConfig() {
     if (import.meta.hot) {
       import.meta.hot.send("config-save", config);
       toast.success("Config sauvegardée");
     } else {
-      toast.error("HMR non disponible");
+      try {
+        const res = await fetch("/api/admin/config-save", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(config),
+        });
+        if (!res.ok) throw new Error((await res.json()).error || res.statusText);
+        toast.success("Config sauvegardée");
+      } catch (e) {
+        toast.error(`Erreur: ${(e as Error).message}`);
+      }
     }
   }
 
