@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import serialize from "serialize-javascript";
+import { createImageOptimizer } from "./middleware/imageOptimizer.js";
 
 // import dotenv from "dotenv";
 // dotenv.config();
@@ -58,6 +59,12 @@ app.use(compression({
 
 // ETag pour requêtes conditionnelles (304 Not Modified)
 app.set('etag', 'strong');
+
+// Image optimizer — must be before express.static
+app.use("/img", createImageOptimizer({
+  staticRoot: path.resolve(__dirname, "../dist/client"),
+  cacheDir: path.resolve(__dirname, "../.cache/images"),
+}));
 
 // Cache long terme pour assets hashés Vite (1 an, immutable)
 app.use('/assets', (req, res, next) => {

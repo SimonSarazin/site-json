@@ -54,6 +54,7 @@ export function PageFiltersProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function usePageFilters() {
   const context = useContext(PageFiltersContext);
   if (context === undefined) {
@@ -66,6 +67,7 @@ export function usePageFilters() {
  * Version optionnelle du hook qui retourne null si le contexte n'est pas disponible
  * Utilisé pour les composants qui peuvent fonctionner avec ou sans filtres
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function usePageFiltersOptional() {
   const context = useContext(PageFiltersContext);
   return context || null;

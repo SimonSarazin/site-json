@@ -7,6 +7,7 @@ import { T } from "@/components/ui/T";
 import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from '@/lib/utils';
 import { EventListSectionProps } from '@/types/site-schema';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
 
 export function EventListSection({ id, props }: { id?: string; props: EventListSectionProps }) {
   const { t } = useLocalization();
@@ -51,9 +52,10 @@ export function EventListSection({ id, props }: { id?: string; props: EventListS
     )}>
       {event.image && (
         <div className="w-full h-48 overflow-hidden rounded-t-lg">
-          <img
+          <OptimizedImage
             src={event.image}
             alt={t(event.title)}
+            width={400}
             className="w-full h-full object-cover"
           />
         </div>

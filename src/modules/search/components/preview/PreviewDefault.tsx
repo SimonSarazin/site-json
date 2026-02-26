@@ -13,6 +13,7 @@ import { useSearchPropsOptional } from "@/modules/search/hooks/useSearchProps";
 import { DynamicIcon, IconName } from "lucide-react/dynamic";
 import useItem from "@/modules/search/hooks/useItem";
 import { PreviewProps } from "@/modules/search/schema";
+import type { LocalizedString } from "@/types/locale-schema";
 
 /* -----------------------------------------------------------------------
  * Component
@@ -57,7 +58,7 @@ const PreviewDefault: React.FC<PreviewProps> = ({ item }) => {
       .filter(([, filter]) => filter.previewVisible !== false)
       .map(([key, filter]) => {
         const icon = filter.previewIcon ? filter.previewIcon : "tag";
-        const label = t(filter.name as any);
+        const label = t(filter.name as LocalizedString | string);
 
         let value: string | undefined;
 
@@ -69,12 +70,12 @@ const PreviewDefault: React.FC<PreviewProps> = ({ item }) => {
             )
           );
           if (found) {
-            const record = (filter.list as Record<string, any>)[found];
+            const record = (filter.list as Record<string, LocalizedString | string>)[found];
             value = typeof record === "object" ? t(record) : t(record ?? found);
           }
         } else if (filter.type === "type") {
           if (type) {
-            const record = (filter.list as Record<string, any>)[type];
+            const record = (filter.list as Record<string, LocalizedString | string>)[type];
             value = typeof record === "object" ? t(record) : t(record ?? type);
           }
         }

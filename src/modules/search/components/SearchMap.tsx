@@ -1,5 +1,6 @@
 import { useTheme } from "next-themes";
 import { useEffect, useRef, useState } from "react";
+import { useIsMounted } from "@/hooks/useIsMounted";
 
 import { renderMapPopup } from "./renderMapPopup";
 import { loadLeaflet } from "@/modules/search/hooks/loadLeaflet";
@@ -19,17 +20,12 @@ export default function SearchMap({ results, card, preview }: SearchMapProps) {
   const lightLayerRef = useRef<import('leaflet').TileLayer | null>(null);
   const darkLayerRef = useRef<import('leaflet').TileLayer | null>(null);
   const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useIsMounted();
   const [openDetails, setOpenDetails] = useState(false);
   const [item, setItem] = useState<SearchEntity | null>(null);
   const t = useT("modules/search");
   const { inSection } = useSearchProps();
   const { page } = usePage();
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
 
   function isValidGeoPoint(coords: unknown): coords is [number, number] {
     if (!Array.isArray(coords) || coords.length !== 2) return false;
@@ -172,7 +168,7 @@ export default function SearchMap({ results, card, preview }: SearchMapProps) {
         mapInstanceRef.current = null;
       }
     };
-  }, [mounted, results, resolvedTheme]);
+  }, [mounted, results, resolvedTheme, t]);
 
   useEffect(() => {
     if (!mapInstanceRef.current) return;

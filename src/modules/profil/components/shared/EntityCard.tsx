@@ -5,6 +5,7 @@ import { useT } from "@/hooks/useT";
 import { Link } from "react-router";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { getEntityIcon } from "@/lib/entityIcons";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 interface EntityCardProps {
   entity: EntityTypes;
@@ -44,9 +45,10 @@ export function EntityCard({
         {/* Image/Logo */}
         <div className="w-16 h-16 rounded-lg border border-border overflow-hidden bg-muted flex-shrink-0">
           {entity.serverData?.profilImageUrl ? (
-            <img
+            <OptimizedImage
               src={entity.serverData.profilImageUrl}
               alt={entity.serverData?.name || ""}
+              width={64}
               className="w-full h-full object-cover"
             />
           ) : (

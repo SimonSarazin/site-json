@@ -155,19 +155,16 @@ export default defineConfig(({ mode, isSsrBuild }) => ({
     }
   },
   ssr: {
+    // Bundle tout dans le build SSR par défaut (image Docker légère)
+    // Seuls les packages serveur/natifs restent externes
+    noExternal: true,
     external: [
-      'react',
-      'react-dom',
-      'react/jsx-runtime',
-      'react/jsx-dev-runtime',
-      'react-router',
-      'cookie',
-      '@tanstack/react-query',
       'express',
       'compression',
       'serialize-javascript',
       'isomorphic-dompurify',
-      '@communecter/cocolight-api-client'
+      '@communecter/cocolight-api-client',
+      'sharp'
     ]
   }
 }));

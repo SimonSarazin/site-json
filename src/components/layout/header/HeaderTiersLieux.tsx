@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import LoginForm from "@/components/auth/LoginForm";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
 
@@ -62,7 +63,7 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                 <div className="flex items-center justify-between">
                     <Link to={header.path || "/"} className="flex items-center shrink-0">
                         {header.logo && (
-                            <img
+                            <OptimizedImage
                                 src={`/${header.logo}`}
                                 alt={header.logoAlt ? t(header.logoAlt) : ""}
                                 width={207}
@@ -184,9 +185,10 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                                                     <DropdownMenuTrigger asChild>
                                                         <button className="bg-background rounded-full px-3 lg:px-4 py-1.5 flex items-center gap-1.5 lg:gap-2 hover:bg-secondary/80 transition text-sm lg:text-base">
                                                             {profilThumbImageUrl ? (
-                                                                <img
+                                                                <OptimizedImage
                                                                     src={profilThumbImageUrl}
                                                                     alt={name || 'Profile'}
+                                                                    width={32}
                                                                     className="w-6 h-6 lg:w-8 lg:h-8 rounded-full object-cover"
                                                                 />
                                                             ) : (

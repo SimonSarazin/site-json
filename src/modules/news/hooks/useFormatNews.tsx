@@ -5,6 +5,7 @@ import { useCocolight } from "@/hooks/useCocolight";
 import type { News, EntityTypes, NewsMention } from "@communecter/cocolight-api-client";
 import { useNewsPermissions } from "./useNewsPermissions";
 import { extractAuthorInfo, calculateTotalVotes } from "@/lib/entityFormatting";
+import type { NewsImageItem, NewsDocumentItem } from "../types";
 
 export interface SharedByPerson {
   name: string;
@@ -36,9 +37,9 @@ export interface FormattedNews {
 
   // Médias formatés
   hasImages: boolean;
-  images: string[];
+  images: NewsImageItem[];
   hasFiles: boolean;
-  mediaFiles: unknown[];
+  mediaFiles: NewsDocumentItem[];
   hasVideo: boolean;
   videoEmbedUrl: string | null;
 
@@ -117,11 +118,11 @@ export function useFormatNews(newsItem: News | null, entity: EntityTypes | null 
     const firstSharer = sharedBy.length > 0 ? sharedBy[0].name : null;
 
     // Médias - Images
-    const images = serverData.mediaImg?.images || [];
+    const images = (serverData.mediaImg?.images || []) as NewsImageItem[];
     const hasImages = Array.isArray(images) && images.length > 0;
 
     // Médias - Fichiers/Documents
-    const mediaFiles = serverData.mediaFile?.files || [];
+    const mediaFiles = (serverData.mediaFile?.files || []) as NewsDocumentItem[];
     const hasFiles = Array.isArray(mediaFiles) && mediaFiles.length > 0;
 
     // Médias - Vidéo
@@ -163,7 +164,7 @@ export function useFormatNews(newsItem: News | null, entity: EntityTypes | null 
       sharedByCount: sharedBy.length,
       firstSharer,
       hasImages,
-      images: images as string[],
+      images,
       hasFiles,
       mediaFiles,
       hasVideo,

@@ -1,4 +1,4 @@
-import type { UseFormReturn } from "react-hook-form";
+import { type FieldValues, type UseFormReturn } from "react-hook-form";
 import {
   Github,
   GitlabIcon as Gitlab,
@@ -12,7 +12,7 @@ import {
 import { IconFormField } from "./fields";
 
 interface EditSocialTabProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<FieldValues>;
 }
 
 const socialNetworks = [

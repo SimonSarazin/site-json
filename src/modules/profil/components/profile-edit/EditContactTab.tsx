@@ -1,10 +1,10 @@
-import type { UseFormReturn } from "react-hook-form";
+import { type FieldValues, type UseFormReturn } from "react-hook-form";
 import { useT } from "@/hooks/useT";
 import { Mail, Phone, Globe } from "lucide-react";
 import { IconFormField } from "./fields";
 
 interface EditContactTabProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<FieldValues>;
   entityType: string;
 }
 

@@ -19,15 +19,17 @@ export function LocalizationProvider({
 
   // Mark when we're on the client
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- SSR hydration guard: must sync isClient after mount
     setIsClient(true);
   }, []);
 
   // Only access localStorage on the client
   useEffect(() => {
     if (!isClient) return;
-    
+
     const savedLocale = localStorage.getItem('preferred-locale') as Locale;
     if (savedLocale && availableLocales.includes(savedLocale)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- reads localStorage after SSR hydration
       setCurrentLocale(savedLocale);
     }
   }, [isClient, availableLocales]);

@@ -12,3 +12,7 @@ services:
       SITE_CONFIG_PATH: "./config.prod.json"
     volumes:
       - ./config.prod.json:/app/config.prod.json
+      - image-cache:/app/.cache/images
+
+volumes:
+  image-cache:

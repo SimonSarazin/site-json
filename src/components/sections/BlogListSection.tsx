@@ -8,6 +8,7 @@ import { useLocalization } from "@/hooks/useLocalization";
 import { useNavigate } from "react-router";
 import { cn } from '@/lib/utils';
 import { BlogListSectionProps } from '@/types/site-schema';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
 
 export function BlogListSection({ id, props }: { id?: string; props: BlogListSectionProps }) {
   const { t } = useLocalization();
@@ -51,9 +52,10 @@ const navigate = useNavigate();
     >
       {post.featuredImage && (
         <div className="w-full h-48 overflow-hidden rounded-t-lg">
-          <img 
-            src={post.featuredImage} 
+          <OptimizedImage
+            src={post.featuredImage}
             alt={t(post.title)}
+            width={400}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
         </div>

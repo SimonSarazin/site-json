@@ -2,6 +2,7 @@ import { T } from "@/components/ui/T";
 import { useLocalization } from "@/hooks/useLocalization";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { Loader2 } from "lucide-react";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 import { HeroTiersLieuxProps as SchemaHeroTiersLieuxProps } from "@/types/site-schema";
 import { useAutocomplete } from "@/hooks/useAutocomplete";
@@ -288,10 +289,11 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
 
         {props.backgroundImage && (
           <div className="absolute bottom-0 left-0 right-0 h-64 overflow-hidden">
-            <img
+            <OptimizedImage
               src={props.backgroundImage}
-              className="w-full h-full object-cover object-top"
               alt=""
+              width={1200}
+              className="w-full h-full object-cover object-top"
             />
           </div>
         )}
@@ -421,10 +423,11 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
 
       {props.backgroundImage && (
         <div className="absolute -bottom-10 left-0 right-0 h-64 overflow-hidden">
-          <img
+          <OptimizedImage
             src={props.backgroundImage}
-            className="w-full h-full object-cover object-top"
             alt=""
+            width={1200}
+            className="w-full h-full object-cover object-top"
           />
         </div>
       )}

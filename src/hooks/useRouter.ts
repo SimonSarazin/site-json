@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
 
 export interface RouterState {
   currentPath: string;
@@ -7,45 +7,44 @@ export interface RouterState {
   goForward: () => void;
 }
 
-export function useRouter(initialPath = "/"): RouterState {
-  const [currentPath, setCurrentPath] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return window.location.pathname;
-    }
-    return initialPath; // Default path for SSR
-  });
+function subscribeToPathname(callback: () => void) {
+  window.addEventListener('popstate', callback);
+  return () => window.removeEventListener('popstate', callback);
+}
 
-  const navigate = (path: string) => {
+function getPathnameSnapshot() {
+  return window.location.pathname;
+}
+
+function getServerPathnameSnapshot() {
+  return '/';
+}
+
+export function useRouter(): RouterState {
+  const currentPath = useSyncExternalStore(
+    subscribeToPathname,
+    getPathnameSnapshot,
+    getServerPathnameSnapshot,
+  );
+
+  const navigate = useCallback((path: string) => {
     if (typeof window !== 'undefined') {
       window.history.pushState({}, '', path);
-      setCurrentPath(path);
+      // Dispatch popstate so useSyncExternalStore picks up the change
+      window.dispatchEvent(new PopStateEvent('popstate'));
     }
-  };
+  }, []);
 
-  const goBack = () => {
+  const goBack = useCallback(() => {
     if (typeof window !== 'undefined') {
       window.history.back();
     }
-  };
+  }, []);
 
-  const goForward = () => {
+  const goForward = useCallback(() => {
     if (typeof window !== 'undefined') {
       window.history.forward();
     }
-  };
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
-    // Set initial path on client hydration
-    setCurrentPath(window.location.pathname);
-    
-    const handlePopState = () => {
-      setCurrentPath(window.location.pathname);
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   return {

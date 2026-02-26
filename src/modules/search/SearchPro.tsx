@@ -30,7 +30,7 @@ function normalizeDefaultTypes(
   if (!defaultTypes || !Array.isArray(defaultTypes)) return undefined;
 
   const typeFilterEntry = Object.entries(filters).find(
-    ([_, config]) => config.type === "type"
+    ([, config]) => config.type === "type"
   );
 
   const key = typeFilterEntry?.[0] ?? fallbackKey;
