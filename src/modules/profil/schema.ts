@@ -116,6 +116,7 @@ export const ProfileTiersLieuxAboutSectionSchema = z.object({
     finder: z.string().optional(),
     linked: z.boolean(),
     category: z.enum(["salle-reunion", "coworking", "hebergement"]).optional(),
+    hide: z.boolean().optional().default(false), // Option pour cacher le formulaire dans le profil
   })).optional(),
 });
 

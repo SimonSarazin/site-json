@@ -157,7 +157,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
       console.error("No answer available to open for form:", formId);
       return;
     }
-    const targetUrl = `/#answer.index_coformv2.id.${answer.serverData.id}.form.${formId}.${step ? `step.${step}.` : ''}${input ? `input.${input}.` : ''}mode.w.standalone.true.ask.false`
+    const targetUrl = `/costum/co/index/slug/navigatorDesTierslieux/#answer.index_coformv2.id.${answer.serverData.id}.form.${formId}.${step ? `step.${step}.` : ''}${input ? `input.${input}.` : ''}mode.w.standalone.true.ask.false`
     const urlToRedirect = `${getServerUrl()}/co2/embed/render?targetUrl=${encodeURIComponent(targetUrl)}&embedToken=${accessToken}`;
     window.open(urlToRedirect, "_blank");
 

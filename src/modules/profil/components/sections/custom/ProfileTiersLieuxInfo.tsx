@@ -224,7 +224,7 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
             console.error("No answer available to open for form:", formId);
             return;
         }
-        const targetUrl = `/#answer.index_coformv2.id.${answer.serverData.id}.form.${formId}.mode.w.standalone.true.ask.false`
+        const targetUrl = `/costum/co/index/slug/navigatorDesTierslieux/#answer.index_coformv2.id.${answer.serverData.id}.form.${formId}.mode.w.standalone.true.ask.false`
         const urlToRedirect = `${getServerUrl()}/co2/embed/render?targetUrl=${encodeURIComponent(targetUrl)}&embedToken=${accessToken}`;
         window.open(urlToRedirect, "_blank");
 
