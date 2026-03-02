@@ -44,6 +44,11 @@ export const QUERY_KEYS = {
   // Search queries
   SEARCH_USERS: (userContextId: string | null = null) => ["search-users", userContextId] as const,
   SEARCH_USERS_PREFIX: () => ["search-users"] as const,
+
+  // Answers by forms queries
+  ANSWERS_BY_FORMS: (entityId: string | null, formIds: string[], userContextId: string | null = null) =>
+    ["answers-by-forms", entityId, formIds, userContextId] as const,
+  ANSWERS_BY_FORMS_PREFIX: (entityId: string | null) => ["answers-by-forms", entityId] as const,
 } as const;
 
 export type QueryKeyType = ReturnType<(typeof QUERY_KEYS)[keyof typeof QUERY_KEYS]>;

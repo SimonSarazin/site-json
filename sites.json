@@ -25,7 +25,7 @@
     "css": "index-institut-bleu"
   },
   {
-    "slug": "tiersLieux",
+    "slug": "franceTierslieux",
     "config": "config.prod.tiers-lieux.json",
     "css": "index-tiers-lieux"
   },

@@ -1229,5 +1229,53 @@
     "datetime": {
       "invalid": "Format ISO 8601 requis"
     }
+  },
+  "ProfileTiersLieuxInfo": {
+    "reserveOnline": "Réserver en ligne",
+    "meetingRooms": "salle de réunion",
+    "meetingRoomsPlural": "salles de réunion",
+    "workstations": "poste de travail",
+    "workstationsPlural": "postes de travail",
+    "accommodation": "chambre",
+    "accommodationPlural": "chambres",
+    "reservationSpace": "Espace réservation",
+    "reservationNote": "Réserver votre espace directement en ligne",
+    "contact": "Contact",
+    "fax": "Fax",
+    "tools": "Nos outils",
+    "socialNetworks": "Réseaux sociaux",
+    "keywords": "Mots clés",
+    "forms": "Formulaires",
+    "noPois": "Aucun espace disponible"
+  },
+  "ProfilTiersLieuxAbout": {
+    "title": "À propos",
+    "readMore": "Lire la suite",
+    "readLess": "Lire moins",
+    "equipements": "Équipements",
+    "seeAllEquipements": "Voir tous les équipements",
+    "activities": "Activités proposées",
+    "latestNews": "Dernières actualités",
+    "allNews": "Toutes les actualités",
+    "rooms": "Salles de réunion",
+    "allRooms": "Voir toutes les salles",
+    "learnMore": "En savoir plus",
+    "capacity": "pers.",
+    "noEquipements": "Aucun équipement renseigné",
+    "noActivities": "Aucune activité renseignée",
+    "noNews": "Aucune actualité disponible",
+    "noRooms": "Aucune salle disponible",
+    "halfDay": "/demi-journée",
+    "fullDay": "/journée",
+    "coworking": "Coworking",
+    "noCoworking": "Pas de poste de travail en coworking",
+    "accommodation": "Hébergement",
+    "noAccommodation": "Pas de chambre d'hébergement",
+    "coworkingSpace": "Espace de coworking",
+    "accommodationSpace": "Espace d'hébergement",
+    "nightly": "Nuitée",
+    "bed": "lit",
+    "reserve": "Réserver",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer cet élément ?"
   }
 }
