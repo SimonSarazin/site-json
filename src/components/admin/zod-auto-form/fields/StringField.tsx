@@ -2,6 +2,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { CodeField } from "./CodeField";
+import { ImageField, isImageKey } from "./ImageField";
+import { IconField, isIconKey } from "./IconField";
 
 const CODE_KEYS = new Set([
   "html", "css", "js", "code",
@@ -32,10 +34,38 @@ export function StringField({
 }: StringFieldProps) {
   const isCode = fieldKey ? CODE_KEYS.has(fieldKey) : false;
   const isMultiline = fieldKey ? MULTILINE_KEYS.has(fieldKey) : false;
+  const isIcon = fieldKey ? isIconKey(fieldKey) : false;
+  const isImage = fieldKey ? (!isIcon && isImageKey(fieldKey)) : false;
 
   if (isCode && fieldKey) {
     return (
       <CodeField
+        label={label}
+        fieldKey={fieldKey}
+        value={value}
+        onChange={onChange}
+        isOptional={isOptional}
+        compact={compact}
+      />
+    );
+  }
+
+  if (isIcon && fieldKey) {
+    return (
+      <IconField
+        label={label}
+        fieldKey={fieldKey}
+        value={value}
+        onChange={onChange}
+        isOptional={isOptional}
+        compact={compact}
+      />
+    );
+  }
+
+  if (isImage && fieldKey) {
+    return (
+      <ImageField
         label={label}
         fieldKey={fieldKey}
         value={value}

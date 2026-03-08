@@ -1284,6 +1284,8 @@ export const Header = z.object({
   type: z.enum(["tiers-lieux", "rezo-la-mer", "cyber-reunion", "julie-pot-vin", "default"]).default("default"),
   logo: z.string(),
   logoAlt: LocalizedString.optional(),
+  logoTitle: LocalizedString.optional(),
+  logoIcon: z.string().optional(),
   path: z.string().min(1).optional(),
   nav: z.array(EnhancedNavItem),
   sticky: z.boolean().default(true),
@@ -1297,6 +1299,20 @@ export const Header = z.object({
     cart: z.boolean().default(false),
     notifications: z.boolean().default(false),
   }),
+  ctaButton: z.object({
+    label: LocalizedString,
+    path: z.string().optional(),
+  }).optional(),
+  piggyBank: z.object({
+    amount: z.string().optional(),
+    icon: z.string().optional(),
+    path: z.string().optional(),
+  }).optional(),
+  urgenceButton: z.object({
+    label: LocalizedString,
+    icon: z.string().optional(),
+    path: z.string().optional(),
+  }).optional(),
   announcement: z.object({
     text: LocalizedString,
     href: z.string().optional(),

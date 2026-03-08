@@ -23,9 +23,14 @@ import {
 import { toast } from "sonner";
 import ZodAutoForm from "./zod-auto-form/ZodAutoForm";
 import { getSectionPropsSchema, createDefaultValue, resolveType } from "./zod-auto-form/schema-utils";
-import { Section as SectionSchema, SiteConfig as SiteConfigSchema } from "@/types/site-schema";
+import { Section as SectionSchema, SiteConfig as SiteConfigSchema, Header as HeaderSchema, Footer as FooterSchema } from "@/types/site-schema";
+import { ObjectFields } from "./zod-auto-form/ZodAutoForm";
 import { SortableList } from "./SortableList";
 import SECTION_META from "./section-meta";
+import { IconField } from "./zod-auto-form/fields/IconField";
+
+const HeaderFieldsSchema = HeaderSchema.omit({ nav: true });
+const FooterFieldsSchema = FooterSchema.omit({ columns: true });
 
 const ADDABLE_SECTIONS: { type: string; label: string; desc: string; image: string }[] = SectionSchema.options
   .map((opt: import("zod").ZodTypeAny) => {
@@ -162,6 +167,12 @@ export default function AdminPanel() {
   const [view, setView] = useState<View>({ mode: "sections", pageIndex: currentPageIndex });
 
   useEffect(() => {
+    if (view.mode === "sections" || view.mode === "editSection") {
+      setView({ mode: "sections", pageIndex: currentPageIndex });
+    }
+  }, [pathname]); 
+
+  useEffect(() => {
     if (!sheetOpen) return;
     const style = document.createElement("style");
     style.id = "admin-hover-highlight";
@@ -193,9 +204,7 @@ export default function AdminPanel() {
     return () => { style.remove(); };
   }, [sheetOpen]);
 
-  // Ne pas afficher le panneau admin si l'utilisateur n'est pas admin
-  if (!isAdmin) return null;
-
+  // if (!isAdmin) return null;
   function highlightSection(index: number | null) {
     document.querySelectorAll("[data-section-index].admin-highlight").forEach((el) => el.classList.remove("admin-highlight"));
     if (index === null) return;
@@ -270,6 +279,7 @@ export default function AdminPanel() {
     setView({ mode: "pages" });
     toast.success("Page supprimée");
   }
+
 
 
   function updateNav(newNav: NavItem[]) {
@@ -401,14 +411,22 @@ export default function AdminPanel() {
           </div>
 
           <div className="p-2 space-y-1">
-            {config.pages.map((page, idx) => (
+            {config.pages.map((page, idx) => {
+              const isCurrent = page.path === pathname;
+              return (
               <div key={page.path}
-                className="flex items-center gap-1 p-2 rounded-md border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                className={`flex items-center gap-1 p-2 rounded-md border transition-colors cursor-pointer ${
+                  isCurrent
+                    ? "bg-accent-foreground hover:bg-accent/50 border-primary"
+                    : "bg-card hover:bg-accent/50"
+                }`}
                 onClick={() => setView({ mode: "sections", pageIndex: idx })}
               >
-                <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                <FileText className={`h-3.5 w-3.5 shrink-0 text-muted-foreground`} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{page.title?.fr || page.path}</p>
+                  <p className="text-sm font-medium truncate">
+                    {page.title?.fr || page.path}
+                  </p>
                   <p className="text-xs text-muted-foreground">{page.path}</p>
                 </div>
                 <Badge variant="secondary" className="text-[10px] shrink-0">{page.sections.length}</Badge>
@@ -434,7 +452,8 @@ export default function AdminPanel() {
                   </AlertDialogContent>
                 </AlertDialog>
               </div>
-            ))}
+            );
+            })}
           </div>
         </ScrollArea>
 
@@ -494,10 +513,13 @@ export default function AdminPanel() {
             <SheetTitle className="text-sm truncate">
               {page.title?.fr || page.path}
               <Badge variant="outline" className="ml-2">{page.sections.length}</Badge>
+              {page.path === pathname && <span className="ml-1.5 inline-flex items-center rounded-full bg-background text-white text-[9px] font-semibold px-1.5 py-0 leading-4">ici</span>}
             </SheetTitle>
-            <Button size="sm" variant="ghost" className="ml-auto text-xs" onClick={() => navigate(page.path)}>
-              Voir
-            </Button>
+            {page.path !== pathname && (
+              <Button size="sm" variant="ghost" className="ml-auto text-xs" onClick={() => navigate(page.path)}>
+                Voir
+              </Button>
+            )}
           </div>
         </SheetHeader>
 
@@ -573,7 +595,7 @@ export default function AdminPanel() {
             </SheetTitle>
           </div>
         </SheetHeader>
-        <div className="flex-1 min-h-0 p-4 overflow-y-auto">
+        <div className="flex-1 min-h-0 p-4 overflow-y-auto flex flex-col">
           {propsSchema ? (
             <ZodAutoForm schema={propsSchema} value={section.props as Record<string, unknown>}
               onChange={(newProps) => updateSectionProps(pageIdx, sectionIdx, newProps)} />
@@ -589,6 +611,8 @@ export default function AdminPanel() {
   function renderHeaderView() {
     if (!header) return null;
 
+    const { nav: _nav, ...headerFieldsValue } = header as Record<string, unknown> & { nav: unknown };
+
     return (
       <div className="flex flex-col h-full min-h-0">
         <SheetHeader className="p-4 border-b shrink-0">
@@ -596,56 +620,68 @@ export default function AdminPanel() {
             <Button size="icon" variant="ghost" onClick={() => setView({ mode: "pages" })}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            <SheetTitle className="text-sm">
-              Navigation <Badge variant="outline" className="ml-2">{nav.length}</Badge>
-            </SheetTitle>
+            <SheetTitle className="text-sm">Header & Navigation</SheetTitle>
           </div>
         </SheetHeader>
 
-        <ScrollArea className="flex-1 min-h-0">
-          <div className="p-2">
-            <SortableList
-              items={nav}
-              getId={(_: NavItem, i: number) => `nav-${i}`}
-              onReorder={updateNav}
-              renderItem={(item: NavItem, idx: number) => (
-                <div className="flex items-center gap-1 p-2 rounded-md border bg-card">
-                  <LinkIcon className="h-3 w-3 text-muted-foreground shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{item.label?.fr || "—"}</p>
-                    <p className="text-xs text-muted-foreground truncate">{item.path || item.href || "—"}</p>
-                  </div>
-                  <Button size="icon" variant="ghost" className="h-7 w-7"
-                    onClick={() => setView({ mode: "editNavItem", navIndex: idx })}>
-                    <Pencil className="h-3.5 w-3.5" />
-                  </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive">
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Supprimer ce lien ?</AlertDialogTitle>
-                        <AlertDialogDescription>Le lien "{item.label?.fr}" sera supprimé du menu.</AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Annuler</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => removeNavItem(idx)}>Supprimer</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              )}
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          <div className="p-4 space-y-4">
+            <ObjectFields
+              schema={HeaderFieldsSchema}
+              value={headerFieldsValue as Record<string, unknown>}
+              onChange={(v) => patch({ header: { ...header, ...v } })}
+              compact
             />
-          </div>
-        </ScrollArea>
 
-        <div className="p-4 border-t space-y-2 shrink-0">
-          <Button className="w-full" variant="outline" onClick={addNavItem}>
-            <Plus className="h-4 w-4 mr-2" /> Ajouter un lien
-          </Button>
+            <div className="space-y-2 pt-2 border-t">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Liens de navigation <Badge variant="outline" className="ml-2">{nav.length}</Badge>
+              </p>
+              <SortableList
+                items={nav}
+                getId={(_: NavItem, i: number) => `nav-${i}`}
+                onReorder={updateNav}
+                renderItem={(item: NavItem, idx: number) => (
+                  <div className="flex items-center gap-1 p-2 rounded-md border bg-card"
+                    onMouseEnter={() => highlightSection(null)}
+                  >
+                    <LinkIcon className="h-3 w-3 text-muted-foreground shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{item.label?.fr || "—"}</p>
+                      <p className="text-xs text-muted-foreground truncate">{item.path || item.href || "—"}</p>
+                    </div>
+                    <Button size="icon" variant="ghost" className="h-7 w-7"
+                      onClick={() => setView({ mode: "editNavItem", navIndex: idx })}>
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive">
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Supprimer ce lien ?</AlertDialogTitle>
+                          <AlertDialogDescription>Le lien &quot;{item.label?.fr}&quot; sera supprimé du menu.</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Annuler</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => removeNavItem(idx)}>Supprimer</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                )}
+              />
+              <Button className="w-full" variant="outline" size="sm" onClick={addNavItem}>
+                <Plus className="h-4 w-4 mr-2" /> Ajouter un lien
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-4 border-t shrink-0">
           <Button className="w-full" onClick={saveConfig}>
             <Save className="h-4 w-4 mr-2" /> Sauvegarder
           </Button>
@@ -673,11 +709,15 @@ export default function AdminPanel() {
             <SheetTitle className="text-sm">Lien : {item.label?.fr || "—"}</SheetTitle>
           </div>
         </SheetHeader>
-        <ScrollArea className="flex-1 min-h-0 p-4">
+        <div className="flex-1 min-h-0 overflow-y-auto p-4">
           <div className="space-y-4">
             <div className="space-y-1.5">
               <Label className="text-xs font-medium">Label (fr)</Label>
               <Input value={item.label?.fr ?? ""} onChange={(e) => update({ label: { ...item.label, fr: e.target.value } })} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium">Label (en) <span className="text-muted-foreground">(optionnel)</span></Label>
+              <Input value={item.label?.en ?? ""} onChange={(e) => update({ label: { ...item.label, en: e.target.value || undefined } })} />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs font-medium">Chemin (route interne)</Label>
@@ -685,13 +725,27 @@ export default function AdminPanel() {
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs font-medium">URL externe <span className="text-muted-foreground">(optionnel)</span></Label>
+              <Input value={item.href ?? ""} onChange={(e) => update({ href: e.target.value || undefined })} placeholder="https://example.com" />
             </div>
+            <IconField
+              label="Icône"
+              fieldKey="icon"
+              value={item.icon}
+              onChange={(v) => update({ icon: v as string | undefined })}
+              isOptional
+              compact
+            />
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium">Icône <span className="text-muted-foreground">(optionnel)</span></Label>
-              <Input value={item.icon ?? ""} onChange={(e) => update({ icon: e.target.value || undefined })} placeholder="Home" />
+              <Label className="text-xs font-medium">Description <span className="text-muted-foreground">(optionnel)</span></Label>
+              <Input value={(item as any).description?.fr ?? ""} onChange={(e) => update({ description: e.target.value ? { fr: e.target.value } : undefined } as any)} placeholder="Description du lien" />
             </div>
           </div>
-        </ScrollArea>
+        </div>
+        <div className="p-4 border-t shrink-0">
+          <Button className="w-full" onClick={saveConfig}>
+            <Save className="h-4 w-4 mr-2" /> Sauvegarder
+          </Button>
+        </div>
       </div>
     );
   }
@@ -699,6 +753,8 @@ export default function AdminPanel() {
 
   function renderFooterView() {
     if (!footer) return null;
+
+    const { columns: _cols, ...footerFieldsValue } = footer as Record<string, unknown> & { columns: unknown };
 
     return (
       <div className="flex flex-col h-full min-h-0">
@@ -714,15 +770,19 @@ export default function AdminPanel() {
         </SheetHeader>
 
         <ScrollArea className="flex-1 min-h-0">
-          <div className="p-4 border-b space-y-1.5">
-            <Label className="text-xs font-medium">Copyright (fr)</Label>
-            <Input
-              value={footer.copyright?.fr ?? ""}
-              onChange={(e) => updateFooter({ ...footer, copyright: { ...footer.copyright, fr: e.target.value } })}
+          <div className="p-4 border-b">
+            <ObjectFields
+              schema={FooterFieldsSchema}
+              value={footerFieldsValue as Record<string, unknown>}
+              onChange={(v) => updateFooter({ ...footer, ...v })}
+              compact
             />
           </div>
 
           <div className="p-2">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2 py-1">
+              Colonnes
+            </p>
             <SortableList
               items={columns}
               getId={(_: FooterColumn, i: number) => `col-${i}`}

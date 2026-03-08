@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
-import { Header, LocalizedString } from "@/types/site-schema";
+import type { Header } from "@/types/site-schema";
 import { ChevronDown, User, LogOut, Globe, Bell, Menu, X } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router";
 import { useCocolight } from "@/hooks/useCocolight";
@@ -24,24 +24,7 @@ import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
 
 interface HeaderRezoLaMerProps {
-    header: Header & {
-        logoTitle?: LocalizedString;
-        logoIcon?: string;
-        ctaButton?: {
-            label: LocalizedString;
-            path?: string;
-        };
-        piggyBank?: {
-            amount?: string;
-            icon?: string;
-            path?: string;
-        };
-        urgenceButton?: {
-            label: LocalizedString;
-            icon?: string;
-            path?: string;
-        };
-    };
+    header: Header;
 }
 
 export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {

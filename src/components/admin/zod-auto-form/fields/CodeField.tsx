@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback, useState } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import { EditorView, basicSetup } from "codemirror";
 import { EditorState } from "@codemirror/state";
 import { indentWithTab } from "@codemirror/commands";
@@ -9,8 +9,6 @@ import { css } from "@codemirror/lang-css";
 import { javascript } from "@codemirror/lang-javascript";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Maximize2, Minimize2 } from "lucide-react";
 
 const LANG_MAP: Record<string, () => ReturnType<typeof html>> = {
   html: html,
@@ -82,8 +80,6 @@ export function CodeField({
   onChangeRef.current = onChange;
   const valueRef = useRef(value);
   valueRef.current = value;
-  const [expanded, setExpanded] = useState(false);
-
   const isDark =
     typeof document !== "undefined" &&
     document.documentElement.classList.contains("dark");
@@ -117,10 +113,10 @@ export function CodeField({
         }
       }),
       EditorView.theme({
-        "&": { fontSize: compact ? "11px" : "12px" },
+        "&": { fontSize: compact ? "11px" : "12px", flex: "1" },
         ".cm-scroller": {
-          minHeight: expanded ? "60vh" : compact ? "100px" : "140px",
-          maxHeight: expanded ? "80vh" : "400px",
+          minHeight: "calc(100vh - 200px)",
+          maxHeight: "none",
         },
       }),
     ];
@@ -137,7 +133,7 @@ export function CodeField({
       state,
       parent: containerRef.current,
     });
-  }, [fieldKey, isDark, compact, expanded]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [fieldKey, isDark, compact]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     initEditor();
@@ -160,28 +156,16 @@ export function CodeField({
   }, [value]);
 
   return (
-    <div className="space-y-1.5">
-      <div className="flex items-center justify-between">
-        <Label className="text-xs font-medium">
-          {label}{" "}
-          {isOptional && (
-            <span className="text-muted-foreground">(optionnel)</span>
-          )}
-        </Label>
-        <Button
-          type="button"
-          size="icon"
-          variant="ghost"
-          className="h-6 w-6"
-          onClick={() => setExpanded((e) => !e)}
-          title={expanded ? "Réduire" : "Agrandir"}
-        >
-          {expanded ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
-        </Button>
-      </div>
+    <div className="flex flex-col h-full min-h-0 space-y-1.5">
+      <Label className="text-xs font-medium shrink-0">
+        {label}{" "}
+        {isOptional && (
+          <span className="text-muted-foreground">(optionnel)</span>
+        )}
+      </Label>
       <div
         ref={containerRef}
-        className="rounded-md border [&_.cm-editor]:outline-none"
+        className="rounded-md border [&_.cm-editor]:outline-none flex-1 min-h-0 [&_.cm-editor]:h-full"
       />
     </div>
   );

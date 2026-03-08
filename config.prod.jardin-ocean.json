@@ -76,13 +76,25 @@
           "en": "Mapping"
         },
         "path": "/mapping"
+      },
+      {
+        "label": {
+          "fr": "Evenement"
+        },
+        "path": "/events"
+      },
+      {
+        "label": {
+          "fr": "Feuille de route"
+        },
+        "path": "/feuillederoute"
       }
     ],
     "sticky": true,
     "transparent": false,
     "height": "lg",
     "utilities": {
-      "themeSwitch": false,
+      "themeSwitch": true,
       "langSwitch": true,
       "search": false,
       "auth": true,
@@ -103,17 +115,16 @@
           "type": "hero-rezo-la-mer",
           "id": "hero-cyber-reunion",
           "props": {
-            "variant": "cyber",
             "headline": {
-              "fr": "Cyber Réunion gyugu",
+              "fr": "Jardins Communs Océan Indien",
               "en": "Cyber Réunion"
             },
             "subhead": {
-              "fr": "Pôle européen d'innovation numérique pour la cybersécurité à La Réunion. Accompagnement, formation et sensibilisation pour protéger vos données.",
+              "fr": "Nourrir les mascareignes, La coopérative citoyenne qui finance et développe une agriculture nourricière, locale et solidaire dans l'océan Indien",
               "en": "European Digital Innovation Hub for cybersecurity in Réunion. Support, training and awareness to protect your data."
             },
-            "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10\"></path></svg>",
-            "backgroundImage": "/images/cyberReunion/hero.png",
+            "logoIcon": "<Sprout />",
+            "backgroundImage": "/images/jardinCommuns/hero-farm.jpg",
             "backgroundImageAlt": {
               "fr": "Fond cybersécurité Cyber Réunion",
               "en": "Cyber Réunion cybersecurity background"
@@ -121,21 +132,21 @@
             "badges": [
               {
                 "label": {
-                  "fr": "Protection des données",
+                  "fr": "Coopérative interegéionale",
                   "en": "Data protection"
                 },
                 "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\"></rect><path d=\"M7 11V7a5 5 0 0 1 10 0v4\"></path></svg>"
               },
               {
                 "label": {
-                  "fr": "Formation cyber",
+                  "fr": "Crowdfunding alimentaire",
                   "en": "Cyber training"
                 },
                 "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M22 10v6M2 10l10-5 10 5-10 5z\"></path><path d=\"M6 12v5c3 3 9 3 12 0v-5\"></path></svg>"
               },
               {
                 "label": {
-                  "fr": "Innovation EDIH",
+                  "fr": "Souveraineté alimentaire",
                   "en": "EDIH Innovation"
                 },
                 "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83\"></path></svg>"
@@ -144,19 +155,19 @@
             "ctaButtons": [
               {
                 "label": {
-                  "fr": "Mon Aide Cyber",
+                  "fr": "Rejoindre la cooperative",
                   "en": "My Cyber Help"
                 },
-                "path": "/aide-cyber",
+                "path": "/",
                 "variant": "default"
               },
               {
                 "label": {
-                  "fr": "Signaler une urgence",
+                  "fr": "Decouvrir les projects",
                   "en": "Report emergency"
                 },
-                "path": "/hero.png",
-                "variant": "accent"
+                "path": "/",
+                "variant": "secondary"
               }
             ],
             "showScrollIndicator": true
@@ -166,31 +177,31 @@
           "type": "html",
           "id": "mission",
           "props": {
-            "html": "<section class=\"relative py-32 px-4 overflow-hidden\"><div class=\"absolute inset-0 z-0\"><img src=\"/images/cyberReunion/mission.png\" alt=\"Mission Cyber Réunion\" class=\"w-full h-full object-cover\" /><div class=\"absolute inset-0 bg-linear-to-r from-background via-background/80 to-background/60\"></div></div><div class=\"relative z-10 container mx-auto max-w-4xl\"><div class=\"space-y-8\"><h2 class=\"text-4xl md:text-5xl font-bold mb-6 text-foreground\">Notre mission</h2><div class=\"space-y-6 text-lg md:text-xl leading-relaxed\"><p class=\"text-muted-foreground\"><span class=\"text-primary font-semibold\">Cyber Réunion</span> est le pôle européen d'innovation numérique (EDIH) dédié à la <span class=\"text-primary font-medium\">cybersécurité</span> pour les entreprises et collectivités de La Réunion.</p><p class=\"text-muted-foreground\">Nous accompagnons la <span class=\"text-accent font-medium\">transformation numérique sécurisée</span> de notre territoire en proposant des services d'évaluation, de formation et de mise en relation avec l'écosystème cyber régional et européen.</p><div class=\"grid md:grid-cols-2 gap-6 pt-8\"><div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-sm border border-primary/20\"><h3 class=\"text-2xl font-semibold mb-3 text-primary\">Accompagnement personnalisé</h3><p class=\"text-muted-foreground\">Diagnostic cyber, plan d'action sur mesure et suivi pour renforcer votre posture de sécurité informatique</p></div><div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-sm border border-accent/20\"><h3 class=\"text-2xl font-semibold mb-3 text-accent\">Réponse aux incidents</h3><p class=\"text-muted-foreground\">En cas d'urgence cyber, notre équipe vous guide dans les premières actions et vous oriente vers les bons interlocuteurs</p></div></div></div></div></div></section>"
+            "html": "<section class=\"relative py-32 px-4 overflow-hidden\">\n  <div class=\"absolute inset-0 z-0\">\n    <img src=\"/images/cyberReunion/mission.png\" alt=\"Mission Cyber Réunion\" class=\"w-full h-full object-cover\" />\n    <div class=\"absolute inset-0 bg-linear-to-r from-background via-background/80 to-background/60\">\n    </div>\n  </div>\n  <div class=\"relative z-10 container mx-auto max-w-4xl\">\n    <div class=\"space-y-8\">\n      <h2 class=\"text-4xl md:text-5xl font-bold mb-6 text-foreground\">\n        Notre mission\n      </h2>\n      <div class=\"space-y-6 text-lg md:text-xl leading-relaxed\">\n        <p class=\"text-muted-foreground\">\n          <span class=\"text-primary font-semibold\">\n            Nourrir l'Indianocéanie\n          </span>\n          est un mouvement coopératif pour renforcer la souveraineté alimentaire de La Réunion, Mayotte, Madagascar, Maurice, les Comores et les Seychelles.\n          <span class=\"text-primary font-medium\">\n            cybersécurité\n          </span>\n          pour les entreprises et collectivités de La Réunion.\n        </p>\n        <p class=\"text-muted-foreground\">\n          Nous créons un\n          <span class=\"text-accent font-medium\">\n            espace de financement participatif\n          </span>\n          où producteurs, consommateurs, coopératives et diaspora peuvent co-financer et développer une agriculture tropicale durable, adaptée aux réalités insulaires.\n        </p>\n        <div class=\"grid md:grid-cols-2 gap-6 pt-8\">\n          <div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-sm border border-primary/20\">\n            <h3 class=\"text-2xl font-semibold mb-3 text-primary\">\n              Autonomie alimentaire\n            </h3>\n            <p class=\"text-muted-foreground\">\n             Réduire la dépendance aux importations en finançant les filières vivrières locales : fruits, légumes, épices, élevage\n            </p>\n          </div>\n          <div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-sm border border-accent/20\">\n            <h3 class=\"text-2xl font-semibold mb-3 text-accent\">\n              Solidarité inter-îles\n            </h3>\n            <p class=\"text-muted-foreground\">\n              Mutualiser savoirs, semences et pratiques entre les îles de l'océan Indien pour une agriculture résiliente\n            </p>\n          </div>\n        </div>\n      </div>\n    </div>\n  </div>\n</section>"
           }
         },
         {
           "type": "features-rezo-la-mer",
           "id": "features",
           "props": {
-            "variant": "cyber",
+            "variant": "ocean",
             "headline": {
-              "fr": "Nos domaines d'expertise",
+              "fr": "Une plateforme pour l'Indianocéanie",
               "en": "Our areas of expertise"
             },
             "subhead": {
-              "fr": "Des prestataires certifiés pour couvrir tous les aspects de votre cybersécurité",
+              "fr": "Tous les outils pour financer, produire et distribuer une alimentation locale dans l'océan Indien",
               "en": "Certified providers to cover all aspects of your cybersecurity"
             },
             "features": [
               {
                 "icon": "shield",
                 "title": {
-                  "fr": "Gouvernance",
+                  "fr": "Réseau inter-îles",
                   "en": "Governance"
                 },
                 "description": {
-                  "fr": "Politique de sécurité, analyse de risques, conformité RGPD et stratégie cyber adaptée à votre entreprise",
+                  "fr": "Un réseau vivant reliant producteurs et consommateurs de La Réunion, Maurice, Madagascar, Mayotte, Comores et Seychelles",
                   "en": "Security policy, risk analysis, GDPR compliance and cyber strategy tailored to your business"
                 },
                 "color": "primary"
@@ -198,11 +209,11 @@
               {
                 "icon": "server",
                 "title": {
-                  "fr": "Sécurité des infrastructures",
+                  "fr": "Crowdfunding agricole",
                   "en": "Infrastructure security"
                 },
                 "description": {
-                  "fr": "Protection de vos serveurs, réseaux, cloud et systèmes critiques contre les cybermenaces",
+                  "fr": "Financez collectivement les projets de production alimentaire locale : maraîchage, agroforesterie, élevage",
                   "en": "Protection of your servers, networks, cloud and critical systems against cyber threats"
                 },
                 "color": "accent"
@@ -210,11 +221,11 @@
               {
                 "icon": "lock",
                 "title": {
-                  "fr": "Sécurité des accès",
+                  "fr": "Mobiliser les citoyens",
                   "en": "Access security"
                 },
                 "description": {
-                  "fr": "Gestion des identités, authentification forte, contrôle d'accès et protection des données sensibles",
+                  "fr": "Fédérer une communauté engagée pour la souveraineté alimentaire et les circuits courts insulaires",
                   "en": "Identity management, strong authentication, access control and sensitive data protection"
                 },
                 "color": "primary"
@@ -222,11 +233,11 @@
               {
                 "icon": "eye",
                 "title": {
-                  "fr": "Sécurité des postes",
+                  "fr": "Agriculture tropicale durable",
                   "en": "Endpoint security"
                 },
                 "description": {
-                  "fr": "Antivirus, EDR, protection des endpoints et sécurisation des équipements de travail",
+                  "fr": "Cultiver vanille, letchi, mangue, brèdes, manioc et épices dans le respect des sols et du climat",
                   "en": "Antivirus, EDR, endpoint protection and securing work equipment"
                 },
                 "color": "accent"
@@ -234,11 +245,11 @@
               {
                 "icon": "graduation-cap",
                 "title": {
-                  "fr": "Sensibilisation",
+                  "fr": "Mutualiser les ressources",
                   "en": "Awareness"
                 },
                 "description": {
-                  "fr": "Formation des collaborateurs aux bonnes pratiques et tests de phishing pour renforcer la vigilance",
+                  "fr": "Partager semences endémiques, savoir-faire traditionnels et outils entre îles de l'océan Indien",
                   "en": "Training employees on best practices and phishing tests to strengthen vigilance"
                 },
                 "color": "primary"
@@ -246,11 +257,11 @@
               {
                 "icon": "users",
                 "title": {
-                  "fr": "Réaction cyberattaque",
+                  "fr": "Gouvernance ouverte",
                   "en": "Cyber attack response"
                 },
                 "description": {
-                  "fr": "Réponse aux incidents, forensic, plan de continuité d'activité et gestion de crise cyber",
+                  "fr": "Une approche démocratique où chaque coopérateur·rice co-décide des projets à soutenir",
                   "en": "Incident response, forensics, business continuity plan and cyber crisis management"
                 },
                 "color": "accent"
@@ -268,7 +279,7 @@
               "en": "Take action"
             },
             "subhead": {
-              "fr": "Engagez-vous concrètement pour la transition selon vos envies et disponibilités",
+              "fr": "Engagez-vous concrètement pour une alimentation locale selon vos envies et disponibilités",
               "en": "Get involved in the transition according to your desires and availability"
             },
             "actions": [
@@ -333,14 +344,14 @@
           "props": {
             "variant": "cyber",
             "headline": {
-              "fr": "L'écosystème cyber réunionnais",
+              "fr": "Rejoignez la coopérative",
               "en": "The Réunion cyber ecosystem"
             },
             "subhead": {
-              "fr": "Un réseau d'experts locaux pour accompagner la transformation numérique sécurisée de nos entreprises",
+              "fr": "Ensemble, construisons la souveraineté alimentaire de l'océan Indien",
               "en": "A network of local experts to support the secure digital transformation of our businesses"
             },
-            "image": "/images/cyberReunion/community.png",
+            "image": "/images/jardin/1875e4f20328ce72.png",
             "imageAlt": {
               "fr": "Événement cybersécurité à La Réunion",
               "en": "Cybersecurity event in Réunion"
@@ -453,29 +464,29 @@
           "props": {
             "variant": "cyber",
             "headline": {
-              "fr": "Protégez votre entreprise dès aujourd'hui",
+              "fr": "Prêt·e à nourrir nos îles ?",
               "en": "Protect your business today"
             },
             "subhead": {
-              "fr": "Rejoignez l'écosystème Cyber Réunion et bénéficiez de l'accompagnement EDIH pour sécuriser votre transformation numérique",
+              "fr": "Rejoignez la coopérative et participez au financement d'une agriculture insulaire durable dans l'océan Indien",
               "en": "Join the Cyber Réunion ecosystem and benefit from EDIH support to secure your digital transformation"
             },
             "newsletterPlaceholder": {
-              "fr": "Votre email professionnel",
+              "fr": "Votre email",
               "en": "Your professional email"
             },
             "newsletterButtonLabel": {
-              "fr": "S'abonner",
+              "fr": "S'inscrire",
               "en": "Subscribe"
             },
             "newsletterDisclaimer": {
-              "fr": "Recevez les alertes cyber et actualités EDIH Cyber Réunion",
+              "fr": "Recevez les actualités de la coopérative et les nouveaux projets à soutenir",
               "en": "Receive cyber alerts and EDIH Cyber Réunion news"
             },
             "buttons": [
               {
                 "label": {
-                  "fr": "Voir les projets",
+                  "fr": "Explorer les projets",
                   "en": "View projects"
                 },
                 "href": "/projets",
@@ -483,7 +494,7 @@
               },
               {
                 "label": {
-                  "fr": "Signaler un incident",
+                  "fr": "Contacter l'equipe",
                   "en": "Report an incident"
                 },
                 "href": "/urgence-cyber",
@@ -547,22 +558,7 @@
                 "projects"
               ],
               "notSourceKey": true,
-              "defaultFilters": {
-                "links.preferences.toBeValidated.openAtlas": {
-                  "$exists": false
-                },
-                "$or": {
-                  "links.contributors.695b58ca8693fc2c121208e4": {
-                    "$exists": true
-                  },
-                  "parent.695b58ca8693fc2c121208e4": {
-                    "$exists": true
-                  }
-                },
-                "links.contributors.695b58ca8693fc2c121208e4": {
-                  "$exists": true
-                }
-              }
+              "defaultFields": []
             },
             "list": {
               "columns": {
@@ -631,7 +627,7 @@
               "type": "profile",
               "showDescription": true,
               "showAddress": true,
-              "detailsMode": "drawer"
+              "detailsMode": "dialog"
             }
           }
         }
@@ -1587,7 +1583,7 @@
       }
     ],
     "copyright": {
-      "fr": "© 2025 Cyber Réunion - EDIH La Réunion. Projet cofinancé par l'Union européenne.",
+      "fr": "© 2025 Nourrir l'Indianocéanie. Plateforme coopérative open-source sous licence MIT.",
       "en": "© 2025 Cyber Réunion - EDIH Réunion. Project co-financed by the European Union."
     }
   },
@@ -1629,28 +1625,6 @@
     },
     "borderRadius": {
       "base": "0.5rem"
-    },
-    "shadows": {
-      "light": {
-        "shadow2xs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
-        "shadowXs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
-        "shadowSm": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
-        "shadow": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
-        "shadowMd": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 2px 4px -1px hsl(0.00 0.00% 0.00% / 0.25)",
-        "shadowLg": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 4px 6px -1px hsl(0.00 0.00% 0.00% / 0.25)",
-        "shadowXl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 8px 10px -1px hsl(0.00 0.00% 0.00% / 0.25)",
-        "shadow2xl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.63)"
-      },
-      "dark": {
-        "shadow2xs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
-        "shadowXs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
-        "shadowSm": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
-        "shadow": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
-        "shadowMd": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 2px 4px -1px hsl(0.00 0.00% 0.00% / 0.25)",
-        "shadowLg": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 4px 6px -1px hsl(0.00 0.00% 0.00% / 0.25)",
-        "shadowXl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 8px 10px -1px hsl(0.00 0.00% 0.00% / 0.25)",
-        "shadow2xl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.63)"
-      }
     },
     "customCSS": ""
   },
@@ -2593,9 +2567,9 @@
     }
   },
   "floatingQRCode": {
-    "enabled": true,
+    "enabled": false,
     "url": "https://test.com",
-    "position": "bottom-right",
+    "position": "bottom-left",
     "size": 80,
     "expandedSize": 200,
     "includeFavicon": true,

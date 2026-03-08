@@ -5,7 +5,7 @@ import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
-import { Header, LocalizedString } from "@/types/site-schema";
+import type { Header } from "@/types/site-schema";
 import { ClientOnly } from "../ClientOnly";
 import {
     DropdownMenu,
@@ -23,14 +23,7 @@ import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import { ChevronDown, User, LogOut, Globe, Menu, X } from "lucide-react";
 
 interface HeaderJuliePotVinProps {
-    header: Header & {
-        logoTitle?: LocalizedString;
-        logoIcon?: string;
-        ctaButton?: {
-            label: LocalizedString;
-            path?: string;
-        };
-    };
+    header: Header;
 }
 
 export default function HeaderJuliePotVin({ header }: HeaderJuliePotVinProps) {

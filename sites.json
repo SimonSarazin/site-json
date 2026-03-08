@@ -35,8 +35,8 @@
     "css": "index-julie-pot-vin"
   },
   {
-    "slug": "openAtlas",
-    "config": "config.prod.open-atlas-test.json",
-    "css": null
+    "slug": "jardin",
+    "config": "config.prod.jardin-ocean.json",
+    "css": "index-jardin-ocean"
   }
 ]
