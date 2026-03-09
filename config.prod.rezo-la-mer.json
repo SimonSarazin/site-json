@@ -1,0 +1,2175 @@
+{
+  "version": "1.0.0",
+  "generated": "2025-09-08T10:30:00.000Z",
+  "meta": {
+    "title": {
+      "fr": "Rézo la mer",
+      "en": "Rézo la mer"
+    },
+    "description": {
+      "fr": "Le réseau des passionné·es de la mer",
+      "en": "The network for ocean enthusiasts"
+    },
+    "defaultLang": "fr",
+    "languages": [
+      "fr",
+      "en"
+    ],
+    "favicon": "images/rezoLaMer/logo.png",
+    "themeColor": "#00e7e3",
+    "keywords": [
+      "océan",
+      "mer",
+      "communauté",
+      "protection marine",
+      "environnement"
+    ]
+  },
+  "header": {
+    "type": "rezo-la-mer",
+    "path": "/",
+    "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path></svg>",
+    "logoTitle": {
+      "fr": "Rézo la mer",
+      "en": "Rézo la mer"
+    },
+    "ctaButton": {
+      "label": {
+        "fr": "Rejoindre",
+        "en": "Join"
+      },
+      "path": "/rejoindre"
+    },
+    "piggyBank": {
+      "amount": "2 847 €",
+      "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.5 1.7-1 2-2h2v-4h-2c0-1-.5-1.5-1-2V5z\"></path><path d=\"M2 9v1c0 1.1.9 2 2 2h1\"></path><path d=\"M16 11h.01\"></path></svg>",
+      "path": "/cagnotte"
+    },
+    "nav": [
+      {
+        "label": {
+          "fr": "Accueil",
+          "en": "Home"
+        },
+        "path": "/"
+      },
+      {
+        "label": {
+          "fr": "Projets",
+          "en": "Projects"
+        },
+        "path": "/projets"
+      },
+      {
+        "label": {
+          "fr": "Événements",
+          "en": "Events"
+        },
+        "path": "/evenements"
+      },
+      {
+        "label": {
+          "fr": "Communauté",
+          "en": "Community"
+        },
+        "path": "/communaute"
+      },
+      {
+        "label": {
+          "fr": "Ressources",
+          "en": "Resources"
+        },
+        "path": "/ressources"
+      }
+    ],
+    "sticky": true,
+    "transparent": false,
+    "height": "lg",
+    "utilities": {
+      "themeSwitch": true,
+      "langSwitch": true,
+      "search": false,
+      "auth": true,
+      "cart": false,
+      "notifications": true
+    }
+  },
+  "pages": [
+    {
+      "path": "/",
+      "title": {
+        "fr": "Accueil - Rézo la mer",
+        "en": "Home - Rézo la mer"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "hero-rezo-la-mer",
+          "id": "hero-rezo-la-mer",
+          "props": {
+            "headline": {
+              "fr": "Rézo la mer",
+              "en": "Rézo la mer"
+            },
+            "subhead": {
+              "fr": "Outiller et connecter le réseau de passionné·es de la mer pour construire ensemble un océan vivant et résilient",
+              "en": "Equip and connect the network of ocean enthusiasts to build together a living and resilient ocean"
+            },
+            "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" class=\"w-20 h-20\"><path d=\"M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path></svg>",
+            "backgroundImage": "images/rezoLaMer/hero-ocean.jpg",
+            "backgroundImageAlt": {
+              "fr": "Récif corallien vibrant avec vie marine",
+              "en": "Vibrant coral reef with marine life"
+            },
+            "badges": [
+              {
+                "label": {
+                  "fr": "Communauté citoyenne",
+                  "en": "Citizen community"
+                },
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\"></path><circle cx=\"9\" cy=\"7\" r=\"4\"></circle><path d=\"M22 21v-2a4 4 0 0 0-3-3.87\"></path><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"></path></svg>"
+              },
+              {
+                "label": {
+                  "fr": "Science participative",
+                  "en": "Citizen science"
+                },
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><ellipse cx=\"12\" cy=\"5\" rx=\"9\" ry=\"3\"></ellipse><path d=\"M3 5V19A9 3 0 0 0 21 19V5\"></path><path d=\"M3 12A9 3 0 0 0 21 12\"></path></svg>"
+              },
+              {
+                "label": {
+                  "fr": "Projets collaboratifs",
+                  "en": "Collaborative projects"
+                },
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\"></path></svg>"
+              }
+            ],
+            "ctaButtons": [
+              {
+                "label": {
+                  "fr": "Rejoindre le réseau",
+                  "en": "Join the network"
+                },
+                "path": "/rejoindre",
+                "variant": "default"
+              },
+              {
+                "label": {
+                  "fr": "Découvrir les projets",
+                  "en": "Discover projects"
+                },
+                "path": "#projets",
+                "variant": "secondary"
+              }
+            ],
+            "showScrollIndicator": true
+          }
+        },
+        {
+          "type": "html",
+          "id": "mission",
+          "props": {
+            "html": "<section class=\"relative py-32 px-4 overflow-hidden\"><div class=\"absolute inset-0 z-0\"><img src=\"/images/rezoLaMer/whale-ocean.jpg\" alt=\"Baleine nageant paisiblement dans l'océan\" class=\"w-full h-full object-cover\" /><div class=\"absolute inset-0 bg-linear-to-r from-background via-background/80 to-background/60\"></div></div><div class=\"relative z-10 container mx-auto max-w-4xl\"><div class=\"space-y-8\"><h2 class=\"text-4xl md:text-5xl font-bold mb-6 text-foreground\">Notre mission</h2><div class=\"space-y-6 text-lg md:text-xl leading-relaxed\"><p class=\"text-muted-foreground\"><span class=\"text-primary font-semibold\">Rézo la mer</span> est bien plus qu'une plateforme : c'est un <span class=\"text-primary font-medium\">mouvement collectif</span> pour reconnecter l'humanité avec l'océan.</p><p class=\"text-muted-foreground\">Nous créons un <span class=\"text-chart-2 font-medium\">espace numérique ouvert</span> où citoyens, associations, scientifiques et passionné·es peuvent se rencontrer, collaborer et agir ensemble pour la protection et la valorisation de nos océans.</p><div class=\"grid md:grid-cols-2 gap-6 pt-8\"><div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-ocean border border-primary/20\"><h3 class=\"text-2xl font-semibold mb-3 text-primary\">Approche collaborative</h3><p class=\"text-muted-foreground\">Construire ensemble les solutions de demain à travers le partage, la mutualisation et l'intelligence collective</p></div><div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-ocean border border-primary/20\"><h3 class=\"text-2xl font-semibold mb-3 text-chart-2\">Démocratie participative</h3><p class=\"text-muted-foreground\">Une gouvernance transparente et ouverte où chaque voix compte dans les décisions importantes</p></div></div></div></div></div></section>"
+          }
+        },
+        {
+          "type": "features-rezo-la-mer",
+          "id": "features",
+          "props": {
+            "headline": {
+              "fr": "Une plateforme complète pour l'océan",
+              "en": "A complete platform for the ocean"
+            },
+            "subhead": {
+              "fr": "Tous les outils nécessaires pour dynamiser la communauté océanique et créer un impact durable",
+              "en": "All the tools needed to energize the ocean community and create lasting impact"
+            },
+            "features": [
+              {
+                "icon": "network",
+                "title": {
+                  "fr": "Connecter la communauté",
+                  "en": "Connect the community"
+                },
+                "description": {
+                  "fr": "Un réseau vivant qui relie citoyens et associations autour de la passion commune de l'océan",
+                  "en": "A living network connecting citizens and associations around a shared passion for the ocean"
+                },
+                "color": "primary"
+              },
+              {
+                "icon": "trending-up",
+                "title": {
+                  "fr": "Valoriser les projets",
+                  "en": "Promote projects"
+                },
+                "description": {
+                  "fr": "Mettre en lumière les initiatives, leurs impacts réels et les actions de chacun·e",
+                  "en": "Highlight initiatives, their real impacts and everyone's actions"
+                },
+                "color": "chart-2"
+              },
+              {
+                "icon": "users",
+                "title": {
+                  "fr": "Mobiliser les bénévoles",
+                  "en": "Mobilize volunteers"
+                },
+                "description": {
+                  "fr": "Proposer des actions concrètes et fédérer une communauté volontaire et engagée",
+                  "en": "Offer concrete actions and unite a willing and engaged community"
+                },
+                "color": "primary"
+              },
+              {
+                "icon": "database",
+                "title": {
+                  "fr": "Science participative",
+                  "en": "Citizen science"
+                },
+                "description": {
+                  "fr": "Collecter et partager des données pour créer un jumeau numérique océanique",
+                  "en": "Collect and share data to create an oceanic digital twin"
+                },
+                "color": "accent"
+              },
+              {
+                "icon": "share-2",
+                "title": {
+                  "fr": "Mutualiser les ressources",
+                  "en": "Pool resources"
+                },
+                "description": {
+                  "fr": "Créer un commun de connaissances, d'outils et de ressources partagées",
+                  "en": "Create a commons of shared knowledge, tools and resources"
+                },
+                "color": "chart-2"
+              },
+              {
+                "icon": "vote",
+                "title": {
+                  "fr": "Gouvernance ouverte",
+                  "en": "Open governance"
+                },
+                "description": {
+                  "fr": "Une approche démocratique et participative pour toutes les décisions",
+                  "en": "A democratic and participatory approach to all decisions"
+                },
+                "color": "primary"
+              }
+            ]
+          }
+        },
+        {
+          "type": "action-buttons-rezo-la-mer",
+          "id": "actions",
+          "props": {
+            "headline": {
+              "fr": "Passez à l'action",
+              "en": "Take action"
+            },
+            "subhead": {
+              "fr": "Engagez-vous concrètement pour l'océan selon vos envies et disponibilités",
+              "en": "Get involved in the ocean according to your desires and availability"
+            },
+            "actions": [
+              {
+                "icon": "plus-circle",
+                "title": {
+                  "fr": "Soumettre un projet",
+                  "en": "Submit a project"
+                },
+                "subtitle": {
+                  "fr": "Proposez votre initiative",
+                  "en": "Propose your initiative"
+                },
+                "href": "/proposer-projet",
+                "color": "primary"
+              },
+              {
+                "icon": "users",
+                "title": {
+                  "fr": "Participer",
+                  "en": "Participate"
+                },
+                "subtitle": {
+                  "fr": "Études participatives",
+                  "en": "Participatory studies"
+                },
+                "href": "/participer",
+                "color": "primary"
+              },
+              {
+                "icon": "alert-triangle",
+                "title": {
+                  "fr": "Actions",
+                  "en": "Actions"
+                },
+                "subtitle": {
+                  "fr": "Actions prioritaires",
+                  "en": "Priority actions"
+                },
+                "href": "/actions",
+                "color": "amber"
+              },
+              {
+                "icon": "coins",
+                "title": {
+                  "fr": "Co-financer",
+                  "en": "Co-finance"
+                },
+                "subtitle": {
+                  "fr": "Soutenez un projet",
+                  "en": "Support a project"
+                },
+                "href": "/projets",
+                "color": "chart-2"
+              }
+            ]
+          }
+        },
+        {
+          "type": "community-rezo-la-mer",
+          "id": "community",
+          "props": {
+            "headline": {
+              "fr": "Rejoignez la communauté",
+              "en": "Join the community"
+            },
+            "subhead": {
+              "fr": "Ensemble, nous construisons un écosystème vivant au service de l'océan",
+              "en": "Together, we build a living ecosystem for the ocean"
+            },
+            "image": "/images/rezoLaMer/community-ocean.jpg",
+            "imageAlt": {
+              "fr": "Vue aérienne de la côte avec dauphins dans l'eau turquoise",
+              "en": "Aerial view of the coast with dolphins in turquoise water"
+            },
+            "actions": [
+              {
+                "icon": "anchor",
+                "title": {
+                  "fr": "Proposer un projet",
+                  "en": "Propose a project"
+                },
+                "description": {
+                  "fr": "Partagez votre initiative et trouvez du soutien",
+                  "en": "Share your initiative and find support"
+                },
+                "ctaLabel": {
+                  "fr": "Soumettre un projet",
+                  "en": "Submit a project"
+                },
+                "href": "/proposer-projet"
+              },
+              {
+                "icon": "lightbulb",
+                "title": {
+                  "fr": "Contribuer aux données",
+                  "en": "Contribute data"
+                },
+                "description": {
+                  "fr": "Participez à la science citoyenne océanique",
+                  "en": "Participate in ocean citizen science"
+                },
+                "ctaLabel": {
+                  "fr": "Participer",
+                  "en": "Participate"
+                },
+                "href": "/participer"
+              },
+              {
+                "icon": "heart-handshake",
+                "title": {
+                  "fr": "Rejoindre une action",
+                  "en": "Join an action"
+                },
+                "description": {
+                  "fr": "Trouvez des missions bénévoles près de vous",
+                  "en": "Find volunteer missions near you"
+                },
+                "ctaLabel": {
+                  "fr": "Voir les actions",
+                  "en": "See actions"
+                },
+                "href": "/actions"
+              },
+              {
+                "icon": "git-branch",
+                "title": {
+                  "fr": "Co-financer",
+                  "en": "Co-finance"
+                },
+                "description": {
+                  "fr": "Soutenez les projets qui vous inspirent",
+                  "en": "Support projects that inspire you"
+                },
+                "ctaLabel": {
+                  "fr": "Découvrir",
+                  "en": "Discover"
+                },
+                "href": "/projets"
+              }
+            ],
+            "stats": [
+              {
+                "value": "2.5K+",
+                "label": {
+                  "fr": "Membres actifs",
+                  "en": "Active members"
+                },
+                "color": "primary"
+              },
+              {
+                "value": "150+",
+                "label": {
+                  "fr": "Projets en cours",
+                  "en": "Ongoing projects"
+                },
+                "color": "primary"
+              },
+              {
+                "value": "85+",
+                "label": {
+                  "fr": "Associations",
+                  "en": "Associations"
+                },
+                "color": "chart-2"
+              },
+              {
+                "value": "12K+",
+                "label": {
+                  "fr": "Données collectées",
+                  "en": "Data collected"
+                },
+                "color": "primary"
+              }
+            ]
+          }
+        },
+        {
+          "type": "cta-rezo-la-mer",
+          "id": "cta",
+          "props": {
+            "headline": {
+              "fr": "Prêt·e à plonger dans l'aventure ?",
+              "en": "Ready to dive into the adventure?"
+            },
+            "subhead": {
+              "fr": "Rejoignez dès maintenant la communauté Rézo la mer et participez à la construction d'un avenir durable pour nos océans",
+              "en": "Join the Rézo la mer community now and participate in building a sustainable future for our oceans"
+            },
+            "newsletterPlaceholder": {
+              "fr": "Votre email",
+              "en": "Your email"
+            },
+            "newsletterButtonLabel": {
+              "fr": "S'inscrire",
+              "en": "Subscribe"
+            },
+            "newsletterDisclaimer": {
+              "fr": "Recevez les dernières actualités et opportunités de la communauté",
+              "en": "Receive the latest news and opportunities from the community"
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Explorer la plateforme",
+                  "en": "Explore the platform"
+                },
+                "href": "/explorer",
+                "variant": "outline"
+              },
+              {
+                "label": {
+                  "fr": "Contacter l'équipe",
+                  "en": "Contact the team"
+                },
+                "href": "/contact",
+                "variant": "outline"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/projets",
+      "title": {
+        "fr": "Projets Marins - Rézo la mer",
+        "en": "Marine Projects - Rézo la mer"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "projets-marins",
+          "props": {
+            "headline": {
+              "fr": "Projets marins",
+              "en": "Marine Projects"
+            },
+            "subhead": {
+              "fr": "Découvrez et soutenez les initiatives qui protègent nos océans",
+              "en": "Discover and support initiatives protecting our oceans"
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Proposer un projet",
+                  "en": "Submit a project"
+                },
+                "icon": "plus",
+                "action": "add-project",
+                "variant": "primary"
+              }
+            ],
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher...",
+              "en": "Search..."
+            }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "section-project-list",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "baseParams": {
+              "defaultTypes": [
+                "projects"
+              ],
+              "indexStepList": 5
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3,
+                "xl": 4
+              },
+              "card": {
+                "type": "rezo-la-mer",
+                "variant": "rezo-la-mer",
+                "detailsMode": "drawer"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/evenements",
+      "title": {
+        "fr": "Événements océaniques - Rézo la mer",
+        "en": "Ocean Events - Rézo la mer"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "evenements-header",
+          "props": {
+            "headline": {
+              "fr": "Événements océaniques",
+              "en": "Ocean Events"
+            },
+            "subhead": {
+              "fr": "Retrouvez tous les événements, rencontres et actions pour vivre votre passion de l'océan",
+              "en": "Find all the events, meetings and actions to live your passion for the ocean"
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Proposer un événement",
+                  "en": "Submit an event"
+                },
+                "icon": "calendar-plus",
+                "action": "add-event",
+                "variant": "primary"
+              }
+            ]
+          }
+        },
+        {
+          "type": "title",
+          "id": "evenements-subtitle",
+          "props": {
+            "title": {
+              "fr": "Événements à la une",
+              "en": "Featured Events"
+            },
+            "align" : "center",
+            "size": "md"
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "section-event-featured",
+          "props": {
+            "useFilter": false,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": false,
+            "showActiveFiltersTags": false,
+            "disableInfiniteScroll": false,
+            "width": "container",
+            "baseParams": {
+              "defaultTypes": [
+                "events"
+              ],
+              "indexStepList": 3,
+              "defaultFilters": {
+                "isStarred": true
+              }
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3,
+                "xl": 4
+              },
+              "card": {
+                "type": "event-rezo-la-mer",
+                "variant": "event-rezo-la-mer",
+                "detailsMode": "drawer"
+              }
+            }
+          }
+        },
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "events-filter",
+          "props": {
+            "subhead": {
+              "fr": "Tous les événements",
+              "en": "All events"
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher un événement...",
+              "en": "Search for an event..."
+            }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "section-event-list",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "showDetailedViewToggle": false,
+            "defaultDetailedView": true,
+            "width": "container",
+            "baseParams": {
+              "defaultTypes": [
+                "events"
+              ],
+              "indexStepList": 3
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 1,
+                "lg": 1,
+                "xl": 1
+              },
+              "card": {
+                "showStar": true,
+                "type": "event-rezo-la-mer",
+                "variant": "event-rezo-la-mer",
+                "detailsMode": "drawer",
+                "viewDetail": true 
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/communaute",
+      "title": {
+        "fr": "Communauté marine - Rézo la mer",
+        "en": "Marine Community - Rézo la mer"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "communaute-header",
+          "props": {
+            "headline": {
+              "fr": "Communauté marine",
+              "en": "Marine Community"
+            },
+            "subhead": {
+              "fr": "Connectez-vous avec des passionnés et des organisations engagées pour l'océan",
+              "en": "Connect with enthusiasts and organizations committed to the ocean"
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Rejoindre la communauté",
+                  "en": "Join the community"
+                },
+                "icon": "user",
+                "href": "/rejoindre",
+                "variant": "primary"
+              },
+              {
+                "label": {
+                  "fr": "Inscrire mon organisation",
+                  "en": "Register my organization"
+                },
+                "icon": "building-2",
+                "href": "/inscrire-organisation",
+                "variant": "outline"
+              }
+            ]
+          }
+        },
+        {
+          "type": "tabs",
+          "id": "community-tabs",
+          "props": {
+            "defaultTab": "members",
+            "tabs": [
+              {
+                "id": "members",
+                "label": {
+                  "fr": "Membres",
+                  "en": "Members"
+                },
+                "icon": "users",
+                "content": [
+                  {
+                    "type": "searchProStatic",
+                    "id": "search-members",
+                    "props": {
+                      "useFilter": false,
+                      "showMap": false,
+                      "enableMap": false,
+                      "disableInfiniteScroll": false,
+                      "baseParams": {
+                        "defaultTypes": [
+                          "citoyens",
+                          "NGO",
+                          "LocalBusiness",
+                          "Group",
+                          "GovernmentOrganization",
+                          "Cooperative"
+                        ],
+                        "filters[preferences.toBeValidated.rezoLaMer][$exists]": false,
+                        "filters[links.memberOf.5a8d040040bb4eba04d62bdf][$exists]": true,
+                        "notSourceKey": 30
+                      },
+                      "list": {
+                        "columns": {
+                          "sm": 1,
+                          "md": 2,
+                          "lg": 3,
+                          "xl": 4
+                        },
+                        "card": {
+                          "type": "event",
+                          "variant": "event",
+                          "detailsMode": "drawer"
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "organizations",
+                "label": {
+                  "fr": "Organisations",
+                  "en": "Organizations"
+                },
+                "icon": "building-2",
+                "content": [
+                  {
+                    "type": "searchProStatic",
+                    "id": "search-organizations",
+                    "props": {
+                      "useFilter": true,
+                      "showMap": false,
+                      "enableMap": false,
+                      "disableInfiniteScroll": false,
+                      "showDetailedViewToggle": true,
+                      "baseParams": {
+                        "defaultTypes": [
+                          "NGO",
+                          "LocalBusiness",
+                          "Group",
+                          "GovernmentOrganization",
+                          "Cooperative"
+                        ],
+                        "filters[preferences.toBeValidated.rezoLaMer][$exists]": false,
+                        "filters[links.members.5a8d040040bb4eba04d62bdf][$exists]": true,
+                        "notSourceKey": true
+                      },
+                      "list": {
+                        "columns": {
+                          "sm": 1,
+                          "md": 2,
+                          "lg": 3,
+                          "xl": 4
+                        },
+                        "card": {
+                          "type": "event",
+                          "variant": "event",
+                          "detailsMode": "drawer"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/ressources",
+      "title": {
+        "fr": "Ressources mutualisées - Rézo la mer",
+        "en": "Shared Resources - Rézo la mer"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "ressources-header",
+          "props": {
+            "headline": {
+              "fr": "Ressources mutualisées",
+              "en": "Shared Resources"
+            },
+            "subhead": {
+              "fr": "Partagez et accédez aux équipements et ressources de la communauté",
+              "en": "Share and access community equipment and resources"
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Proposer une ressource",
+                  "en": "Propose a resource"
+                },
+                "icon": "anchor",
+                "action": "add-poi",
+                "variant": "primary"
+              }
+            ],
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher une ressource...",
+              "en": "Search for a resource..."
+            },
+            "types": [
+              {
+                "id": "all",
+                "label": {
+                  "fr": "Toutes",
+                  "en": "All"
+                }
+              },
+              {
+                "id": "tags",
+                "label": {
+                  "fr": "tags",
+                  "en": "tags"
+                }
+              },
+              {
+                "id": "test",
+                "label": {
+                  "fr": "test",
+                  "en": "test"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "section-poi-list",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "baseParams": {
+              "defaultTypes": [
+                "poi"
+              ],
+              "indexStepList": 3
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3,
+                "xl": 4
+              },
+              "card": {
+                "type": "poi-rezo-la-mer",
+                "variant": "poi-rezo-la-mer",
+                "detailsMode": "drawer"
+              }
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "type": "rezo-la-mer",
+    "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path></svg>",
+    "logoTitle": {
+      "fr": "Rézo la mer",
+      "en": "Rézo la mer"
+    },
+    "description": {
+      "fr": "Le réseau qui connecte et outille les passionné·es de l'océan",
+      "en": "The network that connects and empowers ocean enthusiasts"
+    },
+    "columns": [
+      {
+        "title": {
+          "fr": "Plateforme",
+          "en": "Platform"
+        },
+        "links": [
+          {
+            "href": "#projets",
+            "label": {
+              "fr": "Projets",
+              "en": "Projects"
+            }
+          },
+          {
+            "href": "#communaute",
+            "label": {
+              "fr": "Communauté",
+              "en": "Community"
+            }
+          },
+          {
+            "href": "#actions",
+            "label": {
+              "fr": "Actions",
+              "en": "Actions"
+            }
+          },
+          {
+            "href": "#donnees",
+            "label": {
+              "fr": "Données",
+              "en": "Data"
+            }
+          },
+          {
+            "href": "#ressources",
+            "label": {
+              "fr": "Ressources",
+              "en": "Resources"
+            }
+          }
+        ]
+      },
+      {
+        "title": {
+          "fr": "À propos",
+          "en": "About"
+        },
+        "links": [
+          {
+            "href": "/mission",
+            "label": {
+              "fr": "Notre mission",
+              "en": "Our mission"
+            }
+          },
+          {
+            "href": "/equipe",
+            "label": {
+              "fr": "L'équipe",
+              "en": "The team"
+            }
+          },
+          {
+            "href": "/gouvernance",
+            "label": {
+              "fr": "Gouvernance",
+              "en": "Governance"
+            }
+          },
+          {
+            "href": "/partenaires",
+            "label": {
+              "fr": "Partenaires",
+              "en": "Partners"
+            }
+          },
+          {
+            "href": "/blog",
+            "label": {
+              "fr": "Blog",
+              "en": "Blog"
+            }
+          }
+        ]
+      },
+      {
+        "title": {
+          "fr": "Participer",
+          "en": "Participate"
+        },
+        "links": [
+          {
+            "href": "/rejoindre",
+            "label": {
+              "fr": "Créer un compte",
+              "en": "Create account"
+            }
+          },
+          {
+            "href": "/proposer-projet",
+            "label": {
+              "fr": "Proposer un projet",
+              "en": "Propose a project"
+            }
+          },
+          {
+            "href": "/cagnotte",
+            "label": {
+              "fr": "Faire un don",
+              "en": "Make a donation"
+            }
+          },
+          {
+            "href": "/benevole",
+            "label": {
+              "fr": "Devenir bénévole",
+              "en": "Become a volunteer"
+            }
+          },
+          {
+            "href": "/contact",
+            "label": {
+              "fr": "Contact",
+              "en": "Contact"
+            }
+          }
+        ]
+      },
+      {
+        "title": {
+          "fr": "Légal",
+          "en": "Legal"
+        },
+        "links": [
+          {
+            "href": "/mentions-legales",
+            "label": {
+              "fr": "Mentions légales",
+              "en": "Legal notice"
+            }
+          },
+          {
+            "href": "/cgu",
+            "label": {
+              "fr": "CGU",
+              "en": "Terms of use"
+            }
+          },
+          {
+            "href": "/confidentialite",
+            "label": {
+              "fr": "Confidentialité",
+              "en": "Privacy policy"
+            }
+          },
+          {
+            "href": "/cookies",
+            "label": {
+              "fr": "Cookies",
+              "en": "Cookies"
+            }
+          },
+          {
+            "href": "/licences",
+            "label": {
+              "fr": "Licences",
+              "en": "Licenses"
+            }
+          }
+        ]
+      }
+    ],
+    "socials": [
+      {
+        "platform": "facebook",
+        "url": "https://facebook.com/rezolamer"
+      },
+      {
+        "platform": "twitter",
+        "url": "https://twitter.com/rezolamer"
+      },
+      {
+        "platform": "instagram",
+        "url": "https://instagram.com/rezolamer"
+      },
+      {
+        "platform": "linkedin",
+        "url": "https://linkedin.com/company/rezolamer"
+      },
+      {
+        "platform": "mail",
+        "url": "mailto:contact@rezolamer.org"
+      }
+    ],
+    "legalLinks": [
+      {
+        "href": "/accessibilite",
+        "label": {
+          "fr": "Accessibilité",
+          "en": "Accessibility"
+        }
+      },
+      {
+        "href": "/plan-du-site",
+        "label": {
+          "fr": "Plan du site",
+          "en": "Sitemap"
+        }
+      },
+      {
+        "href": "/contribuer",
+        "label": {
+          "fr": "Contribuer",
+          "en": "Contribute"
+        }
+      }
+    ],
+    "copyright": {
+      "fr": "© 2025 Rézo la mer. Tous droits réservés. Plateforme open-source sous licence MIT.",
+      "en": "© 2025 Rézo la mer. All rights reserved. Open-source platform under MIT license."
+    }
+  },
+  "features": [
+    {
+      "key": "communityFeatures",
+      "enabled": true,
+      "rolloutPercentage": 100
+    },
+    {
+      "key": "lightMode",
+      "enabled": true,
+      "rolloutPercentage": 100
+    },
+    {
+      "key": "multiLanguage",
+      "enabled": true,
+      "rolloutPercentage": 100
+    }
+  ],
+  "theme": {
+    "typography": {
+      "fontFamily": {
+        "sans": [
+          "Inter"
+        ],
+        "serif": [
+          "Roboto Slab"
+        ],
+        "mono": [
+          "Roboto Mono"
+        ]
+      },
+      "letterSpacing": "0em"
+    },
+    "spacing": {
+      "base": "0.25rem"
+    },
+    "borderRadius": {
+      "base": "0.5rem"
+    },
+    "shadows": {
+      "light": {
+        "shadow2xs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowXs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowSm": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowMd": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 2px 4px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowLg": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 4px 6px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowXl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 8px 10px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow2xl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.63)"
+      },
+      "dark": {
+        "shadow2xs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowXs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
+        "shadowSm": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowMd": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 2px 4px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowLg": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 4px 6px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadowXl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 8px 10px -1px hsl(0.00 0.00% 0.00% / 0.25)",
+        "shadow2xl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.63)"
+      }
+    },
+    "customCSS": ""
+  },
+  "auth": {
+    "login": {
+      "title": {
+        "fr": "Se connecter",
+        "en": "Sign in"
+      },
+      "subtitle": {
+        "fr": "Accédez au réseau des passionné·es de la mer",
+        "en": "Access the network for ocean enthusiasts"
+      }
+    }
+  },
+  "profiles": {
+    "default": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete"
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-event-dates"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                },
+                {
+                  "type": "profile-opening-hours"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gallery",
+          "label": {
+            "fr": "Galerie",
+            "en": "Gallery"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-gallery"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "map",
+          "label": {
+            "fr": "Localisation",
+            "en": "Location"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-map"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showPhone": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "citoyens": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": true,
+          "addConfig": {
+            "organization": true,
+            "project": true,
+            "event": true,
+            "poi": true
+          }
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-event-dates"
+                },
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                },
+                {
+                  "type": "profile-opening-hours"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "news",
+          "label": {
+            "fr": "Actualités",
+            "en": "News"
+          },
+          "sections": [
+            {
+              "type": "news",
+              "props": {
+                "maxItems": 10,
+                "showAddButton": true,
+                "showComments": true,
+                "showReactions": true
+              }
+            }
+          ],
+          "subRoutes": [
+            {
+              "path": ":newsId",
+              "component": "NewsDetailPage"
+            }
+          ]
+        },
+        {
+          "id": "social",
+          "label": {
+            "fr": "Amis",
+            "en": "Friends"
+          },
+          "condition": {
+            "entityTypes": [
+              "citoyens"
+            ],
+            "userContext": "own"
+          },
+          "component": "SocialTab"
+        },
+        {
+          "id": "membership",
+          "label": {
+            "fr": "Communautés",
+            "en": "Communities"
+          },
+          "condition": {
+            "entityTypes": [
+              "citoyens"
+            ],
+            "userContext": "own"
+          },
+          "component": "MembershipTab"
+        }
+      ]
+    },
+    "organizations": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": true,
+          "addConfig": {
+            "organization": false,
+            "project": true,
+            "event": true,
+            "poi": true
+          }
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                },
+                {
+                  "type": "profile-opening-hours"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "news",
+          "label": {
+            "fr": "Actualités",
+            "en": "News"
+          },
+          "sections": [
+            {
+              "type": "news",
+              "props": {
+                "maxItems": 10,
+                "showAddButton": true,
+                "showComments": true,
+                "showReactions": true
+              }
+            }
+          ],
+          "subRoutes": [
+            {
+              "path": ":newsId",
+              "component": "NewsDetailPage"
+            }
+          ]
+        },
+        {
+          "id": "members",
+          "label": {
+            "fr": "Membres",
+            "en": "Members"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-members",
+                  "showRole": true,
+                  "showManagement": true
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "projects",
+          "label": {
+            "fr": "Projets",
+            "en": "Projects"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-related",
+                  "relationType": "projects",
+                  "title": {
+                    "fr": "Projets",
+                    "en": "Projects"
+                  }
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "events",
+          "label": {
+            "fr": "Événements",
+            "en": "Events"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-related",
+                  "relationType": "events",
+                  "title": {
+                    "fr": "Événements",
+                    "en": "Events"
+                  }
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "projects": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": true,
+          "addConfig": {
+            "organization": false,
+            "project": false,
+            "event": true,
+            "poi": true
+          }
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                },
+                {
+                  "type": "profile-event-dates"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "news",
+          "label": {
+            "fr": "Actualités",
+            "en": "News"
+          },
+          "sections": [
+            {
+              "type": "news",
+              "props": {
+                "maxItems": 10,
+                "showAddButton": true,
+                "showComments": true,
+                "showReactions": true
+              }
+            }
+          ],
+          "subRoutes": [
+            {
+              "path": ":newsId",
+              "component": "NewsDetailPage"
+            }
+          ]
+        },
+        {
+          "id": "contributors",
+          "label": {
+            "fr": "Contributeurs",
+            "en": "Contributors"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-members",
+                  "showRole": true,
+                  "showManagement": true
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "organizations",
+          "label": {
+            "fr": "Organisations",
+            "en": "Organizations"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-related",
+                  "relationType": "projects",
+                  "title": {
+                    "fr": "Organisations partenaires",
+                    "en": "Partner Organizations"
+                  }
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "events",
+          "label": {
+            "fr": "Événements",
+            "en": "Events"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-related",
+                  "relationType": "events",
+                  "title": {
+                    "fr": "Événements",
+                    "en": "Events"
+                  }
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "events": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": false
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-event-dates"
+                },
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "dates",
+          "label": {
+            "fr": "Dates & Horaires",
+            "en": "Dates & Schedule"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-event-dates"
+                },
+                {
+                  "type": "profile-opening-hours"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showDates": true,
+                  "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "location",
+          "label": {
+            "fr": "Lieu",
+            "en": "Location"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-map"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showPhone": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "organizer",
+          "label": {
+            "fr": "Organisateur",
+            "en": "Organizer"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-related",
+                  "relationType": "events",
+                  "title": {
+                    "fr": "Autres événements",
+                    "en": "Other events"
+                  }
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showOrganizer": true,
+                  "showEmail": true,
+                  "showPhone": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gallery",
+          "label": {
+            "fr": "Galerie",
+            "en": "Gallery"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-gallery"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "poi": {
+      "layout": "default",
+      "hideHeader": false,
+      "hideFooter": false,
+      "sections": [
+        {
+          "type": "profile-header",
+          "variant": "complete",
+          "showAddDropdown": false
+        },
+        {
+          "type": "profile-template-dynamic"
+        }
+      ],
+      "tabs": [
+        {
+          "id": "about",
+          "label": {
+            "fr": "À propos",
+            "en": "About"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showUsername": true,
+                  "showEmail": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showAddress": true,
+                  "showOpeningDate": true,
+                  "showDates": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "practicalInfo",
+          "label": {
+            "fr": "Infos pratiques",
+            "en": "Practical Info"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-opening-hours"
+                },
+                {
+                  "type": "profile-about"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showPhone": true,
+                  "showWebsite": true,
+                  "showOpeningDate": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "map",
+          "label": {
+            "fr": "Carte",
+            "en": "Map"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-map"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showPhone": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gallery",
+          "label": {
+            "fr": "Galerie",
+            "en": "Gallery"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-gallery"
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showAddress": true,
+                  "showWebsite": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

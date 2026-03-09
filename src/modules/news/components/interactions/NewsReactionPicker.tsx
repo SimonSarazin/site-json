@@ -18,7 +18,7 @@ export function NewsReactionPicker({ onSelect }: NewsReactionPickerProps) {
       purple: "text-purple-500",
       indigo: "text-indigo-500",
     };
-    return colorMap[color] || "text-gray-500";
+    return colorMap[color] || "text-muted-foreground";
   };
 
   return (

@@ -26,6 +26,14 @@ interface FormFieldTagsProps<T extends FieldValues> {
    * Utiliser tous les textes de traduction (pour EditBasicInfoTab)
    */
   extendedTexts?: boolean;
+  /**
+   * Label personnalisé (remplace la traduction par défaut)
+   */
+  label?: string;
+  /**
+   * Placeholder personnalisé
+   */
+  placeholder?: string;
 }
 
 /**
@@ -37,19 +45,21 @@ export function FormFieldTags<T extends FieldValues>({
   name = "tags" as FieldPath<T>,
   maxTags = 10,
   extendedTexts = false,
+  label,
+  placeholder,
 }: FormFieldTagsProps<T>) {
   const t = useT("modules/profil");
 
   const texts = extendedTexts
     ? {
-        placeholder: t("ProfileEdit.fields.tags.placeholder"),
+        placeholder: placeholder ?? t("ProfileEdit.fields.tags.placeholder"),
         maxReached: t("ProfileEdit.fields.tags.maxReached"),
         searching: t("ProfileEdit.fields.tags.searching"),
         noResults: t("ProfileEdit.fields.tags.noResults"),
         typeToSearch: t("ProfileEdit.fields.tags.typeToSearch"),
       }
     : {
-        placeholder: t("ProfileEdit.fields.tags.placeholder"),
+        placeholder: placeholder ?? t("ProfileEdit.fields.tags.placeholder"),
       };
 
   return (
@@ -58,7 +68,7 @@ export function FormFieldTags<T extends FieldValues>({
       name={name}
       render={({ field }) => (
         <FormItem>
-          <FormLabel>{t("ProfileEdit.fields.tags.label")}</FormLabel>
+          <FormLabel>{label ?? t("ProfileEdit.fields.tags.label")}</FormLabel>
           <FormControl>
             <TagsInput
               tags={Array.isArray(field.value) ? field.value : []}

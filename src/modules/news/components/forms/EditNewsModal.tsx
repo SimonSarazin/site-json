@@ -253,7 +253,7 @@ export function EditNewsModal({ entity, news, open, onOpenChange }: EditNewsModa
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Edit className="w-5 h-5 text-blue-500" />
+            <Edit className="w-5 h-5 text-primary" />
             {t("forms.editNews.title")}
           </DialogTitle>
         </DialogHeader>
@@ -316,7 +316,7 @@ export function EditNewsModal({ entity, news, open, onOpenChange }: EditNewsModa
           {/* Text area with mention support + emoji */}
           <div className="space-y-2">
             <Label htmlFor="news-text" className="text-sm sm:text-base font-semibold">
-              {t("forms.editNews.textLabel")} <span className="text-red-500">*</span>
+              {t("forms.editNews.textLabel")} <span className="text-destructive">*</span>
             </Label>
             <div className="relative">
               <MentionInput
@@ -345,7 +345,7 @@ export function EditNewsModal({ entity, news, open, onOpenChange }: EditNewsModa
 
           {showEmojiPicker && (
             <div
-              className="fixed inset-0 z-100 flex items-center justify-center bg-black/20"
+              className="fixed inset-0 z-100 flex items-center justify-center bg-foreground/20"
               onClick={(e) => {
                 if (e.target === e.currentTarget) {
                   setShowEmojiPicker(false);
@@ -488,7 +488,7 @@ export function EditNewsModal({ entity, news, open, onOpenChange }: EditNewsModa
             <Button
               type="submit"
               disabled={isEditing || !text.trim()}
-              className="bg-lime-700 hover:bg-lime-600 text-white font-semibold text-xs sm:text-sm uppercase"
+              className="bg-success hover:bg-success/90 text-success-foreground font-semibold text-xs sm:text-sm uppercase"
             >
               {isEditing ? (
                 <>

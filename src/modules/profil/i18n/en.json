@@ -1,4 +1,9 @@
 {
+  "EntityGridView": {
+    "gridView": "Grid",
+    "detailedView": "Details",
+    "searchPlaceholder": "Search..."
+  },
   "common": {
     "organizedBy": "Organized by",
     "viewProfile": "View profile",
@@ -166,7 +171,7 @@
       "news": "News",
       "coworking": "Coworking",
       "meetingRooms": "Meeting rooms",
-      "practicalInfo": "Practical info",
+      "projects": "Projects",
       "communities": "Communities",
       "observatories": "Observatories",
       "social": "Social",
@@ -204,6 +209,9 @@
     "manage": "Manage",
     "noMembers": "No members yet",
     "loadingMore": "Loading more members...",
+    "searchPlaceholder": "Search member...",
+    "loadingOrganization": "Loading organization...",
+    "loadingProject": "Loading project...",
     "organization": {
       "title": "Organization Members",
       "member": "Member",
@@ -377,7 +385,357 @@
       "complete": "Upload complete"
     }
   },
+  "AddProjectModal": {
+    "title": "Create a project",
+    "creatingAs": "Creating as",
+    "form": {
+      "name": {
+        "label": "Project name",
+        "placeholder": "Your project name"
+      },
+      "visibility": {
+        "label": "Make the project publicly visible?",
+        "public": "Public",
+        "private": "Private"
+      },
+      "images": {
+        "label": "Project images"
+      },
+      "shortDescription": {
+        "label": "Short description",
+        "placeholder": "Briefly describe your project..."
+      },
+      "url": {
+        "label": "Main URL",
+        "placeholder": "https://your-site.com"
+      },
+      "tags": {
+        "label": "Tags"
+      }
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "create": "Create project",
+      "creating": "Creating..."
+    },
+    "validation": {
+      "nameRequired": "Project name is required",
+      "nameTooShort": "Name must be at least 3 characters"
+    }
+  },
+  "AddOrganizationModal": {
+    "title": "Create an organization",
+    "creatingAs": "Creating as",
+    "form": {
+      "name": {
+        "label": "Organization name",
+        "placeholder": "Your organization name"
+      },
+      "type": {
+        "label": "Organization type",
+        "placeholder": "Select a type",
+        "options": {
+          "ngo": "NGO",
+          "localBusiness": "Local Business",
+          "group": "Group",
+          "government": "Government Organization",
+          "cooperative": "Cooperative"
+        }
+      },
+      "role": {
+        "label": "Your role",
+        "placeholder": "Select a role",
+        "options": {
+          "admin": "Administrator",
+          "member": "Member"
+        }
+      },
+      "tags": {
+        "label": "Tags"
+      },
+      "images": {
+        "label": "Your images here"
+      },
+      "email": {
+        "label": "Main email",
+        "placeholder": "contact@example.com"
+      },
+      "shortDescription": {
+        "label": "Short description",
+        "placeholder": "Briefly describe your organization..."
+      },
+      "url": {
+        "label": "Main URL",
+        "placeholder": "https://your-site.com"
+      }
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "create": "Create organization",
+      "creating": "Creating..."
+    },
+    "validation": {
+      "nameRequired": "Organization name is required",
+      "nameTooShort": "Name must be at least 3 characters"
+    }
+  },
+  "AboutTab": {
+    "description": "Description",
+    "notSpecified": "Not specified",
+    "generalInfo": "General information",
+    "name": "Name",
+    "email": "Email address",
+    "birthDate": "Date of birth",
+    "link": "Link",
+    "freeInfo": "Information / URLs",
+    "fixedPhone": "Fixed phone",
+    "mobilePhone": "Mobile phone",
+    "type": "Type",
+    "tags": "Tags",
+    "progress": "Progress",
+    "socialNetworks": "Social networks",
+    "badges": "Badges",
+    "openingDate": "Opening date",
+    "openingHours": "Opening hours",
+    "from": "From",
+    "to": "To",
+    "address": "Address",
+    "addressNotProvided": "Address not provided",
+    "addAddress": "Add address",
+    "openInMaps": "Open in Google Maps",
+    "getDirections": "Get directions"
+  },
+  "ProfileBannerCarriedBy": {
+    "carriedBy": "Carried by"
+  },
+  "EditAbout": {
+    "edit": "Edit",
+    "editDescription": "Edit description",
+    "editInfo": "Edit information",
+    "editSocialNetworks": "Edit social networks",
+    "shortDescription": "Short description",
+    "shortDescriptionPlaceholder": "A brief description...",
+    "description": "Detailed description",
+    "descriptionPlaceholder": "Full description...",
+    "name": "Name",
+    "namePlaceholder": "Enter name",
+    "email": "Email",
+    "mainUrl": "Main URL",
+    "fixedPhone": "Fixed phone",
+    "mobilePhone": "Mobile phone",
+    "birthDate": "Date of birth",
+    "organizationType": "Organization type",
+    "selectType": "Select a type",
+    "projectProgress": "Project progress",
+    "selectProgress": "Select progress",
+    "tags": "Tags",
+    "tagsPlaceholder": "tag1, tag2, tag3",
+    "tagsHelp": "Separate tags with commas",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving...",
+    "success": "Success",
+    "error": "Error",
+    "descriptionUpdated": "Description updated successfully",
+    "infoUpdated": "Information updated successfully",
+    "socialUpdated": "Social networks updated successfully",
+    "updateFailed": "Update failed",
+    "addressUpdated": "Address updated successfully",
+    "editAddress": "Edit address",
+    "addAddress": "Add address",
+    "deleteAddress": "Delete address",
+    "country": "Country",
+    "selectCountry": "Select a country",
+    "city": "City",
+    "searchCity": "Search for a city...",
+    "postalCode": "Postal code",
+    "selectPostalCode": "Select a postal code",
+    "streetAddress": "Street address",
+    "streetAddressPlaceholder": "12 Main Street",
+    "locationPreview": "Location preview",
+    "loading": "Loading...",
+    "resultsFound": "results found",
+    "noResults": "No results",
+    "selectCityFirst": "Please select a city first",
+    "addressRemoved": "Address removed successfully",
+    "editDateTime": "Edit dates",
+    "editOpeningHours": "Edit opening hours",
+    "addDateTime": "Add opening dates",
+    "addOpeningHours": "Add opening hours",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "dateTimeUpdated": "Dates updated successfully",
+    "openingHoursUpdated": "Opening hours updated successfully",
+    "noOpeningHours": "No opening hours defined",
+    "addDay": "Add a day",
+    "opens": "Opens",
+    "closes": "Closes",
+    "editProfile": "Edit profile",
+    "profileUpdated": "Profile updated successfully",
+    "tabs": {
+      "info": "Information",
+      "contact": "Contact",
+      "social": "Social networks",
+      "location": "Location",
+      "schedule": "Schedule"
+    },
+    "nameDescription": "The name that will be displayed publicly",
+    "organizationTypeDescription": "The legal or structural type of your organization",
+    "shortDescriptionHelp": "Summary in a few words (max 500 characters)",
+    "descriptionHelp": "Complete and detailed presentation",
+    "contactInfo": "Contact information",
+    "contactDescription": "Enter your main contact information",
+    "socialNetworks": "Social networks",
+    "socialNetworksDescription": "Add your social network links",
+    "scheduleDescription": "Define opening hours for each day of the week"
+  },
+  "EditImage": {
+    "editProfileImage": "Edit profile picture",
+    "editBannerImage": "Edit cover photo",
+    "dragOrClick": "Drag an image or click to select",
+    "dragToPosition": "Drag to position the crop area",
+    "selectImage": "Select an image",
+    "changeImage": "Change image",
+    "invalidFileType": "File must be an image (JPG, PNG, GIF, WebP)",
+    "fileTooLarge": "Image must not exceed 5 MB",
+    "imageRequirements": "Accepted formats: JPG, PNG, GIF, WebP. Max size: 5 MB",
+    "bannerRequirements": "Accepted formats: JPG, PNG, GIF, WebP. Max size: 10 MB. Recommended ratio: 16:9",
+    "success": "Success",
+    "error": "Error",
+    "profileImageUpdated": "Profile picture updated successfully",
+    "bannerImageUpdated": "Cover photo updated successfully",
+    "updateFailed": "Failed to update image",
+    "zoom": "Zoom"
+  },
+  "SocialTab": {
+    "addFriend": "Add friend",
+    "searchFriends": "Search friends...",
+    "privateProfile": "Private profile",
+    "cannotViewFriends": "You cannot view this user's friends",
+    "tabs": {
+      "friends": "Friends",
+      "friendsShort": "Friends",
+      "pending": "Pending",
+      "pendingShort": "Pending",
+      "sent": "Sent",
+      "sentShort": "Sent"
+    },
+    "noFriendsFound": "No friends found",
+    "noFriendsYet": "No friends yet",
+    "tryDifferentSearch": "Try a different search",
+    "startConnecting": "Start connecting with other users",
+    "removeFriend": "Remove",
+    "noPendingRequests": "No pending requests",
+    "pendingRequestsInfo": "Friend requests received will appear here",
+    "accept": "Accept",
+    "reject": "Reject",
+    "noSentRequests": "No sent requests",
+    "sentRequestsInfo": "Your sent friend requests will appear here",
+    "cancel": "Cancel",
+    "requestPending": "Waiting for response"
+  },
+  "FriendRequestDialog": {
+    "title": "Add a friend",
+    "searchPlaceholder": "Search for a user...",
+    "startTyping": "Start typing to search",
+    "minimumChars": "Type at least 2 characters",
+    "searching": "Searching...",
+    "noUsersFound": "No users found",
+    "tryDifferentSearch": "Try a different search",
+    "sendRequest": "Add"
+  },
+  "badges": {
+    "admin": "Administrator",
+    "member": "Member",
+    "contributor": "Contributor",
+    "participant": "Participant",
+    "invitationPending": "Invitation pending",
+    "validationPending": "Validation pending",
+    "adminInvitationPending": "Admin invitation pending",
+    "adminRequestPending": "Admin request pending"
+  },
+  "ProfileActions": {
+    "message": "Message",
+    "contact": "Contact",
+    "addFriend": "Add friend",
+    "removeFriend": "Remove friend",
+    "acceptFriend": "Accept",
+    "friendRequestPending": "Pending",
+    "follow": "Follow",
+    "unfollow": "Unfollow",
+    "join": "Join",
+    "contribute": "Contribute",
+    "participate": "Participate",
+    "leaveOrganization": "Leave organization",
+    "leaveProject": "Leave project",
+    "joinOrganization": "Join organization",
+    "contributeProject": "Contribute to project",
+    "sendEmail": "Send email",
+    "call": "Call",
+    "visitWebsite": "Visit website",
+    "share": "Share",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied!",
+    "copyError": "Unable to copy link",
+    "report": "Report",
+    "featureComingSoon": "Feature coming soon"
+  },
+  "EntityStatusButton": {
+    "admin": "Admin",
+    "member": "Member",
+    "contributor": "Contributor",
+    "following": "Following",
+    "follow": "Follow",
+    "unfollow": "Unfollow",
+    "joinOrganization": "Join organization",
+    "contributeProject": "Contribute to project",
+    "leaveOrganization": "Leave organization",
+    "leaveProject": "Leave project",
+    "acceptInvitation": "Accept invitation",
+    "acceptAdminInvitation": "Accept (Admin)",
+    "rejectInvitation": "Reject invitation",
+    "membershipPending": "Request pending",
+    "adminRequestPending": "Admin request pending",
+    "confirmLeaveOrgTitle": "Leave organization?",
+    "confirmLeaveOrgDescription": "You are about to leave this organization. You will lose your access and privileges.",
+    "confirmLeaveProjectTitle": "Leave project?",
+    "confirmLeaveProjectDescription": "You are about to leave this project. You will lose your access and privileges.",
+    "cancel": "Cancel",
+    "confirmLeave": "Leave"
+  },
   "toast": {
+    "relationship": {
+      "followSuccess": "You are now following",
+      "followError": "Unable to follow",
+      "unfollowSuccess": "You are no longer following",
+      "unfollowError": "Unable to unfollow",
+      "memberRequestSent": "Membership request sent",
+      "memberRequestError": "Unable to send request",
+      "adminRequestSent": "Admin request sent",
+      "adminRequestError": "Unable to send admin request",
+      "leaveSuccess": "You have left successfully",
+      "leaveError": "Unable to leave"
+    },
+    "invitation": {
+      "acceptSuccess": "Invitation accepted",
+      "acceptError": "Unable to accept invitation",
+      "rejectSuccess": "Invitation rejected",
+      "rejectError": "Unable to reject invitation"
+    },
+    "friend": {
+      "requestSent": "Friend request sent",
+      "requestError": "Unable to send request",
+      "removeSuccess": "Friend removed",
+      "removeError": "Unable to remove friend",
+      "acceptSuccess": "Friend request accepted",
+      "acceptError": "Unable to accept request",
+      "requestCancelled": "Friend request cancelled",
+      "cancelError": "Unable to cancel request"
+    },
+    "members": {
+      "requestPromoteSuccess": "Promotion request sent",
+      "requestPromoteError": "Unable to send promotion request"
+    },
     "comment": {
       "addSuccess": "Comment added successfully",
       "addError": "Unable to add comment",
@@ -405,6 +763,42 @@
       "deleteError": "Unable to delete news",
       "voteSuccess": "Reaction added successfully",
       "voteError": "Unable to add reaction"
+    },
+    "project": {
+      "addSuccess": "Project created successfully",
+      "addError": "Unable to create project",
+      "editSuccess": "Project updated successfully",
+      "editError": "Unable to update project",
+      "deleteSuccess": "Project deleted successfully",
+      "deleteError": "Unable to delete project"
+    },
+    "organization": {
+      "addSuccess": "Organization created successfully",
+      "addError": "Unable to create organization",
+      "editSuccess": "Organization updated successfully",
+      "editError": "Unable to update organization",
+      "deleteSuccess": "Organization deleted successfully",
+      "deleteError": "Unable to delete organization"
+    },
+    "profile": {
+      "updateSuccess": "Profile updated successfully",
+      "updateError": "Unable to update profile",
+      "imageUploadSuccess": "Profile image updated successfully",
+      "imageUploadError": "Unable to update profile image",
+      "bannerUploadSuccess": "Banner updated successfully",
+      "bannerUploadError": "Unable to update banner"
+    },
+    "friends": {
+      "requestSent": "Friend request sent",
+      "sendRequestError": "Unable to send friend request",
+      "requestAccepted": "Friend request accepted",
+      "acceptRequestError": "Unable to accept friend request",
+      "requestRejected": "Friend request rejected",
+      "rejectRequestError": "Unable to reject friend request",
+      "friendRemoved": "Friend removed",
+      "removeError": "Unable to remove friend",
+      "requestCancelled": "Friend request cancelled",
+      "cancelError": "Unable to cancel friend request"
     },
     "error": {
       "generic": "An error occurred"
@@ -832,5 +1226,53 @@
     "datetime": {
       "invalid": "ISO 8601 format required"
     }
+  },
+  "ProfileTiersLieuxInfo": {
+    "reserveOnline": "Book online",
+    "meetingRooms": "meeting room",
+    "meetingRoomsPlural": "meeting rooms",
+    "workstations": "workstation",
+    "workstationsPlural": "workstations",
+    "accommodation": "room",
+    "accommodationPlural": "rooms",
+    "reservationSpace": "Book a space",
+    "reservationNote": "Book your space directly online",
+    "contact": "Contact",
+    "fax": "Fax",
+    "tools": "Our tools",
+    "socialNetworks": "Social networks",
+    "keywords": "Keywords",
+    "forms": "Forms",
+    "noPois": "No spaces available"
+  },
+  "ProfilTiersLieuxAbout": {
+    "title": "About",
+    "readMore": "Read more",
+    "readLess": "Read less",
+    "equipements": "Equipment",
+    "seeAllEquipements": "See all equipment",
+    "activities": "Proposed activities",
+    "latestNews": "Latest news",
+    "allNews": "All news",
+    "rooms": "Meeting rooms",
+    "allRooms": "View all rooms",
+    "learnMore": "Learn more",
+    "capacity": "pers.",
+    "noEquipements": "No equipment listed",
+    "noActivities": "No activities listed",
+    "noNews": "No news available",
+    "noRooms": "No rooms available",
+    "halfDay": "/half-day",
+    "fullDay": "/full-day",
+    "coworking": "Coworking",
+    "noCoworking": "No coworking space available",
+    "accommodation": "Accommodation",
+    "noAccommodation": "No accommodation available",
+    "coworkingSpace": "Coworking space",
+    "accommodationSpace": "Accommodation space",
+    "nightly": "Night",
+    "bed": "bed",
+    "reserve": "Book now",
+    "confirmDelete": "Are you sure you want to delete this item?"
   }
 }

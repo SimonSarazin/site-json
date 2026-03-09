@@ -48,7 +48,7 @@ export function PricingSection({ id, props }: { id?: string; props: PricingSecti
               <CardContent className="space-y-4">
                 {plan.features.map((feature, featureIndex) => (
                   <div key={featureIndex} className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-green-500 shrink-0" />
+                    <Check className="w-5 h-5 text-success shrink-0" />
                     <T k={feature} as="span" className="text-sm text-foreground" />
                   </div>
                 ))}

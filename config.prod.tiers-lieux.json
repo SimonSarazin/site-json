@@ -268,7 +268,7 @@
     "height": "lg",
     "utilities": {
       "themeSwitch": false,
-      "langSwitch": false,
+      "langSwitch": true,
       "search": false,
       "auth": true,
       "cart": false,
@@ -380,7 +380,14 @@
               "defaultTypes": [
                 "organizations"
               ],
-              "indexStepList": 5
+              "indexStepList": 5,
+              "defaultFilters": {
+                "$or": {
+                  "source.key": "franceTierslieux",
+                  "source.keys": "franceTierslieux",
+                  "reference.costum": "franceTierslieux"
+                }
+              }
             },
             "list": {
               "columns": {
@@ -747,8 +754,8 @@
               "en": "Observe the data"
             },
             "description": {
-              "fr": "Add a concise value statements that explains how your metrics demonstrate success and growth. Focus on transformation and measurable outcomes while keeping it under 2 lines. Align with statistical data display.",
-              "en": "Add a concise value statements that explains how your metrics demonstrate success and growth. Focus on transformation and measurable outcomes while keeping it under 2 lines. Align with statistical data display."
+              "fr": "Découvrez comment nos indicateurs témoignent de notre impact et de notre croissance. Des résultats concrets qui illustrent la transformation des territoires.",
+              "en": "Discover how our metrics demonstrate success and growth. Concrete results that illustrate territorial transformation."
             },
             "links": [
               {
@@ -770,7 +777,7 @@
               "svg": "<svg width=\"52\" height=\"35\" viewBox=\"0 0 52 35\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M50.0147 10.2046C36.3404 -2.31298 15.186 -2.31298 1.51168 10.2046C0.845496 10.8177 0.483185 11.697 0.483185 12.5993V22.7568C5.81267 17.4814 12.3927 14.2305 19.2883 12.9811C15.6418 15.318 13.3511 19.5638 13.8887 24.2955C14.5082 29.6982 18.9377 34.0828 24.3958 34.6728C31.6069 35.4595 37.7195 29.8948 37.7195 22.9188C37.7195 18.754 35.5339 15.0866 32.2497 12.9811C39.1337 14.2305 45.7254 17.4814 51.0549 22.7568V12.5993C51.0549 11.697 50.6926 10.8177 50.0264 10.2046H50.0147Z\" fill=\"#FFD836\"></path></svg>"
             },
             "image": "images/tiersLieux/forum.png",
-            "imagePosition": "right",
+            "imagePosition": "left",
             "className": "",
             "decorativeElements": {
               "type": "none"
@@ -893,6 +900,30 @@
                     ]
                   },
                   {
+                    "id": "pays",
+                    "type": "scopeList",
+                    "label": {
+                      "fr": "Pays",
+                      "en": "Countries"
+                    },
+                    "config": {
+                      "countryCode": [
+                        "FR",
+                        "BE",
+                        "CH",
+                        "GP",
+                        "GF",
+                        "MQ",
+                        "YT",
+                        "RE"
+                      ],
+                      "level": [
+                        "1"
+                      ],
+                      "sortBy": "name"
+                    }
+                  },
+                  {
                     "id": "reseaux",
                     "label": {
                       "fr": "Réseaux thématiques",
@@ -931,86 +962,22 @@
                   },
                   {
                     "id": "regions",
+                    "type": "scopeList",
                     "label": {
                       "fr": "Régions",
                       "en": "Regions"
                     },
-                    "options": [
-                      {
-                        "id": "idf",
-                        "label": {
-                          "fr": "Île-de-France",
-                          "en": "Île-de-France"
-                        }
-                      },
-                      {
-                        "id": "aura",
-                        "label": {
-                          "fr": "Auvergne-Rhône-Alpes",
-                          "en": "Auvergne-Rhône-Alpes"
-                        }
-                      },
-                      {
-                        "id": "occitanie",
-                        "label": {
-                          "fr": "Occitanie",
-                          "en": "Occitanie"
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "id": "equipement",
-                    "label": {
-                      "fr": "Équipement",
-                      "en": "Equipment"
-                    },
-                    "options": [
-                      {
-                        "id": "wifi",
-                        "label": {
-                          "fr": "WiFi",
-                          "en": "WiFi"
-                        }
-                      },
-                      {
-                        "id": "imprimante",
-                        "label": {
-                          "fr": "Imprimante 3D",
-                          "en": "3D Printer"
-                        }
-                      },
-                      {
-                        "id": "cuisine",
-                        "label": {
-                          "fr": "Cuisine équipée",
-                          "en": "Equipped kitchen"
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "id": "activites",
-                    "label": {
-                      "fr": "Activités",
-                      "en": "Activities"
-                    },
-                    "options": [
-                      {
-                        "id": "ateliers",
-                        "label": {
-                          "fr": "Ateliers",
-                          "en": "Workshops"
-                        }
-                      },
-                      {
-                        "id": "conferences",
-                        "label": {
-                          "fr": "Conférences",
-                          "en": "Conferences"
-                        }
-                      }
-                    ]
+                    "config": {
+                      "countryCode": [
+                        "FR",
+                        "BE",
+                        "CH"
+                      ],
+                      "level": [
+                        "3"
+                      ],
+                      "sortBy": "name"
+                    }
                   },
                   {
                     "id": "partage",
@@ -1066,6 +1033,60 @@
                     ]
                   }
                 ],
+                "filtersByAnswers": {
+                  "activités": {
+                    "label": {
+                      "fr": "Activités",
+                      "en": "Activities"
+                    },
+                    "domGroup": ".domGroupFilters",
+                    "forms": "6486d24e9cad105cbf29a777",
+                    "path": "lesCommunsDesTierslieux1262023_1215_0.multiCheckboxPluslesCommunsDesTierslieux1262023_1215_0liu3d5bbs2lwwdpiosq",
+                    "finderPath": "answers.lesCommunsDesTierslieux1262023_1215_0.finderlesCommunsDesTierslieux1262023_1215_0lix46h1uhnukfgtzj6s"
+                  },
+                  "équipement": {
+                    "label": {
+                      "fr": "Équipements",
+                      "en": "Equipment"
+                    },
+                    "domGroup": ".domGroupFilters",
+                    "forms": "645b300b6d70bb35426fc0e3",
+                    "path": "lesCommunsDesTierslieux1052023_949_0.multiCheckboxPluslesCommunsDesTierslieux1052023_949_0lhi0h2l1gjvac3zpbcw",
+                    "finderPath": "answers.lesCommunsDesTierslieux1052023_949_0.finderlesCommunsDesTierslieux1052023_949_0lat3sl0xwwg06k856jc"
+                  },
+                  "services": {
+                    "label": {
+                      "fr": "Service",
+                      "en": "Service"
+                    },
+                    "domGroup": ".domGroupFilters",
+                    "type": "form",
+                    "value": {
+                      "Coworking": {
+                        "id": "6925e2b05dd63b02ca70d6d9",
+                        "finder": "answers.navigatorDesTierslieux25112025_209_0.findernavigatorDesTierslieux25112025_209_0miem3epsztzcm9dgim"
+                      },
+                      "Salle de Réunion": {
+                        "id": "6925869ad76aaf6c5a2b2f8a",
+                        "finder": "answers.navigatorDesTierslieux25112025_1436_0.findernavigatorDesTierslieux25112025_1436_0miem3epsztzcm9dgim"
+                      },
+                      "Hébérgement": {
+                        "id": "6925ee8ac537f8056114aec7",
+                        "finder": "answers.navigatorDesTierslieux25112025_2059_0.findernavigatorDesTierslieux25112025_2059_0miem3epsztzcm9dgim"
+                      }
+                    }
+                  },
+                  "licoop": {
+                    "label": {
+                      "fr": "Licoop",
+                      "en": "Licoop"
+                    },
+                    "domGroup": ".domGroupFilters",
+                    "forms": "6876c3e58fa8df3c7f024253",
+                    "path": "navigatorDesTierslieux1572025_2311_0.findernavigatorDesTierslieux1572025_2311_0md5u4tkmsz33mya3xvb",
+                    "finderPath": "answers.navigatorDesTierslieux1572025_2311_0.findernavigatorDesTierslieux1572025_2311_0md5u4tkmsz33mya3xvb"
+                  }
+                },
                 "className": "sticky top-20"
               }
             },
@@ -1220,93 +1241,71 @@
     }
   ],
   "theme": {
+    "defaultMode": "light",
     "colors": {
       "light": {
-        "background": "#ffffff",
-        "foreground": "#0f172a",
-        "card": "#ffffff",
-        "cardForeground": "#0f172a",
-        "popover": "#ffffff",
-        "popoverForeground": "#0f172a",
-        "primary": "#1f7a73",
-        "primaryForeground": "#f9fafb",
-        "secondary": "#f1f5f9",
-        "secondaryForeground": "#0f172a",
-        "muted": "#f1f5f9",
-        "mutedForeground": "#64748b",
-        "accent": "#f1f5f9",
-        "accentForeground": "#0f172a",
-        "destructive": "#ef4444",
-        "destructiveForeground": "#f9fafb",
-        "border": "#e2e8f0",
-        "input": "#e2e8f0",
-        "ring": "#1f7a73",
-        "chart1": "#1f7a73",
-        "chart2": "#cc3373",
-        "chart3": "#f5e53d",
-        "chart4": "#3526d9",
-        "chart5": "#42ad1f",
-        "sidebar": "#ffffff",
-        "sidebarForeground": "#0f172a",
-        "sidebarPrimary": "#1f7a73",
-        "sidebarPrimaryForeground": "#f9fafb",
-        "sidebarAccent": "#f1f5f9",
-        "sidebarAccentForeground": "#0f172a",
-        "sidebarBorder": "#e2e8f0",
-        "sidebarRing": "#1f7a73",
-        "success": "oklch(0.6959 0.1491 162.4796)",
-        "successForeground": "oklch(1.0000 0.0000 0.0000)",
-        "warning": "oklch(0.7686 0.1647 70.0804)",
-        "warningForeground": "oklch(1.0000 0.0000 0.0000)",
-        "error": "oklch(0.6368 0.2078 25.3313)",
-        "errorForeground": "oklch(1.0000 0.0000 0.0000)",
-        "info": "oklch(0.6847 0.1479 237.3225)",
-        "infoForeground": "oklch(1.0000 0.0000 0.0000)",
-        "radius": "0.5rem",
-        "spacing": "0.25rem"
+        "primary": "hsl(182, 56%, 40%)",
+        "primaryForeground": "hsl(0, 0%, 100%)",
+        "secondary": "hsl(43, 91%, 52%)",
+        "secondaryForeground": "hsl(25, 20%, 12%)",
+        "accent": "hsl(182, 40%, 88%)",
+        "accentForeground": "hsl(182, 56%, 22%)",
+        "background": "hsl(0, 0%, 100%)",
+        "foreground": "hsl(210, 20%, 14%)",
+        "muted": "hsl(182, 18%, 94%)",
+        "mutedForeground": "hsl(182, 12%, 42%)",
+        "border": "hsl(182, 18%, 88%)",
+        "input": "hsl(182, 18%, 88%)",
+        "ring": "hsl(182, 56%, 40%)",
+        "card": "hsl(0, 0%, 100%)",
+        "cardForeground": "hsl(210, 20%, 14%)",
+        "popover": "hsl(0, 0%, 100%)",
+        "popoverForeground": "hsl(210, 20%, 14%)",
+        "destructive": "hsl(0, 72%, 51%)",
+        "destructiveForeground": "hsl(0, 0%, 100%)",
+        "success": "hsl(142, 60%, 40%)",
+        "successForeground": "hsl(0, 0%, 100%)",
+        "warning": "hsl(43, 91%, 52%)",
+        "warningForeground": "hsl(25, 20%, 12%)",
+        "info": "hsl(200, 70%, 48%)",
+        "infoForeground": "hsl(0, 0%, 100%)",
+        "chart1": "hsl(182, 56%, 40%)",
+        "chart2": "hsl(43, 91%, 52%)",
+        "chart3": "hsl(182, 40%, 60%)",
+        "chart4": "hsl(43, 70%, 70%)",
+        "chart5": "hsl(200, 60%, 50%)"
       },
       "dark": {
-        "background": "#0f172a",
-        "foreground": "#f9fafb",
-        "card": "#0f172a",
-        "cardForeground": "#f9fafb",
-        "popover": "#0f172a",
-        "popoverForeground": "#f9fafb",
-        "primary": "#1f7a73",
-        "primaryForeground": "#0f172a",
-        "secondary": "#1e293b",
-        "secondaryForeground": "#f9fafb",
-        "muted": "#1e293b",
-        "mutedForeground": "#94a3b8",
-        "accent": "#1e293b",
-        "accentForeground": "#f9fafb",
-        "destructive": "#7f1d1d",
-        "destructiveForeground": "#f9fafb",
-        "border": "#1e293b",
-        "input": "#1e293b",
-        "ring": "#1f7a73",
-        "chart1": "#1f7a73",
-        "chart2": "#cc3373",
-        "chart3": "#f5e53d",
-        "chart4": "#3526d9",
-        "chart5": "#42ad1f",
-        "sidebar": "#0f172a",
-        "sidebarForeground": "#f9fafb",
-        "sidebarPrimary": "#1f7a73",
-        "sidebarPrimaryForeground": "#0f172a",
-        "sidebarAccent": "#1e293b",
-        "sidebarAccentForeground": "#f9fafb",
-        "sidebarBorder": "#1e293b",
-        "sidebarRing": "#1f7a73",
-        "success": "oklch(0.6959 0.1491 162.4796)",
-        "successForeground": "oklch(1.0000 0.0000 0.0000)",
-        "warning": "oklch(0.7686 0.1647 70.0804)",
-        "warningForeground": "oklch(1.0000 0.0000 0.0000)",
-        "error": "oklch(0.6368 0.2078 25.3313)",
-        "errorForeground": "oklch(1.0000 0.0000 0.0000)",
-        "info": "oklch(0.6847 0.1479 237.3225)",
-        "infoForeground": "oklch(1.0000 0.0000 0.0000)",
-        "radius": "0.5rem"
+        "primary": "hsl(182, 56%, 50%)",
+        "primaryForeground": "hsl(0, 0%, 100%)",
+        "secondary": "hsl(43, 85%, 48%)",
+        "secondaryForeground": "hsl(25, 20%, 10%)",
+        "accent": "hsl(182, 30%, 22%)",
+        "accentForeground": "hsl(182, 56%, 80%)",
+        "background": "hsl(210, 20%, 8%)",
+        "foreground": "hsl(182, 10%, 93%)",
+        "muted": "hsl(182, 15%, 16%)",
+        "mutedForeground": "hsl(182, 12%, 62%)",
+        "border": "hsl(182, 15%, 22%)",
+        "input": "hsl(182, 15%, 22%)",
+        "ring": "hsl(182, 56%, 50%)",
+        "card": "hsl(210, 20%, 11%)",
+        "cardForeground": "hsl(182, 10%, 93%)",
+        "popover": "hsl(210, 20%, 11%)",
+        "popoverForeground": "hsl(182, 10%, 93%)",
+        "destructive": "hsl(0, 65%, 55%)",
+        "destructiveForeground": "hsl(0, 0%, 100%)",
+        "success": "hsl(142, 55%, 45%)",
+        "successForeground": "hsl(0, 0%, 100%)",
+        "warning": "hsl(43, 85%, 48%)",
+        "warningForeground": "hsl(25, 20%, 10%)",
+        "info": "hsl(200, 65%, 52%)",
+        "infoForeground": "hsl(0, 0%, 100%)",
+        "chart1": "hsl(182, 56%, 50%)",
+        "chart2": "hsl(43, 85%, 48%)",
+        "chart3": "hsl(182, 40%, 65%)",
+        "chart4": "hsl(43, 70%, 65%)",
+        "chart5": "hsl(200, 60%, 55%)"
       }
     },
     "typography": {
@@ -1331,24 +1330,24 @@
     },
     "shadows": {
       "light": {
-        "shadow2xs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
-        "shadowXs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
-        "shadowSm": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
-        "shadow": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
-        "shadowMd": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 2px 4px -1px hsl(0.00 0.00% 0.00% / 0.25)",
-        "shadowLg": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 4px 6px -1px hsl(0.00 0.00% 0.00% / 0.25)",
-        "shadowXl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 8px 10px -1px hsl(0.00 0.00% 0.00% / 0.25)",
-        "shadow2xl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.63)"
+        "shadow2xs": "0px 1px 4px 0px hsl(182 56% 40% / 0.08)",
+        "shadowXs": "0px 1px 4px 0px hsl(182 56% 40% / 0.10)",
+        "shadowSm": "0px 1px 4px 0px hsl(182 56% 40% / 0.12), 0px 1px 2px -1px hsl(182 56% 40% / 0.10)",
+        "shadow": "0px 2px 6px 0px hsl(182 56% 40% / 0.12), 0px 1px 3px -1px hsl(182 56% 40% / 0.10)",
+        "shadowMd": "0px 4px 10px 0px hsl(182 56% 40% / 0.12), 0px 2px 4px -1px hsl(182 56% 40% / 0.10)",
+        "shadowLg": "0px 8px 20px 0px hsl(182 56% 40% / 0.12), 0px 4px 8px -2px hsl(182 56% 40% / 0.10)",
+        "shadowXl": "0px 12px 28px 0px hsl(182 56% 40% / 0.14), 0px 6px 12px -2px hsl(182 56% 40% / 0.10)",
+        "shadow2xl": "0px 20px 48px 0px hsl(182 56% 40% / 0.18)"
       },
       "dark": {
-        "shadow2xs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
-        "shadowXs": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.13)",
-        "shadowSm": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
-        "shadow": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 1px 2px -1px hsl(0.00 0.00% 0.00% / 0.25)",
-        "shadowMd": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 2px 4px -1px hsl(0.00 0.00% 0.00% / 0.25)",
-        "shadowLg": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 4px 6px -1px hsl(0.00 0.00% 0.00% / 0.25)",
-        "shadowXl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.25), 0px 8px 10px -1px hsl(0.00 0.00% 0.00% / 0.25)",
-        "shadow2xl": "0px 1px 4px 0px hsl(0.00 0.00% 0.00% / 0.63)"
+        "shadow2xs": "0px 1px 4px 0px hsl(0 0% 0% / 0.20)",
+        "shadowXs": "0px 1px 4px 0px hsl(0 0% 0% / 0.22)",
+        "shadowSm": "0px 1px 4px 0px hsl(0 0% 0% / 0.30), 0px 1px 2px -1px hsl(0 0% 0% / 0.25)",
+        "shadow": "0px 2px 6px 0px hsl(0 0% 0% / 0.32), 0px 1px 3px -1px hsl(0 0% 0% / 0.25)",
+        "shadowMd": "0px 4px 10px 0px hsl(0 0% 0% / 0.32), 0px 2px 4px -1px hsl(0 0% 0% / 0.25)",
+        "shadowLg": "0px 8px 20px 0px hsl(0 0% 0% / 0.35), 0px 4px 8px -2px hsl(0 0% 0% / 0.25)",
+        "shadowXl": "0px 12px 28px 0px hsl(0 0% 0% / 0.38), 0px 6px 12px -2px hsl(0 0% 0% / 0.25)",
+        "shadow2xl": "0px 20px 48px 0px hsl(0 0% 0% / 0.50)"
       }
     },
     "customCSS": ""
@@ -1390,12 +1389,24 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-about" },
-                { "type": "profile-organizer" },
-                { "type": "profile-event-dates" },
-                { "type": "profile-badges" },
-                { "type": "profile-tags" },
-                { "type": "profile-opening-hours" }
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-event-dates"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                },
+                {
+                  "type": "profile-opening-hours"
+                }
               ],
               "rightSections": [
                 {
@@ -1426,7 +1437,9 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-gallery" }
+                {
+                  "type": "profile-gallery"
+                }
               ],
               "rightSections": [
                 {
@@ -1450,7 +1463,9 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-map" }
+                {
+                  "type": "profile-map"
+                }
               ],
               "rightSections": [
                 {
@@ -1498,12 +1513,24 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-event-dates" },
-                { "type": "profile-about" },
-                { "type": "profile-organizer" },
-                { "type": "profile-badges" },
-                { "type": "profile-tags" },
-                { "type": "profile-opening-hours" }
+                {
+                  "type": "profile-event-dates"
+                },
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                },
+                {
+                  "type": "profile-opening-hours"
+                }
               ],
               "rightSections": [
                 {
@@ -1555,7 +1582,9 @@
             "en": "Friends"
           },
           "condition": {
-            "entityTypes": ["citoyens"],
+            "entityTypes": [
+              "citoyens"
+            ],
             "userContext": "own"
           },
           "component": "SocialTab"
@@ -1567,7 +1596,9 @@
             "en": "Communities"
           },
           "condition": {
-            "entityTypes": ["citoyens"],
+            "entityTypes": [
+              "citoyens"
+            ],
             "userContext": "own"
           },
           "component": "MembershipTab"
@@ -1605,26 +1636,203 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-about" },
-                { "type": "profile-organizer" },
-                { "type": "profile-badges" },
-                { "type": "profile-tags" },
-                { "type": "profile-opening-hours" }
+                {
+                  "type": "profile-about-tl",
+                  "activity": {
+                    "id": "63e0a8abeac0741b506fb4f7",
+                    "finder": "answers.franceTierslieux1522023_1352_1.finderfranceTierslieux1522023_1352_1le5ofi0x733rc1gmbk4",
+                    "step": "franceTierslieux1822023_1721_4",
+                    "input": "franceTierslieux1822023_1721_4lea64x9qwknlysdiuab",
+                    "answerPath": "franceTierslieux1822023_1721_4.multiCheckboxPlusfranceTierslieux1822023_1721_4lea64x9qwknlysdiuab"
+                  },
+                  "equipement": {
+                    "id": "63e0a8abeac0741b506fb4f7",
+                    "finder": "answers.franceTierslieux1522023_1352_1.finderfranceTierslieux1522023_1352_1le5ofi0x733rc1gmbk4",
+                    "step": "franceTierslieux1822023_1721_4",
+                    "input": "franceTierslieux1822023_1721_4lea64x9zyzijgmpwk4",
+                    "answerPath": "franceTierslieux1822023_1721_4.multiCheckboxPlusfranceTierslieux1822023_1721_4lea64x9zyzijgmpwk4"
+                  },
+                  "bedRoomPath": {
+                    "id": "6925ee8ac537f8056114aec7",
+                    "place": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0mieg4k7z9gv729cs53",
+                    "type": "answer",
+                    "name": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0mieg4k7yxrito5j9e6",
+                    "bedPrice": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0minaceqtibwcyy3khtm",
+                    "roomPrice": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0miq84do7c678u3c8xuq",
+                    "linkPath": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0miq83c8getjt3lcz64f"
+                  },
+                  "coworkingPath": {
+                    "id": "6925e2b05dd63b02ca70d6d9",
+                    "place": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0mieg4k7z9gv729cs53",
+                    "name": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0mieg4k7yxrito5j9e6",
+                    "area": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0mieg4k7zslc8awrql2",
+                    "extra": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0mieg8j24m89gm99t5mi",
+                    "linkPath": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0miq8118cmkh16zjwmt",
+                    "hourly": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0minag948nw1ltatx78o",
+                    "halfDay": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0minagtkflgfepmrq32l",
+                    "fullDay": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0minah6jdpwjpzymuxm"
+                  },
+                  "roomPath": {
+                    "id": "6925869ad76aaf6c5a2b2f8a",
+                    "place": "navigatorDesTierslieux25112025_1436_0.navigatorDesTierslieux25112025_1436_0miokvr9ezvu0064fk",
+                    "type": "array",
+                    "linkPath": "navigatorDesTierslieux25112025_1436_0.navigatorDesTierslieux25112025_1436_0miq81uh4gat3vgbtgkj",
+                    "name": 0,
+                    "minPers": 2,
+                    "maxPers": 3,
+                    "hourly": 4,
+                    "halfday": 5,
+                    "fullday": 6,
+                    "images": 8
+                  },
+                  "forms": {
+                    "646498a5f2b3d6423d74b7f6": {
+                      "name": "Fréquentation des tiers-lieux",
+                      "finder": "answers.lesCommunsDesTierslieux1752023_1312_0.finderlesCommunsDesTierslieux1752023_1312_0lix4a7257iht8lp282r",
+                      "linked": true
+                    },
+                    "645b300b6d70bb35426fc0e3": {
+                      "name": "Diagnostic des usages des équipements proposés en tiers-lieux",
+                      "finder": "answers.lesCommunsDesTierslieux1052023_949_0.finderlesCommunsDesTierslieux1052023_949_0lat3sl0xwwg06k856jc",
+                      "linked": true
+                    },
+                    "6486d24e9cad105cbf29a777": {
+                      "name": "Modèle économique des tiers-lieux",
+                      "finder": "answers.lesCommunsDesTierslieux1262023_1215_0.finderlesCommunsDesTierslieux1262023_1215_0lix46h1uhnukfgtzj6s",
+                      "linked": true
+                    },
+                    "64a3fbd77c66a6036a282e8a": {
+                      "name": "Satisfaction du tiers-lieu",
+                      "finder": "answers.lesCommunsDesTierslieux472023_154_0.finderlesCommunsDesTierslieux472023_154_0ljo6ru90tnrau11hui",
+                      "linked": true
+                    },
+                    "636cd563e2439b7fc12cd680": {
+                      "name": "Usages des outils numériques",
+                      "finder": "answers.lesCommunsDesTierslieux10112022_1423_0.finderlesCommunsDesTierslieux10112022_1423_0lmbmy4z4ze9v982h4fh",
+                      "linked": true
+                    },
+                    "63e0a8abeac0741b506fb4f7": {
+                      "name": "Grand recensement 2023",
+                      "finder": "answers.franceTierslieux1522023_1352_1.finderfranceTierslieux1522023_1352_1le5ofi0x733rc1gmbk4",
+                      "linked": true
+                    },
+                    "652e32b222c3cf69f018ec40": {
+                      "name": "Réseau régionnaux & thématique",
+                      "finder": "answers.lesCommunsDesTierslieux17102023_108_0.finderlesCommunsDesTierslieux17102023_108_0lo5zvgqitv0b2mx2rl",
+                      "linked": true
+                    },
+                    "666c245dd4968131956aa91e": {
+                      "name": "Tiers Lieux de France mobilisons nous !",
+                      "finder": "answers.lesCommunsDesTierslieux1462024_1313_0.finderlesCommunsDesTierslieux1462024_1313_0lxeldfuzo8xtrxheuwo",
+                      "linked": true
+                    },
+                    "6925e2b05dd63b02ca70d6d9": {
+                      "name": "Coworking",
+                      "finder": "answers.navigatorDesTierslieux25112025_209_0.findernavigatorDesTierslieux25112025_209_0miem3epsztzcm9dgim",
+                      "linked": true,
+                      "category": "coworking"
+                    },
+                    "6925ee8ac537f8056114aec7": {
+                      "name": "Hebergement",
+                      "finder": "answers.navigatorDesTierslieux25112025_2059_0.findernavigatorDesTierslieux25112025_2059_0miem3epsztzcm9dgim",
+                      "linked": true,
+                      "category": "hebergement"
+                    },
+                    "6925869ad76aaf6c5a2b2f8a": {
+                      "name": "Salle de réunion",
+                      "finder": "answers.navigatorDesTierslieux25112025_1436_0.findernavigatorDesTierslieux25112025_1436_0miem3epsztzcm9dgim",
+                      "linked": true,
+                      "category": "salle-reunion"
+                    }
+                  }
+                }
               ],
               "rightSections": [
                 {
-                  "type": "profile-info",
+                  "type": "profile-info-tl",
                   "variant": "sidebar",
                   "sticky": true,
-                  "showCounts": true,
-                  "showUsername": true,
                   "showEmail": true,
                   "showPhone": true,
                   "showWebsite": true,
-                  "showAddress": true,
-                  "showOpeningDate": true,
-                  "showDates": true,
-                  "showOrganizer": true
+                  "bedRoomPath": {
+                    "id": "6925ee8ac537f8056114aec7",
+                    "place": "navigatorDesTierslieux25112025_2059_0.navigatorDesTierslieux25112025_2059_0mieg4k7z9gv729cs53",
+                    "type": "answer"
+                  },
+                  "coworkingPath": {
+                    "id": "6925e2b05dd63b02ca70d6d9",
+                    "place": "navigatorDesTierslieux25112025_209_0.navigatorDesTierslieux25112025_209_0mieg4k7z9gv729cs53"
+                  },
+                  "roomPath": {
+                    "id": "6925869ad76aaf6c5a2b2f8a",
+                    "place": "navigatorDesTierslieux25112025_1436_0.navigatorDesTierslieux25112025_1436_0miokvr9ezvu0064fk",
+                    "type": "array"
+                  },
+                  "forms": {
+                    "646498a5f2b3d6423d74b7f6": {
+                      "name": "Fréquentation des tiers-lieux",
+                      "finder": "answers.lesCommunsDesTierslieux1752023_1312_0.finderlesCommunsDesTierslieux1752023_1312_0lix4a7257iht8lp282r",
+                      "linked": true
+                    },
+                    "645b300b6d70bb35426fc0e3": {
+                      "name": "Diagnostic des usages des équipements proposés en tiers-lieux",
+                      "finder": "answers.lesCommunsDesTierslieux1052023_949_0.finderlesCommunsDesTierslieux1052023_949_0lat3sl0xwwg06k856jc",
+                      "linked": true
+                    },
+                    "6486d24e9cad105cbf29a777": {
+                      "name": "Modèle économique des tiers-lieux",
+                      "finder": "answers.lesCommunsDesTierslieux1262023_1215_0.finderlesCommunsDesTierslieux1262023_1215_0lix46h1uhnukfgtzj6s",
+                      "linked": true
+                    },
+                    "64a3fbd77c66a6036a282e8a": {
+                      "name": "Satisfaction du tiers-lieu",
+                      "finder": "answers.lesCommunsDesTierslieux472023_154_0.finderlesCommunsDesTierslieux472023_154_0ljo6ru90tnrau11hui",
+                      "linked": true
+                    },
+                    "636cd563e2439b7fc12cd680": {
+                      "name": "Usages des outils numériques",
+                      "finder": "answers.lesCommunsDesTierslieux10112022_1423_0.finderlesCommunsDesTierslieux10112022_1423_0lmbmy4z4ze9v982h4fh",
+                      "linked": true
+                    },
+                    "63e0a8abeac0741b506fb4f7": {
+                      "name": "Grand recensement 2023",
+                      "finder": "answers.franceTierslieux1522023_1352_1.finderfranceTierslieux1522023_1352_1le5ofi0x733rc1gmbk4",
+                      "linked": true
+                    },
+                    "652e32b222c3cf69f018ec40": {
+                      "name": "Réseau régionnaux & thématique",
+                      "finder": "answers.lesCommunsDesTierslieux17102023_108_0.finderlesCommunsDesTierslieux17102023_108_0lo5zvgqitv0b2mx2rl",
+                      "linked": true
+                    },
+                    "666c245dd4968131956aa91e": {
+                      "name": "Tiers Lieux de France mobilisons nous !",
+                      "finder": "answers.lesCommunsDesTierslieux1462024_1313_0.finderlesCommunsDesTierslieux1462024_1313_0lxeldfuzo8xtrxheuwo",
+                      "linked": true,
+                      "hide": true
+                    },
+                    "6925e2b05dd63b02ca70d6d9": {
+                      "name": "Coworking",
+                      "finder": "answers.navigatorDesTierslieux25112025_209_0.findernavigatorDesTierslieux25112025_209_0miem3epsztzcm9dgim",
+                      "linked": true,
+                      "category": "coworking",
+                      "hide": true
+                    },
+                    "6925ee8ac537f8056114aec7": {
+                      "name": "Hebergement",
+                      "finder": "answers.navigatorDesTierslieux25112025_2059_0.findernavigatorDesTierslieux25112025_2059_0miem3epsztzcm9dgim",
+                      "linked": true,
+                      "category": "hebergement",
+                      "hide": true
+                    },
+                    "6925869ad76aaf6c5a2b2f8a": {
+                      "name": "Salle de réunion",
+                      "finder": "answers.navigatorDesTierslieux25112025_1436_0.findernavigatorDesTierslieux25112025_1436_0miem3epsztzcm9dgim",
+                      "linked": true,
+                      "category": "salle-reunion",
+                      "hide": true
+                    }
+                  }
                 }
               ]
             }
@@ -1664,7 +1872,11 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-members", "showRole": true, "showManagement": true }
+                {
+                  "type": "profile-members",
+                  "showRole": true,
+                  "showManagement": true
+                }
               ],
               "rightSections": [
                 {
@@ -1689,7 +1901,14 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-related", "relationType": "projects", "title": { "fr": "Projets", "en": "Projects" } }
+                {
+                  "type": "profile-related",
+                  "relationType": "projects",
+                  "title": {
+                    "fr": "Projets",
+                    "en": "Projects"
+                  }
+                }
               ],
               "rightSections": [
                 {
@@ -1713,7 +1932,14 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-related", "relationType": "events", "title": { "fr": "Événements", "en": "Events" } }
+                {
+                  "type": "profile-related",
+                  "relationType": "events",
+                  "title": {
+                    "fr": "Événements",
+                    "en": "Events"
+                  }
+                }
               ],
               "rightSections": [
                 {
@@ -1760,11 +1986,21 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-about" },
-                { "type": "profile-organizer" },
-                { "type": "profile-badges" },
-                { "type": "profile-tags" },
-                { "type": "profile-event-dates" }
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                },
+                {
+                  "type": "profile-event-dates"
+                }
               ],
               "rightSections": [
                 {
@@ -1819,7 +2055,11 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-members", "showRole": true, "showManagement": true }
+                {
+                  "type": "profile-members",
+                  "showRole": true,
+                  "showManagement": true
+                }
               ],
               "rightSections": [
                 {
@@ -1844,7 +2084,14 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-related", "relationType": "projects", "title": { "fr": "Organisations partenaires", "en": "Partner Organizations" } }
+                {
+                  "type": "profile-related",
+                  "relationType": "projects",
+                  "title": {
+                    "fr": "Organisations partenaires",
+                    "en": "Partner Organizations"
+                  }
+                }
               ],
               "rightSections": [
                 {
@@ -1868,7 +2115,14 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-related", "relationType": "events", "title": { "fr": "Événements", "en": "Events" } }
+                {
+                  "type": "profile-related",
+                  "relationType": "events",
+                  "title": {
+                    "fr": "Événements",
+                    "en": "Events"
+                  }
+                }
               ],
               "rightSections": [
                 {
@@ -1909,11 +2163,21 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-event-dates" },
-                { "type": "profile-about" },
-                { "type": "profile-organizer" },
-                { "type": "profile-badges" },
-                { "type": "profile-tags" }
+                {
+                  "type": "profile-event-dates"
+                },
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                }
               ],
               "rightSections": [
                 {
@@ -1944,8 +2208,12 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-event-dates" },
-                { "type": "profile-opening-hours" }
+                {
+                  "type": "profile-event-dates"
+                },
+                {
+                  "type": "profile-opening-hours"
+                }
               ],
               "rightSections": [
                 {
@@ -1970,7 +2238,9 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-map" }
+                {
+                  "type": "profile-map"
+                }
               ],
               "rightSections": [
                 {
@@ -1995,8 +2265,17 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-organizer" },
-                { "type": "profile-related", "relationType": "events", "title": { "fr": "Autres événements", "en": "Other events" } }
+                {
+                  "type": "profile-organizer"
+                },
+                {
+                  "type": "profile-related",
+                  "relationType": "events",
+                  "title": {
+                    "fr": "Autres événements",
+                    "en": "Other events"
+                  }
+                }
               ],
               "rightSections": [
                 {
@@ -2021,7 +2300,9 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-gallery" }
+                {
+                  "type": "profile-gallery"
+                }
               ],
               "rightSections": [
                 {
@@ -2061,9 +2342,15 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-about" },
-                { "type": "profile-badges" },
-                { "type": "profile-tags" }
+                {
+                  "type": "profile-about"
+                },
+                {
+                  "type": "profile-badges"
+                },
+                {
+                  "type": "profile-tags"
+                }
               ],
               "rightSections": [
                 {
@@ -2093,8 +2380,12 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-opening-hours" },
-                { "type": "profile-about" }
+                {
+                  "type": "profile-opening-hours"
+                },
+                {
+                  "type": "profile-about"
+                }
               ],
               "rightSections": [
                 {
@@ -2120,7 +2411,9 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-map" }
+                {
+                  "type": "profile-map"
+                }
               ],
               "rightSections": [
                 {
@@ -2145,7 +2438,9 @@
             {
               "type": "profile-tab-layout",
               "leftSections": [
-                { "type": "profile-gallery" }
+                {
+                  "type": "profile-gallery"
+                }
               ],
               "rightSections": [
                 {

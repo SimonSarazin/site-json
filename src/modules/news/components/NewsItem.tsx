@@ -157,7 +157,7 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef, onEdit, onDele
               <time dateTime={(date as Date)?.toISOString?.() || new Date().toISOString()}>
                 {formatDate((date as Date) || new Date())}
               </time>
-              <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-xs font-medium bg-lime-700 text-white dark:bg-lime-600">
+              <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-xs font-medium bg-success text-success-foreground">
                 {t(`forms.scope.${scope}`)}
               </span>
             </div>
@@ -308,7 +308,7 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef, onEdit, onDele
                 disabled={!me?.isConnected}
                 className={`flex items-center gap-2 transition-colors ${
                   me?.isConnected
-                    ? 'text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400'
+                    ? 'text-muted-foreground hover:text-primary'
                     : 'text-muted-foreground/50 cursor-not-allowed'
                 }`}
               >

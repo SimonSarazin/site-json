@@ -110,8 +110,8 @@ export default function RecoverPasswordForm(): React.ReactNode {
     return (
       <div className="w-full space-y-6 p-8 rounded-lg bg-card shadow-lg border">
         <div className="text-center">
-          <div className="mx-auto w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mb-4">
-            <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+          <div className="mx-auto w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mb-4">
+            <CheckCircle className="w-8 h-8 text-success" />
           </div>
           <h2 className="text-3xl font-bold text-foreground mb-2">
             {t("E-mail envoyé")}

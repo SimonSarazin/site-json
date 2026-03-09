@@ -5,6 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import serialize from "serialize-javascript";
 import { createImageOptimizer } from "./middleware/imageOptimizer.js";
+import { createImageUpload } from "./middleware/imageUpload.js";
 
 // import dotenv from "dotenv";
 // dotenv.config();
@@ -45,11 +46,13 @@ function loadSiteConfig() {
 }
 
 /* ---- Charger la config UNE SEULE FOIS au démarrage -------------------- */
-const cachedConfig = loadSiteConfig();
-const configScript = `<script>window.__CONFIG__=${serialize(cachedConfig, { isJSON: true })}</script>`;
+let cachedConfig = loadSiteConfig();
+let configScript = `<script>window.__CONFIG__=${serialize(cachedConfig, { isJSON: true })}</script>`;
 console.log("Config chargée :", cachedConfig?.meta?.title?.fr || "Config OK");
 
 const app = express();
+
+app.use(express.json({ limit: '5mb' }));
 
 // Compression gzip avec options optimisées
 app.use(compression({
@@ -94,6 +97,32 @@ app.use((req, res, next) => {
   }
   next();
 });
+
+app.post('/api/admin/config-save', (req, res) => {
+  if (!process.env.SITE_CONFIG_PATH) {
+    return res.status(400).json({ error: "SITE_CONFIG_PATH non défini" });
+  }
+  try {
+    const envPath = process.env.SITE_CONFIG_PATH;
+    const configPath = path.isAbsolute(envPath)
+      ? envPath
+      : path.resolve(process.cwd(), envPath);
+
+    const json = JSON.stringify(req.body, null, 2) + "\n";
+    fs.writeFileSync(configPath, json, "utf-8");
+    cachedConfig = req.body;
+    configScript = `<script>window.__CONFIG__=${serialize(cachedConfig, { isJSON: true })}</script>`;
+    console.log("[Admin] Config saved to", configPath);
+    res.json({ ok: true });
+  } catch (e) {
+    console.error("[Admin] Save error:", e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post("/api/admin/upload-image", createImageUpload({
+  staticRoot: path.resolve(__dirname, "../dist/client"),
+}));
 
 // SSR universel
 app.use(['/{*all}'], async (req, res) => {

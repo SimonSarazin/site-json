@@ -101,14 +101,15 @@ export function TagsInput({
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      if (!target.closest('[data-radix-popper-content-wrapper]')) {
+      if (!target.closest("[data-radix-popper-content-wrapper]")) {
         setShowSuggestions(false);
       }
     };
 
     if (showSuggestions) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [showSuggestions]);
 
@@ -182,3 +183,5 @@ export function TagsInput({
     </div>
   );
 }
+
+export type { TagsInputProps };

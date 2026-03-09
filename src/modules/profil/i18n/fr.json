@@ -1,4 +1,9 @@
 {
+  "EntityGridView": {
+    "gridView": "Grille",
+    "detailedView": "Détails",
+    "searchPlaceholder": "Rechercher..."
+  },
   "common": {
     "organizedBy": "Organisé par",
     "viewProfile": "Voir le profil",
@@ -166,7 +171,7 @@
       "news": "Actualités",
       "coworking": "Coworking",
       "meetingRooms": "Salles de réunions",
-      "practicalInfo": "Infos pratiques",
+      "projects": "Projets",
       "communities": "Communautés",
       "observatories": "Observatoires",
       "social": "Social",
@@ -204,6 +209,9 @@
     "manage": "Gérer",
     "noMembers": "Aucun membre pour le moment",
     "loadingMore": "Chargement de plus de membres...",
+    "searchPlaceholder": "Rechercher un membre...",
+    "loadingOrganization": "Chargement de l'organisation...",
+    "loadingProject": "Chargement du projet...",
     "organization": {
       "title": "Membres de l'organisation",
       "member": "Membre",
@@ -377,7 +385,360 @@
       "complete": "Téléchargement terminé"
     }
   },
+  "AddProjectModal": {
+    "title": "Créer un projet",
+    "creatingAs": "Création en tant que",
+    "form": {
+      "name": {
+        "label": "Nom du projet",
+        "placeholder": "Nom de votre projet"
+      },
+      "visibility": {
+        "label": "Rendre le projet visible publiquement ?",
+        "public": "Public",
+        "private": "Privé"
+      },
+      "images": {
+        "label": "Images du projet"
+      },
+      "shortDescription": {
+        "label": "Description courte",
+        "placeholder": "Décrivez brièvement votre projet..."
+      },
+      "url": {
+        "label": "URL principale",
+        "placeholder": "https://votre-site.com"
+      },
+      "tags": {
+        "label": "Tags"
+      }
+    },
+    "actions": {
+      "cancel": "Annuler",
+      "create": "Créer le projet",
+      "creating": "Création..."
+    },
+    "validation": {
+      "nameRequired": "Le nom du projet est requis",
+      "nameTooShort": "Le nom doit contenir au moins 3 caractères"
+    }
+  },
+  "AddOrganizationModal": {
+    "title": "Créer une organisation",
+    "creatingAs": "Création en tant que",
+    "form": {
+      "name": {
+        "label": "Nom de votre organisation",
+        "placeholder": "Nom de votre organisation"
+      },
+      "type": {
+        "label": "Type d'organisation",
+        "placeholder": "Sélectionner un type",
+        "options": {
+          "ngo": "Association",
+          "localBusiness": "Entreprise locale",
+          "group": "Groupe",
+          "government": "Organisation gouvernementale",
+          "cooperative": "Coopérative"
+        }
+      },
+      "role": {
+        "label": "Votre rôle",
+        "placeholder": "Sélectionner un rôle",
+        "options": {
+          "admin": "Administrateur",
+          "member": "Membre"
+        }
+      },
+      "tags": {
+        "label": "Tags"
+      },
+      "images": {
+        "label": "Vos images ici"
+      },
+      "email": {
+        "label": "E-mail principal",
+        "placeholder": "contact@exemple.com"
+      },
+      "shortDescription": {
+        "label": "Description courte",
+        "placeholder": "Décrivez brièvement votre organisation..."
+      },
+      "url": {
+        "label": "URL principale",
+        "placeholder": "https://votre-site.com"
+      }
+    },
+    "actions": {
+      "cancel": "Annuler",
+      "create": "Créer l'organisation",
+      "creating": "Création..."
+    },
+    "validation": {
+      "nameRequired": "Le nom de l'organisation est requis",
+      "nameTooShort": "Le nom doit contenir au moins 3 caractères"
+    }
+  },
+  "AboutTab": {
+    "description": "Description",
+    "notSpecified": "Non spécifié",
+    "generalInfo": "Informations générales",
+    "name": "Nom",
+    "email": "Adresse e-mail",
+    "birthDate": "Date de naissance",
+    "link": "Lien",
+    "freeInfo": "Informations / URLs",
+    "fixedPhone": "Téléphone fixe",
+    "mobilePhone": "Téléphone mobile",
+    "type": "Type",
+    "tags": "Tags",
+    "progress": "Avancement",
+    "socialNetworks": "Réseaux sociaux",
+    "badges": "Badges",
+    "openingDate": "Date d'ouverture",
+    "openingHours": "Horaires d'ouverture",
+    "from": "Du",
+    "to": "Au",
+    "address": "Adresse",
+    "addressNotProvided": "Adresse non renseignée",
+    "addAddress": "Ajouter une adresse",
+    "openInMaps": "Ouvrir dans Google Maps",
+    "getDirections": "Itinéraire"
+  },
+  "ProfileBannerCarriedBy": {
+    "carriedBy": "Porté par"
+  },
+  "EditAbout": {
+    "edit": "Modifier",
+    "editDescription": "Modifier la description",
+    "editInfo": "Modifier les informations",
+    "editSocialNetworks": "Modifier les réseaux sociaux",
+    "shortDescription": "Description courte",
+    "shortDescriptionPlaceholder": "Une brève description...",
+    "description": "Description détaillée",
+    "descriptionPlaceholder": "Description complète...",
+    "name": "Nom",
+    "namePlaceholder": "Entrez le nom",
+    "email": "Email",
+    "mainUrl": "URL principale",
+    "fixedPhone": "Téléphone fixe",
+    "mobilePhone": "Téléphone mobile",
+    "birthDate": "Date de naissance",
+    "organizationType": "Type d'organisation",
+    "selectType": "Sélectionner un type",
+    "projectProgress": "Avancement du projet",
+    "selectProgress": "Sélectionner l'avancement",
+    "tags": "Tags",
+    "tagsPlaceholder": "tag1, tag2, tag3",
+    "tagsHelp": "Séparez les tags par des virgules",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "saving": "Enregistrement...",
+    "success": "Succès",
+    "error": "Erreur",
+    "descriptionUpdated": "Description mise à jour avec succès",
+    "infoUpdated": "Informations mises à jour avec succès",
+    "socialUpdated": "Réseaux sociaux mis à jour avec succès",
+    "addressUpdated": "Adresse mise à jour avec succès",
+    "updateFailed": "Échec de la mise à jour",
+    "editAddress": "Modifier l'adresse",
+    "addAddress": "Ajouter une adresse",
+    "deleteAddress": "Supprimer l'adresse",
+    "country": "Pays ou DOM/TOM",
+    "selectCountry": "Sélectionner un pays",
+    "city": "Ville",
+    "searchCity": "Rechercher une ville...",
+    "postalCode": "Code postal",
+    "selectPostalCode": "Sélectionner un code postal",
+    "streetAddress": "Adresse (n° et rue)",
+    "streetAddressPlaceholder": "12 rue de la Paix",
+    "locationPreview": "Aperçu de la localisation",
+    "loading": "Chargement...",
+    "resultsFound": "résultats trouvés",
+    "noResults": "Aucun résultat",
+    "selectCityFirst": "Veuillez d'abord sélectionner une ville",
+    "addressRemoved": "Adresse supprimée avec succès",
+    "editDateTime": "Modifier les dates",
+    "editOpeningHours": "Modifier les horaires",
+    "addDateTime": "Ajouter les dates d'ouverture",
+    "addOpeningHours": "Ajouter les horaires d'ouverture",
+    "startDate": "Date de début",
+    "endDate": "Date de fin",
+    "dateTimeUpdated": "Dates mises à jour avec succès",
+    "openingHoursUpdated": "Horaires mis à jour avec succès",
+    "noOpeningHours": "Aucun horaire défini",
+    "addDay": "Ajouter un jour",
+    "opens": "Ouverture",
+    "closes": "Fermeture",
+    "editProfile": "Modifier le profil",
+    "profileUpdated": "Profil mis à jour avec succès",
+    "tabs": {
+      "info": "Informations",
+      "contact": "Contact",
+      "social": "Réseaux sociaux",
+      "location": "Localisation",
+      "schedule": "Horaires"
+    },
+    "nameDescription": "Le nom qui sera affiché publiquement",
+    "organizationTypeDescription": "Le type juridique ou structurel de votre organisation",
+    "shortDescriptionHelp": "Résumé en quelques mots (max 500 caractères)",
+    "descriptionHelp": "Présentation complète et détaillée",
+    "contactInfo": "Coordonnées de contact",
+    "contactDescription": "Renseignez vos informations de contact principales",
+    "socialNetworks": "Réseaux sociaux",
+    "socialNetworksDescription": "Ajoutez vos liens vers les réseaux sociaux",
+    "scheduleDescription": "Définissez les horaires d'ouverture pour chaque jour de la semaine"
+  },
+  "EditImage": {
+    "editProfileImage": "Modifier la photo de profil",
+    "editBannerImage": "Modifier la photo de couverture",
+    "dragOrClick": "Glissez une image ou cliquez pour sélectionner",
+    "dragToPosition": "Faites glisser pour positionner la zone de recadrage",
+    "selectImage": "Sélectionner une image",
+    "changeImage": "Changer l'image",
+    "invalidFileType": "Le fichier doit être une image (JPG, PNG, GIF, WebP)",
+    "fileTooLarge": "L'image ne doit pas dépasser 5 Mo",
+    "imageRequirements": "Formats acceptés : JPG, PNG, GIF, WebP. Taille max : 5 Mo",
+    "bannerRequirements": "Formats acceptés : JPG, PNG, GIF, WebP. Taille max : 10 Mo. Ratio recommandé : 16:9",
+    "success": "Succès",
+    "error": "Erreur",
+    "profileImageUpdated": "Photo de profil mise à jour avec succès",
+    "bannerImageUpdated": "Photo de couverture mise à jour avec succès",
+    "updateFailed": "Échec de la mise à jour de l'image",
+    "zoom": "Zoom"
+  },
+  "common": {
+    "loading": "Chargement..."
+  },
+  "SocialTab": {
+    "addFriend": "Ajouter un ami",
+    "searchFriends": "Rechercher parmi les amis...",
+    "privateProfile": "Profil privé",
+    "cannotViewFriends": "Vous ne pouvez pas voir les amis de cet utilisateur",
+    "tabs": {
+      "friends": "Amis",
+      "friendsShort": "Amis",
+      "pending": "En attente",
+      "pendingShort": "Attente",
+      "sent": "Envoyées",
+      "sentShort": "Envoyées"
+    },
+    "noFriendsFound": "Aucun ami trouvé",
+    "noFriendsYet": "Pas encore d'amis",
+    "tryDifferentSearch": "Essayez une recherche différente",
+    "startConnecting": "Commencez à vous connecter avec d'autres utilisateurs",
+    "removeFriend": "Retirer",
+    "noPendingRequests": "Aucune demande en attente",
+    "pendingRequestsInfo": "Les demandes d'amitié reçues apparaîtront ici",
+    "accept": "Accepter",
+    "reject": "Refuser",
+    "noSentRequests": "Aucune demande envoyée",
+    "sentRequestsInfo": "Vos demandes d'amitié envoyées apparaîtront ici",
+    "cancel": "Annuler",
+    "requestPending": "En attente de réponse"
+  },
+  "FriendRequestDialog": {
+    "title": "Ajouter un ami",
+    "searchPlaceholder": "Rechercher un utilisateur...",
+    "startTyping": "Commencez à taper pour rechercher",
+    "minimumChars": "Tapez au moins 2 caractères",
+    "searching": "Recherche...",
+    "noUsersFound": "Aucun utilisateur trouvé",
+    "tryDifferentSearch": "Essayez une recherche différente",
+    "sendRequest": "Ajouter"
+  },
+  "badges": {
+    "admin": "Administrateur",
+    "member": "Membre",
+    "contributor": "Contributeur",
+    "participant": "Participant",
+    "invitationPending": "Invitation en attente",
+    "validationPending": "Validation en attente",
+    "adminInvitationPending": "Invitation admin en attente",
+    "adminRequestPending": "Demande admin en attente"
+  },
+  "ProfileActions": {
+    "message": "Message",
+    "contact": "Contacter",
+    "addFriend": "Ajouter en ami",
+    "removeFriend": "Retirer des amis",
+    "acceptFriend": "Accepter",
+    "friendRequestPending": "En attente",
+    "follow": "Suivre",
+    "unfollow": "Ne plus suivre",
+    "join": "Rejoindre",
+    "contribute": "Contribuer",
+    "participate": "Participer",
+    "leaveOrganization": "Quitter l'organisation",
+    "leaveProject": "Quitter le projet",
+    "joinOrganization": "Rejoindre l'organisation",
+    "contributeProject": "Contribuer au projet",
+    "sendEmail": "Envoyer un email",
+    "call": "Appeler",
+    "visitWebsite": "Visiter le site web",
+    "share": "Partager",
+    "copyLink": "Copier le lien",
+    "linkCopied": "Lien copié !",
+    "copyError": "Impossible de copier le lien",
+    "report": "Signaler",
+    "featureComingSoon": "Fonctionnalité bientôt disponible"
+  },
+  "EntityStatusButton": {
+    "admin": "Admin",
+    "member": "Membre",
+    "contributor": "Contributeur",
+    "following": "Suivi",
+    "follow": "Suivre",
+    "unfollow": "Ne plus suivre",
+    "joinOrganization": "Rejoindre l'organisation",
+    "contributeProject": "Contribuer au projet",
+    "leaveOrganization": "Quitter l'organisation",
+    "leaveProject": "Quitter le projet",
+    "acceptInvitation": "Accepter l'invitation",
+    "acceptAdminInvitation": "Accepter (Admin)",
+    "rejectInvitation": "Refuser l'invitation",
+    "membershipPending": "Demande en attente",
+    "adminRequestPending": "Demande admin en attente",
+    "confirmLeaveOrgTitle": "Quitter l'organisation ?",
+    "confirmLeaveOrgDescription": "Vous êtes sur le point de quitter cette organisation. Vous perdrez vos accès et privilèges.",
+    "confirmLeaveProjectTitle": "Quitter le projet ?",
+    "confirmLeaveProjectDescription": "Vous êtes sur le point de quitter ce projet. Vous perdrez vos accès et privilèges.",
+    "cancel": "Annuler",
+    "confirmLeave": "Quitter"
+  },
   "toast": {
+    "relationship": {
+      "followSuccess": "Vous suivez maintenant",
+      "followError": "Impossible de suivre",
+      "unfollowSuccess": "Vous ne suivez plus",
+      "unfollowError": "Impossible de ne plus suivre",
+      "memberRequestSent": "Demande d'adhésion envoyée",
+      "memberRequestError": "Impossible d'envoyer la demande",
+      "adminRequestSent": "Demande admin envoyée",
+      "adminRequestError": "Impossible d'envoyer la demande admin",
+      "leaveSuccess": "Vous avez quitté avec succès",
+      "leaveError": "Impossible de quitter"
+    },
+    "invitation": {
+      "acceptSuccess": "Invitation acceptée",
+      "acceptError": "Impossible d'accepter l'invitation",
+      "rejectSuccess": "Invitation refusée",
+      "rejectError": "Impossible de refuser l'invitation"
+    },
+    "friend": {
+      "requestSent": "Demande d'ami envoyée",
+      "requestError": "Impossible d'envoyer la demande",
+      "removeSuccess": "Ami retiré",
+      "removeError": "Impossible de retirer l'ami",
+      "acceptSuccess": "Demande d'ami acceptée",
+      "acceptError": "Impossible d'accepter la demande",
+      "requestCancelled": "Demande d'ami annulée",
+      "cancelError": "Impossible d'annuler la demande"
+    },
+    "members": {
+      "requestPromoteSuccess": "Demande de promotion envoyée",
+      "requestPromoteError": "Impossible d'envoyer la demande de promotion"
+    },
     "comment": {
       "addSuccess": "Commentaire ajouté avec succès",
       "addError": "Impossible d'ajouter le commentaire",
@@ -405,6 +766,42 @@
       "deleteError": "Impossible de supprimer l'actualité",
       "voteSuccess": "Réaction ajoutée avec succès",
       "voteError": "Impossible d'ajouter la réaction"
+    },
+    "project": {
+      "addSuccess": "Projet créé avec succès",
+      "addError": "Impossible de créer le projet",
+      "editSuccess": "Projet modifié avec succès",
+      "editError": "Impossible de modifier le projet",
+      "deleteSuccess": "Projet supprimé avec succès",
+      "deleteError": "Impossible de supprimer le projet"
+    },
+    "organization": {
+      "addSuccess": "Organisation créée avec succès",
+      "addError": "Impossible de créer l'organisation",
+      "editSuccess": "Organisation modifiée avec succès",
+      "editError": "Impossible de modifier l'organisation",
+      "deleteSuccess": "Organisation supprimée avec succès",
+      "deleteError": "Impossible de supprimer l'organisation"
+    },
+    "profile": {
+      "updateSuccess": "Profil mis à jour avec succès",
+      "updateError": "Impossible de mettre à jour le profil",
+      "imageUploadSuccess": "Image de profil mise à jour avec succès",
+      "imageUploadError": "Impossible de mettre à jour l'image de profil",
+      "bannerUploadSuccess": "Bannière mise à jour avec succès",
+      "bannerUploadError": "Impossible de mettre à jour la bannière"
+    },
+    "friends": {
+      "requestSent": "Demande d'amitié envoyée",
+      "sendRequestError": "Impossible d'envoyer la demande d'amitié",
+      "requestAccepted": "Demande d'amitié acceptée",
+      "acceptRequestError": "Impossible d'accepter la demande d'amitié",
+      "requestRejected": "Demande d'amitié refusée",
+      "rejectRequestError": "Impossible de refuser la demande d'amitié",
+      "friendRemoved": "Ami retiré",
+      "removeError": "Impossible de retirer l'ami",
+      "requestCancelled": "Demande d'amitié annulée",
+      "cancelError": "Impossible d'annuler la demande d'amitié"
     },
     "error": {
       "generic": "Une erreur est survenue"
@@ -832,5 +1229,53 @@
     "datetime": {
       "invalid": "Format ISO 8601 requis"
     }
+  },
+  "ProfileTiersLieuxInfo": {
+    "reserveOnline": "Réserver en ligne",
+    "meetingRooms": "salle de réunion",
+    "meetingRoomsPlural": "salles de réunion",
+    "workstations": "poste de travail",
+    "workstationsPlural": "postes de travail",
+    "accommodation": "chambre",
+    "accommodationPlural": "chambres",
+    "reservationSpace": "Espace réservation",
+    "reservationNote": "Réserver votre espace directement en ligne",
+    "contact": "Contact",
+    "fax": "Fax",
+    "tools": "Nos outils",
+    "socialNetworks": "Réseaux sociaux",
+    "keywords": "Mots clés",
+    "forms": "Formulaires",
+    "noPois": "Aucun espace disponible"
+  },
+  "ProfilTiersLieuxAbout": {
+    "title": "À propos",
+    "readMore": "Lire la suite",
+    "readLess": "Lire moins",
+    "equipements": "Équipements",
+    "seeAllEquipements": "Voir tous les équipements",
+    "activities": "Activités proposées",
+    "latestNews": "Dernières actualités",
+    "allNews": "Toutes les actualités",
+    "rooms": "Salles de réunion",
+    "allRooms": "Voir toutes les salles",
+    "learnMore": "En savoir plus",
+    "capacity": "pers.",
+    "noEquipements": "Aucun équipement renseigné",
+    "noActivities": "Aucune activité renseignée",
+    "noNews": "Aucune actualité disponible",
+    "noRooms": "Aucune salle disponible",
+    "halfDay": "/demi-journée",
+    "fullDay": "/journée",
+    "coworking": "Coworking",
+    "noCoworking": "Pas de poste de travail en coworking",
+    "accommodation": "Hébergement",
+    "noAccommodation": "Pas de chambre d'hébergement",
+    "coworkingSpace": "Espace de coworking",
+    "accommodationSpace": "Espace d'hébergement",
+    "nightly": "Nuitée",
+    "bed": "lit",
+    "reserve": "Réserver",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer cet élément ?"
   }
 }

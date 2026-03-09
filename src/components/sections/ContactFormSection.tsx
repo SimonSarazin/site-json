@@ -218,7 +218,7 @@ export function ContactFormSection({ id, props }: { id?: string; props: ContactF
                 {field.type !== 'checkbox' && (
                   <Label htmlFor={field.name} className="text-sm font-medium">
                     {t(field.label)}
-                    {field.required && <span className="text-red-500 ml-1">*</span>}
+                    {field.required && <span className="text-destructive ml-1">*</span>}
                   </Label>
                 )}
                 {renderField(field)}

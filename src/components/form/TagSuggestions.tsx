@@ -33,7 +33,10 @@ export function TagSuggestions({ query, onSelect, texts }: TagSuggestionsProps) 
 
   return (
     <Command className="rounded-lg border shadow-md" shouldFilter={false}>
-      <CommandList className="max-h-[200px] overflow-y-auto" onWheel={(e) => e.stopPropagation()}>
+      <CommandList
+        className="max-h-[200px] overflow-y-auto"
+        onWheel={(e) => e.stopPropagation()}
+      >
         {isLoading && (
           <div className="flex items-center justify-center py-6">
             <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
@@ -69,3 +72,5 @@ export function TagSuggestions({ query, onSelect, texts }: TagSuggestionsProps) 
     </Command>
   );
 }
+
+export type { TagSuggestionsProps };

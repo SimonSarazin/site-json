@@ -1,13 +1,15 @@
-import { MapPin, Phone, Mail, Calendar, Tag, ChevronRight } from "lucide-react";
+import { MapPin, Phone, Mail, Calendar, Tag, ChevronRight, Star } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SearchCardProps } from "../schema";
 import useItem from "../hooks/useItem";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { getBaseUrl } from "@/lib/constant/common";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import { useCocolight } from "@/hooks/useCocolight";
+import { cn } from "@/lib/utils";
 
 function shortenTag(tag: string, maxLength = 20): string {
   if (tag.length <= maxLength) return tag;
@@ -22,9 +24,11 @@ export default function SearchCardDetailed({
     tagLimit: 10,
     showDescription: true,
     showAddress: true,
+    showStar: true,
   },
 }: SearchCardProps) {
   const data = useItem(item);
+  const { entity } = useCocolight();
 
   const {
     name,
@@ -32,13 +36,15 @@ export default function SearchCardDetailed({
     shortDescription,
     description,
     tags = [],
-    image,
     email,
     phone,
     startDate,
     endDate,
+    type,
+    isStarred
   } = data;
-
+  const serverData = item?.serverData;
+  const image = serverData?.profilImageUrl;
   const initials = useMemo(
     () =>
       name
@@ -50,6 +56,38 @@ export default function SearchCardDetailed({
     [name]
   );
 
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [localIsStarred, setLocalIsStarred] = useState(isStarred);
+
+  const handleToggleStar = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (!entity || !item?.id || isUpdating) return;
+
+    try {
+      setIsUpdating(true);
+      const newStarredValue = !localIsStarred;
+      const entityType = item?.getEntityType?.();
+
+      await entity.endpointApi.updatePathValue({
+        id: item.id,
+        collection: (entityType || "events") as any,
+        path: "isStarred",
+        value: newStarredValue as unknown as { [k: string]: unknown }
+      });
+
+      setLocalIsStarred(newStarredValue);
+
+      if ((item as any).reload) {
+        await (item as any).reload();
+      }
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour de l'étoile:", error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   const fullDescription = description || shortDescription;
   const displayTags = tags.slice(0, card.tagLimit || 10);
   const remainingTags = tags.length - (card.tagLimit || 10);
@@ -59,7 +97,7 @@ export default function SearchCardDetailed({
       <CardContent className="p-0">
         <div className="flex flex-col sm:flex-row">
           {/* Image section */}
-          <div className="w-full sm:w-64 h-48 sm:h-auto flex-shrink-0 relative overflow-hidden">
+          <div className="w-full sm:w-64 h-48 sm:h-auto flex-shrink-0 relative overflow-hidden ml-4 rounded-lg">
             {image ? (
               <OptimizedImage
                 src={image.startsWith('http') ? image : `${getBaseUrl()}${image}`}
@@ -77,12 +115,40 @@ export default function SearchCardDetailed({
                 </Avatar>
               </div>
             )}
+            
+            {card.showStar && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleToggleStar}
+                disabled={isUpdating}
+                className={cn(
+                  "absolute top-2 right-2 bg-white/90 hover:bg-white transition-all",
+                  isUpdating && "opacity-50 cursor-not-allowed"
+                )}
+                aria-label={localIsStarred ? "Retirer des favoris" : "Ajouter aux favoris"}
+              >
+                <Star 
+                  className={cn(
+                    "w-5 h-5 transition-all",
+                    localIsStarred ? "fill-yellow-400 text-yellow-400" : "text-gray-600"
+                  )} 
+                />
+              </Button>
+            )}
           </div>
 
           {/* Content section */}
           <div className="flex-1 p-6">
             <div className="flex justify-between items-start mb-4">
               <div className="flex-1">
+                {type && (
+                  <Badge
+                    className="top-4 left-4"
+                  >
+                    {type}
+                  </Badge>
+                )}
                 <h3 className="text-2xl font-bold text-primary group-hover:text-primary/80 transition-colors mb-2">
                   {name}
                 </h3>

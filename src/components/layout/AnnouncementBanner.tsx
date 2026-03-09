@@ -5,10 +5,10 @@ import { cn } from "@/lib/utils";
 import type { Header } from "@/types/site-schema";
 
 const variantStyles: Record<string, string> = {
-  info: "bg-blue-500 text-white",
-  success: "bg-green-500 text-white",
-  warning: "bg-yellow-500 text-black",
-  error: "bg-red-500 text-white",
+  info: "bg-info text-info-foreground",
+  success: "bg-success text-success-foreground",
+  warning: "bg-warning text-warning-foreground",
+  error: "bg-destructive text-destructive-foreground",
 };
 const variantIcons: Record<
   string,

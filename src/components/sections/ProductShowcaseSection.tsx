@@ -54,7 +54,7 @@ export function ProductShowcaseSection({ id, props }: { id?: string; props: Prod
                 variant="ghost"
                 size="sm"
                 aria-label="Image précédente"
-                className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white"
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background"
                 onClick={() => prevImage(product.id, product.images.length)}
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -64,7 +64,7 @@ export function ProductShowcaseSection({ id, props }: { id?: string; props: Prod
                 variant="ghost"
                 size="sm"
                 aria-label="Image suivante"
-                className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white"
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background"
                 onClick={() => nextImage(product.id, product.images.length)}
               >
                 <ChevronRight className="w-4 h-4" />
@@ -78,7 +78,7 @@ export function ProductShowcaseSection({ id, props }: { id?: string; props: Prod
                     aria-label={`Afficher l'image ${index + 1}`}
                     className={cn(
                       "w-2 h-2 rounded-full transition-colors",
-                      index === currentIndex ? "bg-white" : "bg-white/50"
+                      index === currentIndex ? "bg-background" : "bg-background/50"
                     )}
                     onClick={() =>
                       setCurrentImageIndex(prev => ({ ...prev, [product.id]: index }))

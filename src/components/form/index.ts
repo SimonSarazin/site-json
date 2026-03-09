@@ -15,3 +15,5 @@ export type { SelectInputProps, SelectOption } from "./SelectInput";
 export type { CheckboxInputProps } from "./CheckboxInput";
 export type { RadioInputProps, RadioOption } from "./RadioInput";
 export type { FileInputProps } from "./FileInput";
+export type { TagsInputProps } from "./TagsInput";
+export type { TagSuggestionsProps } from "./TagSuggestions";

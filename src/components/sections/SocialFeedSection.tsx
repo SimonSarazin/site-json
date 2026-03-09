@@ -27,15 +27,15 @@ export function SocialFeedSection({ id, props }: { id?: string; props: SocialFee
   const getPlatformColor = () => {
     switch (platform) {
       case 'twitter':
-        return 'text-blue-500';
+        return 'text-info';
       case 'instagram':
-        return 'text-pink-500';
+        return 'text-chart-1';
       case 'linkedin':
-        return 'text-blue-600';
+        return 'text-chart-3';
       case 'facebook':
-        return 'text-blue-700';
+        return 'text-chart-2';
       default:
-        return 'text-gray-500';
+        return 'text-muted-foreground';
     }
   };
 

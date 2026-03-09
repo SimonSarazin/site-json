@@ -4,6 +4,7 @@ import type {
   ProfileGallerySection,
   ProfileHeaderSection,
   ProfileInfoSection,
+  ProfileTiersLieuxInfoSection,
   ProfileMapSection,
   ProfileMembersSection,
   ProfileOrganizerSection,
@@ -35,7 +36,8 @@ const ProfileBadges = lazy(() => import("./components/sections/ProfileBadges"));
 const ProfileTags = lazy(() => import("./components/sections/ProfileTags"));
 const ProfileOpeningHours = lazy(() => import("./components/sections/ProfileOpeningHours"));
 const ProfileTabLayout = lazy(() => import("./components/sections/ProfileTabLayout"));
-
+const ProfileTiersLieuxInfo = lazy(() => import("./components/sections/custom/ProfileTiersLieuxInfo"));
+const ProfileTiersLieuxAbout = lazy(() => import("./components/sections/custom/ProfilTiersLieuxAbout"));
 // Lazy load des templates
 const ProfileTemplateDynamic = lazy(() => import("./components/templates/ProfileTemplateDynamic"));
 
@@ -47,7 +49,9 @@ interface ProfileSectionRendererProps {
 const PROFILE_SECTION_TYPES = [
   "profile-header",
   "profile-info",
+  "profile-info-tl",
   "profile-about",
+  "profile-about-tl",
   "profile-map",
   "profile-organizer",
   "profile-members",
@@ -95,8 +99,13 @@ export function ProfileSectionRenderer({ section }: ProfileSectionRendererProps)
     case "profile-info":
       return <ProfileInfo section={section as ProfileInfoSection} />;
 
+    case "profile-info-tl":
+      return <ProfileTiersLieuxInfo section={section as ProfileTiersLieuxInfoSection} />;
+
     case "profile-about":
       return <ProfileAbout section={section as ProfileAboutSection} />;
+    case "profile-about-tl":
+      return <ProfileTiersLieuxAbout section={section as ProfileAboutSection} />;
 
     case "profile-map":
       return <ProfileMap section={section as ProfileMapSection} />;

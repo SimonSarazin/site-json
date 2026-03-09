@@ -80,7 +80,7 @@ async function createApiInstances(
   const newClient = new Cocolight.ApiClient({
     baseURL: options.baseURL ?? getBaseUrl(),
     ...options,
-    debug: import.meta.env.DEV ?? false,
+    debug: typeof window !== "undefined" && (import.meta.env.DEV ?? false),
     tokenStorageStrategy,
   });
 

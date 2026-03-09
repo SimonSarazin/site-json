@@ -114,7 +114,7 @@ export default function ProfileTemplateDynamic() {
                   <TabsTrigger
                     key={tab.id}
                     value={tab.id}
-                    className="flex-shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm text-foreground hover:text-foreground"
+                    className="shrink-0 px-2 sm:px-3 md:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm text-foreground hover:text-foreground"
                   >
                     {t(tab.label)}
                   </TabsTrigger>

@@ -94,7 +94,7 @@ export function CommentInput({
               onClick={handleSubmit}
               className={`transition-colors ${isSmall ? "" : "mr-1"} ${buttonSize} ${
                 text.trim()
-                  ? 'text-blue-500 hover:text-blue-600'
+                  ? 'text-info hover:text-info/80'
                   : 'opacity-50 cursor-not-allowed'
               }`}
             >

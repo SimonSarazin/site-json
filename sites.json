@@ -1,0 +1,42 @@
+[
+  {
+    "slug": "cyberReunion",
+    "config": "config.prod.cyber-reunion.json",
+    "css": "index-cyber-reunion"
+  },
+  {
+    "slug": "rezoLaMer",
+    "config": "config.prod.rezo-la-mer.json",
+    "css": "index-rezo-la-mer"
+  },
+  {
+    "slug": "sportSanteBienetre",
+    "config": "config.prod.sport-sante-bien-etre.json",
+    "css": "index-sport-sante-bien-etre"
+  },
+  {
+    "slug": "institutBleu",
+    "config": "config.prod.institut-bleu.json",
+    "css": "index-institut-bleu"
+  },
+  {
+    "slug": "franceTierslieux",
+    "config": "config.prod.tiers-lieux.json",
+    "css": "index-tiers-lieux"
+  },
+  {
+    "slug": "juliePotVin",
+    "config": "config.prod.julie-pot-vin.json",
+    "css": "index-julie-pot-vin"
+  },
+  {
+    "slug": "jardin",
+    "config": "config.prod.jardin-ocean.json",
+    "css": "index-jardin-ocean"
+  },
+  {
+    "slug": "cocolight",
+    "config": "config.prod.jardin-ocean.json",
+    "css": "index-jardin-ocean"
+  }
+]

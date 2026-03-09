@@ -79,8 +79,8 @@ export function CTASection({ id, props }: { id?: string; props: CTASectionProps 
                 size="lg"
                 className={cn(
                   "text-lg px-8 py-6",
-                  backgroundImage && button.variant === 'default' && "bg-white text-black hover:bg-white/90",
-                  backgroundImage && button.variant === 'outline' && "border-white text-white hover:bg-white hover:text-black"
+                  backgroundImage && button.variant === 'default' && "bg-background text-foreground hover:bg-background/90",
+                  backgroundImage && button.variant === 'outline' && "border-background text-background hover:bg-background hover:text-foreground"
                 )}
                 onClick={() => handleButtonClick(button.href)}
               >

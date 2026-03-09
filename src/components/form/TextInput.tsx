@@ -62,7 +62,7 @@ const TextInput: React.FC<TextInputProps> = ({
         )}
       />
       {error && (
-        <p className="text-sm text-destructive">dsd{error}</p>
+        <p className="text-sm text-destructive">{error}</p>
       )}
       {helpText && !error && (
         <p className="text-sm text-muted-foreground">{helpText}</p>
