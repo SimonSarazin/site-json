@@ -629,7 +629,7 @@ export default function AdminPanel() {
             <ObjectFields
               schema={HeaderFieldsSchema}
               value={headerFieldsValue as Record<string, unknown>}
-              onChange={(v) => patch({ header: { ...header, ...v } })}
+              onChange={(v) => patch({ header: { nav: (header as any).nav, ...v } })}
               compact
             />
 
@@ -774,7 +774,7 @@ export default function AdminPanel() {
             <ObjectFields
               schema={FooterFieldsSchema}
               value={footerFieldsValue as Record<string, unknown>}
-              onChange={(v) => updateFooter({ ...footer, ...v })}
+              onChange={(v) => updateFooter({ columns: (footer as any).columns, ...v })}
               compact
             />
           </div>

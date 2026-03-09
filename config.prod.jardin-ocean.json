@@ -3,17 +3,16 @@
   "generated": "2025-09-08T10:30:00.000Z",
   "meta": {
     "title": {
-      "fr": "EDIH - Cyber Réunion",
+      "fr": "cocoLight",
       "en": "EDIH - Cyber Réunion"
     },
     "description": {
-      "fr": "EDIH - Cyber Réunion - Pôle européen d'innovation numérique pour la cybersécurité à La Réunion",
+      "fr": "cocoLight",
       "en": "EDIH - Cyber Réunion - European Digital Innovation Hub for cybersecurity in Réunion"
     },
     "defaultLang": "fr",
     "languages": [
-      "fr",
-      "en"
+      "fr"
     ],
     "favicon": "/images/cyberReunion/logo.png",
     "themeColor": "#d4a520",
@@ -27,20 +26,6 @@
     ]
   },
   "header": {
-    "type": "cyber-reunion",
-    "path": "/",
-    "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10\"></path></svg>",
-    "logoTitle": {
-      "fr": "Cyber Réunion",
-      "en": "Cyber Réunion"
-    },
-    "ctaButton": {
-      "label": {
-        "fr": "Se connecter",
-        "en": "Log in"
-      },
-      "path": "/aide-cyber"
-    },
     "nav": [
       {
         "label": {
@@ -58,30 +43,21 @@
       },
       {
         "label": {
-          "fr": "Membres",
-          "en": "Members"
-        },
-        "path": "/membres"
-      },
-      {
-        "label": {
-          "fr": "Annuaire",
-          "en": "Directory"
-        },
-        "path": "/annuaire"
-      },
-      {
-        "label": {
-          "fr": "Mapping",
-          "en": "Mapping"
-        },
-        "path": "/mapping"
-      },
-      {
-        "label": {
-          "fr": "Evenement"
+          "fr": "Evenements"
         },
         "path": "/events"
+      },
+      {
+        "label": {
+          "fr": "Communaute"
+        },
+        "path": "/Communaute"
+      },
+      {
+        "label": {
+          "fr": "Ressource"
+        },
+        "path": "/ressource"
       },
       {
         "label": {
@@ -90,16 +66,34 @@
         "path": "/feuillederoute"
       }
     ],
+    "type": "cyber-reunion",
+    "path": "/",
+    "logoIcon": "leaf",
+    "logoTitle": {
+      "fr": "Jardins Communs Ocean Indien",
+      "en": "Cyber Réunion"
+    },
+    "ctaButton": {
+      "label": {
+        "fr": "Se connecter",
+        "en": "Log in"
+      },
+      "path": "/aide-cyber"
+    },
     "sticky": true,
     "transparent": false,
     "height": "lg",
     "utilities": {
-      "themeSwitch": true,
-      "langSwitch": true,
+      "themeSwitch": false,
+      "langSwitch": false,
       "search": false,
       "auth": true,
       "cart": false,
       "notifications": true
+    },
+    "piggyBank": {
+      "icon": "piggy-bank",
+      "amount": "4215$"
     }
   },
   "pages": [
@@ -170,14 +164,15 @@
                 "variant": "secondary"
               }
             ],
-            "showScrollIndicator": true
+            "showScrollIndicator": true,
+            "subheadColor": "white"
           }
         },
         {
           "type": "html",
           "id": "mission",
           "props": {
-            "html": "<section class=\"relative py-32 px-4 overflow-hidden\">\n  <div class=\"absolute inset-0 z-0\">\n    <img src=\"/images/cyberReunion/mission.png\" alt=\"Mission Cyber Réunion\" class=\"w-full h-full object-cover\" />\n    <div class=\"absolute inset-0 bg-linear-to-r from-background via-background/80 to-background/60\">\n    </div>\n  </div>\n  <div class=\"relative z-10 container mx-auto max-w-4xl\">\n    <div class=\"space-y-8\">\n      <h2 class=\"text-4xl md:text-5xl font-bold mb-6 text-foreground\">\n        Notre mission\n      </h2>\n      <div class=\"space-y-6 text-lg md:text-xl leading-relaxed\">\n        <p class=\"text-muted-foreground\">\n          <span class=\"text-primary font-semibold\">\n            Nourrir l'Indianocéanie\n          </span>\n          est un mouvement coopératif pour renforcer la souveraineté alimentaire de La Réunion, Mayotte, Madagascar, Maurice, les Comores et les Seychelles.\n          <span class=\"text-primary font-medium\">\n            cybersécurité\n          </span>\n          pour les entreprises et collectivités de La Réunion.\n        </p>\n        <p class=\"text-muted-foreground\">\n          Nous créons un\n          <span class=\"text-accent font-medium\">\n            espace de financement participatif\n          </span>\n          où producteurs, consommateurs, coopératives et diaspora peuvent co-financer et développer une agriculture tropicale durable, adaptée aux réalités insulaires.\n        </p>\n        <div class=\"grid md:grid-cols-2 gap-6 pt-8\">\n          <div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-sm border border-primary/20\">\n            <h3 class=\"text-2xl font-semibold mb-3 text-primary\">\n              Autonomie alimentaire\n            </h3>\n            <p class=\"text-muted-foreground\">\n             Réduire la dépendance aux importations en finançant les filières vivrières locales : fruits, légumes, épices, élevage\n            </p>\n          </div>\n          <div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-sm border border-accent/20\">\n            <h3 class=\"text-2xl font-semibold mb-3 text-accent\">\n              Solidarité inter-îles\n            </h3>\n            <p class=\"text-muted-foreground\">\n              Mutualiser savoirs, semences et pratiques entre les îles de l'océan Indien pour une agriculture résiliente\n            </p>\n          </div>\n        </div>\n      </div>\n    </div>\n  </div>\n</section>"
+            "html": "<section class=\"relative py-32 px-4 overflow-hidden\">\n  <div class=\"absolute inset-0 z-0\">\n    <img src=\"/images/jardin/mission-farm.jpg\" alt=\"Mission Cyber Réunion\" class=\"w-full h-full object-cover\" />\n    <div class=\"absolute inset-0 bg-linear-to-r from-background via-background/80 to-background/60\">\n    </div>\n  </div>\n  <div class=\"relative z-10 container mx-auto max-w-4xl\">\n    <div class=\"space-y-8\">\n      <h2 class=\"text-4xl md:text-5xl font-bold mb-6 text-foreground\">\n        Notre mission\n      </h2>\n      <div class=\"space-y-6 text-lg md:text-xl leading-relaxed\">\n        <p class=\"text-muted-foreground\">\n          <span class=\"text-primary font-semibold\">\n            Nourrir l'Indianocéanie\n          </span>\n          est un mouvement coopératif pour renforcer la souveraineté alimentaire de La Réunion, Mayotte, Madagascar, Maurice, les Comores et les Seychelles.\n          <span class=\"text-primary font-medium\">\n            cybersécurité\n          </span>\n          pour les entreprises et collectivités de La Réunion.\n        </p>\n        <p class=\"text-muted-foreground\">\n          Nous créons un\n          <span class=\"text-accent font-medium\">\n            espace de financement participatif\n          </span>\n          où producteurs, consommateurs, coopératives et diaspora peuvent co-financer et développer une agriculture tropicale durable, adaptée aux réalités insulaires.\n        </p>\n        <div class=\"grid md:grid-cols-2 gap-6 pt-8\">\n          <div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-sm border border-primary/20\">\n            <h3 class=\"text-2xl font-semibold mb-3 text-primary\">\n              Autonomie alimentaire\n            </h3>\n            <p class=\"text-muted-foreground\">\n             Réduire la dépendance aux importations en finançant les filières vivrières locales : fruits, légumes, épices, élevage\n            </p>\n          </div>\n          <div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-sm border border-accent/20\">\n            <h3 class=\"text-2xl font-semibold mb-3 text-accent\">\n              Solidarité inter-îles\n            </h3>\n            <p class=\"text-muted-foreground\">\n              Mutualiser savoirs, semences et pratiques entre les îles de l'océan Indien pour une agriculture résiliente\n            </p>\n          </div>\n        </div>\n      </div>\n    </div>\n  </div>\n</section>"
           }
         },
         {
@@ -195,7 +190,7 @@
             },
             "features": [
               {
-                "icon": "shield",
+                "icon": "phone-incoming",
                 "title": {
                   "fr": "Réseau inter-îles",
                   "en": "Governance"
@@ -207,7 +202,7 @@
                 "color": "primary"
               },
               {
-                "icon": "server",
+                "icon": "trending-up",
                 "title": {
                   "fr": "Crowdfunding agricole",
                   "en": "Infrastructure security"
@@ -219,7 +214,7 @@
                 "color": "accent"
               },
               {
-                "icon": "lock",
+                "icon": "users-round",
                 "title": {
                   "fr": "Mobiliser les citoyens",
                   "en": "Access security"
@@ -231,7 +226,7 @@
                 "color": "primary"
               },
               {
-                "icon": "eye",
+                "icon": "leaf",
                 "title": {
                   "fr": "Agriculture tropicale durable",
                   "en": "Endpoint security"
@@ -243,7 +238,7 @@
                 "color": "accent"
               },
               {
-                "icon": "graduation-cap",
+                "icon": "share-2",
                 "title": {
                   "fr": "Mutualiser les ressources",
                   "en": "Awareness"
@@ -255,7 +250,7 @@
                 "color": "primary"
               },
               {
-                "icon": "users",
+                "icon": "square-check-big",
                 "title": {
                   "fr": "Gouvernance ouverte",
                   "en": "Cyber attack response"
@@ -266,7 +261,8 @@
                 },
                 "color": "accent"
               }
-            ]
+            ],
+            "bg": "primary"
           }
         },
         {
@@ -310,17 +306,16 @@
                 "color": "teal"
               },
               {
-                "icon": "alert-triangle",
+                "icon": "leaf",
                 "title": {
-                  "fr": "Actions urgentes",
+                  "fr": "Cultiver",
                   "en": "Urgent actions"
                 },
-                "subtitle": {
-                  "fr": "Priorités du moment",
-                  "en": "Current priorities"
-                },
                 "href": "/urgence-cyber",
-                "color": "amber"
+                "color": "amber",
+                "subtitle": {
+                  "fr": "Rejoindre une ferme"
+                }
               },
               {
                 "icon": "coins",
@@ -335,7 +330,8 @@
                 "href": "/projets",
                 "color": "eco"
               }
-            ]
+            ],
+            "bg": "primary"
           }
         },
         {
@@ -351,111 +347,108 @@
               "fr": "Ensemble, construisons la souveraineté alimentaire de l'océan Indien",
               "en": "A network of local experts to support the secure digital transformation of our businesses"
             },
-            "image": "/images/jardin/1875e4f20328ce72.png",
             "imageAlt": {
               "fr": "Événement cybersécurité à La Réunion",
               "en": "Cybersecurity event in Réunion"
             },
             "actions": [
               {
-                "icon": "folder-open",
+                "icon": "leaf",
                 "title": {
-                  "fr": "Découvrir les projets",
+                  "fr": "Proposer un projet",
                   "en": "Discover projects"
                 },
                 "description": {
-                  "fr": "Explorez les projets cybersécurité en cours à La Réunion",
+                  "fr": "Partagez votre initiative agricole insulaire et trouvez du financement",
                   "en": "Explore ongoing cybersecurity projects in Réunion"
                 },
                 "ctaLabel": {
-                  "fr": "Voir les projets",
+                  "fr": "Soumettre un projet projet",
                   "en": "View projects"
                 },
                 "href": "/projets"
               },
               {
-                "icon": "clipboard-check",
+                "icon": "hand-heart",
                 "title": {
-                  "fr": "Diagnostic cyber",
+                  "fr": "Partager des savoirs",
                   "en": "Cyber assessment"
                 },
                 "description": {
-                  "fr": "Évaluez gratuitement le niveau de sécurité de votre entreprise",
+                  "fr": "Transmettez les pratiques agricoles traditionnelles de votre île",
                   "en": "Assess your company's security level for free"
                 },
                 "ctaLabel": {
-                  "fr": "Faire le diagnostic",
+                  "fr": "Participer",
                   "en": "Start assessment"
                 },
                 "href": "/aide-cyber"
               },
               {
-                "icon": "badge-check",
+                "icon": "hand-heart",
                 "title": {
-                  "fr": "Devenir prestataire",
+                  "fr": "Rejoindre une exploitation",
                   "en": "Become a provider"
                 },
                 "description": {
-                  "fr": "Rejoignez le réseau des experts cyber de La Réunion",
+                  "fr": "Trouvez des missions bénévoles dans les fermes de l'océan Indien",
                   "en": "Join the network of cyber experts in Réunion"
                 },
                 "ctaLabel": {
-                  "fr": "Rejoindre",
+                  "fr": "Voir les actions",
                   "en": "Join"
                 },
                 "href": "/rejoindre"
               },
               {
-                "icon": "alert-triangle",
+                "icon": "git-branch",
                 "title": {
-                  "fr": "Urgence Cyber",
-                  "en": "Cyber Emergency"
+                  "fr": "Co-financer"
                 },
                 "description": {
-                  "fr": "Victime d'une cyberattaque ? Obtenez de l'aide immédiatement",
-                  "en": "Victim of a cyber attack? Get help immediately"
+                  "fr": "Soutenez les projets alimentaires qui nourrissent nos îles"
                 },
                 "ctaLabel": {
-                  "fr": "Appel urgence",
-                  "en": "Emergency call"
+                  "fr": "Decouvrir"
                 },
-                "href": "/urgence-cyber"
+                "href": ""
               }
             ],
             "stats": [
               {
-                "value": "50+",
+                "value": "6",
                 "label": {
-                  "fr": "Prestataires certifiés",
-                  "en": "Certified providers"
-                },
-                "color": "primary"
-              },
-              {
-                "value": "200+",
-                "label": {
-                  "fr": "Entreprises accompagnées",
+                  "fr": "Îles connectées",
                   "en": "Companies supported"
                 },
                 "color": "primary"
               },
               {
-                "value": "6",
+                "value": "75+",
                 "label": {
-                  "fr": "Domaines d'expertise",
+                  "fr": "Projets financés",
                   "en": "Areas of expertise"
                 },
-                "color": "accent"
+                "color": "primary"
               },
               {
-                "value": "24/7",
+                "value": "120+",
                 "label": {
-                  "fr": "Assistance disponible",
+                  "fr": "Producteurs locaux",
                   "en": "Support available"
                 },
-                "color": "primary"
+                "color": "cyan-bright"
+              },
+              {
+                "value": "38K$",
+                "label": {
+                  "fr": "Fonds collectés"
+                },
+                "color": "cyan-bright"
               }
-            ]
+            ],
+            "bg": "primary",
+            "image": "/images/jardin/1b5be58a6aa7e0be.png"
           }
         },
         {
@@ -500,7 +493,8 @@
                 "href": "/urgence-cyber",
                 "variant": "accent"
               }
-            ]
+            ],
+            "bg": "primary"
           }
         }
       ]
@@ -518,11 +512,11 @@
           "id": "projets-cyber",
           "props": {
             "headline": {
-              "fr": "Projets",
+              "fr": "Projets marins",
               "en": "Projects"
             },
             "subhead": {
-              "fr": "Découvrez les projets cybersécurité à La Réunion",
+              "fr": "Soutenez les initiatives qui protègent et valorisent nos océans",
               "en": "Discover cybersecurity projects in Réunion"
             },
             "buttons": [
@@ -536,11 +530,45 @@
                 "variant": "primary"
               }
             ],
-            "showSearch": true,
+            "showSearch": false,
             "searchPlaceholder": {
               "fr": "Rechercher un projet...",
               "en": "Search for a project..."
-            }
+            },
+            "categories": [],
+            "types": [
+              {
+                "id": "",
+                "label": {
+                  "fr": "Tous"
+                }
+              },
+              {
+                "id": "",
+                "label": {
+                  "fr": "Protection"
+                }
+              },
+              {
+                "id": "",
+                "label": {
+                  "fr": "Recherche"
+                }
+              },
+              {
+                "id": "",
+                "label": {
+                  "fr": "Innovation"
+                }
+              },
+              {
+                "id": "",
+                "label": {
+                  "fr": "Education"
+                }
+              }
+            ],
+            "bg": "primary"
           }
         },
         {
@@ -549,7 +577,7 @@
           "props": {
             "useFilter": true,
             "showMap": false,
-            "enableMap": true,
+            "enableMap": false,
             "showActiveFiltersTypes": true,
             "showActiveFiltersTags": true,
             "disableInfiniteScroll": false,
@@ -557,8 +585,7 @@
               "defaultTypes": [
                 "projects"
               ],
-              "notSourceKey": true,
-              "defaultFields": []
+              "notSourceKey": true
             },
             "list": {
               "columns": {
@@ -568,11 +595,13 @@
                 "xl": 4
               },
               "card": {
-                "type": "profile",
-                "variant": "profile",
+                "type": "poi-rezo-la-mer",
+                "variant": "rezo-la-mer",
                 "detailsMode": "drawer"
               }
-            }
+            },
+            "showDetailedViewToggle": false,
+            "bg": "primary"
           }
         }
       ]
@@ -634,743 +663,158 @@
       ]
     },
     {
-      "path": "/annuaire",
+      "path": "/Communaute",
       "title": {
-        "fr": "Annuaire - Cyber Réunion",
-        "en": "Directory - Cyber Réunion"
+        "fr": "Communaute"
       },
-      "layout": "fullwidth",
+      "layout": "default",
       "sections": [
         {
           "type": "title-with-filters-rezo-la-mer",
-          "id": "annuaire-header",
           "props": {
             "headline": {
-              "fr": "Cyber Sécurité Réunion",
-              "en": "Cyber Security Réunion"
+              "fr": "Communauté marine"
+            },
+            "subhead": {
+              "fr": "Connectez-vous avec des passionnés et des organisations engagées pour l'océan"
             },
             "buttons": [
               {
                 "label": {
-                  "fr": "Inscrire mon organisation",
-                  "en": "Register my organization"
+                  "fr": "Rejoindre la communaute"
                 },
-                "icon": "building-2",
-                "modal": "json-form",
-                "variant": "primary",
-                "requiresAdmin": false,
-                "formConfig": {
-                  "title": {
-                    "fr": "Inscrire mon organisation",
-                    "en": "Register my organization"
-                  },
-                  "icon": "building-2",
-                  "submitLabel": {
-                    "fr": "Inscrire mon organisation",
-                    "en": "Register my organization"
-                  },
-                  "submitMode": "sdk",
-                  "entityType": "organization",
-                  "tagsFrom": [
-                    "actorType",
-                    "domains",
-                    "specialties"
-                  ],
-                  "extraData": {
-                    "type": "NGO",
-                    "public": true,
-                    "preferences": {
-                      "toBeValidated": {
-                        "cyberReunion": true
-                      }
-                    },
-                    "costumSlug": "cyberReunion",
-                    "costumEditMode": false,
-                    "costumId": "695b58ca8693fc2c121208e4",
-                    "costumType": "organizations"
-                  },
-                  "successMessage": {
-                    "fr": "Votre organisation a été inscrite avec succès",
-                    "en": "Your organization has been registered successfully"
-                  },
-                  "steps": [
-                    {
-                      "title": {
-                        "fr": "Qui êtes-vous ?",
-                        "en": "Who are you?"
-                      },
-                      "description": {
-                        "fr": "Commençons par quelques informations de base",
-                        "en": "Let's start with some basic information"
-                      },
-                      "icon": "building-2",
-                      "fields": [
-                        {
-                          "name": "email",
-                          "label": {
-                            "fr": "Email",
-                            "en": "Email"
-                          },
-                          "type": "email",
-                          "required": true,
-                          "placeholder": {
-                            "fr": "contact@organisation.com"
-                          },
-                          "validation": "email"
-                        },
-                        {
-                          "name": "name",
-                          "label": {
-                            "fr": "Nom de l'organisation",
-                            "en": "Organization name"
-                          },
-                          "type": "text",
-                          "required": true,
-                          "placeholder": {
-                            "fr": "Nom de votre organisation",
-                            "en": "Your organization name"
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "title": {
-                        "fr": "Détails de l'organisation",
-                        "en": "Organization details"
-                      },
-                      "description": {
-                        "fr": "Informations complémentaires sur votre activité",
-                        "en": "Additional information about your activity"
-                      },
-                      "icon": "file-text",
-                      "fields": [
-                        {
-                          "name": "siren",
-                          "label": {
-                            "fr": "SIREN",
-                            "en": "SIREN"
-                          },
-                          "type": "text",
-                          "placeholder": {
-                            "fr": "123 456 789"
-                          }
-                        },
-                        {
-                          "name": "actorType",
-                          "label": {
-                            "fr": "Type d'acteur",
-                            "en": "Actor type"
-                          },
-                          "type": "multiselect",
-                          "options": [
-                            {
-                              "value": "Entreprises(produits/solutions et services)",
-                              "label": {
-                                "fr": "Entreprises (produits/solutions et services)",
-                                "en": "Companies (products/solutions and services)"
-                              }
-                            },
-                            {
-                              "value": "CERT/CSIRT",
-                              "label": {
-                                "fr": "CERT/CSIRT",
-                                "en": "CERT/CSIRT"
-                              }
-                            },
-                            {
-                              "value": "Organismes de formation",
-                              "label": {
-                                "fr": "Organismes de formation",
-                                "en": "Training organizations"
-                              }
-                            },
-                            {
-                              "value": "Laboratoires/recherche",
-                              "label": {
-                                "fr": "Laboratoires/recherche",
-                                "en": "Laboratories/research"
-                              }
-                            },
-                            {
-                              "value": "Structure d'accompagnement et financement",
-                              "label": {
-                                "fr": "Structure d'accompagnement et financement",
-                                "en": "Support and funding structure"
-                              }
-                            },
-                            {
-                              "value": "Réseaux/cluster",
-                              "label": {
-                                "fr": "Réseaux/cluster",
-                                "en": "Networks/cluster"
-                              }
-                            },
-                            {
-                              "value": "Services défense/intérieur",
-                              "label": {
-                                "fr": "Services défense/intérieur",
-                                "en": "Defense/interior services"
-                              }
-                            },
-                            {
-                              "value": "Association/ONG",
-                              "label": {
-                                "fr": "Association/ONG",
-                                "en": "Association/NGO"
-                              }
-                            }
-                          ]
-                        },
-                        {
-                          "name": "domains",
-                          "label": {
-                            "fr": "Domaines / sous-domaines",
-                            "en": "Domains / sub-domains"
-                          },
-                          "type": "multiselect",
-                          "placeholder": {
-                            "fr": "Sélectionner les domaines...",
-                            "en": "Select domains..."
-                          },
-                          "options": [
-                            {
-                              "value": "Sécurité Réseau",
-                              "label": {
-                                "fr": "Sécurité Réseau",
-                                "en": "Network Security"
-                              }
-                            },
-                            {
-                              "value": "Sécurité Cloud",
-                              "label": {
-                                "fr": "Sécurité Cloud",
-                                "en": "Cloud Security"
-                              }
-                            },
-                            {
-                              "value": "Sécurité des postes",
-                              "label": {
-                                "fr": "Sécurité des postes",
-                                "en": "Endpoint Security"
-                              }
-                            },
-                            {
-                              "value": "Sécurité des Applications",
-                              "label": {
-                                "fr": "Sécurité des Applications",
-                                "en": "Application Security"
-                              }
-                            },
-                            {
-                              "value": "Sécurité des Postes et Mobiles",
-                              "label": {
-                                "fr": "Sécurité des Postes et Mobiles",
-                                "en": "Endpoint and Mobile Security"
-                              }
-                            },
-                            {
-                              "value": "Sécurité de l'IdO (IoT)",
-                              "label": {
-                                "fr": "Sécurité de l'IdO (IoT)",
-                                "en": "IoT Security"
-                              }
-                            },
-                            {
-                              "value": "Sécurité Opérationnelle et Gouvernance (SOC)",
-                              "label": {
-                                "fr": "Sécurité Opérationnelle et Gouvernance (SOC)",
-                                "en": "Operational Security and Governance (SOC)"
-                              }
-                            },
-                            {
-                              "value": "Cryptographie/Cryptologie",
-                              "label": {
-                                "fr": "Cryptographie/Cryptologie",
-                                "en": "Cryptography/Cryptology"
-                              }
-                            },
-                            {
-                              "value": "Cybersécurité Offensive (Pentest)",
-                              "label": {
-                                "fr": "Cybersécurité Offensive (Pentest)",
-                                "en": "Offensive Cybersecurity (Pentest)"
-                              }
-                            },
-                            {
-                              "value": "Audit/Conseil et Conformité",
-                              "label": {
-                                "fr": "Audit/Conseil et Conformité",
-                                "en": "Audit/Consulting and Compliance"
-                              }
-                            }
-                          ]
-                        },
-                        {
-                          "name": "specialties",
-                          "label": {
-                            "fr": "Spécialités",
-                            "en": "Specialties"
-                          },
-                          "type": "multiselect",
-                          "placeholder": {
-                            "fr": "Sélectionner les spécialités...",
-                            "en": "Select specialties..."
-                          },
-                          "options": [
-                            {
-                              "value": "RSSI (CISO)",
-                              "label": {
-                                "fr": "RSSI (CISO)",
-                                "en": "CISO"
-                              }
-                            },
-                            {
-                              "value": "Consultant GRC",
-                              "label": {
-                                "fr": "Consultant GRC",
-                                "en": "GRC Consultant"
-                              }
-                            },
-                            {
-                              "value": "Auditeur de sécurité",
-                              "label": {
-                                "fr": "Auditeur de sécurité",
-                                "en": "Security Auditor"
-                              }
-                            },
-                            {
-                              "value": "Analyste SOC",
-                              "label": {
-                                "fr": "Analyste SOC",
-                                "en": "SOC Analyst"
-                              }
-                            },
-                            {
-                              "value": "Incident Responder",
-                              "label": {
-                                "fr": "Incident Responder",
-                                "en": "Incident Responder"
-                              }
-                            },
-                            {
-                              "value": "Analyste Threat Intelligence",
-                              "label": {
-                                "fr": "Analyste Threat Intelligence",
-                                "en": "Threat Intelligence Analyst"
-                              }
-                            },
-                            {
-                              "value": "Pentester",
-                              "label": {
-                                "fr": "Pentester",
-                                "en": "Pentester"
-                              }
-                            },
-                            {
-                              "value": "Red Team",
-                              "label": {
-                                "fr": "Red Team",
-                                "en": "Red Team"
-                              }
-                            },
-                            {
-                              "value": "Architecte Sécurité",
-                              "label": {
-                                "fr": "Architecte Sécurité",
-                                "en": "Security Architect"
-                              }
-                            },
-                            {
-                              "value": "Ingénieur Sécurité Cloud",
-                              "label": {
-                                "fr": "Ingénieur Sécurité Cloud",
-                                "en": "Cloud Security Engineer"
-                              }
-                            },
-                            {
-                              "value": "Développeur Sécurisé (DevSecOps)",
-                              "label": {
-                                "fr": "Développeur Sécurisé (DevSecOps)",
-                                "en": "Secure Developer (DevSecOps)"
-                              }
-                            },
-                            {
-                              "value": "Cryptologue",
-                              "label": {
-                                "fr": "Cryptologue",
-                                "en": "Cryptologist"
-                              }
-                            },
-                            {
-                              "value": "Analyste Forensic",
-                              "label": {
-                                "fr": "Analyste Forensic",
-                                "en": "Forensic Analyst"
-                              }
-                            }
-                          ]
-                        },
-                        {
-                          "name": "offers",
-                          "label": {
-                            "fr": "Offre (matériels/logiciels/services)",
-                            "en": "Offer (hardware/software/services)"
-                          },
-                          "type": "text",
-                          "placeholder": {
-                            "fr": "Consulting, Formation, Logiciels...",
-                            "en": "Consulting, Training, Software..."
-                          }
-                        },
-                        {
-                          "name": "phone",
-                          "label": {
-                            "fr": "Téléphone",
-                            "en": "Phone"
-                          },
-                          "type": "tel",
-                          "placeholder": {
-                            "fr": "+262 692 00 00 00"
-                          },
-                          "validation": "tel"
-                        },
-                        {
-                          "name": "partnerships",
-                          "label": {
-                            "fr": "Partenariats / affiliations",
-                            "en": "Partnerships / affiliations"
-                          },
-                          "type": "text",
-                          "placeholder": {
-                            "fr": "ANSSI, Campus Cyber...",
-                            "en": "ANSSI, Campus Cyber..."
-                          }
-                        },
-                        {
-                          "name": "website",
-                          "label": {
-                            "fr": "Site web",
-                            "en": "Website"
-                          },
-                          "type": "url",
-                          "placeholder": {
-                            "fr": "https://www.exemple.com"
-                          }
-                        },
-                        {
-                          "name": "verificationDate",
-                          "label": {
-                            "fr": "Date de vérification",
-                            "en": "Verification date"
-                          },
-                          "type": "date"
-                        }
-                      ]
-                    },
-                    {
-                      "title": {
-                        "fr": "Localisation",
-                        "en": "Location"
-                      },
-                      "description": {
-                        "fr": "Adresse postale complète de l'organisme",
-                        "en": "Full postal address of the organization"
-                      },
-                      "icon": "map-pin",
-                      "fields": [
-                        {
-                          "name": "address",
-                          "label": {
-                            "fr": "Adresse",
-                            "en": "Address"
-                          },
-                          "type": "location"
-                        }
-                      ]
-                    }
-                  ]
-                }
+                "icon": "user",
+                "action": "join-dropdown",
+                "requiresAdmin": true
               }
-            ]
+            ],
+            "bg": "primary"
           }
         },
         {
-          "type": "searchProStatic",
-          "id": "section-annuaire-list",
+          "type": "member",
           "props": {
             "title": {
-              "fr": "Annuaire",
-              "en": "Directory"
+              "fr": "Membres"
             },
-            "icon": "building-1",
-            "showSearch": true,
-            "placeholder": {
-              "fr": "Rechercher un annuaire ...",
-              "en": "Search for a directory..."
-            },
-            "tagSelector": {
-              "show": true,
-              "placeholder": {
-                "fr": "Filtrer par typologie...",
-                "en": "Filter by typology..."
-              },
-              "options": {
-                "Entreprises(produits/solutions et services)": "Entreprises (produits/solutions et services)",
-                "CERT/CSIRT": "CERT/CSIRT",
-                "Organismes de formation": "Organismes de formation",
-                "Laboratoires/recherche": "Laboratoires/recherche",
-                "Structure d'accompagnement et financement": "Structure d'accompagnement et financement",
-                "Réseaux/cluster": "Réseaux/cluster",
-                "Services défense/intérieur": "Services défense/intérieur",
-                "Association/ONG": "Association/ONG"
-              }
-            },
-            "zoneSelector": {
-              "show": true,
-              "placeholder": {
-                "fr": "Filtrer par pays...",
-                "en": "Filter by country..."
-              },
-              "countryCode": [
-                "RE",
-                "AU",
-                "ZA",
-                "KE",
-                "MG",
-                "MZ",
-                "TZ",
-                "SC",
-                "LK",
-                "IN",
-                "MU"
-              ],
-              "level": [
-                1
-              ],
-              "sortBy": "name",
-              "costumSlug": "cyberReunion",
-              "costumEditMode": false,
-              "costumId": "695b58ca8693fc2c121208e4",
-              "costumType": "organizations"
-            },
-            "csvButton": {
-              "show": true,
-              "label": {
-                "fr": "CSV",
-                "en": "CSV"
-              },
-              "columns": [
-                {
-                  "header": "Nom",
-                  "path": "name"
-                },
-                {
-                  "header": "SIREN",
-                  "path": "siren"
-                },
-                {
-                  "header": "Email",
-                  "path": "email"
-                },
-                {
-                  "header": "Type d'acteur",
-                  "path": "typologie"
-                },
-                {
-                  "header": "Domaines/sous-domaines",
-                  "path": "domains"
-                },
-                {
-                  "header": "Spécialités",
-                  "path": "specialities"
-                },
-                {
-                  "header": "offre(matériels/logiciels/services)",
-                  "path": "offer"
-                },
-                {
-                  "header": "Contact",
-                  "path": "contact"
-                },
-                {
-                  "header": "Partenariats/affiliations",
-                  "path": "partners"
-                },
-                {
-                  "header": "Source(URL)",
-                  "path": "link"
-                },
-                {
-                  "header": "Date de vérification",
-                  "path": "date"
-                },
-                {
-                  "header": "Adresse",
-                  "path": "address"
-                }
-              ]
-            },
-            "useFilter": true,
+            "showRole": true,
+            "showManagement": true,
+            "showCard": false,
             "showMap": false,
-            "enableMap": true,
-            "showActiveFiltersTypes": true,
-            "showActiveFiltersTags": true,
-            "disableInfiniteScroll": false,
-            "baseParams": {
-              "defaultTypes": [
-                "organizations"
-              ],
-              "defaultFields": [
-                "name",
-                "shortDescription",
-                "siren",
-                "collection",
-                "email",
-                "typologie",
-                "domains",
-                "specialities",
-                "offer",
-                "contact",
-                "partners",
-                "link",
-                "date",
-                "address"
-              ],
-              "notSourceKey": true,
-              "defaultFilters": {
-                "$or": {
-                  "source.key": "cyberReunion",
-                  "source.keys": "cyberReunion",
-                  "reference.costum": "cyberReunion",
-                  "links.contributors.695b58ca8693fc2c121208e4": {
-                    "$exists": true
-                  },
-                  "links.projects.695b58ca8693fc2c121208e4": {
-                    "$exists": true
-                  },
-                  "links.memberOf.695b58ca8693fc2c121208e4": {
-                    "$exists": true
-                  }
-                }
-              }
+            "card": {
+              "type": "default",
+              "showDescription": true,
+              "detailsMode": "drawer"
             },
-            "list": {
-              "columns": {
-                "sm": 1,
-                "md": 2,
-                "lg": 3,
-                "xl": 4
-              },
-              "card": {
-                "type": "profile",
-                "variant": "profile",
-                "detailsMode": "drawer"
-              }
-            }
+            "organizationId": "69a68bbcbb2a8e178c4d5d88"
           }
         }
       ]
     },
     {
-      "path": "/mapping",
+      "path": "/feuillederoute",
       "title": {
-        "fr": "Mapping - Cyber Réunion",
-        "en": "Mapping - Cyber Réunion"
+        "fr": "Feuille de route"
       },
-      "layout": "fullwidth",
+      "layout": "default",
+      "sections": []
+    },
+    {
+      "path": "/events",
+      "title": {
+        "fr": "Evenements"
+      },
+      "layout": "default",
+      "sections": []
+    },
+    {
+      "path": "/ressource",
+      "title": {
+        "fr": "Ressource"
+      },
+      "layout": "default",
       "sections": [
         {
           "type": "title-with-filters-rezo-la-mer",
-          "id": "mapping-header",
           "props": {
             "headline": {
-              "fr": "Mapping",
-              "en": "Mapping"
+              "fr": "Ressources mutualisées"
+            },
+            "subhead": {
+              "fr": "Partagez et accédez aux équipements et ressources de la communauté"
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Proposer une ressource"
+                },
+                "icon": "anchor",
+                "action": "add-poi"
+              }
+            ],
+            "showSearch": true,
+            "types": [
+              {
+                "id": "",
+                "label": {
+                  "fr": "Toutes"
+                }
+              },
+              {
+                "id": "",
+                "label": {
+                  "fr": "Embarcation"
+                }
+              },
+              {
+                "id": "",
+                "label": {
+                  "fr": "Materiel scientifique"
+                }
+              },
+              {
+                "id": "",
+                "label": {
+                  "fr": "Equipement video"
+                }
+              },
+              {
+                "id": "",
+                "label": {
+                  "fr": "Documentation"
+                }
+              }
+            ],
+            "searchPlaceholder": {
+              "fr": "Rechercher une ressource..."
             }
           }
         },
         {
           "type": "searchProStatic",
-          "id": "mapping-search",
           "props": {
-            "title": {
-              "fr": "Mapping",
-              "en": "Mapping"
-            },
             "showSearch": false,
             "useFilter": false,
             "showMap": false,
-            "enableMap": false,
-            "enableGraph": true,
-            "defaultViewMode": "graph",
-            "graphCategories": [
-              "Entreprises(produits/solutions et services)",
-              "CERT/CSIRT",
-              "Organismes de formation",
-              "Laboratoires/recherche",
-              "Structure d'accompagnement et financement",
-              "Réseaux/cluster",
-              "Services défense/intérieur",
-              "Association/ONG"
-            ],
-            "baseParams": {
-              "defaultTypes": [
-                "organizations"
-              ],
-              "defaultFilters": {
-                "$or": {
-                  "parent.695b58ca8693fc2c121208e4": {
-                    "$exists": true
-                  },
-                  "source.keys": "cyberReunion",
-                  "reference.costum": "cyberReunion",
-                  "links.projects.695b58ca8693fc2c121208e4": {
-                    "$exists": true
-                  },
-                  "links.memberOf.695b58ca8693fc2c121208e4": {
-                    "$exists": true
-                  }
-                },
-                "toBeValidated": {
-                  "$exists": false
-                }
-              },
-              "notSourceKey": true
+            "enableMap": true,
+            "enableGraph": false,
+            "graphDetailsMode": "drawer",
+            "showActiveFiltersTypes": false,
+            "showActiveFiltersTags": false,
+            "title": {
+              "fr": "Liste"
             },
-            "list": {
-              "columns": {
-                "lg": 3,
-                "md": 2,
-                "sm": 1
-              },
-              "card": {
-                "type": "profile",
-                "showDescription": true,
-                "showAddress": true,
-                "detailsMode": "drawer"
-              }
-            }
+            "icon": "anchor"
           }
         }
       ]
     }
   ],
   "footer": {
-    "type": "cyber-reunion",
-    "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10\"></path></svg>",
-    "logoTitle": {
-      "fr": "Cyber Réunion",
-      "en": "Cyber Réunion"
-    },
-    "description": {
-      "fr": "EDIH La Réunion - Hub Européen d'Innovation Numérique en Cybersécurité",
-      "en": "EDIH Réunion - European Digital Innovation Hub for Cybersecurity"
-    },
-    "website": "https://www.cyber-reunion.fr",
     "columns": [
       {
         "title": {
-          "fr": "Services",
+          "fr": "Plateforme",
           "en": "Services"
         },
         "links": [
@@ -1541,6 +985,12 @@
         ]
       }
     ],
+    "type": "cyber-reunion",
+    "logoIcon": "leafy-green",
+    "description": {
+      "fr": "La coopérative qui finance l'agriculture locale et la souveraineté alimentaire dans l'océan Indien",
+      "en": "EDIH Réunion - European Digital Innovation Hub for Cybersecurity"
+    },
     "socials": [
       {
         "platform": "facebook",
@@ -1585,6 +1035,9 @@
     "copyright": {
       "fr": "© 2025 Nourrir l'Indianocéanie. Plateforme coopérative open-source sous licence MIT.",
       "en": "© 2025 Cyber Réunion - EDIH Réunion. Project co-financed by the European Union."
+    },
+    "logoTitle": {
+      "fr": "Nourrir l'Indianocéanie"
     }
   },
   "features": [

@@ -5,11 +5,6 @@
     "css": "index-cyber-reunion"
   },
   {
-    "slug": "cocolight",
-    "config": "config.prod.cyber-reunion.json",
-    "css": "index-cyber-reunion"
-  },
-  {
     "slug": "rezoLaMer",
     "config": "config.prod.rezo-la-mer.json",
     "css": "index-rezo-la-mer"
@@ -36,6 +31,11 @@
   },
   {
     "slug": "jardin",
+    "config": "config.prod.jardin-ocean.json",
+    "css": "index-jardin-ocean"
+  },
+  {
+    "slug": "cocolight",
     "config": "config.prod.jardin-ocean.json",
     "css": "index-jardin-ocean"
   }
