@@ -3,11 +3,11 @@
   "generated": "2025-09-08T10:30:00.000Z",
   "meta": {
     "title": {
-      "fr": "cocoLight",
+      "fr": "Jardins Communs Ocean Indien",
       "en": "EDIH - Cyber Réunion"
     },
     "description": {
-      "fr": "cocoLight",
+      "fr": "Jardins Communs Ocean Indien",
       "en": "EDIH - Cyber Réunion - European Digital Innovation Hub for cybersecurity in Réunion"
     },
     "defaultLang": "fr",
@@ -725,7 +725,131 @@
         "fr": "Evenements"
       },
       "layout": "default",
-      "sections": []
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "evenements-header",
+          "props": {
+            "headline": {
+              "fr": "Événements océaniques",
+              "en": "Ocean Events"
+            },
+            "subhead": {
+              "fr": "Retrouvez tous les événements, rencontres et actions pour vivre votre passion de l'océan",
+              "en": "Find all the events, meetings and actions to live your passion for the ocean"
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Proposer un événement",
+                  "en": "Submit an event"
+                },
+                "icon": "calendar-plus",
+                "action": "add-event",
+                "variant": "primary"
+              }
+            ]
+          }
+        },
+        {
+          "type": "title",
+          "id": "evenements-subtitle",
+          "props": {
+            "title": {
+              "fr": "Événements à la une",
+              "en": "Featured Events"
+            },
+            "align": "left",
+            "size": "md"
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "section-event-featured",
+          "props": {
+            "useFilter": false,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": false,
+            "showActiveFiltersTags": false,
+            "disableInfiniteScroll": false,
+            "width": "container",
+            "baseParams": {
+              "defaultTypes": [
+                "events"
+              ],
+              "indexStepList": 3,
+              "defaultFilters": {
+                "isStarred": true
+              }
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3,
+                "xl": 4
+              },
+              "card": {
+                "type": "event-rezo-la-mer",
+                "variant": "event-rezo-la-mer",
+                "detailsMode": "drawer"
+              }
+            }
+          }
+        },
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "events-filter",
+          "props": {
+            "subhead": {
+              "fr": "Tous les événements",
+              "en": "All events"
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher un événement...",
+              "en": "Search for an event..."
+            }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "section-event-list",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "showDetailedViewToggle": false,
+            "defaultDetailedView": true,
+            "width": "container",
+            "baseParams": {
+              "defaultTypes": [
+                "events"
+              ],
+              "indexStepList": 3
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 1,
+                "lg": 1,
+                "xl": 1
+              },
+              "card": {
+                "showStar": true,
+                "type": "event-rezo-la-mer",
+                "variant": "event-rezo-la-mer",
+                "detailsMode": "drawer",
+                "viewDetail": true
+              }
+            }
+          }
+        }
+      ]
     },
     {
       "path": "/ressource",
