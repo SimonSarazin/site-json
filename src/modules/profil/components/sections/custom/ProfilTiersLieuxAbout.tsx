@@ -122,7 +122,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
         answer = dataForms.answers[0];
       }
     } else {
-      answer = await entity.generateNewAnswerId(formId);
+      answer = await (entity as any).generateNewAnswerId(formId);
       if (!answer) {
         console.error("Failed to generate new answer ID for form:", formId);
         return;
@@ -147,8 +147,8 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
           name: entity.serverData.name,
         }
       }
-      await entity.endpointApi.updatePathValue(params);
-      await entity.endpointApi.updatePathValue(paramsLinks);
+      await entity.endpointApi.updatePathValue(params as any);
+      await entity.endpointApi.updatePathValue(paramsLinks as any);
       // entity.endpointApi.updatePathValue({
       //     "id": 
       // })

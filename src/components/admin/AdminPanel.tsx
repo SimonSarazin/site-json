@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { useSite } from "@/hooks/useSite";
-import { useCocolight } from "@/hooks/useCocolight";
+// import { useCocolight } from "@/hooks/useCocolight";
 import type { Section, SiteConfig } from "@/types/site-schema";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,
@@ -149,9 +149,7 @@ function SectionPicker({ value, onChange, onAdd }: { value: string; onChange: (v
 }
 
 export default function AdminPanel() {
-  const { me, entity } = useCocolight();
-  const isAdmin = me?.isConnected && entity?.isAdmin?.();
-
+  // const { me, entity } = useCocolight();
   const { config, setConfig } = useSite();
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -629,7 +627,7 @@ export default function AdminPanel() {
             <ObjectFields
               schema={HeaderFieldsSchema}
               value={headerFieldsValue as Record<string, unknown>}
-              onChange={(v) => patch({ header: { nav: (header as any).nav, ...v } })}
+              onChange={(v) => patch({ header: { nav: (header as any).nav, ...v } as any })}
               compact
             />
 
@@ -774,7 +772,7 @@ export default function AdminPanel() {
             <ObjectFields
               schema={FooterFieldsSchema}
               value={footerFieldsValue as Record<string, unknown>}
-              onChange={(v) => updateFooter({ columns: (footer as any).columns, ...v })}
+              onChange={(v) => updateFooter({ columns: (footer as any).columns, ...v } as any)}
               compact
             />
           </div>
