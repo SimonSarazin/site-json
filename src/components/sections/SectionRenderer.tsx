@@ -28,6 +28,8 @@ const LazySections: {
   "community-rezo-la-mer": lazy(() => import("./CommunityRezoLaMer")),
   "cta-rezo-la-mer": lazy(() => import("./CallToActionRezoLaMer")),
   "title-with-filters-rezo-la-mer": lazy(() => import("./TitleWithFiltersRezoLaMer")),
+  "hero-nos-communes": lazy(() => import("./NosCommunesBannerSection")),
+  "hero-commune-transparente": lazy(() => import("./HeroCommuneTransparenteSection")),
   markdown: lazy(() => import("./MarkdownSection")),
   cards: lazy(() => import("./CardsSection")),
   gallery: lazy(() => import("./GallerySection")),
