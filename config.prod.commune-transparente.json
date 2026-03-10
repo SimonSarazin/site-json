@@ -1,0 +1,352 @@
+{
+  "version": "1.0.0",
+  "generated": "2026-03-05T10:00:00.000Z",
+  "meta": {
+    "title": {
+      "fr": "Commune Transparente",
+      "en": "Transparent Commune"
+    },
+    "description": {
+      "fr": "La plateforme collaborative pour connecter et dynamiser votre commune.",
+      "en": "The collaborative platform to connect and energize your commune."
+    },
+    "defaultLang": "fr",
+    "languages": ["fr"],
+    "favicon": "/images/communeTransparente/logo.png",
+    "themeColor": "#6366f1",
+    "keywords": [
+      "commune transparente",
+      "citoyens",
+      "démocratie participative",
+      "gouvernance locale",
+      "territoire",
+      "transparence"
+    ]
+  },
+  "header": {
+    "type": "commune-transparente",
+    "path": "/",
+    "logo": "/images/communeTransparente/logo.png",
+    "logoTitle": {
+      "fr": "Commune Transparente",
+      "en": "Transparent Commune"
+    },
+    "ctaButton": {
+      "label": { "fr": "Se connecter", "en": "Sign in" },
+      "path": "/se-connecter"
+    },
+    "nav": [
+      { "label": { "fr": "Actualité", "en": "News" }, "path": "/actualite" },
+      { "label": { "fr": "Projet", "en": "Project" }, "path": "/projets" },
+      { "label": { "fr": "Citoyens", "en": "Citizens" }, "path": "/citoyens" },
+      { "label": { "fr": "Ressources", "en": "Resources" }, "path": "/ressources" },
+      { "label": { "fr": "Agenda", "en": "Agenda" }, "path": "/agenda" },
+      { "label": { "fr": "Navigation", "en": "Navigation" }, "path": "/navigation" },
+      { "label": { "fr": "Proposition", "en": "Proposal" }, "path": "/propositions" }
+    ],
+    "sticky": true,
+    "transparent": true,
+    "height": "md",
+    "utilities": {
+      "themeSwitch": false,
+      "langSwitch": false,
+      "search": false,
+      "auth": true,
+      "cart": false,
+      "notifications": false
+    }
+  },
+  "pages": [
+    {
+      "path": "/",
+      "title": { "fr": "Accueil - Commune Transparente", "en": "Home - Transparent Commune" },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "hero-commune-transparente",
+          "id": "hero-commune-transparente",
+          "props": {
+            "headline": { 
+              "fr": "Commune Transparente", 
+              "en": "Transparent Commune" 
+            },
+            "logoImage": "/images/communeTransparente/logo.png",
+            "subhead": { 
+              "fr": "Une ville tournée vers l'avenir, entre transformation et solidarité", 
+              "en": "A city turned towards the future, between transformation and solidarity" 
+            },
+            "backgroundImage": "/images/communeTransparente/hero.png",
+            "backgroundImageAlt": { "fr": "Commune Transparente", "en": "Transparent Commune" },
+            "badges": [
+              { "icon": "users", "label": { "fr": "Communauté citoyenne", "en": "Citizen community" } },
+              { "icon": "share-2", "label": { "fr": "Partage de propositions", "en": "Sharing proposals" } },
+              { "icon": "heart-handshake", "label": { "fr": "Projets Partagés", "en": "Shared Projects" } }
+            ],
+            "ctaButtons": [
+              { "label": { "fr": "En savoir plus", "en": "Learn more" }, "path": "/commune", "variant": "default" },
+              { "label": { "fr": "Découvrir le Territoire", "en": "Discover the Territory" }, "path": "/navigation", "variant": "outline" }
+            ],
+            "showScrollIndicator": false
+          }
+        },
+        {
+          "type": "html",
+          "id": "nos-thematiques",
+          "props": {
+            "html": "<section class=\"py-16 px-4 bg-white\"><div class=\"container mx-auto max-w-6xl\"><h2 class=\"text-3xl md:text-4xl font-bold text-center mb-2\">Nos <span class=\"text-primary\">Thématiques</span></h2><p class=\"text-center text-muted-foreground text-base mb-10\">Explorez les différentes dimensions de votre Commune</p><div class=\"grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4\"><a href=\"/thematique/culture\" class=\"group relative flex flex-col p-4 rounded-xl border border-border bg-white hover:shadow-md transition-all cursor-pointer\"><span class=\"absolute top-3 right-3 text-4xl font-extrabold text-muted/20 leading-none select-none\">1</span><div class=\"w-10 h-10 rounded-lg bg-violet-100 flex items-center justify-center mb-3\"><svg class=\"w-5 h-5 text-violet-600\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path d=\"M12 2a9 9 0 1 0 0 18A9 9 0 0 0 12 2z\"/><path d=\"M8 12l2 2 4-4\"/></svg></div><span class=\"font-semibold text-sm text-foreground mb-2\">Culture</span><div class=\"flex gap-1 text-xs text-muted-foreground\"><span>👥 2</span><span>📋 16</span><span>🏷 44</span></div></a><a href=\"/thematique/environnement\" class=\"group relative flex flex-col p-4 rounded-xl border border-border bg-white hover:shadow-md transition-all cursor-pointer\"><span class=\"absolute top-3 right-3 text-4xl font-extrabold text-muted/20 leading-none select-none\">2</span><div class=\"w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center mb-3\"><svg class=\"w-5 h-5 text-green-600\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path d=\"M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z\"/></svg></div><span class=\"font-semibold text-sm text-foreground mb-2\">Environnement</span><div class=\"flex gap-1 text-xs text-muted-foreground\"><span>👥 2</span><span>📋 3</span><span>🏷 37</span><span>📌 1</span></div></a><a href=\"/thematique/tiers-lieux\" class=\"group relative flex flex-col p-4 rounded-xl border border-border bg-white hover:shadow-md transition-all cursor-pointer\"><span class=\"absolute top-3 right-3 text-4xl font-extrabold text-muted/20 leading-none select-none\">3</span><div class=\"w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center mb-3\"><svg class=\"w-5 h-5 text-blue-600\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path d=\"M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"/></svg></div><span class=\"font-semibold text-sm text-foreground mb-2\">Tiers lieux</span><div class=\"flex gap-1 text-xs text-muted-foreground\"><span>🏷 6</span></div></a><a href=\"/thematique/ocean\" class=\"group relative flex flex-col p-4 rounded-xl border border-border bg-white hover:shadow-md transition-all cursor-pointer\"><span class=\"absolute top-3 right-3 text-4xl font-extrabold text-muted/20 leading-none select-none\">4</span><div class=\"w-10 h-10 rounded-lg bg-cyan-100 flex items-center justify-center mb-3\"><svg class=\"w-5 h-5 text-cyan-600\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path d=\"M2 12c2-4 6-4 8 0s6 4 8 0\"/><path d=\"M2 18c2-4 6-4 8 0s6 4 8 0\"/></svg></div><span class=\"font-semibold text-sm text-foreground mb-2\">Océan</span><div class=\"flex gap-1 text-xs text-muted-foreground\"><span>👥 3</span><span>📋 10</span></div></a><a href=\"/thematique/education\" class=\"group relative flex flex-col p-4 rounded-xl border border-border bg-white hover:shadow-md transition-all cursor-pointer\"><span class=\"absolute top-3 right-3 text-4xl font-extrabold text-muted/20 leading-none select-none\">5</span><div class=\"w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center mb-3\"><svg class=\"w-5 h-5 text-orange-600\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path d=\"M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z\"/><path d=\"M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z\"/></svg></div><span class=\"font-semibold text-sm text-foreground mb-2\">Éducation</span><div class=\"flex gap-1 text-xs text-muted-foreground\"><span>👥 8</span><span>🏷 9</span></div></a><a href=\"/thematique/dechets\" class=\"group relative flex flex-col p-4 rounded-xl border border-border bg-white hover:shadow-md transition-all cursor-pointer\"><span class=\"absolute top-3 right-3 text-4xl font-extrabold text-muted/20 leading-none select-none\">6</span><div class=\"w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center mb-3\"><svg class=\"w-5 h-5 text-gray-600\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><polyline points=\"3,6 5,6 21,6\"/><path d=\"M19 6l-1 14H6L5 6\"/><path d=\"M10 11v6\"/><path d=\"M14 11v6\"/></svg></div><span class=\"font-semibold text-sm text-foreground mb-2\">Déchets</span><div class=\"flex gap-1 text-xs text-muted-foreground\"><span>👥 8</span><span>🏷 22</span></div></a><a href=\"/thematique/innovation\" class=\"group relative flex flex-col p-4 rounded-xl border border-border bg-white hover:shadow-md transition-all cursor-pointer\"><span class=\"absolute top-3 right-3 text-4xl font-extrabold text-muted/20 leading-none select-none\">7</span><div class=\"w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center mb-3\"><svg class=\"w-5 h-5 text-purple-600\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"3\"/><path d=\"M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4\"/></svg></div><span class=\"font-semibold text-sm text-foreground mb-2\">Innovation</span><div class=\"flex gap-1 text-xs text-muted-foreground\"><span>👥 1</span><span>📋 3</span><span>🏛 1</span></div></a><a href=\"/thematique/sport\" class=\"group relative flex flex-col p-4 rounded-xl border border-border bg-white hover:shadow-md transition-all cursor-pointer\"><span class=\"absolute top-3 right-3 text-4xl font-extrabold text-muted/20 leading-none select-none\">8</span><div class=\"w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center mb-3\"><svg class=\"w-5 h-5 text-red-600\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20\"/><path d=\"M2 12h20\"/></svg></div><span class=\"font-semibold text-sm text-foreground mb-2\">Sport</span><div class=\"flex gap-1 text-xs text-muted-foreground\"><span>👥 1</span><span>📋 2</span><span>🏷 49</span><span>📌 1</span></div></a></div></div></section>"
+          }
+        },
+        {
+          "type": "html",
+          "id": "explorer-territoire",
+          "props": {
+            "html": "<section class=\"py-16 px-4 bg-gradient-to-b from-cyan-100 to-teal-200\"><div class=\"container mx-auto max-w-4xl text-center\"><h2 class=\"text-3xl md:text-4xl font-bold text-slate-800 mb-3\">Explorez le Territoire</h2><p class=\"text-slate-600 text-base mb-10\">Découvrez les lieux, événements et initiatives près de chez vous</p><div class=\"flex flex-col sm:flex-row gap-3 justify-center\"><a href=\"/navigation\" class=\"px-6 py-3 rounded-full border-2 border-teal-700 text-teal-900 font-medium bg-white/60 hover:bg-white transition-all text-sm\">Explorez votre territoire en toute liberté</a><a href=\"/elements\" class=\"px-6 py-3 rounded-full bg-teal-700 text-white font-medium hover:bg-teal-800 transition-all text-sm\">Les éléments existants</a><a href=\"/observatoire\" class=\"px-6 py-3 rounded-full border-2 border-teal-700 text-teal-900 font-medium bg-white/60 hover:bg-white transition-all text-sm\">Espace d'observation publique</a></div></div></section>"
+          }
+        },
+        {
+          "type": "html",
+          "id": "territoire-en-chiffres",
+          "props": {
+            "html": "<section class=\"py-16 px-4 bg-gradient-to-b from-teal-200 to-white\"><div class=\"container mx-auto max-w-5xl\"><h2 class=\"text-4xl md:text-5xl font-bold text-center text-slate-800 mb-2\">Notre Territoire en Chiffres</h2><p class=\"text-center text-slate-500 text-lg md:text-xl mb-10\">Une communauté active et engagée</p><div class=\"grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4\"><div class=\"flex flex-col items-center p-4 rounded-xl border-t-4 border-violet-400 bg-white shadow-sm\"><svg class=\"w-7 h-7 text-violet-400 mb-2\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" viewBox=\"0 0 24 24\"><path d=\"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/></svg><span class=\"text-3xl font-extrabold text-slate-800\">893</span><span class=\"text-sm md:text-base text-slate-500 mt-1\">Association</span></div><div class=\"flex flex-col items-center p-4 rounded-xl border-t-4 border-teal-400 bg-white shadow-sm\"><svg class=\"w-7 h-7 text-teal-400 mb-2\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" viewBox=\"0 0 24 24\"><rect x=\"2\" y=\"3\" width=\"20\" height=\"14\" rx=\"2\"/><path d=\"M8 21h8M12 17v4\"/></svg><span class=\"text-3xl font-extrabold text-slate-800\">159</span><span class=\"text-sm md:text-base text-slate-500 mt-1\">Entreprise</span></div><div class=\"flex flex-col items-center p-4 rounded-xl border-t-4 border-pink-400 bg-white shadow-sm\"><svg class=\"w-7 h-7 text-pink-400 mb-2\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" viewBox=\"0 0 24 24\"><path d=\"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M23 21v-2a4 4 0 0 0-3-3.87\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"/></svg><span class=\"text-3xl font-extrabold text-slate-800\">68</span><span class=\"text-sm md:text-base text-slate-500 mt-1\">Groupe</span></div><div class=\"flex flex-col items-center p-4 rounded-xl border-t-4 border-red-400 bg-white shadow-sm\"><svg class=\"w-7 h-7 text-red-400 mb-2\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" viewBox=\"0 0 24 24\"><path d=\"M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"/></svg><span class=\"text-3xl font-extrabold text-slate-800\">30</span><span class=\"text-sm md:text-base text-slate-500 mt-1\">Service Public</span></div><div class=\"flex flex-col items-center p-4 rounded-xl border-t-4 border-yellow-400 bg-white shadow-sm\"><svg class=\"w-7 h-7 text-yellow-500 mb-2\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" viewBox=\"0 0 24 24\"><path d=\"M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z\"/></svg><span class=\"text-3xl font-extrabold text-slate-800\">2</span><span class=\"text-sm md:text-base text-slate-500 mt-1\">Coopérative</span></div><div class=\"flex flex-col items-center p-4 rounded-xl border-t-4 border-green-400 bg-white shadow-sm\"><svg class=\"w-7 h-7 text-green-500 mb-2\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" viewBox=\"0 0 24 24\"><path d=\"M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z\"/><circle cx=\"12\" cy=\"10\" r=\"3\"/></svg><span class=\"text-3xl font-extrabold text-slate-800\">33</span><span class=\"text-sm md:text-base text-slate-500 mt-1\">Point d'intérêt</span></div><div class=\"flex flex-col items-center p-4 rounded-xl border-t-4 border-indigo-400 bg-white shadow-sm\"><svg class=\"w-7 h-7 text-indigo-400 mb-2\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" viewBox=\"0 0 24 24\"><path d=\"M9 11l3 3L22 4\"/><path d=\"M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11\"/></svg><span class=\"text-3xl font-extrabold text-slate-800\">25</span><span class=\"text-sm md:text-base text-slate-500 mt-1\">projets</span></div><div class=\"flex flex-col items-center p-4 rounded-xl border-t-4 border-orange-400 bg-white shadow-sm\"><svg class=\"w-7 h-7 text-orange-400 mb-2\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" viewBox=\"0 0 24 24\"><path d=\"M18 8h1a4 4 0 0 1 0 8h-1\"/><path d=\"M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z\"/><line x1=\"6\" y1=\"1\" x2=\"6\" y2=\"4\"/><line x1=\"10\" y1=\"1\" x2=\"10\" y2=\"4\"/><line x1=\"14\" y1=\"1\" x2=\"14\" y2=\"4\"/></svg><span class=\"text-3xl font-extrabold text-slate-800\">1</span><span class=\"text-sm md:text-base text-slate-500 mt-1\">annonces</span></div><div class=\"flex flex-col items-center p-4 rounded-xl border-t-4 border-blue-400 bg-white shadow-sm\"><svg class=\"w-7 h-7 text-blue-400 mb-2\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" viewBox=\"0 0 24 24\"><path d=\"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/></svg><span class=\"text-3xl font-extrabold text-slate-800\">132</span><span class=\"text-sm md:text-base text-slate-500 mt-1\">citoyens</span></div><div class=\"flex flex-col items-center p-4 rounded-xl border-t-4 border-cyan-400 bg-white shadow-sm\"><svg class=\"w-7 h-7 text-cyan-500 mb-2\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"/><line x1=\"16\" y1=\"2\" x2=\"16\" y2=\"6\"/><line x1=\"8\" y1=\"2\" x2=\"8\" y2=\"6\"/><line x1=\"3\" y1=\"10\" x2=\"21\" y2=\"10\"/></svg><span class=\"text-3xl font-extrabold text-slate-800\">184</span><span class=\"text-sm md:text-base text-slate-500 mt-1\">événements</span></div></div></div></section>"
+          }
+        },
+        {
+          "type": "html",
+          "id": "commune-transparente-actions",
+          "props": {
+            "html": "<section class=\"py-16 px-4 bg-white\"><div class=\"container mx-auto max-w-5xl\"><div class=\"grid grid-cols-1 md:grid-cols-2 gap-10 items-stretch\"><div class=\"flex flex-col items-center justify-center h-full text-center\"><img src=\"/images/communeTransparente/ct-illustration.png\" alt=\"Commune Transparente\" class=\"w-64 h-auto mb-6 rounded-xl\" /><h3 class=\"text-2xl md:text-3xl font-bold text-indigo-700 uppercase tracking-wide mb-4\">COMMUNE TRANSPARENTE</h3><p class=\"text-base md:text-lg text-slate-600 text-center mb-3\">Favoriser la transparence et l'accès à l'information publique au sein de votre commune. Nous présentons ici des rubriques dédiées aux actions municipales, aux projets en cours, aux décisions publiques et aux données ouvertes.</p><p class=\"text-base md:text-lg font-semibold text-slate-800 text-center italic\">Une expérience claire et accessible, pensée pour renforcer la confiance et l'implication citoyenne.</p></div><div class=\"flex flex-col divide-y divide-slate-200\"><details class=\"py-6 group\"><summary class=\"flex items-center gap-3 cursor-pointer list-none select-none\"><div class=\"w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center shrink-0\"><svg class=\"w-4 h-4 text-white\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 8v4l3 3\"/></svg></div><span class=\"font-bold text-base md:text-lg uppercase tracking-wide text-slate-700\">PARTAGE DE RESSOURCES</span><span class=\"ml-auto text-slate-400 transition-transform group-open:rotate-90\">›</span></summary><div class=\"pt-2 pb-1 pl-11\"><p class=\"text-sm md:text-base text-slate-500 mb-3\">Trouvez du soutien près de chez vous. Postez votre demande et laissez la communauté vous aider.</p><a href=\"/ressources/nouveau\" class=\"inline-block px-4 py-2 bg-indigo-600 text-white text-sm md:text-base font-semibold rounded-md hover:bg-indigo-700 transition-all\">Proposer une ressource</a></div></details><details class=\"py-6 group\"><summary class=\"flex items-center gap-3 cursor-pointer list-none select-none\"><div class=\"w-8 h-8 rounded-lg bg-slate-600 flex items-center justify-center shrink-0\"><svg class=\"w-4 h-4 text-white\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path d=\"M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z\"/><line x1=\"3\" y1=\"6\" x2=\"21\" y2=\"6\"/><path d=\"M16 10a4 4 0 0 1-8 0\"/></svg></div><span class=\"font-bold text-base md:text-lg uppercase tracking-wide text-slate-700\">BESOINS &amp; DEMANDES</span><span class=\"ml-auto text-slate-400 transition-transform group-open:rotate-90\">›</span></summary><div class=\"pt-2 pb-1 pl-11\"><p class=\"text-sm md:text-base text-slate-500 mb-3\">Vous avez des compétences ou du temps ? Proposez vos services pour aider votre quartier.</p><a href=\"/offres/nouveau\" class=\"inline-block px-4 py-2 bg-indigo-600 text-white text-sm md:text-base font-semibold rounded-md hover:bg-indigo-700 transition-all\">Proposer une offre</a></div></details><details class=\"py-6 group\"><summary class=\"flex items-center gap-3 cursor-pointer list-none select-none\"><div class=\"w-8 h-8 rounded-lg bg-purple-500 flex items-center justify-center shrink-0\"><svg class=\"w-4 h-4 text-white\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path d=\"M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z\"/><circle cx=\"12\" cy=\"10\" r=\"3\"/></svg></div><span class=\"font-bold text-base md:text-lg uppercase tracking-wide text-slate-700\">PROPOSER UNE IDÉE</span><span class=\"ml-auto text-slate-400 transition-transform group-open:rotate-90\">›</span></summary><div class=\"pt-2 pb-1 pl-11\"><p class=\"text-sm md:text-base text-slate-500 mb-3\">Accédez à l'annuaire des associations, commerces et services utiles de votre territoire.</p><a href=\"/idees/nouveau\" class=\"inline-block px-4 py-2 bg-indigo-600 text-white text-sm md:text-base font-semibold rounded-md hover:bg-indigo-700 transition-all\">Proposer une offre</a></div></details><details class=\"py-6 group\"><summary class=\"flex items-center gap-3 cursor-pointer list-none select-none\"><div class=\"w-8 h-8 rounded-lg bg-green-500 flex items-center justify-center shrink-0\"><svg class=\"w-4 h-4 text-white\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path d=\"M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z\"/><circle cx=\"12\" cy=\"10\" r=\"3\"/></svg></div><span class=\"font-bold text-base md:text-lg uppercase tracking-wide text-slate-700\">PROJETS LOCAUX</span><span class=\"ml-auto text-slate-400 transition-transform group-open:rotate-90\">›</span></summary><div class=\"pt-2 pb-1 pl-11\"><p class=\"text-sm md:text-base text-slate-500 mb-3\">Présentez votre projet local pour trouver des soutiens, des bénévoles et des partenaires.</p><div class=\"flex gap-2\"><a href=\"/projets/nouveau\" class=\"inline-block px-4 py-2 bg-indigo-600 text-white text-sm md:text-base font-semibold rounded-md hover:bg-indigo-700 transition-all\">Proposer un projet</a><a href=\"/projets\" class=\"inline-block px-4 py-2 bg-indigo-100 text-indigo-700 text-sm md:text-base font-semibold rounded-md hover:bg-indigo-200 transition-all\">Les Projets locaux</a></div></div></details><details class=\"py-6 group\"><summary class=\"flex items-center gap-3 cursor-pointer list-none select-none\"><div class=\"w-8 h-8 rounded-lg bg-blue-700 flex items-center justify-center shrink-0\"><svg class=\"w-4 h-4 text-white\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path d=\"M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"/><polyline points=\"9 22 9 12 15 12 15 22\"/></svg></div><span class=\"font-bold text-base md:text-lg uppercase tracking-wide text-slate-700\">ENTREPRISES LOCALES</span><span class=\"ml-auto text-slate-400 transition-transform group-open:rotate-90\">›</span></summary><div class=\"pt-2 pb-1 pl-11\"><p class=\"text-sm md:text-base text-slate-500 mb-3\">Faites connaître une association, un club ou un collectif en l'ajoutant à notre annuaire local.</p><a href=\"/organisations/nouveau\" class=\"inline-block px-4 py-2 bg-indigo-600 text-white text-sm md:text-base font-semibold rounded-md hover:bg-indigo-700 transition-all\">Proposer une organisation</a></div></details><details class=\"py-6 group\"><summary class=\"flex items-center gap-3 cursor-pointer list-none select-none\"><div class=\"w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center shrink-0\"><svg class=\"w-4 h-4 text-white\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"/><line x1=\"16\" y1=\"2\" x2=\"16\" y2=\"6\"/><line x1=\"8\" y1=\"2\" x2=\"8\" y2=\"6\"/><line x1=\"3\" y1=\"10\" x2=\"21\" y2=\"10\"/></svg></div><span class=\"font-bold text-base md:text-lg uppercase tracking-wide text-slate-700\">ÉVÉNEMENT</span><span class=\"ml-auto text-slate-400 transition-transform group-open:rotate-90\">›</span></summary><div class=\"pt-2 pb-1 pl-11\"><p class=\"text-sm md:text-base text-slate-500 mb-3\">Annoncez un concert, marché ou réunion d'information pour le partager avec les habitants.</p><div class=\"flex gap-2\"><a href=\"/evenements/nouveau\" class=\"inline-block px-4 py-2 bg-indigo-600 text-white text-sm md:text-base font-semibold rounded-md hover:bg-indigo-700 transition-all\">Proposer un événement</a><a href=\"/evenements\" class=\"inline-block px-4 py-2 bg-indigo-100 text-indigo-700 text-sm md:text-base font-semibold rounded-md hover:bg-indigo-200 transition-all\">Les Événements</a></div></div></details><details class=\"py-6 group\"><summary class=\"flex items-center gap-3 cursor-pointer list-none select-none\"><div class=\"w-8 h-8 rounded-lg bg-green-400 flex items-center justify-center shrink-0\"><svg class=\"w-4 h-4 text-white\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><line x1=\"12\" y1=\"5\" x2=\"12\" y2=\"19\"/><line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\"/></svg></div><span class=\"font-bold text-base md:text-lg uppercase tracking-wide text-slate-700\">PROPOSITION</span><span class=\"ml-auto text-slate-400 transition-transform group-open:rotate-90\">›</span></summary><div class=\"pt-2 pb-1 pl-11\"><p class=\"text-sm md:text-base text-slate-500 mb-3\">Vous avez une idée pour améliorer votre commune ? Proposez-la et trouvez des soutiens pour la réaliser.</p><a href=\"/propositions/nouveau\" class=\"inline-block px-4 py-2 bg-indigo-600 text-white text-sm md:text-base font-semibold rounded-md hover:bg-indigo-700 transition-all\">Partage de Propositions</a></div></details></div></div></div></section>"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/actualite",
+      "title": { "fr": "Actualité - Saint-Paul CT", "en": "News - Saint-Paul CT" },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "actualite-header",
+          "props": {
+            "headline": { "fr": "Actualité", "en": "News" },
+            "subhead": { "fr": "Toutes les actualités de votre commune", "en": "All news from your commune" }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "actualite-list",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "baseParams": { "defaultTypes": ["news"], "notSourceKey": true },
+            "list": { "columns": { "sm": 1, "md": 2, "lg": 3, "xl": 3 }, "card": { "type": "profile", "variant": "profile", "detailsMode": "drawer" } }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/projets",
+      "title": { "fr": "Projets - Saint-Paul CT", "en": "Projects - Saint-Paul CT" },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "projets-header",
+          "props": {
+            "headline": { "fr": "Projets", "en": "Projects" },
+            "subhead": { "fr": "Tous les projets portés par et pour les citoyens", "en": "All projects carried by and for the citizens" }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "projets-list",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "baseParams": { "defaultTypes": ["projects"], "notSourceKey": true },
+            "list": { "columns": { "sm": 1, "md": 2, "lg": 3, "xl": 3 }, "card": { "type": "profile", "variant": "profile", "detailsMode": "drawer" } }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/citoyens",
+      "title": { "fr": "Citoyens - Saint-Paul CT", "en": "Citizens - Saint-Paul CT" },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "citoyens-header",
+          "props": {
+            "headline": { "fr": "Citoyens", "en": "Citizens" },
+            "subhead": { "fr": "La communauté citoyenne de Saint-Paul", "en": "The citizen community of Saint-Paul" }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "citoyens-list",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": false,
+            "showActiveFiltersTags": false,
+            "disableInfiniteScroll": false,
+            "baseParams": { 
+              "defaultTypes": [
+                "citoyens"
+              ], 
+              "notSourceKey": true 
+            },
+            "list": { 
+              "columns": { 
+                "sm": 1, 
+                "md": 2, 
+                "lg": 4, 
+                "xl": 4 
+              }, 
+              "card": { 
+                "type": "profile", 
+                "variant": "profile", 
+                "detailsMode": "drawer" 
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/agenda",
+      "title": { "fr": "Agenda - Saint-Paul CT", "en": "Agenda - Saint-Paul CT" },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "agenda-header",
+          "props": {
+            "headline": { "fr": "Agenda", "en": "Agenda" },
+            "subhead": { "fr": "Tous les événements de votre commune", "en": "All events in your commune" }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "agenda-list",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "baseParams": { "defaultTypes": ["events"], "notSourceKey": true },
+            "list": { "columns": { "sm": 1, "md": 2, "lg": 3, "xl": 3 }, "card": { "type": "profile", "variant": "profile", "detailsMode": "drawer" } }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/propositions",
+      "title": { "fr": "Propositions - Saint-Paul CT", "en": "Proposals - Saint-Paul CT" },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "propositions-header",
+          "props": {
+            "headline": { "fr": "Propositions", "en": "Proposals" },
+            "subhead": { "fr": "Les propositions citoyennes pour améliorer la commune", "en": "Citizen proposals to improve the commune" }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "propositions-list",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "baseParams": { "defaultTypes": ["proposals"], "notSourceKey": true },
+            "list": { "columns": { "sm": 1, "md": 2, "lg": 3, "xl": 3 }, "card": { "type": "profile", "variant": "profile", "detailsMode": "drawer" } }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/navigation",
+      "title": { "fr": "Navigation - Saint-Paul CT", "en": "Navigation - Saint-Paul CT" },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "navigation-header",
+          "props": {
+            "headline": { "fr": "Votre territoire", "en": "Your territory" },
+            "subhead": { "fr": "Explorez le territoire de Saint-Paul", "en": "Explore the territory of Saint-Paul" }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "navigation-map",
+          "props": {
+            "useFilter": true,
+            "showMap": true,
+            "enableMap": true,
+            "defaultView": "map",
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": false,
+            "disableInfiniteScroll": false,
+            "baseParams": { "defaultTypes": ["organizations", "projects", "events"], "notSourceKey": true },
+            "list": { "columns": { "sm": 1, "md": 2, "lg": 3, "xl": 3 }, "card": { "type": "profile", "variant": "profile", "detailsMode": "drawer" } }
+          }
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "type": "nos-communes",
+    "logoImage": "/images/communeTransparente/logo.png",
+    "logoTitle": { "fr": "Commune Transparente", "en": "Commune Transparente" },
+    "description": { "fr": "Rendre l'action communale lisible pour encourager la participation citoyenne.", "en": "Making communal action legible to encourage civic participation." },
+    "ctaButton": {
+      "label": { "fr": "Trouver votre Commune", "en": "Find your Commune" },
+      "href": "/navigation"
+    },
+    "columns": [
+      {
+        "title": { "fr": "Navigation", "en": "Navigation" },
+        "links": [
+          { "href": "/actualite", "label": { "fr": "Actualité", "en": "News" } },
+          { "href": "/agenda", "label": { "fr": "Agenda", "en": "Agenda" } },
+          { "href": "/projets", "label": { "fr": "Projet", "en": "Project" } },
+          { "href": "/citoyens", "label": { "fr": "Citoyens", "en": "Citizens" } },
+          { "href": "/navigation", "label": { "fr": "Navigation", "en": "Navigation" } },
+          { "href": "/propositions", "label": { "fr": "Proposition", "en": "Proposal" } }
+        ]
+      },
+      {
+        "title": { "fr": "Contacts", "en": "Contacts" },
+        "links": [
+          { "href": "mailto:contact@saint-paul-ct.fr", "label": { "fr": "contact@saint-paul-ct.fr", "en": "contact@saint-paul-ct.fr" } },
+          { "href": "tel:+262262000000", "label": { "fr": "+262 262 00 00 00", "en": "+262 262 00 00 00" } }
+        ]
+      }
+    ],
+    "legalLinks": [
+      { "href": "/mentions-legales", "label": { "fr": "Mentions légales", "en": "Legal notice" } },
+      { "href": "/confidentialite", "label": { "fr": "Politique de confidentialité", "en": "Privacy policy" } }
+    ],
+    "copyright": { "fr": "Ce site est gracieusement hébergé par Open Atlas, pour faire disparaître cette bannière, merci de nous aider à payer l'hébergement", "en": "This site is graciously hosted by Open Atlas. To remove this banner, please help us pay for hosting." }
+  },
+  "floatingQRCode": { "enabled": false }
+}
+

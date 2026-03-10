@@ -55,6 +55,7 @@ const SECTION_META: Record<string, SectionMeta> = {
   "community-rezo-la-mer": { label: "Community RLM", desc: "Section communauté Rézo la Mer", image: "https://placehold.co/300x180/e17055/eee?text=Community+RLM" },
   "cta-rezo-la-mer": { label: "CTA RLM", desc: "Appel à l'action Rézo la Mer", image: "https://placehold.co/300x180/a29bfe/eee?text=CTA+RLM" },
   "title-with-filters-rezo-la-mer": { label: "Title Filters RLM", desc: "Titre avec filtres Rézo la Mer", image: "https://placehold.co/300x180/74b9ff/333?text=Filters+RLM" },
+  "hero-nos-communes": { label: "Nos Communes", desc: "Bannière pour Nos Communes", image: "https://placehold.co/300x180/00cec9/eee?text=Hero+NC" },
 };
 
 export default SECTION_META;
