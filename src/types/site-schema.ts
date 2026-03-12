@@ -6,7 +6,7 @@
 // Validation : Zod 3.x – le schéma sert à la fois de typings, de runtime‑guard,
 //               et d'autocomplétion dans VS Code.
 // ------------------------------------------------------------
-import { SearchProSectionSchema, SearchProStaticSectionSchema } from "@/modules/search/schema";
+import { SearchProSectionSchema, SearchProStaticSectionSchema, CardCountCTSectionSchema } from "@/modules/search/schema";
 import { NewsSectionSchema } from "@/modules/news/schema";
 import { z } from "zod";
 import { LocalizedString, LOCALES } from "./locale-schema";
@@ -202,6 +202,7 @@ export const HeroCommuneTransparenteSchema = z.object({
         z.object({
           label: LocalizedString,
           icon: z.string().optional(),
+          href: z.string().optional(),
         })
       )
       .optional(),
@@ -400,6 +401,41 @@ export const TitleWithFiltersRezoLaMerSchema = z.object({
 
 export type TitleWithFiltersRezoLaMer = z.infer<typeof TitleWithFiltersRezoLaMerSchema>;
 export type TitleWithFiltersRezoLaMerProps = z.infer<typeof TitleWithFiltersRezoLaMerSchema>["props"];
+
+//──────────────── Actions Commune Transparente
+const CommuneTransparenteActionButtonSchema = z.object({
+  label: LocalizedString,
+  href: z.string().optional(),
+  variant: z.enum(["primary", "secondary"]).optional(),
+  action: z.enum(["add-project", "add-event", "add-poi"]).optional(),
+  modal: z.string().optional(),
+  formConfig: JsonFormModalConfigSchema.optional(),
+  requiresAuth: z.boolean().optional(),
+});
+
+const CommuneTransparenteActionItemSchema = z.object({
+  title: LocalizedString,
+  description: LocalizedString,
+  icon: z.string(),
+  iconBg: z.enum(["blue", "slate", "purple", "green", "blue-dark", "orange", "lime"]).optional(),
+  buttons: z.array(CommuneTransparenteActionButtonSchema).default([]),
+});
+
+export const CommuneTransparenteActionsSectionSchema = z.object({
+  type: z.literal("commune-transparente-actions"),
+  id: z.string().optional(),
+  props: z.object({
+    imageSrc: z.string().optional(),
+    imageAlt: LocalizedString.optional(),
+    brandTitle: LocalizedString.optional(),
+    description: LocalizedString.optional(),
+    highlightText: LocalizedString.optional(),
+    items: z.array(CommuneTransparenteActionItemSchema).default([]),
+  }),
+});
+
+export type CommuneTransparenteActionsSection = z.infer<typeof CommuneTransparenteActionsSectionSchema>;
+export type CommuneTransparenteActionsSectionProps = z.infer<typeof CommuneTransparenteActionsSectionSchema>["props"];
 
 //──────────────── Markdown / MDX
 const MarkdownSectionSchema = z.object({
@@ -1223,6 +1259,7 @@ export const Section = z.discriminatedUnion("type", [
   CommunityRezoLaMerSchema,
   CallToActionRezoLaMerSchema,
   TitleWithFiltersRezoLaMerSchema,
+  CommuneTransparenteActionsSectionSchema,
   MarkdownSectionSchema,
   CardsSectionSchema,
   GallerySectionSchema,
@@ -1262,6 +1299,7 @@ export const Section = z.discriminatedUnion("type", [
   ContentSectionSchema,
   SearchProSectionSchema,
   SearchProStaticSectionSchema,
+  CardCountCTSectionSchema,
   GridLayoutSectionSchema,
   NewsSectionSchema,
   MemberSectionSchema,
