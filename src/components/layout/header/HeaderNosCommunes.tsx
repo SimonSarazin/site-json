@@ -52,9 +52,6 @@ export default function HeaderNosCommunes({ header }: HeaderNosCommunesProps) {
     const location = useLocation();
     const { me, api, entity } = useCocolight();
     
-    console.log("HeaderNosCommunes entity : ", location);
-    console.log("HeaderNosCommunes me : ", me);
-
     const isNavItemActive = (itemPath?: string) => {
         if (!itemPath) return false;
         if (itemPath === "/" && location.pathname === "/") return true;

@@ -69,7 +69,9 @@ export function HeroCommuneTransparenteSection({ id, props }: HeroCommuneTranspa
                                 {badge.icon && (
                                     <DynamicIcon name={badge.icon as any} className="w-4 h-4 shrink-0" />
                                 )}
-                                {t(badge.label)}
+                                <a href={badge.href || "#"}>
+                                    {t(badge.label)}
+                                </a>
                             </span>
                         ))}
                     </div>

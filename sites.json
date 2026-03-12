@@ -45,7 +45,7 @@
     "css": "index-nos-communes"
   },
   {
-    "slug": "communeTransparente",
+    "slug": "etangsale1",
     "config": "config.prod.commune-transparente.json",
     "css": "index-commune-transparente"
   }
