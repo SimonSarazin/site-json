@@ -76,12 +76,12 @@
             "backgroundImageAlt": { "fr": "Bienvenu à Étang de Salé", "en": "Welcome to Étang de Salé" },
             "badges": [
               { "icon": "users", "label": { "fr": "Communauté citoyenne", "en": "Citizen community" }, "href": "/citoyens" },
-              { "icon": "share-2", "label": { "fr": "Partage de propositions", "en": "Sharing proposals" }, "href": "/" },
+              { "icon": "share-2", "label": { "fr": "Partage de propositions", "en": "Sharing proposals" }, "href": "/ressources" },
               { "icon": "heart-handshake", "label": { "fr": "Projets Partagés", "en": "Shared Projects" }, "href": "/projets" }
             ],
             "ctaButtons": [
-              { "label": { "fr": "En savoir plus", "en": "Learn more" }, "path": "/commune", "variant": "default" },
-              { "label": { "fr": "Découvrir le Territoire", "en": "Discover the Territory" }, "path": "/navigation", "variant": "outline" }
+              { "label": { "fr": "En savoir plus", "en": "Learn more" }, "path": "/", "variant": "default" },
+              { "label": { "fr": "Découvrir le Territoire", "en": "Discover the Territory" }, "path": "/", "variant": "outline" }
             ],
             "showScrollIndicator": false
           }
