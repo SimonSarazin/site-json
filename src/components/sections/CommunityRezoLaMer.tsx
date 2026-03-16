@@ -11,7 +11,7 @@ export interface CommunityRezoLaMerProps {
     variant?: "ocean" | "cyber";
     image?: string;
     imageAlt?: LocalizedString;
-    actions: Array<{
+    actions?: Array<{
         icon: string;
         title: LocalizedString;
         description: LocalizedString;
@@ -86,7 +86,7 @@ export function CommunityRezoLaMer({ id, props }: CommunityRezoLaMerSectionProps
                 )}
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {props.actions.map((action, index) => (
+                    {props.actions?.map((action, index) => (
                         <Card
                             key={index}
                             className={cardClasses}

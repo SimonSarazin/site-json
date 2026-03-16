@@ -7,6 +7,7 @@ import CardRezoLaMer from "./card/CardRezoLaMer";
 import CardProfile from "./card/CardProfile";
 import CardEventRezoLaMer from "./card/CardEventRezoLaMer";
 import CardPoiRezoLaMer from "./card/CardPoiRezoLaMer";
+import CardSsbe from "./card/CardSsbe";
 
 export default function SearchCard({
   item,
@@ -39,6 +40,8 @@ export default function SearchCard({
       return <CardEventRezoLaMer item={item} onClick={onClick} card={card} />;
     case "poi-rezo-la-mer":
       return <CardPoiRezoLaMer item={item} onClick={onClick} card={card} />;
+    case "ssbe":
+      return <CardSsbe item={item} onClick={onClick} card={card} />;
     case "default":
       return <CardDefault item={item} onClick={onClick} card={card} />;
     default:
