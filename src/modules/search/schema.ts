@@ -30,8 +30,8 @@ const ListConfSchema = z.object({
     shareButton:     z.boolean().optional(),
     showStar:        z.boolean().optional(),
     detailsMode: z.enum(["drawer", "dialog"]).default("drawer"),
-    type: z.enum(["overlay", "default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer"]).default("default"),
-    variant: z.enum(["default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer"]).optional(),
+    type: z.enum(["overlay", "default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer","ssbe"]).default("default"),
+    variant: z.enum(["default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer","ssbe"]).optional(),
   }).partial().optional(),
   preview: z.object({
     type: z.enum(["default"]).default("default"),
