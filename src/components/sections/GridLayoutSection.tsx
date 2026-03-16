@@ -9,7 +9,7 @@ export function GridLayoutSection({
   id?: string;
   props: GridLayoutSectionProps;
 }) {
-  const { leftColumns = 1, rightColumns = 3, gap = 8, className } = props;
+  const { leftColumns = 1, rightColumns = 3, gap = 8, className, leftWrapperClass, rightWrapperClass } = props as any;
   // Cast nécessaire car z.lazy() infère unknown (même pattern que TabsSection)
   const leftSection = props.leftSection as Section | undefined;
   const rightSection = props.rightSection as Section | undefined;
@@ -28,16 +28,16 @@ export function GridLayoutSection({
     <section id={id} className={cn("py-4", className)}>
       <div className="container mx-auto px-6">
         <div
-          className={cn("grid grid-cols-1 lg:grid-cols-4")}
+          className={cn("grid grid-cols-1 lg:grid-cols-4 items-start")}
           style={{ gap: `${gap * 0.25}rem` }}
         >
           {leftSection && (
-            <div className={`${getColSpan(leftColumns)}`}>
+            <div className={cn(getColSpan(leftColumns), leftWrapperClass)}>
               <SectionRenderer section={leftSection} />
             </div>
           )}
           {rightSection && (
-            <div className={getColSpan(rightColumns)}>
+            <div className={cn(getColSpan(rightColumns), rightWrapperClass)}>
               <SectionRenderer section={rightSection} />
             </div>
           )}
