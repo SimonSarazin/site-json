@@ -12,7 +12,7 @@
     },
     "defaultLang": "fr",
     "languages": ["fr"],
-    "favicon": "/images/communeTransparente/logosale.png",
+    "favicon": "/images/etangsale1/logosale.png",
     "themeColor": "#6366f1",
     "keywords": [
       "commune transparente",
@@ -26,7 +26,7 @@
   "header": {
     "type": "commune-transparente",
     "path": "/",
-    "logo": "/images/communeTransparente/logosale.png",
+    "logo": "/images/etangsale1/logosale.png",
     "logoTitle": {
       "fr": "Etang-Salé",
       "en": "Etang-Salé"
@@ -36,7 +36,6 @@
       "path": "/se-connecter"
     },
     "nav": [
-      { "label": { "fr": "Actualité", "en": "News" }, "path": "/actualite" },
       { "label": { "fr": "Projet", "en": "Project" }, "path": "/projets" },
       { "label": { "fr": "Citoyens", "en": "Citizens" }, "path": "/citoyens" },
       { "label": { "fr": "Ressources", "en": "Resources" }, "path": "/ressources" },
@@ -68,12 +67,12 @@
               "fr": "Bienvenu à Étang de Salé", 
               "en": "Welcome to Étang de Salé" 
             },
-            "logoImage": "/images/communeTransparente/logosale1.png",
+            "logoImage": "/images/etangsale1/logosale1.png",
             "subhead": { 
               "fr": "Une ville tournée vers l'avenir, entre transformation et solidarité", 
               "en": "A city turned towards the future, between transformation and solidarity" 
             },
-            "backgroundImage": "/images/communeTransparente/herosale.png",
+            "backgroundImage": "/images/etangsale1/herosale.png",
             "backgroundImageAlt": { "fr": "Bienvenu à Étang de Salé", "en": "Welcome to Étang de Salé" },
             "badges": [
               { "icon": "users", "label": { "fr": "Communauté citoyenne", "en": "Citizen community" }, "href": "/citoyens" },
@@ -126,7 +125,7 @@
           "type": "commune-transparente-actions",
           "id": "commune-transparente-actions",
           "props": {
-            "imageSrc": "/images/communeTransparente/logo.png",
+            "imageSrc": "/images/etangsale1/logo.png",
             "imageAlt": { "fr": "Commune Transparente" },
             "brandTitle": { "fr": "COMMUNE TRANSPARENTE" },
             "description": {
@@ -404,8 +403,8 @@
                 "xl": 5 
               }, 
               "card": { 
-                "type": "card-elts",
-                "variant": "card-elts", 
+                "type": "profile",
+                "variant": "profile", 
                 "detailsMode": "drawer" 
               }
             }
@@ -570,7 +569,7 @@
   ],
   "footer": {
     "type": "nos-communes",
-    "logoImage": "/images/communeTransparente/logo.png",
+    "logoImage": "/images/etangsale1/logo.png",
     "logoTitle": { "fr": "Commune Transparente", "en": "Commune Transparente" },
     "description": { "fr": "Rendre l'action communale lisible pour encourager la participation citoyenne.", "en": "Making communal action legible to encourage civic participation." },
     "ctaButton": {
