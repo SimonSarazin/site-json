@@ -1058,6 +1058,9 @@ const GridLayoutSectionPropsSchema = z.object({
   rightColumns: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]).optional(),
   gap: z.number().optional(),
   className: z.string().optional(),
+  leftWrapperClass: z.string().optional(),
+  rightWrapperClass: z.string().optional(),
+  fixedHeight: z.string().optional(),
 });
 
 const GridLayoutSectionSchema = z.object({
