@@ -363,26 +363,6 @@
           "props": {
             "headline": { "fr": "Citoyens", "en": "Citizens" },
             "subhead": { "fr": "La communauté citoyenne de Etang-Salé", "en": "The citizen community of Etang-Salé" },
-            "buttons": [
-              {
-                "label": {
-                  "fr": "Rejoindre la communauté",
-                  "en": "Join the community"
-                },
-                "icon": "user",
-                "href": "/rejoindre",
-                "variant": "primary"
-              },
-              {
-                "label": {
-                  "fr": "Inscrire mon organisation",
-                  "en": "Register my organization"
-                },
-                "icon": "building-2",
-                "href": "/inscrire-organisation",
-                "variant": "outline"
-              }
-            ],
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher...",
@@ -523,7 +503,7 @@
                 }
               }
             },
-            "list": { "columns": { "sm": 1, "md": 2, "lg": 3, "xl": 3 }, "card": { "type": "profile", "variant": "profile", "detailsMode": "drawer" } }
+            "list": { "columns": { "sm": 1, "md": 2, "lg": 3, "xl": 4 }, "card": { "type": "profile", "variant": "profile", "detailsMode": "drawer" } }
           }
         }
       ]
