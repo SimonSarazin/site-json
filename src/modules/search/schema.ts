@@ -30,8 +30,8 @@ const ListConfSchema = z.object({
     shareButton:     z.boolean().optional(),
     showStar:        z.boolean().optional(),
     detailsMode: z.enum(["drawer", "dialog"]).default("drawer"),
-    type: z.enum(["overlay", "default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer","ssbe"]).default("default"),
-    variant: z.enum(["default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer","ssbe"]).optional(),
+    type: z.enum(["overlay", "default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer", "card-elts","ssbe"]).default("default"),
+    variant: z.enum(["default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer", "card-elts","ssbe"]).optional(),
   }).partial().optional(),
   preview: z.object({
     type: z.enum(["default"]).default("default"),
@@ -113,6 +113,15 @@ export const SearchProSectionSchema = z.object({
       defaultFields: z.array(z.string()).optional(),
       defaultSortBy: z.record(z.string(), z.union([z.literal(1), z.literal(-1)])).optional(),
       notSourceKey: z.boolean().optional(),
+      locality: z.record(z.string(), z.object({
+        id: z.string(),
+        type: z.string(),
+        name: z.string().optional(),
+        countryCode: z.string().optional(),
+        level: z.union([z.string(), z.number()]).optional(),
+        active: z.boolean().optional(),
+        key: z.string().optional(),
+      })).optional(),
     }).optional(),
 
     list: ListConfSchema.optional(),
@@ -222,6 +231,15 @@ export const SearchProStaticSectionSchema = z.object({
       defaultFields: z.array(z.string()).optional(),
       defaultSortBy: z.record(z.string(), z.union([z.literal(1), z.literal(-1)])).optional(),
       notSourceKey: z.boolean().optional(),
+      locality: z.record(z.string(), z.object({
+        id: z.string(),
+        type: z.string(),
+        name: z.string().optional(),
+        countryCode: z.string().optional(),
+        level: z.union([z.string(), z.number()]).optional(),
+        active: z.boolean().optional(),
+        key: z.string().optional(),
+      })).optional(),
     }).optional(),
 
     list: ListConfSchema.optional(),
@@ -232,6 +250,52 @@ export const SearchProStaticSectionSchema = z.object({
 
 export type SearchProStaticSection = z.infer<typeof SearchProStaticSectionSchema>;
 export type SearchProStaticSectionProps = z.infer<typeof SearchProStaticSectionSchema>["props"]
+
+// CardCountCT: Section dédiée à l'affichage des compteurs par type
+const CardCountCTCardConfigSchema = z.object({
+  countKey: z.string(),
+  label: LocalizedString.or(z.string()),
+  icon: z.string().optional(),
+  color: z.string().optional(),
+  href: z.string().optional(),
+});
+
+export const CardCountCTSectionSchema = z.object({
+  type: z.literal("cardCountCT"),
+  id:   z.string().optional(),
+
+  props: z.object({
+    title: LocalizedString.optional(),
+    subtitle: LocalizedString.optional(),
+    bg: z.enum([
+      "default", "card", "muted", "primary", "secondary", "accent", "transparent",
+      "gradient-teal", "gradient-blue", "gradient-indigo", "gradient-cyan",
+    ]).optional(),
+
+    baseParams: z.object({
+      fediverse:     z.boolean().optional(),
+      indexStepList: z.number().optional(),
+      defaultTypes: z.array(SearchTypeSchema).optional(),
+      defaultTags:   z.array(z.string()).optional(),
+      defaultFilters: z.record(z.string(), z.unknown()).optional(),
+      notSourceKey: z.boolean().optional(),
+      locality: z.record(z.string(), z.object({
+        id: z.string(),
+        type: z.string(),
+        name: z.string().optional(),
+        countryCode: z.string().optional(),
+        level: z.union([z.string(), z.number()]).optional(),
+        active: z.boolean().optional(),
+        key: z.string().optional(),
+      })).optional(),
+    }).optional(),
+
+    cards: z.array(CardCountCTCardConfigSchema).optional(),
+  }),
+});
+
+export type CardCountCTSection = z.infer<typeof CardCountCTSectionSchema>;
+export type CardCountCTSectionProps = z.infer<typeof CardCountCTSectionSchema>["props"]
 
 
 export interface SearchListViewProps<T extends SearchEntity = SearchEntity> {

@@ -51,7 +51,6 @@ export interface TitleWithFiltersRezoLaMerProps {
     buttons?: ActionButton[];
     searchPlaceholder?: LocalizedString;
     showSearch?: boolean;
-    bg?: "default" | "card" | "muted" | "primary" | "secondary" | "accent" | "transparent";
 }
 
 interface TitleWithFiltersRezoLaMerSectionProps {
@@ -299,6 +298,9 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
 
     const activeType = selectedFilters['type']?.[0] ?? "all";
 
+    const { entity } = useCocolight();
+    const slugEntity = entity?.slug;
+
     const [localSearchQuery, setLocalSearchQuery] = useState(pageFilters?.searchQuery ?? "");
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -332,19 +334,8 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
         }
     };
 
-    const BG_MAP: Record<string, string> = {
-        card: "bg-card",
-        muted: "bg-muted",
-        primary: "bg-primary/10",
-        secondary: "bg-secondary",
-        accent: "bg-accent/10",
-        transparent: "bg-transparent",
-    };
-
-    const sectionBg = props.bg && props.bg !== "default" ? BG_MAP[props.bg] : "bg-ocean-gradient";
-
     return (
-        <section id={id} className={`relative pt-10 px-4 overflow-hidden ${sectionBg}`}>
+        <section id={id} className="relative pt-10 px-4 bg-ocean-gradient overflow-hidden">
             <div className="inset-0 opacity-10">
                 <div className="absolute top-10 left-10 w-64 h-64 bg-primary rounded-full blur-3xl animate-float" />
                 <div
@@ -360,7 +351,7 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
                     </h1>
                 )}
                 {props.subhead && (
-                    <p className="text-xl text-white/80 max-w-2xl mx-auto animate-fade-in">
+                    <p className={`text-xl ${(slugEntity == "nosCommunes" || slugEntity == "etangsale1") ? "" : "text-white/80"} max-w-2xl mx-auto animate-fade-in`}>
                         {tLocalized(props.subhead)}
                     </p>
                 )}

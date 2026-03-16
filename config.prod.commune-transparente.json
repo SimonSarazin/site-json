@@ -1,0 +1,605 @@
+{
+  "version": "1.0.0",
+  "generated": "2026-03-05T10:00:00.000Z",
+  "meta": {
+    "title": {
+      "fr": "Etang-Salé",
+      "en": "Etang-Salé"
+    },
+    "description": {
+      "fr": "La plateforme collaborative pour connecter et dynamiser votre commune.",
+      "en": "The collaborative platform to connect and energize your commune."
+    },
+    "defaultLang": "fr",
+    "languages": ["fr"],
+    "favicon": "/images/etangsale1/logosale.png",
+    "themeColor": "#6366f1",
+    "keywords": [
+      "commune transparente",
+      "citoyens",
+      "démocratie participative",
+      "gouvernance locale",
+      "territoire",
+      "transparence"
+    ]
+  },
+  "header": {
+    "type": "commune-transparente",
+    "path": "/",
+    "logo": "/images/etangsale1/logosale.png",
+    "logoTitle": {
+      "fr": "Etang-Salé",
+      "en": "Etang-Salé"
+    },
+    "ctaButton": {
+      "label": { "fr": "Se connecter", "en": "Sign in" },
+      "path": "/se-connecter"
+    },
+    "nav": [
+      { "label": { "fr": "Projet", "en": "Project" }, "path": "/projets" },
+      { "label": { "fr": "Citoyens", "en": "Citizens" }, "path": "/citoyens" },
+      { "label": { "fr": "Ressources", "en": "Resources" }, "path": "/ressources" },
+      { "label": { "fr": "Agenda", "en": "Agenda" }, "path": "/agenda" }
+    ],
+    "sticky": true,
+    "transparent": true,
+    "height": "md",
+    "utilities": {
+      "themeSwitch": false,
+      "langSwitch": false,
+      "search": false,
+      "auth": true,
+      "cart": false,
+      "notifications": false
+    }
+  },
+  "pages": [
+    {
+      "path": "/",
+      "title": { "fr": "Accueil - Commune Transparente", "en": "Home - Transparent Commune" },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "hero-commune-transparente",
+          "id": "hero-commune-transparente",
+          "props": {
+            "headline": { 
+              "fr": "Bienvenu à Étang de Salé", 
+              "en": "Welcome to Étang de Salé" 
+            },
+            "logoImage": "/images/etangsale1/logosale1.png",
+            "subhead": { 
+              "fr": "Une ville tournée vers l'avenir, entre transformation et solidarité", 
+              "en": "A city turned towards the future, between transformation and solidarity" 
+            },
+            "backgroundImage": "/images/etangsale1/herosale.png",
+            "backgroundImageAlt": { "fr": "Bienvenu à Étang de Salé", "en": "Welcome to Étang de Salé" },
+            "badges": [
+              { "icon": "users", "label": { "fr": "Communauté citoyenne", "en": "Citizen community" }, "href": "/citoyens" },
+              { "icon": "share-2", "label": { "fr": "Partage de propositions", "en": "Sharing proposals" }, "href": "/" },
+              { "icon": "heart-handshake", "label": { "fr": "Projets Partagés", "en": "Shared Projects" }, "href": "/projets" }
+            ],
+            "ctaButtons": [
+              { "label": { "fr": "En savoir plus", "en": "Learn more" }, "path": "/commune", "variant": "default" },
+              { "label": { "fr": "Découvrir le Territoire", "en": "Discover the Territory" }, "path": "/navigation", "variant": "outline" }
+            ],
+            "showScrollIndicator": false
+          }
+        },
+        {
+          "type": "html",
+          "id": "nos-thematiques",
+          "props": {
+            "html": "<section class=\"py-16 px-4 bg-white\"><div class=\"container mx-auto max-w-6xl\"><h2 class=\"text-3xl md:text-4xl font-bold text-center mb-2\">Nos <span class=\"text-primary\">Thématiques</span></h2><p class=\"text-center text-muted-foreground text-base mb-10\">Explorez les différentes dimensions de votre Commune</p><div class=\"grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4\"><a href=\"/thematique/culture\" class=\"group relative flex flex-col p-4 rounded-xl border border-border bg-white hover:shadow-md transition-all cursor-pointer\"><span class=\"absolute top-3 right-3 text-4xl font-extrabold text-muted/20 leading-none select-none\">1</span><div class=\"w-10 h-10 rounded-lg bg-violet-100 flex items-center justify-center mb-3\"><svg class=\"w-5 h-5 text-violet-600\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path d=\"M12 2a9 9 0 1 0 0 18A9 9 0 0 0 12 2z\"/><path d=\"M8 12l2 2 4-4\"/></svg></div><span class=\"font-semibold text-sm text-foreground mb-2\">Culture</span><div class=\"flex gap-1 text-xs text-muted-foreground\"><span>👥 2</span><span>📋 16</span><span>🏷 44</span></div></a><a href=\"/thematique/environnement\" class=\"group relative flex flex-col p-4 rounded-xl border border-border bg-white hover:shadow-md transition-all cursor-pointer\"><span class=\"absolute top-3 right-3 text-4xl font-extrabold text-muted/20 leading-none select-none\">2</span><div class=\"w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center mb-3\"><svg class=\"w-5 h-5 text-green-600\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path d=\"M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z\"/></svg></div><span class=\"font-semibold text-sm text-foreground mb-2\">Environnement</span><div class=\"flex gap-1 text-xs text-muted-foreground\"><span>👥 2</span><span>📋 3</span><span>🏷 37</span><span>📌 1</span></div></a><a href=\"/thematique/tiers-lieux\" class=\"group relative flex flex-col p-4 rounded-xl border border-border bg-white hover:shadow-md transition-all cursor-pointer\"><span class=\"absolute top-3 right-3 text-4xl font-extrabold text-muted/20 leading-none select-none\">3</span><div class=\"w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center mb-3\"><svg class=\"w-5 h-5 text-blue-600\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path d=\"M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"/></svg></div><span class=\"font-semibold text-sm text-foreground mb-2\">Tiers lieux</span><div class=\"flex gap-1 text-xs text-muted-foreground\"><span>🏷 6</span></div></a><a href=\"/thematique/ocean\" class=\"group relative flex flex-col p-4 rounded-xl border border-border bg-white hover:shadow-md transition-all cursor-pointer\"><span class=\"absolute top-3 right-3 text-4xl font-extrabold text-muted/20 leading-none select-none\">4</span><div class=\"w-10 h-10 rounded-lg bg-cyan-100 flex items-center justify-center mb-3\"><svg class=\"w-5 h-5 text-cyan-600\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path d=\"M2 12c2-4 6-4 8 0s6 4 8 0\"/><path d=\"M2 18c2-4 6-4 8 0s6 4 8 0\"/></svg></div><span class=\"font-semibold text-sm text-foreground mb-2\">Océan</span><div class=\"flex gap-1 text-xs text-muted-foreground\"><span>👥 3</span><span>📋 10</span></div></a><a href=\"/thematique/education\" class=\"group relative flex flex-col p-4 rounded-xl border border-border bg-white hover:shadow-md transition-all cursor-pointer\"><span class=\"absolute top-3 right-3 text-4xl font-extrabold text-muted/20 leading-none select-none\">5</span><div class=\"w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center mb-3\"><svg class=\"w-5 h-5 text-orange-600\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path d=\"M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z\"/><path d=\"M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z\"/></svg></div><span class=\"font-semibold text-sm text-foreground mb-2\">Éducation</span><div class=\"flex gap-1 text-xs text-muted-foreground\"><span>👥 8</span><span>🏷 9</span></div></a><a href=\"/thematique/dechets\" class=\"group relative flex flex-col p-4 rounded-xl border border-border bg-white hover:shadow-md transition-all cursor-pointer\"><span class=\"absolute top-3 right-3 text-4xl font-extrabold text-muted/20 leading-none select-none\">6</span><div class=\"w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center mb-3\"><svg class=\"w-5 h-5 text-gray-600\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><polyline points=\"3,6 5,6 21,6\"/><path d=\"M19 6l-1 14H6L5 6\"/><path d=\"M10 11v6\"/><path d=\"M14 11v6\"/></svg></div><span class=\"font-semibold text-sm text-foreground mb-2\">Déchets</span><div class=\"flex gap-1 text-xs text-muted-foreground\"><span>👥 8</span><span>🏷 22</span></div></a><a href=\"/thematique/innovation\" class=\"group relative flex flex-col p-4 rounded-xl border border-border bg-white hover:shadow-md transition-all cursor-pointer\"><span class=\"absolute top-3 right-3 text-4xl font-extrabold text-muted/20 leading-none select-none\">7</span><div class=\"w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center mb-3\"><svg class=\"w-5 h-5 text-purple-600\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"3\"/><path d=\"M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4\"/></svg></div><span class=\"font-semibold text-sm text-foreground mb-2\">Innovation</span><div class=\"flex gap-1 text-xs text-muted-foreground\"><span>👥 1</span><span>📋 3</span><span>🏛 1</span></div></a><a href=\"/thematique/sport\" class=\"group relative flex flex-col p-4 rounded-xl border border-border bg-white hover:shadow-md transition-all cursor-pointer\"><span class=\"absolute top-3 right-3 text-4xl font-extrabold text-muted/20 leading-none select-none\">8</span><div class=\"w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center mb-3\"><svg class=\"w-5 h-5 text-red-600\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20\"/><path d=\"M2 12h20\"/></svg></div><span class=\"font-semibold text-sm text-foreground mb-2\">Sport</span><div class=\"flex gap-1 text-xs text-muted-foreground\"><span>👥 1</span><span>📋 2</span><span>🏷 49</span><span>📌 1</span></div></a></div></div></section>"
+          }
+        },
+        {
+          "type": "html",
+          "id": "explorer-territoire",
+          "props": {
+            "html": "<section class=\"py-16 px-4 bg-gradient-to-b from-cyan-100 to-teal-200\"><div class=\"container mx-auto max-w-4xl text-center\"><h2 class=\"text-3xl md:text-4xl font-bold text-slate-800 mb-3\">Explorez le Territoire</h2><p class=\"text-slate-600 text-base mb-10\">Découvrez les lieux, événements et initiatives près de chez vous</p><div class=\"flex flex-col sm:flex-row gap-3 justify-center\"><a href=\"/navigation\" class=\"px-6 py-3 rounded-full border-2 border-teal-700 text-teal-900 font-medium bg-white/60 hover:bg-white transition-all text-sm\">Explorez votre territoire en toute liberté</a><a href=\"/elements\" class=\"px-6 py-3 rounded-full bg-teal-700 text-white font-medium hover:bg-teal-800 transition-all text-sm\">Les éléments existants</a><a href=\"/observatoire\" class=\"px-6 py-3 rounded-full border-2 border-teal-700 text-teal-900 font-medium bg-white/60 hover:bg-white transition-all text-sm\">Espace d'observation publique</a></div></div></section>"
+          }
+        },
+        {
+          "type": "cardCountCT",
+          "id": "territoire-en-chiffres",
+          "props": {
+            "title": { "fr": "Notre Territoire en Chiffres", "en": "Our Territory in Numbers" },
+            "subtitle": { "fr": "Une communauté active et engagée", "en": "An active and committed community" },
+            "bg": "gradient-teal",
+            "baseParams": {
+              "defaultTypes": ["organizations","projects", "events", "citoyens", "poi"],
+              "notSourceKey": true,
+              "defaultFilters": { }
+            },
+            "cards": [
+              { "countKey": "organizations", "label": { "fr": "Organisation", "en": "organization" }, "icon": "handshake", "color": "yellow" },
+              { "countKey": "poi", "label": { "fr": "Point d'intérêt", "en": "Point of interest" }, "icon": "map-pin", "color": "green" },
+              { "countKey": "projects", "label": { "fr": "Projets", "en": "Projects" }, "icon": "layout-dashboard", "color": "indigo" },
+              { "countKey": "citoyens", "label": { "fr": "Citoyens", "en": "Citizens" }, "icon": "user", "color": "blue" },
+              { "countKey": "events", "label": { "fr": "Événements", "en": "Events" }, "icon": "calendar-days", "color": "cyan" }
+            ]
+          }
+        },
+        {
+          "type": "commune-transparente-actions",
+          "id": "commune-transparente-actions",
+          "props": {
+            "imageSrc": "/images/etangsale1/logo.png",
+            "imageAlt": { "fr": "Commune Transparente" },
+            "brandTitle": { "fr": "COMMUNE TRANSPARENTE" },
+            "description": {
+              "fr": "Favoriser la transparence et l'accès à l'information publique au sein de votre commune. Nous présentons ici des rubriques dédiées aux actions municipales, aux projets en cours, aux décisions publiques et aux données ouvertes."
+            },
+            "highlightText": {
+              "fr": "Une expérience claire et accessible, pensée pour renforcer la confiance et l'implication citoyenne."
+            },
+            "items": [
+              {
+                "title": { "fr": "PARTAGE DE RESSOURCES" },
+                "description": {
+                  "fr": "Trouvez du soutien près de chez vous. Postez votre demande et laissez la communauté vous aider."
+                },
+                "icon": "clock-3",
+                "iconBg": "blue",
+                "buttons": [
+                  {
+                    "label": { "fr": "Proposer une ressource" },
+                    "action": "add-poi",
+                    "requiresAuth": true
+                  }
+                ]
+              },
+              {
+                "title": { "fr": "BESOINS & DEMANDES" },
+                "description": {
+                  "fr": "Vous avez des compétences ou du temps ? Proposez vos services pour aider votre quartier."
+                },
+                "icon": "package",
+                "iconBg": "slate",
+                "buttons": [
+                  {
+                    "label": { "fr": "Proposer une offre" },
+                    "action": "add-offer",
+                    "requiresAuth": true
+                  }
+                ]
+              },
+              {
+                "title": { "fr": "PROJETS LOCAUX" },
+                "description": {
+                  "fr": "Présentez votre projet local pour trouver des soutiens, des bénévoles et des partenaires."
+                },
+                "icon": "map-pinned",
+                "iconBg": "green",
+                "buttons": [
+                  {
+                    "label": { "fr": "Proposer un projet" },
+                    "action": "add-project",
+                    "requiresAuth": true
+                  },
+                  {
+                    "label": { "fr": "Les Projets locaux" },
+                    "href": "/projets",
+                    "variant": "secondary"
+                  }
+                ]
+              },
+              {
+                "title": { "fr": "ENTREPRISES LOCALES" },
+                "description": {
+                  "fr": "Faites connaître une association, un club ou un collectif en l'ajoutant à notre annuaire local."
+                },
+                "icon": "house",
+                "iconBg": "blue-dark",
+                "buttons": [
+                  {
+                    "label": { "fr": "Proposer une organisation" },
+                    "action": "add-organization",
+                    "requiresAuth": true 
+                  }
+                ]
+              },
+              {
+                "title": { "fr": "ÉVÉNEMENT" },
+                "description": {
+                  "fr": "Annoncez un concert, marché ou réunion d'information pour le partager avec les habitants."
+                },
+                "icon": "calendar-days",
+                "iconBg": "orange",
+                "buttons": [
+                  {
+                    "label": { "fr": "Proposer un événement" },
+                    "action": "add-event",
+                    "requiresAuth": true
+                  },
+                  {
+                    "label": { "fr": "Les Événements" },
+                    "href": "/evenements",
+                    "variant": "secondary"
+                  }
+                ]
+              },
+              {
+                "title": { "fr": "PROPOSITION" },
+                "description": {
+                  "fr": "Vous avez une idée pour améliorer votre commune ? Proposez-la et trouvez des soutiens pour la réaliser."
+                },
+                "icon": "plus",
+                "iconBg": "lime",
+                "buttons": [
+                  {
+                    "label": { "fr": "Partage de Propositions" },
+                    "action": "add-poi",
+                    "requiresAuth": true
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/actualite",
+      "title": { "fr": "Actualité - Etang-Salé CT", "en": "News - Etang-Salé CT" },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "actualite-header",
+          "props": {
+            "headline": { "fr": "Actualité", "en": "News" },
+            "subhead": { "fr": "Toutes les actualités de votre commune", "en": "All news from your commune" }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "actualite-list",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "baseParams": { 
+              "defaultTypes": ["news"], 
+              "notSourceKey": true,
+              "defaultFilters": {
+                "$or" : {
+                  "address.localityId": "54c0965cf6b95c141800a527",
+                  "source.key": "etangsale1",
+                  "source.keys": "etangsale1"
+                }
+              } 
+            },
+            "list": { "columns": { "sm": 1, "md": 2, "lg": 3, "xl": 3 }, "card": { "type": "profile", "variant": "profile", "detailsMode": "drawer" } }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/projets",
+      "title": { "fr": "Projets - Etang-Salé CT", "en": "Projects - Etang-Salé CT" },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "projets-header",
+          "props": {
+            "headline": { "fr": "Projets", "en": "Projects" },
+            "subhead": { "fr": "Tous les projets portés par et pour les citoyens", "en": "All projects carried by and for the citizens" },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Proposer un projet",
+                  "en": "Submit a project"
+                },
+                "icon": "plus",
+                "action": "add-project",
+                "variant": "primary"
+              }
+            ],
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher...",
+              "en": "Search..."
+            }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "projets-list",
+          "props": {
+            "useFilter": true,
+            "showMap": true,
+            "enableMap": true,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "baseParams": { 
+              "defaultTypes": ["projects"], 
+              "notSourceKey": true,
+              "defaultFields": [
+                "name",
+                "shortDescription",
+                "siren",
+                "collection",
+                "email", 
+                "profilImageUrl",
+                "profilMediumImageUrl",
+                "profilThumbImageUrl",
+                "slug",
+                "tags",
+                "partners",
+                "links",
+                "date",
+                "address"
+              ],
+              "defaultFilters": { 
+                "$or": {
+                  "address.localityId": "54c0965cf6b95c141800a527",
+                  "source.key": "etangsale1",
+                  "source.keys": "etangsale1"
+                }
+              }
+            },
+            "list": { "columns": { "sm": 1, "md": 3, "lg": 5, "xl": 5 }, 
+            "card": { "type": "card-elts", "variant": "card-elts", "detailsMode": "drawer" } }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/citoyens",
+      "title": { "fr": "Citoyens - Etang-Salé CT", "en": "Citizens - Etang-Salé CT" },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "citoyens-header",
+          "props": {
+            "headline": { "fr": "Citoyens", "en": "Citizens" },
+            "subhead": { "fr": "La communauté citoyenne de Etang-Salé", "en": "The citizen community of Etang-Salé" },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher...",
+              "en": "Search..."
+            }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "citoyens-list",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": false,
+            "showActiveFiltersTags": false,
+            "disableInfiniteScroll": false,
+            "baseParams": { 
+              "defaultTypes": [
+                "citoyens"
+              ], 
+              "notSourceKey": true,
+              "defaultFields": [
+                "address"
+              ],
+              "defaultFilters": { 
+                "$or": {
+                  "address.localityId": "54c0965cf6b95c141800a527",
+                  "source.key": "etangsale1",
+                  "source.keys": "etangsale1"
+                }
+              }
+            },
+            "list": { 
+              "columns": { 
+                "sm": 1, 
+                "md": 3, 
+                "lg": 4, 
+                "xl": 5 
+              }, 
+              "card": { 
+                "type": "profile",
+                "variant": "profile", 
+                "detailsMode": "drawer" 
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/ressources",
+      "title": { "fr": "Ressources - Etang-Salé CT", "en": "Resources - Etang-Salé CT" },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "ressources-header",
+          "props": {
+            "headline": { "fr": "Ressources", "en": "Resources" },
+            "subhead": { "fr": "Partage de ressources entre citoyens", "en": "Sharing resources between citizens" }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "ressources-list",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": false,
+            "showActiveFiltersTags": false,
+            "disableInfiniteScroll": false,
+            "baseParams": { 
+              "defaultTypes": [
+                "poi"
+              ], 
+              "notSourceKey": true,
+              "defaultFields": [
+                "address"
+              ],
+              "defaultFilters": { 
+                "$or": {
+                  "address.localityId": "54c0965cf6b95c141800a527",
+                  "source.key": "etangsale1",
+                  "source.keys": "etangsale1"
+                }
+              }
+            },
+            "list": { 
+              "columns": { 
+                "sm": 1, 
+                "md": 3, 
+                "lg": 4, 
+                "xl": 5 
+              }, 
+              "card": { 
+                "type": "card-elts",
+                "variant": "card-elts", 
+                "detailsMode": "drawer" 
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/agenda",
+      "title": { "fr": "Agenda - Etang-Salé CT", "en": "Agenda - Etang-Salé CT" },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "agenda-header",
+          "props": {
+            "headline": { "fr": "Agenda", "en": "Agenda" },
+            "subhead": { "fr": "Tous les événements de votre commune", "en": "All events in your commune" }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "agenda-list",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "baseParams": { 
+              "defaultTypes": ["events"], 
+              "notSourceKey": true ,
+              "defaultFilters": { 
+                "$or": {
+                  "address.localityId": "54c0965cf6b95c141800a527",
+                  "source.key": "etangsale1",
+                  "source.keys": "etangsale1"
+                }
+              }
+            },
+            "list": { "columns": { "sm": 1, "md": 2, "lg": 3, "xl": 4 }, "card": { "type": "profile", "variant": "profile", "detailsMode": "drawer" } }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/propositions",
+      "title": { "fr": "Propositions - Etang-Salé CT", "en": "Proposals - Etang-Salé CT" },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "propositions-header",
+          "props": {
+            "headline": { "fr": "Propositions", "en": "Proposals" },
+            "subhead": { "fr": "Les propositions citoyennes pour améliorer la commune", "en": "Citizen proposals to improve the commune" }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "propositions-list",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "baseParams": { "defaultTypes": ["proposals"], "notSourceKey": true },
+            "list": { "columns": { "sm": 1, "md": 2, "lg": 3, "xl": 3 }, "card": { "type": "profile", "variant": "profile", "detailsMode": "drawer" } }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/navigation",
+      "title": { "fr": "Navigation - Etang-Salé CT", "en": "Navigation - Etang-Salé CT" },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "navigation-header",
+          "props": {
+            "headline": { "fr": "Votre territoire", "en": "Your territory" },
+            "subhead": { "fr": "Explorez le territoire de Etang-Salé", "en": "Explore the territory of Etang-Salé" }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "navigation-map",
+          "props": {
+            "useFilter": true,
+            "showMap": true,
+            "enableMap": true,
+            "defaultView": "map",
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": false,
+            "disableInfiniteScroll": false,
+            "baseParams": { "defaultTypes": ["organizations", "projects", "events"], "notSourceKey": true },
+            "list": { "columns": { "sm": 1, "md": 2, "lg": 3, "xl": 3 }, "card": { "type": "profile", "variant": "profile", "detailsMode": "drawer" } }
+          }
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "type": "nos-communes",
+    "logoImage": "/images/etangsale1/logo.png",
+    "logoTitle": { "fr": "Commune Transparente", "en": "Commune Transparente" },
+    "description": { "fr": "Rendre l'action communale lisible pour encourager la participation citoyenne.", "en": "Making communal action legible to encourage civic participation." },
+    "ctaButton": {
+      "label": { "fr": "Trouver votre Commune", "en": "Find your Commune" },
+      "href": "/navigation"
+    },
+    "columns": [
+      {
+        "title": { "fr": "Navigation", "en": "Navigation" },
+        "links": [
+          { "href": "/actualite", "label": { "fr": "Actualité", "en": "News" } },
+          { "href": "/agenda", "label": { "fr": "Agenda", "en": "Agenda" } },
+          { "href": "/projets", "label": { "fr": "Projet", "en": "Project" } },
+          { "href": "/citoyens", "label": { "fr": "Citoyens", "en": "Citizens" } }
+        ]
+      },
+      {
+        "title": { "fr": "Contacts", "en": "Contacts" },
+        "links": [
+          { "href": "mailto:contact@etangsale.fr", "label": { "fr": "contact@etangsale.fr", "en": "contact@etangsale.fr" } },
+          { "href": "tel:+262262000000", "label": { "fr": "+262 262 00 00 00", "en": "+262 262 00 00 00" } }
+        ]
+      }
+    ],
+    "legalLinks": [
+      { "href": "/mentions-legales", "label": { "fr": "Mentions légales", "en": "Legal notice" } },
+      { "href": "/confidentialite", "label": { "fr": "Politique de confidentialité", "en": "Privacy policy" } }
+    ],
+    "copyright": { "fr": "Ce site est gracieusement hébergé par Open Atlas, pour faire disparaître cette bannière, merci de nous aider à payer l'hébergement", "en": "This site is graciously hosted by Open Atlas. To remove this banner, please help us pay for hosting." }
+  },
+  "floatingQRCode": { "enabled": false }
+}
+
