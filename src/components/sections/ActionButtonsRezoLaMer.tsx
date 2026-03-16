@@ -8,6 +8,7 @@ export interface ActionButtonsRezoLaMerProps {
     headline: LocalizedString;
     subhead?: LocalizedString;
     variant?: "ocean" | "cyber";
+    bg?: "default" | "card" | "muted" | "primary" | "secondary" | "accent" | "transparent";
     actions: Array<{
         icon: string;
         title: LocalizedString;
@@ -63,12 +64,23 @@ export function ActionButtonsRezoLaMer({ id, props }: ActionButtonsRezoLaMerSect
         }
     };
 
-    const sectionClasses = isCyber
-        ? "py-16 px-4 bg-gradient-to-b from-card/20 to-background"
-        : "py-16 px-4 bg-linear-to-b from-background/80 to-background";
+    const BG_MAP: Record<string, string> = {
+        card: "bg-card",
+        muted: "bg-muted",
+        primary: "bg-primary/10",
+        secondary: "bg-secondary",
+        accent: "bg-accent/10",
+        transparent: "bg-transparent",
+    };
+
+    const defaultBg = isCyber
+        ? "bg-gradient-to-b from-card/20 to-background"
+        : "bg-linear-to-b from-background/80 to-background";
+
+    const sectionBg = props.bg && props.bg !== "default" ? BG_MAP[props.bg] : defaultBg;
 
     return (
-        <section id={id} className={sectionClasses}>
+        <section id={id} className={`py-16 px-4 ${sectionBg}`}>
             <div className="container mx-auto max-w-5xl">
                 <div className="text-center mb-10">
                     <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">

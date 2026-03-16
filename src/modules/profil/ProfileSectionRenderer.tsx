@@ -5,6 +5,7 @@ import type {
   ProfileHeaderSection,
   ProfileInfoSection,
   ProfileTiersLieuxInfoSection,
+  ProfileTiersLieuxAboutSection,
   ProfileMapSection,
   ProfileMembersSection,
   ProfileOrganizerSection,
@@ -105,7 +106,7 @@ export function ProfileSectionRenderer({ section }: ProfileSectionRendererProps)
     case "profile-about":
       return <ProfileAbout section={section as ProfileAboutSection} />;
     case "profile-about-tl":
-      return <ProfileTiersLieuxAbout section={section as ProfileAboutSection} />;
+      return <ProfileTiersLieuxAbout section={section as ProfileTiersLieuxAboutSection} />;
 
     case "profile-map":
       return <ProfileMap section={section as ProfileMapSection} />;

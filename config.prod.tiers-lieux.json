@@ -850,52 +850,68 @@
                         "defaultChecked": false
                       },
                       {
+                        "id": "ateliers-artisanaux",
+                        "label": {
+                          "fr": "Ateliers artisanaux partagés",
+                          "en": "Shared craft workshops"
+                        },
+                        "name": "Ateliers artisanaux partagés"
+                      },
+                      {
                         "id": "coworking",
                         "label": {
-                          "fr": "Coworking",
-                          "en": "Coworking"
+                          "fr": "Bureaux partagés / Coworking",
+                          "en": "Shared offices / Coworking"
                         },
                         "name": "Bureaux partagés / Coworking"
                       },
                       {
-                        "id": "reunion",
+                        "id": "foodlab",
                         "label": {
-                          "fr": "Salles de réunion",
-                          "en": "Meeting rooms"
+                          "fr": "Cuisine partagée / Foodlab",
+                          "en": "Shared kitchen / Foodlab"
                         },
-                        "name": "Salle de réunion"
-                      },
-                      {
-                        "id": "bureaux",
-                        "label": {
-                          "fr": "Bureaux privatifs",
-                          "en": "Private offices"
-                        },
-                        "name": "Bureau privatif"
+                        "name": "Cuisine partagée / Foodlab"
                       },
                       {
                         "id": "fablab",
                         "label": {
-                          "fr": "FabLab",
-                          "en": "FabLab"
+                          "fr": "Fablab / Makerspace / Hackerspace",
+                          "en": "Fablab / Makerspace / Hackerspace"
                         },
-                        "name": "Fablab / Makerspace / Hackerspace"
+                        "name": "Fablab / Makerspace / Hackerspace (Espaces du Faire)"
                       },
                       {
-                        "id": "restaurant",
+                        "id": "livinglab",
                         "label": {
-                          "fr": "Restaurant",
-                          "en": "Restaurant"
+                          "fr": "LivingLab / Innovation sociale",
+                          "en": "LivingLab / Social innovation"
                         },
-                        "name": "Restaurant"
+                        "name": "LivingLab / Laboratoire d'innovation sociale"
                       },
                       {
-                        "id": "bar",
+                        "id": "nourricier",
                         "label": {
-                          "fr": "Bar",
-                          "en": "Bar"
+                          "fr": "Tiers-lieu nourricier",
+                          "en": "Food-producing third place"
                         },
-                        "name": "Bar"
+                        "name": "Tiers-lieu nourricier"
+                      },
+                      {
+                        "id": "culturel",
+                        "label": {
+                          "fr": "Tiers-lieu culturel",
+                          "en": "Cultural third place"
+                        },
+                        "name": "Tiers-lieu culturel / Lieux intermédiaires et indépendants"
+                      },
+                      {
+                        "id": "autre",
+                        "label": {
+                          "fr": "Autre famille de tiers-lieux",
+                          "en": "Other third place types"
+                        },
+                        "name": "Autre famille de tiers-lieux"
                       }
                     ]
                   },
@@ -980,55 +996,83 @@
                     }
                   },
                   {
-                    "id": "partage",
+                    "id": "portage",
                     "label": {
-                      "fr": "Partage",
-                      "en": "Sharing"
+                      "fr": "Portage",
+                      "en": "Governance"
                     },
                     "options": [
                       {
-                        "id": "openspace",
+                        "id": "association",
                         "label": {
-                          "fr": "Open space",
-                          "en": "Open space"
-                        }
+                          "fr": "Association",
+                          "en": "Association"
+                        },
+                        "name": "Association"
                       },
                       {
-                        "id": "prive",
+                        "id": "collectif-citoyen",
                         "label": {
-                          "fr": "Espace privé",
-                          "en": "Private space"
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "id": "taille",
-                    "label": {
-                      "fr": "Taille",
-                      "en": "Size"
-                    },
-                    "options": [
-                      {
-                        "id": "petit",
-                        "label": {
-                          "fr": "< 100m²",
-                          "en": "< 100m²"
-                        }
+                          "fr": "Collectif citoyen",
+                          "en": "Citizen collective"
+                        },
+                        "name": "Collectif citoyen"
                       },
                       {
-                        "id": "moyen",
+                        "id": "universites",
                         "label": {
-                          "fr": "100-500m²",
-                          "en": "100-500m²"
-                        }
+                          "fr": "Universités / Écoles",
+                          "en": "Universities / Schools"
+                        },
+                        "name": "Universités / Écoles d'ingénieurs ou de commerce / EPST"
                       },
                       {
-                        "id": "grand",
+                        "id": "etablissements-scolaires",
                         "label": {
-                          "fr": "> 500m²",
-                          "en": "> 500m²"
-                        }
+                          "fr": "Établissements scolaires",
+                          "en": "Schools"
+                        },
+                        "name": "Établissements scolaires (Lycée, Collège, Ecole)"
+                      },
+                      {
+                        "id": "collectivites",
+                        "label": {
+                          "fr": "Collectivités",
+                          "en": "Local authorities"
+                        },
+                        "name": "Collectivités (Département, Intercommunalité, Région, etc)"
+                      },
+                      {
+                        "id": "sarl-sa-sas",
+                        "label": {
+                          "fr": "SARL-SA-SAS",
+                          "en": "SARL-SA-SAS"
+                        },
+                        "name": "SARL-SA-SAS"
+                      },
+                      {
+                        "id": "scic",
+                        "label": {
+                          "fr": "SCIC",
+                          "en": "SCIC"
+                        },
+                        "name": "SCIC"
+                      },
+                      {
+                        "id": "scop",
+                        "label": {
+                          "fr": "SCOP",
+                          "en": "SCOP"
+                        },
+                        "name": "SCOP"
+                      },
+                      {
+                        "id": "autre-gestion",
+                        "label": {
+                          "fr": "Autre mode de gestion",
+                          "en": "Other governance"
+                        },
+                        "name": "Autre mode de gestion"
                       }
                     ]
                   }

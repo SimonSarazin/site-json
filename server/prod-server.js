@@ -5,6 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import serialize from "serialize-javascript";
 import { createImageOptimizer } from "./middleware/imageOptimizer.js";
+import { createImageUpload } from "./middleware/imageUpload.js";
 
 // import dotenv from "dotenv";
 // dotenv.config();
@@ -118,6 +119,10 @@ app.post('/api/admin/config-save', (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
+
+app.post("/api/admin/upload-image", createImageUpload({
+  staticRoot: path.resolve(__dirname, "../dist/client"),
+}));
 
 // SSR universel
 app.use(['/{*all}'], async (req, res) => {

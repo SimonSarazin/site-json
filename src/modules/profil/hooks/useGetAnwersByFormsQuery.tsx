@@ -73,7 +73,7 @@ export function useGetAnswersByFormsQuery({
       const formsParam = buildFormsParam(forms, entityId);
 
       try {
-        const results = await entity.searchAnswersByForms({ forms: formsParam });
+        const results = await (entity as any).searchAnswersByForms({ forms: formsParam });
         return results;
       } catch (err) {
         console.error("[useGetAnswersByFormsQuery] Erreur searchAnswersByForms:", err);

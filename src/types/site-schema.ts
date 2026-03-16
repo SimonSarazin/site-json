@@ -141,6 +141,8 @@ export const HeroRezoLaMerSchema = z.object({
       .optional(),
     showScrollIndicator: z.boolean().optional(),
     variant: z.enum(["ocean", "cyber"]).optional(),
+    overlayOpacity: z.string().optional(),
+    subheadColor: z.string().optional(),
   }),
 });
 
@@ -156,6 +158,7 @@ export const FeaturesRezoLaMerSchema = z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
     variant: z.enum(["ocean", "cyber"]).optional(),
+    bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
     features: z.array(
       z.object({
         icon: z.string(),
@@ -177,6 +180,7 @@ export const ActionButtonsRezoLaMerSchema = z.object({
   props: z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
+    bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
     actions: z.array(
       z.object({
         icon: z.string(),
@@ -199,6 +203,7 @@ export const CommunityRezoLaMerSchema = z.object({
   props: z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
+    bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
     image: z.string().optional(),
     imageAlt: LocalizedString.optional(),
     actions: z.array(
@@ -232,6 +237,7 @@ export const CallToActionRezoLaMerSchema = z.object({
   props: z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
+    bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
     newsletterPlaceholder: LocalizedString.optional(),
     newsletterButtonLabel: LocalizedString.optional(),
     newsletterDisclaimer: LocalizedString.optional(),
@@ -320,6 +326,7 @@ export const TitleWithFiltersRezoLaMerSchema = z.object({
     buttons: z.array(ActionButtonSchema).optional(),
     showSearch: z.boolean().optional(),
     searchPlaceholder: LocalizedString.optional(),
+    bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
   }),
 });
 
@@ -1287,6 +1294,8 @@ export const Header = z.object({
   type: z.enum(["tiers-lieux", "rezo-la-mer", "cyber-reunion", "julie-pot-vin", "default"]).default("default"),
   logo: z.string(),
   logoAlt: LocalizedString.optional(),
+  logoTitle: LocalizedString.optional(),
+  logoIcon: z.string().optional(),
   path: z.string().min(1).optional(),
   nav: z.array(EnhancedNavItem),
   sticky: z.boolean().default(true),
@@ -1300,6 +1309,20 @@ export const Header = z.object({
     cart: z.boolean().default(false),
     notifications: z.boolean().default(false),
   }),
+  ctaButton: z.object({
+    label: LocalizedString,
+    path: z.string().optional(),
+  }).optional(),
+  piggyBank: z.object({
+    amount: z.string().optional(),
+    icon: z.string().optional(),
+    path: z.string().optional(),
+  }).optional(),
+  urgenceButton: z.object({
+    label: LocalizedString,
+    icon: z.string().optional(),
+    path: z.string().optional(),
+  }).optional(),
   announcement: z.object({
     text: LocalizedString,
     href: z.string().optional(),

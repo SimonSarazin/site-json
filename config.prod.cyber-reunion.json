@@ -105,7 +105,7 @@
           "props": {
             "variant": "cyber",
             "headline": {
-              "fr": "Cyber Réunion",
+              "fr": "Cyber Réunion gyugu",
               "en": "Cyber Réunion"
             },
             "subhead": {
@@ -675,7 +675,11 @@
                   },
                   "submitMode": "sdk",
                   "entityType": "organization",
-                  "tagsFrom": ["actorType", "domains", "specialties"],
+                  "tagsFrom": [
+                    "actorType",
+                    "domains",
+                    "specialties"
+                  ],
                   "extraData": {
                     "type": "NGO",
                     "public": true,
@@ -695,7 +699,10 @@
                   },
                   "steps": [
                     {
-                      "title": { "fr": "Qui êtes-vous ?", "en": "Who are you?" },
+                      "title": {
+                        "fr": "Qui êtes-vous ?",
+                        "en": "Who are you?"
+                      },
                       "description": {
                         "fr": "Commençons par quelques informations de base",
                         "en": "Let's start with some basic information"
@@ -704,23 +711,37 @@
                       "fields": [
                         {
                           "name": "email",
-                          "label": { "fr": "Email", "en": "Email" },
+                          "label": {
+                            "fr": "Email",
+                            "en": "Email"
+                          },
                           "type": "email",
                           "required": true,
-                          "placeholder": { "fr": "contact@organisation.com" },
+                          "placeholder": {
+                            "fr": "contact@organisation.com"
+                          },
                           "validation": "email"
                         },
                         {
                           "name": "name",
-                          "label": { "fr": "Nom de l'organisation", "en": "Organization name" },
+                          "label": {
+                            "fr": "Nom de l'organisation",
+                            "en": "Organization name"
+                          },
                           "type": "text",
                           "required": true,
-                          "placeholder": { "fr": "Nom de votre organisation", "en": "Your organization name" }
+                          "placeholder": {
+                            "fr": "Nom de votre organisation",
+                            "en": "Your organization name"
+                          }
                         }
                       ]
                     },
                     {
-                      "title": { "fr": "Détails de l'organisation", "en": "Organization details" },
+                      "title": {
+                        "fr": "Détails de l'organisation",
+                        "en": "Organization details"
+                      },
                       "description": {
                         "fr": "Informations complémentaires sur votre activité",
                         "en": "Additional information about your activity"
@@ -729,98 +750,332 @@
                       "fields": [
                         {
                           "name": "siren",
-                          "label": { "fr": "SIREN", "en": "SIREN" },
+                          "label": {
+                            "fr": "SIREN",
+                            "en": "SIREN"
+                          },
                           "type": "text",
-                          "placeholder": { "fr": "123 456 789" }
+                          "placeholder": {
+                            "fr": "123 456 789"
+                          }
                         },
                         {
                           "name": "actorType",
-                          "label": { "fr": "Type d'acteur", "en": "Actor type" },
+                          "label": {
+                            "fr": "Type d'acteur",
+                            "en": "Actor type"
+                          },
                           "type": "multiselect",
                           "options": [
-                            { "value": "Entreprises(produits/solutions et services)", "label": { "fr": "Entreprises (produits/solutions et services)", "en": "Companies (products/solutions and services)" } },
-                            { "value": "CERT/CSIRT", "label": { "fr": "CERT/CSIRT", "en": "CERT/CSIRT" } },
-                            { "value": "Organismes de formation", "label": { "fr": "Organismes de formation", "en": "Training organizations" } },
-                            { "value": "Laboratoires/recherche", "label": { "fr": "Laboratoires/recherche", "en": "Laboratories/research" } },
-                            { "value": "Structure d'accompagnement et financement", "label": { "fr": "Structure d'accompagnement et financement", "en": "Support and funding structure" } },
-                            { "value": "Réseaux/cluster", "label": { "fr": "Réseaux/cluster", "en": "Networks/cluster" } },
-                            { "value": "Services défense/intérieur", "label": { "fr": "Services défense/intérieur", "en": "Defense/interior services" } },
-                            { "value": "Association/ONG", "label": { "fr": "Association/ONG", "en": "Association/NGO" } }
+                            {
+                              "value": "Entreprises(produits/solutions et services)",
+                              "label": {
+                                "fr": "Entreprises (produits/solutions et services)",
+                                "en": "Companies (products/solutions and services)"
+                              }
+                            },
+                            {
+                              "value": "CERT/CSIRT",
+                              "label": {
+                                "fr": "CERT/CSIRT",
+                                "en": "CERT/CSIRT"
+                              }
+                            },
+                            {
+                              "value": "Organismes de formation",
+                              "label": {
+                                "fr": "Organismes de formation",
+                                "en": "Training organizations"
+                              }
+                            },
+                            {
+                              "value": "Laboratoires/recherche",
+                              "label": {
+                                "fr": "Laboratoires/recherche",
+                                "en": "Laboratories/research"
+                              }
+                            },
+                            {
+                              "value": "Structure d'accompagnement et financement",
+                              "label": {
+                                "fr": "Structure d'accompagnement et financement",
+                                "en": "Support and funding structure"
+                              }
+                            },
+                            {
+                              "value": "Réseaux/cluster",
+                              "label": {
+                                "fr": "Réseaux/cluster",
+                                "en": "Networks/cluster"
+                              }
+                            },
+                            {
+                              "value": "Services défense/intérieur",
+                              "label": {
+                                "fr": "Services défense/intérieur",
+                                "en": "Defense/interior services"
+                              }
+                            },
+                            {
+                              "value": "Association/ONG",
+                              "label": {
+                                "fr": "Association/ONG",
+                                "en": "Association/NGO"
+                              }
+                            }
                           ]
                         },
                         {
                           "name": "domains",
-                          "label": { "fr": "Domaines / sous-domaines", "en": "Domains / sub-domains" },
+                          "label": {
+                            "fr": "Domaines / sous-domaines",
+                            "en": "Domains / sub-domains"
+                          },
                           "type": "multiselect",
-                          "placeholder": { "fr": "Sélectionner les domaines...", "en": "Select domains..." },
+                          "placeholder": {
+                            "fr": "Sélectionner les domaines...",
+                            "en": "Select domains..."
+                          },
                           "options": [
-                            { "value": "Sécurité Réseau", "label": { "fr": "Sécurité Réseau", "en": "Network Security" } },
-                            { "value": "Sécurité Cloud", "label": { "fr": "Sécurité Cloud", "en": "Cloud Security" } },
-                            { "value": "Sécurité des postes", "label": { "fr": "Sécurité des postes", "en": "Endpoint Security" } },
-                            { "value": "Sécurité des Applications", "label": { "fr": "Sécurité des Applications", "en": "Application Security" } },
-                            { "value": "Sécurité des Postes et Mobiles", "label": { "fr": "Sécurité des Postes et Mobiles", "en": "Endpoint and Mobile Security" } },
-                            { "value": "Sécurité de l'IdO (IoT)", "label": { "fr": "Sécurité de l'IdO (IoT)", "en": "IoT Security" } },
-                            { "value": "Sécurité Opérationnelle et Gouvernance (SOC)", "label": { "fr": "Sécurité Opérationnelle et Gouvernance (SOC)", "en": "Operational Security and Governance (SOC)" } },
-                            { "value": "Cryptographie/Cryptologie", "label": { "fr": "Cryptographie/Cryptologie", "en": "Cryptography/Cryptology" } },
-                            { "value": "Cybersécurité Offensive (Pentest)", "label": { "fr": "Cybersécurité Offensive (Pentest)", "en": "Offensive Cybersecurity (Pentest)" } },
-                            { "value": "Audit/Conseil et Conformité", "label": { "fr": "Audit/Conseil et Conformité", "en": "Audit/Consulting and Compliance" } }
+                            {
+                              "value": "Sécurité Réseau",
+                              "label": {
+                                "fr": "Sécurité Réseau",
+                                "en": "Network Security"
+                              }
+                            },
+                            {
+                              "value": "Sécurité Cloud",
+                              "label": {
+                                "fr": "Sécurité Cloud",
+                                "en": "Cloud Security"
+                              }
+                            },
+                            {
+                              "value": "Sécurité des postes",
+                              "label": {
+                                "fr": "Sécurité des postes",
+                                "en": "Endpoint Security"
+                              }
+                            },
+                            {
+                              "value": "Sécurité des Applications",
+                              "label": {
+                                "fr": "Sécurité des Applications",
+                                "en": "Application Security"
+                              }
+                            },
+                            {
+                              "value": "Sécurité des Postes et Mobiles",
+                              "label": {
+                                "fr": "Sécurité des Postes et Mobiles",
+                                "en": "Endpoint and Mobile Security"
+                              }
+                            },
+                            {
+                              "value": "Sécurité de l'IdO (IoT)",
+                              "label": {
+                                "fr": "Sécurité de l'IdO (IoT)",
+                                "en": "IoT Security"
+                              }
+                            },
+                            {
+                              "value": "Sécurité Opérationnelle et Gouvernance (SOC)",
+                              "label": {
+                                "fr": "Sécurité Opérationnelle et Gouvernance (SOC)",
+                                "en": "Operational Security and Governance (SOC)"
+                              }
+                            },
+                            {
+                              "value": "Cryptographie/Cryptologie",
+                              "label": {
+                                "fr": "Cryptographie/Cryptologie",
+                                "en": "Cryptography/Cryptology"
+                              }
+                            },
+                            {
+                              "value": "Cybersécurité Offensive (Pentest)",
+                              "label": {
+                                "fr": "Cybersécurité Offensive (Pentest)",
+                                "en": "Offensive Cybersecurity (Pentest)"
+                              }
+                            },
+                            {
+                              "value": "Audit/Conseil et Conformité",
+                              "label": {
+                                "fr": "Audit/Conseil et Conformité",
+                                "en": "Audit/Consulting and Compliance"
+                              }
+                            }
                           ]
                         },
                         {
                           "name": "specialties",
-                          "label": { "fr": "Spécialités", "en": "Specialties" },
+                          "label": {
+                            "fr": "Spécialités",
+                            "en": "Specialties"
+                          },
                           "type": "multiselect",
-                          "placeholder": { "fr": "Sélectionner les spécialités...", "en": "Select specialties..." },
+                          "placeholder": {
+                            "fr": "Sélectionner les spécialités...",
+                            "en": "Select specialties..."
+                          },
                           "options": [
-                            { "value": "RSSI (CISO)", "label": { "fr": "RSSI (CISO)", "en": "CISO" } },
-                            { "value": "Consultant GRC", "label": { "fr": "Consultant GRC", "en": "GRC Consultant" } },
-                            { "value": "Auditeur de sécurité", "label": { "fr": "Auditeur de sécurité", "en": "Security Auditor" } },
-                            { "value": "Analyste SOC", "label": { "fr": "Analyste SOC", "en": "SOC Analyst" } },
-                            { "value": "Incident Responder", "label": { "fr": "Incident Responder", "en": "Incident Responder" } },
-                            { "value": "Analyste Threat Intelligence", "label": { "fr": "Analyste Threat Intelligence", "en": "Threat Intelligence Analyst" } },
-                            { "value": "Pentester", "label": { "fr": "Pentester", "en": "Pentester" } },
-                            { "value": "Red Team", "label": { "fr": "Red Team", "en": "Red Team" } },
-                            { "value": "Architecte Sécurité", "label": { "fr": "Architecte Sécurité", "en": "Security Architect" } },
-                            { "value": "Ingénieur Sécurité Cloud", "label": { "fr": "Ingénieur Sécurité Cloud", "en": "Cloud Security Engineer" } },
-                            { "value": "Développeur Sécurisé (DevSecOps)", "label": { "fr": "Développeur Sécurisé (DevSecOps)", "en": "Secure Developer (DevSecOps)" } },
-                            { "value": "Cryptologue", "label": { "fr": "Cryptologue", "en": "Cryptologist" } },
-                            { "value": "Analyste Forensic", "label": { "fr": "Analyste Forensic", "en": "Forensic Analyst" } }
+                            {
+                              "value": "RSSI (CISO)",
+                              "label": {
+                                "fr": "RSSI (CISO)",
+                                "en": "CISO"
+                              }
+                            },
+                            {
+                              "value": "Consultant GRC",
+                              "label": {
+                                "fr": "Consultant GRC",
+                                "en": "GRC Consultant"
+                              }
+                            },
+                            {
+                              "value": "Auditeur de sécurité",
+                              "label": {
+                                "fr": "Auditeur de sécurité",
+                                "en": "Security Auditor"
+                              }
+                            },
+                            {
+                              "value": "Analyste SOC",
+                              "label": {
+                                "fr": "Analyste SOC",
+                                "en": "SOC Analyst"
+                              }
+                            },
+                            {
+                              "value": "Incident Responder",
+                              "label": {
+                                "fr": "Incident Responder",
+                                "en": "Incident Responder"
+                              }
+                            },
+                            {
+                              "value": "Analyste Threat Intelligence",
+                              "label": {
+                                "fr": "Analyste Threat Intelligence",
+                                "en": "Threat Intelligence Analyst"
+                              }
+                            },
+                            {
+                              "value": "Pentester",
+                              "label": {
+                                "fr": "Pentester",
+                                "en": "Pentester"
+                              }
+                            },
+                            {
+                              "value": "Red Team",
+                              "label": {
+                                "fr": "Red Team",
+                                "en": "Red Team"
+                              }
+                            },
+                            {
+                              "value": "Architecte Sécurité",
+                              "label": {
+                                "fr": "Architecte Sécurité",
+                                "en": "Security Architect"
+                              }
+                            },
+                            {
+                              "value": "Ingénieur Sécurité Cloud",
+                              "label": {
+                                "fr": "Ingénieur Sécurité Cloud",
+                                "en": "Cloud Security Engineer"
+                              }
+                            },
+                            {
+                              "value": "Développeur Sécurisé (DevSecOps)",
+                              "label": {
+                                "fr": "Développeur Sécurisé (DevSecOps)",
+                                "en": "Secure Developer (DevSecOps)"
+                              }
+                            },
+                            {
+                              "value": "Cryptologue",
+                              "label": {
+                                "fr": "Cryptologue",
+                                "en": "Cryptologist"
+                              }
+                            },
+                            {
+                              "value": "Analyste Forensic",
+                              "label": {
+                                "fr": "Analyste Forensic",
+                                "en": "Forensic Analyst"
+                              }
+                            }
                           ]
                         },
                         {
                           "name": "offers",
-                          "label": { "fr": "Offre (matériels/logiciels/services)", "en": "Offer (hardware/software/services)" },
+                          "label": {
+                            "fr": "Offre (matériels/logiciels/services)",
+                            "en": "Offer (hardware/software/services)"
+                          },
                           "type": "text",
-                          "placeholder": { "fr": "Consulting, Formation, Logiciels...", "en": "Consulting, Training, Software..." }
+                          "placeholder": {
+                            "fr": "Consulting, Formation, Logiciels...",
+                            "en": "Consulting, Training, Software..."
+                          }
                         },
                         {
                           "name": "phone",
-                          "label": { "fr": "Téléphone", "en": "Phone" },
+                          "label": {
+                            "fr": "Téléphone",
+                            "en": "Phone"
+                          },
                           "type": "tel",
-                          "placeholder": { "fr": "+262 692 00 00 00" },
+                          "placeholder": {
+                            "fr": "+262 692 00 00 00"
+                          },
                           "validation": "tel"
                         },
                         {
                           "name": "partnerships",
-                          "label": { "fr": "Partenariats / affiliations", "en": "Partnerships / affiliations" },
+                          "label": {
+                            "fr": "Partenariats / affiliations",
+                            "en": "Partnerships / affiliations"
+                          },
                           "type": "text",
-                          "placeholder": { "fr": "ANSSI, Campus Cyber...", "en": "ANSSI, Campus Cyber..." }
+                          "placeholder": {
+                            "fr": "ANSSI, Campus Cyber...",
+                            "en": "ANSSI, Campus Cyber..."
+                          }
                         },
                         {
                           "name": "website",
-                          "label": { "fr": "Site web", "en": "Website" },
+                          "label": {
+                            "fr": "Site web",
+                            "en": "Website"
+                          },
                           "type": "url",
-                          "placeholder": { "fr": "https://www.exemple.com" }
+                          "placeholder": {
+                            "fr": "https://www.exemple.com"
+                          }
                         },
                         {
                           "name": "verificationDate",
-                          "label": { "fr": "Date de vérification", "en": "Verification date" },
+                          "label": {
+                            "fr": "Date de vérification",
+                            "en": "Verification date"
+                          },
                           "type": "date"
                         }
                       ]
                     },
                     {
-                      "title": { "fr": "Localisation", "en": "Location" },
+                      "title": {
+                        "fr": "Localisation",
+                        "en": "Location"
+                      },
                       "description": {
                         "fr": "Adresse postale complète de l'organisme",
                         "en": "Full postal address of the organization"
@@ -829,7 +1084,10 @@
                       "fields": [
                         {
                           "name": "address",
-                          "label": { "fr": "Adresse", "en": "Address" },
+                          "label": {
+                            "fr": "Adresse",
+                            "en": "Address"
+                          },
                           "type": "location"
                         }
                       ]
@@ -877,8 +1135,22 @@
                 "fr": "Filtrer par pays...",
                 "en": "Filter by country..."
               },
-              "countryCode": ["RE", "AU", "ZA", "KE", "MG", "MZ", "TZ", "SC", "LK", "IN", "MU"],
-              "level": [1],
+              "countryCode": [
+                "RE",
+                "AU",
+                "ZA",
+                "KE",
+                "MG",
+                "MZ",
+                "TZ",
+                "SC",
+                "LK",
+                "IN",
+                "MU"
+              ],
+              "level": [
+                1
+              ],
               "sortBy": "name",
               "costumSlug": "cyberReunion",
               "costumEditMode": false,
@@ -892,18 +1164,54 @@
                 "en": "CSV"
               },
               "columns": [
-                { "header": "Nom", "path": "name" },
-                { "header": "SIREN", "path": "siren" },
-                { "header": "Email", "path": "email" },
-                { "header": "Type d'acteur", "path": "typologie" },
-                { "header": "Domaines/sous-domaines", "path": "domains" },
-                { "header": "Spécialités", "path": "specialities" },
-                { "header": "offre(matériels/logiciels/services)", "path": "offer" },
-                { "header": "Contact", "path": "contact" },
-                { "header": "Partenariats/affiliations", "path": "partners" },
-                { "header": "Source(URL)", "path": "link" },
-                { "header": "Date de vérification", "path": "date" },
-                { "header": "Adresse", "path": "address" }
+                {
+                  "header": "Nom",
+                  "path": "name"
+                },
+                {
+                  "header": "SIREN",
+                  "path": "siren"
+                },
+                {
+                  "header": "Email",
+                  "path": "email"
+                },
+                {
+                  "header": "Type d'acteur",
+                  "path": "typologie"
+                },
+                {
+                  "header": "Domaines/sous-domaines",
+                  "path": "domains"
+                },
+                {
+                  "header": "Spécialités",
+                  "path": "specialities"
+                },
+                {
+                  "header": "offre(matériels/logiciels/services)",
+                  "path": "offer"
+                },
+                {
+                  "header": "Contact",
+                  "path": "contact"
+                },
+                {
+                  "header": "Partenariats/affiliations",
+                  "path": "partners"
+                },
+                {
+                  "header": "Source(URL)",
+                  "path": "link"
+                },
+                {
+                  "header": "Date de vérification",
+                  "path": "date"
+                },
+                {
+                  "header": "Adresse",
+                  "path": "address"
+                }
               ]
             },
             "useFilter": true,
@@ -1010,16 +1318,26 @@
               "Association/ONG"
             ],
             "baseParams": {
-              "defaultTypes": ["organizations"],
+              "defaultTypes": [
+                "organizations"
+              ],
               "defaultFilters": {
                 "$or": {
-                  "parent.695b58ca8693fc2c121208e4": { "$exists": true },
+                  "parent.695b58ca8693fc2c121208e4": {
+                    "$exists": true
+                  },
                   "source.keys": "cyberReunion",
                   "reference.costum": "cyberReunion",
-                  "links.projects.695b58ca8693fc2c121208e4": { "$exists": true },
-                  "links.memberOf.695b58ca8693fc2c121208e4": { "$exists": true }
+                  "links.projects.695b58ca8693fc2c121208e4": {
+                    "$exists": true
+                  },
+                  "links.memberOf.695b58ca8693fc2c121208e4": {
+                    "$exists": true
+                  }
                 },
-                "toBeValidated": { "$exists": false }
+                "toBeValidated": {
+                  "$exists": false
+                }
               },
               "notSourceKey": true
             },

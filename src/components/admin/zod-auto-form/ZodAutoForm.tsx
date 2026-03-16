@@ -1,5 +1,6 @@
+import { useState } from "react";
 import type { z } from "zod";
-import { classifyField, humanizeKey, resolveType } from "./schema-utils";
+import { classifyField, createDefaultValue, humanizeKey, resolveType } from "./schema-utils";
 import { StringField } from "./fields/StringField";
 import { NumberField } from "./fields/NumberField";
 import { BooleanField } from "./fields/BooleanField";
@@ -8,6 +9,8 @@ import { LocalizedStringField } from "./fields/LocalizedStringField";
 import { ArrayField } from "./fields/ArrayField";
 import { JsonFallbackField } from "./fields/JsonFallbackField";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Plus, Trash2, ChevronDown, ChevronRight } from "lucide-react";
 
 
 export function ObjectFields({
@@ -33,7 +36,11 @@ export function ObjectFields({
   }
 
   function updateField(key: string, fieldValue: unknown) {
-    onChange({ ...value, [key]: fieldValue });
+    const next = { ...value, [key]: fieldValue };
+    if (fieldValue === undefined) {
+      delete next[key];
+    }
+    onChange(next);
   }
 
   return (
@@ -124,14 +131,18 @@ export function ObjectFields({
               />
             );
           case "object":
-            return (
+            return info.isOptional ? (
+              <OptionalObjectField
+                key={key}
+                label={label}
+                schema={info.schema}
+                value={fieldValue as Record<string, unknown> | undefined}
+                onChange={(v) => updateField(key, v)}
+                compact={compact}
+              />
+            ) : (
               <div key={key} className="space-y-2 pl-3 border-l-2 border-muted">
-                <Label className="text-xs font-medium">
-                  {label}{" "}
-                  {info.isOptional && (
-                    <span className="text-muted-foreground">(optionnel)</span>
-                  )}
-                </Label>
+                <Label className="text-xs font-medium">{label}</Label>
                 <ObjectFields
                   schema={info.schema}
                   value={(fieldValue as Record<string, unknown>) ?? {}}
@@ -152,6 +163,87 @@ export function ObjectFields({
             );
         }
       })}
+    </div>
+  );
+}
+
+
+function OptionalObjectField({
+  label,
+  schema,
+  value,
+  onChange,
+  compact,
+}: {
+  label: string;
+  schema: z.ZodTypeAny;
+  value: Record<string, unknown> | undefined;
+  onChange: (v: Record<string, unknown> | undefined) => void;
+  compact: boolean;
+}) {
+  const isActive = value !== undefined && value !== null;
+  const [collapsed, setCollapsed] = useState(false);
+
+  function handleActivate() {
+    onChange(createDefaultValue(schema) as Record<string, unknown>);
+  }
+
+  function handleRemove() {
+    onChange(undefined);
+  }
+
+  if (!isActive) {
+    return (
+      <div className="flex items-center gap-2 py-1">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-7 text-xs gap-1.5"
+          onClick={handleActivate}
+        >
+          <Plus className="h-3 w-3" />
+          {label}
+        </Button>
+        <span className="text-[10px] text-muted-foreground">(optionnel)</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2 pl-3 border-l-2 border-primary/30 rounded-sm">
+      <div className="flex items-center gap-1.5">
+        <button
+          type="button"
+          className="flex items-center gap-1 text-xs font-medium hover:text-primary transition-colors"
+          onClick={() => setCollapsed(!collapsed)}
+        >
+          {collapsed ? (
+            <ChevronRight className="h-3.5 w-3.5" />
+          ) : (
+            <ChevronDown className="h-3.5 w-3.5" />
+          )}
+          {label}
+        </button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6 text-destructive hover:text-destructive"
+          onClick={handleRemove}
+          title={`Supprimer ${label}`}
+        >
+          <Trash2 className="h-3 w-3" />
+        </Button>
+      </div>
+      {!collapsed && (
+        <ObjectFields
+          schema={schema}
+          value={value}
+          onChange={onChange}
+          compact={compact}
+        />
+      )}
     </div>
   );
 }

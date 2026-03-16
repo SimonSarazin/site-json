@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 import serialize from "serialize-javascript";
 import dotenv from "dotenv";
 import { createImageOptimizer } from "./middleware/imageOptimizer.js";
+import { createImageUpload } from "./middleware/imageUpload.js";
 
 dotenv.config();
 
@@ -70,6 +71,10 @@ async function createServer() {
   app.use("/img", createImageOptimizer({
     staticRoot: path.resolve(__dirname, "../public"),
     cacheDir: path.resolve(__dirname, "../.cache/images"),
+  }));
+
+  app.post("/api/admin/upload-image", createImageUpload({
+    staticRoot: path.resolve(__dirname, "../public"),
   }));
 
   app.use(vite.middlewares);

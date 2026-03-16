@@ -1,0 +1,118 @@
+import { useEffect, useMemo } from "react";
+import { useForm, type UseFormReturn, type FieldValues } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useCoForm } from "./useCoForm";
+import { generateZodSchema, generateDefaultValues } from "../utils/formParser";
+import type { SubFormFields, SubFormData } from "../types";
+
+interface UseCoFormStepOptions {
+  stepIndex?: number;
+  /** Valeurs initiales personnalisées */
+  defaultValues?: SubFormData;
+  onSuccess?: (data: SubFormData) => void;
+  onError?: (error: Error) => void;
+}
+
+interface UseCoFormStepReturn {
+  /** Instance react-hook-form */
+  form: UseFormReturn<FieldValues>;
+  /** Champs de l'étape actuelle */
+  fields: SubFormFields | null;
+  /** ID du sous-formulaire */
+  subFormId: string | null;
+  stepName: string;
+  /** L'étape est-elle en cours de soumission? */
+  isSubmitting: boolean;
+  /** L'étape a-t-elle été complétée? */
+  isCompleted: boolean;
+  hasError: boolean;
+  submitStep: () => Promise<void>;
+  saveStep: () => void;
+}
+
+/**
+ * Hook pour gérer une étape spécifique du formulaire
+ * Fournit react-hook-form configuré avec validation Zod
+ */
+export function useCoFormStep(options: UseCoFormStepOptions = {}): UseCoFormStepReturn {
+  const { stepIndex, defaultValues: customDefaultValues, onSuccess, onError } = options;
+  const coform = useCoForm();
+
+  // Déterminer l'étape à utiliser
+  const effectiveStepIndex = stepIndex ?? coform.stepState.currentStepIndex;
+  const stepFields = coform.subFormsFields[effectiveStepIndex] ?? null;
+  const subFormId = stepFields?.subFormId ?? null;
+
+  // Générer le schéma Zod et les valeurs par défaut pour cette étape
+  const { schema, defaults } = useMemo(() => {
+    if (!stepFields) {
+      return { schema: null, defaults: {} };
+    }
+
+    const schema = generateZodSchema([stepFields]);
+    const defaults = {
+      ...generateDefaultValues([stepFields]),
+      ...(coform.stepState.stepsData[subFormId!] ?? {}),
+      ...customDefaultValues,
+    };
+
+    return { schema, defaults };
+  }, [stepFields, subFormId, coform.stepState.stepsData, customDefaultValues]);
+
+  // Configurer react-hook-form
+  const form = useForm({
+    resolver: schema ? zodResolver(schema) : undefined,
+    defaultValues: defaults,
+    mode: "onBlur",
+  });
+
+  // Réinitialiser le formulaire quand on change d'étape
+  // useForm ne réagit pas aux changements de defaultValues après le premier rendu
+  useEffect(() => {
+    form.reset(defaults);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveStepIndex]);
+
+  // États dérivés
+  const isSubmitting = coform.stepState.submittingStep === subFormId;
+  const isCompleted = subFormId ? coform.stepState.completedSteps.includes(subFormId) : false;
+  const hasError = subFormId ? coform.stepState.errorSteps.includes(subFormId) : false;
+
+  // Soumettre l'étape
+  const submitStep = async () => {
+    if (!subFormId) return;
+
+    try {
+      const data = form.getValues();
+      const isValid = await form.trigger();
+
+      if (!isValid) {
+        return;
+      }
+
+      await coform.submitStepData(subFormId, data);
+      onSuccess?.(data);
+    } catch (err) {
+      onError?.(err instanceof Error ? err : new Error("Erreur de soumission"));
+    }
+  };
+
+  // Sauvegarder sans soumettre
+  const saveStep = () => {
+    if (!subFormId) return;
+    const data = form.getValues();
+    coform.saveStepData(subFormId, data);
+  };
+
+  return {
+    form,
+    fields: stepFields,
+    subFormId,
+    stepName: stepFields?.subFormName ?? "",
+    isSubmitting,
+    isCompleted,
+    hasError,
+    submitStep,
+    saveStep,
+  };
+}

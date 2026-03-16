@@ -7,6 +7,7 @@ export interface FeaturesRezoLaMerProps {
     headline: LocalizedString;
     subhead?: LocalizedString;
     variant?: "ocean" | "cyber";
+    bg?: "default" | "card" | "muted" | "primary" | "secondary" | "accent" | "transparent";
     features: Array<{
         icon: string;
         title: LocalizedString;
@@ -43,12 +44,23 @@ export function FeaturesRezoLaMer({ id, props }: FeaturesRezoLaMerSectionProps) 
         ? "p-6 bg-card/40 backdrop-blur-sm border-border/50 hover:bg-card/60 transition-all duration-300 hover:shadow-lg animate-fade-in-up group"
         : "p-6 bg-secondary/30 backdrop-blur-ocean border-primary/20 hover:bg-secondary/50 transition-all duration-300 hover:shadow-ocean animate-fade-in-up group";
 
-    const sectionClasses = isCyber
-        ? "py-24 px-4 bg-gradient-to-b from-background to-card/20"
-        : "py-24 px-4 bg-linear-to-b from-background to-background/80";
+    const BG_MAP: Record<string, string> = {
+        card: "bg-card",
+        muted: "bg-muted",
+        primary: "bg-primary/10",
+        secondary: "bg-secondary",
+        accent: "bg-accent/10",
+        transparent: "bg-transparent",
+    };
+
+    const defaultBg = isCyber
+        ? "bg-gradient-to-b from-background to-card/20"
+        : "bg-linear-to-b from-background to-background/80";
+
+    const sectionBg = props.bg && props.bg !== "default" ? BG_MAP[props.bg] : defaultBg;
 
     return (
-        <section id={id} className={sectionClasses}>
+        <section id={id} className={`py-24 px-4 ${sectionBg}`}>
             <div className="container mx-auto max-w-6xl">
                 <div className="text-center mb-16 animate-fade-in">
                     <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
