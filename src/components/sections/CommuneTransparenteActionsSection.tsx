@@ -110,9 +110,69 @@ function ActionButtonRenderer({ button }: { button: ActionButton }) {
   );
 }
 
+function ActionCardItem({
+  item,
+  index,
+  id,
+  isExpanded,
+  onToggle,
+}: {
+  item: ActionItem;
+  index: number;
+  id?: string;
+  isExpanded: boolean;
+  onToggle: () => void;
+}) {
+  const { t } = useLocalization();
+  const cardKey = `${id || "commune-transparente-actions"}-${index}`;
+
+  return (
+    <div
+      key={cardKey}
+      className="flex flex-col p-6 rounded-lg bg-gray-50 border border-gray-200 hover:border-gray-300 transition-all cursor-pointer"
+      onClick={onToggle}
+    >
+      <div className="flex items-start gap-4 mb-3">
+        <div
+          className={`w-10 h-10 rounded-lg ${getIconBgClass(item.iconBg)} flex items-center justify-center shrink-0`}
+        >
+          <DynamicIcon name={item.icon as IconName} className="w-5 h-5 text-white" />
+        </div>
+        <div className="flex-grow">
+          <h3 className="font-bold text-base md:text-lg text-gray-800">
+            {t(item.title)}
+          </h3>
+        </div>
+        <div
+          className={`text-gray-600 shrink-0 transition-transform duration-300 ${
+            isExpanded ? "rotate-180" : ""
+          }`}
+        >
+          <DynamicIcon name="chevron-down" className="w-5 h-5" />
+        </div>
+      </div>
+
+      {isExpanded && (
+        <>
+          <p className="text-sm md:text-base text-gray-600 mb-4 flex-grow">{t(item.description)}</p>
+          <div className="flex gap-2 flex-wrap">
+            {item.buttons.map((button, buttonIndex) => (
+              <ActionButtonRenderer
+                key={`${cardKey}-${buttonIndex}`}
+                button={button}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 export function CommuneTransparenteActionsSection({ id, props }: CommuneTransparenteActionsComponentProps) {
   const { t } = useLocalization();
   const items = (props.items ?? []) as ActionItem[];
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
   return (
     <section id={id} className="py-12 px-4 bg-white">
@@ -133,29 +193,16 @@ export function CommuneTransparenteActionsSection({ id, props }: CommuneTranspar
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
           {items.map((item, index) => (
-            <div key={`${id || "commune-transparente-actions"}-${index}`} className="flex flex-col p-6 rounded-lg bg-gray-50 border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all">
-              <div className="flex items-start gap-4 mb-3">
-                <div
-                  className={`w-10 h-10 rounded-lg ${getIconBgClass(item.iconBg)} flex items-center justify-center shrink-0`}
-                >
-                  <DynamicIcon name={item.icon as IconName} className="w-5 h-5 text-white" />
-                </div>
-                <h3 className="font-bold text-base md:text-lg text-gray-800">
-                  {t(item.title)}
-                </h3>
-              </div>
-              <p className="text-sm md:text-base text-gray-600 mb-4 flex-grow">{t(item.description)}</p>
-              <div className="flex gap-2 flex-wrap">
-                {item.buttons.map((button, buttonIndex) => (
-                  <ActionButtonRenderer
-                    key={`${id || "commune-transparente-actions"}-${index}-${buttonIndex}`}
-                    button={button}
-                  />
-                ))}
-              </div>
-            </div>
+            <ActionCardItem
+              key={`${id || "commune-transparente-actions"}-${index}`}
+              item={item}
+              index={index}
+              id={id}
+              isExpanded={expandedIndex === index}
+              onToggle={() => setExpandedIndex(expandedIndex === index ? null : index)}
+            />
           ))}
         </div>
       </div>
