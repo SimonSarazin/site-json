@@ -24,6 +24,8 @@ const BG_MAP: Record<string, string> = {
   "gradient-blue": "bg-gradient-to-b from-blue-200 to-white",
   "gradient-indigo": "bg-gradient-to-b from-indigo-200 to-white",
   "gradient-cyan": "bg-gradient-to-b from-cyan-100 to-teal-200",
+  "bg-cyan-500": "bg-cyan-500",
+  "bg-blue-600": "bg-blue-600",
 };
 
 /**
@@ -98,6 +100,8 @@ export function CardCountCTSection({ id, props }: CardCountCTSectionWrapperProps
         title={title}
         subtitle={subtitle}
         isLoading={isPending || isLoading}
+        bg={bg}
+        isDarkBg={bg === "secondary" }
       />
     </section>
   );

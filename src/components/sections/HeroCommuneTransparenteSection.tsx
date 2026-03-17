@@ -85,7 +85,7 @@ export function HeroCommuneTransparenteSection({ id, props }: HeroCommuneTranspa
                             return (
                                 <a
                                     key={idx}
-                                    href={btn.path || btn.href || "#"}
+                                    // href={btn.path || btn.href || "#"}
                                     className={
                                         isOutline
                                             ? "px-6 sm:px-8 py-3 text-sm sm:text-base font-semibold border-2 border-white/70 text-white bg-transparent hover:bg-white/10 rounded-md transition-all shadow"

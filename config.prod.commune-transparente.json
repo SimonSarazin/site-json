@@ -80,8 +80,8 @@
               { "icon": "heart-handshake", "label": { "fr": "Projets Partagés", "en": "Shared Projects" }, "href": "/projets" }
             ],
             "ctaButtons": [
-              { "label": { "fr": "En savoir plus", "en": "Learn more" }, "path": "/", "variant": "default" },
-              { "label": { "fr": "Découvrir le Territoire", "en": "Discover the Territory" }, "path": "/", "variant": "outline" }
+              { "label": { "fr": "En savoir plus", "en": "Learn more" }, "path": "", "variant": "default" },
+              { "label": { "fr": "Découvrir le Territoire", "en": "Discover the Territory" }, "path": "", "variant": "outline" }
             ],
             "showScrollIndicator": false
           }
@@ -90,14 +90,7 @@
           "type": "html",
           "id": "nos-thematiques",
           "props": {
-            "html": "<section class=\"py-16 px-4 bg-white\"><div class=\"container mx-auto max-w-6xl\"><h2 class=\"text-3xl md:text-4xl font-bold text-center mb-2\">Nos <span class=\"text-primary\">Thématiques</span></h2><p class=\"text-center text-muted-foreground text-base mb-10\">Explorez les différentes dimensions de votre Commune</p><div class=\"grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4\"><a href=\"/thematique/culture\" class=\"group relative flex flex-col p-4 rounded-xl border border-border bg-white hover:shadow-md transition-all cursor-pointer\"><span class=\"absolute top-3 right-3 text-4xl font-extrabold text-muted/20 leading-none select-none\">1</span><div class=\"w-10 h-10 rounded-lg bg-violet-100 flex items-center justify-center mb-3\"><svg class=\"w-5 h-5 text-violet-600\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path d=\"M12 2a9 9 0 1 0 0 18A9 9 0 0 0 12 2z\"/><path d=\"M8 12l2 2 4-4\"/></svg></div><span class=\"font-semibold text-sm text-foreground mb-2\">Culture</span><div class=\"flex gap-1 text-xs text-muted-foreground\"><span>👥 2</span><span>📋 16</span><span>🏷 44</span></div></a><a href=\"/thematique/environnement\" class=\"group relative flex flex-col p-4 rounded-xl border border-border bg-white hover:shadow-md transition-all cursor-pointer\"><span class=\"absolute top-3 right-3 text-4xl font-extrabold text-muted/20 leading-none select-none\">2</span><div class=\"w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center mb-3\"><svg class=\"w-5 h-5 text-green-600\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path d=\"M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z\"/></svg></div><span class=\"font-semibold text-sm text-foreground mb-2\">Environnement</span><div class=\"flex gap-1 text-xs text-muted-foreground\"><span>👥 2</span><span>📋 3</span><span>🏷 37</span><span>📌 1</span></div></a><a href=\"/thematique/tiers-lieux\" class=\"group relative flex flex-col p-4 rounded-xl border border-border bg-white hover:shadow-md transition-all cursor-pointer\"><span class=\"absolute top-3 right-3 text-4xl font-extrabold text-muted/20 leading-none select-none\">3</span><div class=\"w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center mb-3\"><svg class=\"w-5 h-5 text-blue-600\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path d=\"M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"/></svg></div><span class=\"font-semibold text-sm text-foreground mb-2\">Tiers lieux</span><div class=\"flex gap-1 text-xs text-muted-foreground\"><span>🏷 6</span></div></a><a href=\"/thematique/ocean\" class=\"group relative flex flex-col p-4 rounded-xl border border-border bg-white hover:shadow-md transition-all cursor-pointer\"><span class=\"absolute top-3 right-3 text-4xl font-extrabold text-muted/20 leading-none select-none\">4</span><div class=\"w-10 h-10 rounded-lg bg-cyan-100 flex items-center justify-center mb-3\"><svg class=\"w-5 h-5 text-cyan-600\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path d=\"M2 12c2-4 6-4 8 0s6 4 8 0\"/><path d=\"M2 18c2-4 6-4 8 0s6 4 8 0\"/></svg></div><span class=\"font-semibold text-sm text-foreground mb-2\">Océan</span><div class=\"flex gap-1 text-xs text-muted-foreground\"><span>👥 3</span><span>📋 10</span></div></a><a href=\"/thematique/education\" class=\"group relative flex flex-col p-4 rounded-xl border border-border bg-white hover:shadow-md transition-all cursor-pointer\"><span class=\"absolute top-3 right-3 text-4xl font-extrabold text-muted/20 leading-none select-none\">5</span><div class=\"w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center mb-3\"><svg class=\"w-5 h-5 text-orange-600\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path d=\"M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z\"/><path d=\"M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z\"/></svg></div><span class=\"font-semibold text-sm text-foreground mb-2\">Éducation</span><div class=\"flex gap-1 text-xs text-muted-foreground\"><span>👥 8</span><span>🏷 9</span></div></a><a href=\"/thematique/dechets\" class=\"group relative flex flex-col p-4 rounded-xl border border-border bg-white hover:shadow-md transition-all cursor-pointer\"><span class=\"absolute top-3 right-3 text-4xl font-extrabold text-muted/20 leading-none select-none\">6</span><div class=\"w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center mb-3\"><svg class=\"w-5 h-5 text-gray-600\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><polyline points=\"3,6 5,6 21,6\"/><path d=\"M19 6l-1 14H6L5 6\"/><path d=\"M10 11v6\"/><path d=\"M14 11v6\"/></svg></div><span class=\"font-semibold text-sm text-foreground mb-2\">Déchets</span><div class=\"flex gap-1 text-xs text-muted-foreground\"><span>👥 8</span><span>🏷 22</span></div></a><a href=\"/thematique/innovation\" class=\"group relative flex flex-col p-4 rounded-xl border border-border bg-white hover:shadow-md transition-all cursor-pointer\"><span class=\"absolute top-3 right-3 text-4xl font-extrabold text-muted/20 leading-none select-none\">7</span><div class=\"w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center mb-3\"><svg class=\"w-5 h-5 text-purple-600\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"3\"/><path d=\"M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4\"/></svg></div><span class=\"font-semibold text-sm text-foreground mb-2\">Innovation</span><div class=\"flex gap-1 text-xs text-muted-foreground\"><span>👥 1</span><span>📋 3</span><span>🏛 1</span></div></a><a href=\"/thematique/sport\" class=\"group relative flex flex-col p-4 rounded-xl border border-border bg-white hover:shadow-md transition-all cursor-pointer\"><span class=\"absolute top-3 right-3 text-4xl font-extrabold text-muted/20 leading-none select-none\">8</span><div class=\"w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center mb-3\"><svg class=\"w-5 h-5 text-red-600\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20\"/><path d=\"M2 12h20\"/></svg></div><span class=\"font-semibold text-sm text-foreground mb-2\">Sport</span><div class=\"flex gap-1 text-xs text-muted-foreground\"><span>👥 1</span><span>📋 2</span><span>🏷 49</span><span>📌 1</span></div></a></div></div></section>"
-          }
-        },
-        {
-          "type": "html",
-          "id": "explorer-territoire",
-          "props": {
-            "html": "<section class=\"py-16 px-4 bg-gradient-to-b from-cyan-100 to-teal-200\"><div class=\"container mx-auto max-w-4xl text-center\"><h2 class=\"text-3xl md:text-4xl font-bold text-slate-800 mb-3\">Explorez le Territoire</h2><p class=\"text-slate-600 text-base mb-10\">Découvrez les lieux, événements et initiatives près de chez vous</p><div class=\"flex flex-col sm:flex-row gap-3 justify-center\"><a href=\"/navigation\" class=\"px-6 py-3 rounded-full border-2 border-teal-700 text-teal-900 font-medium bg-white/60 hover:bg-white transition-all text-sm\">Explorez votre territoire en toute liberté</a><a href=\"/elements\" class=\"px-6 py-3 rounded-full bg-teal-700 text-white font-medium hover:bg-teal-800 transition-all text-sm\">Les éléments existants</a><a href=\"/observatoire\" class=\"px-6 py-3 rounded-full border-2 border-teal-700 text-teal-900 font-medium bg-white/60 hover:bg-white transition-all text-sm\">Espace d'observation publique</a></div></div></section>"
+            "html": "<section class=\"py-12 px-4 bg-white\"><div class=\"container mx-auto max-w-6xl\"><h2 class=\"text-3xl md:text-4xl font-bold text-center mb-2\">Nos <span class=\"text-teal-600\">Thématiques</span></h2><p class=\"text-center text-gray-600 text-base mb-8\">Explorez les différentes dimensions de votre Commune</p><div class=\"grid grid-cols-2 md:grid-cols-4 gap-6\"><a class=\"flex flex-col items-center text-center p-4 rounded-lg hover:bg-gray-50 transition-all cursor-pointer\"><div class=\"w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center mb-3\"><svg class=\"w-6 h-6 text-gray-700\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path d=\"M12 2a9 9 0 1 0 0 18A9 9 0 0 0 12 2z\"/><path d=\"M8 12l2 2 4-4\"/></svg></div><span class=\"font-semibold text-sm text-gray-800\">Culture</span></a><a class=\"flex flex-col items-center text-center p-4 rounded-lg hover:bg-gray-50 transition-all cursor-pointer\"><div class=\"w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center mb-3\"><svg class=\"w-6 h-6 text-gray-700\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path d=\"M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z\"/></svg></div><span class=\"font-semibold text-sm text-gray-800\">Environnement</span></a><a class=\"flex flex-col items-center text-center p-4 rounded-lg hover:bg-gray-50 transition-all cursor-pointer\"><div class=\"w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center mb-3\"><svg class=\"w-6 h-6 text-gray-700\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path d=\"M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"/></svg></div><span class=\"font-semibold text-sm text-gray-800\">Tiers lieux</span></a><a class=\"flex flex-col items-center text-center p-4 rounded-lg hover:bg-gray-50 transition-all cursor-pointer\"><div class=\"w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center mb-3\"><svg class=\"w-6 h-6 text-gray-700\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path d=\"M2 12c2-4 6-4 8 0s6 4 8 0\"/><path d=\"M2 18c2-4 6-4 8 0s6 4 8 0\"/></svg></div><span class=\"font-semibold text-sm text-gray-800\">Océan</span></a><a class=\"flex flex-col items-center text-center p-4 rounded-lg hover:bg-gray-50 transition-all cursor-pointer\"><div class=\"w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center mb-3\"><svg class=\"w-6 h-6 text-gray-700\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path d=\"M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z\"/><path d=\"M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z\"/></svg></div><span class=\"font-semibold text-sm text-gray-800\">Éducation</span></a><a class=\"flex flex-col items-center text-center p-4 rounded-lg hover:bg-gray-50 transition-all cursor-pointer\"><div class=\"w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center mb-3\"><svg class=\"w-6 h-6 text-gray-700\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><polyline points=\"3,6 5,6 21,6\"/><path d=\"M19 6l-1 14H6L5 6\"/><path d=\"M10 11v6\"/><path d=\"M14 11v6\"/></svg></div><span class=\"font-semibold text-sm text-gray-800\">Déchets</span></a><a class=\"flex flex-col items-center text-center p-4 rounded-lg hover:bg-gray-50 transition-all cursor-pointer\"><div class=\"w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center mb-3\"><svg class=\"w-6 h-6 text-gray-700\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"3\"/><path d=\"M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4\"/></svg></div><span class=\"font-semibold text-sm text-gray-800\">Innovation</span></a><a class=\"flex flex-col items-center text-center p-4 rounded-lg hover:bg-gray-50 transition-all cursor-pointer\"><div class=\"w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center mb-3\"><svg class=\"w-6 h-6 text-gray-700\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20\"/><path d=\"M2 12h20\"/></svg></div><span class=\"font-semibold text-sm text-gray-800\">Sport</span></a></div></div></section>"
           }
         },
         {
@@ -106,18 +99,18 @@
           "props": {
             "title": { "fr": "Notre Territoire en Chiffres", "en": "Our Territory in Numbers" },
             "subtitle": { "fr": "Une communauté active et engagée", "en": "An active and committed community" },
-            "bg": "gradient-teal",
+            "bg": "bg-cyan-500",
             "baseParams": {
               "defaultTypes": ["organizations","projects", "events", "citoyens", "poi"],
               "notSourceKey": true,
               "defaultFilters": { }
             },
             "cards": [
-              { "countKey": "organizations", "label": { "fr": "Organisation", "en": "organization" }, "icon": "handshake", "color": "yellow" },
-              { "countKey": "poi", "label": { "fr": "Point d'intérêt", "en": "Point of interest" }, "icon": "map-pin", "color": "green" },
-              { "countKey": "projects", "label": { "fr": "Projets", "en": "Projects" }, "icon": "layout-dashboard", "color": "indigo" },
-              { "countKey": "citoyens", "label": { "fr": "Citoyens", "en": "Citizens" }, "icon": "user", "color": "blue" },
-              { "countKey": "events", "label": { "fr": "Événements", "en": "Events" }, "icon": "calendar-days", "color": "cyan" }
+              { "countKey": "organizations", "label": { "fr": "Organisations", "en": "Organizations" }, "icon": "handshake", "color": "white" },
+              { "countKey": "poi", "label": { "fr": "Points d'intérêt", "en": "Points of Interest" }, "icon": "map-pin", "color": "white" },
+              { "countKey": "projects", "label": { "fr": "Projets", "en": "Projects" }, "icon": "layout-dashboard", "color": "white" },
+              { "countKey": "citoyens", "label": { "fr": "Citoyens", "en": "Citizens" }, "icon": "user", "color": "white" },
+              { "countKey": "events", "label": { "fr": "Événements", "en": "Events" }, "icon": "calendar-days", "color": "white" }
             ]
           }
         },
@@ -127,7 +120,7 @@
           "props": {
             "imageSrc": "/images/etangsale1/logo.png",
             "imageAlt": { "fr": "Commune Transparente" },
-            "brandTitle": { "fr": "COMMUNE TRANSPARENTE" },
+            "brandTitle": { "fr": "Commune Transparente" },
             "description": {
               "fr": "Favoriser la transparence et l'accès à l'information publique au sein de votre commune. Nous présentons ici des rubriques dédiées aux actions municipales, aux projets en cours, aux décisions publiques et aux données ouvertes."
             },
@@ -136,12 +129,12 @@
             },
             "items": [
               {
-                "title": { "fr": "PARTAGE DE RESSOURCES" },
+                "title": { "fr": "Partage de Ressources" },
                 "description": {
                   "fr": "Trouvez du soutien près de chez vous. Postez votre demande et laissez la communauté vous aider."
                 },
                 "icon": "clock-3",
-                "iconBg": "blue",
+                "iconBg": "slate",
                 "buttons": [
                   {
                     "label": { "fr": "Proposer une ressource" },
@@ -151,7 +144,7 @@
                 ]
               },
               {
-                "title": { "fr": "BESOINS & DEMANDES" },
+                "title": { "fr": "Besoins & Demandes" },
                 "description": {
                   "fr": "Vous avez des compétences ou du temps ? Proposez vos services pour aider votre quartier."
                 },
@@ -166,12 +159,12 @@
                 ]
               },
               {
-                "title": { "fr": "PROJETS LOCAUX" },
+                "title": { "fr": "Projets Locaux" },
                 "description": {
                   "fr": "Présentez votre projet local pour trouver des soutiens, des bénévoles et des partenaires."
                 },
                 "icon": "map-pinned",
-                "iconBg": "green",
+                "iconBg": "slate",
                 "buttons": [
                   {
                     "label": { "fr": "Proposer un projet" },
@@ -179,19 +172,19 @@
                     "requiresAuth": true
                   },
                   {
-                    "label": { "fr": "Les Projets locaux" },
+                    "label": { "fr": "Voir les projets" },
                     "href": "/projets",
                     "variant": "secondary"
                   }
                 ]
               },
               {
-                "title": { "fr": "ENTREPRISES LOCALES" },
+                "title": { "fr": "Organisations" },
                 "description": {
                   "fr": "Faites connaître une association, un club ou un collectif en l'ajoutant à notre annuaire local."
                 },
-                "icon": "house",
-                "iconBg": "blue-dark",
+                "icon": "building-2",
+                "iconBg": "slate",
                 "buttons": [
                   {
                     "label": { "fr": "Proposer une organisation" },
@@ -201,12 +194,12 @@
                 ]
               },
               {
-                "title": { "fr": "ÉVÉNEMENT" },
+                "title": { "fr": "Événements" },
                 "description": {
-                  "fr": "Annoncez un concert, marché ou réunion d'information pour le partager avec les habitants."
+                  "fr": "Annoncez un événement pour le partager avec les habitants et les visiteurs."
                 },
                 "icon": "calendar-days",
-                "iconBg": "orange",
+                "iconBg": "slate",
                 "buttons": [
                   {
                     "label": { "fr": "Proposer un événement" },
@@ -214,19 +207,19 @@
                     "requiresAuth": true
                   },
                   {
-                    "label": { "fr": "Les Événements" },
-                    "href": "/evenements",
+                    "label": { "fr": "Voir les événements" },
+                    "href": "/agenda",
                     "variant": "secondary"
                   }
                 ]
               },
               {
-                "title": { "fr": "PROPOSITION" },
+                "title": { "fr": "Propositions" },
                 "description": {
                   "fr": "Vous avez une idée pour améliorer votre commune ? Proposez-la et trouvez des soutiens pour la réaliser."
                 },
-                "icon": "plus",
-                "iconBg": "lime",
+                "icon": "lightbulb",
+                "iconBg": "slate",
                 "buttons": [
                   {
                     "label": { "fr": "Partage de Propositions" },
@@ -422,7 +415,12 @@
           "id": "ressources-header",
           "props": {
             "headline": { "fr": "Ressources", "en": "Resources" },
-            "subhead": { "fr": "Partage de ressources entre citoyens", "en": "Sharing resources between citizens" }
+            "subhead": { "fr": "Partage de ressources entre citoyens", "en": "Sharing resources between citizens" },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher...",
+              "en": "Search..."
+            }
           }
         },
         {
@@ -478,7 +476,23 @@
           "id": "agenda-header",
           "props": {
             "headline": { "fr": "Agenda", "en": "Agenda" },
-            "subhead": { "fr": "Tous les événements de votre commune", "en": "All events in your commune" }
+            "subhead": { "fr": "Tous les événements de votre commune", "en": "All events in your commune" },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Proposer un événement",
+                  "en": "Submit an event"
+                },
+                "icon": "plus",
+                "action": "add-event",
+                "variant": "primary"
+              }
+            ],
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher...",
+              "en": "Search..."
+            }
           }
         },
         {

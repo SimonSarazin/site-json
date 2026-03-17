@@ -57,10 +57,10 @@ function getIconBgClass(iconBg?: ActionItem["iconBg"]) {
 
 function getButtonClassName(variant?: ActionButton["variant"]) {
   if (variant === "secondary") {
-    return "inline-block px-4 py-2 bg-indigo-100 text-indigo-700 text-sm md:text-base font-semibold rounded-md hover:bg-indigo-200 transition-all";
+    return "inline-block px-3 py-2 bg-gray-200 text-gray-700 text-xs md:text-sm font-medium rounded-md hover:bg-gray-300 transition-all";
   }
 
-  return "inline-block px-4 py-2 bg-indigo-600 text-white text-sm md:text-base font-semibold rounded-md hover:bg-indigo-700 transition-all";
+  return "inline-block px-3 py-2 bg-gray-800 text-white text-xs md:text-sm font-medium rounded-md hover:bg-gray-900 transition-all";
 }
 
 function ActionButtonRenderer({ button }: { button: ActionButton }) {
@@ -115,60 +115,48 @@ export function CommuneTransparenteActionsSection({ id, props }: CommuneTranspar
   const items = (props.items ?? []) as ActionItem[];
 
   return (
-    <section id={id} className="py-16 px-4 bg-white">
-      <div className="container mx-auto max-w-5xl">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-stretch">
-          <div className="flex flex-col items-center justify-center h-full text-center">
-            {props.imageSrc && (
-              <img
-                src={props.imageSrc}
-                alt={props.imageAlt ? t(props.imageAlt) : "Commune Transparente"}
-                className="w-64 h-auto mb-6 rounded-xl"
-              />
-            )}
-            {props.brandTitle && (
-              <h3 className="text-2xl md:text-3xl font-bold text-indigo-700 uppercase tracking-wide mb-4">
-                {t(props.brandTitle)}
-              </h3>
-            )}
-            {props.description && (
-              <p className="text-base md:text-lg text-slate-600 text-center mb-3">{t(props.description)}</p>
-            )}
-            {props.highlightText && (
-              <p className="text-base md:text-lg font-semibold text-slate-800 text-center italic">
-                {t(props.highlightText)}
-              </p>
-            )}
-          </div>
+    <section id={id} className="py-12 px-4 bg-white">
+      <div className="container mx-auto max-w-6xl">
+        <div className="text-center mb-10">
+          {props.brandTitle && (
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">
+              {t(props.brandTitle)}
+            </h2>
+          )}
+          {props.description && (
+            <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto mb-2">{t(props.description)}</p>
+          )}
+          {props.highlightText && (
+            <p className="text-base font-semibold text-gray-700 italic">
+              {t(props.highlightText)}
+            </p>
+          )}
+        </div>
 
-          <div className="flex flex-col divide-y divide-slate-200">
-            {items.map((item, index) => (
-              <details key={`${id || "commune-transparente-actions"}-${index}`} className="py-6 group">
-                <summary className="flex items-center gap-3 cursor-pointer list-none select-none">
-                  <div
-                    className={`w-8 h-8 rounded-lg ${getIconBgClass(item.iconBg)} flex items-center justify-center shrink-0`}
-                  >
-                    <DynamicIcon name={item.icon as IconName} className="w-4 h-4 text-white" />
-                  </div>
-                  <span className="font-bold text-base md:text-lg uppercase tracking-wide text-slate-700">
-                    {t(item.title)}
-                  </span>
-                  <span className="ml-auto text-slate-400 transition-transform group-open:rotate-90">›</span>
-                </summary>
-                <div className="pt-2 pb-1 pl-11">
-                  <p className="text-sm md:text-base text-slate-500 mb-3">{t(item.description)}</p>
-                  <div className="flex gap-2 flex-wrap">
-                    {item.buttons.map((button, buttonIndex) => (
-                      <ActionButtonRenderer
-                        key={`${id || "commune-transparente-actions"}-${index}-${buttonIndex}`}
-                        button={button}
-                      />
-                    ))}
-                  </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {items.map((item, index) => (
+            <div key={`${id || "commune-transparente-actions"}-${index}`} className="flex flex-col p-6 rounded-lg bg-gray-50 border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all">
+              <div className="flex items-start gap-4 mb-3">
+                <div
+                  className={`w-10 h-10 rounded-lg ${getIconBgClass(item.iconBg)} flex items-center justify-center shrink-0`}
+                >
+                  <DynamicIcon name={item.icon as IconName} className="w-5 h-5 text-white" />
                 </div>
-              </details>
-            ))}
-          </div>
+                <h3 className="font-bold text-base md:text-lg text-gray-800">
+                  {t(item.title)}
+                </h3>
+              </div>
+              <p className="text-sm md:text-base text-gray-600 mb-4 flex-grow">{t(item.description)}</p>
+              <div className="flex gap-2 flex-wrap">
+                {item.buttons.map((button, buttonIndex) => (
+                  <ActionButtonRenderer
+                    key={`${id || "commune-transparente-actions"}-${index}-${buttonIndex}`}
+                    button={button}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
