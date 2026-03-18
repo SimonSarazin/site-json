@@ -2,6 +2,7 @@ import { XIcon } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { useT } from "@/hooks/useT";
+import type { LocalizedString } from "@/types/locale-schema";
 import { TagsFilter } from "../schema";
 
 interface ActiveFiltersBarProps {
@@ -22,16 +23,16 @@ export default function ActiveFiltersBar({ filters, showActiveFiltersTypes, show
   const t = useT("modules/search");
 
 
-  const activeEntries = showActiveFiltersTags && filtersSearchTags ? Object.entries(filtersSearchTags).filter(([_, values]) => values?.length) : [];
-  const activeTypeEntries = showActiveFiltersTypes && filtersSearchType ? Object.entries(filtersSearchType).filter(([_, values]) => values?.length) : [];
+  const activeEntries = showActiveFiltersTags && filtersSearchTags ? Object.entries(filtersSearchTags).filter(([, values]) => values?.length) : [];
+  const activeTypeEntries = showActiveFiltersTypes && filtersSearchType ? Object.entries(filtersSearchType).filter(([, values]) => values?.length) : [];
 
   const label = (key: string, value: string | Record<string, string>) => {
     // LocalizedString → on le passe directement à t()
     
     let label = value;
-    if (key && value && typeof value === 'string' && filters?.[key]?.list && 
-        typeof filters[key].list === 'object' && value in (filters[key].list as Record<string, any>)) {
-      label = (filters[key].list as Record<string, any>)[value];
+    if (key && value && typeof value === 'string' && filters?.[key]?.list &&
+        typeof filters[key].list === 'object' && value in (filters[key].list as Record<string, LocalizedString | string>)) {
+      label = (filters[key].list as Record<string, LocalizedString | string>)[value];
     }
 
     if (typeof label === "object") return t(label);

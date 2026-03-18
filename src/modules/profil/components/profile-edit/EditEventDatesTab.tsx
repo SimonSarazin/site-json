@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { UseFormReturn } from "react-hook-form";
+import { type FieldValues, type UseFormReturn } from "react-hook-form";
 import { useT } from "@/hooks/useT";
 import { Calendar, Clock, Repeat } from "lucide-react";
 import {
@@ -15,7 +15,7 @@ import { DateTimePicker } from "@/components/ui/datetime-picker";
 import { OpeningHoursPicker } from "@/components/form/OpeningHoursPicker";
 
 interface EditEventDatesTabProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<FieldValues>;
 }
 
 /**

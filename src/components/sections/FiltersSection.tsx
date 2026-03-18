@@ -18,7 +18,7 @@ export function FiltersSection({
   const { title, filterGroups: propsFiltersGroups, defaultOpenGroups = [], filtersByAnswers, className } = props;
   const [filterGroups, setFilterGroups] = useState<FiltersSectionProps["filterGroups"]>([]);
   const [openGroups, setOpenGroups] = useState<string[]>(defaultOpenGroups);
-  const { data: filterAnswerData, isLoading, error } = filtersByAnswers ? useFiltersByAnswersQuery(`filters-answers-${id}`, filtersByAnswers as any) : { data: null, isLoading: false, error: null };
+  const { data: filterAnswerData } = filtersByAnswers ? useFiltersByAnswersQuery(`filters-answers-${id}`, filtersByAnswers as any) : { data: null };
 
   const zoneQueryParams = useMemo(() => {
     const hasScopeList = propsFiltersGroups.some(group => group.type === "scopeList");
@@ -44,7 +44,7 @@ export function FiltersSection({
     }, {} as any);
   }, [propsFiltersGroups]);
 
-  const { data: filterZoneData, isLoading: isZoneLoading, error: zoneError } = zoneQueryParams ? useSearchZoneQuery(`filters-zone-${id}`, zoneQueryParams) : { data: null, isLoading: false, error: null };
+  const { data: filterZoneData } = zoneQueryParams ? useSearchZoneQuery(`filters-zone-${id}`, zoneQueryParams) : { data: null };
   // Utiliser le context partagé
   const { selectedFilters, setSelectedFilters, searchQuery, setSearchQuery, clearFilters: clearFiltersContext, searchByFields, setSearchByFields } = usePageFilters();
   // Initialiser les filtres par défaut (defaultChecked)

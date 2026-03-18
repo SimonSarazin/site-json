@@ -142,18 +142,21 @@
     - [7.5.8 Hook rétrocompatible `useUserPermissions`](#758-hook-rétrocompatible-useuserpermissions)
     - [7.5.9 Avantages de l'architecture modulaire](#759-avantages-de-larchitecture-modulaire)
 - [8. API Client \& Authentification](#8-api-client--authentification)
-  - [8.1 Initialisation de l'API - Pattern Singleton (`apiClient.ts`)](#81-initialisation-de-lapi---pattern-singleton-apiclientts)
-    - [8.1.1 Architecture du singleton](#811-architecture-du-singleton)
-    - [8.1.2 Fonction principale: `initApiClient()`](#812-fonction-principale-initapiclient)
-    - [8.1.3 Token Storage Strategy selon l'environnement](#813-token-storage-strategy-selon-lenvironnement)
-    - [8.1.4 Helpers pour accéder aux singletons](#814-helpers-pour-accéder-aux-singletons)
-    - [8.1.5 Types et interfaces](#815-types-et-interfaces)
-    - [8.1.6 Gestion du slug contextuel](#816-gestion-du-slug-contextuel)
-    - [8.1.7 Sécurité et gestion d'erreurs](#817-sécurité-et-gestion-derreurs)
-    - [8.1.8 Usage dans les loaders SSR](#818-usage-dans-les-loaders-ssr)
-    - [8.1.9 Limitations et considérations](#819-limitations-et-considérations)
+  - [8.1 Initialisation de l'API - Pattern Dual Server/Client (`apiClient.ts`)](#81-initialisation-de-lapi---pattern-dual-serverclient-apiclientts)
+    - [8.1.1 Architecture server/client](#811-architecture-serverclient)
+    - [8.1.2 Fonction pure : `createApiInstances()`](#812-fonction-pure--createapiinstances)
+    - [8.1.3 Point d'entrée : `initApiClient()`](#813-point-dentrée--initapiclient)
+    - [8.1.4 Hydratation SSR : `getHydratedCocolightData()`](#814-hydratation-ssr--gethydratedcocolightdata)
+    - [8.1.5 Token Storage Strategy selon l'environnement](#815-token-storage-strategy-selon-lenvironnement)
+    - [8.1.6 Helpers pour accéder aux singletons](#816-helpers-pour-accéder-aux-singletons)
+    - [8.1.7 `resetApiState()`](#817-resetapistate)
+    - [8.1.8 Types et interfaces](#818-types-et-interfaces)
+    - [8.1.9 Gestion du slug contextuel](#819-gestion-du-slug-contextuel)
+    - [8.1.10 Sécurité et gestion d'erreurs](#8110-sécurité-et-gestion-derreurs)
+    - [8.1.11 Usage dans les loaders SSR](#8111-usage-dans-les-loaders-ssr)
+    - [8.1.12 Limitations et considérations](#8112-limitations-et-considérations)
   - [8.2 Stratégies de stockage des tokens](#82-stratégies-de-stockage-des-tokens)
-    - [8.2.1 Choix automatique selon l'environnement](#821-choix-automatique-selon-lenvironnement)
+    - [8.2.1 Choix selon l'environnement](#821-choix-selon-lenvironnement)
     - [8.2.2 MultiServerTokenStorageStrategy](#822-multiservertokenstoragestrategy)
     - [8.2.3 Sécurité des tokens](#823-sécurité-des-tokens)
     - [8.2.4 Refresh automatique des tokens](#824-refresh-automatique-des-tokens)
@@ -213,6 +216,34 @@
     - [12.5.8 Exemple complet: Module Profil](#1258-exemple-complet-module-profil)
     - [12.5.9 Optimisations avancées](#1259-optimisations-avancées)
     - [12.5.10 Limitations et considérations](#12510-limitations-et-considérations)
+- [13. Architecture de tests](#13-architecture-de-tests)
+  - [13.1 Vue d'ensemble](#131-vue-densemble)
+  - [13.2 Commandes de test](#132-commandes-de-test)
+  - [13.3 Arborescence des fichiers de test](#133-arborescence-des-fichiers-de-test)
+  - [13.4 Configuration Vitest](#134-configuration-vitest)
+  - [13.5 Configuration Playwright](#135-configuration-playwright)
+  - [13.6 Approche config-driven](#136-approche-config-driven)
+    - [13.6.1 Principe](#1361-principe)
+    - [13.6.2 Helper partagé `e2e/helpers/config.ts`](#1362-helper-partagé-e2ehelpersconfigts)
+    - [13.6.3 Fonctions utilitaires](#1363-fonctions-utilitaires)
+    - [13.6.4 Usage dans les tests E2E](#1364-usage-dans-les-tests-e2e)
+    - [13.6.5 Usage dans les tests d'intégration](#1365-usage-dans-les-tests-dintégration)
+  - [13.7 Pattern `navigateToLoginForm`](#137-pattern-navigatetologinform)
+  - [13.8 Tests d'intégration SSR](#138-tests-dintégration-ssr)
+    - [13.8.1 Gestion du serveur de test](#1381-gestion-du-serveur-de-test)
+    - [13.8.2 Tests SSR config-driven (`config-driven-ssr.test.ts`)](#1382-tests-ssr-config-driven-config-driven-ssrtestts)
+    - [13.8.3 Tests SSR de rendu (`ssr-rendering.test.ts`)](#1383-tests-ssr-de-rendu-ssr-renderingtestts)
+    - [13.8.4 Tests de concurrence SSR (`ssr-concurrency.test.ts`)](#1384-tests-de-concurrence-ssr-ssr-concurrencytestts)
+  - [13.9 Tests E2E par domaine](#139-tests-e2e-par-domaine)
+    - [13.9.1 Recherche (`search.spec.ts`)](#1391-recherche-searchspects)
+    - [13.9.2 Authentification (`auth-flow.spec.ts`, `auth-real.spec.ts`)](#1392-authentification-auth-flowspects-auth-realspects)
+    - [13.9.3 Profil (`profile.spec.ts`)](#1393-profil-profilespects)
+    - [13.9.4 Hydratation (`hydration.spec.ts`)](#1394-hydratation-hydrationspects)
+    - [13.9.5 Navigation (`config-nav.spec.ts`)](#1395-navigation-config-navspects)
+    - [13.9.6 i18n (`i18n.spec.ts`)](#1396-i18n-i18nspects)
+  - [13.10 Ce qui reste hardcodé et pourquoi](#1310-ce-qui-reste-hardcodé-et-pourquoi)
+  - [13.11 Variables d'environnement de test](#1311-variables-denvironnement-de-test)
+  - [13.12 Guide : Ajouter un nouveau test config-driven](#1312-guide--ajouter-un-nouveau-test-config-driven)
 
 
 ## 1. Introduction générale
@@ -368,6 +399,7 @@ La configuration de SiteForge se fait principalement via :
 | `VITE_SLUG`             | « Slug » à utiliser pour les requêtes par défaut (injecté en tant que `import.meta.env`).  | `default`                      |
 | `NODE_ENV`              | Mode d’exécution Node.js (`development` ou `production`).                                  | Défini par Vite ou `npm run …` |
 | `PORT`                  | Port sur lequel le serveur écoute en mode dev ou preview.                                  | `5173` en dev, `3000` en prod  |
+| `IMAGE_OPTIMIZER_ALLOWED_DOMAINS` | Domaines distants autorisés pour l'optimisation d'images (séparés par des virgules). | `localhost,127.0.0.1` + hostname de `VITE_BASE_URL_BACKEND` |
 
 > **En production**, au moins `SITE_CONFIG_JSON` **ou** `SITE_CONFIG_PATH` doit être défini — sinon le serveur arrête le démarrage avec une erreur.
 
@@ -459,7 +491,7 @@ export default defineConfig(({ mode, isSsrBuild }) => ({
   define: { 'process.env.NODE_ENV': JSON.stringify(mode) },
   ssr: {
     noExternal: ['@radix-ui/', 'lucide-react'],
-    external: ['express', 'compression', '@communecter/cocolight-api-client']
+    external: ['express', 'compression', '@communecter/cocolight-api-client', 'sharp']
   },
   build: isSsrBuild ? { rollupOptions: { /* … */ } } : undefined
 }))
@@ -480,6 +512,8 @@ Cette section décrit l’organisation générale du code, le flux d’exécutio
 ├── .bolt/                 # Scripts et configurations d’alerte/ignore interne
 ├── scripts/               # Outils de génération automatique (ex. génération de config)
 ├── server/                # Serveurs Express (dev et prod)
+│   ├── middleware/         # Middlewares Express
+│   │   └── imageOptimizer.js  # Optimisation d'images à la volée (sharp, cache disque)
 │   ├── dev-server.js      # Serveur de dev avec middleware Vite (SSR + HMR)
 │   └── prod-server.js     # Serveur de prod (compression, serveStatic, SSR streaming)
 ├── src/                   # Code source principal
@@ -491,12 +525,13 @@ Cette section décrit l’organisation générale du code, le flux d’exécutio
 │   ├── data/              # Exemplaires de config (demo-site.ts)
 │   ├── helpers/           # Fonctions utilitaires (ex. email validation)
 │   ├── hooks/             # Hooks React (useToast, useInfiniteQueryScroll…)
-│   ├── lib/               # Bibliothèques internes (apiClient, buildRoutes, sanitize)
+│   ├── lib/               # Bibliothèques internes (apiClient, buildRoutes, sanitize, imageUtils)
 │   ├── modules/           # Modules fonctionnels (search, events, contactForm…)
 │   ├── types/             # Schémas Zod & types TS (site-schema, locale-schema…)
 │   ├── entry-client.tsx   # Point d’entrée bundler client (hydrate React)
 │   ├── entry-server.tsx   # Point d’entrée SSR (renderToPipeableStream)
 │   └── RootLayout.tsx     # Layout global avec providers et React Router Outlet
+├── .cache/                # Cache d'images optimisées (gitignored)
 ├── config.prod.json       # Configuration JSON structurée du site
 ├── package.json           # Dépendances, scripts, résolutions
 ├── tsconfig*.json         # Config TypeScript
@@ -3981,21 +4016,25 @@ Le client d’API et le système d’authentification de SiteForge reposent sur 
 
 ---
 
-### 8.1 Initialisation de l'API - Pattern Singleton (`apiClient.ts`)
+### 8.1 Initialisation de l'API - Pattern Dual Server/Client (`apiClient.ts`)
 
-Le fichier `src/lib/apiClient.ts` implémente un **pattern singleton** pour l'API client. Ce pattern garantit qu'une seule instance du client API existe dans l'application, évitant les initialisations multiples coûteuses.
+Le fichier `src/lib/apiClient.ts` implémente un **pattern dual** pour l'API client :
+- **Serveur** : instances fraîches et isolées par requête (pas de globals partagés)
+- **Client** : singleton via globals (un seul utilisateur, pas de concurrence)
 
-#### 8.1.1 Architecture du singleton
+#### 8.1.1 Architecture server/client
 
-Le singleton gère plusieurs caches internes:
+L'architecture repose sur une **fonction pure `createApiInstances()`** qui encapsule toute la logique d'initialisation, et un **point d'entrée `initApiClient()`** qui choisit le mode selon l'environnement.
+
+**Côté client uniquement**, des variables module-level servent de cache singleton :
 
 ```ts
-// Variables d'état internes (module-level)
+// Variables d'état CLIENT uniquement (singleton navigateur)
+// Côté serveur, ces variables ne sont jamais utilisées.
 let client: ApiClient | null = null;
 let userApiInstance: UserApi | null = null;
 let api: Api | null = null;
 let cachedMe: User | null = null;
-let cachedOrganization: Organization | null = null;
 let cachedContextType: string | undefined = undefined;
 let cachedContextId: string | undefined = undefined;
 let cachedEntity: any = null;
@@ -4003,123 +4042,146 @@ let initialized = false;
 let initPromise: Promise<InitApiResult> | null = null;
 ```
 
-**Pourquoi ce pattern ?**
-- **Performance**: L'initialisation de l'API est coûteuse (vérification de connexion, récupération du `me`, résolution du slug contextuel)
-- **Cohérence**: Garantit que tous les composants utilisent la même instance
-- **SSR-safe**: Supporte l'initialisation côté serveur et côté client
-- **Race condition safe**: Utilise `initPromise` pour éviter les initialisations concurrentes
+**Pourquoi cette architecture ?**
+- **Isolation SSR** : chaque requête serveur crée ses propres instances, pas de contamination inter-requêtes
+- **Performance client** : un seul init, tous les composants partagent la même instance
+- **Race condition safe** : `initPromise` empêche les double initialisations côté client
+- **Hydratation SSR** : les données pré-chargées par le serveur sont réutilisées côté client via `getHydratedCocolightData()`
 
-#### 8.1.2 Fonction principale: `initApiClient()`
+#### 8.1.2 Fonction pure : `createApiInstances()`
+
+La logique d'initialisation est encapsulée dans une **fonction pure** qui ne touche aucun global :
+
+```ts
+async function createApiInstances(
+  options: InitApiOptions,
+  storageType: "memory" | "localStorage",
+): Promise<InitApiResult> {
+  // 1. Créer la stratégie de stockage des tokens
+  const tokenStorageStrategy =
+    await Cocolight.tokenStorageStrategy.createDefaultMultiServerTokenStorageStrategy(storageType);
+
+  // 2. Créer le client API
+  const newClient = new Cocolight.ApiClient({
+    baseURL: options.baseURL ?? getBaseUrl(),
+    ...options,
+    debug: import.meta.env.DEV ?? false,
+    tokenStorageStrategy,
+  });
+
+  // 3. Créer l'instance UserApi
+  const newUserApi = Cocolight.Api.userApi(newClient);
+
+  // 4. Hydratation SSR (client uniquement, user non connecté)
+  const hydratedData = getHydratedCocolightData();
+  if (hydratedData && !newUserApi.client.isConnected) {
+    // Réutiliser les données pré-chargées par le serveur
+    if (hydratedData.entity) {
+      entity = Cocolight.helper.fromEntityJSON(hydratedData.entity, newClient);
+    }
+  }
+
+  // 5. Si connecté → meIsconnected() + me()
+  // 6. Résolution du slug si entity pas déjà hydratée
+  // ... (voir code complet dans apiClient.ts)
+
+  return { client: newClient, userApiInstance: newUserApi, api: newApi,
+           me, contextType, contextId, entity };
+}
+```
+
+**Points clés** :
+- Le `storageType` est un paramètre explicite (`"memory"` ou `"localStorage"`)
+- Le `debug` utilise `import.meta.env.DEV` (plus d'option manuelle)
+- L'hydratation SSR est tentée **avant** les appels réseau
+- Aucune variable globale n'est modifiée — la fonction est **réutilisable et testable**
+
+#### 8.1.3 Point d'entrée : `initApiClient()`
 
 ```ts
 export async function initApiClient(
   options: InitApiOptions = {},
 ): Promise<InitApiResult> {
-  // 1. Si déjà initialisé, retourner le cache
-  if (initialized) {
-    return {
-      client: client!,
-      userApiInstance: userApiInstance!,
-      api: api!,
-      me: cachedMe,
-      organization: cachedOrganization,
-      contextType: cachedContextType,
-      contextId: cachedContextId,
-      entity: cachedEntity,
-    };
+  const isServer = typeof window === "undefined";
+
+  // SERVEUR : purement fonctionnel, pas de globals partagés
+  if (isServer) {
+    return createApiInstances(options, "memory");
   }
 
-  // 2. Si initialisation en cours, retourner la promesse existante
+  // CLIENT : singleton — un seul user, pas de concurrence
+  if (initialized) {
+    return { client: client!, userApiInstance: userApiInstance!, api: api!,
+             me: cachedMe, contextType: cachedContextType,
+             contextId: cachedContextId, entity: cachedEntity };
+  }
   if (initPromise) return initPromise;
 
-  // 3. Démarrer l'initialisation
-  initPromise = (async (): Promise<InitApiResult> => {
-    const isServer = typeof window === "undefined";
-
-    // Choisir le storage selon l'environnement
-    const tokenStorageStrategy = isServer
-      ? await Cocolight.tokenStorageStrategy.createDefaultMultiServerTokenStorageStrategy("memory")
-      : await Cocolight.tokenStorageStrategy.createDefaultMultiServerTokenStorageStrategy("localStorage");
-
-    // Créer le client API
-    client = new Cocolight.ApiClient({
-      baseURL: options.baseURL ?? getBaseUrl(),
-      debug: options.debug ?? false,
-      ...options,
-      tokenStorageStrategy,
-    });
-
-    // Créer l'instance UserApi
-    userApiInstance = Cocolight.Api.userApi(client);
+  initPromise = createApiInstances(options, "localStorage").then((result) => {
+    client = result.client;
+    userApiInstance = result.userApiInstance;
+    api = result.api;
+    cachedMe = result.me;
+    cachedContextType = result.contextType;
+    cachedContextId = result.contextId;
+    cachedEntity = result.entity;
     initialized = true;
-
-    // Initialiser les caches
-    cachedMe = null;
-    cachedOrganization = null;
-    const slug = getSlug();
-
-    try {
-      // Si connecté, récupérer l'utilisateur
-      if (userApiInstance.client.isConnected) {
-        const loggedUser = await userApiInstance.meIsconnected();
-        api = new Cocolight.Api(loggedUser, userApiInstance.client);
-        cachedMe = await api.me();
-      } else {
-        api = new Cocolight.Api(null, userApiInstance.client);
-      }
-
-      // Résoudre le slug contextuel (si présent)
-      if (slug) {
-        const entity = cachedMe
-          ? await cachedMe.entityBySlug(slug)
-          : await api.entitySlug(slug);
-
-        if (entity) {
-          cachedEntity = entity;
-          cachedContextType = entity.getEntityType();
-          cachedContextId = entity.id || undefined;
-
-          if (cachedContextType === "organizations") {
-            cachedOrganization = entity as Organization;
-          }
-        }
-      }
-    } catch (err) {
-      console.error("[Api.init] Erreur lors de l'initialisation:", err);
-      if (!api) {
-        api = new Cocolight.Api(null, userApiInstance.client);
-      }
-    }
-
-    return {
-      client,
-      userApiInstance,
-      api,
-      me: cachedMe,
-      organization: cachedOrganization,
-      contextType: cachedContextType,
-      contextId: cachedContextId,
-      entity: cachedEntity,
-    } as InitApiResult;
-  })();
+    return result;
+  });
 
   return initPromise;
 }
 ```
 
-**Flux d'initialisation**:
-1. **Vérification du cache** (`initialized`): Si déjà initialisé, retour immédiat
-2. **Vérification de promesse concurrente** (`initPromise`): Évite les double initialisations
-3. **Choix du storage**: `memory` (SSR) ou `localStorage` (client)
-4. **Création du client API**: Instance `ApiClient` avec token storage
-5. **Création de l'API façade**: Instance `UserApi` et `Api`
-6. **Récupération du `me`**: Si connecté, appel `meIsconnected()` + `api.me()`
-7. **Résolution du slug contextuel**: Si présent, résolution de l'entité via `entityBySlug(slug)`
-8. **Cache de l'entité**: Stockage dans `cachedEntity`, `cachedOrganization`, etc.
+**Flux selon l'environnement** :
 
-#### 8.1.3 Token Storage Strategy selon l'environnement
+| Étape | Serveur (SSR) | Client (Browser) |
+|-------|---------------|------------------|
+| 1. Détection | `typeof window === "undefined"` → `true` | → `false` |
+| 2. Cache | — (pas de cache, chaque requête est isolée) | `initialized` → retour immédiat |
+| 3. Concurrence | — (pas de singleton) | `initPromise` → attendre la promesse en cours |
+| 4. Création | `createApiInstances(opts, "memory")` | `createApiInstances(opts, "localStorage")` |
+| 5. Hydratation | — (pas de `window`) | `getHydratedCocolightData()` pour les données SSR |
+| 6. Globals | — (retour direct, aucun global modifié) | `.then()` → remplit les globals du singleton |
 
-Le choix du storage est automatique:
+#### 8.1.4 Hydratation SSR : `getHydratedCocolightData()`
+
+Fonction d'optimisation qui évite des appels réseau redondants côté client :
+
+```ts
+interface CocolightHydratedData {
+  me: Record<string, unknown> | null;
+  entity: Record<string, unknown> | null;
+  contextType?: string;
+  contextId?: string;
+}
+
+function getHydratedCocolightData(): CocolightHydratedData | null {
+  if (typeof window === "undefined") return null;
+
+  const reactQueryState = window.__REACT_QUERY_STATE__;
+  if (!reactQueryState?.queries) return null;
+
+  const cocolightDataQuery = reactQueryState.queries.find(
+    (q) => q.queryKey?.[0] === "cocolight-data"
+  );
+
+  return cocolightDataQuery?.state?.data ?? null;
+}
+```
+
+**Fonctionnement** :
+1. Le serveur SSR pré-charge les données `cocolight-data` via React Query
+2. Ces données sont sérialisées dans `window.__REACT_QUERY_STATE__` (via `serialize-javascript`)
+3. Côté client, si l'utilisateur n'est **pas connecté**, `createApiInstances()` réutilise ces données
+4. L'entité est reconstituée via `Cocolight.helper.fromEntityJSON()` pour obtenir un objet SDK complet
+5. Cela évite un appel réseau supplémentaire à `entityBySlug()` au premier render
+
+**Condition d'activation** : `hydratedData && !isUserConnected` — si l'utilisateur est connecté, l'API est appelée normalement pour obtenir des données à jour.
+
+#### 8.1.5 Token Storage Strategy selon l'environnement
+
+Le choix du storage est passé en paramètre à `createApiInstances()` :
 
 ```ts
 const isServer = typeof window === "undefined";
@@ -4132,45 +4194,61 @@ const tokenStorageStrategy = isServer
 - **Côté serveur** (`isServer = true`): Utilise `memory` (non persistant, évite les collisions entre requêtes)
 - **Côté client** (`isServer = false`): Utilise `localStorage` (persistant entre sessions)
 
-#### 8.1.4 Helpers pour accéder aux singletons
+#### 8.1.6 Helpers pour accéder aux singletons
 
-Le fichier expose des helpers pour accéder facilement aux instances:
+Le fichier expose des helpers pour accéder facilement aux instances **côté client** :
 
 ```ts
-// Retourne le client API (initialise si nécessaire)
 export async function getApiClient(): Promise<ApiClient> {
   if (!initialized) await initApiClient();
   return client!;
 }
 
-// Retourne l'instance UserApi (initialise si nécessaire)
 export async function getUserApi(): Promise<UserApi> {
   if (!initialized) await initApiClient();
   return userApiInstance!;
 }
 
-// Retourne l'API façade (initialise si nécessaire)
 export async function getApi(): Promise<Api> {
   if (!initialized) await initApiClient();
   return api!;
 }
 
-// Alias simple pour initApiClient (retourne la promesse directement)
+// Alias simple pour initApiClient
 export function initApi(options: InitApiOptions = {}) {
   return initApiClient(options);
 }
 ```
 
-**Usage recommandé**:
-- Utiliser `initApi()` pour forcer l'initialisation avec des options spécifiques
-- Utiliser les helpers (`getApiClient()`, `getApi()`, etc.) pour un accès lazy
+**Usage recommandé** :
+- `initApi()` : dans les loaders SSR et l'initialisation côté client (avec options)
+- `getApiClient()`, `getApi()`, `getUserApi()` : accès lazy dans les composants client
 
-#### 8.1.5 Types et interfaces
+#### 8.1.7 `resetApiState()`
+
+Fonction de reset des globals du singleton, conservée pour la rétro-compatibilité :
+
+```ts
+export function resetApiState(): void {
+  client = null;
+  userApiInstance = null;
+  api = null;
+  cachedMe = null;
+  cachedContextType = undefined;
+  cachedContextId = undefined;
+  cachedEntity = null;
+  initialized = false;
+  initPromise = null;
+}
+```
+
+> **Note** : Cette fonction n'est plus nécessaire côté serveur car le serveur ne touche plus aux globals. Elle reste utile pour les tests unitaires ou un éventuel re-login côté client.
+
+#### 8.1.8 Types et interfaces
 
 ```ts
 export interface InitApiOptions {
   baseURL?: string;
-  debug?: boolean;
   [key: string]: any; // Options supplémentaires du SDK
 }
 
@@ -4179,90 +4257,95 @@ export interface InitApiResult {
   userApiInstance: UserApi;
   api: Api;
   me: User | null;
-  organization: Organization | null;
   contextType?: string;     // Type de l'entité contextuelle ("organizations", "events", etc.)
   contextId?: string;       // ID de l'entité contextuelle
   entity?: any;             // L'entité complète (organization, project, event, etc.)
 }
 ```
 
-#### 8.1.6 Gestion du slug contextuel
+> **Changement** : le champ `organization: Organization | null` a été supprimé. L'entité contextuelle est désormais générique via `entity` (peut être une organization, un project, un event, etc.).
 
-Le slug contextuel provient de `getSlug()` (défini dans `src/lib/constant/common.ts`):
+#### 8.1.9 Gestion du slug contextuel
+
+Le slug contextuel provient de `getSlug()` (défini dans `src/lib/constant/common.ts`). Sa résolution tient compte de l'hydratation SSR :
 
 ```ts
-const slug = getSlug(); // Ex: "toulouse", "ma-startup"
+const slug = getSlug();
 
-if (slug) {
-  const entity = cachedMe
-    ? await cachedMe.entityBySlug(slug)  // Si connecté, utiliser me.entityBySlug
-    : await api.entitySlug(slug);         // Sinon, utiliser l'API publique
+// 1. Si données hydratées disponibles (et user non connecté) → utiliser directement
+const hydratedData = getHydratedCocolightData();
+if (hydratedData && !isUserConnected && hydratedData.entity) {
+  entity = Cocolight.helper.fromEntityJSON(hydratedData.entity, newClient);
+}
 
-  if (entity) {
-    cachedEntity = entity;
-    cachedContextType = entity.getEntityType();
-    cachedContextId = entity.id;
-
-    // Si c'est une organisation, la mettre en cache
-    if (cachedContextType === "organizations") {
-      cachedOrganization = entity as Organization;
-    }
+// 2. Sinon, résoudre via l'API
+if (slug && !entity) {
+  const resolved = me
+    ? await me.entityBySlug(slug)    // Si connecté, via me.entityBySlug
+    : await newApi.entitySlug(slug); // Sinon, via l'API publique
+  if (resolved) {
+    entity = resolved;
+    contextType = resolved.getEntityType();
+    contextId = resolved.id || undefined;
   }
 }
 ```
 
-**Contexte d'utilisation**: Permet d'avoir un "contexte" actif dans toute l'application (ex: l'organisation courante) accessible via le singleton.
+**Optimisation** : l'appel réseau `entityBySlug()` est évité si les données sont déjà présentes dans l'hydratation SSR.
 
-#### 8.1.7 Sécurité et gestion d'erreurs
+#### 8.1.10 Sécurité et gestion d'erreurs
 
-L'initialisation est entourée de try-catch pour garantir qu'une instance `Api` existe toujours:
+L'initialisation dans `createApiInstances()` est entourée de try-catch pour garantir qu'une instance `Api` existe toujours :
 
 ```ts
 try {
-  // Initialisation normale
+  if (newUserApi.client.isConnected) {
+    const loggedUser = await newUserApi.meIsconnected();
+    newApi = new Cocolight.Api(loggedUser, newUserApi.client);
+    me = await newApi.me();
+  } else {
+    newApi = new Cocolight.Api(null, newUserApi.client);
+  }
+  // ... résolution slug
 } catch (err) {
-  console.error("[Api.init] Erreur lors de l'initialisation:", err);
-  if (!api) {
-    api = new Cocolight.Api(null, userApiInstance.client); // Fallback: API non connectée
+  console.error("[Api.init] Erreur lors de l'initialisation de l'API:", err);
+  if (!newApi) {
+    newApi = new Cocolight.Api(null, newUserApi.client); // Fallback: API non connectée
   }
 }
 ```
 
-**Garantie**: Même en cas d'erreur réseau, l'application dispose d'une instance API fonctionnelle (non connectée).
+**Garantie** : même en cas d'erreur réseau, l'application dispose d'une instance API fonctionnelle (non connectée).
 
-#### 8.1.8 Usage dans les loaders SSR
+#### 8.1.11 Usage dans les loaders SSR
 
-Les loaders de routes utilisent `initApi()` pour initialiser l'API côté serveur:
+Les loaders de routes utilisent `initApi()` pour créer des instances fraîches côté serveur :
 
 ```ts
 // Dans routes.tsx du module profil
 loader: async ({ params }) => {
-  const { organization } = await initApi({
+  const { api, entity } = await initApi({
     baseURL: getBaseUrl(),
-    debug: true
   });
 
   return await queryClient.ensureQueryData({
     queryKey: ["element-about", params.slug],
-    queryFn: () => organization.entityBySlug(params.slug)
+    queryFn: () => api.entitySlug(params.slug)
   });
 }
 ```
 
-**Avantage**: L'initialisation se fait une seule fois par requête SSR grâce au singleton.
+**Avantage** : côté serveur, chaque requête SSR crée ses propres instances via `createApiInstances()`, aucun état global n'est partagé entre les requêtes concurrentes.
 
-#### 8.1.9 Limitations et considérations
+#### 8.1.12 Limitations et considérations
 
-**⚠️ Limitations du pattern singleton**:
-- **SSR multi-requêtes**: Les variables module-level sont partagées entre toutes les requêtes SSR. En production, utiliser un système de requête-scoped context (ex: AsyncLocalStorage)
-- **Reset impossible**: Une fois initialisé, le singleton ne peut pas être réinitialisé (par design)
-- **Tests unitaires**: Nécessite un reset manuel entre tests
+**⚠️ Limitations restantes** :
+- **Tests unitaires** : le singleton client nécessite un appel à `resetApiState()` entre tests
+- **Re-login** : après logout côté client, il faut appeler `resetApiState()` pour forcer une ré-initialisation
 
-**✅ Avantages**:
-- Évite les initialisations multiples coûteuses
-- Garantit une seule source de vérité pour l'état de connexion
-- Supporte SSR et CSR avec le même code
-- Gestion automatique du storage selon l'environnement
+**✅ Problèmes résolus (par rapport à l'ancienne architecture)** :
+- ~~SSR multi-requêtes~~ : le serveur crée désormais des instances fraîches par requête, plus aucune contamination inter-requêtes
+- ~~Reset impossible~~ : `resetApiState()` est disponible pour les cas de re-login et les tests
 
 ---
 
@@ -4270,16 +4353,16 @@ loader: async ({ params }) => {
 
 Le stockage des tokens d'authentification est géré par le SDK `@communecter/cocolight-api-client` via sa factory `createDefaultMultiServerTokenStorageStrategy()`. Cette stratégie permet de gérer l'authentification sur plusieurs serveurs simultanément (multi-tenant).
 
-#### 8.2.1 Choix automatique selon l'environnement
+#### 8.2.1 Choix selon l'environnement
 
-Le type de storage est choisi automatiquement dans `initApiClient()`:
+Le type de storage est passé en paramètre à `createApiInstances()` par `initApiClient()` :
 
 ```ts
-const isServer = typeof window === "undefined";
+// Serveur → "memory"
+if (isServer) return createApiInstances(options, "memory");
 
-const tokenStorageStrategy = isServer
-  ? await Cocolight.tokenStorageStrategy.createDefaultMultiServerTokenStorageStrategy("memory")
-  : await Cocolight.tokenStorageStrategy.createDefaultMultiServerTokenStorageStrategy("localStorage");
+// Client → "localStorage"
+initPromise = createApiInstances(options, "localStorage").then(...);
 ```
 
 **Deux modes de storage**:
@@ -4337,10 +4420,9 @@ interface TokenPair {
 - **Recommandation**: Le SDK gère le refresh automatique des tokens expirés
 
 **Côté serveur (memory)**:
-- Les tokens sont stockés en mémoire (Map JavaScript)
+- Les tokens sont stockés en mémoire (Map JavaScript) dans chaque instance créée par `createApiInstances()`
 - Non persistant : les tokens sont perdus à chaque redémarrage du serveur
-- **⚠️ Limitation SSR**: Les variables module-level sont partagées entre toutes les requêtes
-- **Recommandation future**: Utiliser AsyncLocalStorage pour isoler les tokens par requête
+- **Isolation garantie** : chaque requête SSR crée ses propres instances, aucune contamination inter-requêtes
 
 #### 8.2.4 Refresh automatique des tokens
 
@@ -4656,45 +4738,44 @@ export function SectionRenderer({ section }: { section: Section }) {
 * Les composants de sections **doivent** avoir un `export default`
 * Les sections des modules (search, news) sont importées depuis leurs chemins respectifs
 
-#### 10.1.2 Lazy loading des images
+#### 10.1.2 Optimisation et lazy loading des images
 
-Le composant `LazyImage` (dans `src/components/layout/LazyImage.tsx`) combine l’API `IntersectionObserver` et l’attribut natif `loading="lazy"` :
+Le composant `OptimizedImage` (dans `src/components/ui/OptimizedImage.tsx`) gère automatiquement l’optimisation et le lazy loading de toutes les images :
 
 ```tsx
-import React, { useState, useRef, useEffect } from "react";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
-export const LazyImage: React.FC<{ src: string; alt: string }> = ({ src, alt }) => {
-  const [visible, setVisible] = useState(false);
-  const imgRef = useRef<HTMLImageElement>(null);
+// Image standard (lazy par defaut, format auto WebP/AVIF)
+<OptimizedImage src="/images/photo.jpg" alt="Photo" width={400} />
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.1 }
-    );
-    if (imgRef.current) observer.observe(imgRef.current);
-    return () => observer.disconnect();
-  }, []);
+// Image prioritaire (LCP) — eager + fetchPriority="high"
+<OptimizedImage src={bannerUrl} alt="Banner" width={1200} priority />
 
-  return (
-    <img
-      ref={imgRef}
-      src={visible ? src : undefined}
-      data-src={src}
-      alt={alt}
-      loading="lazy"
-    />
-  );
-};
+// Avec gestion d’erreur
+<OptimizedImage src={avatarUrl} alt="Avatar" width={96} onError={() => setError(true)} />
 ```
 
-* **IntersectionObserver** déclenche le chargement lorsque l’image entre dans le viewport.
-* `loading="lazy"` active le lazy loading natif sur les navigateurs compatibles.
+**Props disponibles** :
+
+| Prop | Type | Defaut | Description |
+|------|------|--------|-------------|
+| `src` | `string` | — | URL source (locale ou distante) |
+| `alt` | `string` | — | Texte alternatif (obligatoire) |
+| `width` | `number` | — | Largeur souhaitee (genere srcSet 1x/2x) |
+| `height` | `number` | — | Hauteur (optionnel, ratio preserve) |
+| `quality` | `number` | `80` | Qualite 1-100 |
+| `format` | `string` | `"auto"` | `webp`, `avif`, `jpeg`, `png`, `auto` |
+| `priority` | `boolean` | `false` | `true` = eager + fetchPriority="high" |
+| `className` | `string` | — | Classes CSS |
+| `title` | `string` | — | Attribut title (tooltip) |
+| `style` | `CSSProperties` | — | Styles inline |
+| `onError` | `function` | — | Callback en cas d’erreur de chargement |
+
+**Comportement** :
+* Genere automatiquement un `srcSet` 1x/2x quand `width` est fourni
+* `loading="lazy"` par defaut, `loading="eager"` + `fetchPriority="high"` si `priority`
+* Bypass automatique pour SVG, data URIs et blob URLs (rendu `<img>` classique)
+* Les chemins relatifs (`images/foo.png`) sont normalises en `/images/foo.png`
 
 ---
 
@@ -4705,7 +4786,7 @@ export const LazyImage: React.FC<{ src: string; alt: string }> = ({ src, alt }) 
 * **Configuration Vite** (`vite.config.ts`) :
 
   ```ts
-  ssr: { noExternal: ["@radix-ui/", "lucide-react"] },
+  ssr: { noExternal: ["@radix-ui/", "lucide-react"], external: ["sharp"] },
   build: {
     rollupOptions: {
       output: { manualChunks: { /* grouping spécifique */ } }
@@ -4715,17 +4796,64 @@ export const LazyImage: React.FC<{ src: string; alt: string }> = ({ src, alt }) 
 
 ---
 
-### 10.3 Optimisation des images
+### 10.3 Optimisation des images — Middleware sharp
 
-* **Composant `Image.tsx`** génère automatiquement un `srcSet` pour plusieurs résolutions :
+Le middleware Express `/img` optimise les images a la volee avec **sharp** (resize + conversion de format) et les met en cache sur disque.
 
-  ```tsx
-  export function Image({ src, alt, sizes }: { src: string; alt: string; sizes?: string }) {
-    const srcSet = `${src}?w=300 300w, ${src}?w=600 600w, ${src}?w=900 900w`;
-    return <img src={src} srcSet={srcSet} sizes={sizes} alt={alt} />;
-  }
-  ```
-* Intégration possible de **plugins Vite** (ex. `vite-imagetools`) pour transformer et optimiser les images à la volée.
+#### Architecture
+
+```
+Navigateur  →  GET /img?url=/images/bg.jpg&w=800&f=auto
+                    ↓
+            [Middleware imageOptimizer]
+                    ↓
+            Cache disque (.cache/images/)
+            ├── HIT  → stream le fichier cache (immutable, 1 an)
+            └── MISS → fetch source → sharp(resize+format) → cache + reponse
+```
+
+#### Route API
+
+`GET /img?url=<source>&w=<width>&h=<height>&q=<quality>&f=<format>`
+
+| Param | Requis | Defaut | Validation |
+|-------|--------|--------|------------|
+| `url` | Oui | — | String, domaine dans allowlist ou chemin local (`/...`) |
+| `w` | Non | original | Entier 16..4096 |
+| `h` | Non | original | Entier 16..4096 |
+| `q` | Non | 80 | Entier 1..100 |
+| `f` | Non | `auto` | `webp`, `avif`, `jpeg`, `png`, `auto` |
+
+* **Format `auto`** : negocie via le header `Accept` du navigateur (AVIF > WebP > JPEG)
+* **Cache** : cle SHA-256 de `url:w:h:q:format`, header `Cache-Control: public, max-age=31536000, immutable`
+* **Header `X-Image-Cache`** : `HIT`, `MISS` ou `ERROR` (fallback vers l'image originale)
+
+#### Securite
+
+* **Allowlist de domaines** pour les URLs distantes (construit depuis `VITE_BASE_URL_BACKEND` + `IMAGE_OPTIMIZER_ALLOWED_DOMAINS`)
+* **Protection path traversal** pour les fichiers locaux (`path.resolve` verifie que le chemin reste dans `staticRoot`)
+* Les chemins locaux doivent commencer par `/`
+
+#### Utilitaire `buildOptimizedUrl`
+
+```ts
+import { buildOptimizedUrl } from "@/lib/imageUtils";
+
+buildOptimizedUrl("/images/bg.jpg", { w: 800, q: 80, f: "auto" });
+// → "/img?url=%2Fimages%2Fbg.jpg&w=800&q=80&f=auto"
+```
+
+Bypass automatique pour SVG, data URIs et blob URLs (retourne `src` tel quel).
+
+#### Docker
+
+Le cache d'images est persiste via un volume Docker :
+
+```yaml
+# docker-compose.yml
+volumes:
+  - image-cache:/app/.cache/images
+```
 
 ---
 
@@ -4998,7 +5126,20 @@ Cette section décrit en détail le fonctionnement des fichiers responsables du 
    dotenv.config();
    ```
 
-2. **Création du serveur Express + Vite middleware**
+2. **Middleware d'optimisation d'images**
+
+   ```js
+   import { createImageOptimizer } from "./middleware/imageOptimizer.js";
+   app.use("/img", createImageOptimizer({
+     staticRoot: path.resolve(__dirname, "../public"),
+     cacheDir: path.resolve(__dirname, "../.cache/images"),
+   }));
+   ```
+
+   * Monte **avant** les middlewares Vite pour intercepter les requetes `/img`
+   * `staticRoot` pointe vers `public/` en dev
+
+3. **Création du serveur Express + Vite middleware**
 
    ```js
    const vite = await createViteServer({
@@ -5048,7 +5189,20 @@ Cette section décrit en détail le fonctionnement des fichiers responsables du 
 
 ### 12.2 `server/prod-server.js`&#x20;
 
-1. **Compression et static serving**
+1. **Middleware d'optimisation d'images**
+
+   ```js
+   import { createImageOptimizer } from "./middleware/imageOptimizer.js";
+   app.use("/img", createImageOptimizer({
+     staticRoot: path.resolve(__dirname, "../dist/client"),
+     cacheDir: path.resolve(__dirname, "../.cache/images"),
+   }));
+   ```
+
+   * Monte **avant** `compression` et `serveStatic`
+   * `staticRoot` pointe vers `dist/client/` en prod
+
+2. **Compression et static serving**
 
    ```js
    app.use(compression());
@@ -5609,3 +5763,421 @@ Avec ces quatre fichiers, SiteForge propose :
 * Un **prod-server** optimisé (gzip, caching long, injection config/env, streaming SSR).
 * Un **entry-server** robuste (React Router loaders, React Query prefetch, streaming avec Helmet).
 * Un **entry-client** fluide (hydrateRoot, React Query, React Router hydratation).
+
+---
+
+## 13. Architecture de tests
+
+### 13.1 Vue d'ensemble
+
+SiteForge utilise une stratégie de tests à **trois niveaux**, tous pilotés par la configuration JSON (`config.prod.json`) pour garantir que les tests restent valides quand la configuration change.
+
+| Niveau | Runner | Cible | Durée typique |
+|--------|--------|-------|---------------|
+| **Unit / Preflight** | Vitest | Logique pure, validation config, API client | < 1s |
+| **Integration SSR** | Vitest | Rendu serveur, concurrence, hydratation state | ~20s |
+| **E2E** | Playwright | Navigation browser, formulaires, hydratation client | ~2min |
+
+### 13.2 Commandes de test
+
+| Commande | Description |
+|----------|-------------|
+| `npm run test:unit` | Tests unitaires + preflight (Vitest) |
+| `npm run test:integration` | Tests d'intégration SSR avec serveur dédié (Vitest) |
+| `npm run test:e2e` | Tests end-to-end navigateur (Playwright) |
+| `npm run test:all` | Exécute les trois niveaux séquentiellement |
+| `npm run test:preflight` | Vérification rapide de l'environnement |
+
+Pour les tests E2E avec authentification backend réelle :
+
+```bash
+source .env.test && npm run test:e2e
+```
+
+### 13.3 Arborescence des fichiers de test
+
+```
+.
+├── src/lib/__tests__/           # Tests unitaires (apiClient, configValidation)
+├── tests/
+│   ├── preflight/
+│   │   └── environment.test.ts  # Vérification Node, deps, fichiers config
+│   ├── helpers/
+│   │   ├── global-setup.ts      # Démarre le serveur SSR sur port 5188
+│   │   └── server-manager.ts    # Expose getBaseUrl() pour les tests intégration
+│   └── integration/
+│       ├── config-driven-ssr.test.ts  # SSR par page config, meta, nav, sections
+│       ├── ssr-rendering.test.ts      # SSR home + pages secondaires + 404
+│       └── ssr-concurrency.test.ts    # 10-20 requêtes parallèles, cross-route leakage
+├── e2e/
+│   ├── global-setup.ts          # Warmup du dev server Playwright
+│   ├── helpers/
+│   │   └── config.ts            # Helper partagé config-driven (loadSiteConfig, etc.)
+│   ├── hydration.spec.ts        # SSR sans JS, hydratation, window globals
+│   ├── search.spec.ts           # Sections searchPro/searchProStatic/gridLayout
+│   ├── auth-flow.spec.ts        # Auth avec mocks API (login/logout flow)
+│   ├── auth-real.spec.ts        # Auth avec vrai backend (skip si pas de credentials)
+│   ├── profile.spec.ts          # Pages profil + validation config.profiles
+│   ├── config-nav.spec.ts       # Header nav, footer, logo (config-driven)
+│   └── i18n.spec.ts             # Langue par défaut, switch de langue
+├── vitest.config.unit.ts        # Config Vitest pour unit + preflight
+├── vitest.config.integration.ts # Config Vitest pour intégration (globalSetup, timeout 60s)
+└── playwright.config.ts         # Config Playwright (chromium, webServer dev)
+```
+
+### 13.4 Configuration Vitest
+
+**`vitest.config.unit.ts`** : Tests unitaires rapides.
+
+```ts
+test: {
+  environment: "node",
+  include: ["src/**/*.test.ts", "tests/preflight/**/*.test.ts"],
+}
+```
+
+**`vitest.config.integration.ts`** : Tests SSR avec serveur dédié.
+
+```ts
+test: {
+  environment: "node",
+  include: ["tests/**/*.test.ts"],
+  testTimeout: 60_000,
+  fileParallelism: false,               // Séquentiel : partage un seul serveur
+  globalSetup: ["tests/helpers/global-setup.ts"],  // Démarre le serveur sur port 5188
+}
+```
+
+### 13.5 Configuration Playwright
+
+```ts
+// playwright.config.ts
+export default defineConfig({
+  testDir: "./e2e",
+  globalSetup: "./e2e/global-setup.ts",    // Warmup du dev server
+  fullyParallel: false,                     // Séquentiel (1 worker)
+  workers: 1,
+  timeout: 60_000,
+  use: {
+    baseURL: "http://localhost:5173",
+    navigationTimeout: 60_000,
+  },
+  webServer: {
+    command: "npm run dev",                 // Démarre le dev server automatiquement
+    url: "http://localhost:5173",
+    reuseExistingServer: !process.env.CI,   // Réutilise si déjà lancé en local
+  },
+});
+```
+
+### 13.6 Approche config-driven
+
+#### 13.6.1 Principe
+
+Les tests **ne hardcodent jamais** de chemins comme `/lieux` ou `/login`. Ils dérivent toutes les URLs et assertions de `config.prod.json`. Ainsi, si la config change (renommage de page, ajout de routes), les tests s'adaptent automatiquement.
+
+**Avant** (fragile) :
+```ts
+await page.goto("/lieux");  // Casse si la page est renommée
+```
+
+**Après** (config-driven) :
+```ts
+const searchPages = findSearchPages(config);
+for (const searchPage of searchPages) {
+  test(`${searchPage.path} renders`, async ({ page }) => {
+    await page.goto(searchPage.path);
+  });
+}
+```
+
+#### 13.6.2 Helper partagé `e2e/helpers/config.ts`
+
+Ce module charge `config.prod.json` une seule fois (cache en mémoire) et expose des fonctions utilitaires pour tous les specs E2E.
+
+```ts
+import { loadSiteConfig, findSearchPages, findLoginPath } from "./helpers/config";
+
+const config = loadSiteConfig();
+```
+
+**Types exportés** :
+
+| Type | Description |
+|------|-------------|
+| `SiteConfig` | Structure racine de la config (meta, header, pages, footer, profiles) |
+| `SitePage` | Une page avec path, title, sections |
+| `SiteSection` | Une section avec type, id, props |
+| `NavItem` | Item de navigation (récursif avec children) |
+
+#### 13.6.3 Fonctions utilitaires
+
+| Fonction | Signature | Description |
+|----------|-----------|-------------|
+| `loadSiteConfig()` | `() => SiteConfig` | Charge et cache `config.prod.json` |
+| `findPageBySection(config, sectionType)` | `(SiteConfig, string) => SitePage \| undefined` | Trouve la 1re page contenant un type de section |
+| `findLoginPath(config)` | `(SiteConfig) => string \| undefined` | Chemin de la page avec section `loginForm` |
+| `findSearchPages(config)` | `(SiteConfig) => SitePage[]` | Pages avec `searchPro`, `searchProStatic` ou `gridLayout` |
+| `getAllNavPaths(config)` | `(SiteConfig) => string[]` | Tous les paths du header nav (aplatis, sans `#`) |
+| `findSecondaryPage(config)` | `(SiteConfig) => SitePage \| undefined` | 1re page avec `path !== "/"` |
+
+#### 13.6.4 Usage dans les tests E2E
+
+**`search.spec.ts`** : Boucle sur les pages search trouvées dans la config :
+
+```ts
+const searchPages = findSearchPages(config);
+
+for (const searchPage of searchPages.filter((p) => p.path !== "/")) {
+  test(`${searchPage.path} renders search/grid content`, async ({ page }) => {
+    await page.goto(searchPage.path);
+    // assertions...
+  });
+}
+```
+
+**`hydration.spec.ts`** : Utilise la page secondaire au lieu de hardcoder `/lieux` :
+
+```ts
+const secondaryPage = findSecondaryPage(config);
+const secondaryPath = secondaryPage?.path ?? "/lieux"; // fallback ultime
+
+test(`hydration on ${secondaryPath}`, async ({ page }) => {
+  await page.goto(secondaryPath);
+});
+```
+
+**`auth-flow.spec.ts` / `auth-real.spec.ts`** : Cherche la page login dans la config :
+
+```ts
+const loginPath = findLoginPath(config);
+// Si trouvé → page.goto(loginPath)
+// Sinon → fallback: cliquer "Se connecter" depuis "/"
+```
+
+#### 13.6.5 Usage dans les tests d'intégration
+
+**`ssr-rendering.test.ts`** : Boucle sur toutes les pages secondaires :
+
+```ts
+const secondaryPages = config.pages.filter((p) => p.path !== "/");
+
+for (const page of secondaryPages) {
+  describe(`${page.path}`, () => {
+    it("returns 200 with SSR content", async () => {
+      const { status, html } = await fetchPage(`${getBaseUrl()}${page.path}`);
+      expect(status).toBe(200);
+    });
+  });
+}
+```
+
+**`ssr-concurrency.test.ts`** : Construit les routes de test depuis la config :
+
+```ts
+const configRoutes = config.pages.map((p) => p.path);
+const mixedRoutes = [...configRoutes, "/page-inexistante"];
+
+// 20 requêtes parallèles sur toutes les routes config + fallback
+```
+
+### 13.7 Pattern `navigateToLoginForm`
+
+Les tests d'authentification utilisent un helper commun `navigateToLoginForm()` qui implémente une stratégie à deux niveaux :
+
+1. **Page login config** : Si `findLoginPath(config)` retourne un chemin, naviguer vers cette page
+2. **Fallback header** : Si pas de page login ou pas de formulaire visible, naviguer vers `/` et cliquer le bouton "Se connecter" dans le header
+
+```ts
+async function navigateToLoginForm(page: Page): Promise<boolean> {
+  // Stratégie 1 : page login depuis config
+  if (loginPath) {
+    await page.goto(loginPath);
+    const emailInput = page.locator('input[type="email"]').first();
+    if ((await emailInput.count()) > 0) return true;
+  }
+
+  // Stratégie 2 : fallback via header
+  await page.goto("/");
+  const loginButton = page.getByRole("button", { name: /Se connecter/i });
+  if ((await loginButton.count()) > 0) {
+    await loginButton.first().click();
+    return true;
+  }
+
+  return false;  // Aucun formulaire login trouvé → test.skip()
+}
+```
+
+### 13.8 Tests d'intégration SSR
+
+#### 13.8.1 Gestion du serveur de test
+
+Le fichier `tests/helpers/global-setup.ts` :
+- Démarre un serveur de dev sur le **port 5188** (distinct du port 5173 du dev local)
+- Fait un warmup (3 tentatives) pour s'assurer que le SSR est stable
+- Arrête le serveur via SIGTERM/SIGKILL à la fin des tests
+
+Le fichier `tests/helpers/server-manager.ts` expose `getBaseUrl()` qui retourne `http://localhost:5188`.
+
+#### 13.8.2 Tests SSR config-driven (`config-driven-ssr.test.ts`)
+
+Le test le plus complet : vérifie que **chaque page** de la config produit un SSR valide.
+
+- **Pages** : Boucle sur `config.pages`, vérifie 200 + `#root` + `window.__CONFIG__`
+- **Meta** : `<title>` contient `config.meta.title[defaultLang]`
+- **Nav vers pages** : Les items nav qui pointent vers des pages config rendent en SSR
+- **Section types** : Chaque type de section utilisé dans config est enregistré dans `SectionRenderer.tsx`
+- **Footer** : Le copyright apparaît dans le HTML SSR
+
+#### 13.8.3 Tests SSR de rendu (`ssr-rendering.test.ts`)
+
+Vérifie le rendu SSR de base :
+- `/` : status 200, `<title>`, `#root` non-vide, `window.__CONFIG__`, `window.__REACT_QUERY_STATE__`, viewport meta
+- **Pages secondaires** (config-driven) : 200 + contenu SSR complet
+- `/page-inexistante` : 200 (catch-all, pas de 404 HTTP)
+- Assets statiques inexistants : 404
+- Content-Type : `text/html`
+
+#### 13.8.4 Tests de concurrence SSR (`ssr-concurrency.test.ts`)
+
+Stress-test du pipeline SSR streaming :
+- 1 requête : vérifie les globals et `#root`
+- 10 requêtes parallèles sur `/` : toutes 200 avec state parseable
+- 20 requêtes parallèles sur routes mixtes (config + fallback) : pas de troncature
+- 5 requêtes parallèles : state déshydraté contient `cocolight-data` query
+- Cross-route leakage : `/` et page secondaire en parallèle ne mélangent pas leur contenu
+
+### 13.9 Tests E2E par domaine
+
+#### 13.9.1 Recherche (`search.spec.ts`)
+
+- **Skip** si le backend n'est pas joignable
+- `/` : Les sections `searchProStatic` rendent sans crash
+- **Pages search** (config-driven) : Chaque page contenant `searchPro`/`searchProStatic`/`gridLayout` rend correctement
+- Input de recherche dans le hero : fonctionnel (fill + vérification valeur)
+
+#### 13.9.2 Authentification (`auth-flow.spec.ts`, `auth-real.spec.ts`)
+
+**`auth-flow.spec.ts`** (avec mocks API) :
+- Le bouton "Se connecter" est visible dans le header
+- Cliquer dessus affiche un formulaire email/password
+- Credentials corrects : dialog fermé, état connecté
+- Credentials incorrects : toast d'erreur
+- Logout : retour à l'état "Se connecter" visible
+
+**`auth-real.spec.ts`** (backend réel) :
+- **Skip** si `TEST_USER_EMAIL` / `TEST_USER_PASSWORD` non définis ou backend injoignable
+- Login avec vrais credentials
+- `/api/person/me` retourne des données valides
+- Login avec mauvais password : toast d'erreur
+- Login puis logout
+
+#### 13.9.3 Profil (`profile.spec.ts`)
+
+- **Vérification config** : `config.profiles` existe avec au moins un type, chaque type a des tabs
+- `/profil/{VITE_SLUG}` rend une page profil (backend requis)
+- `/profil/slug-inexistant-xyz` ne crash pas (error boundary)
+- Le chemin `/profil/` reste hardcodé car défini dans le module code (`src/modules/profil/routes.tsx`), pas dans la config JSON
+
+#### 13.9.4 Hydratation (`hydration.spec.ts`)
+
+- SSR rend du contenu sans JS (`javaScriptEnabled: false`)
+- Hydratation sans erreurs critiques (pas de mismatch)
+- `window.__CONFIG__` a la forme attendue (meta, pages, header)
+- `window.__REACT_QUERY_STATE__` contient des queries
+- Navigation client-side sans full page reload (vers page secondaire config-driven)
+- Hydratation sans erreurs sur la page secondaire config-driven
+
+#### 13.9.5 Navigation (`config-nav.spec.ts`)
+
+- Header visible avec logo linkant vers `/`
+- Chaque label nav de `config.header.nav` apparaît dans le header
+- Footer visible avec copyright de `config.footer.copyright`
+- Menu mobile toggle visible à 375px
+
+#### 13.9.6 i18n (`i18n.spec.ts`)
+
+- Page home charge avec le contenu en langue par défaut (hero headline)
+- Si `langSwitch` activé dans config : switch de langue change le texte visible
+
+### 13.10 Ce qui reste hardcodé et pourquoi
+
+| Route/donnée | Pourquoi hardcodé | Source |
+|--------------|-------------------|--------|
+| `/profil/:slug` | Défini dans le code du module, pas dans `config.pages` | `src/modules/profil/routes.tsx` |
+| `/page-inexistante` | Route intentionnellement invalide pour tester le 404 fallback | Convention de test |
+| `"/"` | Route structurelle, toujours présente | Convention de toute app web |
+| Tabs de profil | Le type d'entité est résolu par l'API, pas par la config | Backend-dependent |
+| Tabs conditionnels (`social`, `membership`) | Dépendent de `condition.userContext: "own"` | Runtime user context |
+
+### 13.11 Variables d'environnement de test
+
+| Variable | Usage | Fichier |
+|----------|-------|---------|
+| `TEST_USER_EMAIL` | Email pour tests auth backend réel | `.env.test` |
+| `TEST_USER_PASSWORD` | Password pour tests auth backend réel | `.env.test` |
+| `VITE_BASE_URL_BACKEND` | URL backend (défaut: `http://localhost:5080`) | `.env` / process.env |
+| `VITE_SLUG` | Slug profil pour tests E2E (défaut: `franceTierslieux`) | `.env` / process.env |
+| `SITE_CONFIG_PATH` | Chemin config JSON (défaut: `./config.prod.json`) | `.env` / process.env |
+
+> **Ne jamais committer `.env.test`** qui contient des credentials. Ce fichier est dans `.gitignore`.
+
+### 13.12 Guide : Ajouter un nouveau test config-driven
+
+**1. Identifier la source dans la config**
+
+Déterminer quelle donnée de `config.prod.json` pilote le test : une page, un type de section, un item nav, un profil...
+
+**2. Ajouter une fonction helper si nécessaire**
+
+Si le pattern de recherche est réutilisable, l'ajouter dans `e2e/helpers/config.ts` :
+
+```ts
+export function findPagesWithSection(config: SiteConfig, type: string): SitePage[] {
+  return config.pages.filter((p) => p.sections.some((s) => s.type === type));
+}
+```
+
+**3. Utiliser dans le spec**
+
+```ts
+import { loadSiteConfig, findPagesWithSection } from "./helpers/config";
+
+const config = loadSiteConfig();
+const galleryPages = findPagesWithSection(config, "gallery");
+
+test.describe("Gallery", () => {
+  for (const page of galleryPages) {
+    test(`${page.path} renders gallery`, async ({ page: pw }) => {
+      await pw.goto(page.path);
+      // assertions...
+    });
+  }
+});
+```
+
+**4. Pour les tests d'intégration SSR**
+
+Charger la config directement avec `fs.readFileSync` (pas d'import du helper E2E) :
+
+```ts
+import fs from "node:fs";
+import path from "node:path";
+
+const config = JSON.parse(
+  fs.readFileSync(path.resolve(__dirname, "../../config.prod.json"), "utf-8")
+);
+```
+
+**5. Principe de fallback**
+
+Toujours prévoir un fallback gracieux si la config ne contient pas la donnée attendue :
+
+```ts
+const loginPath = findLoginPath(config);
+if (!loginPath) {
+  // Fallback: cliquer "Se connecter" depuis "/"
+  // Ou: test.skip() si le test n'a pas de sens sans login page
+}
+```

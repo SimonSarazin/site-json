@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Share2 } from "lucide-react";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { useFormatProfileEntity } from "../../../hooks/useFormatProfileEntity";
 import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../../hooks/useProfileEntity";
@@ -35,11 +36,12 @@ export function ProfileHeaderCover({ section }: ProfileHeaderCoverProps) {
       <div className="relative w-full h-80 md:h-96 overflow-hidden rounded-lg group mb-1">
         {/* Background image */}
         {coverImage ? (
-          <img
+          <OptimizedImage
             src={coverImage}
             alt={`${entityName} cover`}
+            width={1200}
+            priority
             className="absolute inset-0 w-full h-full object-cover"
-            fetchPriority="high"
           />
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-muted to-muted/60" />

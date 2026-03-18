@@ -1,6 +1,7 @@
 import { FileText } from "lucide-react";
+import type { NewsDocumentItem } from "../../types";
 
-export function NewsFileList({ files }: { files: any[] }) {
+export function NewsFileList({ files }: { files: NewsDocumentItem[] }) {
   if (!files || files.length === 0) return null;
   return (
     <div className="px-4 sm:px-6 pb-3 w-full">

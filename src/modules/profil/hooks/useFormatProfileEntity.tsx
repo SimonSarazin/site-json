@@ -37,10 +37,11 @@ export function useFormatProfileEntity(entity: SearchEntity) {
   const addressRaw = useReactiveProperty(entity.serverData, 'address');
   const address = useMemo((): PostalAddress | null => {
     if (addressRaw && typeof addressRaw === "object") {
+      const addr = addressRaw as PostalAddress;
       return {
-        streetAddress: (addressRaw as any)?.streetAddress,
-        postalCode: (addressRaw as any)?.postalCode,
-        addressLocality: (addressRaw as any)?.addressLocality
+        streetAddress: addr?.streetAddress,
+        postalCode: addr?.postalCode,
+        addressLocality: addr?.addressLocality
       };
     }
     return null;

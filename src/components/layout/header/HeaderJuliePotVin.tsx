@@ -5,7 +5,7 @@ import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
-import { Header, LocalizedString } from "@/types/site-schema";
+import type { Header } from "@/types/site-schema";
 import { ClientOnly } from "../ClientOnly";
 import {
     DropdownMenu,
@@ -21,16 +21,10 @@ import {
 import LoginForm from "@/components/auth/LoginForm";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import { ChevronDown, User, LogOut, Globe, Menu, X } from "lucide-react";
+import { DynamicIcon } from "lucide-react/dynamic";
 
 interface HeaderJuliePotVinProps {
-    header: Header & {
-        logoTitle?: LocalizedString;
-        logoIcon?: string;
-        ctaButton?: {
-            label: LocalizedString;
-            path?: string;
-        };
-    };
+    header: Header;
 }
 
 export default function HeaderJuliePotVin({ header }: HeaderJuliePotVinProps) {
@@ -77,7 +71,7 @@ export default function HeaderJuliePotVin({ header }: HeaderJuliePotVinProps) {
                              {header.logo ? (
                                 <img src={header.logo} alt={header.logoAlt ? t(header.logoAlt) : "Logo"} className="w-8 h-8 object-contain" />
                             ) : header.logoIcon ? (
-                                <div className="w-8 h-8 [&>svg]:w-full [&>svg]:h-full" dangerouslySetInnerHTML={{ __html: header.logoIcon }} />
+                                <DynamicIcon name={header.logoIcon as any} className="w-8 h-8 text-primary" />
                             ) : (
                                 <img src="images/juliePotVin/monogramme.svg" alt="Monogramme" className="w-8 h-8" />
                             )}

@@ -265,9 +265,12 @@ function Calendar({
     return false;
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- CalendarProps is a strict subset of DayPickerProps but TS can't infer the rest type correctly
+  const dayPickerProps = props as any;
+
   return (
     <DayPicker
-      {...(props as any)}
+      {...dayPickerProps}
       showOutsideDays={showOutsideDays}
       disabled={disabledDays}
       className={cn("p-3", className)}
@@ -742,6 +745,7 @@ function DateTimePicker({
 
   useEffect(() => {
     const validatedValue = value && !isNaN(value.getTime()) ? value : undefined;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncs display state with controlled value prop
     setDisplayDate(validatedValue);
   }, [value]);
 

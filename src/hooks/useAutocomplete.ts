@@ -60,9 +60,9 @@ export function useAutocomplete(
         const resultsArray = Object.values(resultsObj);
 
         // Transformer les entités JSON en entités Cocolight
-        const transformedResults = resultsArray.flatMap((d: any) => {
-          if (d?.getEntityType) return d;
-          return helper.fromEntityJSON(d, entity);
+        const transformedResults = resultsArray.flatMap((d: unknown) => {
+          if (d && typeof d === 'object' && 'getEntityType' in d) return d as SearchEntity;
+          return helper.fromEntityJSON(d, entity) as SearchEntity;
         });
 
         setSuggestions(transformedResults);

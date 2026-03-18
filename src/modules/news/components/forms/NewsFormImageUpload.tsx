@@ -3,6 +3,7 @@ import { ImagePlus, X, Loader2, Crop, Upload } from "lucide-react";
 import { useT } from "@/hooks/useT";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { Progress } from "@/components/ui/progress";
 import { ImageCropDialog } from "./ImageCropDialog";
 
@@ -347,9 +348,10 @@ export function NewsFormImageUpload({
         <div className="grid grid-cols-3 gap-2">
           {previews.map((preview, index) => (
             <div key={index} className="relative group aspect-square">
-              <img
+              <OptimizedImage
                 src={preview}
                 alt={`Preview ${index + 1}`}
+                width={200}
                 className="w-full h-full object-cover rounded-lg border border-border"
               />
               <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-1">
@@ -385,7 +387,7 @@ export function NewsFormImageUpload({
       {cropImageData && (
         <ImageCropDialog
           imageUrl={cropImageData.preview}
-          onCrop={(blob, _cropArea) => {
+          onCrop={(blob) => {
             // Convert blob to file
             const file = new File([blob], cropImageData.fileName, { type: blob.type });
             handleCropComplete(file);

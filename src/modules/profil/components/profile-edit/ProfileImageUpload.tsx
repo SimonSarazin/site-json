@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { Camera, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { useT } from "@/hooks/useT";
 import { useUploadProfileImage, useUploadProfileBanner } from "../../hooks/useProfileMutations";
 import { ImageCropDialog } from "@/modules/news";
@@ -114,9 +115,10 @@ export function ProfileImageUpload({
         {!overlayOnly && (
           <div className={`${containerClasses} overflow-hidden bg-muted flex items-center justify-center`}>
             {currentUrl ? (
-              <img
+              <OptimizedImage
                 src={currentUrl}
                 alt={isProfile ? t("ProfileEdit.profileImage") : t("ProfileEdit.bannerImage")}
+                width={isProfile ? 128 : 800}
                 className="w-full h-full object-cover"
               />
             ) : (

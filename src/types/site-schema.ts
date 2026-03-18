@@ -6,7 +6,7 @@
 // Validation : Zod 3.x – le schéma sert à la fois de typings, de runtime‑guard,
 //               et d'autocomplétion dans VS Code.
 // ------------------------------------------------------------
-import { SearchProSectionSchema, SearchProStaticSectionSchema } from "@/modules/search/schema";
+import { SearchProSectionSchema, SearchProStaticSectionSchema, CardCountCTSectionSchema } from "@/modules/search/schema";
 import { NewsSectionSchema } from "@/modules/news/schema";
 import { z } from "zod";
 import { LocalizedString, LOCALES } from "./locale-schema";
@@ -177,12 +177,89 @@ export const HeroRezoLaMerSchema = z.object({
       )
       .optional(),
     showScrollIndicator: z.boolean().optional(),
+    variant: z.enum(["ocean", "cyber"]).optional(),
   }),
 });
 
 export type HeroRezoLaMer = z.infer<typeof HeroRezoLaMerSchema>;
 
 export type HeroRezoLaMerProps = z.infer<typeof HeroRezoLaMerSchema>["props"];
+
+// Nos-commune
+export const HeroNoCommunesShema = z.object({
+  type: z.literal("hero-nos-communes"),
+  id: z.string().optional(),
+  props: z.object({
+    badge: LocalizedString.optional(),
+    headline: LocalizedString,
+    subhead: LocalizedString.optional(),
+    tagline: LocalizedString.optional(),
+    taglineSubtext: LocalizedString.optional(),
+    backgroundImage: z.string().optional(),
+    backgroundImageAlt: LocalizedString.optional(),
+    ctaButtons: z
+      .array(
+        z.object({
+          label: LocalizedString,
+          path: z.string().optional(),
+          variant: z.enum(["default", "secondary"]).optional(),
+        })
+      )
+      .optional(),
+    badges: z
+      .array(
+        z.object({
+          label: LocalizedString,
+          icon: z.string().optional(),
+        })
+      )
+      .optional(),
+    showScrollIndicator: z.boolean().optional(),
+    variant: z.enum(["nos-communes"]).optional(),
+  })
+});
+
+export type HeroNosCommunes = z.infer<typeof HeroNoCommunesShema>;
+
+export type HeroNosCommunesProps = z.infer<typeof HeroNoCommunesShema>["props"];
+
+//──────────────── Commune Transparente Hero
+export const HeroCommuneTransparenteSchema = z.object({
+  type: z.literal("hero-commune-transparente"),
+  id: z.string().optional(),
+  props: z.object({
+    headline: LocalizedString,
+    subhead: LocalizedString.optional(),
+    logoIcon: z.string().optional(),
+    logoImage: z.string().optional(),
+    backgroundImage: z.string().optional(),
+    backgroundImageAlt: LocalizedString.optional(),
+    badges: z
+      .array(
+        z.object({
+          label: LocalizedString,
+          icon: z.string().optional(),
+          href: z.string().optional(),
+        })
+      )
+      .optional(),
+    ctaButtons: z
+      .array(
+        z.object({
+          label: LocalizedString,
+          path: z.string().optional(),
+          href: z.string().optional(),
+          variant: z.enum(["default", "secondary", "outline"]).optional(),
+        })
+      )
+      .optional(),
+    showScrollIndicator: z.boolean().optional(),
+    variant: z.enum(["commune-transparente"]).optional(),
+  }),
+});
+
+export type HeroCommuneTransparente = z.infer<typeof HeroCommuneTransparenteSchema>;
+export type HeroCommuneTransparenteProps = z.infer<typeof HeroCommuneTransparenteSchema>["props"];
 
 //──────────────── Features Rézo la Mer
 export const FeaturesRezoLaMerSchema = z.object({
@@ -191,12 +268,13 @@ export const FeaturesRezoLaMerSchema = z.object({
   props: z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
+    variant: z.enum(["ocean", "cyber"]).optional(),
     features: z.array(
       z.object({
         icon: z.string(),
         title: LocalizedString,
         description: LocalizedString,
-        color: z.enum(["turquoise", "cyan-bright", "primary", "turquoise-light"]).optional(),
+        color: z.enum(["turquoise", "cyan-bright", "primary", "turquoise-light", "accent", "chart-2", "chart-3"]).optional(),
       })
     ),
   }),
@@ -381,6 +459,41 @@ const MeeteemSectionSchema = z.object({
 
 export type MeeteemSection = z.infer<typeof MeeteemSectionSchema>;
 export type MeeteemSectionProps = z.infer<typeof MeeteemSectionSchema>["props"];
+
+//──────────────── Actions Commune Transparente
+const CommuneTransparenteActionButtonSchema = z.object({
+  label: LocalizedString,
+  href: z.string().optional(),
+  variant: z.enum(["primary", "secondary"]).optional(),
+  action: z.enum(["add-project", "add-event", "add-poi"]).optional(),
+  modal: z.string().optional(),
+  formConfig: JsonFormModalConfigSchema.optional(),
+  requiresAuth: z.boolean().optional(),
+});
+
+const CommuneTransparenteActionItemSchema = z.object({
+  title: LocalizedString,
+  description: LocalizedString,
+  icon: z.string(),
+  iconBg: z.enum(["blue", "slate", "purple", "green", "blue-dark", "orange", "lime"]).optional(),
+  buttons: z.array(CommuneTransparenteActionButtonSchema).default([]),
+});
+
+export const CommuneTransparenteActionsSectionSchema = z.object({
+  type: z.literal("commune-transparente-actions"),
+  id: z.string().optional(),
+  props: z.object({
+    imageSrc: z.string().optional(),
+    imageAlt: LocalizedString.optional(),
+    brandTitle: LocalizedString.optional(),
+    description: LocalizedString.optional(),
+    highlightText: LocalizedString.optional(),
+    items: z.array(CommuneTransparenteActionItemSchema).default([]),
+  }),
+});
+
+export type CommuneTransparenteActionsSection = z.infer<typeof CommuneTransparenteActionsSectionSchema>;
+export type CommuneTransparenteActionsSectionProps = z.infer<typeof CommuneTransparenteActionsSectionSchema>["props"];
 
 //──────────────── Markdown / MDX
 const MarkdownSectionSchema = z.object({
@@ -1114,6 +1227,9 @@ const GridLayoutSectionPropsSchema = z.object({
   rightColumns: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]).optional(),
   gap: z.number().optional(),
   className: z.string().optional(),
+  leftWrapperClass: z.string().optional(),
+  rightWrapperClass: z.string().optional(),
+  fixedHeight: z.string().optional(),
 });
 
 const GridLayoutSectionSchema = z.object({
@@ -1198,11 +1314,14 @@ export const Section = z.discriminatedUnion("type", [
   HeroWithIconSectionSchema,
   HeroTiersLieuxSchema,
   HeroRezoLaMerSchema,
+  HeroNoCommunesShema,
+  HeroCommuneTransparenteSchema,
   FeaturesRezoLaMerSchema,
   ActionButtonsRezoLaMerSchema,
   CommunityRezoLaMerSchema,
   CallToActionRezoLaMerSchema,
   TitleWithFiltersRezoLaMerSchema,
+  CommuneTransparenteActionsSectionSchema,
   MarkdownSectionSchema,
   CardsSectionSchema,
   GallerySectionSchema,
@@ -1243,6 +1362,7 @@ export const Section = z.discriminatedUnion("type", [
   SearchProSectionSchema,
   SearchProStaticSectionSchema,
   MeeteemSectionSchema,
+  CardCountCTSectionSchema,
   GridLayoutSectionSchema,
   NewsSectionSchema,
   MemberSectionSchema,
@@ -1339,9 +1459,11 @@ const EnhancedNavItem: z.ZodType<EnhancedNavItemType> = z.lazy(() =>
 );
 
 export const Header = z.object({
-  type: z.enum(["tiers-lieux", "rezo-la-mer", "default"]).default("default"),
+  type: z.enum(["tiers-lieux", "rezo-la-mer", "cyber-reunion", "julie-pot-vin", "nos-communes", "commune-transparente", "default"]).default("default"),
   logo: z.string(),
   logoAlt: LocalizedString.optional(),
+  logoTitle: LocalizedString.optional(),
+  logoIcon: z.string().optional(),
   path: z.string().min(1).optional(),
   nav: z.array(EnhancedNavItem),
   sticky: z.boolean().default(true),
@@ -1355,6 +1477,20 @@ export const Header = z.object({
     cart: z.boolean().default(false),
     notifications: z.boolean().default(false),
   }),
+  ctaButton: z.object({
+    label: LocalizedString,
+    path: z.string().optional(),
+  }).optional(),
+  piggyBank: z.object({
+    amount: z.string().optional(),
+    icon: z.string().optional(),
+    path: z.string().optional(),
+  }).optional(),
+  urgenceButton: z.object({
+    label: LocalizedString,
+    icon: z.string().optional(),
+    path: z.string().optional(),
+  }).optional(),
   announcement: z.object({
     text: LocalizedString,
     href: z.string().optional(),
@@ -1375,7 +1511,7 @@ const FooterColumn = z.object({
 });
 
 export const Footer = z.object({
-  type: z.enum(["tiers-lieux", "rezo-la-mer", "default"]).default("default"),
+  type: z.enum(["tiers-lieux", "rezo-la-mer", "cyber-reunion", "default"]).default("default"),
   columns: z.array(FooterColumn),
   socials: z.array(z.object({ platform: z.string(), url: z.string() })).optional(),
   extra: z.string().optional(),
@@ -1395,6 +1531,7 @@ export const Footer = z.object({
     label: LocalizedString,
   })).optional(),
   paymentMethods: z.array(z.string()).optional(), // Array of payment method icons
+  website: z.string().optional(),
 });
 export type Footer = z.infer<typeof Footer>;
 

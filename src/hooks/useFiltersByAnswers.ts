@@ -38,7 +38,7 @@ export function useFiltersByAnswersQuery(
     query: string,
     options: FiltersByAnswersOptions = {}
 ): FiltersByAnswersResult {
-    const { entity, helper } = useCocolight();
+    const { entity } = useCocolight();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<Error | null>(null);
     const [data, setData] = useState<Record<string, FilterAnswerType>>({});

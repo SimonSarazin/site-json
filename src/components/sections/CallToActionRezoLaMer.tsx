@@ -10,6 +10,7 @@ export interface CallToActionRezoLaMerProps {
     headline: LocalizedString;
     subhead?: LocalizedString;
     variant?: "ocean" | "cyber";
+    bg?: "default" | "card" | "muted" | "primary" | "secondary" | "accent" | "transparent";
     newsletterPlaceholder?: LocalizedString;
     newsletterButtonLabel?: LocalizedString;
     newsletterDisclaimer?: LocalizedString;
@@ -47,9 +48,20 @@ export function CallToActionRezoLaMer({ id, props }: CallToActionRezoLaMerSectio
         return "bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow";
     };
 
-    const sectionClasses = isCyber
-        ? "py-24 px-4 bg-gradient-to-br from-card/30 via-background to-card/20 relative overflow-hidden"
-        : "py-24 px-4 bg-ocean-gradient relative overflow-hidden";
+    const BG_MAP: Record<string, string> = {
+        card: "bg-card",
+        muted: "bg-muted",
+        primary: "bg-primary/10",
+        secondary: "bg-secondary",
+        accent: "bg-accent/10",
+        transparent: "bg-transparent",
+    };
+
+    const defaultBg = isCyber
+        ? "bg-gradient-to-br from-card/30 via-background to-card/20"
+        : "bg-ocean-gradient";
+
+    const sectionBg = props.bg && props.bg !== "default" ? BG_MAP[props.bg] : defaultBg;
 
     const decorativeColor = isCyber ? "bg-accent" : "bg-chart-2";
 
@@ -58,7 +70,7 @@ export function CallToActionRezoLaMer({ id, props }: CallToActionRezoLaMerSectio
         : "pl-10 h-12 bg-background/50 backdrop-blur-ocean border-primary/30 focus:border-primary text-foreground placeholder:text-muted-foreground";
 
     return (
-        <section id={id} className={sectionClasses}>
+        <section id={id} className={`py-24 px-4 relative overflow-hidden ${sectionBg}`}>
             <div className="absolute inset-0 opacity-10">
                 <div className="absolute top-20 left-10 w-64 h-64 bg-primary rounded-full blur-3xl animate-float" />
                 <div

@@ -1,0 +1,123 @@
+{
+  "coform": {
+    "title": "Form",
+    "steps": {
+      "step": "Step",
+      "of": "of",
+      "completed": "Completed",
+      "current": "Current",
+      "pending": "Pending"
+    },
+    "navigation": {
+      "next": "Next",
+      "previous": "Previous",
+      "submit": "Submit",
+      "save": "Save",
+      "reset": "Reset"
+    },
+    "progress": {
+      "title": "Progress",
+      "percent": "{{percent}}% completed"
+    },
+    "validation": {
+      "required": "This field is required",
+      "minLength": "Minimum {{min}} characters",
+      "maxLength": "Maximum {{max}} characters",
+      "email": "Invalid email address",
+      "url": "Invalid URL",
+      "number": "Must be a number",
+      "selectOption": "Please select an option",
+      "selectAtLeastOne": "Please select at least one option"
+    },
+    "status": {
+      "loading": "Loading form...",
+      "submitting": "Submitting...",
+      "success": "Form submitted successfully!",
+      "updateSuccess": "Answer updated successfully!",
+      "error": "An error occurred",
+      "stepSuccess": "Step validated",
+      "stepError": "Error validating step"
+    },
+    "errors": {
+      "formNotFound": "Form not found",
+      "networkError": "Network error",
+      "serverError": "Server error"
+    },
+    "banner": {
+      "alt": "Form banner"
+    },
+    "answer": {
+      "notFound": "Answer not found",
+      "notFoundDescription": "The requested answer does not exist or has been deleted.",
+      "missingParams": "Both formId and answerId parameters are required.",
+      "viewingAnswer": "Viewing answer",
+      "switchToEdit": "Edit",
+      "switchToReadonly": "Read only",
+      "submittedAt": "Submitted on {{date}}",
+      "updatedAt": "Updated on {{date}}",
+      "author": "Author",
+      "editDenied": {
+        "not_logged_in": "You must be logged in to edit this answer.",
+        "not_owner": "You can only edit your own answers.",
+        "form_inactive": "This form is disabled, editing is not possible.",
+        "form_closed": "The editing period has ended.",
+        "default": "You do not have permission to edit this answer."
+      }
+    },
+    "thankYou": {
+      "title": "Your response has been recorded",
+      "message": "Thank you for taking the time to fill out this form. Your response has been successfully recorded.",
+      "updateTitle": "Your response has been updated",
+      "updateMessage": "Your changes have been saved successfully. Thank you!",
+      "editAnswer": "Edit my answer",
+      "submitAnother": "Submit another response",
+      "goHome": "Back to home"
+    },
+    "access": {
+      "denied": "Access denied",
+      "alreadyAnswered": {
+        "title": "You have already responded",
+        "description": "You have already submitted an answer to this form. Only one answer per person is allowed.",
+        "editButton": "Edit my answer",
+        "viewButton": "View my answer"
+      },
+      "notMember": {
+        "title": "Members only",
+        "description": "This form is restricted to community members. Join the community to respond."
+      },
+      "formNotStarted": {
+        "title": "Form not yet open",
+        "description": "This form will open on {{date}}. Come back later."
+      },
+      "formClosed": {
+        "title": "Response period ended",
+        "description": "The response period for this form ended on {{date}}."
+      },
+      "formInactive": {
+        "title": "Form disabled",
+        "description": "This form is currently disabled by its administrator. It does not accept responses at this time."
+      },
+      "notLoggedIn": {
+        "title": "Login required",
+        "description": "You must be logged in to respond to this form.",
+        "loginButton": "Log in"
+      },
+      "dateRange": "Open from {{start}} to {{end}}",
+      "dateStart": "Open from {{start}}",
+      "dateEnd": "Open until {{end}}",
+      "editMode": {
+        "title": "Edit your answer",
+        "description": "You can edit your previous answer below.",
+        "updateButton": "Update"
+      }
+    },
+    "multiCheckboxPlus": {
+      "maxSelections": "Maximum {{max}} choices",
+      "withInput": "with text",
+      "enterDetails": "Please specify...",
+      "textRequired": "This field is required",
+      "rank": "Rank",
+      "addNewValue": "Add an option..."
+    }
+  }
+}

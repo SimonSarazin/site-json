@@ -1226,5 +1226,53 @@
     "datetime": {
       "invalid": "ISO 8601 format required"
     }
+  },
+  "ProfileTiersLieuxInfo": {
+    "reserveOnline": "Book online",
+    "meetingRooms": "meeting room",
+    "meetingRoomsPlural": "meeting rooms",
+    "workstations": "workstation",
+    "workstationsPlural": "workstations",
+    "accommodation": "room",
+    "accommodationPlural": "rooms",
+    "reservationSpace": "Book a space",
+    "reservationNote": "Book your space directly online",
+    "contact": "Contact",
+    "fax": "Fax",
+    "tools": "Our tools",
+    "socialNetworks": "Social networks",
+    "keywords": "Keywords",
+    "forms": "Forms",
+    "noPois": "No spaces available"
+  },
+  "ProfilTiersLieuxAbout": {
+    "title": "About",
+    "readMore": "Read more",
+    "readLess": "Read less",
+    "equipements": "Equipment",
+    "seeAllEquipements": "See all equipment",
+    "activities": "Proposed activities",
+    "latestNews": "Latest news",
+    "allNews": "All news",
+    "rooms": "Meeting rooms",
+    "allRooms": "View all rooms",
+    "learnMore": "Learn more",
+    "capacity": "pers.",
+    "noEquipements": "No equipment listed",
+    "noActivities": "No activities listed",
+    "noNews": "No news available",
+    "noRooms": "No rooms available",
+    "halfDay": "/half-day",
+    "fullDay": "/full-day",
+    "coworking": "Coworking",
+    "noCoworking": "No coworking space available",
+    "accommodation": "Accommodation",
+    "noAccommodation": "No accommodation available",
+    "coworkingSpace": "Coworking space",
+    "accommodationSpace": "Accommodation space",
+    "nightly": "Night",
+    "bed": "bed",
+    "reserve": "Book now",
+    "confirmDelete": "Are you sure you want to delete this item?"
   }
 }

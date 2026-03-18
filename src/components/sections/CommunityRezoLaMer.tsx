@@ -9,9 +9,10 @@ export interface CommunityRezoLaMerProps {
     headline: LocalizedString;
     subhead?: LocalizedString;
     variant?: "ocean" | "cyber";
+    bg?: "default" | "card" | "muted" | "primary" | "secondary" | "accent" | "transparent";
     image?: string;
     imageAlt?: LocalizedString;
-    actions: Array<{
+    actions?: Array<{
         icon: string;
         title: LocalizedString;
         description: LocalizedString;
@@ -21,7 +22,7 @@ export interface CommunityRezoLaMerProps {
     stats?: Array<{
         value: string;
         label: LocalizedString;
-        color?: "primary" | "accent" | "chart-2";
+        color?: string;
     }>;
 }
 
@@ -57,11 +58,24 @@ export function CommunityRezoLaMer({ id, props }: CommunityRezoLaMerSectionProps
 
     const imageShadow = isCyber ? "shadow-lg" : "shadow-ocean";
 
+    const BG_MAP: Record<string, string> = {
+        card: "bg-card",
+        muted: "bg-muted",
+        primary: "bg-primary/10",
+        secondary: "bg-secondary",
+        accent: "bg-accent/10",
+        transparent: "bg-transparent",
+    };
+
+    const sectionBg = props.bg && props.bg !== "default" ? BG_MAP[props.bg] : "";
+
     return (
-        <section id={id} className="relative py-24 px-4">
+        <section id={id} className={`relative py-24 px-4 ${sectionBg}`}>
+            {(!props.bg || props.bg === "default") && (
             <div className="absolute inset-0 z-0">
                 <div className="absolute inset-0 bg-linear-to-b from-background/40 via-background to-background/40" />
             </div>
+            )}
 
             <div className="relative z-10 container mx-auto max-w-6xl">
                 <div className="text-center mb-16 animate-fade-in">
@@ -86,7 +100,7 @@ export function CommunityRezoLaMer({ id, props }: CommunityRezoLaMerSectionProps
                 )}
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {props.actions.map((action, index) => (
+                    {props.actions?.map((action, index) => (
                         <Card
                             key={index}
                             className={cardClasses}

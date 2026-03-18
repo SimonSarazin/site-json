@@ -123,7 +123,7 @@ export function useNewsQuery({
   const news = useMemo(() => {
     if (!data || !entity) return [];
 
-    return data.pages.flatMap((page) =>
+    const all = data.pages.flatMap((page) =>
       page.map(item => {
         // Si déjà transformé (Proxy), le retourner tel quel
         if (item.serverData && isReactive(item.serverData)) {
@@ -133,6 +133,15 @@ export function useNewsQuery({
         return transformToEntityInstance<News>(item, helper, entity);
       })
     );
+
+    // Dédoublonner par id (la pagination peut retourner des doublons)
+    const seen = new Set<string>();
+    return all.filter(item => {
+      if (!item.id) return true;
+      if (seen.has(item.id)) return false;
+      seen.add(item.id);
+      return true;
+    });
   }, [data, helper, entity]);
 
   return {

@@ -26,6 +26,7 @@ export default function SearchListView({
     columns?.sm ? `sm:grid-cols-${columns.sm}` : null,
     columns?.md ? `md:grid-cols-${columns.md}` : null,
     columns?.lg ? `lg:grid-cols-${columns.lg}` : null,
+    columns?.xl ? `xl:grid-cols-${columns.xl}` : null,
   ]
     .filter(Boolean)
     .join(" ");

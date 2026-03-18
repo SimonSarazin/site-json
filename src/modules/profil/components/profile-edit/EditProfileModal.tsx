@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useT } from "@/hooks/useT";
 import { getProfileSchema, type ProfileFormData } from "../../schemaForm";
 import { Loader2, AlertCircle } from "lucide-react";
-import type { FieldErrors, Resolver } from "react-hook-form";
+import type { FieldErrors, FieldValues, Resolver, UseFormReturn } from "react-hook-form";
 import {
   Dialog,
   DialogContent,
@@ -371,22 +371,22 @@ export function EditProfileModal({
                   <div className="mt-6 flex-1 overflow-y-auto pr-4">
                     {tabs.includes('basic') && (
                       <TabsContent value="basic">
-                        <EditBasicInfoTab form={form} entityType={entityType || ""} />
+                        <EditBasicInfoTab form={form as unknown as UseFormReturn<FieldValues>} entityType={entityType || ""} />
                       </TabsContent>
                     )}
                     {tabs.includes('contact') && (
                       <TabsContent value="contact">
-                        <EditContactTab form={form} entityType={entityType || ""} />
+                        <EditContactTab form={form as unknown as UseFormReturn<FieldValues>} entityType={entityType || ""} />
                       </TabsContent>
                     )}
                     {tabs.includes('location') && (
                       <TabsContent value="location">
-                        <EditLocationTab form={form} />
+                        <EditLocationTab form={form as unknown as UseFormReturn<FieldValues>} />
                       </TabsContent>
                     )}
                     {tabs.includes('social') && (
                       <TabsContent value="social">
-                        <EditSocialTab form={form} />
+                        <EditSocialTab form={form as unknown as UseFormReturn<FieldValues>} />
                       </TabsContent>
                     )}
                     {tabs.includes('schedule') && (
@@ -396,7 +396,7 @@ export function EditProfileModal({
                     )}
                     {tabs.includes('eventDates') && (
                       <TabsContent value="eventDates">
-                        <EditEventDatesTab form={form} />
+                        <EditEventDatesTab form={form as unknown as UseFormReturn<FieldValues>} />
                       </TabsContent>
                     )}
                   </div>

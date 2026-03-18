@@ -21,7 +21,7 @@ export interface Option {
   label: string;
   disable?: boolean;
   fixed?: boolean;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface GroupOption {

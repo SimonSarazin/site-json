@@ -352,7 +352,8 @@ export function JsonFormModal({ open, onOpenChange, formConfig }: ModalProps) {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
-  const submitViaFetch = async (data: Record<string, any>) => {
+  // @ts-expect-error — kept for future use when form submission is wired
+  const _submitViaFetch = async (data: Record<string, any>) => {
     if (!formConfig.action) throw new Error("No action URL configured");
     const response = await fetch(formConfig.action, {
       method: formConfig.method || "POST",

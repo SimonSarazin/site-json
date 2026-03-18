@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Share2, Edit } from "lucide-react";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { useFormatProfileEntity } from "../../../hooks/useFormatProfileEntity";
 import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../../hooks/useProfileEntity";
@@ -74,9 +75,10 @@ export function ProfileHeaderSimple({ section }: ProfileHeaderSimpleProps) {
         {/* Avatar with upload */}
         <div className="relative group">
           {avatarImage ? (
-            <img
+            <OptimizedImage
               src={avatarImage}
               alt={entityName}
+              width={96}
               className="w-24 h-24 rounded-lg object-cover"
             />
           ) : (

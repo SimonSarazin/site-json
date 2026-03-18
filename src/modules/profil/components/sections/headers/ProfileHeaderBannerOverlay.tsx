@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Share2, Edit } from "lucide-react";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { useFormatProfileEntity } from "../../../hooks/useFormatProfileEntity";
 import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../../hooks/useProfileEntity";
@@ -45,11 +46,12 @@ export function ProfileHeaderBannerOverlay({ section }: ProfileHeaderBannerOverl
       {section.showBanner !== false && (
         <div className="relative h-64 rounded-md border-border border group overflow-hidden bg-muted">
           {coverImage ? (
-            <img
+            <OptimizedImage
               src={coverImage}
               alt={`${entityName} banner`}
+              width={1200}
+              priority
               className="absolute inset-0 w-full h-full object-cover"
-              fetchPriority="high"
             />
           ) : (
             <div className="absolute inset-0 bg-gradient-to-br from-muted to-muted/80 rounded-md" />
@@ -109,9 +111,10 @@ export function ProfileHeaderBannerOverlay({ section }: ProfileHeaderBannerOverl
             <div className="relative group z-20">
               <div className="w-24 h-24 rounded-full border-4 border-background bg-card shadow-lg overflow-hidden">
                 {effectiveLogoUrl ? (
-                  <img
+                  <OptimizedImage
                     src={effectiveLogoUrl}
                     alt={entityName}
+                    width={96}
                     className="w-full h-full object-cover"
                     onError={() => setImageError(true)}
                   />

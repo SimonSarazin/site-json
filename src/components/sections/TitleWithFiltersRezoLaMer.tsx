@@ -38,7 +38,7 @@ export interface ActionButton {
 }
 
 export interface TitleWithFiltersRezoLaMerProps {
-    headline: LocalizedString;
+    headline?: LocalizedString;
     subhead?: LocalizedString;
     categories?: Array<{
         id: string;
@@ -298,6 +298,9 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
 
     const activeType = selectedFilters['type']?.[0] ?? "all";
 
+    const { entity } = useCocolight();
+    const slugEntity = entity?.slug;
+
     const [localSearchQuery, setLocalSearchQuery] = useState(pageFilters?.searchQuery ?? "");
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -348,7 +351,7 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
                     </h1>
                 )}
                 {props.subhead && (
-                    <p className="text-xl text-white/80 max-w-2xl mx-auto animate-fade-in">
+                    <p className={`text-xl ${(slugEntity == "nosCommunes" || slugEntity == "etangsale1") ? "" : "text-white/80"} max-w-2xl mx-auto animate-fade-in`}>
                         {tLocalized(props.subhead)}
                     </p>
                 )}

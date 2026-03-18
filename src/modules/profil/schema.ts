@@ -71,6 +71,55 @@ export const ProfileInfoSectionSchema = z.object({
   showRegistrationButton: z.boolean().optional().default(true),
 });
 
+export const ProfileTiersLieuxInfoSectionSchema = z.object({
+  type: z.literal("profile-info-tl"),
+  variant: ProfileInfoVariantSchema.optional().default("sidebar"),
+  sticky: z.boolean().optional().default(true),
+  // Contact info
+  showEmail: z.boolean().optional().default(true),
+  showPhone: z.boolean().optional().default(true),
+  showWebsite: z.boolean().optional().default(true),
+  bedRoomPath: z.record(z.string(), z.string()).optional(),
+  coworkingPath: z.record(z.string(), z.string()).optional(),
+  roomPath: z.record(z.string(), z.string()).optional(),
+  // Formulaires : objet clé → { name, finder?, linked, category? }
+  forms: z.record(z.string(), z.object({
+    name: z.string(),
+    finder: z.string().optional(),
+    linked: z.boolean(),
+    category: z.enum(["salle-reunion", "coworking", "hebergement"]).optional(),
+    hide: z.boolean().optional().default(false), // Option pour cacher le formulaire dans le profil
+  })).optional(),
+});
+
+export const ProfileTiersLieuxAboutSectionSchema = z.object({
+  type: z.literal("profile-about-tl"),
+  // Description
+  showShortDescription: z.boolean().optional().default(true),
+  showDescription: z.boolean().optional().default(true),
+  markdownEnabled: z.boolean().optional().default(true),
+  // Sections
+  showEquipements: z.boolean().optional().default(true),
+  showActivities: z.boolean().optional().default(true),
+  showNews: z.boolean().optional().default(true),
+  showRooms: z.boolean().optional().default(true),
+  showCoworking: z.boolean().optional().default(true),
+  showAccommodation: z.boolean().optional().default(true),
+  activity: z.record(z.string(), z.string()).optional(),
+  equipement: z.record(z.string(), z.string()).optional(),
+  bedRoomPath: z.record(z.string(), z.string()).optional(),
+  coworkingPath: z.record(z.string(), z.string()).optional(),
+  roomPath: z.record(z.string(), z.string()).optional(),
+  // Formulaires (hérité de TiersLieux)
+  forms: z.record(z.string(), z.object({
+    name: z.string(),
+    finder: z.string().optional(),
+    linked: z.boolean(),
+    category: z.enum(["salle-reunion", "coworking", "hebergement"]).optional(),
+    hide: z.boolean().optional().default(false), // Option pour cacher le formulaire dans le profil
+  })).optional(),
+});
+
 export const ProfileAboutSectionSchema = z.object({
   type: z.literal("profile-about"),
   showDescription: z.boolean().optional().default(true),
@@ -175,6 +224,8 @@ export const ProfileTemplateDynamicSchema = z.object({
 const ProfileOnlySectionSchema = z.discriminatedUnion("type", [
   ProfileHeaderSectionSchema,
   ProfileInfoSectionSchema,
+  ProfileTiersLieuxInfoSectionSchema,
+  ProfileTiersLieuxAboutSectionSchema,
   ProfileAboutSectionSchema,
   ProfileMapSectionSchema,
   ProfileOrganizerSectionSchema,
@@ -285,3 +336,5 @@ export type ProfileBadgesSection = z.infer<typeof ProfileBadgesSectionSchema>;
 export type ProfileTagsSection = z.infer<typeof ProfileTagsSectionSchema>;
 export type ProfileOpeningHoursSection = z.infer<typeof ProfileOpeningHoursSectionSchema>;
 export type ProfileTabLayoutSection = z.infer<typeof ProfileTabLayoutSectionSchema>;
+export type ProfileTiersLieuxAboutSection = z.infer<typeof ProfileTiersLieuxAboutSectionSchema>;
+export type ProfileTiersLieuxInfoSection = z.infer<typeof ProfileTiersLieuxInfoSectionSchema>;
