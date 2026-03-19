@@ -70,6 +70,7 @@ const LazySections: {
   searchPro: lazy(() => import("@/modules/search/SearchProSection")),
   searchProStatic: lazy(() => import("@/modules/search/SearchProStaticSection")),
   cardCountCT: lazy(() => import("@/modules/search/CardCountCTSection")),
+  thematics: lazy(() => import("@/modules/search/components/card/ThematicsSection")),
   filters: lazy(() => import("./FiltersSection")),
   gridLayout: lazy(() => import("./GridLayoutSection")),
   news: lazy(() => import("@/modules/news/components/sections/NewsSection")),

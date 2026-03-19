@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { ComponentType, useMemo } from "react";
 import * as LucideIcons from "lucide-react";
 import { useT } from "@/hooks/useT";
 import type { CardCountCTSectionProps } from "../../schema";
@@ -36,29 +36,15 @@ const DEFAULT_LABELS: Record<string, { fr: string; en: string }> = {
  * Mapping Tailwind color → classes CSS
  * On utilise des classes complètes pour que Tailwind les détecte (pas de concaténation dynamique)
  */
-const COLOR_CLASSES: Record<string, { bg: string; text: string }> = {
-  violet: { bg: "bg-[#1e1a2e]", text: "text-violet-400" },
-  teal:   { bg: "bg-[#0d1f1f]", text: "text-teal-400" },
-  pink:   { bg: "bg-[#261523]", text: "text-pink-400" },
-  red:    { bg: "bg-[#231520]", text: "text-red-400" },
-  yellow: { bg: "bg-[#1f1a0d]", text: "text-yellow-400" },
-  green:  { bg: "bg-[#0d1f12]", text: "text-green-400" },
-  indigo: { bg: "bg-[#15172e]", text: "text-indigo-400" },
-  orange: { bg: "bg-[#1f1508]", text: "text-orange-400" },
-  blue:   { bg: "bg-[#0d1826]", text: "text-blue-400" },
-  cyan:   { bg: "bg-[#0a1e22]", text: "text-cyan-400" },
-  purple: { bg: "bg-[#1a1228]", text: "text-purple-400" },
-  gray:   { bg: "bg-[#1a1e26]", text: "text-gray-400" },
-};
 
 /** Résoudre un nom d'icône Lucide en composant */
-function resolveLucideIcon(iconName: string): React.ComponentType<{ className?: string }> | null {
+function resolveLucideIcon(iconName: string): ComponentType<{ className?: string }> | null {
   // Convertir kebab-case en PascalCase (ex: "map-pin" → "MapPin")
   const pascalName = iconName
     .split("-")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join("");
-  return (LucideIcons as Record<string, any>)[pascalName] ?? null;
+  return (LucideIcons as unknown as Record<string, ComponentType<{ className?: string }>>)[pascalName] ?? null;
 }
 
 export interface CardCountCTProps {
@@ -78,7 +64,7 @@ export interface CardCountCTProps {
   isDarkBg?: boolean;
 }
 
-export default function CardCountCT({ count, cards, title, subtitle, isLoading, isDarkBg }: CardCountCTProps) {
+export default function CardCountCT({ count, cards, title, subtitle, isLoading }: CardCountCTProps) {
   const t = useT("modules/search");
 
   /** Construire la liste des cartes à afficher */
