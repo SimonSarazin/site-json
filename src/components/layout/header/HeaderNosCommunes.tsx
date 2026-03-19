@@ -50,7 +50,7 @@ export default function HeaderNosCommunes({ header }: HeaderNosCommunesProps) {
     const { currentLocale, setLocale, availableLocales } = useLocalization();
     const navigate = useNavigate();
     const location = useLocation();
-    const { me, api, entity } = useCocolight();
+    const { me, api } = useCocolight();
     
     const isNavItemActive = (itemPath?: string) => {
         if (!itemPath) return false;
