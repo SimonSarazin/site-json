@@ -6,7 +6,6 @@ import CardCountCT from "./components/card/CardCountCT";
 import type { CardCountCTSectionProps } from "./schema";
 import { Loader2 } from "lucide-react";
 import "@/modules/search/i18n";
-import { log } from "node:console";
 
 export interface CardCountCTSectionWrapperProps {
   id?: string;
@@ -39,26 +38,44 @@ export function CardCountCTSection({ id, props }: CardCountCTSectionWrapperProps
   const { loaded } = useLoadNamespace("modules/search");
   const { entity } = useCocolight();
 
-  console.log("CardCountCTSection entity : ", entity, " loaded : ", loaded);
   const { title, subtitle, cards, baseParams = {}, bg } = props;
 
   const sectionBg = bg && bg !== "default" ? (BG_MAP[bg] || "") : "";
-  // const localityId = entity?.serverData?.address?.localityId;
+
   // Paramètres pour la recherche (on n'a besoin que du count, pas de résultats)
   const [searchType] = useState<Record<string, string[]> | null>(
     baseParams?.defaultTypes ? { type: baseParams.defaultTypes } : null
   );
-  const localityId = entity?.serverData?.address?.localityId;
-  baseParams.defaultFilters = baseParams.defaultFilters || {};
-  if(localityId) {
-    baseParams.defaultFilters["address.localityId"] = localityId;
-  }
-  console.log("baseParams : ", baseParams, " searchType : ", searchType);
+  const localityId = entity?.serverData?.address?.localityId as string | undefined;
+  const slug = entity?.serverData?.slug as string | undefined;
   
-  const mergedBaseParams = useMemo(() => ({
-    ...baseParams,
-    indexStepList: 10, // On ne veut pas de résultats, juste le count
-  }), [baseParams]);
+  const mergedBaseParams = useMemo(() => {
+    // Créer une copie complète de baseParams pour éviter de modifier les props
+    const params = {
+      ...baseParams,
+      indexStepList: 10, // On ne veut pas de résultats, juste le count
+      defaultFilters: {
+        ...(baseParams.defaultFilters || {}),
+      } as Record<string, Record<string, string>>,
+    };
+    
+    // Initialiser ou mettre à jour l'objet $or
+    if (!params.defaultFilters["$or"]) {
+      params.defaultFilters["$or"] = {};
+    }
+    
+    const orFilters = params.defaultFilters["$or"] as Record<string, string>;
+    if (localityId) {
+      orFilters["address.localityId"] = localityId;
+    }
+
+    if (slug) {
+      orFilters["source.key"] = slug;
+      orFilters["source.keys"] = slug;
+    }
+    
+    return params;
+  }, [baseParams, localityId, slug]);
 
   const {
     data,

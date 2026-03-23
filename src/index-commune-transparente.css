@@ -85,7 +85,7 @@
   /* Commune Transparente custom colors */
   --color-header-bg: #1e1254f2;        /* violet très foncé, 95% opaque */
   --color-header-bg-scrolled: #1e1254; /* violet pur opaque après scroll */
-  --color-hero-overlay: #1e12542b;     /* overlay violet translucide hero */
+  --color-hero-overlay: #1e12544d;     /* overlay violet translucide hero */
   --color-badge-bg: rgba(255,255,255,0.15);
   --color-badge-border: rgba(255,255,255,0.35);
 

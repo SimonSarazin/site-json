@@ -297,6 +297,53 @@ export const CardCountCTSectionSchema = z.object({
 export type CardCountCTSection = z.infer<typeof CardCountCTSectionSchema>;
 export type CardCountCTSectionProps = z.infer<typeof CardCountCTSectionSchema>["props"]
 
+// Thematics Section - Icon mapping from FontAwesome to Lucide
+/**
+ * Mapping des icônes FontAwesome vers les icônes Lucide
+ * Basé sur les filières disponibles
+ */
+export const FILIERE_ICON_MAPPING: Record<string, string> = {
+  "fa-cutlery": "utensils",
+  "fa-heart-o": "heart",
+  "fa-chain": "link",
+  "fa-link": "link",
+  "fa-globe": "globe",
+  "fa-bus": "bus",
+  "fa-book": "book",
+  "fa-user-circle-o": "circle-user",
+  "fa-sun-o": "sun",
+  "fa-universal-access": "accessibility",
+  "fa-tree": "tree-pine",
+  "fa-laptop": "laptop",
+  "fa-futbol-o": "circle-dot",
+  "fa-trash-o": "trash-2",
+  "fa-android": "smartphone",
+  "fa-leaf": "leaf",
+  "fa-money": "banknote",
+  "fa-arrows": "move",
+  "fa-hand-o-up": "hand",
+  "fa-flask": "flask-conical",
+  "fa-lightbulb-o": "lightbulb",
+  "fa-cross": "cross",
+  "fa-gavel": "scale",
+  "fa-anchor": "anchor"
+};
+
+// Thematics: Section pour afficher les filières de manière dynamique
+export const ThematicsSectionSchema = z.object({
+  type: z.literal("thematics"),
+  id: z.string().optional(),
+
+  props: z.object({
+    title: LocalizedString.optional(),
+    subtitle: LocalizedString.optional(),
+    emptyMessage: LocalizedString.optional(),
+  }),
+});
+
+export type ThematicsSection = z.infer<typeof ThematicsSectionSchema>;
+export type ThematicsSectionProps = z.infer<typeof ThematicsSectionSchema>["props"]
+
 
 export interface SearchListViewProps<T extends SearchEntity = SearchEntity> {
   results: T[];
