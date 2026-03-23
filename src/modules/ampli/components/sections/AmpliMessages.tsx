@@ -1,7 +1,7 @@
 import { AmpliConfig } from "../../schema";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
-import { MeeteemSection } from "@/modules/ampli/components/sections/MeeteemSection";
+import MeeteemSection from "./MeeteemSection";
 
 interface AmpliMessagesProps {
     props: AmpliConfig["props"]["message"];

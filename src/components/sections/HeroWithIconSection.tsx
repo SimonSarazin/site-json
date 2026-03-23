@@ -4,7 +4,7 @@ import { useNavigate } from "react-router";
 import { Button } from "../ui/button";
 import { DynamicIcon, IconName } from "lucide-react/dynamic";
 
-export function HeroWithIconSection({ id, props }: { id?: string, props: HeroWithIconSectionProps }) {
+export default function HeroWithIconSection({ id, props }: { id?: string, props: HeroWithIconSectionProps }) {
     const { t } = useLocalization();
     const navigate = useNavigate();
 

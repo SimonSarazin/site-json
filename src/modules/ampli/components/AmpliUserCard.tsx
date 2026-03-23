@@ -15,7 +15,7 @@ export default function AmpliUserCard({ user, contributionCount }: AmpliUserProp
             .join(", ")
         : "Localisation non renseignée";
     return (
-        <div className="ampli-user-card p-4 border border-foreground/15 shadow-foreground/10 shadow-[0_2px_8px] rounded-[12px] before:content-[''] before:duration-300 before:ease-in-out before:absolute before:top-0 before:left-0 before:w-full before:h-1 before:bg-linear-to-r before:from-primary before:to-secondary before:scale-x-0 hover:before:scale-x-[1] transition-all relative overflow-hidden bg-background/70">
+        <div className="ampli-user-card p-4 border border-foreground/15 shadow-foreground/10 shadow-[0_2px_8px] rounded-xl before:content-[''] before:duration-300 before:ease-in-out before:absolute before:top-0 before:left-0 before:w-full before:h-1 before:bg-linear-to-r before:from-primary before:to-secondary before:scale-x-0 hover:before:scale-x-[1] transition-all relative overflow-hidden bg-background/70">
             <div className="flex items-center gap-4">
                 <div className="w-14 h-14 rounded-full overflow-hidden bg-primary">
                     {user?.serverData.profilMediumImageUrl ?
@@ -38,7 +38,7 @@ export default function AmpliUserCard({ user, contributionCount }: AmpliUserProp
                         )
                     }
                     <div className="mt-2 flex items-center flex-wrap gap-2.5">
-
+                        <span className="text-xs text-foreground/75">{contributionCount ?? 0} contribution{contributionCount && contributionCount > 1 ? "s" : ""}</span>
                     </div>
                 </div>
             </div>

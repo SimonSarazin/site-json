@@ -74,7 +74,8 @@ const LazySections: {
   gridLayout: lazy(() => import("./GridLayoutSection")),
   news: lazy(() => import("@/modules/news/components/sections/NewsSection")),
   member: lazy(() => import("./MemberSection")),
-  heroWithIcon: lazyNamed(() => import("./HeroWithIconSection"), "HeroWithIconSection"),
+  heroWithIcon: lazy(() => import("./HeroWithIconSection")),
+  meeteem: lazy(() => import("@/modules/ampli/components/sections/MeeteemSection")),
 };
 
 // Fallback skeleton pour les sections en cours de chargement

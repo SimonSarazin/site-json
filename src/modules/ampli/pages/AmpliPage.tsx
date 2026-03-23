@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 export default function AmpliPage() {
     const location = useLocation();
     const loaderData = useLoaderData() as { slug: string, activeTab?: string } | null;
+    const { config: siteConfig } = useSite();
 
     const pathSegments = location.pathname.split('/').filter(Boolean);
     const activeTab = loaderData?.activeTab || (pathSegments.length > 2 ? pathSegments[pathSegments.length - 1] : 'home');
@@ -47,8 +48,6 @@ export default function AmpliPage() {
             </div>
         );
     }
-
-    const { config: siteConfig } = useSite();
 
     const ampliConfig = siteConfig.ampli?.find((ampli) => ampli.slug === slug) || undefined;
 

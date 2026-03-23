@@ -6,14 +6,15 @@ import { TextAlignJustifyIcon } from "@radix-ui/react-icons";
 import { MapPinIcon } from "lucide-react";
 import { getSummaryData } from "../../helpers/summary";
 import AmpliUserCard from "../AmpliUserCard";
+import type { UserWithContributions } from "../../helpers/summary";
+import { User } from "@communecter/cocolight-api-client";
 
 interface AmpliCommunityProps {
     props: AmpliConfig["props"]["community"];
-    data: any;
-    isLoading?: boolean;
+    data: Parameters<typeof getSummaryData>[0];
 }
 
-export default function AmpliCommunity({ props, data, isLoading }: AmpliCommunityProps) {
+export default function AmpliCommunity({ props, data }: AmpliCommunityProps) {
     useLoadNamespace("modules/ampli");
     const t = useT("modules/ampli");
     const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
@@ -58,15 +59,15 @@ export default function AmpliCommunity({ props, data, isLoading }: AmpliCommunit
             {
                 viewMode === 'list' && (
                     <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-5 py-5 px-2 md:px-0">
-                        {summary.map((userSummary: any, index: number) => (
-                            <AmpliUserCard key={index} user={userSummary.user} contributionCount={userSummary.contributionCount} />
+                        {summary.map((userSummary: UserWithContributions, index: number) => (
+                            <AmpliUserCard key={index} user={userSummary.user instanceof Object && !(typeof userSummary.user === 'string') && 'serverData' in (userSummary.user as object) ? userSummary.user as User : undefined} contributionCount={userSummary.contributionCount} />
                         ))}
                     </div>
                 )
             }
             {
                 viewMode === 'map' && (
-                    <div className="w-full h-[600px] rounded-xl border border-gray-200 overflow-hidden shadow-md mb-10">
+                    <div className="w-full h-150 rounded-xl border border-gray-200 overflow-hidden shadow-md mb-10">
                         <div className="w-full h-full bg-linear-to-br from-emerald-50 to-blue-50 flex items-center justify-center">
                             <div className="text-center">
                                 <i className="fas fa-map-marked-alt text-6xl text-emerald-400 mb-4"></i>

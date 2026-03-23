@@ -1,8 +1,7 @@
-import { SearchResultPage } from "@/modules/search/schema";
+import { PaginatorPage, CoformAnswersSearchData, User } from "@communecter/cocolight-api-client";
+import { useMemo } from "react";
 import { useCocolight } from "../../../hooks/useCocolight";
 import { useInfiniteQueryScrollNext } from "../../../hooks/useInfiniteQueryScroll";
-import { CoformAnswersSearchData, User } from "@communecter/cocolight-api-client";
-import { useMemo } from "react";
 import getMultipleValuesByPaths from "@/helpers/getMultipleValuesByPaths";
 
 export interface UseFetchAnswerQueryParams {
@@ -13,7 +12,7 @@ export interface UseFetchAnswerQueryParams {
         fediverse?: boolean;
         indexStepList?: number;
         indexStepMap?: number;
-        defaultFilters?: Record<string, any>;
+        defaultFilters?: Record<string, unknown>;
         defaultFields?: string[];
         defaultSortBy?: Record<string, 1 | -1>;
         notSourceKey?: boolean;
@@ -54,7 +53,7 @@ export function useFetchAnswerQuery({
                 throw new Error("API non initialisée - ni organization ni entity disponible");
             }
 
-            const page = pageParam as SearchResultPage | undefined;
+            const page = pageParam as PaginatorPage<unknown> | undefined;
 
             const {
                 fediverse = false,
@@ -89,7 +88,7 @@ export function useFetchAnswerQuery({
             }
 
             if (!param.searchType) {
-                return { results: [], count: {}, hasNext: false, pageNumber: 1 };
+                throw new Error("searchType is required");
             }
 
 
@@ -118,24 +117,25 @@ export function useFetchAnswerQuery({
     });
     // Transformation et extraction en une seule boucle pour optimiser les performances
     const transformedResults = useMemo(() => {
-        const results = data?.pages?.flatMap((p) => p?.results) ?? [];
+        const results = data?.pages?.flatMap((p: PaginatorPage<unknown>) => p?.results) ?? [];
         if (!entity || !results.length) return results || [];
 
-        return results.flatMap((d: any) => {
+        return results.flatMap((d: unknown) => {
             // 1. Transformation : JSON -> Entity
-            const item = d?.getEntityType ? d : helper.fromEntityJSON(d, entity);
+            const raw = d as Record<string, unknown>;
+            const item = raw?.getEntityType ? raw : helper.fromEntityJSON(raw, entity);
 
             // 2. Extraction optionnelle (si extractionConfig fourni)
             if (extractionConfig) {
                 const extractedFields = getMultipleValuesByPaths(
-                    item.serverData,
+                    (item as { serverData: Record<string, unknown> }).serverData,
                     extractionConfig.dataPath,
                     extractionConfig.prefix || "answers"
                 );
 
                 let userInfo = undefined;
                 if (extractionConfig.includeUserInfo) {
-                    const user = item.serverData.user as User | undefined;
+                    const user = (item as { serverData: Record<string, unknown> }).serverData.user as User | undefined;
                     const userName = user?.serverData?.name || "";
                     userInfo = {
                         name: userName,

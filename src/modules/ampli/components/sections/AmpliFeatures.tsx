@@ -9,7 +9,7 @@ import { getSummaryData } from "../../helpers/summary";
 interface AmpliFeaturesProps {
     props: AmpliConfig["props"]["features"];
     isLoading?: boolean;
-    data: any;
+    data: Parameters<typeof getSummaryData>[0];
 }
 
 export default function AmpliFeatures({ props, isLoading, data }: AmpliFeaturesProps) {

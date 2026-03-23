@@ -30,7 +30,7 @@ import { useGetAnswersByFormsQuery } from "@/modules/profil/hooks/useGetAnwersBy
 import z from "zod";
 import { getServerUrl } from "@/lib/constant/common";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
-import { Answer } from "@communecter/cocolight-api-client";
+import { Answer, AnswerItemNormalized, UpdatePathValueData } from "@communecter/cocolight-api-client";
 
 const TOOLS_MAP: Record<string, { label: string; Icon: LucideIcon }> = {
   site: { label: "Site", Icon: Globe },
@@ -103,8 +103,11 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
   const { shortDescription, description } = useFormatProfileEntity(entity);
   const { canEditProfile } = useProfilPermissions(entity);
   const navigate = useNavigate();
-  const getNestedValue = (obj: Record<string, any>, path: string): any =>
-    path.split('.').reduce((current: any, key: string) => current?.[key], obj);
+  const getNestedValue = (obj: Record<string, unknown>, path: string): unknown =>
+    path.split('.').reduce<unknown>((current, key) => {
+      if (current === null || typeof current !== "object") return undefined;
+      return (current as Record<string, unknown>)[key];
+    }, obj);
 
   const { data: _answersByForms, isLoading: _isAnswersByFormsLoading, error: _answersError } = useGetAnswersByFormsQuery({
     entity,
@@ -112,23 +115,27 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
     enabled: !!entity && !!section.forms && Object.keys(section.forms).length > 0,
   });
   const handleClickForm = useCallback(async (formId: string, finder?: string, step?: string, input?: string, answerId?: string, key?: string) => {
-    const dataForms = _answersByForms?.find((item: any) => item.id === formId);
+    const dataForms = _answersByForms?.find((item: Record<string, unknown>) => item.id === formId);
     const accessToken = entity.apiClient.getToken();
     let answer: Answer | undefined = undefined;
     if (dataForms && dataForms.answers.length > 0 && key != "new") {
       if (answerId) {
-        answer = dataForms?.answers.find((a: any) => a.id === answerId);
+        answer = dataForms?.answers.find((a: AnswerItemNormalized) => a.id === answerId);
       } else {
         answer = dataForms.answers[0];
       }
     } else {
-      answer = await (entity as any).generateNewAnswerId(formId);
+      answer = await entity.generateNewAnswerId(formId);
       if (!answer) {
         console.error("Failed to generate new answer ID for form:", formId);
         return;
       }
+      if(!answer.id) {
+        console.error("No answer ID generated for form:", formId);
+        return;
+      }
       const finderPath = finder ? finder : section.forms?.[formId]?.finder;
-      const params = {
+      const params: UpdatePathValueData = {
         id: answer.id,
         collection: "answers",
         path: `${finderPath}.${entity.id}`,
@@ -138,7 +145,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
           name: entity.serverData.name,
         }
       }
-      const paramsLinks = {
+      const paramsLinks: UpdatePathValueData = {
         id: answer.id,
         collection: "answers",
         path: `links.${entity.serverData.collection}.${entity.id}`,
@@ -147,8 +154,8 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
           name: entity.serverData.name,
         }
       }
-      await entity.endpointApi.updatePathValue(params as any);
-      await entity.endpointApi.updatePathValue(paramsLinks as any);
+      await entity.endpointApi.updatePathValue(params);
+      await entity.endpointApi.updatePathValue(paramsLinks);
       // entity.endpointApi.updatePathValue({
       //     "id": 
       // })
@@ -161,12 +168,12 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
     const urlToRedirect = `${getServerUrl()}/co2/embed/render?targetUrl=${encodeURIComponent(targetUrl)}&embedToken=${accessToken}`;
     window.open(urlToRedirect, "_blank");
 
-  }, [_answersByForms])
+  }, [_answersByForms, entity, section.forms])
 
   const [showFullDesc, setShowFullDesc] = useState(false);
   const [showAllEquip, setShowAllEquip] = useState(false);
   const [modalItem, setModalItem] = useState<ModalItem | null>(null);
-  const rooms: any[] = useMemo(() => {
+  const rooms: Answer[] = useMemo(() => {
     if (!_answersByForms || !section.roomPath) {
       return [];
     }
@@ -180,12 +187,12 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
     const roomId = section.roomPath?.id;
     if (!roomId) return [];
 
-    const roomData = _answersByForms?.find((f: Record<string, any>) => f.id === roomId);
+    const roomData = _answersByForms?.find((f: Record<string, unknown>) => f.id === roomId);
 
     return roomData && roomData.answers ? roomData.answers : [];
-  }, [_answersByForms, section.roomPath]);
+  }, [_answersByForms, section.roomPath, _answersError, _isAnswersByFormsLoading]);
   /* List of coworking answers */
-  const coworkData: any[] = useMemo(() => {
+  const coworkData: Answer[] = useMemo(() => {
     if (!_answersByForms || !section.coworkingPath) {
       return [];
     }
@@ -199,11 +206,11 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
     const coworkId = section.coworkingPath?.id;
     if (!coworkId) return [];
 
-    const coworkData = _answersByForms?.find((f: Record<string, any>) => f.id === coworkId);
+    const coworkData = _answersByForms?.find((f: Record<string, unknown>) => f.id === coworkId);
     return coworkData && coworkData.answers ? coworkData.answers : [];
-  }, [_answersByForms, section.coworkingPath]);
+  }, [_answersByForms, section.coworkingPath, _answersError, _isAnswersByFormsLoading]);
   /* List of accommodation answers */
-  const accommodationData: any[] = useMemo(() => {
+  const accommodationData: Answer[] = useMemo(() => {
     if (!_answersByForms || !section.bedRoomPath) {
       return [];
     }
@@ -216,20 +223,20 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
     }
     const accommodationId = section.bedRoomPath?.id;
     if (!accommodationId) return [];
-    const accommodationData = _answersByForms?.find((f: Record<string, any>) => f.id === accommodationId);
+    const accommodationData = _answersByForms?.find((f: Record<string, unknown>) => f.id === accommodationId);
     return accommodationData && accommodationData.answers ? accommodationData.answers : [];
-  }, [_answersByForms, section.bedRoomPath]);
+  }, [_answersByForms, section.bedRoomPath, _answersError, _isAnswersByFormsLoading]);
   // Équipements depuis serverData
-  const equipements: any[] = useMemo(() => {
+  const equipements: string[] = useMemo(() => {
     if (!section.equipement || !_answersByForms) return [];
     if (_isAnswersByFormsLoading) {
       return [];
     }
-    const surveyData = _answersByForms.find((f: Record<string, any>) => f.id === section.equipement?.id);
+    const surveyData = _answersByForms.find((f: Record<string, unknown>) => f.id === section.equipement?.id);
     if (!surveyData || !surveyData.answers) return [];
-    let equipList: Set<string> = new Set();
-    surveyData.answers.forEach((answer: any) => {
-      const value = getNestedValue(answer.serverData.answers, section.equipement?.answerPath ?? "");
+    const equipList: Set<string> = new Set();
+    surveyData.answers.forEach((answer: Answer) => {
+      const value = getNestedValue(answer._serverData.answers ?? {}, section.equipement?.answerPath ?? "");
       if (typeof value === "string") {
         equipList.add(value);
       } else if (Array.isArray(value)) {
@@ -241,7 +248,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
               if (typeof val === "string") {
                 equipList.add(val);
               } else {
-                const newValue = (val as any).value;
+                const newValue = (val as Record<string, unknown>).value;
                 if (typeof newValue === "string") {
                   equipList.add(newValue);
                 }
@@ -253,18 +260,18 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
     });
     // console.log("Extracted equipements:", Array.from(equipList));
     return Array.from(equipList);
-  }, [section.equipement, _answersByForms]);
+  }, [section.equipement, _answersByForms, _isAnswersByFormsLoading]);
 
-  const activities: any[] = useMemo(() => {
+  const activities: string[] = useMemo(() => {
     if (!section.activity || !_answersByForms) return [];
     if (_isAnswersByFormsLoading) {
       return [];
     }
-    const surveyData = _answersByForms.find((f: Record<string, any>) => f.id === section.activity?.id);
+    const surveyData = _answersByForms.find((f: Record<string, unknown>) => f.id === section.activity?.id);
     if (!surveyData || !surveyData.answers) return [];
-    let equipList: Set<string> = new Set();
-    surveyData.answers.forEach((answer: any) => {
-      const value = getNestedValue(answer.serverData.answers, section.activity?.answerPath ?? "");
+    const equipList: Set<string> = new Set();
+    surveyData.answers.forEach((answer: Answer) => {
+      const value = getNestedValue(answer._serverData.answers ?? {}, section.activity?.answerPath ?? "");
       if (typeof value === "string") {
         equipList.add(value);
       } else if (Array.isArray(value)) {
@@ -276,7 +283,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
               if (typeof val === "string") {
                 equipList.add(val);
               } else {
-                const newValue = (val as any).value;
+                const newValue = (val as Record<string, unknown>).value;
                 if (typeof newValue === "string") {
                   equipList.add(newValue);
                 }
@@ -287,8 +294,8 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
       }
     });
     // console.log("Extracted activitys:", Array.from(equipList));
-    return Array.from(equipList).concat(Array.from(equipList));
-  }, [section.activity, _answersByForms]);
+    return Array.from(equipList);
+  }, [section.activity, _answersByForms, _isAnswersByFormsLoading]);
 
   type ToolItem = { name: string; url?: string };
   type ParsedTools = Array<{ key: string; items: ToolItem[] }>;
@@ -307,7 +314,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
   const handleDeleteAnswer = useCallback(async (answerId: string) => {
     if (!window.confirm(t("ProfilTiersLieuxAbout.confirmDelete"))) return;
     try {
-      await (entity.endpointApi as any).deleteElement({
+      await entity.endpointApi.deleteElement({
         reason: "delete answer from profile",
         pathParams: { type: "answers", id: answerId }
       });
@@ -315,7 +322,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
     } catch (e) {
       console.error("Error deleting answer:", e);
     }
-  }, [entity]);
+  }, [entity, t]);
 
   // Actualités (4 max pour la preview)
   const { news, isLoading: isLoadingNews } = useNewsQuery({
@@ -561,7 +568,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                   variant="default"
                   size="sm"
                   className="p-2"
-                  onClick={() => handleClickForm(section.roomPath!.id, undefined, undefined, undefined, rooms.length > 0 ? rooms[0].id : undefined)}
+                  onClick={() => handleClickForm(section.roomPath!.id, undefined, undefined, undefined, rooms.length > 0 ? rooms[0]._serverData.id : undefined)}
                 >
                   <Pencil className="h-4 w-4" />
                 </Button>
@@ -574,28 +581,28 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {rooms.map((room) => {
-                  const sd = room.serverData as Record<string, any>;
+                  const sd = room.serverData as Record<string, unknown>;
                   const type = section.roomPath?.type;
                   const linkPath = section.roomPath?.linkPath;
-                  const linkValue = linkPath ? getNestedValue(sd.answers, linkPath) : null;
+                  const linkValue = linkPath ? getNestedValue(sd.answers as Record<string, unknown>, linkPath) as string | null : null;
                   const roomPath = section.roomPath?.place ?? section.roomPath?.roomPath;
                   if (type === "array") {
                     if (!roomPath) {
                       return null;
                     }
-                    const value = getNestedValue(sd.answers, roomPath);
+                    const value = getNestedValue(sd.answers as Record<string, unknown>, roomPath);
                     if (!value || !Array.isArray(value)) {
                       return null;
                     }
-                    return value.map((v: any, idx: number) => {
+                    return value.map((v: Record<string, unknown>, idx: number) => {
                       if (idx === 0) return null;
-                      const name = v[section.roomPath?.name ?? 0];
-                      const minPers = section.roomPath?.minPers ? v[section.roomPath.minPers] : 0;
-                      const maxPers = section.roomPath?.maxPers ? v[section.roomPath.maxPers] : 0;
-                      const hourly = section.roomPath?.hourly ? v[section.roomPath.hourly] : 0;
-                      const halfday = section.roomPath?.halfday ? v[section.roomPath.halfday] : 0;
-                      const fullday = section.roomPath?.fullday ? v[section.roomPath.fullday] : 0;
-                      const images = section.roomPath?.images ? v[section.roomPath.images] : [];
+                      const name: string = v[section.roomPath?.name ?? 0] as string || t("ProfilTiersLieuxAbout.room");
+                      const minPers: number = section.roomPath?.minPers ? v[section.roomPath.minPers] as number : 0;
+                      const maxPers: number  = section.roomPath?.maxPers ? v[section.roomPath.maxPers] as number : 0;
+                      const hourly: number = section.roomPath?.hourly ? v[section.roomPath.hourly] as number : 0;
+                      const halfday: number = section.roomPath?.halfday ? v[section.roomPath.halfday] as number : 0;
+                      const fullday: number = section.roomPath?.fullday ? v[section.roomPath.fullday] as number : 0;
+                      const images: string[] = section.roomPath?.images ? v[section.roomPath.images] as Array<string> : [];
                       return (
                         <div
                           key={`${room.id}-${idx}`}
@@ -683,8 +690,6 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                         </div>
                       );
                     })
-                  } else if (type === "single" || type === "answer") {
-
                   }
                   return null;
                 })}
@@ -718,28 +723,28 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {coworkData.map((coworking) => {
-                  const sd = coworking.serverData as Record<string, any>;
+                  const sd = coworking.serverData as Record<string, unknown>;
                   const type = section.coworkingPath?.type ?? "single";
                   const linkPath = section.coworkingPath?.linkPath;
-                  const linkValue = linkPath ? getNestedValue(sd.answers, linkPath) : null;
+                  const linkValue = linkPath ? getNestedValue(sd.answers as Record<string, unknown>, linkPath) as string | null : null;
                   const coworkingPath = section.coworkingPath?.place ?? section.coworkingPath?.coworkingPath;
                   if (type === "array") {
                     if (!coworkingPath) {
                       return null;
                     }
-                    const value = getNestedValue(sd.answers, coworkingPath);
+                    const value = getNestedValue(sd.answers as Record<string, unknown>, coworkingPath);
                     if (!value || !Array.isArray(value)) {
                       return null;
                     }
-                    return value.map((v: any, idx: number) => {
+                    return value.map((v: Record<string, unknown>, idx: number) => {
                       if (idx === 0) return null;
-                      const name = v[section.coworkingPath?.name ?? 0];
-                      const minPers = section.coworkingPath?.minPers ? v[section.coworkingPath.minPers] : 0;
-                      const maxPers = section.coworkingPath?.maxPers ? v[section.coworkingPath.maxPers] : 0;
-                      const hourly = section.coworkingPath?.hourly ? v[section.coworkingPath.hourly] : 0;
-                      const halfday = section.coworkingPath?.halfday ? v[section.coworkingPath.halfday] : 0;
-                      const fullday = section.coworkingPath?.fullday ? v[section.coworkingPath.fullday] : 0;
-                      const images = section.coworkingPath?.images ? v[section.coworkingPath.images] : [];
+                      const name: string = v[section.coworkingPath?.name ?? 0] as string || t("ProfilTiersLieuxAbout.coworking");
+                      const minPers: number = section.coworkingPath?.minPers ? v[section.coworkingPath.minPers] as number : 0;
+                      const maxPers: number = section.coworkingPath?.maxPers ? v[section.coworkingPath.maxPers] as number : 0;
+                      const hourly: number = section.coworkingPath?.hourly ? v[section.coworkingPath.hourly] as number : 0;
+                      const halfday: number = section.coworkingPath?.halfday ? v[section.coworkingPath.halfday] as number : 0;
+                      const fullday: number = section.coworkingPath?.fullday ? v[section.coworkingPath.fullday] as number : 0;
+                      const images: string[] = section.coworkingPath?.images ? v[section.coworkingPath.images] as Array<string> : [];
                       return (
                         <div
                           key={`${coworking.id}-${idx}`}
@@ -748,10 +753,10 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                         >
                           {canEditProfile && (
                             <div className="absolute top-2 left-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                              <Button size="icon" variant="secondary" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleClickForm(section.coworkingPath!.id, undefined, undefined, undefined, coworking.id); }}>
+                              <Button size="icon" variant="secondary" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleClickForm(section.coworkingPath!.id, undefined, undefined, undefined, coworking._serverData.id); }}>
                                 <Pencil className="h-3.5 w-3.5" />
                               </Button>
-                              <Button size="icon" variant="destructive" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleDeleteAnswer(coworking.id); }}>
+                              <Button size="icon" variant="destructive" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleDeleteAnswer(coworking._serverData.id); }}>
                                 <Trash2 className="h-3.5 w-3.5" />
                               </Button>
                             </div>
@@ -838,15 +843,19 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                       );
                     })
                   } else if (type === "single" || type === "answer") {
-                    const allImages = _answersByForms?.find((f: Record<string, any>) => f.id === section.coworkingPath?.id)?.documents ?? [];
-                    const images = Object.values(allImages).filter((doc: any) => {
-                      return doc.folder.includes(sd.id);
+                    const allImages = _answersByForms?.find((f: Record<string, unknown>) => f.id === section.coworkingPath?.id)?.documents ?? [];
+                     const images = Object.values(allImages).filter((doc): doc is Record<string, unknown> => {
+                      if (!doc || typeof doc !== "object") {
+                        return false;
+                      }
+                      const folder = (doc as Record<string, unknown>).folder;
+                      return typeof folder === "string" && folder.includes(String(sd.id));
                     });
-                    const name = getNestedValue(sd.answers, section.coworkingPath?.name ?? "") || t("ProfilTiersLieuxAbout.coworkingSpace");
-                    const capacity = (section.coworkingPath?.place && getNestedValue(sd.answers, section.coworkingPath.place)) || null;
-                    const hourly = section.coworkingPath?.hourly ? getNestedValue(sd.answers, section.coworkingPath.hourly) : 0;
-                    const halfday = section.coworkingPath?.halfday ? getNestedValue(sd.answers, section.coworkingPath.halfday) : 0;
-                    const fullday = section.coworkingPath?.fullday ? getNestedValue(sd.answers, section.coworkingPath.fullday) : 0;
+                    const name: string = (getNestedValue(sd.answers as Record<string, unknown>, section.coworkingPath?.name ?? "") as string) || t("ProfilTiersLieuxAbout.coworkingSpace");
+                    const capacity: number | null = (section.coworkingPath?.place && getNestedValue(sd.answers as Record<string, unknown>, section.coworkingPath.place)) as number | null || null;
+                    const hourly: number = section.coworkingPath?.hourly ? getNestedValue(sd.answers as Record<string, unknown>, section.coworkingPath.hourly) as number : 0;
+                    const halfday: number = section.coworkingPath?.halfday ? getNestedValue(sd.answers as Record<string, unknown>, section.coworkingPath.halfday) as number : 0;
+                    const fullday: number = section.coworkingPath?.fullday ? getNestedValue(sd.answers as Record<string, unknown>, section.coworkingPath.fullday) as number : 0;
                     return (
                       <div
                         key={`${sd.id}`}
@@ -855,10 +864,10 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                       >
                         {canEditProfile && (
                           <div className="absolute top-2 left-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                            <Button size="icon" variant="secondary" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleClickForm(section.coworkingPath!.id, undefined, undefined, undefined, coworking.id); }}>
+                            <Button size="icon" variant="secondary" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleClickForm(section.coworkingPath!.id, undefined, undefined, undefined, coworking._serverData.id); }}>
                               <Pencil className="h-3.5 w-3.5" />
                             </Button>
-                            <Button size="icon" variant="destructive" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleDeleteAnswer(coworking.id); }}>
+                            <Button size="icon" variant="destructive" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleDeleteAnswer(coworking._serverData.id); }}>
                               <Trash2 className="h-3.5 w-3.5" />
                             </Button>
                           </div>
@@ -871,7 +880,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                               onClick={(e) => e.stopPropagation()}
                             >
                               <CarouselContent className="h-36 ml-0">
-                                {(images as any[]).map((src, idx) => {
+                                {(images as Record<string, unknown>[] || []).map((src, idx) => {
                                   const url = typeof src === "object" && src !== null ? `/upload/${src.moduleId}/${src.folder}/${src.name}` : src;
                                   return (
                                     <CarouselItem key={idx} className="pl-0 h-36">
@@ -896,7 +905,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                               <Users className="w-10 h-10 text-muted-foreground/40" />
                             </div>
                           )}
-                          {(capacity > 0) && (
+                          {(capacity && capacity > 0) && (
                             <span className="absolute top-2 right-2 bg-background/90 text-foreground text-xs px-2 py-1 rounded shadow z-10">
                               {capacity} {t("ProfilTiersLieuxAbout.capacity")}
                             </span>
@@ -935,7 +944,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                                 hourly: Number(hourly) || 0,
                                 halfday: Number(halfday) || 0,
                                 fullday: Number(fullday) || 0,
-                                images: (images as any[]).map(src => {
+                                images: (images as Record<string, unknown>[] || []).map(src => {
                                   const p = typeof src === "object" && src !== null ? `/upload/${src.moduleId}/${src.folder}/${src.name}` : src;
                                   return `${getServerUrl()}${p}`;
                                 }),
@@ -981,28 +990,28 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {accommodationData.map((accommodation) => {
-                  const sd = accommodation.serverData as Record<string, any>;
+                  const sd = accommodation.serverData as Record<string, unknown>;
                   const type = section.bedRoomPath?.type ?? "single";
                   const linkPath = section.bedRoomPath?.linkPath;
-                  const linkValue = linkPath ? getNestedValue(sd.answers, linkPath) : null;
+                  const linkValue = linkPath ? getNestedValue(sd.answers as Record<string, unknown>, linkPath) as string | null : null;
                   const accommodationPath = section.bedRoomPath?.place ?? section.bedRoomPath?.accommodationPath;
                   if (type === "array") {
                     if (!accommodationPath) {
                       return null;
                     }
-                    const value = getNestedValue(sd.answers, accommodationPath);
+                    const value = getNestedValue(sd.answers as Record<string, unknown>, accommodationPath);
                     if (!value || !Array.isArray(value)) {
                       return null;
                     }
-                    return value.map((v: any, idx: number) => {
+                    return value.map((v: Record<string, unknown>, idx: number) => {
                       if (idx === 0) return null;
-                      const name = v[section.bedRoomPath?.name ?? 0];
-                      const minPers = section.bedRoomPath?.minPers ? v[section.bedRoomPath.minPers] : 0;
-                      const maxPers = section.bedRoomPath?.maxPers ? v[section.bedRoomPath.maxPers] : 0;
-                      const hourly = section.bedRoomPath?.hourly ? v[section.bedRoomPath.hourly] : 0;
-                      const halfday = section.bedRoomPath?.halfday ? v[section.bedRoomPath.halfday] : 0;
-                      const fullday = section.bedRoomPath?.fullday ? v[section.bedRoomPath.fullday] : 0;
-                      const images = section.bedRoomPath?.images ? v[section.bedRoomPath.images] : [];
+                      const name : string = v[section.bedRoomPath?.name ?? 0] as string || t("ProfilTiersLieuxAbout.accommodation") ;
+                      const minPers : number = section.bedRoomPath?.minPers ? v[section.bedRoomPath.minPers] as number : 0;
+                      const maxPers : number = section.bedRoomPath?.maxPers ? v[section.bedRoomPath.maxPers] as number : 0;
+                      const hourly : number = section.bedRoomPath?.hourly ? v[section.bedRoomPath.hourly] as number : 0;
+                      const halfday : number = section.bedRoomPath?.halfday ? v[section.bedRoomPath.halfday] as number : 0;
+                      const fullday : number = section.bedRoomPath?.fullday ? v[section.bedRoomPath.fullday] as number : 0;
+                      const images : string[] = section.bedRoomPath?.images ? v[section.bedRoomPath.images] as Array<string> : [];
                       return (
                         <div
                           key={`${accommodation.id}-${idx}`}
@@ -1011,10 +1020,10 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                         >
                           {canEditProfile && (
                             <div className="absolute top-2 left-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                              <Button size="icon" variant="secondary" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleClickForm(section.bedRoomPath!.id, undefined, undefined, undefined, accommodation.id); }}>
+                              <Button size="icon" variant="secondary" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleClickForm(section.bedRoomPath!.id, undefined, undefined, undefined, accommodation._serverData.id); }}>
                                 <Pencil className="h-3.5 w-3.5" />
                               </Button>
-                              <Button size="icon" variant="destructive" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleDeleteAnswer(accommodation.id); }}>
+                              <Button size="icon" variant="destructive" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleDeleteAnswer(accommodation._serverData.id); }}>
                                 <Trash2 className="h-3.5 w-3.5" />
                               </Button>
                             </div>
@@ -1101,14 +1110,19 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                       );
                     })
                   } else if (type === "single" || type === "answer") {
-                    const allImages = _answersByForms?.find((f: Record<string, any>) => f.id === section.bedRoomPath?.id)?.documents ?? [];
-                    const images = Object.values(allImages).filter((doc: any) => {
-                      return doc.folder.includes(sd.id);
+                    const allImages = _answersByForms?.find((f: Record<string, unknown>) => f.id === section.bedRoomPath?.id)?.documents ?? [];
+                    const images = Object.values(allImages).filter((doc): doc is Record<string, unknown> => {
+                      if (!doc || typeof doc !== "object") {
+                        return false;
+                      }
+                      const folder = (doc as Record<string, unknown>).folder;
+                      return typeof folder === "string" && folder.includes(String(sd.id));
                     });
-                    const name = getNestedValue(sd.answers, section.bedRoomPath?.name ?? "") || t("ProfilTiersLieuxAbout.accommodationSpace");
-                    const capacity = (section.bedRoomPath?.place && getNestedValue(sd.answers, section.bedRoomPath.place)) || null;
-                    const bed = section.bedRoomPath?.bedPrice ? getNestedValue(sd.answers, section.bedRoomPath.bedPrice) : 0;
-                    const room = section.bedRoomPath?.roomPrice ? getNestedValue(sd.answers, section.bedRoomPath.roomPrice) : 0;
+                    const answers = sd.answers as Record<string, unknown>;
+                    const name = (getNestedValue(answers, section.bedRoomPath?.name ?? "") as string) || t("ProfilTiersLieuxAbout.accommodationSpace");
+                    const capacity: number | null = section.bedRoomPath?.place ? getNestedValue(answers, section.bedRoomPath.place) as number : null;
+                    const bed = section.bedRoomPath?.bedPrice ? getNestedValue(answers, section.bedRoomPath.bedPrice) as number : 0;
+                    const room = section.bedRoomPath?.roomPrice ? getNestedValue(answers, section.bedRoomPath.roomPrice) as number : 0;
                     return (
                       <div
                         key={`${sd.id}`}
@@ -1117,10 +1131,10 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                       >
                         {canEditProfile && (
                           <div className="absolute top-2 left-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                            <Button size="icon" variant="secondary" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleClickForm(section.bedRoomPath!.id, undefined, undefined, undefined, accommodation.id); }}>
+                            <Button size="icon" variant="secondary" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleClickForm(section.bedRoomPath!.id, undefined, undefined, undefined, accommodation._serverData.id); }}>
                               <Pencil className="h-3.5 w-3.5" />
                             </Button>
-                            <Button size="icon" variant="destructive" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleDeleteAnswer(accommodation.id); }}>
+                            <Button size="icon" variant="destructive" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleDeleteAnswer(accommodation._serverData.id); }}>
                               <Trash2 className="h-3.5 w-3.5" />
                             </Button>
                           </div>
@@ -1133,7 +1147,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                               onClick={(e) => e.stopPropagation()}
                             >
                               <CarouselContent className="h-36 ml-0">
-                                {(images as any[]).map((src, idx) => {
+                                {(images as Record<string, unknown>[] || []).map((src, idx) => {
                                   const url = typeof src === "object" && src !== null ? `/upload/${src.moduleId}/${src.folder}/${src.name}` : src;
                                   return (
                                     <CarouselItem key={idx} className="pl-0 h-36">
@@ -1158,7 +1172,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                               <Users className="w-10 h-10 text-muted-foreground/40" />
                             </div>
                           )}
-                          {(capacity > 0) && (
+                          {(capacity != null && capacity > 0) && (
                             <span className="absolute top-2 right-2 bg-background/90 text-foreground text-xs px-2 py-1 rounded shadow z-10">
                               {capacity} {t("ProfilTiersLieuxAbout.capacity")}
                             </span>
@@ -1191,7 +1205,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                                 capacity: Number(capacity) || 0,
                                 bed: Number(bed) || 0,
                                 room: Number(room) || 0,
-                                images: (images as any[]).map(src => {
+                                images: (images as Record<string, unknown>[] || []).map(src => {
                                   const p = typeof src === "object" && src !== null ? `/upload/${src.moduleId}/${src.folder}/${src.name}` : src;
                                   return `${getServerUrl()}${p}`;
                                 }),

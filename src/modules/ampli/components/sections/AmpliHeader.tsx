@@ -1,4 +1,3 @@
-import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { AmpliConfig } from "../../schema";
 import { useT } from "@/hooks/useT";
 import { DynamicIcon, IconName } from "lucide-react/dynamic";
@@ -7,11 +6,9 @@ import { getBaseUrl } from "@/lib/constant/common";
 
 interface AmpliHeaderProps {
     props: AmpliConfig["props"]["hero"];
-    form: AmpliConfig["props"]["coform"];
 }
 
-export default function AmpliHeader({ props, form }: AmpliHeaderProps) {
-    useLoadNamespace("modules/ampli");
+export default function AmpliHeader({ props }: AmpliHeaderProps) {
     const t = useT("modules/ampli");
 
     const {

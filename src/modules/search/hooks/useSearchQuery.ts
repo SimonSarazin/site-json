@@ -122,7 +122,7 @@ export function useSearchQuery({
         ...(defaultSortBy && Object.keys(defaultSortBy).length > 0 && {
           sortBy: defaultSortBy,
         }),
-        ...(locality && Object.keys(locality).length > 0 && { locality: locality as any }),
+        ...(locality && Object.keys(locality).length > 0 && { locality: locality as GlobalAutocompleteCostumData["locality"] }),
         ...(notSourceKey ? { notSourceKey: true } : {}),
       };
       console.log("Search params:", param);

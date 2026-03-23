@@ -1,6 +1,7 @@
 import { lazy } from "react";
 import { AmpliConfig } from "./schema";
 import { useFetchAnswerQuery } from "./hooks/useFetchAnswerQuery";
+import { AmpliDataResponse } from "./helpers/summary";
 import AmpliCommunity from "./components/sections/AmpliCommunity";
 
 interface AmpliSectionRendererProps {
@@ -57,15 +58,15 @@ export function AmpliSectionRenderer({ activeTab, config }: AmpliSectionRenderer
         case "home":
             return (
                 <>
-                    <AmpliHeader props={config.hero} form={config.coform} />
+                    <AmpliHeader props={config.hero} />
                     <AmpliIntro props={config.intro} />
-                    <AmpliFeatures props={config.features} isLoading={isLoading} data={transformedResults} />
+                    <AmpliFeatures props={config.features} isLoading={isLoading} data={transformedResults as AmpliDataResponse[]} />
                     <AmpliMessages props={config.message} coform={config.coform} path={config.path} />
                 </>
             );
         case "community": 
             return (
-                <AmpliCommunity props={config.community}  isLoading={isLoading} data={transformedResults} />
+                <AmpliCommunity props={config.community} data={transformedResults as AmpliDataResponse[]} />
             );
         default:
             console.warn(`Unknown tab activate type: ${activeTab}`);

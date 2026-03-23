@@ -2500,5 +2500,21 @@
         }
       ]
     }
-  }
+  },
+  "ampli": [
+        {
+            "slug": "amplifions",
+            "layout": "fullwidth",
+            "props": {
+                "coform": "69426516f7a7f229f7399da2",
+                "path": {
+                    "name": "navigatorDesTierslieux17122025_0808_0.navigatorDesTierslieux17122025_0808_0mj9qcq9c7qpigi",
+                    "description": "navigatorDesTierslieux17122025_0808_0.navigatorDesTierslieux17122025_0808_0mj9qcq9c5rcrqp",
+                    "address": "navigatorDesTierslieux17122025_0808_0.navigatorDesTierslieux17122025_0808_0mj9qcq9cpjkbu7",
+                    "tags": "navigatorDesTierslieux17122025_0808_0.navigatorDesTierslieux17122025_0808_0mj9qcq9cjwaqwp",
+                    "image": "navigatorDesTierslieux17122025_0808_0.navigatorDesTierslieux17122025_0808_0mj9qcq9cky8n7j"
+                }
+            }
+        }
+    ]
 }

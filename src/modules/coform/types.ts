@@ -452,6 +452,13 @@ export interface FinderElement {
   type: FinderElementType;
   /** Chemin relatif de l'image de profil */
   img?: string;
+
+  // Champs supplémentaires selon le type d'élément
+  address?: {
+    streetAddress?: string;
+    postalCode?: string;
+    addressLocality?: string;
+  };
 }
 
 /**

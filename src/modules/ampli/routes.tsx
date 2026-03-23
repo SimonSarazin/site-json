@@ -1,4 +1,3 @@
-import { useSite } from "@/hooks/useSite";
 import { QueryClient } from "@tanstack/react-query";
 import { LoaderFunctionArgs, RouteObject } from "react-router";
 import type { ModuleRouteFactory } from "@/lib/modules";

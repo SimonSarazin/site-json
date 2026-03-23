@@ -4,7 +4,7 @@ import { TextAlignJustifyIcon } from "@radix-ui/react-icons";
 import { ChevronDown, Columns2Icon, FunnelIcon, Heart, MapIcon, MapPinIcon, MessageCircle, XIcon } from "lucide-react";
 import { useState } from "react";
 
-export function MeeteemSection({ id, props }: { id?: string, props: MeeteemSectionProps }) {
+export default function MeeteemSection({ id, props }: { id?: string, props: MeeteemSectionProps }) {
     const [viewMode, setViewMode] = useState<'answers' | 'map' | 'split'>('answers');
 
     const [activeFilters, setActiveFilters] = useState<string[]>([]);

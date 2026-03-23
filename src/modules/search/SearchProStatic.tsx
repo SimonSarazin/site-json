@@ -192,7 +192,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
       return obj;
     }
     return {};
-  }, [contextFilters?.searchByFields]);
+  }, [contextFilters]);
 
   const contextLocality = useMemo<Record<string, any>>(() => {
     if (contextFilters?.searchByFields) {
@@ -207,7 +207,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
       return obj;
     }
     return {};
-  }, [contextFilters?.searchByFields]);
+  }, [contextFilters]);
 
   const locality = useMemo<Record<string, any>>(() => {
     const combined = {
