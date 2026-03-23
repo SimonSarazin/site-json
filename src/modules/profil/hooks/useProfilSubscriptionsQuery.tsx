@@ -35,6 +35,7 @@ export function useProfilSubscriptionsQuery({
         return [];
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await (entity as any).getSubscriptions({
         indexMin: pageParam as number,
         indexStep,

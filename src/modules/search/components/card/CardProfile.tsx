@@ -62,13 +62,13 @@ export default function CardProfile({
   let isFollowing = false;
   try {
     isAdmin = item?.isAdmin?.() || false;
-  } catch {  }
+  } catch { /* ignore */ }
   try {
     isContributor = item?.isContributor?.() || false;
-  } catch {  }
+  } catch { /* ignore */ }
   try {
     isFollowing = item?.isFollowing?.() || false;
-  } catch {  }
+  } catch { /* ignore */ }
 
   const slug = item?.slug;
 

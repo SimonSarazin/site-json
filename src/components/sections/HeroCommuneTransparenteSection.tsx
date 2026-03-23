@@ -1,7 +1,7 @@
 import { useCocolight } from "@/hooks/useCocolight";
 import { useLocalization } from "@/hooks/useLocalization";
 import type { HeroCommuneTransparenteProps } from "@/types/site-schema";
-import { DynamicIcon, type IconName } from 'lucide-react/dynamic';
+import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 
 interface HeroCommuneTransparenteSectionProps {
     id?: string;

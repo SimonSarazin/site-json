@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { ArrowUpRight, BarChart2, CalendarDays, ChevronDown, ChevronUp, Cloud, FolderKanban, FolderOpen, Globe, LucideIcon, MessageCircle, Newspaper, Pencil, PlusCircle, Ticket, Trash2, UserCheck, Users, Video } from "lucide-react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
@@ -30,7 +30,7 @@ import { useGetAnswersByFormsQuery } from "@/modules/profil/hooks/useGetAnwersBy
 import z from "zod";
 import { getServerUrl } from "@/lib/constant/common";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
-import { Answer, AnswerItemNormalized, UpdatePathValueData } from "@communecter/cocolight-api-client";
+import { Answer } from "@communecter/cocolight-api-client";
 
 const TOOLS_MAP: Record<string, { label: string; Icon: LucideIcon }> = {
   site: { label: "Site", Icon: Globe },
@@ -94,6 +94,26 @@ interface ModalItem {
   reserveUrl?: string | null;
 }
 
+interface AnswerItem {
+  id?: string;
+  serverData: { answers: Record<string, unknown>; id?: string; [key: string]: unknown };
+  [key: string]: unknown;
+}
+
+interface AnswersByFormsItem {
+  id: string;
+  answers: AnswerItem[];
+  documents?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+interface DocumentItem {
+  moduleId?: string;
+  folder: string;
+  name: string;
+  [key: string]: unknown;
+}
+
 interface ProfileAboutProps {
   section: ProfileTiersLieuxAboutSection;
 }
@@ -103,8 +123,10 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
   const { shortDescription, description } = useFormatProfileEntity(entity);
   const { canEditProfile } = useProfilPermissions(entity);
   const navigate = useNavigate();
-  const getNestedValue = (obj: Record<string, unknown>, path: string): unknown =>
-    path.split('.').reduce<unknown>((current, key) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const getNestedValue = (obj: Record<string, unknown>, path: string): any =>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    path.split('.').reduce<any>((current, key) => {
       if (current === null || typeof current !== "object") return undefined;
       return (current as Record<string, unknown>)[key];
     }, obj);
@@ -114,18 +136,19 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
     forms: section.forms,
     enabled: !!entity && !!section.forms && Object.keys(section.forms).length > 0,
   });
-  const handleClickForm = useCallback(async (formId: string, finder?: string, step?: string, input?: string, answerId?: string, key?: string) => {
-    const dataForms = _answersByForms?.find((item: Record<string, unknown>) => item.id === formId);
+  const handleClickForm = async (formId: string, finder?: string, step?: string, input?: string, answerId?: string, key?: string) => {
+    const dataForms = _answersByForms?.find((item: AnswersByFormsItem) => item.id === formId);
     const accessToken = entity.apiClient.getToken();
     let answer: Answer | undefined = undefined;
     if (dataForms && dataForms.answers.length > 0 && key != "new") {
       if (answerId) {
-        answer = dataForms?.answers.find((a: AnswerItemNormalized) => a.id === answerId);
+        answer = dataForms?.answers.find((a: AnswerItem) => a.id === answerId);
       } else {
         answer = dataForms.answers[0];
       }
     } else {
-      answer = await entity.generateNewAnswerId(formId);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      answer = await (entity as any).generateNewAnswerId(formId);
       if (!answer) {
         console.error("Failed to generate new answer ID for form:", formId);
         return;
@@ -135,7 +158,8 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
         return;
       }
       const finderPath = finder ? finder : section.forms?.[formId]?.finder;
-      const params: UpdatePathValueData = {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const params: any = {
         id: answer.id,
         collection: "answers",
         path: `${finderPath}.${entity.id}`,
@@ -145,7 +169,8 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
           name: entity.serverData.name,
         }
       }
-      const paramsLinks: UpdatePathValueData = {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const paramsLinks: any = {
         id: answer.id,
         collection: "answers",
         path: `links.${entity.serverData.collection}.${entity.id}`,
@@ -154,8 +179,10 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
           name: entity.serverData.name,
         }
       }
-      await entity.endpointApi.updatePathValue(params);
-      await entity.endpointApi.updatePathValue(paramsLinks);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await entity.endpointApi.updatePathValue(params as any);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await entity.endpointApi.updatePathValue(paramsLinks as any);
       // entity.endpointApi.updatePathValue({
       //     "id": 
       // })
@@ -168,12 +195,12 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
     const urlToRedirect = `${getServerUrl()}/co2/embed/render?targetUrl=${encodeURIComponent(targetUrl)}&embedToken=${accessToken}`;
     window.open(urlToRedirect, "_blank");
 
-  }, [_answersByForms, entity, section.forms])
+  };
 
   const [showFullDesc, setShowFullDesc] = useState(false);
   const [showAllEquip, setShowAllEquip] = useState(false);
   const [modalItem, setModalItem] = useState<ModalItem | null>(null);
-  const rooms: Answer[] = useMemo(() => {
+  const rooms: AnswerItem[] = useMemo(() => {
     if (!_answersByForms || !section.roomPath) {
       return [];
     }
@@ -187,12 +214,12 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
     const roomId = section.roomPath?.id;
     if (!roomId) return [];
 
-    const roomData = _answersByForms?.find((f: Record<string, unknown>) => f.id === roomId);
+    const roomData = _answersByForms?.find((f: AnswersByFormsItem) => f.id === roomId);
 
     return roomData && roomData.answers ? roomData.answers : [];
   }, [_answersByForms, section.roomPath, _answersError, _isAnswersByFormsLoading]);
   /* List of coworking answers */
-  const coworkData: Answer[] = useMemo(() => {
+  const coworkData: AnswerItem[] = useMemo(() => {
     if (!_answersByForms || !section.coworkingPath) {
       return [];
     }
@@ -206,11 +233,11 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
     const coworkId = section.coworkingPath?.id;
     if (!coworkId) return [];
 
-    const coworkData = _answersByForms?.find((f: Record<string, unknown>) => f.id === coworkId);
-    return coworkData && coworkData.answers ? coworkData.answers : [];
+    const coworkDataItem = _answersByForms?.find((f: AnswersByFormsItem) => f.id === coworkId);
+    return coworkDataItem && coworkDataItem.answers ? coworkDataItem.answers : [];
   }, [_answersByForms, section.coworkingPath, _answersError, _isAnswersByFormsLoading]);
   /* List of accommodation answers */
-  const accommodationData: Answer[] = useMemo(() => {
+  const accommodationData: AnswerItem[] = useMemo(() => {
     if (!_answersByForms || !section.bedRoomPath) {
       return [];
     }
@@ -223,8 +250,8 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
     }
     const accommodationId = section.bedRoomPath?.id;
     if (!accommodationId) return [];
-    const accommodationData = _answersByForms?.find((f: Record<string, unknown>) => f.id === accommodationId);
-    return accommodationData && accommodationData.answers ? accommodationData.answers : [];
+    const accommodationDataItem = _answersByForms?.find((f: AnswersByFormsItem) => f.id === accommodationId);
+    return accommodationDataItem && accommodationDataItem.answers ? accommodationDataItem.answers : [];
   }, [_answersByForms, section.bedRoomPath, _answersError, _isAnswersByFormsLoading]);
   // Équipements depuis serverData
   const equipements: string[] = useMemo(() => {
@@ -232,11 +259,11 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
     if (_isAnswersByFormsLoading) {
       return [];
     }
-    const surveyData = _answersByForms.find((f: Record<string, unknown>) => f.id === section.equipement?.id);
+    const surveyData = _answersByForms.find((f: AnswersByFormsItem) => f.id === section.equipement?.id);
     if (!surveyData || !surveyData.answers) return [];
     const equipList: Set<string> = new Set();
-    surveyData.answers.forEach((answer: Answer) => {
-      const value = getNestedValue(answer._serverData.answers ?? {}, section.equipement?.answerPath ?? "");
+    surveyData.answers.forEach((answer: AnswerItem) => {
+      const value = getNestedValue(answer.serverData.answers as Record<string, unknown>, section.equipement?.answerPath ?? "");
       if (typeof value === "string") {
         equipList.add(value);
       } else if (Array.isArray(value)) {
@@ -267,11 +294,11 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
     if (_isAnswersByFormsLoading) {
       return [];
     }
-    const surveyData = _answersByForms.find((f: Record<string, unknown>) => f.id === section.activity?.id);
+    const surveyData = _answersByForms.find((f: AnswersByFormsItem) => f.id === section.activity?.id);
     if (!surveyData || !surveyData.answers) return [];
     const equipList: Set<string> = new Set();
-    surveyData.answers.forEach((answer: Answer) => {
-      const value = getNestedValue(answer._serverData.answers ?? {}, section.activity?.answerPath ?? "");
+    surveyData.answers.forEach((answer: AnswerItem) => {
+      const value = getNestedValue(answer.serverData.answers as Record<string, unknown>, section.activity?.answerPath ?? "");
       if (typeof value === "string") {
         equipList.add(value);
       } else if (Array.isArray(value)) {
@@ -311,10 +338,11 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
   }, [toolsRaw]);
   const externalLink = z.string().nullable().parse(parsedTools.find(t => t.key === "reservation")?.items[0]?.url ?? null);
 
-  const handleDeleteAnswer = useCallback(async (answerId: string) => {
+  const handleDeleteAnswer = async (answerId: string) => {
     if (!window.confirm(t("ProfilTiersLieuxAbout.confirmDelete"))) return;
     try {
-      await entity.endpointApi.deleteElement({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (entity.endpointApi as any).deleteElement({
         reason: "delete answer from profile",
         pathParams: { type: "answers", id: answerId }
       });
@@ -322,7 +350,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
     } catch (e) {
       console.error("Error deleting answer:", e);
     }
-  }, [entity, t]);
+  };
 
   // Actualités (4 max pour la preview)
   const { news, isLoading: isLoadingNews } = useNewsQuery({
@@ -568,7 +596,8 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                   variant="default"
                   size="sm"
                   className="p-2"
-                  onClick={() => handleClickForm(section.roomPath!.id, undefined, undefined, undefined, rooms.length > 0 ? rooms[0]._serverData.id : undefined)}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  onClick={() => handleClickForm(section.roomPath!.id, undefined, undefined, undefined, rooms.length > 0 ? (rooms[0] as any)._serverData.id : undefined)}
                 >
                   <Pencil className="h-4 w-4" />
                 </Button>
@@ -594,7 +623,8 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                     if (!value || !Array.isArray(value)) {
                       return null;
                     }
-                    return value.map((v: Record<string, unknown>, idx: number) => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    return value.map((v: any, idx: number) => {
                       if (idx === 0) return null;
                       const name: string = v[section.roomPath?.name ?? 0] as string || t("ProfilTiersLieuxAbout.room");
                       const minPers: number = section.roomPath?.minPers ? v[section.roomPath.minPers] as number : 0;
@@ -690,6 +720,8 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                         </div>
                       );
                     })
+                  } else if (type === "single" || type === "answer") {
+                    // No rendering for single/answer type in rooms section
                   }
                   return null;
                 })}
@@ -736,7 +768,8 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                     if (!value || !Array.isArray(value)) {
                       return null;
                     }
-                    return value.map((v: Record<string, unknown>, idx: number) => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    return value.map((v: any, idx: number) => {
                       if (idx === 0) return null;
                       const name: string = v[section.coworkingPath?.name ?? 0] as string || t("ProfilTiersLieuxAbout.coworking");
                       const minPers: number = section.coworkingPath?.minPers ? v[section.coworkingPath.minPers] as number : 0;
@@ -753,10 +786,11 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                         >
                           {canEditProfile && (
                             <div className="absolute top-2 left-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                              <Button size="icon" variant="secondary" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleClickForm(section.coworkingPath!.id, undefined, undefined, undefined, coworking._serverData.id); }}>
+                              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                              <Button size="icon" variant="secondary" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleClickForm(section.coworkingPath!.id, undefined, undefined, undefined, (coworking as any)._serverData.id); }}>
                                 <Pencil className="h-3.5 w-3.5" />
                               </Button>
-                              <Button size="icon" variant="destructive" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleDeleteAnswer(coworking._serverData.id); }}>
+                              <Button size="icon" variant="destructive" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleDeleteAnswer(coworking.id!); }}>
                                 <Trash2 className="h-3.5 w-3.5" />
                               </Button>
                             </div>
@@ -843,19 +877,17 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                       );
                     })
                   } else if (type === "single" || type === "answer") {
-                    const allImages = _answersByForms?.find((f: Record<string, unknown>) => f.id === section.coworkingPath?.id)?.documents ?? [];
-                     const images = Object.values(allImages).filter((doc): doc is Record<string, unknown> => {
-                      if (!doc || typeof doc !== "object") {
-                        return false;
-                      }
-                      const folder = (doc as Record<string, unknown>).folder;
-                      return typeof folder === "string" && folder.includes(String(sd.id));
-                    });
-                    const name: string = (getNestedValue(sd.answers as Record<string, unknown>, section.coworkingPath?.name ?? "") as string) || t("ProfilTiersLieuxAbout.coworkingSpace");
-                    const capacity: number | null = (section.coworkingPath?.place && getNestedValue(sd.answers as Record<string, unknown>, section.coworkingPath.place)) as number | null || null;
-                    const hourly: number = section.coworkingPath?.hourly ? getNestedValue(sd.answers as Record<string, unknown>, section.coworkingPath.hourly) as number : 0;
-                    const halfday: number = section.coworkingPath?.halfday ? getNestedValue(sd.answers as Record<string, unknown>, section.coworkingPath.halfday) as number : 0;
-                    const fullday: number = section.coworkingPath?.fullday ? getNestedValue(sd.answers as Record<string, unknown>, section.coworkingPath.fullday) as number : 0;
+                    const allImages = _answersByForms?.find((f: AnswersByFormsItem) => f.id === section.coworkingPath?.id)?.documents ?? [];
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const images = Object.values(allImages).filter((doc: any) => {
+                      return doc.folder.includes(sd.id);
+                    }) as DocumentItem[];
+                    const name = getNestedValue(sd.answers as Record<string, unknown>, section.coworkingPath?.name ?? "") || t("ProfilTiersLieuxAbout.coworkingSpace");
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const capacity = (section.coworkingPath?.place && getNestedValue(sd.answers as Record<string, unknown>, section.coworkingPath.place)) as any;
+                    const hourly = section.coworkingPath?.hourly ? getNestedValue(sd.answers as Record<string, unknown>, section.coworkingPath.hourly) : 0;
+                    const halfday = section.coworkingPath?.halfday ? getNestedValue(sd.answers as Record<string, unknown>, section.coworkingPath.halfday) : 0;
+                    const fullday = section.coworkingPath?.fullday ? getNestedValue(sd.answers as Record<string, unknown>, section.coworkingPath.fullday) : 0;
                     return (
                       <div
                         key={`${sd.id}`}
@@ -864,10 +896,11 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                       >
                         {canEditProfile && (
                           <div className="absolute top-2 left-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                            <Button size="icon" variant="secondary" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleClickForm(section.coworkingPath!.id, undefined, undefined, undefined, coworking._serverData.id); }}>
+                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                            <Button size="icon" variant="secondary" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleClickForm(section.coworkingPath!.id, undefined, undefined, undefined, (coworking as any)._serverData.id); }}>
                               <Pencil className="h-3.5 w-3.5" />
                             </Button>
-                            <Button size="icon" variant="destructive" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleDeleteAnswer(coworking._serverData.id); }}>
+                            <Button size="icon" variant="destructive" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleDeleteAnswer(coworking.id!); }}>
                               <Trash2 className="h-3.5 w-3.5" />
                             </Button>
                           </div>
@@ -880,7 +913,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                               onClick={(e) => e.stopPropagation()}
                             >
                               <CarouselContent className="h-36 ml-0">
-                                {(images as Record<string, unknown>[] || []).map((src, idx) => {
+                                {(images as DocumentItem[]).map((src, idx) => {
                                   const url = typeof src === "object" && src !== null ? `/upload/${src.moduleId}/${src.folder}/${src.name}` : src;
                                   return (
                                     <CarouselItem key={idx} className="pl-0 h-36">
@@ -944,7 +977,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                                 hourly: Number(hourly) || 0,
                                 halfday: Number(halfday) || 0,
                                 fullday: Number(fullday) || 0,
-                                images: (images as Record<string, unknown>[] || []).map(src => {
+                                images: (images as DocumentItem[]).map(src => {
                                   const p = typeof src === "object" && src !== null ? `/upload/${src.moduleId}/${src.folder}/${src.name}` : src;
                                   return `${getServerUrl()}${p}`;
                                 }),
@@ -1003,7 +1036,8 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                     if (!value || !Array.isArray(value)) {
                       return null;
                     }
-                    return value.map((v: Record<string, unknown>, idx: number) => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    return value.map((v: any, idx: number) => {
                       if (idx === 0) return null;
                       const name : string = v[section.bedRoomPath?.name ?? 0] as string || t("ProfilTiersLieuxAbout.accommodation") ;
                       const minPers : number = section.bedRoomPath?.minPers ? v[section.bedRoomPath.minPers] as number : 0;
@@ -1020,10 +1054,11 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                         >
                           {canEditProfile && (
                             <div className="absolute top-2 left-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                              <Button size="icon" variant="secondary" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleClickForm(section.bedRoomPath!.id, undefined, undefined, undefined, accommodation._serverData.id); }}>
+                              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                              <Button size="icon" variant="secondary" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleClickForm(section.bedRoomPath!.id, undefined, undefined, undefined, (accommodation as any)._serverData.id); }}>
                                 <Pencil className="h-3.5 w-3.5" />
                               </Button>
-                              <Button size="icon" variant="destructive" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleDeleteAnswer(accommodation._serverData.id); }}>
+                              <Button size="icon" variant="destructive" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleDeleteAnswer(accommodation.id!); }}>
                                 <Trash2 className="h-3.5 w-3.5" />
                               </Button>
                             </div>
@@ -1110,19 +1145,16 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                       );
                     })
                   } else if (type === "single" || type === "answer") {
-                    const allImages = _answersByForms?.find((f: Record<string, unknown>) => f.id === section.bedRoomPath?.id)?.documents ?? [];
-                    const images = Object.values(allImages).filter((doc): doc is Record<string, unknown> => {
-                      if (!doc || typeof doc !== "object") {
-                        return false;
-                      }
-                      const folder = (doc as Record<string, unknown>).folder;
-                      return typeof folder === "string" && folder.includes(String(sd.id));
-                    });
-                    const answers = sd.answers as Record<string, unknown>;
-                    const name = (getNestedValue(answers, section.bedRoomPath?.name ?? "") as string) || t("ProfilTiersLieuxAbout.accommodationSpace");
-                    const capacity: number | null = section.bedRoomPath?.place ? getNestedValue(answers, section.bedRoomPath.place) as number : null;
-                    const bed = section.bedRoomPath?.bedPrice ? getNestedValue(answers, section.bedRoomPath.bedPrice) as number : 0;
-                    const room = section.bedRoomPath?.roomPrice ? getNestedValue(answers, section.bedRoomPath.roomPrice) as number : 0;
+                    const allImages = _answersByForms?.find((f: AnswersByFormsItem) => f.id === section.bedRoomPath?.id)?.documents ?? [];
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const images = Object.values(allImages).filter((doc: any) => {
+                      return doc.folder.includes(sd.id);
+                    }) as DocumentItem[];
+                    const name = getNestedValue(sd.answers as Record<string, unknown>, section.bedRoomPath?.name ?? "") || t("ProfilTiersLieuxAbout.accommodationSpace");
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const capacity = (section.bedRoomPath?.place && getNestedValue(sd.answers as Record<string, unknown>, section.bedRoomPath.place)) as any;
+                    const bed = section.bedRoomPath?.bedPrice ? getNestedValue(sd.answers as Record<string, unknown>, section.bedRoomPath.bedPrice) : 0;
+                    const room = section.bedRoomPath?.roomPrice ? getNestedValue(sd.answers as Record<string, unknown>, section.bedRoomPath.roomPrice) : 0;
                     return (
                       <div
                         key={`${sd.id}`}
@@ -1131,10 +1163,11 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                       >
                         {canEditProfile && (
                           <div className="absolute top-2 left-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                            <Button size="icon" variant="secondary" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleClickForm(section.bedRoomPath!.id, undefined, undefined, undefined, accommodation._serverData.id); }}>
+                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                            <Button size="icon" variant="secondary" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleClickForm(section.bedRoomPath!.id, undefined, undefined, undefined, (accommodation as any)._serverData.id); }}>
                               <Pencil className="h-3.5 w-3.5" />
                             </Button>
-                            <Button size="icon" variant="destructive" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleDeleteAnswer(accommodation._serverData.id); }}>
+                            <Button size="icon" variant="destructive" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleDeleteAnswer(accommodation.id!); }}>
                               <Trash2 className="h-3.5 w-3.5" />
                             </Button>
                           </div>
@@ -1147,7 +1180,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                               onClick={(e) => e.stopPropagation()}
                             >
                               <CarouselContent className="h-36 ml-0">
-                                {(images as Record<string, unknown>[] || []).map((src, idx) => {
+                                {(images as DocumentItem[]).map((src, idx) => {
                                   const url = typeof src === "object" && src !== null ? `/upload/${src.moduleId}/${src.folder}/${src.name}` : src;
                                   return (
                                     <CarouselItem key={idx} className="pl-0 h-36">
@@ -1205,7 +1238,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                                 capacity: Number(capacity) || 0,
                                 bed: Number(bed) || 0,
                                 room: Number(room) || 0,
-                                images: (images as Record<string, unknown>[] || []).map(src => {
+                                images: (images as DocumentItem[]).map(src => {
                                   const p = typeof src === "object" && src !== null ? `/upload/${src.moduleId}/${src.folder}/${src.name}` : src;
                                   return `${getServerUrl()}${p}`;
                                 }),

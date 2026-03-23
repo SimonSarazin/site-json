@@ -21,7 +21,7 @@ import {
 import LoginForm from "@/components/auth/LoginForm";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import { ChevronDown, User, LogOut, Globe, Menu, X } from "lucide-react";
-import { DynamicIcon } from "lucide-react/dynamic";
+import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 
 interface HeaderJuliePotVinProps {
     header: Header;
@@ -71,7 +71,7 @@ export default function HeaderJuliePotVin({ header }: HeaderJuliePotVinProps) {
                              {header.logo ? (
                                 <img src={header.logo} alt={header.logoAlt ? t(header.logoAlt) : "Logo"} className="w-8 h-8 object-contain" />
                             ) : header.logoIcon ? (
-                                <DynamicIcon name={header.logoIcon as any} className="w-8 h-8 text-primary" />
+                                <DynamicIcon name={header.logoIcon as IconName} className="w-8 h-8 text-primary" />
                             ) : (
                                 <img src="images/juliePotVin/monogramme.svg" alt="Monogramme" className="w-8 h-8" />
                             )}

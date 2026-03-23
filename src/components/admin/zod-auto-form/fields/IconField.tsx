@@ -53,6 +53,7 @@ export function IconField({
   }, [open, iconsReady]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Reset pagination when search changes
     setVisibleCount(PAGE_SIZE);
     scrollRef.current?.scrollTo(0, 0);
   }, [search]);

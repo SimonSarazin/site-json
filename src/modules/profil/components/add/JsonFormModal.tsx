@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, createElement, type ComponentType } from "react";
 import { useForm } from "react-hook-form";
 import * as LucideIcons from "lucide-react";
 import { ChevronLeft, ChevronRight, Check, X, ChevronsUpDown } from "lucide-react";
@@ -33,14 +33,21 @@ import {
 import { EditLocationTab } from "../profile-edit/EditLocationTab";
 import type { ModalProps } from "./ModalRegistry";
 import type { JsonFormModalField, JsonFormModalStep } from "@/types/site-schema";
+import type { LocalizedString } from "@/types/locale-schema";
 import { cn } from "@/lib/utils";
 import { useLocalization } from "@/hooks/useLocalization";
 import { toast } from "sonner";
 
-function getLucideIcon(name?: string) {
+const lucideIconCache = new Map<string, ComponentType<{ className?: string }> | null>();
+
+function getLucideIcon(name?: string): ComponentType<{ className?: string }> | null {
   if (!name) return null;
+  if (lucideIconCache.has(name)) return lucideIconCache.get(name)!;
   const key = name.charAt(0).toUpperCase() + name.slice(1).replace(/-./g, (x) => x[1].toUpperCase());
-  return (LucideIcons as any)[key] || null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const icon = (LucideIcons as any as Record<string, ComponentType<{ className?: string }>>)[key] || null;
+  lucideIconCache.set(name, icon);
+  return icon;
 }
 
 function FieldRenderer({
@@ -50,9 +57,11 @@ function FieldRenderer({
   t,
 }: {
   field: JsonFormModalField;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   value: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onChange: (val: any) => void;
-  t: (v: any) => string;
+  t: (v: LocalizedString) => string;
 }) {
   switch (field.type) {
     case "textarea":
@@ -212,7 +221,7 @@ function StepIndicator({
 }: {
   steps: JsonFormModalStep[];
   currentStep: number;
-  t: (v: any) => string;
+  t: (v: LocalizedString) => string;
 }) {
   return (
     <div className="py-4 px-4">
@@ -265,17 +274,22 @@ function StepIndicator({
   );
 }
 
+function renderLucideIcon(name?: string, className?: string) {
+  const Icon = getLucideIcon(name);
+  if (!Icon) return null;
+  return createElement(Icon, { className });
+}
+
 export function JsonFormModal({ open, onOpenChange, formConfig }: ModalProps) {
   const { t } = useLocalization();
   const [currentStep, setCurrentStep] = useState(1);
 
-  if (!formConfig) return null;
-
-  const hasStepper = !!formConfig.steps && formConfig.steps.length > 0;
-  const steps = formConfig.steps || [];
+  const hasStepper = !!formConfig?.steps && formConfig.steps.length > 0;
+  const steps = useMemo(() => formConfig?.steps || [], [formConfig?.steps]);
   const totalSteps = hasStepper ? steps.length : 1;
 
   const allFields = useMemo(() => {
+    if (!formConfig) return [];
     if (hasStepper) {
       return steps.flatMap((s) => s.fields);
     }
@@ -283,7 +297,7 @@ export function JsonFormModal({ open, onOpenChange, formConfig }: ModalProps) {
   }, [formConfig, hasStepper, steps]);
 
   const defaultValues = useMemo(() => {
-    const vals: Record<string, any> = {};
+    const vals: Record<string, unknown> = {};
     for (const f of allFields) {
       if (f.type === "checkbox") vals[f.name] = false;
       else if (f.type === "multiselect") vals[f.name] = [];
@@ -294,7 +308,7 @@ export function JsonFormModal({ open, onOpenChange, formConfig }: ModalProps) {
 
   const form = useForm({ defaultValues });
 
-  const TitleIcon = getLucideIcon(formConfig.icon);
+  if (!formConfig) return null;
 
   const currentFields = hasStepper ? steps[currentStep - 1]?.fields || [] : formConfig.fields || [];
   const currentStepConfig = hasStepper ? steps[currentStep - 1] : null;
@@ -311,7 +325,8 @@ export function JsonFormModal({ open, onOpenChange, formConfig }: ModalProps) {
     const errors: string[] = [];
     for (const field of currentFields) {
       if (field.type === "location") continue;
-      const value = form.getValues(field.name);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const value = form.getValues(field.name) as any;
       if (field.required) {
         const isEmpty = Array.isArray(value) ? value.length === 0 : (!value || value === "");
         if (isEmpty) {
@@ -352,8 +367,7 @@ export function JsonFormModal({ open, onOpenChange, formConfig }: ModalProps) {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
-  // @ts-expect-error — kept for future use when form submission is wired
-  const _submitViaFetch = async (data: Record<string, any>) => {
+  const _submitViaFetch = async (data: Record<string, unknown>) => {
     if (!formConfig.action) throw new Error("No action URL configured");
     const response = await fetch(formConfig.action, {
       method: formConfig.method || "POST",
@@ -364,8 +378,9 @@ export function JsonFormModal({ open, onOpenChange, formConfig }: ModalProps) {
       throw new Error("Erreur serveur");
     }
   };
+  void _submitViaFetch;
 
-  const onSubmit = async (data: Record<string, any>) => {
+  const onSubmit = async (data: Record<string, unknown>) => {
     console.log(data)
   };
 
@@ -428,7 +443,7 @@ export function JsonFormModal({ open, onOpenChange, formConfig }: ModalProps) {
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            {TitleIcon && <TitleIcon className="h-5 w-5" />}
+            {renderLucideIcon(formConfig.icon, "h-5 w-5")}
             {t(formConfig.title)}
           </DialogTitle>
           <DialogDescription className="sr-only">

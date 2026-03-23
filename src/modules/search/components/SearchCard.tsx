@@ -36,7 +36,7 @@ export default function SearchCard({
     case "rezo-la-mer":
       return <CardRezoLaMer item={item} onClick={onClick} card={card} />;
     case "profile":
-      return <CardProfile item={item as any} onClick={onClick} card={card} />;
+      return <CardProfile item={item as import("@communecter/cocolight-api-client").User | import("@communecter/cocolight-api-client").Organization} onClick={onClick} card={card} />;
     case "event-rezo-la-mer":
       return <CardEventRezoLaMer item={item} onClick={onClick} card={card} />;
     case "poi-rezo-la-mer":

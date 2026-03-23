@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Users, UserPlus, Settings, Loader2, Search, Map } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { MemberSection as MemberSectionType } from "@/types/site-schema";
-import type { Organization, User } from "@communecter/cocolight-api-client";
+import type { Organization, User, SearchEntity } from "@communecter/cocolight-api-client";
 import { MemberListRenderer } from "@/modules/profil/components/members/MemberListRenderer";
 import { MemberManagementDialog } from "@/modules/profil/components/members/MemberManagementDialog";
 import { InviteMemberDialog } from "@/modules/profil/components/members/InviteMemberDialog";
@@ -120,7 +120,7 @@ function ProfileCardListRenderer({
         <SwitchDetailsMode
           openDetails={openDetails}
           setOpenDetails={setOpenDetails}
-          item={selectedItem as any}
+          item={selectedItem as unknown as SearchEntity}
           card={{ detailsMode: detailsMode === "drawer" ? "drawer" : "dialog" }}
         />
       )}

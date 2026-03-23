@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocalization } from "@/hooks/useLocalization";
 import { useT } from "@/hooks/useT";
 import { LocalizedString } from "@/types/site-schema";
@@ -292,7 +292,7 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
     const [activeCategory, setActiveCategory] = useState("all");
     
     const pageFilters = usePageFiltersOptional();
-    const setSearchQuery = pageFilters?.setSearchQuery ?? (() => {});
+    const setSearchQuery = useMemo(() => pageFilters?.setSearchQuery ?? (() => {}), [pageFilters?.setSearchQuery]);
     const setSelectedFilters = pageFilters?.setSelectedFilters ?? (() => {});
     const selectedFilters = pageFilters?.selectedFilters ?? {};
 

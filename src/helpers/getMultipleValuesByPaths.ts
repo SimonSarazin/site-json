@@ -24,11 +24,15 @@
  * // Construit automatiquement "answers.projectName", "answers.projectDesc"
  * // Ignore le champ vide "tags"
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getMultipleValuesByPaths<T extends Record<string, string | undefined>>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   obj: Record<string, any>,
   pathsMap: T,
   prefix?: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): { [K in keyof T]: any } {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const result = {} as { [K in keyof T]: any };
 
   for (const [key, fieldOrPath] of Object.entries(pathsMap)) {
@@ -42,6 +46,7 @@ function getMultipleValuesByPaths<T extends Record<string, string | undefined>>(
 
     // Parcourir le chemin
     const keys = fullPath.split('.');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let value: any = obj;
 
     for (let i = 0; i < keys.length; i++) {

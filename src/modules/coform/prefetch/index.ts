@@ -8,7 +8,7 @@ import { COFORM_QUERY_KEYS } from "../constants";
 export async function prefetchCoFormQuery(
   queryClient: QueryClient,
   formId: string,
-  fetchFn: () => Promise<any>
+  fetchFn: () => Promise<unknown>
 ): Promise<void> {
   await queryClient.prefetchQuery({
     queryKey: COFORM_QUERY_KEYS.form(formId),

@@ -34,7 +34,8 @@ export function useCoFormQuery({ formId, enabled = true }: UseCoFormQueryOptions
       if (!api) throw new Error("API non initialisée");
       
       // Utilise l'endpoint GET_COFORM_BY_ID
-      const form = await api.form({ id: formId });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const form = await (api as any).form({ id: formId });
       return form.serverData as unknown as CoFormData;
     },
     enabled: enabled && isReady && !!formId,
@@ -125,7 +126,8 @@ export function useCoFormFinalMutation({ formId, answerId, onSuccess, onError }:
       if (!api) throw new Error("API non initialisée");
 
       // Sérialiser les réponses en JSON pour l'envoi URL-encoded
-      const response = await api.endpointApi.saveCoformAnswer({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const response = await (api.endpointApi as any).saveCoformAnswer({
         formId,
         answers: JSON.stringify(allData),
         ...(answerId ? { answerId } : {}),

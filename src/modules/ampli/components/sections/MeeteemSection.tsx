@@ -17,7 +17,7 @@ export default function MeeteemSection({ id, props }: { id?: string, props: Meet
 
     const {
         lastItemRef,
-        transformedResults,
+        transformedResults: _rawResults,
         isLoading
     } = useFetchAnswerQuery({
         queryKeyPrefix: `Meeteem-${coform}`,
@@ -53,6 +53,8 @@ export default function MeeteemSection({ id, props }: { id?: string, props: Meet
             includeUserInfo: true
         }
     });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const transformedResults = _rawResults as any[];
 
     // Gestion des filtres par tags
     const toggleFilter = (tag: string) => {

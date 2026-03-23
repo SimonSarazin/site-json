@@ -8,10 +8,11 @@ export default function CardSsbe({ item, onClick }: SearchCardProps) {
 
   const image = serverData?.profilImageUrl;
   const title = serverData?.name ?? "—";
-  const email = (serverData as any)?.email;
-  const phone = (serverData as any)?.telephone ?? (serverData as any)?.phone;
+  const sd = serverData as Record<string, unknown> | undefined;
+  const email = sd?.email as string | undefined;
+  const phone = (sd?.telephone ?? sd?.phone) as string | undefined;
 
-  const addr = serverData?.address as any;
+  const addr = serverData?.address as Record<string, unknown> | undefined;
   const addressStr = [addr?.streetAddress, addr?.postalCode, addr?.addressLocality]
     .filter(Boolean)
     .join(" ");
@@ -22,8 +23,8 @@ export default function CardSsbe({ item, onClick }: SearchCardProps) {
   const hiddenCount = tags.length - visibleTags.length;
 
   // "Validé" si l'entité n'est pas en attente de validation
-  const toBeValidated = (serverData as any)?.preferences?.toBeValidated;
-  const isValidated = !toBeValidated || Object.keys(toBeValidated).length === 0;
+  const toBeValidated = (sd?.preferences as Record<string, unknown> | undefined)?.toBeValidated as Record<string, unknown> | undefined;
+  const isValidated = !toBeValidated || (typeof toBeValidated === "object" && Object.keys(toBeValidated).length === 0);
 
   return (
     <article

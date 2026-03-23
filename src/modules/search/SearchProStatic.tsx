@@ -1,6 +1,6 @@
 import { Loader2, Map, List, LayoutGrid, Search, MapPin, Download, Plus, GitBranch } from "lucide-react";
 import * as LucideIcons from "lucide-react";
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -62,7 +62,8 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   const isConnected = !!me;
   const permissions = useProfilPermissions(entity || null);
 
-  const IconComponent = icon ? (LucideIcons as any)[icon.charAt(0).toUpperCase() + icon.slice(1).replace(/-./g, x => x[1].toUpperCase())] : null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const IconComponent = icon ? (LucideIcons as any as Record<string, React.ComponentType<{ className?: string }>>)[icon.charAt(0).toUpperCase() + icon.slice(1).replace(/-./g, x => x[1].toUpperCase())] : null;
 
   const customHeader = props.customHeader;
   const showDetailedViewToggle = props.showDetailedViewToggle ?? false;
@@ -87,9 +88,10 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   const [graphOpenDetails, setGraphOpenDetails] = useState(false);
   const [graphSelectedItem, setGraphSelectedItem] = useState<SearchEntity | null>(null);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleGraphItemClick = (item: any) => {
     if (graphDetailsMode === "link") {
-      const data = item.serverData || item;
+      const data = ('serverData' in item && item.serverData ? item.serverData : item) as Record<string, unknown>;
       if (data.slug) {
         window.location.href = `/@${data.slug}`;
       }
@@ -176,10 +178,12 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     baseParams?.defaultTypes ? { type: baseParams.defaultTypes } : null
   );
 
-  const filters = useMemo<Record<string, any>>(() => {
-    if (contextFilters?.searchByFields) {
-      const obj: Record<string, any> = {};
-      for (const { field, type, value } of Object.values(contextFilters.searchByFields)) {
+  const searchByFields = contextFilters?.searchByFields;
+
+  const filters = useMemo<Record<string, unknown>>(() => {
+    if (searchByFields) {
+      const obj: Record<string, Record<string, string[]>> = {};
+      for (const { field, type, value } of Object.values(searchByFields)) {
         if (type && type === "scopeList") continue;
         if (value && value.length > 0) {
           if (!obj[field]) {
@@ -192,12 +196,12 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
       return obj;
     }
     return {};
-  }, [contextFilters]);
+  }, [searchByFields]);
 
-  const contextLocality = useMemo<Record<string, any>>(() => {
-    if (contextFilters?.searchByFields) {
-      const obj: Record<string, any> = {};
-      for (const { field, type, value } of Object.values(contextFilters.searchByFields)) {
+  const contextLocality = useMemo<Record<string, unknown>>(() => {
+    if (searchByFields) {
+      const obj: Record<string, unknown> = {};
+      for (const { field, type, value } of Object.values(searchByFields)) {
         if (type && type === "scopeList") {
           if (!obj[field]) {
             obj[field] = value;
@@ -207,9 +211,9 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
       return obj;
     }
     return {};
-  }, [contextFilters]);
+  }, [searchByFields]);
 
-  const locality = useMemo<Record<string, any>>(() => {
+  const locality = useMemo<Record<string, unknown>>(() => {
     const combined = {
       ...contextLocality,
       ...zoneLocality,
@@ -217,12 +221,8 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     return combined;
   }, [contextLocality, zoneLocality]);
 
-  useEffect(() => {
-    if (Object.keys(zoneLocality).length > 0) {
-    }
-  }, [locality, zoneLocality]);
-
-  const mergedBaseParams = useMemo(() => ({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mergedBaseParams = useMemo<any>(() => ({
     ...baseParams,
     defaultFilters: {
       ...baseParams.defaultFilters,
@@ -510,6 +510,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
               >
                 {() => (
                   <SearchBubbleChart
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     results={transformedResults as any}
                     categories={graphCategories}
                     onItemClick={handleGraphItemClick}

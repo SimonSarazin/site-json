@@ -51,8 +51,8 @@ export default function CardEventRezoLaMer({
 
       setLocalIsStarred(newStarredValue);
 
-      if ((item as any).reload) {
-        await (item as any).reload();
+      if ('reload' in item && typeof item.reload === 'function') {
+        await item.reload();
       }
     } catch (error) {
       console.error("Erreur lors de la mise à jour de l'étoile:", error);

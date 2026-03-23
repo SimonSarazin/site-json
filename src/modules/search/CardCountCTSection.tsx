@@ -48,7 +48,7 @@ export function CardCountCTSection({ id, props }: CardCountCTSectionWrapperProps
   );
   const localityId = entity?.serverData?.address?.localityId as string | undefined;
   const slug = entity?.serverData?.slug as string | undefined;
-  
+
   const mergedBaseParams = useMemo(() => {
     // Créer une copie complète de baseParams pour éviter de modifier les props
     const params = {
@@ -58,12 +58,12 @@ export function CardCountCTSection({ id, props }: CardCountCTSectionWrapperProps
         ...(baseParams.defaultFilters || {}),
       } as Record<string, Record<string, string>>,
     };
-    
+
     // Initialiser ou mettre à jour l'objet $or
     if (!params.defaultFilters["$or"]) {
       params.defaultFilters["$or"] = {};
     }
-    
+
     const orFilters = params.defaultFilters["$or"] as Record<string, string>;
     if (localityId) {
       orFilters["address.localityId"] = localityId;
@@ -73,7 +73,7 @@ export function CardCountCTSection({ id, props }: CardCountCTSectionWrapperProps
       orFilters["source.key"] = slug;
       orFilters["source.keys"] = slug;
     }
-    
+
     return params;
   }, [baseParams, localityId, slug]);
 

@@ -97,7 +97,8 @@ export function useFiltersByAnswersQuery(
                         ) as FilterAnswerType["values"];
 
                         transformedData[key] = {
-                            label,
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            label: label as any,
                             values: filteredResults
                         };
                     }
