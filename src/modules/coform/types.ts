@@ -233,7 +233,8 @@ export interface FormFieldMapping {
   name: string; // Nom du champ pour react-hook-form
   label: string;
   type: string; // Type CoForm (text, textarea, tpls.forms.cplx.radioNew, etc.)
-  componentType: "text" | "textarea" | "radio" | "checkbox" | "select" | "multiCheckboxPlus" | "evaluation" | "finder";
+  componentType: "text" | "textarea" | "radio" | "checkbox" | "select" | "multiCheckboxPlus" | "evaluation" | "finder" | "simpleTable" | "uploader" | "unknown";
+  inputType?: string; // Type HTML pour l'input (url, email, tel, etc.) - utilisé quand componentType est "text"
   placeholder?: string;
   info?: string;
   isRequired: boolean;
@@ -271,6 +272,10 @@ export interface FormFieldMapping {
   evaluationConfig?: EvaluationConfig;
   // Spécifique finder
   finderConfig?: FinderConfig;
+  // Spécifique simpleTable
+  simpleTableConfig?: SimpleTableConfig;
+  // Spécifique uploader
+  uploaderConfig?: UploaderConfig;
 }
 
 export interface SubFormFields {
@@ -296,6 +301,9 @@ export type FormFieldValue =
   | MultiCheckboxPlusValue
   | EvaluationValue
   | FinderValue
+  | SimpleTableValue
+  | UploaderValue
+  | UploaderLegacyValue
   | null
   | undefined;
 
@@ -452,8 +460,7 @@ export interface FinderElement {
   type: FinderElementType;
   /** Chemin relatif de l'image de profil */
   img?: string;
-
-  // Champs supplémentaires selon le type d'élément
+  /** Adresse de l'élément (optionnel) */
   address?: {
     streetAddress?: string;
     postalCode?: string;
@@ -467,6 +474,85 @@ export interface FinderElement {
  * Mode multiple: { [elementId]: FinderElement } (plusieurs éléments)
  */
 export type FinderValue = Record<string, FinderElement> | null;
+
+/**
+ * Types pour le champ SimpleTable (tableau 2D)
+ */
+export type SimpleTableColumnType = "Text" | "Case à cocher" | "Nombre" | "Image" | "Images";
+
+export interface SimpleTableColumn {
+  label: string;
+  type: SimpleTableColumnType;
+}
+
+export interface SimpleTableRow {
+  label: string;
+}
+
+export interface SimpleTableConfig {
+  tableName: string;
+  columns: SimpleTableColumn[];
+  rows: SimpleTableRow[];
+  activeNewLine: boolean;
+  singleAnswerByLine: boolean;
+}
+
+/**
+ * Image en attente d'upload (avant sauvegarde côté serveur).
+ */
+export interface ImageUploadValue {
+  /** Nom original du fichier, préservé pour nommer le fichier sur le serveur */
+  name: string;
+  /** Data URI base64 (utilisé pour la prévisualisation locale) */
+  data: string;
+}
+
+/**
+ * Fichier déjà uploadé et enregistré en base (collection documents).
+ */
+export interface ExistingUploadFile {
+  /** ID MongoDB du document dans la collection 'documents' */
+  docId: string;
+  /** Chemin relatif vers le fichier (ex: /upload/.../file.jpg) */
+  docPath: string;
+  /** Nom du fichier */
+  name?: string;
+}
+
+/**
+ * Configuration du champ uploader (subset utile pour site-json)
+ */
+export interface UploaderConfig {
+  docType: "image" | "file";
+  itemLimit: number;
+  sizeLimit: number;
+  formats?: string[];
+  displayMode?: "simple" | "dropzone";
+}
+
+/**
+ * Valeur stockée pour un champ uploader
+ */
+export type UploaderValue = Array<string | ImageUploadValue | ExistingUploadFile>;
+
+/**
+ * Format legacy d'un champ uploader (ancien système).
+ */
+export interface UploaderLegacyValue {
+  updateDate: string[];
+  /** En DB: objet { docId: docPath }. Pendant l'édition: tableau mixte (string | ImageUploadValue | ExistingUploadFile). */
+  files?: Array<string | ImageUploadValue | ExistingUploadFile> | Record<string, string>;
+}
+
+/** Valeur d'une cellule : URL déjà enregistrée (string) ou image en attente (ImageUploadValue) */
+export type SimpleTableCell = string | ImageUploadValue;
+
+/**
+ * Valeur stockée pour un champ SimpleTable
+ * Tableau 2D : row 0 = headers, row 1+ = données
+ * Chaque cellule est un SimpleTableCell (ou SimpleTableCell[] pour Images)
+ */
+export type SimpleTableValue = (SimpleTableCell | SimpleTableCell[])[][];
 
 /**
  * Résultat de recherche du Finder (depuis l'API globalautocomplete)

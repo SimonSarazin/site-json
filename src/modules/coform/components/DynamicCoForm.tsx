@@ -8,7 +8,9 @@ import { TextField, TextAreaField, RadioField, CheckboxField } from "./FormField
 import { MultiCheckboxPlusField } from "./MultiCheckboxPlusField";
 import { EvaluationField } from "./EvaluationField";
 import { FinderField } from "./FinderField";
-import type { CoFormData, SubFormData, AddedOptionsMap, EvaluationValue, FinderValue } from "../types";
+import { SimpleTableField } from "./SimpleTableField";
+import { UploaderField } from "./UploaderField";
+import type { CoFormData, SubFormData, AddedOptionsMap, EvaluationValue, FinderValue, SimpleTableValue } from "../types";
 import { parseCoFormFields, generateZodSchema, generateDefaultValues } from "../utils/formParser";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -22,6 +24,8 @@ interface DynamicCoFormProps {
   isLoading?: boolean;
   /** Valeurs par défaut pour pré-remplir le formulaire (mode édition) */
   defaultValues?: SubFormData;
+  /** ID de la réponse en cours d'édition (pour le chargement des fichiers legacy) */
+  answerId?: string;
 }
 
 /**
@@ -34,6 +38,7 @@ export function DynamicCoForm({
   submitButtonText,
   isLoading = false,
   defaultValues: externalDefaults,
+  answerId,
 }: DynamicCoFormProps) {
   const t = useT("modules/coform");
   useLoadNamespace("modules/coform");
@@ -243,14 +248,48 @@ export function DynamicCoForm({
                     />
                   );
 
+                case "simpleTable":
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={control}
+                      render={({ field: controllerField }) => (
+                        <SimpleTableField
+                          field={field}
+                          errors={errors}
+                          value={controllerField.value as SimpleTableValue}
+                          onChange={controllerField.onChange}
+                        />
+                      )}
+                    />
+                  );
+
+                case "uploader":
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={control}
+                      render={({ field: controllerField }) => (
+                        <UploaderField
+                          field={field}
+                          errors={errors}
+                          value={controllerField.value as import("../types").UploaderValue}
+                          onChange={controllerField.onChange}
+                          answerId={answerId}
+                          subKey={`${subForm.subFormId}.${field.name}`}
+                        />
+                      )}
+                    />
+                  );
+
                 default:
                   return (
-                    <TextField
-                      key={field.name}
-                      field={field}
-                      register={register}
-                      errors={errors}
-                    />
+                    <div key={field.name} role="alert" className="col-span-12 flex flex-col gap-1 rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                      <p className="font-semibold">{field.label}</p>
+                      <p>Template d'input introuvable — Le type <code className="font-mono bg-destructive/20 px-1 rounded">{field.type}</code> n'a pas de template associé.</p>
+                    </div>
                   );
               }
             })}

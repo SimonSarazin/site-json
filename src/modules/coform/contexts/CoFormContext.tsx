@@ -28,6 +28,8 @@ export interface CoFormContextType {
   /** Nombre total d'étapes */
   totalSteps: number;
   currentSubFormId: string | null;
+  /** ID de la réponse en cours d'édition (mode édition uniquement) */
+  answerId?: string;
   isFirstStep: boolean;
   isLastStep: boolean;
   isLoading: boolean;
@@ -60,6 +62,7 @@ export const defaultCoFormContext: CoFormContextType = {
   },
   totalSteps: 0,
   currentSubFormId: null,
+  answerId: undefined,
   isFirstStep: true,
   isLastStep: true,
   isLoading: false,

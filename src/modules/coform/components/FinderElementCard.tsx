@@ -82,8 +82,7 @@ function getTypeLabel(type: FinderElementType): string {
 /**
  * Formate une adresse en string lisible
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function formatAddress(address?: any): string | null {
+function formatAddress(address?: FinderElement["address"]): string | null {
   if (!address) return null;
   const parts: string[] = [];
   if (address.streetAddress) parts.push(address.streetAddress);
@@ -108,8 +107,7 @@ export function FinderElementCard({
 }: FinderElementCardProps) {
   const ElementIcon = elementIconMap[element.type] || Building2;
   const typeLabel = getTypeLabel(element.type);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const address = formatAddress((element as any).address);
+  const address = formatAddress(element.address);
 
   // Construire l'URL de l'image
   const imageUrl = element.img

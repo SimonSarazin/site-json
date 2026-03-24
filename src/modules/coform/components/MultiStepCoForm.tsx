@@ -15,7 +15,9 @@ import { TextField, TextAreaField, RadioField, CheckboxField } from "./FormField
 import { MultiCheckboxPlusField } from "./MultiCheckboxPlusField";
 import { EvaluationField } from "./EvaluationField";
 import { FinderField } from "./FinderField";
-import type { CoFormData, SubFormData, AllStepsData, MultiCheckboxPlusValue, EvaluationValue, FinderValue } from "../types";
+import { SimpleTableField } from "./SimpleTableField";
+import { UploaderField } from "./UploaderField";
+import type { CoFormData, SubFormData, AllStepsData, MultiCheckboxPlusValue, EvaluationValue, FinderValue, SimpleTableValue } from "../types";
 import type { CoFormSubmitMode, CoFormVariant } from "../schema";
 
 interface MultiStepCoFormProps {
@@ -31,6 +33,8 @@ interface MultiStepCoFormProps {
   className?: string;
   /** Valeurs par défaut pour pré-remplir le formulaire (mode édition) */
   defaultValues?: AllStepsData;
+  /** ID de la réponse en cours d'édition (pour le chargement des fichiers legacy) */
+  answerId?: string;
 }
 
 /**
@@ -48,6 +52,7 @@ export function MultiStepCoForm({
   allowFreeNavigation = false,
   className,
   defaultValues,
+  answerId,
 }: MultiStepCoFormProps) {
   return (
     <CoFormProvider
@@ -56,6 +61,7 @@ export function MultiStepCoForm({
       onFinalSubmit={onFinalSubmit}
       submitMode={submitMode}
       defaultValues={defaultValues}
+      answerId={answerId}
     >
       <MultiStepCoFormContent
         variant={variant}
@@ -121,7 +127,7 @@ function MultiStepCoFormContent({
             alt="Bannière du formulaire"
             className="w-full h-48 object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent" />
           {coform.formData.name && (
             <div className="absolute bottom-0 left-0 right-0 p-8">
               <h1 className="text-4xl font-bold text-white drop-shadow-lg">
@@ -131,7 +137,7 @@ function MultiStepCoFormContent({
           )}
         </div>
       ) : coform.formData?.name ? (
-        <div className="w-full rounded-lg bg-gradient-to-r from-primary/10 via-primary/5 to-background p-8 border">
+        <div className="w-full rounded-lg bg-linear-to-r from-primary/10 via-primary/5 to-background p-8 border">
           <h1 className="text-4xl font-bold text-foreground">
             {coform.formData.name}
           </h1>
@@ -317,14 +323,48 @@ function MultiStepCoFormContent({
                     />
                   );
 
+                case "simpleTable":
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={form.control}
+                      render={({ field: controllerField }) => (
+                        <SimpleTableField
+                          field={field}
+                          errors={form.formState.errors}
+                          value={controllerField.value as SimpleTableValue}
+                          onChange={controllerField.onChange}
+                        />
+                      )}
+                    />
+                  );
+
+                case "uploader":
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={form.control}
+                      render={({ field: controllerField }) => (
+                        <UploaderField
+                          field={field}
+                          errors={form.formState.errors}
+                          value={controllerField.value as import("../types").UploaderValue}
+                          onChange={controllerField.onChange}
+                          answerId={coform.answerId}
+                          subKey={fields.subFormId ? `${fields.subFormId}.${field.name}` : undefined}
+                        />
+                      )}
+                    />
+                  );
+
                 default:
                   return (
-                    <TextField
-                      key={field.name}
-                      field={field}
-                      register={form.register}
-                      errors={form.formState.errors}
-                    />
+                    <div key={field.name} role="alert" className="col-span-12 flex flex-col gap-1 rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                      <p className="font-semibold">{field.label}</p>
+                      <p>Template d'input introuvable — Le type <code className="font-mono bg-destructive/20 px-1 rounded">{field.type}</code> n'a pas de template associé.</p>
+                    </div>
                   );
               }
             })}
@@ -355,7 +395,7 @@ function MultiStepCoFormContent({
                 type="submit"
                 form="step-form"
                 disabled={isSubmitting || isFinalSubmitting}
-                className="gap-2 min-w-[140px]"
+                className="gap-2 min-w-35"
                 size="lg"
               >
                 {isSubmitting || isFinalSubmitting ? (
@@ -380,7 +420,7 @@ function MultiStepCoFormContent({
                 type="submit"
                 form="step-form"
                 disabled={isSubmitting}
-                className="gap-2 min-w-[140px]"
+                className="gap-2 min-w-35"
                 size="lg"
               >
                 {isSubmitting ? (
