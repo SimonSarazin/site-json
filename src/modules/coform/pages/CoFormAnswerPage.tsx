@@ -247,6 +247,7 @@ export default function CoFormAnswerPage() {
           authorName={authorName}
           submittedAt={answer?.created}
           updatedAt={answer?.updated}
+          answerId={answerId}
         />
       )}
 
@@ -266,6 +267,7 @@ export default function CoFormAnswerPage() {
             showProgress={true}
             showStepNumbers={true}
             defaultValues={answerData}
+            answerId={answerId}
           />
         </>
       )}

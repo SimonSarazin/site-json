@@ -27,6 +27,8 @@ interface SmartCoFormProps {
   showStepNumbers?: boolean;
   /** Valeurs par défaut pour pré-remplir le formulaire (mode édition / résumé) */
   defaultValues?: AllStepsData;
+  /** ID de la réponse en cours d'édition (pour le chargement des fichiers legacy) */
+  answerId?: string;
 }
 
 interface LoadingStateProps {
@@ -104,6 +106,7 @@ export function SmartCoForm({
   showProgress = true,
   showStepNumbers = true,
   defaultValues,
+  answerId,
 }: SmartCoFormProps) {
   // Charger les données depuis l'API si formId est fourni
   const {
@@ -189,6 +192,7 @@ export function SmartCoForm({
         showProgress={showProgress}
         showStepNumbers={showStepNumbers}
         defaultValues={normalizedDefaults}
+        answerId={answerId}
       />
     );
   }
@@ -205,6 +209,7 @@ export function SmartCoForm({
       formData={formData}
       submitButtonText={t("coform.navigation.submit")}
       defaultValues={stepDefaults}
+      answerId={answerId}
       onSubmit={async (data, addedOptions) => {
         try {
           if (onFinalSubmit) {

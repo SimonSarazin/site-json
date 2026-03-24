@@ -1,0 +1,70 @@
+{
+    "AmpliTemplateDefault": {
+        "tabs" : {
+            "home" : "Home",
+            "message": "Messages",
+            "network" : "Network",
+            "dashboard": "Dashboard",
+            "news": "News"
+        }
+    },
+    "AmpliHero": {
+        "headline": "Let's amplify common sense",
+        "subhead": "An army of humans working for the common good. A peer-to-peer trust network that amplifies your ideas to the whole world.",
+        "proposal": "Propose an idea",
+        "join": "Join Now",
+        "mediaPulse": "Media Pulse",
+        "globalAmplification": "Global Amplification",
+        "trustedNetwork": "Trusted Network"
+    },
+    "AmpliIntro": {
+        "headline": "How does it work?",
+        "subhead": "A collaborative platform that transforms good ideas into concrete actions through the power of the collective.",
+        "trustedNetwork": "Trusted Network",
+        "trustedNetworkText": "A peer-to-peer ecosystem where each member is validated by the community",
+        "collectiveValidation": "Collective Validation",
+        "collectiveValidationText": "Your ideas are evaluated by peers who share your values",
+        "globalAmplification": "Global Amplification",
+        "globalAmplificationText": "The best proposals are widely disseminated outside the network",
+        "mediaPulse": "Media Pulse",
+        "mediaPulseText": "Creation of a regular rhythm to maintain public attention",
+        "networkEffect": "Network Effect",
+        "networkEffectText": "The more we are, the greater our impact grows exponentially",
+        "commonGood": "For the Common Good",
+        "commonGoodText": "Every action aims to improve society as a whole"
+    },
+    "AmpliFeatures": {
+        "headline": "Submit your idea",
+        "subhead": "Share your ideas for the common good with our community",
+        "button": "Submit to the community",
+        "summary": {
+            "headline": "Network statistics",
+            "submitted": "Ideas submitted",
+            "members": "Active members",
+            "amplified": "Ideas amplified",
+            "comments": "Discussions generated"
+        },
+        "howItWork": {
+            "headline": "How does it work?",
+            "stepOne": "You submit your idea.",
+            "stepTwo": "The community evaluates it and votes.",
+            "stepThree": "The best ideas are massively amplified."
+        }
+    },
+    "AmpliMessage": {
+        "headline": "Popular posts",
+        "subhead": "Discover the ideas that mobilize our community."
+    },
+    "AmpliCommunity": {
+        "headline": "Trusted Network",
+        "subhead": "A peer-to-peer ecosystem where each member is validated by the community."
+    },
+    "AmpliDashboard": {
+        "headline": "Vision Globale",
+        "subhead": "Voir la globalité sur les données fournit par votre communauté."
+    },
+    "AmpliNews": {
+        "headline": "Dernières actualités",
+        "subhead": "Restez informé des développements et des succès de notre communauté."
+    }
+}

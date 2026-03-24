@@ -1,5 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { COFORM_QUERY_KEYS } from "../constants";
+import type { CoFormData } from "../types";
 
 /**
  * Précharge les données d'un formulaire CoForm
@@ -8,7 +9,7 @@ import { COFORM_QUERY_KEYS } from "../constants";
 export async function prefetchCoFormQuery(
   queryClient: QueryClient,
   formId: string,
-  fetchFn: () => Promise<any>
+  fetchFn: () => Promise<CoFormData>
 ): Promise<void> {
   await queryClient.prefetchQuery({
     queryKey: COFORM_QUERY_KEYS.form(formId),

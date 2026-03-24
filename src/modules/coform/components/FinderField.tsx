@@ -25,6 +25,8 @@ interface FinderFieldProps {
   onChange?: (value: FinderValue) => void;
   /** Mode lecture seule */
   readOnly?: boolean;
+  /** Masquer le label interne (ex: en mode readOnly avec label externe) */
+  hideLabel?: boolean;
   /** URL de base pour les images */
   baseUrl?: string;
 }
@@ -63,6 +65,7 @@ export function FinderField({
   value,
   onChange,
   readOnly = false,
+  hideLabel = false,
   baseUrl = "",
 }: FinderFieldProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -138,12 +141,14 @@ export function FinderField({
   return (
     <div className={cn("space-y-2", field.width || "col-span-12")}>
       {/* Label */}
-      <label className="block">
-        <span className="text-sm font-medium">
-          {field.label}
-          {field.isRequired && <span className="text-destructive ml-1">*</span>}
-        </span>
-      </label>
+      {!hideLabel && (
+        <label className="block">
+          <span className="text-sm font-medium">
+            {field.label}
+            {field.isRequired && <span className="text-destructive ml-1">*</span>}
+          </span>
+        </label>
+      )}
 
       {/* Info/Description */}
       {field.info && <HintText text={field.info} />}

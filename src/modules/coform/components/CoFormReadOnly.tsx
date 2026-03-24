@@ -8,7 +8,11 @@ import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import "../i18n/i18n";
 import { parseCoFormFields, normalizeAnswerData } from "../utils/formParser";
-import type { CoFormData, AllStepsData, SubFormFields, FormFieldMapping, FormFieldValue, MultiCheckboxPlusValue } from "../types";
+import type { CoFormData, AllStepsData, SubFormFields, FormFieldMapping, FormFieldValue, MultiCheckboxPlusValue, UploaderLegacyValue, SimpleTableValue, EvaluationValue, FinderValue } from "../types";
+import { ReadOnlyUploaderGallery } from "./ReadOnlyUploaderGallery";
+import { SimpleTableField } from "./SimpleTableField";
+import { EvaluationField } from "./EvaluationField";
+import { FinderField } from "./FinderField";
 
 interface CoFormReadOnlyProps {
   formData: CoFormData;
@@ -16,6 +20,7 @@ interface CoFormReadOnlyProps {
   authorName?: string;
   submittedAt?: number;
   updatedAt?: number;
+  answerId?: string;
   className?: string;
 }
 
@@ -29,6 +34,7 @@ export function CoFormReadOnly({
   authorName,
   submittedAt,
   updatedAt,
+  answerId,
   className,
 }: CoFormReadOnlyProps) {
   useLoadNamespace("modules/coform");
@@ -52,7 +58,9 @@ export function CoFormReadOnly({
 
   const formatDate = (timestamp: number) => {
     try {
-      return new Date(timestamp * 1000).toLocaleDateString(undefined, {
+      // Si le timestamp a plus de 10 chiffres, il est déjà en millisecondes
+      const ms = timestamp > 1e10 ? timestamp : timestamp * 1000;
+      return new Date(ms).toLocaleDateString(undefined, {
         year: "numeric",
         month: "long",
         day: "numeric",
@@ -114,6 +122,7 @@ export function CoFormReadOnly({
           key={step.subFormId}
           step={step}
           data={normalizedAnswers[step.subFormId] ?? {}}
+          answerId={answerId}
         />
       ))}
     </div>
@@ -125,9 +134,11 @@ export function CoFormReadOnly({
 function ReadOnlySection({
   step,
   data,
+  answerId,
 }: {
   step: SubFormFields;
   data: Record<string, FormFieldValue>;
+  answerId?: string;
 }) {
   return (
     <Card className="shadow-sm">
@@ -141,6 +152,8 @@ function ReadOnlySection({
               key={field.name}
               field={field}
               value={data[field.name]}
+              answerId={answerId}
+              subFormId={step.subFormId}
             />
           ))}
         </div>
@@ -154,17 +167,92 @@ function ReadOnlySection({
 function ReadOnlyField({
   field,
   value,
+  answerId,
+  subFormId,
 }: {
   field: FormFieldMapping;
   value: FormFieldValue;
+  answerId?: string;
+  subFormId?: string;
 }) {
   const widthClass = field.width ?? "col-span-12";
+
+  // Rendu spécifique pour uploader
+  const isUploader = field.componentType === "uploader";
+  if (isUploader) {
+    const uploaderValue = value as UploaderLegacyValue | undefined;
+    const isEmpty = !uploaderValue || (
+      typeof uploaderValue === "object" && "updateDate" in uploaderValue
+        ? !uploaderValue.files || (Array.isArray(uploaderValue.files) ? uploaderValue.files.length === 0 : typeof uploaderValue.files === "object" && Object.keys(uploaderValue.files).length === 0)
+        : Array.isArray(value) && (value as unknown[]).length === 0
+    );
+    const subKey = subFormId ? `${subFormId}.${field.name}` : field.name;
+    return (
+      <div className={cn(widthClass, "space-y-1.5")}>
+        <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          {field.label}
+        </dt>
+        <dd>
+          {isEmpty ? (
+            <span className="text-muted-foreground/50 italic">—</span>
+          ) : (
+            <ReadOnlyUploaderGallery
+              value={value}
+              answerId={answerId}
+              subKey={subKey}
+            />
+          )}
+        </dd>
+      </div>
+    );
+  }
+
+  // Composants réutilisés en mode readOnly
+  if (field.componentType === "simpleTable") {
+    return (
+      <div className={cn(widthClass, "space-y-1.5")}>
+        <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          {field.label}
+        </dt>
+        <dd>
+          <SimpleTableField field={field} errors={{}} value={value as SimpleTableValue} readOnly hideLabel />
+        </dd>
+      </div>
+    );
+  }
+
+  if (field.componentType === "evaluation") {
+    return (
+      <div className={cn(widthClass, "space-y-1.5")}>
+        <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          {field.label}
+        </dt>
+        <dd>
+          <EvaluationField field={field} errors={{}} value={value as EvaluationValue} readOnly hideLabel />
+        </dd>
+      </div>
+    );
+  }
+
+  if (field.componentType === "finder") {
+    return (
+      <div className={cn(widthClass, "space-y-1.5")}>
+        <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          {field.label}
+        </dt>
+        <dd>
+          <FinderField field={field} errors={{}} value={value as FinderValue} readOnly hideLabel />
+        </dd>
+      </div>
+    );
+  }
 
   // Rendu spécifique pour les checkbox (tableaux)
   const isMultipleValues = Array.isArray(value);
   const isEmpty = value === null || value === undefined || value === "" || (isMultipleValues && value.length === 0);
   const isTextarea = field.componentType === "textarea";
   const isMultiCheckboxPlus = field.componentType === "multiCheckboxPlus";
+  const isUrl = field.inputType === "url";
 
   // Extraire les données multiCheckboxPlus
   const multiCheckboxPlusData = isMultiCheckboxPlus && isMultipleValues 
@@ -224,13 +312,22 @@ function ReadOnlyField({
             {value ? "Oui" : "Non"}
           </Badge>
         ) : isTextarea ? (
-          <div className="prose prose-sm dark:prose-invert max-w-none rounded-lg bg-muted/30 px-4 py-3 border border-border/40 [&>p:last-child]:mb-0 [&>h1]:text-lg [&>h2]:text-base [&>h3]:text-sm">
+          <div className="prose prose-sm dark:prose-invert max-w-none [&>p:last-child]:mb-0 [&>h1]:text-lg [&>h2]:text-base [&>h3]:text-sm">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
               {String(value)}
             </ReactMarkdown>
           </div>
+        ) : isUrl ? (
+          <a
+            href={String(value)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary underline underline-offset-2 wrap-break-word hover:opacity-80 transition-opacity"
+          >
+            {String(value)}
+          </a>
         ) : (
-          <span>{String(value)}</span>
+          <span className="wrap-break-word">{String(value)}</span>
         )}
       </dd>
     </div>

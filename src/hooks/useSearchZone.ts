@@ -1,6 +1,6 @@
 import { SearchZonesData, ZoneItemNormalized } from "@communecter/cocolight-api-client";
 import { useCocolight } from "./useCocolight";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 interface SearchZoneOptions {
     countryCode: string[];
     level: string[];
@@ -23,7 +23,7 @@ export function useSearchZoneQuery(
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<Error | null>(null);
 
-    const fetchZones = async () => {
+    const fetchZones = useCallback(async () => {
         setIsLoading(true);
         setError(null);
         if (!entity) {
@@ -39,10 +39,12 @@ export function useSearchZoneQuery(
         } finally {
             setIsLoading(false);
         }
-    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [queryKey, options, entity]);
+
     useEffect(() => {
         fetchZones();
-    }, [queryKey, options, entity]);
+    }, [fetchZones]);
 
     return {
         data,

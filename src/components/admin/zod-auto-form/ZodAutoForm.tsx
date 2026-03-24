@@ -24,7 +24,8 @@ export function ObjectFields({
   onChange: (v: Record<string, unknown>) => void;
   compact?: boolean;
 }) {
-  const shape = (schema._def as any).shape as Record<string, z.ZodTypeAny>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const shape = (schema._def as Record<string, any>).shape as Record<string, z.ZodTypeAny>;
   const entries = Object.entries(shape);
 
   if (entries.length === 0) {

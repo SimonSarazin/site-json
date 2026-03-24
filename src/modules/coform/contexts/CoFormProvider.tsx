@@ -12,6 +12,8 @@ interface CoFormProviderProps {
   submitMode?: "step" | "final" | "both";
   /** Valeurs par défaut pour pré-remplir le formulaire (mode édition / résumé) */
   defaultValues?: AllStepsData;
+  /** ID de la réponse en cours d'édition (mode édition uniquement) */
+  answerId?: string;
 }
 
 /**
@@ -25,6 +27,7 @@ export function CoFormProvider({
   onFinalSubmit,
   submitMode = "step",
   defaultValues,
+  answerId,
 }: CoFormProviderProps) {
   const subFormsFields = useMemo(() => parseCoFormFields(formData), [formData]);
 
@@ -210,6 +213,7 @@ export function CoFormProvider({
       stepState,
       totalSteps,
       currentSubFormId,
+      answerId,
       isFirstStep,
       isLastStep,
       isLoading,
@@ -229,6 +233,7 @@ export function CoFormProvider({
       stepState,
       totalSteps,
       currentSubFormId,
+      answerId,
       isFirstStep,
       isLastStep,
       isLoading,

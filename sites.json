@@ -5,6 +5,11 @@
     "css": "index-cyber-reunion"
   },
   {
+    "slug": "cocolight",
+    "config": "config.prod.cyber-reunion.json",
+    "css": "index-cyber-reunion"
+  },
+  {
     "slug": "rezoLaMer",
     "config": "config.prod.rezo-la-mer.json",
     "css": "index-rezo-la-mer"
@@ -20,7 +25,7 @@
     "css": "index-institut-bleu"
   },
   {
-    "slug": "franceTierslieux",
+    "slug": "tiersLieux",
     "config": "config.prod.tiers-lieux.json",
     "css": "index-tiers-lieux"
   },
@@ -30,13 +35,43 @@
     "css": "index-julie-pot-vin"
   },
   {
-    "slug": "jardin",
-    "config": "config.prod.jardin-ocean.json",
-    "css": "index-jardin-ocean"
+    "slug": "openAtlas",
+    "config": "config.prod.open-atlas-test.json",
+    "css": "index-rezo-la-mer"
   },
   {
-    "slug": "cocolight",
-    "config": "config.prod.jardin-ocean.json",
-    "css": "index-jardin-ocean"
+    "slug": "nosCommunes",
+    "config": "config.prod.nos-commune.json",
+    "css": "index-nos-communes"
+  },
+  {
+    "slug": "etangsale1",
+    "config": "config.prod.commune-transparente.json",
+    "css": "index-commune-transparente"
+  },
+  {
+    "slug": "tampon",
+    "config": "config.prod.commune-transparente.json",
+    "css": "index-commune-transparente"
+  },
+  {
+    "slug": "saintbenoit4",
+    "config": "config.prod.commune-transparente.json",
+    "css": "index-commune-transparente"
+  },
+  {
+    "slug": "saintemarie1",
+    "config": "config.prod.commune-transparente.json",
+    "css": "index-commune-transparente"
+  },
+  {
+    "slug": "saintpaul4",
+    "config": "config.prod.commune-transparente.json",
+    "css": "index-commune-transparente"
+  },
+  {
+    "slug": "saintJoseph",
+    "config": "config.prod.commune-transparente.json",
+    "css": "index-commune-transparente"
   }
 ]

@@ -118,6 +118,26 @@
       "textRequired": "This field is required",
       "rank": "Rank",
       "addNewValue": "Add an option..."
+    },
+    "uploader": {
+      "addFile": "Add a file",
+      "addFiles": "Add files",
+      "dropzoneLabel": "Drag and drop your files here",
+      "dropzoneOr": "or",
+      "browse": "Browse",
+      "maxFiles": "Maximum {{max}} file(s)",
+      "maxSize": "Max size: {{size}} MB",
+      "invalidExtension": "Extension not allowed: {{name}}",
+      "fileTooLarge": "File too large: {{name}}",
+      "tooManyFiles": "Maximum {{max}} file(s) allowed.",
+      "deleteFile": "Delete {{name}}",
+      "loadingFiles": "Loading files…",
+      "noFileSelected": "No file selected",
+      "pasteHint": "Ctrl+V to paste",
+      "gallery": {
+        "openPdf": "Open PDF",
+        "download": "Download"
+      }
     }
   }
 }

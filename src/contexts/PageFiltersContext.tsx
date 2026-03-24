@@ -1,20 +1,20 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 
+interface SearchByFieldValue {
+  field: string;
+  type?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  value: any;
+}
+
 interface PageFiltersContextType {
   selectedFilters: Record<string, string[]>;
   setSelectedFilters: React.Dispatch<React.SetStateAction<Record<string, string[]>>>;
   filterNames: string[];
   searchQuery: string;
-  searchByFields: Record<string, {
-    field: string;
-    type?: string;
-    value: any;
-  }>;
+  searchByFields: Record<string, SearchByFieldValue>;
   setSearchQuery: (query: string) => void;
-  setSearchByFields: React.Dispatch<React.SetStateAction<Record<string, {
-    field: string;
-    value: any[];
-  }>>>;
+  setSearchByFields: React.Dispatch<React.SetStateAction<Record<string, SearchByFieldValue>>>;
   clearFilters: () => void;
 }
 
@@ -23,10 +23,7 @@ const PageFiltersContext = createContext<PageFiltersContextType | undefined>(und
 export function PageFiltersProvider({ children }: { children: ReactNode }) {
   const [selectedFilters, setSelectedFilters] = useState<Record<string, string[]>>({});
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [searchByFields, setSearchByFields] = useState<Record<string, {
-    field: string;
-    value: any[];
-  }>>({});
+  const [searchByFields, setSearchByFields] = useState<Record<string, SearchByFieldValue>>({});
   // Calculer les noms de filtres à partir des IDs sélectionnés
   const filterNames = Object.values(selectedFilters).flat();
 

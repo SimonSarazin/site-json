@@ -9,7 +9,7 @@ export function GridLayoutSection({
   id?: string;
   props: GridLayoutSectionProps;
 }) {
-  const { leftColumns = 1, rightColumns = 3, gap = 8, className, leftWrapperClass, rightWrapperClass } = props as any;
+  const { leftColumns = 1, rightColumns = 3, gap = 8, className, leftWrapperClass, rightWrapperClass } = props;
   // Cast nécessaire car z.lazy() infère unknown (même pattern que TabsSection)
   const leftSection = props.leftSection as Section | undefined;
   const rightSection = props.rightSection as Section | undefined;

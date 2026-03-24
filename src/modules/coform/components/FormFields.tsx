@@ -58,6 +58,7 @@ export function TextField({ field, register, errors }: FormFieldProps) {
       )}>
         <Input
           id={field.name}
+          type={field.inputType || "text"}
           placeholder={field.placeholder}
           {...(register ? register(field.name) : {})}
           className="border border-input focus-visible:ring-0 focus-visible:border-input"

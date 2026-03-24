@@ -39,6 +39,8 @@ interface EvaluationFieldProps {
   errors: FieldErrors;
   value?: EvaluationValue;
   onChange?: (value: EvaluationValue) => void;
+  readOnly?: boolean;
+  hideLabel?: boolean;
 }
 
 /**
@@ -80,6 +82,8 @@ export function EvaluationField({
   errors,
   value = {},
   onChange,
+  readOnly,
+  hideLabel,
 }: EvaluationFieldProps) {
   useLoadNamespace("modules/coform");
   const t = useT("modules/coform");
@@ -162,16 +166,18 @@ export function EvaluationField({
   return (
     <div className={cn("space-y-2", field.width || "col-span-12")}>
       {/* Label */}
-      <label
-        htmlFor={field.name}
-        className={cn(
-          "block text-sm font-medium",
-          hasError && "text-destructive"
-        )}
-      >
-        {field.label}
-        {field.isRequired && <span className="text-destructive ml-1">*</span>}
-      </label>
+      {!hideLabel && (
+        <label
+          htmlFor={field.name}
+          className={cn(
+            "block text-sm font-medium",
+            hasError && "text-destructive"
+          )}
+        >
+          {field.label}
+          {field.isRequired && <span className="text-destructive ml-1">*</span>}
+        </label>
+      )}
 
       {/* Info/description */}
       {field.info && <HintText text={field.info} />}
@@ -257,6 +263,7 @@ export function EvaluationField({
                       emojis={emojis}
                       noteMax={noteMax}
                       starCount={starCount}
+                      disabled={readOnly}
                     />
                   ))}
                 </tr>

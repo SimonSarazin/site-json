@@ -18,7 +18,11 @@ export function FiltersSection({
   const { title, filterGroups: propsFiltersGroups, defaultOpenGroups = [], filtersByAnswers, className } = props;
   const [filterGroups, setFilterGroups] = useState<FiltersSectionProps["filterGroups"]>([]);
   const [openGroups, setOpenGroups] = useState<string[]>(defaultOpenGroups);
-  const { data: filterAnswerData } = filtersByAnswers ? useFiltersByAnswersQuery(`filters-answers-${id}`, filtersByAnswers as any) : { data: null };
+
+  const filtersByAnswersOptions = filtersByAnswers ?? {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const filterAnswerResult = useFiltersByAnswersQuery(`filters-answers-${id}`, filtersByAnswersOptions as any);
+  const filterAnswerData = filtersByAnswers ? filterAnswerResult.data : null;
 
   const zoneQueryParams = useMemo(() => {
     const hasScopeList = propsFiltersGroups.some(group => group.type === "scopeList");
@@ -41,10 +45,12 @@ export function FiltersSection({
       acc.countryCode = [...new Set(acc.countryCode)];
       acc.level = [...new Set(acc.level)];
       return acc;
-    }, {} as any);
+    }, {} as { countryCode: string[]; level: string[] });
   }, [propsFiltersGroups]);
 
-  const { data: filterZoneData } = zoneQueryParams ? useSearchZoneQuery(`filters-zone-${id}`, zoneQueryParams) : { data: null };
+  const zoneResult = useSearchZoneQuery(`filters-zone-${id}`, zoneQueryParams ?? { countryCode: [], level: [] });
+  const filterZoneData = zoneQueryParams ? zoneResult.data : null;
+
   // Utiliser le context partagé
   const { selectedFilters, setSelectedFilters, searchQuery, setSearchQuery, clearFilters: clearFiltersContext, searchByFields, setSearchByFields } = usePageFilters();
   // Initialiser les filtres par défaut (defaultChecked)
@@ -60,7 +66,7 @@ export function FiltersSection({
           if (group.config && group.config.level && !zone.level.some(lvl => group.config?.level?.includes(lvl))) {
             return;
           }
-          let data: {
+          const data: {
             id: string;
             label: Record<string, string>,
             level: ("cities" | "level1" | "level2" | "level3" | "level4" | "level5")
@@ -73,9 +79,9 @@ export function FiltersSection({
             },
             level: (zone.level.length === 1 ? `level${zone.level[0]}` : `level${group.config?.level ? Math.min(...group.config.level.map(lvl => parseInt(lvl, 10))) : zone.level[0]}`) as ("cities" | "level1" | "level2" | "level3" | "level4" | "level5")
           }
-          if (zone.translate && typeof zone.translate === "object" && typeof (zone.translate as any).translates === "object") {
-            Object.keys((zone.translate as any).translates).forEach((lang) => {
-              data.label[lang.toLowerCase()] = (zone.translate as any).translates[lang];
+          if (zone.translate && typeof zone.translate === "object" && typeof (zone.translate as Record<string, unknown>).translates === "object") {
+            Object.keys((zone.translate as Record<string, Record<string, string>>).translates).forEach((lang) => {
+              data.label[lang.toLowerCase()] = (zone.translate as Record<string, Record<string, string>>).translates[lang];
             })
           }
           group.options.push(data);
@@ -107,12 +113,13 @@ export function FiltersSection({
     );
   };
 
-  const toggleFilter = (groupId: string, filterName: string, field: string | null = null, value: any = null, level: "cities" | "level1" | "level2" | "level3" | "level4" | "level5" | null = null) => {
+  const toggleFilter = (groupId: string, filterName: string, field: string | null = null, value: string | string[] | null = null, level: "cities" | "level1" | "level2" | "level3" | "level4" | "level5" | null = null) => {
     if (field && value !== null) {
       setSearchByFields(prev => {
         const isActive = Object.keys(prev).includes(filterName);
         if (isActive) {
-          const { [filterName]: _, ...rest } = prev;
+          const { [filterName]: _removed, ...rest } = prev;
+          void _removed;
           return rest;
         } else {
           if (level) {
@@ -125,7 +132,8 @@ export function FiltersSection({
                   id: value,
                   type: level
                 }
-              } as any
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              } as any as typeof prev[string]
             };
           } else {
             const valueToSet = Array.isArray(value) ? value : [value];

@@ -81,6 +81,7 @@ export function useProfilFriendsQuery({
         params.name = searchQuery;
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await (entity as any).getFriends(params);
 
       if (result.totalCount !== undefined) {

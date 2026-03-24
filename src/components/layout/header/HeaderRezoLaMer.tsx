@@ -4,7 +4,7 @@ import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
 import type { Header } from "@/types/site-schema";
 import { ChevronDown, User, LogOut, Globe, Bell, Menu, X } from "lucide-react";
-import { DynamicIcon } from "lucide-react/dynamic";
+import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { Link, useNavigate, useLocation } from "react-router";
 import { useCocolight } from "@/hooks/useCocolight";
 import { ClientOnly } from "../ClientOnly";
@@ -97,7 +97,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                             />
                         ) : header.logoIcon ? (
                             <DynamicIcon
-                                name={header.logoIcon as any}
+                                name={header.logoIcon as IconName}
                                 className="w-8 h-8 text-primary group-hover:scale-110 transition-transform"
                             />
                         ) : null}
@@ -158,7 +158,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                             >
                                 {header.piggyBank.icon ? (
                                     <DynamicIcon
-                                        name={header.piggyBank.icon as any}
+                                        name={header.piggyBank.icon as IconName}
                                         className="w-5 h-5 group-hover:scale-110 transition-transform"
                                     />
                                 ) : null}
@@ -175,7 +175,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                             >
                                 {header.urgenceButton.icon ? (
                                     <DynamicIcon
-                                        name={header.urgenceButton.icon as any}
+                                        name={header.urgenceButton.icon as IconName}
                                         className="w-5 h-5 group-hover:scale-110 transition-transform"
                                     />
                                 ) : null}
@@ -328,7 +328,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                             <span className="flex items-center gap-2">
                                 {header.urgenceButton.icon ? (
                                     <DynamicIcon
-                                        name={header.urgenceButton.icon as any}
+                                        name={header.urgenceButton.icon as IconName}
                                         className="w-5 h-5"
                                     />
                                 ) : null}

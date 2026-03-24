@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { CoFormData, FormFieldMapping, SubFormFields, MultiCheckboxPlusOptionType, EvaluationConfig, FinderConfig, FinderFilter } from "../types";
+import type { CoFormData, FormFieldMapping, SubFormFields, MultiCheckboxPlusOptionType, EvaluationConfig, FinderConfig, FinderFilter, SimpleTableConfig, SimpleTableColumn, SimpleTableRow, UploaderConfig } from "../types";
 
 // ─── Configuration des préfixes de champs ────────────────────────
 // Certains types de champs PHP stockent leurs données avec un préfixe
@@ -131,9 +131,13 @@ function parseBootstrapWidth(bootstrapWidth?: string): string {
  */
 export function mapCoFormTypeToComponentType(
   coFormType: string
-): "text" | "textarea" | "radio" | "checkbox" | "select" | "multiCheckboxPlus" | "evaluation" | "finder" {
-  const typeMapping: Record<string, "text" | "textarea" | "radio" | "checkbox" | "select" | "multiCheckboxPlus" | "evaluation" | "finder"> = {
+): "text" | "textarea" | "radio" | "checkbox" | "select" | "multiCheckboxPlus" | "evaluation" | "finder" | "simpleTable" | "uploader" | "unknown" {
+  const typeMapping: Record<string, "text" | "textarea" | "radio" | "checkbox" | "select" | "multiCheckboxPlus" | "evaluation" | "finder" | "simpleTable" | "uploader"> = {
     text: "text",
+    url: "text",
+    email: "text",
+    tel: "text",
+    number: "text",
     textarea: "textarea",
     "tpls.forms.cplx.radioNew": "radio",
     "tpls.forms.cplx.checkboxNew": "checkbox",
@@ -142,10 +146,12 @@ export function mapCoFormTypeToComponentType(
     "tpls.forms.evaluation.evaluation": "evaluation",
     "tpls.forms.cplx.finder": "finder",
     "tpls.forms.finder.finder": "finder",
+    "tpls.forms.cplx.simpleTable": "simpleTable",
+    "tpls.forms.uploader": "uploader",
     select: "select",
   };
 
-  return typeMapping[coFormType] || "text";
+  return typeMapping[coFormType] ?? "unknown";
 }
 
 /**
@@ -169,6 +175,7 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
       let nbPerRow: string | undefined;
       let multiCheckboxPlusConfig: FormFieldMapping["multiCheckboxPlusConfig"] | undefined;
       let evaluationConfig: EvaluationConfig | undefined;
+      let uploaderConfig: UploaderConfig | undefined;
       
       if ((componentType === "radio" || componentType === "checkbox") && formData.params) {
         // Les clés dans params peuvent avoir des préfixes comme "radioNew" ou "checkboxNew"
@@ -312,12 +319,92 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
         }
       }
 
+      // Config spécifique pour simpleTable
+      let simpleTableConfig: SimpleTableConfig | undefined;
+
+      if (componentType === "simpleTable" && formData.params) {
+        const paramKey = `simpleTable${fieldKey}`;
+        const paramData = formData.params[paramKey] || formData.params[fieldKey];
+
+        if (paramData) {
+          const toBool = (val: unknown): boolean => val === true || val === "true";
+
+          const columns: SimpleTableColumn[] = [];
+          if (Array.isArray(paramData.columns)) {
+            for (const col of paramData.columns as Array<{ label?: string; type?: string }>) {
+              columns.push({
+                label: col.label || "",
+                type: (col.type as SimpleTableColumn["type"]) || "Text",
+              });
+            }
+          } else if (paramData.columns && typeof paramData.columns === "object") {
+            for (const col of Object.values(paramData.columns as Record<string, { label?: string; type?: string }>)) {
+              columns.push({
+                label: col.label || "",
+                type: (col.type as SimpleTableColumn["type"]) || "Text",
+              });
+            }
+          }
+
+          const rows: SimpleTableRow[] = [];
+          if (Array.isArray(paramData.rows)) {
+            for (const row of paramData.rows as Array<{ label?: string }>) {
+              rows.push({ label: row.label || "" });
+            }
+          } else if (paramData.rows && typeof paramData.rows === "object") {
+            for (const row of Object.values(paramData.rows as Record<string, { label?: string }>)) {
+              rows.push({ label: row.label || "" });
+            }
+          }
+
+          simpleTableConfig = {
+            tableName: (paramData.tableName as string) || "Titre",
+            columns,
+            rows,
+            activeNewLine: toBool(paramData.activeNewLine),
+            singleAnswerByLine: toBool(paramData.singleAnswerByLine),
+          };
+        }
+      }
+
+      // Config spécifique pour uploader
+      if (componentType === "uploader") {
+        const paramsData = formData.params?.[fieldKey] || {};
+        const uploaderData = (fieldData as unknown as { uploader?: Record<string, unknown> }).uploader || {};
+
+        const itemLimitRaw = paramsData?.itemLimit ?? uploaderData?.itemLimit;
+        const sizeLimitRaw = paramsData?.sizeLimit ?? uploaderData?.sizeLimit;
+        const formatsRaw = paramsData?.fileType ?? uploaderData?.formats;
+        const docTypeRaw = (uploaderData?.docType as string | undefined) || "image";
+
+        const itemLimit = Number.isFinite(Number(itemLimitRaw)) ? Math.max(1, Number(itemLimitRaw)) : 5;
+        const sizeLimit = Number.isFinite(Number(sizeLimitRaw)) ? Number(sizeLimitRaw) : 5000000;
+        const formats: string[] | undefined = Array.isArray(formatsRaw)
+          ? formatsRaw.map(String).filter(Boolean)
+          : typeof formatsRaw === "string" && formatsRaw.trim()
+            ? formatsRaw.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean)
+            : undefined;
+
+        uploaderConfig = {
+          docType: docTypeRaw === "file" ? "file" : "image",
+          itemLimit,
+          sizeLimit,
+          formats,
+        };
+      }
+
+      // Déterminer le type HTML pour les inputs texte
+      const inputType = componentType === "text" && ["url", "email", "tel", "number"].includes(fieldData.type)
+        ? fieldData.type
+        : undefined;
+
       fields.push({
         // Appliquer le préfixe selon le type (finder, multiCheckboxPlus, evaluation)
         name: getFieldNameWithPrefix(componentType, fieldKey),
         label: fieldData.label || fieldKey,
         type: fieldData.type,
         componentType,
+        inputType,
         placeholder: fieldData.placeholder,
         info: fieldData.info,
         isRequired: fieldData.isRequired || false,
@@ -330,11 +417,11 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
         multiCheckboxPlusConfig,
         evaluationConfig,
         finderConfig,
+        simpleTableConfig,
+        uploaderConfig,
       });
     });
 
-    // Trier par position
-    // Note: les champs avec préfixe ont leur nom préfixé, on doit récupérer la clé originale pour accéder à inputs
     fields.sort((a, b) => {
       const keyA = getOriginalFieldKey(a);
       const keyB = getOriginalFieldKey(b);
@@ -491,6 +578,38 @@ export function generateZodSchema(subFormsFields: SubFormFields[]) {
           break;
         }
 
+        case "simpleTable": {
+          // Structure: tableau 2D — row 0 = headers, row 1+ = données
+          const simpleTableSchema = z.array(z.array(z.any()));
+
+          if (field.isRequired) {
+            schemaShape[field.name] = simpleTableSchema.refine(
+              (arr) => arr.length >= 2,
+              { message: `${field.label} est requis (au moins une ligne de données)` }
+            );
+          } else {
+            schemaShape[field.name] = simpleTableSchema.optional();
+          }
+          break;
+        }
+
+        case "uploader": {
+          const uploaderSchema = z.union([
+            z.array(z.any()),
+            z.object({
+              updateDate: z.array(z.string()),
+              files: z.union([z.array(z.any()), z.record(z.string(), z.string())]).optional(),
+            }),
+          ]);
+          schemaShape[field.name] = field.isRequired
+            ? uploaderSchema.refine(
+                (v) => (Array.isArray(v) ? v.length > 0 : true),
+                `${field.label} est requis`
+              )
+            : uploaderSchema.optional();
+          break;
+        }
+
         default:
           schemaShape[field.name] = z.string().optional();
       }
@@ -530,6 +649,29 @@ export function generateDefaultValues(subFormsFields: SubFormFields[]): Record<s
 
         case "finder":
           defaultValues[field.name] = null;
+          break;
+
+        case "simpleTable": {
+          // Construire le tableau 2D initial depuis la config
+          const config = field.simpleTableConfig;
+          if (config) {
+            const headers = [config.tableName, ...config.columns.map(c => c.label)];
+            const dataRows = config.rows.map(row => {
+              const cells: (string | string[])[] = [row.label];
+              for (const col of config.columns) {
+                cells.push(col.type === "Images" ? [] : "");
+              }
+              return cells;
+            });
+            defaultValues[field.name] = [headers, ...dataRows];
+          } else {
+            defaultValues[field.name] = [];
+          }
+          break;
+        }
+
+        case "uploader":
+          defaultValues[field.name] = [];
           break;
 
         default:

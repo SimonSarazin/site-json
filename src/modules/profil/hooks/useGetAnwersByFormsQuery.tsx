@@ -4,6 +4,7 @@ import { QUERY_KEYS } from "../constants/queryKeys";
 import type { ProfileTiersLieuxInfoSection } from "../schema";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 
+
 /**
  * Construit le paramètre `forms` attendu par `searchAnswersByForms`.
  *
@@ -73,6 +74,7 @@ export function useGetAnswersByFormsQuery({
       const formsParam = buildFormsParam(forms, entityId);
 
       try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const results = await (entity as any).searchAnswersByForms({ forms: formsParam });
         return results;
       } catch (err) {

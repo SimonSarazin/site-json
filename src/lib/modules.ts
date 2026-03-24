@@ -25,13 +25,13 @@ export interface ModuleConfigSchema {
  */
 export type DiscoveredModule =
   | {
-      config: ModuleConfigSchema & { type: "core" };
-      routes: ModuleRouteFactory;
-    }
+    config: ModuleConfigSchema & { type: "core" };
+    routes: ModuleRouteFactory;
+  }
   | {
-      config: ModuleConfigSchema & { type: "optional" };
-      routes: () => Promise<{ routes: ModuleRouteFactory }>;
-    };
+    config: ModuleConfigSchema & { type: "optional" };
+    routes: () => Promise<{ routes: ModuleRouteFactory }>;
+  };
 
 /**
  * Découvre tous les modules avec import.meta.glob
