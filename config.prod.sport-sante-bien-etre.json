@@ -225,14 +225,6 @@
                 },
                 "path": "/structure",
                 "variant": "default"
-              },
-              {
-                "label": {
-                  "fr": "En savoir plus",
-                  "en": "Learn more"
-                },
-                "path": "/",
-                "variant": "accent"
               }
             ]
           }
@@ -900,27 +892,29 @@
             "enableMap": false,
             "enableGraph": true,
             "defaultViewMode": "graph",
-            "graphCategories": [
-              "Entreprises(produits/solutions et services)",
-              "CERT/CSIRT",
-              "Organismes de formation",
-              "Laboratoires/recherche",
-              "Structure d'accompagnement et financement",
-              "Réseaux/cluster",
-              "Services défense/intérieur",
-              "Association/ONG"
+            "graphDefaultGroupMode": "category",
+            "graphEnableCountryGrouping": false,
+            "graphTags": [
+              "Sport",
+              "Santé/prévention",
+              "Social",
+              "Insertion",
+              "Handicap",
+              "culture",
+              "tourisme",
+              "mss",
+              "Scolaire 1er degré",
+              "Scolaire 2nd degré",
+              "Periscolaire 1er degré",
+              "Periscolaire 2eme degré"
             ],
             "baseParams": {
               "defaultTypes": ["organizations"],
               "defaultFilters": {
                 "$or": {
-                  "parent.695b58ca8693fc2c121208e4": { "$exists": true },
-                  "source.keys": "cyberReunion",
-                  "reference.costum": "cyberReunion",
-                  "links.projects.695b58ca8693fc2c121208e4": { "$exists": true },
-                  "links.memberOf.695b58ca8693fc2c121208e4": { "$exists": true }
-                },
-                "toBeValidated": { "$exists": false }
+                  "source.keys": "sportSanteBienetre",
+                  "reference.costum": "sportSanteBienetre"
+                }
               },
               "notSourceKey": true
             },
