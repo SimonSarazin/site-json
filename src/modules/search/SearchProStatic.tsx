@@ -81,8 +81,10 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   const [selectedTagValue, setSelectedTagValue] = useState<string>("");
 
   const enableGraph = props.enableGraph ?? false;
-  const graphCategories = props.graphCategories;
+  const graphTags = props.graphTags ?? props.graphCategories;
   const graphDetailsMode = props.graphDetailsMode ?? "drawer";
+  const graphDefaultGroupMode = props.graphDefaultGroupMode ?? "country";
+  const graphEnableCountryGrouping = props.graphEnableCountryGrouping ?? true;
 
   const [graphOpenDetails, setGraphOpenDetails] = useState(false);
   const [graphSelectedItem, setGraphSelectedItem] = useState<SearchEntity | null>(null);
@@ -511,9 +513,11 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                 {() => (
                   <SearchBubbleChart
                     results={transformedResults as any}
-                    categories={graphCategories}
+                    categories={graphTags}
                     onItemClick={handleGraphItemClick}
                     height={450}
+                    defaultGroupMode={graphDefaultGroupMode}
+                    enableCountryGrouping={graphEnableCountryGrouping}
                   />
                 )}
               </ClientOnly>

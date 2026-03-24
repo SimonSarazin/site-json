@@ -42,6 +42,10 @@ interface SearchBubbleChartProps {
   categories?: string[];
   onItemClick?: (item: SearchResult) => void;
   height?: number;
+  // groupement initial (par pays ou par catégorie/tag)
+  defaultGroupMode?: GroupMode;
+  // activer/désactiver le regroupement par pays
+  enableCountryGrouping?: boolean;
 }
 
 interface BubbleNode {
@@ -91,35 +95,36 @@ function getData(item: SearchResult): ServerData {
   return item.serverData || item as unknown as ServerData;
 }
 
-function getItemCategory(item: SearchResult, categories?: string[]): string | null {
+function getItemCategories(item: SearchResult, categories?: string[]): string[] {
   const data = getData(item);
   const itemTags = data.tags;
 
   if (!itemTags || itemTags.length === 0) {
-    return null;
+    return [];
   }
 
   if (categories && categories.length > 0) {
-    for (const tag of itemTags) {
-      const normalizedTag = tag.trim().toLowerCase();
-      for (const cat of categories) {
-        const normalizedCat = cat.trim().toLowerCase();
-        if (normalizedTag === normalizedCat) {
-          return cat;
-        }
+    const matches: string[] = [];
+    for (const cat of categories) {
+      const normalizedCat = cat.trim().toLowerCase();
+      const hasTag = itemTags.some((tag: string) => tag && tag.trim().toLowerCase() === normalizedCat);
+      if (hasTag) {
+        matches.push(cat);
       }
     }
-    return null;
+
+    return matches;
   }
 
+  const matches: string[] = [];
   for (const tag of itemTags) {
     const normalizedTag = tag.trim();
     if (CATEGORY_COLORS[normalizedTag]) {
-      return normalizedTag;
+      matches.push(normalizedTag);
     }
   }
 
-  return null;
+  return matches;
 }
 
 function getItemCountry(item: SearchResult): string | null {
@@ -150,13 +155,15 @@ export default function SearchBubbleChart({
   categories,
   onItemClick,
   height = 600,
+  defaultGroupMode,
+  enableCountryGrouping = true,
 }: SearchBubbleChartProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height });
   const [tooltip, setTooltip] = useState<{ x: number; y: number; item: SearchResult } | null>(null);
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
-  const [groupMode, setGroupMode] = useState<GroupMode>("country");
+  const [groupMode, setGroupMode] = useState<GroupMode>(defaultGroupMode ?? "country");
   const [isZoomed, setIsZoomed] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
@@ -180,8 +187,8 @@ export default function SearchBubbleChart({
 
   const filteredResults = useMemo(() => {
     return results.filter((item) => {
-      const category = getItemCategory(item, categories);
-      return category !== null;
+      const itemCategories = getItemCategories(item, categories);
+      return itemCategories.length > 0;
     });
   }, [results, categories]);
 
@@ -189,21 +196,24 @@ export default function SearchBubbleChart({
     const groupMap = new Map<string, number>();
 
     filteredResults.forEach((item) => {
-      let groupKey: string | null = null;
+      let groupKeys: string[] = [];
       if (groupMode === "country") {
-        groupKey = getItemCountry(item);
+        const country = getItemCountry(item);
+        if (country) {
+          groupKeys = [country];
+        }
       } else {
-        groupKey = getItemCategory(item, categories);
+        groupKeys = getItemCategories(item, categories);
       }
-      if (groupKey) {
+
+      groupKeys.forEach((groupKey) => {
         groupMap.set(groupKey, (groupMap.get(groupKey) || 0) + 1);
-      }
+      });
     });
 
     if (groupMode === "category" && categories && categories.length > 0) {
-      return categories
-        .filter(cat => groupMap.has(cat))
-        .map(name => ({ name, count: groupMap.get(name) || 0 }));
+  
+      return categories.map(name => ({ name, count: groupMap.get(name) || 0 }));
     }
 
     return Array.from(groupMap.entries())
@@ -225,28 +235,34 @@ export default function SearchBubbleChart({
     filteredResults.forEach((item) => {
       const data = getData(item);
 
-      let groupKey: string | null = null;
+      let groupKeys: string[] = [];
       if (groupMode === "country") {
-        groupKey = getItemCountry(item);
+        const country = getItemCountry(item);
+        if (country) {
+          groupKeys = [country];
+        }
       } else {
-        groupKey = getItemCategory(item, categories);
+        groupKeys = getItemCategories(item, categories);
       }
-      if (!groupKey) return;
 
-      const node: BubbleNode = {
-        id: getItemId(item),
-        name: data.name,
-        slug: data.slug,
-        category: getItemCategory(item, categories) || "",
-        imageUrl: getImageUrl(item, baseUrl),
-        data: item,
-        value: 1,
-      };
+      if (groupKeys.length === 0) return;
 
-      if (!groupMap.has(groupKey)) {
-        groupMap.set(groupKey, []);
-      }
-      groupMap.get(groupKey)!.push(node);
+      groupKeys.forEach((groupKey) => {
+        const node: BubbleNode = {
+          id: `${getItemId(item)}::${groupKey}`,
+          name: data.name,
+          slug: data.slug,
+          category: groupKey,
+          imageUrl: getImageUrl(item, baseUrl),
+          data: item,
+          value: 1,
+        };
+
+        if (!groupMap.has(groupKey)) {
+          groupMap.set(groupKey, []);
+        }
+        groupMap.get(groupKey)!.push(node);
+      });
     });
 
     const children: GroupNode[] = Array.from(groupMap.entries()).map(
@@ -483,14 +499,16 @@ export default function SearchBubbleChart({
   return (
     <div ref={containerRef} className="relative w-full">
       <div className="flex items-center gap-2 mb-4">
-        <Button
-          variant={groupMode === "country" ? "default" : "outline"}
-          size="sm"
-          onClick={() => handleGroupModeChange("country")}
-          className="text-xs font-semibold"
-        >
-          Par pays
-        </Button>
+        {enableCountryGrouping && (
+          <Button
+            variant={groupMode === "country" ? "default" : "outline"}
+            size="sm"
+            onClick={() => handleGroupModeChange("country")}
+            className="text-xs font-semibold"
+          >
+            Par pays
+          </Button>
+        )}
         <Button
           variant={groupMode === "category" ? "default" : "outline"}
           size="sm"
