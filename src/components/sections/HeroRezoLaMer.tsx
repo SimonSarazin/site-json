@@ -48,8 +48,7 @@ export function HeroRezoLaMer({ props }: HeroRezoLaMerProps) {
                     <div
                         className="absolute inset-0"
                         style={{
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            background: `linear-gradient(to bottom, color-mix(in oklch, var(--color-background) 80%, transparent), color-mix(in oklch, var(--color-background) ${(props as any).overlayOpacity ?? "60%"}, transparent), var(--color-background))`
+                            background: `linear-gradient(to bottom, color-mix(in oklch, var(--color-background) 80%, transparent), color-mix(in oklch, var(--color-background) ${(props as unknown as Record<string, unknown>).overlayOpacity ?? "60%"}, transparent), var(--color-background))`
                         }}
                     />
                 </div>
@@ -79,8 +78,7 @@ export function HeroRezoLaMer({ props }: HeroRezoLaMerProps) {
                     {props.subhead && (
                         <p
                             className="text-xl md:text-2xl max-w-3xl mx-auto leading-relaxed"
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            style={{ color: (props as any).subheadColor ?? "var(--color-muted-foreground)" }}
+                                style={{ color: (props as unknown as Record<string, unknown>).subheadColor as string ?? "var(--color-muted-foreground)" }}
                         >
                             {t(props.subhead)}
                         </p>

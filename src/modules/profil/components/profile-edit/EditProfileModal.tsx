@@ -391,7 +391,7 @@ export function EditProfileModal({
                     )}
                     {tabs.includes('schedule') && (
                       <TabsContent value="schedule">
-                        <EditScheduleTab form={form} />
+                        <EditScheduleTab form={form as unknown as UseFormReturn<FieldValues>} />
                       </TabsContent>
                     )}
                     {tabs.includes('eventDates') && (

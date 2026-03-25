@@ -44,8 +44,7 @@ function getLucideIcon(name?: string): ComponentType<{ className?: string }> | n
   if (!name) return null;
   if (lucideIconCache.has(name)) return lucideIconCache.get(name)!;
   const key = name.charAt(0).toUpperCase() + name.slice(1).replace(/-./g, (x) => x[1].toUpperCase());
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const icon = (LucideIcons as any as Record<string, ComponentType<{ className?: string }>>)[key] || null;
+  const icon = (LucideIcons as unknown as Record<string, ComponentType<{ className?: string }>>)[key] || null;
   lucideIconCache.set(name, icon);
   return icon;
 }
@@ -57,10 +56,8 @@ function FieldRenderer({
   t,
 }: {
   field: JsonFormModalField;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  value: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onChange: (val: any) => void;
+  value: unknown;
+  onChange: (val: unknown) => void;
   t: (v: LocalizedString) => string;
 }) {
   switch (field.type) {
@@ -68,7 +65,7 @@ function FieldRenderer({
       return (
         <Textarea
           placeholder={field.placeholder ? t(field.placeholder) : ""}
-          value={value || ""}
+          value={(value as string) || ""}
           onChange={(e) => onChange(e.target.value)}
           className="min-h-[100px]"
         />
@@ -76,7 +73,7 @@ function FieldRenderer({
 
     case "select":
       return (
-        <Select value={value || ""} onValueChange={onChange}>
+        <Select value={(value as string) || ""} onValueChange={onChange}>
           <SelectTrigger>
             <SelectValue
               placeholder={field.placeholder ? t(field.placeholder) : `${t(field.label)}...`}
@@ -93,7 +90,7 @@ function FieldRenderer({
       );
 
     case "multiselect": {
-      const selected: string[] = Array.isArray(value) ? value : [];
+      const selected: string[] = Array.isArray(value) ? (value as string[]) : [];
       const toggleOption = (optValue: string) => {
         if (selected.includes(optValue)) {
           onChange(selected.filter((v) => v !== optValue));
@@ -182,7 +179,7 @@ function FieldRenderer({
 
     case "radio":
       return (
-        <RadioGroup value={value || ""} onValueChange={onChange}>
+        <RadioGroup value={(value as string) || ""} onValueChange={onChange}>
           {field.options?.map((opt) => (
             <div key={opt.value} className="flex items-center space-x-2">
               <RadioGroupItem value={opt.value} id={`${field.name}-${opt.value}`} />
@@ -207,7 +204,7 @@ function FieldRenderer({
         <Input
           type={field.type || "text"}
           placeholder={field.placeholder ? t(field.placeholder) : ""}
-          value={value || ""}
+          value={(value as string) || ""}
           onChange={(e) => onChange(e.target.value)}
         />
       );
@@ -325,8 +322,7 @@ export function JsonFormModal({ open, onOpenChange, formConfig }: ModalProps) {
     const errors: string[] = [];
     for (const field of currentFields) {
       if (field.type === "location") continue;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const value = form.getValues(field.name) as any;
+      const value: unknown = form.getValues(field.name);
       if (field.required) {
         const isEmpty = Array.isArray(value) ? value.length === 0 : (!value || value === "");
         if (isEmpty) {
@@ -334,17 +330,18 @@ export function JsonFormModal({ open, onOpenChange, formConfig }: ModalProps) {
         }
       }
       if (field.validation && value) {
+        const strValue = String(value);
         if (field.validation === "email") {
-          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(strValue)) {
             errors.push("Adresse e-mail invalide");
           }
         } else if (field.validation === "tel") {
-          if (!/^[\d\s()+-]+$/.test(value)) {
+          if (!/^[\d\s()+-]+$/.test(strValue)) {
             errors.push("Numéro de téléphone invalide");
           }
         } else {
           try {
-            if (!new RegExp(field.validation).test(value)) {
+            if (!new RegExp(field.validation).test(strValue)) {
               errors.push(`Format invalide pour ${t(field.label)}`);
             }
           } catch { /* ignore invalid regex */ }

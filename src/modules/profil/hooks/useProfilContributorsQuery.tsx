@@ -35,8 +35,7 @@ export function useProfilContributorsQuery({
         return [];
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const result = await (entity as any).getContributors({
+      const result = await (entity as unknown as { getContributors(params: Record<string, unknown>): Promise<{ results?: (User | Organization)[] }> }).getContributors({
         indexMin: pageParam as number,
         indexStep,
         ...(searchQuery ? { name: searchQuery } : {}),

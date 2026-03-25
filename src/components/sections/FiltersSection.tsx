@@ -20,8 +20,7 @@ export function FiltersSection({
   const [openGroups, setOpenGroups] = useState<string[]>(defaultOpenGroups);
 
   const filtersByAnswersOptions = filtersByAnswers ?? {};
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const filterAnswerResult = useFiltersByAnswersQuery(`filters-answers-${id}`, filtersByAnswersOptions as any);
+  const filterAnswerResult = useFiltersByAnswersQuery(`filters-answers-${id}`, filtersByAnswersOptions as Parameters<typeof useFiltersByAnswersQuery>[1]);
   const filterAnswerData = filtersByAnswers ? filterAnswerResult.data : null;
 
   const zoneQueryParams = useMemo(() => {
@@ -132,8 +131,7 @@ export function FiltersSection({
                   id: value,
                   type: level
                 }
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              } as any as typeof prev[string]
+              } as unknown as typeof prev[string]
             };
           } else {
             const valueToSet = Array.isArray(value) ? value : [value];

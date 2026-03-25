@@ -81,8 +81,7 @@ export function useProfilFriendsQuery({
         params.name = searchQuery;
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const result = await (entity as any).getFriends(params);
+      const result = await (entity as unknown as { getFriends(params: Record<string, unknown>): Promise<{ results?: User[]; totalCount?: number }> }).getFriends(params);
 
       if (result.totalCount !== undefined) {
         setTotalCount(result.totalCount);

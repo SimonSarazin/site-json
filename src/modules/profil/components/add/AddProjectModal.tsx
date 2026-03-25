@@ -35,8 +35,7 @@ const TAB_FIELDS = {
 
 type TabName = keyof typeof TAB_FIELDS;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function hasTabErrors(tabName: TabName, errors: FieldErrors<any>): boolean {
+function hasTabErrors(tabName: TabName, errors: FieldErrors<FieldValues>): boolean {
   return TAB_FIELDS[tabName].some(field => !!errors[field]);
 }
 

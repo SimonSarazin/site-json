@@ -16,9 +16,18 @@ interface MemberMapProps {
   };
 }
 
-function getData(member: User | Organization) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return ((member as any).serverData || member) as any;
+interface MemberData {
+  id?: string;
+  name?: string;
+  profilThumbImageUrl?: string;
+  geoPosition?: { coordinates?: number[] };
+  geo?: { latitude?: string | number; longitude?: string | number };
+  address?: { streetAddress?: string };
+  [key: string]: unknown;
+}
+
+function getData(member: User | Organization): MemberData {
+  return ((member as unknown as { serverData?: MemberData }).serverData || member) as MemberData;
 }
 
 function getCoordinates(member: User | Organization): [number, number] | null {

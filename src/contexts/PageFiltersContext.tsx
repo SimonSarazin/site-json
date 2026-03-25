@@ -3,8 +3,7 @@ import { createContext, useContext, useState, type ReactNode } from "react";
 interface SearchByFieldValue {
   field: string;
   type?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  value: any;
+  value: string[] | Record<string, unknown>;
 }
 
 interface PageFiltersContextType {
