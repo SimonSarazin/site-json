@@ -55,7 +55,8 @@ export function useCoFormAnswerFiles({
     queryFn: async () => {
       if (!api) throw new Error("API non initialisée");
 
-      const response = await api.endpointApi.coformGetAnswerFiles({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const response = await (api.endpointApi as any).coformGetAnswerFiles({
         answerId,
         subKey,
         docType,

@@ -31,7 +31,7 @@ export interface ActionButton {
     icon?: string;
     href?: string;
     variant?: "default" | "outline" | "primary" | "turquoise";
-    action?: "join-dropdown" | "add-project" | "add-event" | "add-poi";
+    action?: "join-dropdown" | "add-project" | "add-event" | "add-poi" | "add-organization";
     modal?: string;
     formConfig?: JsonFormModalConfig;
     requiresAdmin?: boolean;
@@ -416,6 +416,19 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
                                         key={index}
                                         button={button}
                                         modalName="add-poi"
+                                        tLocalized={tLocalized}
+                                        tKey={tKey}
+                                        getButtonClasses={getButtonClasses}
+                                    />
+                                );
+                            }
+
+                            if (button.action === "add-organization") {
+                                return (
+                                    <DynamicModalButton
+                                        key={index}
+                                        button={button}
+                                        modalName="add-organization"
                                         tLocalized={tLocalized}
                                         tKey={tKey}
                                         getButtonClasses={getButtonClasses}
