@@ -1511,8 +1511,32 @@ const FooterColumn = z.object({
   })),
 });
 
+const FooterContactItem = z.object({
+  icon: z.string().optional(),
+  label: LocalizedString.optional(),
+  lines: z.array(LocalizedString).optional(),
+  value: LocalizedString.optional(),
+  href: z.string().optional(),
+});
+
+const FooterContactSection = z.object({
+  title: LocalizedString.optional(),
+  items: z.array(FooterContactItem),
+});
+
+const FooterPartnerLogo = z.object({
+  image: z.string(),
+  alt: LocalizedString,
+  href: z.string().optional(),
+});
+
+const FooterPartnersSection = z.object({
+  title: LocalizedString.optional(),
+  logos: z.array(FooterPartnerLogo),
+});
+
 export const Footer = z.object({
-  type: z.enum(["tiers-lieux", "rezo-la-mer", "cyber-reunion", "default"]).default("default"),
+  type: z.enum(["tiers-lieux", "rezo-la-mer", "cyber-reunion", "ssbe", "default"]).default("default"),
   columns: z.array(FooterColumn),
   socials: z.array(z.object({ platform: z.string(), url: z.string() })).optional(),
   extra: z.string().optional(),
@@ -1533,6 +1557,8 @@ export const Footer = z.object({
   })).optional(),
   paymentMethods: z.array(z.string()).optional(), // Array of payment method icons
   website: z.string().optional(),
+  contactSection: FooterContactSection.optional(),
+  partners: FooterPartnersSection.optional(),
 });
 export type Footer = z.infer<typeof Footer>;
 
