@@ -23,6 +23,7 @@ const LazySections: {
   hero: lazy(() => import("./HeroSection")),
   "hero-tiers-lieux": lazy(() => import("./HeroTiersLieux")),
   "hero-rezo-la-mer": lazy(() => import("./HeroRezoLaMer")),
+  "hero-ssbe": lazy(() => import("./HeroSSBE")),
   "features-rezo-la-mer": lazy(() => import("./FeaturesRezoLaMer")),
   "action-buttons-rezo-la-mer": lazy(() => import("./ActionButtonsRezoLaMer")),
   "community-rezo-la-mer": lazy(() => import("./CommunityRezoLaMer")),
