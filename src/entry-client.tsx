@@ -5,7 +5,6 @@ import { createBrowserRouter, RouterProvider, type RouterState } from "react-rou
 import { HelmetProvider } from "@dr.pogodin/react-helmet";
 import { buildRoutes } from "@/lib/buildRoutes";
 import { type SiteConfig } from '@/types/site';
-import "virtual:site-css";
 import { HydrationBoundary, QueryClient, QueryClientProvider, type DehydratedState } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 

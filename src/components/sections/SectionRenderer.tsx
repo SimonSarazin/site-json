@@ -77,6 +77,7 @@ const LazySections: {
   member: lazy(() => import("./MemberSection")),
   heroWithIcon: lazy(() => import("./HeroWithIconSection")),
   meeteem: lazy(() => import("@/modules/ampli/components/sections/MeeteemSection")),
+  siteList: lazy(() => import("./SiteListSection")),
 };
 
 // Fallback skeleton pour les sections en cours de chargement

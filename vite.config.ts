@@ -1,50 +1,43 @@
 import path from 'path';
 import fs from 'fs';
+import { execSync } from 'child_process';
 import tailwindcss from "@tailwindcss/vite"
 import react from '@vitejs/plugin-react';
-import { defineConfig, loadEnv, type Plugin } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import { visualizer } from 'rollup-plugin-visualizer';
 import preloadPlugin from 'vite-preload/plugin';
 
-function siteCssPlugin(): Plugin {
-  const virtualId = 'virtual:site-css';
-  const resolvedId = '\0' + virtualId;
-  let cssFile: string | null = null;
+function buildAllSiteCssPlugin(): Plugin {
+  let outDir: string;
+  let root: string;
 
   return {
-    name: 'site-css-resolver',
+    name: 'build-all-site-css',
     configResolved(config) {
-      const env = loadEnv(config.mode, config.root, '');
-      const slug = env.VITE_SLUG;
-
-      if (!slug) {
-        console.warn('[site-css] VITE_SLUG non défini dans .env');
-        return;
-      }
-
-      const sitesPath = path.resolve(config.root, 'sites.json');
-      if (!fs.existsSync(sitesPath)) {
-        console.warn('[site-css] sites.json non trouvé');
-        return;
-      }
-
-      const sites = JSON.parse(fs.readFileSync(sitesPath, 'utf-8'));
-      const site = sites.find((s: { slug: string }) => s.slug === slug);
-      if (!site?.css) {
-        console.warn(`[site-css] Pas de CSS pour le slug "${slug}"`);
-        return;
-      }
-
-      cssFile = path.resolve(config.root, 'src', `${site.css}.css`);
-      console.log(`[site-css] ${slug} → src/${site.css}.css`);
+      outDir = config.build.outDir;
+      root = config.root;
     },
-    resolveId(id) {
-      if (id === virtualId) return resolvedId;
-    },
-    load(id) {
-      if (id === resolvedId) {
-        if (!cssFile) return '/* no site css */';
-        return `import "${cssFile}";`;
+    closeBundle() {
+      const srcDir = path.resolve(root, 'src');
+      const cssOutDir = path.resolve(root, outDir, 'css');
+
+      const cssFiles = fs.readdirSync(srcDir).filter(f => f.startsWith('index-') && f.endsWith('.css'));
+      if (cssFiles.length === 0) return;
+
+      fs.mkdirSync(cssOutDir, { recursive: true });
+
+      for (const cssFile of cssFiles) {
+        const input = path.resolve(srcDir, cssFile);
+        const output = path.resolve(cssOutDir, cssFile);
+        try {
+          execSync(`npx @tailwindcss/cli -i "${input}" -o "${output}" --minify`, {
+            cwd: root,
+            stdio: 'pipe',
+          });
+          console.log(`[site-css] ${cssFile} → css/${cssFile}`);
+        } catch (e: unknown) {
+          console.error(`[site-css] ${cssFile}:`, (e as Error).message);
+        }
       }
     },
   };
@@ -52,7 +45,6 @@ function siteCssPlugin(): Plugin {
 
 export default defineConfig(({ mode, isSsrBuild }) => ({
   plugins: [
-    siteCssPlugin(),
     preloadPlugin(), // Doit être AVANT react() pour tracer les lazy imports
     react(),
     tailwindcss(),
@@ -62,7 +54,8 @@ export default defineConfig(({ mode, isSsrBuild }) => ({
       open: false,
       gzipSize: true,
       brotliSize: true,
-    })
+    }),
+    !isSsrBuild && buildAllSiteCssPlugin(),
   ].filter(Boolean),
   resolve: {
     alias: {
