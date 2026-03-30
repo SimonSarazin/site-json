@@ -162,6 +162,16 @@
   --shadow-lg: 0px 4px 8px -1px oklch(0.08 0.02 230 / 0.55), 0px 4px 6px -2px oklch(0.08 0.02 230 / 0.45);
   --shadow-xl: 0px 4px 8px -1px oklch(0.08 0.02 230 / 0.65), 0px 8px 10px -2px oklch(0.08 0.02 230 / 0.55);
   --shadow-2xl: 0px 4px 8px -1px oklch(0.08 0.02 230 / 0.75);
+  /* Gradients */
+  --gradient-hero: linear-gradient(135deg,oklch(0.70 0.16 180),oklch(0.65 0.17 230));
+  --gradient-warm: linear-gradient(135deg,oklch(0.72 0.18 40),oklch(0.78 0.18 80));
+  --gradient-card: linear-gradient(180deg,oklch(1 0 0),oklch(0.98 0.02 180));
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 oklch(0.25 0.04 240 / 0.05);
+  --shadow-md:0 4px 6px -1px oklch(0.25 0.04 240 / 0.08),0 2px 4px -1px oklch(0.25 0.04 240 / 0.04);
+  --shadow-lg: 0 10px 15px -3px oklch(0.25 0.04 240 / 0.1), 0 4px 6px -2px oklch(0.25 0.04 240 / 0.05);
+  --shadow-xl:0 20px 25px -5px oklch(0.25 0.04 240 / 0.1),0 10px 10px -5px oklch(0.25 0.04 240 / 0.04);
+  --shadow-glow: 0 0 40px oklch(0.70 0.16 180 / 0.15);
 }
 
 @theme inline {
@@ -381,3 +391,64 @@ html { scroll-behavior: smooth; }
 .prose pre { background: var(--muted); padding: 1rem; border-radius: 0.5rem; overflow-x: auto; }
 .prose blockquote { border-left: 4px solid var(--primary); padding-left: 1rem; margin: 1.5rem 0; font-style: italic; color: var(--muted-foreground); }
 
+@layer components {
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--gradient-hero);
+  }
+
+  .bg-gradient-hero {
+    background-image: var(--gradient-hero);
+  }
+
+  .bg-gradient-warm {
+    background-image: var(--gradient-warm);
+  }
+
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .card-elevated {
+    @apply bg-card rounded-xl;
+    box-shadow: var(--shadow-md);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+  }
+
+  .card-elevated:hover {
+    box-shadow: var(--shadow-xl);
+    transform: translateY(-2px);
+  }
+
+  .stat-card {
+    @apply relative overflow-hidden rounded-2xl p-6;
+    background: var(--gradient-card);
+    box-shadow: var(--shadow-md);
+  }
+
+  .stat-card::before {
+    content: '';
+    @apply absolute top-0 left-0 w-full h-1;
+    background-image: var(--gradient-hero);
+  }
+
+  .access-card {
+    @apply relative overflow-hidden rounded-2xl p-8 transition-all duration-300;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .access-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+  }
+
+  .access-card-pro {
+    @apply text-white;
+    background-image: var(--gradient-hero);
+  }
+
+  .access-card-public {
+    background: linear-gradient(135deg, var(--coral), var(--warning));
+    @apply text-white;
+  }
+}
