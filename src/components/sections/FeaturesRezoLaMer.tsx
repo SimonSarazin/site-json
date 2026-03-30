@@ -63,9 +63,11 @@ export function FeaturesRezoLaMer({ id, props }: FeaturesRezoLaMerSectionProps) 
         <section id={id} className={`py-24 px-4 ${sectionBg}`}>
             <div className="container mx-auto max-w-6xl">
                 <div className="text-center mb-16 animate-fade-in">
-                    <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
-                        {t(props.headline)}
-                    </h2>
+                    {props.subhead && (
+                        <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
+                            {t(props.headline)}
+                        </h2>
+                    )}
                     {props.subhead && (
                         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
                             {t(props.subhead)}
@@ -87,9 +89,11 @@ export function FeaturesRezoLaMer({ id, props }: FeaturesRezoLaMerSectionProps) 
                             <h3 className="text-xl font-semibold mb-3 text-foreground">
                                 {t(feature.title)}
                             </h3>
-                            <p className="text-muted-foreground leading-relaxed">
-                                {t(feature.description)}
-                            </p>
+                            {feature.description && (
+                                <p className="text-muted-foreground leading-relaxed">
+                                    {t(feature.description)}
+                                </p>
+                            )}
                         </Card>
                     ))}
                 </div>
