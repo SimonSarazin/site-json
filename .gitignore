@@ -39,3 +39,4 @@ test-results/
 
 # Test credentials
 .env.test
+agent-os/

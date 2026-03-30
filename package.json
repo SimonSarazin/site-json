@@ -12,7 +12,7 @@
     "build": "npm run clean && npm run build:client && npm run build:server",
     "clean": "rimraf dist tsconfig.tsbuildinfo",
     "lint": "eslint .",
-    "preview": "cross-env NODE_ENV=production SITE_CONFIG_PATH=$PWD/config.prod.json node server/prod-server.js",
+    "preview": "cross-env NODE_ENV=production SITE_CONFIG_PATH=$PWD/config.prod.tiers-lieux.json node server/prod-server.js",
     "preview:ssr": "npm run build:ssr && npm preview",
     "start": "node server/prod-server.js",
     "test": "vitest run",
