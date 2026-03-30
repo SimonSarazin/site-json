@@ -1467,6 +1467,7 @@ export const Header = z.object({
   logoIcon: z.string().optional(),
   path: z.string().min(1).optional(),
   nav: z.array(EnhancedNavItem),
+  navVisibleOnlyForListedPages: z.boolean().default(false),
   sticky: z.boolean().default(true),
   transparent: z.boolean().default(false),
   height: z.enum(["sm", "md", "lg"]).default("md"),
