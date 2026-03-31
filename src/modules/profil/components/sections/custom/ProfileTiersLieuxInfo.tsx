@@ -187,11 +187,6 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
     const handleClickForm = useCallback(async (formId: string, finder?: string) => {
         if(!entity || !me) return;
         if(!canEditProfile) return;
-
-        // Ouvrir la fenêtre immédiatement (dans le geste utilisateur)
-        // sinon le navigateur bloque le popup après un await
-        const newWindow = window.open("about:blank", "_blank");
-
         const dataForms = _answersByForms?.find((item) => item.id === formId);
         const accessToken = entity.apiClient.getToken();
         let answer: Answer | undefined = undefined;
@@ -201,12 +196,10 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
             answer = await (entity as unknown as { generateNewAnswerId(formId: string): Promise<Answer | undefined> }).generateNewAnswerId(formId);
             if (!answer) {
                 console.error("Failed to generate new answer ID for form:", formId);
-                newWindow?.close();
                 return;
             }
             if(!answer.id) {
                 console.error("No answer ID generated for form:", formId);
-                newWindow?.close();
                 return;
             }
             const params = {
@@ -230,19 +223,17 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
             };
             await (entity.endpointApi as unknown as { updatePathValue(p: Record<string, unknown>): Promise<unknown> }).updatePathValue(params);
             await (entity.endpointApi as unknown as { updatePathValue(p: Record<string, unknown>): Promise<unknown> }).updatePathValue(paramsLinks);
+            // entity.endpointApi.updatePathValue({
+            //     "id": 
+            // })
         }
         if (!answer) {
             console.error("No answer available to open for form:", formId);
-            newWindow?.close();
             return;
         }
         const targetUrl = `/costum/co/index/slug/navigatorDesTierslieux/#answer.index_coformv2.id.${answer.serverData.id}.form.${formId}.mode.w.standalone.true.ask.false`
         const urlToRedirect = `${getServerUrl()}/co2/embed/render?targetUrl=${encodeURIComponent(targetUrl)}&embedToken=${accessToken}`;
-        if (newWindow) {
-            newWindow.location.href = urlToRedirect;
-        } else {
-            window.location.href = urlToRedirect;
-        }
+        window.open(urlToRedirect, "_blank");
 
     }, [_answersByForms, entity, me, canEditProfile])
 
