@@ -177,7 +177,6 @@
       "social": "Social",
       "membership": "Mes Organisations",
       "members": "Membres",
-      "projects": "Projets",
       "events": "Événements",
       "contributors": "Contributeurs",
       "organizations": "Organisations",
@@ -607,44 +606,41 @@
     "updateFailed": "Échec de la mise à jour de l'image",
     "zoom": "Zoom"
   },
-  "common": {
-    "loading": "Chargement..."
-  },
   "SocialTab": {
-    "addFriend": "Ajouter un ami",
-    "searchFriends": "Rechercher parmi les amis...",
-    "privateProfile": "Profil privé",
-    "cannotViewFriends": "Vous ne pouvez pas voir les amis de cet utilisateur",
+    "addFriend": "Ajouter un Ami",
+    "searchFriends": "Rechercher des amis...",
+    "privateProfile": "Profil Privé",
+    "cannotViewFriends": "Vous ne pouvez pas voir la liste d'amis de cet utilisateur",
     "tabs": {
       "friends": "Amis",
       "friendsShort": "Amis",
-      "pending": "En attente",
-      "pendingShort": "Attente",
-      "sent": "Envoyées",
+      "pending": "Demandes Reçues",
+      "pendingShort": "Reçues",
+      "sent": "Demandes Envoyées",
       "sentShort": "Envoyées"
     },
     "noFriendsFound": "Aucun ami trouvé",
     "noFriendsYet": "Pas encore d'amis",
-    "tryDifferentSearch": "Essayez une recherche différente",
-    "startConnecting": "Commencez à vous connecter avec d'autres utilisateurs",
-    "removeFriend": "Retirer",
+    "tryDifferentSearch": "Essayez un autre terme de recherche",
+    "startConnecting": "Commencez à vous connecter avec des personnes pour construire votre réseau",
+    "removeFriend": "Supprimer l'Ami",
     "noPendingRequests": "Aucune demande en attente",
-    "pendingRequestsInfo": "Les demandes d'amitié reçues apparaîtront ici",
+    "pendingRequestsInfo": "Les demandes d'amitié en attente de votre réponse apparaîtront ici",
     "accept": "Accepter",
-    "reject": "Refuser",
+    "reject": "Rejeter",
     "noSentRequests": "Aucune demande envoyée",
-    "sentRequestsInfo": "Vos demandes d'amitié envoyées apparaîtront ici",
+    "sentRequestsInfo": "Les demandes d'amitié que vous avez envoyées apparaîtront ici",
     "cancel": "Annuler",
-    "requestPending": "En attente de réponse"
+    "requestPending": "Demande en attente"
   },
   "FriendRequestDialog": {
-    "title": "Ajouter un ami",
-    "searchPlaceholder": "Rechercher un utilisateur...",
-    "startTyping": "Commencez à taper pour rechercher",
+    "title": "Ajouter un Ami",
+    "searchPlaceholder": "Rechercher par nom ou nom d'utilisateur...",
+    "startTyping": "Commencez à taper pour rechercher des utilisateurs",
     "minimumChars": "Tapez au moins 2 caractères",
     "searching": "Recherche...",
     "noUsersFound": "Aucun utilisateur trouvé",
-    "tryDifferentSearch": "Essayez une recherche différente",
+    "tryDifferentSearch": "Essayez un autre terme de recherche",
     "sendRequest": "Ajouter"
   },
   "badges": {
@@ -708,19 +704,38 @@
   },
   "toast": {
     "relationship": {
-      "followSuccess": "Vous suivez maintenant",
-      "followError": "Impossible de suivre",
-      "unfollowSuccess": "Vous ne suivez plus",
-      "unfollowError": "Impossible de ne plus suivre",
-      "memberRequestSent": "Demande d'adhésion envoyée",
-      "memberRequestError": "Impossible d'envoyer la demande",
+      "followSuccess": "Utilisateur suivi avec succès",
+      "followError": "Impossible de suivre l'utilisateur",
+      "unfollowSuccess": "Utilisateur retiré des abonnements",
+      "unfollowError": "Impossible de ne plus suivre l'utilisateur",
+      "memberRequestSent": "Demande de membre envoyée avec succès",
+      "memberRequestError": "Impossible d'envoyer la demande de membre",
       "adminRequestSent": "Demande admin envoyée",
       "adminRequestError": "Impossible d'envoyer la demande admin",
       "leaveSuccess": "Vous avez quitté avec succès",
-      "leaveError": "Impossible de quitter"
+      "leaveError": "Impossible de quitter",
+      "friendRequestSent": "Demande d'ami envoyée",
+      "friendRequestError": "Impossible d'envoyer la demande d'ami",
+      "friendRequestAccepted": "Demande d'ami acceptée",
+      "friendRemoved": "Ami retiré",
+      "friendRemoveError": "Impossible de retirer l'ami",
+      "memberLeftSuccess": "Vous avez quitté l'organisation avec succès",
+      "memberLeftError": "Impossible de quitter l'organisation",
+      "contributorRequestSent": "Demande de contribution envoyée avec succès",
+      "contributorRequestError": "Impossible d'envoyer la demande de contribution",
+      "projectAdminRequestSent": "Demande d'administration envoyée avec succès",
+      "projectAdminRequestError": "Impossible d'envoyer la demande d'administration",
+      "orgAdminRequestSent": "Demande d'administration envoyée avec succès",
+      "orgAdminRequestError": "Impossible d'envoyer la demande d'administration",
+      "projectLeftSuccess": "Vous avez quitté le projet avec succès",
+      "projectLeftError": "Impossible de quitter le projet",
+      "participationSuccess": "Vous participez maintenant à cet événement",
+      "participationError": "Impossible de participer à cet événement",
+      "participationLeftSuccess": "Vous ne participez plus à cet événement",
+      "participationLeftError": "Impossible d'arrêter la participation à cet événement"
     },
     "invitation": {
-      "acceptSuccess": "Invitation acceptée",
+      "acceptSuccess": "Invitation acceptée avec succès",
       "acceptError": "Impossible d'accepter l'invitation",
       "rejectSuccess": "Invitation refusée",
       "rejectError": "Impossible de refuser l'invitation"
@@ -736,8 +751,24 @@
       "cancelError": "Impossible d'annuler la demande"
     },
     "members": {
-      "requestPromoteSuccess": "Demande de promotion envoyée",
-      "requestPromoteError": "Impossible d'envoyer la demande de promotion"
+      "requestPromoteSuccess": "Votre demande de devenir administrateur a été envoyée",
+      "requestPromoteError": "Impossible d'envoyer la demande de promotion",
+      "demoteSuccess": "{{name}} a été rétrogradé avec succès",
+      "demoteError": "Impossible de rétrograder {{name}}",
+      "promoteSuccess": "{{name}} a été promu administrateur",
+      "promoteError": "Impossible de promouvoir {{name}}",
+      "validateSuccess": "{{name}} a été validé avec succès",
+      "validateError": "Impossible de valider {{name}}",
+      "validateAdminSuccess": "{{name}} a été validé en tant qu'administrateur",
+      "validateAdminError": "Impossible de valider {{name}} en tant qu'administrateur",
+      "rejectSuccess": "La demande de {{name}} a été rejetée",
+      "rejectError": "Impossible de rejeter la demande de {{name}}",
+      "removeSuccess": "{{name}} a été supprimé avec succès",
+      "removeError": "Impossible de supprimer {{name}}",
+      "inviteSuccess": "Invitation envoyée à {{name}}",
+      "inviteError": "Impossible d'envoyer l'invitation à {{name}}",
+      "inviteAdminSuccess": "Invitation d'administrateur envoyée à {{name}}",
+      "inviteAdminError": "Impossible d'envoyer l'invitation d'administrateur à {{name}}"
     },
     "comment": {
       "addSuccess": "Commentaire ajouté avec succès",
@@ -786,86 +817,10 @@
     "profile": {
       "updateSuccess": "Profil mis à jour avec succès",
       "updateError": "Impossible de mettre à jour le profil",
-      "imageUploadSuccess": "Image de profil mise à jour avec succès",
-      "imageUploadError": "Impossible de mettre à jour l'image de profil",
-      "bannerUploadSuccess": "Bannière mise à jour avec succès",
-      "bannerUploadError": "Impossible de mettre à jour la bannière"
-    },
-    "friends": {
-      "requestSent": "Demande d'amitié envoyée",
-      "sendRequestError": "Impossible d'envoyer la demande d'amitié",
-      "requestAccepted": "Demande d'amitié acceptée",
-      "acceptRequestError": "Impossible d'accepter la demande d'amitié",
-      "requestRejected": "Demande d'amitié refusée",
-      "rejectRequestError": "Impossible de refuser la demande d'amitié",
-      "friendRemoved": "Ami retiré",
-      "removeError": "Impossible de retirer l'ami",
-      "requestCancelled": "Demande d'amitié annulée",
-      "cancelError": "Impossible d'annuler la demande d'amitié"
-    },
-    "error": {
-      "generic": "Une erreur est survenue"
-    },
-    "profile": {
-      "updateSuccess": "Profil mis à jour avec succès",
-      "updateError": "Impossible de mettre à jour le profil",
       "imageUploadSuccess": "Photo de profil uploadée avec succès",
       "imageUploadError": "Impossible d'uploader la photo de profil",
       "bannerUploadSuccess": "Bannière uploadée avec succès",
       "bannerUploadError": "Impossible d'uploader la bannière"
-    },
-    "invitation": {
-      "acceptSuccess": "Invitation acceptée avec succès",
-      "acceptError": "Impossible d'accepter l'invitation",
-      "rejectSuccess": "Invitation refusée",
-      "rejectError": "Impossible de refuser l'invitation"
-    },
-    "relationship": {
-      "followSuccess": "Utilisateur suivi avec succès",
-      "followError": "Impossible de suivre l'utilisateur",
-      "unfollowSuccess": "Utilisateur retiré des abonnements",
-      "unfollowError": "Impossible de ne plus suivre l'utilisateur",
-      "friendRequestSent": "Demande d'ami envoyée",
-      "friendRequestError": "Impossible d'envoyer la demande d'ami",
-      "friendRequestAccepted": "Demande d'ami acceptée",
-      "friendRemoved": "Ami retiré",
-      "friendRemoveError": "Impossible de retirer l'ami",
-      "memberRequestSent": "Demande de membre envoyée avec succès",
-      "memberRequestError": "Impossible d'envoyer la demande de membre",
-      "memberLeftSuccess": "Vous avez quitté l'organisation avec succès",
-      "memberLeftError": "Impossible de quitter l'organisation",
-      "contributorRequestSent": "Demande de contribution envoyée avec succès",
-      "contributorRequestError": "Impossible d'envoyer la demande de contribution",
-      "projectAdminRequestSent": "Demande d'administration envoyée avec succès",
-      "projectAdminRequestError": "Impossible d'envoyer la demande d'administration",
-      "orgAdminRequestSent": "Demande d'administration envoyée avec succès",
-      "orgAdminRequestError": "Impossible d'envoyer la demande d'administration",
-      "projectLeftSuccess": "Vous avez quitté le projet avec succès",
-      "projectLeftError": "Impossible de quitter le projet",
-      "participationSuccess": "Vous participez maintenant à cet événement",
-      "participationError": "Impossible de participer à cet événement",
-      "participationLeftSuccess": "Vous ne participez plus à cet événement",
-      "participationLeftError": "Impossible d'arrêter la participation à cet événement"
-    },
-    "members": {
-      "demoteSuccess": "{{name}} a été rétrogradé avec succès",
-      "demoteError": "Impossible de rétrograder {{name}}",
-      "promoteSuccess": "{{name}} a été promu administrateur",
-      "promoteError": "Impossible de promouvoir {{name}}",
-      "requestPromoteSuccess": "Votre demande de devenir administrateur a été envoyée",
-      "requestPromoteError": "Impossible d'envoyer la demande de promotion",
-      "validateSuccess": "{{name}} a été validé avec succès",
-      "validateError": "Impossible de valider {{name}}",
-      "validateAdminSuccess": "{{name}} a été validé en tant qu'administrateur",
-      "validateAdminError": "Impossible de valider {{name}} en tant qu'administrateur",
-      "rejectSuccess": "La demande de {{name}} a été rejetée",
-      "rejectError": "Impossible de rejeter la demande de {{name}}",
-      "removeSuccess": "{{name}} a été supprimé avec succès",
-      "removeError": "Impossible de supprimer {{name}}",
-      "inviteSuccess": "Invitation envoyée à {{name}}",
-      "inviteError": "Impossible d'envoyer l'invitation à {{name}}",
-      "inviteAdminSuccess": "Invitation d'administrateur envoyée à {{name}}",
-      "inviteAdminError": "Impossible d'envoyer l'invitation d'administrateur à {{name}}"
     },
     "friends": {
       "requestSent": "Demande d'amitié envoyée avec succès",
@@ -878,6 +833,9 @@
       "removeError": "Impossible de supprimer l'ami",
       "requestCancelled": "Demande d'amitié annulée",
       "cancelError": "Impossible d'annuler la demande d'amitié"
+    },
+    "error": {
+      "generic": "Une erreur est survenue"
     },
     "add": {
       "organizationSuccess": "Organisation créée avec succès",
@@ -1079,41 +1037,6 @@
         "noDaysSelected": "Sélectionnez des jours pour définir les horaires"
       }
     }
-  },
-  "SocialTab": {
-    "privateProfile": "Profil Privé",
-    "cannotViewFriends": "Vous ne pouvez pas voir la liste d'amis de cet utilisateur",
-    "searchFriends": "Rechercher des amis...",
-    "addFriend": "Ajouter un Ami",
-    "tabs": {
-      "friends": "Amis",
-      "friendsShort": "Amis",
-      "pending": "Demandes Reçues",
-      "pendingShort": "Reçues",
-      "sent": "Demandes Envoyées",
-      "sentShort": "Envoyées"
-    },
-    "noFriendsFound": "Aucun ami trouvé",
-    "noFriendsYet": "Pas encore d'amis",
-    "tryDifferentSearch": "Essayez un autre terme de recherche",
-    "startConnecting": "Commencez à vous connecter avec des personnes pour construire votre réseau",
-    "removeFriend": "Supprimer l'Ami",
-    "noPendingRequests": "Aucune demande en attente",
-    "pendingRequestsInfo": "Les demandes d'amitié en attente de votre réponse apparaîtront ici",
-    "accept": "Accepter",
-    "reject": "Rejeter",
-    "noSentRequests": "Aucune demande envoyée",
-    "sentRequestsInfo": "Les demandes d'amitié que vous avez envoyées apparaîtront ici",
-    "requestPending": "Demande en attente",
-    "cancel": "Annuler"
-  },
-  "FriendRequestDialog": {
-    "title": "Ajouter un Ami",
-    "searchPlaceholder": "Rechercher par nom ou nom d'utilisateur...",
-    "startTyping": "Commencez à taper pour rechercher des utilisateurs",
-    "noUsersFound": "Aucun utilisateur trouvé",
-    "tryDifferentSearch": "Essayez un autre terme de recherche",
-    "sendRequest": "Ajouter"
   },
   "MembershipTab": {
     "privateProfile": "Profil Privé",

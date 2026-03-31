@@ -155,8 +155,7 @@ describe("apiClient", () => {
       let callCount = 0;
       // @ts-expect-error — replacing constructor temporarily
       Cocolight.Api = function (this: Record<string, unknown>, ...args: unknown[]) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (origApi as any).apply(this, args);
+        (origApi as unknown as (...a: unknown[]) => void).apply(this, args);
         callCount++;
         if (callCount === 1) {
           // First Api instance: entitySlug rejects

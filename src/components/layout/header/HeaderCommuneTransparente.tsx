@@ -39,7 +39,7 @@ export default function HeaderCommuneTransparente({ header }: HeaderCommuneTrans
     const { currentLocale, setLocale, availableLocales } = useLocalization();
     const navigate = useNavigate();
     const location = useLocation();
-    const { me, api } = useCocolight();
+    const { me, api, entity } = useCocolight();
 
     const isNavItemActive = (itemPath?: string) => {
         if (!itemPath) return false;
@@ -86,7 +86,17 @@ export default function HeaderCommuneTransparente({ header }: HeaderCommuneTrans
         (isScrolled || location.pathname !== "/")
             ? "bg-ct-header backdrop-blur-sm shadow-lg"
             : "bg-transparent";
-
+    
+    const dataCostum = entity?.serverData?.costum as Record<string, unknown> | undefined;
+    
+    // Créer des variables locales pour logo et logoTitle au lieu de modifier les props
+    const logo = dataCostum?.transparentCommune
+        ? "https://www.communecter.org" + (dataCostum?.logo as string || dataCostum?.bannerLogoUrl as string) || header.logo || ""
+        : header.logo;
+        
+    const logoTitle = dataCostum?.transparentCommune
+        ? { fr: entity?.serverData?.name || "Votre ville", en: entity?.serverData?.name || "Your city" }
+        : header.logoTitle;
     return (
         <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${headerBg}`}>
             <div className="container mx-auto px-4">
@@ -96,9 +106,9 @@ export default function HeaderCommuneTransparente({ header }: HeaderCommuneTrans
                         to={header.path || "/"}
                         className="flex items-center gap-2 cursor-pointer group"
                     >
-                        {header.logo ? (
+                        {logo ? (
                             <img
-                                src={`${header.logo}`}
+                                src={`${logo}`}
                                 alt={header.logoAlt ? t(header.logoAlt) : ""}
                                 className="h-9 w-auto object-contain group-hover:scale-105 transition-transform"
                             />
@@ -108,9 +118,9 @@ export default function HeaderCommuneTransparente({ header }: HeaderCommuneTrans
                                 dangerouslySetInnerHTML={{ __html: header.logoIcon }}
                             />
                         ) : null}
-                        {(header as any).logoTitle && (
+                        {logoTitle && (
                             <span className="text-white font-bold text-lg hidden sm:block">
-                                {t((header as any).logoTitle)}
+                                {t(logoTitle)}
                             </span>
                         )}
                     </Link>
@@ -209,8 +219,8 @@ export default function HeaderCommuneTransparente({ header }: HeaderCommuneTrans
                                         className="text-white border-white/40 hover:bg-white/10 hover:border-white/70 bg-transparent text-xs sm:text-sm"
                                         onClick={() => setLoginDialogOpen(true)}
                                     >
-                                        {(header as any).ctaButton?.label
-                                            ? t((header as any).ctaButton.label)
+                                        {header.ctaButton?.label
+                                            ? t(header.ctaButton.label)
                                             : t({ fr: "Se connecter", en: "Sign in" })}
                                     </Button>
                                 )}

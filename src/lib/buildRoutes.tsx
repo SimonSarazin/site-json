@@ -23,10 +23,9 @@ function parseJSON(value: string | null): unknown {
  * Registry des extracteurs de sections imbriquées
  * Pour ajouter un nouveau container : ajouter 1 ligne ici
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const SECTION_EXTRACTORS: Record<string, (props: any) => unknown[]> = {
+const SECTION_EXTRACTORS: Record<string, (props: Record<string, unknown>) => unknown[]> = {
   gridLayout: (p) => [p.leftSection, p.rightSection],
-  tabs: (p) => p.tabs?.flatMap((t: { content: unknown }) => Array.isArray(t.content) ? t.content : []) || [],
+  tabs: (p) => (Array.isArray(p.tabs) ? p.tabs : []).flatMap((t: { content: unknown }) => Array.isArray(t.content) ? t.content : []),
 };
 
 /**

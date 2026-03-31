@@ -1,23 +1,42 @@
+import { useCocolight } from "@/hooks/useCocolight";
 import { useLocalization } from "@/hooks/useLocalization";
 import type { HeroCommuneTransparenteProps } from "@/types/site-schema";
-import { DynamicIcon } from "lucide-react/dynamic";
+import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 
 interface HeroCommuneTransparenteSectionProps {
     id?: string;
     props: HeroCommuneTransparenteProps;
 }
 
+interface DonneEntity {
+    name?: string;
+    bannerImageUrl?: string;
+    bannerLogoUrl?: string;
+    bannerText?: string;
+}
+
 export function HeroCommuneTransparenteSection({ id, props }: HeroCommuneTransparenteSectionProps) {
     const { t } = useLocalization();
+    const { entity } = useCocolight();
 
+    const data = entity?.serverData;
+    const dataCostum = entity?.serverData?.costum as Record<string, unknown> | undefined;
+
+    const donneEntity: DonneEntity = {
+        name: data?.name,
+        bannerImageUrl: (dataCostum?.bannerImageUrl || props.backgroundImage) as string | undefined,
+        bannerLogoUrl: (dataCostum?.bannerLogoUrl || props.logoImage) as string | undefined,
+        bannerText: (dataCostum?.bannerText || "Une ville tournée vers l'avenir, entre transformation et solidarité") as string | undefined,
+    }
+    
     return (
         <section id={id} className="relative min-h-screen flex flex-col overflow-hidden">
             {/* ── Image de fond ── */}
-            {props.backgroundImage && (
+            {donneEntity.bannerImageUrl && (
                 <>
                     <img
-                        src={props.backgroundImage}
-                        alt={props.backgroundImageAlt ? t(props.backgroundImageAlt) : ""}
+                        src={`https://www.communecter.org${donneEntity.bannerImageUrl}`}
+                        alt=""
                         className="absolute inset-0 w-full h-full object-cover z-0"
                     />
                     {/* Overlay violet sombre dégradé, fidèle à l'image */}
@@ -29,32 +48,25 @@ export function HeroCommuneTransparenteSection({ id, props }: HeroCommuneTranspa
             {/* ── Contenu centré ── */}
             <div className="relative z-20 flex flex-col items-center justify-center flex-1 text-center px-4 pt-28 pb-16">
 
-                {/* Logo / Icône du site */}
-                {props.logoIcon && (
-                    <div
-                        className="flex items-center justify-center w-16 h-16 mb-6 [&>svg]:w-16 [&>svg]:h-16 ct-animate-in ct-delay-1"
-                        dangerouslySetInnerHTML={{ __html: props.logoIcon }}
-                    />
-                )}
-                {props.logoImage && (
+                {donneEntity.bannerLogoUrl && (
                     <img
-                        src={props.logoImage}
-                        alt={props.headline ? t(props.headline) : "logo"}
+                        src={`https://www.communecter.org${donneEntity.bannerLogoUrl}`}
+                        alt= "logo"
                         className="h-24 w-auto mb-16 object-contain ct-animate-in ct-delay-1"
                     />
                 )}
 
                 {/* Headline */}
-                {props.headline && (
+                {donneEntity.name && (
                     <h1 className="text-white text-3xl sm:text-5xl md:text-6xl font-extrabold mb-16 drop-shadow-lg ct-animate-in ct-delay-2 leading-tight">
-                        {t(props.headline)}
+                        {donneEntity.name}
                     </h1>
                 )}
 
                 {/* Subhead */}
-                {props.subhead && (
-                    <p className="text-white/90 text-base sm:text-lg md:text-xl font-light mb-16 drop-shadow max-w-2xl ct-animate-in ct-delay-3">
-                        {t(props.subhead)}
+                {donneEntity.bannerText && (
+                    <p className="text-white/90 text-base sm:text-lg md:text-2xl font-semibold mb-16 drop-shadow max-w-2xl ct-animate-in ct-delay-3">
+                        {donneEntity.bannerText}
                     </p>
                 )}
 
@@ -64,10 +76,10 @@ export function HeroCommuneTransparenteSection({ id, props }: HeroCommuneTranspa
                         {props.badges.map((badge, idx) => (
                             <span
                                 key={idx}
-                                className="flex items-center gap-2 bg-white/15 border border-white/30 backdrop-blur-sm text-white text-sm font-medium px-4 py-2 rounded-full shadow"
+                                className="flex items-center gap-2 bg-white/30 border border-white/40 backdrop-blur-sm text-white text-sm font-semibold px-4 py-2 rounded-full shadow"
                             >
                                 {badge.icon && (
-                                    <DynamicIcon name={badge.icon as any} className="w-4 h-4 shrink-0" />
+                                    <DynamicIcon name={badge.icon as IconName} className="w-4 h-4 shrink-0" />
                                 )}
                                 <a href={badge.href || "#"}>
                                     {t(badge.label)}
@@ -85,7 +97,7 @@ export function HeroCommuneTransparenteSection({ id, props }: HeroCommuneTranspa
                             return (
                                 <a
                                     key={idx}
-                                    href={btn.path || btn.href || "#"}
+                                    // href={btn.path || btn.href || "#"}
                                     className={
                                         isOutline
                                             ? "px-6 sm:px-8 py-3 text-sm sm:text-base font-semibold border-2 border-white/70 text-white bg-transparent hover:bg-white/10 rounded-md transition-all shadow"

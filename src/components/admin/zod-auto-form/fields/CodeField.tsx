@@ -77,9 +77,16 @@ export function CodeField({
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const onChangeRef = useRef(onChange);
-  onChangeRef.current = onChange;
   const valueRef = useRef(value);
-  valueRef.current = value;
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  useEffect(() => {
+    valueRef.current = value;
+  }, [value]);
+
   const isDark =
     typeof document !== "undefined" &&
     document.documentElement.classList.contains("dark");
@@ -133,7 +140,7 @@ export function CodeField({
       state,
       parent: containerRef.current,
     });
-  }, [fieldKey, isDark, compact]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [fieldKey, isDark, compact]);  
 
   useEffect(() => {
     initEditor();

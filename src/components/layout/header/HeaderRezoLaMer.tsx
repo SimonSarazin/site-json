@@ -4,7 +4,7 @@ import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
 import type { Header } from "@/types/site-schema";
 import { ChevronDown, User, LogOut, Globe, Bell, Menu, X } from "lucide-react";
-import { DynamicIcon } from "lucide-react/dynamic";
+import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { Link, useNavigate, useLocation } from "react-router";
 import { useCocolight } from "@/hooks/useCocolight";
 import { ClientOnly } from "../ClientOnly";
@@ -97,7 +97,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                             />
                         ) : header.logoIcon ? (
                             <DynamicIcon
-                                name={header.logoIcon as any}
+                                name={header.logoIcon as IconName}
                                 className="w-8 h-8 text-primary group-hover:scale-110 transition-transform"
                             />
                         ) : null}
@@ -109,15 +109,45 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                     <div className="hidden md:flex items-center gap-8">
                         {header.nav.map((item, idx) => {
                             const isActive = isNavItemActive(item.path);
+                            const hasChildren = !!item.children?.length;
                             return (
-                                <Link
-                                    key={idx}
-                                    to={item.path || "#"}
-                                    className={`transition-colors font-medium relative group ${isActive ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
-                                >
-                                    {t(item.label)}
-                                    <span className={`absolute -bottom-1 left-0 h-0.5 bg-primary transition-all ${isActive ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
-                                </Link>
+                                <div key={idx} className="relative group">
+                                    <Link
+                                        to={item.path || "#"}
+                                        className={`transition-colors font-medium relative group ${isActive ? 'text-primary' : 'text-muted-foreground hover:text-primary'} ${hasChildren ? 'transition flex items-center gap-1' : ''}`}
+                                    >
+                                        {t(item.label)}
+                                        {hasChildren && <ChevronDown className="w-3 h-3" />}
+                                        <span className={`absolute -bottom-1 left-0 h-0.5 bg-primary transition-all ${isActive ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
+                                    </Link>
+                                    {hasChildren && item.children && (
+                                        <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-screen max-w-2xl bg-popover text-popover-foreground rounded-xl shadow-2xl border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-8 z-60">
+                                            {item.children.length > 2 ? (
+                                                <div className="grid grid-cols-2 gap-6">
+                                                    {item.children.map((sub, i) => (
+                                                        <Link key={i} to={sub.path || "#"} className="block">
+                                                            <h4 className="font-bold text-popover-foreground mb-2">{t(sub.label)}</h4>
+                                                            <p className="text-muted-foreground text-xs leading-relaxed">
+                                                                {sub.description ? t(sub.description) : ""}
+                                                            </p>
+                                                        </Link>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-4">
+                                                    {item.children.map((sub, i) => (
+                                                        <Link key={i} to={sub.path || "#"} className="block">
+                                                            <h4 className="font-bold text-popover-foreground mb-2">{t(sub.label)}</h4>
+                                                            <p className="text-muted-foreground text-xs leading-relaxed">
+                                                                {sub.description ? t(sub.description) : ""}
+                                                            </p>
+                                                        </Link>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}         
+                                </div>
                             );
                         })}
 
@@ -128,7 +158,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                             >
                                 {header.piggyBank.icon ? (
                                     <DynamicIcon
-                                        name={header.piggyBank.icon as any}
+                                        name={header.piggyBank.icon as IconName}
                                         className="w-5 h-5 group-hover:scale-110 transition-transform"
                                     />
                                 ) : null}
@@ -145,7 +175,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                             >
                                 {header.urgenceButton.icon ? (
                                     <DynamicIcon
-                                        name={header.urgenceButton.icon as any}
+                                        name={header.urgenceButton.icon as IconName}
                                         className="w-5 h-5 group-hover:scale-110 transition-transform"
                                     />
                                 ) : null}
@@ -298,7 +328,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                             <span className="flex items-center gap-2">
                                 {header.urgenceButton.icon ? (
                                     <DynamicIcon
-                                        name={header.urgenceButton.icon as any}
+                                        name={header.urgenceButton.icon as IconName}
                                         className="w-5 h-5"
                                     />
                                 ) : null}

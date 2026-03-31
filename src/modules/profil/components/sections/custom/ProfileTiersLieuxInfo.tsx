@@ -1,4 +1,4 @@
-import { use, useCallback, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import {
     MapPin,
     Mail,
@@ -65,7 +65,7 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
     const toolsRaw = useReactiveProperty(entity.serverData, "ourTools");
     const { address, email, mobile, url, tags } = useFormatProfileEntity(entity);
 
-    const { data: _answersByForms, isLoading: _isAnswersByFormsLoading, error: _answersError } = useGetAnswersByFormsQuery({
+    const { data: _answersByForms } = useGetAnswersByFormsQuery({
         entity,
         forms: section.forms,
         enabled: !!entity && section.forms && Object.keys(section.forms).length > 0,
@@ -84,8 +84,11 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
             }));
     }, [toolsRaw]);
 
-    const getNestedValue = (obj: Record<string, any>, path: string): any =>
-        path.split('.').reduce((current: any, key: string) => current?.[key], obj);
+    const getNestedValue = (obj: Record<string, unknown>, path: string): unknown =>
+        path.split('.').reduce<unknown>((current, key) => {
+            if (current === null || typeof current !== "object") return undefined;
+            return (current as Record<string, unknown>)[key];
+        }, obj);
     // Champs supplémentaires via serverData
     const fax = useReactiveProperty<string>(entity.serverData, "fax") ?? null;
     const externalLink = z.string().nullable().parse(parsedTools.find(t => t.key === "reservation")?.items[0]?.url ?? null);
@@ -100,18 +103,18 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
         if (!roomPath) return 0;
         const roomId = section.roomPath?.id;
         if (!roomId) return 0;
-        const roomData = _answersByForms?.find((item: Record<string, any>) => item.id === roomId);
+        const roomData = _answersByForms?.find((item) => item.id === roomId);
         let count = 0;
         if (type === "array") {
-            roomData?.answers.forEach((answer: Record<string, any>) => {
-                const value = getNestedValue(answer.serverData.answers, roomPath);
+            roomData?.answers.forEach((answer) => {
+                const value = getNestedValue((answer.serverData as Record<string, unknown>).answers as Record<string, unknown>, roomPath);
                 if (Array.isArray(value)) {
                     count += value.length - 1;
                 }
             })
         }else if(type === "single"){
-            roomData?.answers.forEach((answer: Record<string, any>) => {
-                const value = getNestedValue(answer.serverData.answers, roomPath);
+            roomData?.answers.forEach((answer) => {
+                const value = getNestedValue((answer.serverData as Record<string, unknown>).answers as Record<string, unknown>, roomPath);
                 if(value && isNaN(Number(value)) === false){
                     count += Number(value);
                 }
@@ -125,24 +128,24 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
         if (!coworkPath) return 0;
         const coworkId = section.coworkingPath?.id;
         if (!coworkId) return 0;
-        const coworkData = _answersByForms?.find((item: Record<string, any>) => item.id === coworkId);
+        const coworkData = _answersByForms?.find((item) => item.id === coworkId);
         let count = 0;
         if (type === "array") {
-            coworkData?.answers.forEach((answer: Record<string, any>) => {
-                const value = getNestedValue(answer.serverData.answers, coworkPath);
+            coworkData?.answers.forEach((answer) => {
+                const value = getNestedValue((answer.serverData as Record<string, unknown>).answers as Record<string, unknown>, coworkPath);
                 if (Array.isArray(value)) {
                     count += value.length - 1;
                 }
             })
         }else if(type === "single"){
-            coworkData?.answers.forEach((answer: Record<string, any>) => {
-                const value = getNestedValue(answer.serverData.answers, coworkPath);
+            coworkData?.answers.forEach((answer) => {
+                const value = getNestedValue((answer.serverData as Record<string, unknown>).answers as Record<string, unknown>, coworkPath);
                 if(value && isNaN(Number(value)) === false){
                     count += Number(value);
                 }
             })
         }else if(type === "answer"){
-            count = coworkData?.answers.length ?? 0;
+            count = (coworkData?.answers as Answer[] | undefined)?.length ?? 0;
         }
         return count;
     }, [section.coworkingPath, _answersByForms])
@@ -152,24 +155,24 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
         if (!bedPath) return 0;
         const bedId = section.bedRoomPath?.id;
         if (!bedId) return 0;
-        const bedData = _answersByForms?.find((item: Record<string, any>) => item.id === bedId);
+        const bedData = _answersByForms?.find((item) => item.id === bedId);
         let count = 0;
         if (type === "array") {
-            bedData?.answers.forEach((answer: Record<string, any>) => {
-                const value = getNestedValue(answer.serverData.answers, bedPath);
+            bedData?.answers.forEach((answer) => {
+                const value = getNestedValue((answer.serverData as Record<string, unknown>).answers as Record<string, unknown>, bedPath);
                 if (Array.isArray(value)) {
                     count += value.length - 1;
                 }
             })
         }else if(type === "single"){
-            bedData?.answers.forEach((answer: Record<string, any>) => {
-                const value = getNestedValue(answer.serverData.answers, bedPath);
+            bedData?.answers.forEach((answer) => {
+                const value = getNestedValue((answer.serverData as Record<string, unknown>).answers as Record<string, unknown>, bedPath);
                 if(value && isNaN(Number(value)) === false){
                     count += Number(value);
                 }
             })
         }else if(type === "answer"){
-            count = bedData?.answers.length ?? 0;
+            count = (bedData?.answers as Answer[] | undefined)?.length ?? 0;
         }
         return count;
     }, [section.bedRoomPath, _answersByForms])
@@ -184,15 +187,19 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
     const handleClickForm = useCallback(async (formId: string, finder?: string) => {
         if(!entity || !me) return;
         if(!canEditProfile) return;
-        const dataForms = _answersByForms?.find((item: any) => item.id === formId);
+        const dataForms = _answersByForms?.find((item) => item.id === formId);
         const accessToken = entity.apiClient.getToken();
         let answer: Answer | undefined = undefined;
         if (dataForms && dataForms.answers.length > 0) {
             answer = dataForms.answers[0];
         } else {
-            answer = await entity.generateNewAnswerId(formId);
+            answer = await (entity as unknown as { generateNewAnswerId(formId: string): Promise<Answer | undefined> }).generateNewAnswerId(formId);
             if (!answer) {
                 console.error("Failed to generate new answer ID for form:", formId);
+                return;
+            }
+            if(!answer.id) {
+                console.error("No answer ID generated for form:", formId);
                 return;
             }
             const params = {
@@ -204,7 +211,7 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
                     type: entity.serverData.collection,
                     name: entity.serverData.name,
                 }
-            }
+            };
             const paramsLinks = {
                 id: answer.id,
                 collection: "answers",
@@ -213,9 +220,9 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
                     type: entity.serverData.collection,
                     name: entity.serverData.name,
                 }
-            }
-            await entity.endpointApi.updatePathValue(params);
-            await entity.endpointApi.updatePathValue(paramsLinks);
+            };
+            await (entity.endpointApi as unknown as { updatePathValue(p: Record<string, unknown>): Promise<unknown> }).updatePathValue(params);
+            await (entity.endpointApi as unknown as { updatePathValue(p: Record<string, unknown>): Promise<unknown> }).updatePathValue(paramsLinks);
             // entity.endpointApi.updatePathValue({
             //     "id": 
             // })
@@ -228,7 +235,7 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
         const urlToRedirect = `${getServerUrl()}/co2/embed/render?targetUrl=${encodeURIComponent(targetUrl)}&embedToken=${accessToken}`;
         window.open(urlToRedirect, "_blank");
 
-    }, [_answersByForms])
+    }, [_answersByForms, entity, me, canEditProfile])
 
     return (
         <div className={cardClasses}>

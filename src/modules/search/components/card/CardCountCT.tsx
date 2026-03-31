@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { ComponentType, useMemo } from "react";
 import * as LucideIcons from "lucide-react";
 import { useT } from "@/hooks/useT";
 import type { CardCountCTSectionProps } from "../../schema";
@@ -36,29 +36,15 @@ const DEFAULT_LABELS: Record<string, { fr: string; en: string }> = {
  * Mapping Tailwind color → classes CSS
  * On utilise des classes complètes pour que Tailwind les détecte (pas de concaténation dynamique)
  */
-const COLOR_CLASSES: Record<string, { bg: string; text: string }> = {
-  violet: { bg: "bg-[#1e1a2e]", text: "text-violet-400" },
-  teal:   { bg: "bg-[#0d1f1f]", text: "text-teal-400" },
-  pink:   { bg: "bg-[#261523]", text: "text-pink-400" },
-  red:    { bg: "bg-[#231520]", text: "text-red-400" },
-  yellow: { bg: "bg-[#1f1a0d]", text: "text-yellow-400" },
-  green:  { bg: "bg-[#0d1f12]", text: "text-green-400" },
-  indigo: { bg: "bg-[#15172e]", text: "text-indigo-400" },
-  orange: { bg: "bg-[#1f1508]", text: "text-orange-400" },
-  blue:   { bg: "bg-[#0d1826]", text: "text-blue-400" },
-  cyan:   { bg: "bg-[#0a1e22]", text: "text-cyan-400" },
-  purple: { bg: "bg-[#1a1228]", text: "text-purple-400" },
-  gray:   { bg: "bg-[#1a1e26]", text: "text-gray-400" },
-};
 
 /** Résoudre un nom d'icône Lucide en composant */
-function resolveLucideIcon(iconName: string): React.ComponentType<{ className?: string }> | null {
+function resolveLucideIcon(iconName: string): ComponentType<{ className?: string }> | null {
   // Convertir kebab-case en PascalCase (ex: "map-pin" → "MapPin")
   const pascalName = iconName
     .split("-")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join("");
-  return (LucideIcons as Record<string, any>)[pascalName] ?? null;
+  return (LucideIcons as unknown as Record<string, ComponentType<{ className?: string }>>)[pascalName] ?? null;
 }
 
 export interface CardCountCTProps {
@@ -72,6 +58,10 @@ export interface CardCountCTProps {
   subtitle?: CardCountCTSectionProps["subtitle"];
   /** Est-ce que le chargement est en cours */
   isLoading?: boolean;
+  /** Background de la section */
+  bg?: string;
+  /** Si le fond est sombre (pour adapter le style des cartes) */
+  isDarkBg?: boolean;
 }
 
 export default function CardCountCT({ count, cards, title, subtitle, isLoading }: CardCountCTProps) {
@@ -109,14 +99,12 @@ export default function CardCountCT({ count, cards, title, subtitle, isLoading }
   if (isLoading) {
     return (
       <div className="container mx-auto max-w-5xl px-4">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex flex-col gap-2 p-5 rounded-2xl bg-[#1a2233] animate-pulse">
-              <div className="flex items-center gap-3">
-                <div className="w-6 h-6 bg-slate-700 rounded" />
-                <div className="w-10 h-7 bg-slate-700 rounded" />
-              </div>
-              <div className="w-24 h-4 bg-slate-700 rounded" />
+            <div key={i} className="flex flex-col items-center gap-3 animate-pulse">
+              <div className="w-8 h-8 rounded-lg bg-white/30" />
+              <div className="w-12 h-6 bg-white/30 rounded" />
+              <div className="w-16 h-4 bg-white/30 rounded" />
             </div>
           ))}
         </div>
@@ -131,40 +119,37 @@ export default function CardCountCT({ count, cards, title, subtitle, isLoading }
   return (
     <div className="container mx-auto max-w-5xl">
       {(title || subtitle) && (
-        <div className="mb-10 text-center">
+        <div className="mb-12 text-center">
           {title && (
-            <h2 className="text-4xl md:text-5xl font-bold text-slate-800 dark:text-slate-100 mb-2">
+            <h2 className="text-4xl md:text-5xl font-bold mb-10 text-white">
               {t(title)}
             </h2>
           )}
           {subtitle && (
-            <p className="text-slate-500 dark:text-slate-400 text-lg md:text-xl">
+            <p className="text-lg mb-6 md:text-xl text-white/90">
               {t(subtitle)}
             </p>
           )}
         </div>
       )}
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8">
         {displayCards.map((card) => {
-          const colorClasses = COLOR_CLASSES[card.color] || COLOR_CLASSES.indigo;
           const iconName = card.icon || "circle";
           const IconComponent = resolveLucideIcon(iconName);
 
           const content = (
-            <>
-              <div className="flex items-center gap-3">
-                {IconComponent && (
-                  <IconComponent className={`w-6 h-6 ${colorClasses.text} shrink-0`} />
-                )}
-                <span className="text-3xl font-extrabold text-white leading-none">
-                  {card.value}
-                </span>
-              </div>
-              <span className="text-sm text-slate-400 leading-snug">
+            <div className="flex flex-col items-center text-center">
+              {IconComponent && (
+                <IconComponent className="w-8 h-8 text-white mb-3" />
+              )}
+              <span className="text-4xl font-bold text-white mb-2">
+                {card.value}
+              </span>
+              <span className="text-lg text-white/80">
                 {typeof card.label === "string" ? card.label : t(card.label)}
               </span>
-            </>
+            </div>
           );
 
           if (card.href) {
@@ -172,7 +157,7 @@ export default function CardCountCT({ count, cards, title, subtitle, isLoading }
               <a
                 key={card.countKey}
                 href={card.href}
-                className={`flex flex-col gap-2 p-5 rounded-2xl ${colorClasses.bg} hover:brightness-110 transition-all`}
+                className="transition-opacity hover:opacity-80"
               >
                 {content}
               </a>
@@ -180,10 +165,7 @@ export default function CardCountCT({ count, cards, title, subtitle, isLoading }
           }
 
           return (
-            <div
-              key={card.countKey}
-              className={`flex flex-col gap-2 p-5 rounded-2xl ${colorClasses.bg}`}
-            >
+            <div key={card.countKey}>
               {content}
             </div>
           );

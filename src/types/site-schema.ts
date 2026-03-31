@@ -6,12 +6,13 @@
 // Validation : Zod 3.x – le schéma sert à la fois de typings, de runtime‑guard,
 //               et d'autocomplétion dans VS Code.
 // ------------------------------------------------------------
-import { SearchProSectionSchema, SearchProStaticSectionSchema, CardCountCTSectionSchema } from "@/modules/search/schema";
+import { SearchProSectionSchema, SearchProStaticSectionSchema, CardCountCTSectionSchema, ThematicsSectionSchema } from "@/modules/search/schema";
 import { NewsSectionSchema } from "@/modules/news/schema";
 import { z } from "zod";
 import { LocalizedString, LOCALES } from "./locale-schema";
 export { LocalizedString, LOCALES };
 import { ProfilesConfigSchema } from "../modules/profil/schema";
+import { AmpliConfigSchema } from "@/modules/ampli/schema";
 
 // export const CocolightConfig = z.object({
 //   baseUrl: z.string().url().default("http://localhost:5080"),
@@ -86,6 +87,42 @@ const HeroSectionSchema = z.object({
 export type HeroSection = z.infer<typeof HeroSectionSchema>;
 
 export type HeroSectionProps = z.infer<typeof HeroSectionSchema>["props"];
+
+//──────────────── Hero With Icon
+const HeroWithIconSectionSchema = z.object({
+  type: z.literal("heroWithIcon"),
+  id: z.string().optional(),
+  props: z.object({
+    headline: LocalizedString,
+    subhead: LocalizedString.optional(),
+    icon: z.object({
+      show: z.boolean().default(true),
+      name: z.string().optional(),
+      size: z.number().default(64),
+      backdrop: z.boolean().default(false),
+    }),
+    backgroundImage: z.string().optional(),
+    videoBg: z.string().optional(),
+    align: Alignment.default("center"),
+    overlay: z.boolean().default(false),
+    cta: z.array(
+      z.object({ label: LocalizedString, icon: z.string().optional(), href: z.string(), variant: z.string().optional() })
+    ).optional(),
+    listContent: z.object({
+      items: z.array(z.object({
+        title: LocalizedString,
+        icon: z.string().optional(),
+        iconPosition: z.enum(["left", "right", "top", "bottom"]).default("left"),
+      })),
+      layout: z.enum(["rows", "columns"]).default("columns"),
+    }).optional(),
+    scrollTo: z.string().optional(),
+  })
+})
+
+export type HeroWithIconSection = z.infer<typeof HeroWithIconSectionSchema>;
+export type HeroWithIconSectionProps = z.infer<typeof HeroWithIconSectionSchema>["props"];
+
 
 //──────────────── Hero Tiers-Lieux
 export const HeroTiersLieuxSchema = z.object({
@@ -369,7 +406,7 @@ const ActionButtonSchema = z.object({
   icon: z.string().optional(),
   href: z.string().optional(),
   variant: z.enum(["default", "outline", "primary", "turquoise"]).optional(),
-  action: z.enum(["join-dropdown", "add-project", "add-event", "add-poi"]).optional(),
+  action: z.enum(["join-dropdown", "add-project", "add-event", "add-poi", "add-organization"]).optional(),
   modal: z.string().optional(),
   formConfig: JsonFormModalConfigSchema.optional(),
   requiresAdmin: z.boolean().optional(),
@@ -402,12 +439,33 @@ export const TitleWithFiltersRezoLaMerSchema = z.object({
 export type TitleWithFiltersRezoLaMer = z.infer<typeof TitleWithFiltersRezoLaMerSchema>;
 export type TitleWithFiltersRezoLaMerProps = z.infer<typeof TitleWithFiltersRezoLaMerSchema>["props"];
 
+// ──────────────── Meeteem Props
+
+const MeeteemSectionSchema = z.object({
+  type: z.literal("meeteem"),
+  id: z.string().optional(),
+  props: z.object({
+    coform: z.string().min(1),
+    path: z.object({
+      name: z.string().min(1),
+      description: z.string().optional(),
+      address: z.string().min(1),
+      image: z.string().optional(),
+      finder: z.string().optional(),
+      tags: z.string().optional(),
+    })
+  })
+})
+
+export type MeeteemSection = z.infer<typeof MeeteemSectionSchema>;
+export type MeeteemSectionProps = z.infer<typeof MeeteemSectionSchema>["props"];
+
 //──────────────── Actions Commune Transparente
 const CommuneTransparenteActionButtonSchema = z.object({
   label: LocalizedString,
   href: z.string().optional(),
   variant: z.enum(["primary", "secondary"]).optional(),
-  action: z.enum(["add-project", "add-event", "add-poi"]).optional(),
+  action: z.enum(["add-project", "add-event", "add-poi", "add-organization"]).optional(),
   modal: z.string().optional(),
   formConfig: JsonFormModalConfigSchema.optional(),
   requiresAuth: z.boolean().optional(),
@@ -1169,6 +1227,9 @@ const GridLayoutSectionPropsSchema = z.object({
   rightColumns: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]).optional(),
   gap: z.number().optional(),
   className: z.string().optional(),
+  leftWrapperClass: z.string().optional(),
+  rightWrapperClass: z.string().optional(),
+  fixedHeight: z.string().optional(),
 });
 
 const GridLayoutSectionSchema = z.object({
@@ -1250,6 +1311,7 @@ export type MemberSectionProps = z.infer<typeof MemberSectionSchema>["props"];
 //───────────────────────────────────────────────────────────────
 export const Section = z.discriminatedUnion("type", [
   HeroSectionSchema,
+  HeroWithIconSectionSchema,
   HeroTiersLieuxSchema,
   HeroRezoLaMerSchema,
   HeroNoCommunesShema,
@@ -1299,7 +1361,9 @@ export const Section = z.discriminatedUnion("type", [
   ContentSectionSchema,
   SearchProSectionSchema,
   SearchProStaticSectionSchema,
+  MeeteemSectionSchema,
   CardCountCTSectionSchema,
+  ThematicsSectionSchema,
   GridLayoutSectionSchema,
   NewsSectionSchema,
   MemberSectionSchema,
@@ -1717,6 +1781,7 @@ export const SiteConfig = z.object({
     bgColor: z.string().optional().default("#ffffff"), 
     fgColor: z.string().optional().default("#000000"), 
   }).optional(),
+  ampli: z.array(AmpliConfigSchema).optional(),
 });
 export type SiteConfig = z.infer<typeof SiteConfig>;
 

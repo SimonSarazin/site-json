@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocalization } from "@/hooks/useLocalization";
 import { useT } from "@/hooks/useT";
 import { LocalizedString } from "@/types/site-schema";
@@ -31,7 +31,7 @@ export interface ActionButton {
     icon?: string;
     href?: string;
     variant?: "default" | "outline" | "primary" | "turquoise";
-    action?: "join-dropdown" | "add-project" | "add-event" | "add-poi";
+    action?: "join-dropdown" | "add-project" | "add-event" | "add-poi" | "add-organization";
     modal?: string;
     formConfig?: JsonFormModalConfig;
     requiresAdmin?: boolean;
@@ -292,7 +292,7 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
     const [activeCategory, setActiveCategory] = useState("all");
     
     const pageFilters = usePageFiltersOptional();
-    const setSearchQuery = pageFilters?.setSearchQuery ?? (() => {});
+    const setSearchQuery = useMemo(() => pageFilters?.setSearchQuery ?? (() => {}), [pageFilters?.setSearchQuery]);
     const setSelectedFilters = pageFilters?.setSelectedFilters ?? (() => {});
     const selectedFilters = pageFilters?.selectedFilters ?? {};
 
@@ -416,6 +416,19 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
                                         key={index}
                                         button={button}
                                         modalName="add-poi"
+                                        tLocalized={tLocalized}
+                                        tKey={tKey}
+                                        getButtonClasses={getButtonClasses}
+                                    />
+                                );
+                            }
+
+                            if (button.action === "add-organization") {
+                                return (
+                                    <DynamicModalButton
+                                        key={index}
+                                        button={button}
+                                        modalName="add-organization"
                                         tLocalized={tLocalized}
                                         tKey={tKey}
                                         getButtonClasses={getButtonClasses}

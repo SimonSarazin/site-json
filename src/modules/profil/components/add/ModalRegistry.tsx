@@ -1,4 +1,4 @@
-import { lazy, Suspense, ComponentType } from "react";
+import { lazy, Suspense, type ComponentType } from "react";
 import { Loader2 } from "lucide-react";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import type { JsonFormModalConfig } from "@/types/site-schema";
@@ -21,17 +21,15 @@ const modalRegistry: Record<string, () => Promise<{ default: ComponentType<Modal
 
 const lazyComponents: Record<string, ComponentType<ModalProps>> = {};
 
-function getLazyModal(modalName: string): ComponentType<ModalProps> | null {
+function ensureLazyModal(modalName: string): void {
   if (!modalRegistry[modalName]) {
     console.log(`Modal "${modalName}" not found in registry`);
-    return null;
+    return;
   }
 
   if (!lazyComponents[modalName]) {
     lazyComponents[modalName] = lazy(modalRegistry[modalName]);
   }
-
-  return lazyComponents[modalName];
 }
 
 export function DynamicModal({
@@ -47,7 +45,8 @@ export function DynamicModal({
   parent?: EntityTypes | null;
   formConfig?: JsonFormModalConfig;
 }) {
-  const ModalComponent = getLazyModal(modalName);
+  ensureLazyModal(modalName);
+  const ModalComponent = lazyComponents[modalName];
 
   if (!ModalComponent) {
     return null;

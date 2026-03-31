@@ -71,15 +71,15 @@ export default function SearchCardDetailed({
 
       await entity.endpointApi.updatePathValue({
         id: item.id,
-        collection: (entityType || "events") as any,
+        collection: (entityType || "events") as "citoyens" | "organizations" | "projects" | "events" | "poi",
         path: "isStarred",
         value: newStarredValue as unknown as { [k: string]: unknown }
       });
 
       setLocalIsStarred(newStarredValue);
 
-      if ((item as any).reload) {
-        await (item as any).reload();
+      if ('reload' in item && typeof item.reload === 'function') {
+        await item.reload();
       }
     } catch (error) {
       console.error("Erreur lors de la mise à jour de l'étoile:", error);
@@ -97,7 +97,7 @@ export default function SearchCardDetailed({
       <CardContent className="p-0">
         <div className="flex flex-col sm:flex-row">
           {/* Image section */}
-          <div className="w-full sm:w-64 h-48 sm:h-auto flex-shrink-0 relative overflow-hidden ml-4 rounded-lg">
+          <div className="w-full sm:w-64 h-48 sm:h-auto shrink-0 relative overflow-hidden ml-4 rounded-lg">
             {image ? (
               <OptimizedImage
                 src={image.startsWith('http') ? image : `${getBaseUrl()}${image}`}
@@ -106,7 +106,7 @@ export default function SearchCardDetailed({
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+              <div className="w-full h-full bg-linear-to-br from-primary/20 to-primary/5 flex items-center justify-center">
                 <Avatar className="h-24 w-24 bg-primary/10">
                   <AvatarImage src={image} alt={`${name} avatar`} />
                   <AvatarFallback className="bg-primary text-primary-foreground font-semibold text-3xl">
@@ -197,7 +197,7 @@ export default function SearchCardDetailed({
               <Button
                 variant="ghost"
                 size="sm"
-                className="flex-shrink-0"
+                className="shrink-0"
                 onClick={(e) => {
                   e.stopPropagation();
                   if (onClick) onClick();
@@ -216,7 +216,7 @@ export default function SearchCardDetailed({
 
             {displayTags.length > 0 && (
               <div className="flex items-start gap-2">
-                <Tag className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />
+                <Tag className="h-4 w-4 text-muted-foreground mt-1 shrink-0" />
                 <div className="flex flex-wrap gap-1.5 flex-1">
                   {displayTags.map((tag, index) => (
                     <Badge

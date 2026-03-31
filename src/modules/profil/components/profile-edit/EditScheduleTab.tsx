@@ -1,4 +1,4 @@
-import { UseFormReturn } from "react-hook-form";
+import type { UseFormReturn, FieldValues } from "react-hook-form";
 import { useT } from "@/hooks/useT";
 import { Clock } from "lucide-react";
 import {
@@ -12,8 +12,7 @@ import { TranslatedFormMessage } from "./fields/TranslatedFormMessage";
 import { OpeningHoursPicker } from "@/components/form/OpeningHoursPicker";
 
 interface EditScheduleTabProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  form: UseFormReturn<any>;
+  form: UseFormReturn<FieldValues>;
 }
 
 /**

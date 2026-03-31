@@ -7,18 +7,18 @@ const DEFAULT_COLUMNS = [
   { header: "Nom", path: "name" },
 ];
 
-function resolvePath(obj: Record<string, any>, path: string): unknown {
-  return path.split(".").reduce((acc, key) => acc?.[key], obj);
+function resolvePath(obj: Record<string, unknown>, path: string): unknown {
+  return path.split(".").reduce<unknown>((acc, key) => (acc as Record<string, unknown> | undefined)?.[key], obj);
 }
 
-function extractValue(item: Record<string, any>, path: string): string {
-  const serverData = item.serverData || item;
+function extractValue(item: Record<string, unknown>, path: string): string {
+  const serverData = (item.serverData || item) as Record<string, unknown>;
 
   const raw = resolvePath(serverData, path) ?? resolvePath(item, path);
 
   switch (path) {
     case "address": {
-      const addr = serverData.address ?? item.address;
+      const addr = (serverData.address ?? item.address) as Record<string, unknown> | undefined;
       if (!addr || typeof addr !== "object") return String(addr ?? "");
       const parts = [
         addr.streetAddress,
@@ -38,9 +38,17 @@ function extractValue(item: Record<string, any>, path: string): string {
   }
 }
 
+interface EntityWithSearchCostum {
+  searchCostum(params: Record<string, unknown>): Promise<{ results?: Record<string, unknown>[] }>;
+}
+
+interface HelperWithFromEntityJSON {
+  fromEntityJSON?(item: Record<string, unknown>): unknown;
+}
+
 export interface UseCsvExportOptions {
   csvButton?: CsvButtonConfig;
-  entity?: any;
+  entity?: EntityWithSearchCostum | null;
   searchParams?: {
     searchText: string;
     searchTags: Record<string, string[]>;
@@ -53,13 +61,13 @@ export interface UseCsvExportOptions {
       defaultFields?: string[];
       defaultSortBy?: Record<string, 1 | -1>;
       notSourceKey?: boolean;
-      locality?: Record<string, any>;
+      locality?: Record<string, unknown>;
     };
   };
-  helper?: any;
+  helper?: HelperWithFromEntityJSON | null;
 }
 
-function generateCsv(results: Record<string, any>[], csvButton: CsvButtonConfig) {
+function generateCsv(results: Record<string, unknown>[], csvButton: CsvButtonConfig) {
   const columns = csvButton?.columns ?? DEFAULT_COLUMNS;
   const separator = csvButton?.separator ?? ";";
 
@@ -121,7 +129,7 @@ export function useCsvExport({ csvButton, entity, searchParams, helper }: UseCsv
           locality,
         } = baseParams;
 
-        const param: Partial<GlobalAutocompleteCostumData> = {
+        const param: Partial<GlobalAutocompleteCostumData> & Record<string, unknown> = ({
           name: searchText,
           fediverse,
           indexMin: 0,
@@ -141,7 +149,7 @@ export function useCsvExport({ csvButton, entity, searchParams, helper }: UseCsv
           }),
           ...(locality && Object.keys(locality).length > 0 && { locality }),
           ...(notSourceKey ? { notSourceKey: true } : {}),
-        };
+        }) as Partial<GlobalAutocompleteCostumData> & Record<string, unknown>;
 
         if (type && type.length > 0) param.searchType = type as GlobalAutocompleteCostumData["searchType"];
         if (!type && defaultTypes) param.searchType = defaultTypes as GlobalAutocompleteCostumData["searchType"];
@@ -158,9 +166,9 @@ export function useCsvExport({ csvButton, entity, searchParams, helper }: UseCsv
         let allResults = result?.results ?? [];
 
         if (helper && allResults.length > 0) {
-          allResults = allResults.map((item: any) => {
+          allResults = allResults.map((item: Record<string, unknown>) => {
             try {
-              return helper.fromEntityJSON ? helper.fromEntityJSON(item) : item;
+              return (helper.fromEntityJSON ? helper.fromEntityJSON(item) : item) as Record<string, unknown>;
             } catch {
               return item;
             }

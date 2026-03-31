@@ -35,7 +35,7 @@ export function useProfilSubscriptionsQuery({
         return [];
       }
 
-      const result = await (entity as any).getSubscriptions({
+      const result = await (entity as unknown as { getSubscriptions(params: Record<string, unknown>): Promise<{ results?: EntityTypes[] }> }).getSubscriptions({
         indexMin: pageParam as number,
         indexStep,
         ...(searchQuery ? { name: searchQuery } : {}),

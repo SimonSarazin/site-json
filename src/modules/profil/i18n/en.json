@@ -177,7 +177,6 @@
       "social": "Social",
       "membership": "My Organizations",
       "members": "Members",
-      "projects": "Projects",
       "events": "Events",
       "contributors": "Contributors",
       "organizations": "Organizations",
@@ -608,40 +607,40 @@
     "zoom": "Zoom"
   },
   "SocialTab": {
-    "addFriend": "Add friend",
+    "addFriend": "Add Friend",
     "searchFriends": "Search friends...",
-    "privateProfile": "Private profile",
-    "cannotViewFriends": "You cannot view this user's friends",
+    "privateProfile": "Private Profile",
+    "cannotViewFriends": "You cannot view this user's friends list",
     "tabs": {
       "friends": "Friends",
       "friendsShort": "Friends",
-      "pending": "Pending",
+      "pending": "Pending Requests",
       "pendingShort": "Pending",
-      "sent": "Sent",
+      "sent": "Sent Requests",
       "sentShort": "Sent"
     },
     "noFriendsFound": "No friends found",
     "noFriendsYet": "No friends yet",
-    "tryDifferentSearch": "Try a different search",
-    "startConnecting": "Start connecting with other users",
-    "removeFriend": "Remove",
+    "tryDifferentSearch": "Try a different search term",
+    "startConnecting": "Start connecting with people to build your network",
+    "removeFriend": "Remove Friend",
     "noPendingRequests": "No pending requests",
-    "pendingRequestsInfo": "Friend requests received will appear here",
+    "pendingRequestsInfo": "Friend requests waiting for your response will appear here",
     "accept": "Accept",
     "reject": "Reject",
     "noSentRequests": "No sent requests",
-    "sentRequestsInfo": "Your sent friend requests will appear here",
+    "sentRequestsInfo": "Friend requests you've sent will appear here",
     "cancel": "Cancel",
-    "requestPending": "Waiting for response"
+    "requestPending": "Request pending"
   },
   "FriendRequestDialog": {
-    "title": "Add a friend",
-    "searchPlaceholder": "Search for a user...",
-    "startTyping": "Start typing to search",
+    "title": "Add Friend",
+    "searchPlaceholder": "Search users by name or username...",
+    "startTyping": "Start typing to search for users",
     "minimumChars": "Type at least 2 characters",
     "searching": "Searching...",
     "noUsersFound": "No users found",
-    "tryDifferentSearch": "Try a different search",
+    "tryDifferentSearch": "Try a different search term",
     "sendRequest": "Add"
   },
   "badges": {
@@ -705,22 +704,41 @@
   },
   "toast": {
     "relationship": {
-      "followSuccess": "You are now following",
-      "followError": "Unable to follow",
-      "unfollowSuccess": "You are no longer following",
-      "unfollowError": "Unable to unfollow",
-      "memberRequestSent": "Membership request sent",
-      "memberRequestError": "Unable to send request",
+      "followSuccess": "User followed successfully",
+      "followError": "Unable to follow user",
+      "unfollowSuccess": "User unfollowed successfully",
+      "unfollowError": "Unable to unfollow user",
+      "memberRequestSent": "Membership request sent successfully",
+      "memberRequestError": "Unable to send membership request",
       "adminRequestSent": "Admin request sent",
       "adminRequestError": "Unable to send admin request",
       "leaveSuccess": "You have left successfully",
-      "leaveError": "Unable to leave"
+      "leaveError": "Unable to leave",
+      "friendRequestSent": "Friend request sent",
+      "friendRequestError": "Unable to send friend request",
+      "friendRequestAccepted": "Friend request accepted",
+      "friendRemoved": "Friend removed",
+      "friendRemoveError": "Unable to remove friend",
+      "memberLeftSuccess": "You have successfully left the organization",
+      "memberLeftError": "Unable to leave the organization",
+      "contributorRequestSent": "Contributor request sent successfully",
+      "contributorRequestError": "Unable to send contributor request",
+      "projectAdminRequestSent": "Admin request sent successfully",
+      "projectAdminRequestError": "Unable to send admin request",
+      "orgAdminRequestSent": "Admin request sent successfully",
+      "orgAdminRequestError": "Unable to send admin request",
+      "projectLeftSuccess": "You have successfully left the project",
+      "projectLeftError": "Unable to leave the project",
+      "participationSuccess": "You are now participating in this event",
+      "participationError": "Unable to join this event",
+      "participationLeftSuccess": "You have stopped participating in this event",
+      "participationLeftError": "Unable to stop participating in this event"
     },
     "invitation": {
-      "acceptSuccess": "Invitation accepted",
+      "acceptSuccess": "Invitation accepted successfully",
       "acceptError": "Unable to accept invitation",
-      "rejectSuccess": "Invitation rejected",
-      "rejectError": "Unable to reject invitation"
+      "rejectSuccess": "Invitation declined",
+      "rejectError": "Unable to decline invitation"
     },
     "friend": {
       "requestSent": "Friend request sent",
@@ -733,8 +751,24 @@
       "cancelError": "Unable to cancel request"
     },
     "members": {
-      "requestPromoteSuccess": "Promotion request sent",
-      "requestPromoteError": "Unable to send promotion request"
+      "requestPromoteSuccess": "Your request to become administrator has been sent",
+      "requestPromoteError": "Unable to send promotion request",
+      "demoteSuccess": "{{name}} has been demoted successfully",
+      "demoteError": "Unable to demote {{name}}",
+      "promoteSuccess": "{{name}} has been promoted to administrator",
+      "promoteError": "Unable to promote {{name}}",
+      "validateSuccess": "{{name}} has been validated successfully",
+      "validateError": "Unable to validate {{name}}",
+      "validateAdminSuccess": "{{name}} has been validated as administrator",
+      "validateAdminError": "Unable to validate {{name}} as administrator",
+      "rejectSuccess": "{{name}}'s request has been rejected",
+      "rejectError": "Unable to reject {{name}}'s request",
+      "removeSuccess": "{{name}} has been removed successfully",
+      "removeError": "Unable to remove {{name}}",
+      "inviteSuccess": "Invitation sent to {{name}}",
+      "inviteError": "Unable to send invitation to {{name}}",
+      "inviteAdminSuccess": "Admin invitation sent to {{name}}",
+      "inviteAdminError": "Unable to send admin invitation to {{name}}"
     },
     "comment": {
       "addSuccess": "Comment added successfully",
@@ -783,86 +817,10 @@
     "profile": {
       "updateSuccess": "Profile updated successfully",
       "updateError": "Unable to update profile",
-      "imageUploadSuccess": "Profile image updated successfully",
-      "imageUploadError": "Unable to update profile image",
-      "bannerUploadSuccess": "Banner updated successfully",
-      "bannerUploadError": "Unable to update banner"
-    },
-    "friends": {
-      "requestSent": "Friend request sent",
-      "sendRequestError": "Unable to send friend request",
-      "requestAccepted": "Friend request accepted",
-      "acceptRequestError": "Unable to accept friend request",
-      "requestRejected": "Friend request rejected",
-      "rejectRequestError": "Unable to reject friend request",
-      "friendRemoved": "Friend removed",
-      "removeError": "Unable to remove friend",
-      "requestCancelled": "Friend request cancelled",
-      "cancelError": "Unable to cancel friend request"
-    },
-    "error": {
-      "generic": "An error occurred"
-    },
-    "profile": {
-      "updateSuccess": "Profile updated successfully",
-      "updateError": "Unable to update profile",
       "imageUploadSuccess": "Profile picture uploaded successfully",
       "imageUploadError": "Unable to upload profile picture",
       "bannerUploadSuccess": "Banner uploaded successfully",
       "bannerUploadError": "Unable to upload banner"
-    },
-    "invitation": {
-      "acceptSuccess": "Invitation accepted successfully",
-      "acceptError": "Unable to accept invitation",
-      "rejectSuccess": "Invitation declined",
-      "rejectError": "Unable to decline invitation"
-    },
-    "relationship": {
-      "followSuccess": "User followed successfully",
-      "followError": "Unable to follow user",
-      "unfollowSuccess": "User unfollowed successfully",
-      "unfollowError": "Unable to unfollow user",
-      "friendRequestSent": "Friend request sent",
-      "friendRequestError": "Unable to send friend request",
-      "friendRequestAccepted": "Friend request accepted",
-      "friendRemoved": "Friend removed",
-      "friendRemoveError": "Unable to remove friend",
-      "memberRequestSent": "Membership request sent successfully",
-      "memberRequestError": "Unable to send membership request",
-      "memberLeftSuccess": "You have successfully left the organization",
-      "memberLeftError": "Unable to leave the organization",
-      "contributorRequestSent": "Contributor request sent successfully",
-      "contributorRequestError": "Unable to send contributor request",
-      "projectAdminRequestSent": "Admin request sent successfully",
-      "projectAdminRequestError": "Unable to send admin request",
-      "orgAdminRequestSent": "Admin request sent successfully",
-      "orgAdminRequestError": "Unable to send admin request",
-      "projectLeftSuccess": "You have successfully left the project",
-      "projectLeftError": "Unable to leave the project",
-      "participationSuccess": "You are now participating in this event",
-      "participationError": "Unable to join this event",
-      "participationLeftSuccess": "You have stopped participating in this event",
-      "participationLeftError": "Unable to stop participating in this event"
-    },
-    "members": {
-      "demoteSuccess": "{{name}} has been demoted successfully",
-      "demoteError": "Unable to demote {{name}}",
-      "promoteSuccess": "{{name}} has been promoted to administrator",
-      "promoteError": "Unable to promote {{name}}",
-      "requestPromoteSuccess": "Your request to become administrator has been sent",
-      "requestPromoteError": "Unable to send promotion request",
-      "validateSuccess": "{{name}} has been validated successfully",
-      "validateError": "Unable to validate {{name}}",
-      "validateAdminSuccess": "{{name}} has been validated as administrator",
-      "validateAdminError": "Unable to validate {{name}} as administrator",
-      "rejectSuccess": "{{name}}'s request has been rejected",
-      "rejectError": "Unable to reject {{name}}'s request",
-      "removeSuccess": "{{name}} has been removed successfully",
-      "removeError": "Unable to remove {{name}}",
-      "inviteSuccess": "Invitation sent to {{name}}",
-      "inviteError": "Unable to send invitation to {{name}}",
-      "inviteAdminSuccess": "Admin invitation sent to {{name}}",
-      "inviteAdminError": "Unable to send admin invitation to {{name}}"
     },
     "friends": {
       "requestSent": "Friend request sent successfully",
@@ -875,6 +833,9 @@
       "removeError": "Failed to remove friend",
       "requestCancelled": "Friend request cancelled",
       "cancelError": "Failed to cancel friend request"
+    },
+    "error": {
+      "generic": "An error occurred"
     },
     "add": {
       "organizationSuccess": "Organization created successfully",
@@ -1076,41 +1037,6 @@
         "noDaysSelected": "Select days to define the schedule"
       }
     }
-  },
-  "SocialTab": {
-    "privateProfile": "Private Profile",
-    "cannotViewFriends": "You cannot view this user's friends list",
-    "searchFriends": "Search friends...",
-    "addFriend": "Add Friend",
-    "tabs": {
-      "friends": "Friends",
-      "friendsShort": "Friends",
-      "pending": "Pending Requests",
-      "pendingShort": "Pending",
-      "sent": "Sent Requests",
-      "sentShort": "Sent"
-    },
-    "noFriendsFound": "No friends found",
-    "noFriendsYet": "No friends yet",
-    "tryDifferentSearch": "Try a different search term",
-    "startConnecting": "Start connecting with people to build your network",
-    "removeFriend": "Remove Friend",
-    "noPendingRequests": "No pending requests",
-    "pendingRequestsInfo": "Friend requests waiting for your response will appear here",
-    "accept": "Accept",
-    "reject": "Reject",
-    "noSentRequests": "No sent requests",
-    "sentRequestsInfo": "Friend requests you've sent will appear here",
-    "requestPending": "Request pending",
-    "cancel": "Cancel"
-  },
-  "FriendRequestDialog": {
-    "title": "Add Friend",
-    "searchPlaceholder": "Search users by name or username...",
-    "startTyping": "Start typing to search for users",
-    "noUsersFound": "No users found",
-    "tryDifferentSearch": "Try a different search term",
-    "sendRequest": "Add"
   },
   "MembershipTab": {
     "privateProfile": "Private Profile",

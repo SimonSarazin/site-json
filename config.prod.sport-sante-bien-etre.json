@@ -52,17 +52,121 @@
       },
       {
         "label": {
-          "fr": "Projets",
-          "en": "Projects"
+          "fr": "Structures",
+          "en": "Structures"
         },
-        "path": "/projets"
+        "path": "/structure"
       },
       {
         "label": {
-          "fr": "Communauté",
-          "en": "Community"
+          "fr": "Espace professionnels",
+          "en": "Professionals Space"
         },
-        "path": "/communaute"
+        "children": [
+          {
+            "label": {
+              "fr": "Espace professionnels",
+              "en": "Professionals Space"
+            },
+            "description": {
+              "fr": "Ressources et outils",
+              "en": "Resources and tools"
+            },
+            "path": "#"
+          },
+          {
+            "label": {
+              "fr": "Labeliser mon activités",
+              "en": "Label my activities"
+            },
+            "description": {
+              "fr": "Sport santé pour tous ou Sport sur ordonnance",
+              "en": "Sport health for all or Sport on prescription"
+            },
+            "path": "#"
+          },
+          {
+            "label": {
+              "fr": "Formations",
+              "en": "Trainings"
+            },
+            "description": {
+              "fr": "Catalogue et inscriptions aux formations",
+              "en": "Browse and register for training sessions."
+            },
+            "path": "#"
+          },
+          {
+            "label": {
+              "fr": "Prescription Médicale",
+              "en": "Medical Prescription"
+            },
+            "description": {
+              "fr": "Guides et bonnes pratiques",
+              "en": "Guides and best practices"
+            },
+            "path": "#"
+          }
+        ]
+      },
+      {
+        "label": {
+          "fr": "Grand Public",
+          "en": "Public Space"
+        },
+        "children": [
+          {
+            "label": {
+              "fr": "Espace Public",
+              "en": "Public Space"
+            },
+            "description": {
+              "fr": "Découvrir le Sport Santé",
+              "en": "Discover Sport Health"
+            },
+            "path": "#"
+          },
+          {
+            "label": {
+              "fr": "Trouver une activité",
+              "en": "Find an activity"
+            },
+            "description": {
+              "fr": "Rechercher et carte interactive",
+              "en": "Search and interactive map"
+            },
+            "path": "#"
+          },
+          {
+            "label": {
+              "fr": "Actualités",
+              "en": "News"
+            },
+            "description": {
+              "fr": "Articles et évènements",
+              "en": "Articles and events"
+            },
+            "path": "#"
+          },
+          {
+            "label": {
+              "fr": "Maisons Sport Santé",
+              "en": "Sport Health Houses"
+            },
+            "description": {
+              "fr": "Trouver une MSS près de chez vous",
+              "en": "Find a Sport Health House near you"
+            },
+            "path": "/mss"
+          }
+        ]
+      },
+      {
+        "label": {
+          "fr": "Mapping",
+          "en": "Mapping"
+        },
+        "path": "/mapping"
       }
     ],
     "sticky": true,
@@ -92,15 +196,14 @@
           "props": {
             "variant": "cyber",
             "headline": {
-              "fr": "Sport Santé Bien-être",
-              "en": "Sport Health Wellness"
+              "fr": "L'activité physique, votre meilleur allié santé",
+              "en": "Physical activity, your best health ally"
             },
             "subhead": {
-              "fr": "Bienvenue sur le site du Sport Santé à La Réunion. Découvrez les activités physiques adaptées, les structures partenaires et les ressources pour améliorer votre bien-être.",
-              "en": "Welcome to the Sport Health site in Réunion. Discover adapted physical activities, partner structures and resources to improve your well-being."
+              "fr": "Découvrez le réseau Sport Santé de La Réunion : formations, activités adaptées, structures labellisées et accompagnement personnalisé pour tous.",
+              "en": "Discover the Sport Health network of Réunion: training, adapted activities, labeled structures and personalized support for all."
             },
-            "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 8h1a4 4 0 0 1 0 8h-1\"></path><path d=\"M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z\"></path><line x1=\"6\" y1=\"1\" x2=\"6\" y2=\"4\"></line><line x1=\"10\" y1=\"1\" x2=\"10\" y2=\"4\"></line><line x1=\"14\" y1=\"1\" x2=\"14\" y2=\"4\"></line></svg>",
-            "backgroundImage": "/images/sportSanteBienetre/hero.png",
+            "backgroundImage": "/images/sportSanteBienetre/hero.jpg",
             "backgroundImageAlt": {
               "fr": "Sport Santé Bien-être La Réunion",
               "en": "Sport Health Wellness Réunion"
@@ -108,24 +211,10 @@
             "badges": [
               {
                 "label": {
-                  "fr": "Activité physique adaptée",
-                  "en": "Adapted physical activity"
+                  "fr": "Sport Santé Bien-Être à La Réunion",
+                  "en": "Sport Health Wellness in Réunion"
                 },
                 "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"12\" cy=\"5\" r=\"3\"></circle><path d=\"m6.5 10 1.5 2h8l1.5-2\"></path><path d=\"M12 12v4\"></path><path d=\"m7 22 3-8 2 2 2-2 3 8\"></path></svg>"
-              },
-              {
-                "label": {
-                  "fr": "Prévention santé",
-                  "en": "Health prevention"
-                },
-                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\"></path></svg>"
-              },
-              {
-                "label": {
-                  "fr": "Bien-être",
-                  "en": "Wellness"
-                },
-                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"M8 14s1.5 2 4 2 4-2 4-2\"></path><line x1=\"9\" y1=\"9\" x2=\"9.01\" y2=\"9\"></line><line x1=\"15\" y1=\"9\" x2=\"15.01\" y2=\"9\"></line></svg>"
               }
             ],
             "ctaButtons": [
@@ -134,19 +223,18 @@
                   "fr": "Trouver une activité",
                   "en": "Find an activity"
                 },
-                "path": "/activites",
+                "path": "/structure",
                 "variant": "default"
               },
               {
                 "label": {
-                  "fr": "Rejoindre la communauté",
-                  "en": "Join the community"
+                  "fr": "En savoir plus",
+                  "en": "Learn more"
                 },
-                "path": "/communaute",
+                "path": "/",
                 "variant": "accent"
               }
-            ],
-            "showScrollIndicator": true
+            ]
           }
         },
         {
@@ -245,236 +333,52 @@
             ]
           }
         },
-        {
-          "type": "action-buttons-rezo-la-mer",
-          "id": "actions",
-          "props": {
-            "variant": "cyber",
-            "headline": {
-              "fr": "Passez à l'action",
-              "en": "Take action"
-            },
-            "subhead": {
-              "fr": "Commencez votre parcours vers une meilleure santé dès aujourd'hui",
-              "en": "Start your journey to better health today"
-            },
-            "actions": [
-              {
-                "icon": "plus-circle",
-                "title": {
-                  "fr": "Proposer une activité",
-                  "en": "Propose an activity"
-                },
-                "subtitle": {
-                  "fr": "Partagez votre projet",
-                  "en": "Share your project"
-                },
-                "href": "/proposer-projet",
-                "color": "primary"
-              },
-              {
-                "icon": "users",
-                "title": {
-                  "fr": "Rejoindre un groupe",
-                  "en": "Join a group"
-                },
-                "subtitle": {
-                  "fr": "Activités collectives",
-                  "en": "Group activities"
-                },
-                "href": "/communaute",
-                "color": "teal"
-              },
-              {
-                "icon": "calendar",
-                "title": {
-                  "fr": "Événements",
-                  "en": "Events"
-                },
-                "subtitle": {
-                  "fr": "Agenda santé",
-                  "en": "Health agenda"
-                },
-                "href": "/evenements",
-                "color": "amber"
-              },
-              {
-                "icon": "heart",
-                "title": {
-                  "fr": "Devenir partenaire",
-                  "en": "Become a partner"
-                },
-                "subtitle": {
-                  "fr": "Rejoignez le réseau",
-                  "en": "Join the network"
-                },
-                "href": "/devenir-partenaire",
-                "color": "eco"
-              }
-            ]
-          }
-        },
+
         {
           "type": "community-rezo-la-mer",
-          "id": "community",
+          "id": "community-ssbe",
           "props": {
             "variant": "cyber",
             "headline": {
-              "fr": "La communauté Sport Santé",
-              "en": "The Sport Health Community"
+              "fr": "Le Sport Santé à La Réunion en chiffres",
+              "en": "Sport Health in Réunion in numbers"
             },
             "subhead": {
-              "fr": "Un réseau de professionnels et de structures engagés pour votre bien-être à La Réunion",
-              "en": "A network of professionals and structures committed to your well-being in Réunion"
+              "fr": "Un réseau dynamique qui se développe pour promouvoir l'activité physique adaptée sur tout le territoire.",
+              "en": "A dynamic network that is developing to promote adapted physical activity throughout the territory."
             },
-            "image": "/images/sportSanteBienetre/community.png",
-            "imageAlt": {
-              "fr": "Communauté Sport Santé à La Réunion",
-              "en": "Sport Health Community in Réunion"
-            },
-            "actions": [
-              {
-                "icon": "folder-open",
-                "title": {
-                  "fr": "Découvrir les projets",
-                  "en": "Discover projects"
-                },
-                "description": {
-                  "fr": "Explorez les initiatives sport santé en cours à La Réunion",
-                  "en": "Explore ongoing sport health initiatives in Réunion"
-                },
-                "ctaLabel": {
-                  "fr": "Voir les projets",
-                  "en": "View projects"
-                },
-                "href": "/projets"
-              },
-              {
-                "icon": "clipboard-check",
-                "title": {
-                  "fr": "Bilan de forme",
-                  "en": "Fitness assessment"
-                },
-                "description": {
-                  "fr": "Évaluez votre condition physique et recevez des recommandations personnalisées",
-                  "en": "Assess your fitness level and receive personalized recommendations"
-                },
-                "ctaLabel": {
-                  "fr": "Faire le bilan",
-                  "en": "Start assessment"
-                },
-                "href": "/bilan-forme"
-              },
-              {
-                "icon": "badge-check",
-                "title": {
-                  "fr": "Devenir partenaire",
-                  "en": "Become a partner"
-                },
-                "description": {
-                  "fr": "Rejoignez le réseau des professionnels du sport santé à La Réunion",
-                  "en": "Join the network of sport health professionals in Réunion"
-                },
-                "ctaLabel": {
-                  "fr": "Rejoindre",
-                  "en": "Join"
-                },
-                "href": "/devenir-partenaire"
-              },
-              {
-                "icon": "phone",
-                "title": {
-                  "fr": "Contact",
-                  "en": "Contact"
-                },
-                "description": {
-                  "fr": "Une question ? Contactez notre équipe pour plus d'informations",
-                  "en": "Have a question? Contact our team for more information"
-                },
-                "ctaLabel": {
-                  "fr": "Nous contacter",
-                  "en": "Contact us"
-                },
-                "href": "/contact"
-              }
-            ],
             "stats": [
               {
-                "value": "100+",
+                "value": "248",
                 "label": {
-                  "fr": "Structures partenaires",
-                  "en": "Partner structures"
+                  "fr": "Fiches activités Sport Santé",
+                  "en": "Sport Health activity cards"
                 },
                 "color": "primary"
               },
               {
-                "value": "500+",
+                "value": "156",
                 "label": {
-                  "fr": "Participants actifs",
-                  "en": "Active participants"
+                  "fr": "Professionnels formés",
+                  "en": "Trained professionals"
                 },
                 "color": "primary"
               },
               {
-                "value": "50+",
+                "value": "42",
                 "label": {
-                  "fr": "Activités proposées",
-                  "en": "Activities offered"
+                  "fr": "Structures labellisées",
+                  "en": "Labelled structures"
                 },
                 "color": "accent"
               },
               {
-                "value": "24",
+                "value": "23",
                 "label": {
-                  "fr": "Communes couvertes",
-                  "en": "Municipalities covered"
+                  "fr": "Croissance annuelle",
+                  "en": "Annual growth"
                 },
                 "color": "primary"
-              }
-            ]
-          }
-        },
-        {
-          "type": "cta-rezo-la-mer",
-          "id": "cta",
-          "props": {
-            "variant": "cyber",
-            "headline": {
-              "fr": "Prenez soin de votre santé dès aujourd'hui",
-              "en": "Take care of your health today"
-            },
-            "subhead": {
-              "fr": "Rejoignez la communauté Sport Santé Bien-être et découvrez toutes les ressources pour améliorer votre qualité de vie",
-              "en": "Join the Sport Health Wellness community and discover all the resources to improve your quality of life"
-            },
-            "newsletterPlaceholder": {
-              "fr": "Votre email",
-              "en": "Your email"
-            },
-            "newsletterButtonLabel": {
-              "fr": "S'inscrire",
-              "en": "Subscribe"
-            },
-            "newsletterDisclaimer": {
-              "fr": "Recevez nos conseils santé et les actualités du réseau Sport Santé Bien-être",
-              "en": "Receive our health tips and Sport Health Wellness network news"
-            },
-            "buttons": [
-              {
-                "label": {
-                  "fr": "Voir les projets",
-                  "en": "View projects"
-                },
-                "href": "/projets",
-                "variant": "outline"
-              },
-              {
-                "label": {
-                  "fr": "Nous contacter",
-                  "en": "Contact us"
-                },
-                "href": "/contact",
-                "variant": "accent"
               }
             ]
           }
@@ -700,6 +604,339 @@
                 ]
               }
             ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/structure",
+      "title": {
+        "fr": "Les structure",
+        "en": "Structures"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "structure-sport-sante",
+          "props": {
+            "headline": {
+              "fr": "Structures",
+              "en": "Structures"
+            },
+            "subhead": {
+              "fr": "Découvrez les structures sport santé à La Réunion",
+              "en": "Discover sport health structures in Réunion"
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Proposer une structure",
+                  "en": "Submit a structure"
+                },
+                "icon": "plus",
+                "action": "add-structure",
+                "variant": "primary"
+              }
+            ],
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher une structure...",
+              "en": "Search for a structure..."
+            }
+          }
+        },
+        {
+          "type": "gridLayout",
+          "id": "section-structure-list",
+          "props": {
+            "leftColumns": 1,
+            "rightColumns": 3,
+            "gap": 4,
+            "leftWrapperClass": "max-h-[75vh] overflow-y-auto",
+            "rightWrapperClass": "sticky top-20 max-h-[75vh] overflow-hidden",
+            "leftSection": {
+              "type": "searchProStatic",
+              "id": "section-structure-cards",
+              "props": {
+                "useFilter": true,
+                "showMap": false,
+                "enableMap": false,
+                "showActiveFiltersTypes": true,
+                "showActiveFiltersTags": true,
+                "disableInfiniteScroll": false,
+                "showRole": true,
+                "baseParams": {
+                  "defaultTypes": [
+                    "organizations"
+                  ],
+                  "defaultFilters": {
+                    "$or": {
+                      "source.key": "sportSanteBienetre",
+                      "source.keys": "sportSanteBienetre",
+                      "reference.costum": "sportSanteBienetre"
+                    }
+                  }
+                },
+                "list": {
+                  "columns": {
+                    "sm": 1,
+                    "md": 1,
+                    "lg": 1,
+                    "xl": 1
+                  },
+                  "card": {
+                    "type": "ssbe",
+                    "variant": "ssbe",
+                    "detailsMode": "drawer"
+                  }
+                }
+              }
+            },
+            "rightSection": {
+              "type": "searchProStatic",
+              "id": "section-structure-map",
+              "props": {
+                "useFilter": false,
+                "showMap": true,
+                "enableMap": true,
+                "defaultViewMode": "map",
+                "showViewModeToggle": false,
+                "showActiveFiltersTypes": false,
+                "showActiveFiltersTags": false,
+                "disableInfiniteScroll": true,
+                "sticky": true,
+                "baseParams": {
+                  "defaultTypes": [
+                    "organizations"
+                  ],
+                  "defaultFilters": {
+                    "$or": {
+                      "source.key": "sportSanteBienetre",
+                      "source.keys": "sportSanteBienetre",
+                      "reference.costum": "sportSanteBienetre"
+                    }
+                  }
+                },
+                "list": {
+                  "columns": {
+                    "sm": 1,
+                    "md": 1,
+                    "lg": 1,
+                    "xl": 1
+                  },
+                  "card": {
+                    "type": "rezo-la-mer",
+                    "variant": "rezo-la-mer",
+                    "detailsMode": "drawer"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+     {
+      "path": "/mss",
+      "title": {
+        "fr": "Les structure",
+        "en": "Structures"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "mss-title",
+          "props": {
+            "headline": {
+              "fr": "Les Maisons Sport Santé de La Réunion",
+              "en": "Sport Health Houses in Réunion"
+            },
+            "subhead": {
+              "fr": "Retrouvez la Maison Sport Santé la plus proche de chez vous. Toutes les MSS sont ouvertes sans rendez-vous et proposent un accueil gratuit.",
+              "en": "Find the Sport Health House closest to you. All MSS are open without an appointment and offer free reception."
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Ajouter une mss",
+                  "en": "Add a mss"
+                },
+                "icon": "home",
+                "action": "add-mss",
+                "variant": "primary"
+              }
+            ],
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher une mss...",
+              "en": "Search for a mss..."
+            }
+          }
+        },
+        {
+          "type": "gridLayout",
+          "id": "section-structure-list",
+          "props": {
+            "leftColumns": 1,
+            "rightColumns": 3,
+            "gap": 4,
+            "leftWrapperClass": "max-h-[75vh] overflow-y-auto",
+            "rightWrapperClass": "sticky top-20 max-h-[75vh] overflow-hidden",
+            "leftSection": {
+              "type": "searchProStatic",
+              "id": "section-structure-cards",
+              "props": {
+                "useFilter": true,
+                "showMap": false,
+                "enableMap": false,
+                "showActiveFiltersTypes": true,
+                "showActiveFiltersTags": true,
+                "disableInfiniteScroll": false,
+                "showRole": true,
+                "baseParams": {
+                  "defaultTypes": [
+                    "organizations"
+                  ],
+                  "defaultFilters": {
+                    "$or": {
+                      "source.key": "sportSanteBienetre",
+                      "source.keys": "sportSanteBienetre",
+                      "reference.costum": "sportSanteBienetre"
+                    },
+                    "tags" : ["mss"]
+                  }
+                },
+                "list": {
+                  "columns": {
+                    "sm": 1,
+                    "md": 1,
+                    "lg": 1,
+                    "xl": 1
+                  },
+                  "card": {
+                    "type": "ssbe",
+                    "variant": "ssbe",
+                    "detailsMode": "drawer"
+                  }
+                }
+              }
+            },
+            "rightSection": {
+              "type": "searchProStatic",
+              "id": "section-structure-map",
+              "props": {
+                "useFilter": false,
+                "showMap": true,
+                "enableMap": true,
+                "defaultViewMode": "map",
+                "showViewModeToggle": false,
+                "showActiveFiltersTypes": false,
+                "showActiveFiltersTags": false,
+                "disableInfiniteScroll": true,
+                "sticky": true,
+                "baseParams": {
+                  "defaultTypes": [
+                    "organizations"
+                  ],
+                  "defaultFilters": {
+                    "$or": {
+                      "source.key": "sportSanteBienetre",
+                      "source.keys": "sportSanteBienetre",
+                      "reference.costum": "sportSanteBienetre"
+                    },
+                    "tags" : ["mss"]
+                  }
+                },
+                "list": {
+                  "columns": {
+                    "sm": 1,
+                    "md": 1,
+                    "lg": 1,
+                    "xl": 1
+                  },
+                  "card": {
+                    "type": "rezo-la-mer",
+                    "variant": "rezo-la-mer",
+                    "detailsMode": "drawer"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/mapping",
+      "title": {
+        "fr": "Mapping - Cyber Réunion",
+        "en": "Mapping - Cyber Réunion"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "mapping-header",
+          "props": {
+            "headline": {
+              "fr": "Mapping",
+              "en": "Mapping"
+            }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "mapping-search",
+          "props": {
+            "title": {
+              "fr": "Mapping",
+              "en": "Mapping"
+            },
+            "showSearch": false,
+            "useFilter": false,
+            "showMap": false,
+            "enableMap": false,
+            "enableGraph": true,
+            "defaultViewMode": "graph",
+            "graphCategories": [
+              "Entreprises(produits/solutions et services)",
+              "CERT/CSIRT",
+              "Organismes de formation",
+              "Laboratoires/recherche",
+              "Structure d'accompagnement et financement",
+              "Réseaux/cluster",
+              "Services défense/intérieur",
+              "Association/ONG"
+            ],
+            "baseParams": {
+              "defaultTypes": ["organizations"],
+              "defaultFilters": {
+                "$or": {
+                  "parent.695b58ca8693fc2c121208e4": { "$exists": true },
+                  "source.keys": "cyberReunion",
+                  "reference.costum": "cyberReunion",
+                  "links.projects.695b58ca8693fc2c121208e4": { "$exists": true },
+                  "links.memberOf.695b58ca8693fc2c121208e4": { "$exists": true }
+                },
+                "toBeValidated": { "$exists": false }
+              },
+              "notSourceKey": true
+            },
+            "list": {
+              "columns": {
+                "lg": 3,
+                "md": 2,
+                "sm": 1
+              },
+              "card": {
+                "type": "profile",
+                "showDescription": true,
+                "showAddress": true,
+                "detailsMode": "drawer"
+              }
+            }
           }
         }
       ]

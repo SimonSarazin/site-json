@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, createElement, type ComponentType } from "react";
 import { useForm } from "react-hook-form";
 import * as LucideIcons from "lucide-react";
 import { ChevronLeft, ChevronRight, Check, X, ChevronsUpDown } from "lucide-react";
@@ -33,14 +33,20 @@ import {
 import { EditLocationTab } from "../profile-edit/EditLocationTab";
 import type { ModalProps } from "./ModalRegistry";
 import type { JsonFormModalField, JsonFormModalStep } from "@/types/site-schema";
+import type { LocalizedString } from "@/types/locale-schema";
 import { cn } from "@/lib/utils";
 import { useLocalization } from "@/hooks/useLocalization";
 import { toast } from "sonner";
 
-function getLucideIcon(name?: string) {
+const lucideIconCache = new Map<string, ComponentType<{ className?: string }> | null>();
+
+function getLucideIcon(name?: string): ComponentType<{ className?: string }> | null {
   if (!name) return null;
+  if (lucideIconCache.has(name)) return lucideIconCache.get(name)!;
   const key = name.charAt(0).toUpperCase() + name.slice(1).replace(/-./g, (x) => x[1].toUpperCase());
-  return (LucideIcons as any)[key] || null;
+  const icon = (LucideIcons as unknown as Record<string, ComponentType<{ className?: string }>>)[key] || null;
+  lucideIconCache.set(name, icon);
+  return icon;
 }
 
 function FieldRenderer({
@@ -50,16 +56,16 @@ function FieldRenderer({
   t,
 }: {
   field: JsonFormModalField;
-  value: any;
-  onChange: (val: any) => void;
-  t: (v: any) => string;
+  value: unknown;
+  onChange: (val: unknown) => void;
+  t: (v: LocalizedString) => string;
 }) {
   switch (field.type) {
     case "textarea":
       return (
         <Textarea
           placeholder={field.placeholder ? t(field.placeholder) : ""}
-          value={value || ""}
+          value={(value as string) || ""}
           onChange={(e) => onChange(e.target.value)}
           className="min-h-[100px]"
         />
@@ -67,7 +73,7 @@ function FieldRenderer({
 
     case "select":
       return (
-        <Select value={value || ""} onValueChange={onChange}>
+        <Select value={(value as string) || ""} onValueChange={onChange}>
           <SelectTrigger>
             <SelectValue
               placeholder={field.placeholder ? t(field.placeholder) : `${t(field.label)}...`}
@@ -84,7 +90,7 @@ function FieldRenderer({
       );
 
     case "multiselect": {
-      const selected: string[] = Array.isArray(value) ? value : [];
+      const selected: string[] = Array.isArray(value) ? (value as string[]) : [];
       const toggleOption = (optValue: string) => {
         if (selected.includes(optValue)) {
           onChange(selected.filter((v) => v !== optValue));
@@ -173,7 +179,7 @@ function FieldRenderer({
 
     case "radio":
       return (
-        <RadioGroup value={value || ""} onValueChange={onChange}>
+        <RadioGroup value={(value as string) || ""} onValueChange={onChange}>
           {field.options?.map((opt) => (
             <div key={opt.value} className="flex items-center space-x-2">
               <RadioGroupItem value={opt.value} id={`${field.name}-${opt.value}`} />
@@ -198,7 +204,7 @@ function FieldRenderer({
         <Input
           type={field.type || "text"}
           placeholder={field.placeholder ? t(field.placeholder) : ""}
-          value={value || ""}
+          value={(value as string) || ""}
           onChange={(e) => onChange(e.target.value)}
         />
       );
@@ -212,7 +218,7 @@ function StepIndicator({
 }: {
   steps: JsonFormModalStep[];
   currentStep: number;
-  t: (v: any) => string;
+  t: (v: LocalizedString) => string;
 }) {
   return (
     <div className="py-4 px-4">
@@ -265,17 +271,22 @@ function StepIndicator({
   );
 }
 
+function renderLucideIcon(name?: string, className?: string) {
+  const Icon = getLucideIcon(name);
+  if (!Icon) return null;
+  return createElement(Icon, { className });
+}
+
 export function JsonFormModal({ open, onOpenChange, formConfig }: ModalProps) {
   const { t } = useLocalization();
   const [currentStep, setCurrentStep] = useState(1);
 
-  if (!formConfig) return null;
-
-  const hasStepper = !!formConfig.steps && formConfig.steps.length > 0;
-  const steps = formConfig.steps || [];
+  const hasStepper = !!formConfig?.steps && formConfig.steps.length > 0;
+  const steps = useMemo(() => formConfig?.steps || [], [formConfig?.steps]);
   const totalSteps = hasStepper ? steps.length : 1;
 
   const allFields = useMemo(() => {
+    if (!formConfig) return [];
     if (hasStepper) {
       return steps.flatMap((s) => s.fields);
     }
@@ -283,7 +294,7 @@ export function JsonFormModal({ open, onOpenChange, formConfig }: ModalProps) {
   }, [formConfig, hasStepper, steps]);
 
   const defaultValues = useMemo(() => {
-    const vals: Record<string, any> = {};
+    const vals: Record<string, unknown> = {};
     for (const f of allFields) {
       if (f.type === "checkbox") vals[f.name] = false;
       else if (f.type === "multiselect") vals[f.name] = [];
@@ -294,7 +305,7 @@ export function JsonFormModal({ open, onOpenChange, formConfig }: ModalProps) {
 
   const form = useForm({ defaultValues });
 
-  const TitleIcon = getLucideIcon(formConfig.icon);
+  if (!formConfig) return null;
 
   const currentFields = hasStepper ? steps[currentStep - 1]?.fields || [] : formConfig.fields || [];
   const currentStepConfig = hasStepper ? steps[currentStep - 1] : null;
@@ -311,7 +322,7 @@ export function JsonFormModal({ open, onOpenChange, formConfig }: ModalProps) {
     const errors: string[] = [];
     for (const field of currentFields) {
       if (field.type === "location") continue;
-      const value = form.getValues(field.name);
+      const value: unknown = form.getValues(field.name);
       if (field.required) {
         const isEmpty = Array.isArray(value) ? value.length === 0 : (!value || value === "");
         if (isEmpty) {
@@ -319,17 +330,18 @@ export function JsonFormModal({ open, onOpenChange, formConfig }: ModalProps) {
         }
       }
       if (field.validation && value) {
+        const strValue = String(value);
         if (field.validation === "email") {
-          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(strValue)) {
             errors.push("Adresse e-mail invalide");
           }
         } else if (field.validation === "tel") {
-          if (!/^[\d\s()+-]+$/.test(value)) {
+          if (!/^[\d\s()+-]+$/.test(strValue)) {
             errors.push("Numéro de téléphone invalide");
           }
         } else {
           try {
-            if (!new RegExp(field.validation).test(value)) {
+            if (!new RegExp(field.validation).test(strValue)) {
               errors.push(`Format invalide pour ${t(field.label)}`);
             }
           } catch { /* ignore invalid regex */ }
@@ -352,7 +364,7 @@ export function JsonFormModal({ open, onOpenChange, formConfig }: ModalProps) {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
-  const _submitViaFetch = async (data: Record<string, any>) => {
+  const _submitViaFetch = async (data: Record<string, unknown>) => {
     if (!formConfig.action) throw new Error("No action URL configured");
     const response = await fetch(formConfig.action, {
       method: formConfig.method || "POST",
@@ -363,8 +375,9 @@ export function JsonFormModal({ open, onOpenChange, formConfig }: ModalProps) {
       throw new Error("Erreur serveur");
     }
   };
+  void _submitViaFetch;
 
-  const onSubmit = async (data: Record<string, any>) => {
+  const onSubmit = async (data: Record<string, unknown>) => {
     console.log(data)
   };
 
@@ -427,7 +440,7 @@ export function JsonFormModal({ open, onOpenChange, formConfig }: ModalProps) {
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            {TitleIcon && <TitleIcon className="h-5 w-5" />}
+            {renderLucideIcon(formConfig.icon, "h-5 w-5")}
             {t(formConfig.title)}
           </DialogTitle>
           <DialogDescription className="sr-only">

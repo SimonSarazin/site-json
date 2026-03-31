@@ -70,10 +70,13 @@ const LazySections: {
   searchPro: lazy(() => import("@/modules/search/SearchProSection")),
   searchProStatic: lazy(() => import("@/modules/search/SearchProStaticSection")),
   cardCountCT: lazy(() => import("@/modules/search/CardCountCTSection")),
+  thematics: lazy(() => import("@/modules/search/components/card/ThematicsSection")),
   filters: lazy(() => import("./FiltersSection")),
   gridLayout: lazy(() => import("./GridLayoutSection")),
   news: lazy(() => import("@/modules/news/components/sections/NewsSection")),
   member: lazy(() => import("./MemberSection")),
+  heroWithIcon: lazy(() => import("./HeroWithIconSection")),
+  meeteem: lazy(() => import("@/modules/ampli/components/sections/MeeteemSection")),
 };
 
 // Fallback skeleton pour les sections en cours de chargement

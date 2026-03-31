@@ -24,7 +24,7 @@ export function ObjectFields({
   onChange: (v: Record<string, unknown>) => void;
   compact?: boolean;
 }) {
-  const shape = (schema._def as any).shape as Record<string, z.ZodTypeAny>;
+  const shape = (schema._def as unknown as Record<string, unknown>).shape as Record<string, z.ZodTypeAny>;
   const entries = Object.entries(shape);
 
   if (entries.length === 0) {

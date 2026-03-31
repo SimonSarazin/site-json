@@ -2,7 +2,15 @@ import { useQuery } from "@tanstack/react-query";
 import { useHydratedUserContextId } from "@/hooks/useHydratedUserContextId";
 import { QUERY_KEYS } from "../constants/queryKeys";
 import type { ProfileTiersLieuxInfoSection } from "../schema";
-import type { SearchEntity } from "@communecter/cocolight-api-client";
+import type { SearchEntity, Answer } from "@communecter/cocolight-api-client";
+
+/** Shape returned by entity.searchAnswersByForms() per form */
+interface AnswersByFormsResult {
+  id: string;
+  answers: Answer[];
+  [key: string]: unknown;
+}
+
 
 /**
  * Construit le paramètre `forms` attendu par `searchAnswersByForms`.
@@ -73,7 +81,7 @@ export function useGetAnswersByFormsQuery({
       const formsParam = buildFormsParam(forms, entityId);
 
       try {
-        const results = await entity.searchAnswersByForms({ forms: formsParam });
+        const results = await (entity as unknown as { searchAnswersByForms(params: { forms: Record<string, string> }): Promise<AnswersByFormsResult[]> }).searchAnswersByForms({ forms: formsParam });
         return results;
       } catch (err) {
         console.error("[useGetAnswersByFormsQuery] Erreur searchAnswersByForms:", err);

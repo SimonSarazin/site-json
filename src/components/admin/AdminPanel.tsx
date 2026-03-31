@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { useSite } from "@/hooks/useSite";
-import { useCocolight } from "@/hooks/useCocolight";
-import type { Section, SiteConfig } from "@/types/site-schema";
+// import { useCocolight } from "@/hooks/useCocolight";
+import type { Section, SiteConfig, Header, Footer } from "@/types/site-schema";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,
 } from "@/components/ui/sheet";
@@ -34,7 +34,8 @@ const FooterFieldsSchema = FooterSchema.omit({ columns: true });
 
 const ADDABLE_SECTIONS: { type: string; label: string; desc: string; image: string }[] = SectionSchema.options
   .map((opt: import("zod").ZodTypeAny) => {
-    const d = opt._def as any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const d = opt._def as Record<string, any>;
     const type = (d.shape.type as import("zod").ZodLiteral<string>).value;
     const meta = SECTION_META[type];
     return { type, label: meta?.label ?? type, desc: meta?.desc ?? "", image: meta?.image ?? "" };
@@ -54,7 +55,8 @@ type View =
   | { mode: "editSetting"; settingKey: string };
 
 const SETTING_ENTRIES: { key: string; label: string; icon: string }[] = (() => {
-  const shape = (SiteConfigSchema._def as any).shape as Record<string, import("zod").ZodTypeAny>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const shape = (SiteConfigSchema._def as Record<string, any>).shape as Record<string, import("zod").ZodTypeAny>;
   const skip = new Set(["pages", "header", "footer", "version", "generated"]);
   return Object.keys(shape)
     .filter((k) => !skip.has(k))
@@ -65,9 +67,9 @@ const SETTING_ENTRIES: { key: string; label: string; icon: string }[] = (() => {
     }));
 })();
 
-type NavItem = any;
-type FooterColumn = any;
-type FooterLink = any;
+type NavItem = Header['nav'][number];
+type FooterColumn = Footer['columns'][number];
+type FooterLink = FooterColumn['links'][number];
 
 function SectionPicker({ value, onChange, onAdd }: { value: string; onChange: (v: string) => void; onAdd: () => void }) {
   const [open, setOpen] = useState(false);
@@ -149,9 +151,7 @@ function SectionPicker({ value, onChange, onAdd }: { value: string; onChange: (v
 }
 
 export default function AdminPanel() {
-  const { me, entity } = useCocolight();
-  const isAdmin = me?.isConnected && entity?.isAdmin?.();
-
+  // const { me, entity } = useCocolight();
   const { config, setConfig } = useSite();
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -170,7 +170,8 @@ export default function AdminPanel() {
     if (view.mode === "sections" || view.mode === "editSection") {
       setView({ mode: "sections", pageIndex: currentPageIndex });
     }
-  }, [pathname]); 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   useEffect(() => {
     if (!sheetOpen) return;
@@ -611,7 +612,8 @@ export default function AdminPanel() {
   function renderHeaderView() {
     if (!header) return null;
 
-    const { nav: _nav, ...headerFieldsValue } = header as Record<string, unknown> & { nav: unknown };
+    const { nav: _nav, ...headerFieldsValue } = header;
+    void _nav;
 
     return (
       <div className="flex flex-col h-full min-h-0">
@@ -629,7 +631,7 @@ export default function AdminPanel() {
             <ObjectFields
               schema={HeaderFieldsSchema}
               value={headerFieldsValue as Record<string, unknown>}
-              onChange={(v) => patch({ header: { nav: (header as any).nav, ...v } })}
+              onChange={(v) => patch({ header: { nav: header.nav, ...v } as Header })}
               compact
             />
 
@@ -737,7 +739,7 @@ export default function AdminPanel() {
             />
             <div className="space-y-1.5">
               <Label className="text-xs font-medium">Description <span className="text-muted-foreground">(optionnel)</span></Label>
-              <Input value={(item as any).description?.fr ?? ""} onChange={(e) => update({ description: e.target.value ? { fr: e.target.value } : undefined } as any)} placeholder="Description du lien" />
+              <Input value={(item as unknown as Record<string, Record<string, string>>).description?.fr ?? ""} onChange={(e) => update({ description: e.target.value ? { fr: e.target.value } : undefined } as Record<string, unknown>)} placeholder="Description du lien" />
             </div>
           </div>
         </div>
@@ -754,7 +756,8 @@ export default function AdminPanel() {
   function renderFooterView() {
     if (!footer) return null;
 
-    const { columns: _cols, ...footerFieldsValue } = footer as Record<string, unknown> & { columns: unknown };
+    const { columns: _cols, ...footerFieldsValue } = footer;
+    void _cols;
 
     return (
       <div className="flex flex-col h-full min-h-0">
@@ -774,7 +777,7 @@ export default function AdminPanel() {
             <ObjectFields
               schema={FooterFieldsSchema}
               value={footerFieldsValue as Record<string, unknown>}
-              onChange={(v) => updateFooter({ columns: (footer as any).columns, ...v })}
+              onChange={(v) => updateFooter({ columns: footer.columns, ...v } as Footer)}
               compact
             />
           </div>
@@ -929,7 +932,7 @@ export default function AdminPanel() {
         <ScrollArea className="flex-1 min-h-0">
           <div className="p-2 space-y-1">
             {SETTING_ENTRIES.map(({ key, label }) => {
-              const val = (config as any)[key];
+              const val = (config as Record<string, unknown>)[key];
               const isEmpty = val === undefined || val === null;
               return (
                 <div
@@ -959,11 +962,12 @@ export default function AdminPanel() {
   }
 
   function renderEditSettingView(settingKey: string) {
-    const shape = (SiteConfigSchema._def as any).shape as Record<string, import("zod").ZodTypeAny>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const shape = (SiteConfigSchema._def as Record<string, any>).shape as Record<string, import("zod").ZodTypeAny>;
     const fieldSchema = shape[settingKey];
     if (!fieldSchema) return null;
 
-    const currentValue = (config as any)[settingKey];
+    const currentValue = (config as Record<string, unknown>)[settingKey];
     const label = settingKey.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/^./, (c) => c.toUpperCase());
 
     const { innerSchema } = resolveType(fieldSchema);
@@ -1012,7 +1016,7 @@ export default function AdminPanel() {
     <Sheet modal={false} open={sheetOpen} onOpenChange={setSheetOpen}>
       <SheetTrigger asChild>
         <Button size="icon" variant="outline"
-          className="fixed bottom-4 right-4 z-[9999] h-12 w-12 rounded-full shadow-lg bg-background border-2">
+          className="fixed bottom-4 right-4 z-9999 h-12 w-12 rounded-full shadow-lg bg-background border-2">
           <Settings className="h-5 w-5" />
         </Button>
       </SheetTrigger>

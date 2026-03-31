@@ -2,7 +2,8 @@ import type { z } from "zod";
 import { LOCALES } from "@/types/locale-schema";
 import { Section } from "@/types/site-schema";
 
-type Def = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Def = Record<string, any>;
 
 function def(schema: z.ZodTypeAny): Def {
   return schema._def as Def;
@@ -58,7 +59,7 @@ export function getUnionLiteralValues(
   const options = d.options as z.ZodTypeAny[] | undefined;
   if (!Array.isArray(options)) return false;
   if (!options.every((o) => def(o).type === "literal")) return false;
-  return options.map((o) => (o as any).value);
+  return options.map((o) => (o as z.ZodLiteral).value);
 }
 
 
@@ -98,7 +99,7 @@ export function classifyField(rawSchema: z.ZodTypeAny): FieldInfo {
     return { kind: "boolean", schema: innerSchema, isOptional, defaultValue };
 
   if (t === "enum") {
-    const enumSchema = innerSchema as any;
+    const enumSchema = innerSchema as z.ZodEnum;
     return {
       kind: "enum",
       schema: innerSchema,
@@ -169,7 +170,7 @@ export function createDefaultValue(schema: z.ZodTypeAny): unknown {
   if (t === "number") return 0;
   if (t === "boolean") return false;
   if (t === "enum") {
-    const enumSchema = innerSchema as any;
+    const enumSchema = innerSchema as z.ZodEnum;
     return (enumSchema.options as string[])[0];
   }
   if (t === "array") return [];
