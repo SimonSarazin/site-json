@@ -175,9 +175,14 @@
 - [10. Performance et optimisation](#10-performance-et-optimisation)
   - [10.1 Lazy loading des sections et des images](#101-lazy-loading-des-sections-et-des-images)
     - [10.1.1 Chargement asynchrone des sections](#1011-chargement-asynchrone-des-sections)
-    - [10.1.2 Lazy loading des images](#1012-lazy-loading-des-images)
+    - [10.1.2 Optimisation et lazy loading des images](#1012-optimisation-et-lazy-loading-des-images)
   - [10.2 Code splitting et bundling](#102-code-splitting-et-bundling)
-  - [10.3 Optimisation des images](#103-optimisation-des-images)
+  - [10.3 Optimisation des images — Middleware sharp](#103-optimisation-des-images--middleware-sharp)
+    - [Architecture](#architecture)
+    - [Route API](#route-api)
+    - [Securite](#securite)
+    - [Utilitaire `buildOptimizedUrl`](#utilitaire-buildoptimizedurl)
+    - [Docker](#docker)
   - [10.4 Caching et hydratation des données](#104-caching-et-hydratation-des-données)
   - [10.5 Compression et réseau](#105-compression-et-réseau)
 - [11. Internationalisation (i18n)](#11-internationalisation-i18n)
@@ -244,6 +249,15 @@
   - [13.10 Ce qui reste hardcodé et pourquoi](#1310-ce-qui-reste-hardcodé-et-pourquoi)
   - [13.11 Variables d'environnement de test](#1311-variables-denvironnement-de-test)
   - [13.12 Guide : Ajouter un nouveau test config-driven](#1312-guide--ajouter-un-nouveau-test-config-driven)
+- [14. Deploiement Docker](#14-deploiement-docker)
+  - [14.1 Dockerfile — Build multi-stage](#141-dockerfile--build-multi-stage)
+    - [Arguments de build (ARG)](#arguments-de-build-arg)
+    - [Deploiement avec Coolify](#deploiement-avec-coolify)
+  - [14.2 Variables d'environnement runtime](#142-variables-denvironnement-runtime)
+  - [14.3 Volumes](#143-volumes)
+  - [14.4 Ajouter des images de contenu en production](#144-ajouter-des-images-de-contenu-en-production)
+  - [14.5 Exemple complet docker-compose.yml](#145-exemple-complet-docker-composeyml)
+  - [14.6 Recapitulatif du flux build / runtime](#146-recapitulatif-du-flux-build--runtime)
 
 
 ## 1. Introduction générale
@@ -511,7 +525,6 @@ Cette section décrit l’organisation générale du code, le flux d’exécutio
 
 ```
 .
-├── .bolt/                 # Scripts et configurations d’alerte/ignore interne
 ├── scripts/               # Outils de génération automatique (ex. génération de config)
 ├── server/                # Serveurs Express (dev et prod)
 │   ├── middleware/         # Middlewares Express
