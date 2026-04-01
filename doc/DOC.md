@@ -175,9 +175,14 @@
 - [10. Performance et optimisation](#10-performance-et-optimisation)
   - [10.1 Lazy loading des sections et des images](#101-lazy-loading-des-sections-et-des-images)
     - [10.1.1 Chargement asynchrone des sections](#1011-chargement-asynchrone-des-sections)
-    - [10.1.2 Lazy loading des images](#1012-lazy-loading-des-images)
+    - [10.1.2 Optimisation et lazy loading des images](#1012-optimisation-et-lazy-loading-des-images)
   - [10.2 Code splitting et bundling](#102-code-splitting-et-bundling)
-  - [10.3 Optimisation des images](#103-optimisation-des-images)
+  - [10.3 Optimisation des images — Middleware sharp](#103-optimisation-des-images--middleware-sharp)
+    - [Architecture](#architecture)
+    - [Route API](#route-api)
+    - [Securite](#securite)
+    - [Utilitaire `buildOptimizedUrl`](#utilitaire-buildoptimizedurl)
+    - [Docker](#docker)
   - [10.4 Caching et hydratation des données](#104-caching-et-hydratation-des-données)
   - [10.5 Compression et réseau](#105-compression-et-réseau)
 - [11. Internationalisation (i18n)](#11-internationalisation-i18n)
@@ -234,16 +239,30 @@
     - [13.8.2 Tests SSR config-driven (`config-driven-ssr.test.ts`)](#1382-tests-ssr-config-driven-config-driven-ssrtestts)
     - [13.8.3 Tests SSR de rendu (`ssr-rendering.test.ts`)](#1383-tests-ssr-de-rendu-ssr-renderingtestts)
     - [13.8.4 Tests de concurrence SSR (`ssr-concurrency.test.ts`)](#1384-tests-de-concurrence-ssr-ssr-concurrencytestts)
-  - [13.9 Tests E2E par domaine](#139-tests-e2e-par-domaine)
-    - [13.9.1 Recherche (`search.spec.ts`)](#1391-recherche-searchspects)
-    - [13.9.2 Authentification (`auth-flow.spec.ts`, `auth-real.spec.ts`)](#1392-authentification-auth-flowspects-auth-realspects)
-    - [13.9.3 Profil (`profile.spec.ts`)](#1393-profil-profilespects)
-    - [13.9.4 Hydratation (`hydration.spec.ts`)](#1394-hydratation-hydrationspects)
-    - [13.9.5 Navigation (`config-nav.spec.ts`)](#1395-navigation-config-navspects)
-    - [13.9.6 i18n (`i18n.spec.ts`)](#1396-i18n-i18nspects)
-  - [13.10 Ce qui reste hardcodé et pourquoi](#1310-ce-qui-reste-hardcodé-et-pourquoi)
-  - [13.11 Variables d'environnement de test](#1311-variables-denvironnement-de-test)
-  - [13.12 Guide : Ajouter un nouveau test config-driven](#1312-guide--ajouter-un-nouveau-test-config-driven)
+  - [13.9 Tests unitaires](#139-tests-unitaires)
+    - [13.9.1 ImageOptimizer](#1391-imageoptimizer-servertestsimageoptimizertestts)
+    - [13.9.2 Sanitize](#1392-sanitize-srclibteststestsantizetestts)
+    - [13.9.3 Permissions](#1393-permissions-srclibtestspermissionstestts)
+    - [13.9.4 Validation configs multi-sites](#1394-validation-configs-multi-sites-testsprefligthsites-configstestts)
+  - [13.10 Tests E2E par domaine](#1310-tests-e2e-par-domaine)
+    - [13.10.1 Recherche (`search.spec.ts`)](#13101-recherche-searchspects)
+    - [13.10.2 Authentification (`auth-flow.spec.ts`, `auth-real.spec.ts`)](#13102-authentification-auth-flowspects-auth-realspects)
+    - [13.10.3 Profil (`profile.spec.ts`)](#13103-profil-profilespects)
+    - [13.10.4 Hydratation (`hydration.spec.ts`)](#13104-hydratation-hydrationspects)
+    - [13.10.5 Navigation (`config-nav.spec.ts`)](#13105-navigation-config-navspects)
+    - [13.10.6 i18n (`i18n.spec.ts`)](#13106-i18n-i18nspects)
+  - [13.11 Ce qui reste hardcodé et pourquoi](#1311-ce-qui-reste-hardcodé-et-pourquoi)
+  - [13.12 Variables d'environnement de test](#1312-variables-denvironnement-de-test)
+  - [13.13 Guide : Ajouter un nouveau test config-driven](#1313-guide--ajouter-un-nouveau-test-config-driven)
+- [14. Deploiement Docker](#14-deploiement-docker)
+  - [14.1 Dockerfile — Build multi-stage](#141-dockerfile--build-multi-stage)
+    - [Arguments de build (ARG)](#arguments-de-build-arg)
+    - [Deploiement avec Coolify](#deploiement-avec-coolify)
+  - [14.2 Variables d'environnement runtime](#142-variables-denvironnement-runtime)
+  - [14.3 Volumes](#143-volumes)
+  - [14.4 Ajouter des images de contenu en production](#144-ajouter-des-images-de-contenu-en-production)
+  - [14.5 Exemple complet docker-compose.yml](#145-exemple-complet-docker-composeyml)
+  - [14.6 Recapitulatif du flux build / runtime](#146-recapitulatif-du-flux-build--runtime)
 
 
 ## 1. Introduction générale
@@ -511,7 +530,6 @@ Cette section décrit l’organisation générale du code, le flux d’exécutio
 
 ```
 .
-├── .bolt/                 # Scripts et configurations d’alerte/ignore interne
 ├── scripts/               # Outils de génération automatique (ex. génération de config)
 ├── server/                # Serveurs Express (dev et prod)
 │   ├── middleware/         # Middlewares Express
@@ -5776,7 +5794,8 @@ SiteForge utilise une stratégie de tests à **trois niveaux**, tous pilotés pa
 
 | Niveau | Runner | Cible | Durée typique |
 |--------|--------|-------|---------------|
-| **Unit / Preflight** | Vitest | Logique pure, validation config, API client | < 1s |
+| **Unit** | Vitest | Logique pure, fonctions utilitaires, sécurité (sanitize, permissions, imageOptimizer) | < 1s |
+| **Preflight** | Vitest | Validation env, configs JSON, schéma Zod, toutes les configs de `sites.json` | < 1s |
 | **Integration SSR** | Vitest | Rendu serveur, concurrence, hydratation state | ~20s |
 | **E2E** | Playwright | Navigation browser, formulaires, hydratation client | ~2min |
 
@@ -5800,10 +5819,17 @@ source .env.test && npm run test:e2e
 
 ```
 .
-├── src/lib/__tests__/           # Tests unitaires (apiClient, configValidation)
+├── src/lib/__tests__/
+│   ├── apiClient.test.ts        # Singleton API client, isolation server/client
+│   ├── configValidation.test.ts # Validation schéma Zod
+│   ├── sanitize.test.ts         # Tests XSS (scripts, event handlers, iframes)
+│   └── permissions.test.ts      # Registre permissions (register, get, overwrite)
+├── server/__tests__/
+│   └── imageOptimizer.test.ts   # Fonctions pures (allowlist, format, magic bytes, MIME)
 ├── tests/
 │   ├── preflight/
-│   │   └── environment.test.ts  # Vérification Node, deps, fichiers config
+│   │   ├── environment.test.ts  # Vérification Node, deps, fichiers config
+│   │   └── sites-configs.test.ts # Validation de TOUTES les configs de sites.json
 │   ├── helpers/
 │   │   ├── global-setup.ts      # Démarre le serveur SSR sur port 5188
 │   │   └── server-manager.ts    # Expose getBaseUrl() pour les tests intégration
@@ -5822,7 +5848,7 @@ source .env.test && npm run test:e2e
 │   ├── profile.spec.ts          # Pages profil + validation config.profiles
 │   ├── config-nav.spec.ts       # Header nav, footer, logo (config-driven)
 │   └── i18n.spec.ts             # Langue par défaut, switch de langue
-├── vitest.config.unit.ts        # Config Vitest pour unit + preflight
+├── vitest.config.unit.ts        # Config Vitest pour unit + preflight + server
 ├── vitest.config.integration.ts # Config Vitest pour intégration (globalSetup, timeout 60s)
 └── playwright.config.ts         # Config Playwright (chromium, webServer dev)
 ```
@@ -5834,7 +5860,7 @@ source .env.test && npm run test:e2e
 ```ts
 test: {
   environment: "node",
-  include: ["src/**/*.test.ts", "tests/preflight/**/*.test.ts"],
+  include: ["src/**/*.test.ts", "tests/preflight/**/*.test.ts", "server/**/*.test.ts"],
 }
 ```
 
@@ -5895,7 +5921,7 @@ for (const searchPage of searchPages) {
 
 #### 13.6.2 Helper partagé `e2e/helpers/config.ts`
 
-Ce module charge `config.prod.json` une seule fois (cache en mémoire) et expose des fonctions utilitaires pour tous les specs E2E.
+Ce module charge la config JSON une seule fois (cache en mémoire) et expose des fonctions utilitaires pour tous les specs E2E. Il charge automatiquement le `.env` pour résoudre `SITE_CONFIG_PATH` si cette variable n'est pas déjà définie (Playwright ne charge pas le `.env` nativement).
 
 ```ts
 import { loadSiteConfig, findSearchPages, findLoginPath } from "./helpers/config";
@@ -6050,16 +6076,71 @@ Stress-test du pipeline SSR streaming :
 - 5 requêtes parallèles : state déshydraté contient `cocolight-data` query
 - Cross-route leakage : `/` et page secondaire en parallèle ne mélangent pas leur contenu
 
-### 13.9 Tests E2E par domaine
+### 13.9 Tests unitaires
 
-#### 13.9.1 Recherche (`search.spec.ts`)
+#### 13.9.1 ImageOptimizer (`server/__tests__/imageOptimizer.test.ts`)
+
+Teste les 5 fonctions pures exportées du middleware d'optimisation d'images (37 tests) :
+
+- **`buildAllowlist()`** : construction de la whitelist de domaines depuis les variables d'environnement (localhost par défaut, `VITE_BASE_URL_BACKEND`, `IMAGE_OPTIMIZER_ALLOWED_DOMAINS`)
+- **`isDomainAllowed()`** : vérification qu'une URL distante est dans la whitelist (sécurité SSRF)
+- **`negotiateFormat()`** : négociation du format de sortie via le header Accept (AVIF > WebP > JPEG)
+- **`detectImageType()`** : détection du vrai type d'image par magic bytes (PNG, JPEG, WebP, GIF, TIFF, AVIF). Retourne `null` pour du HTML ou des buffers invalides.
+- **`mimeFromPath()`** : déduction du type MIME depuis l'extension de fichier
+
+#### 13.9.2 Sanitize (`src/lib/__tests__/sanitize.test.ts`)
+
+Teste la fonction `sanitize()` contre les vecteurs XSS classiques (16 tests) :
+
+- Suppression des `<script>`, `<iframe>`, `<object>`
+- Suppression des event handlers (`onclick`, `onerror`, `onload`, `onmouseover`)
+- Suppression des `javascript:` URI dans les href
+- Préservation du HTML safe (`<p>`, `<strong>`, `<a href>`)
+- Payloads XSS : `<img src=x onerror=alert(1)>`, `<svg onload=alert(1)>`, etc.
+
+#### 13.9.3 Permissions (`src/lib/__tests__/permissions.test.ts`)
+
+Teste le registre central des calculateurs de permissions (10 tests) :
+
+- `registerPermissions()` + `getCalculator()` : enregistrement et récupération
+- `hasCalculator()` : existence d'un namespace
+- `getAllCalculators()` : liste complète
+- Overwrite : ré-enregistrement du même namespace → `console.warn` + remplacement
+- Namespace inconnu → `undefined`
+- `_resetForTesting()` : nettoyage entre les tests
+- Le contexte (`entity`, `me`, `data`) est bien passé au calculateur
+
+#### 13.9.4 Validation configs multi-sites (`tests/preflight/sites-configs.test.ts`)
+
+Valide automatiquement **toutes** les configs référencées dans `sites.json` (56 tests) :
+
+**Intégrité de `sites.json`** :
+- Format valide (array non-vide)
+- Chaque entrée a `slug`, `config`, `css`
+- Pas de slugs dupliqués
+
+**Pour chaque config JSON** (dédupliquées si plusieurs slugs partagent la même config) :
+- Le fichier existe
+- Le JSON est valide
+- Passe le schéma Zod `SiteConfigSchema`
+- Au moins une page avec `path: "/"`
+- Pas de chemins de page dupliqués
+
+**Pour chaque fichier CSS** référencé :
+- `src/{css}.css` existe
+
+Ce test détecte automatiquement les problèmes de désynchronisation entre `sites.json`, les configs JSON et le schéma Zod.
+
+### 13.10 Tests E2E par domaine
+
+#### 13.10.1 Recherche (`search.spec.ts`)
 
 - **Skip** si le backend n'est pas joignable
 - `/` : Les sections `searchProStatic` rendent sans crash
 - **Pages search** (config-driven) : Chaque page contenant `searchPro`/`searchProStatic`/`gridLayout` rend correctement
 - Input de recherche dans le hero : fonctionnel (fill + vérification valeur)
 
-#### 13.9.2 Authentification (`auth-flow.spec.ts`, `auth-real.spec.ts`)
+#### 13.10.2 Authentification (`auth-flow.spec.ts`, `auth-real.spec.ts`)
 
 **`auth-flow.spec.ts`** (avec mocks API) :
 - Le bouton "Se connecter" est visible dans le header
@@ -6075,14 +6156,20 @@ Stress-test du pipeline SSR streaming :
 - Login avec mauvais password : toast d'erreur
 - Login puis logout
 
-#### 13.9.3 Profil (`profile.spec.ts`)
+#### 13.10.3 Profil (`profile.spec.ts`)
 
-- **Vérification config** : `config.profiles` existe avec au moins un type, chaque type a des tabs
-- `/profil/{VITE_SLUG}` rend une page profil (backend requis)
+Séparé en deux `describe` indépendants :
+
+**Profile Config** (pas besoin du backend) :
+- `config.profiles` est défini avec au moins un type (skip gracieux si absent)
+- Chaque type de profil a des tabs configurés
+
+**Profile Pages E2E** (backend requis, skip si injoignable) :
+- `/profil/{VITE_SLUG}` rend une page profil
 - `/profil/slug-inexistant-xyz` ne crash pas (error boundary)
-- Le chemin `/profil/` reste hardcodé car défini dans le module code (`src/modules/profil/routes.tsx`), pas dans la config JSON
+- Le chemin `/profil/` reste hardcodé car défini dans le module code, pas dans la config JSON
 
-#### 13.9.4 Hydratation (`hydration.spec.ts`)
+#### 13.10.4 Hydratation (`hydration.spec.ts`)
 
 - SSR rend du contenu sans JS (`javaScriptEnabled: false`)
 - Hydratation sans erreurs critiques (pas de mismatch)
@@ -6091,19 +6178,19 @@ Stress-test du pipeline SSR streaming :
 - Navigation client-side sans full page reload (vers page secondaire config-driven)
 - Hydratation sans erreurs sur la page secondaire config-driven
 
-#### 13.9.5 Navigation (`config-nav.spec.ts`)
+#### 13.10.5 Navigation (`config-nav.spec.ts`)
 
 - Header visible avec logo linkant vers `/`
 - Chaque label nav de `config.header.nav` apparaît dans le header
 - Footer visible avec copyright de `config.footer.copyright`
 - Menu mobile toggle visible à 375px
 
-#### 13.9.6 i18n (`i18n.spec.ts`)
+#### 13.10.6 i18n (`i18n.spec.ts`)
 
 - Page home charge avec le contenu en langue par défaut (hero headline)
 - Si `langSwitch` activé dans config : switch de langue change le texte visible
 
-### 13.10 Ce qui reste hardcodé et pourquoi
+### 13.11 Ce qui reste hardcodé et pourquoi
 
 | Route/donnée | Pourquoi hardcodé | Source |
 |--------------|-------------------|--------|
@@ -6113,7 +6200,7 @@ Stress-test du pipeline SSR streaming :
 | Tabs de profil | Le type d'entité est résolu par l'API, pas par la config | Backend-dependent |
 | Tabs conditionnels (`social`, `membership`) | Dépendent de `condition.userContext: "own"` | Runtime user context |
 
-### 13.11 Variables d'environnement de test
+### 13.12 Variables d'environnement de test
 
 | Variable | Usage | Fichier |
 |----------|-------|---------|
@@ -6125,7 +6212,7 @@ Stress-test du pipeline SSR streaming :
 
 > **Ne jamais committer `.env.test`** qui contient des credentials. Ce fichier est dans `.gitignore`.
 
-### 13.12 Guide : Ajouter un nouveau test config-driven
+### 13.13 Guide : Ajouter un nouveau test config-driven
 
 **1. Identifier la source dans la config**
 
