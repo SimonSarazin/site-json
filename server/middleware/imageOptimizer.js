@@ -68,6 +68,51 @@ const FORMAT_TO_EXT = {
   png: "png",
 };
 
+// Types MIME acceptés en entrée
+const ALLOWED_MIME_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/avif",
+  "image/gif",
+  "image/tiff",
+]);
+
+// Magic bytes pour détecter le vrai type d'un buffer
+function detectImageType(buffer) {
+  if (buffer.length < 4) return null;
+  // PNG: 89 50 4E 47
+  if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4e && buffer[3] === 0x47) return "image/png";
+  // JPEG: FF D8 FF
+  if (buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) return "image/jpeg";
+  // WebP: RIFF....WEBP
+  if (buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46 && buffer.length > 11 && buffer[8] === 0x57 && buffer[9] === 0x45 && buffer[10] === 0x42 && buffer[11] === 0x50) return "image/webp";
+  // GIF: GIF8
+  if (buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x38) return "image/gif";
+  // AVIF/HEIF: ....ftyp
+  if (buffer.length > 11 && buffer[4] === 0x66 && buffer[5] === 0x74 && buffer[6] === 0x79 && buffer[7] === 0x70) return "image/avif";
+  // TIFF: II (little-endian) or MM (big-endian)
+  if ((buffer[0] === 0x49 && buffer[1] === 0x49) || (buffer[0] === 0x4d && buffer[1] === 0x4d)) return "image/tiff";
+  return null;
+}
+
+/**
+ * Guess Content-Type from file extension.
+ */
+function mimeFromPath(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  const map = {
+    ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".webp": "image/webp",
+    ".avif": "image/avif",
+    ".gif": "image/gif",
+    ".svg": "image/svg+xml",
+    ".tiff": "image/tiff", ".tif": "image/tiff",
+  };
+  return map[ext] || "application/octet-stream";
+}
+
 /**
  * Creates an Express router that serves optimized images.
  *
@@ -89,6 +134,11 @@ export function createImageOptimizer({ staticRoot, cacheDir }) {
     // --- Validate required param ---
     if (!sourceUrl || typeof sourceUrl !== "string") {
       return res.status(400).json({ error: "Missing required parameter: url" });
+    }
+
+    // --- Skip SVG and data URIs (not rasterizable) ---
+    if (sourceUrl.endsWith(".svg") || sourceUrl.startsWith("data:")) {
+      return res.redirect(301, sourceUrl);
     }
 
     // --- Parse & validate optional params ---
@@ -140,9 +190,9 @@ export function createImageOptimizer({ staticRoot, cacheDir }) {
     }
 
     // --- Cache MISS: fetch source ---
-    try {
-      let sourceBuffer;
+    let sourceBuffer;
 
+    try {
       if (isLocal) {
         const localPath = path.join(staticRoot, sourceUrl);
         // Prevent directory traversal
@@ -160,10 +210,47 @@ export function createImageOptimizer({ staticRoot, cacheDir }) {
         if (!response.ok) {
           return res.status(502).json({ error: `Upstream returned ${response.status}` });
         }
+
+        // Vérifier que la réponse est bien une image
+        const contentType = response.headers.get("content-type") || "";
+        if (!contentType.startsWith("image/")) {
+          return res.status(400).json({ error: `Not an image: ${contentType}` });
+        }
+
+        // SVG distant : proxy sans transformation
+        if (contentType.includes("svg")) {
+          const svgBuf = Buffer.from(await response.arrayBuffer());
+          res.setHeader("Content-Type", "image/svg+xml");
+          res.setHeader("Cache-Control", "public, max-age=86400");
+          return res.send(svgBuf);
+        }
+
         sourceBuffer = Buffer.from(await response.arrayBuffer());
       }
+    } catch (err) {
+      console.error(`[imageOptimizer] Fetch error for ${sourceUrl}:`, err.message);
+      return res.status(502).json({ error: "Failed to fetch source image" });
+    }
 
-      // --- Transform with sharp ---
+    // --- Validate buffer ---
+    if (!sourceBuffer || sourceBuffer.length < 8) {
+      return res.status(400).json({ error: "Source image is empty or too small" });
+    }
+
+    const detectedType = detectImageType(sourceBuffer);
+    if (!detectedType || !ALLOWED_MIME_TYPES.has(detectedType)) {
+      // Le buffer n'est pas une image reconnue — servir tel quel si local
+      if (isLocal) {
+        const localPath = path.join(staticRoot, sourceUrl);
+        res.setHeader("Content-Type", mimeFromPath(localPath));
+        res.setHeader("X-Image-Cache", "PASSTHROUGH");
+        return res.send(sourceBuffer);
+      }
+      return res.status(400).json({ error: `Unrecognized image format (detected: ${detectedType || "unknown"})` });
+    }
+
+    // --- Transform with sharp ---
+    try {
       let pipeline = sharp(sourceBuffer);
 
       // Resize (preserves aspect ratio if only one dimension provided)
@@ -187,26 +274,14 @@ export function createImageOptimizer({ staticRoot, cacheDir }) {
       res.setHeader("X-Image-Cache", "MISS");
       return res.send(optimizedBuffer);
     } catch (err) {
-      console.error("[imageOptimizer] Processing error:", err.message);
+      console.error(`[imageOptimizer] Sharp error for ${sourceUrl} (detected: ${detectedType}):`, err.message);
 
-      // Fallback: try to proxy original image unmodified
-      try {
-        if (isLocal) {
-          const localPath = path.join(staticRoot, sourceUrl);
-          res.setHeader("X-Image-Cache", "ERROR");
-          return fs.createReadStream(localPath).pipe(res);
-        } else {
-          const fallbackRes = await fetch(sourceUrl, {
-            signal: AbortSignal.timeout(10_000),
-          });
-          res.setHeader("X-Image-Cache", "ERROR");
-          res.setHeader("Content-Type", fallbackRes.headers.get("content-type") || "image/jpeg");
-          const fallbackBuf = Buffer.from(await fallbackRes.arrayBuffer());
-          return res.send(fallbackBuf);
-        }
-      } catch (fallbackErr) {
-        return res.status(500).json({ error: "Image processing failed" });
-      }
+      // Fallback: serve original unmodified
+      const fallbackContentType = isLocal ? mimeFromPath(sourceUrl) : (detectedType || "application/octet-stream");
+      res.setHeader("Content-Type", fallbackContentType);
+      res.setHeader("Cache-Control", "public, max-age=3600");
+      res.setHeader("X-Image-Cache", "ERROR");
+      return res.send(sourceBuffer);
     }
   });
 
