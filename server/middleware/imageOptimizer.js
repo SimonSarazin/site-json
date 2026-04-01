@@ -8,7 +8,7 @@ import path from "path";
  * Build the domain allowlist from environment variables.
  * Allows: localhost variants + VITE_BASE_URL_BACKEND + IMAGE_OPTIMIZER_ALLOWED_DOMAINS
  */
-function buildAllowlist() {
+export function buildAllowlist() {
   const allowed = new Set(["localhost", "127.0.0.1"]);
 
   const backendUrl = process.env.VITE_BASE_URL_BACKEND;
@@ -34,7 +34,7 @@ function buildAllowlist() {
 /**
  * Check if a remote URL's hostname is in the allowlist.
  */
-function isDomainAllowed(urlStr, allowlist) {
+export function isDomainAllowed(urlStr, allowlist) {
   try {
     const hostname = new URL(urlStr).hostname;
     return allowlist.has(hostname);
@@ -47,7 +47,7 @@ function isDomainAllowed(urlStr, allowlist) {
  * Negotiate best format from Accept header.
  * Priority: AVIF > WebP > JPEG
  */
-function negotiateFormat(acceptHeader) {
+export function negotiateFormat(acceptHeader) {
   if (!acceptHeader) return "jpeg";
   if (acceptHeader.includes("image/avif")) return "avif";
   if (acceptHeader.includes("image/webp")) return "webp";
@@ -79,7 +79,7 @@ const ALLOWED_MIME_TYPES = new Set([
 ]);
 
 // Magic bytes pour détecter le vrai type d'un buffer
-function detectImageType(buffer) {
+export function detectImageType(buffer) {
   if (buffer.length < 4) return null;
   // PNG: 89 50 4E 47
   if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4e && buffer[3] === 0x47) return "image/png";
@@ -99,7 +99,7 @@ function detectImageType(buffer) {
 /**
  * Guess Content-Type from file extension.
  */
-function mimeFromPath(filePath) {
+export function mimeFromPath(filePath) {
   const ext = path.extname(filePath).toLowerCase();
   const map = {
     ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
