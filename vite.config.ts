@@ -15,28 +15,56 @@ function siteCssPlugin(): Plugin {
     name: 'site-css-resolver',
     configResolved(config) {
       const env = loadEnv(config.mode, config.root, '');
+      const defaultCss = path.resolve(config.root, 'src', 'index.css');
+
+      // 1. Contenu CSS inline via env (pour CI/CD, Docker build sans fichier dans le repo)
+      const cssContent = env.SITE_CSS_CONTENT;
+      if (cssContent) {
+        const tmpFile = path.resolve(config.root, 'src', '.tmp-site-theme.css');
+        fs.writeFileSync(tmpFile, cssContent, 'utf-8');
+        cssFile = tmpFile;
+        console.log(`[site-css] SITE_CSS_CONTENT → src/.tmp-site-theme.css`);
+        return;
+      }
+
+      // 2. Chemin CSS explicite (comme SITE_CONFIG_PATH pour la config)
+      const cssPath = env.SITE_CSS_PATH;
+      if (cssPath) {
+        const resolved = path.isAbsolute(cssPath)
+          ? cssPath
+          : path.resolve(config.root, cssPath);
+        if (fs.existsSync(resolved)) {
+          cssFile = resolved;
+          console.log(`[site-css] SITE_CSS_PATH → ${resolved}`);
+          return;
+        }
+        console.warn(`[site-css] SITE_CSS_PATH "${cssPath}" introuvable, fallback sur default`);
+      }
+
+      // 3. Lookup via sites.json + VITE_SLUG
       const slug = env.VITE_SLUG;
-
-      if (!slug) {
-        console.warn('[site-css] VITE_SLUG non défini dans .env');
-        return;
+      if (slug) {
+        const sitesPath = path.resolve(config.root, 'sites.json');
+        if (fs.existsSync(sitesPath)) {
+          const sites = JSON.parse(fs.readFileSync(sitesPath, 'utf-8'));
+          const site = sites.find((s: { slug: string }) => s.slug === slug);
+          if (site?.css) {
+            const slugCss = path.resolve(config.root, 'src', `${site.css}.css`);
+            if (fs.existsSync(slugCss)) {
+              cssFile = slugCss;
+              console.log(`[site-css] ${slug} → src/${site.css}.css`);
+              return;
+            }
+            console.warn(`[site-css] src/${site.css}.css introuvable pour slug "${slug}", fallback sur default`);
+          } else {
+            console.warn(`[site-css] Pas de CSS pour le slug "${slug}" dans sites.json, fallback sur default`);
+          }
+        }
       }
 
-      const sitesPath = path.resolve(config.root, 'sites.json');
-      if (!fs.existsSync(sitesPath)) {
-        console.warn('[site-css] sites.json non trouvé');
-        return;
-      }
-
-      const sites = JSON.parse(fs.readFileSync(sitesPath, 'utf-8'));
-      const site = sites.find((s: { slug: string }) => s.slug === slug);
-      if (!site?.css) {
-        console.warn(`[site-css] Pas de CSS pour le slug "${slug}"`);
-        return;
-      }
-
-      cssFile = path.resolve(config.root, 'src', `${site.css}.css`);
-      console.log(`[site-css] ${slug} → src/${site.css}.css`);
+      // 4. Fallback : src/index.css (thème par défaut)
+      cssFile = defaultCss;
+      console.log(`[site-css] fallback → src/index.css`);
     },
     resolveId(id) {
       if (id === virtualId) return resolvedId;

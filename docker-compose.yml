@@ -2,7 +2,10 @@ version: "3.8"
 
 services:
   cocostum:
-    build: .
+    build:
+      context: .
+      args:
+        VITE_SLUG: "franceTierslieux"
     ports:
       - "3000:3000"
     environment:
