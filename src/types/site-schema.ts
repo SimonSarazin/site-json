@@ -3,7 +3,7 @@
 // ------------------------------------------------------------
 // Objectif : couvrir un maximum de cas d'usage « no‑code » sans modifier le runtime React.
 // Technologies cibles : React 19 + Vite 5 + Tailwind 4 + shadcn/ui.
-// Validation : Zod 3.x – le schéma sert à la fois de typings, de runtime‑guard,
+// Validation : Zod 4.x – le schéma sert à la fois de typings, de runtime‑guard,
 //               et d'autocomplétion dans VS Code.
 // ------------------------------------------------------------
 import { SearchProSectionSchema, SearchProStaticSectionSchema, CardCountCTSectionSchema, ThematicsSectionSchema } from "@/modules/search/schema";
