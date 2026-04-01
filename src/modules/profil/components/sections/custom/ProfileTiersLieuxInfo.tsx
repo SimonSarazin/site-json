@@ -470,7 +470,7 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
                 )}
 
                 {/* ── 6. Formulaires ───────────────────────────────────── */}
-                {me && section.forms && Object.keys(section.forms).length > 0 && (
+                {me && canEditProfile && section.forms && Object.keys(section.forms).length > 0 && (
                     <>
                         <Separator />
                         <div>
