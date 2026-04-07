@@ -22,6 +22,12 @@ interface CoFormReadOnlyProps {
   updatedAt?: number;
   answerId?: string;
   className?: string;
+  /** Masquer la bannière (mode standalone) */
+  hideBanner?: boolean;
+  /** Masquer les en-têtes d'étape / Card wrapper (mode input standalone) */
+  hideStepHeaders?: boolean;
+  /** Masquer les métadonnées (auteur, date) */
+  hideMetadata?: boolean;
 }
 
 /**
@@ -36,6 +42,9 @@ export function CoFormReadOnly({
   updatedAt,
   answerId,
   className,
+  hideBanner = false,
+  hideStepHeaders = false,
+  hideMetadata = false,
 }: CoFormReadOnlyProps) {
   useLoadNamespace("modules/coform");
   const t = useT("modules/coform");
@@ -75,7 +84,7 @@ export function CoFormReadOnly({
   return (
     <div className={cn("space-y-6", className)}>
       {/* Bannière du formulaire */}
-      {formData.useBannerImg && formData.profilBannerUrl ? (
+      {!hideBanner && formData.useBannerImg && formData.profilBannerUrl ? (
         <div className="relative w-full overflow-hidden rounded-lg">
           <img
             src={formData.profilBannerUrl}
@@ -91,7 +100,7 @@ export function CoFormReadOnly({
             </div>
           )}
         </div>
-      ) : formData.name ? (
+      ) : !hideBanner && formData.name ? (
         <div className="w-full rounded-lg bg-linear-to-r from-primary/10 via-primary/5 to-background p-8 border">
           <h1 className="text-4xl font-bold text-foreground">
             {formData.name}
@@ -100,6 +109,7 @@ export function CoFormReadOnly({
       ) : null}
 
       {/* Métadonnées */}
+      {!hideMetadata && (
       <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
         {authorName && (
           <Badge variant="secondary" className="gap-1.5">
@@ -115,16 +125,31 @@ export function CoFormReadOnly({
           </span>
         )}
       </div>
+      )}
 
       {/* Sections (une card par étape) */}
-      {subFormsFields.map((step) => (
-        <ReadOnlySection
-          key={step.subFormId}
-          step={step}
-          data={normalizedAnswers[step.subFormId] ?? {}}
-          answerId={answerId}
-        />
-      ))}
+      {subFormsFields.map((step) =>
+        hideStepHeaders ? (
+          <div key={step.subFormId} className="grid grid-cols-12 gap-x-6 gap-y-4">
+            {step.fields.map((field) => (
+              <ReadOnlyField
+                key={field.name}
+                field={field}
+                value={(normalizedAnswers[step.subFormId] ?? {})[field.name]}
+                answerId={answerId}
+                subFormId={step.subFormId}
+              />
+            ))}
+          </div>
+        ) : (
+          <ReadOnlySection
+            key={step.subFormId}
+            step={step}
+            data={normalizedAnswers[step.subFormId] ?? {}}
+            answerId={answerId}
+          />
+        )
+      )}
     </div>
   );
 }
