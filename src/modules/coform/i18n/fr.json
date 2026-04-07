@@ -111,6 +111,13 @@
         "updateButton": "Mettre à jour"
       }
     },
+    "answerPicker": {
+      "title": "Vos réponses",
+      "description": "Vous avez déjà {{count}} réponse(s) pour ce formulaire. Sélectionnez une réponse à modifier ou créez-en une nouvelle.",
+      "answerLabel": "Réponse n°{{number}}",
+      "updated": "modifié le",
+      "newAnswer": "Nouvelle réponse"
+    },
     "multiCheckboxPlus": {
       "maxSelections": "Maximum {{max}} choix",
       "withInput": "avec texte",

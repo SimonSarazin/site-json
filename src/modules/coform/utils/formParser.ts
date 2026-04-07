@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { CoFormData, FormFieldMapping, SubFormFields, MultiCheckboxPlusOptionType, EvaluationConfig, FinderConfig, FinderFilter, SimpleTableConfig, SimpleTableColumn, SimpleTableRow, UploaderConfig } from "../types";
+import type { CoFormData, FormFieldMapping, SubFormFields, MultiCheckboxPlusOptionType, EvaluationConfig, FinderConfig, FinderFilter, SimpleTableConfig, SimpleTableColumn, SimpleTableRow, UploaderConfig, ConditionalDisplay } from "../types";
 
 // ─── Configuration des préfixes de champs ────────────────────────
 // Certains types de champs PHP stockent leurs données avec un préfixe
@@ -376,6 +376,7 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
         const sizeLimitRaw = paramsData?.sizeLimit ?? uploaderData?.sizeLimit;
         const formatsRaw = paramsData?.fileType ?? uploaderData?.formats;
         const docTypeRaw = (uploaderData?.docType as string | undefined) || "image";
+        const displayModeRaw = (paramsData?.displayMode as string | undefined) ?? (uploaderData?.displayMode as string | undefined);
 
         const itemLimit = Number.isFinite(Number(itemLimitRaw)) ? Math.max(1, Number(itemLimitRaw)) : 5;
         const sizeLimit = Number.isFinite(Number(sizeLimitRaw)) ? Number(sizeLimitRaw) : 5000000;
@@ -390,6 +391,7 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
           itemLimit,
           sizeLimit,
           formats,
+          displayMode: displayModeRaw === "advanced" ? "advanced" : "simple",
         };
       }
 
@@ -397,6 +399,9 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
       const inputType = componentType === "text" && ["url", "email", "tel", "number"].includes(fieldData.type)
         ? fieldData.type
         : undefined;
+
+      // Parser conditionalDisplay si présent
+      const conditionalDisplay = fieldData.conditionalDisplay as ConditionalDisplay | undefined;
 
       fields.push({
         // Appliquer le préfixe selon le type (finder, multiCheckboxPlus, evaluation)
@@ -419,6 +424,7 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
         finderConfig,
         simpleTableConfig,
         uploaderConfig,
+        conditionalDisplay,
       });
     });
 

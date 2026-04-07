@@ -17,6 +17,19 @@ export type CoFormAccessReason =
   | null;
 
 /**
+ * Résumé d'une réponse existante (pour le sélecteur de réponses multiples)
+ */
+export interface CoFormAnswerSummary {
+  id: string;
+  createdAt: string;
+  updatedAt?: string;
+  /** Données complètes de la réponse (pour le rendu readonly) */
+  answers?: AllStepsData;
+  /** Aperçu des premières valeurs remplies (clé label → valeur affichable) */
+  preview?: Record<string, string>;
+}
+
+/**
  * Informations d'accès retournées par le serveur
  * Contrôle d'accès enrichi : droits, dates, réponse existante
  */
@@ -26,6 +39,8 @@ export interface CoFormAccessInfo {
   formStatus: "open" | "not_started" | "closed" | "inactive";
   existingAnswerId: string | null;
   existingAnswer: AllStepsData | null;
+  /** Liste des réponses existantes de l'utilisateur (mode réponse multiple) */
+  existingAnswers?: CoFormAnswerSummary[];
   requiresLogin: boolean;
   allowTemporary: boolean;
   withConfirmation: boolean;
@@ -62,6 +77,28 @@ export interface CoFormParent {
   };
 }
 
+// ============================================================================
+// Types pour la logique conditionnelle
+// ============================================================================
+
+export type ConditionalOperator = "equals" | "notEquals" | "contains" | "matches" | "isEmpty" | "isNotEmpty";
+export type ConditionalAction = "show" | "hide";
+
+export interface ConditionalRule {
+  sourceInput: string;
+  operator: ConditionalOperator;
+  value: string;
+  action: ConditionalAction;
+  targetInput?: string;
+  targetStep?: string;
+}
+
+export interface ConditionalDisplay {
+  enabled: boolean;
+  logic: "and" | "or";
+  rules: ConditionalRule[];
+}
+
 export interface CoFormInputField {
   label?: string;
   placeholder?: string;
@@ -72,6 +109,7 @@ export interface CoFormInputField {
   activeComments?: boolean;
   width?: string;
   enableMarkdown?: boolean;
+  conditionalDisplay?: ConditionalDisplay;
   [key: string]: unknown;
 }
 
@@ -276,6 +314,8 @@ export interface FormFieldMapping {
   simpleTableConfig?: SimpleTableConfig;
   // Spécifique uploader
   uploaderConfig?: UploaderConfig;
+  // Logique conditionnelle
+  conditionalDisplay?: ConditionalDisplay;
 }
 
 export interface SubFormFields {
@@ -527,7 +567,7 @@ export interface UploaderConfig {
   itemLimit: number;
   sizeLimit: number;
   formats?: string[];
-  displayMode?: "simple" | "dropzone";
+  displayMode?: "simple" | "advanced";
 }
 
 /**
