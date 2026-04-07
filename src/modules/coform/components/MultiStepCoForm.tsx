@@ -17,6 +17,7 @@ import { EvaluationField } from "./EvaluationField";
 import { FinderField } from "./FinderField";
 import { SimpleTableField } from "./SimpleTableField";
 import { UploaderField } from "./UploaderField";
+import { useConditionalFields } from "../hooks/useConditionalFields";
 import type { CoFormData, SubFormData, AllStepsData, MultiCheckboxPlusValue, EvaluationValue, FinderValue, SimpleTableValue } from "../types";
 import type { CoFormSubmitMode, CoFormVariant } from "../schema";
 
@@ -35,6 +36,8 @@ interface MultiStepCoFormProps {
   defaultValues?: AllStepsData;
   /** ID de la réponse en cours d'édition (pour le chargement des fichiers legacy) */
   answerId?: string;
+  /** Clé (subFormId) de l'étape initiale pour démarrer le wizard sur une étape spécifique */
+  initialStepKey?: string;
 }
 
 /**
@@ -53,6 +56,7 @@ export function MultiStepCoForm({
   className,
   defaultValues,
   answerId,
+  initialStepKey,
 }: MultiStepCoFormProps) {
   return (
     <CoFormProvider
@@ -62,6 +66,7 @@ export function MultiStepCoForm({
       submitMode={submitMode}
       defaultValues={defaultValues}
       answerId={answerId}
+      initialStepKey={initialStepKey}
     >
       <MultiStepCoFormContent
         variant={variant}
@@ -101,6 +106,9 @@ function MultiStepCoFormContent({
     onSuccess: () => onSuccess?.(),
   });
   const { form, fields, stepName, isSubmitting, submitStep } = useCoFormStep();
+
+  // Logique conditionnelle pour l'étape courante
+  const { isFieldVisible } = useConditionalFields(fields?.fields ?? [], form.control);
 
   // Gérer la soumission de l'étape ou la soumission finale
   const handleSubmit = async () => {
@@ -193,6 +201,7 @@ function MultiStepCoFormContent({
           <form id="step-form" onSubmit={form.handleSubmit(handleSubmit)}>
             <div className="grid grid-cols-12 gap-6">
               {fields.fields.map((field) => {
+                if (!isFieldVisible(field.name)) return null;
                 switch (field.componentType) {
                 case "text":
                   return (
