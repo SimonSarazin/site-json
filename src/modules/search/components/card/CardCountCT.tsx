@@ -99,9 +99,9 @@ export default function CardCountCT({ count, cards, title, subtitle, isLoading }
   if (isLoading) {
     return (
       <div className="container mx-auto max-w-5xl px-4">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8">
+        <div className="flex flex-wrap justify-center gap-8">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex flex-col items-center gap-3 animate-pulse">
+            <div key={i} className="flex flex-col items-center gap-3 animate-pulse w-24">
               <div className="w-8 h-8 rounded-lg bg-white/30" />
               <div className="w-12 h-6 bg-white/30 rounded" />
               <div className="w-16 h-4 bg-white/30 rounded" />
@@ -133,13 +133,13 @@ export default function CardCountCT({ count, cards, title, subtitle, isLoading }
         </div>
       )}
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8">
+      <div className="flex flex-wrap justify-center gap-16">
         {displayCards.map((card) => {
           const iconName = card.icon || "circle";
           const IconComponent = resolveLucideIcon(iconName);
 
           const content = (
-            <div className="flex flex-col items-center text-center">
+            <div className="flex flex-col items-center text-center w-32">
               {IconComponent && (
                 <IconComponent className="w-8 h-8 text-white mb-3" />
               )}

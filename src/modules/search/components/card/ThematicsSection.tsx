@@ -1,7 +1,7 @@
 import { useCocolight } from "@/hooks/useCocolight";
 import * as LucideIcons from "lucide-react";
 import type { ThematicsSectionProps } from "../../schema";
-import { FILIERE_ICON_MAPPING } from "../../schema";
+import { ALL_THEME, FILIERE_ICON_MAPPING } from "../../schema";
 import "@/modules/search/i18n";
 import { useT } from "@/hooks/useT";
 import { ComponentType } from "react";
@@ -45,11 +45,31 @@ export function ThematicsSection({
 }: ThematicsSectionWrapperProps) {
     const { entity } = useCocolight();
     const t = useT("components/layout");
-    // Récupérer les filières depuis les données de l'entité
-    const filiere = entity?.serverData?.filiere || {};
-    const fiereEntries = Object.entries(filiere).filter(([, value]) => {
-        return value && typeof value === "object" && "name" in value && "icon" in value;
-    });
+
+    type FiliereItem = { name: string; icon: string; tags?: string[] };
+    const thematicKeys = Array.isArray(entity?.serverData?.thematic)
+        ? (entity?.serverData?.thematic as string[])
+        : [];
+
+    const thematicEntries: Array<[string, FiliereItem]> = thematicKeys
+        .filter((key) => key in ALL_THEME)
+        .map((key) => [key, ALL_THEME[key]]);
+
+    const rawFiliere = entity?.serverData?.filiere as unknown;
+    const isSingleFiliereObject =
+        !!rawFiliere &&
+        typeof rawFiliere === "object" &&
+        !Array.isArray(rawFiliere) &&
+        "name" in rawFiliere &&
+        "icon" in rawFiliere;
+
+    const fallbackFiliereEntries: Array<[string, FiliereItem]> = isSingleFiliereObject
+        ? [["filiere", rawFiliere as FiliereItem]]
+        : Object.entries((rawFiliere as Record<string, unknown>) || {}).filter(([, value]) => {
+              return value && typeof value === "object" && "name" in value && "icon" in value;
+          }) as Array<[string, FiliereItem]>;
+
+    const fiereEntries = thematicEntries.length > 0 ? thematicEntries : fallbackFiliereEntries;
 
     const hasThematics = fiereEntries.length > 0;
 
@@ -84,8 +104,8 @@ export function ThematicsSection({
                         </p>
                     </div>
                 ) : (
-                    // Grille des filières
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    // Grille des filières - centrée
+                    <div className="flex flex-wrap justify-center gap-6">
                         {fiereEntries.map(([key, data]) => {
                             const iconName = data.icon as string;
                             const name = data.name;
@@ -94,7 +114,7 @@ export function ThematicsSection({
                             return (
                                 <a
                                     key={key}
-                                    className="flex flex-col items-center text-center p-4 rounded-lg hover:bg-gray-50 transition-all cursor-pointer"
+                                    className="flex flex-col items-center text-center p-4 rounded-lg hover:bg-gray-50 transition-all cursor-pointer w-36"
                                 >
                                     <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center mb-3">
                                         {IconComponent ? (
