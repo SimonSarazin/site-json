@@ -924,6 +924,25 @@
         "placeholder": "https://exemple.com",
         "description": "L'URL de votre site personnel"
       },
+      "bannerImageUrl": {
+        "label": "Bannière URL image",
+        "placeholder": "https://exemple.com/banniere.jpg",
+        "description": "Image de couverture affichée en haut de votre commune",
+        "uploadHint": "Choisissez un fichier image, il sera hébergé automatiquement.",
+        "preview": "Voir l'image"
+      },
+      "bannerLogoUrl": {
+        "label": "Logo URL image",
+        "placeholder": "https://exemple.com/logo.png",
+        "description": "Logo mis en avant sur la bannière",
+        "uploadHint": "Choisissez un fichier logo, il sera hébergé automatiquement.",
+        "preview": "Voir le logo"
+      },
+      "bannerText": {
+        "label": "Slogan de votre ville",
+        "placeholder": "Une ville tournée vers l'avenir",
+        "description": "Texte mis en avant sur la bannière"
+      },
       "addressCountry": {
         "label": "Pays",
         "placeholder": "Sélectionnez un pays"
@@ -1101,6 +1120,15 @@
       "poi": {
         "title": "Ajouter un lieu",
         "description": "Renseignez les informations du lieu"
+      },
+      "transparentCommune": {
+        "title": "Créer votre commune transparente",
+        "description": "Personnalisez votre bannière et vos informations avant publication",
+        "uploadSuccess": "Image ajoutée",
+        "uploadError": "Impossible de téléverser l'image",
+        "uploadInvalid": "Merci de sélectionner un fichier image (PNG, JPG, ...)",
+        "currentPath": "Chemin actuel",
+        "clearImage": "Supprimer l'image"
       }
     }
   },
@@ -1143,6 +1171,9 @@
     "openingHours": {
       "required": "Les horaires d'ouverture sont requis pour un événement récurrent",
       "format": "Format HH:MM requis"
+    },
+    "location": {
+      "required": "La localisation est obligatoire"
     },
     "slug": {
       "minLength": "Le slug doit contenir au moins 3 caractères",

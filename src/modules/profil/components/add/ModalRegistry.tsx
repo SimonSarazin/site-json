@@ -15,6 +15,7 @@ const modalRegistry: Record<string, () => Promise<{ default: ComponentType<Modal
   "add-project": () => import("./AddProjectModal").then(m => ({ default: m.AddProjectModal })),
   "add-event": () => import("./AddEventModal").then(m => ({ default: m.AddEventModal })),
   "add-poi": () => import("./AddPoiModal").then(m => ({ default: m.AddPoiModal })),
+  "add-new-ct": () => import("./AddCTModal").then(m => ({ default: m.AddCTModal })),
   "register-cyber-reunion": () => import("./RegisterCyberReunionModal").then(m => ({ default: m.RegisterCyberReunionModal })),
   "json-form": () => import("./JsonFormModal").then(m => ({ default: m.JsonFormModal })),
 };

@@ -7,6 +7,7 @@ import type {
   AddProjectFormData,
   AddEventFormData,
   AddPoiFormData,
+  AddTransparentCommuneFormData,
 } from "../schemaForm";
 import { useNavigate } from "react-router";
 import {
@@ -14,6 +15,8 @@ import {
   buildParentReference,
   buildOrganizerReference,
 } from "./mutationUtils";
+import { toast } from "sonner";
+import { ALL_THEME } from "@/modules/search/schema";
 
 /**
  * Hook pour créer une nouvelle organisation
@@ -54,6 +57,80 @@ export function useAddOrganization(entity?: EntityTypes | null) {
       // Rediriger vers le profil de la nouvelle organisation
       if (data.organization.slug) {
         navigate(`/profil/${data.organization.slug}`);
+      }
+    },
+  });
+}
+
+export function useAddTransparentCommune(datas?: EntityTypes | null) {
+  const { me } = useCocolight();
+  const navigate = useNavigate();
+
+  const targetEntity = datas || me;
+  
+  return useMutationWithToast<{ organization: Organization }, AddTransparentCommuneFormData>({
+    mutationFn: async (data) => {
+      if (!targetEntity) {
+        throw new Error("No entity provided");
+      }
+
+      const { bannerImageUrl, bannerLogoUrl, bannerText, selectedThematics, ...rest } = data;
+      const organizationData: AddOrganizationFormData = {
+        ...rest,
+        type: "NGO",
+      };
+
+      const transformedData = transformFormDataWithAddress(organizationData);
+      const organization = await targetEntity.organization(transformedData);
+
+      const costumPayload: Record<string, unknown> = {
+        transparentCommune: true,
+        cocity: true,
+        slug: "costumize",
+        typeCocity: "ville",
+      };
+
+      if (bannerImageUrl) {
+        costumPayload.bannerImageUrl = bannerImageUrl;
+      }
+      if (bannerLogoUrl) {
+        costumPayload.bannerLogoUrl = bannerLogoUrl;
+      }
+      if (bannerText) {
+        costumPayload.bannerText = bannerText;
+      }
+      const thematic = (selectedThematics ?? []).filter((key) => key in ALL_THEME);
+      const filiere = thematic.reduce<Record<string, { name: string; icon: string; tags: string[] }>>((acc, key) => {
+        acc[key] = ALL_THEME[key];
+        return acc;
+      }, {});
+      const hasFiliere = Object.keys(filiere).length > 0;
+
+      // Persist transparent commune specific metadata on the organization profile
+      organization.data.costum = {
+        ...(organization.data.costum as Record<string, unknown> | undefined),
+        ...costumPayload,
+      };
+
+      organization.data.thematic = thematic;
+      if (hasFiliere) {
+        organization.data.filiere = filiere;
+      }
+
+      await organization.save();
+
+      return { organization };
+    },
+    namespace: "modules/profil",
+    successKey: "toast.add.organizationSuccess",
+    errorKey: "toast.add.organizationError",
+    invalidateQueries: targetEntity ? [QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(targetEntity.slug)] : [],
+    onSuccessCallback: (data) => {
+      if (data.organization.slug) {
+        navigate(`/profil/${data.organization.slug}`);
+        toast.success("Votre Commune Transarente est créée avec succès !", {
+          description: "Veuillez copier ce slug pour configurer votre domaine personnalisé : " + data.organization.slug + "",
+        });
       }
     },
   });

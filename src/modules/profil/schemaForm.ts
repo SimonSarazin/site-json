@@ -8,6 +8,14 @@ import { z } from "zod";
 // Champ URL optionnel ou vide
 const urlOrEmptySchema = z.union([z.url({ error: "validation.url.invalid" }), z.literal("")]);
 
+const hostedImageSchema = z
+  .union([
+    z.url({ error: "validation.url.invalid" }),
+    z.string().regex(/^\/[\w./-]+$/, "validation.url.invalid"),
+    z.literal(""),
+  ])
+  .optional();
+
 // Champ date ISO optionnel ou vide (pour birthDate)
 const dateOrEmptySchema = z.union([z.iso.date({ error: "validation.date.invalid" }), z.literal("")]);
 
@@ -294,6 +302,23 @@ export const addOrganizationSchema = z.object({
 });
 
 export type AddOrganizationFormData = z.infer<typeof addOrganizationSchema>;
+
+export const addTransparentCommuneSchema = addOrganizationSchema.extend({
+  bannerImageUrl: hostedImageSchema,
+  bannerLogoUrl: hostedImageSchema,
+  bannerText: z.string().optional(),
+  selectedThematics: z.array(z.string()).optional(),
+}).superRefine((data, ctx) => {
+  if (!data.addressCountry || !data.addressLocality) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "validation.location.required",
+      path: ["addressLocality"],
+    });
+  }
+});
+
+export type AddTransparentCommuneFormData = z.infer<typeof addTransparentCommuneSchema>;
 
 // ============================================================================
 // ADD_PROJECT SCHEMA

@@ -924,6 +924,25 @@
         "placeholder": "https://example.com",
         "description": "The URL of your personal website"
       },
+      "bannerImageUrl": {
+        "label": "Banner image URL",
+        "placeholder": "https://example.com/banner.jpg",
+        "description": "Cover image displayed at the top of your commune",
+        "uploadHint": "Choose an image file and we will host it for you.",
+        "preview": "View image"
+      },
+      "bannerLogoUrl": {
+        "label": "Logo image URL",
+        "placeholder": "https://example.com/logo.png",
+        "description": "Logo highlighted on the banner",
+        "uploadHint": "Choose a logo file and we will host it for you.",
+        "preview": "View logo"
+      },
+      "bannerText": {
+        "label": "City slogan",
+        "placeholder": "A city looking to the future",
+        "description": "Text displayed on the banner"
+      },
       "addressCountry": {
         "label": "Country",
         "placeholder": "Select a country"
@@ -1101,6 +1120,15 @@
       "poi": {
         "title": "Add a place",
         "description": "Fill in the place details"
+      },
+      "transparentCommune": {
+        "title": "Create your transparent commune",
+        "description": "Customize your banner and details before publishing",
+        "uploadSuccess": "Image uploaded",
+        "uploadError": "Image upload failed",
+        "uploadInvalid": "Please choose an image file (PNG, JPG, ...)",
+        "currentPath": "Current path",
+        "clearImage": "Remove image"
       }
     }
   },
@@ -1143,6 +1171,9 @@
     "openingHours": {
       "required": "Opening hours are required for a recurring event",
       "format": "HH:MM format required"
+    },
+    "location": {
+      "required": "Location is required"
     },
     "slug": {
       "minLength": "Slug must be at least 3 characters",

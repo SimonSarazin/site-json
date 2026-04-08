@@ -329,6 +329,158 @@ export const FILIERE_ICON_MAPPING: Record<string, string> = {
   "fa-anchor": "anchor"
 };
 
+export const  ALL_THEME: Record<string, { name: string; icon: string; tags: string[] }> = {
+  "alimentation" : {
+      "name" : "Alimentation",
+      "icon" : "fa-cutlery",
+      "tags" : [ 
+          "agriculture", 
+          "alimentation", 
+          "nourriture", 
+          "AMAP"
+      ]
+  },
+  "santé" : {
+      "name" : "Santé",
+      "icon" : "fa-heart-o",
+      "tags" : [ 
+          "santé"
+      ]
+  },
+  "déchets" : {
+      "name" : "Déchets",
+      "icon" : "fa-trash-o",
+      "tags" : [ 
+          "déchets"
+      ]
+  },
+  "transport" : {
+      "name" : "Transport",
+      "icon" : "fa-bus",
+      "tags" : [ 
+          "Urbanisme", 
+          "transport", 
+          "construction"
+      ]
+  },
+  "éducation" : {
+      "name" : "Education",
+      "icon" : "fa-book",
+      "tags" : [ 
+          "éducation", 
+          "petite enfance"
+      ]
+  },
+  "citoyenneté" : {
+      "name" : "Citoyenneté",
+      "icon" : "fa-user-circle-o",
+      "tags" : [ 
+          "citoyen", 
+          "society"
+      ]
+  },
+  "économie" : {
+      "name" : "Economie",
+      "icon" : "fa-money",
+      "tags" : [ 
+          "ess", 
+          "économie social solidaire"
+      ]
+  },
+  "économie bleu" : {
+      "name" : "Economie bleu",
+      "icon" : "fa-money",
+      "tags" : [ 
+          "économie bleu"
+      ]
+  },
+  "énergie" : {
+      "name" : "Energie",
+      "icon" : "fa-sun-o",
+      "tags" : [ 
+          "énergie", 
+          "climat"
+      ]
+  },
+  "culture" : {
+      "name" : "Culture",
+      "icon" : "fa-universal-access",
+      "tags" : [ 
+          "culture", 
+          "animation"
+      ]
+  },
+  "environnement" : {
+      "name" : "Environnement",
+      "icon" : "fa-tree",
+      "tags" : [ 
+          "environnement", 
+          "biodiversité", 
+          "écologie"
+      ]
+  },
+  "numérique" : {
+      "name" : "Numerique",
+      "icon" : "fa-laptop",
+      "tags" : [ 
+          "informatique", 
+          "tic", 
+          "internet", 
+          "web",
+          "numérique"
+      ]
+  },
+  "sport" : {
+      "name" : "Sport",
+      "icon" : "fa-futbol-o",
+      "tags" : [ 
+          "sport"
+      ]
+  },
+  "tiers lieux" : {
+      "name" : "Tiers lieux",
+      "icon" : "fa-globe",
+      "tags" : [
+          "TiersLieux"
+      ]
+  },
+  "pacte" : {
+      "name" : "Pact",
+      "icon" : "fa-hand-o-up",
+      "tags" : [
+          "pacte"
+      ]
+  },
+  "associations" : {
+      "name" : "Associations",
+      "icon" : "fa-chain",
+      "tags" : [
+          "associations"
+      ]
+  },
+  "innovation" : {
+      "name" : "Innovation",
+      "icon" : "fa-lightbulb-o",
+      "tags" : [
+          "Innovation"
+      ]
+  },
+  "ess" : {
+      "name" : "ESS",
+      "icon" : "fa-leaf",
+      "tags" : [
+          "ess"
+      ]
+  },
+  "océan" : {
+      "name" : "Ocean",
+      "icon" : "fa-anchor",
+      "tags" : [
+          "océan"
+      ]
+  }
+};
+
 // Thematics: Section pour afficher les filières de manière dynamique
 export const ThematicsSectionSchema = z.object({
   type: z.literal("thematics"),
