@@ -13,6 +13,7 @@ export interface FeaturesRezoLaMerProps {
         title: LocalizedString;
         description: LocalizedString;
         color?: string;
+        link?: string;
     }>;
 }
 
@@ -76,26 +77,42 @@ export function FeaturesRezoLaMer({ id, props }: FeaturesRezoLaMerSectionProps) 
                 </div>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {props.features.map((feature, index) => (
-                        <Card
-                            key={index}
-                            className={cardClasses}
-                            style={{ animationDelay: `${index * 100}ms` }}
-                        >
-                            <DynamicIcon
-                                name={feature.icon as IconName}
-                                className={`w-12 h-12 mb-4 ${getColorClass(feature.color)} group-hover:scale-110 transition-transform duration-300`}
-                            />
-                            <h3 className="text-xl font-semibold mb-3 text-foreground">
-                                {t(feature.title)}
-                            </h3>
-                            {feature.description && (
-                                <p className="text-muted-foreground leading-relaxed">
-                                    {t(feature.description)}
-                                </p>
-                            )}
-                        </Card>
-                    ))}
+                    {props.features.map((feature, index) => {
+                        const CardContent = (
+                            <Card
+                                key={index}
+                                className={cardClasses}
+                                style={{ animationDelay: `${index * 100}ms` }}
+                            >
+                                <DynamicIcon
+                                    name={feature.icon as IconName}
+                                    className={`w-12 h-12 mb-4 ${getColorClass(feature.color)} group-hover:scale-110 transition-transform duration-300`}
+                                />
+                                <h3 className="text-xl font-semibold mb-3 text-foreground">
+                                    {t(feature.title)}
+                                </h3>
+                                {feature.description && (
+                                    <p className="text-muted-foreground leading-relaxed">
+                                        {t(feature.description)}
+                                    </p>
+                                )}
+                            </Card>
+                        );
+
+                        if (feature.link) {
+                            return (
+                                <a
+                                    key={index}
+                                    href={feature.link}
+                                    className="no-underline hover:no-underline"
+                                >
+                                    {CardContent}
+                                </a>
+                            );
+                        }
+
+                        return CardContent;
+                    })}
                 </div>
             </div>
         </section>
