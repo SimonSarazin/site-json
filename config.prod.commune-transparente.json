@@ -560,22 +560,23 @@
     }
   ],
   "footer": {
-    "type": "nos-communes",
+    "type": "commune-transparentes",
     "logoImage": "/images/communeTransparente/logo.png",
     "logoTitle": { "fr": "Commune Transparente", "en": "Transparent Commune" },
     "description": { "fr": "Rendre l'action communale lisible pour encourager la participation citoyenne.", "en": "Making communal action legible to encourage civic participation." },
     "ctaButton": {
-      "label": { "fr": "Trouver votre Commune", "en": "Find your Commune" },
-      "href": "/navigation"
+      "label": { "fr": "Créer votre Commune Transparente", "en": "Create your Transparent Commune" },
+      "action": "add-new-ct",
+      "requiresAuth": true
     },
     "columns": [
       {
         "title": { "fr": "Navigation", "en": "Navigation" },
         "links": [
-          { "href": "/actualite", "label": { "fr": "Actualité", "en": "News" } },
-          { "href": "/agenda", "label": { "fr": "Agenda", "en": "Agenda" } },
           { "href": "/projets", "label": { "fr": "Projet", "en": "Project" } },
-          { "href": "/citoyens", "label": { "fr": "Citoyens", "en": "Citizens" } }
+          { "href": "/citoyens", "label": { "fr": "Citoyens", "en": "Citizens" } },
+          { "href": "/ressources", "label": { "fr": "Ressources", "en": "Resources" } },
+          { "href": "/agenda", "label": { "fr": "Agenda", "en": "Agenda" } }
         ]
       },
       {
