@@ -2,6 +2,7 @@ import { useSite } from "@/hooks/useSite";
 import { DefaultFooter } from "./footer/DefaultFooter";
 import FooterTiersLieux from "./footer/FooterTiersLieux";
 import FooterRezoLaMer from "./footer/FooterRezoLaMer";
+import FooterCommuneTransparente from "./footer/FooterCommuneTransparente";
 
 export function SiteFooter() {
   const { config } = useSite();
@@ -13,6 +14,8 @@ export function SiteFooter() {
     case "rezo-la-mer":
     case "cyber-reunion":
       return <FooterRezoLaMer footer={footer} />;
+    case "commune-transparentes":
+      return <FooterCommuneTransparente footer={footer} />;
     case "default":
     default:
       return <DefaultFooter />;
