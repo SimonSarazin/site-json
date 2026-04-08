@@ -32,6 +32,7 @@ const LazySections: {
   "commune-transparente-actions": lazy(() => import("./CommuneTransparenteActionsSection")),
   "hero-nos-communes": lazy(() => import("./NosCommunesBannerSection")),
   "hero-commune-transparente": lazy(() => import("./HeroCommuneTransparenteSection")),
+  "categories-grid": lazy(() => import("./CategoriesGridSection")),
   markdown: lazy(() => import("./MarkdownSection")),
   cards: lazy(() => import("./CardsSection")),
   gallery: lazy(() => import("./GallerySection")),
@@ -77,7 +78,7 @@ const LazySections: {
   news: lazy(() => import("@/modules/news/components/sections/NewsSection")),
   member: lazy(() => import("./MemberSection")),
   heroWithIcon: lazy(() => import("./HeroWithIconSection")),
-  meeteem: lazy(() => import("@/modules/ampli/components/sections/MeeteemSection")),
+  meeteem: lazy(() => import("@/modules/ampli/components/sections/MeeteemSection"))
 };
 
 // Fallback skeleton pour les sections en cours de chargement
