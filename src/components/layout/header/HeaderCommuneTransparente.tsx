@@ -91,7 +91,7 @@ export default function HeaderCommuneTransparente({ header }: HeaderCommuneTrans
     
     // Créer des variables locales pour logo et logoTitle au lieu de modifier les props
     const logo = dataCostum?.transparentCommune
-        ? "https://www.communecter.org" + (dataCostum?.logo as string || dataCostum?.bannerLogoUrl as string) || header.logo || ""
+        ?  dataCostum?.logo as string || dataCostum?.bannerLogoUrl as string || header.logo || ""
         : header.logo;
         
     const logoTitle = dataCostum?.transparentCommune

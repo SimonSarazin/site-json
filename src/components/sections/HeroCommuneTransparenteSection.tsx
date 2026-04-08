@@ -35,7 +35,7 @@ export function HeroCommuneTransparenteSection({ id, props }: HeroCommuneTranspa
             {donneEntity.bannerImageUrl && (
                 <>
                     <img
-                        src={`https://www.communecter.org${donneEntity.bannerImageUrl}`}
+                        src={`${donneEntity.bannerImageUrl}`}
                         alt=""
                         className="absolute inset-0 w-full h-full object-cover z-0"
                     />
@@ -50,7 +50,7 @@ export function HeroCommuneTransparenteSection({ id, props }: HeroCommuneTranspa
 
                 {donneEntity.bannerLogoUrl && (
                     <img
-                        src={`https://www.communecter.org${donneEntity.bannerLogoUrl}`}
+                        src={`${donneEntity.bannerLogoUrl}`}
                         alt= "logo"
                         className="h-24 w-auto mb-16 object-contain ct-animate-in ct-delay-1"
                     />

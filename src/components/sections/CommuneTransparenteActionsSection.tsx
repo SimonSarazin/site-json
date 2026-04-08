@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type MouseEvent } from "react";
 import { Link } from "react-router";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { toast } from "sonner";
@@ -57,10 +57,10 @@ function getIconBgClass(iconBg?: ActionItem["iconBg"]) {
 
 function getButtonClassName(variant?: ActionButton["variant"]) {
   if (variant === "secondary") {
-    return "inline-block px-3 py-2 bg-gray-200 text-gray-700 text-xs md:text-sm font-medium rounded-md hover:bg-gray-300 transition-all";
+    return "inline-block px-3 py-2 bg-gray-200 text-gray-700 text-xs md:text-sm font-medium rounded-md hover:bg-gray-300 transition-all cursor-pointer";
   }
 
-  return "inline-block px-3 py-2 bg-gray-800 text-white text-xs md:text-sm font-medium rounded-md hover:bg-gray-900 transition-all";
+  return "inline-block px-3 py-2 bg-gray-800 text-white text-xs md:text-sm font-medium rounded-md hover:bg-gray-900 transition-all cursor-pointer";
 }
 
 function ActionButtonRenderer({ button }: { button: ActionButton }) {
@@ -73,7 +73,8 @@ function ActionButtonRenderer({ button }: { button: ActionButton }) {
   const shouldOpenModal = !!modalName;
   const requiresAuth = button.requiresAuth ?? shouldOpenModal;
 
-  const handleClick = () => {
+  const handleClick = (event: MouseEvent) => {
+    event.stopPropagation();
     if (requiresAuth && !me) {
       toast.error(tKey("Vous devez être connecté"));
       return;
@@ -86,7 +87,11 @@ function ActionButtonRenderer({ button }: { button: ActionButton }) {
 
   if (button.href) {
     return (
-      <Link to={button.href} className={getButtonClassName(button.variant)}>
+      <Link
+        to={button.href}
+        className={getButtonClassName(button.variant)}
+        onClick={(event) => event.stopPropagation()}
+      >
         {t(button.label)}
       </Link>
     );
@@ -94,17 +99,27 @@ function ActionButtonRenderer({ button }: { button: ActionButton }) {
 
   return (
     <>
-      <button type="button" className={getButtonClassName(button.variant)} onClick={handleClick}>
+      <button
+        type="button"
+        className={getButtonClassName(button.variant)}
+        onClick={handleClick}
+      >
         {t(button.label)}
       </button>
       {shouldOpenModal && (
-        <DynamicModal
-          modalName={modalName}
-          open={isModalOpen}
-          onOpenChange={setIsModalOpen}
-          parent={entity}
-          formConfig={button.formConfig}
-        />
+        <div
+          onPointerDown={(event) => event.stopPropagation()}
+          onMouseDown={(event) => event.stopPropagation()}
+          onClick={(event) => event.stopPropagation()}
+        >
+          <DynamicModal
+            modalName={modalName}
+            open={isModalOpen}
+            onOpenChange={setIsModalOpen}
+            parent={entity}
+            formConfig={button.formConfig}
+          />
+        </div>
       )}
     </>
   );
