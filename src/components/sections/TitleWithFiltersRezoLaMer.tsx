@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocalization } from "@/hooks/useLocalization";
 import { useT } from "@/hooks/useT";
-import { LocalizedString } from "@/types/site-schema";
+import { type TitleWithFiltersRezoLaMerProps, type ActionButton, type LocalizedString } from "@/types/site-schema";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -24,35 +24,6 @@ import { toast } from "sonner";
 import type { Organization } from "@communecter/cocolight-api-client";
 import type { EntityAction } from "@/modules/profil/types";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
-import type { JsonFormModalConfig } from "@/types/site-schema";
-
-export interface ActionButton {
-    label: LocalizedString;
-    icon?: string;
-    href?: string;
-    variant?: "default" | "outline" | "primary" | "turquoise";
-    action?: "join-dropdown" | "add-project" | "add-event" | "add-poi" | "add-organization";
-    modal?: string;
-    formConfig?: JsonFormModalConfig;
-    requiresAdmin?: boolean;
-}
-
-export interface TitleWithFiltersRezoLaMerProps {
-    headline?: LocalizedString;
-    subhead?: LocalizedString;
-    categories?: Array<{
-        id: string;
-        label: LocalizedString;
-    }>;
-    types?: Array<{
-        id: string;
-        label: LocalizedString;
-    }>;
-    buttons?: ActionButton[];
-    searchPlaceholder?: LocalizedString;
-    showSearch?: boolean;
-}
-
 interface TitleWithFiltersRezoLaMerSectionProps {
     id?: string;
     props: TitleWithFiltersRezoLaMerProps;

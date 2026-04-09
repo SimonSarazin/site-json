@@ -58,6 +58,7 @@ export function FiltersSection({
     const newFilterGroups: FiltersSectionProps["filterGroups"] = [];
     propsFiltersGroups?.forEach(group => {
 
+      if (!group.options) group.options = [];
       if (group.type === "scopeList") {
         group.options = [];
         // Remplir les options à partir des données de zone
@@ -83,11 +84,11 @@ export function FiltersSection({
               data.label[lang.toLowerCase()] = (zone.translate as Record<string, Record<string, string>>).translates[lang];
             })
           }
-          group.options.push(data);
+          group.options!.push(data);
         });
         newFilterGroups.push(group);
       } else {
-        const defaultCheckedIds = group.options
+        const defaultCheckedIds = (group.options ?? [])
           .filter(option => option.defaultChecked)
           .map(option => option.name || option.id);
 
@@ -235,7 +236,7 @@ export function FiltersSection({
             {/* Group Content */}
             {isGroupOpen(group.id) && (
               <div className="pb-3 px-2 space-y-2">
-                {group.options.map((option) => {
+                {(group.options ?? []).map((option) => {
                   const filterName = option.name || option.id;
                   return (
                     <label

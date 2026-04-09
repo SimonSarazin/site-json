@@ -182,16 +182,29 @@ async function createServer() {
                     dehydratedState, { isJSON: true }
                   )}</script>`);
         res.write(beforeBody);          // </head><body><div id="root">
-      });
+      }, tail);                           // closing tags avec le script entry-client
       timings.render = (performance.now() - t0).toFixed(1);
+
+      // S'assurer que la réponse est bien fermée après le streaming
+      if (!res.writableEnded) {
+        res.end();
+      }
 
       timings.total = (performance.now() - startTotal).toFixed(1);
       console.log(`[PERF] ${url} → template:${timings.template}ms | loadEntry:${timings.loadEntryServer}ms | render:${timings.render}ms | TOTAL:${timings.total}ms`);
 
     } catch (e) {
       vite.ssrFixStacktrace(e);
+      // Ignorer les erreurs de stream fermé (client déconnecté pendant le cold start)
+      if (e?.code === 'ERR_STREAM_WRITE_AFTER_END' || e?.code === 'ERR_STREAM_DESTROYED') {
+        return;
+      }
       console.error("SSR Error:", e);
-      res.status(500).end("Internal Server Error");
+      if (!res.headersSent) {
+        res.status(500).end("Internal Server Error");
+      } else {
+        res.end();
+      }
     }
   });
   /* ------------------------------------------------------------------ */
