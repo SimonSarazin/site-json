@@ -88,10 +88,11 @@ export default function HeaderCommuneTransparente({ header }: HeaderCommuneTrans
             : "bg-transparent";
     
     const dataCostum = entity?.serverData?.costum as Record<string, unknown> | undefined;
-    
+    const slug = entity?.serverData?.slug;
     // Créer des variables locales pour logo et logoTitle au lieu de modifier les props
+    const preUrl = (slug  == "etangsale1" || slug == "tampon" || slug  == "saintbenoit4" || slug == "saintemarie1" || slug  == "saintpaul4") ? "https://communecter.org" : ""; 
     const logo = dataCostum?.transparentCommune
-        ?  dataCostum?.logo as string || dataCostum?.bannerLogoUrl as string || header.logo || ""
+        ?  preUrl + (dataCostum?.logo as string || dataCostum?.bannerLogoUrl as string) || header.logo || ""
         : header.logo;
         
     const logoTitle = dataCostum?.transparentCommune

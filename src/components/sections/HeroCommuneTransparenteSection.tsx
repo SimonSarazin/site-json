@@ -2,6 +2,7 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { useLocalization } from "@/hooks/useLocalization";
 import type { HeroCommuneTransparenteProps } from "@/types/site-schema";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
+import { log } from "node:console";
 
 interface HeroCommuneTransparenteSectionProps {
     id?: string;
@@ -22,10 +23,15 @@ export function HeroCommuneTransparenteSection({ id, props }: HeroCommuneTranspa
     const data = entity?.serverData;
     const dataCostum = entity?.serverData?.costum as Record<string, unknown> | undefined;
 
+    const slug = data?.slug;
+    let preUrl = "";
+    if(slug  == "etangsale1" || slug == "tampon" || slug  == "saintbenoit4" || slug == "saintemarie1" || slug  == "saintpaul4") {
+        preUrl = "https://communecter.org";
+    }  
     const donneEntity: DonneEntity = {
         name: data?.name,
-        bannerImageUrl: (dataCostum?.bannerImageUrl || props.backgroundImage) as string | undefined,
-        bannerLogoUrl: (dataCostum?.bannerLogoUrl || props.logoImage) as string | undefined,
+        bannerImageUrl: preUrl + (dataCostum?.bannerImageUrl || props.backgroundImage) as string | undefined,
+        bannerLogoUrl: preUrl + (dataCostum?.bannerLogoUrl || props.logoImage) as string | undefined,
         bannerText: (dataCostum?.bannerText || "Une ville tournée vers l'avenir, entre transformation et solidarité") as string | undefined,
     }
     
