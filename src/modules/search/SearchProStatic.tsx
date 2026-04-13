@@ -1,6 +1,6 @@
-import { Loader2, Map, List, LayoutGrid, Search, MapPin, Download, Plus, GitBranch } from "lucide-react";
+import { Loader2, Map, List, LayoutGrid, Search, MapPin, Download, Plus, GitBranch, XIcon, Tag, Filter } from "lucide-react";
 import * as LucideIcons from "lucide-react";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +19,7 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import "@/modules/search/i18n"; // Required: registers i18n resources
 import "@/modules/search/styles.css";
-import { SearchProStaticSectionProps } from "./schema";
+import { SearchProStaticSectionProps, ALL_THEME, DEFAULT_12_THEMATICS } from "./schema";
 import { useSearchQuery } from "./hooks/useSearchQuery";
 import { useCsvExport } from "./hooks/useCsvExport";
 import { useZonesQuery, getZoneId, getZoneName } from "./hooks/useZonesQuery";
@@ -53,6 +53,8 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     addButton,
     zoneSelector,
     tagSelector,
+    dynamicTagSelector,
+    thematicSelector,
     csvButton,
     baseParams = {},
     list,
@@ -79,6 +81,20 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedZoneId, setSelectedZoneId] = useState<string>("");
   const [selectedTagValue, setSelectedTagValue] = useState<string>("");
+  const [selectedDynamicTags, setSelectedDynamicTags] = useState<string[]>([]);
+  const [selectedThematics, setSelectedThematics] = useState<string[]>([]);
+
+  // Lecture des pré-filtres passés via sessionStorage au montage
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const raw = sessionStorage.getItem("searchProStaticPrefilter");
+    if (!raw) return;
+    try {
+      const parsed = JSON.parse(raw) as { tags?: string[] };
+      if (parsed.tags?.length) setSelectedDynamicTags(parsed.tags);
+    } catch {  }
+    sessionStorage.removeItem("searchProStaticPrefilter");
+  }, []);
 
   const enableGraph = props.enableGraph ?? false;
   const graphCategories = props.graphCategories;
@@ -170,8 +186,17 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
       tags.push(selectedTagValue);
     }
 
+    if (selectedDynamicTags.length > 0) {
+      tags.push(...selectedDynamicTags);
+    }
+
+    for (const thematic of selectedThematics) {
+      const themeTags = ALL_THEME[thematic]?.tags;
+      if (themeTags) tags.push(...themeTags);
+    }
+
     return tags.length > 0 ? { tags } : {} as Record<string, string[]>;
-  }, [filterNames, selectedTagValue]);
+  }, [filterNames, selectedTagValue, selectedDynamicTags, selectedThematics]);
 
   const [searchType] = useState<Record<string, string[]> | null>(
     baseParams?.defaultTypes ? { type: baseParams.defaultTypes } : null
@@ -259,8 +284,51 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     searchType,
     mapUsed: viewMode === "map",
     graphUsed: viewMode === "graph",
+    tagsVerb: "$in",
     baseParams: mergedBaseParams,
   });
+
+  const cumulativeTagsRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (transformedResults && transformedResults.length > 0) {
+      for (const item of transformedResults) {
+        const tags = (item as unknown as Record<string, unknown>).serverData
+          ? ((item as unknown as Record<string, Record<string, unknown>>).serverData?.tags as string[] | undefined)
+          : undefined;
+        if (Array.isArray(tags)) {
+          for (const tag of tags) {
+            if (typeof tag === "string" && tag.trim()) {
+              cumulativeTagsRef.current.add(tag.trim());
+            }
+          }
+        }
+      }
+    }
+  }, [transformedResults]);
+
+  const availableTags = useMemo(() => {
+    const tagsFromResults = new Set<string>();
+    if (transformedResults) {
+      for (const item of transformedResults) {
+        const tags = (item as unknown as Record<string, unknown>).serverData
+          ? ((item as unknown as Record<string, Record<string, unknown>>).serverData?.tags as string[] | undefined)
+          : undefined;
+        if (Array.isArray(tags)) {
+          for (const tag of tags) {
+            if (typeof tag === "string" && tag.trim()) {
+              tagsFromResults.add(tag.trim());
+            }
+          }
+        }
+      }
+    }
+    
+    for (const tag of cumulativeTagsRef.current) {
+      tagsFromResults.add(tag);
+    }
+    return Array.from(tagsFromResults).sort((a, b) => a.localeCompare(b));
+  }, [transformedResults]);
 
   if (!loaded) {
     return (
@@ -293,7 +361,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
 
       <div className="flex flex-col flex-1 w-full h-full overflow-hidden">
         {/* Header */}
-        {(title || description || showSearch || enableMap) && (
+        {(title || description || showSearch || enableMap || dynamicTagSelector?.show || thematicSelector?.show) && (
           <div className="flex flex-col gap-3 p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center space-x-2">
@@ -359,8 +427,8 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                 )}
               </div>
             </div>
-            {(showSearch || (tagSelector?.show && tagSelector.options) || zoneSelector?.show) && (
-              <div className="flex flex-col gap-2 items-center sm:flex-row sm:items-center sm:justify-center">
+            {(showSearch || (tagSelector?.show && tagSelector.options) || zoneSelector?.show || dynamicTagSelector?.show || thematicSelector?.show) && (
+              <div className="flex flex-row flex-wrap gap-3 items-center">
                 {showSearch && (
                   <div className="relative w-full sm:w-auto">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -429,12 +497,103 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                     </div>
                   </div>
                 )}
+                {thematicSelector?.show && (
+                  <div className="relative">
+                    <Filter className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    <select
+                      value=""
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (!val) return;
+                        setSelectedThematics(prev =>
+                          prev.includes(val) ? prev.filter(k => k !== val) : [...prev, val]
+                        );
+                      }}
+                      className="h-9 pl-8 pr-3 rounded-md border border-input bg-background text-sm min-w-44 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring"
+                    >
+                      <option value="">
+                        {thematicSelector.placeholder
+                          ? t(thematicSelector.placeholder)
+                          : t("Toutes les thématiques")}
+                      </option>
+                      {(thematicSelector.thematics ?? DEFAULT_12_THEMATICS).map((key) => {
+                        const theme = ALL_THEME[key];
+                        if (!theme) return null;
+                        const isActive = selectedThematics.includes(key);
+                        return (
+                          <option key={key} value={key}>
+                            {isActive ? `✓ ${theme.name}` : theme.name}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                )}
+                {dynamicTagSelector?.show && (
+                  <div className="relative">
+                    <Tag className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    <select
+                      value=""
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (!val) return;
+                        setSelectedDynamicTags(prev =>
+                          prev.includes(val) ? prev.filter(t => t !== val) : [...prev, val]
+                        );
+                      }}
+                      className="h-9 pl-8 pr-3 rounded-md border border-input bg-background text-sm min-w-44 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring"
+                    >
+                      <option value="">
+                        {dynamicTagSelector.placeholder
+                          ? t(dynamicTagSelector.placeholder)
+                          : t("Tous les tags")}
+                      </option>
+                      {availableTags.map((tag) => {
+                        const isActive = selectedDynamicTags.includes(tag);
+                        return (
+                          <option key={tag} value={tag}>
+                            {isActive ? `✓ ${tag}` : tag}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                )}
+              </div>
+            )}
+            {/* Active filters bar */}
+            {(selectedThematics.length > 0 || selectedDynamicTags.length > 0) && (
+              <div className="flex flex-wrap items-center gap-2 mt-1">
+                <span className="text-sm font-medium text-muted-foreground">{t("Filtre(s) actif(s) :")}</span>
+                {selectedThematics.map((key) => (
+                  <span key={key} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary text-primary-foreground text-sm">
+                    {ALL_THEME[key]?.name ?? key}
+                    <button
+                      onClick={() => setSelectedThematics(prev => prev.filter(k => k !== key))}
+                      className="inline-flex items-center justify-center rounded-full hover:bg-primary-foreground/20 p-0.5 cursor-pointer"
+                      aria-label={`Supprimer ${key}`}
+                    >
+                      <XIcon size={12} />
+                    </button>
+                  </span>
+                ))}
+                {selectedDynamicTags.map((tag) => (
+                  <span key={tag} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary text-primary-foreground text-sm">
+                    {tag}
+                    <button
+                      onClick={() => setSelectedDynamicTags(prev => prev.filter(t => t !== tag))}
+                      className="inline-flex items-center justify-center rounded-full hover:bg-primary-foreground/20 p-0.5 cursor-pointer"
+                      aria-label={`Supprimer ${tag}`}
+                    >
+                      <XIcon size={12} />
+                    </button>
+                  </span>
+                ))}
               </div>
             )}
             {description && <p className="text-sm text-muted-foreground">{t(description)}</p>}
           </div>
         )}
-
         {viewMode === "map" && enableMap ? (
           <div className="relative flex-1 h-full w-full overflow-hidden">
             {loadingMap && (

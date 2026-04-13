@@ -78,7 +78,26 @@ export function ThematicsSection({
         title = { fr: "Nos Thématiques", en: "Our Themes" },
         subtitle = { fr: "Explorez les différentes dimensions de votre Commune", en: "Explore the different dimensions of your Commune" },
         emptyMessage = { fr: "Aucune thématique n'est actuellement associée à cette commune", en: "No themes are currently associated with this commune" },
+        filterHref,
     } = props;
+
+    const handleFiliereClick = (key: string, data: FiliereItem) => {
+        if (!filterHref) return;
+
+        // Chercher les tags associés dans ALL_THEME (par clé ou par nom)
+        const matchedKey = key in ALL_THEME
+            ? key
+            : Object.entries(ALL_THEME).find(([, v]) =>
+                v.name.toLowerCase() === data.name.toLowerCase()
+              )?.[0];
+
+        const tagsToFilter = matchedKey
+            ? ALL_THEME[matchedKey].tags          // tags du ALL_THEME (OR entre eux)
+            : [data.name];                        // nom de la filière comme tag de
+
+        sessionStorage.setItem("searchProStaticPrefilter", JSON.stringify({ tags: tagsToFilter }));
+        window.location.href = filterHref;
+    };
 
     // Extraire le dernier mot du titre pour le mettre en span styled
     const titleStr = t(title);
@@ -114,7 +133,8 @@ export function ThematicsSection({
                             return (
                                 <a
                                     key={key}
-                                    className="flex flex-col items-center text-center p-4 rounded-lg hover:bg-gray-50 transition-all cursor-pointer w-36"
+                                    onClick={filterHref ? () => handleFiliereClick(key, data) : undefined}
+                                    className={`flex flex-col items-center text-center p-4 rounded-lg hover:bg-gray-50 transition-all w-36${filterHref ? " cursor-pointer" : ""}`}
                                 >
                                     <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center mb-3">
                                         {IconComponent ? (

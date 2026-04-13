@@ -184,6 +184,29 @@ const TagSelectorConfigSchema = z.object({
 
 export type TagSelectorConfig = z.infer<typeof TagSelectorConfigSchema>;
 
+const DynamicTagSelectorConfigSchema = z.object({
+  show: z.boolean().default(false),
+  label: LocalizedString.optional(),
+  placeholder: LocalizedString.optional(),
+}).optional();
+
+export type DynamicTagSelectorConfig = z.infer<typeof DynamicTagSelectorConfigSchema>;
+
+const ThematicSelectorConfigSchema = z.object({
+  show: z.boolean().default(false),
+  label: LocalizedString.optional(),
+  placeholder: LocalizedString.optional(),
+  thematics: z.array(z.string()).optional(),
+}).optional();
+
+export type ThematicSelectorConfig = z.infer<typeof ThematicSelectorConfigSchema>;
+
+export const DEFAULT_12_THEMATICS = [
+  "alimentation", "santé", "déchets", "transport",
+  "éducation", "citoyenneté", "économie", "énergie",
+  "culture", "environnement", "numérique", "sport",
+] as const;
+
 // SearchProStatic: Version sans synchronisation URL pour affichage multiple par page
 export const SearchProStaticSectionSchema = z.object({
   type: z.literal("searchProStatic"),
@@ -211,6 +234,8 @@ export const SearchProStaticSectionSchema = z.object({
     addButton: AddButtonConfigSchema,
     zoneSelector: ZoneSelectorConfigSchema,
     tagSelector: TagSelectorConfigSchema,
+    dynamicTagSelector: DynamicTagSelectorConfigSchema,
+    thematicSelector: ThematicSelectorConfigSchema,
     csvButton: CsvButtonConfigSchema,
     customHeader: z.object({
       title: LocalizedString.optional(),
@@ -490,6 +515,7 @@ export const ThematicsSectionSchema = z.object({
     title: LocalizedString.optional(),
     subtitle: LocalizedString.optional(),
     emptyMessage: LocalizedString.optional(),
+    filterHref: z.string().optional(),
   }),
 });
 

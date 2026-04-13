@@ -92,7 +92,8 @@
           "props": {
             "title": { "fr": "Nos Thématiques", "en": "Our Themes" },
             "subtitle": { "fr": "Explorez les différentes dimensions de votre Commune", "en": "Explore the different dimensions of your Commune" },
-            "emptyMessage": { "fr": "Aucune thématique n'est actuellement associée à cette commune", "en": "No themes are currently associated with this commune" }
+            "emptyMessage": { "fr": "Aucune thématique n'est actuellement associée à cette commune", "en": "No themes are currently associated with this commune" },
+            "filterHref": "/citoyens"
           }
         },
         {
@@ -330,7 +331,8 @@
                 "partners",
                 "links",
                 "date",
-                "address"
+                "address",
+                "thematic"
               ],
               "defaultFilters": { }
             },
@@ -368,13 +370,17 @@
             "showActiveFiltersTypes": false,
             "showActiveFiltersTags": false,
             "disableInfiniteScroll": false,
+            "thematicSelector": { "show": true },
+            "dynamicTagSelector": { "show": true },
             "baseParams": { 
               "defaultTypes": [
                 "citoyens"
               ], 
               "notSourceKey": true,
               "defaultFields": [
-                "address"
+                "address",
+                "thematic",
+                "tags"
               ],
               "defaultFilters": { }
             },
@@ -429,7 +435,9 @@
               ], 
               "notSourceKey": true,
               "defaultFields": [
-                "address"
+                "address",
+                "thematic",
+                "tags"
               ],
               "defaultFilters": { }
             },

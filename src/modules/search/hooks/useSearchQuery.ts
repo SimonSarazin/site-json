@@ -13,6 +13,7 @@ export interface UseSearchQueryParams {
   searchType: Record<string, string[]> | null;
   mapUsed: boolean;
   graphUsed?: boolean;
+  tagsVerb?: "$all" | "$in";
   baseParams?: {
     fediverse?: boolean;
     indexStepList?: number;
@@ -46,6 +47,7 @@ export function useSearchQuery({
   searchType,
   mapUsed,
   graphUsed = false,
+  tagsVerb = "$all",
   baseParams = {},
 }: UseSearchQueryParams) {
   const { entity, helper } = useCocolight();
@@ -111,7 +113,7 @@ export function useSearchQuery({
             : { indexMin: 0, indexStep: indexStepList }),
         ...(tags.length > 0 && {
           searchTags: tags,
-          options: { tags: { verb: "$all" } },
+          options: { tags: { verb: tagsVerb } },
         }),
         ...(defaultFilters && Object.keys(defaultFilters).length > 0 && {
           filters: defaultFilters,
