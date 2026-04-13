@@ -35,7 +35,7 @@ src/                  # Source de l'application
 ## 📖 Documentation
 
 Pour une documentation complète (installation, configuration, schémas JSON, SSR, modules, i18n, etc.), consultez :
-[doc/DOC.md](./doc/DOC.md)
+[doc/README.md](./doc/README.md)
 
 ---
 

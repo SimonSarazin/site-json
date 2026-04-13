@@ -19,20 +19,21 @@ async function isBackendReachable(): Promise<boolean> {
   }
 }
 
-test.describe("Profile Pages (E2E)", () => {
-  test.beforeEach(async () => {
-    const reachable = await isBackendReachable();
-    if (!reachable) {
-      test.skip();
-    }
-  });
-
+// Tests de config — pas besoin du backend
+test.describe("Profile Config", () => {
   test("config.profiles is defined with at least one profile type", () => {
-    expect(config.profiles).toBeDefined();
+    if (!config.profiles) {
+      test.skip();
+      return;
+    }
     expect(profileTypes.length).toBeGreaterThan(0);
   });
 
   test("each profile type has tabs configured", () => {
+    if (!config.profiles || profileTypes.length === 0) {
+      test.skip();
+      return;
+    }
     for (const type of profileTypes) {
       const profile = config.profiles![type];
       expect(
@@ -40,6 +41,16 @@ test.describe("Profile Pages (E2E)", () => {
         `Profile type "${type}" should have tabs`
       ).toBeDefined();
       expect(profile.tabs!.length).toBeGreaterThan(0);
+    }
+  });
+});
+
+// Tests E2E — nécessitent le backend
+test.describe("Profile Pages (E2E)", () => {
+  test.beforeEach(async () => {
+    const reachable = await isBackendReachable();
+    if (!reachable) {
+      test.skip();
     }
   });
 

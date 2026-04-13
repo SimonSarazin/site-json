@@ -1,25 +1,10 @@
 import { useState } from "react";
 import { useLocalization } from "@/hooks/useLocalization";
-import { LocalizedString } from "@/types/site-schema";
+import { type CallToActionRezoLaMerProps } from "@/types/site-schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowRight, Mail } from "lucide-react";
 import { Link } from "react-router";
-
-export interface CallToActionRezoLaMerProps {
-    headline: LocalizedString;
-    subhead?: LocalizedString;
-    variant?: "ocean" | "cyber";
-    bg?: "default" | "card" | "muted" | "primary" | "secondary" | "accent" | "transparent";
-    newsletterPlaceholder?: LocalizedString;
-    newsletterButtonLabel?: LocalizedString;
-    newsletterDisclaimer?: LocalizedString;
-    buttons?: Array<{
-        label: LocalizedString;
-        href: string;
-        variant?: "default" | "outline" | "accent";
-    }>;
-}
 
 interface CallToActionRezoLaMerSectionProps {
     id?: string;
