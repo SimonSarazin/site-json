@@ -59,7 +59,7 @@ export function SportCategoriesSection({
       default:
         return {
           sectionBg: "bg-linear-to-b from-background to-background/80",
-          cardBg: "bg-cream/60 backdrop-blur-sm border-border/30 hover:shadow-lg hover:shadow-warm/20",
+          cardBg: "bg-secondary/30 backdrop-blur-sm border  border-primary/20 hover:shadow-lg hover:shadow-warm/20",
           accentColor: "text-earth",
         };
     }
@@ -99,19 +99,23 @@ export function SportCategoriesSection({
                 className={`group flex flex-col items-center gap-4 rounded-2xl ${styles.cardBg} px-4 py-8 backdrop-blur-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background hover:shadow-lg hover:scale-105 animate-fade-in-up`}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-background shadow-sm transition-colors group-hover:bg-warm-light">
-                  <DynamicIcon
-                    name={card.icon as IconName}
-                    className={`h-7 w-7 ${styles.accentColor} transition-transform duration-300 group-hover:scale-110`}
-                    strokeWidth={1.5}
-                  />
-                </div>
+                {card.icon && (
+                  <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-background shadow-sm transition-colors group-hover:bg-warm-light">
+                    <DynamicIcon
+                      name={card.icon as IconName}
+                      className={`h-12 w-12 ${styles.accentColor} transition-transform duration-300 group-hover:scale-110`}
+                      strokeWidth={1.5}
+                    />
+                  </div>
+                )}
                 <div className="flex flex-col items-center gap-1 text-center">
-                  <span className="font-body text-xs font-bold uppercase tracking-wider text-earth-light transition-colors group-hover:text-foreground">
-                    {t(card.title)}
-                  </span>
+                   {card.title && (
+                      <span className="font-body text-md font-bold uppercase tracking-wider text-primary transition-colors group-hover:text-foreground">
+                        {t(card.title)}
+                      </span>
+                  )}
                   {card.subtitle && (
-                    <span className="font-body text-[11px] text-earth-light/60">
+                    <span className="text-muted-foreground ">
                       {t(card.subtitle)}
                     </span>
                   )}
