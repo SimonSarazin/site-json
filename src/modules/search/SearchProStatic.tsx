@@ -62,8 +62,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   const isConnected = !!me;
   const permissions = useProfilPermissions(entity || null);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const IconComponent = icon ? (LucideIcons as any as Record<string, React.ComponentType<{ className?: string }>>)[icon.charAt(0).toUpperCase() + icon.slice(1).replace(/-./g, x => x[1].toUpperCase())] : null;
+  const IconComponent = icon ? (LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[icon.charAt(0).toUpperCase() + icon.slice(1).replace(/-./g, x => x[1].toUpperCase())] : null;
 
   const customHeader = props.customHeader;
   const showDetailedViewToggle = props.showDetailedViewToggle ?? false;
@@ -90,10 +89,10 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   const [graphOpenDetails, setGraphOpenDetails] = useState(false);
   const [graphSelectedItem, setGraphSelectedItem] = useState<SearchEntity | null>(null);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleGraphItemClick = (item: any) => {
+  const handleGraphItemClick = (item: unknown) => {
     if (graphDetailsMode === "link") {
-      const data = ('serverData' in item && item.serverData ? item.serverData : item) as Record<string, unknown>;
+      const itemObj = item as Record<string, unknown>;
+      const data = ('serverData' in itemObj && itemObj.serverData ? itemObj.serverData : itemObj) as Record<string, unknown>;
       if (data.slug) {
         window.location.href = `/@${data.slug}`;
       }
@@ -187,7 +186,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
       const obj: Record<string, Record<string, string[]>> = {};
       for (const { field, type, value } of Object.values(searchByFields)) {
         if (type && type === "scopeList") continue;
-        if (value && value.length > 0) {
+        if (Array.isArray(value) && value.length > 0) {
           if (!obj[field]) {
             obj[field] = { "$in": value };
           } else {
@@ -223,8 +222,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     return combined;
   }, [contextLocality, zoneLocality]);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mergedBaseParams = useMemo<any>(() => ({
+  const mergedBaseParams = useMemo<Record<string, unknown>>(() => ({
     ...baseParams,
     defaultFilters: {
       ...baseParams.defaultFilters,
@@ -512,9 +510,8 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
               >
                 {() => (
                   <SearchBubbleChart
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    results={transformedResults as any}
-                    categories={graphTags}
+                    results={transformedResults as unknown as React.ComponentProps<typeof SearchBubbleChart>["results"]}
+                    categories={graphCategories}
                     onItemClick={handleGraphItemClick}
                     height={450}
                     defaultGroupMode={graphDefaultGroupMode}

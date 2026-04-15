@@ -38,10 +38,17 @@ function extractValue(item: Record<string, unknown>, path: string): string {
   }
 }
 
+interface EntityWithSearchCostum {
+  searchCostum(params: Record<string, unknown>): Promise<{ results?: Record<string, unknown>[] }>;
+}
+
+interface HelperWithFromEntityJSON {
+  fromEntityJSON?(item: Record<string, unknown>): unknown;
+}
+
 export interface UseCsvExportOptions {
   csvButton?: CsvButtonConfig;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  entity?: any;
+  entity?: EntityWithSearchCostum | null;
   searchParams?: {
     searchText: string;
     searchTags: Record<string, string[]>;
@@ -57,8 +64,7 @@ export interface UseCsvExportOptions {
       locality?: Record<string, unknown>;
     };
   };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  helper?: any;
+  helper?: HelperWithFromEntityJSON | null;
 }
 
 function generateCsv(results: Record<string, unknown>[], csvButton: CsvButtonConfig) {
@@ -123,8 +129,7 @@ export function useCsvExport({ csvButton, entity, searchParams, helper }: UseCsv
           locality,
         } = baseParams;
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const param: Partial<GlobalAutocompleteCostumData> & Record<string, any> = ({
+        const param: Partial<GlobalAutocompleteCostumData> & Record<string, unknown> = ({
           name: searchText,
           fediverse,
           indexMin: 0,
@@ -144,8 +149,7 @@ export function useCsvExport({ csvButton, entity, searchParams, helper }: UseCsv
           }),
           ...(locality && Object.keys(locality).length > 0 && { locality }),
           ...(notSourceKey ? { notSourceKey: true } : {}),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        }) as any;
+        }) as Partial<GlobalAutocompleteCostumData> & Record<string, unknown>;
 
         if (type && type.length > 0) param.searchType = type as GlobalAutocompleteCostumData["searchType"];
         if (!type && defaultTypes) param.searchType = defaultTypes as GlobalAutocompleteCostumData["searchType"];
@@ -164,7 +168,7 @@ export function useCsvExport({ csvButton, entity, searchParams, helper }: UseCsv
         if (helper && allResults.length > 0) {
           allResults = allResults.map((item: Record<string, unknown>) => {
             try {
-              return helper.fromEntityJSON ? helper.fromEntityJSON(item) : item;
+              return (helper.fromEntityJSON ? helper.fromEntityJSON(item) : item) as Record<string, unknown>;
             } catch {
               return item;
             }

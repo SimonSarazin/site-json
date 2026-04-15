@@ -9,7 +9,9 @@ import { fileURLToPath } from "node:url";
 export interface SiteSection {
   type: string;
   id?: string;
-  props?: Record<string, unknown>;
+  props?: Record<string, unknown> & {
+    headline?: Record<string, string>;
+  };
 }
 
 export interface SitePage {
@@ -32,7 +34,9 @@ export interface SiteConfig {
   };
   header: {
     nav: NavItem[];
-    utilities: Record<string, boolean>;
+    utilities: Record<string, boolean> & {
+      langSwitch?: boolean;
+    };
   };
   pages: SitePage[];
   footer: {
@@ -50,6 +54,23 @@ export interface SiteConfig {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
+
+// Charger le .env si SITE_CONFIG_PATH n'est pas déjà défini
+if (!process.env.SITE_CONFIG_PATH) {
+  const envPath = path.resolve(PROJECT_ROOT, ".env");
+  if (fs.existsSync(envPath)) {
+    for (const line of fs.readFileSync(envPath, "utf-8").split("\n")) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith("#")) continue;
+      const eqIdx = trimmed.indexOf("=");
+      if (eqIdx === -1) continue;
+      const key = trimmed.slice(0, eqIdx).trim();
+      const val = trimmed.slice(eqIdx + 1).trim();
+      if (!process.env[key]) process.env[key] = val;
+    }
+  }
+}
+
 const configPath = path.resolve(
   PROJECT_ROOT,
   process.env.SITE_CONFIG_PATH || "./config.prod.json"

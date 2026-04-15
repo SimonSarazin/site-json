@@ -20,8 +20,7 @@ export function FiltersSection({
   const [openGroups, setOpenGroups] = useState<string[]>(defaultOpenGroups);
 
   const filtersByAnswersOptions = filtersByAnswers ?? {};
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const filterAnswerResult = useFiltersByAnswersQuery(`filters-answers-${id}`, filtersByAnswersOptions as any);
+  const filterAnswerResult = useFiltersByAnswersQuery(`filters-answers-${id}`, filtersByAnswersOptions as Parameters<typeof useFiltersByAnswersQuery>[1]);
   const filterAnswerData = filtersByAnswers ? filterAnswerResult.data : null;
 
   const zoneQueryParams = useMemo(() => {
@@ -59,6 +58,7 @@ export function FiltersSection({
     const newFilterGroups: FiltersSectionProps["filterGroups"] = [];
     propsFiltersGroups?.forEach(group => {
 
+      if (!group.options) group.options = [];
       if (group.type === "scopeList") {
         group.options = [];
         // Remplir les options à partir des données de zone
@@ -84,11 +84,11 @@ export function FiltersSection({
               data.label[lang.toLowerCase()] = (zone.translate as Record<string, Record<string, string>>).translates[lang];
             })
           }
-          group.options.push(data);
+          group.options!.push(data);
         });
         newFilterGroups.push(group);
       } else {
-        const defaultCheckedIds = group.options
+        const defaultCheckedIds = (group.options ?? [])
           .filter(option => option.defaultChecked)
           .map(option => option.name || option.id);
 
@@ -132,8 +132,7 @@ export function FiltersSection({
                   id: value,
                   type: level
                 }
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              } as any as typeof prev[string]
+              } as unknown as typeof prev[string]
             };
           } else {
             const valueToSet = Array.isArray(value) ? value : [value];
@@ -237,7 +236,7 @@ export function FiltersSection({
             {/* Group Content */}
             {isGroupOpen(group.id) && (
               <div className="pb-3 px-2 space-y-2">
-                {group.options.map((option) => {
+                {(group.options ?? []).map((option) => {
                   const filterName = option.name || option.id;
                   return (
                     <label

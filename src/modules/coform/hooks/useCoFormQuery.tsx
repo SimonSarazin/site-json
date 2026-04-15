@@ -547,7 +547,8 @@ export function useCoFormFinalMutation({ formId, answerId, onSuccess, onError }:
         // Pas de fichiers, soumission directe
         // Nettoyer les URLs uniquement dans les champs uploader
         const cleanedData = cleanUploaderUrls(allData, formData);
-        const response = await api.endpointApi.saveCoformAnswer({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const response = await (api.endpointApi as any).saveCoformAnswer({
           formId,
           answers: JSON.stringify(cleanedData),
           ...(answerId ? { answerId } : {}),
@@ -568,7 +569,8 @@ export function useCoFormFinalMutation({ formId, answerId, onSuccess, onError }:
         const { file, docType } = await dataUriToFile(firstPending.value, "upload-1");
         const { contentKey, subKey } = getUploadKeys(firstPending.inputType, firstPending.path);
 
-        const firstUploadResponse = await api.endpointApi.coformUploadAnswerFile({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const firstUploadResponse = await (api.endpointApi as any).coformUploadAnswerFile({
           formId,
           docType,
           contentKey,
@@ -625,7 +627,8 @@ export function useCoFormFinalMutation({ formId, answerId, onSuccess, onError }:
             const { file, docType } = await dataUriToFile(pending.value, fallbackName);
             const { contentKey, subKey } = getUploadKeys(pending.inputType, pending.path);
 
-            const uploadResponse = await api.endpointApi.coformUploadAnswerFile({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const uploadResponse = await (api.endpointApi as any).coformUploadAnswerFile({
               formId,
               answerId: activeAnswerId!, // On a forcément un answerId ici
               docType,

@@ -53,8 +53,11 @@ export default function MeeteemSection({ id, props }: { id?: string, props: Meet
             includeUserInfo: true
         }
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const transformedResults = _rawResults as any[];
+    const transformedResults = _rawResults as Array<{
+        answer: { serverData: { id?: string; created?: Date; vote?: Record<string, unknown>; comments?: Record<string, unknown>; [key: string]: unknown } };
+        data: { name?: string; description?: string; tags?: string[]; [key: string]: unknown };
+        user?: { name: string; initial: string; exists: boolean };
+    }>;
 
     // Gestion des filtres par tags
     const toggleFilter = (tag: string) => {
@@ -84,7 +87,7 @@ export default function MeeteemSection({ id, props }: { id?: string, props: Meet
             data.tags?.some((tag: string) => activeFilters.includes(tag));
 
         const matchesUser = !userFilter ||
-            user.name === userFilter;
+            user?.name === userFilter;
 
         return matchesTag && matchesUser;
     });
@@ -297,7 +300,7 @@ export default function MeeteemSection({ id, props }: { id?: string, props: Meet
                                                 {user?.initial}
                                             </div>
                                             <div className="flex flex-col gap-0.5">
-                                                <span className="font-semibold text-sm">{user.name}</span>
+                                                <span className="font-semibold text-sm">{user?.name}</span>
                                                 <span className="text-[11px]">{answer.serverData.created?.toLocaleDateString() ?? "N/A"}</span>
                                             </div>
                                         </div>

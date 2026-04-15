@@ -84,7 +84,7 @@ export function SiteHeader2() {
           <div className="flex items-center gap-6">
             <a href="#" onClick={handleLogoClick} className="flex items-center gap-2">
               <OptimizedImage
-                src={header.logo}
+                src={header.logo ?? ""}
                 alt={header.logoAlt ? t(header.logoAlt) : ""}
                 height={32}
                 className="h-8 w-auto rounded"
@@ -196,7 +196,7 @@ export function SiteHeader2() {
         <div className="flex lg:hidden items-center justify-between">
           <a href="#" onClick={handleLogoClick}>
             <OptimizedImage
-              src={header.logo}
+              src={header.logo ?? ""}
               alt={header.logoAlt ? t(header.logoAlt) : ""}
               height={32}
               className="h-8 w-auto rounded"
@@ -213,7 +213,7 @@ export function SiteHeader2() {
                 <SheetTitle>
                   <a href="#" onClick={handleLogoClick}>
                     <OptimizedImage
-                      src={header.logo}
+                      src={header.logo ?? ""}
                       alt={header.logoAlt ? t(header.logoAlt) : ""}
                       height={32}
                       className="h-8 w-auto rounded"

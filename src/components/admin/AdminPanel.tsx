@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { useSite } from "@/hooks/useSite";
 // import { useCocolight } from "@/hooks/useCocolight";
-import type { Section, SiteConfig } from "@/types/site-schema";
+import type { Section, SiteConfig, Header, Footer } from "@/types/site-schema";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,
 } from "@/components/ui/sheet";
@@ -67,12 +67,9 @@ const SETTING_ENTRIES: { key: string; label: string; icon: string }[] = (() => {
     }));
 })();
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type NavItem = any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type FooterColumn = any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type FooterLink = any;
+type NavItem = Header['nav'][number];
+type FooterColumn = Footer['columns'][number];
+type FooterLink = FooterColumn['links'][number];
 
 function SectionPicker({ value, onChange, onAdd }: { value: string; onChange: (v: string) => void; onAdd: () => void }) {
   const [open, setOpen] = useState(false);
@@ -615,8 +612,7 @@ export default function AdminPanel() {
   function renderHeaderView() {
     if (!header) return null;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { nav: _nav, ...headerFieldsValue } = header as any;
+    const { nav: _nav, ...headerFieldsValue } = header;
     void _nav;
 
     return (
@@ -635,8 +631,7 @@ export default function AdminPanel() {
             <ObjectFields
               schema={HeaderFieldsSchema}
               value={headerFieldsValue as Record<string, unknown>}
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onChange={(v) => patch({ header: { nav: (header as any).nav, ...v } as any })}
+              onChange={(v) => patch({ header: { nav: header.nav, ...v } as Header })}
               compact
             />
 
@@ -744,7 +739,7 @@ export default function AdminPanel() {
             />
             <div className="space-y-1.5">
               <Label className="text-xs font-medium">Description <span className="text-muted-foreground">(optionnel)</span></Label>
-              <Input value={(item as Record<string, Record<string, string>>).description?.fr ?? ""} onChange={(e) => update({ description: e.target.value ? { fr: e.target.value } : undefined } as Record<string, unknown>)} placeholder="Description du lien" />
+              <Input value={(item as unknown as Record<string, Record<string, string>>).description?.fr ?? ""} onChange={(e) => update({ description: e.target.value ? { fr: e.target.value } : undefined } as Record<string, unknown>)} placeholder="Description du lien" />
             </div>
           </div>
         </div>
@@ -761,8 +756,7 @@ export default function AdminPanel() {
   function renderFooterView() {
     if (!footer) return null;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { columns: _cols, ...footerFieldsValue } = footer as any;
+    const { columns: _cols, ...footerFieldsValue } = footer;
     void _cols;
 
     return (
@@ -783,8 +777,7 @@ export default function AdminPanel() {
             <ObjectFields
               schema={FooterFieldsSchema}
               value={footerFieldsValue as Record<string, unknown>}
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onChange={(v) => updateFooter({ columns: (footer as any).columns, ...v } as any)}
+              onChange={(v) => updateFooter({ columns: footer.columns, ...v } as Footer)}
               compact
             />
           </div>

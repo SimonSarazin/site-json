@@ -39,18 +39,6 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { Answer } from "@communecter/cocolight-api-client";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
 
-interface AnswerItem {
-    id?: string;
-    serverData: { answers: Record<string, unknown>; id?: string; [key: string]: unknown };
-    [key: string]: unknown;
-}
-
-interface AnswersByFormsItem {
-    id: string;
-    answers: AnswerItem[];
-    [key: string]: unknown;
-}
-
 interface ProfileTiersLieuxInfoProps {
     section: ProfileTiersLieuxInfoSection;
 }
@@ -115,18 +103,18 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
         if (!roomPath) return 0;
         const roomId = section.roomPath?.id;
         if (!roomId) return 0;
-        const roomData = _answersByForms?.find((item: AnswersByFormsItem) => item.id === roomId);
+        const roomData = _answersByForms?.find((item) => item.id === roomId);
         let count = 0;
         if (type === "array") {
-            roomData?.answers.forEach((answer: AnswerItem) => {
-                const value = getNestedValue(answer.serverData.answers as Record<string, unknown>, roomPath);
+            roomData?.answers.forEach((answer) => {
+                const value = getNestedValue((answer.serverData as Record<string, unknown>).answers as Record<string, unknown>, roomPath);
                 if (Array.isArray(value)) {
                     count += value.length - 1;
                 }
             })
         }else if(type === "single"){
-            roomData?.answers.forEach((answer: AnswerItem) => {
-                const value = getNestedValue(answer.serverData.answers as Record<string, unknown>, roomPath);
+            roomData?.answers.forEach((answer) => {
+                const value = getNestedValue((answer.serverData as Record<string, unknown>).answers as Record<string, unknown>, roomPath);
                 if(value && isNaN(Number(value)) === false){
                     count += Number(value);
                 }
@@ -140,18 +128,18 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
         if (!coworkPath) return 0;
         const coworkId = section.coworkingPath?.id;
         if (!coworkId) return 0;
-        const coworkData = _answersByForms?.find((item: AnswersByFormsItem) => item.id === coworkId);
+        const coworkData = _answersByForms?.find((item) => item.id === coworkId);
         let count = 0;
         if (type === "array") {
-            coworkData?.answers.forEach((answer: AnswerItem) => {
-                const value = getNestedValue(answer.serverData.answers as Record<string, unknown>, coworkPath);
+            coworkData?.answers.forEach((answer) => {
+                const value = getNestedValue((answer.serverData as Record<string, unknown>).answers as Record<string, unknown>, coworkPath);
                 if (Array.isArray(value)) {
                     count += value.length - 1;
                 }
             })
         }else if(type === "single"){
-            coworkData?.answers.forEach((answer: AnswerItem) => {
-                const value = getNestedValue(answer.serverData.answers as Record<string, unknown>, coworkPath);
+            coworkData?.answers.forEach((answer) => {
+                const value = getNestedValue((answer.serverData as Record<string, unknown>).answers as Record<string, unknown>, coworkPath);
                 if(value && isNaN(Number(value)) === false){
                     count += Number(value);
                 }
@@ -167,18 +155,18 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
         if (!bedPath) return 0;
         const bedId = section.bedRoomPath?.id;
         if (!bedId) return 0;
-        const bedData = _answersByForms?.find((item: AnswersByFormsItem) => item.id === bedId);
+        const bedData = _answersByForms?.find((item) => item.id === bedId);
         let count = 0;
         if (type === "array") {
-            bedData?.answers.forEach((answer: AnswerItem) => {
-                const value = getNestedValue(answer.serverData.answers as Record<string, unknown>, bedPath);
+            bedData?.answers.forEach((answer) => {
+                const value = getNestedValue((answer.serverData as Record<string, unknown>).answers as Record<string, unknown>, bedPath);
                 if (Array.isArray(value)) {
                     count += value.length - 1;
                 }
             })
         }else if(type === "single"){
-            bedData?.answers.forEach((answer: AnswerItem) => {
-                const value = getNestedValue(answer.serverData.answers as Record<string, unknown>, bedPath);
+            bedData?.answers.forEach((answer) => {
+                const value = getNestedValue((answer.serverData as Record<string, unknown>).answers as Record<string, unknown>, bedPath);
                 if(value && isNaN(Number(value)) === false){
                     count += Number(value);
                 }
@@ -199,14 +187,13 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
     const handleClickForm = useCallback(async (formId: string, finder?: string) => {
         if(!entity || !me) return;
         if(!canEditProfile) return;
-        const dataForms = _answersByForms?.find((item: AnswersByFormsItem) => item.id === formId);
+        const dataForms = _answersByForms?.find((item) => item.id === formId);
         const accessToken = entity.apiClient.getToken();
         let answer: Answer | undefined = undefined;
         if (dataForms && dataForms.answers.length > 0) {
             answer = dataForms.answers[0];
         } else {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            answer = await (entity as any).generateNewAnswerId(formId);
+            answer = await (entity as unknown as { generateNewAnswerId(formId: string): Promise<Answer | undefined> }).generateNewAnswerId(formId);
             if (!answer) {
                 console.error("Failed to generate new answer ID for form:", formId);
                 return;
@@ -215,8 +202,7 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
                 console.error("No answer ID generated for form:", formId);
                 return;
             }
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const params: any = {
+            const params = {
                 id: answer.id,
                 collection: "answers",
                 path: `${finder}.${entity.id}`,
@@ -225,9 +211,8 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
                     type: entity.serverData.collection,
                     name: entity.serverData.name,
                 }
-            }
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const paramsLinks: any = {
+            };
+            const paramsLinks = {
                 id: answer.id,
                 collection: "answers",
                 path: `links.${entity.serverData.collection}.${entity.id}`,
@@ -235,11 +220,9 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
                     type: entity.serverData.collection,
                     name: entity.serverData.name,
                 }
-            }
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            await entity.endpointApi.updatePathValue(params as any);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            await entity.endpointApi.updatePathValue(paramsLinks as any);
+            };
+            await (entity.endpointApi as unknown as { updatePathValue(p: Record<string, unknown>): Promise<unknown> }).updatePathValue(params);
+            await (entity.endpointApi as unknown as { updatePathValue(p: Record<string, unknown>): Promise<unknown> }).updatePathValue(paramsLinks);
             // entity.endpointApi.updatePathValue({
             //     "id": 
             // })
@@ -487,7 +470,7 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
                 )}
 
                 {/* ── 6. Formulaires ───────────────────────────────────── */}
-                {me && section.forms && Object.keys(section.forms).length > 0 && (
+                {me && canEditProfile && section.forms && Object.keys(section.forms).length > 0 && (
                     <>
                         <Separator />
                         <div>

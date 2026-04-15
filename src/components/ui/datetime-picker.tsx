@@ -265,12 +265,18 @@ function Calendar({
     return false;
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- CalendarProps is a strict subset of DayPickerProps but TS can't infer the rest type correctly
-  const dayPickerProps = props as any;
+  // Extract only DayPicker-compatible props; CalendarProps has extra fields (yearRange, min, max)
+  const { selected, onSelect, month, onMonthChange, locale: pickerLocale, showWeekNumber } = props;
 
   return (
     <DayPicker
-      {...dayPickerProps}
+      mode="single"
+      selected={selected}
+      onSelect={onSelect}
+      month={month}
+      onMonthChange={onMonthChange}
+      locale={pickerLocale}
+      showWeekNumber={showWeekNumber}
       showOutsideDays={showOutsideDays}
       disabled={disabledDays}
       className={cn("p-3", className)}
@@ -367,7 +373,6 @@ function Calendar({
           );
         },
       }}
-      {...props}
     />
   );
 }

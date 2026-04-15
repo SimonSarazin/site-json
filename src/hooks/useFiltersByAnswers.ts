@@ -97,8 +97,7 @@ export function useFiltersByAnswersQuery(
                         ) as FilterAnswerType["values"];
 
                         transformedData[key] = {
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            label: label as any,
+                            label: (typeof label === "string" ? { fr: label } : label) as LocalizedString,
                             values: filteredResults
                         };
                     }

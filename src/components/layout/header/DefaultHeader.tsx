@@ -230,7 +230,7 @@ export function DefaultHeader() {
         <div className="flex items-center justify-between h-full">
           {/* Logo */}
           <button onClick={handleLogoClick} className="flex items-center gap-2">
-            <OptimizedImage src={header.logo} alt={header.logoAlt ? t(header.logoAlt) : 'Logo'} height={32} className="h-8 w-auto rounded" />
+            <OptimizedImage src={header.logo ?? ""} alt={header.logoAlt ? t(header.logoAlt) : 'Logo'} height={32} className="h-8 w-auto rounded" />
           </button>
 
           {/* Desktop Nav */}

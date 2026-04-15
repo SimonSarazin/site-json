@@ -63,6 +63,15 @@ interface GroupNode {
   children: BubbleNode[];
 }
 
+interface RootNode {
+  name: string;
+  children: GroupNode[];
+}
+
+type HierarchyDatum = RootNode | GroupNode | BubbleNode;
+
+type CircularNode = d3.HierarchyCircularNode<HierarchyDatum>;
+
 type GroupMode = "country" | "category";
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -150,6 +159,14 @@ function getImageUrl(item: SearchResult, baseUrl: string): string {
   return `${baseUrl}${imageUrl}`;
 }
 
+function isGroupCircularNode(d: CircularNode): d is d3.HierarchyCircularNode<HierarchyDatum> & { data: GroupNode } {
+  return d.depth === 1 && "children" in d.data && Array.isArray((d.data as GroupNode).children);
+}
+
+function isBubbleCircularNode(d: CircularNode): d is d3.HierarchyCircularNode<HierarchyDatum> & { data: BubbleNode } {
+  return d.depth === 2 && "id" in d.data;
+}
+
 export default function SearchBubbleChart({
   results,
   categories,
@@ -229,7 +246,7 @@ export default function SearchBubbleChart({
     return map;
   }, [groupsWithCount, groupMode]);
 
-  const hierarchyData = useMemo(() => {
+  const hierarchyData = useMemo((): RootNode => {
     const groupMap = new Map<string, BubbleNode[]>();
 
     filteredResults.forEach((item) => {
@@ -285,18 +302,16 @@ export default function SearchBubbleChart({
     const margin = 40;
 
     const root = d3
-      .hierarchy(hierarchyData)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .sum((d: any) => d.value || 0)
+      .hierarchy<HierarchyDatum>(hierarchyData)
+      .sum((d: HierarchyDatum) => ("value" in d ? (d as BubbleNode).value : 0))
       .sort((a, b) => (b.value || 0) - (a.value || 0));
 
     const pack = d3
-      .pack()
+      .pack<HierarchyDatum>()
       .size([width - margin * 2, h - margin * 2])
       .padding(12);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const nodes = pack(root as any).descendants();
+    const nodes = pack(root).descendants();
 
     const g = svg
       .append("g")
@@ -323,16 +338,20 @@ export default function SearchBubbleChart({
       .attr("cx", (d) => d.x)
       .attr("cy", (d) => d.y)
       .attr("r", (d) => d.r)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .attr("fill", (d: any) => `${groupColorMap.get(d.data.name) || DEFAULT_COLOR}15`)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .attr("stroke", (d: any) => groupColorMap.get(d.data.name) || DEFAULT_COLOR)
+      .attr("fill", (d: CircularNode) => {
+        const groupData = d.data as GroupNode;
+        return `${groupColorMap.get(groupData.name) || DEFAULT_COLOR}15`;
+      })
+      .attr("stroke", (d: CircularNode) => {
+        const groupData = d.data as GroupNode;
+        return groupColorMap.get(groupData.name) || DEFAULT_COLOR;
+      })
       .attr("stroke-width", 2)
       .attr("stroke-dasharray", "5,5")
       .attr("opacity", 0.8);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    groupNodes.forEach((d: any) => {
+    groupNodes.forEach((d: CircularNode) => {
+      if (!isGroupCircularNode(d)) return;
       const name: string = d.data.name;
       const color = groupColorMap.get(name) || DEFAULT_COLOR;
       const fontSize = Math.max(10, Math.min(14, d.r / 5));
@@ -356,8 +375,7 @@ export default function SearchBubbleChart({
 
     const defs = svg.append("defs");
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    itemNodes.forEach((d: any, i) => {
+    itemNodes.forEach((d: CircularNode, i) => {
       defs
         .append("clipPath")
         .attr("id", `bubble-clip-${i}`)
@@ -372,17 +390,15 @@ export default function SearchBubbleChart({
       .attr("class", "item-group")
       .attr("transform", (d) => `translate(${d.x}, ${d.y})`)
       .style("cursor", "pointer")
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .on("click", (event, d: any) => {
+      .on("click", (event: MouseEvent, d: CircularNode) => {
         event.stopPropagation();
-        if (onItemClick && d.data.data) {
+        if (onItemClick && isBubbleCircularNode(d)) {
           onItemClick(d.data.data);
         }
       })
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .on("mouseenter", (event, d: any) => {
+      .on("mouseenter", (event: MouseEvent, d: CircularNode) => {
         const rect = containerRef.current?.getBoundingClientRect();
-        if (rect && d.data.data) {
+        if (rect && isBubbleCircularNode(d)) {
           setTooltip({
             x: event.clientX - rect.left,
             y: event.clientY - rect.top,
@@ -398,8 +414,10 @@ export default function SearchBubbleChart({
       .append("circle")
       .attr("r", (d) => d.r)
       .attr("fill", "white")
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .attr("stroke", (d: any) => groupColorMap.get(d.parent?.data.name || "") || DEFAULT_COLOR)
+      .attr("stroke", (d: CircularNode) => {
+        const parentData = d.parent?.data as GroupNode | undefined;
+        return groupColorMap.get(parentData?.name || "") || DEFAULT_COLOR;
+      })
       .attr("stroke-width", 2);
 
     itemGroups
@@ -409,15 +427,17 @@ export default function SearchBubbleChart({
       .attr("width", (d) => (d.r - 2) * 2)
       .attr("height", (d) => (d.r - 2) * 2)
       .attr("clip-path", (_, i) => `url(#bubble-clip-${i})`)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .attr("href", (d: any) => d.data.imageUrl || "")
+      .attr("href", (d: CircularNode) => {
+        const bubbleData = d.data as BubbleNode;
+        return bubbleData.imageUrl || "";
+      })
       .attr("preserveAspectRatio", "xMidYMid slice")
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .on("error", function (this: SVGImageElement, _, d: any) {
+      .on("error", function (this: SVGImageElement, _: Event, d: CircularNode) {
         const parent = d3.select(this.parentNode as SVGGElement);
         d3.select(this).remove();
 
-        const name = d.data?.name || "";
+        const bubbleData = d.data as BubbleNode;
+        const name = bubbleData?.name || "";
         const initials = name
           .split(" ")
           .filter(Boolean)
@@ -426,11 +446,12 @@ export default function SearchBubbleChart({
           .toUpperCase()
           .slice(0, 2);
 
+        const parentData = d.parent?.data as GroupNode | undefined;
         parent
           .append("text")
           .attr("text-anchor", "middle")
           .attr("dominant-baseline", "central")
-          .attr("fill", groupColorMap.get(d.parent?.data.name || "") || DEFAULT_COLOR)
+          .attr("fill", groupColorMap.get(parentData?.name || "") || DEFAULT_COLOR)
           .attr("font-size", `${Math.max(8, d.r / 2)}px`)
           .attr("font-weight", "600")
           .text(initials);
@@ -458,19 +479,16 @@ export default function SearchBubbleChart({
     }
 
     const root = d3
-      .hierarchy(hierarchyData)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .sum((d: any) => d.value || 0);
+      .hierarchy<HierarchyDatum>(hierarchyData)
+      .sum((d: HierarchyDatum) => ("value" in d ? (d as BubbleNode).value : 0));
 
     const pack = d3
-      .pack()
+      .pack<HierarchyDatum>()
       .size([width - margin * 2, h - margin * 2])
       .padding(12);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const nodes = pack(root as any).descendants();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const groupNode = nodes.find((d: any) => d.depth === 1 && d.data.name === groupName);
+    const nodes = pack(root).descendants();
+    const groupNode = nodes.find((d: CircularNode) => d.depth === 1 && (d.data as GroupNode).name === groupName);
 
     if (groupNode) {
       const scale = Math.min(

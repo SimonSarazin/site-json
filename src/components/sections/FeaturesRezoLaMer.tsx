@@ -1,21 +1,7 @@
 import { useLocalization } from "@/hooks/useLocalization";
-import { LocalizedString } from "@/types/site-schema";
+import { type FeaturesRezoLaMerProps } from "@/types/site-schema";
 import { Card } from "@/components/ui/card";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
-
-export interface FeaturesRezoLaMerProps {
-    headline: LocalizedString;
-    subhead?: LocalizedString;
-    variant?: "ocean" | "cyber";
-    bg?: "default" | "card" | "muted" | "primary" | "secondary" | "accent" | "transparent";
-    features: Array<{
-        icon: string;
-        title: LocalizedString;
-        description: LocalizedString;
-        color?: string;
-        link?: string;
-    }>;
-}
 
 interface FeaturesRezoLaMerSectionProps {
     id?: string;

@@ -170,7 +170,7 @@ export function UploaderField({ field, errors, value = [], onChange, answerId, s
       setDeletingIndex(index);
       try {
         if (api) {
-          await api.endpointApi.deleteDocumentById({
+          await (api.endpointApi as unknown as Record<string, (...args: unknown[]) => Promise<unknown>>).deleteDocumentById({
             pathParams: { id: item.docId },
           });
         }

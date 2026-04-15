@@ -1,22 +1,8 @@
 import { useLocalization } from "@/hooks/useLocalization";
-import { LocalizedString } from "@/types/site-schema";
+import { type ActionButtonsRezoLaMerProps } from "@/types/site-schema";
 import { Button } from "@/components/ui/button";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { Link } from "react-router";
-
-export interface ActionButtonsRezoLaMerProps {
-    headline: LocalizedString;
-    subhead?: LocalizedString;
-    variant?: "ocean" | "cyber" | "ssbe";
-    bg?: "default" | "card" | "muted" | "primary" | "secondary" | "accent" | "transparent";
-    actions: Array<{
-        icon: string;
-        title: LocalizedString;
-        subtitle?: LocalizedString;
-        href: string;
-        color?: string;
-    }>;
-}
 
 interface ActionButtonsRezoLaMerSectionProps {
     id?: string;

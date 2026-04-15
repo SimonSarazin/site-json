@@ -1,30 +1,9 @@
 import { useLocalization } from "@/hooks/useLocalization";
-import { LocalizedString } from "@/types/site-schema";
+import { type CommunityRezoLaMerProps } from "@/types/site-schema";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { Link } from "react-router";
-
-export interface CommunityRezoLaMerProps {
-    headline: LocalizedString;
-    subhead?: LocalizedString;
-    variant?: "ocean" | "cyber";
-    bg?: "default" | "card" | "muted" | "primary" | "secondary" | "accent" | "transparent";
-    image?: string;
-    imageAlt?: LocalizedString;
-    actions?: Array<{
-        icon: string;
-        title: LocalizedString;
-        description: LocalizedString;
-        ctaLabel: LocalizedString;
-        href: string;
-    }>;
-    stats?: Array<{
-        value: string;
-        label: LocalizedString;
-        color?: string;
-    }>;
-}
 
 interface CommunityRezoLaMerSectionProps {
     id?: string;

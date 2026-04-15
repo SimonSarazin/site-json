@@ -1,27 +1,7 @@
 import { test, expect } from "@playwright/test";
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { loadSiteConfig } from "./helpers/config";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PROJECT_ROOT = path.resolve(__dirname, "..");
-const configPath = path.resolve(
-  PROJECT_ROOT,
-  process.env.SITE_CONFIG_PATH || "./config.prod.json"
-);
-const config = JSON.parse(fs.readFileSync(configPath, "utf-8")) as {
-  meta: { defaultLang: string; languages: string[] };
-  header: {
-    utilities: { langSwitch: boolean };
-  };
-  pages: Array<{
-    path: string;
-    sections: Array<{
-      type: string;
-      props: { headline?: Record<string, string> };
-    }>;
-  }>;
-};
+const config = loadSiteConfig();
 
 const defaultLang = config.meta.defaultLang || "fr";
 

@@ -40,7 +40,7 @@ export async function prefetchSearchResults(
 
         const searchContext = entity || api;
 
-        if (!searchContext?.searchCostum) {
+        if (!(searchContext as unknown as Record<string, unknown>)?.searchCostum) {
           console.warn("searchCostum non disponible");
           return {
             pages: [{
@@ -109,7 +109,7 @@ export async function prefetchSearchResults(
           };
         }
 
-        const result = await searchContext.searchCostum(apiParam);
+        const result = await (searchContext as unknown as { searchCostum: (params: Record<string, unknown>) => Promise<unknown> }).searchCostum(apiParam);
 
         return {
           pages: [result],

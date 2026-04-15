@@ -129,13 +129,21 @@ export async function render(
       resolve();
     });
 
-    appendTransform.on('error', (err) => {
+    appendTransform.on('error', (err: NodeJS.ErrnoException) => {
+      if (err.code === 'ERR_STREAM_WRITE_AFTER_END' || err.code === 'ERR_STREAM_DESTROYED') {
+        resolve();
+        return;
+      }
       console.error('[SSR] Transform error:', err);
       reject(err);
     });
 
     // Pipe le transform vers la response
     appendTransform.pipe(res as unknown as Writable);
+    (res as unknown as Writable).on('error', (err: NodeJS.ErrnoException) => {
+      if (err.code === 'ERR_STREAM_WRITE_AFTER_END' || err.code === 'ERR_STREAM_DESTROYED') return;
+      console.error('[SSR] Response error:', err);
+    });
 
     const { pipe, abort } = renderToPipeableStream(
       <HelmetProvider context={helmetCtx}>

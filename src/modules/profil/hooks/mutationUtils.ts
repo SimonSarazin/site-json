@@ -56,6 +56,10 @@ export function buildAddressFromForm(data: AddressFormFields) {
     return undefined;
   }
 
+  if (!data.addressCountry && !data.localityId) {
+    return undefined;
+  }
+
   // Construire l'objet avec uniquement les champs non vides
   const addressEntries = ADDRESS_FIELDS.map((field) => [
     field,
@@ -64,6 +68,12 @@ export function buildAddressFromForm(data: AddressFormFields) {
 
   return {
     "@type": "PostalAddress" as const,
+    addressCountry: data.addressCountry || "",
+    addressLocality: data.addressLocality || "",
+    localityId: data.localityId || "",
+    codeInsee: data.codeInsee || "",
+    level1: data.level1 || "",
+    level1Name: data.level1Name || "",
     ...Object.fromEntries(addressEntries),
   };
 }
