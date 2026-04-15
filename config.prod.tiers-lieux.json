@@ -3,8 +3,8 @@
   "generated": "2025-09-08T10:30:00.000Z",
   "meta": {
     "title": {
-      "fr": "Tiers Lieux",
-      "en": "Tiers Lieux"
+      "fr": "Le réseau social des tiers-lieux de sociabilité | TiersLieux",
+      "en": "The social network for third places | TiersLieux"
     },
     "description": {
       "fr": "Le réseau social des tiers-lieux",
@@ -15,7 +15,7 @@
       "fr",
       "en"
     ],
-    "favicon": "images/tiersLieux/Logo_Tl_Temp2.png",
+    "favicon": "images/tiersLieux/Pastilleverte.png",
     "themeColor": "#3b82f6",
     "keywords": [
       "communauté",
@@ -42,81 +42,66 @@
         "children": [
           {
             "label": {
-              "fr": "Afficher tous les tiers-lieux",
-              "en": "Show all third places"
+              "fr": "Afficher tous les tiers-lieux"
             },
             "description": {
-              "fr": "Découvrez tous les lieux disponibles pour coworking, événements et plus.",
-              "en": "Discover all places available for coworking, events, and more."
+              "fr": "Découvrez tous les lieux disponibles"
             },
-            "path": "/lieux",
-            "icon": "arrow-right"
+            "path": "/lieux"
           },
           {
             "label": {
-              "fr": "Se réunir",
-              "en": "Meet"
+              "fr": "Se réunir"
             },
             "description": {
-              "fr": "Espaces adaptés pour les réunions et rencontres professionnelles.",
-              "en": "Spaces suitable for meetings and professional gatherings."
+              "fr": "Trouver la salle de réunion pour vous accueillir."
             },
-            "path": "#"
+            "path": "/lieux?services=Salle de réunion"
           },
           {
             "label": {
-              "fr": "Manger",
-              "en": "Eat"
+              "fr": "Manger"
             },
             "description": {
-              "fr": "Restaurants, cafés et espaces de restauration à disposition.",
-              "en": "Restaurants, cafes, and dining spaces available."
+              "fr": "Cuisines partagées, bar participatifs, tiers-lieux nourriciers."
             },
-            "path": "#"
+            "path": "/lieux?typologies=foodlab"
           },
           {
             "label": {
-              "fr": "Coworker",
-              "en": "Coworking"
+              "fr": "Coworker"
             },
             "description": {
-              "fr": "Espaces de coworking pour travailler et collaborer.",
-              "en": "Coworking spaces to work and collaborate."
+              "fr": "Les bureaux partagés et espaces de Coworking."
             },
-            "path": "#"
+            "path": "/lieux?typologies=coworking"
           },
           {
             "label": {
-              "fr": "S'instruire",
-              "en": "Learn"
+              "fr": "S'instruire"
             },
             "description": {
-              "fr": "Ateliers, formations et ressources pour apprendre.",
-              "en": "Workshops, training, and resources to learn."
+              "fr": "Espaces culturels et livinglabs."
             },
-            "path": "#"
+            "path": "/lieux?typologies=nourricier"
           },
           {
             "label": {
-              "fr": "Fabriquer",
-              "en": "Make"
+              "fr": "Fabriquer"
             },
             "description": {
-              "fr": "FabLabs et ateliers pour créer et fabriquer.",
-              "en": "Fablabs and workshops to create and make."
+              "fr": "Les Fablabs, Makerspace et Hackerspace."
             },
-            "path": "#"
+            "path": "/lieux?typologies=fablab"
           },
           {
             "label": {
-              "fr": "Séjourner",
-              "en": "Stay"
+              "fr": "Séjourner"
             },
             "description": {
-              "fr": "Hébergements et espaces pour passer la nuit.",
-              "en": "Accommodations and spaces to stay overnight."
+              "fr": "Les lieux pouvant vous accueillir pour plusieurs jours."
             },
-            "path": "#"
+            "path": "/lieux?typologies=nourricier"
           }
         ]
       },
@@ -129,58 +114,57 @@
         "children": [
           {
             "label": {
-              "fr": "Le Forum",
-              "en": "Forum"
+              "fr": "Forum"
             },
             "description": {
-              "fr": "Partagez et discutez avec la communauté.",
-              "en": "Share and discuss with the community."
+              "fr": "Échangez et explorez les fils de discussion autour des tiers-lieux"
             },
-            "path": "#"
+            "path": "https://forum.tiers-lieux.org/"
           },
           {
             "label": {
-              "fr": "Usages et logiciels",
-              "en": "Tools and Software"
+              "fr": "Chat"
             },
             "description": {
-              "fr": "Accédez aux logiciels et outils recommandés.",
-              "en": "Access recommended software and tools."
+              "fr": "Discutez dans les divers canaux de chat sur de nombreux thèmes"
             },
-            "path": "#"
+            "path": "https://chat.tiers-lieux.org/"
           },
           {
             "label": {
-              "fr": "Le Chat",
-              "en": "Chat"
+              "fr": "Wiki"
             },
             "description": {
-              "fr": "Communiquez rapidement avec d’autres membres.",
-              "en": "Quickly communicate with other members."
+              "fr": "Plus de 10 000 pages de documentation sur les tiers-lieux"
             },
-            "path": "#"
+            "path": "https://movilab.org/"
           },
           {
             "label": {
-              "fr": "API et données ouvertes",
-              "en": "Open API & Data"
+              "fr": "API et données ouvertes"
             },
             "description": {
-              "fr": "Consultez et utilisez nos API et données ouvertes.",
-              "en": "Browse and use our APIs and open data."
+              "fr": "Les données ouvertes dans les Tiers Lieux. API, CSV..."
             },
-            "path": "#"
+            "path": "/api-donnees"
           },
           {
             "label": {
-              "fr": "Wiki Movilab",
-              "en": "Movilab Wiki"
+              "fr": "Notes"
             },
             "description": {
-              "fr": "Documentation et informations sur nos initiatives.",
-              "en": "Documentation and information on our initiatives."
+              "fr": "Utiliser l'outil de notes proposé, alternative à Docs !"
             },
-            "path": "#"
+            "path": "https://notes.tiers-lieux.org/"
+          },
+          {
+            "label": {
+              "fr": "Visio"
+            },
+            "description": {
+              "fr": "L'outil de visio au service des tiers-lieux basé sur Meet"
+            },
+            "path": "https://visio.tiers-lieux.org/"
           }
         ]
       },
@@ -193,25 +177,30 @@
         "children": [
           {
             "label": {
-              "fr": "Cofinancer",
-              "en": "Co-fund"
+              "fr": "Appel à communs"
             },
             "description": {
-              "fr": "Participez au financement de projets communs.",
-              "en": "Participate in funding joint projects."
+              "fr": "La plateforme de cofinancement des ressources communes"
             },
-            "path": "#"
+            "path": "https://lescommuns.tiers-lieux.org/#les-communs"
           },
           {
             "label": {
-              "fr": "S'entre accompagner",
-              "en": "Support each other"
+              "fr": "Usages"
             },
             "description": {
-              "fr": "Recevez et apportez du soutien à la communauté.",
-              "en": "Give and receive support from the community."
+              "fr": "Le recensement des usages et outils utilisés dans les tiers-lieux, pour faciliter les pratiques de mutualisation"
             },
-            "path": "#"
+            "path": ""
+          },
+          {
+            "label": {
+              "fr": "La plateforme d'aiguillage"
+            },
+            "description": {
+              "fr": "Une plateforme qui facilite les demandes d'aides et les réponses par un réseau d'acteurs"
+            },
+            "path": "https://aiguillage.tiers-lieux.org/"
           }
         ]
       },
@@ -224,43 +213,104 @@
         "children": [
           {
             "label": {
-              "fr": "Réseaux Régionaux",
-              "en": "Regional Networks"
+              "fr": "Réseaux régionaux"
             },
             "description": {
-              "fr": "Analyse et suivi des réseaux régionaux.",
-              "en": "Analysis and monitoring of regional networks."
+              "fr": "Découvrez l'observatoire des réseaux régionaux"
             },
-            "path": "#"
+            "path": "/reseaux-regionaux"
           },
           {
             "label": {
-              "fr": "Réseaux Thématiques",
-              "en": "Thematic Networks"
+              "fr": "Réseaux thématiques"
             },
             "description": {
-              "fr": "Étude des réseaux thématiques en cours.",
-              "en": "Study of ongoing thematic networks."
+              "fr": "Découvrez l'observatoire des réseaux thématiques"
             },
-            "path": "#"
+            "path": "/reseaux-thematiques"
           }
         ]
       },
       {
         "label": {
-          "fr": "Événements",
-          "en": "Events"
+          "fr": "Se gouverner"
         },
         "path": "#",
-        "icon": "calendar"
-      },
+        "children": [
+          {
+            "label": {
+              "fr": "Diagnostic Licoop"
+            },
+            "description": {
+              "fr": "Un diagnostic dédié aux lieux comme communs de proximité"
+            },
+            "path": "#"
+          },
+          {
+            "label": {
+              "fr": "Décider ensemble"
+            },
+            "description": {
+              "fr": "Apprendre à gouverner collectivement notre infrastructure commune et le sujet tiers-lieu"
+            },
+            "path": "#"
+          },
+          {
+            "label": {
+              "fr": "Votre diagnostic ?"
+            },
+            "description": {
+              "fr": "Construisez votre propre diagnostic ici"
+            },
+            "path": "#"
+          },
+          {
+            "label": {
+              "fr": "La version 2 en test"
+            },
+            "description": {
+              "fr": "Découvrir la version 2 en cours de développement, plus rapide, et plus interopérable"
+            },
+            "path": "#"
+          },
+          {
+            "label": {
+              "fr": "Mes lieux"
+            },
+            "description": {
+              "fr": "Gérez vos tiers-lieux"
+            },
+            "path": "#"
+          },
+          {
+            "label": {
+              "fr": "Événements"
+            },
+            "description": {
+              "fr": "Les événements autour de tiers-lieux.org à venir"
+            },
+            "path": "#"
+          },
+          {
+            "label": {
+              "fr": "Communauté"
+            },
+            "description": {
+              "fr": "La communauté qui anime cette plateforme"
+            },
+            "path": "#"
+          }
+        ]
+      }
+    ],
+    "navSubsite": [
       {
         "label": {
-          "fr": "Les marques",
-          "en": "Brands"
+          "fr": "Liste",
+          "en": "List"
         },
-        "path": "#",
-        "icon": "tag"
+        "icon": "list",
+        "path": "/lieux"
       }
     ],
     "sticky": true,
@@ -292,9 +342,17 @@
               "fr": "Le réseau social des tiers-lieux",
               "en": "The third places social network"
             },
+            "headlineSubsite": {
+              "fr": "Region tiers lieux aura",
+              "en": "Region third places aura"
+            },
             "subhead": {
               "fr": "Trouvez le lieu pour ...",
               "en": "Find the place for ..."
+            },
+            "subheadSubsite": {
+              "fr": "Trouvez un lieu de sociabilité près de chez vous",
+              "en": "Find a social place near you"
             },
             "ctaButtons": [
               {
@@ -763,7 +821,7 @@
                   "fr": "Les réseaux régionaux",
                   "en": "Regional networks"
                 },
-                "href": "#"
+                "href": "/reseaux-regionaux"
               },
               {
                 "label": {
@@ -794,25 +852,6 @@
       },
       "layout": "default",
       "sections": [
-        {
-          "type": "hero-tiers-lieux",
-          "id": "hero-tiers-lieux",
-          "props": {
-            "headline": {
-              "fr": "Le réseau social des tiers-lieux",
-              "en": "The third places social network"
-            },
-            "placeholder": {
-              "fr": "Ville, département, code postal ...",
-              "en": "City, ZIP code ..."
-            },
-            "searchButtonText": {
-              "fr": "Rechercher",
-              "en": "Search"
-            },
-            "backgroundImage": "images/tiersLieux/calc1.svg"
-          }
-        },
         {
           "type": "gridLayout",
           "id": "lieux-grid",
@@ -1174,6 +1213,165 @@
                   }
                 }
               }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/reseaux-regionaux",
+      "title": {
+        "fr": "Réseaux Régionaux - Le réseau social des tiers-lieux",
+        "en": "Regional Networks - The third places social network"
+      },
+      "layout": "default",
+      "sections": [
+        {
+          "type": "searchProStatic",
+          "id": "section-reseaux-regionaux",
+          "props": {
+            "customHeader": {
+              "title": {
+                "fr": "Les réseaux régionaux"
+              },
+              "showMapButton": false
+            },
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "baseParams": {
+              "defaultTypes": [
+                "organizations"
+              ],
+              "indexStepList": 25,
+              "notSourceKey": true,
+              "defaultFilters": {
+                "tags": [
+                  "RéseauTiersLieux"
+                ]
+              },
+              "defaultSortBy": {
+                "updated": -1
+              },
+              "fediverse": false,
+              "contextId": "649ed498f93ee7202e6c8b12",
+              "contextType": "projects",
+              "costumSlug": "navigatorDesTierslieux",
+              "costumEditMode": false,
+              "defaultFields": [
+                "name",
+                "profilMediumImageUrl",
+                "profilThumbImageUrl",
+                "slug",
+                "address",
+                "geo",
+                "tags"
+              ]
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 4,
+                "xl": 5
+              },
+              "card": {
+                "type": "tiers-lieux",
+                "variant": "tiers-lieux",
+                "detailsMode": "drawer"
+              }
+            },
+            "defaultViewMode": "regions",
+            "enableRegions": true
+          }
+        }
+      ]
+    },
+    {
+      "path": "/reseaux-thematiques",
+      "title": {
+        "fr": "Réseaux Thématiques - Le réseau social des tiers-lieux",
+        "en": "Thematic Networks - The third places social network"
+      },
+      "layout": "default",
+      "sections": [
+        {
+          "type": "searchProStatic",
+          "id": "section-reseaux-thematiques",
+          "props": {
+            "customHeader": {
+              "title": {
+                "fr": "Les réseaux thématiques"
+              },
+              "showMapButton": false
+            },
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "baseParams": {
+              "defaultTypes": [
+                "organizations"
+              ],
+              "indexStepList": 25,
+              "notSourceKey": true,
+              "defaultFilters": {
+                "tags": [
+                  "RéseauTiersLieux"
+                ]
+              },
+              "defaultSortBy": {
+                "updated": -1
+              },
+              "fediverse": false,
+              "contextId": "649ed498f93ee7202e6c8b12",
+              "contextType": "projects",
+              "costumSlug": "navigatorDesTierslieux",
+              "costumEditMode": false,
+              "defaultFields": [
+                "name",
+                "profilMediumImageUrl",
+                "profilThumbImageUrl",
+                "slug",
+                "address",
+                "geo",
+                "tags"
+              ]
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 4,
+                "xl": 5
+              },
+              "card": {
+                "type": "tiers-lieux",
+                "variant": "tiers-lieux",
+                "detailsMode": "drawer"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/api-donnees",
+      "title": {
+        "fr": "API et données ouvertes"
+      },
+      "sections": [
+        {
+          "type": "html",
+          "id": "api-donnees",
+          "props": {
+            "html": {
+              "fr": "<div class=\"container mx-auto max-w-4xl py-16 px-4\"><h1 class=\"text-3xl font-bold mb-6\">API et données ouvertes</h1><p class=\"text-lg text-muted-foreground mb-8\">Toutes les datas des Tiers Lieux et des réseaux.<br/>Récupérez, Naviguez, Retravaillez la data des Tiers Lieux à votre guise. Créer plus de collaboration, de valeurs ajoutées, communiquez.</p><h2 class=\"text-xl font-bold mb-4\">Tiers-lieux :</h2><div class=\"flex gap-3 mb-8\"><span class=\"px-3 py-1 bg-primary/10 text-primary rounded font-mono text-sm\">API</span><span class=\"px-3 py-1 bg-primary/10 text-primary rounded font-mono text-sm\">JSON</span><span class=\"px-3 py-1 bg-primary/10 text-primary rounded font-mono text-sm\">CSV</span></div><h2 class=\"text-xl font-bold mb-4\">Réseaux :</h2><div class=\"grid grid-cols-2 md:grid-cols-3 gap-2 mb-8 text-sm text-muted-foreground\"><span>Auvergne-Rhône-Alpes</span><span>Bourgogne-Franche-Comté</span><span>Bretagne</span><span>Centre-Val de Loire</span><span>Corse</span><span>Grand Est</span><span>Guadeloupe</span><span>Hauts-de-France</span><span>Normandie</span><span>Nouvelle-Aquitaine</span><span>Occitanie</span><span>Pays de la Loire</span><span>Provence-Alpes-Côte d'Azur</span><span>Île-de-France</span><span>Guyane</span><span>Martinique</span><span>Réunion</span><span>Mayotte</span></div><hr class=\"my-6\"/><p class=\"text-sm text-muted-foreground\">Les données sont sous licence <strong>ODBL</strong>.</p><p class=\"text-sm text-muted-foreground\">La plateforme est basée sur le logiciel libre <strong>Communecter</strong>, qui est sous licence <strong>GPL</strong>.</p></div>"
             }
           }
         }
@@ -2502,19 +2700,19 @@
     }
   },
   "ampli": [
-        {
-            "slug": "amplifions",
-            "layout": "fullwidth",
-            "props": {
-                "coform": "69426516f7a7f229f7399da2",
-                "path": {
-                    "name": "navigatorDesTierslieux17122025_0808_0.navigatorDesTierslieux17122025_0808_0mj9qcq9c7qpigi",
-                    "description": "navigatorDesTierslieux17122025_0808_0.navigatorDesTierslieux17122025_0808_0mj9qcq9c5rcrqp",
-                    "address": "navigatorDesTierslieux17122025_0808_0.navigatorDesTierslieux17122025_0808_0mj9qcq9cpjkbu7",
-                    "tags": "navigatorDesTierslieux17122025_0808_0.navigatorDesTierslieux17122025_0808_0mj9qcq9cjwaqwp",
-                    "image": "navigatorDesTierslieux17122025_0808_0.navigatorDesTierslieux17122025_0808_0mj9qcq9cky8n7j"
-                }
-            }
+    {
+      "slug": "amplifions",
+      "layout": "fullwidth",
+      "props": {
+        "coform": "69426516f7a7f229f7399da2",
+        "path": {
+          "name": "navigatorDesTierslieux17122025_0808_0.navigatorDesTierslieux17122025_0808_0mj9qcq9c7qpigi",
+          "description": "navigatorDesTierslieux17122025_0808_0.navigatorDesTierslieux17122025_0808_0mj9qcq9c5rcrqp",
+          "address": "navigatorDesTierslieux17122025_0808_0.navigatorDesTierslieux17122025_0808_0mj9qcq9cpjkbu7",
+          "tags": "navigatorDesTierslieux17122025_0808_0.navigatorDesTierslieux17122025_0808_0mj9qcq9cjwaqwp",
+          "image": "navigatorDesTierslieux17122025_0808_0.navigatorDesTierslieux17122025_0808_0mj9qcq9cky8n7j"
         }
-    ]
+      }
+    }
+  ]
 }
