@@ -74,6 +74,17 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
         header.navVisibleOnlyForListedPages && !isPathInsideNav(header.nav)
     );
 
+    const secondaryNavItems = (header.secondaryNav ?? []) as HeaderNavItem[];
+    const shouldHideSecondaryNav = Boolean(
+        secondaryNavItems.length > 0
+        && header.secondaryNavVisibleOnlyForListedPages
+        && !isPathInsideNav(secondaryNavItems)
+    );
+
+    const navItemsToDisplay = !shouldHideNav
+        ? header.nav
+        : (!shouldHideSecondaryNav ? secondaryNavItems : []);
+
     useEffect(() => {
         const handleScroll = () => {
             setIsScrolled(window.scrollY > 50);
@@ -86,10 +97,10 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
     }, []);
 
     useEffect(() => {
-        if (shouldHideNav && mobileMenuOpen) {
+        if (navItemsToDisplay.length === 0 && mobileMenuOpen) {
             setMobileMenuOpen(false);
         }
-    }, [shouldHideNav, mobileMenuOpen]);
+    }, [navItemsToDisplay.length, mobileMenuOpen]);
 
     const handleLogout = () => {
         if (!api) return;
@@ -129,7 +140,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                     </Link>
 
                     <div className="hidden md:flex items-center gap-8">
-                        {!shouldHideNav && header.nav.map((item, idx) => {
+                        {navItemsToDisplay.map((item, idx) => {
                             const isActive = isNavItemActive(item.path);
                             const hasChildren = !!item.children?.length;
                             return (
@@ -309,7 +320,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                                 {() => <ToggleButtonTheme />}
                             </ClientOnly>
                         )}
-                        {!shouldHideNav && (
+                        {navItemsToDisplay.length > 0 && (
                             <button
                                 className="p-2 text-muted-foreground hover:text-primary"
                                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -326,10 +337,10 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                 </div>
             </div>
 
-            {mobileMenuOpen && !shouldHideNav && (
+            {mobileMenuOpen && navItemsToDisplay.length > 0 && (
             <div className="md:hidden bg-background/95 backdrop-blur-ocean border-t border-secondary/50 animate-fade-in-up">
                 <div className="container mx-auto px-4 py-4 space-y-3">
-                    {header.nav.map((item, idx) => {
+                    {navItemsToDisplay.map((item, idx) => {
                         const isActive = isNavItemActive(item.path);
                         return (
                             <Link

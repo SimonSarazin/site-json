@@ -7,6 +7,9 @@ export interface HeaderConfig {
   type?: string;
   logo: string;
   nav: EnhancedNavItemType[];
+  secondaryNav?: EnhancedNavItemType[];
+  navVisibleOnlyForListedPages?: boolean;
+  secondaryNavVisibleOnlyForListedPages?: boolean;
   sticky: boolean;
   transparent: boolean;
   height: "sm" | "md" | "lg";
