@@ -61,6 +61,7 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
     useFilter = true,
     showMap = false,
     enableMap = true,
+    defaultViewMode,
     showActiveFiltersTypes = true,
     showActiveFiltersTags = true,
     disableInfiniteScroll = false,
@@ -92,7 +93,7 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
     setMap: rawSetMapUsed,
   } = useSearchFilters({
     type: useFilter ? normalizeDefaultTypes(filters, baseParams?.defaultTypes) : null,
-    map: !!enableMap && !!showMap,
+    map: defaultViewMode === "map" ? true : defaultViewMode === "list" ? false : (!!enableMap && !!showMap),
   });
 
 
