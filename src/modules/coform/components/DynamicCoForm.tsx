@@ -4,13 +4,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { TextField, TextAreaField, RadioField, CheckboxField } from "./FormFields";
+import { TextField, TextAreaField, RadioField, CheckboxField, ProseContent, SectionTitleField, SectionDescriptionField } from "./FormFields";
 import { MultiCheckboxPlusField } from "./MultiCheckboxPlusField";
+import { MultiRadioField } from "./MultiRadioField";
 import { EvaluationField } from "./EvaluationField";
 import { FinderField } from "./FinderField";
 import { SimpleTableField } from "./SimpleTableField";
 import { UploaderField } from "./UploaderField";
-import type { CoFormData, SubFormData, AddedOptionsMap, EvaluationValue, FinderValue, SimpleTableValue } from "../types";
+import type { CoFormData, SubFormData, AddedOptionsMap, EvaluationValue, FinderValue, SimpleTableValue, MultiRadioValue } from "../types";
 import { parseCoFormFields, generateZodSchema, generateDefaultValues } from "../utils/formParser";
 import { useConditionalFields } from "../hooks/useConditionalFields";
 import { useT } from "@/hooks/useT";
@@ -35,6 +36,12 @@ interface DynamicCoFormProps {
   hideSubmitButton?: boolean;
   /** Soumettre automatiquement quand un champ perd le focus (si la valeur a changé) */
   autoSubmitOnBlur?: boolean;
+  /** Appelé quand l'état "modifié" du formulaire change */
+  onDirtyChange?: (isDirty: boolean) => void;
+  /** Ref vers la fonction de soumission programmatique du formulaire */
+  submitRef?: React.RefObject<(() => void) | null>;
+  /** Liste de clés d'inputs verrouillés (lecture seule, non modifiables) */
+  lockedFields?: string[];
 }
 
 /**
@@ -52,6 +59,9 @@ export function DynamicCoForm({
   hideStepHeaders = false,
   hideSubmitButton = false,
   autoSubmitOnBlur = false,
+  onDirtyChange,
+  submitRef,
+  lockedFields,
 }: DynamicCoFormProps) {
   const t = useT("modules/coform");
   useLoadNamespace("modules/coform");
@@ -74,7 +84,7 @@ export function DynamicCoForm({
     register,
     handleSubmit,
     control,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
   } = useForm<FormValues>({
     resolver: zodResolver(zodSchema),
     defaultValues,
@@ -82,6 +92,8 @@ export function DynamicCoForm({
 
   // State pour collecter les options ajoutées par champ
   const [addedOptionsMap, setAddedOptionsMap] = useState<AddedOptionsMap>({});
+
+  const lockedSet = useMemo(() => new Set(lockedFields), [lockedFields]);
 
   // Logique conditionnelle : collecter tous les champs et évaluer la visibilité
   const allFields = subFormsFields.flatMap((sf) => sf.fields);
@@ -107,6 +119,22 @@ export function DynamicCoForm({
   // Auto-submit unifié : useWatch détecte les changements de valeur (tous types d'input)
   // puis debounce 600ms avant de soumettre si la valeur a effectivement changé.
   const watchedValues = useWatch({ control });
+
+  // Propager isDirty vers CoFormModal (détection de modifications non enregistrées)
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
+
+  // Exposer la soumission programmatique via submitRef
+  useEffect(() => {
+    if (submitRef) {
+      submitRef.current = () => handleSubmit(handleFormSubmit)();
+    }
+    return () => {
+      if (submitRef) submitRef.current = null;
+    };
+  }, [submitRef, handleSubmit, handleFormSubmit]);
+
   useEffect(() => {
     if (!autoSubmitOnBlur) return;
     const current = JSON.stringify(watchedValues);
@@ -157,8 +185,9 @@ export function DynamicCoForm({
             <div className="grid grid-cols-12 gap-6">
               {subForm.fields.map((field) => {
                 if (!isFieldVisible(field.name)) return null;
+                const isLocked = lockedSet.has(field.name);
                 // Rendu conditionnel selon le type de champ
-                switch (field.componentType) {
+                const fieldElement = (() => { switch (field.componentType) {
                 case "text":
                   return (
                     <TextField
@@ -249,6 +278,23 @@ export function DynamicCoForm({
                     />
                   );
 
+                case "multiRadio":
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={control}
+                      render={({ field: controllerField }) => (
+                        <MultiRadioField
+                          field={field}
+                          errors={errors}
+                          value={controllerField.value as MultiRadioValue}
+                          onChange={controllerField.onChange}
+                        />
+                      )}
+                    />
+                  );
+
                 case "evaluation":
                   return (
                     <Controller
@@ -261,6 +307,7 @@ export function DynamicCoForm({
                           errors={errors}
                           value={controllerField.value as EvaluationValue}
                           onChange={controllerField.onChange}
+                          readOnly={isLocked}
                         />
                       )}
                     />
@@ -278,6 +325,7 @@ export function DynamicCoForm({
                           errors={errors}
                           value={controllerField.value as FinderValue}
                           onChange={controllerField.onChange}
+                          readOnly={isLocked}
                         />
                       )}
                     />
@@ -295,6 +343,7 @@ export function DynamicCoForm({
                           errors={errors}
                           value={controllerField.value as SimpleTableValue}
                           onChange={controllerField.onChange}
+                          readOnly={isLocked}
                         />
                       )}
                     />
@@ -319,6 +368,12 @@ export function DynamicCoForm({
                     />
                   );
 
+                case "sectionTitle":
+                  return <SectionTitleField key={field.name} field={field} />;
+
+                case "sectionDescription":
+                  return <SectionDescriptionField key={field.name} field={field} />;
+
                 default:
                   return (
                     <div key={field.name} role="alert" className="col-span-12 flex flex-col gap-1 rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
@@ -326,7 +381,17 @@ export function DynamicCoForm({
                       <p>Template d'input introuvable — Le type <code className="font-mono bg-destructive/20 px-1 rounded">{field.type}</code> n'a pas de template associé.</p>
                     </div>
                   );
-              }
+              } })();
+
+                // Wrapper verrouillé pour les champs non modifiables
+                if (isLocked && fieldElement) {
+                  return (
+                    <div key={field.name} className="contents pointer-events-none opacity-60 *:cursor-not-allowed">
+                      {fieldElement}
+                    </div>
+                  );
+                }
+                return fieldElement;
             })}
             </div>
           );
@@ -341,7 +406,10 @@ export function DynamicCoForm({
                 <CardTitle className="text-2xl">{subForm.subFormName}</CardTitle>
                 {formData.inputs?.[subForm.subFormId]?.info && (
                   <CardDescription className="text-base">
-                    {formData.inputs[subForm.subFormId].info}
+                    <ProseContent
+                      text={formData.inputs[subForm.subFormId].info as string}
+                      className="prose prose-sm dark:prose-invert max-w-none"
+                    />
                   </CardDescription>
                 )}
               </CardHeader>

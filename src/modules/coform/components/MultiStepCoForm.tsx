@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import { Fragment, useRef, useEffect, useMemo } from "react";
 import { Controller } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,14 +11,15 @@ import { CoFormProvider } from "../contexts/CoFormProvider";
 import { useCoForm } from "../hooks/useCoForm";
 import { useCoFormStep } from "../hooks/useCoFormStep";
 import { useCoFormNavigation, useCoFormSubmit } from "../hooks/useCoFormNavigation";
-import { TextField, TextAreaField, RadioField, CheckboxField } from "./FormFields";
+import { TextField, TextAreaField, RadioField, CheckboxField, ProseContent, SectionTitleField, SectionDescriptionField } from "./FormFields";
 import { MultiCheckboxPlusField } from "./MultiCheckboxPlusField";
+import { MultiRadioField } from "./MultiRadioField";
 import { EvaluationField } from "./EvaluationField";
 import { FinderField } from "./FinderField";
 import { SimpleTableField } from "./SimpleTableField";
 import { UploaderField } from "./UploaderField";
 import { useConditionalFields } from "../hooks/useConditionalFields";
-import type { CoFormData, SubFormData, AllStepsData, MultiCheckboxPlusValue, EvaluationValue, FinderValue, SimpleTableValue } from "../types";
+import type { CoFormData, SubFormData, AllStepsData, MultiCheckboxPlusValue, MultiRadioValue, EvaluationValue, FinderValue, SimpleTableValue } from "../types";
 import type { CoFormSubmitMode, CoFormVariant } from "../schema";
 
 interface MultiStepCoFormProps {
@@ -38,6 +39,10 @@ interface MultiStepCoFormProps {
   answerId?: string;
   /** Clé (subFormId) de l'étape initiale pour démarrer le wizard sur une étape spécifique */
   initialStepKey?: string;
+  /** Appelé quand l'état "modifié" change (utilisable par CoFormModal) */
+  onDirtyChange?: (isDirty: boolean) => void;
+  /** Liste de clés d'inputs verrouillés (lecture seule, non modifiables) */
+  lockedFields?: string[];
 }
 
 /**
@@ -57,6 +62,8 @@ export function MultiStepCoForm({
   defaultValues,
   answerId,
   initialStepKey,
+  onDirtyChange,
+  lockedFields,
 }: MultiStepCoFormProps) {
   return (
     <CoFormProvider
@@ -74,6 +81,8 @@ export function MultiStepCoForm({
         showStepNumbers={showStepNumbers}
         allowFreeNavigation={allowFreeNavigation}
         onSuccess={onSuccess}
+        onDirtyChange={onDirtyChange}
+        lockedFields={lockedFields}
         className={className}
       />
     </CoFormProvider>
@@ -89,6 +98,8 @@ function MultiStepCoFormContent({
   showStepNumbers,
   allowFreeNavigation,
   onSuccess,
+  onDirtyChange,
+  lockedFields,
   className,
 }: {
   variant: CoFormVariant;
@@ -96,6 +107,8 @@ function MultiStepCoFormContent({
   showStepNumbers: boolean;
   allowFreeNavigation: boolean;
   onSuccess?: () => void;
+  onDirtyChange?: (isDirty: boolean) => void;
+  lockedFields?: string[];
   className?: string;
 }) {
   useLoadNamespace("modules/coform");
@@ -109,6 +122,33 @@ function MultiStepCoFormContent({
 
   // Logique conditionnelle pour l'étape courante
   const { isFieldVisible } = useConditionalFields(fields?.fields ?? [], form.control);
+
+  const lockedSet = useMemo(() => new Set(lockedFields ?? []), [lockedFields]);
+
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Remonter en haut du conteneur (modal ou page) au changement d'étape
+  useEffect(() => {
+    if (!containerRef.current) return;
+    // Chercher le premier ancêtre scrollable (modal body, dialog, ou page)
+    let el: HTMLElement | null = containerRef.current.parentElement;
+    while (el) {
+      const { overflowY } = getComputedStyle(el);
+      if (overflowY === "auto" || overflowY === "scroll") {
+        el.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+      el = el.parentElement;
+    }
+    // Fallback : remonter le conteneur lui-même via scrollIntoView
+    containerRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [navigation.currentStepIndex]);
+
+  // Propager isDirty vers le parent (CoFormModal)
+  const isDirty = form.formState.isDirty;
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
 
   // Gérer la soumission de l'étape ou la soumission finale
   const handleSubmit = async () => {
@@ -126,7 +166,7 @@ function MultiStepCoFormContent({
   }
 
   return (
-    <div className={cn("space-y-6", className)}>
+    <div ref={containerRef} className={cn("space-y-6", className)}>
       {/* Bannière du formulaire avec titre en overlay */}
       {coform.formData?.useBannerImg && coform.formData.profilBannerUrl ? (
         <div className="relative w-full overflow-hidden rounded-lg">
@@ -192,7 +232,10 @@ function MultiStepCoFormContent({
           <CardTitle className="text-2xl">{stepName}</CardTitle>
           {coform.formData?.inputs?.[fields.subFormId]?.info && (
             <CardDescription className="text-base">
-              {coform.formData.inputs[fields.subFormId].info}
+              <ProseContent
+                text={coform.formData.inputs[fields.subFormId].info as string}
+                className="prose prose-sm dark:prose-invert max-w-none"
+              />
             </CardDescription>
           )}
         </CardHeader>
@@ -202,7 +245,8 @@ function MultiStepCoFormContent({
             <div className="grid grid-cols-12 gap-6">
               {fields.fields.map((field) => {
                 if (!isFieldVisible(field.name)) return null;
-                switch (field.componentType) {
+                const isLocked = lockedSet.has(field.name);
+                const fieldElement = (() => { switch (field.componentType) {
                 case "text":
                   return (
                     <TextField
@@ -270,6 +314,23 @@ function MultiStepCoFormContent({
                           register={form.register}
                           errors={form.formState.errors}
                           value={controllerField.value}
+                          onChange={controllerField.onChange}
+                        />
+                      )}
+                    />
+                  );
+
+                case "multiRadio":
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={form.control}
+                      render={({ field: controllerField }) => (
+                        <MultiRadioField
+                          field={field}
+                          errors={form.formState.errors}
+                          value={controllerField.value as MultiRadioValue}
                           onChange={controllerField.onChange}
                         />
                       )}
@@ -368,6 +429,12 @@ function MultiStepCoFormContent({
                     />
                   );
 
+                case "sectionTitle":
+                  return <SectionTitleField key={field.name} field={field} />;
+
+                case "sectionDescription":
+                  return <SectionDescriptionField key={field.name} field={field} />;
+
                 default:
                   return (
                     <div key={field.name} role="alert" className="col-span-12 flex flex-col gap-1 rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
@@ -375,7 +442,17 @@ function MultiStepCoFormContent({
                       <p>Template d'input introuvable — Le type <code className="font-mono bg-destructive/20 px-1 rounded">{field.type}</code> n'a pas de template associé.</p>
                     </div>
                   );
-              }
+              } })();
+
+                // Wrapper verrouillé pour les champs non modifiables
+                if (isLocked && fieldElement && field.componentType !== "sectionTitle" && field.componentType !== "sectionDescription") {
+                  return (
+                    <div key={field.name} className="contents pointer-events-none opacity-60 *:cursor-not-allowed">
+                      {fieldElement}
+                    </div>
+                  );
+                }
+                return fieldElement;
             })}
             </div>
           </form>
