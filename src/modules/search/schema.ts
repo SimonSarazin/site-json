@@ -30,8 +30,8 @@ const ListConfSchema = z.object({
     shareButton:     z.boolean().optional(),
     showStar:        z.boolean().optional(),
     detailsMode: z.enum(["drawer", "dialog"]).default("drawer"),
-    type: z.enum(["overlay", "default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer", "card-elts","ssbe"]).default("default"),
-    variant: z.enum(["default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer", "card-elts","ssbe"]).optional(),
+    type: z.enum(["overlay", "default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer", "card-elts","ssbe", "card-answer"]).default("default"),
+    variant: z.enum(["default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer", "card-elts","ssbe", "card-answer"]).optional(),
   }).partial().optional(),
   preview: z.object({
     type: z.enum(["default"]).default("default"),
@@ -62,6 +62,7 @@ const SearchTypeSchema = z.enum([
   "events",
   "citoyens",
   "poi",
+  "answers",
 ]);
 
 export type SearchType = z.infer<typeof SearchTypeSchema>;
@@ -77,6 +78,7 @@ export const SEARCH_TYPE_ICON_NAMES: Record<SearchType, IconName> = {
   events: "calendar-days",
   citoyens: "user",
   poi: "map-pin",
+  answers: "file-text",
 };
 
 export const SearchProSectionSchema = z.object({
