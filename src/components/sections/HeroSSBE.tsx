@@ -1,16 +1,49 @@
-import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import { useLocalization } from "@/hooks/useLocalization";
-import { HeroSSBEProps as SchemaHeroSSBEProps } from "@/types/site-schema";
+import { LocalizedString } from "@/types/site-schema";
 import { ArrowRight } from "lucide-react";
+
+type HeroButtonVariant = "default" | "secondary" | "accent";
+
+interface HeroBadge {
+  label: LocalizedString;
+  icon?: string;
+}
+
+interface HeroCtaButton {
+  label: LocalizedString;
+  path?: string;
+  variant?: HeroButtonVariant;
+}
+
+interface HeroQuickAccessCard {
+  path: string;
+  label: LocalizedString;
+  title: LocalizedString;
+  description: LocalizedString;
+  icon?: string;
+}
+
+interface HeroSSBESectionProps {
+  headline: LocalizedString;
+  subhead?: LocalizedString;
+  backgroundImage?: string;
+  backgroundImageAlt?: LocalizedString;
+  overlayOpacity?: string;
+  badges?: HeroBadge[];
+  ctaButtons?: HeroCtaButton[];
+  quickAccessTitle?: LocalizedString;
+  quickAccessCards?: HeroQuickAccessCard[];
+}
 
 interface HeroSSBEProps {
   id?: string;
-  props: SchemaHeroSSBEProps;
+  props: HeroSSBESectionProps;
 }
 
 export function HeroSSBE({ id, props }: HeroSSBEProps) {
   const { t } = useLocalization();
+  const overlayOpacity = props.overlayOpacity;
 
   const backgroundImage = props.backgroundImage;
   const backgroundAlt = props.backgroundImageAlt ? t(props.backgroundImageAlt) : "";
@@ -24,9 +57,6 @@ export function HeroSSBE({ id, props }: HeroSSBEProps) {
     }
     return "px-8 py-4 text-lg font-medium bg-primary hover:bg-primary/90 text-primary-foreground rounded-md shadow-lg hover:shadow-xl transition-all";
   };
-  const OneCols = props.quickAccessCards ? "grid lg:grid-cols-2" : "lg:grid-cols-1";
-
-
   const quickAccessCards = props.quickAccessCards ?? [];
 
   return (
@@ -43,7 +73,7 @@ export function HeroSSBE({ id, props }: HeroSSBEProps) {
         <div
           className="absolute inset-0 "
           style={{          
-              background: `linear-gradient(to bottom, color-mix(in oklch, var(--color-background) 60%, transparent), color-mix(in oklch, var(--color-background) ${(props as any).overlayOpacity ?? "30%"}, transparent), var(--color-background))`
+              background: `linear-gradient(to bottom, color-mix(in oklch, var(--color-background) 60%, transparent), color-mix(in oklch, var(--color-background) ${overlayOpacity ?? "30%"}, transparent), var(--color-background))`
           }}
         />
       </div>
