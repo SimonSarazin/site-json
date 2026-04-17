@@ -511,7 +511,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                 {() => (
                   <SearchBubbleChart
                     results={transformedResults as unknown as React.ComponentProps<typeof SearchBubbleChart>["results"]}
-                    categories={graphCategories}
+                    categories={graphTags}
                     onItemClick={handleGraphItemClick}
                     height={450}
                     defaultGroupMode={graphDefaultGroupMode}
