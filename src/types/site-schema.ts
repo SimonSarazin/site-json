@@ -130,7 +130,9 @@ export const HeroTiersLieuxSchema = z.object({
   id: z.string().optional(),
   props: z.object({
     headline: LocalizedString,
+    headlineSubsite: LocalizedString.optional(),
     subhead: LocalizedString.optional(),
+    subheadSubsite: LocalizedString.optional(),
     backgroundImage: z.string().optional(),
     ctaButtons: z
       .array(
@@ -1501,6 +1503,7 @@ export const Header = z.object({
   logoIcon: z.string().optional(),
   path: z.string().min(1).optional(),
   nav: z.array(EnhancedNavItem),
+  navSubsite: z.array(EnhancedNavItem).optional(),
   navVisibleOnlyForListedPages: z.boolean().optional(),
   secondaryNav: z.array(EnhancedNavItem).optional(),
   secondaryNavVisibleOnlyForListedPages: z.boolean().optional(),

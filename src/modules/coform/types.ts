@@ -17,6 +17,19 @@ export type CoFormAccessReason =
   | null;
 
 /**
+ * Résumé d'une réponse existante (pour le sélecteur de réponses multiples)
+ */
+export interface CoFormAnswerSummary {
+  id: string;
+  createdAt: string;
+  updatedAt?: string;
+  /** Données complètes de la réponse (pour le rendu readonly) */
+  answers?: AllStepsData;
+  /** Aperçu des premières valeurs remplies (clé label → valeur affichable) */
+  preview?: Record<string, string>;
+}
+
+/**
  * Informations d'accès retournées par le serveur
  * Contrôle d'accès enrichi : droits, dates, réponse existante
  */
@@ -26,6 +39,8 @@ export interface CoFormAccessInfo {
   formStatus: "open" | "not_started" | "closed" | "inactive";
   existingAnswerId: string | null;
   existingAnswer: AllStepsData | null;
+  /** Liste des réponses existantes de l'utilisateur (mode réponse multiple) */
+  existingAnswers?: CoFormAnswerSummary[];
   requiresLogin: boolean;
   allowTemporary: boolean;
   withConfirmation: boolean;
@@ -62,6 +77,28 @@ export interface CoFormParent {
   };
 }
 
+// ============================================================================
+// Types pour la logique conditionnelle
+// ============================================================================
+
+export type ConditionalOperator = "equals" | "notEquals" | "contains" | "matches" | "isEmpty" | "isNotEmpty";
+export type ConditionalAction = "show" | "hide";
+
+export interface ConditionalRule {
+  sourceInput: string;
+  operator: ConditionalOperator;
+  value: string;
+  action: ConditionalAction;
+  targetInput?: string;
+  targetStep?: string;
+}
+
+export interface ConditionalDisplay {
+  enabled: boolean;
+  logic: "and" | "or";
+  rules: ConditionalRule[];
+}
+
 export interface CoFormInputField {
   label?: string;
   placeholder?: string;
@@ -72,6 +109,7 @@ export interface CoFormInputField {
   activeComments?: boolean;
   width?: string;
   enableMarkdown?: boolean;
+  conditionalDisplay?: ConditionalDisplay;
   [key: string]: unknown;
 }
 
@@ -159,6 +197,16 @@ export type EvaluationVoteValue = string | number | "";
 export type EvaluationValue = Record<string, Record<string, EvaluationVoteValue>>;
 
 /**
+ * Valeur stockée pour un champ multiRadio
+ * Objet avec la valeur sélectionnée et optionnellement un texte supplémentaire
+ */
+export interface MultiRadioValue {
+  value: string;
+  type?: "simple" | "cplx";
+  textsup?: string;
+}
+
+/**
  * Valeur d'une option sélectionnée dans multiCheckboxPlus
  */
 export interface MultiCheckboxPlusSelectedOption {
@@ -233,7 +281,7 @@ export interface FormFieldMapping {
   name: string; // Nom du champ pour react-hook-form
   label: string;
   type: string; // Type CoForm (text, textarea, tpls.forms.cplx.radioNew, etc.)
-  componentType: "text" | "textarea" | "radio" | "checkbox" | "select" | "multiCheckboxPlus" | "evaluation" | "finder" | "simpleTable" | "uploader" | "unknown";
+  componentType: "text" | "textarea" | "radio" | "checkbox" | "select" | "multiCheckboxPlus" | "multiRadio" | "evaluation" | "finder" | "simpleTable" | "uploader" | "sectionTitle" | "sectionDescription" | "unknown";
   inputType?: string; // Type HTML pour l'input (url, email, tel, etc.) - utilisé quand componentType est "text"
   placeholder?: string;
   info?: string;
@@ -268,6 +316,13 @@ export interface FormFieldMapping {
     /** Images par option */
     optimage: Record<string, string[]>;
   };
+  // Spécifique multiRadio
+  multiRadioConfig?: {
+    /** Type par option: simple (radio seul) ou cplx (radio + champ texte) */
+    tofill: Record<string, "simple" | "cplx">;
+    /** Placeholder du champ texte par option (pour type cplx) */
+    placeholdersradio: Record<string, string>;
+  };
   // Spécifique evaluation
   evaluationConfig?: EvaluationConfig;
   // Spécifique finder
@@ -276,6 +331,15 @@ export interface FormFieldMapping {
   simpleTableConfig?: SimpleTableConfig;
   // Spécifique uploader
   uploaderConfig?: UploaderConfig;
+  // Spécifique sectionTitle
+  sectionTitleConfig?: {
+    showBar: boolean;
+    barPosition: "above" | "between" | "below";
+    align: "left" | "center" | "right";
+    textDecoration: "uppercase" | "lowercase" | "capitalize" | "none";
+  };
+  // Logique conditionnelle
+  conditionalDisplay?: ConditionalDisplay;
 }
 
 export interface SubFormFields {
@@ -527,7 +591,7 @@ export interface UploaderConfig {
   itemLimit: number;
   sizeLimit: number;
   formats?: string[];
-  displayMode?: "simple" | "dropzone";
+  displayMode?: "simple" | "advanced";
 }
 
 /**

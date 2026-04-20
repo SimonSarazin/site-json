@@ -2,6 +2,7 @@ import type { UseFormRegister, FieldErrors } from "react-hook-form";
 import { lazy, Suspense } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -14,13 +15,29 @@ import type { FormFieldMapping } from "../types";
 const MDEditor = lazy(() => import("@uiw/react-md-editor").then(mod => ({ default: mod.default })));
 
 /**
+ * Détecte si une chaîne est du HTML déjà rendu (ex: Parsedown PHP) ou du markdown brut.
+ * Utilise dangerouslySetInnerHTML pour le HTML, ReactMarkdown pour le markdown brut.
+ */
+export function ProseContent({ text, className, forceMarkdown = false }: { text: string; className?: string; forceMarkdown?: boolean }) {
+  const isHtml = !forceMarkdown && /<[a-zA-Z][^>]*>/.test(text);
+  return isHtml ? (
+    <div className={className} dangerouslySetInnerHTML={{ __html: text }} />
+  ) : (
+    <div className={className}>
+      <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>{text}</ReactMarkdown>
+    </div>
+  );
+}
+
+/**
  * Composant pour afficher un indice/info avec support markdown
  */
 function HintText({ text }: { text: string }) {
   return (
-    <div className="text-xs text-muted-foreground -mt-1 mb-1 prose prose-xs dark:prose-invert max-w-none [&>p]:m-0 [&>ul]:m-0 [&>ol]:m-0">
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
-    </div>
+    <ProseContent
+      text={text}
+      className="text-xs text-muted-foreground -mt-1 mb-1 prose prose-xs dark:prose-invert max-w-none [&>p]:m-0 [&>ul]:m-0 [&>ol]:m-0"
+    />
   );
 }
 
@@ -40,13 +57,15 @@ export function TextField({ field, register, errors }: FormFieldProps) {
   
   return (
     <div className={cn("space-y-2", field.width)}>
-      <Label 
-        htmlFor={field.name}
-        className="text-sm font-medium text-foreground"
-      >
-        {field.label}
-        {field.isRequired && <span className="text-destructive ml-1">*</span>}
-      </Label>
+      {field.label && (
+        <Label
+          htmlFor={field.name}
+          className="text-sm font-medium text-foreground"
+        >
+          {field.label}
+          {field.isRequired && <span className="text-destructive ml-1">*</span>}
+        </Label>
+      )}
       {field.info && <HintText text={field.info} />}
       <div className={cn(
         "relative",
@@ -86,13 +105,15 @@ export function TextAreaField({ field, register, errors, value, onChange }: Form
   
   return (
     <div className={cn("space-y-2", field.width)}>
-      <Label 
-        htmlFor={field.name}
-        className="text-sm font-medium text-foreground"
-      >
-        {field.label}
-        {field.isRequired && <span className="text-destructive ml-1">*</span>}
-      </Label>
+      {field.label && (
+        <Label
+          htmlFor={field.name}
+          className="text-sm font-medium text-foreground"
+        >
+          {field.label}
+          {field.isRequired && <span className="text-destructive ml-1">*</span>}
+        </Label>
+      )}
       {field.info && <HintText text={field.info} />}
 
       {isMarkdown ? (
@@ -137,6 +158,78 @@ export function TextAreaField({ field, register, errors, value, onChange }: Form
 }
 
 /**
+ * Séparateur de section avec titre (tpls.forms.sectionTitle)
+ * Affiche un titre h2 + barre séparatrice + info optionnel.
+ * N'enregistre aucune valeur dans react-hook-form.
+ */
+export function SectionTitleField({ field }: { field: FormFieldMapping }) {
+  const cfg = field.sectionTitleConfig ?? {
+    showBar: true,
+    barPosition: "between" as const,
+    align: "center" as const,
+    textDecoration: "uppercase" as const,
+  };
+
+  const alignClass = { left: "text-left", center: "text-center", right: "text-right" }[cfg.align];
+
+  return (
+    <div className={cn("col-span-12 my-4", alignClass, field.width)}>
+      {cfg.showBar && cfg.barPosition === "above" && (
+        <hr className="mb-2 border-border" />
+      )}
+      {field.label && (
+        <h2
+          className="text-lg font-semibold text-foreground"
+          style={{
+            textTransform: cfg.textDecoration === "none" ? undefined : cfg.textDecoration,
+            borderBottom: cfg.showBar && cfg.barPosition === "between" ? "1px solid hsl(var(--border))" : "none",
+            paddingBottom: cfg.showBar && cfg.barPosition === "between" ? "0.5rem" : undefined,
+            marginBottom: "0.25rem",
+          }}
+        >
+          {field.label}
+        </h2>
+      )}
+      {field.info && (
+        <ProseContent
+          text={field.info}
+          className="text-sm text-muted-foreground prose prose-sm dark:prose-invert max-w-none mt-1"
+        />
+      )}
+      {cfg.showBar && cfg.barPosition === "below" && (
+        <hr className="mt-2 border-border" />
+      )}
+    </div>
+  );
+}
+
+/**
+ * Bloc de description de section (tpls.forms.sectionDescription)
+ * Affiche un label optionnel + texte de description.
+ * N'enregistre aucune valeur dans react-hook-form.
+ */
+export function SectionDescriptionField({ field }: { field: FormFieldMapping }) {
+  return (
+    <div className={cn("col-span-12 my-1", field.width)}>
+      {field.label && (
+        <ProseContent
+          text={field.label}
+          forceMarkdown
+          className="text-sm text-foreground prose prose-sm dark:prose-invert max-w-none mb-1"
+        />
+      )}
+      {field.info && (
+        <ProseContent
+          text={field.info}
+          forceMarkdown
+          className="text-sm text-muted-foreground prose prose-sm dark:prose-invert max-w-none"
+        />
+      )}
+    </div>
+  );
+}
+
+/**
  * Composant pour afficher des boutons radio
  */
 export function RadioField({ field, errors, value, onChange }: FormFieldProps) {
@@ -147,10 +240,12 @@ export function RadioField({ field, errors, value, onChange }: FormFieldProps) {
 
   return (
     <div className={cn("space-y-4", field.width)}>
-      <Label className="text-sm font-medium text-foreground">
-        {field.label}
-        {field.isRequired && <span className="text-destructive ml-1">*</span>}
-      </Label>
+      {field.label && (
+        <Label className="text-sm font-medium text-foreground">
+          {field.label}
+          {field.isRequired && <span className="text-destructive ml-1">*</span>}
+        </Label>
+      )}
       {field.info && <HintText text={field.info} />}
       
       <RadioGroup
@@ -207,10 +302,12 @@ export function CheckboxField({ field, errors, value = [], onChange }: FormField
 
   return (
     <div className={cn("space-y-4", field.width)}>
-      <Label className="text-sm font-medium text-foreground">
-        {field.label}
-        {field.isRequired && <span className="text-destructive ml-1">*</span>}
-      </Label>
+      {field.label && (
+        <Label className="text-sm font-medium text-foreground">
+          {field.label}
+          {field.isRequired && <span className="text-destructive ml-1">*</span>}
+        </Label>
+      )}
       {field.info && <HintText text={field.info} />}
 
       <div

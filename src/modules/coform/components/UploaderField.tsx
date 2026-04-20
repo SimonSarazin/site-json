@@ -257,7 +257,7 @@ export function UploaderField({ field, errors, value = [], onChange, answerId, s
             onChange={(e) => void handleAddFiles(e.target.files)}
           />
 
-          {displayMode === "dropzone" ? (
+          {displayMode === "advanced" ? (
             /* ---- MODE DROPZONE ---- */
             <div
               role="button"

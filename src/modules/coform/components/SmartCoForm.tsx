@@ -1,7 +1,9 @@
 import { useMemo } from "react";
-import { useCoFormQuery } from "../hooks/useCoFormQuery";
+import { toast } from "sonner";
+import { useCoFormQuery, useCoFormFinalMutation } from "../hooks/useCoFormQuery";
 import { DynamicCoForm } from "./DynamicCoForm";
 import { MultiStepCoForm } from "./MultiStepCoForm";
+import { CoFormReadOnly } from "./CoFormReadOnly";
 import { parseCoFormFields, normalizeAnswerData, denormalizeAnswerData, extractFinderLinks } from "../utils/formParser";
 import type { CoFormData, SubmitMode, AllStepsData, SubFormData, AddedOptionsMap } from "../types";
 import type { FinderLinksMap } from "../utils/formParser";
@@ -29,6 +31,36 @@ interface SmartCoFormProps {
   defaultValues?: AllStepsData;
   /** ID de la réponse en cours d'édition (pour le chargement des fichiers legacy) */
   answerId?: string;
+  /**
+   * Clé (subFormId) d'une étape à afficher en mode standalone.
+   * Si fourni, seule cette étape est rendue (mode single-step), la navigation
+   * multi-step et la bannière sont masquées.
+   */
+  stepKey?: string;
+  /**
+   * Callback exécuté après une soumission réussie (ex: toast, fermer une modale).
+   * La soumission des données passe toujours par onFinalSubmit.
+   */
+  onAfterSubmit?: () => void | Promise<void>;
+  /**
+   * Clé d'un champ à afficher en mode input standalone.
+   * Requiert `stepKey`. Seul ce champ est rendu, sans titre d'étape ni bouton submit.
+   * La soumission se fait automatiquement au blur quand la valeur change.
+   */
+  inputKey?: string;
+  /** Mode lecture seule (affiche les valeurs sans possibilité d'édition) */
+  readOnly?: boolean;
+  /**
+   * En mode multi-step normal, clé (subFormId) de l'étape initiale.
+   * Permet de démarrer le wizard directement sur une étape spécifique.
+   */
+  initialStepKey?: string;
+  /** Appelé quand l'état "modifié" change (utilisable par CoFormModal) */
+  onDirtyChange?: (isDirty: boolean) => void;
+  /** Ref vers la fonction de soumission programmatique */
+  submitRef?: React.RefObject<(() => void) | null>;
+  /** Liste de clés d'inputs verrouillés (lecture seule, non modifiables) */
+  lockedFields?: string[];
 }
 
 interface LoadingStateProps {
@@ -107,6 +139,14 @@ export function SmartCoForm({
   showStepNumbers = true,
   defaultValues,
   answerId,
+  stepKey,
+  onAfterSubmit,
+  inputKey,
+  readOnly = false,
+  initialStepKey,
+  onDirtyChange,
+  submitRef,
+  lockedFields,
 }: SmartCoFormProps) {
   // Charger les données depuis l'API si formId est fourni
   const {
@@ -126,16 +166,69 @@ export function SmartCoForm({
   useLoadNamespace("modules/coform");
   const t = useT("modules/coform");
 
-  const subFormsFields = useMemo(
+  const allSubFormsFields = useMemo(
     () => (formData ? parseCoFormFields(formData) : []),
     [formData]
   );
+
+  // Auto-résolution du stepKey à partir de l'inputKey si stepKey n'est pas fourni
+  const resolvedStepKey = useMemo(() => {
+    if (stepKey) return stepKey;
+    if (!inputKey || !formData?.inputs) return undefined;
+    for (const [key, step] of Object.entries(formData.inputs)) {
+      if (step?.inputs?.[inputKey]) return key;
+    }
+    return undefined;
+  }, [stepKey, inputKey, formData]);
+
+  // Mode standalone : fabriquer un formData filtré à une seule étape
+  const standaloneFormData = useMemo(() => {
+    if (!resolvedStepKey || !formData?.inputs?.[resolvedStepKey]) return null;
+    return {
+      ...formData,
+      inputs: { [resolvedStepKey]: formData.inputs[resolvedStepKey] },
+      // Pas de bannière en standalone
+      useBannerImg: false,
+    } as CoFormData;
+  }, [resolvedStepKey, formData]);
+
+  // Mode input standalone : fabriquer un formData filtré à un seul champ
+  const inputStandaloneFormData = useMemo(() => {
+    if (!inputKey || !resolvedStepKey || !formData?.inputs?.[resolvedStepKey]?.inputs?.[inputKey]) return null;
+    const step = formData.inputs[resolvedStepKey];
+    return {
+      ...formData,
+      inputs: {
+        [resolvedStepKey]: {
+          ...step,
+          inputs: { [inputKey]: step.inputs[inputKey] },
+        },
+      },
+      useBannerImg: false,
+    } as CoFormData;
+  }, [inputKey, resolvedStepKey, formData]);
+
+  const effectiveStandaloneData = inputStandaloneFormData ?? standaloneFormData;
+
+  const subFormsFields = effectiveStandaloneData
+    ? parseCoFormFields(effectiveStandaloneData)
+    : allSubFormsFields;
 
   // Normaliser les defaultValues pour les champs stockés à la racine (comme evaluation)
   const normalizedDefaults = useMemo(
     () => normalizeAnswerData(defaultValues as Record<string, unknown> | undefined, subFormsFields),
     [defaultValues, subFormsFields]
   ) as AllStepsData | undefined;
+
+  // Mutation interne : utilisée quand aucun onFinalSubmit externe n'est fourni
+  const internalMutation = useCoFormFinalMutation({
+    formId: formId ?? "",
+    answerId: answerId ?? null,
+    onError: (err) => {
+      toast.error(err.message);
+      onError?.(err);
+    },
+  });
 
   // Gérer les états de chargement et d'erreur
   if (!externalFormData && formId) {
@@ -160,6 +253,9 @@ export function SmartCoForm({
 
   // Déterminer le mode à utiliser
   const shouldUseMultiStep = (() => {
+    // Mode standalone = toujours single-step
+    if (standaloneFormData) return false;
+
     // Forcer single-step (priorité haute)
     if (forceSingleStep) return false;
     
@@ -176,8 +272,34 @@ export function SmartCoForm({
       threshold: multiStepThreshold,
       forceMultiStep,
       forceSingleStep,
-      selected: shouldUseMultiStep ? "MultiStepCoForm" : "DynamicCoForm",
+      stepKey,
+      initialStepKey,
+      onAfterSubmit: !!onAfterSubmit,
+      selected: standaloneFormData
+        ? "DynamicCoForm (standalone)"
+        : shouldUseMultiStep
+          ? "MultiStepCoForm"
+          : "DynamicCoForm",
     });
+  }
+
+  // Données effectives (filtrées si standalone)
+  const effectiveFormData = effectiveStandaloneData ?? formData;
+  const isStandalone = !!standaloneFormData;
+  const isInputStandalone = !!inputStandaloneFormData;
+
+  // Mode lecture seule : utiliser CoFormReadOnly
+  if (readOnly) {
+    return (
+      <CoFormReadOnly
+        formData={effectiveFormData}
+        answerData={normalizedDefaults ?? {}}
+        answerId={answerId}
+        hideBanner={isStandalone}
+        hideStepHeaders={isInputStandalone}
+        hideMetadata
+      />
+    );
   }
 
   // Afficher le composant approprié
@@ -187,18 +309,28 @@ export function SmartCoForm({
         formData={formData}
         submitMode={submitMode}
         onStepSubmit={onStepSubmit}
-        onFinalSubmit={onFinalSubmit}
+        onFinalSubmit={
+          onFinalSubmit
+            ? (data: AllStepsData) => onFinalSubmit(data)
+            : async (data: AllStepsData) => {
+                await internalMutation.mutateAsync({ allData: data });
+              }
+        }
+        onSuccess={onAfterSubmit}
+        onDirtyChange={onDirtyChange}
+        lockedFields={lockedFields}
         className={className}
         showProgress={showProgress}
         showStepNumbers={showStepNumbers}
         defaultValues={normalizedDefaults}
         answerId={answerId}
+        initialStepKey={initialStepKey}
       />
     );
   }
 
-  // Rendu : formulaire simple (1 seule étape)
-  const subFormIds = Object.keys(formData.inputs || {});
+  // Rendu : formulaire simple (1 seule étape ou standalone)
+  const subFormIds = Object.keys(effectiveFormData.inputs || {});
   const subFormId = subFormIds[0] || "default";
 
   // Extraire les valeurs par défaut pour cette étape
@@ -206,28 +338,36 @@ export function SmartCoForm({
 
   return (
     <DynamicCoForm
-      formData={formData}
+      formData={effectiveFormData}
       submitButtonText={t("coform.navigation.submit")}
       defaultValues={stepDefaults}
       answerId={answerId}
+      hideBanner={isStandalone}
+      hideStepHeaders={isInputStandalone}
+      hideSubmitButton={isInputStandalone}
+      autoSubmitOnBlur={isInputStandalone}
+      onDirtyChange={onDirtyChange}
+      submitRef={submitRef}
+      lockedFields={lockedFields}
       onSubmit={async (data, addedOptions) => {
         try {
+          // Dénormaliser pour le format PHP (champs root-level à la racine)
+          const rawData = { [subFormId]: data } as Record<string, unknown>;
+          const dataForServer = denormalizeAnswerData(rawData, subFormsFields) as AllStepsData;
+          const links = extractFinderLinks(rawData, subFormsFields);
+          const formattedAddedOptions = addedOptions ? { [subFormId]: addedOptions } : undefined;
+          const linksOrUndef = Object.keys(links).length > 0 ? links : undefined;
+
+          // Soumettre les données (onFinalSubmit externe ou mutation interne)
           if (onFinalSubmit) {
-            // Dénormaliser pour le format PHP (champs root-level à la racine)
-            const rawData = { [subFormId]: data } as Record<string, unknown>;
-            const dataForServer = denormalizeAnswerData(rawData, subFormsFields) as AllStepsData;
-            
-            // Extraire les links des champs Finder (avant dénormalisation)
-            const links = extractFinderLinks(rawData, subFormsFields);
-            
-            // Formater addedOptions pour le format attendu { subFormId: {...} }
-            const formattedAddedOptions = addedOptions ? { [subFormId]: addedOptions } : undefined;
-            
-            await onFinalSubmit(
-              dataForServer, 
-              formattedAddedOptions,
-              Object.keys(links).length > 0 ? links : undefined
-            );
+            await onFinalSubmit(dataForServer, formattedAddedOptions, linksOrUndef);
+          } else {
+            await internalMutation.mutateAsync({ allData: dataForServer, addedOptions: formattedAddedOptions, links: linksOrUndef });
+          }
+
+          // Callback post-soumission (ex: toast, fermer modale)
+          if (onAfterSubmit) {
+            await onAfterSubmit();
           }
         } catch (err) {
           onError?.(err instanceof Error ? err : new Error(String(err)));

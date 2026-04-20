@@ -8,7 +8,7 @@ import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import "../i18n/i18n";
 import { parseCoFormFields, normalizeAnswerData } from "../utils/formParser";
-import type { CoFormData, AllStepsData, SubFormFields, FormFieldMapping, FormFieldValue, MultiCheckboxPlusValue, UploaderLegacyValue, SimpleTableValue, EvaluationValue, FinderValue } from "../types";
+import type { CoFormData, AllStepsData, SubFormFields, FormFieldMapping, FormFieldValue, MultiCheckboxPlusValue, MultiRadioValue, UploaderLegacyValue, SimpleTableValue, EvaluationValue, FinderValue } from "../types";
 import { ReadOnlyUploaderGallery } from "./ReadOnlyUploaderGallery";
 import { SimpleTableField } from "./SimpleTableField";
 import { EvaluationField } from "./EvaluationField";
@@ -22,6 +22,12 @@ interface CoFormReadOnlyProps {
   updatedAt?: number;
   answerId?: string;
   className?: string;
+  /** Masquer la bannière (mode standalone) */
+  hideBanner?: boolean;
+  /** Masquer les en-têtes d'étape / Card wrapper (mode input standalone) */
+  hideStepHeaders?: boolean;
+  /** Masquer les métadonnées (auteur, date) */
+  hideMetadata?: boolean;
 }
 
 /**
@@ -36,6 +42,9 @@ export function CoFormReadOnly({
   updatedAt,
   answerId,
   className,
+  hideBanner = false,
+  hideStepHeaders = false,
+  hideMetadata = false,
 }: CoFormReadOnlyProps) {
   useLoadNamespace("modules/coform");
   const t = useT("modules/coform");
@@ -75,7 +84,7 @@ export function CoFormReadOnly({
   return (
     <div className={cn("space-y-6", className)}>
       {/* Bannière du formulaire */}
-      {formData.useBannerImg && formData.profilBannerUrl ? (
+      {!hideBanner && formData.useBannerImg && formData.profilBannerUrl ? (
         <div className="relative w-full overflow-hidden rounded-lg">
           <img
             src={formData.profilBannerUrl}
@@ -91,7 +100,7 @@ export function CoFormReadOnly({
             </div>
           )}
         </div>
-      ) : formData.name ? (
+      ) : !hideBanner && formData.name ? (
         <div className="w-full rounded-lg bg-linear-to-r from-primary/10 via-primary/5 to-background p-8 border">
           <h1 className="text-4xl font-bold text-foreground">
             {formData.name}
@@ -100,6 +109,7 @@ export function CoFormReadOnly({
       ) : null}
 
       {/* Métadonnées */}
+      {!hideMetadata && (
       <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
         {authorName && (
           <Badge variant="secondary" className="gap-1.5">
@@ -115,16 +125,31 @@ export function CoFormReadOnly({
           </span>
         )}
       </div>
+      )}
 
       {/* Sections (une card par étape) */}
-      {subFormsFields.map((step) => (
-        <ReadOnlySection
-          key={step.subFormId}
-          step={step}
-          data={normalizedAnswers[step.subFormId] ?? {}}
-          answerId={answerId}
-        />
-      ))}
+      {subFormsFields.map((step) =>
+        hideStepHeaders ? (
+          <div key={step.subFormId} className="grid grid-cols-12 gap-x-6 gap-y-4">
+            {step.fields.map((field) => (
+              <ReadOnlyField
+                key={field.name}
+                field={field}
+                value={(normalizedAnswers[step.subFormId] ?? {})[field.name]}
+                answerId={answerId}
+                subFormId={step.subFormId}
+              />
+            ))}
+          </div>
+        ) : (
+          <ReadOnlySection
+            key={step.subFormId}
+            step={step}
+            data={normalizedAnswers[step.subFormId] ?? {}}
+            answerId={answerId}
+          />
+        )
+      )}
     </div>
   );
 }
@@ -252,6 +277,7 @@ function ReadOnlyField({
   const isEmpty = value === null || value === undefined || value === "" || (isMultipleValues && value.length === 0);
   const isTextarea = field.componentType === "textarea";
   const isMultiCheckboxPlus = field.componentType === "multiCheckboxPlus";
+  const isMultiRadio = field.componentType === "multiRadio";
   const isUrl = field.inputType === "url";
 
   // Extraire les données multiCheckboxPlus
@@ -262,14 +288,31 @@ function ReadOnlyField({
       }).filter(Boolean).sort((a, b) => (a?.rank ?? 0) - (b?.rank ?? 0))
     : null;
 
+  // Extraire les données multiRadio
+  const multiRadioData = isMultiRadio && value && typeof value === "object" && !Array.isArray(value)
+    ? (value as unknown as MultiRadioValue)
+    : null;
+  const isMultiRadioEmpty = isMultiRadio && (!multiRadioData || !multiRadioData.value);
+
   return (
     <div className={cn(widthClass, "space-y-1.5")}>
       <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
         {field.label}
       </dt>
       <dd className="text-sm text-foreground leading-relaxed">
-        {isEmpty ? (
+        {(isEmpty || isMultiRadioEmpty) ? (
           <span className="text-muted-foreground/50 italic">—</span>
+        ) : isMultiRadio && multiRadioData ? (
+          <div className="flex items-start gap-2 p-2 rounded-md bg-muted/30 border border-border/40">
+            <div className="flex-1">
+              <span className="font-medium">{multiRadioData.value}</span>
+              {multiRadioData.textsup && (
+                <p className="text-muted-foreground text-xs mt-0.5">
+                  {multiRadioData.textsup}
+                </p>
+              )}
+            </div>
+          </div>
         ) : isMultiCheckboxPlus && multiCheckboxPlusData ? (
           <div className="space-y-2">
             {multiCheckboxPlusData.map((opt, idx) => (

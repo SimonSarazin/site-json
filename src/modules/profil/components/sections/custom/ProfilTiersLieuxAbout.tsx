@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { ArrowUpRight, BarChart2, CalendarDays, ChevronDown, ChevronUp, Cloud, FolderKanban, FolderOpen, Globe, LucideIcon, MessageCircle, Newspaper, Pencil, PlusCircle, Ticket, Trash2, UserCheck, Users, Video } from "lucide-react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { CardContent, CardHeader } from "@/components/ui/card";
@@ -31,6 +32,9 @@ import z from "zod";
 import { getServerUrl } from "@/lib/constant/common";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
 import { Answer } from "@communecter/cocolight-api-client";
+import { CoFormModal } from "@/modules/coform/components/CoFormModal";
+import type { AllStepsData } from "@/modules/coform/types";
+import { QUERY_KEYS } from "@/modules/profil/constants/queryKeys";
 
 /** Entity method not exposed in SDK types */
 interface EntityWithForms {
@@ -144,27 +148,74 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
     forms: section.forms,
     enabled: !!entity && !!section.forms && Object.keys(section.forms).length > 0,
   });
-  const handleClickForm = async (formId: string, finder?: string, step?: string, input?: string, answerId?: string, key?: string) => {
-    const dataForms = _answersByForms?.find((item) => item.id === formId);
-    const accessToken = entity.apiClient.getToken();
-    let answer: Answer | undefined = undefined;
-    if (dataForms && dataForms.answers.length > 0 && key != "new") {
-      if (answerId) {
-        answer = dataForms?.answers.find((a) => a.id === answerId);
-      } else {
-        answer = dataForms.answers[0];
-      }
-    } else {
-      answer = await (entity as unknown as EntityWithForms).generateNewAnswerId(formId);
-      if (!answer) {
-        console.error("Failed to generate new answer ID for form:", formId);
-        return;
-      }
-      if(!answer.id) {
-        console.error("No answer ID generated for form:", formId);
-        return;
-      }
-      const finderPath = finder ? finder : section.forms?.[formId]?.finder;
+
+  const [showFullDesc, setShowFullDesc] = useState(false);
+  const [showAllEquip, setShowAllEquip] = useState(false);
+  const [modalItem, setModalItem] = useState<ModalItem | null>(null);
+
+  // ─── CoFormModal state ────────────────────────────────────────
+  const queryClient = useQueryClient();
+  const [formModal, setFormModal] = useState<{
+    formId: string;
+    answerId?: string;
+    defaultValues?: AllStepsData;
+    title?: string;
+    stepKey?: string;
+    inputKey?: string;
+    lockedFields?: string[];
+  } | null>(null);
+
+  /** Invalidate the answers cache after a form modal submit */
+  const entityId = entity?.id ?? null;
+  const invalidateAnswers = () => {
+    queryClient.invalidateQueries({
+      queryKey: QUERY_KEYS.ANSWERS_BY_FORMS_PREFIX(entityId),
+    });
+  };
+
+  /**
+   * Ouvre le CoFormModal pour éditer une réponse existante.
+   */
+  const openEditFormModal = ({ formId, answerId, title, stepKey, inputKey, lockedFields }: {
+    formId: string;
+    answerId: string;
+    title?: string;
+    stepKey?: string;
+    inputKey?: string;
+    lockedFields?: string[];
+  }) => {
+    const answerData = _answersByForms
+      ?.find((f) => f.id === formId)
+      ?.answers.find((a: Answer) => a._serverData?.id === answerId || a.id === answerId);
+    setFormModal({
+      formId,
+      answerId: answerData?._serverData?.id ?? answerId,
+      defaultValues: answerData?.serverData?.answers as AllStepsData | undefined,
+      title,
+      stepKey,
+      inputKey,
+      lockedFields,
+    });
+  };
+
+  /**
+   * Crée une nouvelle réponse (avec finder pre-pop) puis ouvre le CoFormModal.
+   */
+  const openNewFormModal = async ({ formId, title, finder, stepKey, inputKey, lockedFields }: {
+    formId: string;
+    title?: string;
+    finder?: string;
+    stepKey?: string;
+    inputKey?: string;
+    lockedFields?: string[];
+  }) => {
+    const answer = await (entity as unknown as EntityWithForms).generateNewAnswerId(formId);
+    if (!answer?.id) {
+      console.error("Failed to generate new answer ID for form:", formId);
+      return;
+    }
+    const finderPath = finder ?? section.forms?.[formId]?.finder;
+    if (finderPath) {
       const params: UpdatePathValueParams = {
         id: answer.id,
         collection: "answers",
@@ -173,7 +224,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
           id: entity.id,
           type: entity.serverData.collection,
           name: entity.serverData.name,
-        }
+        },
       };
       const paramsLinks: UpdatePathValueParams = {
         id: answer.id,
@@ -182,27 +233,50 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
         value: {
           type: entity.serverData.collection,
           name: entity.serverData.name,
-        }
+        },
       };
       await (entity.endpointApi as unknown as EndpointApiWithDelete).updatePathValue(params);
       await (entity.endpointApi as unknown as EndpointApiWithDelete).updatePathValue(paramsLinks);
-      // entity.endpointApi.updatePathValue({
-      //     "id": 
-      // })
     }
-    if (!answer) {
-      console.error("No answer available to open for form:", formId);
-      return;
+    // Build defaultValues from finderPath so the finder field is pre-populated in the modal
+    let defaultValues: AllStepsData | undefined;
+    if (finderPath) {
+      const entityId = entity.id as string;
+      const entityValue: Record<string, unknown> = {
+        [entityId]: {
+          id: entityId,
+          type: entity.serverData.collection,
+          name: entity.serverData.name,
+        },
+      };
+      const pathWithoutPrefix = finderPath.startsWith("answers.")
+        ? finderPath.slice("answers.".length)
+        : finderPath;
+      defaultValues = pathWithoutPrefix
+        .split(".")
+        .reduceRight<Record<string, unknown>>((acc, part) => ({ [part]: acc }), entityValue) as AllStepsData;
     }
-    const targetUrl = `/costum/co/index/slug/navigatorDesTierslieux/#answer.index_coformv2.id.${answer.serverData.id}.form.${formId}.${step ? `step.${step}.` : ''}${input ? `input.${input}.` : ''}mode.w.standalone.true.ask.false`
-    const urlToRedirect = `${getServerUrl()}/co2/embed/render?targetUrl=${encodeURIComponent(targetUrl)}&embedToken=${accessToken}`;
-    window.open(urlToRedirect, "_blank");
-
+    setFormModal({
+      formId,
+      answerId: answer._serverData?.id ?? answer.id,
+      defaultValues,
+      title,
+      stepKey,
+      inputKey,
+      lockedFields: finderPath
+        ? [...(lockedFields ?? []), finderPath.split(".").pop()!]
+        : lockedFields,
+    });
   };
 
-  const [showFullDesc, setShowFullDesc] = useState(false);
-  const [showAllEquip, setShowAllEquip] = useState(false);
-  const [modalItem, setModalItem] = useState<ModalItem | null>(null);
+  /** Derives the finder locked field name from the forms config */
+  const getFinderLockedField = (formId: string): string[] | undefined => {
+    const finderPath = section.forms?.[formId]?.finder;
+    if (!finderPath) return undefined;
+    const fieldName = finderPath.split('.').pop();
+    return fieldName ? [fieldName] : undefined;
+  };
+
   const rooms: Answer[] = useMemo(() => {
     if (!_answersByForms || !section.roomPath) {
       return [];
@@ -427,12 +501,20 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
           <CardHeader>
             <div className="flex items-center justify-between">
               <SectionTitle label={t("ProfilTiersLieuxAbout.equipements")} />
-              {canEditProfile && section.equipement?.step && section.equipement?.input && (
+              {canEditProfile && section.equipement?.id && (
                 <Button
                   variant="default"
                   size="sm"
                   className="p-2"
-                  onClick={() => handleClickForm(section.equipement!.id, section.equipement!.finder, section.equipement!.step, section.equipement!.input)}
+                  onClick={() => {
+                    const equipFormData = _answersByForms?.find((f) => f.id === section.equipement!.id);
+                    const existingAnswer = equipFormData?.answers?.[0];
+                    if (existingAnswer) {
+                      openEditFormModal({ formId: section.equipement!.id, answerId: existingAnswer._serverData.id, title: t("ProfilTiersLieuxAbout.equipements") as string, stepKey: section.equipement!.step, inputKey: section.equipement!.input });
+                    } else {
+                      openNewFormModal({ formId: section.equipement!.id, title: t("ProfilTiersLieuxAbout.equipements") as string, finder: section.equipement!.finder, stepKey: section.equipement!.step, inputKey: section.equipement!.input });
+                    }
+                  }}
                 >
                   <Pencil className="h-4 w-4" />
                 </Button>
@@ -472,12 +554,20 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
           <CardHeader>
             <div className="flex items-center justify-between">
               <SectionTitle label={t("ProfilTiersLieuxAbout.activities")} />
-              {canEditProfile && section.activity?.step && section.activity?.input && (
+              {canEditProfile && section.activity?.id && (
                 <Button
                   variant="default"
                   size="sm"
                   className="p-2"
-                  onClick={() => handleClickForm(section.activity!.id, section.activity!.finder, section.activity!.step, section.activity!.input)}
+                  onClick={() => {
+                    const activityFormData = _answersByForms?.find((f) => f.id === section.activity!.id);
+                    const existingAnswer = activityFormData?.answers?.[0];
+                    if (existingAnswer) {
+                      openEditFormModal({ formId: section.activity!.id, answerId: existingAnswer._serverData.id, title: t("ProfilTiersLieuxAbout.activities") as string, stepKey: section.activity!.step, inputKey: section.activity!.input });
+                    } else {
+                      openNewFormModal({ formId: section.activity!.id, title: t("ProfilTiersLieuxAbout.activities") as string, finder: section.activity!.finder, stepKey: section.activity!.step, inputKey: section.activity!.input });
+                    }
+                  }}
                 >
                   <Pencil className="h-4 w-4" />
                 </Button>
@@ -598,7 +688,10 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                   variant="default"
                   size="sm"
                   className="p-2"
-                  onClick={() => handleClickForm(section.roomPath!.id, undefined, undefined, undefined, rooms.length > 0 ? rooms[0]._serverData.id : undefined)}
+                  onClick={() => rooms.length > 0
+                    ? openEditFormModal({ formId: section.roomPath!.id, answerId: rooms[0]._serverData.id, title: t("ProfilTiersLieuxAbout.rooms") as string, stepKey: section.roomPath!.step, inputKey: section.roomPath!.input })
+                    : openNewFormModal({ formId: section.roomPath!.id, title: t("ProfilTiersLieuxAbout.rooms") as string, stepKey: section.roomPath!.step, inputKey: section.roomPath!.input })
+                  }
                 >
                   <Pencil className="h-4 w-4" />
                 </Button>
@@ -743,7 +836,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                   variant="default"
                   size="sm"
                   className="p-2"
-                  onClick={() => handleClickForm(section.coworkingPath!.id, undefined, undefined, undefined, undefined, "new")}
+                  onClick={() => openNewFormModal({ formId: section.coworkingPath!.id, title: t("ProfilTiersLieuxAbout.coworking") as string })}
                 >
                   <PlusCircle className="h-4 w-4" />
                 </Button>
@@ -787,7 +880,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                         >
                           {canEditProfile && (
                             <div className="absolute top-2 left-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                                <Button size="icon" variant="secondary" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleClickForm(section.coworkingPath!.id, undefined, undefined, undefined, coworking._serverData.id); }}>
+                                <Button size="icon" variant="secondary" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); openEditFormModal({ formId: section.coworkingPath!.id, answerId: coworking._serverData.id, title: t("ProfilTiersLieuxAbout.coworking") as string, lockedFields: getFinderLockedField(section.coworkingPath!.id) }); }}>
                                 <Pencil className="h-3.5 w-3.5" />
                               </Button>
                               <Button size="icon" variant="destructive" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleDeleteAnswer(coworking.id!); }}>
@@ -894,7 +987,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                       >
                         {canEditProfile && (
                           <div className="absolute top-2 left-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                            <Button size="icon" variant="secondary" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleClickForm(section.coworkingPath!.id, undefined, undefined, undefined, coworking._serverData.id); }}>
+                            <Button size="icon" variant="secondary" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); openEditFormModal({ formId: section.coworkingPath!.id, answerId: coworking._serverData.id, title: t("ProfilTiersLieuxAbout.coworking") as string, lockedFields: getFinderLockedField(section.coworkingPath!.id) }); }}>
                               <Pencil className="h-3.5 w-3.5" />
                             </Button>
                             <Button size="icon" variant="destructive" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleDeleteAnswer(coworking.id!); }}>
@@ -1007,7 +1100,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                   variant="default"
                   size="sm"
                   className="p-2"
-                  onClick={() => handleClickForm(section.bedRoomPath!.id, undefined, undefined, undefined, undefined, "new")}
+                  onClick={() => openNewFormModal({ formId: section.bedRoomPath!.id, title: t("ProfilTiersLieuxAbout.accommodation") as string })}
                 >
                   <PlusCircle className="h-4 w-4" />
                 </Button>
@@ -1051,7 +1144,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                         >
                           {canEditProfile && (
                             <div className="absolute top-2 left-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                              <Button size="icon" variant="secondary" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleClickForm(section.bedRoomPath!.id, undefined, undefined, undefined, accommodation._serverData.id); }}>
+                              <Button size="icon" variant="secondary" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); openEditFormModal({ formId: section.bedRoomPath!.id, answerId: accommodation._serverData.id, title: t("ProfilTiersLieuxAbout.accommodation") as string }); }}>
                                 <Pencil className="h-3.5 w-3.5" />
                               </Button>
                               <Button size="icon" variant="destructive" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleDeleteAnswer(accommodation.id!); }}>
@@ -1157,7 +1250,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                       >
                         {canEditProfile && (
                           <div className="absolute top-2 left-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                            <Button size="icon" variant="secondary" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleClickForm(section.bedRoomPath!.id, undefined, undefined, undefined, accommodation._serverData.id); }}>
+                            <Button size="icon" variant="secondary" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); openEditFormModal({ formId: section.bedRoomPath!.id, answerId: accommodation._serverData.id, title: t("ProfilTiersLieuxAbout.accommodation") as string }); }}>
                               <Pencil className="h-3.5 w-3.5" />
                             </Button>
                             <Button size="icon" variant="destructive" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleDeleteAnswer(accommodation.id!); }}>
@@ -1339,6 +1432,22 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* ── CoForm Modal (salles / coworking / hébergement) ──── */}
+      {formModal && (
+        <CoFormModal
+          formId={formModal.formId}
+          open={!!formModal}
+          onOpenChange={(open) => { if (!open) setFormModal(null); }}
+          title={formModal.title}
+          answerId={formModal.answerId}
+          defaultValues={formModal.defaultValues}
+          stepKey={formModal.stepKey}
+          inputKey={formModal.inputKey}
+          lockedFields={formModal.lockedFields}
+          onAfterSubmit={invalidateAnswers}
+        />
+      )}
     </div>
   );
 }

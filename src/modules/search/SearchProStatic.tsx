@@ -10,6 +10,7 @@ import SearchListView from "./components/SearchListView";
 import SearchListSkeleton from "./components/SearchListSkeleton";
 import SearchMapWrapper from "./components/SearchMapWrapper";
 import SearchBubbleChart from "./components/SearchBubbleChart";
+import FranceRegionsMap from "./components/FranceRegionsMap";
 import { SwitchDetailsMode } from "./components/SwitchDetailsMode";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
@@ -49,6 +50,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     showSearch = false,
     showMap = false,
     enableMap = true,
+    enableRegions = false,
     disableInfiniteScroll = false,
     addButton,
     zoneSelector,
@@ -72,7 +74,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
 
   // État local (pas de sync URL)
   const defaultViewMode = props.defaultViewMode || (showMap ? "map" : "list");
-  const [viewMode, setViewMode] = useState<"list" | "map" | "graph">(defaultViewMode);
+  const [viewMode, setViewMode] = useState<"list" | "map" | "graph" | "regions">(defaultViewMode);
   const [isDetailedView, setIsDetailedView] = useState(defaultDetailedView);
   const [localSearchInput, setLocalSearchInput] = useState("");
   const debouncedLocalSearch = useDebounce(localSearchInput, 500);
@@ -295,7 +297,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
 
       <div className="flex flex-col flex-1 w-full h-full overflow-hidden">
         {/* Header */}
-        {(title || description || showSearch || enableMap) && (
+        {(title || description || showSearch || (enableMap && !customHeader)) && (
           <div className="flex flex-col gap-3 p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center space-x-2">
@@ -310,7 +312,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                 )}
               </div>
               <div className="flex items-center space-x-2">
-                {enableMap && (
+                {enableMap && !customHeader && (
                   <Button
                     variant={viewMode === "map" ? "default" : "outline"}
                     size="sm"
@@ -318,6 +320,16 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                   >
                     <Map className="h-4 w-4 sm:mr-1" />
                     <span className="hidden sm:inline">{t("Carte")}</span>
+                  </Button>
+                )}
+                {enableRegions && !customHeader && (
+                  <Button
+                    variant={viewMode === "regions" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setViewMode(viewMode === "regions" ? "list" : "regions")}
+                  >
+                    <MapPin className="h-4 w-4 sm:mr-1" />
+                    <span className="hidden sm:inline">{t("Régions")}</span>
                   </Button>
                 )}
                 {enableGraph && (
@@ -534,8 +546,8 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
         ) : (
           <div className="p-4 overflow-y-auto">
             {customHeader && (
-              <div className="container flex justify-between mx-auto px-4 sm:px-6 lg:px-8 mb-6">
-                <div className="flex justify-between items-center">
+              <div className="container flex justify-between items-center mx-auto px-4 sm:px-6 lg:px-8 mb-6">
+                <div>
                   {customHeader.title && (
                     <h2 className="text-2xl font-extrabold text-foreground">
                       {typeof customHeader.title === "string"
@@ -544,41 +556,84 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                     </h2>
                   )}
                 </div>
-                {showDetailedViewToggle && (
-                  <Button
-                    variant={isDetailedView ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setIsDetailedView(!isDetailedView)}
-                  >
-                    {isDetailedView ? (
-                      <><LayoutGrid className="mr-2 h-4 w-4" /> Grille</>
-                    ) : (
-                      <><List className="mr-2 h-4 w-4" /> Détails</>
-                    )}
-                  </Button>
+                <div className="flex items-center space-x-2">
+                  {enableMap && (
+                    <Button
+                      variant={viewMode === "map" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setViewMode(viewMode === "map" ? "list" : "map")}
+                    >
+                      <Map className="h-4 w-4 sm:mr-1" />
+                      <span className="hidden sm:inline">{t("Carte")}</span>
+                    </Button>
+                  )}
+                  {enableRegions && (
+                    <Button
+                      variant={viewMode === "regions" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setViewMode(viewMode === "regions" ? "list" : "regions")}
+                    >
+                      {viewMode === "regions" ? (
+                        <><List className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">{t("Mode Liste")}</span></>
+                      ) : (
+                        <><MapPin className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">{t("Mode Carte")}</span></>
+                      )}
+                    </Button>
+                  )}
+                  {showDetailedViewToggle && viewMode !== "regions" && (
+                    <Button
+                      variant={isDetailedView ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setIsDetailedView(!isDetailedView)}
+                    >
+                      {isDetailedView ? (
+                        <><LayoutGrid className="mr-2 h-4 w-4" /> Grille</>
+                      ) : (
+                        <><List className="mr-2 h-4 w-4" /> Détails</>
+                      )}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {viewMode === "regions" && (
+              <ClientOnly>
+                {() => (
+                  <FranceRegionsMap
+                    results={transformedResults as unknown as Record<string, unknown>[]}
+                    onItemClick={(item) => {
+                      if (item && typeof item === "object" && "slug" in item) {
+                        window.open(`/profil/${(item as { slug: string }).slug}`, "_blank");
+                      }
+                    }}
+                    height={550}
+                  />
                 )}
-              </div>
+              </ClientOnly>
             )}
 
-            {/* Afficher le skeleton uniquement lors du premier chargement (isPending) */}
-            {isPending && <SearchListSkeleton />}
+            {viewMode !== "regions" && (
+              <>
+                {isPending && <SearchListSkeleton />}
 
-            {/* Afficher "Aucun résultat" seulement si pas en chargement ET pas de résultats */}
-            {!isPending && !loadingMap && transformedResults.length === 0 && (
-              <div className="text-center text-secondary-foreground py-8">
-                {t("Aucun résultat trouvé.")}
-              </div>
+                {!isPending && !loadingMap && transformedResults.length === 0 && (
+                  <div className="text-center text-secondary-foreground py-8">
+                    {t("Aucun résultat trouvé.")}
+                  </div>
+                )}
+
+                <SearchListView
+                  results={transformedResults}
+                  columns={list?.columns}
+                  card={list?.card}
+                  preview={list?.preview}
+                  isDetailedView={isDetailedView}
+                />
+
+                {!disableInfiniteScroll && <div ref={lastItemRef} className="h-12" />}
+              </>
             )}
-
-            <SearchListView
-              results={transformedResults}
-              columns={list?.columns}
-              card={list?.card}
-              preview={list?.preview}
-              isDetailedView={isDetailedView}
-            />
-
-            {!disableInfiniteScroll && <div ref={lastItemRef} className="h-12" />}
 
             {isFetchingNextPage && (
               <div className="flex justify-center py-4 text-secondary-foreground">

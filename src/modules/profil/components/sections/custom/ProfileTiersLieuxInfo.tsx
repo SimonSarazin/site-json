@@ -1,4 +1,8 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { CoFormModal } from "@/modules/coform/components/CoFormModal";
+import type { AllStepsData } from "@/modules/coform/types";
+import { QUERY_KEYS } from "@/modules/profil/constants/queryKeys";
 import {
     MapPin,
     Mail,
@@ -179,20 +183,38 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
 
     const hasSocials = !!(facebook || instagram || twitter || mastodon || telegram);
 
+    // ─── CoFormModal state (mode "modal") ─────────────────────────────────────
+    const queryClient = useQueryClient();
+    const [formModal, setFormModal] = useState<{
+        formId: string;
+        answerId?: string;
+        defaultValues?: AllStepsData;
+        title?: string;
+        lockedFields?: string[];
+    } | null>(null);
+
+    const entityId = entity?.id ?? null;
+    const invalidateAnswers = useCallback(() => {
+        queryClient.invalidateQueries({
+            queryKey: QUERY_KEYS.ANSWERS_BY_FORMS_PREFIX(entityId),
+        });
+    }, [queryClient, entityId]);
 
     const cardClasses = section.sticky
         ? "overflow-hidden lg:sticky lg:top-4"
         : "overflow-hidden";
 
-    const handleClickForm = useCallback(async (formId: string, finder?: string) => {
+    const handleClickForm = useCallback(async (formId: string, finder?: string, openMode: "modal" | "tab" = "tab") => {
         if(!entity || !me) return;
         if(!canEditProfile) return;
         const dataForms = _answersByForms?.find((item) => item.id === formId);
         const accessToken = entity.apiClient.getToken();
         let answer: Answer | undefined = undefined;
+        let isNewAnswer = false;
         if (dataForms && dataForms.answers.length > 0) {
             answer = dataForms.answers[0];
         } else {
+            isNewAnswer = true;
             answer = await (entity as unknown as { generateNewAnswerId(formId: string): Promise<Answer | undefined> }).generateNewAnswerId(formId);
             if (!answer) {
                 console.error("Failed to generate new answer ID for form:", formId);
@@ -223,21 +245,55 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
             };
             await (entity.endpointApi as unknown as { updatePathValue(p: Record<string, unknown>): Promise<unknown> }).updatePathValue(params);
             await (entity.endpointApi as unknown as { updatePathValue(p: Record<string, unknown>): Promise<unknown> }).updatePathValue(paramsLinks);
-            // entity.endpointApi.updatePathValue({
-            //     "id": 
-            // })
         }
         if (!answer) {
             console.error("No answer available to open for form:", formId);
             return;
         }
-        const targetUrl = `/costum/co/index/slug/navigatorDesTierslieux/#answer.index_coformv2.id.${answer.serverData.id}.form.${formId}.mode.w.standalone.true.ask.false`
+
+        if (openMode === "modal") {
+            let defaultValues: AllStepsData | undefined;
+            if (isNewAnswer) {
+                // Nouvelle réponse : pré-remplir le finder
+                if (finder) {
+                    const entityId = entity.id as string;
+                    const entityValue: Record<string, unknown> = {
+                        [entityId]: {
+                            id: entityId,
+                            type: entity.serverData.collection,
+                            name: entity.serverData.name,
+                        },
+                    };
+                    const pathWithoutPrefix = finder.startsWith("answers.")
+                        ? finder.slice("answers.".length)
+                        : finder;
+                    defaultValues = pathWithoutPrefix
+                        .split(".")
+                        .reduceRight<Record<string, unknown>>((acc, part) => ({ [part]: acc }), entityValue) as AllStepsData;
+                }
+            } else {
+                // Réponse existante : utiliser les données sauvegardées
+                defaultValues = answer.serverData?.answers as AllStepsData | undefined;
+            }
+            const finderFieldName = finder ? finder.split(".").pop() : undefined;
+            setFormModal({
+                formId,
+                answerId: answer._serverData?.id ?? answer.id,
+                defaultValues,
+                lockedFields: finderFieldName ? [finderFieldName] : undefined,
+            });
+            return;
+        }
+
+        // Mode "tab" : ouvrir dans un nouvel onglet (comportement historique)
+        const targetUrl = `/costum/co/index/slug/navigatorDesTierslieux/#answer.index_coformv2.id.${answer.serverData.id}.form.${formId}.mode.w.standalone.true.ask.false`;
         const urlToRedirect = `${getServerUrl()}/co2/embed/render?targetUrl=${encodeURIComponent(targetUrl)}&embedToken=${accessToken}`;
         window.open(urlToRedirect, "_blank");
 
     }, [_answersByForms, entity, me, canEditProfile])
 
     return (
+        <>
         <div className={cardClasses}>
 
             {/* ── 1. RÉSERVER EN LIGNE ─────────────────────────────── */}
@@ -480,7 +536,7 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
                                     <button
                                         key={idx}
                                         rel="noopener noreferrer"
-                                        onClick={() => handleClickForm(id, form.finder)}
+                                        onClick={() => handleClickForm(id, form.finder, form.openMode)}
                                         className={`flex flex-col items-center justify-center text-center gap-1.5 p-2 rounded-lg border border-border hover:bg-muted transition-colors cursor-pointer${form.hide ? " hidden" : ""}`}
                                     >
                                         <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
@@ -498,5 +554,20 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
 
             </div>
         </div>
+
+            {/* ── CoFormModal (mode "modal") ─────────────────────────────── */}
+            {formModal && (
+                <CoFormModal
+                    formId={formModal.formId}
+                    open={!!formModal}
+                    onOpenChange={(open) => { if (!open) setFormModal(null); }}
+                    title={formModal.title}
+                    answerId={formModal.answerId}
+                    defaultValues={formModal.defaultValues}
+                    lockedFields={formModal.lockedFields}
+                    onAfterSubmit={invalidateAnswers}
+                />
+            )}
+        </>
     );
 }

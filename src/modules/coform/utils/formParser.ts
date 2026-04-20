@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { CoFormData, FormFieldMapping, SubFormFields, MultiCheckboxPlusOptionType, EvaluationConfig, FinderConfig, FinderFilter, SimpleTableConfig, SimpleTableColumn, SimpleTableRow, UploaderConfig } from "../types";
+import type { CoFormData, FormFieldMapping, SubFormFields, MultiCheckboxPlusOptionType, EvaluationConfig, FinderConfig, FinderFilter, SimpleTableConfig, SimpleTableColumn, SimpleTableRow, UploaderConfig, ConditionalDisplay } from "../types";
 
 // ─── Configuration des préfixes de champs ────────────────────────
 // Certains types de champs PHP stockent leurs données avec un préfixe
@@ -13,6 +13,7 @@ import type { CoFormData, FormFieldMapping, SubFormFields, MultiCheckboxPlusOpti
 const FIELD_PREFIX_MAP: Partial<Record<FormFieldMapping["componentType"], string>> = {
   finder: "finder",
   multiCheckboxPlus: "multiCheckboxPlus",
+  multiRadio: "multiRadio",
   evaluation: "evaluation",
 };
 
@@ -131,8 +132,8 @@ function parseBootstrapWidth(bootstrapWidth?: string): string {
  */
 export function mapCoFormTypeToComponentType(
   coFormType: string
-): "text" | "textarea" | "radio" | "checkbox" | "select" | "multiCheckboxPlus" | "evaluation" | "finder" | "simpleTable" | "uploader" | "unknown" {
-  const typeMapping: Record<string, "text" | "textarea" | "radio" | "checkbox" | "select" | "multiCheckboxPlus" | "evaluation" | "finder" | "simpleTable" | "uploader"> = {
+): "text" | "textarea" | "radio" | "checkbox" | "select" | "multiCheckboxPlus" | "multiRadio" | "evaluation" | "finder" | "simpleTable" | "uploader" | "sectionTitle" | "sectionDescription" | "unknown" {
+  const typeMapping: Record<string, "text" | "textarea" | "radio" | "checkbox" | "select" | "multiCheckboxPlus" | "multiRadio" | "evaluation" | "finder" | "simpleTable" | "uploader" | "sectionTitle" | "sectionDescription"> = {
     text: "text",
     url: "text",
     email: "text",
@@ -140,6 +141,7 @@ export function mapCoFormTypeToComponentType(
     number: "text",
     textarea: "textarea",
     "tpls.forms.cplx.radioNew": "radio",
+    "tpls.forms.cplx.multiRadio": "multiRadio",
     "tpls.forms.cplx.checkboxNew": "checkbox",
     "tpls.forms.cplx.multiCheckboxPlus": "multiCheckboxPlus",
     "tpls.forms.cplx.evaluation": "evaluation",
@@ -148,6 +150,9 @@ export function mapCoFormTypeToComponentType(
     "tpls.forms.finder.finder": "finder",
     "tpls.forms.cplx.simpleTable": "simpleTable",
     "tpls.forms.uploader": "uploader",
+    sectionTitle: "sectionTitle",
+    "tpls.forms.sectionTitle": "sectionTitle",
+    "tpls.forms.sectionDescription": "sectionDescription",
     select: "select",
   };
 
@@ -166,6 +171,9 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
     const fields: FormFieldMapping[] = [];
 
     Object.entries(subFormData.inputs).forEach(([fieldKey, fieldData]) => {
+      // Ignorer les anciens inputs de validation d'étape (validateStep*)
+      if (/validatestep/i.test(fieldData.type)) return;
+
       const componentType = mapCoFormTypeToComponentType(fieldData.type);
       
       // Récupérer les options depuis params si c'est un radio/checkbox
@@ -198,6 +206,30 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
         }
       }
       
+      // Config spécifique pour multiRadio
+      let multiRadioConfig: FormFieldMapping["multiRadioConfig"] | undefined;
+
+      if (componentType === "multiRadio" && formData.params) {
+        const paramKey = `multiRadio${fieldKey}`;
+        const paramData = formData.params[paramKey];
+
+        if (paramData) {
+          // Options depuis global.list
+          options = paramData.global?.list || paramData.list || [];
+
+          // Construire tofill: type par option (simple par défaut)
+          const tofill: Record<string, "simple" | "cplx"> = {};
+          for (const opt of options) {
+            tofill[opt] = (paramData.tofill?.[opt] as "simple" | "cplx") || "simple";
+          }
+
+          multiRadioConfig = {
+            tofill,
+            placeholdersradio: (paramData.placeholdersradio as Record<string, string>) || {},
+          };
+        }
+      }
+
       // Config spécifique pour multiCheckboxPlus
       if (componentType === "multiCheckboxPlus" && formData.params) {
         const paramKey = `multiCheckboxPlus${fieldKey}`;
@@ -367,6 +399,19 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
         }
       }
 
+      // Config spécifique pour sectionTitle
+      let sectionTitleConfig: FormFieldMapping["sectionTitleConfig"] | undefined;
+
+      if (componentType === "sectionTitle") {
+        const p = (formData.params as Record<string, Record<string, unknown>> | undefined)?.[fieldKey] || {};
+        sectionTitleConfig = {
+          showBar: p.showBar !== false && p.showBar !== "false",
+          barPosition: (["above", "between", "below"].includes(p.barPosition as string) ? p.barPosition : "between") as "above" | "between" | "below",
+          align: (["left", "center", "right"].includes(p.align as string) ? p.align : "center") as "left" | "center" | "right",
+          textDecoration: (["uppercase", "lowercase", "capitalize", "none"].includes(p.textDecoration as string) ? p.textDecoration : "uppercase") as "uppercase" | "lowercase" | "capitalize" | "none",
+        };
+      }
+
       // Config spécifique pour uploader
       if (componentType === "uploader") {
         const paramsData = formData.params?.[fieldKey] || {};
@@ -376,6 +421,7 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
         const sizeLimitRaw = paramsData?.sizeLimit ?? uploaderData?.sizeLimit;
         const formatsRaw = paramsData?.fileType ?? uploaderData?.formats;
         const docTypeRaw = (uploaderData?.docType as string | undefined) || "image";
+        const displayModeRaw = (paramsData?.displayMode as string | undefined) ?? (uploaderData?.displayMode as string | undefined);
 
         const itemLimit = Number.isFinite(Number(itemLimitRaw)) ? Math.max(1, Number(itemLimitRaw)) : 5;
         const sizeLimit = Number.isFinite(Number(sizeLimitRaw)) ? Number(sizeLimitRaw) : 5000000;
@@ -390,6 +436,7 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
           itemLimit,
           sizeLimit,
           formats,
+          displayMode: displayModeRaw === "advanced" ? "advanced" : "simple",
         };
       }
 
@@ -398,10 +445,13 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
         ? fieldData.type
         : undefined;
 
+      // Parser conditionalDisplay si présent
+      const conditionalDisplay = fieldData.conditionalDisplay as ConditionalDisplay | undefined;
+
       fields.push({
         // Appliquer le préfixe selon le type (finder, multiCheckboxPlus, evaluation)
         name: getFieldNameWithPrefix(componentType, fieldKey),
-        label: fieldData.label || fieldKey,
+        label: fieldData.label || "",
         type: fieldData.type,
         componentType,
         inputType,
@@ -415,10 +465,13 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
         rowMode: rowMode || formData.params?.[fieldKey]?.rowMode,
         nbPerRow: nbPerRow || formData.params?.[fieldKey]?.nbPerRow,
         multiCheckboxPlusConfig,
+        multiRadioConfig,
         evaluationConfig,
         finderConfig,
         simpleTableConfig,
         uploaderConfig,
+        sectionTitleConfig,
+        conditionalDisplay,
       });
     });
 
@@ -474,6 +527,22 @@ export function generateZodSchema(subFormsFields: SubFormFields[]) {
             ? z.array(z.string()).min(1, `${field.label} est requis`)
             : z.array(z.string()).optional();
           break;
+
+        case "multiRadio": {
+          // Structure: { value: string, type?: "simple"|"cplx", textsup?: string }
+          const multiRadioSchema = z.object({
+            value: z.string(),
+            type: z.enum(["simple", "cplx"]).optional(),
+            textsup: z.string().optional(),
+          });
+          schemaShape[field.name] = field.isRequired
+            ? multiRadioSchema.refine(
+                (v) => v.value.trim() !== "",
+                { message: `${field.label} est requis` }
+              )
+            : multiRadioSchema.optional();
+          break;
+        }
 
         case "multiCheckboxPlus": {
           // Structure: [{ "Option": { value, type, rank?, textsup? } }]
@@ -637,6 +706,10 @@ export function generateDefaultValues(subFormsFields: SubFormFields[]): Record<s
 
         case "checkbox":
           defaultValues[field.name] = [];
+          break;
+
+        case "multiRadio":
+          defaultValues[field.name] = { value: "" };
           break;
 
         case "multiCheckboxPlus":
