@@ -96,12 +96,6 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    useEffect(() => {
-        if (navItemsToDisplay.length === 0 && mobileMenuOpen) {
-            setMobileMenuOpen(false);
-        }
-    }, [navItemsToDisplay.length, mobileMenuOpen]);
-
     const handleLogout = () => {
         if (!api) return;
         try {
