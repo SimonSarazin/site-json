@@ -14,6 +14,55 @@ export function ActionButtonsRezoLaMer({ id, props }: ActionButtonsRezoLaMerSect
     const variant = props.variant || "ocean";
     const isCyber = variant === "cyber";
 
+    const DEFAULT_ICON_SIZE = 32;
+
+    const isSvgIcon = (icon: string) => icon.trim().startsWith("<svg");
+
+    const getSvgSize = (svg: string) => {
+        const widthMatch = svg.match(/width=["'](\d+(?:\.\d+)?)["']/i);
+        return widthMatch ? Number(widthMatch[1]) : DEFAULT_ICON_SIZE;
+    };
+
+    const getSizeClass = (size: number) => {
+        if (size <= 20) return "size-5";
+        if (size <= 24) return "size-6";
+        if (size <= 28) return "size-7";
+        if (size <= 32) return "size-8";
+        if (size <= 40) return "size-10";
+        if (size <= 48) return "size-12";
+        if (size <= 56) return "size-14";
+        return "size-16";
+    };
+
+    const ensureSvgHasClass = (svg: string, className: string) => {
+        if (/class=["'][^"']*["']/i.test(svg)) {
+            return svg.replace(/class=["']([^"']*)["']/i, (_match, existing) => `class="${existing} ${className}"`);
+        }
+        return svg.replace("<svg", `<svg class="${className}"`);
+    };
+
+    const renderIcon = (icon: string, colorClass: string) => {
+        if (isSvgIcon(icon)) {
+            const sizeInPixels = getSvgSize(icon);
+            const svgWithSizeClass = ensureSvgHasClass(icon, getSizeClass(sizeInPixels));
+
+            return (
+                <div
+                    className={`inline-flex items-center justify-center ${colorClass}`}
+                    style={{ width: sizeInPixels, height: sizeInPixels }}
+                    dangerouslySetInnerHTML={{ __html: svgWithSizeClass }}
+                />
+            );
+        }
+
+        return (
+            <DynamicIcon
+                name={icon as IconName}
+                className={`w-8 h-8 ${colorClass}`}
+            />
+        );
+    };
+
     const getButtonClasses = (color?: string) => {
         switch (color) {
             case "accent":
@@ -66,12 +115,14 @@ export function ActionButtonsRezoLaMer({ id, props }: ActionButtonsRezoLaMerSect
     const sectionBg = props.bg && props.bg !== "default" ? BG_MAP[props.bg] : defaultBg;
 
     return (
-        <section id={id} className={`py-16 px-4 ${sectionBg}`}>
+        <section id={id} className={`px-4 ${sectionBg} ${props.variant !== "ssbe" ? "py-16 " : "py-12 "}`}>
             <div className="container mx-auto max-w-5xl">
                 <div className="text-center mb-10">
-                    <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
-                        {t(props.headline)}
-                    </h2>
+                    {props.headline && (
+                        <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
+                            {t(props.headline)}
+                        </h2>
+                    )}
                     {props.subhead && (
                         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                             {t(props.subhead)}
@@ -86,10 +137,7 @@ export function ActionButtonsRezoLaMer({ id, props }: ActionButtonsRezoLaMerSect
                                 size="lg"
                                 className={`h-auto w-full py-6 flex flex-col items-center gap-3 text-foreground border transition-all ${getButtonClasses(action.color)}`}
                             >
-                                <DynamicIcon
-                                    name={action.icon as IconName}
-                                    className={`w-8 h-8 ${getIconColorClass(action.color)}`}
-                                />
+                                {renderIcon(action.icon, getIconColorClass(action.color))}
                                 <span className="font-semibold">{t(action.title)}</span>
                                 {action.subtitle && (
                                     <span className="text-xs text-muted-foreground">

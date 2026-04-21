@@ -278,6 +278,7 @@ export const FeaturesRezoLaMerSchema = z.object({
         title: LocalizedString,
         description: LocalizedString,
         color: z.enum(["turquoise", "cyan-bright", "primary", "turquoise-light", "accent", "chart-2", "chart-3"]).optional(),
+        link: z.string().optional(),
       })
     ),
   }),
@@ -285,6 +286,29 @@ export const FeaturesRezoLaMerSchema = z.object({
 
 export type FeaturesRezoLaMer = z.infer<typeof FeaturesRezoLaMerSchema>;
 export type FeaturesRezoLaMerProps = z.infer<typeof FeaturesRezoLaMerSchema>["props"];
+
+//──────────────── Categories Grid (Generic)
+export const CategoriesGridSectionSchema = z.object({
+  type: z.literal("categories-grid"),
+  id: z.string().optional(),
+  props: z.object({
+    headline: LocalizedString.optional(),
+    subhead: LocalizedString.optional(),
+    variant: z.enum(["ocean", "cyber", "ssbe"]).optional().default("ssbe"),
+    columns: z.number().min(2).max(6).optional().default(3),
+    cards: z.array(
+      z.object({
+        icon: z.string(),
+        title: LocalizedString,
+        subtitle: LocalizedString.optional(),
+        link: z.string().optional(),
+      })
+    ),
+  }),
+});
+
+export type CategoriesGridSection = z.infer<typeof CategoriesGridSectionSchema>;
+export type CategoriesGridSectionProps = z.infer<typeof CategoriesGridSectionSchema>["props"];
 
 //──────────────── Action Buttons Rézo la Mer
 export const ActionButtonsRezoLaMerSchema = z.object({
@@ -1333,6 +1357,7 @@ export const Section = z.discriminatedUnion("type", [
   CallToActionRezoLaMerSchema,
   TitleWithFiltersRezoLaMerSchema,
   CommuneTransparenteActionsSectionSchema,
+  CategoriesGridSectionSchema,
   MarkdownSectionSchema,
   CardsSectionSchema,
   GallerySectionSchema,
@@ -1479,6 +1504,9 @@ export const Header = z.object({
   path: z.string().min(1).optional(),
   nav: z.array(EnhancedNavItem),
   navSubsite: z.array(EnhancedNavItem).optional(),
+  navVisibleOnlyForListedPages: z.boolean().optional(),
+  secondaryNav: z.array(EnhancedNavItem).optional(),
+  secondaryNavVisibleOnlyForListedPages: z.boolean().optional(),
   sticky: z.boolean().default(true),
   transparent: z.boolean().default(false),
   height: z.enum(["sm", "md", "lg"]).default("md"),
@@ -1523,8 +1551,32 @@ const FooterColumn = z.object({
   })),
 });
 
+const FooterContactItem = z.object({
+  icon: z.string().optional(),
+  label: LocalizedString.optional(),
+  lines: z.array(LocalizedString).optional(),
+  value: LocalizedString.optional(),
+  href: z.string().optional(),
+});
+
+const FooterContactSection = z.object({
+  title: LocalizedString.optional(),
+  items: z.array(FooterContactItem),
+});
+
+const FooterPartnerLogo = z.object({
+  image: z.string(),
+  alt: LocalizedString,
+  href: z.string().optional(),
+});
+
+const FooterPartnersSection = z.object({
+  title: LocalizedString.optional(),
+  logos: z.array(FooterPartnerLogo),
+});
+
 export const Footer = z.object({
-  type: z.enum(["tiers-lieux", "rezo-la-mer", "cyber-reunion", "nos-communes", "commune-transparente", "default"]).default("default"),
+  type: z.enum(["tiers-lieux", "rezo-la-mer", "cyber-reunion", "nos-communes", "commune-transparente", "ssbe", "default"]).default("default"),
   columns: z.array(FooterColumn),
   socials: z.array(z.object({ platform: z.string(), url: z.string() })).optional(),
   extra: z.string().optional(),
@@ -1545,6 +1597,8 @@ export const Footer = z.object({
   })).optional(),
   paymentMethods: z.array(z.string()).optional(), // Array of payment method icons
   website: z.string().optional(),
+  contactSection: FooterContactSection.optional(),
+  partners: FooterPartnersSection.optional(),
 });
 export type Footer = z.infer<typeof Footer>;
 

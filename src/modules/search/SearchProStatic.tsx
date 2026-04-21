@@ -83,8 +83,10 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   const [selectedTagValue, setSelectedTagValue] = useState<string>("");
 
   const enableGraph = props.enableGraph ?? false;
-  const graphCategories = props.graphCategories;
+  const graphTags = props.graphTags ?? props.graphCategories;
   const graphDetailsMode = props.graphDetailsMode ?? "drawer";
+  const graphDefaultGroupMode = props.graphDefaultGroupMode ?? "country";
+  const graphEnableCountryGrouping = props.graphEnableCountryGrouping ?? true;
 
   const [graphOpenDetails, setGraphOpenDetails] = useState(false);
   const [graphSelectedItem, setGraphSelectedItem] = useState<SearchEntity | null>(null);
@@ -521,9 +523,11 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                 {() => (
                   <SearchBubbleChart
                     results={transformedResults as unknown as React.ComponentProps<typeof SearchBubbleChart>["results"]}
-                    categories={graphCategories}
+                    categories={graphTags}
                     onItemClick={handleGraphItemClick}
                     height={450}
+                    defaultGroupMode={graphDefaultGroupMode}
+                    enableCountryGrouping={graphEnableCountryGrouping}
                   />
                 )}
               </ClientOnly>
@@ -549,6 +553,11 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                       {typeof customHeader.title === "string"
                         ? customHeader.title
                         : t(customHeader.title)}
+                      {totalCount !== undefined && totalCount !== null ? (
+                        <span className="ml-2 text-base font-normal text-muted-foreground">
+                          ({totalCount})
+                        </span>
+                      ) : null}
                     </h2>
                   )}
                 </div>

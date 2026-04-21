@@ -56,7 +56,7 @@
             "description": {
               "fr": "Trouver la salle de réunion pour vous accueillir."
             },
-            "path": "/lieux?services=Salle de réunion"
+            "path": "/lieux?services=Salle de Réunion"
           },
           {
             "label": {
@@ -65,7 +65,7 @@
             "description": {
               "fr": "Cuisines partagées, bar participatifs, tiers-lieux nourriciers."
             },
-            "path": "/lieux?typologies=foodlab"
+            "path": "/lieux?typologies=Cuisine partagée / Foodlab"
           },
           {
             "label": {
@@ -74,7 +74,7 @@
             "description": {
               "fr": "Les bureaux partagés et espaces de Coworking."
             },
-            "path": "/lieux?typologies=coworking"
+            "path": "/lieux?services=Coworking"
           },
           {
             "label": {
@@ -83,7 +83,7 @@
             "description": {
               "fr": "Espaces culturels et livinglabs."
             },
-            "path": "/lieux?typologies=nourricier"
+            "path": "/lieux?typologies=LivingLab / Laboratoire d'innovation sociale"
           },
           {
             "label": {
@@ -92,7 +92,7 @@
             "description": {
               "fr": "Les Fablabs, Makerspace et Hackerspace."
             },
-            "path": "/lieux?typologies=fablab"
+            "path": "/lieux?typologies=Fablab / Makerspace / Hackerspace (Espaces du Faire)"
           },
           {
             "label": {
@@ -101,7 +101,7 @@
             "description": {
               "fr": "Les lieux pouvant vous accueillir pour plusieurs jours."
             },
-            "path": "/lieux?typologies=nourricier"
+            "path": "/lieux?services=Hébérgement"
           }
         ]
       },
@@ -1918,6 +1918,8 @@
                     "id": "6925869ad76aaf6c5a2b2f8a",
                     "place": "navigatorDesTierslieux25112025_1436_0.navigatorDesTierslieux25112025_1436_0miokvr9ezvu0064fk",
                     "type": "array",
+                    "step": "navigatorDesTierslieux25112025_1436_0",
+                    "input": "navigatorDesTierslieux25112025_1436_0miokvr9ezvu0064fk",
                     "linkPath": "navigatorDesTierslieux25112025_1436_0.navigatorDesTierslieux25112025_1436_0miq81uh4gat3vgbtgkj",
                     "name": 0,
                     "minPers": 2,
@@ -2015,7 +2017,8 @@
                     "646498a5f2b3d6423d74b7f6": {
                       "name": "Fréquentation des tiers-lieux",
                       "finder": "answers.lesCommunsDesTierslieux1752023_1312_0.finderlesCommunsDesTierslieux1752023_1312_0lix4a7257iht8lp282r",
-                      "linked": true
+                      "linked": true,
+                      "openMode": "modal"
                     },
                     "645b300b6d70bb35426fc0e3": {
                       "name": "Diagnostic des usages des équipements proposés en tiers-lieux",
@@ -2025,7 +2028,8 @@
                     "6486d24e9cad105cbf29a777": {
                       "name": "Modèle économique des tiers-lieux",
                       "finder": "answers.lesCommunsDesTierslieux1262023_1215_0.finderlesCommunsDesTierslieux1262023_1215_0lix46h1uhnukfgtzj6s",
-                      "linked": true
+                      "linked": true,
+                      "openMode": "modal"
                     },
                     "64a3fbd77c66a6036a282e8a": {
                       "name": "Satisfaction du tiers-lieu",
@@ -2040,12 +2044,14 @@
                     "63e0a8abeac0741b506fb4f7": {
                       "name": "Grand recensement 2023",
                       "finder": "answers.franceTierslieux1522023_1352_1.finderfranceTierslieux1522023_1352_1le5ofi0x733rc1gmbk4",
-                      "linked": true
+                      "linked": true,
+                      "openMode": "modal"
                     },
                     "652e32b222c3cf69f018ec40": {
                       "name": "Réseau régionnaux & thématique",
                       "finder": "answers.lesCommunsDesTierslieux17102023_108_0.finderlesCommunsDesTierslieux17102023_108_0lo5zvgqitv0b2mx2rl",
-                      "linked": true
+                      "linked": true,
+                      "openMode": "modal"
                     },
                     "666c245dd4968131956aa91e": {
                       "name": "Tiers Lieux de France mobilisons nous !",

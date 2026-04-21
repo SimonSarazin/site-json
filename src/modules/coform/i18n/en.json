@@ -111,6 +111,13 @@
         "updateButton": "Update"
       }
     },
+    "answerPicker": {
+      "title": "Your answers",
+      "description": "You already have {{count}} answer(s) for this form. Select an answer to edit or create a new one.",
+      "answerLabel": "Answer #{{number}}",
+      "updated": "updated on",
+      "newAnswer": "New answer"
+    },
     "multiCheckboxPlus": {
       "maxSelections": "Maximum {{max}} choices",
       "withInput": "with text",

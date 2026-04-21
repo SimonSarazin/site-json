@@ -15,6 +15,7 @@ export { MultiStepCoForm } from "./components/MultiStepCoForm";
 export { SmartCoForm, SmartCoForm as default } from "./components/SmartCoForm";
 export { TextField, TextAreaField, RadioField, CheckboxField } from "./components/FormFields";
 export { MultiCheckboxPlusField } from "./components/MultiCheckboxPlusField";
+export { CoFormModal, type CoFormModalProps } from "./components/CoFormModal";
 
 // Contexts
 export { CoFormContext, type CoFormContextType, type CoFormStepState } from "./contexts/CoFormContext";
