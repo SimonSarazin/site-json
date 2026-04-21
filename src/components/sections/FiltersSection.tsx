@@ -6,6 +6,7 @@ import { ChevronDown, SlidersHorizontal } from "lucide-react";
 import { usePageFilters } from "@/contexts/PageFiltersContext";
 import { useFiltersByAnswersQuery } from "@/hooks/useFiltersByAnswers";
 import { useSearchZoneQuery } from "@/hooks/useSearchZone";
+import { useSearchParams } from "react-router";
 
 export function FiltersSection({
   id,
@@ -105,6 +106,72 @@ export function FiltersSection({
     setFilterGroups(newFilterGroups);
   }, [propsFiltersGroups, filterZoneData, setSelectedFilters]);
 
+  const [searchParams] = useSearchParams();
+  useEffect(() => {
+    if (filterGroups.length === 0 && !filterAnswerData) return;
+
+    const nextSelected: Record<string, string[]> = {};
+    const nextSearchFields: Record<string, { field: string; value: string[]; type?: string }> = {};
+
+    const managedFilterGroupIds = new Set(filterGroups.map(g => g.id));
+    const managedAnswerOptionKeys = new Set<string>();
+    Object.values(filterAnswerData ?? {}).forEach(g => {
+      Object.keys(g.values).forEach(k => managedAnswerOptionKeys.add(k));
+    });
+
+    searchParams.forEach((rawValue, groupId) => {
+      const values = rawValue.split(",").map(v => v.trim()).filter(Boolean);
+      if (values.length === 0) return;
+
+      const group = filterGroups.find(g => g.id === groupId);
+      if (group) {
+        const matchedNames = values
+          .map(v => {
+            const opt = (group.options ?? []).find(o => (o.name || o.id) === v || o.id === v);
+            return opt ? (opt.name || opt.id) : null;
+          })
+          .filter((n): n is string => n !== null);
+        if (matchedNames.length > 0) {
+          nextSelected[groupId] = matchedNames;
+        }
+        return;
+      }
+
+      const answerGroup = filterAnswerData?.[groupId];
+      if (answerGroup) {
+        values.forEach(v => {
+          const optionEntry = Object.entries(answerGroup.values).find(
+            ([key, val]) => key === v || val.name === v
+          );
+          if (optionEntry) {
+            const [optionKey, optionValue] = optionEntry;
+            nextSearchFields[optionKey] = {
+              field: "_id",
+              value: optionValue.orgaNameArray as string[]
+            };
+          }
+        });
+      }
+    });
+
+    setSelectedFilters(prev => {
+      const preserved: Record<string, string[]> = {};
+      Object.entries(prev).forEach(([gid, arr]) => {
+        if (!managedFilterGroupIds.has(gid)) preserved[gid] = arr;
+      });
+      return { ...preserved, ...nextSelected };
+    });
+
+    setSearchByFields(prev => {
+      const preserved: typeof prev = {};
+      Object.entries(prev).forEach(([key, val]) => {
+        if (!managedAnswerOptionKeys.has(key)) preserved[key] = val;
+      });
+      return { ...preserved, ...nextSearchFields };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, filterGroups, filterAnswerData]);
+
   const toggleGroup = (groupId: string) => {
     setOpenGroups(prev =>
       prev.includes(groupId)
@@ -165,6 +232,13 @@ export function FiltersSection({
   const isFilterSelected = (groupId: string, filterName: string) =>
     (selectedFilters[groupId] || []).includes(filterName) || Object.keys(searchByFields).includes(filterName);
 
+  const getGroupActiveCount = (groupId: string, optionNames: string[]) => {
+    const selected = selectedFilters[groupId] || [];
+    const fromSelected = selected.length;
+    const fromSearchFields = optionNames.filter(name => Object.keys(searchByFields).includes(name)).length;
+    return fromSelected + fromSearchFields;
+  };
+
   const hasActiveFilters = Object.values(selectedFilters).some(arr => arr.length > 0) || searchQuery.length > 0 || Object.keys(searchByFields).length > 0;
 
   return (
@@ -215,19 +289,32 @@ export function FiltersSection({
 
       {/* Filter Groups */}
       <div className="space-y-1">
-        {filterGroups?.map((group) => (
+        {filterGroups?.map((group) => {
+          const groupOptionNames = (group.options ?? []).map(o => o.name || o.id);
+          const activeCount = getGroupActiveCount(group.id, groupOptionNames);
+          const isActive = activeCount > 0;
+          return (
           <div key={group.id} className="border-b border-border last:border-b-0">
             {/* Group Header */}
             <button
               onClick={() => toggleGroup(group.id)}
               className="w-full flex items-center justify-between py-3 text-left hover:bg-muted transition px-2 rounded"
             >
-              <span className="font-medium text-sm text-foreground">
+              <span className={cn(
+                "font-medium text-sm flex items-center gap-2",
+                isActive ? "text-primary" : "text-foreground"
+              )}>
                 {t(group.label)}
+                {isActive && (
+                  <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold">
+                    {activeCount}
+                  </span>
+                )}
               </span>
               <ChevronDown
                 className={cn(
-                  "w-4 h-4 text-muted-foreground transition-transform",
+                  "w-4 h-4 transition-transform",
+                  isActive ? "text-primary" : "text-muted-foreground",
                   isGroupOpen(group.id) && "rotate-180"
                 )}
               />
@@ -272,10 +359,14 @@ export function FiltersSection({
               </div>
             )}
           </div>
-        ))}
+          );
+        })}
         {Object.keys(filterAnswerData ?? {}).map((group) => {
           const groupData = filterAnswerData?.[group];
           if (!groupData) return null;
+          const answerOptionNames = Object.keys(groupData.values);
+          const answerActiveCount = getGroupActiveCount(group, answerOptionNames);
+          const answerIsActive = answerActiveCount > 0;
           return (
             <div key={group} className="border-b border-border last:border-b-0">
               {/* Group Header */}
@@ -290,8 +381,16 @@ export function FiltersSection({
                       }}
                       className="w-full flex items-center justify-between py-3 text-left hover:bg-muted transition px-2 rounded"
                     >
-                      <span className="font-medium text-sm text-foreground">
+                      <span className={cn(
+                        "font-medium text-sm flex items-center gap-2",
+                        answerIsActive ? "text-primary" : "text-foreground"
+                      )}>
                         {t(groupData.label)}
+                        {answerIsActive && (
+                          <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold">
+                            {answerActiveCount}
+                          </span>
+                        )}
                       </span>
                     </button>
                   ) :
@@ -300,12 +399,21 @@ export function FiltersSection({
                       onClick={() => toggleGroup(group)}
                       className="w-full flex items-center justify-between py-3 text-left hover:bg-muted transition px-2 rounded"
                     >
-                      <span className="font-medium text-sm text-foreground">
+                      <span className={cn(
+                        "font-medium text-sm flex items-center gap-2",
+                        answerIsActive ? "text-primary" : "text-foreground"
+                      )}>
                         {t(groupData.label)}
+                        {answerIsActive && (
+                          <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold">
+                            {answerActiveCount}
+                          </span>
+                        )}
                       </span>
                       <ChevronDown
                         className={cn(
-                          "w-4 h-4 text-muted-foreground transition-transform",
+                          "w-4 h-4 transition-transform",
+                          answerIsActive ? "text-primary" : "text-muted-foreground",
                           isGroupOpen(group) && "rotate-180"
                         )}
                       />
