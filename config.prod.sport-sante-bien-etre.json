@@ -157,7 +157,7 @@
                   "fr": "Trouver une activité",
                   "en": "Find an activity"
                 },
-                "path": "/structure",
+                "path": "/creneaux",
                 "variant": "default"
               }
             ],
@@ -1930,23 +1930,420 @@
             },
             "showFilters": true,
             "showSearch": true,
-            "searchPlaceholder": {
-              "fr": "Rechercher une structure...",
-              "en": "Search for a structure..."
-            } 
-          }
-        },
-        {
-          "type": "meeteem",
-          "id": "meeteem-section",
-          "props": {
-              "coform": "6928096adf5caf0d230e7f26",
-              "path": {
-                  "name": "sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdegc9sgox76p87n27",
-                  "description": "sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdeggo91owe8t9ovl4p",
-                  "address": "sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdmxe3qhkjb9qu74wli",
-                  "tags": "sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdn5hortmd4fjejidhh"
+            "dropdownFilters": [
+              {
+                "id": "activityType",
+                "label": {
+                  "fr": "Type d'activité",
+                  "en": "Activity type"
+                },
+                "field": "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdegdo93f77wi3y186s",
+                "multiple": false,
+                "options": [
+                  {
+                    "id": "sports-collectif",
+                    "value": "Sports collectifs",
+                    "label": {
+                      "fr": "Sports collectifs",
+                      "en": "Team sports"
+                    }
+                  },
+                  {
+                    "id": "activites-aquatiques",
+                    "value": "Activités aquatiques",
+                    "label": {
+                      "fr": "Activités aquatiques",
+                      "en": "Aquatic activities"
+                    }
+                  },
+                  {
+                    "id": "activites-athletiques",
+                    "value": "Activités athlétiques",
+                    "label": {
+                      "fr": "Activités athlétiques",
+                      "en": "Athletic activities"
+                    }
+                  },
+                  {
+                    "id": "activites-de-pleine-nature",
+                    "value": "Activités de pleine nature",
+                    "label": {
+                      "fr": "Activités de pleine nature",
+                      "en": "Outdoor activities"
+                    }
+                  },
+                  {
+                    "id": "activites-gymniques",
+                    "value": "Activités gymniques/expression/forme et force",
+                    "label": {
+                      "fr": "Activités",
+                      "en": "Gymnastic"
+                    }
+                  },
+                  {
+                    "id": "sports-de-raquettes",
+                    "value": "Sports de raquettes",
+                    "label": {
+                      "fr": "Sports de raquettes",
+                      "en": "Racket sports"
+                    }
+                  },
+                  {
+                    "id": "sports-urbains",
+                    "value": "Sports urbains",
+                    "label": {
+                      "fr": "Sports urbains",
+                      "en": "Urban sports"
+                    }
+                  },
+                  {
+                    "id": "arts-martiaux-combats",
+                    "value": "Arts martiaux et combats",
+                    "label": {
+                      "fr": "Arts martiaux et combats",
+                      "en": "Martial arts and combat"
+                    }
+                  },
+                  {
+                    "id": "autres-sports",
+                    "value": "Autres sports",
+                    "label": {
+                      "fr": "Autres sports",
+                      "en": "Other sports"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "beneficiaries",
+                "label": {
+                  "fr": "Bénéficiaires",
+                  "en": "Beneficiaries"
+                },
+                "field": "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdmyf2gky9capf1vcfl",
+                "multiple": true,
+                "options": [
+                  {
+                    "id": "enfants",
+                    "value": "Enfants (2-9 ans)",
+                    "label": {
+                      "fr": "Enfants (2-9 ans)",
+                      "en": "Children (2-9 years)"
+                    }
+                  },
+                  {
+                    "id": "adolescents",
+                    "value": "Pré-adolescents/Adolescents (10-17 ans)",
+                    "label": {
+                      "fr": "Pré-adolescents/Adolescents (10-17 ans)",
+                      "en": "Teens (10-17 years)"
+                    }
+                  },
+                  {
+                    "id": "adultes",
+                    "value": "Personnes en perte d'autonomie",
+                    "label": {
+                      "fr": "Personnes en perte d'autonomie",
+                      "en": "Adults with loss of autonomy"
+                    }
+                  },
+                  {
+                    "id": "femmes-enceintes",
+                    "value": "Femmes enceintes",
+                    "label": {
+                      "fr": "Femmes enceintes",
+                      "en": "Pregnant women"
+                    }
+                  },
+                  {
+                    "id": "personnes-situation-handicap",
+                    "value": "Personnes en situation de handicap",
+                    "label": {
+                      "fr": "Personnes en situation de handicap",
+                      "en": "People with disabilities"
+                    }
+                  },
+                  {
+                    "id": "personnes-plus-55-ans",
+                    "value": "Personnes de plus de 55 ans",
+                    "label": {
+                      "fr": "Personnes de plus de 55 ans",
+                      "en": "People over 55 years old"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "sportHealthType",
+                "label": {
+                  "fr": "Type de Sport Santé",
+                  "en": "Sport-health type"
+                },
+                "field": "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdn1cs8on3yru1p80lq",
+                "multiple": false,
+                "options": [
+                  {
+                    "id": "ssso",
+                    "value": "Sport santé sur ordonnance - SSsO",
+                    "label": {
+                      "fr": "Sport santé sur ordonnance",
+                      "en": "Sport health on prescription"
+                    }
+                  },
+                  {
+                    "id": "sspt",
+                    "value": "Sport santé pour tous - SSpT",
+                    "label": {
+                      "fr": "Sport santé pour tous",
+                      "en": "Sport health for all"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "postalCode",
+                "label": {
+                  "fr": "Code postal",
+                  "en": "Postal code"
+                },
+                "field": "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdr0xcsmmpnr6ez17q.address.postalCode",
+                "multiple": false,
+                "options": [
+                  {
+                    "id": "97400",
+                    "value": "97400",
+                    "label": {
+                      "fr": "97400",
+                      "en": "97400"
+                    }
+                  },
+                  {
+                    "id": "97410",
+                    "value": "97410",
+                    "label": {
+                      "fr": "97410",
+                      "en": "97410"
+                    }
+                  },
+                  {
+                    "id": "97411",
+                    "value": "97411",
+                    "label": {
+                      "fr": "97411",
+                      "en": "97411"
+                    }
+                  },
+                  {
+                    "id": "97412",
+                    "value": "97412",
+                    "label": {
+                      "fr": "97412",
+                      "en": "97412"
+                    }
+                  },
+                  {
+                    "id": "97416",
+                    "value": "97416",
+                    "label": {
+                      "fr": "97416",
+                      "en": "97416"
+                    }
+                  },
+                  {
+                    "id": "97418",
+                    "value": "97418",
+                    "label": {
+                      "fr": "97418",
+                      "en": "97418"
+                    }
+                  },
+                  {
+                    "id": "97419",
+                    "value": "97419",
+                    "label": {
+                      "fr": "97419",
+                      "en": "97419"
+                    }
+                  },
+                  {
+                    "id": "97420",
+                    "value": "97420",
+                    "label": {
+                      "fr": "97420",
+                      "en": "97420"
+                    }
+                  },
+                  {
+                    "id": "97421",
+                    "value": "97421",
+                    "label": {
+                      "fr": "97421",
+                      "en": "97421"
+                    }
+                  },
+                  {
+                    "id": "97426",
+                    "value": "97426",
+                    "label": {
+                      "fr": "97426",
+                      "en": "97426"
+                    }
+                  },
+                  {
+                    "id": "97427",
+                    "value": "97427",
+                    "label": {
+                      "fr": "97427",
+                      "en": "97427"
+                    }
+                  },
+                  {
+                    "id": "97429",
+                    "value": "97429",
+                    "label": {
+                      "fr": "97429",
+                      "en": "97429"
+                    }
+                  },
+                  {
+                    "id": "97430",
+                    "value": "97430",
+                    "label": {
+                      "fr": "97430",
+                      "en": "97430"
+                    }
+                  },
+                  {
+                    "id": "97431",
+                    "value": "97431",
+                    "label": {
+                      "fr": "97431",
+                      "en": "97431"
+                    }
+                  },
+                  {
+                    "id": "97433",
+                    "value": "97433",
+                    "label": {
+                      "fr": "97433",
+                      "en": "97433"
+                    }
+                  },
+                  {
+                    "id": "97434",
+                    "value": "97434",
+                    "label": {
+                      "fr": "97434",
+                      "en": "97434"
+                    }
+                  },
+                  {
+                    "id": "97435",
+                    "value": "97435",
+                    "label": {
+                      "fr": "97435",
+                      "en": "97435"
+                    }
+                  },
+                  {
+                    "id": "97436",
+                    "value": "97436",
+                    "label": {
+                      "fr": "97436",
+                      "en": "97436"
+                    }
+                  },
+                  {
+                    "id": "97438",
+                    "value": "97438",
+                    "label": {
+                      "fr": "97438",
+                      "en": "97438"
+                    }
+                  },
+                  {
+                    "id": "97440",
+                    "value": "97440",
+                    "label": {
+                      "fr": "97440",
+                      "en": "97440"
+                    }
+                  },
+                  {
+                    "id": "97450",
+                    "value": "97450",
+                    "label": {
+                      "fr": "97450",
+                      "en": "97450"
+                    }
+                  },
+                  {
+                    "id": "97460",
+                    "value": "97460",
+                    "label": {
+                      "fr": "97460",
+                      "en": "97460"
+                    }
+                  },
+                  {
+                    "id": "97470",
+                    "value": "97470",
+                    "label": {
+                      "fr": "97470",
+                      "en": "97470"
+                    }
+                  },
+                  {
+                    "id": "97480",
+                    "value": "97480",
+                    "label": {
+                      "fr": "97480",
+                      "en": "97480"
+                    }
+                  },
+                  {
+                    "id": "97490",
+                    "value": "97490",
+                    "label": {
+                      "fr": "97490",
+                      "en": "97490"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "publicType",
+                "label": {
+                  "fr": "Type de publique",
+                  "en": "Audience type"
+                },
+                "field": "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdmya4gmezjilnyjj5f",
+                "multiple": true,
+                "options": [
+                  {
+                    "id": "mixte",
+                    "value": "mixte",
+                    "label": {
+                      "fr": "Mixte",
+                      "en": "Mixed"
+                    }
+                  },
+                  {
+                    "id": "femmes",
+                    "value": "femmes",
+                    "label": {
+                      "fr": "Femmes",
+                      "en": "Women"
+                    }
+                  }
+                ]
               }
+            ],
+            "searchPlaceholder": {
+              "fr": "Rechercher une créneaux...",
+              "en": "Search for a slot...",
+              "field": "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdegc9sgox76p87n27"
+            } 
           }
         },
         {
@@ -1954,12 +2351,15 @@
           "id": "section-creneaux-cards",
           "props": {
             "useFilter": true,
-            "showMap": false,
-            "enableMap": false,
+            "showMap": true,
+            "enableMap": true,
             "showActiveFiltersTypes": true,
-            "showActiveFiltersTags": true,
+            "showActiveFiltersTags": false,
             "disableInfiniteScroll": false,
-            "showRole": false,
+            "customHeader": {
+              "showMapButton": false
+            },
+            "defaultViewMode" : "list",
             "baseParams": {
               "defaultTypes": [
                 "answers"
@@ -1977,9 +2377,8 @@
                 "xl": 3
               },
               "card": {
-                "type": "ssbe",
-                "variant": "ssbe",
-                "detailsMode": "drawer"
+                "type": "card-answer",
+                "detailsMode": "dialog"
               }
             }
           }

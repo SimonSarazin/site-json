@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
     DropdownMenu,
+    DropdownMenuCheckboxItem,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuSeparator,
@@ -28,6 +29,8 @@ interface TitleWithFiltersRezoLaMerSectionProps {
     id?: string;
     props: TitleWithFiltersRezoLaMerProps;
 }
+
+type DropdownFilterConfig = NonNullable<TitleWithFiltersRezoLaMerProps["dropdownFilters"]>[number];
 
 const getButtonClasses = (variant?: string) => {
     switch (variant) {
@@ -261,11 +264,14 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
     const { t: tLocalized } = useLocalization();
     const tKey = useT("modules/search");
     const [activeCategory, setActiveCategory] = useState("all");
-    
+
     const pageFilters = usePageFiltersOptional();
     const setSearchQuery = useMemo(() => pageFilters?.setSearchQuery ?? (() => {}), [pageFilters?.setSearchQuery]);
     const setSelectedFilters = pageFilters?.setSelectedFilters ?? (() => {});
+    const setSearchByFields = pageFilters?.setSearchByFields ?? (() => {});
     const selectedFilters = pageFilters?.selectedFilters ?? {};
+    const searchByFields = pageFilters?.searchByFields ?? {};
+    const hasDropdownFilters = (props.dropdownFilters?.length ?? 0) > 0;
 
     const activeType = selectedFilters['type']?.[0] ?? "all";
 
@@ -303,6 +309,89 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
                 type: [typeId]
             }));
         }
+    };
+
+    const getDropdownSelectedValues = (filter: DropdownFilterConfig): string[] => {
+        if (filter.field) {
+            return filter.options
+                .filter((option) => !!searchByFields[`${filter.id}:${option.id}`])
+                .map((option) => option.id);
+        }
+
+        return selectedFilters[filter.id] ?? [];
+    };
+
+    const setDropdownSelection = (filter: DropdownFilterConfig, nextSelectedIds: string[]) => {
+        if (filter.field) {
+            const fieldName = filter.field;
+            setSearchByFields((prev) => {
+                const prefix = `${filter.id}:`;
+                const cleaned = Object.fromEntries(
+                    Object.entries(prev).filter(([key]) => !key.startsWith(prefix))
+                );
+
+                if (nextSelectedIds.length === 0) {
+                    return cleaned;
+                }
+
+                const next = { ...cleaned };
+                nextSelectedIds.forEach((selectedId) => {
+                    const option = filter.options.find((item) => item.id === selectedId);
+                    if (!option) return;
+
+                    next[`${filter.id}:${selectedId}`] = {
+                        field: fieldName,
+                        value: [option.value ?? option.id],
+                    };
+                });
+
+                return next;
+            });
+            return;
+        }
+
+        setSelectedFilters((prev) => {
+            const next = { ...prev };
+
+            if (nextSelectedIds.length === 0) {
+                delete next[filter.id];
+                return next;
+            }
+
+            next[filter.id] = nextSelectedIds;
+            return next;
+        });
+    };
+
+    const toggleDropdownOption = (filter: DropdownFilterConfig, optionId: string) => {
+        const currentSelection = getDropdownSelectedValues(filter);
+        const isSelected = currentSelection.includes(optionId);
+        const isMultiple = filter.multiple === true;
+
+        const nextSelection = isSelected
+            ? currentSelection.filter((item) => item !== optionId)
+            : isMultiple
+                ? [...currentSelection, optionId]
+                : [optionId];
+
+        setDropdownSelection(filter, nextSelection);
+    };
+
+    const getDropdownTriggerLabel = (filter: DropdownFilterConfig): string => {
+        const selectedIds = getDropdownSelectedValues(filter);
+
+        if (selectedIds.length === 0) {
+            return tLocalized(filter.label);
+        }
+
+        if (selectedIds.length === 1) {
+            const selectedOption = filter.options.find((option) => option.id === selectedIds[0]);
+            if (selectedOption) {
+                return tLocalized(selectedOption.label);
+            }
+        }
+
+        return `${tLocalized(filter.label)} (${selectedIds.length})`;
     };
 
     return (
@@ -434,20 +523,62 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
                 )}
             </div>
 
-            {props.showSearch && (
-                <div className="container mx-auto max-w-2xl px-4 mb-8">
-                    <div className="relative">
-                        <DynamicIcon
-                            name="search"
-                            className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground"
-                        />
-                        <Input
-                            type="search"
-                            placeholder={props.searchPlaceholder ? tLocalized(props.searchPlaceholder) : tKey("Rechercher...")}
-                            value={localSearchQuery}
-                            onChange={(e) => setLocalSearchQuery(e.target.value)}
-                            className="pl-12 h-12 bg-secondary/40 backdrop-blur-ocean border-primary/30 focus:border-primary text-foreground placeholder:text-muted-foreground"
-                        />
+            {(props.showSearch || hasDropdownFilters) && (
+                <div className={`container mx-auto px-4 mb-8 ${hasDropdownFilters ? "max-w-6xl" : "max-w-2xl"}`}>
+                    <div className={`gap-3 ${hasDropdownFilters ? "flex flex-col lg:flex-row lg:items-center" : ""}`}>
+                        {props.showSearch && (
+                            <div className={hasDropdownFilters ? "relative flex-1 min-w-[220px]" : "relative"}>
+                                <DynamicIcon
+                                    name="search"
+                                    className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground"
+                                />
+                                <Input
+                                    type="search"
+                                    placeholder={props.searchPlaceholder ? tLocalized(props.searchPlaceholder) : tKey("Rechercher...")}
+                                    value={localSearchQuery}
+                                    onChange={(e) => setLocalSearchQuery(e.target.value)}
+                                    className={hasDropdownFilters
+                                        ? "pl-12 h-12 rounded-full bg-secondary/40 backdrop-blur-ocean border-primary/30 focus:border-primary text-foreground placeholder:text-muted-foreground"
+                                        : "pl-12 h-12 bg-secondary/40 backdrop-blur-ocean border-primary/30 focus:border-primary text-foreground placeholder:text-muted-foreground"
+                                    }
+                                />
+                            </div>
+                        )}
+
+                        {hasDropdownFilters && props.dropdownFilters?.map((filter) => {
+                            const selectedValues = getDropdownSelectedValues(filter);
+
+                            return (
+                                <DropdownMenu key={filter.id}>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            className="h-12 min-w-[200px] max-w-full justify-between rounded-full border-primary/40 bg-background/85 px-4 text-foreground hover:bg-background"
+                                        >
+                                            <span className="truncate">{getDropdownTriggerLabel(filter)}</span>
+                                            <ChevronDown className="ml-2 h-4 w-4 shrink-0" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="start" className="w-72 max-h-72 overflow-y-auto">
+                                        <DropdownMenuItem onClick={() => setDropdownSelection(filter, [])}>
+                                            {filter.allLabel ? tLocalized(filter.allLabel) : tKey("Tous")}
+                                        </DropdownMenuItem>
+
+                                        {filter.options.length > 0 && <DropdownMenuSeparator />}
+
+                                        {filter.options.map((option) => (
+                                            <DropdownMenuCheckboxItem
+                                                key={option.id}
+                                                checked={selectedValues.includes(option.id)}
+                                                onCheckedChange={() => toggleDropdownOption(filter, option.id)}
+                                            >
+                                                {tLocalized(option.label)}
+                                            </DropdownMenuCheckboxItem>
+                                        ))}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            );
+                        })}
                     </div>
                 </div>
             )}

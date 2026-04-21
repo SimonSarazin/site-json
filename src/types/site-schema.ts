@@ -447,6 +447,21 @@ export const ActionButtonSchema = z.object({
 
 export type ActionButton = z.infer<typeof ActionButtonSchema>;
 
+const TitleWithFiltersDropdownOptionSchema = z.object({
+  id: z.string(),
+  label: LocalizedString,
+  value: z.string().optional(),
+});
+
+const TitleWithFiltersDropdownSchema = z.object({
+  id: z.string(),
+  label: LocalizedString,
+  field: z.string().optional(),
+  multiple: z.boolean().optional(),
+  allLabel: LocalizedString.optional(),
+  options: z.array(TitleWithFiltersDropdownOptionSchema).default([]),
+});
+
 export const TitleWithFiltersRezoLaMerSchema = z.object({
   type: z.literal("title-with-filters-rezo-la-mer"),
   id: z.string().optional(),
@@ -465,6 +480,7 @@ export const TitleWithFiltersRezoLaMerSchema = z.object({
         label: LocalizedString,
       })
     ).optional(),
+    dropdownFilters: z.array(TitleWithFiltersDropdownSchema).optional(),
     buttons: z.array(ActionButtonSchema).optional(),
     showSearch: z.boolean().optional(),
     searchPlaceholder: LocalizedString.optional(),
