@@ -2823,7 +2823,7 @@
               "type": "profile-tab-layout",
               "leftSections": [
                 {
-                  "type": "profile-about"
+                  "type": "profile-about-ssbe"
                 },
                 {
                   "type": "profile-organizer"

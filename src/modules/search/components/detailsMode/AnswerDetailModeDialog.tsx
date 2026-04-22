@@ -245,7 +245,7 @@ export default function AnswerDetailModeDialog({ openDetails, setOpenDetails, it
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <InfoCard icon={Heart} title="Activité">
                 <p className="text-sm font-semibold text-foreground">{typeActivity || title}</p>
-                <p className="text-xs text-muted-foreground">{typeGender || type}</p>
+                <p className="text-xs text-muted-foreground">{typeGender}</p>
               </InfoCard>
 
               <InfoCard icon={Users} title="Bénéficiaires">

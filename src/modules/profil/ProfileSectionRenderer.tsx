@@ -6,6 +6,7 @@ import type {
   ProfileInfoSection,
   ProfileTiersLieuxInfoSection,
   ProfileTiersLieuxAboutSection,
+  ProfileSsbeAboutSection,
   ProfileMapSection,
   ProfileMembersSection,
   ProfileOrganizerSection,
@@ -39,6 +40,7 @@ const ProfileOpeningHours = lazy(() => import("./components/sections/ProfileOpen
 const ProfileTabLayout = lazy(() => import("./components/sections/ProfileTabLayout"));
 const ProfileTiersLieuxInfo = lazy(() => import("./components/sections/custom/ProfileTiersLieuxInfo"));
 const ProfileTiersLieuxAbout = lazy(() => import("./components/sections/custom/ProfilTiersLieuxAbout"));
+const ProfileSsbeAbout = lazy(() => import("./components/sections/custom/ProfileSsbeAbout"));
 // Lazy load des templates
 const ProfileTemplateDynamic = lazy(() => import("./components/templates/ProfileTemplateDynamic"));
 
@@ -52,6 +54,7 @@ const PROFILE_SECTION_TYPES = [
   "profile-info",
   "profile-info-tl",
   "profile-about",
+  "profile-about-ssbe",
   "profile-about-tl",
   "profile-map",
   "profile-organizer",
@@ -105,6 +108,8 @@ export function ProfileSectionRenderer({ section }: ProfileSectionRendererProps)
 
     case "profile-about":
       return <ProfileAbout section={section as ProfileAboutSection} />;
+    case "profile-about-ssbe":
+      return <ProfileSsbeAbout section={section as ProfileSsbeAboutSection} />;
     case "profile-about-tl":
       return <ProfileTiersLieuxAbout section={section as ProfileTiersLieuxAboutSection} />;
 
