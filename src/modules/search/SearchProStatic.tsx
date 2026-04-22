@@ -553,6 +553,11 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                       {typeof customHeader.title === "string"
                         ? customHeader.title
                         : t(customHeader.title)}
+                      {totalCount !== undefined && totalCount !== null ? (
+                        <span className="ml-2 text-base font-normal text-muted-foreground">
+                          ({totalCount})
+                        </span>
+                      ) : null}
                     </h2>
                   )}
                 </div>

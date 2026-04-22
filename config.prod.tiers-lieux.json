@@ -56,7 +56,7 @@
             "description": {
               "fr": "Trouver la salle de réunion pour vous accueillir."
             },
-            "path": "/lieux?services=Salle de réunion"
+            "path": "/lieux?services=Salle de Réunion"
           },
           {
             "label": {
@@ -65,7 +65,7 @@
             "description": {
               "fr": "Cuisines partagées, bar participatifs, tiers-lieux nourriciers."
             },
-            "path": "/lieux?typologies=foodlab"
+            "path": "/lieux?typologies=Cuisine partagée / Foodlab"
           },
           {
             "label": {
@@ -74,7 +74,7 @@
             "description": {
               "fr": "Les bureaux partagés et espaces de Coworking."
             },
-            "path": "/lieux?typologies=coworking"
+            "path": "/lieux?services=Coworking"
           },
           {
             "label": {
@@ -83,7 +83,7 @@
             "description": {
               "fr": "Espaces culturels et livinglabs."
             },
-            "path": "/lieux?typologies=nourricier"
+            "path": "/lieux?typologies=LivingLab / Laboratoire d'innovation sociale"
           },
           {
             "label": {
@@ -92,7 +92,7 @@
             "description": {
               "fr": "Les Fablabs, Makerspace et Hackerspace."
             },
-            "path": "/lieux?typologies=fablab"
+            "path": "/lieux?typologies=Fablab / Makerspace / Hackerspace (Espaces du Faire)"
           },
           {
             "label": {
@@ -101,7 +101,7 @@
             "description": {
               "fr": "Les lieux pouvant vous accueillir pour plusieurs jours."
             },
-            "path": "/lieux?typologies=nourricier"
+            "path": "/lieux?services=Hébérgement"
           }
         ]
       },
