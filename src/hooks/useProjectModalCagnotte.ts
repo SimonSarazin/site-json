@@ -62,22 +62,18 @@ function getAnswerDepenses(answerEntity: UnknownRecord | null | undefined): Unkn
   return [];
 }
 
-/**
- * Hook pour récupérer la cagnotte d'un projet spécifique via projectModalId
- * Utilisé pour afficher le montant sur le bouton du header (qui reste fixe)
- */
-import { useQueryClient } from '@tanstack/react-query';
 
 export function useProjectModalCagnotte(
   entity: unknown,
   projectModalId: string | null | undefined
-): ProjectModalCagnotteData & { refresh: () => void } {
+): ProjectModalCagnotteData & { refresh: () => Promise<void> } {
   const entityObj = (entity as UnknownRecord | null) || null;
   const entityId = (entityObj?.id as string | undefined) || null;
 
   const queryClient = useQueryClient();
+  const queryKey = ['projectModalCagnotte', entityId, projectModalId] as const;
   const { data, isLoading, error, refetch } = useQuery<QueryPayload>({
-    queryKey: ['projectModalCagnotte', entityId, projectModalId],
+    queryKey,
     queryFn: async () => {
       if (!entityObj || !projectModalId) {
         return { cagnotteAmount: 0, cagnotteTarget: 0, projectName: '' };
@@ -228,9 +224,9 @@ export function useProjectModalCagnotte(
   });
 
   // Permet de forcer le refresh depuis l'extérieur
-  const refresh = () => {
-    queryClient.invalidateQueries({ queryKey: ['projectModalCagnotte', entityId, projectModalId] });
-    refetch();
+  const refresh = async (): Promise<void> => {
+    await queryClient.invalidateQueries({ queryKey, exact: true, refetchType: 'active' });
+    await refetch();
   };
 
   return {
@@ -238,7 +234,7 @@ export function useProjectModalCagnotte(
     cagnotteTarget: data?.cagnotteTarget || 0,
     projectName: data?.projectName || '',
     isLoading,
-    error: (error as Error) || null,
+    error: error instanceof Error ? error : null,
     refresh,
   };
 }
