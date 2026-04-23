@@ -6,10 +6,34 @@ import { fileURLToPath } from "url";
 import serialize from "serialize-javascript";
 import dotenv from "dotenv";
 import { helloassoCheckoutIntentHandler, helloassoTokenHandler, helloassoCallbackHandler, helloassoCheckoutStatusHandler, helloassoDiagnosticHandler } from "./api/helloasso-checkout.js";
+import { createImageOptimizer } from "./middleware/imageOptimizer.js";
+import { createImageUpload } from "./middleware/imageUpload.js";
 
 dotenv.config();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+function resolveSiteConfigPath() {
+  if (process.env.SITE_CONFIG_PATH) return process.env.SITE_CONFIG_PATH;
+
+  const slug = process.env.VITE_SLUG;
+  if (!slug) return null;
+
+  const sitesPath = path.resolve(process.cwd(), "sites.json");
+  if (!fs.existsSync(sitesPath)) return null;
+
+  const sites = JSON.parse(fs.readFileSync(sitesPath, "utf-8"));
+  const site = sites.find((s) => s.slug === slug);
+  if (!site) {
+    console.warn(`[sites.json] Slug "${slug}" non trouvé, slugs disponibles : ${sites.map((s) => s.slug).join(", ")}`);
+    return null;
+  }
+
+  const configPath = `./${site.config}`;
+  process.env.SITE_CONFIG_PATH = configPath;
+  console.log(`[sites.json] Slug "${slug}" → ${site.config}`);
+  return configPath;
+}
 
 async function loadSiteConfig() {
   // 1. JSON inline (variable d’environnement complète)
@@ -21,21 +45,20 @@ async function loadSiteConfig() {
     }
   }
 
-  // 2. Chemin vers un fichier JSON
-  if (process.env.SITE_CONFIG_PATH) {
+  const configRelPath = resolveSiteConfigPath();
+  if (configRelPath) {
     try {
-      const envPath   = process.env.SITE_CONFIG_PATH;
-      const filePath  = path.isAbsolute(envPath)
-        ? envPath
-        : path.resolve(process.cwd(), envPath);
-      const raw      = fs.readFileSync(filePath, "utf-8");
+      const filePath = path.isAbsolute(configRelPath)
+        ? configRelPath
+        : path.resolve(process.cwd(), configRelPath);
+      const raw = fs.readFileSync(filePath, "utf-8");
       return JSON.parse(raw);
     } catch (e) {
-      throw new Error(`Impossible de lire SITE_CONFIG_PATH : ${e.message}`);
+      throw new Error(`Impossible de lire ${configRelPath} : ${e.message}`);
     }
   }
 
-  return null; // Pas d'erreur, mais pas de config non plus
+  return null;
 }
 
 async function createServer() {
@@ -60,6 +83,16 @@ async function createServer() {
   app.get("/api/helloasso/orgs", helloassoDiagnosticHandler);
 
   // ⚠️ Middleware Vite DOIT être après les routes API
+  // Image optimizer — must be before Vite middlewares to intercept /img
+  app.use("/img", createImageOptimizer({
+    staticRoot: path.resolve(__dirname, "../public"),
+    cacheDir: path.resolve(__dirname, "../.cache/images"),
+  }));
+
+  app.post("/api/admin/upload-image", createImageUpload({
+    staticRoot: path.resolve(__dirname, "../public"),
+  }));
+
   app.use(vite.middlewares);
 
   /* ---- Charger la config UNE SEULE FOIS au démarrage ---------------- */
@@ -70,6 +103,46 @@ async function createServer() {
     cachedConfig = demoSiteConfig;
   }
   console.log("Config chargée :", cachedConfig?.meta?.title?.fr || "Config OK");
+
+  if (process.env.SITE_CONFIG_PATH) {
+    const envPath = process.env.SITE_CONFIG_PATH;
+    const configPath = path.isAbsolute(envPath)
+      ? envPath
+      : path.resolve(process.cwd(), envPath);
+
+    fs.watchFile(configPath, { interval: 500 }, () => {
+      try {
+        const raw = fs.readFileSync(configPath, "utf-8");
+        const newConfig = JSON.parse(raw);
+        cachedConfig = newConfig;
+        console.log("[HMR] Config reloaded, sending to clients...");
+        vite.ws.send({ type: "custom", event: "config-update", data: newConfig });
+      } catch (e) {
+        console.error("[HMR] Config reload error:", e.message);
+      }
+    });
+    console.log(`[HMR] Watching config: ${configPath}`);
+  }
+
+  vite.ws.on("config-save", (data) => {
+    if (!process.env.SITE_CONFIG_PATH) {
+      console.error("[Admin] SITE_CONFIG_PATH non défini, impossible de sauvegarder");
+      return;
+    }
+    const envPath = process.env.SITE_CONFIG_PATH;
+    const configPath = path.isAbsolute(envPath)
+      ? envPath
+      : path.resolve(process.cwd(), envPath);
+
+    try {
+      const json = JSON.stringify(data, null, 2) + "\n";
+      fs.writeFileSync(configPath, json, "utf-8");
+      cachedConfig = data;
+      console.log("[Admin] Config saved to", configPath);
+    } catch (e) {
+      console.error("[Admin] Save error:", e.message);
+    }
+  });
 
   app.use((req, res, next) => {
   // Exclure les routes API
@@ -130,16 +203,29 @@ async function createServer() {
                     dehydratedState, { isJSON: true }
                   )}</script>`);
         res.write(beforeBody);          // </head><body><div id="root">
-      });
+      }, tail);                           // closing tags avec le script entry-client
       timings.render = (performance.now() - t0).toFixed(1);
+
+      // S'assurer que la réponse est bien fermée après le streaming
+      if (!res.writableEnded) {
+        res.end();
+      }
 
       timings.total = (performance.now() - startTotal).toFixed(1);
       console.log(`[PERF] ${url} → template:${timings.template}ms | loadEntry:${timings.loadEntryServer}ms | render:${timings.render}ms | TOTAL:${timings.total}ms`);
 
     } catch (e) {
       vite.ssrFixStacktrace(e);
+      // Ignorer les erreurs de stream fermé (client déconnecté pendant le cold start)
+      if (e?.code === 'ERR_STREAM_WRITE_AFTER_END' || e?.code === 'ERR_STREAM_DESTROYED') {
+        return;
+      }
       console.error("SSR Error:", e);
-      res.status(500).end("Internal Server Error");
+      if (!res.headersSent) {
+        res.status(500).end("Internal Server Error");
+      } else {
+        res.end();
+      }
     }
   });
   /* ------------------------------------------------------------------ */

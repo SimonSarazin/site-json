@@ -1,0 +1,597 @@
+{
+  "version": "1.0.0",
+  "generated": "2026-03-05T10:00:00.000Z",
+  "meta": {
+    "title": {
+      "fr": "Commune Transparente",
+      "en": "Transparent Commune"
+    },
+    "description": {
+      "fr": "La plateforme collaborative pour connecter et dynamiser votre commune.",
+      "en": "The collaborative platform to connect and energize your commune."
+    },
+    "defaultLang": "fr",
+    "languages": ["fr"],
+    "favicon": "/images/communeTransparente/logo.png",
+    "themeColor": "#6366f1",
+    "keywords": [
+      "commune transparente",
+      "citoyens",
+      "démocratie participative",
+      "gouvernance locale",
+      "territoire",
+      "transparence"
+    ]
+  },
+  "header": {
+    "type": "commune-transparente",
+    "path": "/",
+    "logo": "/images/communeTransparente/logo.png",
+    "logoTitle": {
+      "fr": "Commune Transparente",
+      "en": "Transparent Commune"
+    },
+    "ctaButton": {
+      "label": { "fr": "Se connecter", "en": "Sign in" },
+      "path": "/se-connecter"
+    },
+    "nav": [
+      { "label": { "fr": "Projet", "en": "Project" }, "path": "/projets" },
+      { "label": { "fr": "Citoyens", "en": "Citizens" }, "path": "/citoyens" },
+      { "label": { "fr": "Ressources", "en": "Resources" }, "path": "/ressources" },
+      { "label": { "fr": "Agenda", "en": "Agenda" }, "path": "/agenda" }
+    ],
+    "sticky": true,
+    "transparent": true,
+    "height": "md",
+    "utilities": {
+      "themeSwitch": false,
+      "langSwitch": false,
+      "search": false,
+      "auth": true,
+      "cart": false,
+      "notifications": false
+    }
+  },
+  "pages": [
+    {
+      "path": "/",
+      "title": { "fr": "Accueil - Commune Transparente", "en": "Home - Transparent Commune" },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "hero-commune-transparente",
+          "id": "hero-commune-transparente",
+          "props": {
+            "headline": { 
+              "fr": "Bienvenu à Étang de Salé", 
+              "en": "Welcome to Étang de Salé" 
+            },
+            "logoImage": "/images/communeTransparente/logo.png",
+            "subhead": { 
+              "fr": "Une ville tournée vers l'avenir, entre transformation et solidarité", 
+              "en": "A city turned towards the future, between transformation and solidarity" 
+            },
+            "backgroundImage": "/images/communeTransparente/hero.png",
+            "backgroundImageAlt": { "fr": "Bienvenu à Étang de Salé", "en": "Welcome to Étang de Salé" },
+            "badges": [
+              { "icon": "users", "label": { "fr": "Communauté citoyenne", "en": "Citizen community" }, "href": "/citoyens" },
+              { "icon": "share-2", "label": { "fr": "Partage de propositions", "en": "Sharing proposals" }, "href": "/ressources" },
+              { "icon": "heart-handshake", "label": { "fr": "Projets Partagés", "en": "Shared Projects" }, "href": "/projets" }
+            ],
+            "ctaButtons": [
+              { "label": { "fr": "En savoir plus", "en": "Learn more" }, "path": "", "variant": "default" },
+              { "label": { "fr": "Découvrir le Territoire", "en": "Discover the Territory" }, "path": "", "variant": "outline" }
+            ],
+            "showScrollIndicator": false
+          }
+        },
+        {
+          "type": "thematics",
+          "id": "nos-thematiques",
+          "props": {
+            "title": { "fr": "Nos Thématiques", "en": "Our Themes" },
+            "subtitle": { "fr": "Explorez les différentes dimensions de votre Commune", "en": "Explore the different dimensions of your Commune" },
+            "emptyMessage": { "fr": "Aucune thématique n'est actuellement associée à cette commune", "en": "No themes are currently associated with this commune" }
+          }
+        },
+        {
+          "type": "cardCountCT",
+          "id": "territoire-en-chiffres",
+          "props": {
+            "title": { "fr": "Notre Territoire en Chiffres", "en": "Our Territory in Numbers" },
+            "subtitle": { "fr": "Une communauté active et engagée", "en": "An active and committed community" },
+            "bg": "bg-cyan-500",
+            "baseParams": {
+              "defaultTypes": ["organizations","projects", "events", "citoyens", "poi"],
+              "notSourceKey": true,
+              "defaultFilters": { }
+            },
+            "cards": [
+              { "countKey": "organizations", "label": { "fr": "Organisations", "en": "Organizations" }, "icon": "handshake", "color": "white" },
+              { "countKey": "poi", "label": { "fr": "Points d'intérêt", "en": "Points of Interest" }, "icon": "map-pin", "color": "white" },
+              { "countKey": "projects", "label": { "fr": "Projets", "en": "Projects" }, "icon": "layout-dashboard", "color": "white" },
+              { "countKey": "citoyens", "label": { "fr": "Citoyens", "en": "Citizens" }, "icon": "user", "color": "white" },
+              { "countKey": "events", "label": { "fr": "Événements", "en": "Events" }, "icon": "calendar-days", "color": "white" }
+            ]
+          }
+        },
+        {
+          "type": "commune-transparente-actions",
+          "id": "commune-transparente-actions",
+          "props": {
+            "imageSrc": "/images/communeTransparente/logo.png",
+            "imageAlt": { "fr": "Commune Transparente" },
+            "brandTitle": { "fr": "Commune Transparente" },
+            "description": {
+              "fr": "Favoriser la transparence et l'accès à l'information publique au sein de votre commune. Nous présentons ici des rubriques dédiées aux actions municipales, aux projets en cours, aux décisions publiques et aux données ouvertes."
+            },
+            "highlightText": {
+              "fr": "Une expérience claire et accessible, pensée pour renforcer la confiance et l'implication citoyenne."
+            },
+            "items": [
+              {
+                "title": { "fr": "Partage de Ressources" },
+                "description": {
+                  "fr": "Trouvez du soutien près de chez vous. Postez votre demande et laissez la communauté vous aider."
+                },
+                "icon": "clock-3",
+                "iconBg": "slate",
+                "buttons": [
+                  {
+                    "label": { "fr": "Proposer une ressource" },
+                    "action": "add-poi",
+                    "requiresAuth": true
+                  }
+                ]
+              },
+              {
+                "title": { "fr": "Besoins & Demandes" },
+                "description": {
+                  "fr": "Vous avez des compétences ou du temps ? Proposez vos services pour aider votre quartier."
+                },
+                "icon": "package",
+                "iconBg": "slate",
+                "buttons": [
+                  {
+                    "label": { "fr": "Proposer une offre" },
+                    "action": "add-offer",
+                    "requiresAuth": true
+                  }
+                ]
+              },
+              {
+                "title": { "fr": "Projets Locaux" },
+                "description": {
+                  "fr": "Présentez votre projet local pour trouver des soutiens, des bénévoles et des partenaires."
+                },
+                "icon": "map-pinned",
+                "iconBg": "slate",
+                "buttons": [
+                  {
+                    "label": { "fr": "Proposer un projet" },
+                    "action": "add-project",
+                    "requiresAuth": true
+                  },
+                  {
+                    "label": { "fr": "Voir les projets" },
+                    "href": "/projets",
+                    "variant": "secondary"
+                  }
+                ]
+              },
+              {
+                "title": { "fr": "Organisations" },
+                "description": {
+                  "fr": "Faites connaître une association, un club ou un collectif en l'ajoutant à notre annuaire local."
+                },
+                "icon": "building-2",
+                "iconBg": "slate",
+                "buttons": [
+                  {
+                    "label": { "fr": "Proposer une organisation" },
+                    "action": "add-organization",
+                    "requiresAuth": true 
+                  }
+                ]
+              },
+              {
+                "title": { "fr": "Événements" },
+                "description": {
+                  "fr": "Annoncez un événement pour le partager avec les habitants et les visiteurs."
+                },
+                "icon": "calendar-days",
+                "iconBg": "slate",
+                "buttons": [
+                  {
+                    "label": { "fr": "Proposer un événement" },
+                    "action": "add-event",
+                    "requiresAuth": true
+                  },
+                  {
+                    "label": { "fr": "Voir les événements" },
+                    "href": "/agenda",
+                    "variant": "secondary"
+                  }
+                ]
+              },
+              {
+                "title": { "fr": "Propositions" },
+                "description": {
+                  "fr": "Vous avez une idée pour améliorer votre commune ? Proposez-la et trouvez des soutiens pour la réaliser."
+                },
+                "icon": "lightbulb",
+                "iconBg": "slate",
+                "buttons": [
+                  {
+                    "label": { "fr": "Partage de Propositions" },
+                    "action": "add-poi",
+                    "requiresAuth": true
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/actualite",
+      "title": { "fr": "Actualité - Commune Transparente CT", "en": "News - Transparent Commune CT" },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "actualite-header",
+          "props": {
+            "headline": { "fr": "Actualité", "en": "News" },
+            "subhead": { "fr": "Toutes les actualités de votre commune", "en": "All news from your commune" }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "actualite-list",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "baseParams": { 
+              "defaultTypes": ["news"], 
+              "notSourceKey": true,
+              "defaultFilters": {
+                "$or" : {
+                  "address.localityId": "54c0965cf6b95c141800a527",
+                  "source.key": "etangsale1",
+                  "source.keys": "etangsale1"
+                }
+              } 
+            },
+            "list": { "columns": { "sm": 1, "md": 2, "lg": 3, "xl": 3 }, "card": { "type": "profile", "variant": "profile", "detailsMode": "drawer" } }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/projets",
+      "title": { "fr": "Projets - Commune Transparente CT", "en": "Projects - Transparent Commune CT" },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "projets-header",
+          "props": {
+            "headline": { "fr": "Projets", "en": "Projects" },
+            "subhead": { "fr": "Tous les projets portés par et pour les citoyens", "en": "All projects carried by and for the citizens" },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Proposer un projet",
+                  "en": "Submit a project"
+                },
+                "icon": "plus",
+                "action": "add-project",
+                "variant": "primary"
+              }
+            ],
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher...",
+              "en": "Search..."
+            }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "projets-list",
+          "props": {
+            "useFilter": true,
+            "showMap": true,
+            "enableMap": true,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "baseParams": { 
+              "defaultTypes": ["projects"], 
+              "notSourceKey": true,
+              "defaultFields": [
+                "name",
+                "shortDescription",
+                "siren",
+                "collection",
+                "email", 
+                "profilImageUrl",
+                "profilMediumImageUrl",
+                "profilThumbImageUrl",
+                "slug",
+                "tags",
+                "partners",
+                "links",
+                "date",
+                "address"
+              ],
+              "defaultFilters": { }
+            },
+            "list": { "columns": { "sm": 1, "md": 3, "lg": 5, "xl": 5 }, 
+            "card": { "type": "card-elts", "variant": "card-elts", "detailsMode": "drawer" } }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/citoyens",
+      "title": { "fr": "Citoyens - Commune Transparente CT", "en": "Citizens - Transparent Commune CT" },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "citoyens-header",
+          "props": {
+            "headline": { "fr": "Citoyens", "en": "Citizens" },
+            "subhead": { "fr": "La communauté citoyenne de Commune Transparente", "en": "The citizen community of Transparent Commune" },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher...",
+              "en": "Search..."
+            }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "citoyens-list",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": false,
+            "showActiveFiltersTags": false,
+            "disableInfiniteScroll": false,
+            "baseParams": { 
+              "defaultTypes": [
+                "citoyens"
+              ], 
+              "notSourceKey": true,
+              "defaultFields": [
+                "address"
+              ],
+              "defaultFilters": { }
+            },
+            "list": { 
+              "columns": { 
+                "sm": 1, 
+                "md": 3, 
+                "lg": 4, 
+                "xl": 5 
+              }, 
+              "card": { 
+                "type": "profile",
+                "variant": "profile", 
+                "detailsMode": "drawer" 
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/ressources",
+      "title": { "fr": "Ressources - Commune Transparente CT", "en": "Resources - Transparent Commune CT" },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "ressources-header",
+          "props": {
+            "headline": { "fr": "Ressources", "en": "Resources" },
+            "subhead": { "fr": "Partage de ressources entre citoyens", "en": "Sharing resources between citizens" },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher...",
+              "en": "Search..."
+            }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "ressources-list",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": false,
+            "showActiveFiltersTags": false,
+            "disableInfiniteScroll": false,
+            "baseParams": { 
+              "defaultTypes": [
+                "poi"
+              ], 
+              "notSourceKey": true,
+              "defaultFields": [
+                "address"
+              ],
+              "defaultFilters": { }
+            },
+            "list": { 
+              "columns": { 
+                "sm": 1, 
+                "md": 3, 
+                "lg": 4, 
+                "xl": 5 
+              }, 
+              "card": { 
+                "type": "card-elts",
+                "variant": "card-elts", 
+                "detailsMode": "drawer" 
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/agenda",
+      "title": { "fr": "Agenda - Commune Transparente CT", "en": "Agenda - Transparent Commune CT" },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "agenda-header",
+          "props": {
+            "headline": { "fr": "Agenda", "en": "Agenda" },
+            "subhead": { "fr": "Tous les événements de votre commune", "en": "All events in your commune" },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Proposer un événement",
+                  "en": "Submit an event"
+                },
+                "icon": "plus",
+                "action": "add-event",
+                "variant": "primary"
+              }
+            ],
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher...",
+              "en": "Search..."
+            }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "agenda-list",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "baseParams": { 
+              "defaultTypes": ["events"], 
+              "notSourceKey": true ,
+              "defaultFilters": { }
+            },
+            "list": { "columns": { "sm": 1, "md": 2, "lg": 3, "xl": 4 }, "card": { "type": "profile", "variant": "profile", "detailsMode": "drawer" } }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/propositions",
+      "title": { "fr": "Propositions - Commune Transparente CT", "en": "Proposals - Transparent Commune CT" },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "propositions-header",
+          "props": {
+            "headline": { "fr": "Propositions", "en": "Proposals" },
+            "subhead": { "fr": "Les propositions citoyennes pour améliorer la commune", "en": "Citizen proposals to improve the commune" }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "propositions-list",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "baseParams": { "defaultTypes": ["proposals"], "notSourceKey": true },
+            "list": { "columns": { "sm": 1, "md": 2, "lg": 3, "xl": 3 }, "card": { "type": "profile", "variant": "profile", "detailsMode": "drawer" } }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/navigation",
+      "title": { "fr": "Navigation - Commune Transparente CT", "en": "Navigation - Transparent Commune CT" },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "navigation-header",
+          "props": {
+            "headline": { "fr": "Votre territoire", "en": "Your territory" },
+            "subhead": { "fr": "Explorez le territoire de Commune Transparente", "en": "Explore the territory of Transparent Commune" }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "navigation-map",
+          "props": {
+            "useFilter": true,
+            "showMap": true,
+            "enableMap": true,
+            "defaultView": "map",
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": false,
+            "disableInfiniteScroll": false,
+            "baseParams": { "defaultTypes": ["organizations", "projects", "events"], "notSourceKey": true },
+            "list": { "columns": { "sm": 1, "md": 2, "lg": 3, "xl": 3 }, "card": { "type": "profile", "variant": "profile", "detailsMode": "drawer" } }
+          }
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "type": "nos-communes",
+    "logoImage": "/images/communeTransparente/logo.png",
+    "logoTitle": { "fr": "Commune Transparente", "en": "Transparent Commune" },
+    "description": { "fr": "Rendre l'action communale lisible pour encourager la participation citoyenne.", "en": "Making communal action legible to encourage civic participation." },
+    "ctaButton": {
+      "label": { "fr": "Trouver votre Commune", "en": "Find your Commune" },
+      "href": "/navigation"
+    },
+    "columns": [
+      {
+        "title": { "fr": "Navigation", "en": "Navigation" },
+        "links": [
+          { "href": "/actualite", "label": { "fr": "Actualité", "en": "News" } },
+          { "href": "/agenda", "label": { "fr": "Agenda", "en": "Agenda" } },
+          { "href": "/projets", "label": { "fr": "Projet", "en": "Project" } },
+          { "href": "/citoyens", "label": { "fr": "Citoyens", "en": "Citizens" } }
+        ]
+      },
+      {
+        "title": { "fr": "Contacts", "en": "Contacts" },
+        "links": [
+          { "href": "mailto:contact@etangsale.fr", "label": { "fr": "contact@etangsale.fr", "en": "contact@etangsale.fr" } },
+          { "href": "tel:+262262000000", "label": { "fr": "+262 262 00 00 00", "en": "+262 262 00 00 00" } }
+        ]
+      }
+    ],
+    "legalLinks": [
+      { "href": "/mentions-legales", "label": { "fr": "Mentions légales", "en": "Legal notice" } },
+      { "href": "/confidentialite", "label": { "fr": "Politique de confidentialité", "en": "Privacy policy" } }
+    ],
+    "copyright": { "fr": "Ce site est gracieusement hébergé par Open Atlas, pour faire disparaître cette bannière, merci de nous aider à payer l'hébergement", "en": "This site is graciously hosted by Open Atlas. To remove this banner, please help us pay for hosting." }
+  },
+  "floatingQRCode": { "enabled": false }
+}
+

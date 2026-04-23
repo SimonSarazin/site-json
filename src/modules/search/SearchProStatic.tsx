@@ -1,6 +1,6 @@
 import { Loader2, Map, List, LayoutGrid, Search, MapPin, Download, Plus, GitBranch } from "lucide-react";
 import * as LucideIcons from "lucide-react";
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import SearchListView from "./components/SearchListView";
 import SearchListSkeleton from "./components/SearchListSkeleton";
 import SearchMapWrapper from "./components/SearchMapWrapper";
 import SearchBubbleChart from "./components/SearchBubbleChart";
+import FranceRegionsMap from "./components/FranceRegionsMap";
 import { SwitchDetailsMode } from "./components/SwitchDetailsMode";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
@@ -49,6 +50,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     showSearch = false,
     showMap = false,
     enableMap = true,
+    enableRegions = false,
     disableInfiniteScroll = false,
     addButton,
     zoneSelector,
@@ -58,11 +60,11 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     list,
   } = props;
 
-  const { me, entity } = useCocolight();
+  const { me, entity, helper } = useCocolight();
   const isConnected = !!me;
   const permissions = useProfilPermissions(entity || null);
 
-  const IconComponent = icon ? (LucideIcons as any)[icon.charAt(0).toUpperCase() + icon.slice(1).replace(/-./g, x => x[1].toUpperCase())] : null;
+  const IconComponent = icon ? (LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[icon.charAt(0).toUpperCase() + icon.slice(1).replace(/-./g, x => x[1].toUpperCase())] : null;
 
   const customHeader = props.customHeader;
   const showDetailedViewToggle = props.showDetailedViewToggle ?? false;
@@ -71,7 +73,8 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   const contextFilters = usePageFiltersOptional();
 
   // État local (pas de sync URL)
-  const [viewMode, setViewMode] = useState<"list" | "map" | "graph">(showMap ? "map" : "list");
+  const defaultViewMode = props.defaultViewMode || (showMap ? "map" : "list");
+  const [viewMode, setViewMode] = useState<"list" | "map" | "graph" | "regions">(defaultViewMode);
   const [isDetailedView, setIsDetailedView] = useState(defaultDetailedView);
   const [localSearchInput, setLocalSearchInput] = useState("");
   const debouncedLocalSearch = useDebounce(localSearchInput, 500);
@@ -80,15 +83,18 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   const [selectedTagValue, setSelectedTagValue] = useState<string>("");
 
   const enableGraph = props.enableGraph ?? false;
-  const graphCategories = props.graphCategories;
+  const graphTags = props.graphTags ?? props.graphCategories;
   const graphDetailsMode = props.graphDetailsMode ?? "drawer";
+  const graphDefaultGroupMode = props.graphDefaultGroupMode ?? "country";
+  const graphEnableCountryGrouping = props.graphEnableCountryGrouping ?? true;
 
   const [graphOpenDetails, setGraphOpenDetails] = useState(false);
   const [graphSelectedItem, setGraphSelectedItem] = useState<SearchEntity | null>(null);
 
-  const handleGraphItemClick = (item: any) => {
+  const handleGraphItemClick = (item: unknown) => {
     if (graphDetailsMode === "link") {
-      const data = item.serverData || item;
+      const itemObj = item as Record<string, unknown>;
+      const data = ('serverData' in itemObj && itemObj.serverData ? itemObj.serverData : itemObj) as Record<string, unknown>;
       if (data.slug) {
         window.location.href = `/@${data.slug}`;
       }
@@ -175,12 +181,14 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     baseParams?.defaultTypes ? { type: baseParams.defaultTypes } : null
   );
 
-  const filters = useMemo<Record<string, any>>(() => {
-    if (contextFilters?.searchByFields) {
-      const obj: Record<string, any> = {};
-      for (const { field, type, value } of Object.values(contextFilters.searchByFields)) {
+  const searchByFields = contextFilters?.searchByFields;
+
+  const filters = useMemo<Record<string, unknown>>(() => {
+    if (searchByFields) {
+      const obj: Record<string, Record<string, string[]>> = {};
+      for (const { field, type, value } of Object.values(searchByFields)) {
         if (type && type === "scopeList") continue;
-        if (value && value.length > 0) {
+        if (Array.isArray(value) && value.length > 0) {
           if (!obj[field]) {
             obj[field] = { "$in": value };
           } else {
@@ -191,12 +199,12 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
       return obj;
     }
     return {};
-  }, [contextFilters?.searchByFields]);
+  }, [searchByFields]);
 
-  const contextLocality = useMemo<Record<string, any>>(() => {
-    if (contextFilters?.searchByFields) {
-      const obj: Record<string, any> = {};
-      for (const { field, type, value } of Object.values(contextFilters.searchByFields)) {
+  const contextLocality = useMemo<Record<string, unknown>>(() => {
+    if (searchByFields) {
+      const obj: Record<string, unknown> = {};
+      for (const { field, type, value } of Object.values(searchByFields)) {
         if (type && type === "scopeList") {
           if (!obj[field]) {
             obj[field] = value;
@@ -206,9 +214,9 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
       return obj;
     }
     return {};
-  }, [contextFilters?.searchByFields]);
+  }, [searchByFields]);
 
-  const locality = useMemo<Record<string, any>>(() => {
+  const locality = useMemo<Record<string, unknown>>(() => {
     const combined = {
       ...contextLocality,
       ...zoneLocality,
@@ -216,25 +224,27 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     return combined;
   }, [contextLocality, zoneLocality]);
 
-  useEffect(() => {
-    if (Object.keys(zoneLocality).length > 0) {
-    }
-  }, [locality, zoneLocality]);
-
-  const { exportCsv } = useCsvExport({
-    csvButton,
-    baseParams: {
-      searchText,
-      searchTags: Object.values(searchTags).flat(),
-      searchType: baseParams?.defaultTypes,
-      filters: {
-        ...baseParams.defaultFilters,
-        ...filters,
-      },
-      locality,
-      notSourceKey: baseParams?.notSourceKey,
-      costumSlug: csvButton?.costumSlug || zoneSelector?.costumSlug,
+  const mergedBaseParams = useMemo<Record<string, unknown>>(() => ({
+    ...baseParams,
+    defaultFilters: {
+      ...baseParams.defaultFilters,
+      ...filters,
     },
+    locality: locality,
+  }), [baseParams, filters, locality]);
+
+  const csvSearchParams = useMemo(() => ({
+    searchText,
+    searchTags,
+    searchType,
+    baseParams: mergedBaseParams,
+  }), [searchText, searchTags, searchType, mergedBaseParams]);
+
+  const { exportCsv, isExporting } = useCsvExport({
+    csvButton,
+    entity,
+    searchParams: csvSearchParams,
+    helper,
   });
 
   const {
@@ -253,14 +263,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     searchType,
     mapUsed: viewMode === "map",
     graphUsed: viewMode === "graph",
-    baseParams: {
-      ...baseParams,
-      defaultFilters: {
-        ...baseParams.defaultFilters,
-        ...filters,
-      },
-      locality: locality
-    },
+    baseParams: mergedBaseParams,
   });
 
   if (!loaded) {
@@ -294,9 +297,9 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
 
       <div className="flex flex-col flex-1 w-full h-full overflow-hidden">
         {/* Header */}
-        {(title || description || showSearch || enableMap) && (
-          <div className="flex flex-col gap-4 p-4">
-            <div className="flex items-center justify-between">
+        {(title || description || showSearch || (enableMap && !customHeader)) && (
+          <div className="flex flex-col gap-3 p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center space-x-2">
                 {IconComponent && <IconComponent className="h-5 w-5" />}
                 {title && (
@@ -309,12 +312,87 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                 )}
               </div>
               <div className="flex items-center space-x-2">
+                {enableMap && !customHeader && (
+                  <Button
+                    variant={viewMode === "map" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setViewMode(viewMode === "map" ? "list" : "map")}
+                  >
+                    <Map className="h-4 w-4 sm:mr-1" />
+                    <span className="hidden sm:inline">{t("Carte")}</span>
+                  </Button>
+                )}
+                {enableRegions && !customHeader && (
+                  <Button
+                    variant={viewMode === "regions" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setViewMode(viewMode === "regions" ? "list" : "regions")}
+                  >
+                    <MapPin className="h-4 w-4 sm:mr-1" />
+                    <span className="hidden sm:inline">{t("Régions")}</span>
+                  </Button>
+                )}
+                {enableGraph && (
+                  <Button
+                    variant={viewMode === "graph" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setViewMode(viewMode === "graph" ? "list" : "graph")}
+                  >
+                    <GitBranch className="h-4 w-4 sm:mr-1" />
+                    <span className="hidden sm:inline">{t("Graphe")}</span>
+                  </Button>
+                )}
+                {csvButton?.show && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => exportCsv()}
+                    disabled={isExporting}
+                  >
+                    {isExporting ? (
+                      <Loader2 className="h-4 w-4 animate-spin sm:mr-1" />
+                    ) : (
+                      <Download className="h-4 w-4 sm:mr-1" />
+                    )}
+                    <span className="hidden sm:inline">
+                      {csvButton.label ? t(csvButton.label) : t("CSV")}
+                    </span>
+                  </Button>
+                )}
+                {addButton?.show && permissions.isAdmin && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAddClick}
+                  >
+                    <Plus className="h-4 w-4 sm:mr-1" />
+                    <span className="hidden sm:inline">
+                      {addButton.label ? t(addButton.label) : t("Ajouter")}
+                    </span>
+                  </Button>
+                )}
+              </div>
+            </div>
+            {(showSearch || (tagSelector?.show && tagSelector.options) || zoneSelector?.show) && (
+              <div className="flex flex-col gap-2 items-center sm:flex-row sm:items-center sm:justify-center">
+                {showSearch && (
+                  <div className="relative w-full sm:w-auto">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="search"
+                      placeholder={placeholder ? t(placeholder) : t("Rechercher...")}
+                      value={localSearchInput}
+                      onChange={(e) => setLocalSearchInput(e.target.value)}
+                      className="pl-9 w-full sm:w-64 h-9"
+                    />
+                  </div>
+                )}
                 {tagSelector?.show && tagSelector.options && (
-                  <div className="relative">
+                  <div className="relative w-full sm:w-auto">
                     <select
                       value={selectedTagValue}
                       onChange={(e) => setSelectedTagValue(e.target.value)}
-                      className="h-9 px-3 rounded-md border border-input bg-background text-sm min-w-[180px] appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring"
+                      className="h-9 px-3 rounded-md border border-input bg-background text-sm w-full sm:min-w-45 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring"
                     >
                       <option value="">
                         {tagSelector.placeholder
@@ -331,9 +409,9 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                   </div>
                 )}
                 {zoneSelector?.show && (
-                  <div className="flex items-center gap-2">
-                    {zonesLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-                    <div className="relative">
+                  <div className="relative w-full sm:w-auto flex items-center gap-2">
+                    {zonesLoading && <Loader2 className="h-4 w-4 animate-spin shrink-0" />}
+                    <div className="relative w-full sm:w-auto">
                       <MapPin className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                       <select
                         value={selectedZoneId}
@@ -341,7 +419,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                           const newValue = e.target.value;
                           setSelectedZoneId(newValue);
                         }}
-                        className="h-9 pl-8 pr-3 rounded-md border border-input bg-background text-sm min-w-[200px] appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring"
+                        className="h-9 pl-8 pr-3 rounded-md border border-input bg-background text-sm w-full sm:min-w-50 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring"
                         disabled={zonesLoading}
                       >
                         <option value="">
@@ -365,64 +443,8 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                     </div>
                   </div>
                 )}
-                {showSearch && (
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      type="search"
-                      placeholder={placeholder ? t(placeholder) : t("Rechercher...")}
-                      value={localSearchInput}
-                      onChange={(e) => setLocalSearchInput(e.target.value)}
-                      className="pl-9 w-48 sm:w-64 h-9"
-                    />
-                  </div>
-                )}
-                {enableMap && (
-                  <Button
-                    variant={viewMode === "map" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setViewMode(viewMode === "map" ? "list" : "map")}
-                  >
-                    <Map className="h-4 w-4 sm:mr-1" />
-                    <span className="hidden sm:inline">{t("Carte")}</span>
-                  </Button>
-                )}
-                {enableGraph && (
-                  <Button
-                    variant={viewMode === "graph" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setViewMode(viewMode === "graph" ? "list" : "graph")}
-                  >
-                    <GitBranch className="h-4 w-4 sm:mr-1" />
-                    <span className="hidden sm:inline">{t("Graphe")}</span>
-                  </Button>
-                )}
-                {csvButton?.show && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => exportCsv()}
-                  >
-                    <Download className="h-4 w-4 sm:mr-1" />
-                    <span className="hidden sm:inline">
-                      {csvButton.label ? t(csvButton.label) : t("CSV")}
-                    </span>
-                  </Button>
-                )}
-                {addButton?.show && permissions.isAdmin && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleAddClick}
-                  >
-                    <Plus className="h-4 w-4 sm:mr-1" />
-                    <span className="hidden sm:inline">
-                      {addButton.label ? t(addButton.label) : t("Ajouter")}
-                    </span>
-                  </Button>
-                )}
               </div>
-            </div>
+            )}
             {description && <p className="text-sm text-muted-foreground">{t(description)}</p>}
           </div>
         )}
@@ -500,10 +522,12 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
               >
                 {() => (
                   <SearchBubbleChart
-                    results={transformedResults}
-                    categories={graphCategories}
+                    results={transformedResults as unknown as React.ComponentProps<typeof SearchBubbleChart>["results"]}
+                    categories={graphTags}
                     onItemClick={handleGraphItemClick}
                     height={450}
+                    defaultGroupMode={graphDefaultGroupMode}
+                    enableCountryGrouping={graphEnableCountryGrouping}
                   />
                 )}
               </ClientOnly>
@@ -522,51 +546,99 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
         ) : (
           <div className="p-4 overflow-y-auto">
             {customHeader && (
-              <div className="container flex justify-between mx-auto px-4 sm:px-6 lg:px-8 mb-6">
-                <div className="flex justify-between items-center">
+              <div className="container flex justify-between items-center mx-auto px-4 sm:px-6 lg:px-8 mb-6">
+                <div>
                   {customHeader.title && (
                     <h2 className="text-2xl font-extrabold text-foreground">
                       {typeof customHeader.title === "string"
                         ? customHeader.title
                         : t(customHeader.title)}
+                      {totalCount !== undefined && totalCount !== null ? (
+                        <span className="ml-2 text-base font-normal text-muted-foreground">
+                          ({totalCount})
+                        </span>
+                      ) : null}
                     </h2>
                   )}
                 </div>
-                {showDetailedViewToggle && (
-                  <Button
-                    variant={isDetailedView ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setIsDetailedView(!isDetailedView)}
-                  >
-                    {isDetailedView ? (
-                      <><LayoutGrid className="mr-2 h-4 w-4" /> Grille</>
-                    ) : (
-                      <><List className="mr-2 h-4 w-4" /> Détails</>
-                    )}
-                  </Button>
+                <div className="flex items-center space-x-2">
+                  {enableMap && (
+                    <Button
+                      variant={viewMode === "map" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setViewMode(viewMode === "map" ? "list" : "map")}
+                    >
+                      <Map className="h-4 w-4 sm:mr-1" />
+                      <span className="hidden sm:inline">{t("Carte")}</span>
+                    </Button>
+                  )}
+                  {enableRegions && (
+                    <Button
+                      variant={viewMode === "regions" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setViewMode(viewMode === "regions" ? "list" : "regions")}
+                    >
+                      {viewMode === "regions" ? (
+                        <><List className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">{t("Mode Liste")}</span></>
+                      ) : (
+                        <><MapPin className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">{t("Mode Carte")}</span></>
+                      )}
+                    </Button>
+                  )}
+                  {showDetailedViewToggle && viewMode !== "regions" && (
+                    <Button
+                      variant={isDetailedView ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setIsDetailedView(!isDetailedView)}
+                    >
+                      {isDetailedView ? (
+                        <><LayoutGrid className="mr-2 h-4 w-4" /> Grille</>
+                      ) : (
+                        <><List className="mr-2 h-4 w-4" /> Détails</>
+                      )}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {viewMode === "regions" && (
+              <ClientOnly>
+                {() => (
+                  <FranceRegionsMap
+                    results={transformedResults as unknown as Record<string, unknown>[]}
+                    onItemClick={(item) => {
+                      if (item && typeof item === "object" && "slug" in item) {
+                        window.open(`/profil/${(item as { slug: string }).slug}`, "_blank");
+                      }
+                    }}
+                    height={550}
+                  />
                 )}
-              </div>
+              </ClientOnly>
             )}
 
-            {/* Afficher le skeleton uniquement lors du premier chargement (isPending) */}
-            {isPending && <SearchListSkeleton />}
+            {viewMode !== "regions" && (
+              <>
+                {isPending && <SearchListSkeleton />}
 
-            {/* Afficher "Aucun résultat" seulement si pas en chargement ET pas de résultats */}
-            {!isPending && !loadingMap && transformedResults.length === 0 && (
-              <div className="text-center text-secondary-foreground py-8">
-                {t("Aucun résultat trouvé.")}
-              </div>
+                {!isPending && !loadingMap && transformedResults.length === 0 && (
+                  <div className="text-center text-secondary-foreground py-8">
+                    {t("Aucun résultat trouvé.")}
+                  </div>
+                )}
+
+                <SearchListView
+                  results={transformedResults}
+                  columns={list?.columns}
+                  card={list?.card}
+                  preview={list?.preview}
+                  isDetailedView={isDetailedView}
+                />
+
+                {!disableInfiniteScroll && <div ref={lastItemRef} className="h-12" />}
+              </>
             )}
-
-            <SearchListView
-              results={transformedResults}
-              columns={list?.columns}
-              card={list?.card}
-              preview={list?.preview}
-              isDetailedView={isDetailedView}
-            />
-
-            {!disableInfiniteScroll && <div ref={lastItemRef} className="h-12" />}
 
             {isFetchingNextPage && (
               <div className="flex justify-center py-4 text-secondary-foreground">
@@ -583,6 +655,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
           open={isModalOpen}
           onOpenChange={setIsModalOpen}
           parent={entity}
+          formConfig={addButton?.formConfig}
         />
       )}
     </div>

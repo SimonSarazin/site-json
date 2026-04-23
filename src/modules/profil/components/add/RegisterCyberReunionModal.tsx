@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type UseFormReturn, type FieldValues } from "react-hook-form";
 import { Loader2, Building2, MapPin, FileText, ChevronLeft, ChevronRight, Check } from "lucide-react";
 import {
   Dialog,
@@ -345,7 +345,7 @@ export function RegisterCyberReunionModal({ open, onOpenChange }: ModalProps) {
                     <p className="text-sm text-muted-foreground">{currentStepConfig.description}</p>
                   </div>
 
-                  <EditLocationTab form={form} />
+                  <EditLocationTab form={form as unknown as UseFormReturn<FieldValues>} />
                 </div>
               )}
             </div>

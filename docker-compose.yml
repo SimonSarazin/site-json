@@ -2,7 +2,10 @@ version: "3.8"
 
 services:
   cocostum:
-    build: .
+    build:
+      context: .
+      args:
+        VITE_SLUG: "franceTierslieux"
     ports:
       - "3000:3000"
     environment:
@@ -12,3 +15,7 @@ services:
       SITE_CONFIG_PATH: "./config.prod.json"
     volumes:
       - ./config.prod.json:/app/config.prod.json
+      - image-cache:/app/.cache/images
+
+volumes:
+  image-cache:

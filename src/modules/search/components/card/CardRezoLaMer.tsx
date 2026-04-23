@@ -112,8 +112,8 @@ function getLocation(item: SearchEntity): string | null {
     return serverData.address.addressLocality;
   }
 
-  if (serverData?.address?.codePostal) {
-    return serverData.address.codePostal;
+  if ((serverData?.address as Record<string, unknown> | undefined)?.codePostal) {
+    return String((serverData!.address as Record<string, unknown>).codePostal);
   }
 
   return null;

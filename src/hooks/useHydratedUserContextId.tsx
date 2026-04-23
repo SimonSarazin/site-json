@@ -14,6 +14,7 @@ export function useHydratedUserContextId(): string | null {
   const [hydratedUserContextId, setHydratedUserContextId] = useState<string | null>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- SSR hydration: defers userContextId to avoid server/client mismatch
     setHydratedUserContextId(entity?.userContext?.id ?? null);
   }, [entity?.userContext?.id]);
 

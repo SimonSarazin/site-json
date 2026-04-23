@@ -1,0 +1,150 @@
+{
+  "coform": {
+    "title": "Formulaire",
+    "steps": {
+      "step": "Étape",
+      "of": "sur",
+      "completed": "Complété",
+      "current": "En cours",
+      "pending": "À venir"
+    },
+    "navigation": {
+      "next": "Suivant",
+      "previous": "Précédent",
+      "submit": "Envoyer",
+      "save": "Sauvegarder",
+      "reset": "Réinitialiser"
+    },
+    "progress": {
+      "title": "Progression",
+      "percent": "{{percent}}% complété"
+    },
+    "validation": {
+      "required": "Ce champ est requis",
+      "minLength": "Minimum {{min}} caractères",
+      "maxLength": "Maximum {{max}} caractères",
+      "email": "Adresse email invalide",
+      "url": "URL invalide",
+      "number": "Doit être un nombre",
+      "selectOption": "Veuillez sélectionner une option",
+      "selectAtLeastOne": "Veuillez sélectionner au moins une option"
+    },
+    "status": {
+      "loading": "Chargement du formulaire...",
+      "submitting": "Envoi en cours...",
+      "success": "Formulaire envoyé avec succès\u00A0!",
+      "updateSuccess": "Réponse mise à jour avec succès\u00A0!",
+      "error": "Une erreur est survenue",
+      "stepSuccess": "Étape validée",
+      "stepError": "Erreur lors de la validation de l'étape"
+    },
+    "errors": {
+      "formNotFound": "Formulaire introuvable",
+      "networkError": "Erreur de connexion",
+      "serverError": "Erreur serveur"
+    },
+    "banner": {
+      "alt": "Bannière du formulaire"
+    },
+    "answer": {
+      "notFound": "Réponse introuvable",
+      "notFoundDescription": "La réponse demandée n'existe pas ou a été supprimée.",
+      "missingParams": "Les paramètres formId et answerId sont requis.",
+      "viewingAnswer": "Consultation de la réponse",
+      "switchToEdit": "Modifier",
+      "switchToReadonly": "Lecture seule",
+      "submittedAt": "Soumis le {{date}}",
+      "updatedAt": "Modifié le {{date}}",
+      "author": "Auteur",
+      "editDenied": {
+        "not_logged_in": "Vous devez être connecté pour modifier cette réponse.",
+        "not_owner": "Vous ne pouvez modifier que vos propres réponses.",
+        "form_inactive": "Ce formulaire est désactivé, la modification n'est pas possible.",
+        "form_closed": "La période de modification est terminée.",
+        "default": "Vous n'avez pas la permission de modifier cette réponse."
+      }
+    },
+    "thankYou": {
+      "title": "Votre réponse a été enregistrée",
+      "message": "Merci d'avoir pris le temps de répondre à ce formulaire. Votre réponse a bien été enregistrée.",
+      "updateTitle": "Votre réponse a été mise à jour",
+      "updateMessage": "Vos modifications ont bien été enregistrées. Merci\u00A0!",
+      "editAnswer": "Modifier ma réponse",
+      "submitAnother": "Soumettre une autre réponse",
+      "goHome": "Retour à l'accueil"
+    },
+    "access": {
+      "denied": "Accès refusé",
+      "alreadyAnswered": {
+        "title": "Vous avez déjà répondu",
+        "description": "Vous avez déjà soumis une réponse à ce formulaire. Une seule réponse par personne est autorisée.",
+        "editButton": "Modifier ma réponse",
+        "viewButton": "Voir ma réponse"
+      },
+      "notMember": {
+        "title": "Accès réservé aux membres",
+        "description": "Ce formulaire est réservé aux membres de la communauté. Rejoignez la communauté pour pouvoir répondre."
+      },
+      "formNotStarted": {
+        "title": "Formulaire pas encore ouvert",
+        "description": "Ce formulaire ouvrira le {{date}}. Revenez plus tard."
+      },
+      "formClosed": {
+        "title": "Période de réponse terminée",
+        "description": "La période de réponse pour ce formulaire est terminée depuis le {{date}}."
+      },
+      "formInactive": {
+        "title": "Formulaire désactivé",
+        "description": "Ce formulaire est actuellement désactivé par son administrateur. Il n'accepte pas de réponse pour le moment."
+      },
+      "notLoggedIn": {
+        "title": "Connexion requise",
+        "description": "Vous devez être connecté pour répondre à ce formulaire.",
+        "loginButton": "Se connecter"
+      },
+      "dateRange": "Ouvert du {{start}} au {{end}}",
+      "dateStart": "Ouvert à partir du {{start}}",
+      "dateEnd": "Ouvert jusqu'au {{end}}",
+      "editMode": {
+        "title": "Modifier votre réponse",
+        "description": "Vous pouvez modifier votre réponse précédente ci-dessous.",
+        "updateButton": "Mettre à jour"
+      }
+    },
+    "answerPicker": {
+      "title": "Vos réponses",
+      "description": "Vous avez déjà {{count}} réponse(s) pour ce formulaire. Sélectionnez une réponse à modifier ou créez-en une nouvelle.",
+      "answerLabel": "Réponse n°{{number}}",
+      "updated": "modifié le",
+      "newAnswer": "Nouvelle réponse"
+    },
+    "multiCheckboxPlus": {
+      "maxSelections": "Maximum {{max}} choix",
+      "withInput": "avec texte",
+      "enterDetails": "Précisez...",
+      "textRequired": "Ce champ est obligatoire",
+      "rank": "Rang",
+      "addNewValue": "Ajouter une option..."
+    },
+    "uploader": {
+      "addFile": "Ajouter un fichier",
+      "addFiles": "Ajouter des fichiers",
+      "dropzoneLabel": "Glissez-déposez vos fichiers ici",
+      "dropzoneOr": "ou",
+      "browse": "Parcourir",
+      "maxFiles": "Maximum {{max}} fichier(s)",
+      "maxSize": "Taille max : {{size}} Mo",
+      "invalidExtension": "Extension non autorisée : {{name}}",
+      "fileTooLarge": "Fichier trop volumineux : {{name}}",
+      "tooManyFiles": "Maximum {{max}} fichier(s) autorisé(s).",
+      "deleteFile": "Supprimer {{name}}",
+      "loadingFiles": "Chargement des fichiers…",
+      "noFileSelected": "Aucun fichier sélectionné",
+      "pasteHint": "Ctrl+V pour coller",
+      "gallery": {
+        "openPdf": "Ouvrir le PDF",
+        "download": "Télécharger"
+      }
+    }
+  }
+}

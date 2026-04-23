@@ -7,6 +7,68 @@ import { DynamicIcon, type IconName } from 'lucide-react/dynamic';
 import { Grid, List } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
+
+function CardsHeaderSection({
+  props,
+  itemCount,
+  currentLayout,
+  onLayoutChange,
+}: {
+  props: SectionPropsMap["cards"];
+  itemCount: number;
+  currentLayout: 'grid' | 'list';
+  onLayoutChange: (layout: 'grid' | 'list') => void;
+}) {
+  const { showHeader, showResultCount, showViewToggle } = props;
+
+  if (!showHeader) return null;
+
+  return (
+    <div className="mb-8 flex items-center justify-between">
+      <div>
+        {props.headerTitle && (
+          <T k={props.headerTitle} as="h2" className="text-2xl font-bold text-foreground" />
+        )}
+
+        {showResultCount && (
+          <p className="font-semibold text-foreground mt-1">
+            {itemCount} {itemCount === 1 ? 'résultat' : 'résultats'}
+          </p>
+        )}
+      </div>
+
+      {showViewToggle && (
+        <div className="flex gap-2">
+          <button
+            onClick={() => onLayoutChange('grid')}
+            className={cn(
+              "p-2 rounded-lg transition-colors",
+              currentLayout === 'grid'
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:bg-muted/80"
+            )}
+            aria-label="Vue grille"
+          >
+            <Grid className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => onLayoutChange('list')}
+            className={cn(
+              "p-2 rounded-lg transition-colors",
+              currentLayout === 'list'
+                ? "bg-gray-900 dark:bg-slate-700 text-white"
+                : "bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-slate-700"
+            )}
+            aria-label="Vue liste"
+          >
+            <List className="w-5 h-5" />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function CardsSection({ id, props }: { id?: string; props: SectionPropsMap["cards"] }) {
   const { t } = useLocalization();
@@ -16,9 +78,6 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
     layout: defaultLayout = 'grid',
     variant = 'default',
     className,
-    showHeader = false,
-    showResultCount = false,
-    showViewToggle = false,
   } = props;
 
   const [currentLayout, setCurrentLayout] = useState<'grid' | 'list'>(defaultLayout as 'grid' | 'list');
@@ -64,69 +123,20 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
     return <>{children}</>;
   };
 
-  // Header Section (affiché si showHeader est true)
-  const HeaderSection = () => {
-    if (!showHeader) return null;
-
-    return (
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          {props.headerTitle && (
-            <T k={props.headerTitle} as="h2" className="text-2xl font-bold text-foreground" />
-          )}
-
-          {showResultCount && (
-            <p className="font-semibold text-foreground mt-1">
-              {items.length} {items.length === 1 ? 'résultat' : 'résultats'}
-            </p>
-          )}
-        </div>
-
-        {showViewToggle && (
-          <div className="flex gap-2">
-            <button
-              onClick={() => setCurrentLayout('grid')}
-              className={cn(
-                "p-2 rounded-lg transition-colors",
-                currentLayout === 'grid'
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-              )}
-              aria-label="Vue grille"
-            >
-              <Grid className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => setCurrentLayout('list')}
-              className={cn(
-                "p-2 rounded-lg transition-colors",
-                currentLayout === 'list'
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-              )}
-              aria-label="Vue liste"
-            >
-              <List className="w-5 h-5" />
-            </button>
-          </div>
-        )}
-      </div>
-    );
-  };
-
   if (variant === 'event') {
     return (
       <section id={id} className={cn("py-8 sm:py-12 md:py-16 bg-background", className)}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <HeaderSection />
+          <CardsHeaderSection props={props} itemCount={items.length} currentLayout={currentLayout} onLayoutChange={setCurrentLayout} />
           <div className={cn("grid gap-4 sm:gap-6", getGridCols(columns))}>
             {items.map((item, index) => (
               <CardWrapper key={index} href={item.href} target={item.target}>
                 <div className="relative w-full h-64 sm:h-80 md:h-96 rounded-xl overflow-hidden shadow-lg group cursor-pointer">
                   {item.image && (
-                    <img
+                    <OptimizedImage
                       src={item.image}
                       alt={item.eventTitle ? t(item.eventTitle) : t(item.title)}
+                      width={400}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   )}
@@ -177,7 +187,7 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
     return (
       <section id={id} className={cn("py-8 sm:py-12 md:py-16 bg-background", className)}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <HeaderSection />
+          <CardsHeaderSection props={props} itemCount={items.length} currentLayout={currentLayout} onLayoutChange={setCurrentLayout} />
 
           {currentLayout === 'list' ? (
             <div className="space-y-3 sm:space-y-4">
@@ -187,9 +197,10 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
                     <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 p-3 sm:p-4">
                       {item.image && (
                         <div className="w-full sm:w-48 h-32 sm:h-32 flex-shrink-0 rounded-lg overflow-hidden">
-                          <img
+                          <OptimizedImage
                             src={item.image}
                             alt={t(item.title)}
+                            width={192}
                             className="w-full h-full object-cover"
                           />
                         </div>
@@ -239,9 +250,10 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
                 <CardWrapper key={index} href={item.href} target={item.target}>
                   <div className="relative bg-card rounded-xl overflow-hidden shadow hover:shadow-lg transition group cursor-pointer">
                     {item.image && (
-                      <img
+                      <OptimizedImage
                         src={item.image}
                         alt={t(item.title)}
+                        width={400}
                         className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     )}
@@ -292,7 +304,7 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
     return (
       <section id={id} className={cn("py-16 bg-background", className)}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <HeaderSection />
+          <CardsHeaderSection props={props} itemCount={items.length} currentLayout={currentLayout} onLayoutChange={setCurrentLayout} />
           <div className={cn("grid gap-6", getGridCols(columns))}>
             {items.map((item, index) => (
               <CardWrapper key={index} href={item.href} target={item.target}>
@@ -310,9 +322,10 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
                           WebkitClipPath: item.iconClipPath || 'none'
                         }}
                       >
-                        <img
+                        <OptimizedImage
                           src={item.iconImage}
                           alt={t(item.title)}
+                          width={64}
                           className="w-full h-full object-cover"
                         />
                       </div>
@@ -338,7 +351,7 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
   return (
     <section id={id} className={cn("py-16 bg-background text-foreground", className)}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <HeaderSection />
+        <CardsHeaderSection props={props} itemCount={items.length} currentLayout={currentLayout} onLayoutChange={setCurrentLayout} />
 
         {currentLayout === 'list' ? (
           <div className="space-y-4">
@@ -351,9 +364,10 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
                   <div className="flex items-start gap-4 p-6">
                     {item.image && (
                       <div className="w-32 h-32 shrink-0 rounded-lg overflow-hidden">
-                        <img
+                        <OptimizedImage
                           src={item.image}
                           alt={t(item.title)}
+                          width={128}
                           className="w-full h-full object-cover"
                         />
                       </div>
@@ -392,9 +406,10 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
                   <CardHeader>
                     {item.image && (
                       <div className="w-full h-48 mb-4 rounded-lg overflow-hidden">
-                        <img
+                        <OptimizedImage
                           src={item.image}
                           alt={t(item.title)}
+                          width={400}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       </div>

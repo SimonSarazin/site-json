@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocalization } from "@/hooks/useLocalization";
 import { useT } from "@/hooks/useT";
-import { LocalizedString } from "@/types/site-schema";
+import { type TitleWithFiltersRezoLaMerProps, type ActionButton, type LocalizedString } from "@/types/site-schema";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -24,33 +24,6 @@ import { toast } from "sonner";
 import type { Organization } from "@communecter/cocolight-api-client";
 import type { EntityAction } from "@/modules/profil/types";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
-
-export interface ActionButton {
-    label: LocalizedString;
-    icon?: string;
-    href?: string;
-    variant?: "default" | "outline" | "primary" | "turquoise";
-    action?: "join-dropdown" | "add-project" | "add-event" | "add-poi";
-    modal?: string;
-    requiresAdmin?: boolean;
-}
-
-export interface TitleWithFiltersRezoLaMerProps {
-    headline: LocalizedString;
-    subhead?: LocalizedString;
-    categories?: Array<{
-        id: string;
-        label: LocalizedString;
-    }>;
-    types?: Array<{
-        id: string;
-        label: LocalizedString;
-    }>;
-    buttons?: ActionButton[];
-    searchPlaceholder?: LocalizedString;
-    showSearch?: boolean;
-}
-
 interface TitleWithFiltersRezoLaMerSectionProps {
     id?: string;
     props: TitleWithFiltersRezoLaMerProps;
@@ -120,6 +93,7 @@ function DynamicModalButton({
                 open={isModalOpen}
                 onOpenChange={setIsModalOpen}
                 parent={entity}
+                formConfig={button.formConfig}
             />
         </>
     );
@@ -289,11 +263,14 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
     const [activeCategory, setActiveCategory] = useState("all");
     
     const pageFilters = usePageFiltersOptional();
-    const setSearchQuery = pageFilters?.setSearchQuery ?? (() => {});
+    const setSearchQuery = useMemo(() => pageFilters?.setSearchQuery ?? (() => {}), [pageFilters?.setSearchQuery]);
     const setSelectedFilters = pageFilters?.setSelectedFilters ?? (() => {});
     const selectedFilters = pageFilters?.selectedFilters ?? {};
 
     const activeType = selectedFilters['type']?.[0] ?? "all";
+
+    const { entity } = useCocolight();
+    const slugEntity = entity?.slug;
 
     const [localSearchQuery, setLocalSearchQuery] = useState(pageFilters?.searchQuery ?? "");
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -345,7 +322,7 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
                     </h1>
                 )}
                 {props.subhead && (
-                    <p className="text-xl text-white/80 max-w-2xl mx-auto animate-fade-in">
+                    <p className={`text-xl ${(slugEntity == "nosCommunes" || slugEntity == "etangsale1") ? "" : "text-white/80"} max-w-2xl mx-auto animate-fade-in`}>
                         {tLocalized(props.subhead)}
                     </p>
                 )}
@@ -410,6 +387,19 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
                                         key={index}
                                         button={button}
                                         modalName="add-poi"
+                                        tLocalized={tLocalized}
+                                        tKey={tKey}
+                                        getButtonClasses={getButtonClasses}
+                                    />
+                                );
+                            }
+
+                            if (button.action === "add-organization") {
+                                return (
+                                    <DynamicModalButton
+                                        key={index}
+                                        button={button}
+                                        modalName="add-organization"
                                         tLocalized={tLocalized}
                                         tKey={tKey}
                                         getButtonClasses={getButtonClasses}

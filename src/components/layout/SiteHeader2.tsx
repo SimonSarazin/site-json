@@ -34,6 +34,7 @@ import { ClientOnly } from "./ClientOnly";
 import { EnhancedNavItemType } from "@/types/site";
 import { cn } from "@/lib/utils";
 import { DynamicIcon, IconName } from "lucide-react/dynamic";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 export function SiteHeader2() {
   const { config } = useSite();
@@ -82,9 +83,10 @@ export function SiteHeader2() {
         <nav className="hidden lg:flex items-center justify-between">
           <div className="flex items-center gap-6">
             <a href="#" onClick={handleLogoClick} className="flex items-center gap-2">
-              <img
-                src={header.logo}
+              <OptimizedImage
+                src={header.logo ?? ""}
                 alt={header.logoAlt ? t(header.logoAlt) : ""}
+                height={32}
                 className="h-8 w-auto rounded"
               />
               {header.logoAlt && (
@@ -193,9 +195,10 @@ export function SiteHeader2() {
         {/* Mobile */}
         <div className="flex lg:hidden items-center justify-between">
           <a href="#" onClick={handleLogoClick}>
-            <img
-              src={header.logo}
+            <OptimizedImage
+              src={header.logo ?? ""}
               alt={header.logoAlt ? t(header.logoAlt) : ""}
+              height={32}
               className="h-8 w-auto rounded"
             />
           </a>
@@ -209,9 +212,10 @@ export function SiteHeader2() {
               <SheetHeader>
                 <SheetTitle>
                   <a href="#" onClick={handleLogoClick}>
-                    <img
-                      src={header.logo}
+                    <OptimizedImage
+                      src={header.logo ?? ""}
                       alt={header.logoAlt ? t(header.logoAlt) : ""}
+                      height={32}
                       className="h-8 w-auto rounded"
                     />
                   </a>

@@ -1,4 +1,4 @@
-import { UseFormReturn } from "react-hook-form";
+import { type FieldValues, type UseFormReturn } from "react-hook-form";
 import { useT } from "@/hooks/useT";
 import { MapPin, Loader2, Trash2 } from "lucide-react";
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
@@ -17,8 +17,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
+interface BanFeature {
+  properties: { id: string; name: string; postcode?: string; city?: string; context?: string };
+  geometry: { coordinates: [number, number] };
+}
+
 interface EditLocationTabProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<FieldValues>;
 }
 
 interface City {
@@ -76,6 +81,8 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
   const streetAddress = form.watch("streetAddress");
   const localityId = form.watch("localityId");
 
+  const codeInsee = form.watch("codeInsee");
+
   const debouncedCityQuery = useDebounce(addressLocality || "", 500);
   const debouncedStreet = useDebounce(streetAddress || "", 500);
 
@@ -102,38 +109,50 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
       console.error("Error fetching cities:", error);
       return [];
     }
-  }, [addressCountry, entity?.endpointApi]);
+  }, [addressCountry, entity]);
 
   // Fetch streets from BAN API (France only)
+  // Utilise citycode (INSEE) en priorité car plus précis que postcode
+  // pour les villes à arrondissements (Paris, Marseille, Lyon)
   const fetchStreets = useCallback(async (query: string) => {
-    if (!query || !addressCountry || !postalCode) return [];
+    if (!query || !addressCountry || (!postalCode && !codeInsee)) return [];
     if (query.length < 3) return [];
 
     const isFR = ISO_COUNTRIES_FR.includes(addressCountry);
     if (!isFR) return [];
 
     try {
-      const baseUrl = "https://api-adresse.data.gouv.fr";
-      const url = `${baseUrl}/search/?q=${encodeURIComponent(query)}&type=housenumber&postcode=${postalCode}`;
+      const baseUrl = "https://data.geopf.fr/geocodage";
+      const params = new URLSearchParams({ q: query, type: "housenumber" });
+      if (codeInsee) {
+        params.set("citycode", codeInsee);
+      } else if (postalCode) {
+        params.set("postcode", postalCode);
+      }
+      const url = `${baseUrl}/search/?${params}`;
       const res = await fetch(url);
       const json = await res.json();
 
       return json?.features?.length
-        ? json.features.map((f: any) => ({
-            id: f.properties.id,
-            label: f.properties.name,
-            value: {
-              streetAddress: f.properties.name,
-              geo: f.geometry.coordinates,
+        ? json.features.map((f: BanFeature) => {
+            const { name, postcode: pc, city } = f.properties;
+            const suffix = pc && city ? `, ${pc} ${city}` : "";
+            return {
               id: f.properties.id,
-            },
-          }))
+              label: `${name}${suffix}`,
+              value: {
+                streetAddress: name,
+                geo: f.geometry.coordinates,
+                id: f.properties.id,
+              },
+            };
+          })
         : [];
     } catch (error) {
       console.error("Error fetching streets:", error);
       return [];
     }
-  }, [addressCountry, postalCode]);
+  }, [addressCountry, postalCode, codeInsee]);
 
   // Debounced city fetch
   useEffect(() => {
@@ -142,6 +161,7 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
       fetchCities(debouncedCityQuery)
         .then((opts) => active && setCities(opts));
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- resets options when query is cleared
       setCities([]);
     }
     return () => {
@@ -156,6 +176,7 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
       fetchStreets(debouncedStreet)
         .then((opts) => active && setStreetOptions(opts));
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- resets options when query is cleared
       setStreetOptions([]);
     }
     return () => {
@@ -222,7 +243,8 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
   }, [localityId, streetAddress]);
 
   // Handle city selection
-  const handleSelectCity = (city: City | null) => {
+  const handleSelectCity = (value: unknown) => {
+    const city = value as City | null;
     if (!city) {
       form.setValue("addressLocality", "");
       form.setValue("localityId", "");
@@ -275,7 +297,8 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
   };
 
   // Handle street selection
-  const handleSelectStreet = (street: Street | null) => {
+  const handleSelectStreet = (value: unknown) => {
+    const street = value as Street | null;
     if (!street) {
       resetStreet();
       return;

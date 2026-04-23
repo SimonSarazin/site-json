@@ -8,7 +8,7 @@ import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
 import { useUserOrganizations, useUserProjects, useUserPois, useUserEvents } from "../../hooks/useMembershipQuery";
 import { useCocolight } from "@/hooks/useCocolight";
-import type { CollectionKey } from "@communecter/cocolight-api-client";
+import type { CollectionKey, EntityTypes } from "@communecter/cocolight-api-client";
 import { EntityCard } from "../shared/EntityCard";
 import { getEntityIcon } from "@/lib/entityIcons";
 import { EntityGrid } from "../shared/EntityGrid";
@@ -115,7 +115,7 @@ export function MembershipTab() {
   );
 
   const renderTabContent = (
-    items: any[],
+    items: EntityTypes[],
     loading: boolean,
     isFetchingNext: boolean,
     hasNext: boolean,

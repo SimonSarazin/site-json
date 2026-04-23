@@ -62,13 +62,13 @@ export default function CardProfile({
   let isFollowing = false;
   try {
     isAdmin = item?.isAdmin?.() || false;
-  } catch {  }
+  } catch { /* ignore */ }
   try {
     isContributor = item?.isContributor?.() || false;
-  } catch {  }
+  } catch { /* ignore */ }
   try {
     isFollowing = item?.isFollowing?.() || false;
-  } catch {  }
+  } catch { /* ignore */ }
 
   const slug = item?.slug;
 
@@ -134,22 +134,22 @@ export default function CardProfile({
       style={{ animationDelay: `${index * 100}ms` }}
       onClick={onClick}
     >
-      <CardContent className="p-6">
-        <div className="flex flex-col items-center text-center space-y-4">
-          <Avatar className="h-24 w-24 border-4 border-primary/20">
+      <CardContent className="p-3 sm:p-4 md:p-6">
+        <div className="flex flex-col items-center text-center space-y-2 sm:space-y-3 md:space-y-4">
+          <Avatar className="h-16 w-16 border-2 sm:h-20 sm:w-20 md:h-24 md:w-24 sm:border-4 border-primary/20">
             <AvatarImage src={profilImage} alt={name} />
-            <AvatarFallback className="text-lg font-semibold bg-primary/10">
+            <AvatarFallback className="text-sm sm:text-base md:text-lg font-semibold bg-primary/10">
               {initials}
             </AvatarFallback>
           </Avatar>
 
-          <div className="space-y-2">
-            <h3 className="text-xl font-bold">{name}</h3>
+          <div className="w-full space-y-1 sm:space-y-2">
+            <h3 className="text-sm sm:text-lg md:text-xl font-bold line-clamp-2">{name}</h3>
 
             {showAddress && (
-              <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4" />
-                <span>
+              <div className="flex items-center justify-center gap-1 text-xs sm:text-sm text-muted-foreground">
+                <MapPin className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
+                <span className="line-clamp-1">
                   {address?.addressLocality
                     ? `${address.addressLocality}${address.addressCountry ? `, ${address.addressCountry}` : ""}`
                     : t("Adresse non renseignée")
@@ -159,7 +159,7 @@ export default function CardProfile({
             )}
 
             {showDescription && (
-              <p className="text-sm text-muted-foreground line-clamp-1">
+              <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 sm:line-clamp-1">
                 {description ?? String(t("Aucune description"))}
               </p>
             )}
@@ -187,59 +187,59 @@ export default function CardProfile({
             </div>
           )}
 
-          <div className="flex gap-1 justify-center overflow-hidden max-w-full h-6">
+          <div className="flex flex-wrap gap-1 justify-center">
             {tags.length > 0 ? (
               <>
                 {tags.slice(0, 3).map((tag: string, i: number) => (
                   <Badge
                     key={i}
                     variant="outline"
-                    className="text-xs bg-primary/10 text-primary border-primary/20 shrink-0"
+                    className="text-[10px] sm:text-xs bg-primary/10 text-primary border-primary/20"
                   >
                     {tag}
                   </Badge>
                 ))}
                 {tags.length > 3 && (
-                  <Badge variant="outline" className="text-xs shrink-0">
+                  <Badge variant="outline" className="text-[10px] sm:text-xs">
                     +{tags.length - 3}
                   </Badge>
                 )}
               </>
             ) : (
-              <span className="text-xs text-muted-foreground">{t("Aucun tag")}</span>
+              <span className="text-[10px] sm:text-xs text-muted-foreground">{t("Aucun tag")}</span>
             )}
           </div>
 
-          <div className="flex gap-4 text-center pt-2">
+          <div className="flex gap-4 text-center">
             <div>
-              <div className="text-2xl font-bold text-primary">{projectsCount}</div>
-              <div className="text-xs text-muted-foreground">{t("Projets")}</div>
+              <div className="text-lg sm:text-xl md:text-2xl font-bold text-primary">{projectsCount}</div>
+              <div className="text-[10px] sm:text-xs text-muted-foreground">{t("Projets")}</div>
             </div>
           </div>
 
           {!isMe && (
-            <div className="flex gap-2 w-full pt-2">
+            <div className="flex gap-2 w-full">
               <Button
                 variant="outline"
                 size="sm"
-                className="flex-1"
+                className="flex-1 h-8 sm:h-9 text-xs sm:text-sm"
                 disabled={!isConnected}
                 onClick={handleContact}
               >
-                <MessageCircle className="mr-1 h-4 w-4" />
+                <MessageCircle className="h-3.5 w-3.5 mr-1 sm:h-4 sm:w-4" />
                 {t("Contacter")}
               </Button>
               <Button
                 variant={isFollowingState ? "default" : "outline"}
                 size="sm"
-                className="flex-1"
+                className="flex-1 h-8 sm:h-9 text-xs sm:text-sm"
                 disabled={!isConnected || isLoadingFollow}
                 onClick={handleFollow}
               >
                 {isLoadingFollow ? (
-                  <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                  <Loader2 className="h-3.5 w-3.5 mr-1 sm:h-4 sm:w-4 animate-spin" />
                 ) : (
-                  <Heart className={cn("mr-1 h-4 w-4", isFollowingState && "fill-current")} />
+                  <Heart className={cn("h-3.5 w-3.5 mr-1 sm:h-4 sm:w-4", isFollowingState && "fill-current")} />
                 )}
                 {isFollowingState ? t("Suivi") : t("Suivre")}
               </Button>

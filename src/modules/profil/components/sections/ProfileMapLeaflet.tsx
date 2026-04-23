@@ -1,6 +1,7 @@
 import { useTheme } from "next-themes";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { loadLeaflet } from "@/modules/search/hooks/loadLeaflet";
+import { useIsMounted } from "@/hooks/useIsMounted";
 
 interface ProfileMapLeafletProps {
   lat: number;
@@ -23,11 +24,7 @@ export default function ProfileMapLeaflet({
   const lightLayerRef = useRef<import("leaflet").TileLayer | null>(null);
   const darkLayerRef = useRef<import("leaflet").TileLayer | null>(null);
   const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useIsMounted();
 
   // Initialisation de la carte
   useEffect(() => {

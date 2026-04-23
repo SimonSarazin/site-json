@@ -99,7 +99,9 @@ export function useSearchQuery({
         locality,
       } = baseParams;
 
-      const graphIndexStep = 500;
+      const extra = baseParams as Record<string, unknown>;
+
+      const graphIndexStep = 0;
 
       const param: Partial<GlobalAutocompleteCostumData> = {
         name: searchText,
@@ -122,13 +124,18 @@ export function useSearchQuery({
         ...(defaultSortBy && Object.keys(defaultSortBy).length > 0 && {
           sortBy: defaultSortBy,
         }),
-        ...(locality && Object.keys(locality).length > 0 && { locality }),
+        ...(locality && Object.keys(locality).length > 0 && { locality: locality as GlobalAutocompleteCostumData["locality"] }),
         ...(notSourceKey ? { notSourceKey: true } : {}),
-      };
+        ...(extra.contextId ? { contextId: extra.contextId as string } : {}),
+        ...(extra.contextType ? { contextType: extra.contextType as GlobalAutocompleteCostumData["contextType"] } : {}),
+        ...(extra.costumSlug ? { costumSlug: extra.costumSlug as string } : {}),
+        ...(extra.costumEditMode !== undefined ? { costumEditMode: extra.costumEditMode as boolean } : {}),
+        ...(extra.sourceKey ? { sourceKey: extra.sourceKey as string[] } : {}),
+      } as Partial<GlobalAutocompleteCostumData>;
       console.log("Search params:", param);
 
-      if (type && type.length > 0) param.searchType = type as GlobalAutocompleteCostumData["searchType"];
-      if (!type && defaultTypes) param.searchType = defaultTypes;
+      if (type && type.length > 0) param.searchType = type as unknown as GlobalAutocompleteCostumData["searchType"];
+      if (!type && defaultTypes) param.searchType = defaultTypes as unknown as GlobalAutocompleteCostumData["searchType"];
       if (defaultTags && defaultTags.length > 0) {
         param.searchTags = defaultTags;
       }

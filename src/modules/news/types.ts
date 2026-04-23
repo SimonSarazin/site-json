@@ -37,3 +37,19 @@ export interface NewsPermissions {
   canShare: boolean;
   canReport: boolean;
 }
+
+// Media item types for news images and documents
+export interface NewsImageItem {
+  id?: string;
+  _id?: { _str: string };
+  imagePath?: string;
+  imageThumbPath?: string;
+  name?: string;
+}
+
+export interface NewsDocumentItem {
+  id?: string;
+  name?: string;
+  docPath: string;
+  size?: number;
+}

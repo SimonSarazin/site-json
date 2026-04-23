@@ -13,6 +13,7 @@ export { default as SearchProStatic } from "./SearchProStatic";
 export {
   SearchProSectionSchema,
   SearchProStaticSectionSchema,
+  CardCountCTSectionSchema,
   SEARCH_TYPE_ICON_NAMES,
 } from "./schema";
 
@@ -21,6 +22,8 @@ export type {
   SearchProSectionProps,
   SearchProStaticSection,
   SearchProStaticSectionProps,
+  CardCountCTSection,
+  CardCountCTSectionProps,
   TagsFilter,
   ListConf,
   MapConf,

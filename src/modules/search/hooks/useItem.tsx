@@ -50,13 +50,21 @@ const useItem = (item: User | Organization | Project | Poi | EventType) => {
       endDate: null as Date | null,
       eventDate: null as string | null,
       organizerName: null as string | null,
+      // Champs calculés
+      addressString: "",
+      countProjects: 0,
+      countMembers: 0,
+      countContributors: 0,
+      // Champs contact
+      phone: "" as string | undefined,
+      email: "" as string | undefined,
     };
 
     /** Données brutes sécurisées */
     const raw = item?.serverData ?? {};
 
     /** Priorité : raw -> defaults */
-    const merged = { ...defaults, ...raw } as typeof defaults & { [k: string]: any };
+    const merged = { ...defaults, ...raw } as typeof defaults & { [k: string]: unknown };
 
     // Normalisation des dates
     merged.created = toDate(raw.created);

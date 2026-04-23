@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { Loader2, AlertCircle } from "lucide-react";
-import type { FieldErrors, Resolver } from "react-hook-form";
+import type { FieldErrors, FieldValues, Resolver, UseFormReturn } from "react-hook-form";
 import { useT } from "@/hooks/useT";
 import {
   Dialog,
@@ -35,8 +35,7 @@ const TAB_FIELDS = {
 
 type TabName = keyof typeof TAB_FIELDS;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function hasTabErrors(tabName: TabName, errors: FieldErrors<any>): boolean {
+function hasTabErrors(tabName: TabName, errors: FieldErrors<FieldValues>): boolean {
   return TAB_FIELDS[tabName].some(field => !!errors[field]);
 }
 
@@ -145,7 +144,7 @@ export function AddProjectModal({ open, onOpenChange, parent }: AddProjectModalP
 
               {/* Tab Localisation */}
               <TabsContent value="location">
-                <EditLocationTab form={form} />
+                <EditLocationTab form={form as unknown as UseFormReturn<FieldValues>} />
               </TabsContent>
               </div>
             </Tabs>

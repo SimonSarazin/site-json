@@ -3,15 +3,16 @@
 // ------------------------------------------------------------
 // Objectif : couvrir un maximum de cas d'usage « no‑code » sans modifier le runtime React.
 // Technologies cibles : React 19 + Vite 5 + Tailwind 4 + shadcn/ui.
-// Validation : Zod 3.x – le schéma sert à la fois de typings, de runtime‑guard,
+// Validation : Zod 4.x – le schéma sert à la fois de typings, de runtime‑guard,
 //               et d'autocomplétion dans VS Code.
 // ------------------------------------------------------------
-import { SearchProSectionSchema, SearchProStaticSectionSchema } from "@/modules/search/schema";
+import { SearchProSectionSchema, SearchProStaticSectionSchema, CardCountCTSectionSchema, ThematicsSectionSchema } from "@/modules/search/schema";
 import { NewsSectionSchema } from "@/modules/news/schema";
 import { z } from "zod";
 import { LocalizedString, LOCALES } from "./locale-schema";
 export { LocalizedString, LOCALES };
 import { ProfilesConfigSchema } from "../modules/profil/schema";
+import { AmpliConfigSchema } from "@/modules/ampli/schema";
 
 // export const CocolightConfig = z.object({
 //   baseUrl: z.string().url().default("http://localhost:5080"),
@@ -87,19 +88,57 @@ export type HeroSection = z.infer<typeof HeroSectionSchema>;
 
 export type HeroSectionProps = z.infer<typeof HeroSectionSchema>["props"];
 
+//──────────────── Hero With Icon
+const HeroWithIconSectionSchema = z.object({
+  type: z.literal("heroWithIcon"),
+  id: z.string().optional(),
+  props: z.object({
+    headline: LocalizedString,
+    subhead: LocalizedString.optional(),
+    icon: z.object({
+      show: z.boolean().default(true),
+      name: z.string().optional(),
+      size: z.number().default(64),
+      backdrop: z.boolean().default(false),
+    }),
+    backgroundImage: z.string().optional(),
+    videoBg: z.string().optional(),
+    align: Alignment.default("center"),
+    overlay: z.boolean().default(false),
+    cta: z.array(
+      z.object({ label: LocalizedString, icon: z.string().optional(), href: z.string(), variant: z.string().optional() })
+    ).optional(),
+    listContent: z.object({
+      items: z.array(z.object({
+        title: LocalizedString,
+        icon: z.string().optional(),
+        iconPosition: z.enum(["left", "right", "top", "bottom"]).default("left"),
+      })),
+      layout: z.enum(["rows", "columns"]).default("columns"),
+    }).optional(),
+    scrollTo: z.string().optional(),
+  })
+})
+
+export type HeroWithIconSection = z.infer<typeof HeroWithIconSectionSchema>;
+export type HeroWithIconSectionProps = z.infer<typeof HeroWithIconSectionSchema>["props"];
+
+
 //──────────────── Hero Tiers-Lieux
 export const HeroTiersLieuxSchema = z.object({
   type: z.literal("hero-tiers-lieux"),
   id: z.string().optional(),
   props: z.object({
     headline: LocalizedString,
+    headlineSubsite: LocalizedString.optional(),
     subhead: LocalizedString.optional(),
+    subheadSubsite: LocalizedString.optional(),
     backgroundImage: z.string().optional(),
     ctaButtons: z
       .array(
         z.object({
           label: LocalizedString,
-          variant: z.enum(["default", "secondary"]).optional(),
+          variant: z.enum(["default", "secondary", "accent"]).optional(),
         })
       )
       .optional(),
@@ -135,17 +174,94 @@ export const HeroRezoLaMerSchema = z.object({
         z.object({
           label: LocalizedString,
           path: z.string().optional(),
-          variant: z.enum(["default", "secondary"]).optional(),
+          variant: z.enum(["default", "secondary", "accent"]).optional(),
         })
       )
       .optional(),
     showScrollIndicator: z.boolean().optional(),
+    variant: z.enum(["ocean", "cyber"]).optional(),
   }),
 });
 
 export type HeroRezoLaMer = z.infer<typeof HeroRezoLaMerSchema>;
 
 export type HeroRezoLaMerProps = z.infer<typeof HeroRezoLaMerSchema>["props"];
+
+// Nos-commune
+export const HeroNoCommunesShema = z.object({
+  type: z.literal("hero-nos-communes"),
+  id: z.string().optional(),
+  props: z.object({
+    badge: LocalizedString.optional(),
+    headline: LocalizedString,
+    subhead: LocalizedString.optional(),
+    tagline: LocalizedString.optional(),
+    taglineSubtext: LocalizedString.optional(),
+    backgroundImage: z.string().optional(),
+    backgroundImageAlt: LocalizedString.optional(),
+    ctaButtons: z
+      .array(
+        z.object({
+          label: LocalizedString,
+          path: z.string().optional(),
+          variant: z.enum(["default", "secondary", "accent"]).optional(),
+        })
+      )
+      .optional(),
+    badges: z
+      .array(
+        z.object({
+          label: LocalizedString,
+          icon: z.string().optional(),
+        })
+      )
+      .optional(),
+    showScrollIndicator: z.boolean().optional(),
+    variant: z.enum(["nos-communes"]).optional(),
+  })
+});
+
+export type HeroNosCommunes = z.infer<typeof HeroNoCommunesShema>;
+
+export type HeroNosCommunesProps = z.infer<typeof HeroNoCommunesShema>["props"];
+
+//──────────────── Commune Transparente Hero
+export const HeroCommuneTransparenteSchema = z.object({
+  type: z.literal("hero-commune-transparente"),
+  id: z.string().optional(),
+  props: z.object({
+    headline: LocalizedString,
+    subhead: LocalizedString.optional(),
+    logoIcon: z.string().optional(),
+    logoImage: z.string().optional(),
+    backgroundImage: z.string().optional(),
+    backgroundImageAlt: LocalizedString.optional(),
+    badges: z
+      .array(
+        z.object({
+          label: LocalizedString,
+          icon: z.string().optional(),
+          href: z.string().optional(),
+        })
+      )
+      .optional(),
+    ctaButtons: z
+      .array(
+        z.object({
+          label: LocalizedString,
+          path: z.string().optional(),
+          href: z.string().optional(),
+          variant: z.enum(["default", "secondary", "outline"]).optional(),
+        })
+      )
+      .optional(),
+    showScrollIndicator: z.boolean().optional(),
+    variant: z.enum(["commune-transparente"]).optional(),
+  }),
+});
+
+export type HeroCommuneTransparente = z.infer<typeof HeroCommuneTransparenteSchema>;
+export type HeroCommuneTransparenteProps = z.infer<typeof HeroCommuneTransparenteSchema>["props"];
 
 //──────────────── Features Rézo la Mer
 export const FeaturesRezoLaMerSchema = z.object({
@@ -154,12 +270,15 @@ export const FeaturesRezoLaMerSchema = z.object({
   props: z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
+    variant: z.enum(["ocean", "cyber"]).optional(),
+    bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
     features: z.array(
       z.object({
         icon: z.string(),
         title: LocalizedString,
         description: LocalizedString,
-        color: z.enum(["turquoise", "cyan-bright", "primary", "turquoise-light"]).optional(),
+        color: z.enum(["turquoise", "cyan-bright", "primary", "turquoise-light", "accent", "chart-2", "chart-3"]).optional(),
+        link: z.string().optional(),
       })
     ),
   }),
@@ -168,6 +287,29 @@ export const FeaturesRezoLaMerSchema = z.object({
 export type FeaturesRezoLaMer = z.infer<typeof FeaturesRezoLaMerSchema>;
 export type FeaturesRezoLaMerProps = z.infer<typeof FeaturesRezoLaMerSchema>["props"];
 
+//──────────────── Categories Grid (Generic)
+export const CategoriesGridSectionSchema = z.object({
+  type: z.literal("categories-grid"),
+  id: z.string().optional(),
+  props: z.object({
+    headline: LocalizedString.optional(),
+    subhead: LocalizedString.optional(),
+    variant: z.enum(["ocean", "cyber", "ssbe"]).optional().default("ssbe"),
+    columns: z.number().min(2).max(6).optional().default(3),
+    cards: z.array(
+      z.object({
+        icon: z.string(),
+        title: LocalizedString,
+        subtitle: LocalizedString.optional(),
+        link: z.string().optional(),
+      })
+    ),
+  }),
+});
+
+export type CategoriesGridSection = z.infer<typeof CategoriesGridSectionSchema>;
+export type CategoriesGridSectionProps = z.infer<typeof CategoriesGridSectionSchema>["props"];
+
 //──────────────── Action Buttons Rézo la Mer
 export const ActionButtonsRezoLaMerSchema = z.object({
   type: z.literal("action-buttons-rezo-la-mer"),
@@ -175,13 +317,15 @@ export const ActionButtonsRezoLaMerSchema = z.object({
   props: z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
+    variant: z.enum(["ocean", "cyber"]).optional(),
+    bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
     actions: z.array(
       z.object({
         icon: z.string(),
         title: LocalizedString,
         subtitle: LocalizedString.optional(),
         href: z.string(),
-        color: z.enum(["primary", "turquoise", "amber", "cyan-bright"]).optional(),
+        color: z.enum(["primary", "turquoise", "amber", "cyan-bright", "teal", "accent", "eco", "chart-2"]).optional(),
       })
     ),
   }),
@@ -197,6 +341,8 @@ export const CommunityRezoLaMerSchema = z.object({
   props: z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
+    variant: z.enum(["ocean", "cyber"]).optional(),
+    bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
     image: z.string().optional(),
     imageAlt: LocalizedString.optional(),
     actions: z.array(
@@ -207,13 +353,13 @@ export const CommunityRezoLaMerSchema = z.object({
         ctaLabel: LocalizedString,
         href: z.string(),
       })
-    ),
+    ).optional(),
     stats: z
       .array(
         z.object({
           value: z.string(),
           label: LocalizedString,
-          color: z.enum(["primary", "turquoise", "cyan-bright"]).optional(),
+          color: z.enum(["primary", "turquoise", "cyan-bright", "accent", "teal"]).optional(),
         })
       )
       .optional(),
@@ -230,6 +376,8 @@ export const CallToActionRezoLaMerSchema = z.object({
   props: z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
+    variant: z.enum(["ocean", "cyber"]).optional(),
+    bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
     newsletterPlaceholder: LocalizedString.optional(),
     newsletterButtonLabel: LocalizedString.optional(),
     newsletterDisclaimer: LocalizedString.optional(),
@@ -238,7 +386,7 @@ export const CallToActionRezoLaMerSchema = z.object({
         z.object({
           label: LocalizedString,
           href: z.string(),
-          variant: z.enum(["default", "outline"]).optional(),
+          variant: z.enum(["default", "outline", "accent"]).optional(),
         })
       )
       .optional(),
@@ -248,13 +396,56 @@ export const CallToActionRezoLaMerSchema = z.object({
 export type CallToActionRezoLaMer = z.infer<typeof CallToActionRezoLaMerSchema>;
 export type CallToActionRezoLaMerProps = z.infer<typeof CallToActionRezoLaMerSchema>["props"];
 
+const JsonFormModalFieldSchema = z.object({
+  name: z.string(),
+  label: LocalizedString,
+  type: z.enum(["text", "email", "tel", "number", "textarea", "select", "multiselect", "checkbox", "radio", "date", "url", "location", "file"]).default("text"),
+  required: z.boolean().default(false),
+  placeholder: LocalizedString.optional(),
+  options: z.array(z.object({ value: z.string(), label: LocalizedString })).optional(),
+  validation: z.string().optional(),
+});
+
+const JsonFormModalStepSchema = z.object({
+  title: LocalizedString,
+  description: LocalizedString.optional(),
+  icon: z.string().optional(),
+  fields: z.array(JsonFormModalFieldSchema),
+});
+
+export const JsonFormModalConfigSchema = z.object({
+  title: LocalizedString,
+  icon: z.string().optional(),
+  steps: z.array(JsonFormModalStepSchema).optional(),
+  fields: z.array(JsonFormModalFieldSchema).optional(),
+  submitLabel: LocalizedString,
+  submitMode: z.enum(["fetch", "sdk"]).default("fetch"),
+  entityType: z.enum(["organization", "project", "event", "poi"]).optional(),
+  action: z.string().optional(),
+  method: z.enum(["GET", "POST"]).default("POST"),
+  successMessage: LocalizedString.optional(),
+  errorMessage: LocalizedString.optional(),
+  tagsFrom: z.array(z.string()).optional(),
+  extraData: z.record(z.string(), z.unknown()).optional(),
+});
+
+export type JsonFormModalConfig = z.infer<typeof JsonFormModalConfigSchema>;
+export type JsonFormModalField = z.infer<typeof JsonFormModalFieldSchema>;
+export type JsonFormModalStep = z.infer<typeof JsonFormModalStepSchema>;
+
 //──────────────── Title With Filters Rézo la Mer
-const ActionButtonSchema = z.object({
+export const ActionButtonSchema = z.object({
   label: LocalizedString,
   icon: z.string().optional(),
   href: z.string().optional(),
   variant: z.enum(["default", "outline", "primary", "turquoise"]).optional(),
+  action: z.enum(["join-dropdown", "add-project", "add-event", "add-poi", "add-organization", "add-structure", "add-offer"]).optional(),
+  modal: z.string().optional(),
+  formConfig: JsonFormModalConfigSchema.optional(),
+  requiresAdmin: z.boolean().optional(),
 });
+
+export type ActionButton = z.infer<typeof ActionButtonSchema>;
 
 export const TitleWithFiltersRezoLaMerSchema = z.object({
   type: z.literal("title-with-filters-rezo-la-mer"),
@@ -282,6 +473,62 @@ export const TitleWithFiltersRezoLaMerSchema = z.object({
 
 export type TitleWithFiltersRezoLaMer = z.infer<typeof TitleWithFiltersRezoLaMerSchema>;
 export type TitleWithFiltersRezoLaMerProps = z.infer<typeof TitleWithFiltersRezoLaMerSchema>["props"];
+
+// ──────────────── Meeteem Props
+
+const MeeteemSectionSchema = z.object({
+  type: z.literal("meeteem"),
+  id: z.string().optional(),
+  props: z.object({
+    coform: z.string().min(1),
+    path: z.object({
+      name: z.string().min(1),
+      description: z.string().optional(),
+      address: z.string().min(1),
+      image: z.string().optional(),
+      finder: z.string().optional(),
+      tags: z.string().optional(),
+    })
+  })
+})
+
+export type MeeteemSection = z.infer<typeof MeeteemSectionSchema>;
+export type MeeteemSectionProps = z.infer<typeof MeeteemSectionSchema>["props"];
+
+//──────────────── Actions Commune Transparente
+const CommuneTransparenteActionButtonSchema = z.object({
+  label: LocalizedString,
+  href: z.string().optional(),
+  variant: z.enum(["primary", "secondary"]).optional(),
+  action: z.enum(["add-project", "add-event", "add-poi", "add-organization", "add-offer"]).optional(),
+  modal: z.string().optional(),
+  formConfig: JsonFormModalConfigSchema.optional(),
+  requiresAuth: z.boolean().optional(),
+});
+
+const CommuneTransparenteActionItemSchema = z.object({
+  title: LocalizedString,
+  description: LocalizedString,
+  icon: z.string(),
+  iconBg: z.enum(["blue", "slate", "purple", "green", "blue-dark", "orange", "lime"]).optional(),
+  buttons: z.array(CommuneTransparenteActionButtonSchema).default([]),
+});
+
+export const CommuneTransparenteActionsSectionSchema = z.object({
+  type: z.literal("commune-transparente-actions"),
+  id: z.string().optional(),
+  props: z.object({
+    imageSrc: z.string().optional(),
+    imageAlt: LocalizedString.optional(),
+    brandTitle: LocalizedString.optional(),
+    description: LocalizedString.optional(),
+    highlightText: LocalizedString.optional(),
+    items: z.array(CommuneTransparenteActionItemSchema).default([]),
+  }),
+});
+
+export type CommuneTransparenteActionsSection = z.infer<typeof CommuneTransparenteActionsSectionSchema>;
+export type CommuneTransparenteActionsSectionProps = z.infer<typeof CommuneTransparenteActionsSectionSchema>["props"];
 
 //──────────────── Markdown / MDX
 const MarkdownSectionSchema = z.object({
@@ -979,7 +1226,7 @@ const FiltersSectionSchema = z.object({
         level: z.string().optional(),
         name: z.string().optional(),
         defaultChecked: z.boolean().optional(),
-      })),
+      })).optional(),
       config: z.object({
         countryCode: z.array(z.string()).optional(),
         level: z.array(z.string()).optional(),
@@ -988,7 +1235,7 @@ const FiltersSectionSchema = z.object({
       }).optional(),
     })),
     filtersByAnswers: z.record(z.string() , z.object({
-      id: z.string(),
+      id: z.string().optional(),
       label: LocalizedString,
       type: z.enum(["form", 'answers']).default("answers"),
       path: z.string().optional(),
@@ -996,7 +1243,7 @@ const FiltersSectionSchema = z.object({
       finderPath: z.string().optional(),
       value: z.record(z.string(), z.object({
         id: z.string(),
-        finder: LocalizedString,
+        finder: z.string(),
       })).optional(),
     })).optional(),
     defaultOpenGroups: z.array(z.string()).optional(),
@@ -1015,6 +1262,9 @@ const GridLayoutSectionPropsSchema = z.object({
   rightColumns: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]).optional(),
   gap: z.number().optional(),
   className: z.string().optional(),
+  leftWrapperClass: z.string().optional(),
+  rightWrapperClass: z.string().optional(),
+  fixedHeight: z.string().optional(),
 });
 
 const GridLayoutSectionSchema = z.object({
@@ -1181,13 +1431,18 @@ export type FinanceSummarySectionProps = z.infer<typeof FinanceSummarySectionSch
 //───────────────────────────────────────────────────────────────
 export const Section = z.discriminatedUnion("type", [
   HeroSectionSchema,
+  HeroWithIconSectionSchema,
   HeroTiersLieuxSchema,
   HeroRezoLaMerSchema,
+  HeroNoCommunesShema,
+  HeroCommuneTransparenteSchema,
   FeaturesRezoLaMerSchema,
   ActionButtonsRezoLaMerSchema,
   CommunityRezoLaMerSchema,
   CallToActionRezoLaMerSchema,
   TitleWithFiltersRezoLaMerSchema,
+  CommuneTransparenteActionsSectionSchema,
+  CategoriesGridSectionSchema,
   MarkdownSectionSchema,
   CardsSectionSchema,
   GallerySectionSchema,
@@ -1227,6 +1482,9 @@ export const Section = z.discriminatedUnion("type", [
   ContentSectionSchema,
   SearchProSectionSchema,
   SearchProStaticSectionSchema,
+  MeeteemSectionSchema,
+  CardCountCTSectionSchema,
+  ThematicsSectionSchema,
   GridLayoutSectionSchema,
   NewsSectionSchema,
   MemberSectionSchema,
@@ -1327,11 +1585,17 @@ const EnhancedNavItem: z.ZodType<EnhancedNavItemType> = z.lazy(() =>
 );
 
 export const Header = z.object({
-  type: z.enum(["tiers-lieux", "rezo-la-mer", "default"]).default("default"),
-  logo: z.string(),
+  type: z.enum(["tiers-lieux", "rezo-la-mer", "cyber-reunion", "julie-pot-vin", "nos-communes", "commune-transparente", "default"]).default("default"),
+  logo: z.string().optional(),
   logoAlt: LocalizedString.optional(),
+  logoTitle: LocalizedString.optional(),
+  logoIcon: z.string().optional(),
   path: z.string().min(1).optional(),
   nav: z.array(EnhancedNavItem),
+  navSubsite: z.array(EnhancedNavItem).optional(),
+  navVisibleOnlyForListedPages: z.boolean().optional(),
+  secondaryNav: z.array(EnhancedNavItem).optional(),
+  secondaryNavVisibleOnlyForListedPages: z.boolean().optional(),
   sticky: z.boolean().default(true),
   transparent: z.boolean().default(false),
   height: z.enum(["sm", "md", "lg"]).default("md"),
@@ -1344,6 +1608,20 @@ export const Header = z.object({
     notifications: z.boolean().default(false),
     piggyBank: z.boolean().default(false),
   }),
+  ctaButton: z.object({
+    label: LocalizedString,
+    path: z.string().optional(),
+  }).optional(),
+  piggyBank: z.object({
+    amount: z.string().optional(),
+    icon: z.string().optional(),
+    path: z.string().optional(),
+  }).optional(),
+  urgenceButton: z.object({
+    label: LocalizedString,
+    icon: z.string().optional(),
+    path: z.string().optional(),
+  }).optional(),
   announcement: z.object({
     text: LocalizedString,
     href: z.string().optional(),
@@ -1363,8 +1641,32 @@ const FooterColumn = z.object({
   })),
 });
 
+const FooterContactItem = z.object({
+  icon: z.string().optional(),
+  label: LocalizedString.optional(),
+  lines: z.array(LocalizedString).optional(),
+  value: LocalizedString.optional(),
+  href: z.string().optional(),
+});
+
+const FooterContactSection = z.object({
+  title: LocalizedString.optional(),
+  items: z.array(FooterContactItem),
+});
+
+const FooterPartnerLogo = z.object({
+  image: z.string(),
+  alt: LocalizedString,
+  href: z.string().optional(),
+});
+
+const FooterPartnersSection = z.object({
+  title: LocalizedString.optional(),
+  logos: z.array(FooterPartnerLogo),
+});
+
 export const Footer = z.object({
-  type: z.enum(["tiers-lieux", "rezo-la-mer", "default"]).default("default"),
+  type: z.enum(["tiers-lieux", "rezo-la-mer", "cyber-reunion", "nos-communes", "commune-transparente", "ssbe", "default"]).default("default"),
   columns: z.array(FooterColumn),
   socials: z.array(z.object({ platform: z.string(), url: z.string() })).optional(),
   extra: z.string().optional(),
@@ -1384,6 +1686,9 @@ export const Footer = z.object({
     label: LocalizedString,
   })).optional(),
   paymentMethods: z.array(z.string()).optional(), // Array of payment method icons
+  website: z.string().optional(),
+  contactSection: FooterContactSection.optional(),
+  partners: FooterPartnersSection.optional(),
 });
 export type Footer = z.infer<typeof Footer>;
 
@@ -1632,6 +1937,7 @@ export const SiteConfig = z.object({
     bgColor: z.string().optional().default("#ffffff"), 
     fgColor: z.string().optional().default("#000000"), 
   }).optional(),
+  ampli: z.array(AmpliConfigSchema).optional(),
 });
 export type SiteConfig = z.infer<typeof SiteConfig>;
 

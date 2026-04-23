@@ -24,11 +24,16 @@ const LazySections: {
   hero: lazy(() => import("./HeroSection")),
   "hero-tiers-lieux": lazy(() => import("./HeroTiersLieux")),
   "hero-rezo-la-mer": lazy(() => import("./HeroRezoLaMer")),
+  "hero-ssbe": lazy(() => import("./HeroSSBE")),
   "features-rezo-la-mer": lazy(() => import("./FeaturesRezoLaMer")),
   "action-buttons-rezo-la-mer": lazy(() => import("./ActionButtonsRezoLaMer")),
   "community-rezo-la-mer": lazy(() => import("./CommunityRezoLaMer")),
   "cta-rezo-la-mer": lazy(() => import("./CallToActionRezoLaMer")),
   "title-with-filters-rezo-la-mer": lazy(() => import("./TitleWithFiltersRezoLaMer")),
+  "commune-transparente-actions": lazy(() => import("./CommuneTransparenteActionsSection")),
+  "hero-nos-communes": lazy(() => import("./NosCommunesBannerSection")),
+  "hero-commune-transparente": lazy(() => import("./HeroCommuneTransparenteSection")),
+  "categories-grid": lazy(() => import("./CategoriesGridSection")),
   markdown: lazy(() => import("./MarkdownSection")),
   cards: lazy(() => import("./CardsSection")),
   gallery: lazy(() => import("./GallerySection")),
@@ -67,10 +72,14 @@ const LazySections: {
   recoverPasswordForm: lazy(() => import("./RecoverPasswordFormSection")),
   searchPro: lazy(() => import("@/modules/search/SearchProSection")),
   searchProStatic: lazy(() => import("@/modules/search/SearchProStaticSection")),
+  cardCountCT: lazy(() => import("@/modules/search/CardCountCTSection")),
+  thematics: lazy(() => import("@/modules/search/components/card/ThematicsSection")),
   filters: lazy(() => import("./FiltersSection")),
   gridLayout: lazy(() => import("./GridLayoutSection")),
   news: lazy(() => import("@/modules/news/components/sections/NewsSection")),
   member: lazy(() => import("./MemberSection")),
+  heroWithIcon: lazy(() => import("./HeroWithIconSection")),
+  meeteem: lazy(() => import("@/modules/ampli/components/sections/MeeteemSection"))
   actions: lazy(() => import("./ActionsSection")),
   finance: lazy(() => import("./FinanceSection")),
   "actions-summary": lazy(() => import("./ActionsSummarySection")),
@@ -95,31 +104,8 @@ function SectionLoadingFallback({ id, type }: { id?: string; type: string }) {
   );
 }
 
-export function SectionRenderer({ section }: { section: Section }) {
-  const { entity, contextId } = useCocolight();
+export function SectionRenderer({ section, index }: { section: Section; index?: number }) {
   const sectionContext = `Section[type=${section.type}, id=${section.id || "none"}]`;
-  const projectAwareSectionTypes: Section['type'][] = ['actions', 'finance', 'actions-summary', 'finance-summary'];
-
-  const selectedProjectId = (() => {
-    const propsRecord = section.props as Record<string, unknown>;
-    const fromProps = typeof propsRecord?.idProjet === 'string' ? propsRecord.idProjet : '';
-    if (fromProps) return fromProps;
-
-    if (typeof window === 'undefined') return '';
-
-    const fromQuery = new URLSearchParams(window.location.search).get('selectedProjectId') || '';
-    if (fromQuery) return fromQuery;
-
-    const storageScopeId = contextId || entity?.id || '';
-    if (!storageScopeId) return '';
-
-    return window.localStorage.getItem(`projectModalId_${storageScopeId}`) || '';
-  })();
-
-  const resolvedSectionProps = projectAwareSectionTypes.includes(section.type)
-    ? ({ ...(section.props as Record<string, unknown>), idProjet: selectedProjectId } as typeof section.props)
-    : section.props;
-
   const LazyComponent = LazySections[section.type] as React.ComponentType<{ id?: string; props: typeof section.props }>;
 
   if (!LazyComponent) {
@@ -136,19 +122,21 @@ export function SectionRenderer({ section }: { section: Section }) {
   }
 
   return (
-    <Suspense fallback={<SectionLoadingFallback id={section.id} type={section.type} />}>
-      <ErrorBoundary
-        context={sectionContext}
-        fallback={
-          <section id={section.id} className="py-8 bg-destructive/10">
-            <div className="container mx-auto px-4 text-center text-destructive">
-              Failed to load section: {section.type}
-            </div>
-          </section>
-        }
-      >
-        <LazyComponent id={section.id} props={resolvedSectionProps} />
-      </ErrorBoundary>
-    </Suspense>
+    <div data-section-index={index} data-section-type={section.type}>
+      <Suspense fallback={<SectionLoadingFallback id={section.id} type={section.type} />}>
+        <ErrorBoundary
+          context={sectionContext}
+          fallback={
+            <section id={section.id} className="py-8 bg-destructive/10">
+              <div className="container mx-auto px-4 text-center text-destructive">
+                Failed to load section: {section.type}
+              </div>
+            </section>
+          }
+        >
+          <LazyComponent id={section.id} props={section.props} />
+        </ErrorBoundary>
+      </Suspense>
+    </div>
   );
 }

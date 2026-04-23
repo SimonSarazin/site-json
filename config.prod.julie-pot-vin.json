@@ -1,0 +1,225 @@
+{
+  "version": "1.0.0",
+  "meta": {
+    "title": {
+      "fr": "Portfolio — Julie Potvin"
+    },
+    "description": {
+      "fr": "Portfolio de Julie Potvin – Directrice artistique freelance. Design visuel et identité pour les médias interactifs."
+    },
+    "defaultLang": "fr",
+    "languages": [
+      "fr"
+    ],
+    "keywords": [
+      "portfolio",
+      "directrice artistique",
+      "design",
+      "branding",
+      "identité visuelle"
+    ]
+  },
+  "header": {
+    "type": "julie-pot-vin",
+    "logo": "images/juliePotVin/monogramme.svg",
+    "nav": [
+      {
+        "label": {
+          "fr": "Info",
+          "en": "Info"
+        },
+        "path": "/info"
+      },
+      {
+        "label": {
+          "fr": "Inspirations",
+          "en": "Inspirations"
+        },
+        "path": "#"
+      }
+    ],
+    "utilities": {
+      "themeSwitch": false,
+      "langSwitch": false,
+      "auth": false
+    }
+  },
+  "pages": [
+    {
+      "path": "/",
+      "title": {
+        "fr": "Portfolio — Julie Potvin"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "html",
+          "id": "mnhm",
+          "props": {
+            "html": "<div class=\"max-w-[1900px] bg-background mx-auto px-8 md:px-12 lg:px-16 animate-in fade-in slide-in-from-bottom-8 duration-1000\"><div class=\"grid lg:grid-cols-12 gap-4 mb-8 items-center\"><div class=\"lg:col-span-7\"><div class=\"relative overflow-hidden group\"><img src=\"images/juliePotVin/img1.jpg\" alt=\"Muséum national d'Histoire naturelle\" class=\"w-full aspect-[16/9] object-cover transition duration-700 ease-in-out group-hover:scale-105\"><div class=\"absolute inset-0 bg-black/60 flex items-center justify-center p-12 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out z-10\"><p class=\"text-white text-4xl lg:text-5xl serif-italic leading-tight text-center\">Donner vie à un écosystème graphique</p></div></div></div><div class=\"lg:col-span-5 text-center lg:pl-8\"><h2 class=\"text-4xl lg:text-5xl font-bold hover:text-primary text-muted-foreground mb-6 leading-tight cursor-pointer\">Muséum national<br>d'Histoire naturelle</h2><p class=\"text-[10px] font-bold uppercase tracking-[0.20em] text-muted-foreground\">BRANDING DIGITAL | WEB | SOCIAL MEDIA | ACCESSIBILITÉ</p></div></div></div>"
+          }
+        },
+        {
+          "type": "html",
+          "id": "france-inter",
+          "props": {
+            "html": "<div class=\"max-w-[1900px] bg-background mx-auto px-8 md:px-12 lg:px-16 animate-in fade-in slide-in-from-bottom-8 duration-1000\"><div class=\"grid lg:grid-cols-12 gap-8 mb-8 items-center\"><div class=\"lg:col-span-5 text-center lg:pr-8 order-2 lg:order-1\"><h2 class=\"text-4xl lg:text-5xl font-bold text-muted-foreground mb-6 leading-tight hover:text-primary cursor-pointer\">France Inter</h2><p class=\"text-[10px] font-bold uppercase tracking-[0.20em] text-muted-foreground\">WEB | BRANDING DIGITAL</p></div><div class=\"lg:col-span-7 order-1 lg:order-2\"><div class=\"relative overflow-hidden group\"><img src=\"images/juliePotVin/img2.jpg\" alt=\"France Inter\" class=\"w-full aspect-[16/9] object-cover transition duration-700 ease-in-out group-hover:scale-105\"><div class=\"absolute inset-0 bg-black/60 flex items-center justify-center p-12 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out z-10\"><p class=\"text-white text-4xl lg:text-5xl serif-italic leading-tight text-center\">Porter haut ses couleurs, ailleurs comme à domicile</p></div></div></div></div></div></div>"
+          }
+        },
+        {
+          "type": "html",
+          "id": "meaningful",
+          "props": {
+            "html": "<div class=\"max-w-[1900px] bg-background mx-auto px-8 md:px-12 lg:px-16 animate-in fade-in slide-in-from-bottom-8 duration-1000\"><div class=\"grid lg:grid-cols-12 gap-8 mb-8 items-center\"><div class=\"lg:col-span-7\"><div class=\"relative overflow-hidden group bg-secondary/20\"><div class=\"aspect-[16/9] flex items-center justify-center p-12 transition duration-700 ease-in-out group-hover:scale-105\"><div class=\"text-center\"><div class=\"w-32 h-32 lg:w-40 lg:h-40 mx-auto mb-6 bg-black rounded-3xl flex items-center justify-center\"><svg viewBox=\"0 0 100 100\" class=\"w-20 h-20 lg:w-24 lg:h-24\"><text x=\"50\" y=\"65\" text-anchor=\"middle\" font-size=\"60\" font-weight=\"700\" fill=\"white\">M</text></svg></div><p class=\"text-2xl font-semibold text-black lowercase\">meaningful</p></div></div><div class=\"absolute inset-0 bg-black/60 flex items-center justify-center p-12 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out z-10\"><p class=\"text-white text-4xl lg:text-5xl serif-italic leading-tight text-center\">Laboratoire de design</p></div></div></div><div class=\"lg:col-span-5 text-center lg:pl-8\"><h2 class=\"text-4xl lg:text-5xl font-bold text-muted-foreground mb-6 leading-tight hover:text-primary cursor-pointer\">Meaningful</h2><p class=\"text-[10px] font-bold uppercase tracking-[0.20em] text-muted-foreground\">IDENTITÉ | WEB</p></div></div></div>"
+          }
+        },
+        {
+          "type": "html",
+          "id": "bnf",
+          "props": {
+            "html": "<div class=\"max-w-[1900px] bg-background mx-auto px-8 md:px-12 lg:px-16 animate-in fade-in slide-in-from-bottom-8 duration-1000\"><div class=\"grid lg:grid-cols-12 gap-8 mb-8 items-center\"><div class=\"lg:col-span-5 text-center lg:pr-8 order-2 lg:order-1\"><h2 class=\"text-4xl lg:text-5xl font-bold text-muted-foreground mb-6 leading-tight hover:text-primary cursor-pointer\">BnF</h2><p class=\"text-[10px] font-bold uppercase tracking-[0.20em] text-muted-foreground\">WEB | UX</p></div><div class=\"lg:col-span-7 order-1 lg:order-2\"><div class=\"relative overflow-hidden group\"><img src=\"images/juliePotVin/img4.jpg\" alt=\"BnF\" class=\"w-full aspect-[16/9] object-cover transition duration-700 ease-in-out group-hover:scale-105\"><div class=\"absolute inset-0 bg-black/60 flex items-center justify-center p-12 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out z-10\"><p class=\"text-white text-4xl lg:text-5xl serif-italic leading-tight text-center\">Organiser & valoriser un trésor documentaire</p></div></div></div></div></div></div>"
+          }
+        },
+        {
+          "type": "html",
+          "id": "artpoint",
+          "props": {
+            "html": "<div class=\"max-w-[1900px] bg-background mx-auto px-8 md:px-12 lg:px-16 animate-in fade-in slide-in-from-bottom-8 duration-1000\"><div class=\"grid lg:grid-cols-12 gap-8 mb-8 items-center\"><div class=\"lg:col-span-7\"><div class=\"relative overflow-hidden group\"><img src=\"images/juliePotVin/img5.jpg\" alt=\"Artpoint\" class=\"w-full aspect-[16/9] object-cover transition duration-700 ease-in-out group-hover:scale-105\"><div class=\"absolute inset-0 bg-black/60 flex items-center justify-center p-12 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out z-10\"><p class=\"text-white text-4xl lg:text-5xl serif-italic leading-tight text-center\">Galerie d'art numérique</p></div></div></div><div class=\"lg:col-span-5 text-center lg:pl-8\"><h2 class=\"text-4xl lg:text-5xl font-bold text-muted-foreground mb-6 leading-tight hover:text-primary cursor-pointer\">Artpoint</h2><p class=\"text-[10px] font-bold uppercase tracking-[0.20em] text-muted-foreground\">WEB APP | UI</p></div></div></div>"
+          }
+        },
+        {
+          "type": "html",
+          "id": "modilion",
+          "props": {
+            "html": "<div class=\"max-w-[1900px] bg-background mx-auto px-8 md:px-12 lg:px-16 animate-in fade-in slide-in-from-bottom-8 duration-1000\"><div class=\"grid lg:grid-cols-12 gap-8 mb-8 items-center\"><div class=\"lg:col-span-5 text-center lg:pr-8 order-2 lg:order-1\"><h2 class=\"text-4xl lg:text-5xl font-bold text-muted-foreground mb-6 leading-tight hover:text-primary cursor-pointer\">Modilion</h2><p class=\"text-[10px] font-bold uppercase tracking-[0.20em] text-muted-foreground\">IDENTITÉ | WEB | SOCIAL MEDIA</p></div><div class=\"lg:col-span-7 order-1 lg:order-2\"><div class=\"relative overflow-hidden group\"><img src=\"images/juliePotVin/img6.jpg\" alt=\"Modilion\" class=\"w-full aspect-[16/9] object-cover transition duration-700 ease-in-out group-hover:scale-105\"><div class=\"absolute inset-0 bg-black/60 flex items-center justify-center p-12 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out z-10\"><p class=\"text-white text-4xl lg:text-5xl serif-italic leading-tight text-center\">Moderniser l'ébénisterie haut de gamme</p></div></div></div></div></div></div>"
+          }
+        },
+        {
+          "type": "html",
+          "id": "logotypes",
+          "props": {
+            "html": "<div class=\"max-w-[1900px] bg-background mx-auto px-8 md:px-12 lg:px-16 animate-in fade-in slide-in-from-bottom-8 duration-1000\"><div class=\"grid lg:grid-cols-12 gap-8 mb-8 items-center\"><div class=\"lg:col-span-7\"><div class=\"relative overflow-hidden group bg-muted\"><img src=\"images/juliePotVin/img7.jpg\" alt=\"Logotypes\" class=\"w-full aspect-[16/9] object-cover transition duration-700 ease-in-out group-hover:scale-105\"><div class=\"absolute inset-0 bg-black/60 flex items-center justify-center p-12 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out z-10\"><p class=\"text-white text-4xl lg:text-5xl serif-italic leading-tight text-center\">Affirmer une identité avec le minimum</p></div></div></div><div class=\"lg:col-span-5 text-center lg:pl-8\"><h2 class=\"text-4xl lg:text-5xl font-bold text-muted-foreground mb-6 leading-tight hover:text-primary cursor-pointer\">Logotypes</h2><p class=\"text-[10px] font-bold uppercase tracking-[0.20em] text-muted-foreground\">IDENTITÉ</p></div></div></div>"
+          }
+        },
+        {
+          "type": "html",
+          "id": "blue-ice",
+          "props": {
+            "html": "<div class=\"max-w-[1900px] bg-background mx-auto px-8 md:px-12 lg:px-16 animate-in fade-in slide-in-from-bottom-8 duration-1000\"><div class=\"grid lg:grid-cols-12 gap-8 mb-8 items-center\"><div class=\"lg:col-span-5 text-center lg:pr-8 order-2 lg:order-1\"><h2 class=\"text-4xl lg:text-5xl font-bold text-muted-foreground mb-6 leading-tight hover:text-primary cursor-pointer\">Blue Ice</h2><p class=\"text-[10px] font-bold uppercase tracking-[0.20em] text-muted-foreground\">IDENTITÉ | WEB</p></div><div class=\"lg:col-span-7 order-1 lg:order-2\"><div class=\"relative overflow-hidden group\"><img src=\"images/juliePotVin/img8.jpg\" alt=\"Blue Ice\" class=\"w-full aspect-[16/9] object-cover transition duration-700 ease-in-out group-hover:scale-105\"><div class=\"absolute inset-0 bg-black/60 flex items-center justify-center p-12 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out z-10\"><p class=\"text-white text-4xl lg:text-5xl serif-italic leading-tight text-center\">Aller plus haut sans perdre de vue l'essentiel</p></div></div></div></div></div></div>"
+          }
+        },
+        {
+          "type": "html",
+          "id": "vannina-vesperini",
+          "props": {
+            "html": "<div class=\"max-w-[1900px] bg-background mx-auto px-8 md:px-12 lg:px-16 animate-in fade-in slide-in-from-bottom-8 duration-1000\"><div class=\"grid lg:grid-cols-12 gap-8 mb-8 items-center\"><div class=\"lg:col-span-7\"><div class=\"relative overflow-hidden group\"><img src=\"images/juliePotVin/img9.jpg\" alt=\"Vannina Vesperini\" class=\"w-full aspect-[16/9] object-cover transition duration-700 ease-in-out group-hover:scale-105\"><div class=\"absolute inset-0 bg-black/60 flex items-center justify-center p-12 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out z-10\"><p class=\"text-white text-4xl lg:text-5xl serif-italic leading-tight text-center\">Dés/habillage graphique</p></div></div></div><div class=\"lg:col-span-5 text-center lg:pl-8\"><h2 class=\"text-4xl lg:text-5xl font-bold text-muted-foreground mb-6 leading-tight hover:text-primary cursor-pointer\">Vannina Vesperini</h2><p class=\"text-[10px] font-bold uppercase tracking-[0.20em] text-muted-foreground\">WEB | UX</p></div></div></div>"
+          }
+        },
+        {
+          "type": "html",
+          "id": "verdun-2016",
+          "props": {
+            "html": "<div class=\"max-w-[1900px] bg-background mx-auto px-8 md:px-12 lg:px-16 animate-in fade-in slide-in-from-bottom-8 duration-1000\"><div class=\"grid lg:grid-cols-12 gap-8 mb-8 items-center\"><div class=\"lg:col-span-5 text-center lg:pr-8 order-2 lg:order-1\"><h2 class=\"text-4xl lg:text-5xl font-bold text-muted-foreground mb-6 leading-tight hover:text-primary cursor-pointer\">Verdun 2016</h2><p class=\"text-[10px] font-bold uppercase tracking-[0.20em] text-muted-foreground\">WEB | UX</p></div><div class=\"lg:col-span-7 order-1 lg:order-2\"><div class=\"relative overflow-hidden group\"><img src=\"images/juliePotVin/img10.jpg\" alt=\"Verdun 2016\" class=\"w-full aspect-[16/9] object-cover grayscale transition duration-700 ease-in-out group-hover:scale-105\"><div class=\"absolute inset-0 bg-black/60 flex items-center justify-center p-12 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out z-10\"><p class=\"text-white text-4xl lg:text-5xl serif-italic leading-tight text-center\">Rapprocher passé|présent</p></div></div></div></div></div></div>"
+          }
+        },
+        {
+          "type": "html",
+          "id": "urwerk",
+          "props": {
+            "html": "<div class=\"max-w-[1900px] bg-background mx-auto px-8 md:px-12 lg:px-16 animate-in fade-in slide-in-from-bottom-8 duration-1000\"><div class=\"grid lg:grid-cols-12 gap-8 mb-8 items-center\"><div class=\"lg:col-span-7\"><div class=\"relative overflow-hidden group\"><img src=\"images/juliePotVin/img11.jpg\" alt=\"Urwerk\" class=\"w-full aspect-[16/9] object-cover transition duration-700 ease-in-out group-hover:scale-105\"><div class=\"absolute inset-0 bg-black/60 flex items-center justify-center p-12 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out z-10\"><p class=\"text-white text-4xl lg:text-5xl serif-italic leading-tight text-center\">Allier science-fiction & luxe</p></div></div></div><div class=\"lg:col-span-5 text-center lg:pl-8\"><h2 class=\"text-4xl lg:text-5xl font-bold text-muted-foreground mb-6 leading-tight hover:text-primary cursor-pointer\">Urwerk</h2><p class=\"text-[10px] font-bold uppercase tracking-[0.20em] text-muted-foreground\">WEB | CONCEPT</p></div></div></div>"
+          }
+        },
+        {
+          "type": "html",
+          "id": "ima",
+          "props": {
+            "html": "<div class=\"max-w-[1900px] bg-background mx-auto px-8 md:px-12 lg:px-16 animate-in fade-in slide-in-from-bottom-8 duration-1000\"><div class=\"grid lg:grid-cols-12 gap-8 mb-8 items-center\"><div class=\"lg:col-span-5 text-center lg:pr-8 order-2 lg:order-1\"><h2 class=\"text-4xl lg:text-5xl font-bold text-muted-foreground mb-6 leading-tight cursor-pointer hover:text-primary\">Institut du<br>Monde Arabe</h2><p class=\"text-[10px] font-bold uppercase tracking-[0.20em] text-muted-foreground\">WEB | UX</p></div><div class=\"lg:col-span-7 order-1 lg:order-2\"><div class=\"relative overflow-hidden group\"><img src=\"images/juliePotVin/img12.jpg\" alt=\"Institut du Monde Arabe\" class=\"w-full aspect-[16/9] object-cover transition duration-700 ease-in-out group-hover:scale-105\"><div class=\"absolute inset-0 bg-black/60 flex items-center justify-center p-12 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out z-10\"><p class=\"text-white text-4xl lg:text-5xl serif-italic leading-tight text-center\">Renforcer une identité muséale unique</p></div></div></div></div></div></div>"
+          }
+        },
+        {
+          "type": "html",
+          "id": "mother-father",
+          "props": {
+            "html": "<div class=\"max-w-[1900px] bg-background mx-auto px-8 md:px-12 lg:px-16 animate-in fade-in slide-in-from-bottom-8 duration-1000\"><div class=\"grid lg:grid-cols-12 gap-8 mb-8 items-center\"><div class=\"lg:col-span-7\"><div class=\"relative overflow-hidden group\"><img src=\"images/juliePotVin/img13.jpg\" alt=\"Mother & Father\" class=\"w-full aspect-[16/9] object-cover opacity-30 transition duration-700 ease-in-out group-hover:scale-105\"><div class=\"absolute inset-0 bg-black/60 flex items-center justify-center p-12 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out z-10\"><p class=\"text-white text-4xl lg:text-5xl serif-italic leading-tight text-center\">Géographie imaginaire</p></div></div></div><div class=\"lg:col-span-5 text-center lg:pl-8\"><h2 class=\"text-4xl lg:text-5xl font-bold text-muted-foreground mb-6 leading-tight hover:text-primary cursor-pointer\">Mother & Father</h2><p class=\"text-[10px] font-bold uppercase tracking-[0.20em] text-muted-foreground\">ILLUSTRATION | PROJET PERSONNEL</p></div></div></div>"
+          }
+        },
+        {
+          "type": "html",
+          "id": "montres-journe",
+          "props": {
+            "html": "<div class=\"max-w-[1900px] bg-background mx-auto px-8 md:px-12 lg:px-16 animate-in fade-in slide-in-from-bottom-8 duration-1000\"><div class=\"grid lg:grid-cols-12 gap-8 mb-8 items-center\"><div class=\"lg:col-span-5 text-center lg:pr-8 order-2 lg:order-1\"><h2 class=\"text-4xl lg:text-5xl font-bold text-muted-foreground mb-6 leading-tight hover:text-primary cursor-pointer\">Montres Journe</h2><p class=\"text-[10px] font-bold uppercase tracking-[0.20em] text-muted-foreground\">WEB | CONCEPT</p></div><div class=\"lg:col-span-7 order-1 lg:order-2\"><div class=\"relative overflow-hidden group\"><img src=\"images/juliePotVin/img14.jpg\" alt=\"Montres Journe\" class=\"w-full aspect-[16/9] object-cover transition duration-700 ease-in-out group-hover:scale-105\"><div class=\"absolute inset-0 bg-black/60 flex items-center justify-center p-12 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out z-10\"><p class=\"text-white text-4xl lg:text-5xl serif-italic leading-tight text-center\">Alchimie horlogère</p></div></div></div></div></div></div>"
+          }
+        },
+        {
+          "type": "html",
+          "id": "mellerio",
+          "props": {
+            "html": "<div class=\"max-w-[1900px] bg-background mx-auto px-8 md:px-12 lg:px-16 animate-in fade-in slide-in-from-bottom-8 duration-1000\"><div class=\"grid lg:grid-cols-12 gap-8 mb-16 items-center\"><div class=\"lg:col-span-7\"><div class=\"relative overflow-hidden group\"><img src=\"images/juliePotVin/img15.jpg\" alt=\"Mellerio\" class=\"w-full aspect-[16/9] object-cover grayscale transition duration-700 ease-in-out group-hover:scale-105\"><div class=\"absolute inset-0 bg-black/60 flex items-center justify-center p-12 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out z-10\"><p class=\"text-white text-4xl lg:text-5xl serif-italic leading-tight text-center\">Joaillier des reines d'hier & d'aujourd'hui</p></div></div></div><div class=\"lg:col-span-5 text-center lg:pl-8\"><h2 class=\"text-4xl lg:text-5xl font-bold text-muted-foreground mb-6 leading-tight hover:text-primary cursor-pointer\">Mellerio</h2><p class=\"text-[10px] font-bold uppercase tracking-[0.20em] text-muted-foreground\">WEB | CONCEPT</p></div></div></div>"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/info",
+      "title": {
+        "fr": "info — Julie Potvin"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "html",
+          "id": "hero-info",
+          "props": {
+            "html": "<div class=\"pt-24 pb-16 px-8 md:px-12 lg:px-16 max-w-[1400px] mx-auto animate-in fade-in slide-in-from-bottom-8 duration-1000\"><div class=\"grid lg:grid-cols-2 gap-12 items-center\"><div class=\"order-2 lg:order-1\"><img src=\"images/juliePotVin/infoImg.jpg\" alt=\"Julie Potvin\" class=\"w-full\"><p class=\"text-xs text-muted-foreground mt-3 italic\">Photo par Julie Girardot / Meaningful</p></div><div class=\"order-1 lg:order-2 relative lg:-ml-20\"><div class=\"bg-muted p-12 lg:p-16 shadow-xl relative z-20\"><h1 class=\"text-4xl lg:text-5xl font-bold mb-8 leading-tight\">Design visuel &<br>identité pour les<br>médias numériques</h1><div class=\"space-y-6 mb-8\"><div><p class=\"text-sm font-bold uppercase tracking-wider mb-1\">Julie Potvin</p><p class=\"text-xs uppercase tracking-wider text-muted-foreground\">Directrice Artistique Freelance</p></div><div class=\"text-sm\"><p>75018 Paris, France</p><a href=\"mailto:hello@juliepotvin.com\" class=\"text-muted-foreground hover:text-primary\">hello@juliepotvin.com</a><p>+33 (0)1 43 23 18 03</p></div></div><div class=\"flex gap-4 text-muted-foreground\"><a href=\"#\" class=\"hover:text-primary transition-colors\"><i class=\"fab fa-linkedin-in\"></i></a><a href=\"#\" class=\"hover:text-primary transition-colors\"><i class=\"fab fa-tumblr\"></i></a><a href=\"#\" class=\"hover:text-primary transition-colors\"><i class=\"fab fa-instagram\"></i></a></div></div></div></div></div>"
+          }
+        },
+        {
+          "type": "html",
+          "id": "bio-text",
+          "props": {
+            "html": "<div class=\"px-8 md:px-12 lg:px-16 py-16 max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-1000\"><div class=\"space-y-6 text-lg leading-relaxed text-foreground\"><p class=\"dropcap\">Originaire du Québec (Canada), j'exerce en tant que directrice artistique freelance à Paris depuis 2002. Je possède plus de 20 ans d'expérience dans le design visuel et l'identité pour les médias numériques.</p><p>Grâce au branding digital, je donne voix à une marque vis un logo et/ou une charte graphique s'adaptant aux canaux d'aujourd'hui : sites web, réseaux sociaux, vidéos, applications mobile... en m'efforçant de garder des marqueurs d'identité forts, du plus petit au plus grand écran.</p><p>J'aime œuvrer pour des marques et des institutions établies, quand il s'agit de comprendre un univers en place, de s'y ou de le faire évoluer. J'apprécie tout autant la création visuelle pour les start-ups où tout est à inventer.</p><p>Curieux ? <a href=\"#contact\" class=\"text-primary hover:underline font-semibold\">Contactons-nous !</a></p></div></div>"
+          }
+        },
+        {
+          "type": "html",
+          "id": "cta-grid",
+          "props": {
+            "html": "<div class=\"px-8 md:px-12 lg:px-16 py-16 max-w-[1200px] mx-auto animate-in fade-in slide-in-from-bottom-8 duration-1000\"><div class=\"grid md:grid-cols-2 gap-12\"><div class=\"text-center\"><div class=\"w-20 h-20 mx-auto mb-6 bg-black rounded-full flex items-center justify-center\"><i class=\"fas fa-envelope text-white text-2xl\"></i></div><h3 class=\"text-xl font-bold mb-4 uppercase tracking-wider\">Ma Newsletter</h3><p class=\"text-sm text-muted-foreground\">Pour ne rien rater, recevoir en retour en images les meilleures projets — 1 à 2 courriels par an.</p></div><div class=\"text-center\"><div class=\"w-20 h-20 mx-auto mb-6 bg-black rounded-full flex items-center justify-center\"><i class=\"fas fa-star text-white text-2xl\"></i></div><h3 class=\"text-xl font-bold mb-4 uppercase tracking-wider\">Recommandations & CV</h3><p class=\"text-sm text-muted-foreground\"><a href=\"#\" class=\"text-primary hover:underline\">Consultez mon profil LinkedIn</a></p></div></div></div>"
+          }
+        },
+        {
+          "type": "html",
+          "id": "clients-selection",
+          "props": {
+            "html": "<div class=\"px-8 md:px-12 lg:px-16 py-16 bg-muted/30 animate-in fade-in slide-in-from-bottom-8 duration-1000\"><div class=\"max-w-[1200px] mx-auto\"><h2 class=\"text-2xl font-bold mb-8 uppercase tracking-wider\">Sélection de Clients</h2><p class=\"text-sm text-muted-foreground mb-12\">Collaboration en direct ® ou via des agences</p><div class=\"grid grid-cols-1 md:grid-cols-2 gap-4 text-sm leading-loose\"><ul class=\"space-y-2\"><li>Arte TV ®</li><li>Banque de Luxembourg</li><li>Centre des monuments nationaux</li><li>Dior beauté</li><li>Essilor</li><li>Groupe Accor</li><li>Institut National de l'Audiovisuel ®</li><li>Montres Journe ®</li><li>Musée du Louvre ®</li><li>Muséum national d'Histoire naturelle ®</li></ul><ul class=\"space-y-2\"><li>Nuxea</li><li>Opéras de Paris ®</li><li>Orange</li><li>Phytomer</li><li>Radio France ®</li><li>Saint-Gobain</li><li>Sony</li><li>Ubilik ®</li><li>Uriage ®</li><li>Urwerk Swiss Watches ®</li></ul></div></div></div>"
+          }
+        },
+        {
+          "type": "html",
+          "id": "awards-section",
+          "props": {
+            "html": "<div class=\"px-8 md:px-12 lg:px-16 py-16 animate-in fade-in slide-in-from-bottom-8 duration-1000\"><div class=\"max-w-[1200px] mx-auto\"><h2 class=\"text-2xl font-bold mb-12 uppercase tracking-wider\">Distinctions Choisies</h2><div class=\"grid md:grid-cols-2 gap-12\"><div><h3 class=\"font-bold mb-2\">Awwwards Honorable Mention</h3><p class=\"text-sm text-muted-foreground mb-1\">meaningfulstudio</p><a href=\"#\" class=\"text-xs text-primary hover:underline\">perle-de-temps.com</a></div><div><h3 class=\"font-bold mb-2\">FlashForward NYC winner</h3><p class=\"text-sm text-muted-foreground mb-1\">perle-de-temps.com</p></div><div><h3 class=\"font-bold mb-2\">Finaliste Flash Festival France</h3><p class=\"text-sm text-muted-foreground mb-1\">perle-de-temps.com</p></div><div><h3 class=\"font-bold mb-2\">Une question de temps, Le Monde</h3><p class=\"text-sm text-muted-foreground mb-1\">perle-de-temps.com</p></div></div></div></div>"
+          }
+        },
+        {
+          "type": "html",
+          "id": "footer-email",
+          "props": {
+            "html": "<div class=\"px-8 md:px-12 lg:px-16 py-20 text-center animate-in fade-in slide-in-from-bottom-8 duration-1000\"><a href=\"mailto:hello@juliepotvin.com\" class=\"inline-block text-sm uppercase tracking-[0.2em] text-foreground hover:text-primary transition-colors\">Faire sonner ma boîte mail <span class=\"text-muted-foreground/50 ml-2\">→</span></a></div>"
+          }
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "type": "default",
+    "description": {
+      "fr": "J'ai créé et/ou dirige des projets web, applications et identités dans des domaines variés tels que le culturel, le luxe, la technologie, l'institutionnel... Mon approche se base sur l'écoute, avec un souci permanent de proposer la plus juste réponse."
+    },
+    "copyright": {
+      "fr": "© Julie Potvin. Tous droits réservés."
+    },
+    "socials": [],
+    "columns": []
+  }
+}

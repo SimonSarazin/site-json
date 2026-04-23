@@ -2,6 +2,7 @@ import { T } from "@/components/ui/T";
 import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from "@/lib/utils";
 import type { SectionPropsMap } from "@/types/site";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 export function ContentSection({ 
   id, 
@@ -108,11 +109,11 @@ export function ContentSection({
           <div className={cn("relative h-full", isImageLeft && "lg:order-1")}>
             <div className="h-full rounded-2xl overflow-hidden">
               {image && (
-                <img 
-                  src={image} 
-                  className="w-full h-full object-cover rounded-xl" 
+                <OptimizedImage
+                  src={image}
                   alt={t(title)}
-                  suppressHydrationWarning
+                  width={600}
+                  className="w-full h-full object-cover rounded-xl"
                 />
               )}
             </div>

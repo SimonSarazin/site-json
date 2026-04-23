@@ -4,6 +4,28 @@ import { toast } from "sonner";
 import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "./useProfileEntity";
 
+/**
+ * Extended entity methods that may exist on certain entity types at runtime
+ * but are not declared in the base EntityTypes interface.
+ */
+interface EntityRelationshipMethods {
+  follow?: () => Promise<void>;
+  unfollow?: () => Promise<void>;
+  requestToJoin?: () => Promise<void>;
+  requestToJoinAdmin?: () => Promise<void>;
+  leave?: () => Promise<void>;
+  acceptInvitation?: () => Promise<void>;
+  requestPromoteToAdmin?: () => Promise<void>;
+  addFriend?: () => Promise<void>;
+  removeFriend?: () => Promise<void>;
+  acceptFriendRequest?: () => Promise<void>;
+  cancelFriendRequest?: () => Promise<void>;
+}
+
+function asRelationship(entity: EntityTypes): EntityRelationshipMethods {
+  return entity as unknown as EntityRelationshipMethods;
+}
+
 function useEntityMutation<TResult = void>(options: {
   mutationFn: (entity: EntityTypes) => Promise<TResult>;
   successMessage?: string;
@@ -45,8 +67,9 @@ export function useFollowEntity() {
 
   return useEntityMutation({
     mutationFn: async (entity) => {
-      if ((entity as any).follow) {
-        await (entity as any).follow();
+      const methods = asRelationship(entity);
+      if (methods.follow) {
+        await methods.follow();
       }
     },
     successMessage: String(t("toast.relationship.followSuccess") || "Suivi avec succès"),
@@ -59,8 +82,9 @@ export function useUnfollowEntity() {
 
   return useEntityMutation({
     mutationFn: async (entity) => {
-      if ((entity as any).unfollow) {
-        await (entity as any).unfollow();
+      const methods = asRelationship(entity);
+      if (methods.unfollow) {
+        await methods.unfollow();
       }
     },
     successMessage: String(t("toast.relationship.unfollowSuccess") || "Vous ne suivez plus"),
@@ -73,8 +97,9 @@ export function useRequestToJoin() {
 
   return useEntityMutation({
     mutationFn: async (entity) => {
-      if ((entity as any).requestToJoin) {
-        await (entity as any).requestToJoin();
+      const methods = asRelationship(entity);
+      if (methods.requestToJoin) {
+        await methods.requestToJoin();
       }
     },
     successMessage: String(t("toast.relationship.memberRequestSent") || "Demande envoyée"),
@@ -87,8 +112,9 @@ export function useRequestToJoinAdmin() {
 
   return useEntityMutation({
     mutationFn: async (entity) => {
-      if ((entity as any).requestToJoinAdmin) {
-        await (entity as any).requestToJoinAdmin();
+      const methods = asRelationship(entity);
+      if (methods.requestToJoinAdmin) {
+        await methods.requestToJoinAdmin();
       }
     },
     successMessage: String(t("toast.relationship.adminRequestSent") || "Demande admin envoyée"),
@@ -101,8 +127,9 @@ export function useLeaveEntity() {
 
   return useEntityMutation({
     mutationFn: async (entity) => {
-      if ((entity as any).leave) {
-        await (entity as any).leave();
+      const methods = asRelationship(entity);
+      if (methods.leave) {
+        await methods.leave();
       }
     },
     successMessage: String(t("toast.relationship.leaveSuccess") || "Vous avez quitté"),
@@ -115,8 +142,9 @@ export function useAcceptInvitation() {
 
   return useEntityMutation({
     mutationFn: async (entity) => {
-      if ((entity as any).acceptInvitation) {
-        await (entity as any).acceptInvitation();
+      const methods = asRelationship(entity);
+      if (methods.acceptInvitation) {
+        await methods.acceptInvitation();
       }
     },
     successMessage: String(t("toast.invitation.acceptSuccess") || "Invitation acceptée"),
@@ -129,8 +157,9 @@ export function useRejectInvitation() {
 
   return useEntityMutation({
     mutationFn: async (entity) => {
-      if ((entity as any).leave) {
-        await (entity as any).leave();
+      const methods = asRelationship(entity);
+      if (methods.leave) {
+        await methods.leave();
       }
     },
     successMessage: String(t("toast.invitation.rejectSuccess") || "Invitation refusée"),
@@ -143,8 +172,9 @@ export function useRequestPromotion() {
 
   return useEntityMutation({
     mutationFn: async (entity) => {
-      if ((entity as any).requestPromoteToAdmin) {
-        await (entity as any).requestPromoteToAdmin();
+      const methods = asRelationship(entity);
+      if (methods.requestPromoteToAdmin) {
+        await methods.requestPromoteToAdmin();
       }
     },
     successMessage: String(t("toast.members.requestPromoteSuccess") || "Demande de promotion envoyée"),
@@ -157,8 +187,9 @@ export function useSendFriendRequest() {
 
   return useEntityMutation({
     mutationFn: async (entity) => {
-      if ((entity as any).addFriend) {
-        await (entity as any).addFriend();
+      const methods = asRelationship(entity);
+      if (methods.addFriend) {
+        await methods.addFriend();
       }
     },
     successMessage: String(t("toast.friend.requestSent") || "Demande d'ami envoyée"),
@@ -171,8 +202,9 @@ export function useRemoveFriend() {
 
   return useEntityMutation({
     mutationFn: async (entity) => {
-      if ((entity as any).removeFriend) {
-        await (entity as any).removeFriend();
+      const methods = asRelationship(entity);
+      if (methods.removeFriend) {
+        await methods.removeFriend();
       }
     },
     successMessage: String(t("toast.friend.removeSuccess") || "Ami retiré"),
@@ -185,8 +217,9 @@ export function useAcceptFriendRequest() {
 
   return useEntityMutation({
     mutationFn: async (entity) => {
-      if ((entity as any).acceptFriendRequest) {
-        await (entity as any).acceptFriendRequest();
+      const methods = asRelationship(entity);
+      if (methods.acceptFriendRequest) {
+        await methods.acceptFriendRequest();
       }
     },
     successMessage: String(t("toast.friend.acceptSuccess") || "Demande acceptée"),
@@ -199,8 +232,9 @@ export function useCancelFriendRequest() {
 
   return useEntityMutation({
     mutationFn: async (entity) => {
-      if ((entity as any).cancelFriendRequest) {
-        await (entity as any).cancelFriendRequest();
+      const methods = asRelationship(entity);
+      if (methods.cancelFriendRequest) {
+        await methods.cancelFriendRequest();
       }
     },
     successMessage: String(t("toast.friend.requestCancelled") || "Demande annulée"),

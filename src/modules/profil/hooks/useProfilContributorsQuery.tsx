@@ -35,7 +35,7 @@ export function useProfilContributorsQuery({
         return [];
       }
 
-      const result = await (entity as any).getContributors({
+      const result = await (entity as unknown as { getContributors(params: Record<string, unknown>): Promise<{ results?: (User | Organization)[] }> }).getContributors({
         indexMin: pageParam as number,
         indexStep,
         ...(searchQuery ? { name: searchQuery } : {}),

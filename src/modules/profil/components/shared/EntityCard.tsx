@@ -5,6 +5,7 @@ import { useT } from "@/hooks/useT";
 import { Link } from "react-router";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { getEntityIcon } from "@/lib/entityIcons";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 interface EntityCardProps {
   entity: EntityTypes;
@@ -42,11 +43,15 @@ export function EntityCard({
     >
       <div className="flex items-start gap-4">
         {/* Image/Logo */}
-        <div className="w-16 h-16 rounded-lg border border-border overflow-hidden bg-muted flex-shrink-0">
+        <Link
+          to={`/profil/${entity.slug}`}
+          className="w-16 h-16 rounded-lg border border-border overflow-hidden bg-muted shrink-0 hover:opacity-80 transition-opacity"
+        >
           {entity.serverData?.profilImageUrl ? (
-            <img
+            <OptimizedImage
               src={entity.serverData.profilImageUrl}
               alt={entity.serverData?.name || ""}
+              width={64}
               className="w-full h-full object-cover"
             />
           ) : (
@@ -54,16 +59,19 @@ export function EntityCard({
               {getEntityIcon(type, { className: "w-5 h-5", withColor: true })}
             </div>
           )}
-        </div>
+        </Link>
 
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-2">
-                <h3 className="font-semibold text-foreground truncate">
+                <Link
+                  to={`/profil/${entity.slug}`}
+                  className="font-semibold text-foreground truncate hover:text-primary hover:underline transition-colors"
+                >
                   {entity.serverData?.name || t("common.untitled")}
-                </h3>
+                </Link>
                 <Badge variant="secondary" className="text-xs">
                   {getTypeLabel()}
                 </Badge>

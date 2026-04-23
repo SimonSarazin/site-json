@@ -4,6 +4,7 @@ import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
 import { Header, LocalizedString } from "@/types/site-schema";
 import { ChevronDown, User, LogOut, Globe, Bell, Menu, X , PiggyBank} from "lucide-react";
+import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { Link, useNavigate, useLocation } from "react-router";
 import { useCocolight } from "@/hooks/useCocolight";
 import { ClientOnly } from "../ClientOnly";
@@ -27,25 +28,10 @@ import { useProjectModalCagnotte } from "@/hooks/useProjectModalCagnotte";
 import CagnotteDialog from "@/components/cagnotte/CagnotteDialog";
 
 interface HeaderRezoLaMerProps {
-    header: Header & {
-        logoTitle?: LocalizedString;
-        logoIcon?: string;
-        ctaButton?: {
-            label: LocalizedString;
-            path?: string;
-        };
-        piggyBank?: {
-            amount?: string;
-            icon?: string;
-            path?: string;
-        };
-        urgenceButton?: {
-            label: LocalizedString;
-            icon?: string;
-            path?: string;
-        };
-    };
+    header: Header;
 }
+
+type HeaderNavItem = Header['nav'][number];
 
 export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
     useLoadNamespace("components/layout");
@@ -60,6 +46,16 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
         if (itemPath === "/" && location.pathname === "/") return true;
         if (itemPath !== "/" && location.pathname.startsWith(itemPath)) return true;
         return false;
+    };
+
+    const isPathInsideNav = (items: HeaderNavItem[]): boolean => {
+        return items.some(item => {
+            if (isNavItemActive(item.path)) return true;
+            if (item.children?.length) {
+                return isPathInsideNav(item.children as HeaderNavItem[]);
+            }
+            return false;
+        });
     };
 
     useEffect(() => {
@@ -77,6 +73,21 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
 
+    const shouldHideNav = Boolean(
+        header.navVisibleOnlyForListedPages && !isPathInsideNav(header.nav)
+    );
+
+    const secondaryNavItems = (header.secondaryNav ?? []) as HeaderNavItem[];
+    const shouldHideSecondaryNav = Boolean(
+        secondaryNavItems.length > 0
+        && header.secondaryNavVisibleOnlyForListedPages
+        && !isPathInsideNav(secondaryNavItems)
+    );
+
+    const navItemsToDisplay = !shouldHideNav
+        ? header.nav
+        : (!shouldHideSecondaryNav ? secondaryNavItems : []);
+
     useEffect(() => {
         const handleScroll = () => {
             setIsScrolled(window.scrollY > 50);
@@ -87,6 +98,12 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
 
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
+
+    useEffect(() => {
+        if (navItemsToDisplay.length === 0 && mobileMenuOpen) {
+            setMobileMenuOpen(false);
+        }
+    }, [navItemsToDisplay.length, mobileMenuOpen]);
 
     const handleLogout = () => {
         if (!api) return;
@@ -130,9 +147,9 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                                 className="h-8 w-8 object-contain group-hover:scale-110 transition-transform"
                             />
                         ) : header.logoIcon ? (
-                            <span
-                                className="w-8 h-8 text-primary group-hover:scale-110 transition-transform flex items-center justify-center [&>svg]:w-8 [&>svg]:h-8"
-                                dangerouslySetInnerHTML={{ __html: header.logoIcon }}
+                            <DynamicIcon
+                                name={header.logoIcon as IconName}
+                                className="w-8 h-8 text-primary group-hover:scale-110 transition-transform"
                             />
                         ) : null}
                         {header.logoTitle && (
@@ -141,22 +158,52 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                     </Link>
 
                     <div className="hidden md:flex items-center gap-8">
-                        {header.nav.map((item, idx) => {
+                        {navItemsToDisplay.map((item, idx) => {
                             const isActive = isNavItemActive(item.path);
+                            const hasChildren = !!item.children?.length;
                             return (
-                                <Link
-                                    key={idx}
-                                    to={item.path || "#"}
-                                    className={`transition-colors font-medium relative group ${isActive ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
-                                >
-                                    {t(item.label)}
-                                    <span className={`absolute -bottom-1 left-0 h-0.5 bg-primary transition-all ${isActive ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
-                                </Link>
+                                <div key={idx} className="relative group">
+                                    <Link
+                                        to={item.path || "#"}
+                                        className={`transition-colors font-medium relative group ${isActive ? 'text-primary' : 'text-muted-foreground hover:text-primary'} ${hasChildren ? 'transition flex items-center gap-1' : ''}`}
+                                    >
+                                        {t(item.label)}
+                                        {hasChildren && <ChevronDown className="w-3 h-3" />}
+                                        <span className={`absolute -bottom-1 left-0 h-0.5 bg-primary transition-all ${isActive ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
+                                    </Link>
+                                    {hasChildren && item.children && (
+                                        <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-screen max-w-2xl bg-popover text-popover-foreground rounded-xl shadow-2xl border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-8 z-60">
+                                            {item.children.length > 2 ? (
+                                                <div className="grid grid-cols-2 gap-6">
+                                                    {item.children.map((sub, i) => (
+                                                        <Link key={i} to={sub.path || "#"} className="block">
+                                                            <h4 className="font-bold text-popover-foreground mb-2">{t(sub.label)}</h4>
+                                                            <p className="text-muted-foreground text-xs leading-relaxed">
+                                                                {sub.description ? t(sub.description) : ""}
+                                                            </p>
+                                                        </Link>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-4">
+                                                    {item.children.map((sub, i) => (
+                                                        <Link key={i} to={sub.path || "#"} className="block">
+                                                            <h4 className="font-bold text-popover-foreground mb-2">{t(sub.label)}</h4>
+                                                            <p className="text-muted-foreground text-xs leading-relaxed">
+                                                                {sub.description ? t(sub.description) : ""}
+                                                            </p>
+                                                        </Link>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
                             );
                         })}
 
-                        <CagnotteDialog 
-                            totalAmount={piggyAmount} 
+                        <CagnotteDialog
+                            totalAmount={piggyAmount}
                             defaultProjectId={projectModalId || undefined}
                             onRefresh={refreshCagnotte}
                         >
@@ -176,9 +223,9 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                                 className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 text-primary transition-all group"
                             >
                                 {header.urgenceButton.icon ? (
-                                    <span
-                                        className="w-5 h-5 group-hover:scale-110 transition-transform flex items-center justify-center [&>svg]:w-5 [&>svg]:h-5"
-                                        dangerouslySetInnerHTML={{ __html: header.urgenceButton.icon }}
+                                    <DynamicIcon
+                                        name={header.urgenceButton.icon as IconName}
+                                        className="w-5 h-5 group-hover:scale-110 transition-transform"
                                     />
                                 ) : null}
                                 <span className="font-semibold text-sm">{t(header.urgenceButton.label)}</span>
@@ -289,25 +336,27 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                                 {() => <ToggleButtonTheme />}
                             </ClientOnly>
                         )}
-                        <button
-                            className="p-2 text-muted-foreground hover:text-primary"
-                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                            aria-label="Toggle menu"
-                        >
-                            {mobileMenuOpen ? (
-                                <X className="w-6 h-6" />
-                            ) : (
-                                <Menu className="w-6 h-6" />
-                            )}
-                        </button>
+                        {navItemsToDisplay.length > 0 && (
+                            <button
+                                className="p-2 text-muted-foreground hover:text-primary"
+                                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                                aria-label="Toggle menu"
+                            >
+                                {mobileMenuOpen ? (
+                                    <X className="w-6 h-6" />
+                                ) : (
+                                    <Menu className="w-6 h-6" />
+                                )}
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
 
-            {mobileMenuOpen && (
+            {mobileMenuOpen && navItemsToDisplay.length > 0 && (
             <div className="md:hidden bg-background/95 backdrop-blur-ocean border-t border-secondary/50 animate-fade-in-up">
                 <div className="container mx-auto px-4 py-4 space-y-3">
-                    {header.nav.map((item, idx) => {
+                    {navItemsToDisplay.map((item, idx) => {
                         const isActive = isNavItemActive(item.path);
                         return (
                             <Link
@@ -329,9 +378,9 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                         >
                             <span className="flex items-center gap-2">
                                 {header.urgenceButton.icon ? (
-                                    <span
-                                        className="w-5 h-5 flex items-center justify-center [&>svg]:w-5 [&>svg]:h-5"
-                                        dangerouslySetInnerHTML={{ __html: header.urgenceButton.icon }}
+                                    <DynamicIcon
+                                        name={header.urgenceButton.icon as IconName}
+                                        className="w-5 h-5"
                                     />
                                 ) : null}
                                 <span className="font-medium">{t(header.urgenceButton.label)}</span>

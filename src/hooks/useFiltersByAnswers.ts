@@ -5,7 +5,7 @@ import { useCocolight } from "./useCocolight";
 interface FiltersByAnswersOptions {
     [key: string]: {
         id: string;
-        label: string;
+        label: LocalizedString;
         type?: string;
         forms?: string;
         path?: string;
@@ -38,54 +38,88 @@ export function useFiltersByAnswersQuery(
     query: string,
     options: FiltersByAnswersOptions = {}
 ): FiltersByAnswersResult {
-    const { entity, helper } = useCocolight();
+    const { entity } = useCocolight();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<Error | null>(null);
     const [data, setData] = useState<Record<string, FilterAnswerType>>({});
 
-    const fetchFilters = async () => {
-        const params = {
-            searchedData: options
-        };
-        setIsLoading(true);
-        setError(null);
+    useEffect(() => {
+        let isCancelled = false;
 
-        if (!entity) {
-            setIsLoading(false);
-            setError(new Error("API non initialisée - ni organization ni entity disponible"));
-            return null;
-        }
-        try {
-            const result = await entity.coformFiltersSearch(params);
+        const run = async () => {
+            // Decale les mises a jour d'etat pour eviter les setState synchrones dans l'effet.
+            await Promise.resolve();
 
-            // Transformer les données : garder les clés principales, mais extraire results sans distinctElements
-            const transformedData: Record<string, any> = {};
+            if (isCancelled) {
+                return;
+            }
 
-            if (result && typeof result === 'object') {
-                Object.keys(result).forEach(key => {
-                    const item = result[key];
-                    const label = options[key]?.label || key;
-                    if (item?.results) {
-                        const { distinctElements, ...filteredResults } = item.results;
+            setIsLoading(true);
+            setError(null);
+
+            if (!entity) {
+                setIsLoading(false);
+                setError(new Error("API non initialisée - ni organization ni entity disponible"));
+                return;
+            }
+
+            const params = {
+                searchedData: options
+            };
+
+            try {
+                const result = await entity.coformFiltersSearch(params);
+
+                if (isCancelled) {
+                    return;
+                }
+
+                // Transformer les donnees : garder les cles principales, sans distinctElements.
+                const transformedData: Record<string, FilterAnswerType> = {};
+
+                if (result && typeof result === "object") {
+                    for (const [key, rawItem] of Object.entries(result as Record<string, unknown>)) {
+                        const label = options[key]?.label || key;
+
+                        if (!rawItem || typeof rawItem !== "object") {
+                            continue;
+                        }
+
+                        const item = rawItem as { results?: unknown };
+                        if (!item.results || typeof item.results !== "object") {
+                            continue;
+                        }
+
+                        const filteredResults = Object.fromEntries(
+                            Object.entries(item.results as Record<string, unknown>).filter(
+                                ([resultKey]) => resultKey !== "distinctElements"
+                            )
+                        ) as FilterAnswerType["values"];
+
                         transformedData[key] = {
-                            label,
+                            label: (typeof label === "string" ? { fr: label } : label) as LocalizedString,
                             values: filteredResults
                         };
                     }
-                });
-            }
-            setIsLoading(false);
-            setData(transformedData);
-            return transformedData;
-        } catch (err) {
-            setIsLoading(false);
-            setError(err as Error);
-            return null;
-        }
-    }
+                }
 
-    useEffect(() => {
-        fetchFilters();
+                setData(transformedData);
+                setIsLoading(false);
+            } catch (err) {
+                if (isCancelled) {
+                    return;
+                }
+
+                setIsLoading(false);
+                setError(err as Error);
+            }
+        };
+
+        void run();
+
+        return () => {
+            isCancelled = true;
+        };
     }, [query, options, entity]);
 
     return {

@@ -3,6 +3,7 @@ import { Helmet } from "@dr.pogodin/react-helmet";
 import { useLocalization } from "@/hooks/useLocalization";
 import { LocalizedString } from "@/types/locale-schema";
 import { useSite } from "@/hooks/useSite";
+import { useCocolight } from "@/hooks/useCocolight";
 
 interface SeoProps {
   page: {
@@ -25,13 +26,29 @@ interface SeoProps {
 export function Seo({ page }: SeoProps) {
   const { t, currentLocale } = useLocalization();
   const { config } = useSite();
+  const { entity } = useCocolight();
 
   /** 1. Raccourcis vers les deux sources possibles */
   const seo   = page.seo ?? {};
   const meta  = config.meta ?? {};
 
+  let isCity = false;
+  let nameElt: string = "";
+  const dataCostum = entity?.serverData?.costum as Record<string, unknown> | undefined;
+  
+  // Créer une copie locale de meta pour éviter de modifier la valeur du hook
+  const favicon = dataCostum?.transparentCommune
+    ? "https://www.communecter.org" + (dataCostum?.logo as string || dataCostum?.bannerLogoUrl as string) || meta.favicon || ""
+    : meta.favicon;
+    
+  if(dataCostum?.transparentCommune) {
+    isCity = true;
+    nameElt = entity?.serverData?.name || "Votre ville";
+  }
+
   /** 2. Fusion des valeurs (page > site > fallback vide) */
-  const title       = seo.title        ? t(seo.title)
+  const title       = isCity ? nameElt
+                    : seo.title        ? t(seo.title)
                     : meta.title       ? t(meta.title)
                     : t(page.title);
 
@@ -82,8 +99,8 @@ export function Seo({ page }: SeoProps) {
         meta.themeColor && (
           <meta key="theme" name="theme-color" content={meta.themeColor} />
         ),
-        meta.favicon && (
-          <link key="favicon" rel="icon" href={meta.favicon} />
+        favicon && (
+          <link key="favicon" rel="icon" href={favicon} />
         ),
         meta.author && (
           <meta key="author" name="author" content={t(meta.author)} />

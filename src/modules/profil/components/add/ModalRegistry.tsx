@@ -1,11 +1,13 @@
-import { lazy, Suspense, ComponentType } from "react";
+import { lazy, Suspense, type ComponentType } from "react";
 import { Loader2 } from "lucide-react";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
+import type { JsonFormModalConfig } from "@/types/site-schema";
 
 export interface ModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   parent?: EntityTypes | null;
+  formConfig?: JsonFormModalConfig;
 }
 
 const modalRegistry: Record<string, () => Promise<{ default: ComponentType<ModalProps> }>> = {
@@ -14,21 +16,20 @@ const modalRegistry: Record<string, () => Promise<{ default: ComponentType<Modal
   "add-event": () => import("./AddEventModal").then(m => ({ default: m.AddEventModal })),
   "add-poi": () => import("./AddPoiModal").then(m => ({ default: m.AddPoiModal })),
   "register-cyber-reunion": () => import("./RegisterCyberReunionModal").then(m => ({ default: m.RegisterCyberReunionModal })),
+  "json-form": () => import("./JsonFormModal").then(m => ({ default: m.JsonFormModal })),
 };
 
 const lazyComponents: Record<string, ComponentType<ModalProps>> = {};
 
-function getLazyModal(modalName: string): ComponentType<ModalProps> | null {
+function ensureLazyModal(modalName: string): void {
   if (!modalRegistry[modalName]) {
     console.log(`Modal "${modalName}" not found in registry`);
-    return null;
+    return;
   }
 
   if (!lazyComponents[modalName]) {
     lazyComponents[modalName] = lazy(modalRegistry[modalName]);
   }
-
-  return lazyComponents[modalName];
 }
 
 export function DynamicModal({
@@ -36,13 +37,16 @@ export function DynamicModal({
   open,
   onOpenChange,
   parent,
+  formConfig,
 }: {
   modalName: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   parent?: EntityTypes | null;
+  formConfig?: JsonFormModalConfig;
 }) {
-  const ModalComponent = getLazyModal(modalName);
+  ensureLazyModal(modalName);
+  const ModalComponent = lazyComponents[modalName];
 
   if (!ModalComponent) {
     return null;
@@ -56,7 +60,7 @@ export function DynamicModal({
         </div>
       }
     >
-      <ModalComponent open={open} onOpenChange={onOpenChange} parent={parent} />
+      <ModalComponent open={open} onOpenChange={onOpenChange} parent={parent} formConfig={formConfig} />
     </Suspense>
   );
 }

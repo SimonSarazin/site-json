@@ -7,6 +7,9 @@ import CardRezoLaMer from "./card/CardRezoLaMer";
 import CardProfile from "./card/CardProfile";
 import CardEventRezoLaMer from "./card/CardEventRezoLaMer";
 import CardPoiRezoLaMer from "./card/CardPoiRezoLaMer";
+import CardSsbe from "./card/CardSsbe";
+import CardElts from "./card/CardElts";
+import CardAnswer from "./card/CardAnswer";
 
 export default function SearchCard({
   item,
@@ -34,11 +37,17 @@ export default function SearchCard({
     case "rezo-la-mer":
       return <CardRezoLaMer item={item} onClick={onClick} card={card} />;
     case "profile":
-      return <CardProfile item={item} onClick={onClick} card={card} />;
+      return <CardProfile item={item as import("@communecter/cocolight-api-client").User | import("@communecter/cocolight-api-client").Organization} onClick={onClick} card={card} />;
     case "event-rezo-la-mer":
       return <CardEventRezoLaMer item={item} onClick={onClick} card={card} />;
     case "poi-rezo-la-mer":
       return <CardPoiRezoLaMer item={item} onClick={onClick} card={card} />;
+    case "ssbe":
+      return <CardSsbe item={item} onClick={onClick} card={card} />;
+    case "card-elts":
+      return <CardElts item={item} onClick={onClick} card={card} />;
+    case "card-answer":
+      return <CardAnswer item={item} onClick={onClick} card={card} />;
     case "default":
       return <CardDefault item={item} onClick={onClick} card={card} />;
     default:

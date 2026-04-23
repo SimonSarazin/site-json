@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Edit, Mail, ChevronRight, ImageIcon } from "lucide-react";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { useFormatProfileEntity } from "../../../hooks/useFormatProfileEntity";
 import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../../hooks/useProfileEntity";
@@ -43,11 +44,12 @@ export function ProfileHeaderComplete({ section }: ProfileHeaderCompleteProps) {
         <div className="relative h-96 rounded-md border-border border group overflow-hidden bg-muted">
           {/* Image de bannière avec object-fit cover (meilleur LCP que background-image) */}
           {(bannerUrl || imageUrl) && (
-            <img
-              src={bannerUrl || imageUrl || undefined}
+            <OptimizedImage
+              src={bannerUrl || imageUrl || ""}
               alt={`${entityName} banner`}
+              width={1200}
+              priority
               className="absolute inset-0 w-full h-full object-cover"
-              fetchPriority="high"
             />
           )}
 
@@ -83,9 +85,10 @@ export function ProfileHeaderComplete({ section }: ProfileHeaderCompleteProps) {
             <div className="relative group z-20">
               <div className="w-40 h-40 rounded-full border-4 border-background bg-card shadow-xl overflow-hidden">
                 {effectiveLogoUrl ? (
-                  <img
+                  <OptimizedImage
                     src={effectiveLogoUrl}
                     alt={entityName}
+                    width={160}
                     className="w-full h-full object-cover"
                     onError={() => setImageError(true)}
                   />

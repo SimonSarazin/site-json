@@ -65,7 +65,7 @@ export const useEntityBySlugQuery = ({ slug, options = {} }: QueryEntityBySlugPr
 
     if (currentData && typeof currentData === 'object' && currentData !== null && 'serverData' in currentData) {
       // Vérifier si c'est un plain object (après SSR)
-      if (!isReactive((currentData as any).serverData)) {
+      if (!isReactive((currentData as Record<string, unknown>).serverData)) {
         if (import.meta.env.DEV) {
           console.log("🔄 Transformation du cache de l'entité après hydratation SSR");
         }
@@ -84,7 +84,7 @@ export const useEntityBySlugQuery = ({ slug, options = {} }: QueryEntityBySlugPr
     }
 
     // Si déjà transformé (Proxy), le retourner tel quel
-    if (isReactive((data as any).serverData)) {
+    if (isReactive((data as Record<string, unknown>).serverData)) {
       return data as SearchEntity;
     }
 

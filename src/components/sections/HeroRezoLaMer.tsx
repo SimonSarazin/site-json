@@ -45,7 +45,12 @@ export function HeroRezoLaMer({ props }: HeroRezoLaMerProps) {
                         alt={props.backgroundImageAlt ? t(props.backgroundImageAlt) : ""}
                         className="w-full h-[120vh] object-cover"
                     />
-                    <div className="absolute inset-0 bg-linear-to-b from-background/80 via-background/60 to-background" />
+                    <div
+                        className="absolute inset-0"
+                        style={{
+                            background: `linear-gradient(to bottom, color-mix(in oklch, var(--color-background) 80%, transparent), color-mix(in oklch, var(--color-background) ${(props as unknown as Record<string, unknown>).overlayOpacity ?? "60%"}, transparent), var(--color-background))`
+                        }}
+                    />
                 </div>
             )}
 
@@ -71,7 +76,10 @@ export function HeroRezoLaMer({ props }: HeroRezoLaMerProps) {
                     </h1>
 
                     {props.subhead && (
-                        <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+                        <p
+                            className="text-xl md:text-2xl max-w-3xl mx-auto leading-relaxed"
+                                style={{ color: (props as unknown as Record<string, unknown>).subheadColor as string ?? "var(--color-muted-foreground)" }}
+                        >
                             {t(props.subhead)}
                         </p>
                     )}

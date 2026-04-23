@@ -8,7 +8,7 @@
  * appelles pourra être renseignée petit à petit dans ce fichier .d.ts.
  */
 
-import Cocolight, { type Api, type ApiClient, type User, type UserApi } from "@communecter/cocolight-api-client";
+import Cocolight, { type Api, type ApiClient, type Organization, type Project, type User, type UserApi } from "@communecter/cocolight-api-client";
 import { getBaseUrl, getSlug } from "./constant/common";
 
 const COSTUM_PROJECT_ACTION_REQUEST_NEW_ENDPOINT = {
@@ -120,8 +120,7 @@ function registerMissingCustomEndpoints(apiClient: ApiClient): void {
 export interface InitApiOptions {
   baseURL?: string;
   /** Toute option supplémentaire fournie par le SDK */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 // Type pour les données hydratées SSR
@@ -139,17 +138,15 @@ function getHydratedCocolightData(): CocolightHydratedData | null {
   if (typeof window === "undefined") return null;
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const reactQueryState = (window as any).__REACT_QUERY_STATE__;
+    const reactQueryState = window.__REACT_QUERY_STATE__;
     if (!reactQueryState?.queries) return null;
 
     // Chercher la query cocolight-data dans le state
     const cocolightDataQuery = reactQueryState.queries.find(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (q: any) => q.queryKey?.[0] === "cocolight-data"
+      (q) => q.queryKey?.[0] === "cocolight-data"
     );
 
-    return cocolightDataQuery?.state?.data ?? null;
+    return (cocolightDataQuery?.state?.data as CocolightHydratedData | undefined) ?? null;
   } catch {
     return null;
   }
@@ -162,12 +159,99 @@ export interface InitApiResult {
   me: User | null;
   contextType?: string;
   contextId?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  entity?: any; // L'entité complète (organization, project, event, etc.)
+  entity: Organization | Project | null; // L'entité complète (organization, project, event, etc.)
 }
 
 // ————————————————————————————————————————————————————————————
-// Variables d’état internes
+// Logique d’init commune — purement fonctionnelle (pas de globals)
+// ————————————————————————————————————————————————————————————
+
+async function createApiInstances(
+  options: InitApiOptions,
+  storageType: "memory" | "localStorage",
+): Promise<InitApiResult> {
+  const tokenStorageStrategy =
+    await Cocolight.tokenStorageStrategy.createDefaultMultiServerTokenStorageStrategy(
+      storageType,
+    );
+
+  const newClient = new Cocolight.ApiClient({
+    baseURL: options.baseURL ?? getBaseUrl(),
+    ...options,
+    debug: typeof window !== "undefined" && (import.meta.env.DEV ?? false),
+    tokenStorageStrategy,
+  });
+
+  const newUserApi = Cocolight.Api.userApi(newClient);
+
+  let me: User | null = null;
+  let contextType: string | undefined;
+  let contextId: string | undefined;
+  let entity: Organization | Project | null = null;
+  let newApi: Api;
+
+  const slug = getSlug();
+
+  // Hydratation SSR côté client uniquement
+  const hydratedData = getHydratedCocolightData();
+  const isUserConnected = newUserApi.client.isConnected;
+
+  if (hydratedData && !isUserConnected) {
+    if (import.meta.env.DEV) {
+      console.log("[Api.init] User non connecté - utilisation du cache SSR");
+    }
+    if (hydratedData.entity) {
+      entity = Cocolight.helper.fromEntityJSON(hydratedData.entity, newClient) as Organization | Project;
+      contextType = hydratedData.contextType;
+      contextId = hydratedData.contextId;
+    }
+  }
+
+  try {
+    if (newUserApi.client.isConnected) {
+      const loggedUser = await newUserApi.meIsconnected();
+      newApi = new Cocolight.Api(loggedUser, newUserApi.client);
+      me = await newApi.me();
+    } else {
+      newApi = new Cocolight.Api(null, newUserApi.client);
+    }
+
+    if (slug && !entity) {
+      try {
+        const resolved = me
+          ? await me.entityBySlug(slug)
+          : await newApi.entitySlug(slug);
+        if (resolved) {
+          entity = resolved;
+          contextType = resolved.getEntityType();
+          contextId = resolved.id || undefined;
+        }
+      } catch (slugErr) {
+        console.error("[Api.init] Erreur lors de la résolution du slug:", slugErr);
+      }
+    }
+  } catch (err) {
+    console.error("[Api.init] Erreur lors de l’initialisation de l’API:", err);
+    // @ts-expect-error newApi peut ne pas être assigné si l’erreur est dans la première branche
+    if (!newApi) {
+      newApi = new Cocolight.Api(null, newUserApi.client);
+    }
+  }
+
+  return {
+    client: newClient,
+    userApiInstance: newUserApi,
+    api: newApi,
+    me,
+    contextType,
+    contextId,
+    entity,
+  };
+}
+
+// ————————————————————————————————————————————————————————————
+// Variables d’état CLIENT uniquement (singleton navigateur)
+// Côté serveur, ces variables ne sont jamais utilisées.
 // ————————————————————————————————————————————————————————————
 
 let client: ApiClient | null             = null;
@@ -176,12 +260,12 @@ let api: Api | null                      = null;
 let cachedMe: User | null                = null;
 let cachedContextType: string | undefined = undefined;
 let cachedContextId: string | undefined = undefined;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let cachedEntity: any                    = null;
+let cachedEntity: Organization | Project | null = null;
 let initialized = false;
 let initPromise: Promise<InitApiResult> | null = null;
 
-// Reset pour SSR - à appeler au début de chaque requête
+// Reset pour SSR — conservé pour rétro-compatibilité mais plus nécessaire
+// car le serveur ne touche plus aux globals
 export function resetApiState(): void {
   client = null;
   userApiInstance = null;
@@ -195,14 +279,24 @@ export function resetApiState(): void {
 }
 
 // ————————————————————————————————————————————————————————————
-// Initialisation unique
+// Point d’entrée
+// - Serveur : instances fraîches à chaque appel (pas de globals)
+//   → le queryClient de chaque requête gère le cache
+// - Client  : singleton via globals (un seul user, pas de concurrence)
 // ————————————————————————————————————————————————————————————
 
 export async function initApiClient(
   options: InitApiOptions = {},
 ): Promise<InitApiResult> {
+  const isServer = typeof window === "undefined";
+
+  // SERVEUR : purement fonctionnel, pas de globals partagés
+  if (isServer) {
+    return createApiInstances(options, "memory");
+  }
+
+  // CLIENT : singleton — un seul user, pas de concurrence
   if (initialized) {
-    // Non‑null assertion car, par définition, tout est prêt
     return {
       client: client!,
       userApiInstance: userApiInstance!,
@@ -215,96 +309,17 @@ export async function initApiClient(
   }
   if (initPromise) return initPromise;
 
-  initPromise = (async (): Promise<InitApiResult> => {
-    const isServer = typeof window === "undefined";
-
-    // Choix du backend de stockage pour les tokens
-    const tokenStorageStrategy = isServer
-      ? await Cocolight.tokenStorageStrategy.createDefaultMultiServerTokenStorageStrategy(
-          "memory",
-        )
-      : await Cocolight.tokenStorageStrategy.createDefaultMultiServerTokenStorageStrategy(
-          "localStorage",
-        );
-
-    // Instanciation du client HTTP
-    client = new Cocolight.ApiClient({
-      baseURL: options.baseURL ?? getBaseUrl(),
-      ...options,
-      debug: import.meta.env.DEV ?? false,
-      tokenStorageStrategy,
-    });
-    registerMissingCustomEndpoints(client);
-
-      // Facade UserApi
-    userApiInstance = Cocolight.Api.userApi(client);
+  initPromise = createApiInstances(options, "localStorage").then((result) => {
+    client = result.client;
+    userApiInstance = result.userApiInstance;
+    api = result.api;
+    cachedMe = result.me;
+    cachedContextType = result.contextType;
+    cachedContextId = result.contextId;
+    cachedEntity = result.entity;
     initialized = true;
-
-    cachedMe = null;
-    cachedContextType = undefined;
-    cachedContextId = undefined;
-    cachedEntity = null;
-    const slug = getSlug();
-
-    // Vérifier s'il y a des données hydratées du SSR
-    // On utilise le cache SSR seulement si l'user n'est pas connecté
-    // Car les données d'un user connecté peuvent être différentes (droits, données personnelles)
-    const hydratedData = getHydratedCocolightData();
-    const isUserConnected = userApiInstance.client.isConnected;
-
-    if (hydratedData && !isUserConnected) {
-      if (import.meta.env.DEV) {
-        console.log("[Api.init] User non connecté - utilisation du cache SSR");
-      }
-
-      // Transformer les données JSON en instances avec le client
-      if (hydratedData.entity) {
-        cachedEntity = Cocolight.helper.fromEntityJSON(hydratedData.entity, client);
-        cachedContextType = hydratedData.contextType;
-        cachedContextId = hydratedData.contextId;
-      }
-    }
-
-    try {
-      if (userApiInstance.client.isConnected) {
-        const loggedUser = await userApiInstance.meIsconnected();
-        api = new Cocolight.Api(loggedUser, userApiInstance.client);
-        cachedMe = await api.me();
-      } else {
-        api = new Cocolight.Api(null, userApiInstance.client);
-      }
-
-      // Seulement fetch le slug si on n'a pas déjà les données hydratées
-      if (slug && !cachedEntity) {
-        try {
-          const entity = cachedMe ?  await cachedMe.entityBySlug(slug) : await api.entitySlug(slug);
-
-          if (entity) {
-            cachedEntity = entity;
-            cachedContextType = entity.getEntityType();
-            cachedContextId = entity.id || undefined;
-          }
-        } catch (slugErr) {
-          console.error("[Api.init] Erreur lors de la résolution du slug:", slugErr);
-        }
-      }
-    } catch (err) {
-      console.error("[Api.init] Erreur lors de l'initialisation de l'API:", err);
-      if (!api) {
-        api = new Cocolight.Api(null, userApiInstance.client);
-      }
-    }
-
-    return {
-      client,
-      userApiInstance,
-      api,
-      me: cachedMe,
-      contextType: cachedContextType,
-      contextId: cachedContextId,
-      entity: cachedEntity,
-    } as InitApiResult;
-  })();
+    return result;
+  });
 
   return initPromise;
 }

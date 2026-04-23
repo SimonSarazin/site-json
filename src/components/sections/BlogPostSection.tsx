@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Calendar, Clock, User } from 'lucide-react';
 import { useLocalization } from "@/hooks/useLocalization";
 import { BlogPostSectionProps } from '@/types/site-schema';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
 
 export function BlogPostSection({ id, props }: { id?: string; props: BlogPostSectionProps }) {
   const { t } = useLocalization();
@@ -23,9 +24,11 @@ export function BlogPostSection({ id, props }: { id?: string; props: BlogPostSec
           {/* Featured Image */}
           {featuredImage && (
             <div className="mb-8 rounded-lg overflow-hidden">
-              <img
+              <OptimizedImage
                 src={featuredImage}
                 alt={t(title)}
+                width={800}
+                priority
                 className="w-full h-64 md:h-96 object-cover"
               />
             </div>

@@ -30,8 +30,8 @@ const ListConfSchema = z.object({
     shareButton:     z.boolean().optional(),
     showStar:        z.boolean().optional(),
     detailsMode: z.enum(["drawer", "dialog"]).default("drawer"),
-    type: z.enum(["overlay", "default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer"]).default("default"),
-    variant: z.enum(["default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer"]).optional(),
+    type: z.enum(["overlay", "default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer", "card-elts","ssbe", "card-answer"]).default("default"),
+    variant: z.enum(["default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer", "card-elts","ssbe", "card-answer"]).optional(),
   }).partial().optional(),
   preview: z.object({
     type: z.enum(["default"]).default("default"),
@@ -62,6 +62,7 @@ const SearchTypeSchema = z.enum([
   "events",
   "citoyens",
   "poi",
+  "answers",
 ]);
 
 export type SearchType = z.infer<typeof SearchTypeSchema>;
@@ -77,6 +78,7 @@ export const SEARCH_TYPE_ICON_NAMES: Record<SearchType, IconName> = {
   events: "calendar-days",
   citoyens: "user",
   poi: "map-pin",
+  answers: "file-text",
 };
 
 export const SearchProSectionSchema = z.object({
@@ -90,6 +92,7 @@ export const SearchProSectionSchema = z.object({
     useFilter:   z.boolean().default(true),
     showMap:     z.boolean().default(false),
     enableMap: z.boolean().default(true),
+    defaultViewMode: z.enum(["list", "map", "graph"]).optional(),
     showActiveFiltersTypes: z.boolean().default(true),
     showActiveFiltersTags: z.boolean().default(true),
     disableInfiniteScroll: z.boolean().optional(),
@@ -113,6 +116,15 @@ export const SearchProSectionSchema = z.object({
       defaultFields: z.array(z.string()).optional(),
       defaultSortBy: z.record(z.string(), z.union([z.literal(1), z.literal(-1)])).optional(),
       notSourceKey: z.boolean().optional(),
+      locality: z.record(z.string(), z.object({
+        id: z.string(),
+        type: z.string(),
+        name: z.string().optional(),
+        countryCode: z.string().optional(),
+        level: z.union([z.string(), z.number()]).optional(),
+        active: z.boolean().optional(),
+        key: z.string().optional(),
+      })).optional(),
     }).optional(),
 
     list: ListConfSchema.optional(),
@@ -127,6 +139,7 @@ const AddButtonConfigSchema = z.object({
   show: z.boolean().default(false),
   label: LocalizedString.optional(),
   modal: z.string().optional(),
+  formConfig: z.any().optional(),
   organization: z.boolean().optional().default(true),
   project: z.boolean().optional().default(true),
   event: z.boolean().optional().default(true),
@@ -150,12 +163,17 @@ const ZoneSelectorConfigSchema = z.object({
 
 export type ZoneSelectorConfig = z.infer<typeof ZoneSelectorConfigSchema>;
 
+const CsvColumnSchema = z.object({
+  header: z.string(),
+  path: z.string(),
+});
+
 const CsvButtonConfigSchema = z.object({
   show: z.boolean().default(false),
   label: LocalizedString.optional(),
-  fields: z.array(z.string()).optional(),
-  labels: z.array(z.string()).optional(),
-  costumSlug: z.string().optional(),
+  separator: z.string().default(";"),
+  filename: z.string().optional(),
+  columns: z.array(CsvColumnSchema).optional(),
 }).optional();
 
 export type CsvButtonConfig = z.infer<typeof CsvButtonConfigSchema>;
@@ -183,9 +201,14 @@ export const SearchProStaticSectionSchema = z.object({
     useFilter:   z.boolean().default(false),
     showMap:     z.boolean().default(false),
     enableMap: z.boolean().default(true),
+    enableRegions: z.boolean().default(false),
     enableGraph: z.boolean().default(false),
+    graphTags: z.array(z.string()).optional(),
     graphCategories: z.array(z.string()).optional(),
+    graphDefaultGroupMode: z.enum(["country", "category"]).optional(),
+    graphEnableCountryGrouping: z.boolean().optional(),
     graphDetailsMode: z.enum(["drawer", "dialog", "link"]).default("drawer"),
+    defaultViewMode: z.enum(["list", "map", "graph", "regions"]).optional(),
     showActiveFiltersTypes: z.boolean().default(false),
     showActiveFiltersTags: z.boolean().default(false),
     disableInfiniteScroll: z.boolean().optional(),
@@ -215,15 +238,123 @@ export const SearchProStaticSectionSchema = z.object({
       defaultFields: z.array(z.string()).optional(),
       defaultSortBy: z.record(z.string(), z.union([z.literal(1), z.literal(-1)])).optional(),
       notSourceKey: z.boolean().optional(),
+      locality: z.record(z.string(), z.object({
+        id: z.string(),
+        type: z.string(),
+        name: z.string().optional(),
+        countryCode: z.string().optional(),
+        level: z.union([z.string(), z.number()]).optional(),
+        active: z.boolean().optional(),
+        key: z.string().optional(),
+      })).optional(),
+      contextId: z.string().optional(),
+      contextType: z.enum(["projects", "organizations"]).optional(),
+      costumSlug: z.string().optional(),
+      costumEditMode: z.union([z.boolean(), z.string(), z.number()]).optional(),
+      sourceKey: z.array(z.string()).optional(),
     }).optional(),
 
     list: ListConfSchema.optional(),
     map:  MapConfSchema.optional(),
+    bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
   }),
 });
 
 export type SearchProStaticSection = z.infer<typeof SearchProStaticSectionSchema>;
 export type SearchProStaticSectionProps = z.infer<typeof SearchProStaticSectionSchema>["props"]
+
+// CardCountCT: Section dédiée à l'affichage des compteurs par type
+const CardCountCTCardConfigSchema = z.object({
+  countKey: z.string(),
+  label: LocalizedString.or(z.string()),
+  icon: z.string().optional(),
+  color: z.string().optional(),
+  href: z.string().optional(),
+});
+
+export const CardCountCTSectionSchema = z.object({
+  type: z.literal("cardCountCT"),
+  id:   z.string().optional(),
+
+  props: z.object({
+    title: LocalizedString.optional(),
+    subtitle: LocalizedString.optional(),
+    bg: z.enum([
+      "default", "card", "muted", "primary", "secondary", "accent", "transparent",
+      "gradient-teal", "gradient-blue", "gradient-indigo", "gradient-cyan",
+    ]).optional(),
+
+    baseParams: z.object({
+      fediverse:     z.boolean().optional(),
+      indexStepList: z.number().optional(),
+      defaultTypes: z.array(SearchTypeSchema).optional(),
+      defaultTags:   z.array(z.string()).optional(),
+      defaultFilters: z.record(z.string(), z.unknown()).optional(),
+      notSourceKey: z.boolean().optional(),
+      locality: z.record(z.string(), z.object({
+        id: z.string(),
+        type: z.string(),
+        name: z.string().optional(),
+        countryCode: z.string().optional(),
+        level: z.union([z.string(), z.number()]).optional(),
+        active: z.boolean().optional(),
+        key: z.string().optional(),
+      })).optional(),
+    }).optional(),
+
+    cards: z.array(CardCountCTCardConfigSchema).optional(),
+  }),
+});
+
+export type CardCountCTSection = z.infer<typeof CardCountCTSectionSchema>;
+export type CardCountCTSectionProps = z.infer<typeof CardCountCTSectionSchema>["props"]
+
+// Thematics Section - Icon mapping from FontAwesome to Lucide
+/**
+ * Mapping des icônes FontAwesome vers les icônes Lucide
+ * Basé sur les filières disponibles
+ */
+export const FILIERE_ICON_MAPPING: Record<string, string> = {
+  "fa-cutlery": "utensils",
+  "fa-heart-o": "heart",
+  "fa-chain": "link",
+  "fa-link": "link",
+  "fa-globe": "globe",
+  "fa-bus": "bus",
+  "fa-book": "book",
+  "fa-user-circle-o": "circle-user",
+  "fa-sun-o": "sun",
+  "fa-universal-access": "accessibility",
+  "fa-tree": "tree-pine",
+  "fa-laptop": "laptop",
+  "fa-futbol-o": "circle-dot",
+  "fa-trash-o": "trash-2",
+  "fa-android": "smartphone",
+  "fa-leaf": "leaf",
+  "fa-money": "banknote",
+  "fa-arrows": "move",
+  "fa-hand-o-up": "hand",
+  "fa-flask": "flask-conical",
+  "fa-lightbulb-o": "lightbulb",
+  "fa-cross": "cross",
+  "fa-gavel": "scale",
+  "fa-anchor": "anchor"
+};
+
+// Thematics: Section pour afficher les filières de manière dynamique
+export const ThematicsSectionSchema = z.object({
+  type: z.literal("thematics"),
+  id: z.string().optional(),
+
+  props: z.object({
+    title: LocalizedString.optional(),
+    subtitle: LocalizedString.optional(),
+    emptyMessage: LocalizedString.optional(),
+  }),
+});
+
+export type ThematicsSection = z.infer<typeof ThematicsSectionSchema>;
+export type ThematicsSectionProps = z.infer<typeof ThematicsSectionSchema>["props"]
 
 
 export interface SearchListViewProps<T extends SearchEntity = SearchEntity> {

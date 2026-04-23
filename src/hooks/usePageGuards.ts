@@ -2,16 +2,17 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { useCocolight } from "./useCocolight";
 import type { Page } from "@/types/site";
+import type { User } from "@communecter/cocolight-api-client";
 
 const registry: Record<
   string,
-  (args: { me: any; navigate: (path: string) => void }) => void
+  (args: { me: User | null; navigate: (path: string) => void }) => void
 > = {
   "auth-required": ({ me, navigate }) => {
     if (!me?.isConnected) navigate("/login");
   },
   "admin-only": ({ me, navigate }) => {
-    if (!me?.serverData?.roles?.includes("admin")) navigate("/");
+    if (!me?.serverData?.roles?.["admin"]) navigate("/");
   },
   "redirect-if-authenticated": ({ me, navigate }) => {
     if (me?.isConnected) navigate("/");

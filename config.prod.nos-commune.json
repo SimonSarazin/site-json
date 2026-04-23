@@ -1,0 +1,533 @@
+{
+  "version": "1.0.0",
+  "generated": "2026-03-02T10:00:00.000Z",
+  "meta": {
+    "title": {
+      "fr": "Nos Communes",
+      "en": "Nos Communes"
+    },
+    "description": {
+      "fr": "Le mouvement national de réappropriation citoyenne. Ensemble, construisons des communes transparentes et participatives.",
+      "en": "The national civic reappropriation movement. Together, let's build transparent and participative communes."
+    },
+    "defaultLang": "fr",
+    "languages": [
+      "fr"
+    ],
+    "favicon": "/images/nosCommunes/logo.png",
+    "themeColor": "#4ade80",
+    "keywords": [
+      "communes",
+      "citoyens",
+      "démocratie participative",
+      "mouvement citoyen",
+      "territoire",
+      "transparence"
+    ]
+  },
+  "header": {
+    "type": "nos-communes",
+    "path": "/",
+    "logo": "images/nosCommunes/logo.png",
+    "logoTitle": {
+      "fr": "Nos Communes",
+      "en": "Nos Communes"
+    },
+    "ctaButton": {
+      "label": {
+        "fr": "Se connecter",
+        "en": "Sign in"
+      },
+      "path": "/se-connecter"
+    },
+    "nav": [
+      {
+        "label": {
+          "fr": "Manifeste",
+          "en": "Manifeste"
+        },
+        "path": "/manifeste"
+      },
+      {
+        "label": {
+          "fr": "Les communes",
+          "en": "Les communes"
+        },
+        "path": "/communes"
+      }
+    ],
+    "sticky": true,
+    "transparent": true,
+    "height": "md",
+    "utilities": {
+      "themeSwitch": false,
+      "langSwitch": true,
+      "search": false,
+      "auth": true,
+      "cart": false,
+      "notifications": false
+    }
+  },
+  "pages": [
+    {
+      "path": "/",
+      "title": {
+        "fr": "Accueil - Nos Communes",
+        "en": "Home - Nos Communes"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "hero-nos-communes",
+          "id": "hero-nos-communes",
+          "props": {
+            "variant": "nos-communes",
+            "badge": {
+              "fr": "Le Mouvement national de réappropriation",
+              "en": "The National Reappropriation Movement"
+            },
+            "headline": {
+              "fr": "Nos Communes",
+              "en": "Nos Communes"
+            },
+            "subhead": {
+              "fr": "À celles et ceux qui, par leur engagement, font exister les communes",
+              "en": "To those who, through their commitment, make communes exist"
+            },
+            "tagline": {
+              "fr": "Les communes, c'est nous.",
+              "en": "The communes, that's us."
+            },
+            "taglineSubtext": {
+              "fr": "Pourquoi élire des élus si on peut construire un territoire transparent avec un conseil citoyen permanent ?",
+              "en": "Why elect officials if we can build a transparent territory with a permanent citizen council?"
+            },
+            "backgroundImage": "/images/nosCommunes/banniereImg.jpg",
+            "backgroundImageAlt": {
+              "fr": "Bannière Nos Communes - mouvement citoyen",
+              "en": "Nos Communes banner - citizen movement"
+            },
+            "ctaButtons": [
+              {
+                "label": {
+                  "fr": "+ Inviter",
+                  "en": "+ Invite"
+                },
+                "path": "/communes",
+                "variant": "default"
+              }
+            ],
+            "showScrollIndicator": false
+          }
+        },
+        {
+          "type": "html",
+          "id": "pourquoi-mouvement",
+          "props": {
+            "html": "<section class=\"py-16 px-4 bg-white\"><div class=\"container mx-auto max-w-5xl\"><h2 class=\"text-3xl md:text-4xl font-bold text-center mb-4\">Pourquoi ce mouvement ?</h2><p class=\"text-center text-muted-foreground text-lg mb-12 max-w-2xl mx-auto\">Créer des communes transparentes, dynamiques et interactives. Un nouveau modèle de participation citoyenne.</p><div class=\"grid grid-cols-1 md:grid-cols-3 gap-6\"><div class=\"relative rounded-xl overflow-hidden aspect-[4/3]\"><img src=\"/images/nosCommunes/community-garden-Ban5P7ZI.jpg\" alt=\"Jardins partagés\" class=\"w-full h-full object-cover\" /><div class=\"absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-5\"><h3 class=\"text-white font-bold text-xl\">Jardins partagés</h3><p class=\"text-white/80 text-sm\">Cultivez ensemble, tissez des liens</p></div></div><div class=\"relative rounded-xl overflow-hidden aspect-[4/3]\"><img src=\"/images/nosCommunes/local-project-D_tqhREw.jpg\" alt=\"Entraide locale\" class=\"w-full h-full object-cover\" /><div class=\"absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-5\"><h3 class=\"text-white font-bold text-xl\">Entraide locale</h3><p class=\"text-white/80 text-sm\">S'entraider au quotidien</p></div></div><div class=\"relative rounded-xl overflow-hidden aspect-[4/3]\"><img src=\"/images/nosCommunes/mutual-aid-DfH9O85s.jpg\" alt=\"Projets citoyens\" class=\"w-full h-full object-cover\" /><div class=\"absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-5\"><h3 class=\"text-white font-bold text-xl\">Projets citoyens</h3><p class=\"text-white/80 text-sm\">Imaginer demain ensemble</p></div></div></div></div></section>"
+          }
+        },
+        {
+          "type": "features-rezo-la-mer",
+          "id": "features-mouvement",
+          "props": {
+            "variant": "nos-communes",
+            "headline": {
+              "fr": "Ce que nous voulons faire ensemble",
+              "en": "What we want to do together"
+            },
+            "features": [
+              {
+                "icon": "flask-conical",
+                "title": {
+                  "fr": "Expérimenter",
+                  "en": "Experiment"
+                },
+                "description": {
+                  "fr": "Une autre forme de société, d'autres et nouvelles modèles de gouvernance locale.",
+                  "en": "Another form of society, new models of local governance."
+                },
+                "color": "primary"
+              },
+              {
+                "icon": "users",
+                "title": {
+                  "fr": "Se Retrouver",
+                  "en": "Come Together"
+                },
+                "description": {
+                  "fr": "Autour de sujets d'intérêts, de passions, pour partager et faire de la veille collective.",
+                  "en": "Around topics of interest and passions, to share and do collective monitoring."
+                },
+                "color": "primary"
+              },
+              {
+                "icon": "eye",
+                "title": {
+                  "fr": "Montrer la Diversité",
+                  "en": "Show Diversity"
+                },
+                "description": {
+                  "fr": "La présence citoyenne n'est pas qu'un jeu politique. Montrons la richesse de nos communes.",
+                  "en": "Civic presence is not just a political game. Let's show the richness of our communes."
+                },
+                "color": "primary"
+              },
+              {
+                "icon": "link-2",
+                "title": {
+                  "fr": "Trouver des Solutions",
+                  "en": "Find Solutions"
+                },
+                "description": {
+                  "fr": "Ensemble, créativité une d'affinités locales. Partage de compétences, projets d'intérêts communs.",
+                  "en": "Together, creativity through local affinities. Skills sharing, projects of common interest."
+                },
+                "color": "primary"
+              },
+              {
+                "icon": "bar-chart-2",
+                "title": {
+                  "fr": "Comprendre nos Communes",
+                  "en": "Understand our Communes"
+                },
+                "description": {
+                  "fr": "Ce n'est pas si compliqué. Observatoires, statistiques locales, open data connectée.",
+                  "en": "It's not that complicated. Observatories, local statistics, connected open data."
+                },
+                "color": "primary"
+              },
+              {
+                "icon": "message-circle",
+                "title": {
+                  "fr": "Remonter et Partager",
+                  "en": "Escalate and Share"
+                },
+                "description": {
+                  "fr": "Questions, propositions, marques, compétences. Un espace d'écoute citoyenne.",
+                  "en": "Questions, proposals, feedback, skills. A citizen listening space."
+                },
+                "color": "primary"
+              }
+            ]
+          }
+        },
+        {
+          "type": "html",
+          "id": "manifesto",
+          "props": {
+            "html": "<section class=\"py-20 px-4 bg-gray-50\"><div class=\"container mx-auto max-w-3xl\"><h2 class=\"text-3xl md:text-4xl font-bold mb-8\">Ca fait des années qu'on le dit : le système démocratique ne laisse pas beaucoup de place aux citoyens.</h2><p class=\"text-muted-foreground text-lg mb-10\">Et si on tentait une petite expérience encore jamais vue ? Tous les citoyens d'une commune connectés, on met de côté nos différences, les candidats et les partis. On se retrouve tous <strong>ENSEMBLE</strong> sur notre commune.</p><div class=\"bg-white rounded-xl border border-border p-8 mb-8 shadow-sm\"><h3 class=\"text-xl font-semibold mb-6 text-center\">On y habite, rien ne peut nous empêcher.</h3><div class=\"grid grid-cols-1 md:grid-cols-2 gap-8\"><div><h4 class=\"text-primary font-semibold mb-4\">Ce qu'on peut faire</h4><ul class=\"space-y-3 text-muted-foreground\"><li>Créer autant de propositions ou de projets qu'on veut</li><li>Partager des ressources, activités et événements</li><li>Imaginer les outils qu'on veut, la plateforme nous appartient</li><li>Connecter les communes entre elles</li></ul></div><div><h4 class=\"font-semibold mb-4\">Ce qui ne peut pas arriver</h4><ul class=\"space-y-3 text-muted-foreground\"><li>Personne n'est propriétaire d'une Commune Transparente</li><li>Une mairie ne peut pas contrôler ou fermer un CT</li><li>Un maire n'a pas plus de poids que les autres citoyens</li></ul></div></div></div><div class=\"text-center\"><p class=\"text-muted-foreground mb-2\">Ça y est, on est prêt. On a préparé le socle au service de tous.</p><a href=\"/communes\" class=\"text-primary font-medium hover:underline\">Pour vous proposer une vraie alternative multiple.</a></div></div></section>"
+          }
+        },
+        {
+          "type": "html",
+          "id": "cta-ouvrir-commune",
+          "props": {
+            "html": "<section class=\"relative py-24 px-4 overflow-hidden\"><div class=\"absolute inset-0 z-0 bg-gradient-to-br from-blue-800 to-blue-600\"></div><div class=\"relative z-10 container mx-auto max-w-3xl text-center\"><span class=\"inline-block bg-white/20 text-white text-sm font-medium px-4 py-1 rounded-full mb-6\">Devenir à tous</span><h2 class=\"text-3xl md:text-5xl font-bold text-white mb-6\">Tout le monde pourra ouvrir sa commune librement</h2><p class=\"text-white/80 text-lg mb-10\">Se réunir, connecter autant de citoyens, écouter les propositions, participer. C'est maintenant.</p><div class=\"flex flex-wrap gap-4 justify-center\"><a href=\"/communes\" class=\"bg-white text-blue-700 font-semibold px-6 py-3 rounded-lg hover:bg-blue-50 transition-colors\">Trouver votre Commune</a><a href=\"/cartographie\" class=\"bg-transparent border-2 border-white text-white font-semibold px-6 py-3 rounded-lg hover:bg-white/10 transition-colors\">Explorez votre territoire</a></div></div></section>"
+          }
+        },
+        {
+          "type": "html",
+          "id": "vision-reinventer",
+          "props": {
+            "html": "<section class=\"py-20 px-4 bg-white\"><div class=\"container mx-auto max-w-5xl\"><div class=\"grid grid-cols-1 md:grid-cols-2 gap-12 items-center\"><div class=\"rounded-xl overflow-hidden shadow-md\"><img src=\"/images/nosCommunes/community-fair-Bn3V5lmz.jpg\" alt=\"Fête citoyenne communale\" class=\"w-full h-full object-cover\" /></div><div><span class=\"inline-block bg-primary/10 text-primary text-sm font-medium px-4 py-1 rounded-full mb-4\">Notre vision</span><h2 class=\"text-3xl md:text-4xl font-bold mb-6\">Réinventer le vivre ensemble</h2><p class=\"text-muted-foreground text-lg mb-6\">Ça fait des années qu'on le dit : le système démocratique ne laisse pas beaucoup de place aux citoyens. Et si on tentait une petite expérience encore jamais vue ? Tous les citoyens d'une commune connectés, on met de côté nos différences, les candidats et les partis.</p><ul class=\"space-y-4 text-muted-foreground\"><li class=\"flex items-start gap-3\"><span class=\"text-primary font-bold mt-0.5\">›</span><span>Sortir des GATAMs : un réseau social citoyen vous attend</span></li><li class=\"flex items-start gap-3\"><span class=\"text-primary font-bold mt-0.5\">›</span><span>Expérimentez une manière horizontale de participer</span></li><li class=\"flex items-start gap-3\"><span class=\"text-primary font-bold mt-0.5\">›</span><span>Les communes sont connectées entre elles</span></li></ul></div></div></div></section>"
+          }
+        },
+        {
+          "type": "action-buttons-rezo-la-mer",
+          "id": "action-tabs",
+          "props": {
+            "variant": "nos-communes",
+            "headline": {
+              "fr": "Nos Slogans",
+              "en": "Our Slogans"
+            },
+            "actions": [
+              {
+                "icon": "eye",
+                "title": {
+                  "fr": "Voir les communes autrement",
+                  "en": "See communes differently"
+                },
+                "subtitle": {
+                  "fr": "",
+                  "en": ""
+                },
+                "href": "/",
+                "color": "primary"
+              },
+              {
+                "icon": "users",
+                "title": {
+                  "fr": "Connecter, découvrir, participer",
+                  "en": "Connect, discover, participate"
+                },
+                "subtitle": {
+                  "fr": "",
+                  "en": ""
+                },
+                "href": "/",
+                "color": "primary"
+              },
+              {
+                "icon": "map-pin",
+                "title": {
+                  "fr": "Pourquoi j'habite ici ?",
+                  "en": "Why do I live here?"
+                },
+                "subtitle": {
+                  "fr": "",
+                  "en": ""
+                },
+                "href": "/",
+                "color": "primary"
+              },
+              {
+                "icon": "heart-handshake",
+                "title": {
+                  "fr": "Faisons imerger l'iceberg",
+                  "en": "Let's immerse the iceberg"
+                },
+                "subtitle": {
+                  "fr": "",
+                  "en": ""
+                },
+                "href": "/",
+                "color": "primary"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/manifeste",
+      "title": {
+        "fr": "Manifeste - Nos Communes",
+        "en": "Manifesto - Nos Communes"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "html",
+          "id": "manifeste-content",
+          "props": {
+            "html": "<section class=\"py-24 px-4 bg-white\"><div class=\"container mx-auto max-w-3xl\"><h1 class=\"text-4xl md:text-5xl font-bold mb-6\">Manifeste</h1><p class=\"text-xl text-muted-foreground mb-10\">Le mouvement national de réappropriation citoyenne. Ensemble, construisons des communes transparentes et participatives.</p><div class=\"space-y-10\"><div><h2 class=\"text-2xl font-bold mb-4\">Pourquoi ce mouvement ?</h2><p class=\"text-muted-foreground text-lg leading-relaxed\">Ca fait des années qu'on le dit : le système démocratique ne laisse pas beaucoup de place aux citoyens. Nous croyons qu'il est temps de changer cela, ensemble, commune par commune. Tous les citoyens d'une commune connectés, on met de côté nos différences, les candidats et les partis. On se retrouve tous ENSEMBLE sur notre commune.</p></div><div><h2 class=\"text-2xl font-bold mb-4\">Nos principes</h2><ul class=\"space-y-3 text-muted-foreground text-lg\"><li class=\"flex items-start gap-3\"><span class=\"text-primary font-bold mt-0.5\">›</span><span>Transparence totale de la gouvernance locale</span></li><li class=\"flex items-start gap-3\"><span class=\"text-primary font-bold mt-0.5\">›</span><span>Participation citoyenne active et permanente</span></li><li class=\"flex items-start gap-3\"><span class=\"text-primary font-bold mt-0.5\">›</span><span>Horizontalité : chaque citoyen a la même voix</span></li><li class=\"flex items-start gap-3\"><span class=\"text-primary font-bold mt-0.5\">›</span><span>Open source : la plateforme appartient aux citoyens</span></li><li class=\"flex items-start gap-3\"><span class=\"text-primary font-bold mt-0.5\">›</span><span>Sortir des GATAMs : un réseau social citoyen vous attend</span></li></ul></div><div><h2 class=\"text-2xl font-bold mb-4\">Ce qu'on ne peut pas laisser arriver</h2><ul class=\"space-y-3 text-muted-foreground text-lg\"><li class=\"flex items-start gap-3\"><span class=\"text-destructive font-bold mt-0.5\">×</span><span>Personne n'est propriétaire d'une Commune Transparente</span></li><li class=\"flex items-start gap-3\"><span class=\"text-destructive font-bold mt-0.5\">×</span><span>Une mairie ne peut pas contrôler ou fermer un CT</span></li><li class=\"flex items-start gap-3\"><span class=\"text-destructive font-bold mt-0.5\">×</span><span>Un maire n'a pas plus de poids que les autres citoyens</span></li></ul></div></div></div></section>"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/communes",
+      "title": {
+        "fr": "Les Communes - Nos Communes",
+        "en": "The Communes - Nos Communes"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "communes-header",
+          "props": {
+            "headline": {
+              "fr": "Les communes Transparentes",
+              "en": "The Transparent Communes"
+            },
+            "subhead": {
+              "fr": "Découvrez et rejoignez les communes transparentes de votre territoire",
+              "en": "Discover and join the transparent communes in your territory"
+            }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "section-communes-list",
+          "props": {
+            "useFilter": true,
+            "showMap": true,
+            "enableMap": true,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": false,
+            "disableInfiniteScroll": false,
+            "baseParams": {
+              "defaultTypes": [
+                "organizations"
+              ],
+              "notSourceKey": true,
+              "defaultFilters": {
+                "costum.transparentCommune": {
+                  "$exists": true
+                }
+              }
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3,
+                "xl": 3
+              },
+              "card": {
+                "type": "profile",
+                "variant": "profile",
+                "detailsMode": "drawer"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/cartographie",
+      "title": {
+        "fr": "Cartographie - Nos Communes",
+        "en": "Map - Nos Communes"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "carto-header",
+          "props": {
+            "headline": {
+              "fr": "Votre territoire",
+              "en": "Your territory"
+            },
+            "subhead": {
+              "fr": "Explorez les communes transparentes sur la carte",
+              "en": "Explore transparent communes on the map"
+            },
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher un lieu...",
+              "en": "Search a location..."
+            }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "section-map",
+          "props": {
+            "useFilter": false,
+            "showMap": true,
+            "enableMap": true,
+            "defaultView": "map",
+            "showActiveFiltersTypes": false,
+            "showActiveFiltersTags": false,
+            "disableInfiniteScroll": true,
+            "baseParams": {
+              "defaultTypes": [
+                "organizations"
+              ],
+              "notSourceKey": true,
+              "defaultFilters": {}
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3,
+                "xl": 3
+              },
+              "card": {
+                "type": "profile",
+                "variant": "profile",
+                "detailsMode": "drawer"
+              }
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "login": {
+      "title": {
+        "fr": "Se connecter",
+        "en": "Sign in"
+      },
+      "subtitle": {
+        "fr": "Accédez au réseau des passionné·es de la mer",
+        "en": "Access the network for ocean enthusiasts"
+      }
+    }
+  },
+  "footer": {
+    "type": "nos-communes",
+    "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z\"></path><path d=\"M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12\"></path></svg>",
+    "logoTitle": {
+      "fr": "Nos Commune",
+      "en": "Nos Commune"
+    },
+    "description": {
+      "fr": "Le mouvement national de réappropriation citoyenne. Ensemble, construisons des communes transparentes et participatives.",
+      "en": "The national civic reappropriation movement. Together, let's build transparent and participative communes."
+    },
+    "tagline": {
+      "fr": "Fait avec passion par les citoyens",
+      "en": "Made with passion by citizens"
+    },
+    "columns": [
+      {
+        "title": {
+          "fr": "Liens utiles",
+          "en": "Useful links"
+        },
+        "links": [
+          {
+            "href": "/manifeste",
+            "label": {
+              "fr": "Manifeste",
+              "en": "Manifesto"
+            }
+          },
+          {
+            "href": "/communes",
+            "label": {
+              "fr": "Les communes",
+              "en": "The communes"
+            }
+          }
+        ]
+      },
+      {
+        "title": {
+          "fr": "Contact",
+          "en": "Contact"
+        },
+        "links": [
+          {
+            "href": "mailto:contact@noscommunes.fr",
+            "label": {
+              "fr": "contact@noscommunes.fr",
+              "en": "contact@noscommunes.fr"
+            }
+          }
+        ]
+      }
+    ],
+    "legalLinks": [
+      {
+        "href": "/mentions-legales",
+        "label": {
+          "fr": "Mentions légales",
+          "en": "Legal notice"
+        }
+      },
+      {
+        "href": "/confidentialite",
+        "label": {
+          "fr": "Politique de confidentialité",
+          "en": "Privacy policy"
+        }
+      }
+    ],
+    "copyright": {
+      "fr": "Ce site est gracieusement hébergé par Open Atlas, pour faire disparaître cette bannière, merci de nous aider à payer l'hébergement",
+      "en": "This site is graciously hosted by Open Atlas. To remove this banner, please help us pay for hosting."
+    }
+  },
+  "floatingQRCode": {
+    "enabled": false
+  }
+}

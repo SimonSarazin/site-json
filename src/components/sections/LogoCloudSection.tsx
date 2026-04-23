@@ -2,6 +2,7 @@ import { T } from "@/components/ui/T";
 import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from '@/lib/utils';
 import { LogoCloudSectionProps } from "@/types/site-schema";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 export function LogoCloudSection({ id, props }: { id?: string; props: LogoCloudSectionProps }) {
   const { t } = useLocalization();
@@ -14,9 +15,10 @@ export function LogoCloudSection({ id, props }: { id?: string; props: LogoCloudS
         grayscale && "grayscale hover:grayscale-0",
         "hover:scale-110"
       )}>
-        <img
+        <OptimizedImage
           src={logo.src}
           alt={t(logo.alt)}
+          height={48}
           className="max-h-12 w-auto object-contain"
         />
       </div>

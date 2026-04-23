@@ -45,3 +45,8 @@ export function getAllCalculators(): Map<string, PermissionCalculator> {
 export function hasCalculator(namespace: string): boolean {
   return calculators.has(namespace);
 }
+
+/** @internal — utilisé uniquement dans les tests */
+export function _resetForTesting(): void {
+  calculators.clear();
+}

@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import useItem from "../../hooks/useItem";
 import { getEntityColorClasses, getEntityIconName } from "@/lib/entityIcons";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 // Map des tags vers des icônes spécifiques aux événements
 const TAG_ICON_MAP: Record<string, string> = {
@@ -47,9 +48,10 @@ export default function CardEvent({
     >
       {/* Image de fond */}
       {image && (
-        <img
+        <OptimizedImage
           src={image}
           alt={name}
+          width={400}
           className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
         />
       )}

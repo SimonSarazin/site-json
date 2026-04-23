@@ -1,125 +1,181 @@
 import { useState, useCallback } from "react";
-import { useCocolight } from "@/hooks/useCocolight";
+import Papa from "papaparse";
 import type { CsvButtonConfig } from "../schema";
+import type { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
 
-export interface CsvExportParams {
-  searchText?: string;
-  searchTags?: string[];
-  searchType?: string[];
-  filters?: Record<string, unknown>;
-  locality?: Record<string, { id: string; type: string }>;
-  notSourceKey?: boolean;
-  costumSlug?: string;
-  costumId?: string;
-  costumType?: string;
+const DEFAULT_COLUMNS = [
+  { header: "Nom", path: "name" },
+];
+
+function resolvePath(obj: Record<string, unknown>, path: string): unknown {
+  return path.split(".").reduce<unknown>((acc, key) => (acc as Record<string, unknown> | undefined)?.[key], obj);
+}
+
+function extractValue(item: Record<string, unknown>, path: string): string {
+  const serverData = (item.serverData || item) as Record<string, unknown>;
+
+  const raw = resolvePath(serverData, path) ?? resolvePath(item, path);
+
+  switch (path) {
+    case "address": {
+      const addr = (serverData.address ?? item.address) as Record<string, unknown> | undefined;
+      if (!addr || typeof addr !== "object") return String(addr ?? "");
+      const parts = [
+        addr.streetAddress,
+        addr.postalCode,
+        addr.addressLocality,
+        addr.level1Name || addr.addressCountry,
+      ].filter(Boolean);
+      return parts.join(", ");
+    }
+
+    default: {
+      if (raw == null) return "";
+      if (Array.isArray(raw)) return raw.join(", ");
+      if (typeof raw === "object") return Object.keys(raw).join(", ");
+      return String(raw);
+    }
+  }
+}
+
+interface EntityWithSearchCostum {
+  searchCostum(params: Record<string, unknown>): Promise<{ results?: Record<string, unknown>[] }>;
+}
+
+interface HelperWithFromEntityJSON {
+  fromEntityJSON?(item: Record<string, unknown>): unknown;
 }
 
 export interface UseCsvExportOptions {
   csvButton?: CsvButtonConfig;
-  baseParams?: CsvExportParams;
+  entity?: EntityWithSearchCostum | null;
+  searchParams?: {
+    searchText: string;
+    searchTags: Record<string, string[]>;
+    searchType: Record<string, string[]> | null;
+    baseParams?: {
+      fediverse?: boolean;
+      defaultTypes?: string[];
+      defaultTags?: string[];
+      defaultFilters?: Record<string, unknown>;
+      defaultFields?: string[];
+      defaultSortBy?: Record<string, 1 | -1>;
+      notSourceKey?: boolean;
+      locality?: Record<string, unknown>;
+    };
+  };
+  helper?: HelperWithFromEntityJSON | null;
 }
 
-const DEFAULT_FIELDS = [
-  "name",
-  "siren",
-  "email",
-  "typologie",
-  "domains",
-  "specialities",
-  "offer",
-  "contact",
-  "partners",
-  "link",
-  "date",
-  "address",
-];
+function generateCsv(results: Record<string, unknown>[], csvButton: CsvButtonConfig) {
+  const columns = csvButton?.columns ?? DEFAULT_COLUMNS;
+  const separator = csvButton?.separator ?? ";";
 
-const DEFAULT_LABELS = [
-  "Nom",
-  "SIREN",
-  "Email",
-  "Type d'acteur",
-  "Domaines/sous-domaines",
-  "Spécialités",
-  "offre(matériels/logiciels/services)",
-  "Contact",
-  "Partenariats/affiliations",
-  "Source(URL)",
-  "Date de vérification",
-  "Adresse",
-];
+  const rows = results.map((item) =>
+    columns.reduce<Record<string, string>>((row, col) => {
+      row[col.header] = extractValue(item, col.path);
+      return row;
+    }, {})
+  );
 
-export function useCsvExport({ csvButton, baseParams = {} }: UseCsvExportOptions) {
-  const { apiClient } = useCocolight();
+  const csv = Papa.unparse(rows, {
+    delimiter: separator,
+    header: true,
+  });
+
+  const bom = "\uFEFF";
+  const blob = new Blob([bom + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  const filename = csvButton?.filename ?? `export_${new Date().toISOString().split("T")[0]}`;
+  link.download = `${filename}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+export function useCsvExport({ csvButton, entity, searchParams, helper }: UseCsvExportOptions) {
   const [isExporting, setIsExporting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   const exportCsv = useCallback(
-    async (params: CsvExportParams = {}) => {
-      if (!apiClient) {
-        setError(new Error("API client non initialisé"));
-        return;
-      }
-
-      if (!csvButton?.show) {
-        return;
-      }
+    async () => {
+      if (!csvButton?.show) return;
+      if (!entity || !searchParams) return;
 
       setIsExporting(true);
       setError(null);
 
       try {
-        const mergedParams = { ...baseParams, ...params };
+        const { searchText, searchTags, searchType, baseParams = {} } = searchParams;
 
-        const fields = csvButton.fields || DEFAULT_FIELDS;
-        const labels = csvButton.labels || DEFAULT_LABELS;
+        const type = Array.isArray(searchType)
+          ? searchType
+          : searchType
+            ? Object.values(searchType).flat()
+            : [];
+        const tags = Object.values(searchTags).flat() as string[];
 
-        const searchType = mergedParams.searchType || ["organizations"];
+        const {
+          fediverse = false,
+          defaultTypes,
+          defaultTags,
+          defaultFilters,
+          defaultFields,
+          defaultSortBy,
+          notSourceKey,
+          locality,
+        } = baseParams;
 
-        const requestData = {
-          name: mergedParams.searchText || "",
-          searchType,
-          countType: searchType,
+        const param: Partial<GlobalAutocompleteCostumData> & Record<string, unknown> = ({
+          name: searchText,
+          fediverse,
           indexMin: 0,
-          indexStep: 10000,
-          initType: "",
-          count: true,
-          fediverse: false,
-          costumSlug: mergedParams.costumSlug || "",
-          costumEditMode: false,
-          fields,
-          labels,
-          multicolumn: "true",
-          ...(mergedParams.searchTags && mergedParams.searchTags.length > 0 && {
-            searchTags: mergedParams.searchTags,
+          indexStep: 0, // 0 = get ALL results
+          ...(tags.length > 0 && {
+            searchTags: tags,
             options: { tags: { verb: "$all" } },
           }),
-          ...(mergedParams.filters && Object.keys(mergedParams.filters).length > 0 && {
-            filters: mergedParams.filters,
+          ...(defaultFilters && Object.keys(defaultFilters).length > 0 && {
+            filters: defaultFilters,
           }),
-          ...(mergedParams.locality && Object.keys(mergedParams.locality).length > 0 && {
-            locality: mergedParams.locality,
+          ...(defaultFields && defaultFields.length > 0 && {
+            fields: defaultFields,
           }),
-          ...(mergedParams.notSourceKey ? { notSourceKey: true } : {}),
-        };
+          ...(defaultSortBy && Object.keys(defaultSortBy).length > 0 && {
+            sortBy: defaultSortBy,
+          }),
+          ...(locality && Object.keys(locality).length > 0 && { locality }),
+          ...(notSourceKey ? { notSourceKey: true } : {}),
+        }) as Partial<GlobalAutocompleteCostumData> & Record<string, unknown>;
 
-        const response = await apiClient.callEndpoint("COSTUM_CUSTOMIZE_CSV", requestData);
-
-        const csvContent = response.data;
-
-        if (typeof csvContent === "string") {
-          const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement("a");
-          link.href = url;
-          link.download = `export_${new Date().toISOString().split("T")[0]}.csv`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
-        } else {
-          throw new Error("Format de réponse CSV invalide");
+        if (type && type.length > 0) param.searchType = type as GlobalAutocompleteCostumData["searchType"];
+        if (!type && defaultTypes) param.searchType = defaultTypes as GlobalAutocompleteCostumData["searchType"];
+        if (defaultTags && defaultTags.length > 0) {
+          param.searchTags = defaultTags;
         }
+
+        if (!param.searchType) {
+          generateCsv([], csvButton);
+          return;
+        }
+
+        const result = await entity.searchCostum(param);
+        let allResults = result?.results ?? [];
+
+        if (helper && allResults.length > 0) {
+          allResults = allResults.map((item: Record<string, unknown>) => {
+            try {
+              return (helper.fromEntityJSON ? helper.fromEntityJSON(item) : item) as Record<string, unknown>;
+            } catch {
+              return item;
+            }
+          });
+        }
+
+        generateCsv(allResults, csvButton);
       } catch (err) {
         console.error("Erreur export CSV:", err);
         setError(err instanceof Error ? err : new Error(String(err)));
@@ -127,7 +183,7 @@ export function useCsvExport({ csvButton, baseParams = {} }: UseCsvExportOptions
         setIsExporting(false);
       }
     },
-    [apiClient, csvButton, baseParams]
+    [csvButton, entity, searchParams, helper]
   );
 
   return {

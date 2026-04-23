@@ -51,7 +51,7 @@ export default function CardEventRezoLaMer({
 
       setLocalIsStarred(newStarredValue);
 
-      if (item.reload) {
+      if ('reload' in item && typeof item.reload === 'function') {
         await item.reload();
       }
     } catch (error) {

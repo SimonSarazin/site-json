@@ -265,9 +265,18 @@ function Calendar({
     return false;
   };
 
+  // Extract only DayPicker-compatible props; CalendarProps has extra fields (yearRange, min, max)
+  const { selected, onSelect, month, onMonthChange, locale: pickerLocale, showWeekNumber } = props;
+
   return (
     <DayPicker
-      {...(props as any)}
+      mode="single"
+      selected={selected}
+      onSelect={onSelect}
+      month={month}
+      onMonthChange={onMonthChange}
+      locale={pickerLocale}
+      showWeekNumber={showWeekNumber}
       showOutsideDays={showOutsideDays}
       disabled={disabledDays}
       className={cn("p-3", className)}
@@ -364,7 +373,6 @@ function Calendar({
           );
         },
       }}
-      {...props}
     />
   );
 }
@@ -742,6 +750,7 @@ function DateTimePicker({
 
   useEffect(() => {
     const validatedValue = value && !isNaN(value.getTime()) ? value : undefined;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncs display state with controlled value prop
     setDisplayDate(validatedValue);
   }, [value]);
 

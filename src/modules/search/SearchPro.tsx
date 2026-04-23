@@ -30,7 +30,7 @@ function normalizeDefaultTypes(
   if (!defaultTypes || !Array.isArray(defaultTypes)) return undefined;
 
   const typeFilterEntry = Object.entries(filters).find(
-    ([_, config]) => config.type === "type"
+    ([, config]) => config.type === "type"
   );
 
   const key = typeFilterEntry?.[0] ?? fallbackKey;
@@ -61,6 +61,7 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
     useFilter = true,
     showMap = false,
     enableMap = true,
+    defaultViewMode,
     showActiveFiltersTypes = true,
     showActiveFiltersTags = true,
     disableInfiniteScroll = false,
@@ -92,7 +93,7 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
     setMap: rawSetMapUsed,
   } = useSearchFilters({
     type: useFilter ? normalizeDefaultTypes(filters, baseParams?.defaultTypes) : null,
-    map: !!enableMap && !!showMap,
+    map: defaultViewMode === "map" ? true : defaultViewMode === "list" ? false : (!!enableMap && !!showMap),
   });
 
 

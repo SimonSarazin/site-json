@@ -1,7 +1,7 @@
 import { useTheme } from "next-themes";
 import { useEffect, useRef, useState } from "react";
 import { useT } from "@/hooks/useT";
-import type { User, Organization } from "@communecter/cocolight-api-client";
+import type { User, Organization, SearchEntity } from "@communecter/cocolight-api-client";
 import { SwitchDetailsMode } from "@/modules/search/components/SwitchDetailsMode";
 import { loadLeaflet } from "@/modules/search/hooks/loadLeaflet";
 import { cn } from "@/lib/utils";
@@ -16,8 +16,18 @@ interface MemberMapProps {
   };
 }
 
-function getData(member: User | Organization) {
-  return (member as any).serverData || member;
+interface MemberData {
+  id?: string;
+  name?: string;
+  profilThumbImageUrl?: string;
+  geoPosition?: { coordinates?: number[] };
+  geo?: { latitude?: string | number; longitude?: string | number };
+  address?: { streetAddress?: string };
+  [key: string]: unknown;
+}
+
+function getData(member: User | Organization): MemberData {
+  return ((member as unknown as { serverData?: MemberData }).serverData || member) as MemberData;
 }
 
 function getCoordinates(member: User | Organization): [number, number] | null {
@@ -162,10 +172,10 @@ export default function MemberMap({ members, card }: MemberMapProps) {
     if (!map) return;
 
     if (resolvedTheme === "dark") {
-      lightLayerRef.current && map.removeLayer(lightLayerRef.current);
+      if (lightLayerRef.current) map.removeLayer(lightLayerRef.current);
       darkLayerRef.current?.addTo(map);
     } else {
-      darkLayerRef.current && map.removeLayer(darkLayerRef.current);
+      if (darkLayerRef.current) map.removeLayer(darkLayerRef.current);
       lightLayerRef.current?.addTo(map);
     }
   }, [resolvedTheme]);
@@ -191,7 +201,7 @@ export default function MemberMap({ members, card }: MemberMapProps) {
         <SwitchDetailsMode
           openDetails={openDetails}
           setOpenDetails={setOpenDetails}
-          item={selectedMember as any}
+          item={selectedMember as unknown as SearchEntity}
           card={{ detailsMode }}
         />
       )}

@@ -8,30 +8,9 @@ import { useLocalization } from "@/hooks/useLocalization";
 import { cn } from '@/lib/utils';
 import { TestimonialsSectionProps } from '@/types/site-schema';
 
-export function TestimonialsSection({ id, props }: { id?: string; props: TestimonialsSectionProps }) {
+function TestimonialCard({ item }: { item: TestimonialsSectionProps['items'][number] }) {
   const { t } = useLocalization();
-  const { items, style = 'carousel', autoplay = true } = props;
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  // Auto-advance carousel
-  useEffect(() => {
-    if (style === 'carousel' && autoplay && items.length > 1) {
-      const interval = setInterval(() => {
-        setCurrentIndex((prev) => (prev + 1) % items.length);
-      }, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [items.length, style, autoplay]);
-
-  const nextTestimonial = () => {
-    setCurrentIndex((prev) => (prev + 1) % items.length);
-  };
-
-  const prevTestimonial = () => {
-    setCurrentIndex((prev) => (prev - 1 + items.length) % items.length);
-  };
-
-  const TestimonialCard = ({ item }: { item: TestimonialsSectionProps['items'][number]; }) => (
+  return (
     <Card className="h-full">
       <CardContent className="p-6">
         <div className="flex flex-col h-full">
@@ -57,6 +36,29 @@ export function TestimonialsSection({ id, props }: { id?: string; props: Testimo
       </CardContent>
     </Card>
   );
+}
+
+export function TestimonialsSection({ id, props }: { id?: string; props: TestimonialsSectionProps }) {
+  const { items, style = 'carousel', autoplay = true } = props;
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Auto-advance carousel
+  useEffect(() => {
+    if (style === 'carousel' && autoplay && items.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentIndex((prev) => (prev + 1) % items.length);
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [items.length, style, autoplay]);
+
+  const nextTestimonial = () => {
+    setCurrentIndex((prev) => (prev + 1) % items.length);
+  };
+
+  const prevTestimonial = () => {
+    setCurrentIndex((prev) => (prev - 1 + items.length) % items.length);
+  };
 
   return (
     <section id={id} className="py-16 bg-muted/30 text-foreground">
