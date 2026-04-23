@@ -5,6 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import serialize from "serialize-javascript";
 import dotenv from "dotenv";
+import { helloassoCheckoutIntentHandler, helloassoTokenHandler, helloassoCallbackHandler, helloassoCheckoutStatusHandler, helloassoDiagnosticHandler } from "./api/helloasso-checkout.js";
 
 dotenv.config();
 
@@ -40,10 +41,25 @@ async function loadSiteConfig() {
 async function createServer() {
   const app  = express();
   const vite = await createViteServer({
-    server: { middlewareMode: true },
+    server: {
+      middlewareMode: true,
+      allowedHosts: true,
+    },
     appType: "custom",
     ssr: { noExternal: ["@radix-ui/*", "lucide-react", "@communecter/cocolight-api-client"] },
   });
+
+  // Middleware JSON pour les requêtes API (DOIT être AVANT les routes)
+  app.use(express.json());
+
+  // Routes API HelloAsso
+  app.get("/api/helloasso/token", helloassoTokenHandler);
+  app.post("/api/helloasso/checkout-intent", helloassoCheckoutIntentHandler);
+  app.get("/api/helloasso/callback", helloassoCallbackHandler);
+  app.get("/api/helloasso/checkout-status/:checkoutIntentId", helloassoCheckoutStatusHandler);
+  app.get("/api/helloasso/orgs", helloassoDiagnosticHandler);
+
+  // ⚠️ Middleware Vite DOIT être après les routes API
   app.use(vite.middlewares);
 
   /* ---- Charger la config UNE SEULE FOIS au démarrage ---------------- */
@@ -56,6 +72,11 @@ async function createServer() {
   console.log("Config chargée :", cachedConfig?.meta?.title?.fr || "Config OK");
 
   app.use((req, res, next) => {
+  // Exclure les routes API
+  if (req.url.startsWith("/api/")) {
+    return next();
+  }
+
   if (
     req.url.startsWith("/favicon") ||
     req.url.startsWith("/sw") ||

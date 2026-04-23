@@ -4,7 +4,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import serialize from "serialize-javascript";
-
+import { helloassoCheckoutIntentHandler, helloassoTokenHandler, helloassoCallbackHandler, helloassoCheckoutStatusHandler } from "./api/helloasso-checkout.js";
 // import dotenv from "dotenv";
 // dotenv.config();
 
@@ -56,8 +56,15 @@ app.use(compression({
   threshold: 1024, // Minimum 1KB pour compresser
 }));
 
-// ETag pour requêtes conditionnelles (304 Not Modified)
-app.set('etag', 'strong');
+// Middleware JSON pour les requêtes API
+app.use(express.json());
+
+// Routes API HelloAsso
+console.log("🔧 Enregistrement des routes API HelloAsso...");
+app.get("/api/helloasso/token", helloassoTokenHandler);
+app.post("/api/helloasso/checkout-intent", helloassoCheckoutIntentHandler);
+app.get("/api/helloasso/callback", helloassoCallbackHandler);
+app.get("/api/helloasso/checkout-status/:checkoutIntentId", helloassoCheckoutStatusHandler);
 
 // Cache long terme pour assets hashés Vite (1 an, immutable)
 app.use('/assets', (req, res, next) => {
@@ -82,6 +89,11 @@ app.use(
 
 // 404 pour requêtes de fichiers statiques inexistants
 app.use((req, res, next) => {
+  // Exclure les routes API
+  if (req.url.startsWith("/api/")) {
+    return next();
+  }
+
   if (req.url.match(/\.(png|jpg|jpeg|gif|svg|css|js|json|ico|webp|mp4|woff2|woff)$/)) {
     return res.status(404).end();
   }

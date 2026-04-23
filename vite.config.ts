@@ -6,6 +6,9 @@ import { visualizer } from 'rollup-plugin-visualizer';
 import preloadPlugin from 'vite-preload/plugin';
 
 export default defineConfig(({ mode, isSsrBuild }) => ({
+  server: {
+    allowedHosts: true,
+  },
   plugins: [
     preloadPlugin(), // Doit être AVANT react() pour tracer les lazy imports
     react(),
