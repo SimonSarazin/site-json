@@ -79,7 +79,7 @@ const LazySections: {
   news: lazy(() => import("@/modules/news/components/sections/NewsSection")),
   member: lazy(() => import("./MemberSection")),
   heroWithIcon: lazy(() => import("./HeroWithIconSection")),
-  meeteem: lazy(() => import("@/modules/ampli/components/sections/MeeteemSection"))
+  meeteem: lazy(() => import("@/modules/ampli/components/sections/MeeteemSection")),
   actions: lazy(() => import("./ActionsSection")),
   finance: lazy(() => import("./FinanceSection")),
   "actions-summary": lazy(() => import("./ActionsSummarySection")),
@@ -105,7 +105,29 @@ function SectionLoadingFallback({ id, type }: { id?: string; type: string }) {
 }
 
 export function SectionRenderer({ section, index }: { section: Section; index?: number }) {
+  const { entity, contextId } = useCocolight();
   const sectionContext = `Section[type=${section.type}, id=${section.id || "none"}]`;
+  const projectAwareSectionTypes: Section['type'][] = ['actions', 'finance', 'actions-summary', 'finance-summary'];
+  const selectedProjectId = (() => {
+      const propsRecord = section.props as Record<string, unknown>;
+      const fromProps = typeof propsRecord?.idProjet === 'string' ? propsRecord.idProjet : '';
+      if (fromProps) return fromProps;
+  
+      if (typeof window === 'undefined') return '';
+  
+      const fromQuery = new URLSearchParams(window.location.search).get('selectedProjectId') || '';
+      if (fromQuery) return fromQuery;
+  
+      const storageScopeId = contextId || entity?.id || '';
+      if (!storageScopeId) return '';
+  
+      return window.localStorage.getItem(`projectModalId_${storageScopeId}`) || '';
+    })();
+  
+    const resolvedSectionProps = projectAwareSectionTypes.includes(section.type)
+      ? ({ ...(section.props as Record<string, unknown>), idProjet: selectedProjectId } as typeof section.props)
+      : section.props;
+  
   const LazyComponent = LazySections[section.type] as React.ComponentType<{ id?: string; props: typeof section.props }>;
 
   if (!LazyComponent) {
@@ -134,7 +156,7 @@ export function SectionRenderer({ section, index }: { section: Section; index?: 
             </section>
           }
         >
-          <LazyComponent id={section.id} props={section.props} />
+          <LazyComponent id={section.id} props={resolvedSectionProps} />
         </ErrorBoundary>
       </Suspense>
     </div>
