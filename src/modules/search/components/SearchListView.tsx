@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import SearchCard from "./SearchCard";
 import { SearchListViewProps } from "../schema";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { SwitchDetailsMode } from "./SwitchDetailsMode";
 import SearchCardDetailed from "./SearchCardDetailed";
+import { useFundingEnvelope } from "@/hooks/useFundingEnvelope";
 
 export default function SearchListView({
   results,
@@ -14,6 +15,30 @@ export default function SearchListView({
 }: SearchListViewProps) {
   const [openDetails, setOpenDetails] = useState(false);
   const [item, setItem] = useState<SearchEntity | null>(null);
+  const cardType = card?.variant || card?.type;
+  const needsFundingMap = cardType === "rezo-la-mer";
+  const { data: fundingEnvelope } = useFundingEnvelope();
+
+  const fundingByProjectId = useMemo(() => {
+    if (!needsFundingMap || !fundingEnvelope?.projects) {
+      return undefined;
+    }
+
+    const nextMap: Record<string, { goal: number; raised: number; percentage: number }> = {};
+
+    fundingEnvelope.projects.forEach((project) => {
+      const projectId = String(project?.id || "").trim();
+      if (!projectId) return;
+
+      const goal = Number(project?.totalCouts ?? 0);
+      const raised = Number(project?.totalFinancement ?? 0);
+      const percentage = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0;
+
+      nextMap[projectId] = { goal, raised, percentage };
+    });
+
+    return nextMap;
+  }, [needsFundingMap, fundingEnvelope?.projects]);
 
   const handleOpenDetails = (item: SearchEntity) => {
     setItem(item);
@@ -67,6 +92,7 @@ export default function SearchListView({
               item={item}
               onClick={() => handleOpenDetails(item)}
               card={card}
+              fundingByProjectId={fundingByProjectId}
             />
           );
         })}

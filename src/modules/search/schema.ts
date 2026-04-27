@@ -384,6 +384,7 @@ export interface SearchCardProps<T extends SearchEntity = SearchEntity> {
   item: T;
   onClick?: () => void;
   card?: ListConf["card"];
+  fundingByProjectId?: Record<string, { goal: number; raised: number; percentage: number }>;
 }
 
 export interface PreviewProps<T extends SearchEntity = SearchEntity> {

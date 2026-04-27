@@ -1,8 +1,7 @@
 import { SearchCardProps } from "../../schema";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { cn } from "@/lib/utils";
-import { DynamicIcon, type IconName } from "lucide-react/dynamic";
-import { getEntityIconName } from "@/lib/entityIcons";
+import { getEntityIcon } from "@/lib/entityIcons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -12,21 +11,25 @@ export default function CardRezoLaMer({
   item,
   onClick,
   card,
+  fundingByProjectId,
 }: SearchCardProps) {
   const serverData = item?.serverData;
   const entityType = item?.getEntityType?.() || "";
+  const projectId = String(serverData?.id || item?.id || "").trim();
 
   const image = serverData?.profilImageUrl;
   const title = serverData?.name;
   const description = serverData?.shortDescription || serverData?.description;
   const location = getLocation(item);
-  const avatarIcon = getEntityIconName(entityType);
+  const avatarIcon = getEntityIcon(entityType, "w-16 h-16 text-muted-foreground/50");
   const tags = serverData?.tags || [];
   const category = tags.length > 0 ? String(tags[0]) : "Pas de tags";
-  const status = getStatus(serverData);
+  const fundingFromMap = projectId ? fundingByProjectId?.[projectId] : undefined;
+  const status = getStatus(serverData, fundingFromMap);
   const links = serverData?.links as Record<string, Record<string, unknown>> | undefined;
   const contributors = links?.contributors ? Object.keys(links.contributors).length : 0;
-  const funding = getFunding(serverData);
+  const funding = getFunding(serverData, fundingFromMap);
+  const hasRealFunding = !!fundingFromMap || Number.isFinite(Number(serverData?.fundingGoal)) || Number.isFinite(Number(serverData?.goal)) || Number.isFinite(Number(serverData?.fundingRaised)) || Number.isFinite(Number(serverData?.raised)) || Number.isFinite(Number(serverData?.collected));
   const displayDescription = description ? String(description) : "Pas de description";
   
   return (
@@ -43,7 +46,7 @@ export default function CardRezoLaMer({
           />
         ) : (
           <div className="w-full h-full bg-secondary/30 flex items-center justify-center">
-            <DynamicIcon name={avatarIcon as IconName} className="w-16 h-16 text-muted-foreground/50" />
+            {avatarIcon}
           </div>
         )}
         <Badge
@@ -86,14 +89,20 @@ export default function CardRezoLaMer({
 
         <div className="mb-4">
           <div className="flex justify-between text-sm mb-2">
-            <span className="font-semibold text-foreground">
-              {funding.raised.toLocaleString()} €
-            </span>
-            <span className="text-muted-foreground">
-              sur {funding.goal.toLocaleString()} €
-            </span>
+            {hasRealFunding ? (
+              <>
+                <span className="font-semibold text-foreground">
+                  {funding.raised.toLocaleString()} €
+                </span>
+                <span className="text-muted-foreground">
+                  sur {funding.goal.toLocaleString()} €
+                </span>
+              </>
+            ) : (
+              <span className="text-sm text-muted-foreground">Donnée non disponible</span>
+            )}
           </div>
-          <Progress value={funding.percentage} className="h-2" />
+          <Progress value={hasRealFunding ? funding.percentage : 0} className="h-2" />
         </div>
 
         <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground border-0">
@@ -119,14 +128,17 @@ function getLocation(item: SearchEntity): string | null {
   return null;
 }
 
-function getStatus(serverData: Record<string, unknown> | undefined): string {
+function getStatus(
+  serverData: Record<string, unknown> | undefined,
+  fundingFromMap?: { goal: number; raised: number; percentage: number }
+): string {
   if (!serverData) return "En cours";
 
   if (serverData.status) {
     return String(serverData.status);
   }
 
-  const funding = getFunding(serverData);
+  const funding = getFunding(serverData, fundingFromMap);
   if (funding.percentage >= 100) {
     return "Financé";
   }
@@ -134,12 +146,12 @@ function getStatus(serverData: Record<string, unknown> | undefined): string {
   return "En cours";
 }
 
-function getFunding(serverData: Record<string, unknown> | undefined): { goal: number; raised: number; percentage: number } {
-  const defaultGoal = 15000;
-  const defaultRaised = 12350;
-
-  const goal = Number(serverData?.fundingGoal) || Number(serverData?.goal) || defaultGoal;
-  const raised = Number(serverData?.fundingRaised) || Number(serverData?.raised) || Number(serverData?.collected) || defaultRaised;
+function getFunding(
+  serverData: Record<string, unknown> | undefined,
+  fundingFromMap?: { goal: number; raised: number; percentage: number }
+): { goal: number; raised: number; percentage: number } {
+  const goal = Number(fundingFromMap?.goal) || Number(serverData?.fundingGoal) || Number(serverData?.goal) || 0;
+  const raised = Number(fundingFromMap?.raised) || Number(serverData?.fundingRaised) || Number(serverData?.raised) || Number(serverData?.collected) || 0;
   const percentage = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0;
 
   return { goal, raised, percentage };

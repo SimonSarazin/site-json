@@ -92,6 +92,7 @@ export function useOrganizationProjectsWithAnswers({
     data: projectsWithMilestones = [],
     isLoading,
     error,
+    refetch,
   } = useQuery<ProjectWithMilestones[]>({
     queryKey: ["organization-projects-with-answers", entity?.id],
     queryFn: async () => {
@@ -284,6 +285,7 @@ export function useOrganizationProjectsWithAnswers({
     projects: projectsWithMilestones,
     isLoading,
     error,
+    refetch,
   };
 }
 

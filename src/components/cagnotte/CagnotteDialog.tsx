@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { PiggyBank, Heart, Target, Anchor, Ship, Trophy, Loader, Save, CheckCircle2, Check, PartyPopper, Sparkles, Briefcase } from "lucide-react";
+import { PiggyBank, Heart, Anchor, Loader, Save, CheckCircle2, Check, PartyPopper, Sparkles, Briefcase } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useOrganizationProjectsWithAnswers } from "@/modules/profil/hooks/useOrganizationProjectsWithAnswers";
 import { useCocolight } from "@/hooks/useCocolight";
@@ -32,6 +32,7 @@ import {
 import { ClientOnly } from "@/components/layout/ClientOnly";
 import PaymentConfigPage from "./PaymentConfigPage";
 import { updatePathValue } from "@/lib/updatePathValue";
+import { useFundingEnvelope } from "@/hooks/useFundingEnvelope";
 //import confetti from "canvas-confetti";
 
 interface Milestone {
@@ -120,11 +121,38 @@ const CagnotteDialog = ({ totalAmount, children, defaultProjectId, onRefresh, op
 
     // Récupérer TOUS les projets pour le SELECT
     // Note: on précharge même si la modale est fermée pour avoir les données prêtes
-    const { projects: allProjectsData = [], isLoading: allProjectsLoading } = useOrganizationProjectsWithAnswers({
+    const {
+        projects: allProjectsData = [],
+        isLoading: allProjectsLoading,
+        refetch: refetchProjectsWithAnswers,
+    } = useOrganizationProjectsWithAnswers({
         entity: entity || null,
         entityType,
         enabled: !!entity,  //  Précharger dès que l'entité est disponible
     });
+
+    const {
+        data: selectedProjectFundingEnvelope,
+        refetch: refetchSelectedProjectFundingEnvelope,
+    } = useFundingEnvelope(selectedProjectId || undefined);
+    const { data: allProjectsFundingEnvelope } = useFundingEnvelope();
+
+    const fundingByProjectId = useMemo(() => {
+        const nextMap = new Map<string, { totalFunding: number; totalCost: number }>();
+        const projects = allProjectsFundingEnvelope?.projects || [];
+
+        projects.forEach((project) => {
+            const projectId = String(project?.id || "").trim();
+            if (!projectId) return;
+
+            nextMap.set(projectId, {
+                totalFunding: toSafeInt(project?.totalFinancement),
+                totalCost: toSafeInt(project?.totalCouts),
+            });
+        });
+
+        return nextMap;
+    }, [allProjectsFundingEnvelope]);
 
     const allProjects = useMemo(() => (Array.isArray(allProjectsData) ? allProjectsData : []) as unknown[], [allProjectsData]);
 
@@ -142,14 +170,14 @@ const CagnotteDialog = ({ totalAmount, children, defaultProjectId, onRefresh, op
             })
             .filter((projectId) => !!projectId);
 
-        const preferredProjectId = forcedProjectId || defaultProjectId;
-        if (preferredProjectId && allProjectIds.includes(preferredProjectId) && selectedProjectId !== preferredProjectId) {
-            setSelectedProjectId(preferredProjectId);
-            return;
-        }
-
         const selectedIsValid = selectedProjectId && allProjectIds.includes(selectedProjectId);
         if (!selectedIsValid) {
+            const preferredProjectId = forcedProjectId || defaultProjectId;
+            if (preferredProjectId && allProjectIds.includes(preferredProjectId)) {
+                setSelectedProjectId(preferredProjectId);
+                return;
+            }
+
             setSelectedProjectId(allProjectIds[0] || "");
         }
     }, [allProjects, selectedProjectId, defaultProjectId, forcedProjectId]);
@@ -166,10 +194,28 @@ const CagnotteDialog = ({ totalAmount, children, defaultProjectId, onRefresh, op
 
     const selectedProjectData = selectedProject as Record<string, unknown> | undefined;
 
-    const projectMilestones = useMemo(
-        () => (((selectedProjectData?.milestones as unknown[]) || []) as ProjectMilestone[]),
-        [selectedProjectData]
-    );
+    const projectMilestones = useMemo(() => {
+        const envelopeMilestones = (selectedProjectFundingEnvelope?.milestones || []).map((milestone) => {
+            const milestoneRecord = milestone as unknown as Record<string, unknown>;
+            const transactions = (milestoneRecord.transactions as Array<Record<string, unknown>> | undefined) || [];
+            const currentFunding = transactions.reduce((sum, transaction) => sum + toSafeInt(transaction?.amount), 0);
+
+            return {
+                milestoneId: String(milestoneRecord.id || ""),
+                name: String(milestoneRecord.title || ""),
+                description: typeof milestoneRecord.description === "string" ? milestoneRecord.description : undefined,
+                price: toSafeInt(milestoneRecord.targetAmount),
+                currentFunding,
+                status: typeof milestoneRecord.status === "string" ? milestoneRecord.status : undefined,
+            } as ProjectMilestone;
+        }).filter((milestone) => milestone.milestoneId.length > 0);
+
+        if (envelopeMilestones.length > 0) {
+            return envelopeMilestones;
+        }
+
+        return (((selectedProjectData?.milestones as unknown[]) || []) as ProjectMilestone[]);
+    }, [selectedProjectFundingEnvelope, selectedProjectData]);
 
     const normalizedProjectMilestones = useMemo(
         () =>
@@ -193,14 +239,25 @@ const CagnotteDialog = ({ totalAmount, children, defaultProjectId, onRefresh, op
         return activeProjectMilestones.filter((milestone) => milestone.milestoneId === forcedMilestoneId);
     }, [activeProjectMilestones, hideOtherMilestones, forcedMilestoneId]);
 
-    const selectedProjectName = ((selectedProjectData?._serverData as Record<string, unknown> | undefined)?.name as string | undefined)
+    const selectedProjectName = (selectedProjectFundingEnvelope?.selectedProject?.name as string | undefined)
+        || ((selectedProjectData?._serverData as Record<string, unknown> | undefined)?.name as string | undefined)
         || (selectedProjectData?.name as string | undefined)
         || "Projet sans titre";
     const projectImage = selectedProjectData?.profilImageUrl || selectedProjectData?.profilThumbImageUrl;
 
     //  Récupérer l'answerId depuis le projet sélectionné
-    const selectedProjectAnswerId = ((selectedProjectData?._serverData as Record<string, unknown> | undefined)?.answer as string | undefined)
+    const selectedProjectAnswerId = (selectedProjectFundingEnvelope?.selectedProject?.answerId as string | undefined)
+        || ((selectedProjectData?._serverData as Record<string, unknown> | undefined)?.answer as string | undefined)
         || (selectedProjectData?.answer as string | undefined);
+
+    useEffect(() => {
+        if (!open) return;
+
+        void refetchProjectsWithAnswers();
+        if (selectedProjectId) {
+            void refetchSelectedProjectFundingEnvelope();
+        }
+    }, [open, selectedProjectId, refetchProjectsWithAnswers, refetchSelectedProjectFundingEnvelope]);
 
     //  Activer les milestones au chargement/changement de projet
     useEffect(() => {
@@ -714,10 +771,15 @@ const CagnotteDialog = ({ totalAmount, children, defaultProjectId, onRefresh, op
                                                             const projectId = (idObj._str as string) || (proj._id as string);
                                                             const projectName = (projectData.name as string) || "Projet sans titre";
                                                             const projectImage = (projectData.profilImageUrl as string) || (projectData.profilThumbImageUrl as string);
+                                                            const projectFunding = fundingByProjectId.get(projectId);
 
                                                             // Récupérer les montants du projet
-                                                            const cagnotteTotalAmount = (proj?.cagnotteTotalAmount as number) || 0;
-                                                            const cagnotteTargetAmount = (proj?.cagnotteTargetAmount as number) || 0;
+                                                            const cagnotteTotalAmount = projectFunding
+                                                                ? projectFunding.totalFunding
+                                                                : toSafeInt(proj?.cagnotteTotalAmount);
+                                                            const cagnotteTargetAmount = projectFunding
+                                                                ? projectFunding.totalCost
+                                                                : toSafeInt(proj?.cagnotteTargetAmount);
 
                                                             // Vérifier que projectId n'est pas vide
                                                             if (!projectId) {

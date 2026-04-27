@@ -299,7 +299,6 @@ function normalizeFundingEnvelope(rawEnvelope: unknown, _contextEntityId?: strin
     //toString(preferences.projectModalId) ||
     //toString(contextData.projectModalId) ||
     //toString(envelope.projectModalId);
-  console.log("normalizeFundingEnvelope 1/2" , envelope );
   const projects = toArrayOrValues<UnknownRecord>(envelope.projects).map((rawProject) => {
     const projectRow = asRecord(rawProject);
     const projectData = getServerData(projectRow);
@@ -586,9 +585,6 @@ export function useFundingEnvelope(idProjet?: string) {
             console.warn('[useFundingEnvelope] getFormData indisponible, fallback getEnvelopeData', formError);
           }
         }
-
-        console.log("Anatolelog 1", mergedEnvelope);
-
         return normalizeFundingEnvelope(mergedEnvelope, entityId, effectiveContextType, normalizedProjectId);
       } catch (error) {
         console.error('[useFundingEnvelope] Erreur fundingEnvelope:', error);
