@@ -3,8 +3,6 @@
  * Convertit les données de PaymentConfigPage au format de stockage Answer
  */
 
-import type { EntityTypes } from "@communecter/cocolight-api-client";
-
 export interface PaymentFinancingData {
   milestone: string; // milestoneId
   amount: number; // montant alloué à ce milestone

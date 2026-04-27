@@ -19,6 +19,7 @@ export default function SearchListView({
   const needsFundingMap = cardType === "rezo-la-mer";
   const { data: fundingEnvelope } = useFundingEnvelope();
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const fundingByProjectId = useMemo(() => {
     if (!needsFundingMap || !fundingEnvelope?.projects) {
       return undefined;

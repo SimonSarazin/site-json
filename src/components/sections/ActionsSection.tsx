@@ -418,6 +418,7 @@ export default function ActionsSection({ id, props }: { id?: string; props: Acti
       window.removeEventListener(EDIT_MILESTONE_REQUEST_EVENT, onEditMilestoneRequest as EventListener);
       window.removeEventListener(DELETE_MILESTONE_REQUEST_EVENT, onDeleteMilestoneRequest as EventListener);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.milestones, fundingData?.selectedProject?.id]);
 
   useEffect(() => {

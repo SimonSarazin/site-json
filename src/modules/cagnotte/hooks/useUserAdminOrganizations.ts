@@ -24,6 +24,7 @@ export function useUserAdminOrganizations(currentUser: User | null): AdminOrgani
 
   useEffect(() => {
     if (!currentUser || !isUser(currentUser)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAdminOrganizations([]);
       return;
     }
@@ -43,7 +44,7 @@ export function useUserAdminOrganizations(currentUser: User | null): AdminOrgani
           .filter((org: Organization) => {
             // Vérifier si l'utilisateur est admin de cette organisation
             // En regardant les liens de l'organisation
-            const orgLinks = (org as any)._serverData?.links?.members || {};
+            const orgLinks = (org as unknown as { _serverData?: { links?: { members?: Record<string, { isAdmin?: boolean }> } } })._serverData?.links?.members || {};
             const userLink = orgLinks[currentUser.id];
             return userLink?.isAdmin === true;
           })

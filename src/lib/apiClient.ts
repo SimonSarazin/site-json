@@ -94,6 +94,7 @@ const DELETE_ACTION_BY_ID_ENDPOINT = {
   },
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function registerMissingCustomEndpoints(apiClient: ApiClient): void {
   const clientWithInternals = apiClient as unknown as { _endpoints?: Array<{ constant?: string }> };
   if (!Array.isArray(clientWithInternals._endpoints)) return;

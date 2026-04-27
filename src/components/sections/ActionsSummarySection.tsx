@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { CheckCircle2, Clock, Flag, ListChecks, Users, Zap , Plus } from 'lucide-react';
 import type { ActionsSummarySectionProps } from '@/types/site-schema';
 import { useFundingEnvelope } from '@/hooks/useFundingEnvelope';

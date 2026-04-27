@@ -39,9 +39,10 @@ export interface HelloAssoPaymentVerification {
  *
  * TODO: Implémenter vérification HMAC SHA256 en production
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const verifyHelloAssoSignature = async (
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _webhookData: HelloAssoWebhookPayload,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _signature: string
 ): Promise<boolean> => {
   try {

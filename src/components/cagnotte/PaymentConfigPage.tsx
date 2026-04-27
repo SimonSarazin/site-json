@@ -236,14 +236,6 @@ const PaymentConfigPage = ({
         try {
             //  Enregistrer les financements dans Answer (si answerId disponible)
             if (answerId && apiClient) {
-                const userId = me != null
-                    ? me.serverData?.id || me._serverData?.id || ""
-                    : "";
-                const meRecord = me as unknown as Record<string, unknown> | null;
-                const userName = ((meRecord?.serverData as Record<string, unknown> | undefined)?.name as string | undefined)
-                    || ((meRecord?._serverData as Record<string, unknown> | undefined)?.name as string | undefined)
-                    || 'Contributeur anonyme';
-
                 // Préparer les données structurées pour le hook
                 const milestoneFundingData = fundingData.map((f) => ({
                     milestoneId: f.milestoneId,
@@ -313,7 +305,7 @@ const PaymentConfigPage = ({
             //scheduleRedirectToHome(3000, false);
             await refreshAfterContributionSave();
         }
-    }, [answerId, apiClient, me, projectId, contributorType, contributorName, contributorId, toast, onPaymentSuccess, saveContribution, refreshAfterContributionSave]);
+    }, [answerId, apiClient, me, contributorType, contributorName, contributorId, toast, onPaymentSuccess, saveContribution, refreshAfterContributionSave]);
 
     // Récupérer les organisations où l'utilisateur courant est admin
     const currentUserEntity = (me && isUser(me) ? me : null) as User | null;

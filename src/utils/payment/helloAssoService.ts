@@ -150,7 +150,7 @@ export const openHelloAssoPayment = (
     }, 30 * 60 * 1000);
 
     // Ajouter un écouteur pour que le parent sache quand la popup est fermée
-    (popup as any).__helloasso_payment_timeout = timeout;
+    (popup as unknown as { __helloasso_payment_timeout?: ReturnType<typeof setTimeout> }).__helloasso_payment_timeout = timeout;
   });
 };
 

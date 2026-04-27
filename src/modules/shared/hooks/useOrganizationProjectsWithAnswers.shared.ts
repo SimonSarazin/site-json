@@ -85,6 +85,7 @@ type AnswerPayload = LooseRecord & {
  */
 export function useOrganizationProjectsWithAnswers({
   entity,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   entityType = "",
   enabled = true,
 }: UseOrganizationProjectsWithAnswersProps) {
@@ -158,7 +159,7 @@ export function useOrganizationProjectsWithAnswers({
         const getProjectData = (project: unknown): ProjectPayload => getServerData<ProjectPayload>(project);
 
         if (projects.length > 0) {
-          const firstProjectData = getProjectData(projects[0]);
+          getProjectData(projects[0]);
         }
 
         const answerIds = projects
@@ -273,7 +274,7 @@ export function useOrganizationProjectsWithAnswers({
         });
 
         return projectsWithAnswers;
-      } catch (error) {
+      } catch {
         return [];
       }
     },

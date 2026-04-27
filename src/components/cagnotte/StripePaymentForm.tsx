@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import type { StripeCardElementChangeEvent } from "@stripe/stripe-js";
 import {
     CardElement,

@@ -195,7 +195,7 @@ export const useSaveCagnotteContribution = (
         let successCount = 0;
         const errors: string[] = [];
 
-        for (const { milestoneId, amount, name, milestoneIndex } of milestoneFundings) {
+        for (const { milestoneId, amount, milestoneIndex } of milestoneFundings) {
           if (amount <= 0) continue;
 
           const depenseIndex = resolveDepenseIndex({
@@ -356,6 +356,7 @@ export const useSaveCagnotteContribution = (
         return false;
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [saveViaUpdatePathValue, saveViaDraftAndSave, toast]
   );
 

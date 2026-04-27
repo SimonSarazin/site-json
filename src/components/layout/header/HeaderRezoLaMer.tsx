@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
-import { Header, LocalizedString } from "@/types/site-schema";
+import { Header } from "@/types/site-schema";
 import { ChevronDown, User, LogOut, Globe, Bell, Menu, X , PiggyBank} from "lucide-react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { Link, useNavigate, useLocation } from "react-router";
@@ -99,12 +99,6 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    useEffect(() => {
-        if (navItemsToDisplay.length === 0 && mobileMenuOpen) {
-            setMobileMenuOpen(false);
-        }
-    }, [navItemsToDisplay.length, mobileMenuOpen]);
-
     const handleLogout = () => {
         if (!api) return;
         try {
@@ -127,7 +121,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
     const projectModalId = (preferencesData?.projectModalId as string | undefined) || null;
 
     //  Utiliser le hook dédié pour charger la cagnotte du projet modal
-    const { cagnotteAmount, cagnotteTarget, projectName, isLoading: cagnotteLoading, refresh: refreshCagnotte } = useProjectModalCagnotte(
+    const { cagnotteAmount, refresh: refreshCagnotte } = useProjectModalCagnotte(
         entity,
         projectModalId
     );

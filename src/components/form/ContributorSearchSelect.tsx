@@ -112,10 +112,12 @@ export function ContributorSearchSelect({
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     mergeContributorCache(initialContributors);
   }, [initialContributors, mergeContributorCache]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     mergeContributorCache(citizenOptions);
   }, [citizenOptions, mergeContributorCache]);
 
