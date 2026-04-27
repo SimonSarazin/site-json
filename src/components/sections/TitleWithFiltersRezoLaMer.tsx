@@ -411,7 +411,7 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
                     </h1>
                 )}
                 {props.subhead && (
-                    <p className={`text-xl ${(slugEntity == "nosCommunes" || slugEntity == "etangsale1") ? "" : "text-white/80"} max-w-2xl mx-auto animate-fade-in`}>
+                    <p className={`text-xl ${(slugEntity == "nosCommunes" || slugEntity == "etangsale1") ? "" : "text-foreground"} max-w-2xl mx-auto animate-fade-in`}>
                         {tLocalized(props.subhead)}
                     </p>
                 )}
@@ -553,7 +553,7 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
                                     <DropdownMenuTrigger asChild>
                                         <Button
                                             variant="outline"
-                                            className="h-12 min-w-[200px] max-w-full justify-between rounded-full border-primary/40 bg-background/85 px-4 text-foreground hover:bg-background"
+                                            className="h-12 min-w-[200px] max-w-full justify-between rounded-full border-primary/40 bg-background/85 px-4 text-foreground hover:bg-primary/10 hover:text-foreground"
                                         >
                                             <span className="truncate">{getDropdownTriggerLabel(filter)}</span>
                                             <ChevronDown className="ml-2 h-4 w-4 shrink-0" />
