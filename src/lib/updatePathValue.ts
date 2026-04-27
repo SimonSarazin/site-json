@@ -88,7 +88,6 @@ export async function updatePathValue(source: unknown, payload: UpdatePathValueP
   }
 
   const normalizedPayload = normalizeUpdatePathValuePayload(payload);
-  console.log("Anatolelog 6", payload , normalizeUpdatePathValuePayload(payload));
   const directUpdater = getDirectUpdater(source);
   if (directUpdater) {
     return directUpdater(normalizedPayload);

@@ -112,16 +112,13 @@ export function SectionRenderer({ section, index }: { section: Section; index?: 
       const propsRecord = section.props as Record<string, unknown>;
       const fromProps = typeof propsRecord?.idProjet === 'string' ? propsRecord.idProjet : '';
       if (fromProps) return fromProps;
-  
+
       if (typeof window === 'undefined') return '';
-  
-      const fromQuery = new URLSearchParams(window.location.search).get('selectedProjectId') || '';
-      if (fromQuery) return fromQuery;
-  
+
       const storageScopeId = contextId || entity?.id || '';
       if (!storageScopeId) return '';
-  
-      return window.localStorage.getItem(`projectModalId_${storageScopeId}`) || '';
+
+      return '';
     })();
   
     const resolvedSectionProps = projectAwareSectionTypes.includes(section.type)

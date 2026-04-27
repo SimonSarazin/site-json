@@ -196,20 +196,22 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                             );
                         })}
 
-                        <CagnotteDialog
-                            totalAmount={piggyAmount}
-                            defaultProjectId={projectModalId || undefined}
-                            onRefresh={refreshCagnotte}
-                        >
-                            <button
-                                key={piggyAmount}
-                                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/20 hover:bg-primary/30 text-primary transition-all group"
-                                aria-label="Cagnotte participative"
+                        {header.utilities?.piggyBank && (
+                            <CagnotteDialog
+                                totalAmount={piggyAmount}
+                                defaultProjectId={projectModalId || undefined}
+                                onRefresh={refreshCagnotte}
                             >
-                                <PiggyBank className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                                <span className="font-semibold text-sm">{piggyAmount.toLocaleString('fr-FR')} €</span>
-                            </button>
-                        </CagnotteDialog>
+                                <button
+                                    key={piggyAmount}
+                                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/20 hover:bg-primary/30 text-primary transition-all group"
+                                    aria-label="Cagnotte participative"
+                                >
+                                    <PiggyBank className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                                    <span className="font-semibold text-sm">{piggyAmount.toLocaleString('fr-FR')} €</span>
+                                </button>
+                            </CagnotteDialog>
+                        )}
 
                         {header.urgenceButton && (
                             <Link

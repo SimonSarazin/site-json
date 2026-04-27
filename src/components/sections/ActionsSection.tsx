@@ -58,6 +58,8 @@ import { ContributorSearchSelect, type CitizenOption } from '../form/Contributor
 import { DatePickerInput } from '../form/DatePickerInput';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
 import { MilestoneManageActions } from './MilestoneManageActions';
+import { getSelectedProjectIdByProfileSlug } from '@/lib/fundingProjectUtils';
+
 type Contributor = { id: string; name: string; avatar?: string };
 type ActionStatus = 'todo' | 'done';
 type ActionCreateStatus = 'todo' | 'done';
@@ -239,7 +241,13 @@ export default function ActionsSection({ id, props }: { id?: string; props: Acti
     const date = new Date(ts);
     return Number.isNaN(date.getTime()) ? '' : format(date, 'dd/MM/yyyy');
   };
+  
+  // Charger d'abord tous les projets pour trouver le sélectionné par slug
   const { data: fundingData, isLoading, error, refetch: refetchFundingEnvelope } = useFundingEnvelope(id);
+  
+  // Déterminer le selectedProjectId via recherche par slug de profil
+  const selectedProjectId = getSelectedProjectIdByProfileSlug(fundingData?.projects || []) || fundingData?.selectedProject?.id || '';
+
   const { apiClient, me, entity } = useCocolight();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -347,7 +355,7 @@ export default function ActionsSection({ id, props }: { id?: string; props: Acti
       return;
     }
 
-    const projectId = String(fundingData?.selectedProject?.id || id || '').trim();
+    const projectId = String(fundingData?.selectedProject?.id || selectedProjectId || '').trim();
     const answerId = String(fundingData?.selectedProject?.answerId || '').trim();
 
     if (!apiClient || !projectId || !answerId) {
@@ -547,7 +555,7 @@ export default function ActionsSection({ id, props }: { id?: string; props: Acti
       return;
     }
 
-    const projectId = fundingData?.selectedProject?.id || id || '';
+    const projectId = fundingData?.selectedProject?.id || selectedProjectId || '';
     const answerId = fundingData?.selectedProject?.answerId || '';
     const syncContext = resolveMilestoneSyncContext({
       rawEnvelope: fundingData?.rawEnvelope,
@@ -566,7 +574,7 @@ export default function ActionsSection({ id, props }: { id?: string; props: Acti
   };
 
   const handleEditMilestone = async () => {
-    const projectId = fundingData?.selectedProject?.id || id || '';
+    const projectId = fundingData?.selectedProject?.id || selectedProjectId || '';
     const answerId = fundingData?.selectedProject?.answerId || '';
     const cleanName = editMilestoneName.trim();
     const cleanDescription = editMilestoneDescription.trim();
@@ -636,7 +644,7 @@ export default function ActionsSection({ id, props }: { id?: string; props: Acti
       return;
     }
 
-    const projectId = fundingData?.selectedProject?.id || id || '';
+    const projectId = fundingData?.selectedProject?.id || selectedProjectId || '';
     const answerId = fundingData?.selectedProject?.answerId || '';
 
     if (!apiClient || !projectId || !answerId) {
@@ -974,7 +982,7 @@ export default function ActionsSection({ id, props }: { id?: string; props: Acti
   };
 
   const handleCreateAction = async () => {
-    const parentId = fundingData?.selectedProject?.id || id || '';
+    const parentId = fundingData?.selectedProject?.id || selectedProjectId || '';
     const name = newActionName.trim();
     const credits = Number(newActionCredits.replace(',', '.'));
     const expectedStatus: ActionStatus =
@@ -1179,7 +1187,7 @@ export default function ActionsSection({ id, props }: { id?: string; props: Acti
       return;
     }
 
-    const parentId = fundingData?.selectedProject?.id || id || '';
+    const parentId = fundingData?.selectedProject?.id || selectedProjectId || '';
     const resolvedActionId = isValidEntityId(action.id)
       ? action.id
       : resolveCreatedActionId({
