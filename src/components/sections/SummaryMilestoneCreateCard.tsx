@@ -2,12 +2,12 @@ import type { ReactNode } from 'react';
 import MilestoneCreateTrigger from './MilestoneCreateTrigger';
 
 type FundingDataLike = {
-  selectedProject?: { id?: string; answerId?: string };
+  selectedProject?: { id?: string; answerId?: string } | null;
   milestones?: Array<{ id?: string }>;
 };
 
 type MeLike = {
-  id?: string;
+  id?: string | null;
   isConnected?: boolean;
 };
 

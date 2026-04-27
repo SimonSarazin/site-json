@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { HandCoins, PiggyBank, Plus, Target, TrendingUp, Users, Wallet } from 'lucide-react';
 import type { FinanceSummarySectionProps } from '@/types/site-schema';
 import { useFundingEnvelope } from '@/hooks/useFundingEnvelope';
@@ -113,7 +113,6 @@ export default function FinanceSummarySection({ id, props }: { id?: string; prop
               openContext={supportProjectContext}
             >
               <Button
-                key={data.finance.totalFunding}
                 className="w-full bg-accent text-accent-foreground hover:bg-accent/90 font-semibold"
               >
                 <HandCoins className="h-4 w-4 mr-2" />

@@ -69,7 +69,7 @@ function normalizeUpdatePathValuePayload(payload: UpdatePathValuePayload): Updat
     };
   }
 
-  if (payload.pull && (payload.value === null || payload.value === undefined)) {
+  if (payload.pull && (payload.value === "" || payload.value === null || payload.value === undefined)) {
     return {
       ...payload,
       value: "",
@@ -88,7 +88,7 @@ export async function updatePathValue(source: unknown, payload: UpdatePathValueP
   }
 
   const normalizedPayload = normalizeUpdatePathValuePayload(payload);
-
+  console.log("Anatolelog 6", payload , normalizeUpdatePathValuePayload(payload));
   const directUpdater = getDirectUpdater(source);
   if (directUpdater) {
     return directUpdater(normalizedPayload);

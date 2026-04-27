@@ -526,7 +526,7 @@ function extractFormIdFromEnvelope(rawEnvelope: unknown): string {
 function mergeEnvelopePayloads(envelopeData: unknown, formData: unknown): unknown {
   const envelopeRecord = asRecord(envelopeData);
   const formRecord = asRecord(formData);
-
+  console.log("Anatolelog 2", { envelopeRecord, formRecord });
   return {
     ...envelopeRecord,
     ...formRecord,
@@ -580,12 +580,14 @@ export function useFundingEnvelope(idProjet?: string) {
                 project: 'all',
               },
             });
-
+            console.log("Anatolelog 3", rawFormData);
             mergedEnvelope = mergeEnvelopePayloads(rawEnvelope, rawFormData);
           } catch (formError) {
             console.warn('[useFundingEnvelope] getFormData indisponible, fallback getEnvelopeData', formError);
           }
         }
+
+        console.log("Anatolelog 1", mergedEnvelope);
 
         return normalizeFundingEnvelope(mergedEnvelope, entityId, effectiveContextType, normalizedProjectId);
       } catch (error) {

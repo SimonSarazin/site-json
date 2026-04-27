@@ -19,11 +19,11 @@ interface StripePaymentFormProps {
 const cardElementOptions = {
     style: {
         base: {
-            color: "#1f2937",
+            color: "#6b7280",
             fontSize: "16px",
             fontFamily: '"system-ui", "Segoe UI", "Roboto"',
             "::placeholder": {
-                color: "#9ca3af",
+                color: "#cbd5e1",
             },
         },
         invalid: {

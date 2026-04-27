@@ -29,6 +29,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { ClientOnly } from "@/components/layout/ClientOnly";
 import PaymentConfigPage from "./PaymentConfigPage";
 import { updatePathValue } from "@/lib/updatePathValue";
 //import confetti from "canvas-confetti";
@@ -50,10 +51,7 @@ interface ProjectMilestone {
 }
 
 const milestones: Milestone[] = [
-    { target: 1000, label: "Premier palier", description: "Lancement d'une campagne de sensibilisation", icon: Anchor },
-    { target: 3000, label: "Deuxième palier", description: "Financement d'une étude participative", icon: Target },
-    { target: 5000, label: "Troisième palier", description: "Soutien à 3 projets communautaires", icon: Ship },
-    { target: 10000, label: "Objectif final", description: "Création d'un programme de protection marine", icon: Trophy },
+    { target: 0, label: "", description: "", icon: Anchor }
 ];
 
 interface CagnotteDialogProps {
@@ -122,16 +120,13 @@ const CagnotteDialog = ({ totalAmount, children, defaultProjectId, onRefresh, op
 
     // Récupérer TOUS les projets pour le SELECT
     // Note: on précharge même si la modale est fermée pour avoir les données prêtes
-    const { projects: allProjectsData = [], isLoading: allProjectsLoading, error: projectsError } = useOrganizationProjectsWithAnswers({
+    const { projects: allProjectsData = [], isLoading: allProjectsLoading } = useOrganizationProjectsWithAnswers({
         entity: entity || null,
         entityType,
         enabled: !!entity,  //  Précharger dès que l'entité est disponible
     });
 
     const allProjects = useMemo(() => (Array.isArray(allProjectsData) ? allProjectsData : []) as unknown[], [allProjectsData]);
-
-    const draftPreferences = (entity as { data?: { preferences?: Record<string, unknown> } } | null)?.data?.preferences;
-    const serverPreferences = (entity as { _serverData?: { preferences?: Record<string, unknown> } } | null)?._serverData?.preferences;
 
     // Sélectionner le projet avec priorité au contexte d'ouverture
     useEffect(() => {
@@ -402,12 +397,12 @@ const CagnotteDialog = ({ totalAmount, children, defaultProjectId, onRefresh, op
         await Promise.allSettled([
             queryClient.invalidateQueries({ queryKey: ["funding-envelope"] }),
             queryClient.invalidateQueries({ queryKey: ["organization-projects-with-answers"] }),
+            queryClient.invalidateQueries({ queryKey: ["projectModalCagnotte"] }),
             Promise.resolve(onRefresh?.()),
         ]);
     }, [queryClient, onRefresh]);
 
-    const handlePaymentConfigSuccess = (paymentData: { amount?: number }) => {
-        const amount = Number(paymentData?.amount ?? pendingContributionAmount ?? 0);
+    const handlePaymentConfigSuccess = () => {
         // Le flux de fermeture/redirection est géré dans PaymentConfigPage.
         setShowPaymentConfig(false);
         setPendingContributionAmount(null);
@@ -570,403 +565,407 @@ const CagnotteDialog = ({ totalAmount, children, defaultProjectId, onRefresh, op
     };
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                {children}
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-xl bg-card border-border max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2 text-2xl">
-                        <PiggyBank className="w-6 h-6 text-primary" />
-                        Cagnotte Participative
-                    </DialogTitle>
-                    <DialogDescription>
-                        Soutenez les projets océaniques et la plateforme communautaire
-                    </DialogDescription>
-                </DialogHeader>
+        <ClientOnly fallback={<>{children}</>}>
+            {() => (
+                <Dialog open={open} onOpenChange={setOpen}>
+                    <DialogTrigger asChild>
+                        {children}
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-xl bg-card border-border max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2 text-2xl">
+                                <PiggyBank className="w-6 h-6 text-primary" />
+                                Cagnotte Participative
+                            </DialogTitle>
+                            <DialogDescription>
+                                Soutenez les projets océaniques et la plateforme communautaire
+                            </DialogDescription>
+                        </DialogHeader>
 
-                {paymentSuccess ? (
-                    <div className="py-12 text-center space-y-4 animate-fade-in">
-                        {milestoneReached ? (
-                            <>
-                                <div className="relative">
-                                    <div className="w-24 h-24 mx-auto rounded-full bg-linear-to-br from-primary/30 to-accent/30 flex items-center justify-center animate-pulse">
-                                        <PartyPopper className="w-12 h-12 text-primary" />
-                                    </div>
-                                    <div className="absolute -top-2 -right-2 w-8 h-8">
-                                        <Sparkles className="w-8 h-8 text-accent animate-pulse" />
-                                    </div>
-                                </div>
-                                <div className="space-y-2">
-                                    <Badge className="bg-linear-to-r from-primary to-accent text-primary-foreground text-sm px-4 py-1">
-                                        🎉 Nouveau palier débloqué !
-                                    </Badge>
-                                    <h3 className="text-2xl font-bold text-primary">
-                                        {milestoneReached.target.toLocaleString('fr-FR')} € atteints !
-                                    </h3>
-                                    <p className="text-muted-foreground max-w-xs mx-auto">
-                                        {milestoneReached.description}
-                                    </p>
-                                </div>
-                                <p className="text-sm text-foreground/80">
-                                    Merci pour votre contribution ! 🌊
-                                </p>
-                            </>
-                        ) : (
-                            <>
-                                <div className="w-20 h-20 mx-auto rounded-full bg-primary/20 flex items-center justify-center">
-                                    <Check className="w-10 h-10 text-primary" />
-                                </div>
-                                <h3 className="text-xl font-bold text-foreground">Paiement réussi !</h3>
-                                <p className="text-muted-foreground">
-                                    Merci pour votre générosité envers l'océan 🌊
-                                </p>
-                            </>
-                        )}
-                    </div>
-                ) : showPaymentConfig && pendingContributionAmount ? (
-                    <PaymentConfigPage
-                        projectName={selectedProjectName}
-                        projectId={selectedProjectId}
-                        projectImage={typeof projectImage === "string" ? projectImage : undefined}
-                        amount={pendingContributionAmount}
-                        milestones={activeProjectMilestones}
-                        activeMilestoneIds={activeMilestones}
-                        answerId={selectedProjectAnswerId} //  Passer l'answerId pour enregistrer les financements
-                        onBack={() => setShowPaymentConfig(false)}
-                        onPaymentSuccess={handlePaymentConfigSuccess}
-                        onContributionSaved={handleContributionSaved}
-                        onClose={() => setOpen(false)} //  Fermer la modale après paiement réussi
-                        currentUser={null}
-                    />
-                ) : (
-                    <div className="space-y-6 py-4">
-                        {/* Sélection du projet */}
-                        <div className="space-y-3 border-t pt-6">
-                            <div className="flex items-center gap-2">
-                                <Briefcase className="w-5 h-5 text-primary" />
-                                <label className="text-sm font-medium text-foreground">
-                                    {hideProjectSelect ? "Projet soutenu" : "Sélectionner un projet à soutenir"}
-                                </label>
-                            </div>
-                            {!entity ? (
-                                <div className="py-4 text-center text-sm text-muted-foreground border border-dashed rounded-lg">
-                                    <p>Aucune organisation sélectionnée</p>
-                                </div>
-                            ) : allProjectsLoading ? (
-                                <div className="flex items-center justify-center gap-2 py-4 text-muted-foreground">
-                                    <Loader className="w-4 h-4 animate-spin" />
-                                    <span className="text-sm">Chargement des projets...</span>
-                                </div>
-                            ) : allProjects && allProjects.length > 0 ? (
-                                hideProjectSelect ? (
-                                    <div className="h-10 rounded-md border bg-muted/20 px-3 flex items-center gap-2">
-                                        {typeof projectImage === "string" && projectImage ? (
-                                            <img
-                                                src={projectImage}
-                                                alt={selectedProjectName}
-                                                className="w-5 h-5 rounded object-cover"
-                                            />
-                                        ) : null}
-                                        <span className="text-sm font-medium truncate">{selectedProjectName}</span>
-                                    </div>
+                        {paymentSuccess ? (
+                            <div className="py-12 text-center space-y-4 animate-fade-in">
+                                {milestoneReached ? (
+                                    <>
+                                        <div className="relative">
+                                            <div className="w-24 h-24 mx-auto rounded-full bg-linear-to-br from-primary/30 to-accent/30 flex items-center justify-center animate-pulse">
+                                                <PartyPopper className="w-12 h-12 text-primary" />
+                                            </div>
+                                            <div className="absolute -top-2 -right-2 w-8 h-8">
+                                                <Sparkles className="w-8 h-8 text-accent animate-pulse" />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Badge className="bg-linear-to-r from-primary to-accent text-primary-foreground text-sm px-4 py-1">
+                                                🎉 Nouveau palier débloqué !
+                                            </Badge>
+                                            <h3 className="text-2xl font-bold text-primary">
+                                                {milestoneReached.target.toLocaleString('fr-FR')} € atteints !
+                                            </h3>
+                                            <p className="text-muted-foreground max-w-xs mx-auto">
+                                                {milestoneReached.description}
+                                            </p>
+                                        </div>
+                                        <p className="text-sm text-foreground/80">
+                                            Merci pour votre contribution ! 🌊
+                                        </p>
+                                    </>
                                 ) : (
-                                <div className="flex items-end gap-2">
-                                    <div className="flex-1">
-                                        <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
-                                            <SelectTrigger className="h-10">
-                                                {selectedProjectId ? (
-                                                    (() => {
-                                                        const selectedProj = allProjects.find((p: unknown) => {
-                                                            const proj = p as Record<string, unknown>;
-                                                            const id = (proj?._serverData as Record<string, unknown>)?._id as Record<string, unknown>;
-                                                            const projectId = (id?._str as string) || (proj?.id as string);
-                                                            return projectId === selectedProjectId;
-                                                        });
-                                                        if (selectedProj) {
-                                                            const proj = selectedProj as Record<string, unknown>;
+                                    <>
+                                        <div className="w-20 h-20 mx-auto rounded-full bg-primary/20 flex items-center justify-center">
+                                            <Check className="w-10 h-10 text-primary" />
+                                        </div>
+                                        <h3 className="text-xl font-bold text-foreground">Paiement réussi !</h3>
+                                        <p className="text-muted-foreground">
+                                            Merci pour votre générosité envers l'océan 🌊
+                                        </p>
+                                    </>
+                                )}
+                            </div>
+                        ) : showPaymentConfig && pendingContributionAmount ? (
+                            <PaymentConfigPage
+                                projectName={selectedProjectName}
+                                projectId={selectedProjectId}
+                                projectImage={typeof projectImage === "string" ? projectImage : undefined}
+                                amount={pendingContributionAmount}
+                                milestones={activeProjectMilestones}
+                                activeMilestoneIds={activeMilestones}
+                                answerId={selectedProjectAnswerId} //  Passer l'answerId pour enregistrer les financements
+                                onBack={() => setShowPaymentConfig(false)}
+                                onPaymentSuccess={handlePaymentConfigSuccess}
+                                onContributionSaved={handleContributionSaved}
+                                onClose={() => setOpen(false)} //  Fermer la modale après paiement réussi
+                                currentUser={null}
+                            />
+                        ) : (
+                            <div className="space-y-6 py-4">
+                                {/* Sélection du projet */}
+                                <div className="space-y-3 border-t pt-6">
+                                    <div className="flex items-center gap-2">
+                                        <Briefcase className="w-5 h-5 text-primary" />
+                                        <label className="text-sm font-medium text-foreground">
+                                            {hideProjectSelect ? "Projet soutenu" : "Sélectionner un projet à soutenir"}
+                                        </label>
+                                    </div>
+                                    {!entity ? (
+                                        <div className="py-4 text-center text-sm text-muted-foreground border border-dashed rounded-lg">
+                                            <p>Aucune organisation sélectionnée</p>
+                                        </div>
+                                    ) : allProjectsLoading ? (
+                                        <div className="flex items-center justify-center gap-2 py-4 text-muted-foreground">
+                                            <Loader className="w-4 h-4 animate-spin" />
+                                            <span className="text-sm">Chargement des projets...</span>
+                                        </div>
+                                    ) : allProjects && allProjects.length > 0 ? (
+                                        hideProjectSelect ? (
+                                            <div className="h-10 rounded-md border bg-muted/20 px-3 flex items-center gap-2">
+                                                {typeof projectImage === "string" && projectImage ? (
+                                                    <img
+                                                        src={projectImage}
+                                                        alt={selectedProjectName}
+                                                        className="w-5 h-5 rounded object-cover"
+                                                    />
+                                                ) : null}
+                                                <span className="text-sm font-medium truncate">{selectedProjectName}</span>
+                                            </div>
+                                        ) : (
+                                        <div className="flex items-end gap-2">
+                                            <div className="flex-1">
+                                                <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
+                                                    <SelectTrigger className="h-10">
+                                                        {selectedProjectId ? (
+                                                            (() => {
+                                                                const selectedProj = allProjects.find((p: unknown) => {
+                                                                    const proj = p as Record<string, unknown>;
+                                                                    const id = (proj?._serverData as Record<string, unknown>)?._id as Record<string, unknown>;
+                                                                    const projectId = (id?._str as string) || (proj?.id as string);
+                                                                    return projectId === selectedProjectId;
+                                                                });
+                                                                if (selectedProj) {
+                                                                    const proj = selectedProj as Record<string, unknown>;
+                                                                    const projectData = (proj._serverData as Record<string, unknown>) || proj;
+                                                                    const projectName = (projectData.name as string) || "Projet sans titre";
+                                                                    const projectImage = (projectData.profilImageUrl as string) || (projectData.profilThumbImageUrl as string);
+                                                                    return (
+                                                                        <div className="flex items-center gap-2">
+                                                                            {projectImage && (
+                                                                                <img
+                                                                                    src={projectImage}
+                                                                                    alt={projectName}
+                                                                                    className="w-5 h-5 rounded object-cover"
+                                                                                />
+                                                                            )}
+                                                                            <span>{projectName}</span>
+                                                                        </div>
+                                                                    );
+                                                                }
+                                                                return <SelectValue placeholder="Sélectionner un projet..." />;
+                                                            })()
+                                                        ) : (
+                                                            <SelectValue placeholder="Sélectionner un projet..." />
+                                                        )}
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {allProjects.map((project: unknown, index: number) => {
+                                                            const proj = project as Record<string, unknown>;
+
+                                                            // Accéder aux données via serverData si c'est une entité sérialisée
                                                             const projectData = (proj._serverData as Record<string, unknown>) || proj;
+                                                            const idObj = (projectData._id as Record<string, unknown>) || (proj._id as Record<string, unknown>);
+                                                            const projectId = (idObj._str as string) || (proj._id as string);
                                                             const projectName = (projectData.name as string) || "Projet sans titre";
                                                             const projectImage = (projectData.profilImageUrl as string) || (projectData.profilThumbImageUrl as string);
+
+                                                            // Récupérer les montants du projet
+                                                            const cagnotteTotalAmount = (proj?.cagnotteTotalAmount as number) || 0;
+                                                            const cagnotteTargetAmount = (proj?.cagnotteTargetAmount as number) || 0;
+
+                                                            // Vérifier que projectId n'est pas vide
+                                                            if (!projectId) {
+                                                                console.warn(`❌ Projet ${index} sans ID - ignoré`);
+                                                                return null;
+                                                            }
+
                                                             return (
-                                                                <div className="flex items-center gap-2">
-                                                                    {projectImage && (
-                                                                        <img
-                                                                            src={projectImage}
-                                                                            alt={projectName}
-                                                                            className="w-5 h-5 rounded object-cover"
-                                                                        />
-                                                                    )}
-                                                                    <span>{projectName}</span>
-                                                                </div>
+                                                                <SelectItem key={projectId} value={projectId}>
+                                                                    <div className="flex items-center justify-between gap-3 w-full">
+                                                                        <div className="flex items-center gap-2">
+                                                                            {projectImage && (
+                                                                                <img
+                                                                                    src={projectImage}
+                                                                                    alt={projectName}
+                                                                                    className="w-5 h-5 rounded object-cover"
+                                                                                />
+                                                                            )}
+                                                                            <span>{projectName}</span>
+                                                                        </div>
+                                                                        <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                                                            {cagnotteTotalAmount}€ / {cagnotteTargetAmount}€
+                                                                        </span>
+                                                                    </div>
+                                                                </SelectItem>
                                                             );
-                                                        }
-                                                        return <SelectValue placeholder="Sélectionner un projet..." />;
-                                                    })()
-                                                ) : (
-                                                    <SelectValue placeholder="Sélectionner un projet..." />
-                                                )}
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {allProjects.map((project: unknown, index: number) => {
-                                                    const proj = project as Record<string, unknown>;
+                                                        })}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
 
-                                                    // Accéder aux données via serverData si c'est une entité sérialisée
-                                                    const projectData = (proj._serverData as Record<string, unknown>) || proj;
-                                                    const idObj = (projectData._id as Record<string, unknown>) || (proj._id as Record<string, unknown>);
-                                                    const projectId = (idObj._str as string) || (proj._id as string);
-                                                    const projectName = (projectData.name as string) || "Projet sans titre";
-                                                    const projectImage = (projectData.profilImageUrl as string) || (projectData.profilThumbImageUrl as string);
+                                            {/* Bouton pour définir comme cagnotte principale - seulement icône avec tooltip */}
+                                            {selectedProjectId && !isCurrentProjectModalId && (
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button
+                                                                onClick={handleSaveProjectModal}
+                                                                disabled={isSavingProjectModal}
+                                                                variant="secondary"
+                                                                size="icon"
+                                                                className="h-10 w-10"
+                                                            >
+                                                                {isSavingProjectModal ? (
+                                                                    <Loader className="w-4 h-4 animate-spin" />
+                                                                ) : (
+                                                                    <Save className="w-4 h-4" />
+                                                                )}
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>Définir comme cagnotte principale</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                            )}
+                                        </div>
+                                        )
+                                    ) : (
+                                        <div className="py-4 text-center text-sm text-muted-foreground border border-dashed rounded-lg">
+                                            <p>Aucun projet disponible pour cette organisation</p>
+                                        </div>
+                                    )}
+                                </div>
 
-                                                    // Récupérer les montants du projet
-                                                    const cagnotteTotalAmount = (proj?.cagnotteTotalAmount as number) || 0;
-                                                    const cagnotteTargetAmount = (proj?.cagnotteTargetAmount as number) || 0;
+                                {/* Current Total & Progress */}
+                                {selectedProject ? (
+                                    <div className="bg-linear-to-r from-primary/20 to-accent/20 rounded-xl p-6 space-y-4">
+                                        <div className="text-center">
+                                            <p className="text-sm text-muted-foreground mb-2">Cagnotte du projet</p>
+                                            <p className="text-4xl font-bold text-primary">{projectCagnotteTotalAmount.toLocaleString('fr-FR')} €</p>
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                                sur {projectCagnotteTargetAmount.toLocaleString('fr-FR')} € objectif
+                                            </p>
+                                        </div>
 
-                                                    // Vérifier que projectId n'est pas vide
-                                                    if (!projectId) {
-                                                        console.warn(`❌ Projet ${index} sans ID - ignoré`);
-                                                        return null;
-                                                    }
+                                        {/* Progress Bar */}
+                                        <div className="space-y-2">
+                                            <div className="flex justify-between text-xs text-muted-foreground">
+                                                <span>Progression</span>
+                                                <span>{projectCagnotteTotalAmount.toLocaleString('fr-FR')} € / {projectCagnotteTargetAmount.toLocaleString('fr-FR')} €</span>
+                                            </div>
+                                            <Progress value={projectProgressPercentage} className="h-3" />
+                                        </div>
+                                    </div>
+                                ) : null}
 
-                                                    return (
-                                                        <SelectItem key={projectId} value={projectId}>
-                                                            <div className="flex items-center justify-between gap-3 w-full">
-                                                                <div className="flex items-center gap-2">
-                                                                    {projectImage && (
-                                                                        <img
-                                                                            src={projectImage}
-                                                                            alt={projectName}
-                                                                            className="w-5 h-5 rounded object-cover"
-                                                                        />
-                                                                    )}
-                                                                    <span>{projectName}</span>
-                                                                </div>
-                                                                <span className="text-xs text-muted-foreground whitespace-nowrap">
-                                                                    {cagnotteTotalAmount}€ / {cagnotteTargetAmount}€
+                                {/* Milestones */}
+                                <div className="space-y-3">
+                                    <p className="text-sm font-medium text-foreground">Objectifs de la cagnotte</p>
+                                    {visibleProjectMilestones && visibleProjectMilestones.length > 0 ? (
+                                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                            {visibleProjectMilestones.map((milestone) => {
+                                                const isActive = activeMilestones.has(milestone.milestoneId);
+                                                return (
+                                                    <div
+                                                        key={milestone.milestoneId}
+                                                        onClick={() => handleMilestoneClick(milestone.milestoneId)}
+                                                        className={`p-4 rounded-lg cursor-pointer transition-all space-y-2 ${
+                                                            isActive
+                                                                ? 'bg-primary/20 border-primary/50 border-2'
+                                                                : 'bg-muted/30 border border-border/50 hover:border-border/80'
+                                                        }`}
+                                                    >
+                                                        <div className="flex items-start gap-2">
+                                                            {/*  Checkbox pour activer/désactiver */}
+                                                            <div className="flex items-center justify-center w-6 h-6 rounded border-2 mt-0.5 shrink-0 transition-colors"
+                                                                style={{
+                                                                    borderColor: isActive ? 'var(--primary)' : 'var(--border)',
+                                                                    backgroundColor: isActive ? 'var(--primary)' : 'transparent'
+                                                                }}
+                                                            >
+                                                                {isActive && (
+                                                                    <CheckCircle2 className="w-4 h-4 text-primary-foreground" />
+                                                                )}
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <h4 className="text-sm font-semibold text-foreground line-clamp-1">
+                                                                    {milestone.name}
+                                                                </h4>
+                                                                {milestone.description && (
+                                                                    <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+                                                                        {milestone.description}
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Financement et progression */}
+                                                        <div className="space-y-1.5">
+                                                            <div className="flex items-center justify-between text-xs">
+                                                                <span className="text-muted-foreground">Financement</span>
+                                                                <span className="font-semibold text-foreground">
+                                                                    {milestone.currentFunding}€ / {milestone.price}€
                                                                 </span>
                                                             </div>
-                                                        </SelectItem>
-                                                    );
-                                                })}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
+                                                            <Progress
+                                                                value={milestone.price > 0 ? (milestone.currentFunding / milestone.price) * 100 : 0}
+                                                                className="h-2"
+                                                            />
+                                                        </div>
 
-                                    {/* Bouton pour définir comme cagnotte principale - seulement icône avec tooltip */}
-                                    {selectedProjectId && !isCurrentProjectModalId && (
-                                        <TooltipProvider>
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <Button
-                                                        onClick={handleSaveProjectModal}
-                                                        disabled={isSavingProjectModal}
-                                                        variant="secondary"
-                                                        size="icon"
-                                                        className="h-10 w-10"
-                                                    >
-                                                        {isSavingProjectModal ? (
-                                                            <Loader className="w-4 h-4 animate-spin" />
-                                                        ) : (
-                                                            <Save className="w-4 h-4" />
+                                                        {/* Status */}
+                                                        {milestone.status && (
+                                                            <Badge variant="outline" className="text-xs">
+                                                                {milestone.status as string}
+                                                            </Badge>
                                                         )}
-                                                    </Button>
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    <p>Définir comme cagnotte principale</p>
-                                                </TooltipContent>
-                                            </Tooltip>
-                                        </TooltipProvider>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    ) : null}
+                                </div>
+
+                                <div className="space-y-3 text-sm text-muted-foreground">
+                                    <div className="flex items-start gap-3">
+                                        <Heart className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+                                        <p>Chaque euro récolté soutient directement les projets de protection marine et le fonctionnement de la plateforme.</p>
+                                    </div>
+                                    <div className="flex items-start gap-3">
+                                        <Heart className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+                                        <p>Les fonds sont répartis équitablement entre les projets sélectionnés par la communauté et les frais de maintenance.</p>
+                                    </div>
+                                </div>
+
+                                {/* Predefined Amounts - Radio Button Style */}
+                                <div className="space-y-3">
+                                    <p className="text-sm font-medium text-foreground">Choisissez un montant</p>
+                                    {/* Line 1: Remaining to Finance */}
+                                    {remainingToFinanceAmount > 0 && (
+                                        <div className="bg-accent/20 border border-accent/50 rounded-lg p-3">
+                                            <p className="text-sm text-foreground font-medium">
+                                                Reste à financer: <span className="text-lg font-bold text-accent">{remainingToFinanceAmount.toLocaleString('fr-FR')}€</span>
+                                            </p>
+                                        </div>
                                     )}
-                                </div>
-                                )
-                            ) : (
-                                <div className="py-4 text-center text-sm text-muted-foreground border border-dashed rounded-lg">
-                                    <p>Aucun projet disponible pour cette organisation</p>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Current Total & Progress */}
-                        {selectedProject ? (
-                            <div className="bg-linear-to-r from-primary/20 to-accent/20 rounded-xl p-6 space-y-4">
-                                <div className="text-center">
-                                    <p className="text-sm text-muted-foreground mb-2">Cagnotte du projet</p>
-                                    <p className="text-4xl font-bold text-primary">{projectCagnotteTotalAmount.toLocaleString('fr-FR')} €</p>
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                        sur {projectCagnotteTargetAmount.toLocaleString('fr-FR')} € objectif
-                                    </p>
-                                </div>
-
-                                {/* Progress Bar */}
-                                <div className="space-y-2">
-                                    <div className="flex justify-between text-xs text-muted-foreground">
-                                        <span>Progression</span>
-                                        <span>{projectCagnotteTotalAmount.toLocaleString('fr-FR')} € / {projectCagnotteTargetAmount.toLocaleString('fr-FR')} €</span>
+                                    <div className="grid grid-cols-4 gap-3">
+                                        {predefinedAmounts.map((amount) => {
+                                            const isDisabled = amount > maxContributionAmount || isProcessing;
+                                            return (
+                                                <button
+                                                    key={amount}
+                                                    onClick={() => handlePredefinedAmountClick(amount)}
+                                                    className={`h-14 text-lg font-semibold rounded-md transition-all border-2 ${
+                                                        selectedPredefinedAmount === amount && selectedAmountType === "predefined"
+                                                            ? 'bg-primary text-primary-foreground border-primary'
+                                                            : 'bg-background border-border hover:border-primary hover:text-primary'
+                                                    } ${isDisabled ? 'opacity-50 cursor-not-allowed hover:border-border hover:text-foreground' : ''}`}
+                                                    disabled={isDisabled}
+                                                >
+                                                    {amount}€
+                                                </button>
+                                            );
+                                        })}
                                     </div>
-                                    <Progress value={projectProgressPercentage} className="h-3" />
                                 </div>
-                            </div>
-                        ) : null}
 
-                        {/* Milestones */}
-                        <div className="space-y-3">
-                            <p className="text-sm font-medium text-foreground">Objectifs de la cagnotte</p>
-                            {visibleProjectMilestones && visibleProjectMilestones.length > 0 ? (
-                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                    {visibleProjectMilestones.map((milestone) => {
-                                        const isActive = activeMilestones.has(milestone.milestoneId);
-                                        return (
-                                            <div
-                                                key={milestone.milestoneId}
-                                                onClick={() => handleMilestoneClick(milestone.milestoneId)}
-                                                className={`p-4 rounded-lg cursor-pointer transition-all space-y-2 ${
-                                                    isActive
-                                                        ? 'bg-primary/20 border-primary/50 border-2'
-                                                        : 'bg-muted/30 border border-border/50 hover:border-border/80'
-                                                }`}
-                                            >
-                                                <div className="flex items-start gap-2">
-                                                    {/*  Checkbox pour activer/désactiver */}
-                                                    <div className="flex items-center justify-center w-6 h-6 rounded border-2 mt-0.5 shrink-0 transition-colors"
-                                                        style={{
-                                                            borderColor: isActive ? 'var(--primary)' : 'var(--border)',
-                                                            backgroundColor: isActive ? 'var(--primary)' : 'transparent'
-                                                        }}
-                                                    >
-                                                        {isActive && (
-                                                            <CheckCircle2 className="w-4 h-4 text-primary-foreground" />
-                                                        )}
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <h4 className="text-sm font-semibold text-foreground line-clamp-1">
-                                                            {milestone.name}
-                                                        </h4>
-                                                        {milestone.description && (
-                                                            <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
-                                                                {milestone.description}
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                </div>
-
-                                                {/* Financement et progression */}
-                                                <div className="space-y-1.5">
-                                                    <div className="flex items-center justify-between text-xs">
-                                                        <span className="text-muted-foreground">Financement</span>
-                                                        <span className="font-semibold text-foreground">
-                                                            {milestone.currentFunding}€ / {milestone.price}€
-                                                        </span>
-                                                    </div>
-                                                    <Progress
-                                                        value={milestone.price > 0 ? (milestone.currentFunding / milestone.price) * 100 : 0}
-                                                        className="h-2"
-                                                    />
-                                                </div>
-
-                                                {/* Status */}
-                                                {milestone.status && (
-                                                    <Badge variant="outline" className="text-xs">
-                                                        {milestone.status as string}
-                                                    </Badge>
-                                                )}
-                                            </div>
-                                        );
-                                    })}
+                                {/* Custom Amount */}
+                                <div className="space-y-3">
+                                    <p className="text-sm font-medium text-foreground">Ou entrez un montant libre</p>
+                                    <div className="relative">
+                                        <Input
+                                            type="number"
+                                            placeholder="Montant"
+                                            value={customAmount}
+                                            onChange={handleCustomAmountChange}
+                                            className="pr-8 h-12 text-lg"
+                                            min="1"
+                                            max={Math.max(maxContributionAmount, 0)}
+                                            disabled={isProcessing || maxContributionAmount <= 0}
+                                        />
+                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
+                                    </div>
                                 </div>
-                            ) : null}
-                        </div>
 
-                        <div className="space-y-3 text-sm text-muted-foreground">
-                            <div className="flex items-start gap-3">
-                                <Heart className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                                <p>Chaque euro récolté soutient directement les projets de protection marine et le fonctionnement de la plateforme.</p>
-                            </div>
-                            <div className="flex items-start gap-3">
-                                <Heart className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                                <p>Les fonds sont répartis équitablement entre les projets sélectionnés par la communauté et les frais de maintenance.</p>
-                            </div>
-                        </div>
-
-                        {/* Predefined Amounts - Radio Button Style */}
-                        <div className="space-y-3">
-                            <p className="text-sm font-medium text-foreground">Choisissez un montant</p>
-                            {/* Line 1: Remaining to Finance */}
-                            {remainingToFinanceAmount > 0 && (
-                                <div className="bg-accent/20 border border-accent/50 rounded-lg p-3">
-                                    <p className="text-sm text-foreground font-medium">
-                                        Reste à financer: <span className="text-lg font-bold text-accent">{remainingToFinanceAmount.toLocaleString('fr-FR')}€</span>
-                                    </p>
-                                </div>
-                            )}
-                            <div className="grid grid-cols-4 gap-3">
-                                {predefinedAmounts.map((amount) => {
-                                    const isDisabled = amount > maxContributionAmount || isProcessing;
-                                    return (
-                                        <button
-                                            key={amount}
-                                            onClick={() => handlePredefinedAmountClick(amount)}
-                                            className={`h-14 text-lg font-semibold rounded-md transition-all border-2 ${
-                                                selectedPredefinedAmount === amount && selectedAmountType === "predefined"
-                                                    ? 'bg-primary text-primary-foreground border-primary'
-                                                    : 'bg-background border-border hover:border-primary hover:text-primary'
-                                            } ${isDisabled ? 'opacity-50 cursor-not-allowed hover:border-border hover:text-foreground' : ''}`}
-                                            disabled={isDisabled}
+                                {/* Bouton Contribuer Unique - Pour Radio ET Input */}
+                                {(selectedAmountType === "predefined" || selectedAmountType === "custom") && (
+                                    <div className="flex justify-center">
+                                        <Button
+                                            onClick={handleOpenPaymentConfig}
+                                            disabled={isProcessing || !isContributionEnabled}
+                                            className="h-12 px-8"
+                                            size="lg"
                                         >
-                                            {amount}€
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
-
-                        {/* Custom Amount */}
-                        <div className="space-y-3">
-                            <p className="text-sm font-medium text-foreground">Ou entrez un montant libre</p>
-                            <div className="relative">
-                                <Input
-                                    type="number"
-                                    placeholder="Montant"
-                                    value={customAmount}
-                                    onChange={handleCustomAmountChange}
-                                    className="pr-8 h-12 text-lg"
-                                    min="1"
-                                    max={Math.max(maxContributionAmount, 0)}
-                                    disabled={isProcessing || maxContributionAmount <= 0}
-                                />
-                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">€</span>
-                            </div>
-                        </div>
-
-                        {/* Bouton Contribuer Unique - Pour Radio ET Input */}
-                        {(selectedAmountType === "predefined" || selectedAmountType === "custom") && (
-                            <div className="flex justify-center">
-                                <Button
-                                    onClick={handleOpenPaymentConfig}
-                                    disabled={isProcessing || !isContributionEnabled}
-                                    className="h-12 px-8"
-                                    size="lg"
-                                >
-                                    {isProcessing ? (
-                                        <>
-                                            <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin mr-2" />
-                                            Traitement...
-                                        </>
-                                    ) : (
-                                        <>
-                                            Contribuer {selectedAmountType === "predefined" && selectedPredefinedAmount !== null
-                                                ? `${selectedPredefinedAmount}€`
-                                                : selectedAmountType === "custom" && customAmount
-                                                    ? `${customAmount}€`
-                                                    : ''}
-                                        </>
-                                    )}
-                                </Button>
+                                            {isProcessing ? (
+                                                <>
+                                                    <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin mr-2" />
+                                                    Traitement...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    Contribuer {selectedAmountType === "predefined" && selectedPredefinedAmount !== null
+                                                        ? `${selectedPredefinedAmount}€`
+                                                        : selectedAmountType === "custom" && customAmount
+                                                            ? `${customAmount}€`
+                                                            : ''}
+                                                </>
+                                            )}
+                                        </Button>
+                                    </div>
+                                )}
                             </div>
                         )}
-                    </div>
-                )}
-            </DialogContent>
-        </Dialog>
+                    </DialogContent>
+                </Dialog>
+            )}
+        </ClientOnly>
     );
 };
 
