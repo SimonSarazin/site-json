@@ -85,7 +85,6 @@ type AnswerPayload = LooseRecord & {
  */
 export function useOrganizationProjectsWithAnswers({
   entity,
-  entityType: _entityType = "",
   enabled = true,
 }: UseOrganizationProjectsWithAnswersProps) {
   const {
