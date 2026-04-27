@@ -7,6 +7,7 @@ import CardRezoLaMer from "./card/CardRezoLaMer";
 import CardProfile from "./card/CardProfile";
 import CardEventRezoLaMer from "./card/CardEventRezoLaMer";
 import CardPoiRezoLaMer from "./card/CardPoiRezoLaMer";
+import CardPoiSSBE from "./card/CardPoiSSBE";
 import CardSsbe from "./card/CardSsbe";
 import CardElts from "./card/CardElts";
 import CardAnswer from "./card/CardAnswer";
@@ -42,6 +43,8 @@ export default function SearchCard({
       return <CardEventRezoLaMer item={item} onClick={onClick} card={card} />;
     case "poi-rezo-la-mer":
       return <CardPoiRezoLaMer item={item} onClick={onClick} card={card} />;
+    case "poi-ssbe":
+      return <CardPoiSSBE item={item} onClick={onClick} card={card} />;
     case "ssbe":
       return <CardSsbe item={item} onClick={onClick} card={card} />;
     case "card-elts":
