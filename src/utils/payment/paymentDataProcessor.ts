@@ -6,6 +6,7 @@
 export interface PaymentFinancingData {
   milestone: string; // milestoneId
   amount: number; // montant alloué à ce milestone
+  name?: string;
   currentFunding?: number; // financement actuel avant contribution
   targetAmount?: number; // montant cible du milestone
   finalAmount?: number; // financement après contribution (currentFunding + amount)
@@ -39,7 +40,7 @@ export const buildContributionRecords = (
       const record: ContributionRecord = {
         amount: fin.amount,
         user: contributorId,
-        type: contributorType === "person" ? "citoyens" : "organizations",
+        type: contributorType === "citoyens" ? "citoyens" : "organizations",
         date: new Date().toISOString(),
         paymentMethod,
         transactionId,
@@ -169,10 +170,10 @@ export const getContributorId = (
   userId: string | null,
   organizationId: string | null
 ): string | null => {
-  if (contributorType === "person") {
+  if (contributorType === "citoyens") {
     return userId;
   }
-  if (contributorType === "organization") {
+  if (contributorType === "organizations") {
     return organizationId;
   }
   return null;

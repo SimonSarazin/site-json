@@ -241,7 +241,7 @@ export const useSaveCagnotteContribution = (
               },
             ],
             value: financerEntry,
-          } as const;
+          };
 
           // Ecriture atomique de la depense complete (meme logique que la modif depense)
           await updatePathValue(apiClient, updatePayload);

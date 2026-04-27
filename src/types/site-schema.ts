@@ -2014,7 +2014,8 @@ export function getDefaultSiteConfig(): Partial<SiteConfig> {
         search: false,
         auth: false,
         cart: false,
-        notifications: false
+        notifications: false,
+        piggyBank: false
       },
       sticky: false,
       transparent: false,
@@ -2060,7 +2061,8 @@ export const example: SiteConfig = {
       search: false,
       auth: false,
       cart: false,
-      notifications: false
+      notifications: false,
+      piggyBank: false
     }
   },
   pages: [

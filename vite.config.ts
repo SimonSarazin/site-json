@@ -81,6 +81,10 @@ function siteCssPlugin(): Plugin {
 export default defineConfig(({ mode, isSsrBuild }) => ({
   server: {
     allowedHosts: true,
+    warmup: {
+      ssrFiles: ['./src/entry-server.tsx'],
+      clientFiles: ['./src/entry-client.tsx'],
+    },
   },
   plugins: [
     siteCssPlugin(),
@@ -188,12 +192,6 @@ export default defineConfig(({ mode, isSsrBuild }) => ({
         }
       }
     }
-  },
-  server: {
-    warmup: {
-      ssrFiles: ['./src/entry-server.tsx'],
-      clientFiles: ['./src/entry-client.tsx'],
-    },
   },
   ssr: {
     noExternal: isSsrBuild ? true : undefined,

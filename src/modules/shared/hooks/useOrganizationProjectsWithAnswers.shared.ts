@@ -85,8 +85,7 @@ type AnswerPayload = LooseRecord & {
  */
 export function useOrganizationProjectsWithAnswers({
   entity,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  entityType = "",
+  entityType: _entityType = "",
   enabled = true,
 }: UseOrganizationProjectsWithAnswersProps) {
   const {
