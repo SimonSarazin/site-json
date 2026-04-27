@@ -1,10 +1,9 @@
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
+
+const subscribe = () => () => {};
+const getSnapshot = () => true;
+const getServerSnapshot = () => false;
 
 export function useHydrated() {
-  const [hydrated, setHydrated] = useState(false);
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setHydrated(true);
-  }, []);
-  return hydrated;
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }

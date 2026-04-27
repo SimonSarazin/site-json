@@ -187,6 +187,50 @@ export type HeroRezoLaMer = z.infer<typeof HeroRezoLaMerSchema>;
 
 export type HeroRezoLaMerProps = z.infer<typeof HeroRezoLaMerSchema>["props"];
 
+export const HeroSSBESchema = z.object({
+  type: z.literal("hero-ssbe"),
+  id: z.string().optional(),
+  props: z.object({
+    headline: LocalizedString,
+    subhead: LocalizedString.optional(),
+    backgroundImage: z.string().optional(),
+    backgroundImageAlt: LocalizedString.optional(),
+    overlayOpacity: z.string().optional(),
+    badges: z
+      .array(
+        z.object({
+          label: LocalizedString,
+          icon: z.string().optional(),
+        })
+      )
+      .optional(),
+    ctaButtons: z
+      .array(
+        z.object({
+          label: LocalizedString,
+          path: z.string().optional(),
+          variant: z.enum(["default", "secondary", "accent"]).optional(),
+        })
+      )
+      .optional(),
+    quickAccessTitle: LocalizedString.optional(),
+    quickAccessCards: z
+      .array(
+        z.object({
+          path: z.string(),
+          label: LocalizedString,
+          title: LocalizedString,
+          description: LocalizedString,
+          icon: z.string().optional(),
+        })
+      )
+      .optional(),
+  }),
+});
+
+export type HeroSSBE = z.infer<typeof HeroSSBESchema>;
+export type HeroSSBEProps = z.infer<typeof HeroSSBESchema>["props"];
+
 // Nos-commune
 export const HeroNoCommunesShema = z.object({
   type: z.literal("hero-nos-communes"),
@@ -317,7 +361,7 @@ export const ActionButtonsRezoLaMerSchema = z.object({
   props: z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
-    variant: z.enum(["ocean", "cyber"]).optional(),
+    variant: z.enum(["ocean", "cyber", "ssbe"]).optional(),
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
     actions: z.array(
       z.object({
@@ -1434,6 +1478,7 @@ export const Section = z.discriminatedUnion("type", [
   HeroWithIconSectionSchema,
   HeroTiersLieuxSchema,
   HeroRezoLaMerSchema,
+  HeroSSBESchema,
   HeroNoCommunesShema,
   HeroCommuneTransparenteSchema,
   FeaturesRezoLaMerSchema,
