@@ -15,6 +15,11 @@
     "css": "index-rezo-la-mer"
   },
   {
+    "slug": "eXtremeDefiAdeme",
+    "config": "config.prod.eXtremeDefiAdeme.json",
+    "css": "index-rezo-la-mer"
+  },
+  {
     "slug": "sportSanteBienetre",
     "config": "config.prod.sport-sante-bien-etre.json",
     "css": "index-sport-sante-bien-etre"

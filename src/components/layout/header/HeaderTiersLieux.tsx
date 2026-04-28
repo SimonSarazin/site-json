@@ -6,6 +6,7 @@ import { Header } from "@/types/site-schema";
 import { ChevronDown, User, LogOut, Settings, Globe } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router";
 import { useCocolight } from "@/hooks/useCocolight";
+import { useEntityBySlugQuery } from "@/hooks/useEntityBySlugQuery";
 
 function NavLink({ to, className, children }: { to: string; className?: string; children: React.ReactNode }) {
   if (!to || to === "#") {
@@ -50,6 +51,14 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
     const isSubsite = location.pathname.startsWith("/s/");
     const nav = isSubsite && header.navSubsite ? header.navSubsite : header.nav;
 
+    // Extraire le slug depuis l'URL /s/{slug}/... pour afficher l'icône du sous-réseau
+    const subsiteSlug = isSubsite ? location.pathname.split("/")[2] : undefined;
+    const { data: subsiteEntity } = useEntityBySlugQuery({ slug: subsiteSlug });
+    const subsiteImage = subsiteEntity?.serverData?.profilThumbImageUrl
+        ?? subsiteEntity?.serverData?.profilImageUrl
+        ?? null;
+    const subsiteName = subsiteEntity?.serverData?.name ?? "";
+
     const profilThumbImageUrl = useReactiveProperty<string>(me?.serverData, 'profilThumbImageUrl') ?? null;
     const name = useReactiveProperty<string>(me?.serverData, 'name') ?? null;
     const email = useReactiveProperty<string>(me?.serverData, 'email') ?? null;
@@ -76,17 +85,32 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
         <header className={`${header.transparent ? "bg-transparent" : "bg-background"} rounded-b-2xl border-b border-border ${header.sticky ? "sticky top-0 z-50" : ""}`}>
             <nav className="container mx-auto py-3 sm:py-4 px-4 sm:px-6">
                 <div className="flex items-center justify-between">
-                    <Link to={header.path || "/"} className="flex items-center shrink-0">
-                        {header.logo && (
-                            <OptimizedImage
-                                src={`/${header.logo}`}
-                                alt={header.logoAlt ? t(header.logoAlt) : ""}
-                                width={207}
-                                height={48}
-                                className="h-6 xs:h-8 sm:h-9 w-auto max-w-28 xs:max-w-32 sm:max-w-40 object-contain"
-                            />
+                    <div className="flex items-center shrink-0 gap-2 sm:gap-3">
+                        <Link to={header.path || "/"} className="flex items-center shrink-0">
+                            {header.logo && (
+                                <OptimizedImage
+                                    src={`/${header.logo}`}
+                                    alt={header.logoAlt ? t(header.logoAlt) : ""}
+                                    width={207}
+                                    height={48}
+                                    className="h-6 xs:h-8 sm:h-9 w-auto max-w-28 xs:max-w-32 sm:max-w-40 object-contain"
+                                />
+                            )}
+                        </Link>
+
+                        {isSubsite && subsiteImage && (
+                            <>
+                                <span className="text-border text-2xl font-light select-none" aria-hidden="true">/</span>
+                                <OptimizedImage
+                                    src={subsiteImage}
+                                    alt={subsiteName}
+                                    width={207}
+                                    height={48}
+                                    className="h-6 xs:h-8 sm:h-9 w-auto object-contain"
+                                />
+                            </>
                         )}
-                    </Link>
+                    </div>
 
                     {/* Menu desktop */}
                     <div className="hidden md:flex items-center space-x-1.5 text-sm font-medium ml-8 min-w-0">
