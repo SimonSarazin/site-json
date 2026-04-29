@@ -335,15 +335,16 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
                 }
 
                 const next = { ...cleaned };
-                nextSelectedIds.forEach((selectedId) => {
-                    const option = filter.options.find((item) => item.id === selectedId);
-                    if (!option) return;
+                    nextSelectedIds.forEach((selectedId) => {
+                        const option = filter.options.find((item) => item.id === selectedId);
+                        if (!option) return;
 
-                    next[`${filter.id}:${selectedId}`] = {
-                        field: fieldName,
-                        value: [option.value ?? option.id],
-                    };
-                });
+                        const optionField = option.field ?? fieldName;
+                        next[`${filter.id}:${selectedId}`] = {
+                            field: optionField,
+                            value: [option.value ?? option.id],
+                        };
+                    });
 
                 return next;
             });
@@ -572,6 +573,12 @@ export function TitleWithFiltersRezoLaMer({ id, props }: TitleWithFiltersRezoLaM
                                                 checked={selectedValues.includes(option.id)}
                                                 onCheckedChange={() => toggleDropdownOption(filter, option.id)}
                                             >
+                                                {option.icon && (
+                                                    <DynamicIcon
+                                                        name={option.icon as IconName}
+                                                        className="w-4 h-4 mr-2"
+                                                    />
+                                                )}
                                                 {tLocalized(option.label)}
                                             </DropdownMenuCheckboxItem>
                                         ))}

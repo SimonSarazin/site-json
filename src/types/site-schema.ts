@@ -451,6 +451,8 @@ const TitleWithFiltersDropdownOptionSchema = z.object({
   id: z.string(),
   label: LocalizedString,
   value: z.string().optional(),
+  field: z.string().optional(),
+  icon: z.string().optional(),
 });
 
 const TitleWithFiltersDropdownSchema = z.object({
