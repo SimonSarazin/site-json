@@ -187,6 +187,50 @@ export type HeroRezoLaMer = z.infer<typeof HeroRezoLaMerSchema>;
 
 export type HeroRezoLaMerProps = z.infer<typeof HeroRezoLaMerSchema>["props"];
 
+export const HeroSSBESchema = z.object({
+  type: z.literal("hero-ssbe"),
+  id: z.string().optional(),
+  props: z.object({
+    headline: LocalizedString,
+    subhead: LocalizedString.optional(),
+    backgroundImage: z.string().optional(),
+    backgroundImageAlt: LocalizedString.optional(),
+    overlayOpacity: z.string().optional(),
+    badges: z
+      .array(
+        z.object({
+          label: LocalizedString,
+          icon: z.string().optional(),
+        })
+      )
+      .optional(),
+    ctaButtons: z
+      .array(
+        z.object({
+          label: LocalizedString,
+          path: z.string().optional(),
+          variant: z.enum(["default", "secondary", "accent"]).optional(),
+        })
+      )
+      .optional(),
+    quickAccessTitle: LocalizedString.optional(),
+    quickAccessCards: z
+      .array(
+        z.object({
+          path: z.string(),
+          label: LocalizedString,
+          title: LocalizedString,
+          description: LocalizedString,
+          icon: z.string().optional(),
+        })
+      )
+      .optional(),
+  }),
+});
+
+export type HeroSSBE = z.infer<typeof HeroSSBESchema>;
+export type HeroSSBEProps = z.infer<typeof HeroSSBESchema>["props"];
+
 // Nos-commune
 export const HeroNoCommunesShema = z.object({
   type: z.literal("hero-nos-communes"),
@@ -317,7 +361,7 @@ export const ActionButtonsRezoLaMerSchema = z.object({
   props: z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
-    variant: z.enum(["ocean", "cyber"]).optional(),
+    variant: z.enum(["ocean", "cyber", "ssbe"]).optional(),
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
     actions: z.array(
       z.object({
@@ -1359,6 +1403,91 @@ const MemberSectionSchema = z.object({
 export type MemberSection = z.infer<typeof MemberSectionSchema>;
 export type MemberSectionProps = z.infer<typeof MemberSectionSchema>["props"];
 
+//──────────────── Actions Section (Milestones/Tasks)
+const ActionsSectionSchema = z.object({
+  type: z.literal("actions"),
+  id: z.string().optional(),
+  props: z.object({
+    idProjet: z.string().optional(),
+    maxItems: z.number().optional().default(10),
+    showStatus: z.boolean().optional().default(true),
+    showProgress: z.boolean().optional().default(true),
+    showDates: z.boolean().optional().default(true),
+    layout: z.enum(["list", "grid", "timeline"]).optional().default("list"),
+  }),
+});
+
+export type ActionsSection = z.infer<typeof ActionsSectionSchema>;
+export type ActionsSectionProps = z.infer<typeof ActionsSectionSchema>["props"];
+
+//──────────────── Finance Section (Funding/Cagnotte)
+const FinanceSectionSchema = z.object({
+  type: z.literal("finance"),
+  id: z.string().optional(),
+  props: z.object({
+    idProjet: z.string().optional(),
+    maxItems: z.number().optional().default(10),
+    showProgress: z.boolean().optional().default(true),
+    showFundingGoal: z.boolean().optional().default(true),
+    showContributors: z.boolean().optional().default(true),
+    showTimeline: z.boolean().optional().default(false),
+    layout: z.enum(["cards", "list", "compact"]).optional().default("cards"),
+  }),
+});
+
+export type FinanceSection = z.infer<typeof FinanceSectionSchema>;
+export type FinanceSectionProps = z.infer<typeof FinanceSectionSchema>["props"];
+
+//──────────────── Actions Summary Section (Sidebar synthesis/charts)
+const ActionsSummarySectionSchema = z.object({
+  type: z.literal("actions-summary"),
+  id: z.string().optional(),
+  props: z.object({
+    idProjet: z.string().optional(),
+    maxItems: z.number().optional().default(10),
+    showKpis: z.boolean().optional().default(true),
+    showCharts: z.boolean().optional().default(true),
+    charts: z.object({
+      statusDistribution: z.object({
+        enabled: z.boolean().optional().default(true),
+        type: z.enum(["pie", "bar", "list"]).optional().default("pie"),
+      }).optional(),
+      timeline: z.object({
+        enabled: z.boolean().optional().default(true),
+        type: z.enum(["bar", "line", "list"]).optional().default("bar"),
+      }).optional(),
+    }).optional(),
+  }),
+});
+
+export type ActionsSummarySection = z.infer<typeof ActionsSummarySectionSchema>;
+export type ActionsSummarySectionProps = z.infer<typeof ActionsSummarySectionSchema>["props"];
+
+//──────────────── Finance Summary Section (Sidebar synthesis/charts)
+const FinanceSummarySectionSchema = z.object({
+  type: z.literal("finance-summary"),
+  id: z.string().optional(),
+  props: z.object({
+    idProjet: z.string().optional(),
+    maxItems: z.number().optional().default(10),
+    showKpis: z.boolean().optional().default(true),
+    showCharts: z.boolean().optional().default(true),
+    charts: z.object({
+      fundingProgress: z.object({
+        enabled: z.boolean().optional().default(true),
+        type: z.enum(["progress", "bar", "list"]).optional().default("progress"),
+      }).optional(),
+      amountByMilestone: z.object({
+        enabled: z.boolean().optional().default(true),
+        type: z.enum(["bar", "list"]).optional().default("bar"),
+      }).optional(),
+    }).optional(),
+  }),
+});
+
+export type FinanceSummarySection = z.infer<typeof FinanceSummarySectionSchema>;
+export type FinanceSummarySectionProps = z.infer<typeof FinanceSummarySectionSchema>["props"];
+
 //───────────────────────────────────────────────────────────────
 // Union de toutes les sections
 //───────────────────────────────────────────────────────────────
@@ -1367,6 +1496,7 @@ export const Section = z.discriminatedUnion("type", [
   HeroWithIconSectionSchema,
   HeroTiersLieuxSchema,
   HeroRezoLaMerSchema,
+  HeroSSBESchema,
   HeroNoCommunesShema,
   HeroCommuneTransparenteSchema,
   FeaturesRezoLaMerSchema,
@@ -1421,6 +1551,10 @@ export const Section = z.discriminatedUnion("type", [
   GridLayoutSectionSchema,
   NewsSectionSchema,
   MemberSectionSchema,
+  ActionsSectionSchema,
+  FinanceSectionSchema,
+  ActionsSummarySectionSchema,
+  FinanceSummarySectionSchema,
 ]);
 export type Section = z.infer<typeof Section>;
 
@@ -1535,6 +1669,7 @@ export const Header = z.object({
     auth: z.boolean().default(false),
     cart: z.boolean().default(false),
     notifications: z.boolean().default(false),
+    piggyBank: z.boolean().default(false),
   }),
   ctaButton: z.object({
     label: LocalizedString,
@@ -1897,7 +2032,8 @@ export function getDefaultSiteConfig(): Partial<SiteConfig> {
         search: false,
         auth: false,
         cart: false,
-        notifications: false
+        notifications: false,
+        piggyBank: false
       },
       sticky: false,
       transparent: false,
@@ -1943,7 +2079,8 @@ export const example: SiteConfig = {
       search: false,
       auth: false,
       cart: false,
-      notifications: false
+      notifications: false,
+      piggyBank: false
     }
   },
   pages: [

@@ -79,6 +79,13 @@ function siteCssPlugin(): Plugin {
 }
 
 export default defineConfig(({ mode, isSsrBuild }) => ({
+  server: {
+    allowedHosts: true,
+    warmup: {
+      ssrFiles: ['./src/entry-server.tsx'],
+      clientFiles: ['./src/entry-client.tsx'],
+    },
+  },
   plugins: [
     siteCssPlugin(),
     preloadPlugin(), // Doit être AVANT react() pour tracer les lazy imports
@@ -185,12 +192,6 @@ export default defineConfig(({ mode, isSsrBuild }) => ({
         }
       }
     }
-  },
-  server: {
-    warmup: {
-      ssrFiles: ['./src/entry-server.tsx'],
-      clientFiles: ['./src/entry-client.tsx'],
-    },
   },
   ssr: {
     noExternal: isSsrBuild ? true : undefined,
