@@ -26,20 +26,6 @@
     ]
   },
   "header": {
-    "type": "rezo-la-mer",
-    "path": "/",
-    "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path></svg>",
-    "logoTitle": {
-      "fr": "Extreme defi",
-      "en": "Extreme defi"
-    },
-    "ctaButton": {
-      "label": {
-        "fr": "Rejoindre",
-        "en": "Join"
-      },
-      "path": "/rejoindre"
-    },
     "nav": [
       {
         "label": {
@@ -68,20 +54,20 @@
           "en": "Community"
         },
         "path": "/communaute"
-      },
-      {
-        "label": {
-          "fr": "Ressources",
-          "en": "Resources"
-        },
-        "path": "/ressources"
       }
     ],
+    "type": "rezo-la-mer",
+    "path": "/",
+    "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path></svg>",
+    "logoTitle": {
+      "fr": "Extreme defi",
+      "en": "Extreme defi"
+    },
     "sticky": true,
     "transparent": false,
     "height": "lg",
     "utilities": {
-      "piggyBank": true,
+      "piggyBank": false,
       "themeSwitch": true,
       "langSwitch": true,
       "search": false,
@@ -601,7 +587,7 @@
               "fr": "Événements à la une",
               "en": "Featured Events"
             },
-            "align" : "center",
+            "align": "center",
             "size": "md"
           }
         },
@@ -686,7 +672,7 @@
                 "type": "event-rezo-la-mer",
                 "variant": "event-rezo-la-mer",
                 "detailsMode": "drawer",
-                "viewDetail": true 
+                "viewDetail": true
               }
             }
           }
@@ -834,100 +820,6 @@
                 ]
               }
             ]
-          }
-        }
-      ]
-    },
-    {
-      "path": "/ressources",
-      "title": {
-        "fr": "Ressources mutualisées - Extreme defi",
-        "en": "Shared Resources - Extreme defi"
-      },
-      "layout": "fullwidth",
-      "sections": [
-        {
-          "type": "title-with-filters-rezo-la-mer",
-          "id": "ressources-header",
-          "props": {
-            "headline": {
-              "fr": "Ressources mutualisées",
-              "en": "Shared Resources"
-            },
-            "subhead": {
-              "fr": "Partagez et accédez aux équipements et ressources de la communauté",
-              "en": "Share and access community equipment and resources"
-            },
-            "buttons": [
-              {
-                "label": {
-                  "fr": "Proposer une ressource",
-                  "en": "Propose a resource"
-                },
-                "icon": "anchor",
-                "action": "add-poi",
-                "variant": "primary"
-              }
-            ],
-            "showSearch": true,
-            "searchPlaceholder": {
-              "fr": "Rechercher une ressource...",
-              "en": "Search for a resource..."
-            },
-            "types": [
-              {
-                "id": "all",
-                "label": {
-                  "fr": "Toutes",
-                  "en": "All"
-                }
-              },
-              {
-                "id": "tags",
-                "label": {
-                  "fr": "tags",
-                  "en": "tags"
-                }
-              },
-              {
-                "id": "test",
-                "label": {
-                  "fr": "test",
-                  "en": "test"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "searchProStatic",
-          "id": "section-poi-list",
-          "props": {
-            "useFilter": true,
-            "showMap": false,
-            "enableMap": false,
-            "showActiveFiltersTypes": true,
-            "showActiveFiltersTags": true,
-            "disableInfiniteScroll": false,
-            "baseParams": {
-              "defaultTypes": [
-                "poi"
-              ],
-              "indexStepList": 3
-            },
-            "list": {
-              "columns": {
-                "sm": 1,
-                "md": 2,
-                "lg": 3,
-                "xl": 4
-              },
-              "card": {
-                "type": "poi-rezo-la-mer",
-                "variant": "poi-rezo-la-mer",
-                "detailsMode": "drawer"
-              }
-            }
           }
         }
       ]

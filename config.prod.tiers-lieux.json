@@ -191,7 +191,7 @@
             "description": {
               "fr": "Le recensement des usages et outils utilisés dans les tiers-lieux, pour faciliter les pratiques de mutualisation"
             },
-            "path": ""
+            "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=list-tools#list-tools"
           },
           {
             "label": {
@@ -244,7 +244,7 @@
             "description": {
               "fr": "Un diagnostic dédié aux lieux comme communs de proximité"
             },
-            "path": "#"
+            "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=licoop#licoop"
           },
           {
             "label": {
@@ -253,7 +253,7 @@
             "description": {
               "fr": "Apprendre à gouverner collectivement notre infrastructure commune et le sujet tiers-lieu"
             },
-            "path": "#"
+            "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=decider#decider"
           },
           {
             "label": {
@@ -262,7 +262,7 @@
             "description": {
               "fr": "Construisez votre propre diagnostic ici"
             },
-            "path": "#"
+            "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=diagnostic#diagnostic"
           },
           {
             "label": {
@@ -271,7 +271,7 @@
             "description": {
               "fr": "Découvrir la version 2 en cours de développement, plus rapide, et plus interopérable"
             },
-            "path": "#"
+            "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=version#version"
           },
           {
             "label": {
@@ -280,7 +280,7 @@
             "description": {
               "fr": "Gérez vos tiers-lieux"
             },
-            "path": "#"
+            "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=favoris#favoris"
           },
           {
             "label": {
@@ -421,7 +421,8 @@
           "props": {
             "customHeader": {
               "title": {
-                "fr": "Découvrir les lieux"
+                "fr": "Découvrir les lieux",
+                "en": "Discover places"
               },
               "linkText": {
                 "fr": "Cartographie des lieux"
@@ -1179,10 +1180,12 @@
               "props": {
                 "customHeader": {
                   "title": {
-                    "fr": "Tous les tiers-lieux"
+                    "fr": "Tous les tiers-lieux",
+                    "en": "All third places"
                   },
                   "linkText": {
-                    "fr": "Cartographie des événements"
+                    "fr": "Cartographie des événements",
+                    "en": "Event mapping"
                   },
                   "showMapButton": true
                 },
@@ -2720,5 +2723,15 @@
         }
       }
     }
-  ]
+  ],
+  "floatingActionButton": {
+    "enabled": true,
+    "position": "bottom-left",
+    "label": {
+      "fr": "Ajouter un Tiers-Lieu",
+      "en": "Add a Third Place"
+    },
+    "icon": "square-plus",
+    "modal": "add-tiers-lieux"
+  }
 }

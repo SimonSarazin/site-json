@@ -3,9 +3,11 @@ import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
 import { useProfilPermissions } from "../../hooks/useProfilPermissions";
 import { useEntityMembers } from "../../hooks/useMembersQuery";
+import { useConfirmationDialog } from "../../hooks/useConfirmationDialog";
 import { isEvent } from "@/lib/getTypedEntity";
 import { useEntityLabels } from "../../hooks/useEntityLabels";
 import { MemberListRenderer } from "../members/MemberListRenderer";
+import { ConfirmationDialog } from "../members/ConfirmationDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -26,6 +28,7 @@ export default function ProfileMembers({ section }: ProfileMembersProps) {
   const [selectedTab, setSelectedTab] = useState("all");
   const [showManagement, setShowManagement] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
+  const { confirmation, showConfirmation, hideConfirmation, executeAction } = useConfirmationDialog();
 
   // Récupérer les membres selon l'onglet sélectionné
   const allMembers = useEntityMembers(entity, { toBeValidated: false }, {});
@@ -38,6 +41,7 @@ export default function ProfileMembers({ section }: ProfileMembersProps) {
   if (!entity) return null;
 
   const title = section.title ? t(section.title) : labels.title;
+  const canManageInline = permissions.isAdmin || (isEvent(entity) && permissions.isAuthor);
 
 
   return (
@@ -101,25 +105,27 @@ export default function ProfileMembers({ section }: ProfileMembersProps) {
               members={allMembers.members || []}
               entity={entity}
               isLoading={allMembers.isLoading}
-              showActions={false}
+              showActions={canManageInline}
               showBadges={section.showRole}
               isPending={false}
               lastItemRef={allMembers.lastItemRef}
               isFetchingNextPage={allMembers.isFetchingNextPage}
+              showConfirmation={canManageInline ? showConfirmation : undefined}
             />
           </TabsContent>
 
-          {(permissions.isAdmin || (isEvent(entity) && permissions.isAuthor)) && (
+          {canManageInline && (
             <TabsContent value="pending" className="mt-4">
               <MemberListRenderer
                 members={pendingMembers.members || []}
                 entity={entity}
                 isLoading={pendingMembers.isLoading}
-                showActions={false}
+                showActions={true}
                 showBadges={section.showRole}
                 isPending={true}
                 lastItemRef={pendingMembers.lastItemRef}
                 isFetchingNextPage={pendingMembers.isFetchingNextPage}
+                showConfirmation={showConfirmation}
               />
             </TabsContent>
           )}
@@ -129,11 +135,12 @@ export default function ProfileMembers({ section }: ProfileMembersProps) {
               members={adminMembers.members || []}
               entity={entity}
               isLoading={adminMembers.isLoading}
-              showActions={false}
+              showActions={canManageInline}
               showBadges={section.showRole}
               isPending={false}
               lastItemRef={adminMembers.lastItemRef}
               isFetchingNextPage={adminMembers.isFetchingNextPage}
+              showConfirmation={canManageInline ? showConfirmation : undefined}
             />
           </TabsContent>
         </Tabs>
@@ -155,6 +162,12 @@ export default function ProfileMembers({ section }: ProfileMembersProps) {
         onOpenChange={setShowInvite}
       />
       )}
+
+      <ConfirmationDialog
+        confirmation={confirmation}
+        onOpenChange={hideConfirmation}
+        onConfirm={executeAction}
+      />
     </Card>
   );
 }

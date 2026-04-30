@@ -14,6 +14,7 @@ import { DynamicIcon, IconName } from "lucide-react/dynamic";
 import useItem from "@/modules/search/hooks/useItem";
 import { PreviewProps } from "@/modules/search/schema";
 import type { LocalizedString } from "@/types/locale-schema";
+import { renderMarkdown } from "@/helpers/renderMarkdown";
 
 /* -----------------------------------------------------------------------
  * Component
@@ -129,7 +130,10 @@ const PreviewDefault: React.FC<PreviewProps> = ({ item }) => {
         {description && (
           <div>
             <h3 className="text-lg font-semibold mb-1">{t("Description")}</h3>
-            <p className="whitespace-pre-line">{description}</p>
+            <div
+              className="prose prose-sm dark:prose-invert max-w-none"
+              dangerouslySetInnerHTML={{ __html: renderMarkdown(description, { markdownEnabled: true }) }}
+            />
           </div>
         )}
 
@@ -161,7 +165,7 @@ const PreviewDefault: React.FC<PreviewProps> = ({ item }) => {
           <>
             <Separator />
             <div>
-              <h3 className="text-lg font-semibold mb-2">Tags</h3>
+              <h3 className="text-lg font-semibold mb-2">{t("Tags")}</h3>
               <div className="flex flex-wrap gap-2">
                 {displayedTags.map((tag) => (
                   <Badge key={tag} variant="secondary" className="text-sm">
