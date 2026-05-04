@@ -38,6 +38,8 @@ export const COFORM_QUERY_KEYS = {
   formAnswers: (formId: string) => ["coform", "answers", formId] as const,
   formAnswer: (formId: string, answerId: string) => ["coform", "answer", formId, answerId] as const,
   answerFiles: (answerId: string, subKey: string) => ["coform", "answerFiles", answerId, subKey] as const,
+  formCatalogs: (formId: string, inputKeys: string[]) =>
+    ["coform", "catalogs", formId, [...inputKeys].sort().join(",")] as const,
 };
 
 /**

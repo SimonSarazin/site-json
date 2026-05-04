@@ -22,9 +22,17 @@ interface UseCoFormNavigationReturn {
 export function useCoFormNavigation(): UseCoFormNavigationReturn {
   const coform = useCoForm();
 
+  // Progression basée sur l'état réel : étapes soumises avec succès + 0.5 pour l'étape
+  // courante si pas encore complétée. Évite d'afficher 100 % à l'arrivée sur la dernière
+  // étape alors qu'elle n'a pas encore été remplie ni soumise.
+  const completed = coform.stepState.completedSteps.length;
+  const currentIsCompleted = coform.currentSubFormId
+    ? coform.stepState.completedSteps.includes(coform.currentSubFormId)
+    : false;
+  const inProgress = currentIsCompleted ? 0 : 0.5;
   const progressPercent =
     coform.totalSteps > 0
-      ? Math.round(((coform.stepState.currentStepIndex + 1) / coform.totalSteps) * 100)
+      ? Math.min(100, Math.round(((completed + inProgress) / coform.totalSteps) * 100))
       : 0;
 
   const canGoNext = !coform.isLastStep;

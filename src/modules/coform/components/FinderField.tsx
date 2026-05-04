@@ -138,11 +138,25 @@ export function FinderField({
 
   const hasError = !!errors[field.name];
 
+  const labelId = `${field.name}-label`;
+  const descId = field.info ? `${field.name}-desc` : undefined;
+  const errorId = hasError ? `${field.name}-error` : undefined;
+  // aria-describedby: description seule ; l'erreur passe par aria-errormessage (évite la double annonce)
+
   return (
-    <div className={cn("space-y-2", field.width || "col-span-12")}>
+    <div
+      data-field-name={field.name}
+      role="group"
+      aria-labelledby={!hideLabel && field.label ? labelId : undefined}
+      aria-invalid={hasError || undefined}
+      aria-describedby={descId}
+      aria-errormessage={errorId}
+      aria-required={field.isRequired || undefined}
+      className={cn("space-y-2", field.width || "col-span-12")}
+    >
       {/* Label */}
       {!hideLabel && (
-        <label className="block">
+        <label id={labelId} className="block">
           <span className="text-sm font-medium">
             {field.label}
             {field.isRequired && <span className="text-destructive ml-1">*</span>}
@@ -188,7 +202,7 @@ export function FinderField({
 
       {/* Message d'erreur */}
       {hasError && (
-        <p className="text-sm text-destructive">
+        <p id={errorId} role="alert" className="text-sm text-destructive">
           {errors[field.name]?.message?.toString() || "Ce champ est requis"}
         </p>
       )}

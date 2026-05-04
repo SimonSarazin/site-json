@@ -163,11 +163,26 @@ export function EvaluationField({
     [categories]
   );
 
+  const labelId = `${field.name}-label`;
+  const descId = field.info ? `${field.name}-desc` : undefined;
+  const errorId = hasError ? `${field.name}-error` : undefined;
+  // aria-describedby: description seule ; l'erreur passe par aria-errormessage (évite la double annonce)
+
   return (
-    <div className={cn("space-y-2", field.width || "col-span-12")}>
+    <div
+      data-field-name={field.name}
+      role="group"
+      aria-labelledby={!hideLabel && field.label ? labelId : undefined}
+      aria-invalid={hasError || undefined}
+      aria-describedby={descId}
+      aria-errormessage={errorId}
+      aria-required={field.isRequired || undefined}
+      className={cn("space-y-2", field.width || "col-span-12")}
+    >
       {/* Label */}
       {!hideLabel && (
         <label
+          id={labelId}
           htmlFor={field.name}
           className={cn(
             "block text-sm font-medium",
@@ -184,7 +199,17 @@ export function EvaluationField({
 
       {/* Table d'évaluation */}
       <div className="overflow-x-auto border rounded-md">
-        <table className="w-full border-collapse text-sm min-w-max">
+        <table className="border-collapse text-sm table-fixed w-full min-w-240">
+          {/* Largeurs explicites : colonnes de catégorie larges (questions/labels
+              peuvent être longs → wrap), colonnes de vote étroites et fixes. */}
+          <colgroup>
+            {Array.from({ length: categoryNumber }, (_, i) => (
+              <col key={`cat-${i}`} className="w-96" />
+            ))}
+            {criteriaIds.map((criteriaId) => (
+              <col key={`crit-${criteriaId}`} className="w-32" />
+            ))}
+          </colgroup>
           <thead>
             {/* Ligne 1: Label catégorie + Label critères */}
             <tr className="border-b border-border">
@@ -242,11 +267,11 @@ export function EvaluationField({
                     getRowBackgroundClass(row.segments)
                   )}
                 >
-                  {/* Colonnes de catégorie */}
+                  {/* Colonnes de catégorie — wrap pour les libellés longs */}
                   {Array.from({ length: categoryNumber }, (_, i) => (
                     <td
                       key={i}
-                      className="p-2 border-r border-border min-w-24 whitespace-nowrap"
+                      className="p-2 border-r border-border wrap-break-word"
                     >
                       {row.segments[i] || ""}
                     </td>
@@ -275,7 +300,7 @@ export function EvaluationField({
 
       {/* Message d'erreur */}
       {hasError && (
-        <p className="text-sm text-destructive">
+        <p id={errorId} role="alert" className="text-sm text-destructive">
           {errors[field.name]?.message as string}
         </p>
       )}

@@ -54,9 +54,14 @@ interface FormFieldProps {
  */
 export function TextField({ field, register, errors }: FormFieldProps) {
   const hasError = !!errors[field.name];
-  
+  const descId = field.info ? `${field.name}-desc` : undefined;
+  const errorId = hasError ? `${field.name}-error` : undefined;
+  // aria-describedby: uniquement la description. L'erreur est référencée via aria-errormessage
+  // pour éviter une double annonce (certains lecteurs d'écran la liraient deux fois).
+  const describedBy = descId;
+
   return (
-    <div className={cn("space-y-2", field.width)}>
+    <div data-field-name={field.name} className={cn("space-y-2", field.width)}>
       {field.label && (
         <Label
           htmlFor={field.name}
@@ -66,25 +71,29 @@ export function TextField({ field, register, errors }: FormFieldProps) {
           {field.isRequired && <span className="text-destructive ml-1">*</span>}
         </Label>
       )}
-      {field.info && <HintText text={field.info} />}
+      {field.info && <div id={descId}><HintText text={field.info} /></div>}
       <div className={cn(
         "relative",
         "after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:rounded-b-md",
         "after:origin-left after:scale-x-0 after:transition-transform after:duration-300 after:ease-out",
-        hasError 
-          ? "after:scale-x-100 after:bg-destructive" 
+        hasError
+          ? "after:scale-x-100 after:bg-destructive"
           : "focus-within:after:scale-x-100 after:bg-primary"
       )}>
         <Input
           id={field.name}
           type={field.inputType || "text"}
           placeholder={field.placeholder}
+          aria-invalid={hasError || undefined}
+          aria-describedby={describedBy}
+          aria-errormessage={errorId}
+          aria-required={field.isRequired || undefined}
           {...(register ? register(field.name) : {})}
           className="border border-input focus-visible:ring-0 focus-visible:border-input"
         />
       </div>
       {hasError && (
-        <p className="text-xs text-destructive flex items-center gap-1 mt-1">
+        <p id={errorId} role="alert" className="text-xs text-destructive flex items-center gap-1 mt-1">
           <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
           </svg>
@@ -102,9 +111,14 @@ export function TextAreaField({ field, register, errors, value, onChange }: Form
   const hasError = !!errors[field.name];
   const isMarkdown = field.markdown === true;
   const textValue = typeof value === "string" ? value : "";
-  
+  const descId = field.info ? `${field.name}-desc` : undefined;
+  const errorId = hasError ? `${field.name}-error` : undefined;
+  // aria-describedby: uniquement la description. L'erreur est référencée via aria-errormessage
+  // pour éviter une double annonce (certains lecteurs d'écran la liraient deux fois).
+  const describedBy = descId;
+
   return (
-    <div className={cn("space-y-2", field.width)}>
+    <div data-field-name={field.name} className={cn("space-y-2", field.width)}>
       {field.label && (
         <Label
           htmlFor={field.name}
@@ -114,7 +128,7 @@ export function TextAreaField({ field, register, errors, value, onChange }: Form
           {field.isRequired && <span className="text-destructive ml-1">*</span>}
         </Label>
       )}
-      {field.info && <HintText text={field.info} />}
+      {field.info && <div id={descId}><HintText text={field.info} /></div>}
 
       {isMarkdown ? (
         <div data-color-mode="light">
@@ -132,13 +146,17 @@ export function TextAreaField({ field, register, errors, value, onChange }: Form
           "relative",
           "after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:rounded-b-md",
           "after:origin-left after:scale-x-0 after:transition-transform after:duration-300 after:ease-out",
-          hasError 
-            ? "after:scale-x-100 after:bg-destructive" 
+          hasError
+            ? "after:scale-x-100 after:bg-destructive"
             : "focus-within:after:scale-x-100 after:bg-primary"
         )}>
           <Textarea
             id={field.name}
             placeholder={field.placeholder}
+            aria-invalid={hasError || undefined}
+            aria-describedby={describedBy}
+            aria-errormessage={errorId}
+            aria-required={field.isRequired || undefined}
             {...(register ? register(field.name) : {})}
             className="min-h-25 border border-input focus-visible:ring-0 focus-visible:border-input"
           />
@@ -146,7 +164,7 @@ export function TextAreaField({ field, register, errors, value, onChange }: Form
       )}
 
       {hasError && (
-        <p className="text-xs text-destructive flex items-center gap-1 mt-1">
+        <p id={errorId} role="alert" className="text-xs text-destructive flex items-center gap-1 mt-1">
           <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
           </svg>
@@ -237,32 +255,43 @@ export function RadioField({ field, errors, value, onChange }: FormFieldProps) {
   const isRow = field.positionType === "row";
   const selectedValue = typeof value === "string" ? value : "";
   const hasError = !!errors[field.name];
+  const labelId = `${field.name}-label`;
+  const descId = field.info ? `${field.name}-desc` : undefined;
+  const errorId = hasError ? `${field.name}-error` : undefined;
+  // aria-describedby: uniquement la description. L'erreur est référencée via aria-errormessage
+  // pour éviter une double annonce (certains lecteurs d'écran la liraient deux fois).
+  const describedBy = descId;
 
   return (
-    <div className={cn("space-y-4", field.width)}>
+    <div data-field-name={field.name} className={cn("space-y-4", field.width)}>
       {field.label && (
-        <Label className="text-sm font-medium text-foreground">
+        <Label id={labelId} className="text-sm font-medium text-foreground">
           {field.label}
           {field.isRequired && <span className="text-destructive ml-1">*</span>}
         </Label>
       )}
-      {field.info && <HintText text={field.info} />}
-      
+      {field.info && <div id={descId}><HintText text={field.info} /></div>}
+
       <RadioGroup
         value={selectedValue}
         onValueChange={onChange}
+        aria-labelledby={field.label ? labelId : undefined}
+        aria-invalid={hasError || undefined}
+        aria-describedby={describedBy}
+        aria-errormessage={errorId}
+        aria-required={field.isRequired || undefined}
         className={cn(
           isRow ? "flex flex-row flex-wrap gap-4" : "flex-col space-y-0.5"
         )}
       >
         {options.map((option, index) => (
-          <div 
-            key={index} 
+          <div
+            key={index}
             className="flex items-center space-x-2.5 cursor-pointer"
           >
             <RadioGroupItem value={option} id={`${field.name}-${index}`} />
-            <Label 
-              htmlFor={`${field.name}-${index}`} 
+            <Label
+              htmlFor={`${field.name}-${index}`}
               className="font-normal cursor-pointer flex-1"
             >
               {option}
@@ -272,7 +301,7 @@ export function RadioField({ field, errors, value, onChange }: FormFieldProps) {
       </RadioGroup>
 
       {hasError && (
-        <p className="text-xs text-destructive flex items-center gap-1 mt-1">
+        <p id={errorId} role="alert" className="text-xs text-destructive flex items-center gap-1 mt-1">
           <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
           </svg>
@@ -291,6 +320,12 @@ export function CheckboxField({ field, errors, value = [], onChange }: FormField
   const isRow = field.positionType === "row";
   const selectedValues = Array.isArray(value) ? value as string[] : [];
   const hasError = !!errors[field.name];
+  const labelId = `${field.name}-label`;
+  const descId = field.info ? `${field.name}-desc` : undefined;
+  const errorId = hasError ? `${field.name}-error` : undefined;
+  // aria-describedby: uniquement la description. L'erreur est référencée via aria-errormessage
+  // pour éviter une double annonce (certains lecteurs d'écran la liraient deux fois).
+  const describedBy = descId;
 
   const handleCheckboxChange = (option: string, checked: boolean) => {
     if (checked) {
@@ -301,14 +336,23 @@ export function CheckboxField({ field, errors, value = [], onChange }: FormField
   };
 
   return (
-    <div className={cn("space-y-4", field.width)}>
+    <div
+      data-field-name={field.name}
+      role="group"
+      aria-labelledby={field.label ? labelId : undefined}
+      aria-invalid={hasError || undefined}
+      aria-describedby={describedBy}
+      aria-errormessage={errorId}
+      aria-required={field.isRequired || undefined}
+      className={cn("space-y-4", field.width)}
+    >
       {field.label && (
-        <Label className="text-sm font-medium text-foreground">
+        <Label id={labelId} className="text-sm font-medium text-foreground">
           {field.label}
           {field.isRequired && <span className="text-destructive ml-1">*</span>}
         </Label>
       )}
-      {field.info && <HintText text={field.info} />}
+      {field.info && <div id={descId}><HintText text={field.info} /></div>}
 
       <div
         className={cn(
@@ -318,8 +362,8 @@ export function CheckboxField({ field, errors, value = [], onChange }: FormField
         {options.map((option, index) => {
           const isChecked = selectedValues.includes(option);
           return (
-            <div 
-              key={index} 
+            <div
+              key={index}
               className="flex items-center space-x-2.5 py-1 cursor-pointer"
             >
               <Checkbox
@@ -327,8 +371,8 @@ export function CheckboxField({ field, errors, value = [], onChange }: FormField
                 checked={isChecked}
                 onCheckedChange={(checked) => handleCheckboxChange(option, checked as boolean)}
               />
-              <Label 
-                htmlFor={`${field.name}-${index}`} 
+              <Label
+                htmlFor={`${field.name}-${index}`}
                 className="font-normal cursor-pointer flex-1"
               >
                 {option}
@@ -339,7 +383,7 @@ export function CheckboxField({ field, errors, value = [], onChange }: FormField
       </div>
 
       {hasError && (
-        <p className="text-xs text-destructive flex items-center gap-1 mt-1">
+        <p id={errorId} role="alert" className="text-xs text-destructive flex items-center gap-1 mt-1">
           <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
           </svg>

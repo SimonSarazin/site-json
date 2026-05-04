@@ -224,9 +224,24 @@ export function UploaderField({ field, errors, value = [], onChange, answerId, s
     }).join(", ");
   }, [files]);
 
+  const labelId = `${field.name}-label`;
+  const descId = field.info ? `${field.name}-desc` : undefined;
+  const errorId = hasError ? `${field.name}-error` : undefined;
+  // aria-describedby: description seule ; l'erreur passe par aria-errormessage (évite la double annonce)
+
   return (
-    <div className={cn("space-y-2", field.width || "col-span-12")}>
+    <div
+      data-field-name={field.name}
+      role="group"
+      aria-labelledby={field.label ? labelId : undefined}
+      aria-invalid={hasError || undefined}
+      aria-describedby={descId}
+      aria-errormessage={errorId}
+      aria-required={field.isRequired || undefined}
+      className={cn("space-y-2", field.width || "col-span-12")}
+    >
       <label
+        id={labelId}
         htmlFor={field.name}
         className={cn("block text-sm font-medium", hasError && "text-destructive")}
       >
@@ -382,7 +397,7 @@ export function UploaderField({ field, errors, value = [], onChange, answerId, s
       )}
 
       {hasError && (
-        <p className="text-xs text-destructive flex items-center gap-1 mt-1">
+        <p id={errorId} role="alert" className="text-xs text-destructive flex items-center gap-1 mt-1">
           {errors[field.name]?.message as string}
         </p>
       )}

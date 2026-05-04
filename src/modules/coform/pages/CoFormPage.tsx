@@ -390,6 +390,7 @@ export default function CoFormPage() {
 
                         <SmartCoForm
                             formData={formData}
+                            formId={formId}
                             submitMode="final"
                             onFinalSubmit={handleFinalSubmit}
                             onAfterSubmit={isStandalone ? handleAfterStandaloneSubmit : undefined}

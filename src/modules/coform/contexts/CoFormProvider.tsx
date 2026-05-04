@@ -1,7 +1,8 @@
-import { useCallback, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { CoFormContext, type CoFormContextType, type CoFormStepState } from "./CoFormContext";
 import type { CoFormData, SubFormData, AllStepsData, AddedOptionsMap } from "../types";
 import { parseCoFormFields, denormalizeAnswerData, extractFinderLinks, type FinderLinksMap } from "../utils/formParser";
+import { useCoFormDraft } from "../hooks/useCoFormDraft";
 
 interface CoFormProviderProps {
   children: ReactNode;
@@ -16,6 +17,14 @@ interface CoFormProviderProps {
   answerId?: string;
   /** Clé (subFormId) de l'étape initiale (pour démarrer le wizard sur une étape spécifique) */
   initialStepKey?: string;
+  /** ID du formulaire (utilisé comme préfixe de la clé de draft localStorage) */
+  formId?: string;
+  /** ID utilisateur connecté (clé de draft). Si absent, l'auto-save est désactivée. */
+  userId?: string | null;
+  /** updatedAt serveur de la réponse existante (édition) — pour détecter un draft obsolète */
+  baseUpdatedAt?: number | null;
+  /** Active la persistance du brouillon en localStorage. Défaut : true. */
+  enableDraft?: boolean;
 }
 
 /**
@@ -31,8 +40,28 @@ export function CoFormProvider({
   defaultValues,
   answerId,
   initialStepKey,
+  formId,
+  userId,
+  baseUpdatedAt,
+  enableDraft = true,
 }: CoFormProviderProps) {
   const subFormsFields = useMemo(() => parseCoFormFields(formData), [formData]);
+
+  // Persistance du brouillon en localStorage (désactivée si conditions pas réunies).
+  const {
+    restorableDraft,
+    staleDraftInfo,
+    saveDraft,
+    discardDraft,
+    purgeDraft,
+    acknowledgeStale,
+  } = useCoFormDraft({
+    formId,
+    userId,
+    answerId,
+    baseUpdatedAt,
+    disabled: !enableDraft,
+  });
 
   // Résoudre l'index initial à partir de initialStepKey
   const initialStepIndex = useMemo(() => {
@@ -90,6 +119,25 @@ export function CoFormProvider({
     [totalSteps]
   );
 
+  // Persistance du brouillon : déclenchée via un effet qui observe `stepState`
+  // pour lire toujours la valeur post-update (pas de race avec setState).
+  // Le hook sous-jacent debounce à 500ms, donc pas de churn de localStorage.
+  const hasHydratedRef = useRef(false);
+  useEffect(() => {
+    // Skip le tout premier run : on ne veut pas écraser un éventuel draft
+    // restaurable avant que l'utilisateur ait interagi avec le formulaire.
+    if (!hasHydratedRef.current) {
+      hasHydratedRef.current = true;
+      return;
+    }
+    saveDraft({
+      data: stepState.stepsData,
+      currentStepIndex: stepState.currentStepIndex,
+      completedSteps: stepState.completedSteps,
+      addedOptions: stepState.addedOptions,
+    });
+  }, [stepState, saveDraft]);
+
   // Sauvegarde locale des données d'une étape
   const saveStepData = useCallback((subFormId: string, data: SubFormData) => {
     // Mettre à jour le ref immédiatement (synchrone) pour éviter stale closure
@@ -134,7 +182,7 @@ export function CoFormProvider({
           await onStepSubmit(subFormId, data, stepIndex);
         }
 
-        // Marquer l'étape comme complétée
+        // Marquer l'étape comme complétée (la persistance est assurée par l'effet stepState)
         setStepState((prev) => ({
           ...prev,
           completedSteps: prev.completedSteps.includes(subFormId)
@@ -193,6 +241,9 @@ export function CoFormProvider({
           hasAddedOptions ? stepState.addedOptions : undefined,
           hasLinks ? links : undefined
         );
+
+        // Succès : purger le brouillon local
+        purgeDraft();
       }
     } catch (err) {
       setError(err instanceof Error ? err : new Error("Erreur lors de la soumission finale"));
@@ -200,7 +251,7 @@ export function CoFormProvider({
     } finally {
       setIsLoading(false);
     }
-  }, [submitMode, onFinalSubmit, stepState.addedOptions, subFormsFields]);
+  }, [submitMode, onFinalSubmit, stepState.addedOptions, subFormsFields, purgeDraft]);
 
   // Réinitialisation
   const resetForm = useCallback(() => {
@@ -215,6 +266,33 @@ export function CoFormProvider({
     setError(null);
   }, []);
 
+  // Applique le brouillon restaurable au state du formulaire
+  const restoreDraft = useCallback(() => {
+    if (!restorableDraft) return;
+    const safeIndex = Math.min(
+      Math.max(restorableDraft.currentStepIndex, 0),
+      Math.max(totalSteps - 1, 0)
+    );
+    stepsDataRef.current = restorableDraft.data;
+    setStepState({
+      currentStepIndex: safeIndex,
+      stepsData: restorableDraft.data,
+      completedSteps: restorableDraft.completedSteps,
+      errorSteps: [],
+      submittingStep: null,
+      addedOptions: restorableDraft.addedOptions,
+    });
+    // On purge aussi la clé pour fermer la bannière (on vient d'appliquer le contenu).
+    // Le state en mémoire est la source de vérité ; un nouveau draft sera écrit à la prochaine modification.
+    discardDraft();
+  }, [restorableDraft, totalSteps, discardDraft]);
+
+  // Métadonnées exposées au contexte (stables tant que le timestamp ne change pas)
+  const restorableMeta = useMemo(
+    () => (restorableDraft ? { timestamp: restorableDraft.timestamp } : null),
+    [restorableDraft]
+  );
+
   // Valeur du contexte
   const contextValue: CoFormContextType = useMemo(
     () => ({
@@ -228,6 +306,8 @@ export function CoFormProvider({
       isLastStep,
       isLoading,
       error,
+      restorableDraft: restorableMeta,
+      staleDraftInfo,
       goToNextStep,
       goToPreviousStep,
       goToStep,
@@ -236,6 +316,9 @@ export function CoFormProvider({
       submitStepData,
       submitAllData,
       resetForm,
+      restoreDraft,
+      discardDraft,
+      acknowledgeStaleDraft: acknowledgeStale,
     }),
     [
       formData,
@@ -248,6 +331,8 @@ export function CoFormProvider({
       isLastStep,
       isLoading,
       error,
+      restorableMeta,
+      staleDraftInfo,
       goToNextStep,
       goToPreviousStep,
       goToStep,
@@ -256,6 +341,9 @@ export function CoFormProvider({
       submitStepData,
       submitAllData,
       resetForm,
+      restoreDraft,
+      discardDraft,
+      acknowledgeStale,
     ]
   );
 

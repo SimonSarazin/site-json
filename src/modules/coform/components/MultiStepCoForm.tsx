@@ -1,5 +1,6 @@
-import { Fragment, useRef, useEffect, useMemo } from "react";
+import { Fragment, useRef, useEffect, useMemo, useState, useCallback } from "react";
 import { Controller } from "react-hook-form";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -15,11 +16,16 @@ import { TextField, TextAreaField, RadioField, CheckboxField, ProseContent, Sect
 import { MultiCheckboxPlusField } from "./MultiCheckboxPlusField";
 import { MultiRadioField } from "./MultiRadioField";
 import { EvaluationField } from "./EvaluationField";
+import { CommonTableField } from "./CommonTableField";
 import { FinderField } from "./FinderField";
 import { SimpleTableField } from "./SimpleTableField";
 import { UploaderField } from "./UploaderField";
+import { ErrorSummary } from "./ErrorSummary";
+import { DraftRecoveryBanner } from "./DraftRecoveryBanner";
 import { useConditionalFields } from "../hooks/useConditionalFields";
-import type { CoFormData, SubFormData, AllStepsData, MultiCheckboxPlusValue, MultiRadioValue, EvaluationValue, FinderValue, SimpleTableValue } from "../types";
+import { useUnsavedChangesWarning } from "../hooks/useUnsavedChangesWarning";
+import { scrollToFieldByName } from "../utils/helpers";
+import type { CoFormData, SubFormData, AllStepsData, MultiCheckboxPlusValue, MultiRadioValue, EvaluationValue, CommonTableValue, FinderValue, SimpleTableValue } from "../types";
 import type { CoFormSubmitMode, CoFormVariant } from "../schema";
 
 interface MultiStepCoFormProps {
@@ -43,6 +49,14 @@ interface MultiStepCoFormProps {
   onDirtyChange?: (isDirty: boolean) => void;
   /** Liste de clés d'inputs verrouillés (lecture seule, non modifiables) */
   lockedFields?: string[];
+  /** ID du formulaire (sert de préfixe à la clé de draft localStorage) */
+  formId?: string;
+  /** ID utilisateur connecté (clé de draft). `null` = anonyme, draft désactivé. */
+  userId?: string | null;
+  /** updatedAt serveur de la réponse existante (édition), pour détection de draft obsolète */
+  baseUpdatedAt?: number | null;
+  /** Active la persistance du brouillon. Défaut `true`. */
+  enableDraft?: boolean;
 }
 
 /**
@@ -64,6 +78,10 @@ export function MultiStepCoForm({
   initialStepKey,
   onDirtyChange,
   lockedFields,
+  formId,
+  userId,
+  baseUpdatedAt,
+  enableDraft,
 }: MultiStepCoFormProps) {
   return (
     <CoFormProvider
@@ -74,6 +92,10 @@ export function MultiStepCoForm({
       defaultValues={defaultValues}
       answerId={answerId}
       initialStepKey={initialStepKey}
+      formId={formId}
+      userId={userId}
+      baseUpdatedAt={baseUpdatedAt}
+      enableDraft={enableDraft}
     >
       <MultiStepCoFormContent
         variant={variant}
@@ -127,6 +149,15 @@ function MultiStepCoFormContent({
 
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // hasAttemptedSubmit : passe à true après un submit invalide, pour afficher le résumé d'erreurs.
+  // Réinitialisé au changement d'étape via le pattern "adjust state during render".
+  const [prevStepIndex, setPrevStepIndex] = useState(navigation.currentStepIndex);
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
+  if (prevStepIndex !== navigation.currentStepIndex) {
+    setPrevStepIndex(navigation.currentStepIndex);
+    setHasAttemptedSubmit(false);
+  }
+
   // Remonter en haut du conteneur (modal ou page) au changement d'étape
   useEffect(() => {
     if (!containerRef.current) return;
@@ -150,10 +181,21 @@ function MultiStepCoFormContent({
     onDirtyChange?.(isDirty);
   }, [isDirty, onDirtyChange]);
 
+  // Warning navigateur avant refresh/fermeture si modifications non sauvegardées
+  useUnsavedChangesWarning(isDirty);
+
   // Gérer la soumission de l'étape ou la soumission finale
   const handleSubmit = async () => {
-    await submitStep();
-    
+    const ok = await submitStep();
+
+    if (!ok) {
+      setHasAttemptedSubmit(true);
+      const firstErrorName = Object.keys(form.formState.errors)[0];
+      if (firstErrorName) scrollToFieldByName(firstErrorName);
+      toast.error(t("coform.errors.summary.toast"));
+      return;
+    }
+
     // Si dernière étape, soumettre toutes les données
     // stepsDataRef dans CoFormProvider garantit que les données sont à jour
     if (navigation.isLastStep) {
@@ -161,12 +203,32 @@ function MultiStepCoFormContent({
     }
   };
 
+  const handleErrorFieldClick = useCallback((name: string) => {
+    scrollToFieldByName(name);
+  }, []);
+
   if (!fields) {
     return <div>{t("coform.status.loading")}</div>;
   }
 
   return (
     <div ref={containerRef} className={cn("space-y-6", className)}>
+      {coform.restorableDraft && (
+        <DraftRecoveryBanner
+          mode="restorable"
+          timestamp={coform.restorableDraft.timestamp}
+          onRestore={coform.restoreDraft}
+          onDiscard={coform.discardDraft}
+        />
+      )}
+      {coform.staleDraftInfo && !coform.restorableDraft && (
+        <DraftRecoveryBanner
+          mode="stale"
+          timestamp={coform.staleDraftInfo.timestamp}
+          onAcknowledge={coform.acknowledgeStaleDraft}
+        />
+      )}
+
       {/* Bannière du formulaire avec titre en overlay */}
       {coform.formData?.useBannerImg && coform.formData.profilBannerUrl ? (
         <div className="relative w-full overflow-hidden rounded-lg">
@@ -376,6 +438,23 @@ function MultiStepCoFormContent({
                     />
                   );
 
+                case "commonTable":
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={form.control}
+                      render={({ field: controllerField }) => (
+                        <CommonTableField
+                          field={field}
+                          errors={form.formState.errors}
+                          value={controllerField.value as CommonTableValue}
+                          onChange={controllerField.onChange}
+                        />
+                      )}
+                    />
+                  );
+
                 case "finder":
                   return (
                     <Controller
@@ -456,6 +535,13 @@ function MultiStepCoFormContent({
             })}
             </div>
           </form>
+
+          <ErrorSummary
+            errors={hasAttemptedSubmit ? form.formState.errors : {}}
+            fields={fields.fields}
+            serverError={coform.error}
+            onFieldClick={handleErrorFieldClick}
+          />
         </CardContent>
 
         <CardFooter className="flex justify-between gap-3 border-t pt-6">
@@ -531,12 +617,6 @@ function MultiStepCoFormContent({
         </CardFooter>
       </Card>
 
-      {/* Message d'erreur global */}
-      {coform.error && (
-        <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
-          {coform.error.message}
-        </div>
-      )}
     </div>
   );
 };

@@ -363,11 +363,26 @@ export function SimpleTableField({
 
   if (!config) return null;
 
+  const labelId = `${field.name}-label`;
+  const descId = field.info ? `${field.name}-desc` : undefined;
+  const errorId = hasError ? `${field.name}-error` : undefined;
+  // aria-describedby: description seule ; l'erreur passe par aria-errormessage (évite la double annonce)
+
   return (
-    <div className={cn("space-y-2", field.width || "col-span-12")}>
+    <div
+      data-field-name={field.name}
+      role="group"
+      aria-labelledby={!hideLabel && field.label ? labelId : undefined}
+      aria-invalid={hasError || undefined}
+      aria-describedby={descId}
+      aria-errormessage={errorId}
+      aria-required={field.isRequired || undefined}
+      className={cn("space-y-2", field.width || "col-span-12")}
+    >
       {/* Label */}
       {!hideLabel && (
         <label
+          id={labelId}
           htmlFor={field.name}
           className={cn(
             "block text-sm font-medium",
@@ -484,7 +499,7 @@ export function SimpleTableField({
 
       {/* Error message */}
       {hasError && (
-        <p className="text-xs text-destructive flex items-center gap-1 mt-1">
+        <p id={errorId} role="alert" className="text-xs text-destructive flex items-center gap-1 mt-1">
           <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
             <path
               fillRule="evenodd"

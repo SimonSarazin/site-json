@@ -1,19 +1,26 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
-import { useForm, Controller, useWatch } from "react-hook-form";
+import { useForm, Controller, useWatch, type FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TextField, TextAreaField, RadioField, CheckboxField, ProseContent, SectionTitleField, SectionDescriptionField } from "./FormFields";
 import { MultiCheckboxPlusField } from "./MultiCheckboxPlusField";
 import { MultiRadioField } from "./MultiRadioField";
 import { EvaluationField } from "./EvaluationField";
+import { CommonTableField } from "./CommonTableField";
 import { FinderField } from "./FinderField";
 import { SimpleTableField } from "./SimpleTableField";
 import { UploaderField } from "./UploaderField";
-import type { CoFormData, SubFormData, AddedOptionsMap, EvaluationValue, FinderValue, SimpleTableValue, MultiRadioValue } from "../types";
+import { ErrorSummary } from "./ErrorSummary";
+import { DraftRecoveryBanner } from "./DraftRecoveryBanner";
+import type { CoFormData, SubFormData, AddedOptionsMap, EvaluationValue, CommonTableValue, FinderValue, SimpleTableValue, MultiRadioValue } from "../types";
 import { parseCoFormFields, generateZodSchema, generateDefaultValues } from "../utils/formParser";
 import { useConditionalFields } from "../hooks/useConditionalFields";
+import { useCoFormDraft } from "../hooks/useCoFormDraft";
+import { useUnsavedChangesWarning } from "../hooks/useUnsavedChangesWarning";
+import { scrollToFieldByName } from "../utils/helpers";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 
@@ -42,6 +49,14 @@ interface DynamicCoFormProps {
   submitRef?: React.RefObject<(() => void) | null>;
   /** Liste de clés d'inputs verrouillés (lecture seule, non modifiables) */
   lockedFields?: string[];
+  /** ID du formulaire — clé de draft localStorage */
+  formId?: string;
+  /** ID utilisateur connecté — clé de draft */
+  userId?: string | null;
+  /** updatedAt serveur (édition) — pour détecter les drafts obsolètes */
+  baseUpdatedAt?: number | null;
+  /** Active la persistance du draft. Défaut : true. */
+  enableDraft?: boolean;
 }
 
 /**
@@ -62,6 +77,10 @@ export function DynamicCoForm({
   onDirtyChange,
   submitRef,
   lockedFields,
+  formId,
+  userId,
+  baseUpdatedAt,
+  enableDraft = true,
 }: DynamicCoFormProps) {
   const t = useT("modules/coform");
   useLoadNamespace("modules/coform");
@@ -74,9 +93,10 @@ export function DynamicCoForm({
   const generatedDefaults = useMemo(() => generateDefaultValues(subFormsFields), [subFormsFields]);
 
   // Fusionner : valeurs externes (mode édition) écrasent les défauts générés
-  const defaultValues = externalDefaults
-    ? { ...generatedDefaults, ...externalDefaults }
-    : generatedDefaults;
+  const defaultValues = useMemo(
+    () => (externalDefaults ? { ...generatedDefaults, ...externalDefaults } : generatedDefaults),
+    [externalDefaults, generatedDefaults]
+  );
 
   type FormValues = z.infer<typeof zodSchema>;
 
@@ -84,6 +104,7 @@ export function DynamicCoForm({
     register,
     handleSubmit,
     control,
+    reset,
     formState: { errors, isSubmitting, isDirty },
   } = useForm<FormValues>({
     resolver: zodResolver(zodSchema),
@@ -111,10 +132,55 @@ export function DynamicCoForm({
   const lastSubmittedValuesRef = useRef<string>(JSON.stringify(defaultValues));
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
+
+  // Identifiant du sous-formulaire courant (pour encapsuler les données dans le payload du draft,
+  // qui a le même format que AllStepsData utilisé par MultiStepCoForm).
+  const subFormId = subFormsFields[0]?.subFormId ?? "default";
+
+  // Persistance du brouillon en localStorage. Désactivée si conditions non réunies.
+  const { restorableDraft, staleDraftInfo, saveDraft, discardDraft, purgeDraft, acknowledgeStale } =
+    useCoFormDraft({
+      formId,
+      userId,
+      baseUpdatedAt,
+      disabled: !enableDraft || autoSubmitOnBlur,
+    });
+
   const handleFormSubmit = useCallback(async (data: FormValues) => {
+    setHasAttemptedSubmit(false);
     const hasAddedOptions = Object.keys(addedOptionsMap).some(k => addedOptionsMap[k].length > 0);
     await onSubmit(data as SubFormData, hasAddedOptions ? addedOptionsMap : undefined);
-  }, [addedOptionsMap, onSubmit]);
+    // Succès : purge le draft.
+    purgeDraft();
+  }, [addedOptionsMap, onSubmit, purgeDraft]);
+
+  const handleRestoreDraft = useCallback(() => {
+    if (!restorableDraft) return;
+    const restored = restorableDraft.data[subFormId] as Record<string, unknown> | undefined;
+    if (restored) {
+      // `keepDirty: true` est nécessaire pour que l'auto-save (gated by isDirty) continue
+      // à persister les modifications : sans ça, un restore effacerait le draft sans le ré-écrire,
+      // et un refresh juste après perdrait les données restaurées.
+      reset({ ...defaultValues, ...restored } as FormValues, { keepDirty: true });
+    }
+    const restoredOptions = restorableDraft.addedOptions?.[subFormId];
+    if (restoredOptions && Object.keys(restoredOptions).length > 0) {
+      setAddedOptionsMap(restoredOptions);
+    }
+    discardDraft();
+  }, [restorableDraft, subFormId, defaultValues, discardDraft, reset]);
+
+  const handleInvalid = useCallback((invalidErrors: FieldErrors) => {
+    setHasAttemptedSubmit(true);
+    const firstErrorName = Object.keys(invalidErrors)[0];
+    if (firstErrorName) scrollToFieldByName(firstErrorName);
+    toast.error(t("coform.errors.summary.toast"));
+  }, [t]);
+
+  const handleErrorFieldClick = useCallback((name: string) => {
+    scrollToFieldByName(name);
+  }, []);
 
   // Auto-submit unifié : useWatch détecte les changements de valeur (tous types d'input)
   // puis debounce 600ms avant de soumettre si la valeur a effectivement changé.
@@ -125,15 +191,33 @@ export function DynamicCoForm({
     onDirtyChange?.(isDirty);
   }, [isDirty, onDirtyChange]);
 
+  // Warning navigateur avant fermeture/refresh si modifications non sauvegardées
+  useUnsavedChangesWarning(isDirty);
+
+  // Auto-save du draft à chaque changement de valeur (debounce interne au hook).
+  // `formId` et `userId` sont dans les deps pour gérer le cas où ils arriveraient
+  // de façon asynchrone (URL / loader) — sinon un save précoce partirait avec key=null.
+  useEffect(() => {
+    if (!isDirty) return;
+    saveDraft({
+      data: { [subFormId]: watchedValues as SubFormData },
+      currentStepIndex: 0,
+      completedSteps: [],
+      addedOptions: Object.keys(addedOptionsMap).length > 0
+        ? { [subFormId]: addedOptionsMap }
+        : {},
+    });
+  }, [watchedValues, addedOptionsMap, isDirty, saveDraft, subFormId, formId, userId]);
+
   // Exposer la soumission programmatique via submitRef
   useEffect(() => {
     if (submitRef) {
-      submitRef.current = () => handleSubmit(handleFormSubmit)();
+      submitRef.current = () => handleSubmit(handleFormSubmit, handleInvalid)();
     }
     return () => {
       if (submitRef) submitRef.current = null;
     };
-  }, [submitRef, handleSubmit, handleFormSubmit]);
+  }, [submitRef, handleSubmit, handleFormSubmit, handleInvalid]);
 
   useEffect(() => {
     if (!autoSubmitOnBlur) return;
@@ -152,7 +236,22 @@ export function DynamicCoForm({
   });
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(handleFormSubmit, handleInvalid)} className="space-y-6">
+      {restorableDraft && (
+        <DraftRecoveryBanner
+          mode="restorable"
+          timestamp={restorableDraft.timestamp}
+          onRestore={handleRestoreDraft}
+          onDiscard={discardDraft}
+        />
+      )}
+      {staleDraftInfo && !restorableDraft && (
+        <DraftRecoveryBanner
+          mode="stale"
+          timestamp={staleDraftInfo.timestamp}
+          onAcknowledge={acknowledgeStale}
+        />
+      )}
       {/* Bannière du formulaire avec titre en overlay */}
       {!hideBanner && (
         formData.useBannerImg && formData.profilBannerUrl ? (
@@ -313,6 +412,24 @@ export function DynamicCoForm({
                     />
                   );
 
+                case "commonTable":
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={control}
+                      render={({ field: controllerField }) => (
+                        <CommonTableField
+                          field={field}
+                          errors={errors}
+                          value={controllerField.value as CommonTableValue}
+                          onChange={controllerField.onChange}
+                          readOnly={isLocked}
+                        />
+                      )}
+                    />
+                  );
+
                 case "finder":
                   return (
                     <Controller
@@ -420,10 +537,16 @@ export function DynamicCoForm({
           );
       })}
 
+      <ErrorSummary
+        errors={hasAttemptedSubmit ? errors : {}}
+        fields={allFields}
+        onFieldClick={handleErrorFieldClick}
+      />
+
       {!hideSubmitButton && (
       <div className="flex justify-end pt-4">
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
           disabled={isSubmitting || isLoading}
           size="lg"
           className="gap-2 min-w-40"

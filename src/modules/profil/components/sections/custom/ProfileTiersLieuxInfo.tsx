@@ -208,84 +208,74 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
         if(!entity || !me) return;
         if(!canEditProfile) return;
         const dataForms = _answersByForms?.find((item) => item.id === formId);
-        const accessToken = entity.apiClient.getToken();
-        let answer: Answer | undefined = undefined;
-        let isNewAnswer = false;
-        if (dataForms && dataForms.answers.length > 0) {
-            answer = dataForms.answers[0];
-        } else {
-            isNewAnswer = true;
-            answer = await (entity as unknown as { generateNewAnswerId(formId: string): Promise<Answer | undefined> }).generateNewAnswerId(formId);
-            if (!answer) {
-                console.error("Failed to generate new answer ID for form:", formId);
-                return;
-            }
-            if(!answer.id) {
-                console.error("No answer ID generated for form:", formId);
-                return;
-            }
-            const params = {
-                id: answer.id,
-                collection: "answers",
-                path: `${finder}.${entity.id}`,
-                value: {
-                    id: entity.id,
-                    type: entity.serverData.collection,
-                    name: entity.serverData.name,
-                }
-            };
-            const paramsLinks = {
-                id: answer.id,
-                collection: "answers",
-                path: `links.${entity.serverData.collection}.${entity.id}`,
-                value: {
-                    type: entity.serverData.collection,
-                    name: entity.serverData.name,
-                }
-            };
-            await (entity.endpointApi as unknown as { updatePathValue(p: Record<string, unknown>): Promise<unknown> }).updatePathValue(params);
-            await (entity.endpointApi as unknown as { updatePathValue(p: Record<string, unknown>): Promise<unknown> }).updatePathValue(paramsLinks);
-        }
-        if (!answer) {
-            console.error("No answer available to open for form:", formId);
-            return;
-        }
+        const existingAnswer: Answer | undefined = dataForms && dataForms.answers.length > 0 ? dataForms.answers[0] : undefined;
 
         if (openMode === "modal") {
             let defaultValues: AllStepsData | undefined;
-            if (isNewAnswer) {
-                // Nouvelle réponse : pré-remplir le finder
-                if (finder) {
-                    const entityId = entity.id as string;
-                    const entityValue: Record<string, unknown> = {
-                        [entityId]: {
-                            id: entityId,
-                            type: entity.serverData.collection,
-                            name: entity.serverData.name,
-                        },
-                    };
-                    const pathWithoutPrefix = finder.startsWith("answers.")
-                        ? finder.slice("answers.".length)
-                        : finder;
-                    defaultValues = pathWithoutPrefix
-                        .split(".")
-                        .reduceRight<Record<string, unknown>>((acc, part) => ({ [part]: acc }), entityValue) as AllStepsData;
-                }
-            } else {
-                // Réponse existante : utiliser les données sauvegardées
-                defaultValues = answer.serverData?.answers as AllStepsData | undefined;
+            if (existingAnswer) {
+                defaultValues = existingAnswer.serverData?.answers as AllStepsData | undefined;
+            } else if (finder) {
+                const entityId = entity.id as string;
+                const entityValue: Record<string, unknown> = {
+                    [entityId]: {
+                        id: entityId,
+                        type: entity.serverData.collection,
+                        name: entity.serverData.name,
+                    },
+                };
+                const pathWithoutPrefix = finder.startsWith("answers.")
+                    ? finder.slice("answers.".length)
+                    : finder;
+                defaultValues = pathWithoutPrefix
+                    .split(".")
+                    .reduceRight<Record<string, unknown>>((acc, part) => ({ [part]: acc }), entityValue) as AllStepsData;
             }
             const finderFieldName = finder ? finder.split(".").pop() : undefined;
+            const resolvedAnswerId = existingAnswer?._serverData?.id ?? existingAnswer?.id ?? undefined;
             setFormModal({
                 formId,
-                answerId: answer._serverData?.id ?? answer.id,
+                answerId: resolvedAnswerId ?? undefined,
                 defaultValues,
                 lockedFields: finderFieldName ? [finderFieldName] : undefined,
             });
             return;
         }
 
-        // Mode "tab" : ouvrir dans un nouvel onglet (comportement historique)
+        // Mode "tab" : on a besoin d'un answerId réel pour construire l'URL,
+        // donc on pré-crée la réponse + le lien finder si elle n'existe pas encore.
+        let answer: Answer | undefined = existingAnswer;
+        if (!answer) {
+            answer = await (entity as unknown as { generateNewAnswerId(formId: string): Promise<Answer | undefined> }).generateNewAnswerId(formId);
+            if (!answer?.id) {
+                console.error("Failed to generate new answer ID for form:", formId);
+                return;
+            }
+            if (finder) {
+                const params = {
+                    id: answer.id,
+                    collection: "answers",
+                    path: `${finder}.${entity.id}`,
+                    value: {
+                        id: entity.id,
+                        type: entity.serverData.collection,
+                        name: entity.serverData.name,
+                    }
+                };
+                const paramsLinks = {
+                    id: answer.id,
+                    collection: "answers",
+                    path: `links.${entity.serverData.collection}.${entity.id}`,
+                    value: {
+                        type: entity.serverData.collection,
+                        name: entity.serverData.name,
+                    }
+                };
+                await (entity.endpointApi as unknown as { updatePathValue(p: Record<string, unknown>): Promise<unknown> }).updatePathValue(params);
+                await (entity.endpointApi as unknown as { updatePathValue(p: Record<string, unknown>): Promise<unknown> }).updatePathValue(paramsLinks);
+            }
+        }
+
+        const accessToken = entity.apiClient.getToken();
         const targetUrl = `/costum/co/index/slug/navigatorDesTierslieux/#answer.index_coformv2.id.${answer.serverData.id}.form.${formId}.mode.w.standalone.true.ask.false`;
         const urlToRedirect = `${getServerUrl()}/co2/embed/render?targetUrl=${encodeURIComponent(targetUrl)}&embedToken=${accessToken}`;
         window.open(urlToRedirect, "_blank");

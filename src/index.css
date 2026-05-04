@@ -485,3 +485,10 @@ html {
     display: none;
   }
 }
+
+
+@media (prefers-reduced-motion: reduce) {
+  .coform-attention {
+    animation: none;
+  }
+}

@@ -26,7 +26,8 @@ interface UseCoFormStepReturn {
   /** L'étape a-t-elle été complétée? */
   isCompleted: boolean;
   hasError: boolean;
-  submitStep: () => Promise<void>;
+  /** Soumet l'étape. Retourne true si la validation + soumission ont réussi, false si invalide. */
+  submitStep: () => Promise<boolean>;
   saveStep: () => void;
 }
 
@@ -79,21 +80,23 @@ export function useCoFormStep(options: UseCoFormStepOptions = {}): UseCoFormStep
   const hasError = subFormId ? coform.stepState.errorSteps.includes(subFormId) : false;
 
   // Soumettre l'étape
-  const submitStep = async () => {
-    if (!subFormId) return;
+  const submitStep = async (): Promise<boolean> => {
+    if (!subFormId) return false;
 
     try {
       const data = form.getValues();
       const isValid = await form.trigger();
 
       if (!isValid) {
-        return;
+        return false;
       }
 
       await coform.submitStepData(subFormId, data);
       onSuccess?.(data);
+      return true;
     } catch (err) {
       onError?.(err instanceof Error ? err : new Error("Erreur de soumission"));
+      return false;
     }
   };
 

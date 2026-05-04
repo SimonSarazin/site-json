@@ -24,16 +24,36 @@ interface UseCoFormQueryReturn {
  * Hook pour charger un formulaire CoForm depuis l'API
  * Utilise l'endpoint GET_COFORM_BY_ID créé dans cocolight-api-client
  */
-export function useCoFormQuery({ formId, enabled = true }: UseCoFormQueryOptions): UseCoFormQueryReturn {
+export function useCoFormQuery({
+  formId,
+  enabled = true,
+  elementId,
+  elementType,
+}: UseCoFormQueryOptions): UseCoFormQueryReturn {
   const { api, loading } = useCocolight();
   const isReady = !loading && !!api;
+  const hasElement = !!elementId && !!elementType;
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: COFORM_QUERY_KEYS.form(formId),
+    queryKey: hasElement
+      ? ([...COFORM_QUERY_KEYS.form(formId), "element", elementType, elementId] as const)
+      : COFORM_QUERY_KEYS.form(formId),
     queryFn: async () => {
       if (!api) throw new Error("API non initialisée");
-      
-      // Utilise l'endpoint GET_COFORM_BY_ID
+
+      // Mode "par élément" → endpointApi direct (l'entity wrapper ne propage pas
+      // les params elementId/elementType). Sinon, garde le wrapper entity.form()
+      // pour ne pas casser l'usage existant.
+      if (hasElement) {
+        const response = await api.endpointApi.getCoformById({
+          parentFormId: formId,
+          elementId,
+          elementType,
+        });
+        const raw = (response?.serverData?.data ?? response?.data) as CoFormData | undefined;
+        return raw ?? null;
+      }
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const form = await (api as any).form({ id: formId });
       return form.serverData as unknown as CoFormData;

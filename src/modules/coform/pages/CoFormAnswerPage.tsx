@@ -262,12 +262,14 @@ export default function CoFormAnswerPage() {
 
           <SmartCoForm
             formData={formData}
+            formId={formId}
             submitMode="final"
             onFinalSubmit={handleFinalSubmit}
             showProgress={true}
             showStepNumbers={true}
             defaultValues={answerData}
             answerId={answerId}
+            baseUpdatedAt={answer?.updated ?? null}
           />
         </>
       )}

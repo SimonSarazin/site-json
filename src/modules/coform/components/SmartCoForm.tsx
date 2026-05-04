@@ -1,17 +1,21 @@
-import { useMemo } from "react";
+import { useMemo, type ReactNode } from "react";
 import { toast } from "sonner";
-import { useCoFormQuery, useCoFormFinalMutation } from "../hooks/useCoFormQuery";
+import { useCoFormQuery, useCoFormFinalMutation, useCoFormCatalogs } from "../hooks/useCoFormQuery";
 import { DynamicCoForm } from "./DynamicCoForm";
 import { MultiStepCoForm } from "./MultiStepCoForm";
 import { CoFormReadOnly } from "./CoFormReadOnly";
-import { parseCoFormFields, normalizeAnswerData, denormalizeAnswerData, extractFinderLinks } from "../utils/formParser";
+import { parseCoFormFields, normalizeAnswerData, denormalizeAnswerData, extractFinderLinks, getOriginalFieldKey } from "../utils/formParser";
+import { CommonTableCatalogsProvider } from "../contexts/CommonTableCatalogsProvider";
 import type { CoFormData, SubmitMode, AllStepsData, SubFormData, AddedOptionsMap } from "../types";
 import type { FinderLinksMap } from "../utils/formParser";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
+import { useCocolight } from "@/hooks/useCocolight";
 
 interface SmartCoFormProps {
   formId?: string;
+  /** updatedAt serveur de la réponse (édition) — transmis au système de draft pour détecter l'obsolescence */
+  baseUpdatedAt?: number | null;
   formData?: CoFormData;
   submitMode?: SubmitMode;
   forceMultiStep?: boolean;
@@ -61,6 +65,13 @@ interface SmartCoFormProps {
   submitRef?: React.RefObject<(() => void) | null>;
   /** Liste de clés d'inputs verrouillés (lecture seule, non modifiables) */
   lockedFields?: string[];
+  /**
+   * Vrai quand le formulaire est rendu dans un modal (CoFormModal).
+   * Désactive complètement la persistance de draft (pas d'écriture en
+   * localStorage, pas de bannière de récupération) — le contexte modal est
+   * éphémère et la perte accidentelle est gérée par le `onDirtyChange`.
+   */
+  inModal?: boolean;
 }
 
 interface LoadingStateProps {
@@ -147,7 +158,10 @@ export function SmartCoForm({
   onDirtyChange,
   submitRef,
   lockedFields,
+  baseUpdatedAt,
+  inModal = false,
 }: SmartCoFormProps) {
+  const { me } = useCocolight();
   // Charger les données depuis l'API si formId est fourni
   const {
     formData: apiFormData,
@@ -213,6 +227,27 @@ export function SmartCoForm({
   const subFormsFields = effectiveStandaloneData
     ? parseCoFormFields(effectiveStandaloneData)
     : allSubFormsFields;
+
+  // Identifie les inputs commonTable du form pour fetcher leurs catalogues
+  // collaboratifs en un seul appel batch. Si le form n'en contient aucun,
+  // `inputKeys` est vide → le hook ne fait aucun appel réseau (enabled=false).
+  const commonTableInputKeys = useMemo(() => {
+    const keys: string[] = [];
+    for (const sf of subFormsFields) {
+      for (const f of sf.fields) {
+        if (f.componentType === "commonTable") {
+          keys.push(getOriginalFieldKey(f));
+        }
+      }
+    }
+    return keys;
+  }, [subFormsFields]);
+
+  const { catalogs: commonTableCatalogs } = useCoFormCatalogs({
+    formId: formId ?? "",
+    inputKeys: commonTableInputKeys,
+    enabled: !!formId && commonTableInputKeys.length > 0,
+  });
 
   // Normaliser les defaultValues pour les champs stockés à la racine (comme evaluation)
   const normalizedDefaults = useMemo(
@@ -288,6 +323,18 @@ export function SmartCoForm({
   const isStandalone = !!standaloneFormData;
   const isInputStandalone = !!inputStandaloneFormData;
 
+  // Persistance du draft : désactivée en mode lecture seule, standalone (sous-composant
+  // embarqué), modal (contexte éphémère), ou auto-submit (le serveur est la source
+  // de vérité à chaque blur).
+  const enableDraft =
+    !readOnly &&
+    !inModal &&
+    !isStandalone &&
+    !isInputStandalone &&
+    !!formId &&
+    !!me?.id;
+  const userId = me?.id ?? null;
+
   // Mode lecture seule : utiliser CoFormReadOnly
   if (readOnly) {
     return (
@@ -302,9 +349,15 @@ export function SmartCoForm({
     );
   }
 
+  // Wrapper qui expose les catalogues commonTable aux fields. Le provider
+  // accepte un objet vide → si pas de commonTable, c'est un no-op pur.
+  const withCatalogs = (node: ReactNode) => (
+    <CommonTableCatalogsProvider catalogs={commonTableCatalogs}>{node}</CommonTableCatalogsProvider>
+  );
+
   // Afficher le composant approprié
   if (shouldUseMultiStep) {
-    return (
+    return withCatalogs(
       <MultiStepCoForm
         formData={formData}
         submitMode={submitMode}
@@ -325,6 +378,10 @@ export function SmartCoForm({
         defaultValues={normalizedDefaults}
         answerId={answerId}
         initialStepKey={initialStepKey}
+        formId={formId}
+        userId={userId}
+        baseUpdatedAt={baseUpdatedAt}
+        enableDraft={enableDraft}
       />
     );
   }
@@ -336,7 +393,7 @@ export function SmartCoForm({
   // Extraire les valeurs par défaut pour cette étape
   const stepDefaults = normalizedDefaults?.[subFormId];
 
-  return (
+  return withCatalogs(
     <DynamicCoForm
       formData={effectiveFormData}
       submitButtonText={t("coform.navigation.submit")}
@@ -349,6 +406,10 @@ export function SmartCoForm({
       onDirtyChange={onDirtyChange}
       submitRef={submitRef}
       lockedFields={lockedFields}
+      formId={formId}
+      userId={userId}
+      baseUpdatedAt={baseUpdatedAt}
+      enableDraft={enableDraft}
       onSubmit={async (data, addedOptions) => {
         try {
           // Dénormaliser pour le format PHP (champs root-level à la racine)
