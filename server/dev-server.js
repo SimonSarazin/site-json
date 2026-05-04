@@ -5,6 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import serialize from "serialize-javascript";
 import dotenv from "dotenv";
+import { helloassoCheckoutIntentHandler, helloassoTokenHandler, helloassoCallbackHandler, helloassoCheckoutStatusHandler, helloassoDiagnosticHandler } from "./api/helloasso-checkout.js";
 import { createImageOptimizer } from "./middleware/imageOptimizer.js";
 import { createImageUpload } from "./middleware/imageUpload.js";
 
@@ -63,10 +64,25 @@ async function loadSiteConfig() {
 async function createServer() {
   const app  = express();
   const vite = await createViteServer({
-    server: { middlewareMode: true },
+    server: {
+      middlewareMode: true,
+      allowedHosts: true,
+    },
     appType: "custom",
     ssr: { noExternal: ["@radix-ui/*", "lucide-react", "@communecter/cocolight-api-client"] },
   });
+
+  // Middleware JSON pour les requêtes API (DOIT être AVANT les routes)
+  app.use(express.json());
+
+  // Routes API HelloAsso
+  app.get("/api/helloasso/token", helloassoTokenHandler);
+  app.post("/api/helloasso/checkout-intent", helloassoCheckoutIntentHandler);
+  app.get("/api/helloasso/callback", helloassoCallbackHandler);
+  app.get("/api/helloasso/checkout-status/:checkoutIntentId", helloassoCheckoutStatusHandler);
+  app.get("/api/helloasso/orgs", helloassoDiagnosticHandler);
+
+  // ⚠️ Middleware Vite DOIT être après les routes API
   // Image optimizer — must be before Vite middlewares to intercept /img
   app.use("/img", createImageOptimizer({
     staticRoot: path.resolve(__dirname, "../public"),
@@ -129,6 +145,11 @@ async function createServer() {
   });
 
   app.use((req, res, next) => {
+  // Exclure les routes API
+  if (req.url.startsWith("/api/")) {
+    return next();
+  }
+
   if (
     req.url.startsWith("/favicon") ||
     req.url.startsWith("/sw") ||

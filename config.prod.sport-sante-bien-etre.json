@@ -28,7 +28,7 @@
     ]
   },
   "header": {
-    "type": "cyber-reunion",
+    "type": "rezo-la-mer",
     "path": "/",
     "logo": "images/sportSanteBienetre/logo.png",
     "logoTitle": {
@@ -45,140 +45,75 @@
     "nav": [
       {
         "label": {
-          "fr": "Accueil",
-          "en": "Home"
+          "fr": "Le réseau Sport Santé",
+          "en": "The Sport Health Network"
         },
-        "path": "/"
+        "path": "/espace-professionnels"
       },
       {
         "label": {
-          "fr": "Structures",
-          "en": "Structures"
+          "fr": "Labelliser",
+          "en": "Label"
         },
-        "path": "/structure"
+        "path": "/labellisation"
       },
       {
         "label": {
-          "fr": "Espace professionnels",
-          "en": "Professionals Space"
+          "fr": "Prescrire & Orienter",
+          "en": "Prescribe & Guide"
         },
-        "children": [
-          {
-            "label": {
-              "fr": "Espace professionnels",
-              "en": "Professionals Space"
-            },
-            "description": {
-              "fr": "Ressources et outils",
-              "en": "Resources and tools"
-            },
-            "path": "#"
-          },
-          {
-            "label": {
-              "fr": "Labeliser mon activités",
-              "en": "Label my activities"
-            },
-            "description": {
-              "fr": "Sport santé pour tous ou Sport sur ordonnance",
-              "en": "Sport health for all or Sport on prescription"
-            },
-            "path": "#"
-          },
-          {
-            "label": {
-              "fr": "Formations",
-              "en": "Trainings"
-            },
-            "description": {
-              "fr": "Catalogue et inscriptions aux formations",
-              "en": "Browse and register for training sessions."
-            },
-            "path": "#"
-          },
-          {
-            "label": {
-              "fr": "Prescription Médicale",
-              "en": "Medical Prescription"
-            },
-            "description": {
-              "fr": "Guides et bonnes pratiques",
-              "en": "Guides and best practices"
-            },
-            "path": "#"
-          }
-        ]
+        "path": "/prescription"
       },
       {
         "label": {
-          "fr": "Grand Public",
-          "en": "Public Space"
+          "fr": "Formation",
+          "en": "Training"
         },
-        "children": [
-          {
-            "label": {
-              "fr": "Espace Public",
-              "en": "Public Space"
-            },
-            "description": {
-              "fr": "Découvrir le Sport Santé",
-              "en": "Discover Sport Health"
-            },
-            "path": "#"
-          },
-          {
-            "label": {
-              "fr": "Trouver une activité",
-              "en": "Find an activity"
-            },
-            "description": {
-              "fr": "Rechercher et carte interactive",
-              "en": "Search and interactive map"
-            },
-            "path": "#"
-          },
-          {
-            "label": {
-              "fr": "Actualités",
-              "en": "News"
-            },
-            "description": {
-              "fr": "Articles et évènements",
-              "en": "Articles and events"
-            },
-            "path": "#"
-          },
-          {
-            "label": {
-              "fr": "Maisons Sport Santé",
-              "en": "Sport Health Houses"
-            },
-            "description": {
-              "fr": "Trouver une MSS près de chez vous",
-              "en": "Find a Sport Health House near you"
-            },
-            "path": "/mss"
-          }
-        ]
-      },
-      {
-        "label": {
-          "fr": "Mapping",
-          "en": "Mapping"
-        },
-        "path": "/mapping"
+        "path": "/formation"
       }
     ],
+    "navVisibleOnlyForListedPages": true,
+    "secondaryNav": [
+      {
+        "label": {
+          "fr": "Espace Public",
+          "en": "Public Space"
+        },
+        "path": "/public"
+      },
+      {
+        "label": {
+          "fr": "Qu'est-ce que le Sport Santé",
+          "en": "What is Sport Health"
+        },
+        "path": "/presentation"
+      },
+      {
+        "label": {
+          "fr": "Maisons Sport Santé",
+          "en": "Sport Health Houses"
+        },
+        "path": "/mss"
+      },
+      {
+        "label": {
+          "fr": "Actualité",
+          "en": "News"
+        },
+        "path": "/actions"
+      }
+    ],
+    "secondaryNavVisibleOnlyForListedPages": true,
     "sticky": true,
     "transparent": false,
     "height": "lg",
     "utilities": {
       "themeSwitch": false,
-      "langSwitch": true,
+      "langSwitch": false,
       "search": false,
       "auth": true,
       "cart": false,
-      "notifications": true
+      "notifications": false
     }
   },
   "pages": [
@@ -191,10 +126,9 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "hero-rezo-la-mer",
+          "type": "hero-ssbe",
           "id": "hero-sport-sante",
           "props": {
-            "variant": "cyber",
             "headline": {
               "fr": "L'activité physique, votre meilleur allié santé",
               "en": "Physical activity, your best health ally"
@@ -211,10 +145,10 @@
             "badges": [
               {
                 "label": {
-                  "fr": "Sport Santé Bien-Être à La Réunion",
-                  "en": "Sport Health Wellness in Réunion"
+                  "fr": "Communauté citoyenne",
+                  "en": "Citizen Community"
                 },
-                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"12\" cy=\"5\" r=\"3\"></circle><path d=\"m6.5 10 1.5 2h8l1.5-2\"></path><path d=\"M12 12v4\"></path><path d=\"m7 22 3-8 2 2 2-2 3 8\"></path></svg>"
+                "icon":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2\"/></svg>"
               }
             ],
             "ctaButtons": [
@@ -225,112 +159,138 @@
                 },
                 "path": "/structure",
                 "variant": "default"
+              }
+            ],
+            "quickAccessTitle": {
+              "fr": "Accès rapide",
+              "en": "Quick access"
+            },
+            "quickAccessCards": [
+              {
+                "label": {
+                  "fr": "Espace réservé",
+                  "en": "Reserved area"
+                },
+                "title": {
+                  "fr": "Professionnels",
+                  "en": "Professionals"
+                },
+                "description": {
+                  "fr": "Formations, labellisation, outils de prescription et ressources métiers.",
+                  "en": "Training, labelling, prescription tools and professional resources."
+                },
+                "path": "/espace-professionnels",
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M22 21v-2a4 4 0 0 0-3-3.87\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"/></svg>"
               },
               {
                 "label": {
-                  "fr": "En savoir plus",
-                  "en": "Learn more"
+                  "fr": "Pour tous",
+                  "en": "For all"
                 },
-                "path": "/",
-                "variant": "accent"
+                "title": {
+                  "fr": "Grand Public",
+                  "en": "General public"
+                },
+                "description": {
+                  "fr": "Trouvez une activité adaptée près de chez vous, actualités et événements.",
+                  "en": "Find an adapted activity near you, news and events."
+                },
+                "path": "/public",
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z\"/><path d=\"M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2\"/><path d=\"M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2\"/><path d=\"M10 6h4\"/><path d=\"M10 10h4\"/><path d=\"M10 14h4\"/><path d=\"M10 18h4\"/></svg>"
               }
             ]
           }
         },
         {
-          "type": "html",
-          "id": "mission",
+          "type": "gridLayout",
+          "id": "section-activity-grid",
           "props": {
-            "html": "<section class=\"relative py-32 px-4 overflow-hidden\"><div class=\"absolute inset-0 z-0\"><img src=\"/images/sportSanteBienetre/mission.png\" alt=\"Mission Sport Santé Bien-être\" class=\"w-full h-full object-cover\" /><div class=\"absolute inset-0 bg-linear-to-r from-background via-background/80 to-background/60\"></div></div><div class=\"relative z-10 container mx-auto max-w-4xl\"><div class=\"space-y-8\"><h2 class=\"text-4xl md:text-5xl font-bold mb-6 text-foreground\">Notre mission</h2><div class=\"space-y-6 text-lg md:text-xl leading-relaxed\"><p class=\"text-muted-foreground\"><span class=\"text-primary font-semibold\">Sport Santé Bien-être</span> est la plateforme dédiée à la promotion de l'<span class=\"text-primary font-medium\">activité physique adaptée</span> et du bien-être pour tous les Réunionnais.</p><p class=\"text-muted-foreground\">Nous accompagnons les habitants de La Réunion dans leur <span class=\"text-accent font-medium\">parcours vers une meilleure santé</span> en proposant des ressources, des activités et un réseau de professionnels qualifiés.</p><div class=\"grid md:grid-cols-2 gap-6 pt-8\"><div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-sm border border-primary/20\"><h3 class=\"text-2xl font-semibold mb-3 text-primary\">Activités adaptées</h3><p class=\"text-muted-foreground\">Des programmes d'activités physiques adaptées à chaque profil : seniors, personnes en situation de handicap, maladies chroniques</p></div><div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-sm border border-accent/20\"><h3 class=\"text-2xl font-semibold mb-3 text-accent\">Réseau de professionnels</h3><p class=\"text-muted-foreground\">Un réseau de coachs, kinésithérapeutes et structures partenaires pour vous accompagner dans votre démarche santé</p></div></div></div></div></div></section>"
+            "leftColumns": 2,
+            "rightColumns": 2,
+            "gap": 4,
+            "leftSection": {
+              "type": "title-with-filters-rezo-la-mer",
+              "id": "left-showcase-header",
+              "props": {
+                "headline": {
+                  "fr": "Des activités labellisées, un gage de qualité et de sécurité",
+                  "en": "Labeled activities, a guarantee of quality and safety"
+                }
+              }
+            }, 
+            "rightSection": {
+              "type": "title-with-filters-rezo-la-mer",
+              "id": "right-showcase-header",
+              "props": {
+                "subhead": {
+                  "fr": "Les créneaux labellisés sport santé pour tous et sport santé sur ordonnance répondent aux exigences régionales selon des critères de sécurités et des critères de qualités. Les professionnels sont formés et vous proposent des activités adaptées à vos besoins, à vos objectifs. Vous serez encadré et accompagné tout au long de votre pratique. Alon bougé sora valab !",
+                  "en": "The sport health for all and sport health on prescription labeled slots meet regional requirements according to safety and quality criteria. Professionals are trained and offer you activities adapted to your needs, your goals. You will be supervised and supported throughout your practice. Alon bougé sora valab !"
+                },
+                "buttons": [
+                  {   
+                    "label": {
+                      "fr": "Ajouter une activité",
+                      "en": "Add an activity"
+                    },
+                    "path": "/",
+                    "variant": "primary"
+                  },
+                  {
+                    "label": {
+                      "fr": "Ajouter une structure",
+                      "en": "Add a structure"
+                    },
+                    "path": "/",
+                    "variant": "outline"
+                  }
+                ]
+              } 
+            }
           }
         },
         {
-          "type": "features-rezo-la-mer",
-          "id": "features",
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "title-header-webtv",
           "props": {
-            "variant": "cyber",
             "headline": {
-              "fr": "Nos domaines d'action",
-              "en": "Our areas of action"
+              "fr": "WebTV Sport Santé Bien-être",
+              "en": "Sport Health Wellness WebTV"
             },
             "subhead": {
-              "fr": "Des solutions adaptées pour améliorer votre santé par l'activité physique",
-              "en": "Adapted solutions to improve your health through physical activity"
-            },
-            "features": [
-              {
-                "icon": "heart",
-                "title": {
-                  "fr": "Prévention santé",
-                  "en": "Health prevention"
-                },
-                "description": {
-                  "fr": "Programmes de prévention des maladies chroniques par l'activité physique régulière et adaptée",
-                  "en": "Chronic disease prevention programs through regular and adapted physical activity"
-                },
-                "color": "primary"
-              },
-              {
-                "icon": "users",
-                "title": {
-                  "fr": "Sport pour tous",
-                  "en": "Sport for all"
-                },
-                "description": {
-                  "fr": "Activités accessibles à tous les publics : seniors, personnes en situation de handicap, débutants",
-                  "en": "Activities accessible to all audiences: seniors, people with disabilities, beginners"
-                },
-                "color": "accent"
-              },
-              {
-                "icon": "activity",
-                "title": {
-                  "fr": "Activité physique adaptée",
-                  "en": "Adapted physical activity"
-                },
-                "description": {
-                  "fr": "Des programmes sur mesure encadrés par des professionnels diplômés en APA",
-                  "en": "Tailored programs supervised by professionals with APA degrees"
-                },
-                "color": "primary"
-              },
-              {
-                "icon": "smile",
-                "title": {
-                  "fr": "Bien-être mental",
-                  "en": "Mental wellness"
-                },
-                "description": {
-                  "fr": "Yoga, méditation, relaxation : des activités pour prendre soin de votre santé mentale",
-                  "en": "Yoga, meditation, relaxation: activities to take care of your mental health"
-                },
-                "color": "accent"
-              },
-              {
-                "icon": "apple",
-                "title": {
-                  "fr": "Nutrition",
-                  "en": "Nutrition"
-                },
-                "description": {
-                  "fr": "Conseils nutritionnels et accompagnement diététique pour une approche globale de la santé",
-                  "en": "Nutritional advice and dietary support for a comprehensive health approach"
-                },
-                "color": "primary"
-              },
-              {
-                "icon": "map-pin",
-                "title": {
-                  "fr": "Structures partenaires",
-                  "en": "Partner structures"
-                },
-                "description": {
-                  "fr": "Un réseau de salles, associations et clubs partenaires sur toute l'île de La Réunion",
-                  "en": "A network of gyms, associations and partner clubs throughout Réunion Island"
-                },
-                "color": "accent"
+              "fr": "L'activité physique régulière prévient de nombreuses maladies chroniques et améliore la qualité de vie.",
+              "en": "Regular physical activity prevents many chronic diseases and improves quality of life."
+            }
+          } 
+        },
+        {
+          "type": "gridLayout",
+          "id": "section-structure-list",
+          "props": {
+            "leftColumns": 2,
+            "rightColumns": 2,
+            "gap": 4,
+            "leftSection": {
+              "type": "video",
+              "id": "showcase-webtv1",
+              "props": {
+                "src": "AbVrrqgfd_M",
+                "provider": "youtube",
+                "ratio": "16/9",
+                "controls": true,
+                "loop": false
               }
-            ]
+            },
+            "rightSection": {
+              "type": "video",
+              "id": "showcase-webtv2",
+              "props": {
+                "src": "QbX6FbnhrNc",
+                "provider": "youtube",
+                "ratio": "16/9",
+                "controls": true,
+                "loop": false
+              }
+            }
           }
         },
 
@@ -379,6 +339,462 @@
                   "en": "Annual growth"
                 },
                 "color": "primary"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path":"/espace-professionnels",
+      "title": {
+        "fr": "Le réseau Sport Santé",
+        "en": "The Sport Health Network"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "hero-ssbe",
+          "id": "hero-sport-sante",
+          "props": {
+            "headline": {
+              "fr": "Développez le Sport Santé à La Réunion",
+              "en": "Physical activity, your best health ally"
+            },
+            "subhead": {
+              "fr": "Plateforme régionale dédiée aux professionnels du sport et de la santé. Gérez vos structures, formez-vous et développez l'offre Sport Santé Bien-Être.",
+              "en": "Regional platform dedicated to sports and health professionals. Manage your structures, train and develop the Sport Health Wellness offer."
+            },
+            "backgroundImage": "/images/sportSanteBienetre/hero2.jpg",
+            "backgroundImageAlt": {
+              "fr": "Sport Santé Bien-être La Réunion",
+              "en": "Sport Health Wellness Réunion"
+            },
+            "badges": [
+              {
+                "label": {
+                  "fr": "Espace Professionnels",
+                  "en": "Professionals Space"
+                },
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z\"/><path d=\"M20 3v4M22 5h-4M4 17v2M5 18H3\"/></svg>"
+              }
+            ]
+          }
+        },
+        {
+          "type": "html",
+          "id": "mission",
+          "props": {
+            "html": "<section class=\"relative py-32 px-4 overflow-hidden\"><div class=\"relative z-10 container mx-auto max-w-4xl\"><div class=\"space-y-8\"><h2 class=\"text-4xl md:text-5xl font-bold mb-6 text-foreground\">Le Sport Santé Bien-Être à La Réunion</h2><div class=\"space-y-6 text-lg md:text-xl leading-relaxed\"><p class=\"text-muted-foreground\">La Réunion fait face à des enjeux de santé publique majeurs : <b>diabète, obésité, maladies cardiovasculaires et sédentarité</b> touchent une part importante de la population. Le dispositif Sport Santé Bien-Être (SSBE) a été créé pour répondre à ces défis en mobilisant les professionnels du sport et de la santé autour d'une offre d'activité physique adaptée, encadrée et accessible à tous.<br> Porté par l'Agence Régionale de Santé (ARS) et la Délégation Régionale Académique à la Jeunesse, à l'Engagement et aux Sports (DRAJES), le réseau SSBE fédère aujourd'hui 247 structures, 856 professionnels formés et accompagne plus de 12 500 bénéficiaires chaque année.</p></div></div></div></div></div></section>"
+          }
+        },
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "title-header-strategy",
+          "props": {
+            "headline": {
+              "fr": "Du contexte national au contexte régional",
+              "en": "From the national context to the regional context"
+            },
+            "subhead": {
+              "fr": "La Stratégie Nationale Sport-Santé 2019-2024 a été lancée le 3 octobre 2019 conjointement par le Ministère des Sports et le Ministère des Solidarités et de la Santé.",
+              "en": "The National Sport-Health Strategy 2019-2024 was launched on October 3, 2019 jointly by the Ministry of Sports and the Ministry of Solidarity and Health."
+            }
+          }
+        },
+        {
+          "type":"html",
+          "id":"national-plan",
+          "props": {
+            "html":"<section class=\"py-16 bg-muted/40\"><div class=\"container mx-auto px-4\"><div class=\"max-w-4xl mx-auto\"><p class=\"text-muted-foreground leading-relaxed mb-8\">Elle s'articule avec différents plans nationaux dont le plan « Héritage 2024 » des Jeux Olympiques et Paralympiques, la stratégie nationale sport et handicaps, le plan national « priorité prévention », la stratégie nationale de prévention et de lutte contre la pauvreté, la feuille de route « Prise en charge des personnes en situation d'obésité », le livre bleu outre-mer, le plan d'action national pour lutter contre les chutes des personnes âgées, etc.</p><div class=\"rounded-2xl overflow-hidden shadow-card bg-card p-2\"><img src=\"/images/sportSanteBienetre/SRSSBE1.png\" alt=\"Schéma Stratégie Régionale SSBE\" class=\"w-full rounded-xl\" loading=\"lazy\" /></div></div></div></section>"
+          }
+        },
+        {
+          "type":"html",
+          "id":"declinaison-regionale",
+          "props": {
+            "html": "<section class=\"py-16 md:py-20\"><div class=\"container mx-auto px-4\"><div class=\"max-w-4xl mx-auto\"><div class=\"bg-card rounded-2xl p-8 md:p-10 shadow-soft border border-border/50\"><span class=\"inline-block px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-semibold mb-4\">À La Réunion</span><h2 class=\"font-display font-bold text-xl md:text-2xl text-foreground mb-4\">La Stratégie Régionale SSBE</h2><p class=\"text-muted-foreground leading-relaxed mb-6\">À La Réunion, la Stratégie Régionale SSBE est plus qu'une déclinaison de la SNSS 2019-2024 puisqu'elle vient en lien et en complémentarité du Programme Réunionnais Nutrition Diabète (PRND 2020-2023), lui-même issu du 4ème programme national nutrition santé (PNNS) 2019-2023.</p><p class=\"text-muted-foreground leading-relaxed\">Véritable outil fédérateur, sa mise en œuvre nécessite <strong class=\"text-foreground\">une collaboration intersectorielle et une cohérence réelle</strong> entre les politiques du ministère de la santé et de la prévention, de l'agriculture de l'alimentation et des forêts, de la jeunesse et l'éducation, des solidarités et de l'autonomie et personnes handicapées à celle du ministère des sports des jeux olympiques et paralympiques ainsi que les collectivités locales et le mouvement sportif.</p></div></div></div></section>"
+          }
+        },
+        {
+          "type": "categories-grid",
+          "id": "Convention-section",
+          "props": {
+            "headline": {
+              "fr": "Convention partenariale",
+              "en": "Partnership agreement"
+            },
+            "subhead": {
+              "fr": "Cette synergie est formalisée par une convention partenariale actant un engagement entre l'ARS et ses 13 partenaires dont la DRAJES.",
+              "en": "This synergy is formalized by a partnership agreement establishing a commitment between the ARS and its 13 partners including the DRAJES."
+            },
+            "variant": "ssbe",
+            "columns": 4,
+            "cards": [
+              {
+                "icon": "clipboard-list",
+                "title": {
+                  "fr": "Plans nationaux",
+                  "en": "National plans"
+                },
+                "subtitle": {
+                  "fr": "Héritage 2024, PNNS, plans prévention",
+                  "en": "2024 legacy, PNNS, prevention plans"
+                }
+              },
+              {
+                "icon": "handshake",
+                "title": {
+                  "fr": "13 partenaires",
+                  "en": "13 partners"
+                },
+                "subtitle": {
+                  "fr": "ARS, DRAJES et partenaires locaux",
+                  "en": "ARS, DRAJES and local partners"
+                }
+              },
+              {
+                "icon": "users",
+                "title": {
+                  "fr": "Collectivités",
+                  "en": "Communities"
+                },
+                "subtitle": {
+                  "fr": "Collectivités locales et mouvement sportif",
+                  "en": "Local communities and sports movement"
+                }
+              },
+              {
+                "icon": "globe",
+                "title": {
+                  "fr": "Collaboration",
+                  "en": "Collaboration"
+                },
+                "subtitle": {
+                  "fr": "Approche intersectorielle et cohérente",
+                  "en": "Intersectoral and coherent approach"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "features-rezo-la-mer",
+          "id": "features",
+          "props": {
+            "headline": {
+              "fr": "Ressources et outils professionnels",
+              "en": "Professional resources and tools"
+            },
+            "subhead": {
+              "fr": "Tout ce dont vous avez besoin pour développer votre activité Sport Santé : formations, guides, rapports et outils de prescription",
+              "en": "Everything you need to develop your Sport Health activity: training, guides, reports and prescription tools"
+            },
+            "features": [
+              {
+                "icon": "badge-check",
+                "title": {
+                  "fr": "Labellisation",
+                  "en": "Labeling"
+                },
+                "description": {
+                  "fr": "Labelliser votre activité Sport Santé",
+                  "en": "Label your Sport Health activity"
+                },
+                "color": "primary",
+                "link": "/labellisation"
+              },
+              {
+                "icon": "stethoscope",
+                "title": {
+                  "fr": "Aide à la prescription",
+                  "en": "Prescription assistance"
+                },
+                "description": {
+                  "fr": "Guide et outils pour les prescripteurs",
+                  "en": "Guide and tools for prescribers"
+                },
+                "color": "chart-2",
+                "link": "/prescription"
+              },
+              {
+                "icon": "map",
+                "title": {
+                  "fr": "Stratégie régionale Sport Santé",
+                  "en": "Regional Strategy Sport Health"
+                },
+                "description": {
+                  "fr": "Les axes et objectifs stratégiques",
+                  "en": "Strategic axes and objectives"
+                },
+                "color": "primary",
+                "link": "/strategie"
+              },
+              {
+                "icon": "graduation-cap",
+                "title": {
+                  "fr": "Formation",
+                  "en": "Training"
+                },
+                "description": {
+                  "fr": "Catalogue et inscriptions aux formations Sport Santé",
+                  "en": "Catalog and registrations for Sport Health training"
+                },
+                "color": "accent",
+                "link": "/formation"
+              },
+              {
+                "icon": "folder-kanban",
+                "title": {
+                  "fr": "Programmes & Projets",
+                  "en": "Programs & Projects"
+                },
+                "description": {
+                  "fr": "Suivre les programmes régionaux en cours",
+                  "en": "Follow ongoing regional programs"
+                },
+                "color": "chart-2",
+                "link": "/projets"
+              },
+              {
+                "icon": "file-text",
+                "title": {
+                  "fr": "Rapports & Publications",
+                  "en": "Reports & Publications"
+                },
+                "description": {
+                  "fr": "Bibliothèque de ressources et rapports d'activité",
+                  "en": "Library of resources and activity reports"
+                },
+                "color": "primary",
+                "link": "/ressources"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "/public",
+      "title": {
+        "fr": "Grand Public - Sport Santé Bien-être",
+        "en": "General Public - Sport Health Wellness"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "hero-ssbe",
+          "id": "hero-sport-sante",
+          "props": {
+            "headline": {
+              "fr": "Votre santé par l'activité physique à La Réunion",
+              "en": "Your health through physical activity in La Réunion"
+            },
+            "subhead": {
+              "fr": "Trouvez l'activité adaptée à vos besoins, découvrez les Maisons Sport Santé et bénéficiez d'un accompagnement personnalisé.",
+              "en": "Find the right activity for your needs, discover the Sport Health Houses and benefit from personalized support."
+            },
+            "backgroundImage": "images/sportSanteBienetre/hero2.jpg",
+            "badges": [
+              {
+                "label": {
+                  "fr": "Espace Grand Public",
+                  "en": "General Public Space"
+                },
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z\"/><path d=\"M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2\"/><path d=\"M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2\"/><path d=\"M10 6h4\"/><path d=\"M10 10h4\"/><path d=\"M10 14h4\"/><path d=\"M10 18h4\"/></svg>"
+              }
+            ],
+            "ctaButtons": [
+              {
+                "label": {
+                  "fr": "Sport et santé pour tous",
+                  "en": "Sport and health for all"
+                },
+                "path": "/rejoindre",
+                "variant": "default"
+              },
+              {
+                "label": {
+                  "fr": "Sport et santé sur ordonnance",
+                  "en": "Sport and health on prescription"
+                },
+                "path": "/",
+                "variant": "accent"
+              }
+            ]
+          }
+        },
+        {
+          "type": "gridLayout",
+          "id": "title-grid",
+          "props": {
+            "leftColumns": 2,
+            "rightColumns": 2,
+            "gap": 4,
+            "leftSection": {
+              "type": "title-with-filters-rezo-la-mer",
+              "id": "left-activity-title",
+              "props": {
+                "headline": {
+                  "fr": "Vous recherchez une activité physique à La Réunion ?",
+                  "en": "Looking for physical activity in Réunion?"
+                }
+              }
+            }, 
+            "rightSection": {
+              "type": "html",
+              "id": "subtitle-activity",
+              "props": {
+                "html": "<section class=\"relative py-20 px-4 overflow-hidden\"><div class=\"relative z-10 container mx-auto max-w-4xl\"><div class=\"space-y-8\"><div class=\"space-y-6 text-lg md:text-xl leading-relaxed\"><p class=\"text-muted-foreground\">Rien de plus simple ! Que vous souhaitiez pratiquer une activité pour le plaisir, la convivialité ou pour améliorer et renforcer votre santé, des structures proposent des créneaux sur toute l’île.<br><br>Du sport santé pour tous jusqu’au sport santé sur ordonnance , c’est à vous de jouer !</p></div></div></div></div></div></section>"
+              }
+            }
+          }
+        },
+        {
+          "type": "gridLayout",
+          "id": "section-activity-grid",
+          "props": {
+            "leftColumns": 1,
+            "rightColumns": 3,
+            "gap": 4,
+            "leftSection": {
+              "type": "html",
+              "id": "mission",
+              "props": {
+                "html": "<section class=\"relative py-32 px-4 overflow-hidden\"><div class=\"relative z-10 container mx-auto max-w-4xl\"><div class=\"space-y-8\"><h4 class=\"text-4xl md:text-5xl font-bold mb-6 text-foreground\">Le sport santé bien-être en quelques mots</h4></div></div></div></div></section>"
+              }
+            }, 
+            "rightSection": {
+              "type": "features-rezo-la-mer",
+              "id": "features",
+              "props": {
+                "features": [
+                  {
+                    "icon": "heart",
+                    "title": {
+                      "fr": "Une meilleure santé physique",
+                      "en": "Better physical health"
+                    },
+                    "color": "primary"
+                  },
+                  {
+                    "icon": "brain",
+                    "title": {
+                      "fr": "Une meilleure santé psychique",
+                      "en": "Better mental health"
+                    },
+                    "color": "chart-2"
+                  },
+                  {
+                    "icon": "users",
+                    "title": {
+                      "fr": "Une meilleure santé sociale",
+                      "en": "Better social health"
+                    },
+                    "color": "primary"
+                  }
+                ]
+              }
+            }
+          }
+        },
+                {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "title-header-webtv",
+          "props": {
+            "headline": {
+              "fr": "WebTV Sport Santé Bien-être",
+              "en": "Sport Health Wellness WebTV"
+            },
+            "subhead": {
+              "fr": "L'activité physique régulière prévient de nombreuses maladies chroniques et améliore la qualité de vie.",
+              "en": "Regular physical activity prevents many chronic diseases and improves quality of life."
+            }
+          } 
+        },
+        {
+          "type": "gridLayout",
+          "id": "section-structure-list",
+          "props": {
+            "leftColumns": 2,
+            "rightColumns": 2,
+            "gap": 4,
+            "leftSection": {
+              "type": "video",
+              "id": "showcase-webtv1",
+              "props": {
+                "src": "AbVrrqgfd_M",
+                "provider": "youtube",
+                "ratio": "16/9",
+                "controls": true,
+                "loop": false
+              }
+            },
+            "rightSection": {
+              "type": "video",
+              "id": "showcase-webtv2",
+              "props": {
+                "src": "QbX6FbnhrNc",
+                "provider": "youtube",
+                "ratio": "16/9",
+                "controls": true,
+                "loop": false
+              }
+            }
+          }
+        },
+         {
+          "type": "categories-grid",
+          "id": "sport-categories-section",
+          "props": {
+            "headline": {
+              "fr": "Choisissez votre activité sportive",
+              "en": "Choose your sports activity"
+            },
+            "variant": "ssbe",
+            "columns": 6,
+            "cards": [
+              {
+                "icon": "tree-pine",
+                "title": {
+                  "fr": "Pleine Nature",
+                  "en": "Outdoor Activities"
+                }
+              },
+              {
+                "icon": "waves",
+                "title": {
+                  "fr": "Activités Aquatiques",
+                  "en": "Water Activities"
+                }
+              },
+              {
+                "icon": "users",
+                "title": {
+                  "fr": "Sports Collectifs",
+                  "en": "Team Sports"
+                }
+              },
+              {
+                "icon": "dumbbell",
+                "title": {
+                  "fr": "Activités Gymniques",
+                  "en": "Gymnastics Activities"
+                }
+              },
+              {
+                "icon": "swords",
+                "title": {
+                  "fr": "Arts Martiaux",
+                  "en": "Martial Arts"
+                }
+              },
+              {
+                "icon": "layout-grid",
+                "title": {
+                  "fr": "Tous les Sports",
+                  "en": "All Sports"
+                }
               }
             ]
           }
@@ -746,28 +1162,117 @@
       "layout": "fullwidth",
       "sections": [
         {
+          "type": "hero-ssbe",
+          "id": "hero-mss",
+          "props": {
+            "headline": {
+              "fr": "Maisons Sport Santé",
+              "en": "Sport Health Houses"
+            },
+            "subhead": {
+              "fr": "Envie de bouger pour votre santé ? Les Maisons Sport-Santé de La Réunion vous accueillent, vous conseillent et vous accompagnent dans un parcours adapté à votre besoin.",
+              "en": "Looking to get active for your health? The Sport Health Houses in Réunion welcome you, advise you and support you in a path adapted to your needs."
+            },
+            "backgroundImage": "images/sportSanteBienetre/hero5.png",
+            "badges": [
+              {
+                "label": {
+                  "fr": "Réseau MSS",
+                  "en": "MSS Network"
+                },
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M3 10.5 12 3l9 7.5\"/><path d=\"M5 9.5V21h14V9.5\"/><path d=\"M12 17s-3-2.2-3-4a2 2 0 0 1 3-1.5A2 2 0 0 1 15 13c0 1.8-3 4-3 4Z\"/></svg>"
+              }
+            ],
+            "ctaButtons": [
+              {
+                "label": {
+                  "fr": "Trouvez votre  Maison Sport Santé (MSS)",
+                  "en": "Find your Sport Health House (MSS)"
+                },
+                "path": "/mss",
+                "variant": "default"
+              }
+            ]
+          }
+        },
+        {
+          "type": "gridLayout",
+          "id": "section-activity-grid",
+          "props": {
+            "leftColumns": 2,
+            "rightColumns": 2,
+            "gap": 4,
+            "leftSection": {
+              "type": "html",
+              "id": "subtitle-showcase",
+              "props": {
+                "html": "<section class=\"relative py-16 px-4 overflow-hidden\"><div class=\"relative z-10 container mx-auto max-w-4xl\"><div><div class=\"inline-flex items-center gap-2 bg-primary/10 text-primary rounded-full px-4 py-1.5 text-sm font-medium mb-6\">🏠 Qu'est-ce qu'une MSS ?</div><h2 class=\"font-display text-3xl md:text-4xl font-bold text-foreground mb-6 leading-tight\">Une structure labellisée <span class=\"text-gradient\">au service de votre santé</span></h2><div class=\"space-y-4 text-muted-foreground text-base leading-relaxed\"><p>Les Maisons Sport Santé (MSS) sont des structures labellisées par le <strong class=\"text-foreground\">Ministère des Sports</strong> et le <strong class=\"text-foreground\">Ministère de la Santé</strong>. Elles ont pour mission d'accueillir et d'orienter toutes les personnes souhaitant pratiquer, développer ou reprendre une activité physique à des fins de santé.</p><p>À La Réunion, les MSS travaillent en lien étroit avec les professionnels de santé et les structures sportives labellisées pour proposer un <strong class=\"text-foreground\">parcours personnalisé</strong> adapté à chaque situation.</p></div><div class=\"mt-8 p-6 bg-muted/50 rounded-2xl border border-border\"><h3 class=\"font-semibold text-foreground mb-4\">👥 Pour qui ?</h3><div class=\"grid grid-cols-2 gap-3\"><div class=\"flex items-center gap-2 text-sm text-muted-foreground\"><span>🧓 Seniors</span></div><div class=\"flex items-center gap-2 text-sm text-muted-foreground\"><span>🤒 Personnes malades</span></div><div class=\"flex items-center gap-2 text-sm text-muted-foreground\"><span>💊 Patients sous APA</span></div><div class=\"flex items-center gap-2 text-sm text-muted-foreground\"><span>🏋️ Personnes sédentaires</span></div><div class=\"flex items-center gap-2 text-sm text-muted-foreground\"><span>👶 Jeunes en surpoids</span></div><div class=\"flex items-center gap-2 text-sm text-muted-foreground\"><span>♿ Personnes handicapées</span></div></div></div></div></div></section>"
+              }
+            }, 
+            "rightSection": {
+              "type": "categories-grid",
+              "id": "sport-categories-section",
+              "props": {
+                "variant": "ssbe",
+                "columns": 2,
+                "cards": [
+                  {
+                    "icon": "stethoscope",
+                    "title": {
+                      "fr": "Bilan Sport Santé",
+                      "en": "Sport Health Assessment"
+                    },
+                    "subtitle": {
+                      "fr": "Un bilan complet de votre condition physique réalisé par des professionnels pour définir vos besoins et objectifs.",
+                      "en": "A comprehensive assessment of your physical condition conducted by professionals to define your needs and goals."
+                    }
+                  },
+                  {
+                    "icon": "compass",
+                    "title": {
+                      "fr": "Orientation personnalisée",
+                      "en": "Personalized Orientation"
+                    },
+                    "subtitle": {
+                      "fr": "Vous êtes orientés vers les activités et structures sportives les mieux adaptées à votre profil de santé.",
+                      "en": "You are oriented towards sports activities and structures that are best adapted to your health profile."
+                    }
+                  },
+                  {
+                    "icon": "repeat",
+                    "title": {
+                      "fr": "Suivi dans la durée",
+                      "en": "Long-term Follow-up"
+                    },
+                    "subtitle": {
+                      "fr": "Un accompagnement régulier pour s'assurer que votre pratique physique reste bénéfique et adaptée à votre évolution.",
+                      "en": "Regular follow-up to ensure your physical practice remains beneficial and adapted to your evolution."
+                    }
+                  },
+                  {
+                    "icon": "heart-handshake",
+                    "title": {
+                      "fr": "Coordination médicale",
+                      "en": "Medical Coordination"
+                    },
+                    "subtitle": {
+                      "fr": "Lien permanent avec votre médecin et les professionnels de santé pour un parcours cohérent et sécurisé.",
+                      "en": "Permanent link with your doctor and healthcare professionals for a coherent and secure journey."
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
           "type": "title-with-filters-rezo-la-mer",
           "id": "mss-title",
           "props": {
-            "headline": {
-              "fr": "Les Maisons Sport Santé de La Réunion",
-              "en": "Sport Health Houses in Réunion"
-            },
             "subhead": {
               "fr": "Retrouvez la Maison Sport Santé la plus proche de chez vous. Toutes les MSS sont ouvertes sans rendez-vous et proposent un accueil gratuit.",
               "en": "Find the Sport Health House closest to you. All MSS are open without an appointment and offer free reception."
             },
-            "buttons": [
-              {
-                "label": {
-                  "fr": "Ajouter une mss",
-                  "en": "Add a mss"
-                },
-                "icon": "home",
-                "action": "add-mss",
-                "variant": "primary"
-              }
-            ],
             "showSearch": true,
             "searchPlaceholder": {
               "fr": "Rechercher une mss...",
@@ -900,27 +1405,29 @@
             "enableMap": false,
             "enableGraph": true,
             "defaultViewMode": "graph",
-            "graphCategories": [
-              "Entreprises(produits/solutions et services)",
-              "CERT/CSIRT",
-              "Organismes de formation",
-              "Laboratoires/recherche",
-              "Structure d'accompagnement et financement",
-              "Réseaux/cluster",
-              "Services défense/intérieur",
-              "Association/ONG"
+            "graphDefaultGroupMode": "category",
+            "graphEnableCountryGrouping": false,
+            "graphTags": [
+              "Sport",
+              "Santé/prévention",
+              "Social",
+              "Insertion",
+              "Handicap",
+              "culture",
+              "tourisme",
+              "mss",
+              "Scolaire 1er degré",
+              "Scolaire 2nd degré",
+              "Periscolaire 1er degré",
+              "Periscolaire 2eme degré"
             ],
             "baseParams": {
               "defaultTypes": ["organizations"],
               "defaultFilters": {
                 "$or": {
-                  "parent.695b58ca8693fc2c121208e4": { "$exists": true },
-                  "source.keys": "cyberReunion",
-                  "reference.costum": "cyberReunion",
-                  "links.projects.695b58ca8693fc2c121208e4": { "$exists": true },
-                  "links.memberOf.695b58ca8693fc2c121208e4": { "$exists": true }
-                },
-                "toBeValidated": { "$exists": false }
+                  "source.keys": "sportSanteBienetre",
+                  "reference.costum": "sportSanteBienetre"
+                }
               },
               "notSourceKey": true
             },
@@ -940,212 +1447,607 @@
           }
         }
       ]
+    },
+    {
+      "path": "/presentation",
+      "title": {
+        "fr": "Présentation - Sport Santé Bien-être",
+        "en": "Presentation - Sport Health Wellness"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "hero-ssbe",
+          "id": "presentation-header",
+          "props": {
+            "headline": {
+              "fr": "Qu'est-ce que le Sport Santé ?",
+              "en": "What is Sport Health?"
+            },
+            "subhead": {
+              "fr": "Le Sport Santé désigne la pratique d'activités physiques et sportives qui contribuent au bien-être et à la santé, encadrée par des professionnels formés et adaptée aux besoins de chacun.",
+              "en": "Sport Health refers to the practice of physical and sports activities that contribute to well-being and health, supervised by trained professionals and adapted to the needs of each individual."
+            },
+            "backgroundImage": "images/sportSanteBienetre/hero4.png"
+          }
+        },
+        {
+          "type":"gridLayout",
+          "id":"presentation-grid",
+          "props":{
+            "leftColumns": 2,
+            "rightColumns": 2,
+            "gap": 4,
+            "leftSection":{
+              "type":"html",
+              "id":"presentation-mission",
+              "props":{
+                "html":"<section class=\"relative py-20 px-4 overflow-hidden\"><div class=\"relative z-10 container mx-auto max-w-4xl\"><div><h2 class=\"font-display text-3xl font-bold text-foreground mb-6\">Une approche globale de la santé par le mouvement</h2><div class=\"space-y-4 text-muted-foreground\"><p>Le Sport Santé s'adresse à tous : personnes sédentaires souhaitant reprendre une activité, patients atteints de maladies chroniques (diabète, cancer, maladies cardiovasculaires), seniors en perte d'autonomie, ou personnes en situation de handicap.</p><p>À La Réunion, le dispositif Sport Santé Bien-Être coordonne un réseau de professionnels formés et de structures labellisées pour proposer des activités adaptées et sécurisées.</p></div><div class=\"mt-8 space-y-3\"><div class=\"flex items-center gap-3\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" class=\"h-5 w-5 text-primary flex-shrink-0\"><path d=\"M9 12l2 2 4-4\"/><circle cx=\"12\" cy=\"12\" r=\"9\"/></svg><span>Activités adaptées à votre condition</span></div><div class=\"flex items-center gap-3\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" class=\"h-5 w-5 text-primary flex-shrink-0\"><path d=\"M9 12l2 2 4-4\"/><circle cx=\"12\" cy=\"12\" r=\"9\"/></svg><span>Encadrement par des professionnels formés</span></div><div class=\"flex items-center gap-3\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" class=\"h-5 w-5 text-primary flex-shrink-0\"><path d=\"M9 12l2 2 4-4\"/><circle cx=\"12\" cy=\"12\" r=\"9\"/></svg><span>Suivi et évaluation des progrès</span></div><div class=\"flex items-center gap-3\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" class=\"h-5 w-5 text-primary flex-shrink-0\"><path d=\"M9 12l2 2 4-4\"/><circle cx=\"12\" cy=\"12\" r=\"9\"/></svg><span>Coordination avec votre médecin</span></div></div></div></div></section>"
+              }
+            },
+            "rightSection":{
+              "type":"html",
+              "id":"presentation-facts",
+              "props":{
+                "html":"<section class=\"relative py-20 px-4 overflow-hidden\"><div class=\"relative z-10 container mx-auto max-w-4xl\"><div class=\"bg-muted/50 rounded-2xl p-8\"><h3 class=\"font-display text-xl font-semibold mb-6\">Le saviez-vous ?</h3><div class=\"space-y-6\"><div class=\"p-4 bg-background rounded-xl\"><p class=\"text-3xl font-bold text-primary mb-1\">30 min</p><p class=\"text-sm text-muted-foreground\">d'activité physique par jour recommandées par l'OMS</p></div><div class=\"p-4 bg-background rounded-xl\"><p class=\"text-3xl font-bold text-primary mb-1\">-30%</p><p class=\"text-sm text-muted-foreground\">de risque de mortalité prématurée avec une activité régulière</p></div><div class=\"p-4 bg-background rounded-xl\"><p class=\"text-3xl font-bold text-primary mb-1\">1ère</p><p class=\"text-sm text-muted-foreground\">cause de maladie évitable : la sédentarité</p></div></div></div></div></section>"
+              }
+            }
+          }
+        },
+        {
+          "type": "categories-grid",
+          "id": "sport-categories-section",
+          "props": {
+            "headline": {
+              "fr": "Les bienfaits du Sport Santé",
+              "en": "The benefits of Sport Health"
+            },
+            "subhead": {
+              "fr": "égulière et adaptée apporte de nomUne activité physique rbreux bénéfices pour votre santé physique et mentale.",
+              "en": "Regular and adapted physical activity brings many benefits for your physical and mental health."
+            },
+            "variant": "ssbe",
+            "columns": 4,
+            "cards": [
+              {
+                "icon": "heart-pulse",
+                "title": {
+                  "fr": "Prévention des maladies",
+                  "en": "Disease Prevention"
+                },
+                "subtitle": {
+                  "fr": "Réduction des risques de maladies cardiovasculaires, diabète, cancers et maladies neurodégénératives.",
+                  "en": "Reduction of risks of cardiovascular diseases, diabetes, cancers and neurodegenerative diseases."
+                }
+              },
+              {
+                "icon": "dumbbell",
+                "title": {
+                  "fr": "Amélioration de la condition physique",
+                  "en": "Improvement of physical condition"
+                },
+                "subtitle": {
+                  "fr": "Renforce la force musculaire, l'endurance et la flexibilité.",
+                  "en": "Strengthens muscle strength, endurance and flexibility."
+                }
+              },
+              {
+                "icon": "brain",
+                "title": {
+                  "fr": "Bien-être mental et social",
+                  "en": "Mental and Social Well-being"
+                },
+                "subtitle": {
+                  "fr": "Réduction du stress, de l'anxiété et création de liens sociaux enrichissants.",
+                  "en": "Reduces stress and anxiety, and fosters enriching social connections."
+                }
+              },
+              {
+                "icon": "users",
+                "title": {
+                  "fr": "Accompagnement personnalisé",
+                  "en": "Personalized Accompaniment"
+                },
+                "subtitle": {
+                  "fr": "Des professionnels formés adaptent les activités à votre état de santé et vos objectifs.",
+                  "en": "Trained professionals adapt activities to your health status and goals."
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "presentation-Participant",
+          "props": {
+            "headline": {
+              "fr": "Témoignages de participants",
+              "en": "Participant Testimonials"
+            },
+            "subhead": {
+              "fr": "Ils ont testé le Sport Santé et partagent leur expérience.",
+              "en": "They tried Sport Health and share their experience."
+            }
+          }
+        }, 
+        {
+          "type": "testimonials",
+          "id": "presentation-testimonials-Participant",
+          "props": {
+            "style": "carousel",
+            "autoplay": false,
+            "items": [
+              {
+                "quote": { 
+                  "fr": "Grâce à la marche nordique adaptée, j'ai réduit mes doses d'insuline et retrouvé de l'énergie. Je ne pensais pas que le sport pouvait autant m'aider.", 
+                  "en": "Thanks to adapted Nordic walking, I reduced my insulin doses and regained energy. I didn't think sport could help me that much." 
+                },
+                "author": { "fr": "Marie L., 58 ans", "en": "Marie L., 58 years old" },
+                "role": { "fr": "Diabète de type 2  (Marche Nordique)", "en": "Type 2 Diabetes (Nordic Walking)" },
+                "avatar": ""
+              },
+              {
+                "quote": { 
+                  "fr": "Mon cardiologue m'a prescrit du sport. L'aquagym encadrée m'a permis de reprendre confiance en mon corps progressivement", 
+                  "en": "My cardiologist prescribed sport. Supervised aquagym allowed me to regain confidence in my body gradually." 
+                },
+                "author": { "fr": "Jean-Pierre M., 65 ans", "en": "Jean-Pierre M., 65 years old" },
+                "role": { "fr": "Post-infarctus (Aquagym Santé)", "en": "Post-Infarction (Supervised Aquagym)" },
+                "avatar": ""
+              },
+              {
+                "quote": { 
+                  "fr": "Après mes traitements, la gym douce m'a aidée à récupérer physiquement et moralement. Le groupe est devenu une vraie famille.", 
+                  "en": "After my treatments, gentle gym helped me recover physically and mentally. The group has become a real family." 
+                },
+                "author": { "fr": "Sophie T., 45 ans", "en": "Sophie T., 45 years old" },
+                "role": { "fr": "Rémission cancer (Gym Douce)", "en": "Cancer Remission (Gentle Gym)" },
+                "avatar": ""
+              }
+            ]
+          }
+        },
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "presentation-Professional",
+          "props": {
+            "headline": {
+              "fr": "Témoignages professionnels",
+              "en": "Professional Testimonials"
+            },
+            "subhead": {
+              "fr": "Médecins et éducateurs sportifs engagés dans le Sport Santé.",
+              "en": "Doctors and sports educators committed to Sport Health."
+            }
+          }
+        },
+         {
+          "type": "testimonials",
+          "id": "presentation-testimonials-Professional",
+          "props": {
+            "style": "carousel",
+            "autoplay": false,
+            "items": [
+              {
+                "quote": { 
+                  "fr": "La prescription d'activité physique adaptée a transformé ma pratique. Mes patients diabétiques et hypertendus montrent des améliorations significatives.", 
+                  "en": "Prescribing adapted physical activity has transformed my practice. My diabetic and hypertensive patients show significant improvements." 
+                },
+                "author": { "fr": "Dr. Nathalie R.", "en": "Dr. Nathalie R." },
+                "role": { "fr": "Médecin généraliste, Saint-Denis", "en": "General Practitioner, Saint-Denis" },
+                "avatar": ""
+              },
+              {
+                "quote": { 
+                  "fr": "Accompagner des personnes en situation de fragilité et les voir progresser est extrêmement gratifiant. La formation Sport Santé a enrichi mes compétences.", 
+                  "en": "Supporting people in situations of fragility and seeing them progress is extremely rewarding. The Sport Health training has enriched my skills." 
+                },
+                "author": { "fr": "Thomas B.", "en": "Thomas B." },
+                "role": { "fr": "Éducateur sportif, Paris", "en": "Sports Educator, Paris" },
+                "avatar": ""
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path":"/labellisation",
+      "title": {
+        "fr": "Labelliser votre activité",
+        "en": "Label your activity"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "hero-ssbe",
+          "id": "labellisation-hero",
+          "props": {
+            "headline": {
+              "fr": "Participez à la dynamique en labellisant Vos créneaux !",
+              "en": "Join the movement by labeling your slots!"
+            },
+            "backgroundImage": "images/sportSanteBienetre/hero3.jpg",
+            "ctaButtons": [
+              {
+                "label": {
+                  "fr": "Labellisez votre créneau",
+                  "en": "Label your slot"
+                },
+                "href": "/creneaux",
+                "variant": "primary"
+              }
+            ]
+          }
+        },
+        {
+          "type": "gridLayout",
+          "id": "section-label-grid",
+          "props": {
+            "leftColumns": 2,
+            "rightColumns": 2,
+            "gap": 4,
+            "leftSection": {
+              "type": "title-with-filters-rezo-la-mer",
+              "id": "left-label-header",
+              "props": {
+                "headline": {
+                  "fr": "Label Sport Santé pour tous ou Sur Santé ordonnance, c’est par ici !",
+                  "en": "Sport Health for all or On Prescription Labeling, it's here!"
+                },
+                "subhead": {
+                  "fr": "Le label sport santé bien être est une démarche volontaire pour tout organisme proposant des activités sport santé pour des public avec ou sans prescription médicale.",
+                  "en": "The sport health wellness label is a voluntary approach for any organization offering sport health activities for audiences with or without medical prescription."
+                }
+              }
+            }, 
+            "rightSection": {
+              "type": "title-with-filters-rezo-la-mer",
+              "id": "right-label-header",
+              "props": {
+                "subhead": {
+                  "fr": "Ce label permet d’attester de la qualité de votre offre et justifie d’un encadrement professionnel et sécuritaire pour les pratiquants et les professionnels de santé. Attention, la labellisation concerne un créneau Sport Santé et non pas une structure. Autrement dit, une demande est nécessaire pour chaque créneau proposé par une même structure. Pour faire votre demande, vous devez compléter le formulaire en ligne. Si vous êtes déjà labellisé SSBE et que vous souhaitez proposer des activités supplémentaires, connectez-vous à votre compte et suivez le lien.",
+                  "en": "This label certifies the quality of your offer and ensures professional and secure supervision for practitioners and health professionals. Please note that the labeling concerns a Sport Health slot and not a structure. In other words, an application is required for each slot offered by the same structure. To apply, you must complete the online form. If you are already SSBE labeled and wish to offer additional activities, log in to your account and follow the link."
+                }
+              } 
+            }
+          }
+        },
+        {
+          "type": "categories-grid",
+          "id": "sport-categories-section",
+          "props": {
+            "headline": {
+              "fr": "Pourquoi labelliser son créneau ?",
+              "en": "Why label your Sport Health slot?"
+            },
+            "subhead": {
+              "fr": "De nombreuses opportunités pour développer votre activité et contribuer à la santé publique.",
+              "en": "Many opportunities to develop your activity and contribute to public health."
+            },
+            "variant": "ssbe",
+            "columns": 2,
+            "cards": [
+              {
+                "icon": "eye",
+                "subtitle": {
+                  "fr": "Améliorer votre visibilité sur le territoire réunionnais par le référencement sur le site ssbe.re ",
+                  "en": "Improve your visibility in the Réunion territory by being listed on the ssbe.re website"
+                }
+              },
+              {
+                "icon": "megaphone",
+                "subtitle": {
+                  "fr": "Promouvoir votre activité auprès du grand public mais aussi des professionnels de santé ",
+                  "en": "Promote your activity to the general public but also to health professionals"
+                }
+              },
+              {
+                "icon": "handshake",
+                "subtitle": {
+                  "fr": "Participer à l’amélioration de la qualité de vie des réunionnais par la mise en mouvement ",
+                  "en": "Contribute to improving the quality of life of Réunionnais by getting them moving"
+                }
+              },
+              {
+                "icon": "shield-check",
+                "subtitle": {
+                  "fr": "Faire valoir la qualité de votre offre et de votre encadrement et la sécurité du pratiquant",
+                  "en": "Highlight the quality of your offer and supervision and the safety of participants"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "labellisation-timeline-header",
+          "props": {
+            "headline": {
+              "fr": "Les étapes de labellisation",
+              "en": "Sport Health for all or On Prescription Labeling, it's here!"
+            },
+            "subhead": {
+              "fr": "Un parcours clair et accompagné, du dépôt de votre dossier à l'obtention du label.",
+              "en": "A clear and supported process, from submitting your application to obtaining the label."
+            }
+          }
+        }, 
+        {
+          "type": "timeline",
+          "id": "labellisation-timeline",
+          "props": {
+            "events": [
+              {
+                
+                "title": { "fr": "Demande de la structure", "en": "Structure Request" },
+                "text": { 
+                  "fr": "Signature de la charte Sport Santé et renseignements de son créneau sur le formulaire en ligne ", 
+                  "en": "Launch of the idea and start of platform development." 
+                }
+              },
+              {
+                "title": { "fr": "Demande de la structure ", "en": "Structure Request" },
+                "text": { 
+                  "fr": "Vérification de la complétude des dossiers, (pièces justificatives et documents administratifs)", 
+                  "en": "Verification of the completeness of the files (supporting documents and administrative documents)"
+                }
+              },
+              {
+                "title": { "fr": "Comité de validation", "en": "Validation Committee" },
+                "text": { 
+                  "fr": "Passage en commission de labellisation et validation de votre activité sportive ", 
+                  "en": "Validation of your sports activity by the labeling committee" 
+                }
+              },
+              {
+                "title": { "fr": "Publication des activités ", "en": "Activity Publication" },
+                "text": { 
+                  "fr": "Diffusion sur le site ssbe.re des créneaux labellisés et transmission du kit de communication", 
+                  "en": "Listing of labeled slots on the ssbe.re website and distribution of the communication kit." 
+                }
+              },
+              {
+                "title": { "fr": "Mise à jour régulière ", "en": "Regular Updates" },
+                "text": { 
+                  "fr": "La structure s’engage à mettre à jour ses informations par le biais de son espace numérique", 
+                  "en": "The structure commits to updating its information through its digital space." 
+                }
+              }
+            ],
+            "alternating": true
+          }
+        },
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "labellisation-documents-header",
+          "props": {
+            "headline": {
+              "fr": "Pièces à fournir",
+              "en": "Documents to Provide"
+            },
+            "subhead": {
+              "fr": "Préparez ces documents avant de déposer votre demande.",
+              "en": "Prepare these documents before submitting your application."
+            }
+          }
+        },
+         {
+          "type": "gridLayout",
+          "id": "section-activity-grid",
+          "props": {
+            "leftColumns": 2,
+            "rightColumns": 2,
+            "gap": 4,
+            "leftSection": {
+              "type": "categories-grid",
+              "id": "documents-categories-section",
+              "props": {
+                "variant": "ssbe",
+                "columns": 2,
+                "cards": [
+                  {
+                    "subtitle": {
+                      "fr": "Statuts de la structure",
+                      "en": "Structure Status"
+                    }
+                  },
+                  {
+                    "subtitle": {
+                      "fr": "Attestation d'assurance RC Pro",
+                      "en": "Professional Liability Insurance Certificate"
+                    }
+                  },
+                  {
+                    "subtitle": {
+                      "fr": "Copie des diplômes des encadrants",
+                      "en": "Copies of Instructors' Diplomas"
+                    }
+                  },
+                  {
+                    "subtitle": {
+                      "fr": "Programme détaillé des activités",
+                      "en": "Detailed Activity Program"
+                    }
+                  },
+                  {
+                    "subtitle": {
+                      "fr": "Attestations de formation Sport Santé",
+                      "en": "Sport Health Training Certificates"
+                    }
+                  },
+                  {
+                    "subtitle": {
+                      "fr": "Bilan d'activité année précédente",
+                      "en": "Previous Year's Activity Report"
+                    }
+                  },
+                  {
+                    "subtitle": {
+                      "fr": "Descriptif des locaux et équipements",
+                      "en": "Description of Premises and Equipment"
+                    }
+                  },
+                  {
+                    "subtitle": {
+                      "fr": "Conventions de partenariat",
+                      "en": "Partnership Agreements"
+                    }
+                  } 
+                ]
+              }
+            }, 
+            "rightSection": {
+             "type": "html",
+              "id": "documents-right-section",
+              "props": {
+                "html": "<section class=\"relative py-20 px-4 md:py-28 overflow-hidden\"><div class=\"relative z-10 container mx-auto max-w-4xl\"><div class=\"lg:col-span-2\"><div class=\"bg-gradient-hero text-primary-foreground rounded-3xl shadow-2xl sticky top-24 overflow-hidden\"><div class=\"absolute top-0 right-0 w-32 h-32 bg-primary-foreground/5 rounded-full -translate-y-1/2 translate-x-1/2\"></div><div class=\"absolute bottom-10 left-5 w-20 h-20 bg-primary-foreground/5 rounded-full\"></div><div class=\"relative p-8 md:p-10\"><span class=\"text-5xl mb-4 block\">🚀</span><h3 class=\"font-display text-2xl font-bold mb-4\">Prêt à vous lancer ?</h3><p class=\"mb-8 opacity-90 leading-relaxed\">Déposez votre demande en ligne. Notre équipe vous accompagne de A à Z, de la constitution du dossier à l'obtention du label !</p><div class=\"space-y-3\"><a href=\"/pro/labellisation/demande\" class=\"w-full inline-flex items-center justify-center bg-accent hover:bg-accent/90 text-accent-foreground font-bold rounded-full shadow-lg hover:scale-105 transition-all px-4 py-2\">Faire une demande<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" class=\"ml-2 h-4 w-4\"><path d=\"M5 12h14\"/><path d=\"m12 5 7-5-7-5\"/></svg></a><button class=\"w-full inline-flex items-center justify-center bg-transparent border border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 rounded-full px-4 py-2\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" class=\"mr-2 h-4 w-4\"><path d=\"M12 3v12\"/><path d=\"m7-5-7 7-7-7\"/><path d=\"M5 21h14\"/></svg>Télécharger le guide</button></div></div></div></div></div></section>"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/creneaux",
+      "title": {
+        "fr": "Trouvez un créneau - Sport Santé Bien-être",
+        "en": "Find a slot - Sport Health Wellness"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "search-creneaux-header",
+          "props": {
+            "headline": {
+              "fr": "Trouvez un créneau près de chez vous",
+              "en": "Find a slot near you"
+            },
+            "subhead": {
+              "fr": "Explorez les activités sport santé labellisées à La Réunion et trouvez celle qui vous convient !",
+              "en": "Explore the labeled sport health activities in Réunion and find the one that suits you!"
+            },
+            "showFilters": true,
+            "showSearch": true,
+            "searchPlaceholder": {
+              "fr": "Rechercher une structure...",
+              "en": "Search for a structure..."
+            } 
+          }
+        },
+        {
+          "type": "meeteem",
+          "id": "meeteem-section",
+          "props": {
+              "coform": "6928096adf5caf0d230e7f26",
+              "path": {
+                  "name": "sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdegc9sgox76p87n27",
+                  "description": "sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdeggo91owe8t9ovl4p",
+                  "address": "sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdmxe3qhkjb9qu74wli",
+                  "tags": "sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdn5hortmd4fjejidhh"
+              }
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "section-creneaux-cards",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "showRole": false,
+            "baseParams": {
+              "defaultTypes": [
+                "answers"
+              ],
+              "notSourceKey": true,
+              "defaultFilters": {
+                "form": "6928096adf5caf0d230e7f26"
+              }
+            },
+            "list": {
+              "columns": {
+                "sm": 2,
+                "md": 3,
+                "lg": 3,
+                "xl": 3
+              },
+              "card": {
+                "type": "ssbe",
+                "variant": "ssbe",
+                "detailsMode": "drawer"
+              }
+            }
+          }
+        }
+      ]
     }
+
+
   ],
   "footer": {
-    "type": "cyber-reunion",
-    "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 8h1a4 4 0 0 1 0 8h-1\"></path><path d=\"M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z\"></path><line x1=\"6\" y1=\"1\" x2=\"6\" y2=\"4\"></line><line x1=\"10\" y1=\"1\" x2=\"10\" y2=\"4\"></line><line x1=\"14\" y1=\"1\" x2=\"14\" y2=\"4\"></line></svg>",
-    "logoTitle": {
-      "fr": "Sport Santé Bien-être",
-      "en": "Sport Health Wellness"
+    "type": "ssbe",
+    "contactSection": {
+      "title": {
+        "fr": "Nos coordonnées",
+        "en": "Contact us"
+      },
+      "items": [
+        {
+          "icon": "map-pin",
+          "lines": [
+            {
+              "fr": "14, allée des Saphirs – CS 61044",
+              "en": "14, allée des Saphirs – CS 61044"
+            },
+            {
+              "fr": "97404 Saint-Denis Cedex",
+              "en": "97404 Saint-Denis Cedex"
+            }
+          ]
+        },
+        {
+          "icon": "phone",
+          "value": {
+            "fr": "0262 48 13 21",
+            "en": "+262 262 48 13 21"
+          },
+          "href": "tel:+262262481321"
+        }
+      ]
     },
-    "description": {
-      "fr": "Plateforme dédiée à la promotion du sport santé et du bien-être à La Réunion",
-      "en": "Platform dedicated to promoting sport health and wellness in Réunion"
+    "partners": {
+      "logos": [
+        {
+          "image": "images/sportSanteBienetre/partners/ac-reunion.png",
+          "alt": {
+            "fr": "Jeunesse, Engagement et Sports",
+            "en": "Youth, Engagement and Sports"
+          },
+          "href": "https://www.ac-reunion.fr/jeunesse-engagement-sports"
+        },
+        {
+          "image": "images/sportSanteBienetre/partners/ars.jpeg",
+          "alt": {
+            "fr": "ARS La Réunion",
+            "en": "Regional Health Agency of Réunion"
+          },
+          "href": "https://www.ars.sante.fr/la-reunion"
+        },
+        {
+          "image": "images/sportSanteBienetre/partners/promotionsante.png",
+          "alt": {
+            "fr": "Promotion santé la Réunion",
+            "en": "Health promotion in Réunion"
+          },
+          "href": "https://promotionsante.re/"
+        }
+      ]
     },
-    "website": "https://www.sport-sante-bien-etre.re",
-    "columns": [
-      {
-        "title": {
-          "fr": "Services",
-          "en": "Services"
-        },
-        "links": [
-          {
-            "href": "/projets",
-            "label": {
-              "fr": "Projets",
-              "en": "Projects"
-            }
-          },
-          {
-            "href": "/activites",
-            "label": {
-              "fr": "Trouver une activité",
-              "en": "Find an activity"
-            }
-          },
-          {
-            "href": "/bilan-forme",
-            "label": {
-              "fr": "Bilan de forme",
-              "en": "Fitness assessment"
-            }
-          },
-          {
-            "href": "/evenements",
-            "label": {
-              "fr": "Événements",
-              "en": "Events"
-            }
-          },
-          {
-            "href": "/formations",
-            "label": {
-              "fr": "Formations",
-              "en": "Training"
-            }
-          }
-        ]
-      },
-      {
-        "title": {
-          "fr": "Activités",
-          "en": "Activities"
-        },
-        "links": [
-          {
-            "href": "/activites/sport-adapte",
-            "label": {
-              "fr": "Sport adapté",
-              "en": "Adapted sport"
-            }
-          },
-          {
-            "href": "/activites/seniors",
-            "label": {
-              "fr": "Activités seniors",
-              "en": "Senior activities"
-            }
-          },
-          {
-            "href": "/activites/bien-etre",
-            "label": {
-              "fr": "Bien-être",
-              "en": "Wellness"
-            }
-          },
-          {
-            "href": "/activites/nutrition",
-            "label": {
-              "fr": "Nutrition",
-              "en": "Nutrition"
-            }
-          },
-          {
-            "href": "/activites/plein-air",
-            "label": {
-              "fr": "Plein air",
-              "en": "Outdoor"
-            }
-          }
-        ]
-      },
-      {
-        "title": {
-          "fr": "À propos",
-          "en": "About"
-        },
-        "links": [
-          {
-            "href": "/a-propos",
-            "label": {
-              "fr": "Qui sommes-nous",
-              "en": "About us"
-            }
-          },
-          {
-            "href": "/partenaires",
-            "label": {
-              "fr": "Nos partenaires",
-              "en": "Our partners"
-            }
-          },
-          {
-            "href": "/devenir-partenaire",
-            "label": {
-              "fr": "Devenir partenaire",
-              "en": "Become a partner"
-            }
-          },
-          {
-            "href": "/actualites",
-            "label": {
-              "fr": "Actualités",
-              "en": "News"
-            }
-          },
-          {
-            "href": "/contact",
-            "label": {
-              "fr": "Contact",
-              "en": "Contact"
-            }
-          }
-        ]
-      },
-      {
-        "title": {
-          "fr": "Ressources",
-          "en": "Resources"
-        },
-        "links": [
-          {
-            "href": "/ressources/guides",
-            "label": {
-              "fr": "Guides pratiques",
-              "en": "Practical guides"
-            }
-          },
-          {
-            "href": "/ressources/conseils",
-            "label": {
-              "fr": "Conseils santé",
-              "en": "Health tips"
-            }
-          },
-          {
-            "href": "/ressources/videos",
-            "label": {
-              "fr": "Vidéos",
-              "en": "Videos"
-            }
-          },
-          {
-            "href": "/faq",
-            "label": {
-              "fr": "FAQ",
-              "en": "FAQ"
-            }
-          },
-          {
-            "href": "/ressources/glossaire",
-            "label": {
-              "fr": "Glossaire",
-              "en": "Glossary"
-            }
-          }
-        ]
-      }
-    ],
-    "socials": [
-      {
-        "platform": "facebook",
-        "url": "https://facebook.com/sportsantebienetre"
-      },
-      {
-        "platform": "instagram",
-        "url": "https://instagram.com/sportsantebienetre"
-      },
-      {
-        "platform": "linkedin",
-        "url": "https://linkedin.com/company/sport-sante-bien-etre"
-      },
-      {
-        "platform": "mail",
-        "url": "mailto:contact@sport-sante-bien-etre.re"
-      }
-    ],
     "legalLinks": [
       {
         "href": "/mentions-legales",

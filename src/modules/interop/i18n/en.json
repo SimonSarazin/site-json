@@ -1,0 +1,39 @@
+{
+  "wiki": {
+    "title": "Wiki",
+    "link_account": "Link account",
+    "unlink": "Unlink",
+    "open_wiki": "Open Wiki →",
+    "username_placeholder": "Your MediaWiki username",
+    "link_description": "Link your <bold>MediaWiki</bold> account to your profile to display your pages and contributions.",
+    "username_hint": "This is the name shown in your contributions URL, e.g.: {{url}}<bold>your-username</bold>",
+    "no_page_found": "No wiki page found for \"{{username}}\".",
+    "latest_contributions": "Latest contributions",
+    "see_all_contributions": "See all contributions →",
+    "see_full_profile": "See full profile →"
+  },
+  "discourse": {
+    "title": "Forum",
+    "link_account": "Link account",
+    "unlink": "Unlink",
+    "see_full_profile": "See full profile →",
+    "username_placeholder": "Your Discourse username",
+    "link_description": "Link your <strong>Discourse</strong> account to your profile to display your latest forum contributions.",
+    "username_hint": "This is the name shown in your forum profile URL, e.g.: {{url}}<strong>your-username</strong>/summary",
+    "activity": "Activity",
+    "posts_created": "posts created",
+    "topics_created": "topics created",
+    "likes_received": "likes received",
+    "badges": "Badges",
+    "top_replies": "Top replies",
+    "top_topics": "Top topics",
+    "categories": "Categories",
+    "account_found_title": "Discourse account found",
+    "account_found_description": "We found a Discourse account linked to your email address:",
+    "account_found_question": "Would you like to link this account to your profile?",
+    "see_forum_profile": "View profile on the forum →",
+    "confirm_link": "Yes, link",
+    "decline_link": "No thanks",
+    "link_error": "An error occurred while linking the account."
+  }
+}

@@ -30,8 +30,8 @@ const ListConfSchema = z.object({
     shareButton:     z.boolean().optional(),
     showStar:        z.boolean().optional(),
     detailsMode: z.enum(["drawer", "dialog"]).default("drawer"),
-    type: z.enum(["overlay", "default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer", "card-elts","ssbe"]).default("default"),
-    variant: z.enum(["default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer", "card-elts","ssbe"]).optional(),
+    type: z.enum(["overlay", "default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer", "card-elts","ssbe", "card-answer"]).default("default"),
+    variant: z.enum(["default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer", "card-elts","ssbe", "card-answer"]).optional(),
   }).partial().optional(),
   preview: z.object({
     type: z.enum(["default"]).default("default"),
@@ -62,6 +62,7 @@ const SearchTypeSchema = z.enum([
   "events",
   "citoyens",
   "poi",
+  "answers",
 ]);
 
 export type SearchType = z.infer<typeof SearchTypeSchema>;
@@ -77,6 +78,7 @@ export const SEARCH_TYPE_ICON_NAMES: Record<SearchType, IconName> = {
   events: "calendar-days",
   citoyens: "user",
   poi: "map-pin",
+  answers: "file-text",
 };
 
 export const SearchProSectionSchema = z.object({
@@ -90,6 +92,7 @@ export const SearchProSectionSchema = z.object({
     useFilter:   z.boolean().default(true),
     showMap:     z.boolean().default(false),
     enableMap: z.boolean().default(true),
+    defaultViewMode: z.enum(["list", "map", "graph"]).optional(),
     showActiveFiltersTypes: z.boolean().default(true),
     showActiveFiltersTags: z.boolean().default(true),
     disableInfiniteScroll: z.boolean().optional(),
@@ -221,10 +224,14 @@ export const SearchProStaticSectionSchema = z.object({
     useFilter:   z.boolean().default(false),
     showMap:     z.boolean().default(false),
     enableMap: z.boolean().default(true),
+    enableRegions: z.boolean().default(false),
     enableGraph: z.boolean().default(false),
+    graphTags: z.array(z.string()).optional(),
     graphCategories: z.array(z.string()).optional(),
+    graphDefaultGroupMode: z.enum(["country", "category"]).optional(),
+    graphEnableCountryGrouping: z.boolean().optional(),
     graphDetailsMode: z.enum(["drawer", "dialog", "link"]).default("drawer"),
-    defaultViewMode: z.enum(["list", "map", "graph"]).optional(),
+    defaultViewMode: z.enum(["list", "map", "graph", "regions"]).optional(),
     showActiveFiltersTypes: z.boolean().default(false),
     showActiveFiltersTags: z.boolean().default(false),
     disableInfiniteScroll: z.boolean().optional(),
@@ -265,6 +272,11 @@ export const SearchProStaticSectionSchema = z.object({
         active: z.boolean().optional(),
         key: z.string().optional(),
       })).optional(),
+      contextId: z.string().optional(),
+      contextType: z.enum(["projects", "organizations"]).optional(),
+      costumSlug: z.string().optional(),
+      costumEditMode: z.union([z.boolean(), z.string(), z.number()]).optional(),
+      sourceKey: z.array(z.string()).optional(),
     }).optional(),
 
     list: ListConfSchema.optional(),
@@ -550,6 +562,7 @@ export interface SearchCardProps<T extends SearchEntity = SearchEntity> {
   item: T;
   onClick?: () => void;
   card?: ListConf["card"];
+  fundingByProjectId?: Record<string, { goal: number; raised: number; percentage: number }>;
 }
 
 export interface PreviewProps<T extends SearchEntity = SearchEntity> {

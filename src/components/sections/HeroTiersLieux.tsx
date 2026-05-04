@@ -9,7 +9,7 @@ import { useAutocomplete } from "@/hooks/useAutocomplete";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { cn } from "@/lib/utils";
 import { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
-import { Link } from "react-router";
+import { Link, useSearchParams, useLocation } from "react-router";
 import { usePageFiltersOptional } from "@/contexts/PageFiltersContext";
 import { getEntityIcon } from "@/lib/entityIcons";
 
@@ -56,21 +56,49 @@ interface HeroTiersLieuxProps {
   props: SchemaHeroTiersLieuxProps;
 }
 
-// Mapping des catégories du select vers les tags
-const CATEGORY_TO_TAGS: Record<string, string[]> = {
-  all: [],
-  coworking: ["Bureaux partagés / Coworking"],
-  fablab: ["Fablab / Makerspace / Hackerspace"],
-  meeting: ["Salle de réunion"],
-  food: ["Restaurant", "Bar"],
-  learn: [],
-  stay: [],
+const CATEGORY_TO_FILTERS: Record<string, { group: string; names: string[] }> = {
+  all: { group: "", names: [] },
+  coworking: { group: "typologies", names: ["Bureaux partagés / Coworking"] },
+  fablab: { group: "typologies", names: ["Fablab / Makerspace / Hackerspace (Espaces du Faire)"] },
+  meeting: { group: "tags", names: ["Salle de réunion"] },
+  food: { group: "typologies", names: ["Cuisine partagée / Foodlab"] },
+  learn: { group: "typologies", names: ["Tiers-lieu nourricier"] },
+  stay: { group: "typologies", names: ["Tiers-lieu nourricier"] },
 };
+
+const URL_TYPOLOGY_TO_CATEGORY: Record<string, string> = {
+  coworking: "coworking",
+  fablab: "fablab",
+  foodlab: "food",
+  livinglab: "learn",
+  nourricier: "stay",
+};
+
+const TAB_INDEX_TO_CATEGORY = ["all", "meeting", "coworking", "fablab", "food", "learn", "stay", "all"];
 
 export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
   const { t } = useLocalization();
+  const [searchParams] = useSearchParams();
+  const location = useLocation();
+  const isSubsite = location.pathname.startsWith("/s/");
+
+  const headline = isSubsite && props.headlineSubsite ? props.headlineSubsite : props.headline;
+  const subhead = isSubsite && props.subheadSubsite ? props.subheadSubsite : props.subhead;
+  // Initialiser la catégorie depuis les query params de l'URL
+  const initialCategory = useMemo(() => {
+    const typology = searchParams.get("typologies");
+    if (typology && URL_TYPOLOGY_TO_CATEGORY[typology]) {
+      return URL_TYPOLOGY_TO_CATEGORY[typology];
+    }
+    const services = searchParams.get("services");
+    if (services) {
+      return "meeting";
+    }
+    return "all";
+  }, [searchParams]);
+
   const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const [activeTabIndex, setActiveTabIndex] = useState(0);
@@ -114,18 +142,29 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
     }
   }, [suggestions, search]);
 
-  // Synchroniser la catégorie sélectionnée avec les filtres de page
   useEffect(() => {
     if (pageFilters?.setSelectedFilters) {
-      const tags = CATEGORY_TO_TAGS[selectedCategory] || [];
-      if (tags.length > 0) {
-        pageFilters.setSelectedFilters({ tags });
+      const mapping = CATEGORY_TO_FILTERS[selectedCategory];
+      if (mapping && mapping.group && mapping.names.length > 0) {
+        pageFilters.setSelectedFilters({ [mapping.group]: mapping.names });
       } else {
         pageFilters.setSelectedFilters({});
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategory]); // Ne dépendre que de selectedCategory, pas de pageFilters
+
+  useEffect(() => {
+    const typology = searchParams.get("typologies");
+    const services = searchParams.get("services");
+    if (typology && URL_TYPOLOGY_TO_CATEGORY[typology]) {
+      setSelectedCategory(URL_TYPOLOGY_TO_CATEGORY[typology]);
+    } else if (services) {
+      setSelectedCategory("meeting");
+    } else if (!typology && !services) {
+      setSelectedCategory("all");
+    }
+  }, [searchParams]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!isAutocompleteOpen) return;
@@ -176,7 +215,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                   WebkitBackdropFilter: 'blur(12px)'
                 }}
               >
-                <T k={props.headline} as="h1" className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-4 sm:mb-6 text-center px-2" />
+                <T k={headline} as="h1" className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground/80 mb-2 sm:mb-3 text-center px-2" />
 
                 <div className="relative">
                   <div className="flex flex-col sm:flex-row gap-2 sm:gap-0 shadow-xl rounded-2xl sm:rounded-full overflow-hidden">
@@ -313,17 +352,21 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                 WebkitBackdropFilter: 'blur(12px)'
               }}
             >
-              <T k={props.headline} as="h1" className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-4 sm:mb-6 text-center px-2" />
+              <T k={headline} as="h1" className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground/80 mb-2 sm:mb-3 text-center px-2" />
 
-              {props.subhead && (
-                <T k={props.subhead} as="p" className="text-center text-primary font-light text-base sm:text-lg italic mb-4 sm:mb-6 px-4" />
+              {subhead && (
+                <T k={subhead} as="p" className="text-center text-primary font-extralight text-sm sm:text-base italic mb-4 sm:mb-6 px-4" />
               )}
 
               <div className="flex justify-center space-x-1 mb-4 sm:mb-6 text-xs sm:text-sm flex-wrap gap-y-2 px-2">
                 {props.ctaButtons?.map((btn, idx) => (
                   <button
                     key={idx}
-                    onClick={() => setActiveTabIndex(idx)}
+                    onClick={() => {
+                      setActiveTabIndex(idx);
+                      const category = TAB_INDEX_TO_CATEGORY[idx] || "all";
+                      setSelectedCategory(category);
+                    }}
                     className={`px-3 sm:px-6 py-2 sm:py-3 font-semibold transition ${activeTabIndex === idx
                       ? "border-b-4 border-primary text-primary-foreground bg-primary rounded-t-md"
                       : "hover:bg-muted"

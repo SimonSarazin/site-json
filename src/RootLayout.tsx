@@ -13,7 +13,9 @@ import { getBaseUrl } from "@/lib/constant/common";
 import { GoogleFontsLoader } from "@/components/layout/GoogleFontsLoader";
 import { SiteProvider } from "@/contexts/SiteProvider";
 import { FloatingQRCode } from "@/components/layout/FloatingQRCode";
+import { FloatingActionButton } from "@/components/layout/FloatingActionButton";
 import { useSite } from "@/hooks/useSite";
+import DiscourseGlobalModal from "@/modules/interop/components/DiscourseGlobalModal";
 
 const AdminPanel = import.meta.env.DEV
   ? lazy(() => import("@/components/admin/AdminPanel"))
@@ -35,6 +37,7 @@ function SiteShell() {
         <Outlet />
         <IntegrationsLoader />
         <Toaster />
+        <DiscourseGlobalModal />
 
         {AdminPanel && (
           <Suspense fallback={null}>
@@ -51,6 +54,15 @@ function SiteShell() {
             includeFavicon={config.floatingQRCode.includeFavicon}
             bgColor={config.floatingQRCode.bgColor}
             fgColor={config.floatingQRCode.fgColor}
+          />
+        )}
+
+        {config.floatingActionButton?.enabled && (
+          <FloatingActionButton
+            modal={config.floatingActionButton.modal}
+            label={config.floatingActionButton.label}
+            icon={config.floatingActionButton.icon}
+            position={config.floatingActionButton.position}
           />
         )}
       </I18nBridge>

@@ -130,7 +130,9 @@ export const HeroTiersLieuxSchema = z.object({
   id: z.string().optional(),
   props: z.object({
     headline: LocalizedString,
+    headlineSubsite: LocalizedString.optional(),
     subhead: LocalizedString.optional(),
+    subheadSubsite: LocalizedString.optional(),
     backgroundImage: z.string().optional(),
     ctaButtons: z
       .array(
@@ -184,6 +186,50 @@ export const HeroRezoLaMerSchema = z.object({
 export type HeroRezoLaMer = z.infer<typeof HeroRezoLaMerSchema>;
 
 export type HeroRezoLaMerProps = z.infer<typeof HeroRezoLaMerSchema>["props"];
+
+export const HeroSSBESchema = z.object({
+  type: z.literal("hero-ssbe"),
+  id: z.string().optional(),
+  props: z.object({
+    headline: LocalizedString,
+    subhead: LocalizedString.optional(),
+    backgroundImage: z.string().optional(),
+    backgroundImageAlt: LocalizedString.optional(),
+    overlayOpacity: z.string().optional(),
+    badges: z
+      .array(
+        z.object({
+          label: LocalizedString,
+          icon: z.string().optional(),
+        })
+      )
+      .optional(),
+    ctaButtons: z
+      .array(
+        z.object({
+          label: LocalizedString,
+          path: z.string().optional(),
+          variant: z.enum(["default", "secondary", "accent"]).optional(),
+        })
+      )
+      .optional(),
+    quickAccessTitle: LocalizedString.optional(),
+    quickAccessCards: z
+      .array(
+        z.object({
+          path: z.string(),
+          label: LocalizedString,
+          title: LocalizedString,
+          description: LocalizedString,
+          icon: z.string().optional(),
+        })
+      )
+      .optional(),
+  }),
+});
+
+export type HeroSSBE = z.infer<typeof HeroSSBESchema>;
+export type HeroSSBEProps = z.infer<typeof HeroSSBESchema>["props"];
 
 // Nos-commune
 export const HeroNoCommunesShema = z.object({
@@ -276,6 +322,7 @@ export const FeaturesRezoLaMerSchema = z.object({
         title: LocalizedString,
         description: LocalizedString,
         color: z.enum(["turquoise", "cyan-bright", "primary", "turquoise-light", "accent", "chart-2", "chart-3"]).optional(),
+        link: z.string().optional(),
       })
     ),
   }),
@@ -284,6 +331,29 @@ export const FeaturesRezoLaMerSchema = z.object({
 export type FeaturesRezoLaMer = z.infer<typeof FeaturesRezoLaMerSchema>;
 export type FeaturesRezoLaMerProps = z.infer<typeof FeaturesRezoLaMerSchema>["props"];
 
+//──────────────── Categories Grid (Generic)
+export const CategoriesGridSectionSchema = z.object({
+  type: z.literal("categories-grid"),
+  id: z.string().optional(),
+  props: z.object({
+    headline: LocalizedString.optional(),
+    subhead: LocalizedString.optional(),
+    variant: z.enum(["ocean", "cyber", "ssbe"]).optional().default("ssbe"),
+    columns: z.number().min(2).max(6).optional().default(3),
+    cards: z.array(
+      z.object({
+        icon: z.string(),
+        title: LocalizedString,
+        subtitle: LocalizedString.optional(),
+        link: z.string().optional(),
+      })
+    ),
+  }),
+});
+
+export type CategoriesGridSection = z.infer<typeof CategoriesGridSectionSchema>;
+export type CategoriesGridSectionProps = z.infer<typeof CategoriesGridSectionSchema>["props"];
+
 //──────────────── Action Buttons Rézo la Mer
 export const ActionButtonsRezoLaMerSchema = z.object({
   type: z.literal("action-buttons-rezo-la-mer"),
@@ -291,7 +361,7 @@ export const ActionButtonsRezoLaMerSchema = z.object({
   props: z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
-    variant: z.enum(["ocean", "cyber"]).optional(),
+    variant: z.enum(["ocean", "cyber", "ssbe"]).optional(),
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
     actions: z.array(
       z.object({
@@ -1315,6 +1385,91 @@ const MemberSectionSchema = z.object({
 export type MemberSection = z.infer<typeof MemberSectionSchema>;
 export type MemberSectionProps = z.infer<typeof MemberSectionSchema>["props"];
 
+//──────────────── Actions Section (Milestones/Tasks)
+const ActionsSectionSchema = z.object({
+  type: z.literal("actions"),
+  id: z.string().optional(),
+  props: z.object({
+    idProjet: z.string().optional(),
+    maxItems: z.number().optional().default(10),
+    showStatus: z.boolean().optional().default(true),
+    showProgress: z.boolean().optional().default(true),
+    showDates: z.boolean().optional().default(true),
+    layout: z.enum(["list", "grid", "timeline"]).optional().default("list"),
+  }),
+});
+
+export type ActionsSection = z.infer<typeof ActionsSectionSchema>;
+export type ActionsSectionProps = z.infer<typeof ActionsSectionSchema>["props"];
+
+//──────────────── Finance Section (Funding/Cagnotte)
+const FinanceSectionSchema = z.object({
+  type: z.literal("finance"),
+  id: z.string().optional(),
+  props: z.object({
+    idProjet: z.string().optional(),
+    maxItems: z.number().optional().default(10),
+    showProgress: z.boolean().optional().default(true),
+    showFundingGoal: z.boolean().optional().default(true),
+    showContributors: z.boolean().optional().default(true),
+    showTimeline: z.boolean().optional().default(false),
+    layout: z.enum(["cards", "list", "compact"]).optional().default("cards"),
+  }),
+});
+
+export type FinanceSection = z.infer<typeof FinanceSectionSchema>;
+export type FinanceSectionProps = z.infer<typeof FinanceSectionSchema>["props"];
+
+//──────────────── Actions Summary Section (Sidebar synthesis/charts)
+const ActionsSummarySectionSchema = z.object({
+  type: z.literal("actions-summary"),
+  id: z.string().optional(),
+  props: z.object({
+    idProjet: z.string().optional(),
+    maxItems: z.number().optional().default(10),
+    showKpis: z.boolean().optional().default(true),
+    showCharts: z.boolean().optional().default(true),
+    charts: z.object({
+      statusDistribution: z.object({
+        enabled: z.boolean().optional().default(true),
+        type: z.enum(["pie", "bar", "list"]).optional().default("pie"),
+      }).optional(),
+      timeline: z.object({
+        enabled: z.boolean().optional().default(true),
+        type: z.enum(["bar", "line", "list"]).optional().default("bar"),
+      }).optional(),
+    }).optional(),
+  }),
+});
+
+export type ActionsSummarySection = z.infer<typeof ActionsSummarySectionSchema>;
+export type ActionsSummarySectionProps = z.infer<typeof ActionsSummarySectionSchema>["props"];
+
+//──────────────── Finance Summary Section (Sidebar synthesis/charts)
+const FinanceSummarySectionSchema = z.object({
+  type: z.literal("finance-summary"),
+  id: z.string().optional(),
+  props: z.object({
+    idProjet: z.string().optional(),
+    maxItems: z.number().optional().default(10),
+    showKpis: z.boolean().optional().default(true),
+    showCharts: z.boolean().optional().default(true),
+    charts: z.object({
+      fundingProgress: z.object({
+        enabled: z.boolean().optional().default(true),
+        type: z.enum(["progress", "bar", "list"]).optional().default("progress"),
+      }).optional(),
+      amountByMilestone: z.object({
+        enabled: z.boolean().optional().default(true),
+        type: z.enum(["bar", "list"]).optional().default("bar"),
+      }).optional(),
+    }).optional(),
+  }),
+});
+
+export type FinanceSummarySection = z.infer<typeof FinanceSummarySectionSchema>;
+export type FinanceSummarySectionProps = z.infer<typeof FinanceSummarySectionSchema>["props"];
+
 //───────────────────────────────────────────────────────────────
 // Union de toutes les sections
 //───────────────────────────────────────────────────────────────
@@ -1323,6 +1478,7 @@ export const Section = z.discriminatedUnion("type", [
   HeroWithIconSectionSchema,
   HeroTiersLieuxSchema,
   HeroRezoLaMerSchema,
+  HeroSSBESchema,
   HeroNoCommunesShema,
   HeroCommuneTransparenteSchema,
   FeaturesRezoLaMerSchema,
@@ -1331,6 +1487,7 @@ export const Section = z.discriminatedUnion("type", [
   CallToActionRezoLaMerSchema,
   TitleWithFiltersRezoLaMerSchema,
   CommuneTransparenteActionsSectionSchema,
+  CategoriesGridSectionSchema,
   MarkdownSectionSchema,
   CardsSectionSchema,
   GallerySectionSchema,
@@ -1376,6 +1533,10 @@ export const Section = z.discriminatedUnion("type", [
   GridLayoutSectionSchema,
   NewsSectionSchema,
   MemberSectionSchema,
+  ActionsSectionSchema,
+  FinanceSectionSchema,
+  ActionsSummarySectionSchema,
+  FinanceSummarySectionSchema,
 ]);
 export type Section = z.infer<typeof Section>;
 
@@ -1476,6 +1637,10 @@ export const Header = z.object({
   logoIcon: z.string().optional(),
   path: z.string().min(1).optional(),
   nav: z.array(EnhancedNavItem),
+  navSubsite: z.array(EnhancedNavItem).optional(),
+  navVisibleOnlyForListedPages: z.boolean().optional(),
+  secondaryNav: z.array(EnhancedNavItem).optional(),
+  secondaryNavVisibleOnlyForListedPages: z.boolean().optional(),
   sticky: z.boolean().default(true),
   transparent: z.boolean().default(false),
   height: z.enum(["sm", "md", "lg"]).default("md"),
@@ -1486,6 +1651,7 @@ export const Header = z.object({
     auth: z.boolean().default(false),
     cart: z.boolean().default(false),
     notifications: z.boolean().default(false),
+    piggyBank: z.boolean().default(false),
   }),
   ctaButton: z.object({
     label: LocalizedString,
@@ -1520,6 +1686,30 @@ const FooterColumn = z.object({
   })),
 });
 
+const FooterContactItem = z.object({
+  icon: z.string().optional(),
+  label: LocalizedString.optional(),
+  lines: z.array(LocalizedString).optional(),
+  value: LocalizedString.optional(),
+  href: z.string().optional(),
+});
+
+const FooterContactSection = z.object({
+  title: LocalizedString.optional(),
+  items: z.array(FooterContactItem),
+});
+
+const FooterPartnerLogo = z.object({
+  image: z.string(),
+  alt: LocalizedString,
+  href: z.string().optional(),
+});
+
+const FooterPartnersSection = z.object({
+  title: LocalizedString.optional(),
+  logos: z.array(FooterPartnerLogo),
+});
+
 const FooterCtaButtonSchema = z.object({
   label: LocalizedString,
   href: z.string().optional(),
@@ -1531,7 +1721,7 @@ const FooterCtaButtonSchema = z.object({
 });
 
 export const Footer = z.object({
-  type: z.enum(["tiers-lieux", "rezo-la-mer", "cyber-reunion", "nos-communes", "commune-transparente", "default"]).default("default"),
+  type: z.enum(["tiers-lieux", "rezo-la-mer", "cyber-reunion", "nos-communes", "commune-transparente", "ssbe", "default"]).default("default"),
   columns: z.array(FooterColumn),
   socials: z.array(z.object({ platform: z.string(), url: z.string() })).optional(),
   extra: z.string().optional(),
@@ -1554,6 +1744,8 @@ export const Footer = z.object({
   paymentMethods: z.array(z.string()).optional(), // Array of payment method icons
   website: z.string().optional(),
   ctaButton: FooterCtaButtonSchema.optional(),
+  contactSection: FooterContactSection.optional(),
+  partners: FooterPartnersSection.optional(),
 });
 export type Footer = z.infer<typeof Footer>;
 
@@ -1790,17 +1982,36 @@ export const SiteConfig = z.object({
       title: LocalizedString.optional(),
       subtitle: LocalizedString.optional(),
     }).optional(),
+    register: z.object({
+      title: LocalizedString.optional(),
+      subtitle: LocalizedString.optional(),
+    }).optional(),
   }).optional(),
   profiles: ProfilesConfigSchema,
   floatingQRCode: z.object({
     enabled: z.boolean().default(false),
-    url: z.string().optional(), 
+    url: z.string().optional(),
     position: z.enum(["bottom-right", "bottom-left", "top-right", "top-left"]).default("bottom-right"),
-    size: z.number().optional().default(80), 
-    expandedSize: z.number().optional().default(200), 
+    size: z.number().optional().default(80),
+    expandedSize: z.number().optional().default(200),
     includeFavicon: z.boolean().optional().default(true),
-    bgColor: z.string().optional().default("#ffffff"), 
-    fgColor: z.string().optional().default("#000000"), 
+    bgColor: z.string().optional().default("#ffffff"),
+    fgColor: z.string().optional().default("#000000"),
+  }).optional(),
+  floatingActionButton: z.object({
+    enabled: z.boolean().default(false),
+    modal: z.enum([
+      "add-organization",
+      "add-project",
+      "add-event",
+      "add-poi",
+      "add-tiers-lieux",
+      "register-cyber-reunion",
+      "json-form",
+    ]),
+    label: LocalizedString,
+    icon: z.string().optional().default("plus"),
+    position: z.enum(["bottom-right", "bottom-left", "top-right", "top-left"]).default("bottom-right"),
   }).optional(),
   ampli: z.array(AmpliConfigSchema).optional(),
 });
@@ -1834,7 +2045,8 @@ export function getDefaultSiteConfig(): Partial<SiteConfig> {
         search: false,
         auth: false,
         cart: false,
-        notifications: false
+        notifications: false,
+        piggyBank: false
       },
       sticky: false,
       transparent: false,
@@ -1880,7 +2092,8 @@ export const example: SiteConfig = {
       search: false,
       auth: false,
       cart: false,
-      notifications: false
+      notifications: false,
+      piggyBank: false
     }
   },
   pages: [

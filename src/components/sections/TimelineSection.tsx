@@ -35,10 +35,12 @@ export function TimelineSection({ id, props }: { id?: string; props: TimelineSec
                   "w-5/12 p-6 bg-card rounded-lg border shadow-xs",
                   alternating && index % 2 === 0 ? "mr-auto" : "ml-auto"
                 )}>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                    <Calendar className="w-4 h-4" />
-                    <span>{formatDate(event.date)}</span>
-                  </div>
+                  {(event.date) && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                      <Calendar className="w-4 h-4" />
+                      <span>{formatDate(event.date)}</span>
+                    </div>
+                  )}
 
                   <T k={event.title} as="h3" className="text-xl font-bold text-foreground mb-3" />
 

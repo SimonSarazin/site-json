@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { lazy } from "vite-preload"; // Utiliser lazy de vite-preload pour tracer les chunks
 import type { PreloadableComponent } from "react-lazy-with-preload";
 import type { Section, SectionPropsMap } from "@/types/site";
+import { useCocolight } from "@/hooks/useCocolight";
 import { ErrorBoundary } from "../layout/ErrorBoundary";
 
 // vite-preload retourne PreloadableComponent au lieu de LazyExoticComponent
@@ -23,6 +24,7 @@ const LazySections: {
   hero: lazy(() => import("./HeroSection")),
   "hero-tiers-lieux": lazy(() => import("./HeroTiersLieux")),
   "hero-rezo-la-mer": lazy(() => import("./HeroRezoLaMer")),
+  "hero-ssbe": lazy(() => import("./HeroSSBE")),
   "features-rezo-la-mer": lazy(() => import("./FeaturesRezoLaMer")),
   "action-buttons-rezo-la-mer": lazy(() => import("./ActionButtonsRezoLaMer")),
   "community-rezo-la-mer": lazy(() => import("./CommunityRezoLaMer")),
@@ -31,6 +33,7 @@ const LazySections: {
   "commune-transparente-actions": lazy(() => import("./CommuneTransparenteActionsSection")),
   "hero-nos-communes": lazy(() => import("./NosCommunesBannerSection")),
   "hero-commune-transparente": lazy(() => import("./HeroCommuneTransparenteSection")),
+  "categories-grid": lazy(() => import("./CategoriesGridSection")),
   markdown: lazy(() => import("./MarkdownSection")),
   cards: lazy(() => import("./CardsSection")),
   gallery: lazy(() => import("./GallerySection")),
@@ -77,6 +80,10 @@ const LazySections: {
   member: lazy(() => import("./MemberSection")),
   heroWithIcon: lazy(() => import("./HeroWithIconSection")),
   meeteem: lazy(() => import("@/modules/ampli/components/sections/MeeteemSection")),
+  actions: lazy(() => import("./ActionsSection")),
+  finance: lazy(() => import("./FinanceSection")),
+  "actions-summary": lazy(() => import("./ActionsSummarySection")),
+  "finance-summary": lazy(() => import("./FinanceSummarySection")),
 };
 
 // Fallback skeleton pour les sections en cours de chargement
@@ -98,7 +105,29 @@ function SectionLoadingFallback({ id, type }: { id?: string; type: string }) {
 }
 
 export function SectionRenderer({ section, index }: { section: Section; index?: number }) {
+  const { entity, contextId } = useCocolight();
   const sectionContext = `Section[type=${section.type}, id=${section.id || "none"}]`;
+  const projectAwareSectionTypes: Section['type'][] = ['actions', 'finance', 'actions-summary', 'finance-summary'];
+  const selectedProjectId = (() => {
+      const propsRecord = section.props as Record<string, unknown>;
+      const fromProps = typeof propsRecord?.idProjet === 'string' ? propsRecord.idProjet : '';
+      if (fromProps) return fromProps;
+  
+      if (typeof window === 'undefined') return '';
+  
+      const fromQuery = new URLSearchParams(window.location.search).get('selectedProjectId') || '';
+      if (fromQuery) return fromQuery;
+  
+      const storageScopeId = contextId || entity?.id || '';
+      if (!storageScopeId) return '';
+  
+      return window.localStorage.getItem(`projectModalId_${storageScopeId}`) || '';
+    })();
+  
+    const resolvedSectionProps = projectAwareSectionTypes.includes(section.type)
+      ? ({ ...(section.props as Record<string, unknown>), idProjet: selectedProjectId } as typeof section.props)
+      : section.props;
+  
   const LazyComponent = LazySections[section.type] as React.ComponentType<{ id?: string; props: typeof section.props }>;
 
   if (!LazyComponent) {
@@ -127,7 +156,7 @@ export function SectionRenderer({ section, index }: { section: Section; index?: 
             </section>
           }
         >
-          <LazyComponent id={section.id} props={section.props} />
+          <LazyComponent id={section.id} props={resolvedSectionProps} />
         </ErrorBoundary>
       </Suspense>
     </div>

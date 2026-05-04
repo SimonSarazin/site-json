@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Link, useLoaderData, useNavigate, useParams } from "react-router";
+import { Link, useLoaderData, useNavigate, useParams, useSearchParams } from "react-router";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { AlertCircle, Home, Info, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SmartCoForm } from "../components/SmartCoForm";
 import { CoFormAccessGuard } from "../components/CoFormAccessGuard";
+import { CoFormAnswerPicker } from "../components/CoFormAnswerPicker";
 import { CoFormThankYou } from "../components/CoFormThankYou";
 import { useCoFormQuery, useCoFormFinalMutation } from "../hooks/useCoFormQuery";
 import { useT } from "@/hooks/useT";
@@ -34,6 +35,17 @@ export default function CoFormPage() {
     useLoadNamespace("modules/coform");
     const t = useT("modules/coform");
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    // Paramètres URL standalone
+    const stepKeyFromUrl = searchParams.get("step") || undefined;
+    const inputKeyFromUrl = searchParams.get("input") || undefined;
+    const answerIdFromUrl = searchParams.get("answerId") || undefined;
+    const showAnswersFromUrl = searchParams.has("showAnswers");
+    const readOnlyFromUrl = searchParams.has("readOnly");
+
+    // Détection du mode standalone
+    const isStandalone = !!stepKeyFromUrl;
 
     // État de la page : formulaire ou page de remerciement
     const [pageState, setPageState] = useState<CoFormPageState>({
@@ -50,14 +62,31 @@ export default function CoFormPage() {
         enabled: !!formId,
     });
 
+    const effectiveAnswerId = answerIdFromUrl
+        ?? (isEditMode ? (access?.existingAnswerId ?? undefined) : undefined);
+
+    // Résoudre les defaultValues : oneAnswerPerPers → existingAnswer, multi → chercher dans existingAnswers par id
+    const resolvedDefaultValues = (() => {
+        if (readOnlyFromUrl || effectiveAnswerId) {
+            // Mode oneAnswerPerPers : réponse unique dans access.existingAnswer
+            if (access?.existingAnswer) return access.existingAnswer;
+            // Mode multi-answer : chercher par answerId dans la liste
+            if (answerIdFromUrl && access?.existingAnswers) {
+                return access.existingAnswers.find(a => a.id === answerIdFromUrl)?.answers ?? undefined;
+            }
+        }
+        return undefined;
+    })();
+
     // Mutation pour soumettre/mettre à jour le formulaire
-    // Si mode édition, on passe l'answerId existant pour une mise à jour
     const mutation = useCoFormFinalMutation({
         formId: formId || "",
-        answerId: isEditMode ? access?.existingAnswerId : undefined,
+        answerId: effectiveAnswerId,
         onSuccess: () => {
-            // Basculer vers la page de remerciement
-            setPageState({ view: "thankYou", isUpdate: isEditMode });
+            // En mode standalone, pas de page remerciement (onAfterSubmit gère l'affichage)
+            if (!isStandalone) {
+                setPageState({ view: "thankYou", isUpdate: !!effectiveAnswerId });
+            }
         },
         onError: (error) => {
             toast.error(t("coform.status.error"), {
@@ -234,6 +263,11 @@ export default function CoFormPage() {
         await mutation.mutateAsync({ allData: data, addedOptions, links });
     };
 
+    // Callback standalone après soumission réussie (toast simple, pas de page remerciement)
+    const handleAfterStandaloneSubmit = () => {
+        toast.success(t("coform.status.success"));
+    };
+
     // Mode édition : l'utilisateur a déjà répondu et veut modifier sa réponse
     const handleEditExisting = () => {
         setPageState({ view: "form", isEditMode: true });
@@ -246,6 +280,13 @@ export default function CoFormPage() {
 
     // Depuis la page de remerciement : soumettre une autre réponse (si autorisé)
     const handleSubmitAnother = () => {
+        // Retirer answerId et showAnswers de l'URL, revenir au formulaire vierge
+        setSearchParams((prev) => {
+            const next = new URLSearchParams(prev);
+            next.delete("answerId");
+            next.delete("showAnswers");
+            return next;
+        });
         setPageState({ view: "form", isEditMode: false });
     };
 
@@ -275,6 +316,57 @@ export default function CoFormPage() {
         );
     }
 
+    // Réponse multiple : afficher le picker uniquement si ?showAnswers est dans l'URL
+    const showAnswerPicker = showAnswersFromUrl
+        && !isStandalone
+        && !answerIdFromUrl
+        && !isEditMode
+        && !readOnlyFromUrl
+        && access != null
+        && !access.isOneAnswerPerPers
+        && access.existingAnswers != null
+        && access.existingAnswers.length > 0;
+
+    // Navigation vers le formulaire avec un answerId sélectionné
+    const handleSelectAnswer = (answerId: string) => {
+        setSearchParams((prev) => {
+            const next = new URLSearchParams(prev);
+            next.set("answerId", answerId);
+            return next;
+        });
+    };
+
+    // Navigation vers le formulaire sans answerId (nouvelle réponse)
+    const handleNewAnswer = () => {
+        // Retirer showAnswers de l'URL pour afficher directement le formulaire
+        setSearchParams((prev) => {
+            const next = new URLSearchParams(prev);
+            next.delete("showAnswers");
+            return next;
+        });
+    };
+
+    // Rendu du sélecteur de réponses (mode réponse multiple)
+    if (showAnswerPicker && pageState.view === "form" && !pageState.isEditMode) {
+        return (
+            <div className="min-h-screen flex flex-col bg-background">
+                <SiteHeader />
+                <main className="flex-1 py-8">
+                    <div className="container max-w-4xl mx-auto px-4">
+                        <CoFormAnswerPicker
+                            formName={formData?.name}
+                            formData={formData}
+                            answers={access.existingAnswers!}
+                            onSelectAnswer={handleSelectAnswer}
+                            onNewAnswer={handleNewAnswer}
+                        />
+                    </div>
+                </main>
+                <SiteFooter />
+            </div>
+        );
+    }
+
     // Rendu du formulaire avec garde d'accès
     return (
         <div className="min-h-screen flex flex-col bg-background">
@@ -282,14 +374,14 @@ export default function CoFormPage() {
             <main className="flex-1 py-8">
                 <div className="container max-w-4xl mx-auto px-4">
                     <CoFormAccessGuard
-                        access={isEditMode ? null : access}
+                        access={(isEditMode || answerIdFromUrl) ? null : access}
                         onEditExisting={handleEditExisting}
                         onLogin={() => {
                             
                         }}
                     >
                         {/* Bandeau mode édition */}
-                        {isEditMode && access?.existingAnswerId && (
+                        {(!!effectiveAnswerId && !isStandalone) && (
                             <div className="mb-6 flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-200">
                                 <Info className="w-5 h-5 shrink-0" />
                                 <p>{t("coform.access.editMode.description")}</p>
@@ -300,9 +392,14 @@ export default function CoFormPage() {
                             formData={formData}
                             submitMode="final"
                             onFinalSubmit={handleFinalSubmit}
+                            onAfterSubmit={isStandalone ? handleAfterStandaloneSubmit : undefined}
                             showProgress={true}
                             showStepNumbers={true}
-                            defaultValues={isEditMode ? access?.existingAnswer ?? undefined : undefined}
+                            defaultValues={resolvedDefaultValues}
+                            answerId={effectiveAnswerId}
+                            stepKey={stepKeyFromUrl}
+                            inputKey={inputKeyFromUrl}
+                            readOnly={readOnlyFromUrl}
                         />
                     </CoFormAccessGuard>
                 </div>

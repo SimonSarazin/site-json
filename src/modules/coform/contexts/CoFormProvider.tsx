@@ -14,6 +14,8 @@ interface CoFormProviderProps {
   defaultValues?: AllStepsData;
   /** ID de la réponse en cours d'édition (mode édition uniquement) */
   answerId?: string;
+  /** Clé (subFormId) de l'étape initiale (pour démarrer le wizard sur une étape spécifique) */
+  initialStepKey?: string;
 }
 
 /**
@@ -28,11 +30,19 @@ export function CoFormProvider({
   submitMode = "step",
   defaultValues,
   answerId,
+  initialStepKey,
 }: CoFormProviderProps) {
   const subFormsFields = useMemo(() => parseCoFormFields(formData), [formData]);
 
+  // Résoudre l'index initial à partir de initialStepKey
+  const initialStepIndex = useMemo(() => {
+    if (!initialStepKey) return 0;
+    const idx = subFormsFields.findIndex((sf) => sf.subFormId === initialStepKey);
+    return idx >= 0 ? idx : 0;
+  }, [initialStepKey, subFormsFields]);
+
   const [stepState, setStepState] = useState<CoFormStepState>({
-    currentStepIndex: 0,
+    currentStepIndex: initialStepIndex,
     stepsData: defaultValues ?? {},
     completedSteps: [],
     errorSteps: [],

@@ -4,8 +4,19 @@ import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
 import { Header } from "@/types/site-schema";
 import { ChevronDown, User, LogOut, Settings, Globe } from "lucide-react";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useLocation } from "react-router";
 import { useCocolight } from "@/hooks/useCocolight";
+import { useEntityBySlugQuery } from "@/hooks/useEntityBySlugQuery";
+
+function NavLink({ to, className, children }: { to: string; className?: string; children: React.ReactNode }) {
+  if (!to || to === "#") {
+    return <span className={className}>{children}</span>;
+  }
+  if (to.startsWith("http")) {
+    return <a href={to} target="_blank" rel="noopener noreferrer" className={className}>{children}</a>;
+  }
+  return <Link to={to} className={className}>{children}</Link>;
+}
 import { ClientOnly } from "../ClientOnly";
 import {
     DropdownMenu,
@@ -33,7 +44,20 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
     const t = useT("components/layout");
     const { currentLocale, setLocale, availableLocales } = useLocalization();
     const navigate = useNavigate();
+    const location = useLocation();
     const { me, api } = useCocolight();
+
+    // En mode sous-site (/s/:slug), utiliser navSubsite si disponible
+    const isSubsite = location.pathname.startsWith("/s/");
+    const nav = isSubsite && header.navSubsite ? header.navSubsite : header.nav;
+
+    // Extraire le slug depuis l'URL /s/{slug}/... pour afficher l'icône du sous-réseau
+    const subsiteSlug = isSubsite ? location.pathname.split("/")[2] : undefined;
+    const { data: subsiteEntity } = useEntityBySlugQuery({ slug: subsiteSlug });
+    const subsiteImage = subsiteEntity?.serverData?.profilThumbImageUrl
+        ?? subsiteEntity?.serverData?.profilImageUrl
+        ?? null;
+    const subsiteName = subsiteEntity?.serverData?.name ?? "";
 
     const profilThumbImageUrl = useReactiveProperty<string>(me?.serverData, 'profilThumbImageUrl') ?? null;
     const name = useReactiveProperty<string>(me?.serverData, 'name') ?? null;
@@ -61,29 +85,44 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
         <header className={`${header.transparent ? "bg-transparent" : "bg-background"} rounded-b-2xl border-b border-border ${header.sticky ? "sticky top-0 z-50" : ""}`}>
             <nav className="container mx-auto py-3 sm:py-4 px-4 sm:px-6">
                 <div className="flex items-center justify-between">
-                    <Link to={header.path || "/"} className="flex items-center shrink-0">
-                        {header.logo && (
-                            <OptimizedImage
-                                src={`/${header.logo}`}
-                                alt={header.logoAlt ? t(header.logoAlt) : ""}
-                                width={207}
-                                height={48}
-                                className="h-8 xs:h-10 sm:h-12 w-auto max-w-35 xs:max-w-40 sm:max-w-none object-contain"
-                            />
+                    <div className="flex items-center shrink-0 gap-2 sm:gap-3">
+                        <Link to={header.path || "/"} className="flex items-center shrink-0">
+                            {header.logo && (
+                                <OptimizedImage
+                                    src={`/${header.logo}`}
+                                    alt={header.logoAlt ? t(header.logoAlt) : ""}
+                                    width={207}
+                                    height={48}
+                                    className="h-6 xs:h-8 sm:h-9 w-auto max-w-28 xs:max-w-32 sm:max-w-40 object-contain"
+                                />
+                            )}
+                        </Link>
+
+                        {isSubsite && subsiteImage && (
+                            <>
+                                <span className="text-border text-2xl font-light select-none" aria-hidden="true">/</span>
+                                <OptimizedImage
+                                    src={subsiteImage}
+                                    alt={subsiteName}
+                                    width={207}
+                                    height={48}
+                                    className="h-6 xs:h-8 sm:h-9 w-auto object-contain"
+                                />
+                            </>
                         )}
-                    </Link>
+                    </div>
 
                     {/* Menu desktop */}
-                    <div className="hidden md:flex items-center space-x-1.5 text-sm font-medium">
-                        {header.nav.map((item, idx) => {
+                    <div className="hidden md:flex items-center space-x-1.5 text-sm font-medium ml-8 min-w-0">
+                        {nav.map((item, idx) => {
                             const hasChildren = !!item.children?.length;
 
                             return (
                                 <div key={idx} className="relative group">
-                                    <Link to="#" className="hover:text-primary text-foreground transition flex items-center gap-1 truncate w-auto">
+                                    <button type="button" className="hover:text-primary text-foreground transition flex items-center gap-1 truncate w-auto cursor-pointer">
                                         {t(item.label)}
                                         {hasChildren && <ChevronDown className="w-3 h-3" />}
-                                    </Link>
+                                    </button>
 
 
                                     {hasChildren && item.children && (
@@ -109,35 +148,35 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
 
                                                     <div className="col-span-2 grid grid-cols-2 gap-6">
                                                         {item.children.slice(1).map((sub, i) => (
-                                                            <div key={i}>
+                                                            <NavLink key={i} to={sub.path || '#'} className="block hover:bg-accent rounded-lg p-2 -m-2 transition">
                                                                 <h4 className="font-bold text-popover-foreground mb-2">{t(sub.label)}</h4>
                                                                 <p className="text-muted-foreground text-xs leading-relaxed">
                                                                     {sub.description ? t(sub.description) : ""}
                                                                 </p>
-                                                            </div>
+                                                            </NavLink>
                                                         ))}
                                                     </div>
                                                 </div>
                                             ) : item.children.length > 2 ? (
                                                 <div className="grid grid-cols-2 gap-6">
                                                     {item.children.map((sub, i) => (
-                                                        <div key={i}>
+                                                        <NavLink key={i} to={sub.path || '#'} className="block hover:bg-accent rounded-lg p-2 -m-2 transition">
                                                             <h4 className="font-bold text-popover-foreground mb-2">{t(sub.label)}</h4>
                                                             <p className="text-muted-foreground text-xs leading-relaxed">
                                                                 {sub.description ? t(sub.description) : ""}
                                                             </p>
-                                                        </div>
+                                                        </NavLink>
                                                     ))}
                                                 </div>
                                             ) : (
                                                 <div className="space-y-4">
                                                     {item.children.map((sub, i) => (
-                                                        <div key={i}>
+                                                        <NavLink key={i} to={sub.path || '#'} className="block hover:bg-accent rounded-lg p-2 -m-2 transition">
                                                             <h4 className="font-bold text-popover-foreground mb-2">{t(sub.label)}</h4>
                                                             <p className="text-muted-foreground text-xs leading-relaxed">
                                                                 {sub.description ? t(sub.description) : ""}
                                                             </p>
-                                                        </div>
+                                                        </NavLink>
                                                     ))}
                                                 </div>
                                             )}
@@ -148,7 +187,7 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                         })}
                     </div>
 
-                    <div className="hidden md:flex items-center space-x-4 text-sm">
+                    <div className="hidden md:flex items-center space-x-4 text-sm shrink-0 ml-4">
                         <ClientOnly fallback={<div className="w-10 h-10" />}>
                             {() => <ToggleButtonTheme />}
                         </ClientOnly>
@@ -241,7 +280,7 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                         )}
                     </div>
 
-                    <div className="md:hidden flex items-center gap-1 xs:gap-2 shrink-0">
+                    <div className="md:hidden flex items-center gap-1 xs:gap-2 shrink-0 ml-3">
                         <ClientOnly fallback={<div className="w-7 h-7 xs:w-8 xs:h-8" />}>
                             {() => <ToggleButtonTheme />}
                         </ClientOnly>
@@ -287,21 +326,35 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                 {mobileMenuOpen && (
                     <div className="md:hidden absolute left-0 right-0 top-full bg-popover text-popover-foreground border-b border-border shadow-lg max-h-[calc(100vh-4rem)] overflow-y-auto z-55">
                         <div className="px-4 py-4 space-y-4">
-                            {header.nav.map((item, idx) => (
+                            {nav.map((item, idx) => (
                                 <div key={idx} className="space-y-2">
                                     <div className="font-semibold text-foreground">{t(item.label)}</div>
                                     {item.children && (
                                         <div className="pl-4 space-y-2">
-                                            {item.children.map((sub, i) => (
-                                                <Link
-                                                    key={i}
-                                                    to={sub.path || '#'}
-                                                    className="block text-sm text-muted-foreground hover:text-primary transition"
-                                                    onClick={() => setMobileMenuOpen(false)}
-                                                >
-                                                    {t(sub.label)}
-                                                </Link>
-                                            ))}
+                                            {item.children.map((sub, i) => {
+                                                const isExternal = (sub.path || '').startsWith('http');
+                                                return isExternal ? (
+                                                    <a
+                                                        key={i}
+                                                        href={sub.path || '#'}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="block text-sm text-muted-foreground hover:text-primary transition"
+                                                        onClick={() => setMobileMenuOpen(false)}
+                                                    >
+                                                        {t(sub.label)}
+                                                    </a>
+                                                ) : (
+                                                    <Link
+                                                        key={i}
+                                                        to={sub.path || '#'}
+                                                        className="block text-sm text-muted-foreground hover:text-primary transition"
+                                                        onClick={() => setMobileMenuOpen(false)}
+                                                    >
+                                                        {t(sub.label)}
+                                                    </Link>
+                                                );
+                                            })}
                                         </div>
                                     )}
                                 </div>
