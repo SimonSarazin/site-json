@@ -1,5 +1,5 @@
 import Cocolight, { type Api, type Organization, type User, type Project } from "@communecter/cocolight-api-client";
-import { useEffect, useState, ReactNode, useMemo } from "react";
+import { useEffect, useState, ReactNode, useMemo, useCallback } from "react";
 
 import { InitApiOptions } from "../lib/apiClient";
 import { getSlug } from "../lib/constant/common";
@@ -111,6 +111,17 @@ export function CocolightProvider({
     };
   }, [userApiInstance]);
 
+  // ------------------- refresh me ----------------------------------------
+  const refreshMe = useCallback(async () => {
+    if (!api) return;
+    try {
+      const freshMe = await api.me();
+      setMe(freshMe);
+    } catch (e) {
+      console.error("[CocolightProvider] refreshMe failed:", e);
+    }
+  }, [api]);
+
   // ------------------------- Memo du contexte -----------------------------
   const contextValue = useMemo(
     () => ({
@@ -125,8 +136,9 @@ export function CocolightProvider({
       dataToProfile,
       setDataToProfile,
       loading: false,
+      refreshMe,
     }),
-    [client, userApiInstance, api, me, contextType, contextId, entity, dataToProfile],
+    [client, userApiInstance, api, me, contextType, contextId, entity, dataToProfile, refreshMe],
   );
 
   return (
