@@ -1970,6 +1970,10 @@ export const SiteConfig = z.object({
       title: LocalizedString.optional(),
       subtitle: LocalizedString.optional(),
     }).optional(),
+    register: z.object({
+      title: LocalizedString.optional(),
+      subtitle: LocalizedString.optional(),
+    }).optional(),
   }).optional(),
   profiles: ProfilesConfigSchema,
   floatingQRCode: z.object({
