@@ -141,7 +141,7 @@
                 "buttons": [
                   {
                     "label": { "fr": "Proposer une ressource" },
-                    "action": "add-poi",
+                    "action": "add-classified",
                     "requiresAuth": true
                   }
                 ]
@@ -156,7 +156,7 @@
                 "buttons": [
                   {
                     "label": { "fr": "Proposer une offre" },
-                    "action": "add-offer",
+                    "action": "add-classified",
                     "requiresAuth": true
                   }
                 ]
@@ -431,7 +431,8 @@
             "disableInfiniteScroll": false,
             "baseParams": { 
               "defaultTypes": [
-                "poi"
+                "poi",
+                "classifieds"
               ], 
               "notSourceKey": true,
               "defaultFields": [

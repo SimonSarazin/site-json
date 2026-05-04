@@ -845,7 +845,9 @@
       "eventSuccess": "Événement créé avec succès",
       "eventError": "Impossible de créer l'événement",
       "poiSuccess": "Lieu créé avec succès",
-      "poiError": "Impossible de créer le lieu"
+      "poiError": "Impossible de créer le lieu",
+      "classifiedSuccess": "Ressource proposée avec succès",
+      "classifiedError": "Impossible de proposer la ressource"
     }
   },
   "ProfileEdit": {
@@ -1097,10 +1099,56 @@
     "project": "Projet",
     "event": "Événement",
     "poi": "Lieu",
+    "classified": "Ressource",
+    "classified": {
+      "section": {
+        "label": "Type d'annonce",
+        "placeholder": "Sélectionner un type",
+        "offer": "Offre",
+        "need": "Besoin"
+      },
+      "category": {
+        "label": "Catégorie",
+        "placeholder": "Sélectionner une catégorie",
+        "service": "Service",
+        "competence": "Compétence",
+        "material": "Matériel"
+      },
+      "subtype": {
+        "label": "Sous-catégorie",
+        "placeholder": "Sélectionner une sous-catégorie",
+        "charity": "Bénévolat",
+        "education": "Éducation",
+        "househelp": "Aide à domicile",
+        "washing": "Laverie",
+        "gardening": "Jardinage",
+        "farming": "Agriculture",
+        "generalmaintenance": "Entretien général",
+        "childrencare": "Garde d'enfants",
+        "ederlycare": "Aide aux personnes âgées",
+        "disabledcare": "Aide aux personnes handicapées",
+        "hostinghelp": "Aide à l'hébergement",
+        "animalcare": "Soins aux animaux",
+        "artistic": "Artistique",
+        "laws": "Droit",
+        "itdevlopment": "Développement informatique",
+        "handcraft": "Artisanat",
+        "agriculture": "Agriculture",
+        "restauration": "Restauration",
+        "building": "Bâtiment",
+        "electronic": "Électronique",
+        "furniture": "Mobilier",
+        "primaryressources": "Ressources primaires",
+        "buildingtools": "Outils de construction",
+        "gardeningtools": "Outils de jardinage",
+        "medicalstuff": "Matériel médical"
+      }
+    },
     "tabs": {
       "info": "Informations",
       "dates": "Dates",
-      "location": "Localisation"
+      "location": "Localisation",
+      "categorie": "Catégorie"
     },
     "modal": {
       "organization": {
@@ -1120,6 +1168,10 @@
       "poi": {
         "title": "Ajouter un lieu",
         "description": "Renseignez les informations du lieu"
+      },
+      "classified": {
+        "title": "Proposer une ressource",
+        "description": "Renseignez les informations de votre ressource"
       },
       "transparentCommune": {
         "title": "Créer votre commune transparente",
@@ -1179,6 +1231,10 @@
       "minLength": "Le slug doit contenir au moins 3 caractères",
       "maxLength": "Le slug ne peut pas dépasser 100 caractères",
       "format": "Le slug ne peut contenir que des lettres et des chiffres"
+    },
+    "subtype": {
+      "required": "La sous-catégorie est requise",
+      "invalid": "La sous-catégorie ne correspond pas à la catégorie choisie"
     },
     "datetime": {
       "invalid": "Format ISO 8601 requis"

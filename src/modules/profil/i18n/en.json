@@ -845,7 +845,9 @@
       "eventSuccess": "Event created successfully",
       "eventError": "Failed to create event",
       "poiSuccess": "Location created successfully",
-      "poiError": "Failed to create location"
+      "poiError": "Failed to create location",
+      "classifiedSuccess": "Resource submitted successfully",
+      "classifiedError": "Failed to submit resource"
     }
   },
   "ProfileEdit": {
@@ -1097,10 +1099,56 @@
     "project": "Project",
     "event": "Event",
     "poi": "Place",
+    "classified": "Resource",
+    "classified": {
+      "section": {
+        "label": "Listing type",
+        "placeholder": "Select a type",
+        "offer": "Offer",
+        "need": "Need"
+      },
+      "category": {
+        "label": "Category",
+        "placeholder": "Select a category",
+        "service": "Service",
+        "competence": "Skill",
+        "material": "Material"
+      },
+      "subtype": {
+        "label": "Subcategory",
+        "placeholder": "Select a subcategory",
+        "charity": "Volunteering",
+        "education": "Education",
+        "househelp": "Home help",
+        "washing": "Laundry",
+        "gardening": "Gardening",
+        "farming": "Farming",
+        "generalmaintenance": "General maintenance",
+        "childrencare": "Childcare",
+        "ederlycare": "Elderly care",
+        "disabledcare": "Disabled care",
+        "hostinghelp": "Hosting help",
+        "animalcare": "Animal care",
+        "artistic": "Artistic",
+        "laws": "Law",
+        "itdevlopment": "IT development",
+        "handcraft": "Handcraft",
+        "agriculture": "Agriculture",
+        "restauration": "Catering",
+        "building": "Building",
+        "electronic": "Electronics",
+        "furniture": "Furniture",
+        "primaryressources": "Primary resources",
+        "buildingtools": "Building tools",
+        "gardeningtools": "Gardening tools",
+        "medicalstuff": "Medical equipment"
+      }
+    },
     "tabs": {
       "info": "Information",
       "dates": "Dates",
-      "location": "Location"
+      "location": "Location",
+      "categorie": "Category"
     },
     "modal": {
       "organization": {
@@ -1120,6 +1168,10 @@
       "poi": {
         "title": "Add a place",
         "description": "Fill in the place details"
+      },
+      "classified": {
+        "title": "Submit a resource",
+        "description": "Fill in the details of your resource"
       },
       "transparentCommune": {
         "title": "Create your transparent commune",
@@ -1179,6 +1231,10 @@
       "minLength": "Slug must be at least 3 characters",
       "maxLength": "Slug cannot exceed 100 characters",
       "format": "Slug can only contain letters and numbers"
+    },
+    "subtype": {
+      "required": "Subcategory is required",
+      "invalid": "Subcategory does not match the selected category"
     },
     "datetime": {
       "invalid": "ISO 8601 format required"

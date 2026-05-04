@@ -41,6 +41,10 @@ export const QUERY_KEYS = {
   USER_POIS: (slug: string | null, userContextId: string | null = null) => ["user-pois", slug, userContextId] as const,
   USER_POIS_PREFIX: (slug: string | null) => ["user-pois", slug] as const,
 
+  // Classified queries
+  USER_CLASSIFIEDS: (slug: string | null, userContextId: string | null = null) => ["user-classifieds", slug, userContextId] as const,
+  USER_CLASSIFIEDS_PREFIX: (slug: string | null) => ["user-classifieds", slug] as const,
+
   // Search queries
   SEARCH_USERS: (userContextId: string | null = null) => ["search-users", userContextId] as const,
   SEARCH_USERS_PREFIX: () => ["search-users"] as const,

@@ -1,4 +1,4 @@
-import { EVENT_TYPES, ORGANIZATION_TYPES, POI_TYPES, PROJECT_AVANCEMENTS } from "@communecter/cocolight-api-client";
+import { CLASSIFIED_CATEGORIES, CLASSIFIED_SECTIONS, CLASSIFIED_SUBCATEGORIES, EVENT_TYPES, ORGANIZATION_TYPES, POI_TYPES, PROJECT_AVANCEMENTS } from "@communecter/cocolight-api-client";
 import { z } from "zod";
 
 // ============================================================================
@@ -375,6 +375,30 @@ export const addPoiSchema = z.object({
 });
 
 export type AddPoiFormData = z.infer<typeof addPoiSchema>;
+
+// ============================================================================
+// ADD_CLASSIFIED SCHEMA
+// ============================================================================
+
+export const addClassifiedSchema = z.object({
+  name: z.string().min(3, "validation.name.minLength"),
+  section: z.enum(CLASSIFIED_SECTIONS),
+  category: z.enum(CLASSIFIED_CATEGORIES),
+  subtype: z.string().min(1, "validation.subtype.required"),
+  description: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  parent: parentSchema.optional(),
+  geo: geoSchema.optional(),
+  geoPosition: geoPositionSchema.optional(),
+  ...localityFieldsSchema.shape,
+}).superRefine((data, ctx) => {
+  const validKeys = Object.keys(CLASSIFIED_SUBCATEGORIES[data.category]?.subcat ?? {});
+  if (!validKeys.includes(data.subtype)) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "validation.subtype.invalid", path: ["subtype"] });
+  }
+});
+
+export type AddClassifiedFormData = z.infer<typeof addClassifiedSchema>;
 
 // ============================================================================
 // ADD_EVENT SCHEMA (simplifié pour le formulaire de création)

@@ -5,6 +5,7 @@ import { ALL_THEME, FILIERE_ICON_MAPPING } from "../../schema";
 import "@/modules/search/i18n";
 import { useT } from "@/hooks/useT";
 import { ComponentType } from "react";
+import { useNavigate } from "react-router";
 
 export interface ThematicsSectionWrapperProps {
     id?: string;
@@ -45,6 +46,7 @@ export function ThematicsSection({
 }: ThematicsSectionWrapperProps) {
     const { entity } = useCocolight();
     const t = useT("components/layout");
+    const navigate = useNavigate();
 
     type FiliereItem = { name: string; icon: string; tags?: string[] };
     const thematicKeys = Array.isArray(entity?.serverData?.thematic)
@@ -96,7 +98,7 @@ export function ThematicsSection({
             : [data.name];                        // nom de la filière comme tag de
 
         sessionStorage.setItem("searchProStaticPrefilter", JSON.stringify({ tags: tagsToFilter }));
-        window.location.href = filterHref;
+        navigate(filterHref);
     };
 
     // Extraire le dernier mot du titre pour le mettre en span styled
@@ -124,7 +126,7 @@ export function ThematicsSection({
                     </div>
                 ) : (
                     // Grille des filières - centrée
-                    <div className="flex flex-wrap justify-center gap-6">
+                    <div className="flex flex-wrap justify-center gap-16">
                         {fiereEntries.map(([key, data]) => {
                             const iconName = data.icon as string;
                             const name = data.name;

@@ -16,7 +16,7 @@ type ActionButton = {
   label: LocalizedString;
   href?: string;
   variant?: "primary" | "secondary";
-  action?: "add-project" | "add-event" | "add-poi";
+  action?: "add-project" | "add-event" | "add-poi" | "add-classified";
   modal?: string;
   formConfig?: JsonFormModalConfig;
   requiresAuth?: boolean;

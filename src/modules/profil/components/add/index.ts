@@ -3,3 +3,4 @@ export { AddCTModal } from "./AddCTModal";
 export { AddProjectModal } from "./AddProjectModal";
 export { AddEventModal } from "./AddEventModal";
 export { AddPoiModal } from "./AddPoiModal";
+export { AddClassifiedModal } from "./AddClassifiedModal";

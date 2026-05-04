@@ -1,4 +1,4 @@
-import type { EntityTypes, Organization, Project, Event, Poi } from "@communecter/cocolight-api-client";
+import type { EntityTypes, Organization, Project, Event, Poi, Classified } from "@communecter/cocolight-api-client";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { QUERY_KEYS } from "../constants";
 import { useCocolight } from "@/hooks/useCocolight";
@@ -8,6 +8,7 @@ import type {
   AddEventFormData,
   AddPoiFormData,
   AddTransparentCommuneFormData,
+  AddClassifiedFormData,
 } from "../schemaForm";
 import { useNavigate } from "react-router";
 import {
@@ -310,5 +311,38 @@ export function useAddPoi(entity?: EntityTypes | null) {
         navigate(`/profil/${data.poi.slug}`);
       }
     },
+  });
+}
+
+export function useAddClassified(entity?: EntityTypes | null) {
+  const { me } = useCocolight();
+  const targetEntity = entity || me;
+
+  return useMutationWithToast<{ classified: Classified }, AddClassifiedFormData>({
+    mutationFn: async (data) => {
+      if (!targetEntity) {
+        throw new Error("No entity provided");
+      }
+
+      const transformedData = transformFormDataWithAddress(data);
+
+      const parent = buildParentReference(entity);
+      const classifiedData = {
+        ...transformedData,
+        ...(parent ? { parent } : {}),
+      };
+
+      const classified = await targetEntity.classified(classifiedData);
+      await classified.save();
+
+      return { classified };
+    },
+    namespace: "modules/profil",
+    successKey: "toast.add.classifiedSuccess",
+    errorKey: "toast.add.classifiedError",
+    invalidateQueries: [
+      ...(targetEntity ? [QUERY_KEYS.USER_CLASSIFIEDS_PREFIX(targetEntity.slug)] : []),
+      ...(entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : []),
+    ],
   });
 }
