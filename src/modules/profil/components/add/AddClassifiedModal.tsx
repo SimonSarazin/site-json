@@ -1,4 +1,4 @@
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { CLASSIFIED_SECTIONS, CLASSIFIED_CATEGORIES, CLASSIFIED_SUBCATEGORIES } from "@communecter/cocolight-api-client";
@@ -73,7 +73,10 @@ export function AddClassifiedModal({ open, onOpenChange, parent }: AddClassified
     },
   });
 
-  const selectedCategory = form.watch("category");
+  const selectedCategory = useWatch({
+    control: form.control,
+    name: "category",
+  });
   const subcatKeys = Object.keys(
     CLASSIFIED_SUBCATEGORIES[selectedCategory]?.subcat ?? {}
   );
