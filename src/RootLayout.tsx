@@ -15,6 +15,7 @@ import { SiteProvider } from "@/contexts/SiteProvider";
 import { FloatingQRCode } from "@/components/layout/FloatingQRCode";
 import { FloatingActionButton } from "@/components/layout/FloatingActionButton";
 import { useSite } from "@/hooks/useSite";
+import DiscourseGlobalModal from "@/modules/interop/components/DiscourseGlobalModal";
 
 const AdminPanel = import.meta.env.DEV
   ? lazy(() => import("@/components/admin/AdminPanel"))
@@ -36,6 +37,7 @@ function SiteShell() {
         <Outlet />
         <IntegrationsLoader />
         <Toaster />
+        <DiscourseGlobalModal />
 
         {AdminPanel && (
           <Suspense fallback={null}>
