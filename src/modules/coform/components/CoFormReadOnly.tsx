@@ -8,10 +8,11 @@ import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import "../i18n/i18n";
 import { parseCoFormFields, normalizeAnswerData } from "../utils/formParser";
-import type { CoFormData, AllStepsData, SubFormFields, FormFieldMapping, FormFieldValue, MultiCheckboxPlusValue, MultiRadioValue, UploaderLegacyValue, SimpleTableValue, EvaluationValue, FinderValue } from "../types";
+import type { CoFormData, AllStepsData, SubFormFields, FormFieldMapping, FormFieldValue, MultiCheckboxPlusValue, MultiRadioValue, UploaderLegacyValue, SimpleTableValue, EvaluationValue, CommonTableValue, FinderValue } from "../types";
 import { ReadOnlyUploaderGallery } from "./ReadOnlyUploaderGallery";
 import { SimpleTableField } from "./SimpleTableField";
 import { EvaluationField } from "./EvaluationField";
+import { CommonTableField } from "./CommonTableField";
 import { FinderField } from "./FinderField";
 
 interface CoFormReadOnlyProps {
@@ -254,6 +255,19 @@ function ReadOnlyField({
         </dt>
         <dd>
           <EvaluationField field={field} errors={{}} value={value as EvaluationValue} readOnly hideLabel />
+        </dd>
+      </div>
+    );
+  }
+
+  if (field.componentType === "commonTable") {
+    return (
+      <div className={cn(widthClass, "space-y-1.5")}>
+        <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          {field.label}
+        </dt>
+        <dd>
+          <CommonTableField field={field} errors={{}} value={value as CommonTableValue} readOnly hideLabel />
         </dd>
       </div>
     );

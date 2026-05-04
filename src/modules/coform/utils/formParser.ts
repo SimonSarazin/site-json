@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { CoFormData, FormFieldMapping, SubFormFields, MultiCheckboxPlusOptionType, EvaluationConfig, FinderConfig, FinderFilter, SimpleTableConfig, SimpleTableColumn, SimpleTableRow, UploaderConfig, ConditionalDisplay } from "../types";
+import type { CoFormData, FormFieldMapping, SubFormFields, MultiCheckboxPlusOptionType, EvaluationConfig, FinderConfig, FinderFilter, SimpleTableConfig, SimpleTableColumn, SimpleTableRow, UploaderConfig, ConditionalDisplay, CommonTableConfig } from "../types";
 
 // ─── Configuration des préfixes de champs ────────────────────────
 // Certains types de champs PHP stockent leurs données avec un préfixe
@@ -15,6 +15,9 @@ const FIELD_PREFIX_MAP: Partial<Record<FormFieldMapping["componentType"], string
   multiCheckboxPlus: "multiCheckboxPlus",
   multiRadio: "multiRadio",
   evaluation: "evaluation",
+  // Le legacy stocke commonTableV2 sous answers.yesOrNo{key} — on garde ce préfixe
+  // exact pour matcher 1:1 la forme MongoDB (zéro mapping client/serveur).
+  commonTable: "yesOrNo",
 };
 
 /**
@@ -23,6 +26,7 @@ const FIELD_PREFIX_MAP: Partial<Record<FormFieldMapping["componentType"], string
  */
 const ROOT_LEVEL_FIELDS: FormFieldMapping["componentType"][] = [
   "evaluation",
+  "commonTable",
 ];
 
 /**
@@ -132,8 +136,8 @@ function parseBootstrapWidth(bootstrapWidth?: string): string {
  */
 export function mapCoFormTypeToComponentType(
   coFormType: string
-): "text" | "textarea" | "radio" | "checkbox" | "select" | "multiCheckboxPlus" | "multiRadio" | "evaluation" | "finder" | "simpleTable" | "uploader" | "sectionTitle" | "sectionDescription" | "unknown" {
-  const typeMapping: Record<string, "text" | "textarea" | "radio" | "checkbox" | "select" | "multiCheckboxPlus" | "multiRadio" | "evaluation" | "finder" | "simpleTable" | "uploader" | "sectionTitle" | "sectionDescription"> = {
+): FormFieldMapping["componentType"] {
+  const typeMapping: Record<string, FormFieldMapping["componentType"]> = {
     text: "text",
     url: "text",
     email: "text",
@@ -146,6 +150,7 @@ export function mapCoFormTypeToComponentType(
     "tpls.forms.cplx.multiCheckboxPlus": "multiCheckboxPlus",
     "tpls.forms.cplx.evaluation": "evaluation",
     "tpls.forms.evaluation.evaluation": "evaluation",
+    "tpls.forms.evaluation.commonTableV2": "commonTable",
     "tpls.forms.cplx.finder": "finder",
     "tpls.forms.finder.finder": "finder",
     "tpls.forms.cplx.simpleTable": "simpleTable",
@@ -183,6 +188,7 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
       let nbPerRow: string | undefined;
       let multiCheckboxPlusConfig: FormFieldMapping["multiCheckboxPlusConfig"] | undefined;
       let evaluationConfig: EvaluationConfig | undefined;
+      let commonTableConfig: CommonTableConfig | undefined;
       let uploaderConfig: UploaderConfig | undefined;
       
       if ((componentType === "radio" || componentType === "checkbox") && formData.params) {
@@ -274,6 +280,49 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
             newValuePlaceholder: paramData.global?.newValuePlaceholder || "Nouvelle valeur",
           };
         }
+      }
+
+      // Config spécifique pour commonTable (calculateur de bonheur — commonTableV2)
+      if (componentType === "commonTable" && formData.params) {
+        const params = formData.params as unknown as Record<string, unknown>;
+        const rawConfig = params[`config${fieldKey}`] as Record<string, unknown> | undefined;
+        const rawLabels = params[`columnLabel${fieldKey}`] as Record<string, unknown> | undefined;
+        const rawCriterias = params[`criterias${fieldKey}`] as Record<string, { label?: string; group?: string }> | undefined;
+
+        // Conversion d'un flag PHP (string "true"/"false" ou boolean) — défaut true.
+        const flag = (v: unknown): boolean =>
+          v === undefined || v === null ? true : v === true || v === "true";
+
+        // Le PHP nomme les colonnes de manières variées selon les versions ; on accepte
+        // les alias les plus courants pour rester tolérant.
+        const showColumns = {
+          criteria: flag(rawConfig?.criteriaColumn ?? rawConfig?.criteria),
+          happiness: flag(rawConfig?.humourColumn ?? rawConfig?.happinessColumn ?? rawConfig?.happiness),
+          note: flag(rawConfig?.starColumn ?? rawConfig?.noteColumn ?? rawConfig?.note),
+          yesNo: flag(rawConfig?.yesNoColumn ?? rawConfig?.yesNo),
+          comment: flag(rawConfig?.commentColumn ?? rawConfig?.comment),
+        };
+
+        const labels = {
+          usage: (rawLabels?.usageColumn as string | undefined) ?? (rawLabels?.usage as string | undefined),
+          criteria: (rawLabels?.criteriaColumn as string | undefined) ?? (rawLabels?.criteria as string | undefined),
+          happiness: (rawLabels?.humourColumn as string | undefined) ?? (rawLabels?.happinessColumn as string | undefined),
+          note: (rawLabels?.starColumn as string | undefined) ?? (rawLabels?.noteColumn as string | undefined),
+          yesNo: (rawLabels?.yesNoColumn as string | undefined),
+          comment: (rawLabels?.commentColumn as string | undefined),
+        };
+
+        // criterias est typiquement un Record<usageKey, { label, group? }>
+        const usages: CommonTableConfig["usages"] = [];
+        if (rawCriterias && typeof rawCriterias === "object") {
+          for (const [usageKey, raw] of Object.entries(rawCriterias)) {
+            const label = typeof raw === "string" ? raw : raw?.label || usageKey;
+            const group = typeof raw === "object" ? raw?.group : undefined;
+            usages.push({ usageKey, label, group });
+          }
+        }
+
+        commonTableConfig = { showColumns, labels, usages };
       }
 
       // Config spécifique pour evaluation
@@ -467,6 +516,7 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
         multiCheckboxPlusConfig,
         multiRadioConfig,
         evaluationConfig,
+        commonTableConfig,
         finderConfig,
         simpleTableConfig,
         uploaderConfig,
@@ -618,6 +668,44 @@ export function generateZodSchema(subFormsFields: SubFormFields[]) {
           break;
         }
 
+        case "commonTable": {
+          // Valeur composite : { scores: Record<criteriaId, ...>, myCatalog: Record<criteriaId, ...> }
+          const happinessEnum = z.enum(["", "love", "happySmile", "neutral", "sad", "cry"]);
+          const solutionSchema = z.object({
+            criteriaId: z.string(),
+            criteria: z.string(),
+            usage: z.string(),
+            usageKey: z.string(),
+            note: z.number().min(0).max(5),
+            happiness: happinessEnum,
+            yesOrNo: z.boolean(),
+            comment: z.string(),
+          });
+          const myCatalogEntrySchema = z.object({
+            label: z.string().optional(),
+            usage: z.string(),
+            usageKey: z.string(),
+            coeff: z.number().optional(),
+          });
+          const commonTableSchema = z.object({
+            scores: z.record(z.string(), solutionSchema),
+            myCatalog: z.record(z.string(), myCatalogEntrySchema),
+          });
+
+          if (field.isRequired) {
+            schemaShape[field.name] = commonTableSchema.refine(
+              (v) =>
+                Object.values(v.scores).some(
+                  (sol) => sol.happiness !== "" || sol.note > 0 || sol.yesOrNo || sol.comment.trim() !== ""
+                ),
+              { message: `${field.label} est requis` }
+            );
+          } else {
+            schemaShape[field.name] = commonTableSchema.optional();
+          }
+          break;
+        }
+
         case "finder": {
           // Structure: { [elementId]: { id, name, type, img?, email?, address? } }
           const finderElementSchema = z.object({
@@ -720,6 +808,10 @@ export function generateDefaultValues(subFormsFields: SubFormFields[]): Record<s
           defaultValues[field.name] = {};
           break;
 
+        case "commonTable":
+          defaultValues[field.name] = { scores: {}, myCatalog: {} };
+          break;
+
         case "finder":
           defaultValues[field.name] = null;
           break;
@@ -794,6 +886,20 @@ export function normalizeAnswerData(
     for (const field of fields) {
       if (isRootLevelField(field.componentType)) {
         rootLevelFieldNames.push(field.name);
+
+        // commonTable : valeur composite reconstruite depuis DEUX entrées root-level
+        // (yesOrNo{key} pour les scores, criterias{key} pour le catalogue de l'utilisateur).
+        if (field.componentType === "commonTable") {
+          const fieldKey = getOriginalFieldKey(field);
+          const scoresRoot = normalized[`yesOrNo${fieldKey}`];
+          const myCatalogRoot = normalized[`criterias${fieldKey}`];
+          subFormData[field.name] = {
+            scores: typeof scoresRoot === "object" && scoresRoot !== null ? scoresRoot : {},
+            myCatalog: typeof myCatalogRoot === "object" && myCatalogRoot !== null ? myCatalogRoot : {},
+          };
+          continue;
+        }
+
         // Le champ est stocké à la racine avec son nom (qui inclut déjà le préfixe)
         // Ex: field.name = "evaluationXXX", on cherche rawAnswers["evaluationXXX"]
         if (field.name in normalized && !(field.name in subFormData)) {
@@ -833,13 +939,32 @@ export function denormalizeAnswerData(
     if (!subFormData) continue;
 
     for (const field of fields) {
-      if (isRootLevelField(field.componentType) && field.name in subFormData) {
-        // Déplacer le champ du subform vers la racine
-        denormalized[field.name] = subFormData[field.name];
+      if (!isRootLevelField(field.componentType)) continue;
+      if (!(field.name in subFormData)) continue;
+
+      // commonTable : valeur composite { scores, myCatalog } à splitter en DEUX
+      // entrées root-level (yesOrNo{key} et criterias{key}) pour matcher le PHP.
+      if (field.componentType === "commonTable") {
+        const composite = subFormData[field.name] as
+          | { scores?: Record<string, unknown>; myCatalog?: Record<string, unknown> }
+          | undefined;
+        const fieldKey = getOriginalFieldKey(field);
+        denormalized[`yesOrNo${fieldKey}`] = composite?.scores ?? {};
+        denormalized[`criterias${fieldKey}`] = composite?.myCatalog ?? {};
         delete subFormData[field.name];
         if (import.meta.env.DEV) {
-          console.log(`[denormalizeAnswerData] Moved ${field.name} from subform ${subFormId} to root`);
+          console.log(
+            `[denormalizeAnswerData] commonTable ${field.name} split → yesOrNo${fieldKey} + criterias${fieldKey}`
+          );
         }
+        continue;
+      }
+
+      // Cas générique : déplacer le champ du subform vers la racine
+      denormalized[field.name] = subFormData[field.name];
+      delete subFormData[field.name];
+      if (import.meta.env.DEV) {
+        console.log(`[denormalizeAnswerData] Moved ${field.name} from subform ${subFormId} to root`);
       }
     }
   }
@@ -898,4 +1023,63 @@ export function extractFinderLinks(
   }
 
   return links;
+}
+
+/**
+ * Information consolidée sur le finder partagé d'un formulaire collaboratif
+ * "par lieu". Combine la cible (`sharedQuestionPath` côté serveur) et les
+ * filtres de recherche (`FinderConfig.filters` côté input).
+ */
+export interface SharedFinderInfo {
+  /** ID du sous-formulaire qui contient le finder */
+  subFormId: string;
+  /** Nom complet du champ (avec préfixe `finder`) */
+  fieldName: string;
+  /** Chemin original ("subFormId.fieldName") */
+  fullPath: string;
+  /** Filtres tags / sourceKey / etc. (mêmes que FinderSearchModal) */
+  filters: FinderFilter[];
+  /** Exclure les éléments avec sourceKey */
+  notSourceKey: boolean;
+  /** Type d'élément ciblé (organizations, projects, ...) */
+  type: FinderConfig["type"];
+}
+
+/**
+ * Extrait l'info du finder partagé du formulaire (qui détermine le lieu pour
+ * les forms collaboratifs). Retourne `null` si :
+ * - `sharedQuestionPath` absent ou vide,
+ * - aucun chemin ne pointe vers un input "finder",
+ * - le champ pointé n'a pas de FinderConfig (config malformée).
+ *
+ * Utilisé par `CoFormPlacePage` pour pré-remplir + verrouiller le finder en
+ * vue détail, et pour filtrer la liste des lieux par les mêmes critères que
+ * la recherche du finder.
+ */
+export function getSharedFinderInfo(formData: CoFormData): SharedFinderInfo | null {
+  const paths = formData.sharedQuestionPath ?? [];
+  const finderPath = paths.find((p) => typeof p === "string" && p.includes("finder"));
+  if (!finderPath) return null;
+
+  const dotIdx = finderPath.indexOf(".");
+  if (dotIdx <= 0) return null;
+  const subFormId = finderPath.slice(0, dotIdx);
+  const fieldName = finderPath.slice(dotIdx + 1);
+
+  // Récupère le FinderConfig parsé via la pipeline existante.
+  const subFormsFields = parseCoFormFields(formData);
+  const subForm = subFormsFields.find((sf) => sf.subFormId === subFormId);
+  if (!subForm) return null;
+  const field = subForm.fields.find((f) => f.name === fieldName);
+  if (!field || !field.finderConfig) return null;
+
+  const cfg = field.finderConfig;
+  return {
+    subFormId,
+    fieldName,
+    fullPath: finderPath,
+    filters: cfg.filters ?? [],
+    notSourceKey: !!cfg.notSourceKey,
+    type: cfg.type,
+  };
 }

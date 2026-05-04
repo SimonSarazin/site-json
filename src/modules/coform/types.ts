@@ -9,6 +9,7 @@
 export type CoFormAccessReason =
   | "already_answered"
   | "not_member"
+  | "not_authorized"
   | "form_not_started"
   | "form_closed"
   | "form_inactive"
@@ -196,6 +197,118 @@ export type EvaluationVoteValue = string | number | "";
  */
 export type EvaluationValue = Record<string, Record<string, EvaluationVoteValue>>;
 
+// ============================================================================
+// Types pour le champ CommonTable (calculateur de bonheur — commonTableV2)
+// ============================================================================
+
+/**
+ * Niveaux de satisfaction possibles. "" = non renseigné.
+ */
+export type HappinessValue = "" | "love" | "happySmile" | "neutral" | "sad" | "cry";
+
+/**
+ * Une solution déclarée par l'utilisateur pour un usage donné.
+ * Plusieurs solutions peuvent coexister par usage ; chacune a ses propres scores.
+ */
+export interface CommonTableSolution {
+  criteriaId: string;
+  /** Nom de la solution (ex: "Odoo") */
+  criteria: string;
+  /** Libellé de l'usage parent (ex: "Comptabilité") */
+  usage: string;
+  /** Clé technique de l'usage (lien avec config.usages) */
+  usageKey: string;
+  /** Niveau d'urgence 0..5 */
+  note: number;
+  happiness: HappinessValue;
+  yesOrNo: boolean;
+  comment: string;
+}
+
+/** Scores per-criteriaId — match avec MongoDB `answers.yesOrNo{key}`. */
+export type CommonTableScores = Record<string /* criteriaId */, CommonTableSolution>;
+
+/**
+ * Entrée du catalogue local de l'utilisateur (ses propres ajouts pour ce form).
+ * Sera persisté côté serveur dans `answers.criterias{key}` de SA réponse.
+ */
+export interface CommonTableMyCatalogEntry {
+  /** Libellé optionnel (souvent vide ; le nom de la solution vit dans scores.criteria) */
+  label?: string;
+  /** Libellé de l'usage parent (ex: "Comptabilité") */
+  usage: string;
+  /** Clé technique de l'usage parent */
+  usageKey: string;
+  coeff?: number;
+}
+
+/** Catalogue propre à l'utilisateur — match avec MongoDB `answers.criterias{key}`. */
+export type CommonTableMyCatalog = Record<string /* criteriaId */, CommonTableMyCatalogEntry>;
+
+/**
+ * Valeur composite d'un champ commonTable côté React.
+ * Combine les scores (matrice utilisateur) et les ajouts de l'utilisateur au
+ * catalogue. À la dénormalisation, ces deux sous-structures sont splittées en
+ * deux entrées root-level distinctes (`yesOrNo{key}` et `criterias{key}`).
+ */
+export interface CommonTableValue {
+  scores: CommonTableScores;
+  myCatalog: CommonTableMyCatalog;
+}
+
+/**
+ * Entrée du catalogue collaboratif d'un input commonTable.
+ * Représente une criteria (solution) déclarée par n'importe quel répondant pour
+ * un usage donné — agrégée côté serveur depuis tous les `answers.criterias{key}`.
+ */
+export interface CommonTableCatalogEntry {
+  label?: string;
+  /**
+   * Nom canonique de la solution (ex: "Odoo"). Premier nom non-vide rencontré
+   * dans les `yesOrNo{key}.{criteriaId}.criteria` de tous les répondants.
+   * Disponible seulement si au moins un répondant a saisi un nom de solution.
+   */
+  name?: string;
+  usage: string;
+  usageKey: string;
+  coeff?: number;
+  /** Nombre de répondants ayant rempli `criteria` non-vide pour ce criteriaId */
+  count: number;
+}
+
+/** Catalogue collaboratif d'un input, keyé par criteriaId. */
+export type CommonTableCatalog = Record<string, CommonTableCatalogEntry>;
+
+/** Catalogues collaboratifs d'un formulaire, keyés par inputKey. */
+export type CommonTableCatalogs = Record<string, CommonTableCatalog>;
+
+/**
+ * Configuration admin du champ commonTable.
+ */
+export interface CommonTableConfig {
+  showColumns: {
+    criteria: boolean;
+    happiness: boolean;
+    note: boolean;
+    yesNo: boolean;
+    comment: boolean;
+  };
+  labels: {
+    usage?: string;
+    criteria?: string;
+    happiness?: string;
+    note?: string;
+    yesNo?: string;
+    comment?: string;
+  };
+  usages: Array<{
+    usageKey: string;
+    label: string;
+    /** Header de regroupement optionnel (ex: "Administration / Gestion") */
+    group?: string;
+  }>;
+}
+
 /**
  * Valeur stockée pour un champ multiRadio
  * Objet avec la valeur sélectionnée et optionnellement un texte supplémentaire
@@ -272,6 +385,20 @@ export interface CoFormData {
   access?: CoFormAccessInfo;
   /** Configuration de la page de remerciement (personnalisable par l'admin) */
   thankYou?: CoFormThankYouConfig | null;
+  /**
+   * Chemins (subFormId.fieldName) des inputs partagés du form. Pour les forms
+   * collaboratifs liés à un lieu, contient typiquement le path du finder qui
+   * détermine ce lieu (ex: ["step1.finderXYZ"]). Utilisé par la vue
+   * `CoFormPlacePage` pour pré-remplir + verrouiller le finder.
+   */
+  sharedQuestionPath?: string[] | null;
+  /**
+   * Si `true`, n'importe quel utilisateur connecté peut créer ou modifier la
+   * réponse partagée d'un lieu — la membership du lieu n'est pas requise.
+   * Côté UX, on bypass le flow "demande à rejoindre" et on ouvre directement
+   * le formulaire pré-rempli pour le lieu sélectionné.
+   */
+  publicCanEditSharedAnswer?: boolean;
 }
 
 /**
@@ -281,7 +408,7 @@ export interface FormFieldMapping {
   name: string; // Nom du champ pour react-hook-form
   label: string;
   type: string; // Type CoForm (text, textarea, tpls.forms.cplx.radioNew, etc.)
-  componentType: "text" | "textarea" | "radio" | "checkbox" | "select" | "multiCheckboxPlus" | "multiRadio" | "evaluation" | "finder" | "simpleTable" | "uploader" | "sectionTitle" | "sectionDescription" | "unknown";
+  componentType: "text" | "textarea" | "radio" | "checkbox" | "select" | "multiCheckboxPlus" | "multiRadio" | "evaluation" | "commonTable" | "finder" | "simpleTable" | "uploader" | "sectionTitle" | "sectionDescription" | "unknown";
   inputType?: string; // Type HTML pour l'input (url, email, tel, etc.) - utilisé quand componentType est "text"
   placeholder?: string;
   info?: string;
@@ -325,6 +452,8 @@ export interface FormFieldMapping {
   };
   // Spécifique evaluation
   evaluationConfig?: EvaluationConfig;
+  // Spécifique commonTable
+  commonTableConfig?: CommonTableConfig;
   // Spécifique finder
   finderConfig?: FinderConfig;
   // Spécifique simpleTable
@@ -364,6 +493,7 @@ export type FormFieldValue =
   | string[]
   | MultiCheckboxPlusValue
   | EvaluationValue
+  | CommonTableValue
   | FinderValue
   | SimpleTableValue
   | UploaderValue
