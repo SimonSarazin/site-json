@@ -1,13 +1,21 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCocolight } from "@/hooks/useCocolight";
 import { COFORM_QUERY_KEYS } from "../constants";
-import type { CoFormData, CoFormAccessInfo, CoFormAnswer, SubFormData, AllStepsData } from "../types";
+import type { CoFormData, CoFormAccessInfo, CoFormAnswer, SubFormData, AllStepsData, CommonTableCatalogs } from "../types";
 
 interface UseCoFormQueryOptions {
   /** ID du formulaire à charger */
   formId: string;
   /** Activer/désactiver la requête */
   enabled?: boolean;
+  /**
+   * Optionnel : ID d'un élément (lieu) pour la vue collaborative par lieu.
+   * Si fourni avec `elementType`, l'access info portera sur la réponse partagée
+   * du lieu plutôt que sur la réponse personnelle du user.
+   */
+  elementId?: string;
+  /** Type de l'élément (collection MongoDB). Requis si `elementId` fourni. */
+  elementType?: "organizations" | "projects" | "events" | "poi" | "citoyens";
 }
 
 interface UseCoFormQueryReturn {
