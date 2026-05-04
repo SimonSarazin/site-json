@@ -36,23 +36,9 @@ import { CoFormModal } from "@/modules/coform/components/CoFormModal";
 import type { AllStepsData } from "@/modules/coform/types";
 import { QUERY_KEYS } from "@/modules/profil/constants/queryKeys";
 
-/** Entity method not exposed in SDK types */
-interface EntityWithForms {
-  generateNewAnswerId(formId: string): Promise<Answer>;
-}
-
-/** Extended UpdatePathValue params — SDK restricts `collection` but API accepts "answers" */
-interface UpdatePathValueParams {
-  id: string;
-  collection: string;
-  path: string;
-  value: Record<string, unknown>;
-}
-
 /** EndpointApi with deleteElement (exists at runtime but may not be on the narrowed type) */
 interface EndpointApiWithDelete {
   deleteElement(data: Record<string, unknown>): Promise<unknown>;
-  updatePathValue(data: UpdatePathValueParams): Promise<unknown>;
 }
 
 /** A form answer array entry with dynamic indexed fields */
@@ -199,9 +185,11 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
   };
 
   /**
-   * Crée une nouvelle réponse (avec finder pre-pop) puis ouvre le CoFormModal.
+   * Ouvre le CoFormModal pour une nouvelle réponse.
+   * Aucun answer n'est créé en base : le backend insère la réponse au save
+   * et gère lui-même le lien finder via `links` (extractFinderLinks côté frontend).
    */
-  const openNewFormModal = async ({ formId, title, finder, stepKey, inputKey, lockedFields }: {
+  const openNewFormModal = ({ formId, title, finder, stepKey, inputKey, lockedFields }: {
     formId: string;
     title?: string;
     finder?: string;
@@ -209,36 +197,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
     inputKey?: string;
     lockedFields?: string[];
   }) => {
-    const answer = await (entity as unknown as EntityWithForms).generateNewAnswerId(formId);
-    if (!answer?.id) {
-      console.error("Failed to generate new answer ID for form:", formId);
-      return;
-    }
     const finderPath = finder ?? section.forms?.[formId]?.finder;
-    if (finderPath) {
-      const params: UpdatePathValueParams = {
-        id: answer.id,
-        collection: "answers",
-        path: `${finderPath}.${entity.id}`,
-        value: {
-          id: entity.id,
-          type: entity.serverData.collection,
-          name: entity.serverData.name,
-        },
-      };
-      const paramsLinks: UpdatePathValueParams = {
-        id: answer.id,
-        collection: "answers",
-        path: `links.${entity.serverData.collection}.${entity.id}`,
-        value: {
-          type: entity.serverData.collection,
-          name: entity.serverData.name,
-        },
-      };
-      await (entity.endpointApi as unknown as EndpointApiWithDelete).updatePathValue(params);
-      await (entity.endpointApi as unknown as EndpointApiWithDelete).updatePathValue(paramsLinks);
-    }
-    // Build defaultValues from finderPath so the finder field is pre-populated in the modal
     let defaultValues: AllStepsData | undefined;
     if (finderPath) {
       const entityId = entity.id as string;
@@ -258,7 +217,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
     }
     setFormModal({
       formId,
-      answerId: answer._serverData?.id ?? answer.id,
+      answerId: undefined,
       defaultValues,
       title,
       stepKey,
