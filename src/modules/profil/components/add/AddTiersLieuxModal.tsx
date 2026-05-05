@@ -760,6 +760,7 @@ export function AddTiersLieuxModal({ open, onOpenChange }: AddTiersLieuxModalPro
                     </h3>
                     {DAYS.map(({ key }) => {
                       const label = t(`AddTiersLieux.days.${key}`);
+                      // eslint-disable-next-line react-hooks/incompatible-library
                       const enabled = form.watch(`hours.${key}.enabled`);
                       return (
                         <div key={key} className="flex items-center gap-3 p-3 rounded-lg border border-border">

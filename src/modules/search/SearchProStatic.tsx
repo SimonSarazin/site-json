@@ -94,7 +94,9 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     try {
       const parsed = JSON.parse(raw) as { tags?: string[] };
       if (parsed.tags?.length) setSelectedDynamicTags(parsed.tags);
-    } catch {  }
+    } catch {
+      // ignore JSON parsing errors
+    }
     sessionStorage.removeItem("searchProStaticPrefilter");
   }, []);
 
@@ -328,6 +330,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
       }
     }
     
+    // eslint-disable-next-line react-hooks/refs
     for (const tag of cumulativeTagsRef.current) {
       tagsFromResults.add(tag);
     }
