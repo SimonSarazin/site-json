@@ -90,7 +90,15 @@
         "hoursAgo_one": "il y a {{count}} heure",
         "hoursAgo_other": "il y a {{count}} heures",
         "daysAgo_one": "il y a {{count}} jour",
-        "daysAgo_other": "il y a {{count}} jours"
+        "daysAgo_other": "il y a {{count}} jours",
+        "yearsPart_one": "{{count}} an",
+        "yearsPart_other": "{{count}} ans",
+        "monthsPart_one": "{{count}} mois",
+        "monthsPart_other": "{{count}} mois",
+        "daysPart_one": "{{count}} jour",
+        "daysPart_other": "{{count}} jours",
+        "conjAnd": "et",
+        "agoPrefix": "il y a {{value}}"
       }
     },
     "thankYou": {
@@ -232,6 +240,12 @@
         "noPlaces": "Vous n'avez pas encore de lieu correspondant à ce formulaire.",
         "notApplicable": "Ce formulaire n'est pas configuré pour la vue par lieu."
       },
+      "confirmLeave": {
+        "title": "Quitter sans enregistrer ?",
+        "description": "Vous avez des modifications non enregistrées qui seront perdues si vous quittez maintenant.",
+        "stay": "Rester sur le formulaire",
+        "leave": "Quitter sans enregistrer"
+      },
       "join": {
         "alreadyMember": "Vous êtes déjà membre de ce lieu.",
         "alreadyPending": "Demande déjà envoyée — en attente de validation.",
@@ -268,6 +282,33 @@
         "openPdf": "Ouvrir le PDF",
         "download": "Télécharger"
       }
+    },
+    "activity": {
+      "link": "Voir l'activité",
+      "title": "Activité de la réponse",
+      "createdBy": "Créée par {{name}} le {{date}}",
+      "lastModifiedBy": "Dernière modification : {{name}} {{relative}}",
+      "historyTitle": "Historique",
+      "entryCreate": "a créé la réponse",
+      "entryUpdate_one": "a modifié l'étape {{steps}}",
+      "entryUpdate_other": "a modifié les étapes {{steps}}",
+      "close": "Fermer",
+      "loading": "Chargement de l'historique…",
+      "empty": "Aucune activité enregistrée.",
+      "errorLoad": "Impossible de charger l'historique.",
+      "unknownUser": "Utilisateur inconnu"
+    },
+    "multiEval": {
+      "viewChart": "Voir les évaluations",
+      "title": "Comparaison des évaluations",
+      "titleWithStep": "Évaluations — {{stepName}}",
+      "usersLegend": "Évalué par",
+      "loading": "Chargement des évaluations…",
+      "empty": "Aucune évaluation enregistrée pour cette étape.",
+      "errorLoad": "Impossible de charger les évaluations.",
+      "close": "Fermer",
+      "show": "Afficher",
+      "hide": "Masquer"
     }
   }
 }

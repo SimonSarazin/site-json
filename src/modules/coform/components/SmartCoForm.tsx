@@ -6,7 +6,7 @@ import { MultiStepCoForm } from "./MultiStepCoForm";
 import { CoFormReadOnly } from "./CoFormReadOnly";
 import { parseCoFormFields, normalizeAnswerData, denormalizeAnswerData, extractFinderLinks, getOriginalFieldKey } from "../utils/formParser";
 import { CommonTableCatalogsProvider } from "../contexts/CommonTableCatalogsProvider";
-import type { CoFormData, SubmitMode, AllStepsData, SubFormData, AddedOptionsMap } from "../types";
+import type { CoFormData, SubmitMode, AllStepsData, SubFormData, AddedOptionsMap, ExistingAnswerMeta } from "../types";
 import type { FinderLinksMap } from "../utils/formParser";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
@@ -72,6 +72,22 @@ interface SmartCoFormProps {
    * éphémère et la perte accidentelle est gérée par le `onDirtyChange`.
    */
   inModal?: boolean;
+  /**
+   * Métadonnées de la réponse existante (créateur + dernier modifieur) pour
+   * activer le lien "Voir l'activité" en bas du form. Propagé tel quel à
+   * `DynamicCoForm`. Ignoré si `answerId` est absent (création).
+   */
+  existingAnswerMeta?: ExistingAnswerMeta | null;
+  /**
+   * Mode "par élément" : si fourni, le hook de fetch passe ces deux IDs au
+   * backend pour activer la résolution `getFormAccessInfo` en mode
+   * "réponse partagée par lieu". Nécessaire notamment pour que
+   * `access.restrictedFields` (placeAdminOnlyFields / placeMemberOnlyFields)
+   * soit calculé : le backend a besoin de savoir quel lieu est lié pour
+   * vérifier la membership user↔lieu.
+   */
+  elementId?: string;
+  elementType?: "organizations" | "projects" | "events" | "poi" | "citoyens";
 }
 
 interface LoadingStateProps {
@@ -160,6 +176,9 @@ export function SmartCoForm({
   lockedFields,
   baseUpdatedAt,
   inModal = false,
+  existingAnswerMeta,
+  elementId,
+  elementType,
 }: SmartCoFormProps) {
   const { me } = useCocolight();
   // Charger les données depuis l'API si formId est fourni
@@ -172,10 +191,18 @@ export function SmartCoForm({
   } = useCoFormQuery({
     formId: formId ?? "",
     enabled: !!formId && !externalFormData,
+    elementId,
+    elementType,
   });
 
   // Utiliser les données externes ou celles de l'API
   const formData = externalFormData ?? apiFormData;
+
+  // Restriction par rôle dans le lieu lié (placeAdminOnlyFields /
+  // placeMemberOnlyFields). Le serveur calcule la liste finale dans
+  // `access.restrictedFields` selon l'user courant ; on la propage telle
+  // quelle à DynamicCoForm/MultiStepCoForm qui skip le rendu.
+  const restrictedFields = formData?.access?.restrictedFields;
 
   useLoadNamespace("modules/coform");
   const t = useT("modules/coform");
@@ -250,9 +277,13 @@ export function SmartCoForm({
   });
 
   // Normaliser les defaultValues pour les champs stockés à la racine (comme evaluation)
+  // ainsi que pour les inputs multi-eval (radioNew + activeMultieval=true) :
+  // on extrait la valeur de l'user courant depuis `_multiEval.{userId}` pour
+  // pré-remplir le RadioField, en gardant les autres users dans la sous-clé.
+  const userId = me?.id ?? null;
   const normalizedDefaults = useMemo(
-    () => normalizeAnswerData(defaultValues as Record<string, unknown> | undefined, subFormsFields),
-    [defaultValues, subFormsFields]
+    () => normalizeAnswerData(defaultValues as Record<string, unknown> | undefined, subFormsFields, userId),
+    [defaultValues, subFormsFields, userId]
   ) as AllStepsData | undefined;
 
   // Mutation interne : utilisée quand aucun onFinalSubmit externe n'est fourni
@@ -333,7 +364,6 @@ export function SmartCoForm({
     !isInputStandalone &&
     !!formId &&
     !!me?.id;
-  const userId = me?.id ?? null;
 
   // Mode lecture seule : utiliser CoFormReadOnly
   if (readOnly) {
@@ -372,6 +402,7 @@ export function SmartCoForm({
         onSuccess={onAfterSubmit}
         onDirtyChange={onDirtyChange}
         lockedFields={lockedFields}
+        restrictedFields={restrictedFields}
         className={className}
         showProgress={showProgress}
         showStepNumbers={showStepNumbers}
@@ -382,6 +413,7 @@ export function SmartCoForm({
         userId={userId}
         baseUpdatedAt={baseUpdatedAt}
         enableDraft={enableDraft}
+        existingAnswerMeta={existingAnswerMeta}
       />
     );
   }
@@ -406,15 +438,19 @@ export function SmartCoForm({
       onDirtyChange={onDirtyChange}
       submitRef={submitRef}
       lockedFields={lockedFields}
+      restrictedFields={restrictedFields}
       formId={formId}
       userId={userId}
       baseUpdatedAt={baseUpdatedAt}
       enableDraft={enableDraft}
+      existingAnswerMeta={existingAnswerMeta}
       onSubmit={async (data, addedOptions) => {
         try {
-          // Dénormaliser pour le format PHP (champs root-level à la racine)
+          // Dénormaliser pour le format PHP (champs root-level à la racine).
+          // Le userId courant est requis pour les inputs multi-eval — il est
+          // injecté dans `_multiEval.{userId}` au format `{value, date, answer}`.
           const rawData = { [subFormId]: data } as Record<string, unknown>;
-          const dataForServer = denormalizeAnswerData(rawData, subFormsFields) as AllStepsData;
+          const dataForServer = denormalizeAnswerData(rawData, subFormsFields, userId) as AllStepsData;
           const links = extractFinderLinks(rawData, subFormsFields);
           const formattedAddedOptions = addedOptions ? { [subFormId]: addedOptions } : undefined;
           const linksOrUndef = Object.keys(links).length > 0 ? links : undefined;

@@ -27,7 +27,11 @@ import {
     type LucideIcon,
     Monitor,
     BedDouble,
+    Activity,
+    Loader2,
 } from "lucide-react";
+import { useMultiEvalData } from "@/modules/coform/hooks/useMultiEvalData";
+import { MultiEvalRadarCarousel } from "@/modules/coform/components/MultiEvalRadarCarousel";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -183,6 +187,31 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
 
     const hasSocials = !!(facebook || instagram || twitter || mastodon || telegram);
 
+    // ─── Évaluation du lieu ───────────────────────────────────────────────────
+    // On identifie le formulaire d'évaluation via la catégorie `"evaluation"`
+    // dans `section.forms`. Sa réponse pour ce lieu est récupérée via
+    // `_answersByForms` (déjà chargée). Le radar est ensuite rendu inline via
+    // `useMultiEvalData` (lazy, enabled seulement si on a un answerId).
+    const evaluationForm = useMemo(() => {
+        if (!section.forms) return null;
+        const entry = Object.entries(section.forms).find(([, f]) => f.category === "evaluation");
+        if (!entry) return null;
+        const [id, form] = entry;
+        const dataForms = _answersByForms?.find((item) => item.id === id);
+        const existingAnswer = dataForms?.answers?.[0];
+        return {
+            formId: id,
+            form,
+            answerId: existingAnswer?._serverData?.id ?? existingAnswer?.id ?? null,
+        };
+    }, [section.forms, _answersByForms]);
+
+    const { data: multiEvalData, isLoading: multiEvalLoading } = useMultiEvalData({
+        answerId: evaluationForm?.answerId ?? null,
+        enabled: !!evaluationForm?.answerId,
+    });
+    const evaluationSteps = multiEvalData?.steps ?? [];
+
     // ─── CoFormModal state (mode "modal") ─────────────────────────────────────
     const queryClient = useQueryClient();
     const [formModal, setFormModal] = useState<{
@@ -191,6 +220,8 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
         defaultValues?: AllStepsData;
         title?: string;
         lockedFields?: string[];
+        elementId?: string;
+        elementType?: "organizations" | "projects" | "events" | "poi" | "citoyens";
     } | null>(null);
 
     const entityId = entity?.id ?? null;
@@ -204,9 +235,13 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
         ? "overflow-hidden lg:sticky lg:top-4"
         : "overflow-hidden";
 
-    const handleClickForm = useCallback(async (formId: string, finder?: string, openMode: "modal" | "tab" = "tab") => {
+    const handleClickForm = useCallback(async (formId: string, finder?: string, openMode: "modal" | "tab" = "tab", requireOwnerEdit: boolean = true) => {
         if(!entity || !me) return;
-        if(!canEditProfile) return;
+        // L'appelant décide s'il exige les droits d'édition de l'entity. La
+        // section Formulaires (owner-only) passe le défaut `true` ; le bouton
+        // "Évaluer le lieu" passe `false` pour les forms publics dont l'accès
+        // est gated server-side via `canAnswer` (publicCanEditSharedAnswer).
+        if(requireOwnerEdit && !canEditProfile) return;
         const dataForms = _answersByForms?.find((item) => item.id === formId);
         const existingAnswer: Answer | undefined = dataForms && dataForms.answers.length > 0 ? dataForms.answers[0] : undefined;
 
@@ -232,11 +267,21 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
             }
             const finderFieldName = finder ? finder.split(".").pop() : undefined;
             const resolvedAnswerId = existingAnswer?._serverData?.id ?? existingAnswer?.id ?? undefined;
+            // L'entity du profil EST le lieu lié à la réponse partagée. On
+            // pousse son id+type au backend via elementId/elementType pour que
+            // `Coform::getFormAccessInfo` entre en mode "par élément" et
+            // calcule `access.restrictedFields` (placeAdminOnly /
+            // placeMemberOnly). Sans ça, le mode élément n'est pas activé et
+            // les restrictions place-level seraient inopérantes.
+            const entityCollection = entity.serverData.collection as
+                | "organizations" | "projects" | "events" | "poi" | "citoyens";
             setFormModal({
                 formId,
                 answerId: resolvedAnswerId ?? undefined,
                 defaultValues,
                 lockedFields: finderFieldName ? [finderFieldName] : undefined,
+                elementId: entity.id as string,
+                elementType: entityCollection,
             });
             return;
         }
@@ -515,7 +560,42 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
                     </>
                 )}
 
-                {/* ── 6. Formulaires ───────────────────────────────────── */}
+                {/* ── 6. Évaluation du lieu (radar multi-eval) ─────────── */}
+                {evaluationForm && (
+                    <>
+                        <Separator />
+                        <div>
+                            <SectionTitle label={t("ProfileTiersLieuxInfo.evaluation")} />
+
+                            {evaluationForm.answerId && multiEvalLoading ? (
+                                <div className="flex items-center justify-center py-3 text-xs text-muted-foreground">
+                                    <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />
+                                    {t("ProfileTiersLieuxInfo.evaluateLoading")}
+                                </div>
+                            ) : evaluationForm.answerId && evaluationSteps.length > 0 ? (
+                                <MultiEvalRadarCarousel steps={evaluationSteps} />
+                            ) : (
+                                <p className="text-xs text-muted-foreground italic">
+                                    {t("ProfileTiersLieuxInfo.evaluateNoData")}
+                                </p>
+                            )}
+
+                            {me && (
+                                <Button
+                                    variant="default"
+                                    size="sm"
+                                    className="w-full mt-3 gap-2"
+                                    onClick={() => handleClickForm(evaluationForm.formId, evaluationForm.form.finder, evaluationForm.form.openMode, false)}
+                                >
+                                    <Activity className="h-4 w-4" />
+                                    {t("ProfileTiersLieuxInfo.evaluateButton")}
+                                </Button>
+                            )}
+                        </div>
+                    </>
+                )}
+
+                {/* ── 7. Formulaires ───────────────────────────────────── */}
                 {me && canEditProfile && section.forms && Object.keys(section.forms).length > 0 && (
                     <>
                         <Separator />
@@ -555,6 +635,8 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
                     answerId={formModal.answerId}
                     defaultValues={formModal.defaultValues}
                     lockedFields={formModal.lockedFields}
+                    elementId={formModal.elementId}
+                    elementType={formModal.elementType}
                     onAfterSubmit={invalidateAnswers}
                 />
             )}

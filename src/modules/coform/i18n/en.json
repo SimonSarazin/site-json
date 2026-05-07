@@ -90,7 +90,15 @@
         "hoursAgo_one": "{{count}} hour ago",
         "hoursAgo_other": "{{count}} hours ago",
         "daysAgo_one": "{{count}} day ago",
-        "daysAgo_other": "{{count}} days ago"
+        "daysAgo_other": "{{count}} days ago",
+        "yearsPart_one": "{{count}} year",
+        "yearsPart_other": "{{count}} years",
+        "monthsPart_one": "{{count}} month",
+        "monthsPart_other": "{{count}} months",
+        "daysPart_one": "{{count}} day",
+        "daysPart_other": "{{count}} days",
+        "conjAnd": "and",
+        "agoPrefix": "{{value}} ago"
       }
     },
     "thankYou": {
@@ -232,6 +240,12 @@
         "noPlaces": "You don't have any place matching this form yet.",
         "notApplicable": "This form is not configured for the place view."
       },
+      "confirmLeave": {
+        "title": "Leave without saving?",
+        "description": "You have unsaved changes that will be lost if you leave now.",
+        "stay": "Stay on form",
+        "leave": "Leave without saving"
+      },
       "join": {
         "alreadyMember": "You are already a member of this place.",
         "alreadyPending": "Request already sent — waiting for validation.",
@@ -268,6 +282,33 @@
         "openPdf": "Open PDF",
         "download": "Download"
       }
+    },
+    "activity": {
+      "link": "View activity",
+      "title": "Answer activity",
+      "createdBy": "Created by {{name}} on {{date}}",
+      "lastModifiedBy": "Last modified: {{name}} {{relative}}",
+      "historyTitle": "History",
+      "entryCreate": "created the answer",
+      "entryUpdate_one": "modified step {{steps}}",
+      "entryUpdate_other": "modified steps {{steps}}",
+      "close": "Close",
+      "loading": "Loading history…",
+      "empty": "No activity recorded.",
+      "errorLoad": "Could not load history.",
+      "unknownUser": "Unknown user"
+    },
+    "multiEval": {
+      "viewChart": "View evaluations",
+      "title": "Evaluations comparison",
+      "titleWithStep": "Evaluations — {{stepName}}",
+      "usersLegend": "Evaluated by",
+      "loading": "Loading evaluations…",
+      "empty": "No evaluation recorded for this step.",
+      "errorLoad": "Could not load evaluations.",
+      "close": "Close",
+      "show": "Show",
+      "hide": "Hide"
     }
   }
 }

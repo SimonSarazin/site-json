@@ -1,9 +1,20 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
+import { Helmet } from "@dr.pogodin/react-helmet";
 import { ChevronLeft, Loader2 } from "lucide-react";
 import { useT } from "@/hooks/useT";
 import { useCocolight } from "@/hooks/useCocolight";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { SmartCoForm } from "./SmartCoForm";
 import { getSharedFinderInfo } from "../utils/formParser";
 import type { CoFormData, CoFormAccessInfo, AllStepsData } from "../types";
@@ -82,9 +93,36 @@ export function PlaceFormView({ formData, access, formId, placeId }: PlaceFormVi
     return merged as unknown as AllStepsData;
   }, [sharedFinderInfo, place, access?.existingAnswer, placeId]);
 
-  const handleBackToList = () => {
+  // Nom du lieu pour le titre d'onglet — déclaré tôt (avant les early returns)
+  // pour respecter les rules of hooks de React.
+  const placeName = useMemo(() => {
+    if (!place) return null;
+    const data = (place as unknown as { serverData?: Record<string, unknown> }).serverData ?? {};
+    return (data.name as string) || (place as unknown as { name?: string }).name || null;
+  }, [place]);
+
+  // Tracking de l'état "modifié" du form pour l'intercepter avant navigation.
+  const [isFormDirty, setIsFormDirty] = useState(false);
+  const [confirmLeaveOpen, setConfirmLeaveOpen] = useState(false);
+
+  const performBackToList = useCallback(() => {
     navigate(`/coform/${formId}/place`);
-  };
+  }, [navigate, formId]);
+
+  const handleBackToList = useCallback(() => {
+    if (isFormDirty) {
+      setConfirmLeaveOpen(true);
+      return;
+    }
+    performBackToList();
+  }, [isFormDirty, performBackToList]);
+
+  // Après une soumission réussie, le formulaire est sauvegardé donc on peut
+  // naviguer sans confirmation — bypass du flow dirty.
+  const handleAfterSubmit = useCallback(() => {
+    setIsFormDirty(false);
+    performBackToList();
+  }, [performBackToList]);
 
   // Pas de finder partagé → form mal configuré pour la vue par lieu.
   if (!sharedFinderInfo) {
@@ -131,8 +169,17 @@ export function PlaceFormView({ formData, access, formId, placeId }: PlaceFormVi
   // Mode lecture seule si réponse existante mais pas de droit d'édition.
   const readOnly = !!access?.existingAnswerId && !access.canAnswer;
 
+  const formName = formData?.name ?? "";
+  const documentTitle = placeName ? `${formName} — ${placeName}` : formName;
+
   return (
     <div className="space-y-4 max-w-5xl mx-auto p-6">
+      {documentTitle && (
+        <Helmet>
+          <title>{documentTitle}</title>
+        </Helmet>
+      )}
+
       <Button variant="ghost" size="sm" onClick={handleBackToList} className="gap-1 -ml-2">
         <ChevronLeft className="h-4 w-4" />
         {t("coform.placeView.actions.back")}
@@ -145,8 +192,35 @@ export function PlaceFormView({ formData, access, formId, placeId }: PlaceFormVi
         answerId={access?.existingAnswerId ?? undefined}
         lockedFields={[sharedFinderInfo.fieldName]}
         readOnly={readOnly}
-        onAfterSubmit={handleBackToList}
+        existingAnswerMeta={access?.existingAnswerMeta ?? null}
+        onDirtyChange={setIsFormDirty}
+        onAfterSubmit={handleAfterSubmit}
       />
+
+      {/* Confirm dialog pour quitter avec des modifications non sauvegardées.
+          Aligné sur le pattern de CoFormModal (close avec dirty). */}
+      <AlertDialog open={confirmLeaveOpen} onOpenChange={setConfirmLeaveOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("coform.placeView.confirmLeave.title")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("coform.placeView.confirmLeave.description")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("coform.placeView.confirmLeave.stay")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setConfirmLeaveOpen(false);
+                performBackToList();
+              }}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              {t("coform.placeView.confirmLeave.leave")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

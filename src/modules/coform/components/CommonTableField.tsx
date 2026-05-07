@@ -390,6 +390,9 @@ const AddSolutionInput = memo(function AddSolutionInput({
   const [draft, setDraft] = useState("");
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
+  // Ref vers l'input pour exclure ses clics du "interact outside" de Radix
+  // (cf. handler `onInteractOutside` plus bas — sinon flicker open/close).
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   // Filtre les suggestions par préfixe (case-insensitive). Vide → toutes les
   // suggestions disponibles. On limite à 8 pour ne pas allonger la dropdown.
@@ -453,6 +456,7 @@ const AddSolutionInput = memo(function AddSolutionInput({
         <PopoverAnchor asChild>
           <div className="relative flex-1">
             <Input
+              ref={inputRef}
               value={draft}
               onChange={(e) => {
                 setDraft(e.target.value);
@@ -463,8 +467,6 @@ const AddSolutionInput = memo(function AddSolutionInput({
                 setOpen(true);
                 setActiveIndex(-1);
               }}
-              onClick={() => setOpen(true)}
-              onBlur={() => window.setTimeout(() => setOpen(false), 120)}
               onKeyDown={onKeyDown}
               placeholder={placeholder}
               disabled={disabled}
@@ -497,6 +499,17 @@ const AddSolutionInput = memo(function AddSolutionInput({
         // Garde le focus sur l'input — sans ça Radix volerait le focus à l'ouverture.
         onOpenAutoFocus={(e) => e.preventDefault()}
         onCloseAutoFocus={(e) => e.preventDefault()}
+        // Empêche Radix de fermer la popover quand on clique sur l'input
+        // (l'`anchor` n'est pas un `trigger` aux yeux de Radix → un clic
+        // dessus est considéré "outside content" → fermeture parasite que
+        // l'on devait précédemment compenser avec un `onClick` sur l'input,
+        // ce qui causait le flicker open/close/open).
+        onInteractOutside={(e) => {
+          const target = e.target as Node | null;
+          if (target && inputRef.current?.contains(target)) {
+            e.preventDefault();
+          }
+        }}
       >
         <ul role="listbox" className="py-1">
           {filtered.map((s, i) => (
@@ -708,39 +721,92 @@ export function CommonTableField({
   );
   const labels = config?.labels ?? {};
 
-  // Augmente la liste d'usages : config admin + tous les `usageKey` qui apparaissent
-  // dans le catalogue collaboratif et qu'on n'a pas dans la config (cas typique :
-  // les usages sont définis dynamiquement par les répondants, pas en admin).
+  // Helper : key effective pour grouper les entries en lignes de tableau.
+  // Réplique la logique du legacy commonTableV2.php : plusieurs criterias
+  // partageant le même `usage` (texte) sont fusionnés en UNE ligne, même si
+  // une partie n'a pas de `usageKey` (cas typique des données legacy où
+  // `usageKey` n'a été ajouté que tardivement). La règle :
+  //   1. usageKey explicite → l'utiliser
+  //   2. sinon, usageKey déjà connu pour ce `normalizedUsage` → l'utiliser
+  //   3. sinon, fallback sur `normalizedUsage` lui-même
+  const normalizeUsage = (u: string | undefined | null): string =>
+    String(u ?? "").trim().toLowerCase() || "sans usage";
+
+  // Map normalizedUsage → usageKey, partagée par augmentedUsages et
+  // suggestionsByUsage. Construit à partir des entries qui ont déjà un
+  // usageKey (cf. STEP 1 du legacy commonTableV2.php). Les entries sans
+  // usageKey s'aligneront sur cette map via leur `normalizedUsage`.
+  const groupKeyResolver = useMemo(() => {
+    const usageKeyMap: Record<string, string> = {};
+    for (const entry of Object.values(collabCatalog)) {
+      if (!entry.usageKey) continue;
+      const norm = normalizeUsage(entry.usage);
+      if (!usageKeyMap[norm]) usageKeyMap[norm] = entry.usageKey;
+    }
+    for (const sol of Object.values(value.scores)) {
+      if (!sol.usageKey) continue;
+      const norm = normalizeUsage(sol.usage);
+      if (!usageKeyMap[norm]) usageKeyMap[norm] = sol.usageKey;
+    }
+    for (const entry of Object.values(value.myCatalog)) {
+      if (!entry.usageKey) continue;
+      const norm = normalizeUsage(entry.usage);
+      if (!usageKeyMap[norm]) usageKeyMap[norm] = entry.usageKey;
+    }
+    return (rawUsageKey: string | undefined, rawUsage: string | undefined): string => {
+      if (rawUsageKey) return rawUsageKey;
+      const norm = normalizeUsage(rawUsage);
+      return usageKeyMap[norm] ?? norm;
+    };
+  }, [collabCatalog, value.scores, value.myCatalog]);
+
+  // Augmente la liste d'usages : config admin + tous les usages effectifs qui
+  // apparaissent dans le catalogue collaboratif, plus ceux de MES scores /
+  // MON catalog (mode édition).
   const augmentedUsages = useMemo(() => {
+    const resolveGroupKey = groupKeyResolver;
     const seen = new Set<string>();
     const out: typeof usages = [];
+    // 1) Admin-defined usages (config) : on les laisse passer tels quels.
     for (const u of usages) {
-      if (!seen.has(u.usageKey)) {
-        seen.add(u.usageKey);
-        out.push(u);
+      const gk = resolveGroupKey(u.usageKey, u.label);
+      if (!seen.has(gk)) {
+        seen.add(gk);
+        out.push({ ...u, usageKey: gk });
       }
     }
+    // 2) Catalog collaboratif : agréger par groupKey, ignorer `usage` vide
+    //    (entry sans nom de besoin n'est pas affichable comme ligne).
     for (const entry of Object.values(collabCatalog)) {
-      if (entry.usageKey && !seen.has(entry.usageKey)) {
-        seen.add(entry.usageKey);
-        out.push({ usageKey: entry.usageKey, label: entry.usage || entry.usageKey });
+      const usageLabel = (entry.usage ?? "").trim();
+      if (!usageLabel && !entry.usageKey) continue;
+      const gk = resolveGroupKey(entry.usageKey, usageLabel);
+      if (!seen.has(gk)) {
+        seen.add(gk);
+        out.push({ usageKey: gk, label: usageLabel || entry.usageKey || gk });
       }
     }
-    // Inclure aussi les usages présents dans MES scores ou MON catalog (mode édition)
+    // 3) MES scores / MON catalog (édition d'une réponse existante).
     for (const sol of Object.values(value.scores)) {
-      if (sol.usageKey && !seen.has(sol.usageKey)) {
-        seen.add(sol.usageKey);
-        out.push({ usageKey: sol.usageKey, label: sol.usage || sol.usageKey });
+      const usageLabel = (sol.usage ?? "").trim();
+      if (!usageLabel && !sol.usageKey) continue;
+      const gk = resolveGroupKey(sol.usageKey, usageLabel);
+      if (!seen.has(gk)) {
+        seen.add(gk);
+        out.push({ usageKey: gk, label: usageLabel || sol.usageKey || gk });
       }
     }
     for (const entry of Object.values(value.myCatalog)) {
-      if (entry.usageKey && !seen.has(entry.usageKey)) {
-        seen.add(entry.usageKey);
-        out.push({ usageKey: entry.usageKey, label: entry.usage || entry.usageKey });
+      const usageLabel = (entry.usage ?? "").trim();
+      if (!usageLabel && !entry.usageKey) continue;
+      const gk = resolveGroupKey(entry.usageKey, usageLabel);
+      if (!seen.has(gk)) {
+        seen.add(gk);
+        out.push({ usageKey: gk, label: usageLabel || entry.usageKey || gk });
       }
     }
     return out;
-  }, [usages, collabCatalog, value.scores, value.myCatalog]);
+  }, [usages, collabCatalog, value.scores, value.myCatalog, groupKeyResolver]);
 
   // Filtre client-side (n'altère JAMAIS `value` — uniquement l'affichage).
   const [filter, setFilter] = useState("");
@@ -753,20 +819,38 @@ export function CommonTableField({
   // Solution active par usage, indépendante de `value`.
   const [activeByUsage, setActiveByUsage] = useState<Record<string, string>>({});
 
-  // Suggestions par usage : extraites du catalogue collaboratif, filtrées par
-  // usageKey + nom non-vide, triées par fréquence (count décroissant). Stable
-  // tant que le catalog ne change pas — donc mémoïsé sur `collabCatalog`.
+  // Suggestions par usage : extraites du catalogue collaboratif, indexées par
+  // groupKey effective (cf. groupKeyResolver) — pas par `entry.usageKey` brut,
+  // sinon les suggestions des entries legacy (sans usageKey) sont perdues.
+  //
+  // On consomme la distribution `entry.names` (Record<name, count>) plutôt
+  // que le seul `entry.name` canonique : un même criteriaId peut avoir été
+  // rempli avec des solutions différentes par plusieurs users (ex: Sage,
+  // Odoo, EBP COMPTA pour "Comptabilité"). Sans cette agrégation, on ne
+  // verrait que la solution majoritaire. Pour les anciens entries qui
+  // n'auraient pas encore `names`, fallback sur `name` seul.
   const suggestionsByUsage = useMemo(() => {
-    const out: Record<string, SolutionSuggestion[]> = {};
+    const accumulator: Record<string, Record<string, number>> = {};
     for (const entry of Object.values(collabCatalog)) {
-      if (!entry.name || !entry.usageKey) continue;
-      (out[entry.usageKey] ??= []).push({ name: entry.name, count: entry.count });
+      const gk = groupKeyResolver(entry.usageKey, entry.usage);
+      const bucket = (accumulator[gk] ??= {});
+      if (entry.names && Object.keys(entry.names).length > 0) {
+        for (const [name, c] of Object.entries(entry.names)) {
+          if (!name) continue;
+          bucket[name] = (bucket[name] ?? 0) + (typeof c === "number" ? c : 0);
+        }
+      } else if (entry.name) {
+        bucket[entry.name] = (bucket[entry.name] ?? 0) + (entry.count ?? 0);
+      }
     }
-    for (const list of Object.values(out)) {
-      list.sort((a, b) => b.count - a.count);
+    const out: Record<string, SolutionSuggestion[]> = {};
+    for (const [gk, names] of Object.entries(accumulator)) {
+      out[gk] = Object.entries(names)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count);
     }
     return out;
-  }, [collabCatalog]);
+  }, [collabCatalog, groupKeyResolver]);
 
   // Index des solutions par usageKey, basé sur `value.scores`. Cache de référence
   // pour que React.memo sur <CommonTableRow> ne re-rende QUE la ligne modifiée.
@@ -815,10 +899,12 @@ export function CommonTableField({
       }
 
       // STEP 2 — match par nom dans le catalogue collaboratif : réutiliser le
-      // criteriaId existant pour ne pas dupliquer (et bénéficier du `count` agrégé).
+      // criteriaId existant pour ne pas dupliquer (et bénéficier du `count`
+      // agrégé). On matche sur le groupKey résolu — sinon les entries
+      // legacy (usageKey brut vide) ne seraient jamais retrouvées.
       const reuseEntry = Object.entries(collabCatalog).find(
         ([, entry]) =>
-          entry.usageKey === usageKey &&
+          groupKeyResolver(entry.usageKey, entry.usage) === usageKey &&
           typeof entry.name === "string" &&
           entry.name.toLowerCase() === trimmedLower
       );
@@ -845,7 +931,7 @@ export function CommonTableField({
       });
       setActiveByUsage((prev) => ({ ...prev, [usageKey]: sol.criteriaId }));
     },
-    [onChange, collabCatalog]
+    [onChange, collabCatalog, groupKeyResolver]
   );
 
   const handleDelete = useCallback(

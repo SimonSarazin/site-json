@@ -244,7 +244,7 @@
             "description": {
               "fr": "Un diagnostic dédié aux lieux comme communs de proximité"
             },
-            "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=licoop#licoop"
+            "path": "/coform/6876c3e58fa8df3c7f024253/place"
           },
           {
             "label": {
@@ -2081,6 +2081,14 @@
                       "finder": "answers.navigatorDesTierslieux25112025_1436_0.findernavigatorDesTierslieux25112025_1436_0miem3epsztzcm9dgim",
                       "linked": true,
                       "category": "salle-reunion",
+                      "hide": true
+                    },
+                    "6876c3e58fa8df3c7f024253": {
+                      "name": "Diagnostic Licoop",
+                      "finder": "answers.navigatorDesTierslieux1572025_2311_0.findernavigatorDesTierslieux1572025_2311_0md5u4tkmsz33mya3xvb",
+                      "linked": true,
+                      "category": "evaluation",
+                      "openMode": "modal",
                       "hide": true
                     }
                   }

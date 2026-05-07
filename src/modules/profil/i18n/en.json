@@ -1259,6 +1259,11 @@
     "socialNetworks": "Social networks",
     "keywords": "Keywords",
     "forms": "Forms",
+    "evaluation": "Place evaluation",
+    "evaluateButton": "Evaluate this place",
+    "evaluateNoData": "No evaluation for this place yet.",
+    "evaluateLoading": "Loading evaluations…",
+    "evaluateError": "Unable to load evaluations.",
     "noPois": "No spaces available"
   },
   "ProfilTiersLieuxAbout": {

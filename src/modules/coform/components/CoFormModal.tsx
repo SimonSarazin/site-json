@@ -46,6 +46,15 @@ export interface CoFormModalProps {
   className?: string;
   /** Liste de clés d'inputs verrouillés (non modifiables dans le modal) */
   lockedFields?: string[];
+  /**
+   * Mode "par élément" : active la résolution d'access côté backend autour
+   * d'un lieu lié (réponse partagée). Indispensable pour que les
+   * `placeAdminOnlyFields` / `placeMemberOnlyFields` soient appliqués depuis
+   * un contexte hors place picker (typiquement bouton "Évaluer le lieu" sur
+   * un profil). Cf. `useCoFormQuery`.
+   */
+  elementId?: string;
+  elementType?: "organizations" | "projects" | "events" | "poi" | "citoyens";
 }
 
 /**
@@ -66,6 +75,8 @@ export function CoFormModal({
   closeOnSubmit = !inputKey,
   className,
   lockedFields,
+  elementId,
+  elementType,
 }: CoFormModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
@@ -160,6 +171,8 @@ export function CoFormModal({
               onDirtyChange={setIsDirty}
               submitRef={submitRef}
               lockedFields={lockedFields}
+              elementId={elementId}
+              elementType={elementType}
               inModal
             />
           </div>

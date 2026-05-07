@@ -149,7 +149,20 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
     stepKey?: string;
     inputKey?: string;
     lockedFields?: string[];
+    elementId?: string;
+    elementType?: "organizations" | "projects" | "events" | "poi" | "citoyens";
   } | null>(null);
+
+  // L'entity du profil EST le lieu lié à la réponse partagée. On la pousse
+  // au backend via elementId/elementType sur chaque ouverture de modal pour
+  // que `Coform::getFormAccessInfo` entre en mode "par élément" et calcule
+  // `access.restrictedFields` (placeAdminOnly / placeMemberOnly). Sans ça,
+  // les restrictions place-level seraient inopérantes depuis cet écran.
+  const elementType = entity?.serverData?.collection as
+    | "organizations" | "projects" | "events" | "poi" | "citoyens" | undefined;
+  const placeContext = entity?.id && elementType
+    ? { elementId: entity.id as string, elementType }
+    : {};
 
   /** Invalidate the answers cache after a form modal submit */
   const entityId = entity?.id ?? null;
@@ -181,6 +194,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
       stepKey,
       inputKey,
       lockedFields,
+      ...placeContext,
     });
   };
 
@@ -225,6 +239,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
       lockedFields: finderPath
         ? [...(lockedFields ?? []), finderPath.split(".").pop()!]
         : lockedFields,
+      ...placeContext,
     });
   };
 
@@ -648,8 +663,8 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                   size="sm"
                   className="p-2"
                   onClick={() => rooms.length > 0
-                    ? openEditFormModal({ formId: section.roomPath!.id, answerId: rooms[0]._serverData.id, title: t("ProfilTiersLieuxAbout.rooms") as string, stepKey: section.roomPath!.step, inputKey: section.roomPath!.input })
-                    : openNewFormModal({ formId: section.roomPath!.id, title: t("ProfilTiersLieuxAbout.rooms") as string, stepKey: section.roomPath!.step, inputKey: section.roomPath!.input })
+                    ? openEditFormModal({ formId: section.roomPath!.id, answerId: rooms[0]._serverData.id, title: t("ProfilTiersLieuxAbout.rooms") as string, lockedFields: getFinderLockedField(section.roomPath!.id) })
+                    : openNewFormModal({ formId: section.roomPath!.id, title: t("ProfilTiersLieuxAbout.rooms") as string })
                   }
                 >
                   <Pencil className="h-4 w-4" />
@@ -1404,6 +1419,8 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
           stepKey={formModal.stepKey}
           inputKey={formModal.inputKey}
           lockedFields={formModal.lockedFields}
+          elementId={formModal.elementId}
+          elementType={formModal.elementType}
           onAfterSubmit={invalidateAnswers}
         />
       )}

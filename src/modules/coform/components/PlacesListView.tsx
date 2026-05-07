@@ -1,5 +1,6 @@
 import { useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router";
+import { Helmet } from "@dr.pogodin/react-helmet";
 import { toast } from "sonner";
 import { ChevronRight, Loader2, Search, UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -421,11 +422,17 @@ export function PlacesListView({ formData, formId }: PlacesListViewProps) {
     addToLinks: { value: false, links: "" },
   };
 
+  const documentTitle = formData.name ?? t("coform.placeView.title");
+
   return (
     <div className="space-y-6 max-w-3xl mx-auto p-6">
+      <Helmet>
+        <title>{documentTitle}</title>
+      </Helmet>
+
       {/* Header */}
       <div className="space-y-1">
-        <h1 className="text-2xl font-bold">{formData.name ?? t("coform.placeView.title")}</h1>
+        <h1 className="text-2xl font-bold">{documentTitle}</h1>
         <p className="text-sm text-muted-foreground">{t("coform.placeView.description")}</p>
       </div>
 

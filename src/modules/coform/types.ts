@@ -31,6 +31,36 @@ export interface CoFormAnswerSummary {
 }
 
 /**
+ * Métadonnées de traçabilité d'une réponse existante (créateur + dernier
+ * modifieur). Vit à côté de `existingAnswer` pour ne pas polluer le payload
+ * des réponses. Tous les champs sont optionnels :
+ * - `createdBy`/`createdAt` : présents pour toute réponse (champs natifs).
+ * - `lastModifier*` : peuplés depuis le déploiement de la traçabilité.
+ *   Pour les réponses créées avant ce déploiement, `lastModifier === null`.
+ */
+export interface ExistingAnswerMeta {
+  createdBy?: string | null;
+  createdAt?: number | null;
+  lastModifier?: string | null;
+  lastModifierName?: string | null;
+  lastModifiedAt?: number | null;
+}
+
+/**
+ * Une entrée de l'historique d'audit, retournée par GET_COFORM_ANSWER_HISTORY.
+ * `userName`/`userSlug` sont dénormalisés au moment de la modification :
+ * survivent à une suppression du user.
+ */
+export interface AnswerChange {
+  userId: string;
+  userName: string;
+  userSlug: string;
+  at: number;
+  mutationType: "create" | "update";
+  changedFields: string[];
+}
+
+/**
  * Informations d'accès retournées par le serveur
  * Contrôle d'accès enrichi : droits, dates, réponse existante
  */
@@ -40,6 +70,11 @@ export interface CoFormAccessInfo {
   formStatus: "open" | "not_started" | "closed" | "inactive";
   existingAnswerId: string | null;
   existingAnswer: AllStepsData | null;
+  /**
+   * Métadonnées de la réponse existante (créateur, dernier modifieur).
+   * Présent uniquement quand `existingAnswer` est non null.
+   */
+  existingAnswerMeta?: ExistingAnswerMeta | null;
   /** Liste des réponses existantes de l'utilisateur (mode réponse multiple) */
   existingAnswers?: CoFormAnswerSummary[];
   requiresLogin: boolean;
@@ -54,6 +89,15 @@ export interface CoFormAccessInfo {
     startNoConfirmation: string | null;
     endNoConfirmation: string | null;
   };
+  /**
+   * Liste de input keys (kunik) que l'utilisateur courant ne doit pas voir/éditer
+   * sur ce form. Calculée côté serveur via `placeAdminOnlyFields` /
+   * `placeMemberOnlyFields` croisé avec la relation user↔lieu (via
+   * sharedQuestionPath). Toujours présent (vide si aucune restriction
+   * applicable). Le rendu React skip ces fields ; le save backend strip ces
+   * fields au cas où (defense in depth).
+   */
+  restrictedFields?: string[];
 }
 
 /**
@@ -264,9 +308,9 @@ export interface CommonTableValue {
 export interface CommonTableCatalogEntry {
   label?: string;
   /**
-   * Nom canonique de la solution (ex: "Odoo"). Premier nom non-vide rencontré
-   * dans les `yesOrNo{key}.{criteriaId}.criteria` de tous les répondants.
-   * Disponible seulement si au moins un répondant a saisi un nom de solution.
+   * Nom canonique de la solution (ex: "Odoo"). Mode de la distribution
+   * `names` — celui avec le count le plus élevé. Disponible seulement si au
+   * moins un répondant a saisi un nom de solution.
    */
   name?: string;
   usage: string;
@@ -274,6 +318,12 @@ export interface CommonTableCatalogEntry {
   coeff?: number;
   /** Nombre de répondants ayant rempli `criteria` non-vide pour ce criteriaId */
   count: number;
+  /**
+   * Distribution complète des noms de solutions saisis par les users pour
+   * ce criteriaId, avec leur fréquence. Permet de proposer plusieurs
+   * suggestions distinctes par ligne (cf. legacy autocomplete `accriteria`).
+   */
+  names?: Record<string, number>;
 }
 
 /** Catalogue collaboratif d'un input, keyé par criteriaId. */
@@ -399,6 +449,20 @@ export interface CoFormData {
    * le formulaire pré-rempli pour le lieu sélectionné.
    */
   publicCanEditSharedAnswer?: boolean;
+  /**
+   * Liste d'input keys (kunik) réservés aux admins du lieu lié au form (via
+   * sharedQuestionPath). Configuré au niveau form via le wizard legacy.
+   * N'est pas utilisé directement côté React pour le rendu — c'est
+   * `access.restrictedFields` qui contient le résultat calculé pour l'user
+   * courant. Exposé ici principalement pour la persistance/typage et un
+   * éventuel debug côté admin.
+   */
+  placeAdminOnlyFields?: string[];
+  /**
+   * Liste d'input keys (kunik) réservés aux admins ET membres du lieu lié
+   * au form. Cf. `placeAdminOnlyFields`.
+   */
+  placeMemberOnlyFields?: string[];
 }
 
 /**
@@ -469,6 +533,72 @@ export interface FormFieldMapping {
   };
   // Logique conditionnelle
   conditionalDisplay?: ConditionalDisplay;
+  /**
+   * Si `true`, l'input radio active le mode "évaluation multiple" : la valeur
+   * de chaque user est stockée séparément dans `_multiEval.{userId}` au lieu
+   * de la place classique. Permet à plusieurs users de contribuer à la même
+   * réponse partagée et d'agréger les évaluations dans un radar chart.
+   * Cf. legacy `radioNew.php` + `Form.php:hasMultiEval`.
+   */
+  activeMultieval?: boolean;
+  /**
+   * Label de l'axe radar pour les inputs multi-eval (ex: "A", "B"). Utilisé
+   * comme tick du radar chart à la place du label brut de l'input pour rester
+   * compact. Si vide, on fallback sur le label de l'input.
+   */
+  evaluationKey?: string;
+}
+
+/**
+ * Une entrée stockée dans `answers.{stepKey}.{inputKey}_multiEval.{userId}`
+ * pour le mode évaluation multiple.
+ *
+ * Format étendu (stratégie expand → migrate → contract) :
+ * - `value` : canonical (nouveau, robuste au reorder d'options).
+ * - `date` : timestamp d'évaluation (ISO string en pratique).
+ * - `answer` : legacy "{idx}_{slug}" — gardé pour la rétro-compat des readers
+ *   non encore migrés (radar legacy, etc.).
+ *
+ * En lecture, on préfère `value` ; à défaut on parse `answer`.
+ */
+export interface MultiEvalEntry {
+  value?: string;
+  date?: string | number;
+  answer?: string;
+}
+
+/** Un axe du radar (= un input multi-eval d'une step donnée). */
+export interface MultiEvalAxis {
+  /** Clé de l'input (sans préfixe `radioNew`). */
+  key: string;
+  /** Label affiché sur le tick radar (`evaluationKey` si défini). */
+  label: string;
+  /** Options du radio dans leur ordre actuel — pour mapper les valeurs 1..N en labels. */
+  options: string[];
+}
+
+/** Un dataset = la contribution d'un user à un step (1 dataset = 1 user). */
+export interface MultiEvalDataset {
+  userId: string;
+  userName: string;
+  userSlug: string;
+  /** Unix timestamp de la dernière modification de cet user pour cette step. */
+  evaluatedAt: number | null;
+  /** Map { inputKey: index 1..N } — manquant pour les axes que ce user n'a pas évalués. */
+  values: Record<string, number>;
+}
+
+/** Une step (sous-formulaire) avec ses axes et ses contributeurs. */
+export interface MultiEvalStep {
+  stepKey: string;
+  stepName: string;
+  axes: MultiEvalAxis[];
+  datasets: MultiEvalDataset[];
+}
+
+/** Réponse de `GET_COFORM_MULTIEVAL_DATA`. */
+export interface MultiEvalDataResponse {
+  steps: MultiEvalStep[];
 }
 
 export interface SubFormFields {

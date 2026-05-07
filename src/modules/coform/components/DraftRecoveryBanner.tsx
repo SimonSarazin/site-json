@@ -3,6 +3,7 @@ import { History, Info } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/hooks/useT";
+import { formatRelative } from "../utils/formatRelative";
 
 type DraftRecoveryBannerProps =
   | {
@@ -16,17 +17,6 @@ type DraftRecoveryBannerProps =
       timestamp: number;
       onAcknowledge: () => void;
     };
-
-function formatRelative(timestamp: number, t: ReturnType<typeof useT>): string {
-  const diffMs = Math.max(0, Date.now() - timestamp);
-  const minutes = Math.floor(diffMs / 60000);
-  if (minutes < 1) return t("coform.draft.time.justNow");
-  if (minutes < 60) return t("coform.draft.time.minutesAgo", undefined, { count: minutes });
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return t("coform.draft.time.hoursAgo", undefined, { count: hours });
-  const days = Math.floor(hours / 24);
-  return t("coform.draft.time.daysAgo", undefined, { count: days });
-}
 
 function DraftRecoveryBannerImpl(props: DraftRecoveryBannerProps) {
   const t = useT("modules/coform");

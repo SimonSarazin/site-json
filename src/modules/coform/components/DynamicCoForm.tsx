@@ -3,6 +3,7 @@ import { useForm, Controller, useWatch, type FieldErrors } from "react-hook-form
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
 import { toast } from "sonner";
+import { Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TextField, TextAreaField, RadioField, CheckboxField, ProseContent, SectionTitleField, SectionDescriptionField } from "./FormFields";
@@ -15,8 +16,10 @@ import { SimpleTableField } from "./SimpleTableField";
 import { UploaderField } from "./UploaderField";
 import { ErrorSummary } from "./ErrorSummary";
 import { DraftRecoveryBanner } from "./DraftRecoveryBanner";
-import type { CoFormData, SubFormData, AddedOptionsMap, EvaluationValue, CommonTableValue, FinderValue, SimpleTableValue, MultiRadioValue } from "../types";
-import { parseCoFormFields, generateZodSchema, generateDefaultValues } from "../utils/formParser";
+import { AnswerActivityDialog } from "./AnswerActivityDialog";
+import { MultiEvalChartDialog } from "./MultiEvalChartDialog";
+import type { CoFormData, SubFormData, AddedOptionsMap, EvaluationValue, CommonTableValue, FinderValue, SimpleTableValue, MultiRadioValue, ExistingAnswerMeta } from "../types";
+import { parseCoFormFields, generateZodSchema, generateDefaultValues, getStepHasMultiEval, getOriginalFieldKey } from "../utils/formParser";
 import { useConditionalFields } from "../hooks/useConditionalFields";
 import { useCoFormDraft } from "../hooks/useCoFormDraft";
 import { useUnsavedChangesWarning } from "../hooks/useUnsavedChangesWarning";
@@ -49,6 +52,14 @@ interface DynamicCoFormProps {
   submitRef?: React.RefObject<(() => void) | null>;
   /** Liste de clés d'inputs verrouillés (lecture seule, non modifiables) */
   lockedFields?: string[];
+  /**
+   * Liste de input keys (kunik) à ne pas rendre du tout — l'user n'a pas le
+   * droit d'y accéder selon les listes `placeAdminOnlyFields` /
+   * `placeMemberOnlyFields` configurées au niveau form. Les comparaisons se
+   * font sur la kunik (cf. `getOriginalFieldKey(field)`), pas sur `field.name`
+   * (qui peut être préfixé selon le componentType).
+   */
+  restrictedFields?: string[];
   /** ID du formulaire — clé de draft localStorage */
   formId?: string;
   /** ID utilisateur connecté — clé de draft */
@@ -57,6 +68,12 @@ interface DynamicCoFormProps {
   baseUpdatedAt?: number | null;
   /** Active la persistance du draft. Défaut : true. */
   enableDraft?: boolean;
+  /**
+   * Métadonnées de la réponse existante (créateur + dernier modifieur).
+   * Quand fournies, un lien "Voir l'activité" apparaît en bas du form, qui
+   * ouvre la modale `AnswerActivityDialog` avec l'historique des modifs.
+   */
+  existingAnswerMeta?: ExistingAnswerMeta | null;
 }
 
 /**
@@ -77,13 +94,22 @@ export function DynamicCoForm({
   onDirtyChange,
   submitRef,
   lockedFields,
+  restrictedFields,
   formId,
   userId,
   baseUpdatedAt,
   enableDraft = true,
+  existingAnswerMeta,
 }: DynamicCoFormProps) {
   const t = useT("modules/coform");
   useLoadNamespace("modules/coform");
+  const [activityDialogOpen, setActivityDialogOpen] = useState(false);
+  // Dialog multi-eval : un seul Dialog réutilisé pour toutes les steps. L'état
+  // mémorise la step ciblée pour passer le contexte au dialog (titre + filtre
+  // côté serveur via stepKey).
+  const [multiEvalContext, setMultiEvalContext] = useState<
+    { stepKey: string; stepName: string } | null
+  >(null);
 
   const resolvedSubmitText = submitButtonText ?? t("coform.navigation.submit");
 
@@ -114,7 +140,25 @@ export function DynamicCoForm({
   // State pour collecter les options ajoutées par champ
   const [addedOptionsMap, setAddedOptionsMap] = useState<AddedOptionsMap>({});
 
+  // Map subFormId → display name pour rendre l'historique d'activité lisible
+  // (sinon on affiche les clés brutes type `navigatorDesTierslieux1572025_2311_0`).
+  const stepNames = useMemo(() => {
+    const map: Record<string, string> = {};
+    if (formData.inputs) {
+      for (const [stepId, stepData] of Object.entries(formData.inputs)) {
+        const name = (stepData as { name?: unknown })?.name;
+        if (typeof name === "string" && name.trim() !== "") {
+          map[stepId] = name;
+        }
+      }
+    }
+    return map;
+  }, [formData.inputs]);
+
   const lockedSet = useMemo(() => new Set(lockedFields), [lockedFields]);
+  // Set des kuniks restricted — on compare sur la clé d'origine (pas
+  // `field.name` qui inclut le préfixe componentType comme "finder"/"radioNew").
+  const restrictedSet = useMemo(() => new Set(restrictedFields ?? []), [restrictedFields]);
 
   // Logique conditionnelle : collecter tous les champs et évaluer la visibilité
   const allFields = subFormsFields.flatMap((sf) => sf.fields);
@@ -284,6 +328,11 @@ export function DynamicCoForm({
             <div className="grid grid-cols-12 gap-6">
               {subForm.fields.map((field) => {
                 if (!isFieldVisible(field.name)) return null;
+                // Skip total : l'user n'a pas le droit selon les listes
+                // place(Admin|Member)OnlyFields. Calculé serveur-side dans
+                // `access.restrictedFields`. Aligné sur le legacy isAdminOnly
+                // qui hide entirely (pas de readonly cosmétique).
+                if (restrictedSet.has(getOriginalFieldKey(field))) return null;
                 const isLocked = lockedSet.has(field.name);
                 // Rendu conditionnel selon le type de champ
                 const fieldElement = (() => { switch (field.componentType) {
@@ -517,10 +566,35 @@ export function DynamicCoForm({
             return <div key={subForm.subFormId}>{fieldsGrid}</div>;
           }
 
+          // Bouton "Voir les évaluations" — visible uniquement si la step
+          // contient au moins un input multi-eval ET qu'on est en mode édition
+          // (answerId présent : sinon il n'y a pas encore de data à agréger).
+          const stepHasMultiEval = getStepHasMultiEval(subForm);
+          const showMultiEvalButton = stepHasMultiEval && !!answerId;
+
           return (
             <Card key={subForm.subFormId} className="shadow-sm">
               <CardHeader className="space-y-3">
-                <CardTitle className="text-2xl">{subForm.subFormName}</CardTitle>
+                <div className="flex items-start justify-between gap-3">
+                  <CardTitle className="text-2xl">{subForm.subFormName}</CardTitle>
+                  {showMultiEvalButton && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        setMultiEvalContext({
+                          stepKey: subForm.subFormId,
+                          stepName: subForm.subFormName,
+                        })
+                      }
+                      className="shrink-0 gap-2"
+                    >
+                      <Activity className="h-4 w-4" />
+                      <span className="hidden sm:inline">{t("coform.multiEval.viewChart")}</span>
+                    </Button>
+                  )}
+                </div>
                 {formData.inputs?.[subForm.subFormId]?.info && (
                   <CardDescription className="text-base">
                     <ProseContent
@@ -537,10 +611,43 @@ export function DynamicCoForm({
           );
       })}
 
+      {/* Dialog multi-eval mounté une seule fois, partagé par toutes les steps.
+          Le state `multiEvalContext` détermine la step ciblée + son nom. */}
+      <MultiEvalChartDialog
+        open={!!multiEvalContext}
+        onOpenChange={(open) => { if (!open) setMultiEvalContext(null); }}
+        answerId={answerId ?? null}
+        stepKey={multiEvalContext?.stepKey}
+        stepName={multiEvalContext?.stepName}
+      />
+
       <ErrorSummary
         errors={hasAttemptedSubmit ? errors : {}}
         fields={allFields}
         onFieldClick={handleErrorFieldClick}
+      />
+
+      {/* Lien discret "Voir l'activité" — visible uniquement en mode édition
+          d'une réponse existante. Ouvre une modale avec l'historique des
+          modifications de la réponse. Placé volontairement avant le submit
+          pour ne pas surcharger le footer principal. */}
+      {existingAnswerMeta && answerId && (
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={() => setActivityDialogOpen(true)}
+            className="text-xs text-muted-foreground hover:text-foreground underline-offset-2 hover:underline transition-colors"
+          >
+            {t("coform.activity.link")}
+          </button>
+        </div>
+      )}
+      <AnswerActivityDialog
+        open={activityDialogOpen}
+        onOpenChange={setActivityDialogOpen}
+        answerId={answerId}
+        meta={existingAnswerMeta}
+        stepNames={stepNames}
       />
 
       {!hideSubmitButton && (

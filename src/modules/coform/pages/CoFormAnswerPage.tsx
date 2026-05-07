@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useLoaderData, useNavigate, useParams, useSearchParams } from "react-router";
+import { Helmet } from "@dr.pogodin/react-helmet";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { AlertCircle, Eye, Home, Info, Loader2, Lock, Pencil } from "lucide-react";
@@ -166,11 +167,18 @@ export default function CoFormAnswerPage() {
     setPageState({ view: "answer", mode: "readonly" });
   };
 
+  // Titre d'onglet : nom du form (formData a passé les early-returns).
+  // Suffixé "— Réponse" pour distinguer cette page de la page form classique.
+  const documentTitle = `${formData.name ?? t("coform.title")} — ${t("coform.answer.viewingAnswer")}`;
+
   // ── Page de remerciement après update ──────────────────────────
 
   if (pageState.view === "thankYou") {
     return (
       <PageShell>
+        <Helmet>
+          <title>{documentTitle}</title>
+        </Helmet>
         <CoFormThankYou
           config={formData.thankYou}
           formName={formData.name}
@@ -199,6 +207,10 @@ export default function CoFormAnswerPage() {
 
   return (
     <PageShell>
+      <Helmet>
+        <title>{documentTitle}</title>
+      </Helmet>
+
       {/* Bandeau refus d'édition si mode=edit demandé mais non autorisé */}
       {currentMode === "edit" && !canEdit && (
         <div className="mb-6 flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-950/50 dark:text-red-200">
@@ -284,7 +296,7 @@ function PageShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen flex flex-col bg-background">
       <SiteHeader />
       <main className="flex-1 py-8">
-        <div className="container max-w-4xl mx-auto px-4">{children}</div>
+        <div className="container max-w-5xl mx-auto px-4">{children}</div>
       </main>
       <SiteFooter />
     </div>

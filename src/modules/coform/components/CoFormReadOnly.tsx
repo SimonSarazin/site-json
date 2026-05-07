@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { useCocolight } from "@/hooks/useCocolight";
 import "../i18n/i18n";
 import { parseCoFormFields, normalizeAnswerData } from "../utils/formParser";
 import type { CoFormData, AllStepsData, SubFormFields, FormFieldMapping, FormFieldValue, MultiCheckboxPlusValue, MultiRadioValue, UploaderLegacyValue, SimpleTableValue, EvaluationValue, CommonTableValue, FinderValue } from "../types";
@@ -50,12 +51,16 @@ export function CoFormReadOnly({
   useLoadNamespace("modules/coform");
   const t = useT("modules/coform");
 
+  const { me } = useCocolight();
+  const currentUserId = me?.id ?? null;
+
   const subFormsFields = useMemo(() => parseCoFormFields(formData), [formData]);
 
-  // Normaliser les données de réponse (déplacer les champs root-level dans leurs subforms)
+  // Normaliser les données de réponse (déplacer les champs root-level dans leurs
+  // subforms + extraire la valeur multi-eval de l'user courant si elle existe).
   const normalizedAnswers = useMemo(
-    () => normalizeAnswerData(answerData, subFormsFields) as AllStepsData,
-    [answerData, subFormsFields]
+    () => normalizeAnswerData(answerData, subFormsFields, currentUserId) as AllStepsData,
+    [answerData, subFormsFields, currentUserId]
   );
 
   if (!subFormsFields.length) {

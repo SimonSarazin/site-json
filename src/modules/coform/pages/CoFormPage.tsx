@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useLoaderData, useNavigate, useParams, useSearchParams } from "react-router";
+import { Helmet } from "@dr.pogodin/react-helmet";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { AlertCircle, Home, Info, Loader2 } from "lucide-react";
@@ -290,13 +291,20 @@ export default function CoFormPage() {
         setPageState({ view: "form", isEditMode: false });
     };
 
+    // Titre d'onglet basé sur le nom du form (disponible à partir d'ici car
+    // formData a passé les early-returns loading/error/no-data).
+    const documentTitle = formData?.name ?? t("coform.title");
+
     // Rendu de la page de remerciement
     if (pageState.view === "thankYou") {
         return (
             <div className="min-h-screen flex flex-col bg-background">
+                <Helmet>
+                    <title>{documentTitle}</title>
+                </Helmet>
                 <SiteHeader />
                 <main className="flex-1 py-8">
-                    <div className="container max-w-4xl mx-auto px-4">
+                    <div className="container max-w-5xl mx-auto px-4">
                         <CoFormThankYou
                             config={formData?.thankYou}
                             formName={formData?.name}
@@ -350,9 +358,12 @@ export default function CoFormPage() {
     if (showAnswerPicker && pageState.view === "form" && !pageState.isEditMode) {
         return (
             <div className="min-h-screen flex flex-col bg-background">
+                <Helmet>
+                    <title>{documentTitle}</title>
+                </Helmet>
                 <SiteHeader />
                 <main className="flex-1 py-8">
-                    <div className="container max-w-4xl mx-auto px-4">
+                    <div className="container max-w-5xl mx-auto px-4">
                         <CoFormAnswerPicker
                             formName={formData?.name}
                             formData={formData}
@@ -370,9 +381,12 @@ export default function CoFormPage() {
     // Rendu du formulaire avec garde d'accès
     return (
         <div className="min-h-screen flex flex-col bg-background">
+            <Helmet>
+                <title>{documentTitle}</title>
+            </Helmet>
             <SiteHeader />
             <main className="flex-1 py-8">
-                <div className="container max-w-4xl mx-auto px-4">
+                <div className="container max-w-5xl mx-auto px-4">
                     <CoFormAccessGuard
                         access={(isEditMode || answerIdFromUrl) ? null : access}
                         onEditExisting={handleEditExisting}
