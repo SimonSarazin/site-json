@@ -110,6 +110,8 @@ export default function FinanceSection({ id, props }: { id?: string; props: Fina
   const [restoringMilestoneId, setRestoringMilestoneId] = useState('');
   const [showClosedMilestones, setShowClosedMilestones] = useState(false);
 
+  console.log('Anatolelog 6',fundingData);
+
   const highlightAndScroll = (element: HTMLElement) => {
     element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     element.classList.add('ring-2', 'ring-primary', 'ring-offset-2', 'ring-offset-background');
@@ -133,7 +135,7 @@ export default function FinanceSection({ id, props }: { id?: string; props: Fina
     [data.milestones]
   );
 
-  const selectedProjectContextId = String(fundingData?.selectedProject?.id || id || '').trim();
+  const selectedProjectContextId = String(id || '').trim();
   const financeTotalFunding = Number(fundingData?.finance?.totalFunding ?? 0);
 
   const openEditMilestoneModal = (milestone: Milestone) => {

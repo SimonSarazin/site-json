@@ -121,11 +121,17 @@ export function useOrganizationProjectsWithAnswers({
           return [];
         };
 
+        console.log('Anatolelog 5',entity);
         const projectsResult = await searchableEntity.searchCostum({
           name: "",
           searchType: ["projects"],
           filters: {
-            [`parent.${entity.id}`]: { $exists: true },
+            "$or": {
+              "source.key": entity.slug,
+              "source.keys": entity.slug,
+              "reference.costum": entity.slug,
+              [`parent.${entity.id}`]: { $exists: true }
+            }
           },
           fields: [
             "id",

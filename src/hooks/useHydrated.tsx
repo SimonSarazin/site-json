@@ -1,9 +1,11 @@
-import { useSyncExternalStore } from "react";
-
-const subscribe = () => () => {};
-const getSnapshot = () => true;
-const getServerSnapshot = () => false;
+import { useEffect, useState } from "react";
 
 export function useHydrated() {
-  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
+
+  return hydrated;
 }
