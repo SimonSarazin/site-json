@@ -1188,6 +1188,10 @@
       "friday": "Friday",
       "saturday": "Saturday",
       "sunday": "Sunday"
+    },
+    "toast": {
+      "success": "Third-place created successfully",
+      "error": "Error creating the third-place"
     }
   },
   "ProfileRelated": {

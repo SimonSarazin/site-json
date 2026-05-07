@@ -1188,6 +1188,10 @@
       "friday": "Vendredi",
       "saturday": "Samedi",
       "sunday": "Dimanche"
+    },
+    "toast": {
+      "success": "Tiers-lieu créé avec succès",
+      "error": "Erreur lors de la création du tiers-lieu"
     }
   },
   "ProfileRelated": {
