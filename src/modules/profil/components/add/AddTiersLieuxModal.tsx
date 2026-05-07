@@ -3,6 +3,7 @@ import { useForm, useFieldArray, type Resolver, type FieldValues, type UseFormRe
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Plus, Trash2, Building2, MapPin, Image as ImageIcon, Share2, Globe, Clock, Phone, Video, FileText, X, Upload } from "lucide-react";
 import { useT } from "@/hooks/useT";
+import { useAddTiersLieu } from "../../hooks/useAddMutations";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +13,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -136,10 +137,11 @@ interface AddTiersLieuxModalProps {
   parent?: EntityTypes | null;
 }
 
-export function AddTiersLieuxModal({ open, onOpenChange }: AddTiersLieuxModalProps) {
+export function AddTiersLieuxModal({ open, onOpenChange, parent }: AddTiersLieuxModalProps) {
   const t = useT("modules/profil");
   const [currentStep, setCurrentStep] = useState(0);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const addMutation = useAddTiersLieu(parent);
+  const isSubmitting = addMutation.isPending;
 
   const form = useForm<AddTiersLieuxFormData>({
     resolver: zodResolver(addTiersLieuxSchema) as Resolver<AddTiersLieuxFormData>,
@@ -233,14 +235,28 @@ export function AddTiersLieuxModal({ open, onOpenChange }: AddTiersLieuxModalPro
   };
 
   const onSubmit = async (data: AddTiersLieuxFormData) => {
-    setIsSubmitting(true);
-    console.log(data);
-    await new Promise((r) => setTimeout(r, 500));
-    setIsSubmitting(false);
-    handleClose();
+    try {
+      await addMutation.mutateAsync(data);
+      handleClose();
+    } catch (e) {
+      // L'erreur est déjà affichée par le toast (via useMutationWithToast)
+    }
   };
 
-  const goNext = () => setCurrentStep((s) => Math.min(s + 1, STEPS.length - 1));
+  const STEP_REQUIRED_FIELDS: Record<string, Array<keyof AddTiersLieuxFormData>> = {
+    info: ["name", "shortDescription", "managementType"],
+    contact: ["email"],
+    media: [],
+    online: [],
+    details: [],
+  };
+
+  const goNext = async () => {
+    const fields = STEP_REQUIRED_FIELDS[STEPS[currentStep].id] ?? [];
+    const isValid = fields.length === 0 ? true : await form.trigger(fields);
+    if (!isValid) return;
+    setCurrentStep((s) => Math.min(s + 1, STEPS.length - 1));
+  };
   const goPrev = () => setCurrentStep((s) => Math.max(s - 1, 0));
 
   return (
@@ -308,6 +324,7 @@ export function AddTiersLieuxModal({ open, onOpenChange }: AddTiersLieuxModalPro
                         <FormControl>
                           <Input placeholder={t("AddTiersLieux.fields.namePlaceholder")} {...field} />
                         </FormControl>
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
@@ -343,19 +360,31 @@ export function AddTiersLieuxModal({ open, onOpenChange }: AddTiersLieuxModalPro
                       <FormField
                         control={form.control}
                         name="openingYear"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                placeholder={t("AddTiersLieux.fields.year")}
-                                min={1900}
-                                max={new Date().getFullYear() + 5}
-                                {...field}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
+                        render={({ field }) => {
+                          const currentYear = new Date().getFullYear();
+                          const years = Array.from(
+                            { length: currentYear + 5 - 1900 + 1 },
+                            (_, i) => currentYear + 5 - i
+                          );
+                          return (
+                            <FormItem>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder={t("AddTiersLieux.fields.year")} />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent className="max-h-60">
+                                  {years.map((y) => (
+                                    <SelectItem key={y} value={String(y)}>
+                                      {y}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </FormItem>
+                          );
+                        }}
                       />
                     </div>
                   </div>
@@ -369,6 +398,7 @@ export function AddTiersLieuxModal({ open, onOpenChange }: AddTiersLieuxModalPro
                         <FormControl>
                           <Textarea rows={2} {...field} />
                         </FormControl>
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
@@ -406,6 +436,7 @@ export function AddTiersLieuxModal({ open, onOpenChange }: AddTiersLieuxModalPro
                             ))}
                           </SelectContent>
                         </Select>
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
@@ -507,6 +538,7 @@ export function AddTiersLieuxModal({ open, onOpenChange }: AddTiersLieuxModalPro
                           <FormControl>
                             <Input type="email" placeholder={t("AddTiersLieux.fields.emailPlaceholder")} {...field} />
                           </FormControl>
+                          <FormMessage />
                         </FormItem>
                       )}
                     />

@@ -235,3 +235,179 @@ export function useAddPoi(entity?: EntityTypes | null) {
     },
   });
 }
+
+const TIERS_LIEU_COSTUM = {
+  costumSlug: "navigatorDesTierslieux",
+  costumEditMode: false,
+  costumId: "649ed498f93ee7202e6c8b12",
+  costumType: "projects",
+  mainTag: "TiersLieux",
+  compagnon: "Compagnon France Tiers-Lieux",
+} as const;
+
+interface AddTiersLieuFormData {
+  name: string;
+  openingMonth?: string;
+  openingYear?: string;
+  shortDescription?: string;
+  structureName?: string;
+  managementType?: string;
+  managementTypeOther?: string;
+  family?: string[];
+  familyOther?: string;
+  surfaceBuilt?: string;
+  surfaceOutdoor?: string;
+  // Adresse
+  addressCountry?: string;
+  addressLocality?: string;
+  postalCode?: string;
+  streetAddress?: string;
+  localityId?: string;
+  // Médias
+  logo?: string;
+  photos?: string[];
+  videoUrl?: string;
+  // Présence en ligne
+  websiteUrl?: string;
+  socialLinks?: Array<{ platform: string; url: string }>;
+  // Horaires
+  hours?: Record<string, { enabled: boolean; start: string; end: string }>;
+  // Contact
+  email: string;
+  phone?: string;
+  // Description
+  description?: string;
+}
+
+const DAY_TO_DOW: Record<string, string> = {
+  monday: "Mo",
+  tuesday: "Tu",
+  wednesday: "We",
+  thursday: "Th",
+  friday: "Fr",
+  saturday: "Sa",
+  sunday: "Su",
+};
+
+function buildOpeningHoursPayload(hours?: AddTiersLieuFormData["hours"]) {
+  if (!hours) return [];
+  return Object.entries(hours)
+    .filter(([, h]) => h.enabled)
+    .map(([day, h]) => ({
+      dayOfWeek: DAY_TO_DOW[day] ?? day,
+      hours: [{ opens: h.start, closes: h.end }],
+    }));
+}
+
+function buildOpeningDatePayload(month?: string, year?: string): string | undefined {
+  if (!month && !year) return undefined;
+  if (month && year) return `01/${month}/${year}`;
+  return month || year;
+}
+
+
+export function useAddTiersLieu(entity?: EntityTypes | null) {
+  const { me } = useCocolight();
+  const navigate = useNavigate();
+  const targetEntity = entity || me;
+
+  return useMutationWithToast<{ organization: Organization }, AddTiersLieuFormData>({
+    mutationFn: async (data) => {
+      if (!targetEntity) {
+        throw new Error("No entity provided");
+      }
+
+      // Construire le payload backend (forme attendue par /co2/element/save)
+      const transformedAddress = transformFormDataWithAddress({
+        addressCountry: data.addressCountry,
+        addressLocality: data.addressLocality,
+        postalCode: data.postalCode,
+        streetAddress: data.streetAddress,
+        localityId: data.localityId,
+      });
+
+      // ID en dur pour reproduire le test Postman
+      const generatedId = "69f858c451e74c3967050385";
+
+      const payload: Record<string, unknown> = {
+        // Champs requis par le schéma AJV ADD_TIERS_LIEU (permissif)
+        id: generatedId,
+        collection: "organizations",
+        key: "organization",
+        name: data.name,
+        role: "admin",
+        ...transformedAddress,
+        // Description / contenu
+        ...(data.shortDescription ? { shortDescription: data.shortDescription } : {}),
+        ...(data.description ? { description: data.description } : {}),
+        // Champs custom navigatorDesTierslieux
+        ...(buildOpeningDatePayload(data.openingMonth, data.openingYear)
+          ? { openingDate: buildOpeningDatePayload(data.openingMonth, data.openingYear) }
+          : {}),
+        ...(data.structureName ? { holderOrganization: data.structureName } : {}),
+        ...(data.managementType
+          ? { manageModel: data.managementType === "autre" && data.managementTypeOther ? data.managementTypeOther : data.managementType }
+          : {}),
+        ...(data.family && data.family.length > 0
+          ? { typePlace: data.family.join(", ") }
+          : {}),
+        ...(data.familyOther ? { typePlaceOther: data.familyOther } : {}),
+        ...(data.surfaceBuilt ? { buildingSurfaceArea: Number(data.surfaceBuilt) } : {}),
+        ...(data.surfaceOutdoor ? { siteSurfaceArea: Number(data.surfaceOutdoor) } : {}),
+        // Médias
+        ...(data.logo ? { profilImageUrl: data.logo } : {}),
+        ...(data.photos && data.photos.length > 0 ? { photos: data.photos } : {}),
+        ...(data.videoUrl ? { video: [data.videoUrl] } : {}),
+        // Site web + réseaux
+        ...(data.websiteUrl ? { url: data.websiteUrl } : {}),
+        ...(data.socialLinks && data.socialLinks.length > 0
+          ? {
+              socialNetwork: data.socialLinks.filter((s) => s.platform && s.url),
+            }
+          : {}),
+        // Contact
+        email: data.email,
+        ...(data.phone ? { telephone: data.phone } : {}),
+        // Horaires
+        ...((() => {
+          const oh = buildOpeningHoursPayload(data.hours);
+          return oh.length > 0 ? { openingHours: oh } : {};
+        })()),
+        // Constantes navigatorDesTierslieux
+        mainTag: TIERS_LIEU_COSTUM.mainTag,
+        compagnon: TIERS_LIEU_COSTUM.compagnon,
+        preferences: {
+          isOpenData: true,
+          isOpenEdition: true,
+        },
+        source: {
+          insertOrign: "costum",
+          keys: [TIERS_LIEU_COSTUM.costumSlug],
+          key: TIERS_LIEU_COSTUM.costumSlug,
+        },
+        costumSlug: TIERS_LIEU_COSTUM.costumSlug,
+        costumEditMode: TIERS_LIEU_COSTUM.costumEditMode,
+        costumId: TIERS_LIEU_COSTUM.costumId,
+        costumType: TIERS_LIEU_COSTUM.costumType,
+      };
+
+      const targetWithEndpoint = targetEntity as unknown as {
+        endpointApi: { addTiersLieu: (data: Record<string, unknown>) => Promise<unknown> };
+      };
+      await targetWithEndpoint.endpointApi.addTiersLieu(payload);
+
+      const organization = await targetEntity.organization({ id: generatedId }) as Organization;
+
+      return { organization };
+    },
+    namespace: "modules/profil",
+    successKey: "AddTiersLieux.toast.success",
+    errorKey: "AddTiersLieux.toast.error",
+    invalidateQueries: targetEntity ? [QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(targetEntity.slug)] : [],
+    onSuccessCallback: (data) => {
+      if (data.organization.slug) {
+        navigate(`/profil/${data.organization.slug}`);
+      }
+    },
+  });
+}
