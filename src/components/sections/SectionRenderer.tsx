@@ -84,6 +84,7 @@ const LazySections: {
   finance: lazy(() => import("./FinanceSection")),
   "actions-summary": lazy(() => import("./ActionsSummarySection")),
   "finance-summary": lazy(() => import("./FinanceSummarySection")),
+  siteList: lazy(() => import("./SiteListSection")),
 };
 
 // Fallback skeleton pour les sections en cours de chargement
