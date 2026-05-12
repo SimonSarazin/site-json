@@ -1,6 +1,6 @@
 import { type FieldValues, type UseFormReturn } from "react-hook-form";
 import { useT } from "@/hooks/useT";
-import { MapPin, Loader2, Trash2 } from "lucide-react";
+import { MapPin, Loader2, Trash2, ChevronsUpDown, Check } from "lucide-react";
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -16,6 +16,9 @@ import { TranslatedFormMessage } from "./fields/TranslatedFormMessage";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 
 interface BanFeature {
   properties: { id: string; name: string; postcode?: string; city?: string; context?: string };
@@ -386,30 +389,63 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
         )}
       </div>
 
-      {/* Country */}
+      {/* Country (combobox avec recherche) */}
       <FormField
         control={form.control}
         name="addressCountry"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>{t("ProfileEdit.fields.addressCountry.label")}</FormLabel>
-            <Select onValueChange={field.onChange} value={field.value || ""}>
-              <FormControl>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder={t("ProfileEdit.fields.addressCountry.placeholder")} />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {CountryList.map((c) => (
-                  <SelectItem key={c.code} value={c.code}>
-                    {c.nameFr}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <TranslatedFormMessage />
-          </FormItem>
-        )}
+        render={({ field }) => {
+          const selected = CountryList.find((c) => c.code === field.value);
+          return (
+            <FormItem className="flex flex-col">
+              <FormLabel>{t("ProfileEdit.fields.addressCountry.label")}</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      className={cn(
+                        "w-full justify-between font-normal",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      {selected
+                        ? selected.nameFr
+                        : t("ProfileEdit.fields.addressCountry.placeholder")}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder={t("ProfileEdit.fields.addressCountry.placeholder")} />
+                    <CommandList>
+                      <CommandEmpty>Aucun pays trouvé.</CommandEmpty>
+                      <CommandGroup>
+                        {CountryList.map((c) => (
+                          <CommandItem
+                            key={c.code}
+                            value={`${c.nameFr} ${c.code}`}
+                            onSelect={() => field.onChange(c.code)}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                field.value === c.code ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            {c.nameFr}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              <TranslatedFormMessage />
+            </FormItem>
+          );
+        }}
       />
 
       {/* City autocomplete */}
