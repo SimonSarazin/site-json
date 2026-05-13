@@ -289,7 +289,7 @@
             "description": {
               "fr": "Les événements autour de tiers-lieux.org à venir"
             },
-            "path": "#"
+            "path": "/evenements"
           },
           {
             "label": {
@@ -298,7 +298,7 @@
             "description": {
               "fr": "La communauté qui anime cette plateforme"
             },
-            "path": "#"
+            "path": "/communaute"
           }
         ]
       }
@@ -1356,6 +1356,159 @@
               "card": {
                 "type": "tiers-lieux",
                 "variant": "tiers-lieux",
+                "detailsMode": "drawer"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/communaute",
+      "title": {
+        "fr": "Communauté - Le réseau social des tiers-lieux",
+        "en": "Community - The third places social network"
+      },
+      "layout": "default",
+      "sections": [
+        {
+          "type": "searchProStatic",
+          "id": "section-communaute",
+          "props": {
+            "customHeader": {
+              "title": {
+                "fr": "La communauté",
+                "en": "The community"
+              },
+              "showMapButton": false
+            },
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "baseParams": {
+              "defaultTypes": [
+                "citoyens",
+                "NGO",
+                "LocalBusiness",
+                "Group",
+                "GovernmentOrganization",
+                "Cooperative"
+              ],
+              "indexStepList": 30,
+              "notSourceKey": true,
+              "fediverse": false,
+              "contextId": "649ed498f93ee7202e6c8b12",
+              "contextType": "projects",
+              "costumSlug": "navigatorDesTierslieux",
+              "costumEditMode": false,
+              "defaultFilters": {
+                "preferences.toBeValidated.franceTierslieux": {
+                  "$exists": false
+                },
+                "links.memberOf.5ec3b895690864db108b46b8": {
+                  "$exists": true
+                },
+                "links.memberOf.5ec3b895690864db108b46b8.toBeValidated": {
+                  "$exists": false
+                },
+                "links.memberOf.5ec3b895690864db108b46b8.isInviting": {
+                  "$exists": false
+                }
+              },
+              "defaultSortBy": {
+                "updated": -1
+              },
+              "defaultFields": [
+                "name",
+                "profilMediumImageUrl",
+                "profilThumbImageUrl",
+                "slug",
+                "address",
+                "shortDescription",
+                "tags"
+              ]
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3,
+                "xl": 4
+              },
+              "card": {
+                "type": "default",
+                "variant": "profile",
+                "detailsMode": "drawer"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/evenements",
+      "title": {
+        "fr": "Événements - Le réseau social des tiers-lieux",
+        "en": "Events - The third places social network"
+      },
+      "layout": "default",
+      "sections": [
+        {
+          "type": "searchProStatic",
+          "id": "section-evenements",
+          "props": {
+            "customHeader": {
+              "title": {
+                "fr": "Les événements autour de tiers-lieux.org",
+                "en": "events around tiers-lieux.org"
+              },
+              "showMapButton": true
+            },
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": true,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "showDetailedViewToggle": true,
+            "baseParams": {
+              "defaultTypes": [
+                "events"
+              ],
+              "indexStepList": 20,
+              "notSourceKey": true,
+              "fediverse": false,
+              "costumId": "649ed498f93ee7202e6c8b12",
+              "costumEditMode": false,
+              "defaultSortBy": {
+                "startDate": 1
+              },
+              "defaultFields": [
+                "name",
+                "profilMediumImageUrl",
+                "profilThumbImageUrl",
+                "slug",
+                "address",
+                "geo",
+                "startDate",
+                "endDate",
+                "shortDescription",
+                "tags"
+              ]
+            },
+            "list": {
+              "columns": {
+                "sm": 1,
+                "md": 2,
+                "lg": 3,
+                "xl": 4
+              },
+              "card": {
+                "type": "event",
+                "variant": "event",
                 "detailsMode": "drawer"
               }
             }
