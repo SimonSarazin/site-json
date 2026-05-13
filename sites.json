@@ -78,5 +78,10 @@
     "slug": "saintJoseph",
     "config": "config.prod.commune-transparente.json",
     "css": "index-commune-transparente"
+  },
+  {
+    "slug": "equipementsSportifs974",
+    "config": "config.prod.equipements-Sportifs.json",
+    "css": "index-rezo-la-mer"
   }
 ]
