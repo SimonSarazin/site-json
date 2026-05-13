@@ -70,6 +70,13 @@
           "en": "Training"
         },
         "path": "/formation"
+      },
+      {
+        "label": {
+          "fr": "Contact",
+          "en": "Contact"
+        },
+        "path": "/contact"
       }
     ],
     "navVisibleOnlyForListedPages": true,
@@ -1051,7 +1058,7 @@
                   "en": "Submit a structure"
                 },
                 "icon": "plus",
-                "action": "add-structure",
+                "action": "add-organization",
                 "variant": "primary"
               }
             ],
@@ -1928,6 +1935,24 @@
               "fr": "Explorez les activités sport santé labellisées à La Réunion et trouvez celle qui vous convient !",
               "en": "Explore the labeled sport health activities in Réunion and find the one that suits you!"
             },
+            "buttons": [
+              {   
+                "label": {
+                  "fr": "Ajouter une créneau",
+                  "en": "Add a slot"
+                },
+                "path": "/",
+                "variant": "primary"
+              },
+              {
+                "label": {
+                  "fr": "Voir les équipement sportifs",
+                  "en": "View sports facilities"
+                },
+                "href": "/equipements-sportifs",
+                "variant": "outline"
+              }
+            ],
             "showFilters": true,
             "showSearch": true,
             "dropdownFilters": [
@@ -2341,8 +2366,7 @@
             ],
             "searchPlaceholder": {
               "fr": "Rechercher une créneaux...",
-              "en": "Search for a slot...",
-              "field": "answers.sportSanteBienetre2172025_854_0.sportSanteBienetre2172025_854_0mdegc9sgox76p87n27"
+              "en": "Search for a slot..."
             } 
           }
         },
@@ -2384,8 +2408,1533 @@
           }
         }
       ]
-    }
+    },
+    {
+      "path": "/formation",
+      "title": {
+        "fr": "Formation ",
+        "en": ""
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "hero-ssbe",
+          "id": "formation-hero",
+          "props": {
+            "headline": {
+              "fr": "Développez vos compétences par la formation régionale SSBE !",
+              "en": "Develop your skills with the regional SSBE training!"
+            },
+            "subhead": {
+              "fr": "La dynamique régionale SSBE s'appuie sur 4 axes de travail, dont l'offre de formation. Le comité technique formation structure une offre de qualité avec les organismes labellisés SSBE.",
+              "en": "The regional SSBE dynamic is based on 4 areas of work, including the training offer. The technical training committee structures a quality offer with SSBE labeled organizations."
+            },
+            "backgroundImage": "images/sportSanteBienetre/hero3.jpg",
+            "ctaButtons": [
+              {
+                "label": {
+                  "fr": "Les offres de formation",
+                  "en": "Training offers"
+                },
+                "href": "/listing-formations",
+                "variant": "primary"
+              }
+            ]
+          }
+        },
+        {
+          "type" :"html",
+          "id": "formation-html-section",
+          "props": {
+            "html": "<h2 class=\"font-display text-3xl md:text-4xl font-bold text-center text-foreground mb-4\">Organismes de <span class=\"text-gradient\">formation labellisé</span></h2>",
+            "className": "mb-12"
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "section-organisme-cards",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "showRole": true,
+            "width": "container",
+            "baseParams": {
+              "defaultTypes": [
+                "organizations"
+              ],
+              "defaultFilters": {
+                "$or": {
+                  "source.key": "sportSanteBienetre",
+                  "source.keys": "sportSanteBienetre",
+                  "reference.costum": "sportSanteBienetre"
+                },
+                "tags" : ["Labellisé"]
+              }
+            },
+            "list": {
+              "columns": {
+                "sm": 2,
+                "md": 2,
+                "lg": 2,
+                "xl": 2
+              },
+              "card": {
+                "type": "rezo-la-mer",
+                "variant": "ssbe",
+                "detailsMode": "drawer"
+              }
+            }
+          }
+        }
+       
 
+      ]
+    },
+    {
+      "path": "/listing-formations",
+      "title": {
+        "fr": "Offres de formation - Sport Santé Bien-être",
+        "en": "Training offers - Sport Health Wellness"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "listing-formations-header",
+          "props": {
+            "headline": {
+              "fr": "Découvrez les offres de formation labellisées SSBE",
+              "en": "Discover the SSBE labeled training offers" 
+            },
+            "searchPlaceholder": {
+              "fr": "Rechercher une formation...",
+              "en": "Search for a training..."
+            },
+            "showSearch": true,
+            "showFilters": true
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "section-formation-cards",
+          "props": {
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": false,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "showRole": true,
+            "width": "container",
+            "baseParams": {
+              "defaultTypes": [
+                "projects"
+              ],
+              "defaultFilters": {
+                "$or": {
+                  "source.key": "sportSanteBienetre",
+                  "source.keys": "sportSanteBienetre",
+                  "reference.costum": "sportSanteBienetre"
+                },
+                "tags" : ["Formation"]
+              }
+            },
+            "list": {
+              "columns": {
+                "sm": 2,
+                "md": 3,
+                "lg": 3,
+                "xl": 4
+              },
+              "card": {
+                "type": "rezo-la-mer",
+                "variant": "rezo-la-mer",
+                "detailsMode": "drawer"
+              }
+            }
+          }
+        } 
+      ]
+    },
+    {
+      "path": "/equipements-sportifs",
+      "title": {
+        "fr": "Équipements sportifs - Sport Santé Bien-être",
+        "en": "Sports facilities - Sport Health Wellness"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "title-with-filters-rezo-la-mer",
+          "id": "listing-poi-header",
+          "props": {
+            "headline": {
+              "fr": "Découvrez les équipements sportifs",
+              "en": "Discover sports facilities" 
+            },
+            "buttons": [
+              {
+                "label": {
+                  "fr": "Ajouter équipement sportif",
+                  "en": "Add sports facility"
+                },
+                "action": "add-poi",
+                "variant": "outline"
+              }
+            ],
+            "searchPlaceholder": {
+              "fr": "Rechercher un équipement...",
+              "en": "Search for a facility..."
+            },
+            "showFilters": true,
+            "showSearch": true,
+            "dropdownFilters": [
+              {
+                "id": "poi-postalCode",
+                "label": {
+                  "fr": "Code postal",
+                  "en": "Postal code"
+                },
+                "field": "address.postalCode",
+                "multiple": false,
+                "options": [
+                  {
+                    "id": "97400",
+                    "value": "97400",
+                    "label": {
+                      "fr": "97400",
+                      "en": "97400"
+                    }
+                  },
+                  {
+                    "id": "97410",
+                    "value": "97410",
+                    "label": {
+                      "fr": "97410",
+                      "en": "97410"
+                    }
+                  },
+                  {
+                    "id": "97411",
+                    "value": "97411",
+                    "label": {
+                      "fr": "97411",
+                      "en": "97411"
+                    }
+                  },
+                  {
+                    "id": "97412",
+                    "value": "97412",
+                    "label": {
+                      "fr": "97412",
+                      "en": "97412"
+                    }
+                  },
+                  {
+                    "id": "97416",
+                    "value": "97416",
+                    "label": {
+                      "fr": "97416",
+                      "en": "97416"
+                    }
+                  },
+                  {
+                    "id": "97418",
+                    "value": "97418",
+                    "label": {
+                      "fr": "97418",
+                      "en": "97418"
+                    }
+                  },
+                  {
+                    "id": "97419",
+                    "value": "97419",
+                    "label": {
+                      "fr": "97419",
+                      "en": "97419"
+                    }
+                  },
+                  {
+                    "id": "97420",
+                    "value": "97420",
+                    "label": {
+                      "fr": "97420",
+                      "en": "97420"
+                    }
+                  },
+                  {
+                    "id": "97421",
+                    "value": "97421",
+                    "label": {
+                      "fr": "97421",
+                      "en": "97421"
+                    }
+                  },
+                  {
+                    "id": "97426",
+                    "value": "97426",
+                    "label": {
+                      "fr": "97426",
+                      "en": "97426"
+                    }
+                  },
+                  {
+                    "id": "97427",
+                    "value": "97427",
+                    "label": {
+                      "fr": "97427",
+                      "en": "97427"
+                    }
+                  },
+                  {
+                    "id": "97429",
+                    "value": "97429",
+                    "label": {
+                      "fr": "97429",
+                      "en": "97429"
+                    }
+                  },
+                  {
+                    "id": "97430",
+                    "value": "97430",
+                    "label": {
+                      "fr": "97430",
+                      "en": "97430"
+                    }
+                  },
+                  {
+                    "id": "97431",
+                    "value": "97431",
+                    "label": {
+                      "fr": "97431",
+                      "en": "97431"
+                    }
+                  },
+                  {
+                    "id": "97433",
+                    "value": "97433",
+                    "label": {
+                      "fr": "97433",
+                      "en": "97433"
+                    }
+                  },
+                  {
+                    "id": "97434",
+                    "value": "97434",
+                    "label": {
+                      "fr": "97434",
+                      "en": "97434"
+                    }
+                  },
+                  {
+                    "id": "97435",
+                    "value": "97435",
+                    "label": {
+                      "fr": "97435",
+                      "en": "97435"
+                    }
+                  },
+                  {
+                    "id": "97436",
+                    "value": "97436",
+                    "label": {
+                      "fr": "97436",
+                      "en": "97436"
+                    }
+                  },
+                  {
+                    "id": "97438",
+                    "value": "97438",
+                    "label": {
+                      "fr": "97438",
+                      "en": "97438"
+                    }
+                  },
+                  {
+                    "id": "97440",
+                    "value": "97440",
+                    "label": {
+                      "fr": "97440",
+                      "en": "97440"
+                    }
+                  },
+                  {
+                    "id": "97450",
+                    "value": "97450",
+                    "label": {
+                      "fr": "97450",
+                      "en": "97450"
+                    }
+                  },
+                  {
+                    "id": "97460",
+                    "value": "97460",
+                    "label": {
+                      "fr": "97460",
+                      "en": "97460"
+                    }
+                  },
+                  {
+                    "id": "97470",
+                    "value": "97470",
+                    "label": {
+                      "fr": "97470",
+                      "en": "97470"
+                    }
+                  },
+                  {
+                    "id": "97480",
+                    "value": "97480",
+                    "label": {
+                      "fr": "97480",
+                      "en": "97480"
+                    }
+                  },
+                  {
+                    "id": "97490",
+                    "value": "97490",
+                    "label": {
+                      "fr": "97490",
+                      "en": "97490"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "poi-category",
+                "label": {
+                  "fr": "Catégorie",
+                  "en": "Category"
+                },
+                "field": "category",
+                "multiple": true,
+                "options": [
+                  {
+                    "id": "multisports-city-stades",
+                    "value": "Multisports/City-stades",
+                    "label": {
+                      "fr": "Multisports/City-stades",
+                      "en": "Multisports/City-stades"
+                    }
+                  },
+                  {
+                    "id": "terrain-de-basket-ball",
+                    "value": "Terrain de basket-ball",
+                    "label": {
+                      "fr": "Terrain de basket-ball",
+                      "en": "Terrain de basket-ball"
+                    }
+                  },
+                  {
+                    "id": "terrain-de-football",
+                    "value": "Terrain de football",
+                    "label": {
+                      "fr": "Terrain de football",
+                      "en": "Terrain de football"
+                    }
+                  },
+                  {
+                    "id": "salles-polyvalentes-des-fetes-non-specialisees",
+                    "value": "Salles polyvalentes / des fêtes / non spécialisées",
+                    "label": {
+                      "fr": "Salles polyvalentes / des fêtes / non spécialisées",
+                      "en": "Salles polyvalentes / des fêtes / non spécialisées"
+                    }
+                  },
+                  {
+                    "id": "salle-de-musculation-cardiotraining",
+                    "value": "Salle de musculation/cardiotraining",
+                    "label": {
+                      "fr": "Salle de musculation/cardiotraining",
+                      "en": "Salle de musculation/cardiotraining"
+                    }
+                  },
+                  {
+                    "id": "salle-multisports-gymnase",
+                    "value": "Salle multisports (gymnase)",
+                    "label": {
+                      "fr": "Salle multisports (gymnase)",
+                      "en": "Salle multisports (gymnase)"
+                    }
+                  },
+                  {
+                    "id": "terrain-de-handball",
+                    "value": "Terrain de handball",
+                    "label": {
+                      "fr": "Terrain de handball",
+                      "en": "Terrain de handball"
+                    }
+                  },
+                  {
+                    "id": "terrain-de-petanque",
+                    "value": "Terrain de pétanque",
+                    "label": {
+                      "fr": "Terrain de pétanque",
+                      "en": "Terrain de pétanque"
+                    }
+                  },
+                  {
+                    "id": "stade-d-athletisme",
+                    "value": "Stade d’athlétisme",
+                    "label": {
+                      "fr": "Stade d’athlétisme",
+                      "en": "Stade d’athlétisme"
+                    }
+                  },
+                  {
+                    "id": "site-d-activites-aquatiques-et-nautiques",
+                    "value": "Site d'activités aquatiques et nautiques",
+                    "label": {
+                      "fr": "Site d'activités aquatiques et nautiques",
+                      "en": "Site d'activités aquatiques et nautiques"
+                    }
+                  },
+                  {
+                    "id": "court-de-tennis",
+                    "value": "Court de tennis",
+                    "label": {
+                      "fr": "Court de tennis",
+                      "en": "Court de tennis"
+                    }
+                  },
+                  {
+                    "id": "bassin-mixte-de-natation",
+                    "value": "Bassin mixte de natation",
+                    "label": {
+                      "fr": "Bassin mixte de natation",
+                      "en": "Bassin mixte de natation"
+                    }
+                  },
+                  {
+                    "id": "site-de-plongee",
+                    "value": "Site de plongée",
+                    "label": {
+                      "fr": "Site de plongée",
+                      "en": "Site de plongée"
+                    }
+                  },
+                  {
+                    "id": "canyon",
+                    "value": "Canyon",
+                    "label": {
+                      "fr": "Canyon",
+                      "en": "Canyon"
+                    }
+                  },
+                  {
+                    "id": "dojo-salle-d-arts-martiaux",
+                    "value": "Dojo / Salle d'arts martiaux",
+                    "label": {
+                      "fr": "Dojo / Salle d'arts martiaux",
+                      "en": "Dojo / Salle d'arts martiaux"
+                    }
+                  },
+                  {
+                    "id": "parcours-sportif-sante",
+                    "value": "Parcours sportif/santé",
+                    "label": {
+                      "fr": "Parcours sportif/santé",
+                      "en": "Parcours sportif/santé"
+                    }
+                  },
+                  {
+                    "id": "boucle-de-randonnee",
+                    "value": "Boucle de randonnée",
+                    "label": {
+                      "fr": "Boucle de randonnée",
+                      "en": "Boucle de randonnée"
+                    }
+                  },
+                  {
+                    "id": "structure-artificielle-d-escalade",
+                    "value": "Structure Artificielle d'Escalade",
+                    "label": {
+                      "fr": "Structure Artificielle d'Escalade",
+                      "en": "Structure Artificielle d'Escalade"
+                    }
+                  },
+                  {
+                    "id": "site-de-peche",
+                    "value": "Site de pêche",
+                    "label": {
+                      "fr": "Site de pêche",
+                      "en": "Site de pêche"
+                    }
+                  },
+                  {
+                    "id": "parcours-d-obstacles",
+                    "value": "Parcours d'obstacles",
+                    "label": {
+                      "fr": "Parcours d'obstacles",
+                      "en": "Parcours d'obstacles"
+                    }
+                  },
+                  {
+                    "id": "refuge-de-montagne",
+                    "value": "Refuge de montagne",
+                    "label": {
+                      "fr": "Refuge de montagne",
+                      "en": "Refuge de montagne"
+                    }
+                  },
+                  {
+                    "id": "salle-de-danse",
+                    "value": "Salle de danse",
+                    "label": {
+                      "fr": "Salle de danse",
+                      "en": "Salle de danse"
+                    }
+                  },
+                  {
+                    "id": "carriere",
+                    "value": "Carrière",
+                    "label": {
+                      "fr": "Carrière",
+                      "en": "Carrière"
+                    }
+                  },
+                  {
+                    "id": "terrain-de-kayak-polo",
+                    "value": "Terrain de kayak polo",
+                    "label": {
+                      "fr": "Terrain de kayak polo",
+                      "en": "Terrain de kayak polo"
+                    }
+                  },
+                  {
+                    "id": "aire-de-saut",
+                    "value": "Aire de saut",
+                    "label": {
+                      "fr": "Aire de saut",
+                      "en": "Aire de saut"
+                    }
+                  },
+                  {
+                    "id": "mur-a-gauche",
+                    "value": "Mur à gauche",
+                    "label": {
+                      "fr": "Mur à gauche",
+                      "en": "Mur à gauche"
+                    }
+                  },
+                  {
+                    "id": "piste-d-athletisme-isolee",
+                    "value": "Piste d'athlétisme isolée",
+                    "label": {
+                      "fr": "Piste d'athlétisme isolée",
+                      "en": "Piste d'athlétisme isolée"
+                    }
+                  },
+                  {
+                    "id": "bassin-sportif-de-natation",
+                    "value": "Bassin sportif de natation",
+                    "label": {
+                      "fr": "Bassin sportif de natation",
+                      "en": "Bassin sportif de natation"
+                    }
+                  },
+                  {
+                    "id": "trinquet",
+                    "value": "Trinquet",
+                    "label": {
+                      "fr": "Trinquet",
+                      "en": "Trinquet"
+                    }
+                  },
+                  {
+                    "id": "aire-d-atterrissage",
+                    "value": "Aire d'atterrissage",
+                    "label": {
+                      "fr": "Aire d'atterrissage",
+                      "en": "Aire d'atterrissage"
+                    }
+                  },
+                  {
+                    "id": "courses-sur-piste",
+                    "value": "Courses sur piste",
+                    "label": {
+                      "fr": "Courses sur piste",
+                      "en": "Courses sur piste"
+                    }
+                  },
+                  {
+                    "id": "salle-de-boxe",
+                    "value": "Salle de boxe",
+                    "label": {
+                      "fr": "Salle de boxe",
+                      "en": "Salle de boxe"
+                    }
+                  },
+                  {
+                    "id": "port-de-plaisance",
+                    "value": "Port de plaisance",
+                    "label": {
+                      "fr": "Port de plaisance",
+                      "en": "Port de plaisance"
+                    }
+                  },
+                  {
+                    "id": "terrain-de-boules",
+                    "value": "Terrain de boules",
+                    "label": {
+                      "fr": "Terrain de boules",
+                      "en": "Terrain de boules"
+                    }
+                  },
+                  {
+                    "id": "anneau-piste-de-cyclisme",
+                    "value": "Anneau / piste de cyclisme",
+                    "label": {
+                      "fr": "Anneau / piste de cyclisme",
+                      "en": "Anneau / piste de cyclisme"
+                    }
+                  },
+                  {
+                    "id": "aire-mixte-decollage-et-atterissage",
+                    "value": "Aire mixte (décollage et atterissage)",
+                    "label": {
+                      "fr": "Aire mixte (décollage et atterissage)",
+                      "en": "Aire mixte (décollage et atterissage)"
+                    }
+                  },
+                  {
+                    "id": "terrain-de-soccer",
+                    "value": "Terrain de soccer",
+                    "label": {
+                      "fr": "Terrain de soccer",
+                      "en": "Terrain de soccer"
+                    }
+                  },
+                  {
+                    "id": "piste-de-kart",
+                    "value": "Piste de kart",
+                    "label": {
+                      "fr": "Piste de kart",
+                      "en": "Piste de kart"
+                    }
+                  },
+                  {
+                    "id": "bassin-ludique-de-natation",
+                    "value": "Bassin ludique de natation",
+                    "label": {
+                      "fr": "Bassin ludique de natation",
+                      "en": "Bassin ludique de natation"
+                    }
+                  },
+                  {
+                    "id": "terrain-mixte",
+                    "value": "Terrain mixte",
+                    "label": {
+                      "fr": "Terrain mixte",
+                      "en": "Terrain mixte"
+                    }
+                  },
+                  {
+                    "id": "salle-de-cours-collectifs",
+                    "value": "Salle de cours collectifs",
+                    "label": {
+                      "fr": "Salle de cours collectifs",
+                      "en": "Salle de cours collectifs"
+                    }
+                  },
+                  {
+                    "id": "aire-de-decollage",
+                    "value": "Aire de décollage",
+                    "label": {
+                      "fr": "Aire de décollage",
+                      "en": "Aire de décollage"
+                    }
+                  },
+                  {
+                    "id": "salle-d-escrime",
+                    "value": "Salle d'escrime",
+                    "label": {
+                      "fr": "Salle d'escrime",
+                      "en": "Salle d'escrime"
+                    }
+                  },
+                  {
+                    "id": "site-d-escalade-en-falaise",
+                    "value": "Site d'escalade en falaise",
+                    "label": {
+                      "fr": "Site d'escalade en falaise",
+                      "en": "Site d'escalade en falaise"
+                    }
+                  },
+                  {
+                    "id": "piste-de-descente",
+                    "value": "Piste de descente",
+                    "label": {
+                      "fr": "Piste de descente",
+                      "en": "Piste de descente"
+                    }
+                  },
+                  {
+                    "id": "site-de-blocs-d-escalade",
+                    "value": "Site de blocs d'escalade",
+                    "label": {
+                      "fr": "Site de blocs d'escalade",
+                      "en": "Site de blocs d'escalade"
+                    }
+                  },
+                  {
+                    "id": "parcours-acrobatique-en-hauteur-site-d-accrobranche",
+                    "value": "Parcours Acrobatique en Hauteur/Site d'accrobranche",
+                    "label": {
+                      "fr": "Parcours Acrobatique en Hauteur/Site d'accrobranche",
+                      "en": "Parcours Acrobatique en Hauteur/Site d'accrobranche"
+                    }
+                  },
+                  {
+                    "id": "pumptrack",
+                    "value": "Pumptrack",
+                    "label": {
+                      "fr": "Pumptrack",
+                      "en": "Pumptrack"
+                    }
+                  },
+                  {
+                    "id": "terrain-de-basket-ball-3x3",
+                    "value": "Terrain de basket-ball 3x3",
+                    "label": {
+                      "fr": "Terrain de basket-ball 3x3",
+                      "en": "Terrain de basket-ball 3x3"
+                    }
+                  },
+                  {
+                    "id": "piste-d-aerodrome-d-aeroport",
+                    "value": "Piste d’aérodrome / d'aéroport",
+                    "label": {
+                      "fr": "Piste d’aérodrome / d'aéroport",
+                      "en": "Piste d’aérodrome / d'aéroport"
+                    }
+                  },
+                  {
+                    "id": "salle-ou-terrain-de-paintball",
+                    "value": "Salle ou terrain de paintball",
+                    "label": {
+                      "fr": "Salle ou terrain de paintball",
+                      "en": "Salle ou terrain de paintball"
+                    }
+                  },
+                  {
+                    "id": "baignade-amenagee",
+                    "value": "Baignade aménagée",
+                    "label": {
+                      "fr": "Baignade aménagée",
+                      "en": "Baignade aménagée"
+                    }
+                  },
+                  {
+                    "id": "pas-de-tir-a-l-arc",
+                    "value": "Pas de tir à l'arc",
+                    "label": {
+                      "fr": "Pas de tir à l'arc",
+                      "en": "Pas de tir à l'arc"
+                    }
+                  },
+                  {
+                    "id": "piste-de-bicross",
+                    "value": "Piste de bicross",
+                    "label": {
+                      "fr": "Piste de bicross",
+                      "en": "Piste de bicross"
+                    }
+                  },
+                  {
+                    "id": "aire-de-fitness-street-workout",
+                    "value": "Aire de fitness/street workout",
+                    "label": {
+                      "fr": "Aire de fitness/street workout",
+                      "en": "Aire de fitness/street workout"
+                    }
+                  },
+                  {
+                    "id": "site-de-modelisme-automobile",
+                    "value": "Site de modélisme automobile",
+                    "label": {
+                      "fr": "Site de modélisme automobile",
+                      "en": "Site de modélisme automobile"
+                    }
+                  },
+                  {
+                    "id": "parcours-de-cross",
+                    "value": "Parcours de cross",
+                    "label": {
+                      "fr": "Parcours de cross",
+                      "en": "Parcours de cross"
+                    }
+                  },
+                  {
+                    "id": "circuit-de-motocross",
+                    "value": "Circuit de motocross",
+                    "label": {
+                      "fr": "Circuit de motocross",
+                      "en": "Circuit de motocross"
+                    }
+                  },
+                  {
+                    "id": "skatepark",
+                    "value": "Skatepark",
+                    "label": {
+                      "fr": "Skatepark",
+                      "en": "Skatepark"
+                    }
+                  },
+                  {
+                    "id": "salle-de-tennis-de-table",
+                    "value": "Salle de tennis de table",
+                    "label": {
+                      "fr": "Salle de tennis de table",
+                      "en": "Salle de tennis de table"
+                    }
+                  },
+                  {
+                    "id": "terrain-de-volley-ball",
+                    "value": "Terrain de volley-ball",
+                    "label": {
+                      "fr": "Terrain de volley-ball",
+                      "en": "Terrain de volley-ball"
+                    }
+                  },
+                  {
+                    "id": "terrain-de-foot-5x5",
+                    "value": "Terrain de foot 5x5",
+                    "label": {
+                      "fr": "Terrain de foot 5x5",
+                      "en": "Terrain de foot 5x5"
+                    }
+                  },
+                  {
+                    "id": "terrain-de-futsal-exterieur",
+                    "value": "Terrain de futsal extérieur",
+                    "label": {
+                      "fr": "Terrain de futsal extérieur",
+                      "en": "Terrain de futsal extérieur"
+                    }
+                  },
+                  {
+                    "id": "salle-de-blocs-artificiels-d-escalade",
+                    "value": "Salle de blocs artificiels d'escalade",
+                    "label": {
+                      "fr": "Salle de blocs artificiels d'escalade",
+                      "en": "Salle de blocs artificiels d'escalade"
+                    }
+                  },
+                  {
+                    "id": "piste-d-athletisme-2-a-4-couloirs",
+                    "value": "Piste d'athlétisme 2 à 4 couloirs",
+                    "label": {
+                      "fr": "Piste d'athlétisme 2 à 4 couloirs",
+                      "en": "Piste d'athlétisme 2 à 4 couloirs"
+                    }
+                  },
+                  {
+                    "id": "aire-de-lancer",
+                    "value": "Aire de lancer",
+                    "label": {
+                      "fr": "Aire de lancer",
+                      "en": "Aire de lancer"
+                    }
+                  },
+                  {
+                    "id": "practice",
+                    "value": "Practice",
+                    "label": {
+                      "fr": "Practice",
+                      "en": "Practice"
+                    }
+                  },
+                  {
+                    "id": "bassin-de-reception-de-toboggan",
+                    "value": "Bassin de réception de toboggan",
+                    "label": {
+                      "fr": "Bassin de réception de toboggan",
+                      "en": "Bassin de réception de toboggan"
+                    }
+                  },
+                  {
+                    "id": "point-d-embarquement-et-de-debarquement-isole",
+                    "value": "Point d'embarquement et de débarquement isolé",
+                    "label": {
+                      "fr": "Point d'embarquement et de débarquement isolé",
+                      "en": "Point d'embarquement et de débarquement isolé"
+                    }
+                  },
+                  {
+                    "id": "mur-ou-fronton-mixte",
+                    "value": "Mur ou fronton mixte",
+                    "label": {
+                      "fr": "Mur ou fronton mixte",
+                      "en": "Mur ou fronton mixte"
+                    }
+                  },
+                  {
+                    "id": "mur-de-tennis",
+                    "value": "Mur de tennis",
+                    "label": {
+                      "fr": "Mur de tennis",
+                      "en": "Mur de tennis"
+                    }
+                  },
+                  {
+                    "id": "terrain-de-beach-volley",
+                    "value": "Terrain de beach-volley",
+                    "label": {
+                      "fr": "Terrain de beach-volley",
+                      "en": "Terrain de beach-volley"
+                    }
+                  },
+                  {
+                    "id": "terrain-de-beach-soccer",
+                    "value": "Terrain de beach soccer",
+                    "label": {
+                      "fr": "Terrain de beach soccer",
+                      "en": "Terrain de beach soccer"
+                    }
+                  },
+                  {
+                    "id": "salle-de-volley-ball",
+                    "value": "Salle de volley-ball",
+                    "label": {
+                      "fr": "Salle de volley-ball",
+                      "en": "Salle de volley-ball"
+                    }
+                  },
+                  {
+                    "id": "salle-de-gymnastique-sportive",
+                    "value": "Salle de gymnastique sportive",
+                    "label": {
+                      "fr": "Salle de gymnastique sportive",
+                      "en": "Salle de gymnastique sportive"
+                    }
+                  },
+                  {
+                    "id": "parcours-9-trous",
+                    "value": "Parcours 9 trous",
+                    "label": {
+                      "fr": "Parcours 9 trous",
+                      "en": "Parcours 9 trous"
+                    }
+                  },
+                  {
+                    "id": "salle-de-culturisme",
+                    "value": "Salle de culturisme",
+                    "label": {
+                      "fr": "Salle de culturisme",
+                      "en": "Salle de culturisme"
+                    }
+                  },
+                  {
+                    "id": "velodrome",
+                    "value": "Vélodrome",
+                    "label": {
+                      "fr": "Vélodrome",
+                      "en": "Vélodrome"
+                    }
+                  },
+                  {
+                    "id": "stade-de-ski-nautique",
+                    "value": "Stade de ski nautique",
+                    "label": {
+                      "fr": "Stade de ski nautique",
+                      "en": "Stade de ski nautique"
+                    }
+                  },
+                  {
+                    "id": "parcours-d-initiation",
+                    "value": "Parcours d'initiation",
+                    "label": {
+                      "fr": "Parcours d'initiation",
+                      "en": "Parcours d'initiation"
+                    }
+                  },
+                  {
+                    "id": "parcours-18-trous",
+                    "value": "Parcours 18 trous",
+                    "label": {
+                      "fr": "Parcours 18 trous",
+                      "en": "Parcours 18 trous"
+                    }
+                  },
+                  {
+                    "id": "terrain-de-rugby",
+                    "value": "Terrain de rugby",
+                    "label": {
+                      "fr": "Terrain de rugby",
+                      "en": "Terrain de rugby"
+                    }
+                  },
+                  {
+                    "id": "autres-equipements-divers",
+                    "value": "Autres équipements divers",
+                    "label": {
+                      "fr": "Autres équipements divers",
+                      "en": "Autres équipements divers"
+                    }
+                  },
+                  {
+                    "id": "stade-d-eau-vive",
+                    "value": "Stade d’eau vive",
+                    "label": {
+                      "fr": "Stade d’eau vive",
+                      "en": "Stade d’eau vive"
+                    }
+                  },
+                  {
+                    "id": "carriere-de-dressage-rond-de-longe",
+                    "value": "Carrière de dressage/rond de longe",
+                    "label": {
+                      "fr": "Carrière de dressage/rond de longe",
+                      "en": "Carrière de dressage/rond de longe"
+                    }
+                  },
+                  {
+                    "id": "autres-terrains-de-pratique-de-tennis",
+                    "value": "Autres terrains de pratique de tennis",
+                    "label": {
+                      "fr": "Autres terrains de pratique de tennis",
+                      "en": "Autres terrains de pratique de tennis"
+                    }
+                  },
+                  {
+                    "id": "stade-de-canoe-kayak-de-vitesse",
+                    "value": "Stade de canoë-kayak de vitesse",
+                    "label": {
+                      "fr": "Stade de canoë-kayak de vitesse",
+                      "en": "Stade de canoë-kayak de vitesse"
+                    }
+                  },
+                  {
+                    "id": "salle-ou-terrain-de-squash",
+                    "value": "Salle ou terrain de squash",
+                    "label": {
+                      "fr": "Salle ou terrain de squash",
+                      "en": "Salle ou terrain de squash"
+                    }
+                  },
+                  {
+                    "id": "salle-de-basket",
+                    "value": "Salle de basket",
+                    "label": {
+                      "fr": "Salle de basket",
+                      "en": "Salle de basket"
+                    }
+                  },
+                  {
+                    "id": "bassin-d-exercices-aquatiques",
+                    "value": "Bassin d'exercices aquatiques",
+                    "label": {
+                      "fr": "Bassin d'exercices aquatiques",
+                      "en": "Bassin d'exercices aquatiques"
+                    }
+                  },
+                  {
+                    "id": "piste-de-padel",
+                    "value": "Piste de padel",
+                    "label": {
+                      "fr": "Piste de padel",
+                      "en": "Piste de padel"
+                    }
+                  },
+                  {
+                    "id": "anneau-de-roller",
+                    "value": "Anneau de Roller",
+                    "label": {
+                      "fr": "Anneau de Roller",
+                      "en": "Anneau de Roller"
+                    }
+                  },
+                  {
+                    "id": "structure-de-tourisme-equestre",
+                    "value": "Structure de tourisme équestre",
+                    "label": {
+                      "fr": "Structure de tourisme équestre",
+                      "en": "Structure de tourisme équestre"
+                    }
+                  },
+                  {
+                    "id": "salle-ou-terrain-de-badminton",
+                    "value": "Salle ou terrain de badminton",
+                    "label": {
+                      "fr": "Salle ou terrain de badminton",
+                      "en": "Salle ou terrain de badminton"
+                    }
+                  },
+                  {
+                    "id": "salle-de-trampoline",
+                    "value": "Salle de trampoline",
+                    "label": {
+                      "fr": "Salle de trampoline",
+                      "en": "Salle de trampoline"
+                    }
+                  },
+                  {
+                    "id": "salle-de-spectacle-zenith",
+                    "value": "Salle de spectacle / Zenith",
+                    "label": {
+                      "fr": "Salle de spectacle / Zenith",
+                      "en": "Salle de spectacle / Zenith"
+                    }
+                  },
+                  {
+                    "id": "manege",
+                    "value": "Manège",
+                    "label": {
+                      "fr": "Manège",
+                      "en": "Manège"
+                    }
+                  },
+                  {
+                    "id": "salle-de-lutte",
+                    "value": "Salle de lutte",
+                    "label": {
+                      "fr": "Salle de lutte",
+                      "en": "Salle de lutte"
+                    }
+                  },
+                  {
+                    "id": "salle-d-halterophilie",
+                    "value": "Salle d'haltérophilie",
+                    "label": {
+                      "fr": "Salle d'haltérophilie",
+                      "en": "Salle d'haltérophilie"
+                    }
+                  },
+                  {
+                    "id": "circuit-de-vitesse",
+                    "value": "Circuit de vitesse",
+                    "label": {
+                      "fr": "Circuit de vitesse",
+                      "en": "Circuit de vitesse"
+                    }
+                  },
+                  {
+                    "id": "salle-de-patinage-sur-roulette",
+                    "value": "Salle de patinage sur roulette",
+                    "label": {
+                      "fr": "Salle de patinage sur roulette",
+                      "en": "Salle de patinage sur roulette"
+                    }
+                  },
+                  {
+                    "id": "bowling",
+                    "value": "Bowling",
+                    "label": {
+                      "fr": "Bowling",
+                      "en": "Bowling"
+                    }
+                  },
+                  {
+                    "id": "terrain-de-trial",
+                    "value": "Terrain de trial",
+                    "label": {
+                      "fr": "Terrain de trial",
+                      "en": "Terrain de trial"
+                    }
+                  },
+                  {
+                    "id": "piste-ulm",
+                    "value": "Piste ULM",
+                    "label": {
+                      "fr": "Piste ULM",
+                      "en": "Piste ULM"
+                    }
+                  },
+                  {
+                    "id": "pas-de-tir-aux-plateaux",
+                    "value": "Pas de tir aux plateaux",
+                    "label": {
+                      "fr": "Pas de tir aux plateaux",
+                      "en": "Pas de tir aux plateaux"
+                    }
+                  },
+                  {
+                    "id": "parkour-blocpark",
+                    "value": "Parkour/blocpark",
+                    "label": {
+                      "fr": "Parkour/blocpark",
+                      "en": "Parkour/blocpark"
+                    }
+                  },
+                  {
+                    "id": "piste-de-course-sur-le-plat",
+                    "value": "Piste de course sur le plat",
+                    "label": {
+                      "fr": "Piste de course sur le plat",
+                      "en": "Piste de course sur le plat"
+                    }
+                  },
+                  {
+                    "id": "salle-de-beach-volley",
+                    "value": "Salle de beach-volley",
+                    "label": {
+                      "fr": "Salle de beach-volley",
+                      "en": "Salle de beach-volley"
+                    }
+                  },
+                  {
+                    "id": "terrain-de-hockey-sur-gazon",
+                    "value": "Terrain de hockey sur gazon",
+                    "label": {
+                      "fr": "Terrain de hockey sur gazon",
+                      "en": "Terrain de hockey sur gazon"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "poi-amenities",
+                "label": {
+                  "fr": "Sur place",
+                  "en": "Amenities"
+                },
+                "field": "amenity",
+                "multiple": true,
+                "options": [
+                  {
+                    "id": "handicap",
+                    "value": "true",
+                    "field": "handicap",
+                    "icon": "accessibility",
+                    "label": {
+                      "fr": "Acces PMR",
+                      "en": "Accessibility"
+                    }
+                  },
+                  {
+                    "id": "transport-commun",
+                    "value": "true",
+                    "field": "transportCommun",
+                    "icon": "bus",
+                    "label": {
+                      "fr": "Transport en commun",
+                      "en": "Public transport"
+                    }
+                  },
+                  {
+                    "id": "restaurant",
+                    "value": "true",
+                    "field": "restaurant",
+                    "icon": "utensils-crossed",
+                    "label": {
+                      "fr": "Restaurant",
+                      "en": "Restaurant"
+                    }
+                  },
+                  {
+                    "id": "hebergement",
+                    "value": "true",
+                    "field": "hebergement",
+                    "icon": "bed-double",
+                    "label": {
+                      "fr": "Hebergement",
+                      "en": "Accommodation"
+                    }
+                  },
+                  {
+                    "id": "gardiennage",
+                    "value": "true",
+                    "field": "gardiennage",
+                    "icon": "shield",
+                    "label": {
+                      "fr": "Gardiennage",
+                      "en": "Security"
+                    }
+                  }
+                ]
+              }
+
+            ]
+          }
+        },
+        {
+          "type": "searchProStatic",
+          "id": "section-poi-cards",
+          "props": {
+            "customHeader": {
+                "title": {
+                  "fr": "Tous les équipements sportifs"
+                },
+                "showMapButton": true
+              },
+            "useFilter": true,
+            "showMap": false,
+            "enableMap": true,
+            "showActiveFiltersTypes": true,
+            "showActiveFiltersTags": true,
+            "disableInfiniteScroll": false,
+            "showDetailedViewToggle": false,
+            "baseParams": {
+              "defaultTypes": [
+                "poi"
+              ],
+              "defaultFields": [
+                "name",
+                "category",
+                "subCategory",
+                "installation",
+                "familleEquipement",
+                "type",
+                "sportPratiquer",
+                "nature",
+                "surface",
+                "sole",
+                "eclairage",
+                "libreAccess",
+                "partenariat",
+                "typePartenariat",
+                "enqueteStatut",
+                "dateCreation",
+                "dateEnquete",
+                "lastUpdate",
+                "created",
+                "updated",
+                "address",
+                "handicap",
+                "transportCommun",
+                "typeTransportCommun",
+                "typeAccessiblHandicap",
+                "hebergement",
+                "restaurant",
+                "gardiennage",
+                "geo",
+                "geoPosition",
+                "parent"
+              ],
+              "defaultFilters": {
+                "$or": {
+                  "source.key": "sportSanteBienetre",
+                  "source.keys": "sportSanteBienetre"
+                },
+                "type":"recoveryCenter"
+              }
+            },
+            "list": {
+              "columns": {
+                "sm": 2,
+                "md": 3,
+                "lg": 4,
+                "xl": 4
+              },
+              "card": {
+                "type": "poi-ssbe",
+                "detailsMode": "dialog"
+              }
+            }
+          }
+        } 
+      ]
+    },
+    {
+      "path": "/contact",
+      "title": { "fr": "Contact - SiteForge", "en": "Contact - SiteForge" },
+      "seo": {
+        "title": { "fr": "Contact - SiteForge", "en": "Contact - SiteForge" },
+        "description": { "fr": "Contactez notre équipe pour toute question ou demande de support.", "en": "Contact our team for any questions or support requests." }
+      },
+      "layout": "default",
+      "sections": [
+        {
+          "type": "hero",
+          "id": "contact-hero",
+          "props": {
+            "headline": { 
+              "fr": "Contactez-Nous", 
+              "en": "Contact Us" 
+            },
+            "subhead": { 
+              "fr": "Notre équipe est là pour vous aider", 
+              "en": "Our team is here to help you" 
+            },
+            "align": "center",
+            "overlay": false
+          }
+        },
+        {
+          "type": "contactForm",
+          "id": "contact-form",
+          "props": {
+            "fields": [
+              {
+                "name": "name",
+                "label": { "fr": "Nom complet", "en": "Full name" },
+                "type": "text",
+                "required": true,
+                "placeholder": { "fr": "Votre nom", "en": "Your name" }
+              },
+              {
+                "name": "email",
+                "label": { "fr": "Adresse e-mail", "en": "Email address" },
+                "type": "email",
+                "required": true,
+                "placeholder": { "fr": "votre@email.com", "en": "your@email.com"},
+                "validation": "email"
+              },
+              {
+                "name": "subject",
+                "label": { "fr": "Sujet", "en": "Subject" },
+                "type": "select",
+                "required": true,
+                "options": [
+                  { "fr": "Question générale", "en": "General question" },
+                  { "fr": "Support technique", "en": "Technical support" },
+                  { "fr": "Demande commerciale", "en": "Sales inquiry" },
+                  { "fr": "Partenariat", "en": "Partnership" }
+                ]
+              },
+              {
+                "name": "message",
+                "label": { "fr": "Message", "en": "Message" },
+                "type": "textarea",
+                "required": true,
+                "placeholder": { "fr": "Décrivez votre demande...", "en": "Describe your request..." }
+              },
+              {
+                "name": "newsletter",
+                "label": { "fr": "Je souhaite recevoir la newsletter", "en": "I want to receive the newsletter" },
+                "type": "checkbox",
+                "required": false
+              }
+            ],
+            "submitLabel": { "fr": "Envoyer le message", "en": "Send message" },
+            "action": "/api/contact",
+            "method": "POST",
+            "successMessage": { "fr": "Votre message a été envoyé avec succès !", "en": "Your message has been sent successfully!" },
+            "errorMessage": { "fr": "Une erreur est survenue lors de l'envoi", "en": "An error occurred while sending" }
+          }
+        },
+        {
+          "type": "cards",
+          "id": "contact-info",
+          "props": {
+            "columns": 3,
+            "layout": "grid",
+            "items": [
+              {
+                "icon": "mail",
+                "title": { "fr": "Email", "en": "Email" },
+                "text": { "fr": "support@siteforge.com\nRéponse sous 24h", "en": "support@siteforge.com\nResponse within 24h" }
+              },
+              {
+                "icon": "phone",
+                "title": { "fr": "Téléphone", "en": "Phone" },
+                "text": { "fr": "+33 1 23 45 67 89\nLun-Ven 9h-18h", "en": "+33 1 23 45 67 89\nMon-Fri 9am-6pm" }
+              },
+              {
+                "icon": "message-circle",
+                "title": { "fr": "Chat", "en": "Chat" },
+                "text": { "fr": "Chat en direct disponible\n24h/24 7j/7", "en": "Live chat available\n24/7" }
+              }
+            ]
+          }
+        }
+      ]
+    }
 
   ],
   "footer": {
