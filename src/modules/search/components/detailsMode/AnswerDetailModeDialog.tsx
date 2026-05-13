@@ -51,6 +51,15 @@ function translateDayToFrench(day: string): string {
   return dayMap[day.trim().toLowerCase()] ?? day;
 }
 
+function normalizeText(value: unknown): string | undefined {
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : undefined;
+  }
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  return undefined;
+}
+
 function InfoCard({
   icon: Icon,
   title,
@@ -140,6 +149,26 @@ export default function AnswerDetailModeDialog({ openDetails, setOpenDetails, it
     ?? (telephoneObj?.fixe as string | undefined)
     ?? (structureRaw?.phone as string | undefined)
     ?? "";
+
+  const installationFinderKey = `finder${fieldKey("2172025_854_0mocno9muqzznoo0gyx")}`;
+  const installationsRaw = serverData[installationFinderKey] as unknown;
+  const installations = (
+    Array.isArray(installationsRaw)
+      ? installationsRaw
+      : installationsRaw && typeof installationsRaw === "object"
+        ? Object.values(installationsRaw as Record<string, unknown>)
+        : []
+  )
+    .map((entry, index) => {
+      const record = entry as Record<string, unknown> | undefined;
+      const name = record ? normalizeText(record.name) : undefined;
+      const id = record ? normalizeText(record.id) : undefined;
+      return {
+        id: id || name || String(index),
+        name: name || id || "",
+      };
+    })
+    .filter((entry) => entry.name.trim().length > 0);
 
   const scheduleRaw = (serverData[fieldKey("2172025_854_0mdefmehl5baa207uud6")] as unknown[]) ?? [];
   const groupedSchedules: Record<string, string[]> = {};
@@ -242,7 +271,7 @@ export default function AnswerDetailModeDialog({ openDetails, setOpenDetails, it
               </div>
             </InfoCard>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <InfoCard icon={Heart} title="Activité">
                 <p className="text-sm font-semibold text-foreground">{typeActivity || title}</p>
                 <p className="text-xs text-muted-foreground">{typeGender || typeRaw}</p>
@@ -265,6 +294,18 @@ export default function AnswerDetailModeDialog({ openDetails, setOpenDetails, it
                 <span className="inline-block rounded bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground">
                   {mobilityReduced || "Non renseigné"}
                 </span>
+              </InfoCard>
+
+              <InfoCard icon={MapPin} title="Installation">
+                {installations.length > 0 ? (
+                  <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
+                    {installations.map((installation) => (
+                      <li key={installation.id}>{installation.name}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-xs text-muted-foreground">Aucune installation renseignée</p>
+                )}
               </InfoCard>
             </div>
           </div>
