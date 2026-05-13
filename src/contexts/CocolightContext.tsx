@@ -25,6 +25,8 @@ export interface CocolightContextType {
   /** Données temporaires transmises au profil */
   dataToProfile: unknown
   setDataToProfile: Dispatch<SetStateAction<unknown>>
+  /** Recharge les données de l'utilisateur connecté depuis l'API */
+  refreshMe: () => Promise<void>
 }
 
 

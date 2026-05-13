@@ -1555,6 +1555,18 @@ export const Section = z.discriminatedUnion("type", [
   FinanceSectionSchema,
   ActionsSummarySectionSchema,
   FinanceSummarySectionSchema,
+  z.object({
+    type: z.literal("siteList"),
+    id: z.string().optional(),
+    props: z.object({
+      sites: z.array(z.object({
+        slug: z.string(),
+        title: z.string(),
+        description: z.string().optional(),
+        logo: z.string().optional(),
+      })),
+    }),
+  }),
 ]);
 export type Section = z.infer<typeof Section>;
 
@@ -1988,17 +2000,36 @@ export const SiteConfig = z.object({
       title: LocalizedString.optional(),
       subtitle: LocalizedString.optional(),
     }).optional(),
+    register: z.object({
+      title: LocalizedString.optional(),
+      subtitle: LocalizedString.optional(),
+    }).optional(),
   }).optional(),
   profiles: ProfilesConfigSchema,
   floatingQRCode: z.object({
     enabled: z.boolean().default(false),
-    url: z.string().optional(), 
+    url: z.string().optional(),
     position: z.enum(["bottom-right", "bottom-left", "top-right", "top-left"]).default("bottom-right"),
-    size: z.number().optional().default(80), 
-    expandedSize: z.number().optional().default(200), 
+    size: z.number().optional().default(80),
+    expandedSize: z.number().optional().default(200),
     includeFavicon: z.boolean().optional().default(true),
-    bgColor: z.string().optional().default("#ffffff"), 
-    fgColor: z.string().optional().default("#000000"), 
+    bgColor: z.string().optional().default("#ffffff"),
+    fgColor: z.string().optional().default("#000000"),
+  }).optional(),
+  floatingActionButton: z.object({
+    enabled: z.boolean().default(false),
+    modal: z.enum([
+      "add-organization",
+      "add-project",
+      "add-event",
+      "add-poi",
+      "add-tiers-lieux",
+      "register-cyber-reunion",
+      "json-form",
+    ]),
+    label: LocalizedString,
+    icon: z.string().optional().default("plus"),
+    position: z.enum(["bottom-right", "bottom-left", "top-right", "top-left"]).default("bottom-right"),
   }).optional(),
   ampli: z.array(AmpliConfigSchema).optional(),
 });

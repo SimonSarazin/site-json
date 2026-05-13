@@ -432,9 +432,10 @@ export default function SearchBubbleChart({
         return bubbleData.imageUrl || "";
       })
       .attr("preserveAspectRatio", "xMidYMid slice")
-      .on("error", function (this: SVGImageElement, _: Event, d: CircularNode) {
-        const parent = d3.select(this.parentNode as SVGGElement);
-        d3.select(this).remove();
+      .on("error", (event: Event, d: CircularNode) => {
+        const target = event.currentTarget as SVGImageElement;
+        const parent = d3.select(target.parentNode as SVGGElement);
+        d3.select(target).remove();
 
         const bubbleData = d.data as BubbleNode;
         const name = bubbleData?.name || "";

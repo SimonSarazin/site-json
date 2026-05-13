@@ -6,6 +6,7 @@
 import { useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { updatePathValue } from "@/lib/updatePathValue";
+import { launchConfettiBurst } from "@/lib/confetti";
 
 type EndpointCaller = {
   callEndpoint?: (endpointName: string, payload: Record<string, unknown>) => Promise<unknown>;
@@ -337,6 +338,7 @@ export const useSaveCagnotteContribution = (
               description: `${milestoneFundings.length} milestone(s) financer(s)`,
               duration: 4000,
             });
+            launchConfettiBurst({ originY: 0.36, spread: 78, count: Math.min(36, 18 + milestoneFundings.length * 6) });
             return true;
           }
         } catch (pathError) {

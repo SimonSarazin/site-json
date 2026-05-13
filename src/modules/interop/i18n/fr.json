@@ -1,0 +1,39 @@
+{
+  "wiki": {
+    "title": "Wiki",
+    "link_account": "Lier le compte",
+    "unlink": "Délier",
+    "open_wiki": "Ouvrir le Wiki →",
+    "username_placeholder": "Votre nom d'utilisateur MediaWiki",
+    "link_description": "Reliez votre compte <strong>MediaWiki</strong> à votre profil pour afficher vos fiches et contributions.",
+    "username_hint": "C'est le nom affiché dans l'URL de vos contributions, ex : {{url}}<strong>votre-pseudo</strong>",
+    "no_page_found": "Aucune fiche wiki trouvée pour \"{{username}}\".",
+    "latest_contributions": "Dernières contributions",
+    "see_all_contributions": "Voir toutes les contributions →",
+    "see_full_profile": "Voir le profil complet →"
+  },
+  "discourse": {
+    "title": "Forum",
+    "link_account": "Lier le compte",
+    "unlink": "Délier",
+    "see_full_profile": "Voir le profil complet →",
+    "username_placeholder": "Votre nom d'utilisateur Discourse",
+    "link_description": "Reliez votre compte <strong>Discourse</strong> à votre profil pour afficher vos dernières contributions au forum.",
+    "username_hint": "C'est le nom affiché dans l'URL de votre profil forum, ex : {{url}}<strong>votre-pseudo</strong>/summary",
+    "activity": "Activité",
+    "posts_created": "posts créés",
+    "topics_created": "sujets créés",
+    "likes_received": "likes reçus",
+    "badges": "Badges",
+    "top_replies": "Meilleures réponses",
+    "top_topics": "Meilleurs sujets",
+    "categories": "Catégories",
+    "account_found_title": "Compte Discourse trouvé",
+    "account_found_description": "Nous avons trouvé un compte Discourse associé à votre adresse e-mail :",
+    "account_found_question": "Souhaitez-vous associer ce compte à votre profil ?",
+    "see_forum_profile": "Voir le profil sur le forum →",
+    "confirm_link": "Oui, associer",
+    "decline_link": "Non merci",
+    "link_error": "Une erreur est survenue lors de la liaison du compte."
+  }
+}

@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { isValidEmail } from "@/helpers/isValidEmail";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
+import SSOLoginButton from "@/components/auth/SSOLoginButton";
 
 type RadixCheckboxState = boolean | "indeterminate";
 
@@ -32,7 +33,7 @@ export default function LoginForm({ onSuccess, hideBackButton = false }: LoginFo
   const [loadingLogin, setLoading]  = useState<boolean>(false);
 
   const navigate                     = useNavigate();
-  const { userApi, loading, me }     = useCocolight();
+  const { userApi, loading, me, entity }     = useCocolight();
   const { config }                   = useSite();
   const { loaded }                   = useLoadNamespace("components/auth");
   const t                            = useT("components/auth");
@@ -41,6 +42,8 @@ export default function LoginForm({ onSuccess, hideBackButton = false }: LoginFo
   const loginTitle = config.auth?.login?.title || { fr: "Se connecter", en: "Sign in" };
   const loginSubtitle = config.auth?.login?.subtitle || { fr: "Accédez à votre compte SiteForge", en: "Access your SiteForge account" };
 
+  // Fournisseurs SSO configurés (optionnel)
+  const ssoProviders: string[] = (entity?.serverData.costum as { sso?: string[] })?.sso || [];
   /* Redirige l’utilisateur déjà connecté -------------------------------- */
   useEffect(() => {
     if (!loading && me?.isConnected) navigate("/");
@@ -165,6 +168,28 @@ export default function LoginForm({ onSuccess, hideBackButton = false }: LoginFo
         >
           {loadingLogin ? t("Connexion...") : t("Se connecter")}
         </Button>
+
+        {ssoProviders.length > 0 && (
+          <div className="space-y-2">
+            <div className="relative flex items-center gap-2">
+              <div className="flex-1 border-t border-border" />
+              <span className="text-xs text-muted-foreground whitespace-nowrap">
+                {t("ou continuer avec")}
+              </span>
+              <div className="flex-1 border-t border-border" />
+            </div>
+            {ssoProviders.map((provider) => (
+              <SSOLoginButton
+                key={provider}
+                provider={provider}
+                onSuccess={() => {
+                  onSuccess?.();
+                  if (!hideBackButton) navigate("/");
+                }}
+              />
+            ))}
+          </div>
+        )}
 
         <div className="text-center space-y-2">
           <Button

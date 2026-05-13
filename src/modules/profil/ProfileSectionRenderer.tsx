@@ -94,7 +94,6 @@ export function ProfileSectionRenderer({ section }: ProfileSectionRendererProps)
     // It's a site section - use the SectionRenderer
     return <SectionRenderer section={section as Section} />;
   }
-
   // Handle profile-specific sections
   switch (section.type) {
     case "profile-header":

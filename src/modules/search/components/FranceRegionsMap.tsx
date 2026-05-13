@@ -239,15 +239,15 @@ export default function FranceRegionsMap({ results, onItemClick, height = 600 }:
 
     function regionHover(regionName: string) {
       return {
-        mouseover(this: SVGPathElement, event: MouseEvent) {
-          d3.select(this).attr("stroke", "#444").attr("stroke-width", 2);
+        mouseover(event: MouseEvent) {
+          d3.select(event.currentTarget as SVGPathElement).attr("stroke", "#444").attr("stroke-width", 2);
           showTooltip(event, regionName);
         },
-        mousemove(this: SVGPathElement, event: MouseEvent) {
+        mousemove(event: MouseEvent) {
           showTooltip(event, regionName);
         },
-        mouseout(this: SVGPathElement) {
-          d3.select(this).attr("stroke", "#fff").attr("stroke-width", 0.5);
+        mouseout(event: MouseEvent) {
+          d3.select(event.currentTarget as SVGPathElement).attr("stroke", "#fff").attr("stroke-width", 0.5);
           hideTooltip();
         },
         click() {

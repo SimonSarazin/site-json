@@ -5,7 +5,11 @@ import { getEntityIcon } from "@/lib/entityIcons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { MapPin, Users, ArrowRight } from "lucide-react";
+import { MapPin, Users, ArrowRight, Zap } from "lucide-react";
+import { useState } from "react";
+import { useFundingEnvelope } from "@/hooks/useFundingEnvelope";
+import { useCocolight } from "@/hooks/useCocolight";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function CardRezoLaMer({
   item,
@@ -32,6 +36,51 @@ export default function CardRezoLaMer({
   const hasRealFunding = !!fundingFromMap || Number.isFinite(Number(serverData?.fundingGoal)) || Number.isFinite(Number(serverData?.goal)) || Number.isFinite(Number(serverData?.fundingRaised)) || Number.isFinite(Number(serverData?.raised)) || Number.isFinite(Number(serverData?.collected));
   const displayDescription = description ? String(description) : "Pas de description";
   
+  // Pour activer le financement
+  const { data: fundingEnvelope } = useFundingEnvelope();
+  const { entity } = useCocolight();
+  const queryClient = useQueryClient();
+  const [isActivatingFunding, setIsActivatingFunding] = useState(false);
+
+  const formId = fundingEnvelope?.rawEnvelope ? extractFormIdFromEnvelope(fundingEnvelope.rawEnvelope) : null;
+
+   const handleActivateFunding = async () => {
+    if (!formId || !projectId || !entity) {
+      console.warn("Missing formId, projectId, or entity for coremuOperation");
+      return;
+    }
+
+    setIsActivatingFunding(true);
+    try {
+      // Appel à coremuOperation pour générer la proposition
+      const baseEntity = entity as unknown as Record<string, unknown>;
+      const coremuOperationMethod = baseEntity.coremuOperation as (formId: string, projectId: string) => Promise<unknown>;
+      await coremuOperationMethod.call(entity, formId, projectId);
+
+      // Invalider le cache pour rafraîchir les données
+      queryClient.invalidateQueries({
+        queryKey: ['funding-envelope'],
+      });
+
+      // Appeler le callback du parent si disponible
+      onClick?.();
+    } catch (error) {
+      console.error("Erreur lors de l'activation du financement:", error);
+    } finally {
+      setIsActivatingFunding(false);
+    }
+  };
+
+  const handleActivateFundingClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    handleActivateFunding();
+  };
+
+  const handleViewProjectClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    onClick?.();
+  };
+
   return (
     <article
       onClick={onClick}
@@ -105,10 +154,24 @@ export default function CardRezoLaMer({
           <Progress value={hasRealFunding ? funding.percentage : 0} className="h-2" />
         </div>
 
-        <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground border-0">
-          Voir le projet
-          <ArrowRight className="ml-2 w-4 h-4" />
-        </Button>
+        {!hasRealFunding ? (
+          <Button
+            onClick={handleActivateFundingClick}
+            disabled={isActivatingFunding || !formId}
+            className="w-full bg-amber-500 hover:bg-amber-600 text-white border-0"
+          >
+            <Zap className="mr-2 w-4 h-4" />
+            {isActivatingFunding ? "Activation..." : "Activer financement"}
+          </Button>
+        ) : (
+          <Button
+            onClick={handleViewProjectClick}
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground border-0"
+          >
+            Voir le projet
+            <ArrowRight className="ml-2 w-4 h-4" />
+          </Button>
+        )}
       </div>
     </article>
   );
@@ -156,3 +219,28 @@ function getFunding(
 
   return { goal, raised, percentage };
 }
+
+function extractFormIdFromEnvelope(rawEnvelope: unknown): string {
+  const asRecord = (value: unknown): Record<string, unknown> =>
+    value && typeof value === 'object' ? (value as Record<string, unknown>) : {};
+  const toString = (value: unknown): string =>
+    typeof value === 'string' ? value : '';
+
+  const envelope = asRecord(rawEnvelope);
+  const context = asRecord(envelope.context);
+  const form = asRecord(envelope.form);
+
+  const directFormId =
+    toString(envelope.formId) ||
+    toString(context.formId) ||
+    toString(context.form) ||
+    toString(envelope.form);
+
+  if (directFormId) {
+    return directFormId;
+  }
+
+  const formIds = Object.keys(form);
+  return formIds[0] || '';
+}
+

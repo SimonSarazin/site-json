@@ -308,7 +308,6 @@ function normalizeFundingEnvelope(rawEnvelope: unknown, _contextEntityId?: strin
     const actions = toArray<UnknownRecord>(projectData.actions);
     const actionsWithIndex = actions.map((action, sourceIndex) => ({ action, sourceIndex }));
     const projectMilestones = toArray<UnknownRecord>(asRecord(projectRecord.oceco).milestones);
-    console.log("normalizeFundingEnvelope 1/3" , projectData , getEntityId(projectData));
     const projectMilestoneOrder = projectMilestones
       .map((milestone) => toString(milestone.milestoneId))
       .filter((id) => id.length > 0);
@@ -525,7 +524,6 @@ function extractFormIdFromEnvelope(rawEnvelope: unknown): string {
 function mergeEnvelopePayloads(envelopeData: unknown, formData: unknown): unknown {
   const envelopeRecord = asRecord(envelopeData);
   const formRecord = asRecord(formData);
-  console.log("Anatolelog 2", { envelopeRecord, formRecord });
   return {
     ...envelopeRecord,
     ...formRecord,
@@ -536,18 +534,27 @@ function mergeEnvelopePayloads(envelopeData: unknown, formData: unknown): unknow
   };
 }
 
+function getProfileSlugFromLocation(): string {
+  if (typeof window === 'undefined') return '';
+
+  const parts = window.location.pathname.split('/').filter(Boolean);
+  const profileIndex = parts.indexOf('profil');
+  if (profileIndex < 0 || profileIndex + 1 >= parts.length) return '';
+
+  return parts[profileIndex + 1].trim();
+}
+
 export function useFundingEnvelope(idProjet?: string) {
   const { entity, contextId, contextType, me } = useCocolight();
 
   const entityId = contextId || entity?.id || '';
   const effectiveContextType = normalizeEntityType(contextType || entity?.getEntityType?.());
+  const profileSlug = getProfileSlugFromLocation();
 
   const normalizedProjectId = toString(idProjet);
 
-  console.log(normalizedProjectId,'normalizedProjectId');
-
   return useQuery<FundingEnvelopeNormalizedData>({
-    queryKey: ['funding-envelope', entityId, effectiveContextType, normalizedProjectId],
+    queryKey: ['funding-envelope', entityId, effectiveContextType, normalizedProjectId, profileSlug],
     queryFn: async () => {
       const entityRecord = entity as unknown as UnknownRecord;
 
@@ -579,7 +586,6 @@ export function useFundingEnvelope(idProjet?: string) {
                 project: 'all',
               },
             });
-            console.log("Anatolelog 3", rawFormData);
             mergedEnvelope = mergeEnvelopePayloads(rawEnvelope, rawFormData);
           } catch (formError) {
             console.warn('[useFundingEnvelope] getFormData indisponible, fallback getEnvelopeData', formError);
@@ -598,6 +604,8 @@ export function useFundingEnvelope(idProjet?: string) {
     staleTime: 2 * 60 * 1000,
   });
 }
+
+
 
 
 
