@@ -255,7 +255,6 @@ export default function DiscoursePod() {
   const { discourseUsername, isOwnProfile } = useInteropUserLinks();
   const { data, isLoading } = useDiscourseProfilQuery();
   const unlinkMutation = useDiscourseUnlink();
-
   const summary = data?.summary ?? {};
   const userSummary = asUserSummary(summary.user_summary);
 
