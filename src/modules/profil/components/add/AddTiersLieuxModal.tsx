@@ -3,6 +3,7 @@ import { useForm, useFieldArray, type Resolver, type FieldValues, type UseFormRe
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Plus, Trash2, Building2, MapPin, Image as ImageIcon, Share2, Globe, Clock, Phone, Video, FileText, X, Upload } from "lucide-react";
 import { useT } from "@/hooks/useT";
+import { useAddTiersLieu } from "../../hooks/useAddMutations";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +13,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -27,7 +28,6 @@ import { z } from "zod";
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { toast } from "sonner";
 import { EditLocationTab } from "../profile-edit/EditLocationTab";
-import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 const dayHoursSchema = z.object({
   enabled: z.boolean().default(false),
@@ -136,10 +136,11 @@ interface AddTiersLieuxModalProps {
   parent?: EntityTypes | null;
 }
 
-export function AddTiersLieuxModal({ open, onOpenChange }: AddTiersLieuxModalProps) {
+export function AddTiersLieuxModal({ open, onOpenChange, parent }: AddTiersLieuxModalProps) {
   const t = useT("modules/profil");
   const [currentStep, setCurrentStep] = useState(0);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const addMutation = useAddTiersLieu(parent);
+  const isSubmitting = addMutation.isPending;
 
   const form = useForm<AddTiersLieuxFormData>({
     resolver: zodResolver(addTiersLieuxSchema) as Resolver<AddTiersLieuxFormData>,
@@ -176,55 +177,44 @@ export function AddTiersLieuxModal({ open, onOpenChange }: AddTiersLieuxModalPro
     name: "socialLinks",
   });
 
-  const [logoUploading, setLogoUploading] = useState(false);
-  const [photosUploading, setPhotosUploading] = useState(false);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [photoFiles, setPhotoFiles] = useState<File[]>([]);
+  const [logoUploading] = useState(false);
+  const [photosUploading] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const photosInputRef = useRef<HTMLInputElement>(null);
-  const logoUrl = form.watch("logo");
-  const photos = form.watch("photos") ?? [];
 
-  const uploadImage = async (file: File): Promise<string | null> => {
+  const logoPreview = logoFile ? URL.createObjectURL(logoFile) : null;
+  const photoPreviews = photoFiles.map((f) => URL.createObjectURL(f));
+
+  const handleLogoUpload = (file: File) => {
     if (!file.type.startsWith("image/")) {
       toast.error(t("AddTiersLieux.errors.imageOnly"));
-      return null;
+      return;
     }
-    const formData = new FormData();
-    formData.append("file", file);
-    const res = await fetch("/api/admin/upload-image", { method: "POST", body: formData });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ error: res.statusText }));
-      toast.error(`${t("AddTiersLieux.errors.uploadFailed")}: ${err.error || res.statusText}`);
-      return null;
-    }
-    const { path } = await res.json();
-    return path;
+    setLogoFile(file);
   };
 
-  const handleLogoUpload = async (file: File) => {
-    setLogoUploading(true);
-    const path = await uploadImage(file);
-    if (path) form.setValue("logo", path);
-    setLogoUploading(false);
-  };
-
-  const handlePhotosUpload = async (files: FileList) => {
-    setPhotosUploading(true);
-    const uploaded: string[] = [];
-    for (const file of Array.from(files)) {
-      const path = await uploadImage(file);
-      if (path) uploaded.push(path);
-    }
-    if (uploaded.length > 0) {
-      form.setValue("photos", [...(form.getValues("photos") ?? []), ...uploaded]);
-    }
-    setPhotosUploading(false);
+  const handlePhotosUpload = (files: FileList) => {
+    const valid = Array.from(files).filter((f) => {
+      if (!f.type.startsWith("image/")) {
+        toast.error(t("AddTiersLieux.errors.imageOnly"));
+        return false;
+      }
+      return true;
+    });
+    setPhotoFiles((prev) => [...prev, ...valid]);
   };
 
   const removePhoto = (index: number) => {
-    const next = [...(form.getValues("photos") ?? [])];
-    next.splice(index, 1);
-    form.setValue("photos", next);
+    setPhotoFiles((prev) => {
+      const next = [...prev];
+      next.splice(index, 1);
+      return next;
+    });
   };
+
+  const removeLogo = () => setLogoFile(null);
 
   const handleClose = () => {
     form.reset();
@@ -233,14 +223,28 @@ export function AddTiersLieuxModal({ open, onOpenChange }: AddTiersLieuxModalPro
   };
 
   const onSubmit = async (data: AddTiersLieuxFormData) => {
-    setIsSubmitting(true);
-    console.log(data);
-    await new Promise((r) => setTimeout(r, 500));
-    setIsSubmitting(false);
-    handleClose();
+    try {
+      await addMutation.mutateAsync({ ...data, _logoFile: logoFile, _photoFiles: photoFiles });
+      handleClose();
+    } catch {
+      // L'erreur est déjà affichée par le toast (via useMutationWithToast)
+    }
   };
 
-  const goNext = () => setCurrentStep((s) => Math.min(s + 1, STEPS.length - 1));
+  const STEP_REQUIRED_FIELDS: Record<string, Array<keyof AddTiersLieuxFormData>> = {
+    info: ["name", "shortDescription", "managementType"],
+    contact: ["email"],
+    media: [],
+    online: [],
+    details: [],
+  };
+
+  const goNext = async () => {
+    const fields = STEP_REQUIRED_FIELDS[STEPS[currentStep].id] ?? [];
+    const isValid = fields.length === 0 ? true : await form.trigger(fields);
+    if (!isValid) return;
+    setCurrentStep((s) => Math.min(s + 1, STEPS.length - 1));
+  };
   const goPrev = () => setCurrentStep((s) => Math.max(s - 1, 0));
 
   return (
@@ -274,7 +278,15 @@ export function AddTiersLieuxModal({ open, onOpenChange }: AddTiersLieuxModalPro
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col min-h-0">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !(e.target instanceof HTMLTextAreaElement)) {
+                e.preventDefault();
+              }
+            }}
+            className="flex-1 flex flex-col min-h-0"
+          >
             <Tabs value={STEPS[currentStep].id} className="w-full flex-1 flex flex-col min-h-0">
               <div className="shrink-0 px-6 pt-4">
                 <TabsList className="w-full grid grid-cols-5 gap-1 h-auto p-1 bg-muted/50">
@@ -308,6 +320,7 @@ export function AddTiersLieuxModal({ open, onOpenChange }: AddTiersLieuxModalPro
                         <FormControl>
                           <Input placeholder={t("AddTiersLieux.fields.namePlaceholder")} {...field} />
                         </FormControl>
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
@@ -343,19 +356,31 @@ export function AddTiersLieuxModal({ open, onOpenChange }: AddTiersLieuxModalPro
                       <FormField
                         control={form.control}
                         name="openingYear"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                placeholder={t("AddTiersLieux.fields.year")}
-                                min={1900}
-                                max={new Date().getFullYear() + 5}
-                                {...field}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
+                        render={({ field }) => {
+                          const currentYear = new Date().getFullYear();
+                          const years = Array.from(
+                            { length: currentYear + 5 - 1900 + 1 },
+                            (_, i) => currentYear + 5 - i
+                          );
+                          return (
+                            <FormItem>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder={t("AddTiersLieux.fields.year")} />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent className="max-h-60">
+                                  {years.map((y) => (
+                                    <SelectItem key={y} value={String(y)}>
+                                      {y}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </FormItem>
+                          );
+                        }}
                       />
                     </div>
                   </div>
@@ -369,6 +394,7 @@ export function AddTiersLieuxModal({ open, onOpenChange }: AddTiersLieuxModalPro
                         <FormControl>
                           <Textarea rows={2} {...field} />
                         </FormControl>
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
@@ -406,6 +432,7 @@ export function AddTiersLieuxModal({ open, onOpenChange }: AddTiersLieuxModalPro
                             ))}
                           </SelectContent>
                         </Select>
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
@@ -507,6 +534,7 @@ export function AddTiersLieuxModal({ open, onOpenChange }: AddTiersLieuxModalPro
                           <FormControl>
                             <Input type="email" placeholder={t("AddTiersLieux.fields.emailPlaceholder")} {...field} />
                           </FormControl>
+                          <FormMessage />
                         </FormItem>
                       )}
                     />
@@ -535,19 +563,18 @@ export function AddTiersLieuxModal({ open, onOpenChange }: AddTiersLieuxModalPro
                     </div>
 
                     <div className="flex justify-center">
-                      {logoUrl ? (
+                      {logoPreview ? (
                         <div className="relative group">
                           <div className="w-40 h-40 rounded-xl border-2 border-border overflow-hidden bg-muted shadow-sm">
-                            <OptimizedImage
-                              src={logoUrl}
+                            <img
+                              src={logoPreview}
                               alt="Logo"
-                              width={160}
                               className="w-full h-full object-cover"
                             />
                           </div>
                           <button
                             type="button"
-                            onClick={() => form.setValue("logo", "")}
+                            onClick={removeLogo}
                             className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1.5 shadow-lg hover:scale-110 transition"
                             aria-label={t("AddTiersLieux.buttons.removeLogo")}
                           >
@@ -595,18 +622,17 @@ export function AddTiersLieuxModal({ open, onOpenChange }: AddTiersLieuxModalPro
                     <div className="text-center">
                       <FormLabel className="text-base font-semibold">{t("AddTiersLieux.fields.photos")}</FormLabel>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {t("AddTiersLieux.fields.photosHint")} · {photos.length} {photos.length > 1 ? t("AddTiersLieux.fields.photoCountPlural") : t("AddTiersLieux.fields.photoCountSingular")}
+                        {t("AddTiersLieux.fields.photosHint")} · {photoFiles.length} {photoFiles.length > 1 ? t("AddTiersLieux.fields.photoCountPlural") : t("AddTiersLieux.fields.photoCountSingular")}
                       </p>
                     </div>
 
-                    {photos.length > 0 && (
+                    {photoPreviews.length > 0 && (
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        {photos.map((url, idx) => (
+                        {photoPreviews.map((url, idx) => (
                           <div key={idx} className="relative group aspect-square">
-                            <OptimizedImage
+                            <img
                               src={url}
                               alt={`Photo ${idx + 1}`}
-                              width={200}
                               className="w-full h-full object-cover rounded-lg border border-border shadow-sm"
                             />
                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition rounded-lg" />
@@ -637,7 +663,7 @@ export function AddTiersLieuxModal({ open, onOpenChange }: AddTiersLieuxModalPro
                         <div className="flex flex-col items-center gap-2">
                           <Upload className="w-8 h-8 text-muted-foreground" />
                           <p className="text-sm text-muted-foreground">
-                            {photos.length > 0 ? t("AddTiersLieux.fields.photosAddMore") : t("AddTiersLieux.fields.photosDropHint")}
+                            {photoFiles.length > 0 ? t("AddTiersLieux.fields.photosAddMore") : t("AddTiersLieux.fields.photosDropHint")}
                           </p>
                           <Button type="button" variant="secondary" size="sm" className="mt-1">
                             {t("AddTiersLieux.fields.photosSelectButton")}

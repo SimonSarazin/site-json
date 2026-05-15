@@ -155,7 +155,7 @@ const CagnotteDialog = ({ totalAmount, children, defaultProjectId, onRefresh, op
     }, [allProjectsFundingEnvelope]);
 
     const allProjects = useMemo(() => (Array.isArray(allProjectsData) ? allProjectsData : []) as unknown[], [allProjectsData]);
-
+    console.log("Anatolelog 4",allProjects);
     // Sélectionner le projet avec priorité au contexte d'ouverture
     useEffect(() => {
         if (!Array.isArray(allProjects) || allProjects.length === 0) {
@@ -765,7 +765,6 @@ const CagnotteDialog = ({ totalAmount, children, defaultProjectId, onRefresh, op
                                                         {allProjects.map((project: unknown, index: number) => {
                                                             const proj = project as Record<string, unknown>;
 
-                                                            // Accéder aux données via serverData si c'est une entité sérialisée
                                                             const projectData = (proj._serverData as Record<string, unknown>) || proj;
                                                             const idObj = (projectData._id as Record<string, unknown>) || (proj._id as Record<string, unknown>);
                                                             const projectId = (idObj._str as string) || (proj._id as string);

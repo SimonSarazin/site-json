@@ -35,6 +35,7 @@ import { useFundingEnvelope } from "@/hooks/useFundingEnvelope";
 import { useUserAdminOrganizations } from "@/modules/cagnotte/hooks/useUserAdminOrganizations";
 import { useSaveCagnotteContribution } from "@/modules/cagnotte/hooks/useSaveCagnotteContribution";
 import { useQueryClient } from "@tanstack/react-query";
+import { launchConfettiBurst } from "@/lib/confetti";
 import StripePaymentForm from "./StripePaymentForm";
 
 interface ProjectMilestone {
@@ -286,6 +287,7 @@ const PaymentConfigPage = ({
             //  Continuer le flux normal
             setPaymentSuccess(true);
             onPaymentSuccess(paymentData);
+            launchConfettiBurst({ originY: 0.34, spread: 84, count: 40 });
 
             // Fermer la modale et rediriger après affichage court de l'écran succès.
             //scheduleRedirectToHome(3000, true);
