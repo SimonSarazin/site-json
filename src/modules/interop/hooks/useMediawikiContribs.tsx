@@ -1,21 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { useInteropUserLinks } from "./useUserInteropLinks";
 import { useInteropConfig } from "./useInteropConfigQuery";
-import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
+import {
+  asInteropEntity,
+  type MediawikiContribsResult,
+  type WikiContrib,
+} from "./_interopEntity";
 
-export interface WikiContrib {
-  title?: string;
-  timestamp?: string;
-  comment?: string;
-  revid?: number;
-  [k: string]: unknown;
-}
-
-export interface MediawikiContribsResult {
-  result: boolean;
-  contribs?: WikiContrib[] | Record<string, unknown> | null;
-}
+// Re-export pour les consommateurs externes.
+export type { WikiContrib, MediawikiContribsResult };
 
 export function useMediawikiContribsQuery(limit = 10) {
   const { entity } = useCocolight();
@@ -25,14 +19,10 @@ export function useMediawikiContribsQuery(limit = 10) {
   return useQuery<MediawikiContribsResult>({
     queryKey: ["mediawiki-contribs", entity?.id, wikiUsername],
     queryFn: async () => {
-      return (
-        entity as EntityTypes & {
-          getMediaWikiContributions(
-            username: string,
-            limit?: number
-          ): Promise<MediawikiContribsResult>;
-        }
-      ).getMediaWikiContributions(wikiUsername!, limit);
+      if (!entity || !wikiUsername) {
+        throw new Error("MediaWiki contributions query enabled without entity/username");
+      }
+      return asInteropEntity(entity).getMediaWikiContributions(wikiUsername, limit);
     },
     enabled: !!entity && hasWiki && isWikiLinked && !!wikiUsername,
     staleTime: 5 * 60 * 1000,

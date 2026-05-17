@@ -1,133 +1,161 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { EntityTypes } from "@communecter/cocolight-api-client";
-import { useCocolight } from "@/hooks/useCocolight";
+/**
+ * Mutations interop (Discourse + MediaWiki) — factory + hooks.
+ *
+ * Pattern aligné avec `profil/actions/mutations/core.ts` et `cagnotte/actions/mutations/` :
+ * la factory encapsule `useMutationWithToast` + le `refreshMe()` post-succès + l'invalidation
+ * React Query et expose une API stable aux composants.
+ *
+ * Toutes les mutations partagent :
+ *  - `entity` non-null + `refreshMe` provenant de `useCocolight()`
+ *  - Toast i18n via namespace `modules/interop`
+ *  - Invalidation de la query associée (`discourse-profil` / `mediawiki-contribs`)
+ */
 
-type EntityWithDiscourse = EntityTypes & {
-  linkDiscourseAccount(username: string): Promise<{
-    result: boolean;
-    error?: string;
-    username?: string;
-    profileUrl?: string;
-  }>;
-  unlinkDiscourseAccount(): Promise<{ result: boolean; error?: string }>;
-  checkDiscourseEmailMatch(): Promise<{
-    found: boolean;
-    user?: Record<string, unknown>;
-  }>;
-  dismissDiscourseLink(): Promise<{ result: boolean; error?: string }>;
+import { useQueryClient, type QueryKey } from "@tanstack/react-query";
+import { useCocolight } from "@/hooks/useCocolight";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import {
+  asInteropEntity,
+  type EntityWithInterop,
+  type DiscourseLinkResult,
+  type DiscourseCheckEmailResult,
+  type DiscourseSimpleResult,
+  type MediawikiResult,
+} from "./_interopEntity";
+
+// ============================================================================
+// FACTORY
+// ============================================================================
+
+interface InteropMutationConfig<TParams, TData> {
+  /** Action à exécuter — reçoit l'entité résolue (non-null) et les params dynamiques. */
+  action: (entity: EntityWithInterop, params: TParams) => Promise<TData>;
+  /** Clés i18n pour les toasts (relatives au namespace `modules/interop`). */
+  i18n: {
+    successKey: string;
+    errorKey: string;
+  };
+  /** Query keys à invalider au succès (default: aucune). */
+  invalidate?: QueryKey[];
+  /** Si `true`, déclenche `refreshMe()` au succès (default: true). */
+  refreshMeOnSuccess?: boolean;
+}
+
+/**
+ * Crée un hook de mutation interop typé avec toasts + invalidation automatique.
+ *
+ * @example
+ * export const useDiscourseLink = createInteropMutation<string, DiscourseLinkResult>({
+ *   action: (entity, username) => entity.linkDiscourseAccount(username),
+ *   i18n: { successKey: "toasts.discourse.linkSuccess", errorKey: "toasts.discourse.linkError" },
+ *   invalidate: [["discourse-profil"]],
+ * });
+ */
+function createInteropMutation<TParams = void, TData = unknown>(
+  config: InteropMutationConfig<TParams, TData>,
+) {
+  return function useInteropMutation() {
+    const { entity, refreshMe } = useCocolight();
+    const queryClient = useQueryClient();
+    const refreshMeOnSuccess = config.refreshMeOnSuccess ?? true;
+
+    return useMutationWithToast<TData, TParams>({
+      mutationFn: async (params) => {
+        if (!entity) throw new Error("Aucune entité disponible pour la mutation interop");
+        return config.action(asInteropEntity(entity), params);
+      },
+      namespace: "modules/interop",
+      successKey: config.i18n.successKey,
+      errorKey: config.i18n.errorKey,
+      invalidateQueries: config.invalidate ?? [],
+      onSuccessCallback: () => {
+        if (refreshMeOnSuccess) {
+          void refreshMe();
+        }
+        // useMutationWithToast invalide via React Query côté hook, mais on garde
+        // un fallback explicite ici au cas où le hook serait amené à invalider
+        // une query externe au pattern (defensive — pas strictement requis).
+        (config.invalidate ?? []).forEach((queryKey) => {
+          queryClient.invalidateQueries({ queryKey });
+        });
+      },
+    });
+  };
+}
+
+// ============================================================================
+// QUERY KEYS
+// ============================================================================
+
+const QUERY_KEYS = {
+  DISCOURSE_PROFIL: ["discourse-profil"] as const,
+  MEDIAWIKI_CONTRIBS: ["mediawiki-contribs"] as const,
 };
 
-function asDiscourseEntity(entity: EntityTypes): EntityWithDiscourse {
-  return entity as EntityWithDiscourse;
-}
+// ============================================================================
+// DISCOURSE
+// ============================================================================
 
-export function useDiscourseLink() {
-  const { entity, refreshMe } = useCocolight();
-  const queryClient = useQueryClient();
+export const useDiscourseLink = createInteropMutation<string, DiscourseLinkResult>({
+  action: (entity, username) => entity.linkDiscourseAccount(username),
+  i18n: {
+    successKey: "toasts.discourse.linkSuccess",
+    errorKey: "toasts.discourse.linkError",
+  },
+  invalidate: [QUERY_KEYS.DISCOURSE_PROFIL],
+});
 
-  return useMutation({
-    mutationFn: async (username: string) => {
-      if (!entity) throw new Error("No entity");
-      return asDiscourseEntity(entity).linkDiscourseAccount(username);
-    },
-    onSuccess: () => {
-      void refreshMe();
-      queryClient.invalidateQueries({ queryKey: ["discourse-profil"] });
-    }
-  });
-}
-
-export function useDiscourseUnlink() {
-  const { entity, refreshMe } = useCocolight();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async () => {
-      if (!entity) throw new Error("No entity");
-      return asDiscourseEntity(entity).unlinkDiscourseAccount();
-    },
-    onSuccess: () => {
-      void refreshMe();
-      queryClient.invalidateQueries({ queryKey: ["discourse-profil"] });
-    },
-  });
-}
+export const useDiscourseUnlink = createInteropMutation<void, DiscourseSimpleResult>({
+  action: (entity) => entity.unlinkDiscourseAccount(),
+  i18n: {
+    successKey: "toasts.discourse.unlinkSuccess",
+    errorKey: "toasts.discourse.unlinkError",
+  },
+  invalidate: [QUERY_KEYS.DISCOURSE_PROFIL],
+});
 
 /**
  * @unused Pas de consommateur dans le repo au 2026-05-17. Conservé pour usage futur prévu
  * (auto-suggestion de liaison Discourse si l'email du user correspond à un compte existant).
+ *
+ * Note : pas de toast succès (la mutation retourne juste un booléen — l'UI consommatrice
+ * décide quoi afficher selon `found`).
  */
-export function useDiscourseCheckEmail() {
-  const { entity } = useCocolight();
+export const useDiscourseCheckEmail = createInteropMutation<void, DiscourseCheckEmailResult>({
+  action: (entity) => entity.checkDiscourseEmailMatch(),
+  i18n: {
+    successKey: "toasts.discourse.checkEmailError", // jamais affiché — pas de side-effect
+    errorKey: "toasts.discourse.checkEmailError",
+  },
+  refreshMeOnSuccess: false,
+});
 
-  return useMutation({
-    mutationFn: async () => {
-      if (!entity) throw new Error("No entity");
-      return asDiscourseEntity(entity).checkDiscourseEmailMatch();
-    },
-  });
-}
+export const useDiscourseDismiss = createInteropMutation<void, DiscourseSimpleResult>({
+  action: (entity) => entity.dismissDiscourseLink(),
+  i18n: {
+    successKey: "toasts.discourse.dismissSuccess",
+    errorKey: "toasts.discourse.dismissError",
+  },
+});
 
-export function useDiscourseDismiss() {
-  const { entity, refreshMe } = useCocolight();
+// ============================================================================
+// MEDIAWIKI
+// ============================================================================
 
-  return useMutation({
-    mutationFn: async () => {
-      if (!entity) throw new Error("No entity");
-      return asDiscourseEntity(entity).dismissDiscourseLink();
-    },
-    onSuccess: () => {
-      void refreshMe();
-    },
-  });
-}
+export const useMediawikiLink = createInteropMutation<string, MediawikiResult>({
+  action: (entity, username) => entity.linkMediaWikiAccount(username),
+  i18n: {
+    successKey: "toasts.mediawiki.linkSuccess",
+    errorKey: "toasts.mediawiki.linkError",
+  },
+  invalidate: [QUERY_KEYS.MEDIAWIKI_CONTRIBS],
+});
 
-/* ------------------------------------------------------------------ */
-/* MediaWiki                                                            */
-/* ------------------------------------------------------------------ */
-
-type EntityWithMediawiki = EntityTypes & {
-  linkMediaWikiAccount(username: string): Promise<{
-    result: boolean;
-    error?: string;
-    username?: string;
-    msg?: string;
-  }>;
-  unlinkMediaWikiAccount(): Promise<{ result: boolean; error?: string; msg?: string }>;
-};
-
-function asMediawikiEntity(entity: EntityTypes): EntityWithMediawiki {
-  return entity as EntityWithMediawiki;
-}
-
-export function useMediawikiLink() {
-  const { entity, refreshMe } = useCocolight();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (username: string) => {
-      if (!entity) throw new Error("No entity");
-      return asMediawikiEntity(entity).linkMediaWikiAccount(username);
-    },
-    onSuccess: () => {
-      void refreshMe();
-      queryClient.invalidateQueries({ queryKey: ["mediawiki-contribs"] });
-    },
-  });
-}
-
-export function useMediawikiUnlink() {
-  const { entity, refreshMe } = useCocolight();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async () => {
-      if (!entity) throw new Error("No entity");
-      return asMediawikiEntity(entity).unlinkMediaWikiAccount();
-    },
-    onSuccess: () => {
-      void refreshMe();
-      queryClient.invalidateQueries({ queryKey: ["mediawiki-contribs"] });
-    },
-  });
-}
+export const useMediawikiUnlink = createInteropMutation<void, MediawikiResult>({
+  action: (entity) => entity.unlinkMediaWikiAccount(),
+  i18n: {
+    successKey: "toasts.mediawiki.unlinkSuccess",
+    errorKey: "toasts.mediawiki.unlinkError",
+  },
+  invalidate: [QUERY_KEYS.MEDIAWIKI_CONTRIBS],
+});

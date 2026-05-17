@@ -1,4 +1,21 @@
 {
+  "toasts": {
+    "discourse": {
+      "linkSuccess": "Compte Discourse lié avec succès",
+      "linkError": "Échec de la liaison du compte Discourse",
+      "unlinkSuccess": "Compte Discourse délié",
+      "unlinkError": "Échec de la déliaison du compte Discourse",
+      "dismissSuccess": "Suggestion de liaison Discourse masquée",
+      "dismissError": "Échec du masquage de la suggestion",
+      "checkEmailError": "Échec de la vérification de l'email Discourse"
+    },
+    "mediawiki": {
+      "linkSuccess": "Compte MediaWiki lié avec succès",
+      "linkError": "Échec de la liaison du compte MediaWiki",
+      "unlinkSuccess": "Compte MediaWiki délié",
+      "unlinkError": "Échec de la déliaison du compte MediaWiki"
+    }
+  },
   "wiki": {
     "title": "Wiki",
     "link_account": "Lier le compte",

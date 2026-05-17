@@ -1,4 +1,21 @@
 {
+  "toasts": {
+    "discourse": {
+      "linkSuccess": "Discourse account linked successfully",
+      "linkError": "Failed to link Discourse account",
+      "unlinkSuccess": "Discourse account unlinked",
+      "unlinkError": "Failed to unlink Discourse account",
+      "dismissSuccess": "Discourse link suggestion dismissed",
+      "dismissError": "Failed to dismiss the suggestion",
+      "checkEmailError": "Failed to check Discourse email"
+    },
+    "mediawiki": {
+      "linkSuccess": "MediaWiki account linked successfully",
+      "linkError": "Failed to link MediaWiki account",
+      "unlinkSuccess": "MediaWiki account unlinked",
+      "unlinkError": "Failed to unlink MediaWiki account"
+    }
+  },
   "wiki": {
     "title": "Wiki",
     "link_account": "Link account",

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useInteropConfig } from "./useInteropConfigQuery";
+import { asInteropEntity } from "./_interopEntity";
 
 type InteropData = Record<string, Record<string, string | false>>;
 
@@ -31,18 +32,13 @@ export function useDiscourseAutoDetect() {
   const shouldCheck = !!me && !!entity && hasDiscourse && !isLinked && !isDismissed;
 
   useEffect(() => {
-    if (!shouldCheck) return;
+    if (!shouldCheck || !entity) return;
 
     let cancelled = false;
 
     const check = async () => {
       try {
-        const result = await (entity as EntityTypes & {
-          checkDiscourseEmailMatch(): Promise<{
-            found: boolean;
-            user?: Record<string, unknown>;
-          }>;
-        }).checkDiscourseEmailMatch();
+        const result = await asInteropEntity(entity).checkDiscourseEmailMatch();
 
         if (!cancelled && result.found && result.user) {
           setAutoUser(result.user as DiscourseAutoUser);
@@ -54,13 +50,12 @@ export function useDiscourseAutoDetect() {
     };
 
     void check();
-    return () => { cancelled = true; };
-  // On veut que ça s'exécute une seule fois quand shouldCheck devient true
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      cancelled = true;
+    };
+    // On veut que ça s'exécute une seule fois quand shouldCheck devient true
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shouldCheck]);
 
   return { autoUser, open, setOpen };
 }
-
-// Import type nécessaire
-import type { EntityTypes } from "@communecter/cocolight-api-client";
