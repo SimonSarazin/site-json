@@ -3,6 +3,8 @@ import { Search } from "lucide-react";
 import type { FieldErrors } from "react-hook-form";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useT } from "@/hooks/useT";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import type { FormFieldMapping, FinderValue, FinderElement, FinderConfig } from "../types";
 import { FinderElementCard } from "./FinderElementCard";
 import { FinderSearchModal } from "./FinderSearchModal";
@@ -69,6 +71,8 @@ export function FinderField({
   hideLabel = false,
   baseUrl = "",
 }: FinderFieldProps) {
+  useLoadNamespace("modules/coform");
+  const t = useT("modules/coform");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Fusionner la config du champ avec les valeurs par défaut
@@ -190,7 +194,7 @@ export function FinderField({
       {/* Message d'erreur */}
       {hasError && (
         <p className="text-sm text-destructive">
-          {errors[field.name]?.message?.toString() || "Ce champ est requis"}
+          {errors[field.name]?.message?.toString() || String(t("coform.finder.requiredField"))}
         </p>
       )}
 

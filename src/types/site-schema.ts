@@ -1431,6 +1431,7 @@ import {
   FinanceSummarySectionSchema,
   CagnotteLayoutSectionSchema,
 } from "@/modules/cagnotte/schema";
+import { CoFormSectionSchema } from "@/modules/coform/schema";
 
 // Re-exports pour la backward-compat (les consommateurs peuvent continuer à
 // importer depuis `@/types/site-schema`, mais l'origine est `@/modules/cagnotte/schema`).
@@ -1440,6 +1441,7 @@ export {
   ActionsSummarySectionSchema,
   FinanceSummarySectionSchema,
   CagnotteLayoutSectionSchema,
+  CoFormSectionSchema,
 };
 export type {
   ActionsSection,
@@ -1453,6 +1455,7 @@ export type {
   CagnotteLayoutSection,
   CagnotteLayoutSectionProps,
 } from "@/modules/cagnotte/schema";
+export type { CoFormSection } from "@/modules/coform/schema";
 
 //───────────────────────────────────────────────────────────────
 // Union de toutes les sections
@@ -1522,6 +1525,7 @@ export const Section = z.discriminatedUnion("type", [
   ActionsSummarySectionSchema,
   FinanceSummarySectionSchema,
   CagnotteLayoutSectionSchema,
+  CoFormSectionSchema,
   z.object({
     type: z.literal("siteList"),
     id: z.string().optional(),

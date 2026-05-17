@@ -118,6 +118,71 @@
       "updated": "updated on",
       "newAnswer": "New answer"
     },
+    "finder": {
+      "fallbackElement": "element",
+      "requiredField": "This field is required",
+      "elementCard": {
+        "edit": "Edit",
+        "removeAria": "Remove"
+      },
+      "modal": {
+        "title": "Search",
+        "titleWithLabel": "Search for a {{label}}",
+        "searchPlaceholder": "Enter the name of the element to search",
+        "selectedHeading_one": "Selected",
+        "selectedHeading_other": "Selected",
+        "resultsHeading": "Results ({{count}})",
+        "noResults": "No results found for \"{{query}}\"",
+        "addNewPrompt": "Your {{label}} doesn't exist yet?",
+        "addNewButton": "Add",
+        "inviteTitle": "Invite by email",
+        "inviteNameLabel": "Name",
+        "inviteNamePlaceholder": "Person's name",
+        "inviteEmailLabel": "Email",
+        "inviteEmailPlaceholder": "address@email.com",
+        "inviteSendButton": "Send invitation",
+        "searchHint": "Type at least 2 characters to start searching",
+        "cancel": "Cancel",
+        "validate": "Validate"
+      },
+      "types": {
+        "organizations": "Organization",
+        "citoyens": "Citizen",
+        "events": "Event",
+        "projects": "Project",
+        "news": "News",
+        "cities": "City",
+        "things": "Object",
+        "poi": "Point of interest",
+        "classified": "Classified",
+        "products": "Product",
+        "services": "Service",
+        "surveys": "Survey",
+        "bookmarks": "Bookmark",
+        "proposals": "Proposal",
+        "rooms": "Room",
+        "actions": "Action",
+        "networks": "Network",
+        "urls": "Link",
+        "circuits": "Circuit",
+        "risks": "Risk",
+        "badges": "Badge"
+      }
+    },
+    "modal": {
+      "unsavedTitle": "Unsaved changes",
+      "unsavedDescription": "You have unsaved changes. What would you like to do?",
+      "continueEditing": "Continue editing",
+      "discardChanges": "Discard changes",
+      "save": "Save",
+      "ariaTitleFallback": "Form"
+    },
+    "smart": {
+      "loading": "Loading form...",
+      "errorTitle": "Loading error",
+      "retry": "Retry",
+      "emptyMessage": "No form found"
+    },
     "multiCheckboxPlus": {
       "maxSelections": "Maximum {{max}} choices",
       "withInput": "with text",

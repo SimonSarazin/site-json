@@ -4,6 +4,8 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useT } from "@/hooks/useT";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import type { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
 import type { FinderConfig, FinderElement, FinderSearchResult, FinderElementType } from "../types";
 import { FinderElementCard } from "./FinderElementCard";
@@ -35,6 +37,8 @@ export function FinderSearchModal({
   onValidate,
   baseUrl = "",
 }: FinderSearchModalProps) {
+  useLoadNamespace("modules/coform");
+  const t = useT("modules/coform");
   const { entity } = useCocolight();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
@@ -136,7 +140,7 @@ export function FinderSearchModal({
             
             return {
               id: mongoId,
-              name: (rawData.name as string) || "Sans nom",
+              name: (rawData.name as string) || String(t("coform.finder.fallbackElement")),
               type: (rawData.collection as string) || (rawData.type as string) || (Array.isArray(config.type) ? config.type[0] : config.type),
               profilThumbImageUrl: rawData.profilThumbImageUrl as string | undefined,
               email: rawData.email as string | undefined,
@@ -245,7 +249,9 @@ export function FinderSearchModal({
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
           <h3 className="font-semibold">
-            Rechercher {config.elementLabel ? `un ${config.elementLabel}` : "un élément"}
+            {config.elementLabel
+              ? String(t("coform.finder.modal.titleWithLabel", undefined, { label: config.elementLabel }))
+              : String(t("coform.finder.modal.title"))}
           </h3>
           <button
             type="button"
@@ -265,7 +271,7 @@ export function FinderSearchModal({
               type="text"
               value={searchQuery}
               onChange={handleSearchChange}
-              placeholder={config.placeholderSearchField || "Entrez le nom de l'élément recherché"}
+              placeholder={config.placeholderSearchField || String(t("coform.finder.modal.searchPlaceholder"))}
               className="w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
             />
             {isSearching && (
@@ -280,7 +286,13 @@ export function FinderSearchModal({
           {Object.keys(selectedInModal).length > 0 && (
             <div className="mb-4">
               <div className="text-xs font-medium text-muted-foreground mb-2">
-                Sélectionné{Object.keys(selectedInModal).length > 1 ? "s" : ""}
+                {String(
+                  t(
+                    Object.keys(selectedInModal).length > 1
+                      ? "coform.finder.modal.selectedHeading_other"
+                      : "coform.finder.modal.selectedHeading_one"
+                  )
+                )}
               </div>
               <div className="space-y-2">
                 {Object.values(selectedInModal).map((element) => (
@@ -301,7 +313,7 @@ export function FinderSearchModal({
           {searchResults.length > 0 && (
             <div>
               <div className="text-xs font-medium text-muted-foreground mb-2">
-                Résultats ({searchResults.length})
+                {String(t("coform.finder.modal.resultsHeading", undefined, { count: String(searchResults.length) }))}
               </div>
               <div className="space-y-2">
                 {searchResults.map((result) => (
@@ -326,11 +338,13 @@ export function FinderSearchModal({
           {/* Message si aucun résultat */}
           {searchQuery.length >= 2 && !isSearching && searchResults.length === 0 && !showInviteForm && (
             <div className="text-center py-8 text-muted-foreground">
-              <p>Aucun résultat trouvé pour "{searchQuery}"</p>
+              <p>{String(t("coform.finder.modal.noResults", undefined, { query: searchQuery }))}</p>
               {showAddNew && (
                 <div className="mt-4">
                   <p className="text-sm mb-2">
-                    Votre {config.elementLabel || "élément"} n'existe pas encore ?
+                    {String(t("coform.finder.modal.addNewPrompt", undefined, {
+                      label: config.elementLabel || String(t("coform.finder.fallbackElement")),
+                    }))}
                   </p>
                   <button
                     type="button"
@@ -338,7 +352,7 @@ export function FinderSearchModal({
                     className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
                   >
                     <Plus className="w-4 h-4" />
-                    <span>Ajouter</span>
+                    <span>{String(t("coform.finder.modal.addNewButton"))}</span>
                   </button>
                 </div>
               )}
@@ -350,22 +364,22 @@ export function FinderSearchModal({
             <div className="bg-muted/50 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-4">
                 <UserPlus className="w-5 h-5 text-primary" />
-                <span className="font-medium">Inviter par email</span>
+                <span className="font-medium">{String(t("coform.finder.modal.inviteTitle"))}</span>
               </div>
               <div className="space-y-3">
                 <div>
-                  <label className="text-sm font-medium">Nom</label>
+                  <label className="text-sm font-medium">{String(t("coform.finder.modal.inviteNameLabel"))}</label>
                   <input
                     type="text"
-                    placeholder="Nom de la personne"
+                    placeholder={String(t("coform.finder.modal.inviteNamePlaceholder"))}
                     className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Email</label>
+                  <label className="text-sm font-medium">{String(t("coform.finder.modal.inviteEmailLabel"))}</label>
                   <input
                     type="email"
-                    placeholder="adresse@email.com"
+                    placeholder={String(t("coform.finder.modal.inviteEmailPlaceholder"))}
                     className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
                   />
                 </div>
@@ -374,7 +388,7 @@ export function FinderSearchModal({
                   className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
                 >
                   <Mail className="w-4 h-4" />
-                  <span>Envoyer l'invitation</span>
+                  <span>{String(t("coform.finder.modal.inviteSendButton"))}</span>
                 </button>
               </div>
             </div>
@@ -384,7 +398,7 @@ export function FinderSearchModal({
           {searchQuery.length < 2 && !isSearching && (
             <div className="text-center py-8 text-muted-foreground">
               <Search className="w-12 h-12 mx-auto mb-2 opacity-50" />
-              <p>Tapez au moins 2 caractères pour lancer la recherche</p>
+              <p>{String(t("coform.finder.modal.searchHint"))}</p>
             </div>
           )}
         </div>
@@ -396,7 +410,7 @@ export function FinderSearchModal({
             onClick={onClose}
             className="px-4 py-2 border rounded-md hover:bg-muted transition-colors"
           >
-            Annuler
+            {String(t("coform.finder.modal.cancel"))}
           </button>
           <button
             type="button"
@@ -409,7 +423,7 @@ export function FinderSearchModal({
                 : "bg-muted text-muted-foreground cursor-not-allowed"
             )}
           >
-            Valider
+            {String(t("coform.finder.modal.validate"))}
           </button>
         </div>
       </div>

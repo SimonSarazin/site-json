@@ -125,8 +125,8 @@ export function EvaluationVoteCell({
                 className={cn(
                   "w-5 h-5",
                   n <= currentStars
-                    ? "fill-yellow-400 text-yellow-400"
-                    : "text-muted-foreground hover:text-yellow-400"
+                    ? "fill-warning text-warning"
+                    : "text-muted-foreground hover:text-warning"
                 )}
               />
             </button>

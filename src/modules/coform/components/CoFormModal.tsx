@@ -16,6 +16,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/hooks/useT";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { SmartCoForm } from "./SmartCoForm";
 import type { AllStepsData } from "../types";
 
@@ -67,6 +69,8 @@ export function CoFormModal({
   className,
   lockedFields,
 }: CoFormModalProps) {
+  useLoadNamespace("modules/coform");
+  const t = useT("modules/coform");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [confirmClose, setConfirmClose] = useState(false);
@@ -113,18 +117,18 @@ export function CoFormModal({
       <AlertDialog open={confirmClose} onOpenChange={setConfirmClose}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Modifications non enregistrées</AlertDialogTitle>
+            <AlertDialogTitle>{String(t("coform.modal.unsavedTitle"))}</AlertDialogTitle>
             <AlertDialogDescription>
-              Vous avez des modifications en cours. Que souhaitez-vous faire ?
+              {String(t("coform.modal.unsavedDescription"))}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Continuer l'édition</AlertDialogCancel>
+            <AlertDialogCancel>{String(t("coform.modal.continueEditing"))}</AlertDialogCancel>
             <Button variant="destructive" onClick={handleConfirmDiscard}>
-              Annuler les modifications
+              {String(t("coform.modal.discardChanges"))}
             </Button>
             <AlertDialogAction onClick={handleConfirmSave}>
-              Enregistrer
+              {String(t("coform.modal.save"))}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -144,7 +148,7 @@ export function CoFormModal({
           )}
           {!title && (
             <DialogHeader className="sr-only">
-              <DialogTitle>Formulaire</DialogTitle>
+              <DialogTitle>{String(t("coform.modal.ariaTitleFallback"))}</DialogTitle>
             </DialogHeader>
           )}
 

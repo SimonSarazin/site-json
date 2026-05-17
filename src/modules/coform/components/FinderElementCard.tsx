@@ -1,5 +1,7 @@
 import { X, Pencil, User, Building2, Calendar, Briefcase, MapPin, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/hooks/useT";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import type { FinderElement, FinderElementType } from "../types";
 
 interface FinderElementCardProps {
@@ -50,33 +52,14 @@ const elementIconMap: Record<FinderElementType, LucideIcon> = {
 };
 
 /**
- * Label traduit par type d'élément
+ * Label traduit par type d'élément.
+ * Toutes les clés vivent sous `coform.finder.types.<type>` dans le namespace `modules/coform`.
  */
-function getTypeLabel(type: FinderElementType): string {
-  const labels: Record<FinderElementType, string> = {
-    organizations: "Organisation",
-    citoyens: "Citoyen",
-    events: "Événement",
-    projects: "Projet",
-    news: "Actualité",
-    cities: "Ville",
-    things: "Objet",
-    poi: "Point d'intérêt",
-    classified: "Annonce",
-    products: "Produit",
-    services: "Service",
-    surveys: "Enquête",
-    bookmarks: "Favori",
-    proposals: "Proposition",
-    rooms: "Salle",
-    actions: "Action",
-    networks: "Réseau",
-    urls: "Lien",
-    circuits: "Circuit",
-    risks: "Risque",
-    badges: "Badge",
-  };
-  return labels[type] || type;
+function useTypeLabel(type: FinderElementType): string {
+  const t = useT("modules/coform");
+  const translated = t(`coform.finder.types.${type}`);
+  // i18next retourne la clé brute si la traduction n'existe pas — fallback sur `type`.
+  return translated === `coform.finder.types.${type}` ? type : translated;
 }
 
 /**
@@ -105,8 +88,10 @@ export function FinderElementCard({
   onSelect,
   baseUrl = "",
 }: FinderElementCardProps) {
+  useLoadNamespace("modules/coform");
+  const t = useT("modules/coform");
   const ElementIcon = elementIconMap[element.type] || Building2;
-  const typeLabel = getTypeLabel(element.type);
+  const typeLabel = useTypeLabel(element.type);
   const address = formatAddress(element.address);
 
   // Construire l'URL de l'image
@@ -138,7 +123,7 @@ export function FinderElementCard({
             type="checkbox"
             checked={isSelected}
             onChange={() => onSelect?.(element)}
-            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+            className="h-4 w-4 rounded border-input text-primary focus:ring-primary"
           />
         </div>
       )}
@@ -169,17 +154,17 @@ export function FinderElementCard({
                 e.stopPropagation();
                 onEdit(element);
               }}
-              className="text-red-500 hover:text-red-600 flex items-center gap-1 text-xs"
+              className="text-destructive hover:text-destructive/80 flex items-center gap-1 text-xs"
             >
               <Pencil className="w-3 h-3" />
-              <span>Modifier</span>
+              <span>{String(t("coform.finder.elementCard.edit"))}</span>
             </button>
           )}
         </div>
         <div className="text-xs text-muted-foreground">{typeLabel}</div>
         {address && (
           <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-            <MapPin className="w-3 h-3 text-orange-500" />
+            <MapPin className="w-3 h-3 text-muted-foreground" />
             <span className="truncate">{address}</span>
           </div>
         )}
@@ -193,8 +178,8 @@ export function FinderElementCard({
             e.stopPropagation();
             onRemove(element.id);
           }}
-          className="shrink-0 p-1.5 rounded-md bg-red-500 text-white hover:bg-red-600 transition-colors"
-          aria-label="Supprimer"
+          className="shrink-0 p-1.5 rounded-md bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors"
+          aria-label={String(t("coform.finder.elementCard.removeAria"))}
         >
           <X className="w-4 h-4" />
         </button>
