@@ -16,7 +16,7 @@ function asContribList(contribs: unknown): WikiContrib[] {
 const MediawikiPod = () => {
   const t = useT("modules/interop");
   const { wikiBaseUrl } = useInteropConfig();
-  const { wikiUsername } = useInteropUserLinks();
+  const { wikiUsername, isOwnProfile } = useInteropUserLinks();
   const { data, isLoading } = useMediawikiContribsQuery(10);
   const unlinkMutation = useMediawikiUnlink();
 
@@ -38,16 +38,18 @@ const MediawikiPod = () => {
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-primary-foreground border-primary-foreground/40 hover:bg-primary-foreground/10 hover:text-primary-foreground h-7 text-xs"
-            onClick={() => unlinkMutation.mutate()}
-            disabled={unlinkMutation.isPending}
-          >
-            <Unlink className="h-3 w-3 mr-1" />
-            {t("wiki.unlink")}
-          </Button>
+          {isOwnProfile && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-primary-foreground border-primary-foreground/40 hover:bg-primary-foreground/10 hover:text-primary-foreground h-7 text-xs"
+              onClick={() => unlinkMutation.mutate()}
+              disabled={unlinkMutation.isPending}
+            >
+              <Unlink className="h-3 w-3 mr-1" />
+              {t("wiki.unlink")}
+            </Button>
+          )}
           {userPageUrl && (
             <a
               href={userPageUrl}

@@ -268,7 +268,7 @@ export default function CardAnswer({ item, onClick }: SearchCardProps) {
 
 					<Button
 						variant="secondary"
-						className="inline-flex items-center gap-1.5 rounded-md bg-btn-structure px-4 py-2 text-xs font-semibold text-primary-foreground transition-colors hover:opacity-90"
+						className="inline-flex items-center gap-1.5 rounded-md bg-btn-structure px-4 py-2 text-xs font-semibold text-primary-foreground transition-colors hover:text-foreground"
 						onClick={(event) => {
 							event.stopPropagation();
 							if (structure.slug) {

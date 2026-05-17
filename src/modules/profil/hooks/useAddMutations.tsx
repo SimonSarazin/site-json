@@ -263,10 +263,9 @@ interface AddTiersLieuFormData {
   postalCode?: string;
   streetAddress?: string;
   localityId?: string;
-  // Médias
-  logo?: string;
-  photos?: string[];
   videoUrl?: string;
+  _logoFile?: File | null;
+  _photoFiles?: File[];
   // Présence en ligne
   websiteUrl?: string;
   socialLinks?: Array<{ platform: string; url: string }>;
@@ -326,16 +325,16 @@ export function useAddTiersLieu(entity?: EntityTypes | null) {
         localityId: data.localityId,
       });
 
-      // ID en dur pour reproduire le test Postman
       const generatedId = "69f858c451e74c3967050385";
 
       const payload: Record<string, unknown> = {
-        // Champs requis par le schéma AJV ADD_TIERS_LIEU (permissif)
         id: generatedId,
         collection: "organizations",
         key: "organization",
         name: data.name,
+        type: "NGO", 
         role: "admin",
+        scope: "",
         ...transformedAddress,
         // Description / contenu
         ...(data.shortDescription ? { shortDescription: data.shortDescription } : {}),
@@ -354,9 +353,6 @@ export function useAddTiersLieu(entity?: EntityTypes | null) {
         ...(data.familyOther ? { typePlaceOther: data.familyOther } : {}),
         ...(data.surfaceBuilt ? { buildingSurfaceArea: Number(data.surfaceBuilt) } : {}),
         ...(data.surfaceOutdoor ? { siteSurfaceArea: Number(data.surfaceOutdoor) } : {}),
-        // Médias
-        ...(data.logo ? { profilImageUrl: data.logo } : {}),
-        ...(data.photos && data.photos.length > 0 ? { photos: data.photos } : {}),
         ...(data.videoUrl ? { video: [data.videoUrl] } : {}),
         // Site web + réseaux
         ...(data.websiteUrl ? { url: data.websiteUrl } : {}),
@@ -391,12 +387,27 @@ export function useAddTiersLieu(entity?: EntityTypes | null) {
         costumType: TIERS_LIEU_COSTUM.costumType,
       };
 
+      // Utilise l'endpoint ADD_ORGANIZATION (étendu avec les champs tiers-lieu en optionnel).
+      // Appel direct via endpointApi pour bypass le filtrage de save() qui ne garderait
+      // que les champs définis dans le schéma SDK.
       const targetWithEndpoint = targetEntity as unknown as {
-        endpointApi: { addTiersLieu: (data: Record<string, unknown>) => Promise<unknown> };
+        endpointApi: { addOrganization: (data: Record<string, unknown>) => Promise<unknown> };
       };
-      await targetWithEndpoint.endpointApi.addTiersLieu(payload);
+      await targetWithEndpoint.endpointApi.addOrganization(payload);
 
       const organization = await targetEntity.organization({ id: generatedId }) as Organization;
+
+      // Upload du logo vers le backend Cocolight (pas en local)
+      if (data._logoFile) {
+        try {
+          const orgWithUpload = organization as unknown as {
+            updateImageProfil: (data: { profil_avatar: File }) => Promise<unknown>;
+          };
+          await orgWithUpload.updateImageProfil({ profil_avatar: data._logoFile });
+        } catch (err) {
+          console.error("[useAddTiersLieu] Logo upload failed:", err);
+        }
+      }
 
       return { organization };
     },

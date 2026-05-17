@@ -133,6 +133,11 @@ export const ProfileAboutSectionSchema = z.object({
   layout: z.enum(["column", "grid"]).optional().default("column"),
 });
 
+export const ProfileSsbeAboutSectionSchema = z.object({
+  type: z.literal("profile-about-ssbe"),
+  hidden: z.boolean().optional().default(false),
+});
+
 export const ProfileMapSectionSchema = z.object({
   type: z.literal("profile-map"),
   height: z.string().optional().default("400px"),
@@ -231,6 +236,7 @@ const ProfileOnlySectionSchema = z.discriminatedUnion("type", [
   ProfileTiersLieuxInfoSectionSchema,
   ProfileTiersLieuxAboutSectionSchema,
   ProfileAboutSectionSchema,
+  ProfileSsbeAboutSectionSchema,
   ProfileMapSectionSchema,
   ProfileOrganizerSectionSchema,
   ProfileMembersSectionSchema,
@@ -328,6 +334,7 @@ export type ProfilesConfig = z.infer<typeof ProfilesConfigSchema>;
 export type ProfileHeaderSection = z.infer<typeof ProfileHeaderSectionSchema>;
 export type ProfileInfoSection = z.infer<typeof ProfileInfoSectionSchema>;
 export type ProfileAboutSection = z.infer<typeof ProfileAboutSectionSchema>;
+export type ProfileSsbeAboutSection = z.infer<typeof ProfileSsbeAboutSectionSchema>;
 export type ProfileMapSection = z.infer<typeof ProfileMapSectionSchema>;
 export type ProfileOrganizerSection = z.infer<typeof ProfileOrganizerSectionSchema>;
 export type ProfileMembersSection = z.infer<typeof ProfileMembersSectionSchema>;

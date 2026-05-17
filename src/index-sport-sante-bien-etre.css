@@ -111,6 +111,7 @@
   --btn-structure: oklch(0.55 0.18 240);
   --schedule-tag-bg: oklch(0.95 0.01 250);
   --schedule-tag-fg: oklch(0.4 0.05 260);
+  --gradient-hero: linear-gradient(135deg,oklch(0.70 0.16 180),oklch(0.65 0.17 230));
 }
 
 .dark {
