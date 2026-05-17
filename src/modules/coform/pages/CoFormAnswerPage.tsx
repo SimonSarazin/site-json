@@ -14,7 +14,7 @@ import {
 } from "../hooks/useCoFormQuery";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
-import { toast } from "sonner";
+import { showErrorToast } from "@/lib/toastUtils";
 import type { AllStepsData } from "../types";
 import "../i18n/i18n";
 
@@ -94,9 +94,7 @@ export default function CoFormAnswerPage() {
       setPageState({ view: "thankYou" });
     },
     onError: (error) => {
-      toast.error(t("coform.status.error"), {
-        description: error.message,
-      });
+      showErrorToast(error, "coform.status.error", t);
     },
   });
 

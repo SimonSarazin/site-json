@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getBaseUrl } from "@/lib/constant/common";
 import { useCocolight } from "@/hooks/useCocolight";
-import { toast } from "sonner";
+import { showErrorToast } from "@/lib/toastUtils";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useT } from "@/hooks/useT";
@@ -130,7 +130,7 @@ export function UploaderField({ field, errors, value = [], onChange, answerId, s
     const existing = files;
 
     if (existing.length + selected.length > maxFiles) {
-      toast.error(t("coform.uploader.tooManyFiles", "Maximum {{max}} fichier(s) autorisé(s).").replace("{{max}}", String(maxFiles)));
+      showErrorToast(null, "coform.uploader.tooManyFiles", t, { max: String(maxFiles) });
       if (inputRef.current) inputRef.current.value = "";
       return;
     }
@@ -140,11 +140,11 @@ export function UploaderField({ field, errors, value = [], onChange, answerId, s
       const ext = file.name.split(".").pop()?.toLowerCase() || "";
       const allowed = (config?.formats ?? DEFAULT_UPLOAD_FORMATS).map((f) => f.toLowerCase());
       if (!allowed.includes(ext)) {
-        toast.error(t("coform.uploader.invalidExtension", "Extension non autorisée : {{name}}").replace("{{name}}", file.name));
+        showErrorToast(null, "coform.uploader.invalidExtension", t, { name: file.name });
         continue;
       }
       if (file.size > maxSize) {
-        toast.error(t("coform.uploader.fileTooLarge", "Fichier trop volumineux : {{name}}").replace("{{name}}", file.name));
+        showErrorToast(null, "coform.uploader.fileTooLarge", t, { name: file.name });
         continue;
       }
 
@@ -174,8 +174,8 @@ export function UploaderField({ field, errors, value = [], onChange, answerId, s
             pathParams: { id: item.docId },
           });
         }
-      } catch {
-        toast.error("Erreur lors de la suppression du fichier.");
+      } catch (error) {
+        showErrorToast(error, "coform.uploader.deleteFileError", t);
         setDeletingIndex(null);
         return;
       }

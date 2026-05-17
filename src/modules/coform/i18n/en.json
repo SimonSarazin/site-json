@@ -141,6 +141,7 @@
       "fileTooLarge": "File too large: {{name}}",
       "tooManyFiles": "Maximum {{max}} file(s) allowed.",
       "deleteFile": "Delete {{name}}",
+      "deleteFileError": "Failed to delete the file.",
       "loadingFiles": "Loading files…",
       "noFileSelected": "No file selected",
       "pasteHint": "Ctrl+V to paste",

@@ -11,7 +11,7 @@ import { CoFormThankYou } from "../components/CoFormThankYou";
 import { useCoFormQuery, useCoFormFinalMutation } from "../hooks/useCoFormQuery";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
-import { toast } from "sonner";
+import { showErrorToast, showSuccessToast } from "@/lib/toastUtils";
 import type { AllStepsData } from "../types";
 import "../i18n/i18n";
 
@@ -89,9 +89,7 @@ export default function CoFormPage() {
             }
         },
         onError: (error) => {
-            toast.error(t("coform.status.error"), {
-                description: error.message,
-            });
+            showErrorToast(error, "coform.status.error", t);
         },
     });
 
@@ -265,7 +263,7 @@ export default function CoFormPage() {
 
     // Callback standalone après soumission réussie (toast simple, pas de page remerciement)
     const handleAfterStandaloneSubmit = () => {
-        toast.success(t("coform.status.success"));
+        showSuccessToast("coform.status.success", t);
     };
 
     // Mode édition : l'utilisateur a déjà répondu et veut modifier sa réponse

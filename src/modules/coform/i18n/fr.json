@@ -141,6 +141,7 @@
       "fileTooLarge": "Fichier trop volumineux : {{name}}",
       "tooManyFiles": "Maximum {{max}} fichier(s) autorisé(s).",
       "deleteFile": "Supprimer {{name}}",
+      "deleteFileError": "Erreur lors de la suppression du fichier.",
       "loadingFiles": "Chargement des fichiers…",
       "noFileSelected": "Aucun fichier sélectionné",
       "pasteHint": "Ctrl+V pour coller",
