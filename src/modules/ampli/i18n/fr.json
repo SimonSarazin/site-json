@@ -70,5 +70,33 @@
     "AmpliNews": {
         "headline": "Dernières actualités",
         "subhead": "Restez informé des développements et des succès de notre communauté."
+    },
+    "AmpliPage": {
+        "notFoundTitle": "Ampli non trouvé",
+        "notFoundDescription": "La configuration pour l'ampli \"{{slug}}\" est introuvable.",
+        "backHome": "Retour à l'accueil"
+    },
+    "AmpliUserCard": {
+        "noLocation": "Localisation non renseignée",
+        "contributions_one": "{{count}} contribution",
+        "contributions_other": "{{count}} contributions"
+    },
+    "MeeteemSection": {
+        "viewToggle": {
+            "answers": "Annuaire",
+            "map": "Carte",
+            "split": "Split"
+        },
+        "filters": {
+            "title": "Filtres"
+        },
+        "map": {
+            "placeholderTitle": "Carte interactive",
+            "placeholderSubtitle": "(nécessite Leaflet.js)"
+        },
+        "card": {
+            "noDate": "N/A",
+            "noUser": "Anonyme"
+        }
     }
 }

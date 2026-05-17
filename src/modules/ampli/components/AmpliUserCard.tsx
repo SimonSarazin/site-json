@@ -1,6 +1,8 @@
 import { Image } from "@/components/layout/Image";
 import { User } from "@communecter/cocolight-api-client";
 import { MapPin } from "lucide-react";
+import { useT } from "@/hooks/useT";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 
 interface AmpliUserProps {
     user: User | undefined;
@@ -8,12 +10,14 @@ interface AmpliUserProps {
 }
 
 export default function AmpliUserCard({ user, contributionCount }: AmpliUserProps) {
-    
+    useLoadNamespace("modules/ampli");
+    const t = useT("modules/ampli");
+
     const addressString = user?.serverData.address
         ? [user?.serverData.address.streetAddress, user?.serverData.address.postalCode, user?.serverData.address.addressLocality]
             .filter(Boolean)
             .join(", ")
-        : "Localisation non renseignée";
+        : String(t("AmpliUserCard.noLocation"));
     return (
         <div className="ampli-user-card p-4 border border-foreground/15 shadow-foreground/10 shadow-[0_2px_8px] rounded-xl before:content-[''] before:duration-300 before:ease-in-out before:absolute before:top-0 before:left-0 before:w-full before:h-1 before:bg-linear-to-r before:from-primary before:to-secondary before:scale-x-0 hover:before:scale-x-[1] transition-all relative overflow-hidden bg-background/70">
             <div className="flex items-center gap-4">
@@ -22,7 +26,7 @@ export default function AmpliUserCard({ user, contributionCount }: AmpliUserProp
                         (
                             <Image src={user?.serverData.profilMediumImageUrl} alt={user?.serverData.name ?? ""} className="w-full h-full object-cover"/>
                         ) :
-                        (<div className="text-white flex items-center justify-center w-full h-full text-3xl font-bold">
+                        (<div className="text-primary-foreground flex items-center justify-center w-full h-full text-3xl font-bold">
                             {user?.serverData.name ? user.serverData.name.charAt(0).toUpperCase() : "?"}
                         </div>)
                     }
@@ -38,7 +42,17 @@ export default function AmpliUserCard({ user, contributionCount }: AmpliUserProp
                         )
                     }
                     <div className="mt-2 flex items-center flex-wrap gap-2.5">
-                        <span className="text-xs text-foreground/75">{contributionCount ?? 0} contribution{contributionCount && contributionCount > 1 ? "s" : ""}</span>
+                        <span className="text-xs text-foreground/75">
+                            {String(
+                                t(
+                                    contributionCount && contributionCount > 1
+                                        ? "AmpliUserCard.contributions_other"
+                                        : "AmpliUserCard.contributions_one",
+                                    undefined,
+                                    { count: String(contributionCount ?? 0) },
+                                ),
+                            )}
+                        </span>
                     </div>
                 </div>
             </div>
