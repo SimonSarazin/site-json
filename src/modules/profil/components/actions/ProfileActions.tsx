@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useT } from "@/hooks/useT";
 import { useCocolight } from "@/hooks/useCocolight";
+import { isUser } from "@/lib/getTypedEntity";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
 import { useProfilPermissions } from "../../hooks/useProfilPermissions";
 import {
@@ -35,11 +36,13 @@ import {
   useUnfollowEntity,
   useRequestToJoin,
   useLeaveEntity,
+} from "../../actions/mutations/relationship";
+import {
   useSendFriendRequest,
   useRemoveFriend,
   useAcceptFriendRequest,
   useCancelFriendRequest,
-} from "../../hooks/useRelationshipMutations";
+} from "../../actions/mutations/friend";
 import { toast } from "sonner";
 
 interface ProfileActionsProps {
@@ -56,14 +59,16 @@ export function ProfileActions({ email, phone, url }: ProfileActionsProps) {
   const permissions = useProfilPermissions(entity);
   const [copied, setCopied] = useState(false);
 
-  const followMutation = useFollowEntity();
-  const unfollowMutation = useUnfollowEntity();
-  const requestToJoinMutation = useRequestToJoin();
-  const leaveMutation = useLeaveEntity();
-  const sendFriendRequestMutation = useSendFriendRequest();
-  const removeFriendMutation = useRemoveFriend();
-  const acceptFriendMutation = useAcceptFriendRequest();
-  const cancelFriendMutation = useCancelFriendRequest();
+  const currentUser = me && isUser(me) ? me : null;
+
+  const followMutation = useFollowEntity(entity);
+  const unfollowMutation = useUnfollowEntity(entity);
+  const requestToJoinMutation = useRequestToJoin(entity);
+  const leaveMutation = useLeaveEntity(entity);
+  const sendFriendRequestMutation = useSendFriendRequest(currentUser);
+  const removeFriendMutation = useRemoveFriend(currentUser);
+  const acceptFriendMutation = useAcceptFriendRequest(currentUser);
+  const cancelFriendMutation = useCancelFriendRequest(currentUser);
 
   const isOwnProfile = me?.id === entity?.id;
   const isConnected = me?.isConnected;
@@ -113,19 +118,27 @@ export function ProfileActions({ email, phone, url }: ProfileActionsProps) {
   };
 
   const handleAddFriend = () => {
-    sendFriendRequestMutation.mutate();
+    if (isUser(entity)) {
+      sendFriendRequestMutation.mutate({ user: entity });
+    }
   };
 
   const handleRemoveFriend = () => {
-    removeFriendMutation.mutate();
+    if (isUser(entity)) {
+      removeFriendMutation.mutate({ user: entity });
+    }
   };
 
   const handleAcceptFriend = () => {
-    acceptFriendMutation.mutate();
+    if (isUser(entity)) {
+      acceptFriendMutation.mutate({ user: entity });
+    }
   };
 
   const handleCancelFriendRequest = () => {
-    cancelFriendMutation.mutate();
+    if (isUser(entity)) {
+      cancelFriendMutation.mutate({ user: entity });
+    }
   };
 
   const handleFollow = () => {

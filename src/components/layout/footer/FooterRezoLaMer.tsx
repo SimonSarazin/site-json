@@ -2,6 +2,7 @@ import { useLocalization } from "@/hooks/useLocalization";
 import { Footer } from "@/types/site-schema";
 import { Waves, Shield, Facebook, Twitter, Instagram, Linkedin, Mail, Youtube, ExternalLink } from "lucide-react";
 import { Link } from "react-router";
+import { IconOrSvg } from "@/components/ui/icon-or-svg";
 
 interface FooterRezoLaMerProps {
     footer: Footer;
@@ -47,10 +48,7 @@ export default function FooterRezoLaMer({ footer }: FooterRezoLaMerProps) {
                                     className="h-8 w-8 object-contain"
                                 />
                             ) : footer.logoIcon ? (
-                                <span
-                                    className="w-8 h-8 text-primary flex items-center justify-center [&>svg]:w-8 [&>svg]:h-8"
-                                    dangerouslySetInnerHTML={{ __html: footer.logoIcon }}
-                                />
+                                <IconOrSvg value={footer.logoIcon} className="w-8 h-8 text-primary" />
                             ) : (
                                 <DefaultIcon className="w-8 h-8 text-primary" />
                             )}

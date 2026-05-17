@@ -1,29 +1,24 @@
+import {
+  asRecord,
+  getEntityId as sharedGetEntityId,
+  getServerData,
+  type UnknownRecord,
+} from '@/modules/cagnotte/utils/dataTransform';
+
+export type { UnknownRecord };
+export { asRecord };
+
 export type MilestoneSyncContext = {
   projectMilestoneIndex: number | null;
   answerDepenseIndex: number | null;
   description: string;
 };
 
-type UnknownRecord = Record<string, unknown>;
-
-export function asRecord(value: unknown): UnknownRecord {
-  return value && typeof value === 'object' ? (value as UnknownRecord) : {};
-}
-
-export function getEntityIdFromUnknown(value: unknown): string {
-  if (typeof value === 'string') return value;
-  if (!value || typeof value !== 'object') return '';
-
-  const record = value as UnknownRecord;
-  if (typeof record.id === 'string') return record.id;
-
-  const mongo = asRecord(record._id);
-  if (typeof mongo._str === 'string') return mongo._str;
-  if (typeof mongo.$id === 'string') return mongo.$id;
-  if (typeof record.$id === 'string') return String(record.$id);
-
-  return '';
-}
+/**
+ * Alias historique conservé pour compat. `getEntityId` (utils/dataTransform) couvre
+ * exactement le même contrat. Utilise directement `getEntityId` dans le nouveau code.
+ */
+export const getEntityIdFromUnknown = sharedGetEntityId;
 
 export function getEnvelopeProjects(rawEnvelope: unknown): Array<UnknownRecord> {
   const envelopeRecord = asRecord(rawEnvelope);
@@ -41,10 +36,11 @@ export function resolveMilestoneSyncContext(params: {
   const projects = getEnvelopeProjects(params.rawEnvelope);
 
   for (const projectRow of projects) {
-    const projectData = asRecord(projectRow._serverData ?? projectRow.serverData ?? projectRow);
+    const projectData = asRecord(projectRow.serverData ?? projectRow);
+    const projectEntityData = getServerData(projectData.project);
     const candidateAnswerId = getEntityIdFromUnknown(projectData) || String(projectData.answer ?? '').trim();
     const candidateProjectId =
-      String(asRecord(projectData.project).id ?? '').trim() ||
+      String(projectEntityData.id ?? '').trim() ||
       getEntityIdFromUnknown(projectRow.projectIdObj) ||
       String(projectData.projectId ?? '').trim();
 
@@ -52,7 +48,7 @@ export function resolveMilestoneSyncContext(params: {
     const matchesProject = params.projectId && candidateProjectId === params.projectId;
     if (!matchesAnswer && !matchesProject) continue;
 
-    const projectMilestonesSource = asRecord(asRecord(projectData.project).oceco);
+    const projectMilestonesSource = asRecord(projectEntityData.oceco);
     const projectMilestones = Array.isArray(projectMilestonesSource.milestones) ? (projectMilestonesSource.milestones as unknown[]) : [];
     const depensesFromAnswer = asRecord(asRecord(projectData.answers).aapStep1).depense;
     const depenses = Array.isArray(projectData.depenses)

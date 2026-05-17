@@ -33,9 +33,10 @@ export function useCoFormQuery({ formId, enabled = true }: UseCoFormQueryOptions
     queryFn: async () => {
       if (!api) throw new Error("API non initialisée");
       
-      // Utilise l'endpoint GET_COFORM_BY_ID
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const form = await (api as any).form({ id: formId });
+      // Façade `Api.form({ id })` (cf. Api.d.ts:66) — retourne une instance `Form` typée.
+      const form = await api.form({ id: formId });
+      // `Form.serverData` est typé `FormItemNormalized` côté lib ; le type local `CoFormData`
+      // diffère (sous-ensemble enrichi). Cast structurel maintenu.
       return form.serverData as unknown as CoFormData;
     },
     enabled: enabled && isReady && !!formId,
@@ -547,8 +548,7 @@ export function useCoFormFinalMutation({ formId, answerId, onSuccess, onError }:
         // Pas de fichiers, soumission directe
         // Nettoyer les URLs uniquement dans les champs uploader
         const cleanedData = cleanUploaderUrls(allData, formData);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const response = await (api.endpointApi as any).saveCoformAnswer({
+        const response = await api.endpointApi.saveCoformAnswer({
           formId,
           answers: JSON.stringify(cleanedData),
           ...(answerId ? { answerId } : {}),
@@ -569,8 +569,7 @@ export function useCoFormFinalMutation({ formId, answerId, onSuccess, onError }:
         const { file, docType } = await dataUriToFile(firstPending.value, "upload-1");
         const { contentKey, subKey } = getUploadKeys(firstPending.inputType, firstPending.path);
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const firstUploadResponse = await (api.endpointApi as any).coformUploadAnswerFile({
+        const firstUploadResponse = await api.endpointApi.coformUploadAnswerFile({
           formId,
           docType,
           contentKey,
@@ -578,6 +577,8 @@ export function useCoFormFinalMutation({ formId, answerId, onSuccess, onError }:
           qquuid: crypto.randomUUID(),
           qqfilename: file.name,
           qqtotalfilesize: file.size,
+          // `qqfile` est typé `{ [k: string]: unknown }` côté lib (CoformUploadAnswerFileData) :
+          // le `File` natif n'est pas reconnu comme tel, d'où le cast structurel.
           qqfile: file as unknown as Record<string, unknown>,
         });
 
@@ -627,8 +628,7 @@ export function useCoFormFinalMutation({ formId, answerId, onSuccess, onError }:
             const { file, docType } = await dataUriToFile(pending.value, fallbackName);
             const { contentKey, subKey } = getUploadKeys(pending.inputType, pending.path);
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const uploadResponse = await (api.endpointApi as any).coformUploadAnswerFile({
+            const uploadResponse = await api.endpointApi.coformUploadAnswerFile({
               formId,
               answerId: activeAnswerId!, // On a forcément un answerId ici
               docType,

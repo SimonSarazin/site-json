@@ -80,10 +80,11 @@ const LazySections: {
   member: lazy(() => import("./MemberSection")),
   heroWithIcon: lazy(() => import("./HeroWithIconSection")),
   meeteem: lazy(() => import("@/modules/ampli/components/sections/MeeteemSection")),
-  actions: lazy(() => import("./ActionsSection")),
-  finance: lazy(() => import("./FinanceSection")),
-  "actions-summary": lazy(() => import("./ActionsSummarySection")),
-  "finance-summary": lazy(() => import("./FinanceSummarySection")),
+  actions: lazy(() => import("@/modules/cagnotte/components/sections/ActionsSection")),
+  finance: lazy(() => import("@/modules/cagnotte/components/sections/FinanceSection")),
+  "actions-summary": lazy(() => import("@/modules/cagnotte/components/sections/ActionsSummarySection")),
+  "finance-summary": lazy(() => import("@/modules/cagnotte/components/sections/FinanceSummarySection")),
+  "cagnotte-layout": lazy(() => import("@/modules/cagnotte/components/sections/CagnotteLayoutSection")),
   siteList: lazy(() => import("./SiteListSection")),
 };
 

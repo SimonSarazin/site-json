@@ -10,13 +10,23 @@ interface UseOrganizationAllProjectsProps {
 const PROJECTS_SUPPORTED_TYPES = new Set(["organizations", "citoyens"]);
 
 /**
- * Hook pour récupérer TOUS les projets d'une organisation en une seule requête.
- * Utilisé pour les SELECT/dropdowns qui nécessitent la liste complète.
+ * @deprecated **Code mort — aucun consommateur dans le repo (vérifié 2026-05-15).**
  *
- * @param entity - L'entité (organisation ou citoyen)
- * @param entityType - Le type de l'entité ("organizations" ou "citoyens")
- * @param enabled - Activer/désactiver la requête
- * @returns Objet contenant: projects (Project[]), isLoading, error
+ * Statut : créé le 2026-04-23 dans le commit fondateur cagnotte `12a92ef` ("Cagnotte modal...")
+ * comme dropdown projets, mais le flow final utilise `useOrganizationProjectsWithAnswers.shared`
+ * (qui retourne projets + réponses CoForm jointes en une seule requête).
+ *
+ * Raison du @deprecated :
+ *   - Aucun import dans `src/` (grep exhaustif sur ts/tsx/json).
+ *   - Utilise `(entity as any).getProjects(...)` + `indexStep: 10000` — anti-pattern (cf. AUDIT-cocolight-api-client.md §H3).
+ *   - Cast `as any` désactivable via `eslint-disable` au lieu d'un narrow `isUser`/`isOrganization`.
+ *
+ * Alternative active :
+ *   - Projets+answers d'une orga → `useOrganizationProjectsWithAnswers` (`@/modules/cagnotte/hooks`).
+ *   - Projets seuls paginés → `useProfilProjectsQuery` (`@/modules/profil/hooks`) — pattern infinite scroll propre.
+ *
+ * À reviewer : supprimer le fichier dès la prochaine itération de cleanup
+ * (même profil que C1 / C2 dans AUDIT-cocolight-api-client.md — code mort issu de PR massive).
  */
 export function useOrganizationAllProjects({
   entity,

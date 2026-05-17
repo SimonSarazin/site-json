@@ -229,7 +229,7 @@ export function MultiCheckboxPlusField({
       {/* Limite de sélection */}
       {config?.nbAnswersMax && (
         <p className="text-xs text-muted-foreground">
-          {t("multiCheckboxPlus.maxSelections", `Maximum ${config.nbAnswersMax} choix`, { max: config.nbAnswersMax })}
+          {t("coform.multiCheckboxPlus.maxSelections", `Maximum ${config.nbAnswersMax} choix`, { max: config.nbAnswersMax })}
           {" "}({value.length}/{config.nbAnswersMax})
         </p>
       )}
@@ -306,7 +306,7 @@ export function MultiCheckboxPlusField({
                     <div className="mt-2">
                       <Input
                         ref={(el) => { inputRefs.current[option] = el; }}
-                        placeholder={placeholder || t("multiCheckboxPlus.enterDetails", "Précisez...")}
+                        placeholder={placeholder || t("coform.multiCheckboxPlus.enterDetails", "Précisez...")}
                         value={textInputs[option] || ""}
                         onChange={(e) => handleTextChange(option, e.target.value)}
                         onBlur={() => setTouchedInputs(prev => ({ ...prev, [option]: true }))}
@@ -317,7 +317,7 @@ export function MultiCheckboxPlusField({
                       />
                       {showCplxError && (
                         <p className="text-xs text-destructive mt-1">
-                          {t("multiCheckboxPlus.textRequired", "Ce champ est obligatoire")}
+                          {t("coform.multiCheckboxPlus.textRequired", "Ce champ est obligatoire")}
                         </p>
                       )}
                     </div>
@@ -333,7 +333,7 @@ export function MultiCheckboxPlusField({
           <div className="flex items-center gap-2 pt-2">
             <Input
               ref={newValueInputRef}
-              placeholder={config.newValuePlaceholder || t("multiCheckboxPlus.addNewValue", "Ajouter une option...")}
+              placeholder={config.newValuePlaceholder || t("coform.multiCheckboxPlus.addNewValue", "Ajouter une option...")}
               value={newValueInput}
               onChange={(e) => setNewValueInput(e.target.value)}
               onKeyDown={(e) => {

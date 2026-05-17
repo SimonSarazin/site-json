@@ -31,29 +31,10 @@ import { useGetAnswersByFormsQuery } from "@/modules/profil/hooks/useGetAnwersBy
 import z from "zod";
 import { getServerUrl } from "@/lib/constant/common";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
-import { Answer } from "@communecter/cocolight-api-client";
+import { type Answer, type UpdatePathValueData } from "@communecter/cocolight-api-client";
 import { CoFormModal } from "@/modules/coform/components/CoFormModal";
 import type { AllStepsData } from "@/modules/coform/types";
 import { QUERY_KEYS } from "@/modules/profil/constants/queryKeys";
-
-/** Entity method not exposed in SDK types */
-interface EntityWithForms {
-  generateNewAnswerId(formId: string): Promise<Answer>;
-}
-
-/** Extended UpdatePathValue params — SDK restricts `collection` but API accepts "answers" */
-interface UpdatePathValueParams {
-  id: string;
-  collection: string;
-  path: string;
-  value: Record<string, unknown>;
-}
-
-/** EndpointApi with deleteElement (exists at runtime but may not be on the narrowed type) */
-interface EndpointApiWithDelete {
-  deleteElement(data: Record<string, unknown>): Promise<unknown>;
-  updatePathValue(data: UpdatePathValueParams): Promise<unknown>;
-}
 
 /** A form answer array entry with dynamic indexed fields */
 type FormAnswerRow = Record<string | number, unknown>;
@@ -209,14 +190,18 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
     inputKey?: string;
     lockedFields?: string[];
   }) => {
-    const answer = await (entity as unknown as EntityWithForms).generateNewAnswerId(formId);
+    // Façade `BaseEntity.generateNewAnswerId(formId)` — retourne `Promise<any>` côté lib.
+    // On narrow vers les champs effectivement utilisés (`id` direct + `_serverData.id` du Mongo).
+    const answer = (await entity.generateNewAnswerId(formId)) as
+      | (Pick<Answer, "id"> & { _serverData?: { id?: string } })
+      | undefined;
     if (!answer?.id) {
       console.error("Failed to generate new answer ID for form:", formId);
       return;
     }
     const finderPath = finder ?? section.forms?.[formId]?.finder;
     if (finderPath) {
-      const params: UpdatePathValueParams = {
+      const params: UpdatePathValueData = {
         id: answer.id,
         collection: "answers",
         path: `${finderPath}.${entity.id}`,
@@ -226,7 +211,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
           name: entity.serverData.name,
         },
       };
-      const paramsLinks: UpdatePathValueParams = {
+      const paramsLinks: UpdatePathValueData = {
         id: answer.id,
         collection: "answers",
         path: `links.${entity.serverData.collection}.${entity.id}`,
@@ -235,8 +220,8 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
           name: entity.serverData.name,
         },
       };
-      await (entity.endpointApi as unknown as EndpointApiWithDelete).updatePathValue(params);
-      await (entity.endpointApi as unknown as EndpointApiWithDelete).updatePathValue(paramsLinks);
+      await entity.endpointApi.updatePathValue(params);
+      await entity.endpointApi.updatePathValue(paramsLinks);
     }
     // Build defaultValues from finderPath so the finder field is pre-populated in the modal
     let defaultValues: AllStepsData | undefined;
@@ -418,9 +403,9 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
   const handleDeleteAnswer = async (answerId: string) => {
     if (!window.confirm(t("ProfilTiersLieuxAbout.confirmDelete"))) return;
     try {
-      await (entity.endpointApi as unknown as EndpointApiWithDelete).deleteElement({
+      await entity.endpointApi.deleteElement({
         reason: "delete answer from profile",
-        pathParams: { type: "answers", id: answerId }
+        pathParams: { type: "answers", id: answerId },
       });
       window.location.reload();
     } catch (e) {

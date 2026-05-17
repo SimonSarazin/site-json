@@ -126,6 +126,9 @@
       "rank": "Rank",
       "addNewValue": "Add an option..."
     },
+    "evaluation": {
+      "noCategories": "No category defined"
+    },
     "uploader": {
       "addFile": "Add a file",
       "addFiles": "Add files",

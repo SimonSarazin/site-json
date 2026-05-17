@@ -11,6 +11,27 @@ interface UseProfilContributorsQueryProps {
 
 const CONTRIBUTORS_SUPPORTED_TYPES = new Set(["projects"]);
 
+/**
+ * @deprecated **Code mort — aucun consommateur dans le repo (vérifié 2026-05-15).**
+ *
+ * Statut : créé pour alimenter un tab "Contributeurs" sur les profils projets
+ * (`Project.getContributors`). Jamais branché à un composant ; le tab profil
+ * correspondant n'existe pas dans la config actuelle.
+ *
+ * Raison du @deprecated :
+ *   - Aucun import dans `src/` / `tests/` / `e2e/` (grep exhaustif).
+ *   - Cast `(entity as unknown as { getContributors(...) })` au lieu d'un narrow `isProject`
+ *     — anti-pattern (cf. AUDIT-cocolight-api-client.md §H2).
+ *
+ * Alternative active :
+ *   - Si le tab "Contributeurs" est ré-introduit, utiliser le pattern de `useFriendsQuery`
+ *     (narrow `isProject` + `useInfiniteQueryScrollNextWithTransform` + appel direct
+ *     `project.getContributors({...})` typé natif).
+ *
+ * À reviewer : supprimer dès la prochaine itération de cleanup hooks orphelins
+ * (même profil que C1 / C2 dans AUDIT-cocolight-api-client.md, et que
+ * [[useOrganizationAllProjects]] / [[useProfilSubscriptionsQuery]]).
+ */
 export function useProfilContributorsQuery({
   entity,
   entityType,

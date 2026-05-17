@@ -14,6 +14,25 @@ export { LocalizedString, LOCALES };
 import { ProfilesConfigSchema } from "../modules/profil/schema";
 import { AmpliConfigSchema } from "@/modules/ampli/schema";
 
+/**
+ * Schéma réutilisable pour les champs qui acceptent soit un nom d'icône
+ * Lucide (kebab-case, ex: `"waves"`, `"piggy-bank"`), soit un SVG inline
+ * (string commençant par `"<svg"`).
+ *
+ * Consommé côté composant via `<IconOrSvg value={...} />` (`@/components/ui/icon-or-svg`)
+ * qui détecte le format au render.
+ */
+export const LucideIconOrSvg = z.string().refine(
+  (val) => {
+    const trimmed = val.trim();
+    return /^[a-z][a-z0-9-]*$/.test(trimmed) || trimmed.startsWith("<svg");
+  },
+  {
+    message:
+      'Doit être un nom d\'icône Lucide en kebab-case (ex: "waves") ou un SVG inline (string commençant par "<svg").',
+  }
+);
+
 // export const CocolightConfig = z.object({
 //   baseUrl: z.string().url().default("http://localhost:5080"),
 //   debug: z.boolean().default(false),
@@ -158,7 +177,7 @@ export const HeroRezoLaMerSchema = z.object({
   props: z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
-    logoIcon: z.string().optional(),
+    logoIcon: LucideIconOrSvg.optional(),
     backgroundImage: z.string().optional(),
     backgroundImageAlt: LocalizedString.optional(),
     badges: z
@@ -276,7 +295,7 @@ export const HeroCommuneTransparenteSchema = z.object({
   props: z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
-    logoIcon: z.string().optional(),
+    logoIcon: LucideIconOrSvg.optional(),
     logoImage: z.string().optional(),
     backgroundImage: z.string().optional(),
     backgroundImageAlt: LocalizedString.optional(),
@@ -1403,90 +1422,37 @@ const MemberSectionSchema = z.object({
 export type MemberSection = z.infer<typeof MemberSectionSchema>;
 export type MemberSectionProps = z.infer<typeof MemberSectionSchema>["props"];
 
-//──────────────── Actions Section (Milestones/Tasks)
-const ActionsSectionSchema = z.object({
-  type: z.literal("actions"),
-  id: z.string().optional(),
-  props: z.object({
-    idProjet: z.string().optional(),
-    maxItems: z.number().optional().default(10),
-    showStatus: z.boolean().optional().default(true),
-    showProgress: z.boolean().optional().default(true),
-    showDates: z.boolean().optional().default(true),
-    layout: z.enum(["list", "grid", "timeline"]).optional().default("list"),
-  }),
-});
+//──────────────── Sections du module cagnotte (schemas définis dans le module)
+// Cf. src/modules/cagnotte/schema.ts
+import {
+  ActionsSectionSchema,
+  FinanceSectionSchema,
+  ActionsSummarySectionSchema,
+  FinanceSummarySectionSchema,
+  CagnotteLayoutSectionSchema,
+} from "@/modules/cagnotte/schema";
 
-export type ActionsSection = z.infer<typeof ActionsSectionSchema>;
-export type ActionsSectionProps = z.infer<typeof ActionsSectionSchema>["props"];
-
-//──────────────── Finance Section (Funding/Cagnotte)
-const FinanceSectionSchema = z.object({
-  type: z.literal("finance"),
-  id: z.string().optional(),
-  props: z.object({
-    idProjet: z.string().optional(),
-    maxItems: z.number().optional().default(10),
-    showProgress: z.boolean().optional().default(true),
-    showFundingGoal: z.boolean().optional().default(true),
-    showContributors: z.boolean().optional().default(true),
-    showTimeline: z.boolean().optional().default(false),
-    layout: z.enum(["cards", "list", "compact"]).optional().default("cards"),
-  }),
-});
-
-export type FinanceSection = z.infer<typeof FinanceSectionSchema>;
-export type FinanceSectionProps = z.infer<typeof FinanceSectionSchema>["props"];
-
-//──────────────── Actions Summary Section (Sidebar synthesis/charts)
-const ActionsSummarySectionSchema = z.object({
-  type: z.literal("actions-summary"),
-  id: z.string().optional(),
-  props: z.object({
-    idProjet: z.string().optional(),
-    maxItems: z.number().optional().default(10),
-    showKpis: z.boolean().optional().default(true),
-    showCharts: z.boolean().optional().default(true),
-    charts: z.object({
-      statusDistribution: z.object({
-        enabled: z.boolean().optional().default(true),
-        type: z.enum(["pie", "bar", "list"]).optional().default("pie"),
-      }).optional(),
-      timeline: z.object({
-        enabled: z.boolean().optional().default(true),
-        type: z.enum(["bar", "line", "list"]).optional().default("bar"),
-      }).optional(),
-    }).optional(),
-  }),
-});
-
-export type ActionsSummarySection = z.infer<typeof ActionsSummarySectionSchema>;
-export type ActionsSummarySectionProps = z.infer<typeof ActionsSummarySectionSchema>["props"];
-
-//──────────────── Finance Summary Section (Sidebar synthesis/charts)
-const FinanceSummarySectionSchema = z.object({
-  type: z.literal("finance-summary"),
-  id: z.string().optional(),
-  props: z.object({
-    idProjet: z.string().optional(),
-    maxItems: z.number().optional().default(10),
-    showKpis: z.boolean().optional().default(true),
-    showCharts: z.boolean().optional().default(true),
-    charts: z.object({
-      fundingProgress: z.object({
-        enabled: z.boolean().optional().default(true),
-        type: z.enum(["progress", "bar", "list"]).optional().default("progress"),
-      }).optional(),
-      amountByMilestone: z.object({
-        enabled: z.boolean().optional().default(true),
-        type: z.enum(["bar", "list"]).optional().default("bar"),
-      }).optional(),
-    }).optional(),
-  }),
-});
-
-export type FinanceSummarySection = z.infer<typeof FinanceSummarySectionSchema>;
-export type FinanceSummarySectionProps = z.infer<typeof FinanceSummarySectionSchema>["props"];
+// Re-exports pour la backward-compat (les consommateurs peuvent continuer à
+// importer depuis `@/types/site-schema`, mais l'origine est `@/modules/cagnotte/schema`).
+export {
+  ActionsSectionSchema,
+  FinanceSectionSchema,
+  ActionsSummarySectionSchema,
+  FinanceSummarySectionSchema,
+  CagnotteLayoutSectionSchema,
+};
+export type {
+  ActionsSection,
+  ActionsSectionProps,
+  FinanceSection,
+  FinanceSectionProps,
+  ActionsSummarySection,
+  ActionsSummarySectionProps,
+  FinanceSummarySection,
+  FinanceSummarySectionProps,
+  CagnotteLayoutSection,
+  CagnotteLayoutSectionProps,
+} from "@/modules/cagnotte/schema";
 
 //───────────────────────────────────────────────────────────────
 // Union de toutes les sections
@@ -1555,6 +1521,7 @@ export const Section = z.discriminatedUnion("type", [
   FinanceSectionSchema,
   ActionsSummarySectionSchema,
   FinanceSummarySectionSchema,
+  CagnotteLayoutSectionSchema,
   z.object({
     type: z.literal("siteList"),
     id: z.string().optional(),
@@ -1664,7 +1631,7 @@ export const Header = z.object({
   logo: z.string().optional(),
   logoAlt: LocalizedString.optional(),
   logoTitle: LocalizedString.optional(),
-  logoIcon: z.string().optional(),
+  logoIcon: LucideIconOrSvg.optional(),
   path: z.string().min(1).optional(),
   nav: z.array(EnhancedNavItem),
   navSubsite: z.array(EnhancedNavItem).optional(),
@@ -1748,7 +1715,7 @@ export const Footer = z.object({
   newsletter: NewsletterSectionSchema.optional(),
   copyright: LocalizedString,
   logo: z.string().optional(),
-  logoIcon: z.string().optional(),
+  logoIcon: LucideIconOrSvg.optional(),
   logoTitle: LocalizedString.optional(),
   logoAlt: LocalizedString.optional(),
   description: LocalizedString.optional(),

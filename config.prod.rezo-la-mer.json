@@ -1855,38 +1855,40 @@
           },
           "sections": [
             {
-              "type": "profile-tab-layout",
-              "leftSections": [
-                {
-                  "type": "actions",
-                  "props": {
-                    "maxItems": 20,
-                    "showStatus": true,
-                    "showProgress": true,
-                    "showDates": true,
-                    "layout": "list"
+              "type": "cagnotte-layout",
+              "props": {
+                "leftSections": [
+                  {
+                    "type": "actions",
+                    "props": {
+                      "maxItems": 20,
+                      "showStatus": true,
+                      "showProgress": true,
+                      "showDates": true,
+                      "layout": "list"
+                    }
                   }
-                }
-              ],
-              "rightSections": [
-                {
-                  "type": "actions-summary",
-                  "props": {
-                    "showKpis": true,
-                    "showCharts": true,
-                    "charts": {
-                      "statusDistribution": {
-                        "enabled": true,
-                        "type": "pie"
-                      },
-                      "timeline": {
-                        "enabled": true,
-                        "type": "bar"
+                ],
+                "rightSections": [
+                  {
+                    "type": "actions-summary",
+                    "props": {
+                      "showKpis": true,
+                      "showCharts": true,
+                      "charts": {
+                        "statusDistribution": {
+                          "enabled": true,
+                          "type": "pie"
+                        },
+                        "timeline": {
+                          "enabled": true,
+                          "type": "bar"
+                        }
                       }
                     }
                   }
-                }
-              ]
+                ]
+              }
             }
           ]
         },
@@ -1898,38 +1900,40 @@
           },
           "sections": [
             {
-              "type": "profile-tab-layout",
-              "leftSections": [
-                {
-                  "type": "finance",
-                  "props": {
-                    "maxItems": 20,
-                    "showProgress": true,
-                    "showFundingGoal": true,
-                    "showContributors": true,
-                    "layout": "cards"
+              "type": "cagnotte-layout",
+              "props": {
+                "leftSections": [
+                  {
+                    "type": "finance",
+                    "props": {
+                      "maxItems": 20,
+                      "showProgress": true,
+                      "showFundingGoal": true,
+                      "showContributors": true,
+                      "layout": "cards"
+                    }
                   }
-                }
-              ],
-              "rightSections": [
-                {
-                  "type": "finance-summary",
-                  "props": {
-                    "showKpis": true,
-                    "showCharts": true,
-                    "charts": {
-                      "fundingProgress": {
-                        "enabled": true,
-                        "type": "progress"
-                      },
-                      "amountByMilestone": {
-                        "enabled": true,
-                        "type": "bar"
+                ],
+                "rightSections": [
+                  {
+                    "type": "finance-summary",
+                    "props": {
+                      "showKpis": true,
+                      "showCharts": true,
+                      "charts": {
+                        "fundingProgress": {
+                          "enabled": true,
+                          "type": "progress"
+                        },
+                        "amountByMilestone": {
+                          "enabled": true,
+                          "type": "bar"
+                        }
                       }
                     }
                   }
-                }
-              ]
+                ]
+              }
             }
           ]
         }

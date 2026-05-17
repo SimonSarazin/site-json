@@ -19,6 +19,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { IconOrSvg } from "@/components/ui/icon-or-svg";
 import LoginForm from "@/components/auth/LoginForm";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
@@ -112,9 +113,9 @@ export default function HeaderNosCommunes({ header }: HeaderNosCommunesProps) {
                                 className="h-8 w-8 object-contain group-hover:scale-110 transition-transform"
                             />
                         ) : header.logoIcon ? (
-                            <span
-                                className="w-8 h-8 text-primary group-hover:scale-110 transition-transform flex items-center justify-center [&>svg]:w-8 [&>svg]:h-8"
-                                dangerouslySetInnerHTML={{ __html: header.logoIcon }}
+                            <IconOrSvg
+                                value={header.logoIcon}
+                                className="w-8 h-8 text-primary group-hover:scale-110 transition-transform"
                             />
                         ) : null}
                         {header.logoTitle && (
@@ -143,9 +144,9 @@ export default function HeaderNosCommunes({ header }: HeaderNosCommunesProps) {
                                 className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/20 hover:bg-primary/30 text-primary transition-all group"
                             >
                                 {header.piggyBank.icon ? (
-                                    <span
-                                        className="w-5 h-5 group-hover:scale-110 transition-transform flex items-center justify-center [&>svg]:w-5 [&>svg]:h-5"
-                                        dangerouslySetInnerHTML={{ __html: header.piggyBank.icon }}
+                                    <IconOrSvg
+                                        value={header.piggyBank.icon}
+                                        className="w-5 h-5 group-hover:scale-110 transition-transform"
                                     />
                                 ) : null}
                                 {header.piggyBank.amount && (
@@ -160,9 +161,9 @@ export default function HeaderNosCommunes({ header }: HeaderNosCommunesProps) {
                                 className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 text-primary transition-all group"
                             >
                                 {header.urgenceButton.icon ? (
-                                    <span
-                                        className="w-5 h-5 group-hover:scale-110 transition-transform flex items-center justify-center [&>svg]:w-5 [&>svg]:h-5"
-                                        dangerouslySetInnerHTML={{ __html: header.urgenceButton.icon }}
+                                    <IconOrSvg
+                                        value={header.urgenceButton.icon}
+                                        className="w-5 h-5 group-hover:scale-110 transition-transform"
                                     />
                                 ) : null}
                                 <span className="font-semibold text-sm">{t(header.urgenceButton.label)}</span>
@@ -313,9 +314,9 @@ export default function HeaderNosCommunes({ header }: HeaderNosCommunesProps) {
                         >
                             <span className="flex items-center gap-2">
                                 {header.urgenceButton.icon ? (
-                                    <span
-                                        className="w-5 h-5 flex items-center justify-center [&>svg]:w-5 [&>svg]:h-5"
-                                        dangerouslySetInnerHTML={{ __html: header.urgenceButton.icon }}
+                                    <IconOrSvg
+                                        value={header.urgenceButton.icon}
+                                        className="w-5 h-5"
                                     />
                                 ) : null}
                                 <span className="font-medium">{t(header.urgenceButton.label)}</span>

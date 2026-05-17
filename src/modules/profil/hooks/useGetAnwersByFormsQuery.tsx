@@ -4,10 +4,19 @@ import { QUERY_KEYS } from "../constants/queryKeys";
 import type { ProfileTiersLieuxInfoSection } from "../schema";
 import type { SearchEntity, Answer } from "@communecter/cocolight-api-client";
 
-/** Shape returned by entity.searchAnswersByForms() per form */
+/**
+ * Shape retournée par `entity.searchAnswersByForms()` (typage local).
+ *
+ * La signature lib `BaseEntity.searchAnswersByForms` (BaseEntity.d.ts:1700) retourne
+ * `Promise<{ answers: Answer[]; documents: any[]; [k: string]: unknown }[]>` — le champ
+ * `id` (présent en runtime côté backend costum, identifie le formulaire) n'est exposé
+ * que via le `[k]: unknown`. Le type local le rend explicite pour les call-sites qui font
+ * `result.find(r => r.id === formId)`.
+ */
 interface AnswersByFormsResult {
   id: string;
   answers: Answer[];
+  documents?: unknown[];
   [key: string]: unknown;
 }
 
@@ -81,8 +90,12 @@ export function useGetAnswersByFormsQuery({
       const formsParam = buildFormsParam(forms, entityId);
 
       try {
-        const results = await (entity as unknown as { searchAnswersByForms(params: { forms: Record<string, string> }): Promise<AnswersByFormsResult[]> }).searchAnswersByForms({ forms: formsParam });
-        return results;
+        // Façade `BaseEntity.searchAnswersByForms` (BaseEntity.d.ts:1700) — retour typé
+        // `{ answers: Answer[]; documents: any[]; [k]: unknown }[]` côté lib. On l'élargit
+        // localement à `AnswersByFormsResult[]` (qui rend `id` explicite — toujours présent
+        // en runtime côté backend costum).
+        const results = await entity.searchAnswersByForms({ forms: formsParam });
+        return results as AnswersByFormsResult[];
       } catch (err) {
         console.error("[useGetAnswersByFormsQuery] Erreur searchAnswersByForms:", err);
         throw err;

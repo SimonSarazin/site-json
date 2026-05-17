@@ -41,7 +41,7 @@ import {
   useLeaveEntity,
   useAcceptInvitation,
   useRejectInvitation,
-} from "../../hooks/useRelationshipMutations";
+} from "../../actions/mutations/relationship";
 
 export function EntityStatusButton() {
   const t = useT("modules/profil");
@@ -50,12 +50,12 @@ export function EntityStatusButton() {
   const permissions = useProfilPermissions(entity);
   const [confirmAction, setConfirmAction] = useState<string | null>(null);
 
-  const followMutation = useFollowEntity();
-  const unfollowMutation = useUnfollowEntity();
-  const requestToJoinMutation = useRequestToJoin();
-  const leaveMutation = useLeaveEntity();
-  const acceptInvitationMutation = useAcceptInvitation();
-  const rejectInvitationMutation = useRejectInvitation();
+  const followMutation = useFollowEntity(entity);
+  const unfollowMutation = useUnfollowEntity(entity);
+  const requestToJoinMutation = useRequestToJoin(entity);
+  const leaveMutation = useLeaveEntity(entity);
+  const acceptInvitationMutation = useAcceptInvitation(entity);
+  const rejectInvitationMutation = useRejectInvitation(entity);
 
   const isOwnProfile = me?.id === entity?.id;
   const isConnected = me?.isConnected;

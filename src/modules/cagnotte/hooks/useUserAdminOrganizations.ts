@@ -1,10 +1,10 @@
 /**
- * Hook pour récupérer les organisations dont l'utilisateur est admin
- * Utilise getOrganizations() de l'API User pour obtenir les données complètes
+ * Hook pour récupérer les organisations dont l'utilisateur est admin.
+ * Délègue à useUserOrganizations (TanStack + SSR + infinite scroll) avec un filtre serveur.
  */
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import type { User, Organization } from "@communecter/cocolight-api-client";
-import { isUser } from "@/lib/getTypedEntity";
+import { useUserOrganizations } from "@/modules/profil/hooks/useMembershipQuery";
 
 export interface AdminOrganization {
   id: string;
@@ -14,60 +14,46 @@ export interface AdminOrganization {
   profilThumbImageUrl?: string;
 }
 
-/**
- * Hook pour récupérer les organisations où l'utilisateur est admin via l'API
- * @param currentUser - L'utilisateur courant (peut être null)
- * @returns Liste des organisations admin de l'utilisateur
- */
-export function useUserAdminOrganizations(currentUser: User | null): AdminOrganization[] {
-  const [adminOrganizations, setAdminOrganizations] = useState<AdminOrganization[]>([]);
-
-  useEffect(() => {
-    if (!currentUser || !isUser(currentUser)) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setAdminOrganizations([]);
-      return;
-    }
-
-    const fetchAdminOrganizations = async () => {
-      try {
-        // Utiliser getOrganizations() pour récupérer les organisations complètes
-        const result = await currentUser.getOrganizations({
-          indexMin: 0,
-          indexStep: 10000,
-        });
-
-        const organizations = result.results || [];
-
-        // Filtrer pour garder uniquement les organisations où l'utilisateur est admin
-        const adminOrgs = organizations
-          .filter((org: Organization) => {
-            // Vérifier si l'utilisateur est admin de cette organisation
-            // En regardant les liens de l'organisation
-            const orgLinks = (org as unknown as { _serverData?: { links?: { members?: Record<string, { isAdmin?: boolean }> } } })._serverData?.links?.members || {};
-            const userId = currentUser.id;
-            if (!userId) return false;
-            const userLink = orgLinks[userId];
-            return userLink?.isAdmin === true;
-          })
-          .map((org: Organization): AdminOrganization => ({
-            id: org.id || "",
-            name: org.data?.name || "Organisation sans nom",
-            slug: org.data?.slug,
-            profilImageUrl: org.data?.profilImageUrl,
-            profilThumbImageUrl: org.data?.profilThumbImageUrl,
-          }));
-
-        setAdminOrganizations(adminOrgs);
-      } catch (error) {
-        console.error("❌ useUserAdminOrganizations error:", error);
-        setAdminOrganizations([]);
-      }
-    };
-
-    fetchAdminOrganizations();
-  }, [currentUser]);
-
-  return adminOrganizations;
+export interface UseUserAdminOrganizationsParams {
+  /** Terme de recherche fuzzy par nom (côté serveur). Pense à débouncer en amont. */
+  search?: string;
 }
 
+export function useUserAdminOrganizations(
+  currentUser: User | null,
+  params?: UseUserAdminOrganizationsParams
+): AdminOrganization[] {
+  const userId = currentUser?.id ?? "";
+
+  const filters = useMemo(
+    () =>
+      userId
+        ? {
+            [`links.members.${userId}`]: { $exists: true },
+            [`links.members.${userId}.isAdmin`]: true,
+            [`links.members.${userId}.isAdminPending`]: { $exists: false },
+            [`links.members.${userId}.toBeValidated`]: { $exists: false },
+            [`links.members.${userId}.isInviting`]: { $exists: false },
+          }
+        : undefined,
+    [userId]
+  );
+
+  const { organizations } = useUserOrganizations(currentUser, {
+    indexStep: 100,
+    search: params?.search,
+    filters,
+  });
+
+  return useMemo(
+    () =>
+      organizations.map((org: Organization): AdminOrganization => ({
+        id: org.id ?? "",
+        name: org.data?.name ?? "Organisation sans nom",
+        slug: org.data?.slug,
+        profilImageUrl: org.data?.profilImageUrl,
+        profilThumbImageUrl: org.data?.profilThumbImageUrl,
+      })),
+    [organizations]
+  );
+}

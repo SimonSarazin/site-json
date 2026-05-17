@@ -125,7 +125,7 @@ export function ReadOnlyUploaderGallery({ value, answerId, subKey }: ReadOnlyUpl
                 key={idx}
                 entry={entry}
                 baseUrl={baseUrl}
-                label={t("uploader.gallery.openPdf", "Ouvrir le PDF")}
+                label={t("coform.uploader.gallery.openPdf", "Ouvrir le PDF")}
               />
             );
           }
@@ -134,7 +134,7 @@ export function ReadOnlyUploaderGallery({ value, answerId, subKey }: ReadOnlyUpl
               key={idx}
               entry={entry}
               baseUrl={baseUrl}
-              downloadLabel={t("uploader.gallery.download", "Télécharger")}
+              downloadLabel={t("coform.uploader.gallery.download", "Télécharger")}
             />
           );
         })}

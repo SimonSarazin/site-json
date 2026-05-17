@@ -46,7 +46,7 @@ export default function CardEventRezoLaMer({
         id: item.id,
         collection: "events",
         path: "isStarred",
-        value: newStarredValue as unknown as { [k: string]: unknown }
+        value: newStarredValue,
       });
 
       setLocalIsStarred(newStarredValue);

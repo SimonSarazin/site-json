@@ -17,6 +17,7 @@
 | Module de recherche | [Module Search](07-module-search.md) |
 | Module profil | [Module Profil](08-module-profil.md) |
 | Module actualités | [Module News](09-module-news.md) |
+| Module cagnotte (financement) | [Module Cagnotte](18-module-cagnotte.md) |
 | Système de permissions | [Permissions](10-permissions.md) |
 | API et authentification | [API & Auth](11-api-authentification.md) |
 | Optimisation | [Performance](12-performance.md) |

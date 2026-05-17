@@ -1,0 +1,736 @@
+{
+  "validation": {
+    "milestone": {
+      "nameRequired": "Milestone name is required"
+    },
+    "action": {
+      "nameRequired": "Action name is required",
+      "idRequired": "Missing action identifier",
+      "tagsMax": "Up to 10 tags allowed",
+      "dateRange": "End date must be after start date"
+    },
+    "amount": {
+      "nonNegative": "Amount must be zero or positive",
+      "invalid": "Invalid amount"
+    },
+    "date": {
+      "frenchFormat": "Expected format: DD/MM/YYYY"
+    },
+    "id": {
+      "format": "Invalid identifier"
+    },
+    "contribution": {
+      "amountRequired": "Enter an amount greater than 0",
+      "financerRequired": "Select a financer",
+      "allocationsRequired": "Select at least one milestone to fund"
+    }
+  },
+  "toasts": {
+    "contributionSaved": {
+      "title": "Contribution saved",
+      "description": "{{count}} milestone funded",
+      "description_plural": "{{count}} milestones funded"
+    },
+    "contributionPartial": {
+      "title": "Warning",
+      "description": "Payment succeeded. Incomplete save: {{reason}}"
+    },
+    "errors": {
+      "noAnswerId": "Missing answerId",
+      "noMilestoneFundings": "No milestone to fund",
+      "updatePathValueFailed": "updatePathValue failed",
+      "saveMethodUnavailable": "No CoForm save method available (missing formId or answerEntity)",
+      "saveFuncMissing": "save() method unavailable",
+      "noApiClient": "apiClient unavailable",
+      "noMilestoneForId": "Depense not found for milestone {{milestoneId}}",
+      "invalidAmount": "Invalid amount for milestone {{milestoneId}}",
+      "invalidFinancer": "Invalid financer for milestone {{milestoneId}}",
+      "noneSaved": "No milestone saved: {{reasons}}"
+    }
+  },
+  "milestone": {
+    "errors": {
+      "syncContextMissing": "Unable to locate this milestone in projects/answers.",
+      "incompleteForEdit": {
+        "missingProjectSide": "Cannot edit: this milestone is missing from projects.oceco.milestones (project side).",
+        "missingAnswerSide": "Cannot edit: no linked expense for this milestone in answers.aapStep1.depense (answer side)."
+      },
+      "incompleteForClose": {
+        "missingProjectSide": "Cannot close: this milestone is missing from projects.oceco.milestones (project side).",
+        "missingAnswerSide": "Cannot close: no linked expense for this milestone in answers.aapStep1.depense (answer side)."
+      },
+      "incompleteForRestore": {
+        "missingProjectSide": "Cannot restore: this milestone is missing from projects.oceco.milestones (project side).",
+        "missingAnswerSide": "Cannot restore: no linked expense for this milestone in answers.aapStep1.depense (answer side)."
+      },
+      "cannotCloseWithOpenActions": "Cannot close: all actions must be completed first.",
+      "cannotDeleteIfFunded": "Cannot delete: this milestone is already funded.",
+      "noIndexForDelete": "No valid index found to delete this milestone.",
+      "actionIdMissing": "Some milestone actions have no valid ID.",
+      "deleteActionUnavailable": "Action delete unavailable: missing apiClient."
+    }
+  },
+  "PaymentConfigPage": {
+    "title": "Payment form",
+    "milestonesLabel": "Funded milestones:",
+    "contributorTypeLabel": "Contribute as",
+    "contributorOptions": {
+      "person": "Individual",
+      "organization": "Organization"
+    },
+    "orgPicker": {
+      "searchPlaceholder": "Search an organization...",
+      "selectPlaceholder": "Choose an organization...",
+      "notAdminTitle": "You are not admin of any organization",
+      "notAdminHelp": "To contribute as an organization, you must be an administrator"
+    },
+    "paymentMethodLabel": "Payment method",
+    "stripe": {
+      "title": "Stripe",
+      "description": "Enter card details directly in the dialog",
+      "missingConfig": "Missing configuration",
+      "formLabel": "Card details (Stripe)"
+    },
+    "helloasso": {
+      "title": "HelloAsso",
+      "description": "Opens in a popup",
+      "button": "Confirm payment ({{amount}}€)",
+      "buttonLoading": "Opening HelloAsso...",
+      "info": {
+        "title": "About HelloAsso:",
+        "li1": "You will be redirected to the HelloAsso website",
+        "li2": "Payments are secured through HelloAsso",
+        "li3": "You will receive an email confirmation",
+        "li4": "Close the popup after payment to return",
+        "li5": "Funding is recorded only after actual payment confirmation"
+      }
+    },
+    "selectMethodPlaceholder": "Select a payment method",
+    "successScreen": {
+      "title": "Payment successful",
+      "subtitle": "Returning to home page...",
+      "returnButton": "Return now"
+    },
+    "verifying": {
+      "title": "Verifying...",
+      "subtitle": "Confirming your HelloAsso payment",
+      "hint": "This may take a few seconds"
+    },
+    "waiting": {
+      "title": "Waiting for HelloAsso callback...",
+      "subtitle": "Complete the payment in the popup to continue.",
+      "hint": "Funding will be recorded only after actual callback."
+    },
+    "toasts": {
+      "thankYou": {
+        "title": "Thank you for your contribution!",
+        "description": "Returning to home page..."
+      },
+      "paymentAcceptedIncomplete": {
+        "title": "Payment accepted but save incomplete",
+        "fallbackDescription": "Error saving funding records"
+      },
+      "paymentInterrupted": {
+        "title": "Payment interrupted",
+        "description": "HelloAsso payment was not confirmed."
+      },
+      "paymentFailed": {
+        "title": "Payment failed",
+        "fallbackDescription": "Payment failed"
+      },
+      "stripeError": {
+        "title": "Error",
+        "fallbackDescription": "Unable to record Stripe payment"
+      },
+      "paymentInProgress": {
+        "title": "Payment in progress",
+        "description": "Complete the payment in the HelloAsso popup. Validation after actual callback."
+      },
+      "paymentError": {
+        "title": "Payment error",
+        "fallback": "HelloAsso error"
+      },
+      "stripeMissing": {
+        "title": "Missing Stripe configuration",
+        "fallbackDescription": "Invalid Stripe public key."
+      }
+    },
+    "errors": {
+      "fundingEnvelopeUnavailable": "entity.fundingEnvelope is unavailable",
+      "noContextId": "contextId not found for fundingEnvelope",
+      "saveFailed": "Unable to save funding records",
+      "noRedirectUrl": "No HelloAsso redirect URL returned by fundingEnvelope",
+      "popupFailed": "HelloAsso popup could not be opened",
+      "stripeUnavailable": "Stripe unavailable: configure VITE_STRIPE_PUBLIC_KEY"
+    },
+    "helloAssoConfigErrors": {
+      "amountInvalid": "Amount must be greater than 0",
+      "projectNameRequired": "Project name is required",
+      "projectIdRequired": "Project ID is required",
+      "milestoneRequired": "At least one milestone must be selected",
+      "contributorTypeRequired": "Contributor type must be specified",
+      "organizationIdRequired": "Organization ID is required"
+    }
+  },
+  "CreateMilestoneDialog": {
+    "title": "Add a milestone",
+    "fields": {
+      "name": "Milestone name",
+      "targetAmount": "Target amount (€)",
+      "description": "Description"
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "submit": "Add milestone",
+      "submitting": "Adding..."
+    },
+    "states": {
+      "saving": "Saving..."
+    },
+    "errors": {
+      "notConnected": "You must be logged in to add a milestone.",
+      "noApiClient": "API client unavailable.",
+      "noProject": "Project not found.",
+      "noAnswer": "Answer not found for this project.",
+      "nameRequired": "Milestone name is required.",
+      "invalidAmount": "Target amount must be a number greater than 0.",
+      "noUser": "User not found.",
+      "createFailed": "Error while creating the milestone."
+    },
+    "toasts": {
+      "added": {
+        "title": "Milestone added",
+        "description": "Milestone \"{{name}}\" was added"
+      },
+      "addFailed": {
+        "title": "Unable to add milestone"
+      }
+    }
+  },
+  "MilestoneCreateTrigger": {
+    "toasts": {
+      "loginRequired": {
+        "title": "Login required",
+        "description": "You must be logged in to add a milestone."
+      }
+    }
+  },
+  "MilestoneManageActions": {
+    "edit": "Edit",
+    "restore": "Restore",
+    "close": "Close",
+    "delete": "Delete"
+  },
+  "common": {
+    "loading": "Loading...",
+    "addMilestone": "Add milestone",
+    "progress": "Progress",
+    "supportProject": "Support the project"
+  },
+  "ActionsSection": {
+    "loading": "Loading actions...",
+    "error": "Error while loading actions",
+    "emptyActions": "No action available for this project.",
+    "emptyActionsInline": "No action defined",
+    "contributorsLabel": "Contributors:",
+    "fallbacks": {
+      "contributorName": "Contributor"
+    },
+    "statusBadges": {
+      "milestoneOpen": "open",
+      "milestoneDone": "done",
+      "milestoneClose": "closed",
+      "actionTodo": "In progress",
+      "actionDone": "Completed"
+    },
+    "milestoneCard": {
+      "actions": "Actions",
+      "amount": "Amount",
+      "totalCredits": "Total credits",
+      "addAction": "Action",
+      "activeActions": "Actions in progress ({{count}})",
+      "doneActions": "Completed ({{count}})",
+      "endLabel": "End:",
+      "closedMilestones": "Closed milestones ({{count}})",
+      "closedHelp": "Closed milestone: funding, editing and deletion disabled."
+    },
+    "actionsButtons": {
+      "candidate": "Apply",
+      "complete": "Complete",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "createActionDialog": {
+      "title": "Add an action",
+      "milestoneLabel": "Milestone:",
+      "noMilestoneSelected": "Not selected",
+      "nameLabel": "Action name",
+      "contributorsLabel": "Contributors",
+      "contributorsPlaceholder": "Search and click to add...",
+      "tagsLabel": "Tags",
+      "tagsPlaceholder": "Add tags",
+      "tagsMaxReached": "Maximum {{max}} tags allowed",
+      "startDateLabel": "Start date",
+      "startDatePlaceholder": "Select a start date",
+      "endDateLabel": "End date",
+      "endDatePlaceholder": "Select an end date",
+      "invalidDateFormat": "Invalid format (expected: dd/MM/yyyy).",
+      "invalidDateRange": "End date must be greater than or equal to start date.",
+      "creditsLabel": "Credits",
+      "statusLabel": "Initial status",
+      "statusPlaceholder": "Choose a status",
+      "statusOptionTodo": "In progress",
+      "statusOptionDone": "Completed",
+      "savingState": "Saving...",
+      "cancel": "Cancel",
+      "submit": "Create action",
+      "submitting": "Creating..."
+    },
+    "editActionDialog": {
+      "title": "Edit action",
+      "milestoneLabel": "Milestone:",
+      "noMilestoneSelected": "Not selected",
+      "nameLabel": "Action name",
+      "namePlaceholder": "Ex: Organize an awareness workshop",
+      "contributorsLabel": "Contributors (citizens)",
+      "contributorsPlaceholder": "Search and click to add...",
+      "tagsLabel": "Tags",
+      "tagsPlaceholder": "Add tags for the action...",
+      "tagsMaxReached": "Maximum {{max}} tags allowed",
+      "startDateLabel": "Start date",
+      "startDatePlaceholder": "Select a start date",
+      "endDateLabel": "End date",
+      "endDatePlaceholder": "Select an end date",
+      "invalidDateFormat": "Invalid format (expected: dd/MM/yyyy).",
+      "invalidDateRange": "End date must be greater than or equal to start date.",
+      "creditsLabel": "Credits",
+      "statusLabel": "Status",
+      "statusPlaceholder": "Choose a status",
+      "statusOptionTodo": "In progress",
+      "statusOptionDone": "Completed",
+      "updatingState": "Updating...",
+      "cancel": "Cancel",
+      "submit": "Update",
+      "submitting": "Updating..."
+    },
+    "editMilestoneDialog": {
+      "title": "Edit milestone",
+      "nameLabel": "Milestone name",
+      "namePlaceholder": "Milestone name",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Milestone description",
+      "targetAmountLabel": "Target amount (€)",
+      "updatingState": "Updating...",
+      "cancel": "Cancel",
+      "submit": "Update",
+      "submitting": "Updating..."
+    },
+    "deleteMilestoneConfirm": {
+      "title": "Delete this milestone?",
+      "description": "The milestone \"{{name}}\" will be removed from the project and the associated answer.",
+      "confirm": "Yes, delete",
+      "cancel": "Cancel"
+    },
+    "deleteActionConfirm": {
+      "title": "Delete this action?",
+      "description": "The action \"{{name}}\" will be permanently deleted.",
+      "confirm": "Yes, delete",
+      "cancel": "Cancel"
+    },
+    "errors": {
+      "apiClientUnavailable": "API client unavailable.",
+      "projectNotFoundForAction": "Project not found for action creation.",
+      "noMilestoneSelected": "No milestone selected.",
+      "actionNameRequired": "Action name is required.",
+      "invalidCredits": "Credits amount must be greater than or equal to 0.",
+      "invalidDates": "Dates must be in dd/MM/yyyy format and end date must be greater than or equal to start date.",
+      "projectNotFoundForEdit": "Project not found for action update.",
+      "noActionSelected": "No action selected.",
+      "actionEditNameRequired": "Action name is required.",
+      "milestoneNameRequired": "Milestone name is required.",
+      "milestoneInvalidAmount": "Target amount must be a number >= 0.",
+      "milestoneContextInvalid": "Invalid milestone context.",
+      "milestoneUpdateFailed": "Error while updating the milestone.",
+      "milestoneRestoreFailed": "Error while restoring the milestone.",
+      "milestoneDeleteFailed": "Error while deleting the milestone.",
+      "milestoneCloseFailed": "Error while closing the milestone.",
+      "actionCreateFailed": "Error while creating the action.",
+      "actionEditFailed": "Error while updating the action.",
+      "actionDeleteFailed": "Error while deleting the action.",
+      "candidateFailed": "Error while applying.",
+      "actionUpdateStatusFailed": "Error while updating status.",
+      "invalidActionIdMetadata": "Cannot update metadata: invalid or unknown action id ({{value}})"
+    },
+    "toasts": {
+      "loginRequired": {
+        "title": "Login required",
+        "restore": "You must be logged in to restore a milestone.",
+        "edit": "You must be logged in to edit a milestone.",
+        "delete": "You must be logged in to delete a milestone.",
+        "close": "You must be logged in to close a milestone.",
+        "openCreateAction": "You must be logged in to create an action.",
+        "editAction": "You must be logged in to edit an action.",
+        "deleteAction": "You must be logged in to delete an action.",
+        "completeAction": "You must be logged in to complete an action.",
+        "candidate": "You must be logged in to apply."
+      },
+      "restoreImpossible": {
+        "title": "Restoration impossible",
+        "description": "Incomplete API context (project/answer)."
+      },
+      "deleteImpossible": {
+        "title": "Deletion impossible",
+        "description": "Incomplete API context (project/answer)."
+      },
+      "closeImpossible": {
+        "title": "Closure impossible",
+        "descriptionContext": "Incomplete API context (project/answer).",
+        "descriptionActionsNotDone": "All milestone actions must be completed."
+      },
+      "milestoneRestored": {
+        "title": "Milestone restored",
+        "description": "The milestone \"{{name}}\" is active again."
+      },
+      "milestoneUpdated": {
+        "title": "Milestone updated",
+        "description": "The milestone \"{{name}}\" has been updated."
+      },
+      "milestoneDeleted": {
+        "title": "Milestone deleted",
+        "description": "The milestone \"{{name}}\" has been removed from the project and the answer."
+      },
+      "milestoneClosed": {
+        "title": "Milestone closed",
+        "description": "The milestone \"{{name}}\" has been closed."
+      },
+      "milestoneRestoreFailed": {
+        "title": "Cannot restore the milestone"
+      },
+      "milestoneUpdateFailed": {
+        "title": "Cannot update the milestone"
+      },
+      "milestoneDeleteFailed": {
+        "title": "Cannot delete the milestone"
+      },
+      "milestoneCloseFailed": {
+        "title": "Cannot close the milestone"
+      },
+      "apiClientUnavailable": {
+        "title": "API client unavailable",
+        "descriptionContributors": "Cannot update contributors right now.",
+        "descriptionStatus": "Cannot update status right now.",
+        "descriptionDeleteAction": "Cannot delete this action right now."
+      },
+      "userNotFound": {
+        "title": "User not found",
+        "description": "Cannot determine your identity."
+      },
+      "actionNotFound": {
+        "title": "Action not found",
+        "descriptionUpdate": "Cannot find the action to update.",
+        "descriptionComplete": "Cannot find the action to complete.",
+        "descriptionDelete": "Cannot find the action identifier."
+      },
+      "candidateSuccess": {
+        "title": "Application recorded",
+        "description": "You have been added as a contributor to this action."
+      },
+      "candidateFailed": {
+        "title": "Cannot apply"
+      },
+      "actionCompleted": {
+        "title": "Action completed",
+        "description": "The action \"{{name}}\" has been marked as completed."
+      },
+      "actionCompleteFailed": {
+        "title": "Cannot complete the action"
+      },
+      "actionDeleted": {
+        "title": "Action deleted",
+        "description": "The action \"{{name}}\" has been deleted."
+      },
+      "actionDeleteFailed": {
+        "title": "Cannot delete the action"
+      },
+      "actionCreated": {
+        "title": "Action added",
+        "description": "The action \"{{name}}\" was successfully created."
+      },
+      "actionCreateFailed": {
+        "title": "Cannot create the action"
+      },
+      "actionCreatePartial": {
+        "title": "Action partially created",
+        "description": "The action is created but some additional fields could not be saved."
+      },
+      "actionUpdated": {
+        "title": "Action updated",
+        "description": "The action \"{{name}}\" has been updated."
+      },
+      "actionUpdateFailed": {
+        "title": "Cannot update the action"
+      },
+      "editImpossible": {
+        "title": "Edition impossible",
+        "description": "Action identifier not found for the update."
+      },
+      "noModification": {
+        "title": "No changes",
+        "description": "The action information is already up to date."
+      }
+    }
+  },
+  "ActionsSummarySection": {
+    "loading": "Loading actions summary...",
+    "error": "Error while loading actions summary",
+    "titleSummary": "Milestones summary",
+    "stats": {
+      "milestones": "Milestones",
+      "totalActions": "Total actions",
+      "inProgressActions": "Actions in progress",
+      "completedActions": "Completed actions",
+      "totalCredits": "Total action credits"
+    },
+    "contributorsLabel": "Contributors ({{count}})",
+    "noContributors": "No contributor yet."
+  },
+  "CagnotteDialog": {
+    "title": "Participatory Funding",
+    "description": "Support ocean projects and the community platform",
+    "fallbacks": {
+      "untitled": "Untitled project"
+    },
+    "labels": {
+      "supportedProject": "Supported project",
+      "selectProject": "Select a project to support",
+      "noOrganization": "No organization selected",
+      "loadingProjects": "Loading projects...",
+      "noProjects": "No project available for this organization",
+      "selectProjectPlaceholder": "Select a project...",
+      "setAsMainCagnotte": "Set as main cagnotte",
+      "projectCagnotte": "Project cagnotte",
+      "targetSuffix": "of {{target}} € target",
+      "milestonesTitle": "Cagnotte goals",
+      "amountSection": "Choose an amount",
+      "customAmountSection": "Or enter a custom amount",
+      "customAmountPlaceholder": "Amount",
+      "remainingToFinance": "Remaining to fund:",
+      "contribute": "Contribute",
+      "processing": "Processing...",
+      "fundingLabel": "Funding",
+      "infoText1": "Every euro raised directly supports marine protection projects and the platform operations.",
+      "infoText2": "Funds are split fairly between projects selected by the community and maintenance costs."
+    },
+    "successScreen": {
+      "title": "Payment successful!",
+      "subtitle": "Thank you for your generosity towards the ocean"
+    },
+    "milestoneCelebration": {
+      "badge": "New milestone unlocked!",
+      "amountReached": "{{amount}} € reached!",
+      "thankYou": "Thank you for your contribution!"
+    },
+    "toasts": {
+      "milestoneReached": {
+        "title": "Milestone reached: {{amount}} €!"
+      },
+      "projectRequired": {
+        "title": "Project required",
+        "description": "Please select a project."
+      },
+      "milestoneRequired": {
+        "title": "Milestone required",
+        "description": "Please select at least one milestone."
+      },
+      "invalidAmount": {
+        "title": "Invalid amount",
+        "description": "Please choose or enter a valid amount."
+      },
+      "errorTitle": "Error",
+      "saveError": {
+        "title": "Save error",
+        "fallback": "Unable to save the project (database and local)."
+      },
+      "savePartial": {
+        "title": "Partial save",
+        "description": "Database save failed. Project saved locally in this browser only."
+      },
+      "saveSuccess": {
+        "title": "Success",
+        "description": "Main project saved to database."
+      }
+    },
+    "errors": {
+      "entityUnavailable": "Entity unavailable for remote save.",
+      "dbError": "DB: {{message}}"
+    }
+  },
+  "FinanceSection": {
+    "loading": "Loading funding...",
+    "error": "Error while loading funding",
+    "noFunding": "No funding available for this project.",
+    "editDialog": {
+      "title": "Edit milestone",
+      "fields": {
+        "name": "Milestone name",
+        "namePlaceholder": "Milestone name",
+        "description": "Description",
+        "descriptionPlaceholder": "Milestone description",
+        "targetAmount": "Target amount (€)",
+        "status": "Status",
+        "statusPlaceholder": "Choose a status"
+      },
+      "statusOptions": {
+        "open": "Open",
+        "done": "Done",
+        "close": "Closed"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "submit": "Update",
+        "submitting": "Updating..."
+      },
+      "updatingState": "Updating..."
+    },
+    "deleteConfirm": {
+      "title": "Delete this milestone?",
+      "description": "Milestone \"{{name}}\" will be removed from both project and answer.",
+      "confirm": "Yes, delete",
+      "cancel": "Cancel"
+    },
+    "errors": {
+      "noApiClient": "API client unavailable.",
+      "invalidContext": "Invalid milestone context.",
+      "nameRequired": "Milestone name is required.",
+      "invalidAmount": "Target amount must be a number >= 0.",
+      "apiContextIncomplete": "Incomplete API context (project/answer).",
+      "actionsNotDone": "All milestone actions must be completed first.",
+      "updateFailed": "Error while updating milestone.",
+      "deleteFailed": "Error while deleting milestone.",
+      "closeFailed": "Error while closing milestone.",
+      "restoreFailed": "Error while restoring milestone."
+    },
+    "toasts": {
+      "loginRequired": {
+        "title": "Login required",
+        "edit": "You must be logged in to edit a milestone.",
+        "delete": "You must be logged in to delete a milestone.",
+        "close": "You must be logged in to close a milestone.",
+        "restore": "You must be logged in to restore a milestone."
+      },
+      "deleteImpossible": {
+        "title": "Delete impossible"
+      },
+      "closeImpossible": {
+        "title": "Close impossible"
+      },
+      "restoreImpossible": {
+        "title": "Restore impossible"
+      },
+      "updated": {
+        "title": "Milestone updated",
+        "description": "Milestone \"{{name}}\" has been updated."
+      },
+      "deleted": {
+        "title": "Milestone deleted",
+        "description": "Milestone \"{{name}}\" was removed from project and answer."
+      },
+      "closed": {
+        "title": "Milestone closed",
+        "description": "Milestone \"{{name}}\" has been closed."
+      },
+      "restored": {
+        "title": "Milestone restored",
+        "description": "Milestone \"{{name}}\" is active again."
+      },
+      "updateFailed": {
+        "title": "Unable to update milestone"
+      },
+      "deleteFailed": {
+        "title": "Unable to delete milestone"
+      },
+      "closeFailed": {
+        "title": "Unable to close milestone"
+      },
+      "restoreFailed": {
+        "title": "Unable to restore milestone"
+      }
+    },
+    "milestone": {
+      "stats": {
+        "transactions": "Transactions",
+        "objective": "Target",
+        "funding": "Funding",
+        "remaining": "Remaining"
+      },
+      "fundButton": "Fund",
+      "transactionsHistory": "Transaction history ({{count}})",
+      "noTransactions": "No transaction recorded",
+      "paidTransactions": "Paid transactions",
+      "accumulatedCredits": "Accumulated credits"
+    },
+    "closedMilestones": {
+      "label": "Closed milestones ({{count}})",
+      "closedHelp": "Milestone closed: funding, editing and deletion disabled."
+    }
+  },
+  "FinanceSummarySection": {
+    "loading": "Loading funding summary...",
+    "error": "Error while loading funding summary",
+    "titleSummary": "Funding summary",
+    "stats": {
+      "totalCost": "Total cost",
+      "funded": "Funded",
+      "remaining": "Remaining",
+      "totalActionCredits": "Total action credits"
+    },
+    "fundersLabel": "Funders ({{count}})",
+    "noFunders": "No funder yet."
+  },
+  "StripePaymentForm": {
+    "errors": {
+      "notLoaded": "Stripe is not loaded",
+      "incompleteCard": "Please fill in card details",
+      "cardElementMissing": "Card element unavailable",
+      "cardValidationFailed": "Card validation error",
+      "paymentMethodFailed": "Unable to create payment method",
+      "paymentFallback": "Payment error",
+      "stripeNotInitialized": "Stripe is not initialized",
+      "amountMustBePositive": "Amount must be greater than 0"
+    },
+    "stripeErrors": {
+      "card_declined": "Your card was declined. Please check your information.",
+      "expired_card": "Your card has expired.",
+      "incorrect_cvc": "The security code (CVC) is incorrect.",
+      "processing_error": "A processing error occurred. Please try again.",
+      "rate_limit": "Too many attempts. Please wait a few seconds.",
+      "authentication_error": "Authentication error. Please verify your data.",
+      "invalid_expiry_month": "The expiry month is invalid.",
+      "invalid_expiry_year": "The expiry year is invalid.",
+      "invalid_number": "The card number is invalid.",
+      "default": "An error occurred during payment. Please try again."
+    },
+    "configErrors": {
+      "amountInvalid": "Amount must be greater than 0",
+      "amountTooHigh": "Amount cannot exceed €99,999",
+      "projectNameRequired": "Project name is required",
+      "projectIdRequired": "Project ID is required",
+      "milestoneRequired": "At least one milestone must be selected",
+      "contributorTypeRequired": "Contributor type must be specified"
+    },
+    "cardValid": "Card is valid, ready to pay",
+    "actions": {
+      "processing": "Processing payment...",
+      "pay": "Pay {{amount}}€"
+    },
+    "toasts": {
+      "stripeValidated": {
+        "title": "Stripe payment validated",
+        "description": "Card {{brand}} •••• {{last4}}"
+      },
+      "paymentError": {
+        "title": "Payment error"
+      }
+    }
+  }
+}

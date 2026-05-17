@@ -130,7 +130,7 @@ export function UploaderField({ field, errors, value = [], onChange, answerId, s
     const existing = files;
 
     if (existing.length + selected.length > maxFiles) {
-      toast.error(t("uploader.tooManyFiles", "Maximum {{max}} fichier(s) autorisé(s).").replace("{{max}}", String(maxFiles)));
+      toast.error(t("coform.uploader.tooManyFiles", "Maximum {{max}} fichier(s) autorisé(s).").replace("{{max}}", String(maxFiles)));
       if (inputRef.current) inputRef.current.value = "";
       return;
     }
@@ -140,11 +140,11 @@ export function UploaderField({ field, errors, value = [], onChange, answerId, s
       const ext = file.name.split(".").pop()?.toLowerCase() || "";
       const allowed = (config?.formats ?? DEFAULT_UPLOAD_FORMATS).map((f) => f.toLowerCase());
       if (!allowed.includes(ext)) {
-        toast.error(t("uploader.invalidExtension", "Extension non autorisée : {{name}}").replace("{{name}}", file.name));
+        toast.error(t("coform.uploader.invalidExtension", "Extension non autorisée : {{name}}").replace("{{name}}", file.name));
         continue;
       }
       if (file.size > maxSize) {
-        toast.error(t("uploader.fileTooLarge", "Fichier trop volumineux : {{name}}").replace("{{name}}", file.name));
+        toast.error(t("coform.uploader.fileTooLarge", "Fichier trop volumineux : {{name}}").replace("{{name}}", file.name));
         continue;
       }
 
@@ -170,7 +170,7 @@ export function UploaderField({ field, errors, value = [], onChange, answerId, s
       setDeletingIndex(index);
       try {
         if (api) {
-          await (api.endpointApi as unknown as Record<string, (...args: unknown[]) => Promise<unknown>>).deleteDocumentById({
+          await api.endpointApi.deleteDocumentById({
             pathParams: { id: item.docId },
           });
         }
@@ -213,8 +213,8 @@ export function UploaderField({ field, errors, value = [], onChange, answerId, s
 
   const canAddMore = files.length < maxFiles;
   const addLabel = maxFiles > 1
-    ? t("uploader.addFiles", "Ajouter des fichiers")
-    : t("uploader.addFile", "Ajouter un fichier");
+    ? t("coform.uploader.addFiles", "Ajouter des fichiers")
+    : t("coform.uploader.addFile", "Ajouter un fichier");
 
   const fileNames = useMemo(() => {
     if (files.length === 0) return "";
@@ -240,7 +240,7 @@ export function UploaderField({ field, errors, value = [], onChange, answerId, s
       {isLegacyWithoutFiles && isLoadingFiles && (
         <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
           <Loader2 className="h-4 w-4 animate-spin" />
-          {t("uploader.loadingFiles", "Chargement des fichiers…")}
+          {t("coform.uploader.loadingFiles", "Chargement des fichiers…")}
         </div>
       )}
 
@@ -282,19 +282,19 @@ export function UploaderField({ field, errors, value = [], onChange, answerId, s
               </div>
               <div className="text-center">
                 <p className="text-sm font-medium text-foreground">
-                  {t("uploader.dropzoneLabel", "Glissez-déposez vos fichiers ici")}
+                  {t("coform.uploader.dropzoneLabel", "Glissez-déposez vos fichiers ici")}
                 </p>
                 <p className="mt-0.5 text-xs text-muted-foreground">
-                  {t("uploader.dropzoneOr", "ou")}{" "}
-                  <span className="font-medium text-primary">{t("uploader.browse", "Parcourir")}</span>
+                  {t("coform.uploader.dropzoneOr", "ou")}{" "}
+                  <span className="font-medium text-primary">{t("coform.uploader.browse", "Parcourir")}</span>
                   {" · "}
-                  <span>{t("uploader.pasteHint", "Ctrl+V pour coller")}</span>
+                  <span>{t("coform.uploader.pasteHint", "Ctrl+V pour coller")}</span>
                 </p>
               </div>
               <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                <span>{t("uploader.maxFiles", "Maximum {{max}} fichier(s)").replace("{{max}}", String(maxFiles))}</span>
+                <span>{t("coform.uploader.maxFiles", "Maximum {{max}} fichier(s)").replace("{{max}}", String(maxFiles))}</span>
                 <span>·</span>
-                <span>{t("uploader.maxSize", "Taille max : {{size}} Mo").replace("{{size}}", String(Math.round(maxSize / 1_000_000)))}</span>
+                <span>{t("coform.uploader.maxSize", "Taille max : {{size}} Mo").replace("{{size}}", String(Math.round(maxSize / 1_000_000)))}</span>
               </div>
             </div>
           ) : (
@@ -309,7 +309,7 @@ export function UploaderField({ field, errors, value = [], onChange, answerId, s
               >
                 <span className="truncate">
                   {files.length === 0
-                    ? t("uploader.noFileSelected", "Aucun fichier sélectionné")
+                    ? t("coform.uploader.noFileSelected", "Aucun fichier sélectionné")
                     : fileNames
                   }
                 </span>
@@ -321,7 +321,7 @@ export function UploaderField({ field, errors, value = [], onChange, answerId, s
                 onClick={() => inputRef.current?.click()}
               >
                 <FolderOpen className="h-4 w-4" />
-                {t("uploader.browse", "Parcourir")}
+                {t("coform.uploader.browse", "Parcourir")}
               </Button>
             </div>
           )}
@@ -371,7 +371,7 @@ export function UploaderField({ field, errors, value = [], onChange, answerId, s
                   className="h-7 w-7 p-0 shrink-0 text-muted-foreground hover:text-destructive"
                   disabled={isDeleting}
                   onClick={() => void handleRemove(index)}
-                  aria-label={t("uploader.deleteFile", "Supprimer {{name}}").replace("{{name}}", name)}
+                  aria-label={t("coform.uploader.deleteFile", "Supprimer {{name}}").replace("{{name}}", name)}
                 >
                   {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4" />}
                 </Button>

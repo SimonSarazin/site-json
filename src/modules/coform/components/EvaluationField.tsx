@@ -230,7 +230,7 @@ export function EvaluationField({
                   colSpan={categoryNumber + criteriaIds.length}
                   className="text-center p-4 text-muted-foreground"
                 >
-                  {t("evaluation.noCategories", "Aucune catégorie définie")}
+                  {t("coform.evaluation.noCategories", "Aucune catégorie définie")}
                 </td>
               </tr>
             ) : (

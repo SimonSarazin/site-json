@@ -4,7 +4,7 @@ import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
 import { Header } from "@/types/site-schema";
 import { ChevronDown, User, LogOut, Globe, Bell, Menu, X , PiggyBank} from "lucide-react";
-import { DynamicIcon, type IconName } from "lucide-react/dynamic";
+import { IconOrSvg } from "@/components/ui/icon-or-svg";
 import { Link, useNavigate, useLocation } from "react-router";
 import { useCocolight } from "@/hooks/useCocolight";
 import { ClientOnly } from "../ClientOnly";
@@ -23,9 +23,9 @@ import { Button } from "@/components/ui/button";
 import LoginForm from "@/components/auth/LoginForm";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
-import { useProjectModalCagnotte } from "@/hooks/useProjectModalCagnotte";
+import { useProjectModalCagnotte } from "@/modules/cagnotte/hooks/useProjectModalCagnotte";
 
-import CagnotteDialog from "@/components/cagnotte/CagnotteDialog";
+import CagnotteDialog from "@/modules/cagnotte/components/CagnotteDialog";
 
 interface HeaderRezoLaMerProps {
     header: Header;
@@ -141,8 +141,8 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                                 className="h-8 w-8 object-contain group-hover:scale-110 transition-transform"
                             />
                         ) : header.logoIcon ? (
-                            <DynamicIcon
-                                name={header.logoIcon as IconName}
+                            <IconOrSvg
+                                value={header.logoIcon}
                                 className="w-8 h-8 text-primary group-hover:scale-110 transition-transform"
                             />
                         ) : null}
@@ -219,8 +219,8 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                                 className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 text-primary transition-all group"
                             >
                                 {header.urgenceButton.icon ? (
-                                    <DynamicIcon
-                                        name={header.urgenceButton.icon as IconName}
+                                    <IconOrSvg
+                                        value={header.urgenceButton.icon}
                                         className="w-5 h-5 group-hover:scale-110 transition-transform"
                                     />
                                 ) : null}
@@ -374,8 +374,8 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                         >
                             <span className="flex items-center gap-2">
                                 {header.urgenceButton.icon ? (
-                                    <DynamicIcon
-                                        name={header.urgenceButton.icon as IconName}
+                                    <IconOrSvg
+                                        value={header.urgenceButton.icon}
                                         className="w-5 h-5"
                                     />
                                 ) : null}

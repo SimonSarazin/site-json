@@ -325,16 +325,14 @@ export function useAddTiersLieu(entity?: EntityTypes | null) {
         localityId: data.localityId,
       });
 
-      const generatedId = "69f858c451e74c3967050385";
-
+      // Champs structurels (`id`, `collection`, `key`, `scope`) sont implicites quand on
+      // passe par la façade `targetEntity.organization(data)` : la lib crée une instance,
+      // génère l'id, puis `.save()` persiste. Le précédent code passait un `id` hardcodé
+      // ce qui faisait pointer toutes les créations vers la même org (bug latent).
       const payload: Record<string, unknown> = {
-        id: generatedId,
-        collection: "organizations",
-        key: "organization",
         name: data.name,
-        type: "NGO", 
+        type: "NGO",
         role: "admin",
-        scope: "",
         ...transformedAddress,
         // Description / contenu
         ...(data.shortDescription ? { shortDescription: data.shortDescription } : {}),
@@ -387,23 +385,19 @@ export function useAddTiersLieu(entity?: EntityTypes | null) {
         costumType: TIERS_LIEU_COSTUM.costumType,
       };
 
-      // Utilise l'endpoint ADD_ORGANIZATION (étendu avec les champs tiers-lieu en optionnel).
-      // Appel direct via endpointApi pour bypass le filtrage de save() qui ne garderait
-      // que les champs définis dans le schéma SDK.
-      const targetWithEndpoint = targetEntity as unknown as {
-        endpointApi: { addOrganization: (data: Record<string, unknown>) => Promise<unknown> };
-      };
-      await targetWithEndpoint.endpointApi.addOrganization(payload);
+      // Pattern uniforme avec `useAddOrganization` (cf. useOrganizationMutations.tsx:33-46) :
+      //  1. Façade `targetEntity.organization(data)` (BaseEntity.d.ts:1066) crée l'instance
+      //     et génère un id (les champs custom tiers-lieu passent via `OrganizationInput`
+      //     qui accepte `Record<string, any>`).
+      //  2. `.save()` persiste — transmet désormais les champs custom (mainTag, compagnon,
+      //     costumSlug, etc.) sans filtrage côté SDK.
+      //  3. `.updateImageProfil()` (BaseEntity.d.ts:1036) gère l'upload sur la même instance.
+      const organization = await targetEntity.organization(payload);
+      await organization.save();
 
-      const organization = await targetEntity.organization({ id: generatedId }) as Organization;
-
-      // Upload du logo vers le backend Cocolight (pas en local)
       if (data._logoFile) {
         try {
-          const orgWithUpload = organization as unknown as {
-            updateImageProfil: (data: { profil_avatar: File }) => Promise<unknown>;
-          };
-          await orgWithUpload.updateImageProfil({ profil_avatar: data._logoFile });
+          await organization.updateImageProfil({ profil_avatar: data._logoFile });
         } catch (err) {
           console.error("[useAddTiersLieu] Logo upload failed:", err);
         }

@@ -40,7 +40,7 @@ import SectionTitle from "./SectionTitleTL";
 import { useGetAnswersByFormsQuery } from "@/modules/profil/hooks/useGetAnwersByFormsQuery";
 import { getServerUrl } from "@/lib/constant/common";
 import { useCocolight } from "@/hooks/useCocolight";
-import { Answer } from "@communecter/cocolight-api-client";
+import { type Answer, type UpdatePathValueData } from "@communecter/cocolight-api-client";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
 
 interface ProfileTiersLieuxInfoProps {
@@ -215,16 +215,18 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
             answer = dataForms.answers[0];
         } else {
             isNewAnswer = true;
-            answer = await (entity as unknown as { generateNewAnswerId(formId: string): Promise<Answer | undefined> }).generateNewAnswerId(formId);
+            // Façade `BaseEntity.generateNewAnswerId(formId)` (BaseEntity.d.ts:1785) —
+            // retour `Promise<any>` côté lib, narrow vers Answer pour les usages côté `id`.
+            answer = (await entity.generateNewAnswerId(formId)) as Answer | undefined;
             if (!answer) {
                 console.error("Failed to generate new answer ID for form:", formId);
                 return;
             }
-            if(!answer.id) {
+            if (!answer.id) {
                 console.error("No answer ID generated for form:", formId);
                 return;
             }
-            const params = {
+            const params: UpdatePathValueData = {
                 id: answer.id,
                 collection: "answers",
                 path: `${finder}.${entity.id}`,
@@ -232,19 +234,19 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
                     id: entity.id,
                     type: entity.serverData.collection,
                     name: entity.serverData.name,
-                }
+                },
             };
-            const paramsLinks = {
+            const paramsLinks: UpdatePathValueData = {
                 id: answer.id,
                 collection: "answers",
                 path: `links.${entity.serverData.collection}.${entity.id}`,
                 value: {
                     type: entity.serverData.collection,
                     name: entity.serverData.name,
-                }
+                },
             };
-            await (entity.endpointApi as unknown as { updatePathValue(p: Record<string, unknown>): Promise<unknown> }).updatePathValue(params);
-            await (entity.endpointApi as unknown as { updatePathValue(p: Record<string, unknown>): Promise<unknown> }).updatePathValue(paramsLinks);
+            await entity.endpointApi.updatePathValue(params);
+            await entity.endpointApi.updatePathValue(paramsLinks);
         }
         if (!answer) {
             console.error("No answer available to open for form:", formId);

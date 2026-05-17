@@ -11,6 +11,27 @@ interface UseProfilSubscriptionsQueryProps {
 
 const SUBSCRIPTIONS_SUPPORTED_TYPES = new Set(["citoyens"]);
 
+/**
+ * @deprecated **Code mort — aucun consommateur dans le repo (vérifié 2026-05-15).**
+ *
+ * Statut : créé pour alimenter un tab "Abonnements" sur les profils citoyens
+ * (`User.getSubscriptions`). Jamais branché à un composant ; le tab profil correspondant
+ * n'existe pas dans la config actuelle.
+ *
+ * Raison du @deprecated :
+ *   - Aucun import dans `src/` / `tests/` / `e2e/` (grep exhaustif).
+ *   - Cast `(entity as unknown as { getSubscriptions(...) })` au lieu d'un narrow `isUser`
+ *     — anti-pattern (cf. AUDIT-cocolight-api-client.md §H1).
+ *
+ * Alternative active :
+ *   - Si le tab "Abonnements" est ré-introduit, utiliser le pattern de `useFriendsQuery`
+ *     (narrow `isUser` + `useInfiniteQueryScrollNextWithTransform` + appel direct
+ *     `user.getSubscriptions({...})` typé natif).
+ *
+ * À reviewer : supprimer dès la prochaine itération de cleanup hooks orphelins
+ * (même profil que C1 / C2 dans AUDIT-cocolight-api-client.md, et que
+ * [[useOrganizationAllProjects]] / [[useProfilContributorsQuery]]).
+ */
 export function useProfilSubscriptionsQuery({
   entity,
   entityType,

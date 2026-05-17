@@ -1,19 +1,20 @@
-import { updatePathValue } from "@/lib/updatePathValue";
+import type { Api, DeleteElementData, UpdatePathValueData } from "@communecter/cocolight-api-client";
+import i18n from "@/i18n";
+import { normalizeUpdatePathValuePayload } from "@/lib/updatePathValue";
 
-type UpdateSource = unknown;
+const tCagnotte = (key: string): string =>
+  String(i18n.t(key, { ns: "modules/cagnotte" }));
+
+type UpdateSource = Api | null;
 type UpdateSetType = string | Array<{ path: string; type: string }>;
+type UpdateValue = UpdatePathValueData["value"];
 
-type EndpointCaller = {
-  callEndpoint?: (endpointName: string, payload: Record<string, unknown>) => Promise<unknown>;
-  _client?: {
-    request?: (config: {
-      url: string;
-      method: string;
-      headers?: Record<string, string>;
-      data?: unknown;
-    }) => Promise<unknown>;
-  };
-};
+function requireSource(source: UpdateSource): Api {
+  if (!source) {
+    throw new Error(tCagnotte("milestone.errors.apiClientUnavailable"));
+  }
+  return source;
+}
 
 type UpdateAnswerMilestoneParams = {
   kind: "milestone";
@@ -21,7 +22,7 @@ type UpdateAnswerMilestoneParams = {
   answerId: string;
   index: string;
   field: string;
-  value: unknown;
+  value: UpdateValue;
   setType?: UpdateSetType;
 };
 
@@ -31,13 +32,14 @@ type UpdateProjectActionParams = {
   projectId: string;
   index: string;
   field: string;
-  value: unknown;
+  value: UpdateValue;
   setType?: UpdateSetType;
 };
 
 export async function updateActionOrMilestoneField(
   params: UpdateAnswerMilestoneParams | UpdateProjectActionParams
 ) {
+  const api = requireSource(params.source);
   const safeSetType =
     typeof params.setType === "string"
       ? params.setType
@@ -46,23 +48,27 @@ export async function updateActionOrMilestoneField(
         : undefined;
 
   if (params.kind === "action") {
-    return updatePathValue(params.source, {
-      id: params.index,
-      collection: "actions",
-      path: params.field,
-      value: params.value,
-      ...(safeSetType ? { setType: safeSetType } : {}),
-    });
+    return api.endpointApi.updatePathValue(
+      normalizeUpdatePathValuePayload({
+        id: params.index,
+        collection: "actions",
+        path: params.field,
+        value: params.value,
+        ...(safeSetType ? { setType: safeSetType } : {}),
+      })
+    );
   }
 
   if (params.kind === "milestone") {
-    return updatePathValue(params.source, {
-      id: params.answerId,
-      collection: "answers",
-      path: `answers.aapStep1.depense.${params.index}.${params.field}`,
-      value: params.value,
-      ...(safeSetType ? { setType: safeSetType } : {}),
-    });
+    return api.endpointApi.updatePathValue(
+      normalizeUpdatePathValuePayload({
+        id: params.answerId,
+        collection: "answers",
+        path: `answers.aapStep1.depense.${params.index}.${params.field}`,
+        value: params.value,
+        ...(safeSetType ? { setType: safeSetType } : {}),
+      })
+    );
   }
 
   throw new Error("updateActionOrMilestoneField: kind non supporte");
@@ -72,7 +78,7 @@ export async function updateProjectActionFields(params: {
   source: UpdateSource;
   projectId: string;
   index: string;
-  fields: Record<string, unknown>;
+  fields: Record<string, UpdateValue>;
   setType?: UpdateSetType;
 }) {
   const entries = Object.entries(params.fields);
@@ -126,13 +132,16 @@ export async function appendProjectMilestone(params: {
     status: 'open' | 'done';
   };
 }) {
-  return updatePathValue(params.source, {
-    id: params.projectId,
-    collection: 'projects',
-    path: 'oceco.milestones',
-    value: params.milestone,
-    arrayForm: true,
-  });
+  const api = requireSource(params.source);
+  return api.endpointApi.updatePathValue(
+    normalizeUpdatePathValuePayload({
+      id: params.projectId,
+      collection: 'projects',
+      path: 'oceco.milestones',
+      value: params.milestone,
+      arrayForm: true,
+    })
+  );
 }
 
 export async function appendAnswerDepense(params: {
@@ -147,64 +156,59 @@ export async function appendAnswerDepense(params: {
     financer?: unknown[];
   };
 }) {
-  return updatePathValue(params.source, {
-    id: params.answerId,
-    collection: 'answers',
-    path: 'answers.aapStep1.depense',
-    value: params.depense,
-    arrayForm: true,
-    setType: [
-      {
-        path: 'date',
-        type: 'isoDate',
-      },
-      {
-        path: 'price',
-        type: 'int',
-      },
-    ],
-  });
+  const api = requireSource(params.source);
+  return api.endpointApi.updatePathValue(
+    normalizeUpdatePathValuePayload({
+      id: params.answerId,
+      collection: 'answers',
+      path: 'answers.aapStep1.depense',
+      value: params.depense,
+      arrayForm: true,
+      setType: [
+        {
+          path: 'date',
+          type: 'isoDate',
+        },
+        {
+          path: 'price',
+          type: 'int',
+        },
+      ],
+    })
+  );
 }
 
 export const deleteActionById = async (params: {
   source: UpdateSource;
   actionId: string;
 }) => {
-  const source = params.source as EndpointCaller;
-
-  if (typeof source.callEndpoint === "function") {
-    try {
-      return await source.callEndpoint("DELETE_ACTION_BY_ID", { id: params.actionId });
-    } catch {
-      // Fallback HTTP direct si l'endpoint custom n'est pas encore injecte.
-    }
+  if (!params.source) {
+    throw new Error(tCagnotte("milestone.errors.deleteActionUnavailable"));
   }
-
-  if (typeof source._client?.request === "function") {
-    return source._client.request({
-      url: `/co2/element/delete/type/actions/id/${params.actionId}`,
-      method: "post",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    });
-  }
-
-  throw new Error("Suppression action indisponible: source API incompatible.");
+  const payload: DeleteElementData = {
+    reason: "delete action via cagnotte",
+    pathParams: { type: "actions", id: params.actionId },
+  };
+  return params.source.endpointApi.deleteElement(payload);
 };
 
 export async function updateProjectMilestoneFields(params: {
   source: UpdateSource;
   projectId: string;
   index: number;
-  fields: Record<string, unknown>;
+  fields: Record<string, UpdateValue>;
 }) {
+  const api = requireSource(params.source);
   const entries = Object.entries(params.fields);
   for (const [field, value] of entries) {
-    await updatePathValue(params.source, {
-      id: params.projectId,
-      collection: "projects",
-      path: `oceco.milestones.${params.index}.${field}`,
-      value,
-    });
+    await api.endpointApi.updatePathValue(
+      normalizeUpdatePathValuePayload({
+        id: params.projectId,
+        collection: "projects",
+        path: `oceco.milestones.${params.index}.${field}`,
+        value,
+      })
+    );
   }
 }
 
@@ -212,18 +216,21 @@ export async function updateAnswerDepenseFields(params: {
   source: UpdateSource;
   answerId: string;
   index: number;
-  fields: Record<string, unknown>;
+  fields: Record<string, UpdateValue>;
   setType?: UpdateSetType;
 }) {
+  const api = requireSource(params.source);
   const entries = Object.entries(params.fields);
   for (const [field, value] of entries) {
-    await updatePathValue(params.source, {
-      id: params.answerId,
-      collection: "answers",
-      path: `answers.aapStep1.depense.${params.index}.${field}`,
-      value,
-      ...(params.setType && params.setType.length > 0 ? { setType: params.setType } : {}),
-    });
+    await api.endpointApi.updatePathValue(
+      normalizeUpdatePathValuePayload({
+        id: params.answerId,
+        collection: "answers",
+        path: `answers.aapStep1.depense.${params.index}.${field}`,
+        value,
+        ...(params.setType && params.setType.length > 0 ? { setType: params.setType } : {}),
+      })
+    );
   }
 }
 
@@ -232,13 +239,16 @@ export async function deleteProjectMilestoneAtIndex(params: {
   projectId: string;
   index: number;
 }) {
-  return updatePathValue(params.source, {
-    id: params.projectId,
-    collection: "projects",
-    path: `oceco.milestones.${params.index}`,
-    pull: "oceco.milestones",
-    value: null,
-  });
+  const api = requireSource(params.source);
+  return api.endpointApi.updatePathValue(
+    normalizeUpdatePathValuePayload({
+      id: params.projectId,
+      collection: "projects",
+      path: `oceco.milestones.${params.index}`,
+      pull: "oceco.milestones",
+      value: null,
+    })
+  );
 }
 
 export async function deleteAnswerDepenseAtIndex(params: {
@@ -246,12 +256,14 @@ export async function deleteAnswerDepenseAtIndex(params: {
   answerId: string;
   index: number;
 }) {
-  return updatePathValue(params.source, {
-    id: params.answerId,
-    collection: "answers",
-    path: `answers.aapStep1.depense.${params.index}`,
-    pull: "answers.aapStep1.depense",
-    value: null,
-  });
+  const api = requireSource(params.source);
+  return api.endpointApi.updatePathValue(
+    normalizeUpdatePathValuePayload({
+      id: params.answerId,
+      collection: "answers",
+      path: `answers.aapStep1.depense.${params.index}`,
+      pull: "answers.aapStep1.depense",
+      value: null,
+    })
+  );
 }
-

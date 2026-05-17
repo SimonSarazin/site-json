@@ -1,10 +1,49 @@
 import "dotenv/config";
 
 /**
- * Endpoint backend pour créer un checkout-intent HelloAsso
- * Flux: Frontend → Ce endpoint → API HelloAsso → URL paiement
+ * @deprecated FICHIER NON BRANCHÉ — 2026-05-14
  *
- * Utilise OAuth2 (Client Credentials) pour communiquer avec HelloAsso
+ * Statut : PAS BRANCHÉ
+ * Raison : ce fichier exporte 5 handlers Express (`helloassoCallbackHandler`,
+ *   `helloassoTokenHandler`, `helloassoCheckoutIntentHandler`,
+ *   `helloassoCheckoutStatusHandler`, `helloassoDiagnosticHandler`) mais
+ *   **aucun n'est importé** par `server/dev-server.js` ni
+ *   `server/prod-server.js`. Les routes attendues côté front
+ *   (`/api/helloasso/checkout-intent`, `/api/helloasso/checkout-status/:id`,
+ *   `/api/helloasso/callback`, etc.) renvoient donc 404.
+ *
+ * Conséquence runtime : le bouton HelloAsso dans `PaymentConfigPage` ne peut
+ *   pas fonctionner en l'état (les appels `fetch("/api/helloasso/...")` du
+ *   front échouent).
+ *
+ * Alternative active : Stripe (typeof PaymentMethod === "stripe") via le
+ *   composant `StripePaymentForm`, qui ne dépend pas de ce fichier.
+ *
+ * À reviewer en priorité : brancher les handlers dans les serveurs Express
+ *   pour rendre HelloAsso fonctionnel, OU retirer le mode HelloAsso côté
+ *   front si Stripe seul suffit.
+ *
+ * Pour brancher : ajouter dans `dev-server.js` et `prod-server.js` :
+ *   ```js
+ *   import {
+ *     helloassoCallbackHandler,
+ *     helloassoTokenHandler,
+ *     helloassoCheckoutIntentHandler,
+ *     helloassoCheckoutStatusHandler,
+ *     helloassoDiagnosticHandler,
+ *   } from "./api/helloasso-checkout.js";
+ *
+ *   app.get("/api/helloasso/callback", helloassoCallbackHandler);
+ *   app.get("/api/helloasso/token", helloassoTokenHandler);
+ *   app.post("/api/helloasso/checkout-intent", helloassoCheckoutIntentHandler);
+ *   app.get("/api/helloasso/checkout-status/:checkoutIntentId", helloassoCheckoutStatusHandler);
+ *   app.get("/api/helloasso/orgs", helloassoDiagnosticHandler);
+ *   ```
+ *
+ * Endpoint backend pour créer un checkout-intent HelloAsso.
+ * Flux: Frontend → Ce endpoint → API HelloAsso → URL paiement.
+ *
+ * Utilise OAuth2 (Client Credentials) pour communiquer avec HelloAsso.
  */
 
 const HELLOASSO_API_BASE = "https://api.helloasso.com/v5";

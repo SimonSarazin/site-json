@@ -73,7 +73,7 @@ export default function SearchCardDetailed({
         id: item.id,
         collection: (entityType || "events") as "citoyens" | "organizations" | "projects" | "events" | "poi",
         path: "isStarred",
-        value: newStarredValue as unknown as { [k: string]: unknown }
+        value: newStarredValue,
       });
 
       setLocalIsStarred(newStarredValue);

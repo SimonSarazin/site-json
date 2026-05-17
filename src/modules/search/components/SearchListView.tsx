@@ -4,7 +4,7 @@ import { SearchListViewProps } from "../schema";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { SwitchDetailsMode } from "./SwitchDetailsMode";
 import SearchCardDetailed from "./SearchCardDetailed";
-import { useFundingEnvelope } from "@/hooks/useFundingEnvelope";
+import { useFundingEnvelope } from "@/modules/cagnotte/hooks/useFundingEnvelope";
 
 export default function SearchListView({
   results,

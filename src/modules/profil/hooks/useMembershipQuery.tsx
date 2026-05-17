@@ -9,6 +9,7 @@ import { useCocolight } from "@/hooks/useCocolight";
 export interface MembershipQueryParams {
   indexStep?: number;
   search?: string;
+  filters?: Record<string, unknown>;
 }
 
 /**
@@ -39,7 +40,8 @@ export function useUserOrganizations(user: EntityTypes | null, params?: Membersh
       const result = await user.getOrganizations({
         name: params?.search,
         indexMin: 0,
-        indexStep: params?.indexStep || 20
+        indexStep: params?.indexStep || 20,
+        ...(params?.filters ? { filters: params.filters } : {}),
       });
 
       if (

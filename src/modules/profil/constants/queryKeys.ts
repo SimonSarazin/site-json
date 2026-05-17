@@ -9,15 +9,10 @@ export const QUERY_KEYS = {
   // Préfixe pour invalidations (matche toutes les queries peu importe userContextId)
   ELEMENT_ABOUT_PREFIX: (slug: string | null) => ["element-about", slug] as const,
 
-  // User friends queries
+  // User friends queries (un seul queryKey "user-friends" partagé par useFriendsQuery
+  // pour les 3 statuts friends/pending/sent — différenciés via params)
   USER_FRIENDS: (slug: string | null, userContextId: string | null = null) => ["user-friends", slug, userContextId] as const,
   USER_FRIENDS_PREFIX: (slug: string | null) => ["user-friends", slug] as const,
-  USER_PENDING_FRIENDS: (slug: string | null, userContextId: string | null = null) => ["user-pending-friends", slug, userContextId] as const,
-  USER_PENDING_FRIENDS_PREFIX: (slug: string | null) => ["user-pending-friends", slug] as const,
-  USER_SENT_FRIEND_REQUESTS: (slug: string | null, userContextId: string | null = null) => ["user-sent-friend-requests", slug, userContextId] as const,
-  USER_SENT_FRIEND_REQUESTS_PREFIX: (slug: string | null) => ["user-sent-friend-requests", slug] as const,
-  USER_BLOCKED: (slug: string | null, userContextId: string | null = null) => ["user-blocked", slug, userContextId] as const,
-  USER_BLOCKED_PREFIX: (slug: string | null) => ["user-blocked", slug] as const,
 
   // Organization queries
   ORGANIZATION_MEMBERS: (slug: string | null, userContextId: string | null = null) => ["organization-members", slug, userContextId] as const,

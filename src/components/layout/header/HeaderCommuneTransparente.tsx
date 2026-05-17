@@ -19,6 +19,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { IconOrSvg } from "@/components/ui/icon-or-svg";
 import LoginForm from "@/components/auth/LoginForm";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
 
@@ -113,9 +114,9 @@ export default function HeaderCommuneTransparente({ header }: HeaderCommuneTrans
                                 className="h-9 w-auto object-contain group-hover:scale-105 transition-transform"
                             />
                         ) : header.logoIcon ? (
-                            <span
-                                className="w-8 h-8 text-primary group-hover:scale-110 transition-transform flex items-center justify-center [&>svg]:w-8 [&>svg]:h-8"
-                                dangerouslySetInnerHTML={{ __html: header.logoIcon }}
+                            <IconOrSvg
+                                value={header.logoIcon}
+                                className="w-8 h-8 text-primary group-hover:scale-110 transition-transform"
                             />
                         ) : null}
                         {logoTitle && (

@@ -29,10 +29,7 @@ export function useSendFriendRequest(currentUser: User | null) {
     successKey: "toast.friends.requestSent",
     errorKey: "toast.friends.sendRequestError",
     invalidateQueries: currentUser
-      ? [
-          QUERY_KEYS.USER_FRIENDS_PREFIX(currentUser.slug),
-          QUERY_KEYS.USER_SENT_FRIEND_REQUESTS_PREFIX(currentUser.slug),
-        ]
+      ? [QUERY_KEYS.USER_FRIENDS_PREFIX(currentUser.slug)]
       : [],
     onSuccessCallback: (_, { user }) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ELEMENT_ABOUT_PREFIX(user.slug) });
@@ -59,7 +56,6 @@ export function useAcceptFriendRequest(currentUser: User | null) {
     invalidateQueries: currentUser
       ? [
           QUERY_KEYS.USER_FRIENDS_PREFIX(currentUser.slug),
-          QUERY_KEYS.USER_PENDING_FRIENDS_PREFIX(currentUser.slug),
           QUERY_KEYS.ELEMENT_ABOUT_PREFIX(currentUser.slug),
         ]
       : [],
@@ -87,7 +83,7 @@ export function useRejectFriendRequest(currentUser: User | null) {
     errorKey: "toast.friends.rejectRequestError",
     invalidateQueries: currentUser
       ? [
-          QUERY_KEYS.USER_PENDING_FRIENDS_PREFIX(currentUser.slug),
+          QUERY_KEYS.USER_FRIENDS_PREFIX(currentUser.slug),
           QUERY_KEYS.ELEMENT_ABOUT_PREFIX(currentUser.slug),
         ]
       : [],
@@ -143,7 +139,7 @@ export function useCancelFriendRequest(currentUser: User | null) {
     errorKey: "toast.friends.cancelError",
     invalidateQueries: currentUser
       ? [
-          QUERY_KEYS.USER_SENT_FRIEND_REQUESTS_PREFIX(currentUser.slug),
+          QUERY_KEYS.USER_FRIENDS_PREFIX(currentUser.slug),
           QUERY_KEYS.ELEMENT_ABOUT_PREFIX(currentUser.slug),
         ]
       : [],

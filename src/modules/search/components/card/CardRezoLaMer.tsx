@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { MapPin, Users, ArrowRight, Zap } from "lucide-react";
 import { useState } from "react";
-import { useFundingEnvelope } from "@/hooks/useFundingEnvelope";
+import { useFundingEnvelope } from "@/modules/cagnotte/hooks/useFundingEnvelope";
+import { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -52,14 +53,11 @@ export default function CardRezoLaMer({
 
     setIsActivatingFunding(true);
     try {
-      // Appel à coremuOperation pour générer la proposition
-      const baseEntity = entity as unknown as Record<string, unknown>;
-      const coremuOperationMethod = baseEntity.coremuOperation as (formId: string, projectId: string) => Promise<unknown>;
-      await coremuOperationMethod.call(entity, formId, projectId);
+      await entity.coremuOperation({ form: formId, project: projectId });
 
       // Invalider le cache pour rafraîchir les données
       queryClient.invalidateQueries({
-        queryKey: ['funding-envelope'],
+        queryKey: CAGNOTTE_QUERY_KEYS.FUNDING_ENVELOPE_PREFIX(),
       });
 
       // Appeler le callback du parent si disponible
