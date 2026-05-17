@@ -3,7 +3,7 @@ import { useLocalization } from "@/hooks/useLocalization";
 import { LocalizedString } from "@/types/site-schema";
 import { ArrowRight } from "lucide-react";
 
-type HeroButtonVariant = "default" | "secondary" | "accent";
+type HeroButtonVariant = "default" | "secondary" | "accent" | "primary" | "outline";
 
 interface HeroBadge {
   label: LocalizedString;
@@ -48,7 +48,7 @@ export function HeroSSBE({ id, props }: HeroSSBEProps) {
   const backgroundImage = props.backgroundImage;
   const backgroundAlt = props.backgroundImageAlt ? t(props.backgroundImageAlt) : "";
 
-  const getButtonClasses = (btnVariant?: "default" | "secondary" | "accent") => {
+  const getButtonClasses = (btnVariant?: HeroButtonVariant) => {
     if (btnVariant === "secondary") {
         return "px-8 py-4 text-lg font-medium border-2 border-foreground/50 bg-secondary/20 backdrop-blur-sm hover:bg-secondary/40 text-foreground rounded-md transition-all";
     }

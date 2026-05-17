@@ -249,10 +249,6 @@
                   "fr": "Voir les communes autrement",
                   "en": "See communes differently"
                 },
-                "subtitle": {
-                  "fr": "",
-                  "en": ""
-                },
                 "href": "/",
                 "color": "primary"
               },
@@ -261,10 +257,6 @@
                 "title": {
                   "fr": "Connecter, découvrir, participer",
                   "en": "Connect, discover, participate"
-                },
-                "subtitle": {
-                  "fr": "",
-                  "en": ""
                 },
                 "href": "/",
                 "color": "primary"
@@ -275,10 +267,6 @@
                   "fr": "Pourquoi j'habite ici ?",
                   "en": "Why do I live here?"
                 },
-                "subtitle": {
-                  "fr": "",
-                  "en": ""
-                },
                 "href": "/",
                 "color": "primary"
               },
@@ -287,10 +275,6 @@
                 "title": {
                   "fr": "Faisons imerger l'iceberg",
                   "en": "Let's immerse the iceberg"
-                },
-                "subtitle": {
-                  "fr": "",
-                  "en": ""
                 },
                 "href": "/",
                 "color": "primary"

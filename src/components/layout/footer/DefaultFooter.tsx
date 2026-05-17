@@ -59,7 +59,7 @@ export function DefaultFooter() {
 
         {/* Footer Links */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
-          {footer.columns.map((column, index) => (
+          {(footer.columns ?? []).map((column, index) => (
             <div key={index}>
               <h4 className="font-semibold mb-4 text-foreground">{t(column.title)}</h4>
               <ul className="space-y-2">

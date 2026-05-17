@@ -157,7 +157,7 @@ export const HeroTiersLieuxSchema = z.object({
       .array(
         z.object({
           label: LocalizedString,
-          variant: z.enum(["default", "secondary", "accent"]).optional(),
+          variant: z.enum(["default", "secondary", "accent", "primary", "outline"]).optional(),
         })
       )
       .optional(),
@@ -193,7 +193,7 @@ export const HeroRezoLaMerSchema = z.object({
         z.object({
           label: LocalizedString,
           path: z.string().optional(),
-          variant: z.enum(["default", "secondary", "accent"]).optional(),
+          variant: z.enum(["default", "secondary", "accent", "primary", "outline"]).optional(),
         })
       )
       .optional(),
@@ -228,7 +228,7 @@ export const HeroSSBESchema = z.object({
         z.object({
           label: LocalizedString,
           path: z.string().optional(),
-          variant: z.enum(["default", "secondary", "accent"]).optional(),
+          variant: z.enum(["default", "secondary", "accent", "primary", "outline"]).optional(),
         })
       )
       .optional(),
@@ -267,7 +267,7 @@ export const HeroNoCommunesShema = z.object({
         z.object({
           label: LocalizedString,
           path: z.string().optional(),
-          variant: z.enum(["default", "secondary", "accent"]).optional(),
+          variant: z.enum(["default", "secondary", "accent", "primary", "outline"]).optional(),
         })
       )
       .optional(),
@@ -331,15 +331,19 @@ export const FeaturesRezoLaMerSchema = z.object({
   type: z.literal("features-rezo-la-mer"),
   id: z.string().optional(),
   props: z.object({
-    headline: LocalizedString,
+    // `headline` rendu optionnel : utilisable en sous-section (rightSection
+    // d'un gridLayout) où le titre vit côté `leftSection`.
+    headline: LocalizedString.optional(),
     subhead: LocalizedString.optional(),
-    variant: z.enum(["ocean", "cyber"]).optional(),
+    variant: z.enum(["ocean", "cyber", "nos-communes"]).optional(),
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
     features: z.array(
       z.object({
         icon: z.string(),
         title: LocalizedString,
-        description: LocalizedString,
+        // `description` rendu optionnel : certaines features n'ont qu'un
+        // titre/icône sans corps de texte (cf. sport-sante page santé).
+        description: LocalizedString.optional(),
         color: z.enum(["turquoise", "cyan-bright", "primary", "turquoise-light", "accent", "chart-2", "chart-3"]).optional(),
         link: z.string().optional(),
       })
@@ -361,8 +365,11 @@ export const CategoriesGridSectionSchema = z.object({
     columns: z.number().min(2).max(6).optional().default(3),
     cards: z.array(
       z.object({
-        icon: z.string(),
-        title: LocalizedString,
+        // `icon` et `title` rendus optionnels : certaines configs utilisent
+        // uniquement subtitle pour un affichage minimaliste (cf.
+        // config.prod.sport-sante-bien-etre.json).
+        icon: z.string().optional(),
+        title: LocalizedString.optional(),
         subtitle: LocalizedString.optional(),
         link: z.string().optional(),
       })
@@ -380,7 +387,7 @@ export const ActionButtonsRezoLaMerSchema = z.object({
   props: z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
-    variant: z.enum(["ocean", "cyber", "ssbe"]).optional(),
+    variant: z.enum(["ocean", "cyber", "ssbe", "nos-communes"]).optional(),
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
     actions: z.array(
       z.object({
@@ -422,7 +429,7 @@ export const CommunityRezoLaMerSchema = z.object({
         z.object({
           value: z.string(),
           label: LocalizedString,
-          color: z.enum(["primary", "turquoise", "cyan-bright", "accent", "teal"]).optional(),
+          color: z.enum(["primary", "turquoise", "cyan-bright", "accent", "teal", "chart-1", "chart-2", "chart-3", "chart-4", "chart-5"]).optional(),
         })
       )
       .optional(),
@@ -1173,7 +1180,9 @@ const TimelineSectionSchema = z.object({
   type: z.literal("timeline"),
   id: z.string().optional(),
   props: z.object({
-    events: z.array(z.object({ date: z.string(), title: LocalizedString, text: LocalizedString })),
+    // `date` rendu optionnel : certaines timelines servent à raconter des étapes
+    // sans date précise (ex. parcours d'idée, jalons fonctionnels).
+    events: z.array(z.object({ date: z.string().optional(), title: LocalizedString, text: LocalizedString })),
     alternating: z.boolean().default(true),
   }),
 });
@@ -1267,7 +1276,9 @@ export type RecoverPasswordFormSectionProps = z.infer<typeof RecoverPasswordForm
 const HTMLSectionSchema = z.object({
   type: z.literal("html"),
   id: z.string().optional(),
-  props: z.object({ html: z.string() }),
+  // `html` accepte string brute OU LocalizedString (`{ fr, en, ... }`) pour les
+  // sites multilingues (cf. config.prod.tiers-lieux.json pages.6.sections.0).
+  props: z.object({ html: z.union([z.string(), LocalizedString]) }),
 });
 
 export type HTMLSection = z.infer<typeof HTMLSectionSchema>;
@@ -1713,7 +1724,9 @@ const FooterPartnersSection = z.object({
 
 export const Footer = z.object({
   type: z.enum(["tiers-lieux", "rezo-la-mer", "cyber-reunion", "nos-communes", "commune-transparente", "ssbe", "default"]).default("default"),
-  columns: z.array(FooterColumn),
+  // Optionnel : un footer minimaliste (logo + copyright + socials sans colonnes
+  // de liens) est légitime sur certains sites (cf. equipementsSportifs974).
+  columns: z.array(FooterColumn).optional(),
   socials: z.array(z.object({ platform: z.string(), url: z.string() })).optional(),
   extra: z.string().optional(),
   newsletter: NewsletterSectionSchema.optional(),

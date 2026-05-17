@@ -22,7 +22,9 @@ export interface UseSearchQueryParams {
     defaultFilters?: Record<string, unknown>;
     defaultFields?: string[];
     defaultSortBy?: Record<string, 1 | -1>;
-    notSourceKey?: boolean;
+    // Accepte `boolean` (ne pas sourcer) ou `number` (limite custom) — cf.
+    // schema search.ts (config historique avec valeur numérique).
+    notSourceKey?: boolean | number;
     locality?: Record<string, {
       name?: string;
       active?: boolean;

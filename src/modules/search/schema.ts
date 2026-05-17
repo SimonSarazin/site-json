@@ -63,6 +63,8 @@ const SearchTypeSchema = z.enum([
   "citoyens",
   "poi",
   "answers",
+  "news",
+  "proposals",
 ]);
 
 export type SearchType = z.infer<typeof SearchTypeSchema>;
@@ -79,6 +81,8 @@ export const SEARCH_TYPE_ICON_NAMES: Record<SearchType, IconName> = {
   citoyens: "user",
   poi: "map-pin",
   answers: "file-text",
+  news: "newspaper",
+  proposals: "lightbulb",
 };
 
 export const SearchProSectionSchema = z.object({
@@ -115,7 +119,9 @@ export const SearchProSectionSchema = z.object({
       defaultFilters: z.record(z.string(), z.unknown()).optional(),
       defaultFields: z.array(z.string()).optional(),
       defaultSortBy: z.record(z.string(), z.union([z.literal(1), z.literal(-1)])).optional(),
-      notSourceKey: z.boolean().optional(),
+      // Accepte `boolean` (ne pas sourcer par clé) ou `number` (limite custom).
+      // Certaines configs historiques utilisent un nombre — schéma assoupli pour compat.
+      notSourceKey: z.union([z.boolean(), z.number()]).optional(),
       locality: z.record(z.string(), z.object({
         id: z.string(),
         type: z.string(),
@@ -237,7 +243,9 @@ export const SearchProStaticSectionSchema = z.object({
       defaultFilters: z.record(z.string(), z.unknown()).optional(),
       defaultFields: z.array(z.string()).optional(),
       defaultSortBy: z.record(z.string(), z.union([z.literal(1), z.literal(-1)])).optional(),
-      notSourceKey: z.boolean().optional(),
+      // Accepte `boolean` (ne pas sourcer par clé) ou `number` (limite custom).
+      // Certaines configs historiques utilisent un nombre — schéma assoupli pour compat.
+      notSourceKey: z.union([z.boolean(), z.number()]).optional(),
       locality: z.record(z.string(), z.object({
         id: z.string(),
         type: z.string(),
@@ -279,9 +287,15 @@ export const CardCountCTSectionSchema = z.object({
   props: z.object({
     title: LocalizedString.optional(),
     subtitle: LocalizedString.optional(),
-    bg: z.enum([
-      "default", "card", "muted", "primary", "secondary", "accent", "transparent",
-      "gradient-teal", "gradient-blue", "gradient-indigo", "gradient-cyan",
+    // Accepte tokens sémantiques (énumérés) OU classe Tailwind brute (string libre,
+    // ex. `bg-cyan-500`). Cette flexibilité permet aux sites costum d'utiliser
+    // des couleurs spécifiques non listées comme tokens globaux.
+    bg: z.union([
+      z.enum([
+        "default", "card", "muted", "primary", "secondary", "accent", "transparent",
+        "gradient-teal", "gradient-blue", "gradient-indigo", "gradient-cyan",
+      ]),
+      z.string(),
     ]).optional(),
 
     baseParams: z.object({
@@ -290,7 +304,9 @@ export const CardCountCTSectionSchema = z.object({
       defaultTypes: z.array(SearchTypeSchema).optional(),
       defaultTags:   z.array(z.string()).optional(),
       defaultFilters: z.record(z.string(), z.unknown()).optional(),
-      notSourceKey: z.boolean().optional(),
+      // Accepte `boolean` (ne pas sourcer par clé) ou `number` (limite custom).
+      // Certaines configs historiques utilisent un nombre — schéma assoupli pour compat.
+      notSourceKey: z.union([z.boolean(), z.number()]).optional(),
       locality: z.record(z.string(), z.object({
         id: z.string(),
         type: z.string(),

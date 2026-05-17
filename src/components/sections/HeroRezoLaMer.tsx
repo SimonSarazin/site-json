@@ -20,7 +20,7 @@ export function HeroRezoLaMer({ props }: HeroRezoLaMerProps) {
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
-    const getButtonClasses = (btnVariant?: "default" | "secondary" | "accent") => {
+    const getButtonClasses = (btnVariant?: "default" | "secondary" | "accent" | "primary" | "outline") => {
         if (btnVariant === "secondary") {
             return "px-8 py-4 text-lg font-medium border-2 border-foreground/50 bg-secondary/20 backdrop-blur-sm hover:bg-secondary/40 text-foreground rounded-md transition-all";
         }

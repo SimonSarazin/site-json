@@ -2412,8 +2412,8 @@
     {
       "path": "/formation",
       "title": {
-        "fr": "Formation ",
-        "en": ""
+        "fr": "Formation",
+        "en": "Training"
       },
       "layout": "fullwidth",
       "sections": [
