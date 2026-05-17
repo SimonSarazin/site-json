@@ -254,10 +254,6 @@ export default function CoFormPage() {
         addedOptions?: Record<string, Record<string, string[]>>,
         links?: Record<string, Record<string, { name: string; type: string }>>
     ) => {
-        console.log("📤 Envoi des données du formulaire:", data);
-        if (addedOptions) {
-            console.log("📤 Options ajoutées:", addedOptions);
-        }
         await mutation.mutateAsync({ allData: data, addedOptions, links });
     };
 

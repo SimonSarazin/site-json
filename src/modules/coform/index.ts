@@ -5,6 +5,15 @@
  * et envoi de données à chaque étape.
  */
 
+// Side-effect : enregistre le bundle FR/EN sur i18next au montage du module.
+import "./i18n/i18n";
+
+// Side-effect : enregistre le calculateur de permissions "coform" auprès du
+// registre central (`@/lib/permissions`). Tout consommateur du module pourra
+// utiliser `usePermissions(['coform'], entity, data)` ou le hook ergonomique
+// `useCoFormPermissions(entity, data)`.
+import "./permissions/register";
+
 // Configuration du module
 export { default as moduleConfig } from "./module.config";
 export { routes } from "./routes";
