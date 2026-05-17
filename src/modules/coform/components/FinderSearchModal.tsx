@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Search, X, Plus, Loader2, Mail, UserPlus } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -224,12 +225,12 @@ export function FinderSearchModal({
   };
 
   /**
-   * Créer un nouvel élément (placeholder - à implémenter avec le formulaire de création)
+   * Créer un nouvel élément (placeholder - à implémenter avec le formulaire de création).
+   * TODO: Ouvrir un formulaire de création d'élément.
    */
   const handleAddNew = () => {
-    // TODO: Ouvrir un formulaire de création d'élément
     console.log("Add new element of type:", config.type);
-    alert(`Fonctionnalité à implémenter: créer un nouvel élément de type "${config.elementLabel}"`);
+    toast.info(`Fonctionnalité à implémenter : créer un nouvel élément de type « ${config.elementLabel} »`);
   };
 
   if (!isOpen) return null;

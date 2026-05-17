@@ -6,6 +6,10 @@
             "network" : "Network",
             "dashboard": "Dashboard",
             "news": "News"
+        },
+        "comingSoon": {
+            "title": "Coming soon",
+            "description": "This section is being implemented. Check back soon!"
         }
     },
     "AmpliHero": {

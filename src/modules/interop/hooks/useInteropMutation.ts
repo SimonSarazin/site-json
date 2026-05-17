@@ -53,6 +53,10 @@ export function useDiscourseUnlink() {
   });
 }
 
+/**
+ * @unused Pas de consommateur dans le repo au 2026-05-17. Conservé pour usage futur prévu
+ * (auto-suggestion de liaison Discourse si l'email du user correspond à un compte existant).
+ */
 export function useDiscourseCheckEmail() {
   const { entity } = useCocolight();
 

@@ -6,6 +6,11 @@ type InteropData = Record<string, Record<string, string | false>>;
 /**
  * Hook global (sans ProfileEntityContext) pour savoir si l'utilisateur connecté
  * doit voir la modal de liaison Discourse.
+ *
+ * @unused Pas de consommateur dans le repo au 2026-05-17. Conservé pour usage futur prévu
+ * (potentiellement à intégrer dans `DiscourseGlobalModal` côté RootLayout).
+ * Note : duplique partiellement la logique de `useDiscourseAutoDetect` — à consolider
+ * si on l'active.
  */
 export function useDiscourseGlobalStatus() {
   const { me } = useCocolight();

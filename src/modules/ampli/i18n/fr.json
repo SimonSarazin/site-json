@@ -6,6 +6,10 @@
             "network" : "Réseau",
             "dashboard": "Tableau de bord",
             "news": "Actualités"
+        },
+        "comingSoon": {
+            "title": "Bientôt disponible",
+            "description": "Cette section est en cours d'implémentation. Repassez plus tard !"
         }
     },
     "AmpliHero": {

@@ -76,7 +76,12 @@ interface StepSubmitData {
 
 /**
  * Hook pour soumettre les données d'une étape
- * Sauvegarde locale en cache — pas d'appel API intermédiaire
+ * Sauvegarde locale en cache — pas d'appel API intermédiaire.
+ *
+ * @unused Pas de consommateur dans le repo au 2026-05-17 (vérifié `grep -rn "useCoFormStepMutation" src/`).
+ * Conservé pour usage futur prévu — potentiellement pour ajouter du tracking analytics
+ * par étape, ou pour un mode autosave qui appellerait `saveStepData` du Provider.
+ * Son comportement actuel (`console.log` + `invalidateQueries`) est volontairement minimal.
  */
 export function useCoFormStepMutation({ formId, onSuccess, onError }: UseCoFormStepMutationOptions) {
   const queryClient = useQueryClient();

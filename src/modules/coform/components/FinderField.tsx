@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { Search } from "lucide-react";
 import type { FieldErrors } from "react-hook-form";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { FormFieldMapping, FinderValue, FinderElement, FinderConfig } from "../types";
 import { FinderElementCard } from "./FinderElementCard";
@@ -128,12 +129,12 @@ export function FinderField({
   };
 
   /**
-   * Édite un élément (placeholder)
+   * Édite un élément (placeholder).
+   * TODO: Ouvrir le formulaire d'édition de l'élément.
    */
   const handleEditElement = (element: FinderElement) => {
-    // TODO: Ouvrir le formulaire d'édition de l'élément
     console.log("Edit element:", element);
-    alert(`Fonctionnalité à implémenter: éditer l'élément "${element.name}"`);
+    toast.info(`Fonctionnalité à implémenter : éditer l'élément « ${element.name} »`);
   };
 
   const hasError = !!errors[field.name];

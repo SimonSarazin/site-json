@@ -1,3 +1,7 @@
+// i18n — side-effect import : enregistre le bundle FR/EN sur i18next au montage du module.
+// Sans cet import, `t("Ampli*")` retourne la clé brute (bug critique P0).
+import "./i18n";
+
 // Routes
 export { routes } from "./routes";
 export type { ModuleRouteFactory } from "@/lib/modules";
