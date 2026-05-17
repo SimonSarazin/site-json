@@ -24,7 +24,10 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+
+    /* Matchers Jest DOM pour les tests UI (`*.test.tsx` sous src/). */
+    "types": ["@testing-library/jest-dom"]
   },
   "include": ["src"]
 }
