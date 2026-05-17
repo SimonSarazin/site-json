@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import type { Action, ActionItemNormalized } from '@communecter/cocolight-api-client';
 import { useCocolight } from '@/hooks/useCocolight';
 import { CAGNOTTE_QUERY_KEYS } from '@/modules/cagnotte/constants/queryKeys';
 import {
@@ -166,8 +167,15 @@ function getAvatarFromLinks(links: UnknownRecord, id: string, type?: string): st
   );
 }
 
-function extractActionContributors(action: UnknownRecord, links: UnknownRecord): FundingContributor[] {
-  const contributors = asRecord(asRecord(action.links).contributors);
+function extractActionContributors(
+  sd: ActionItemNormalized | UnknownRecord,
+  links: UnknownRecord,
+): FundingContributor[] {
+  // `links.contributors` du SDK est `Record<string, LinkContributorsRef>` (typé) mais
+  // ne contient PAS `name` ni `profilThumbImageUrl`. Les noms/avatars sont enrichis
+  // côté backend dans certaines réponses, sinon fallback sur `envelope.links.{type}[id]`.
+  const linksBlock = asRecord((sd as UnknownRecord).links);
+  const contributors = asRecord(linksBlock.contributors);
   return Object.entries(contributors).map(([contributorId, rawContributor]) => {
     const contributor = asRecord(rawContributor);
     const type = toString(contributor.type) || 'citoyens';
@@ -216,8 +224,19 @@ export function normalizeFundingEnvelope(rawEnvelope: unknown, _contextEntityId?
     const projectRecord = getServerData(projectData.project);
     const answerDepenses = toArray<UnknownRecord>(asRecord(asRecord(projectData.answers).aapStep1).depense);
     const depenses = answerDepenses.length > 0 ? answerDepenses : toArray<UnknownRecord>(projectData.depenses);
-    const actions = toArray<UnknownRecord>(projectData.actions);
-    const actionsWithIndex = actions.map((action, sourceIndex) => ({ action, sourceIndex }));
+    // Depuis SDK 1.0.130, `projectData.actions` peut être un `Action[]` (entités linkées par
+    // `BaseEntity.fundingEnvelope`) — sinon raw JSON. On dérive `serverData` dans les 2 cas
+    // via `getServerData`, et on garde une réf à l'entité quand elle est disponible.
+    const rawActions = toArray<unknown>(projectData.actions);
+    const actionsWithIndex = rawActions.map((rawAction, sourceIndex) => {
+      const maybeEntity = rawAction as Partial<Action> | UnknownRecord;
+      const isEntity =
+        typeof (maybeEntity as Partial<Action>).getEntityType === "function" ||
+        typeof (maybeEntity as { _serverData?: unknown })._serverData !== "undefined";
+      const entity = isEntity ? (rawAction as Action) : undefined;
+      const sd = (getServerData(rawAction) as Partial<ActionItemNormalized> & UnknownRecord) ?? {};
+      return { rawAction, entity, sd, sourceIndex };
+    });
     const projectMilestones = toArray<UnknownRecord>(asRecord(projectRecord.oceco).milestones);
     const projectMilestoneOrder = projectMilestones
       .map((milestone) => toString(milestone.milestoneId))
@@ -225,8 +244,8 @@ export function normalizeFundingEnvelope(rawEnvelope: unknown, _contextEntityId?
     const answerMilestoneOrder = depenses
       .map((depense) => toString(depense.milestone))
       .filter((id) => id.length > 0);
-    const fallbackMilestoneIds = actions
-      .map((action) => toString(asRecord(action.milestone).milestoneId))
+    const fallbackMilestoneIds = actionsWithIndex
+      .map(({ sd }) => toString(asRecord(sd.milestone).milestoneId))
       .filter((id) => id.length > 0);
 
     const milestoneOrder = Array.from(
@@ -242,7 +261,9 @@ export function normalizeFundingEnvelope(rawEnvelope: unknown, _contextEntityId?
       const answerDepenseIndex = answerMilestoneOrder.indexOf(milestoneId);
       const metadata = projectMilestones[projectMilestoneIndex] || {};
       const depensesForMilestone = depenses.filter((depense) => toString(depense.milestone) === milestoneId);
-      const actionsForMilestone = actionsWithIndex.filter(({ action }) => toString(asRecord(action.milestone).milestoneId) === milestoneId);
+      const actionsForMilestone = actionsWithIndex.filter(
+        ({ sd }) => toString(asRecord(sd.milestone).milestoneId) === milestoneId,
+      );
 
       const transactions: FundingTransaction[] = depensesForMilestone.flatMap((depense, depenseIndex) => {
         const financerList = toArray<UnknownRecord>(depense.financer);
@@ -274,21 +295,30 @@ export function normalizeFundingEnvelope(rawEnvelope: unknown, _contextEntityId?
         });
       });
 
-      const mappedActions: FundingAction[] = actionsForMilestone.map(({ action, sourceIndex }, actionIndex): FundingAction => {
-        const actionId = getEntityId(action.id) || getEntityId(action._id) || `${milestoneId}-action-${actionIndex}`;
-        return {
-          id: actionId,
-          sourceIndex,
-          name: toString(action.name) || `Action ${actionIndex + 1}`,
-          credits: toNumber(action.credits),
-          status: normalizeActionStatus(action.status),
-          date_start: Number(getTimestamp(action.startDate as unknown) ?? 0) || undefined,
-          date_end: Number(getTimestamp(action.endDate as unknown) ?? 0) || undefined,
-          // Dédup : bug backend connu (array_merge avec soi-même côté PHP) qui duplique les tags.
-          tags: Array.from(new Set(toArray<string>(action.tags).filter((tag) => tag.length > 0))),
-          contributors: extractActionContributors(action, links),
-        };
-      });
+      const mappedActions: FundingAction[] = actionsForMilestone.map(
+        ({ entity, sd, sourceIndex }, actionIndex): FundingAction => {
+          const actionId =
+            entity?.id ||
+            getEntityId(sd.id) ||
+            getEntityId(asRecord(sd)._id) ||
+            `${milestoneId}-action-${actionIndex}`;
+          const startDate = sd.startDate as Date | number | string | undefined;
+          const endDate = sd.endDate as Date | number | string | undefined;
+          return {
+            id: actionId,
+            sourceIndex,
+            name: toString(sd.name) || `Action ${actionIndex + 1}`,
+            credits: toNumber(sd.credits),
+            status: normalizeActionStatus(sd.status),
+            date_start: getTimestamp(startDate),
+            date_end: getTimestamp(endDate),
+            // Dédup : bug backend connu (array_merge avec soi-même côté PHP) qui duplique les tags.
+            tags: Array.from(new Set(toArray<string>(sd.tags).filter((tag) => tag.length > 0))),
+            contributors: extractActionContributors(sd, links),
+            ...(entity ? { entity } : {}),
+          };
+        },
+      );
 
       const targetAmount = depensesForMilestone.reduce((sum, depense) => {
         return sum + toNumber(depense.priceInt || depense.price);

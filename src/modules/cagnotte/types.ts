@@ -13,6 +13,8 @@
  * plutôt que de redéclarer une interface locale.
  */
 
+import type { Action } from "@communecter/cocolight-api-client";
+
 export type FundingActionStatus = "todo" | "done";
 export type FundingPaymentStatus = "pending" | "paid" | "failed" | "refunded";
 export type FundingMilestoneStatus = "open" | "done" | "close";
@@ -45,6 +47,13 @@ export type FundingAction = {
   date_end?: number;
   tags: string[];
   contributors: FundingContributor[];
+  /**
+   * Instance SDK `Action` linkée par `BaseEntity.fundingEnvelope` (SDK 1.0.130+).
+   * Permet aux call-sites d'appeler des méthodes typées (`delete()`, `get()`,
+   * `isAdmin()`, …) ou d'accéder à `serverData` complet sans relire l'enveloppe.
+   * Optionnel pour rétro-compat : peut être absent si l'entité n'a pas été linkée.
+   */
+  entity?: Action;
 };
 
 export type FundingMilestone = {
