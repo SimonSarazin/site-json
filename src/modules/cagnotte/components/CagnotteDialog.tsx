@@ -73,8 +73,40 @@ interface CagnotteDialogProps {
     };
 }
 
-const CagnotteDialog = ({ totalAmount, children, defaultProjectId, onRefresh, openContext }: CagnotteDialogProps) => {
+/**
+ * Wrapper minimal — ne rend que le trigger.
+ *
+ * Le contenu (et donc tous les hooks data : `useFundingEnvelope`,
+ * `useOrganizationProjectsWithAnswers`, etc.) n'est monté que quand `open === true`.
+ * Cela évite :
+ *   - les fetchs "fantômes" au mount du header (avant que l'utilisateur ne clique)
+ *   - les flickers de montants à 0 entre fermeture/réouverture (état local et
+ *     refetchs partiels qui se désynchronisent)
+ *
+ * Le cache React Query (`queryClient`) survit au unmount, donc les réouvertures
+ * rapides restent instantanées si la donnée est encore fresh (`staleTime`).
+ */
+const CagnotteDialog = ({ children, ...props }: CagnotteDialogProps) => {
     const [open, setOpen] = useState(false);
+
+    return (
+        <ClientOnly fallback={<>{children}</>}>
+            {() => (
+                <Dialog open={open} onOpenChange={setOpen}>
+                    <DialogTrigger asChild>{children}</DialogTrigger>
+                    {open && <CagnotteDialogContent open={open} setOpen={setOpen} {...props} />}
+                </Dialog>
+            )}
+        </ClientOnly>
+    );
+};
+
+interface CagnotteDialogContentProps extends Omit<CagnotteDialogProps, "children"> {
+    open: boolean;
+    setOpen: (open: boolean) => void;
+}
+
+const CagnotteDialogContent = ({ totalAmount, defaultProjectId, onRefresh, openContext, setOpen }: CagnotteDialogContentProps) => {
     const [customAmount, setCustomAmount] = useState("");
     const [selectedAmountType, setSelectedAmountType] = useState<"predefined" | "custom" | null>(null);
     const [selectedPredefinedAmount, setSelectedPredefinedAmount] = useState<number | null>(null);
@@ -106,24 +138,21 @@ const CagnotteDialog = ({ totalAmount, children, defaultProjectId, onRefresh, op
     // Récupérer l'entité depuis le contexte
     const { entity } = useCocolight();
 
-    // Récupérer TOUS les projets pour le SELECT
-    // Note: on précharge même si la modale est fermée pour avoir les données prêtes
+    // Récupérer TOUS les projets pour le SELECT.
+    // Le content n'est monté qu'à l'ouverture du dialog → fetch démarre ici,
+    // pas en background sur le header.
     const {
         projects: allProjects,
         isLoading: allProjectsLoading,
-        refetch: refetchProjectsWithAnswers,
     } = useOrganizationProjectsWithAnswers({
         entity: entity || null,
-        enabled: !!entity,  //  Précharger dès que l'entité est disponible
+        enabled: !!entity,
     });
 
     // Un seul useFundingEnvelope() : il retourne `projects[]` complet ET
     // `selectedProject` ciblé (filtré par projectId côté normalize). Pas besoin
     // d'un 2e hook global — voir doc/refactor-useOrganizationProjectsWithAnswers-lazy.md §9.
-    const {
-        data: fundingEnvelope,
-        refetch: refetchFundingEnvelope,
-    } = useFundingEnvelope(selectedProjectId || undefined);
+    const { data: fundingEnvelope } = useFundingEnvelope(selectedProjectId || undefined);
 
     const fundingByProjectId = useMemo(() => {
         const nextMap = new Map<string, { totalFunding: number; totalCost: number }>();
@@ -246,14 +275,11 @@ const CagnotteDialog = ({ totalAmount, children, defaultProjectId, onRefresh, op
         fundingEnvelope?.selectedProject?.answerId
         || selectedProject?.answerId;
 
-    useEffect(() => {
-        if (!open) return;
-
-        void refetchProjectsWithAnswers();
-        if (selectedProjectId) {
-            void refetchFundingEnvelope();
-        }
-    }, [open, selectedProjectId, refetchProjectsWithAnswers, refetchFundingEnvelope]);
+    // Note (refactor lazy-mount) : on ne refetch plus à l'ouverture.
+    // Le composant n'est monté QUE si `open === true`, donc les hooks démarrent
+    // leur fetch à neuf à chaque ouverture (cache hit si staleTime valide).
+    // Les `refetch*` restent disponibles pour des invalidations manuelles
+    // (ex. après `handleContributionSaved`).
 
     //  Activer les milestones au chargement/changement de projet.
     //  Pattern "adjust state during render" via clé de synchro :
@@ -535,14 +561,8 @@ const CagnotteDialog = ({ totalAmount, children, defaultProjectId, onRefresh, op
     };
 
     return (
-        <ClientOnly fallback={<>{children}</>}>
-            {() => (
-                <Dialog open={open} onOpenChange={setOpen}>
-                    <DialogTrigger asChild>
-                        {children}
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-xl bg-card border-border max-h-[90vh] overflow-y-auto">
-                        <DialogHeader>
+        <DialogContent className="sm:max-w-xl bg-card border-border max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
                             <DialogTitle className="flex items-center gap-2 text-2xl">
                                 <PiggyBank className="w-6 h-6 text-primary" />
                                 {t("CagnotteDialog.title")}
@@ -648,10 +668,7 @@ const CagnotteDialog = ({ totalAmount, children, defaultProjectId, onRefresh, op
                                 ) : null}
                             </div>
                         )}
-                    </DialogContent>
-                </Dialog>
-            )}
-        </ClientOnly>
+        </DialogContent>
     );
 };
 
