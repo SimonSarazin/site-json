@@ -1537,18 +1537,6 @@ export const Section = z.discriminatedUnion("type", [
   FinanceSummarySectionSchema,
   CagnotteLayoutSectionSchema,
   CoFormSectionSchema,
-  z.object({
-    type: z.literal("siteList"),
-    id: z.string().optional(),
-    props: z.object({
-      sites: z.array(z.object({
-        slug: z.string(),
-        title: z.string(),
-        description: z.string().optional(),
-        logo: z.string().optional(),
-      })),
-    }),
-  }),
 ]);
 export type Section = z.infer<typeof Section>;
 

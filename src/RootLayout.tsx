@@ -39,7 +39,7 @@ function SiteShell() {
         <Toaster />
         <DiscourseGlobalModal />
 
-        {AdminPanel && config.pages?.some((p: { sections?: { type: string }[] }) => p.sections?.some((s) => s.type !== "siteList")) && (
+        {AdminPanel && (
           <Suspense fallback={null}>
             <AdminPanel />
           </Suspense>

@@ -156,11 +156,14 @@ export async function render(
         </ChunkCollectorContext>
       </HelmetProvider>,
       {
-        /* Module ESM en dev, script classique en prod */
-        bootstrapModules:
-          process.env.NODE_ENV === 'development'
-            ? ['/src/entry-client.tsx']
-            : [],
+        /**
+         * ⚠ Pas de `bootstrapModules` — le `<script type="module" src="/src/entry-client.tsx">`
+         * du template `index.html` (à la fin du body, dans le `tail`) suffit pour charger
+         * le bundle côté client en dev et en prod. Mettre `bootstrapModules: ['/src/entry-client.tsx']`
+         * en dev provoque l'injection d'un 2e `<script type="module" src="/src/entry-client.tsx?t=...">`
+         * par `transformIndexHtml` de Vite (timestamp anti-cache), ce qui charge le bundle
+         * sous deux URLs distinctes → deux instances du module.
+         */
         onShellReady() {
           /* ⬇️  head prêt : on délègue son injection au serveur HTTP      */
 
@@ -194,11 +197,11 @@ export async function render(
           pipe(appendTransform);
         },
 
-  onAllReady() {
-    // Terminer le transform stream, ce qui déclenchera flush()
-    // et ajoutera les closing tags automatiquement
-    appendTransform.end();
-  },
+        onAllReady() {
+          // Terminer le transform stream, ce qui déclenchera flush()
+          // et ajoutera les closing tags automatiquement
+          appendTransform.end();
+        },
 
 
         onShellError(err) {

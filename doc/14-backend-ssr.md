@@ -44,6 +44,13 @@
 
 Cette section décrit en détail le fonctionnement des fichiers responsables du serveur de développement, du serveur de production, ainsi que des points d'entrée SSR et client.
 
+> ℹ **Warning "Hydration failed" au 1er hit en dev** — c'est un comportement
+> documenté de l'écosystème Vite + `React.lazy()` + SSR en mode dev. Le bug
+> n'apparaît **qu'en dev au premier chargement** (cache navigateur vide) et
+> disparaît au refresh. En prod, `vite-preload` injecte les `<link rel="modulepreload">`
+> et tout fonctionne sans mismatch. Détail complet :
+> `commentaire/HYDRATION-DEV-FIRST-LOAD.md`.
+
 ---
 
 ## `server/dev-server.js`

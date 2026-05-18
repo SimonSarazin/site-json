@@ -1,3 +1,10 @@
+/**
+ * @unused 2026-05-18 — Composant introduit par le commit 74acaad (multi-site).
+ * Plus consommé suite au retrait du mode multi-site (cf. `commentaire/REVIEW-projet-2026-05-18.md`).
+ * Conservé pour usage futur prévu (page d'index d'un futur registry).
+ * Pour réactiver : remettre le type `siteList` dans `src/types/site-schema.ts`
+ * et l'enregistrement dans `SectionRenderer.tsx`.
+ */
 import { useState, useMemo } from "react";
 
 interface SiteInfo {
