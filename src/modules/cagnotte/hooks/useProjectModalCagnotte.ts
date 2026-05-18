@@ -1,6 +1,23 @@
+/**
+ * @unused 2026-05-18 — remplacé dans `HeaderRezoLaMer.tsx` par un appel à
+ * `useFundingEnvelope(projectModalId)?.selectedProject?.totalFinancement` qui
+ * partage le cache React Query avec `CagnotteDialog`.
+ *
+ * Conservé selon la politique projet (ne pas supprimer les exports non utilisés).
+ *
+ * Pourquoi le hook est cassé :
+ * Il lit `api.answer({id}).serverData.answers.aapStep1.depense` directement,
+ * mais le backend Cocolight ne stocke PAS `financer[].amount` ni `price` dans
+ * l'answer raw — ils sont calculés/agrégés dans la réponse `entity.fundingEnvelope()`.
+ * Conséquence : `cagnotteAmount` et `cagnotteTarget` retournent toujours 0.
+ *
+ * Pour ré-utiliser : repenser la stratégie de lecture des montants côté SDK
+ * (idéalement consommer `entity.fundingEnvelope()` au lieu de `api.answer`).
+ */
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getApi } from '@/lib/apiClient';
 import { CAGNOTTE_QUERY_KEYS } from '@/modules/cagnotte/constants/queryKeys';
+import { toArrayOrValues } from '@/modules/cagnotte/utils/dataTransform';
 
 interface ProjectModalCagnotteData {
   cagnotteAmount: number;
@@ -18,6 +35,12 @@ type QueryPayload = {
   projectName: string;
 };
 
+/**
+ * Pour les listes `depense[]` venant directement de l'answer MongoDB raw,
+ * la forme est array, donc `toArray` simple suffit (`depense` est itérable).
+ * Pour `financer`, voir `toArrayOrValues` importé : le backend peut renvoyer
+ * `financer` soit en array, soit en objet keyé par userId.
+ */
 function toArray<T>(value: T | T[] | null | undefined): T[] {
   if (Array.isArray(value)) return value;
   if (value == null) return [];
@@ -200,8 +223,13 @@ export function useProjectModalCagnotte(
 
       const depenses = getAnswerDepenses(answerEntity);
 
+      // `depense.financer` peut être renvoyé par Cocolight sous deux formes :
+      //  - Array : `[{ id, amount, ... }]`
+      //  - Objet keyé par userId : `{ userA: { amount }, userB: { amount } }` (forme MongoDB raw)
+      // `toArrayOrValues` gère les deux ; le `toArray` local échouait sur la forme objet
+      // (wrap dans `[obj]` → `financer.amount` = undefined → 0).
       const cagnotteAmount = depenses.reduce((sum, depense) => {
-        const financers = toArray(depense.financer as UnknownRecord | UnknownRecord[] | null | undefined);
+        const financers = toArrayOrValues<UnknownRecord>(depense.financer);
         const depenseFunding = financers.reduce((localSum, financer) => {
           const amount = Number(financer.amount ?? 0);
           return localSum + (Number.isFinite(amount) ? amount : 0);

@@ -383,13 +383,37 @@ export function normalizeFundingEnvelope(rawEnvelope: unknown, _contextEntityId?
     };
   });
 
+  // Déduplication défensive : le backend (`getFormData`) renvoie parfois plusieurs
+  // entrées pour le même projet (même `id`), dont certaines "fantômes" avec
+  // `totalFinancement: 0` et `totalCouts: 0`. Sans dédup, `projects[0]` est
+  // non-déterministe et le piggy-bank affiche tantôt 0 tantôt le vrai total.
+  // Stratégie : pour chaque `id`, on garde l'entrée la plus "riche"
+  // (max sur `totalFinancement + totalCouts + nb de milestones`).
+  const dedupedProjectsMap = new Map<string, typeof projects[number]>();
+  for (const project of projects) {
+    if (!project.id) continue;
+    const existing = dedupedProjectsMap.get(project.id);
+    if (!existing) {
+      dedupedProjectsMap.set(project.id, project);
+      continue;
+    }
+    const richnessExisting = existing.totalFinancement + existing.totalCouts + existing.milestones.length;
+    const richnessCurrent = project.totalFinancement + project.totalCouts + project.milestones.length;
+    if (richnessCurrent > richnessExisting) {
+      dedupedProjectsMap.set(project.id, project);
+    }
+  }
+  const dedupedProjects = projects.length > 0 && dedupedProjectsMap.size > 0
+    ? Array.from(dedupedProjectsMap.values())
+    : projects;
+
   const profileSlugFromWindow =
     typeof window !== 'undefined'
       ? window.location.pathname.split('/')[window.location.pathname.split('/').indexOf('profil') + 1]
       : undefined;
   const effectiveProfileSlug = forcedProfileSlug || profileSlugFromWindow;
   const selectedProject =
-    projects.find((project) => project.id === preferredProjectId || project.slug == effectiveProfileSlug) ?? null;
+    dedupedProjects.find((project) => project.id === preferredProjectId || project.slug == effectiveProfileSlug) ?? null;
   const milestones = selectedProject?.milestones ?? [];
   const financialMilestones = milestones.filter((milestone) => milestone.status !== 'close');
   const paymentMethods = selectedProject?.paymentMethods ?? extractPaymentMethods(envelope.paymentMethods, asRecord(getNonEmptyRecord(envelope.contextData)?.paymentMethods));
@@ -433,7 +457,7 @@ export function normalizeFundingEnvelope(rawEnvelope: unknown, _contextEntityId?
   }, 0);
 
   return {
-    projects,
+    projects: dedupedProjects,
     selectedProject: selectedProject ?? null,
     paymentMethods,
     milestones,
@@ -565,7 +589,14 @@ export function useFundingEnvelope(idProjet?: string) {
         };
       }
     },
-    enabled: Boolean(entity && entityId && effectiveContextType),
+    // Client-only + utilisateur connecté requis :
+    //  - `typeof window !== 'undefined'` : pas de fetch SSR (le serveur n'a pas
+    //    de session, `me` y est toujours null → on récupérerait une enveloppe
+    //    anonyme avec `totalFinancement: 0`).
+    //  - `me?.id` : `getFormData` (qui enrichit `projects[].totalFinancement`)
+    //    nécessite un `financerId`. Sans `me`, la requête tombe en fallback
+    //    `getEnvelopeData` qui ne calcule pas les totaux.
+    enabled: typeof window !== 'undefined' && Boolean(entity && entityId && effectiveContextType && me?.id),
     staleTime: 2 * 60 * 1000,
   });
 }
