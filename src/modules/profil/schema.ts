@@ -269,6 +269,13 @@ export const ProfileTabConditionSchema = z.object({
   entityTypes: z.array(ProfileTypeSchema).optional(),
   permissions: z.array(z.string()).optional(),
   userContext: z.enum(["own", "other", "any"]).optional(),
+  // `required` = visible uniquement si connecté (ex: tabs cagnotte finance/actions
+  // qui nécessitent un user pour fetcher les données financières).
+  // `anonymous` = visible uniquement si non-connecté (ex: bandeau d'incitation).
+  // `any` (ou champ absent) = visible pour tous.
+  // ⚠️ Le filtre s'applique côté client après hydration de `me` pour éviter les
+  // mismatches SSR (cf. ProfileTemplateDynamic).
+  auth: z.enum(["required", "anonymous", "any"]).optional(),
 }).optional();
 
 // Schema pour les sous-routes d'un tab

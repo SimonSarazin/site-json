@@ -1853,6 +1853,7 @@
             "fr": "Actions",
             "en": "Tasks"
           },
+          "condition": { "auth": "required" },
           "sections": [
             {
               "type": "cagnotte-layout",
@@ -1898,6 +1899,7 @@
             "fr": "Financements",
             "en": "Funding"
           },
+          "condition": { "auth": "required" },
           "sections": [
             {
               "type": "cagnotte-layout",
