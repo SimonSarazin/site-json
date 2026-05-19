@@ -16,29 +16,21 @@ function requireSource(source: UpdateSource): Api {
   return source;
 }
 
-type UpdateAnswerMilestoneParams = {
-  kind: "milestone";
+/**
+ * Met à jour un champ unique d'une action via `endpointApi.updatePathValue`.
+ *
+ * Note historique : cette fonction avait un cousin `kind: "milestone"` qui ciblait
+ * `answers.aapStep1.depense.{i}.{field}`, mais cette branche n'a jamais été utilisée
+ * (les opérations milestone passent par `updateAnswerDepenseFields` /
+ * `updateProjectMilestoneFields` plus bas, qui appellent `updatePathValue` directement).
+ */
+export async function updateActionField(params: {
   source: UpdateSource;
-  answerId: string;
-  index: string;
+  actionId: string;
   field: string;
   value: UpdateValue;
   setType?: UpdateSetType;
-};
-
-type UpdateProjectActionParams = {
-  kind: "action";
-  source: UpdateSource;
-  projectId: string;
-  index: string;
-  field: string;
-  value: UpdateValue;
-  setType?: UpdateSetType;
-};
-
-export async function updateActionOrMilestoneField(
-  params: UpdateAnswerMilestoneParams | UpdateProjectActionParams
-) {
+}) {
   const api = requireSource(params.source);
   const safeSetType =
     typeof params.setType === "string"
@@ -47,37 +39,20 @@ export async function updateActionOrMilestoneField(
         ? params.setType
         : undefined;
 
-  if (params.kind === "action") {
-    return api.endpointApi.updatePathValue(
-      normalizeUpdatePathValuePayload({
-        id: params.index,
-        collection: "actions",
-        path: params.field,
-        value: params.value,
-        ...(safeSetType ? { setType: safeSetType } : {}),
-      })
-    );
-  }
-
-  if (params.kind === "milestone") {
-    return api.endpointApi.updatePathValue(
-      normalizeUpdatePathValuePayload({
-        id: params.answerId,
-        collection: "answers",
-        path: `answers.aapStep1.depense.${params.index}.${params.field}`,
-        value: params.value,
-        ...(safeSetType ? { setType: safeSetType } : {}),
-      })
-    );
-  }
-
-  throw new Error("updateActionOrMilestoneField: kind non supporte");
+  return api.endpointApi.updatePathValue(
+    normalizeUpdatePathValuePayload({
+      id: params.actionId,
+      collection: "actions",
+      path: params.field,
+      value: params.value,
+      ...(safeSetType ? { setType: safeSetType } : {}),
+    })
+  );
 }
 
 export async function updateProjectActionFields(params: {
   source: UpdateSource;
-  projectId: string;
-  index: string;
+  actionId: string;
   fields: Record<string, UpdateValue>;
   setType?: UpdateSetType;
 }) {
@@ -89,11 +64,9 @@ export async function updateProjectActionFields(params: {
 
   // Champs non-date: jamais de setType
   for (const [field, value] of otherEntries) {
-    await updateActionOrMilestoneField({
-      kind: "action",
+    await updateActionField({
       source: params.source,
-      projectId: params.projectId,
-      index: params.index,
+      actionId: params.actionId,
       field,
       value,
     });
@@ -108,11 +81,9 @@ export async function updateProjectActionFields(params: {
 
     await Promise.all(
       dateEntries.map(([field, value]) =>
-        updateActionOrMilestoneField({
-          kind: "action",
+        updateActionField({
           source: params.source,
-          projectId: params.projectId,
-          index: params.index,
+          actionId: params.actionId,
           field,
           value,
           setType: typeof value === "string" ? "isoDate" : safeDateSetType,

@@ -67,7 +67,8 @@
       "cannotDeleteIfFunded": "Suppression impossible : ce jalon est déjà financé.",
       "noIndexForDelete": "Aucun index valide trouvé pour supprimer ce jalon.",
       "actionIdMissing": "Certaines actions du jalon n'ont pas d'identifiant valide.",
-      "deleteActionUnavailable": "Suppression action indisponible : apiClient manquant."
+      "deleteActionUnavailable": "Suppression action indisponible : apiClient manquant.",
+      "projectMissing": "Entité Project Cocolight indisponible — création impossible."
     }
   },
   "PaymentConfigPage": {

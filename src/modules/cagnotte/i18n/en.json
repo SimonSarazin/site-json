@@ -67,7 +67,8 @@
       "cannotDeleteIfFunded": "Cannot delete: this milestone is already funded.",
       "noIndexForDelete": "No valid index found to delete this milestone.",
       "actionIdMissing": "Some milestone actions have no valid ID.",
-      "deleteActionUnavailable": "Action delete unavailable: missing apiClient."
+      "deleteActionUnavailable": "Action delete unavailable: missing apiClient.",
+      "projectMissing": "Cocolight Project entity unavailable — cannot create."
     }
   },
   "PaymentConfigPage": {

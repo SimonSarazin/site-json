@@ -12,7 +12,7 @@
 
 import type { QueryClient, QueryKey } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
-import type { Api, UpdatePathValueData } from "@communecter/cocolight-api-client";
+import type { Api, Project, UpdatePathValueData } from "@communecter/cocolight-api-client";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
 import { normalizeUpdatePathValuePayload } from "@/lib/updatePathValue";
@@ -31,13 +31,30 @@ export interface ActionMutationContext {
    */
   api: Api | null;
   projectId: string;
+  /**
+   * Entité Cocolight `Project` du projet parent. Requise uniquement pour
+   * `useCreateAction` qui utilise l'API entity-oriented `project.action()` +
+   * `save()` du SDK (cf. Action.ts du SDK : `parentId` est injecté automatiquement
+   * depuis `this.parent.id` et l'`actionId` est peuplé dans `_draftData` après
+   * la réponse serveur — plus besoin de résoudre l'id manuellement).
+   *
+   * Les autres mutations (`useEditAction`, `useDeleteAction`, etc.) passent
+   * encore par `endpointApi.updatePathValue` / `deleteElement` et n'utilisent
+   * que `api` + `projectId` — `project` peut être `null` pour elles.
+   */
+  project: Project | null;
 }
 
 export interface ResolvedActionContext {
   api: Api;
   projectId: string;
-  /** Exposé pour les actions composites qui ont besoin de refetcher pendant la mutation
-   * (ex. `useCreateAction` qui doit résoudre l'id de l'action créée). */
+  /**
+   * Passthrough de `ActionMutationContext.project`. Les mutations qui en ont
+   * besoin (ex. `useCreateAction`) valident la non-nullité en début de leur
+   * `action` callback.
+   */
+  project: Project | null;
+  /** Exposé pour les actions composites qui en ont besoin (rétrocompat). */
   queryClient: QueryClient;
 }
 
@@ -73,7 +90,12 @@ function resolveContextOrThrow(
   if (!ctx.projectId) {
     throw new ActionContextError("milestone.errors.projectIdMissing");
   }
-  return { api: ctx.api, projectId: ctx.projectId, queryClient };
+  return {
+    api: ctx.api,
+    projectId: ctx.projectId,
+    project: ctx.project,
+    queryClient,
+  };
 }
 
 export function createActionMutation<TParams = void, TData = void>(
@@ -146,8 +168,7 @@ export const useMarkActionDone = createActionMutation<MarkActionDoneParams>({
   action: async (ctx, params) => {
     await updateProjectActionFields({
       source: ctx.api,
-      projectId: ctx.projectId,
-      index: params.actionId,
+      actionId: params.actionId,
       fields: { status: "done" },
     });
   },
@@ -188,14 +209,31 @@ export interface EditActionParams {
 /**
  * Hook : édite les champs d'une action (avec setType pour les dates ISO).
  * Le call-site est responsable de filtrer `updates` pour ne contenir que les diffs.
+ *
+ * ⚠️ Conversion DD/MM/YYYY → ISO 8601 obligatoire pour `startDate` / `endDate` :
+ * le parser PHP backend (`UpdatePathValuedAction::string_set_type`, branche
+ * `setType: "isoDate"`) priorise le format `m-d-Y` (US) avant `d-m-Y` (FR).
+ * Envoyer `"05/08/2026"` (5 août côté FR) ferait stocker `8 mai` (mois ↔ jour
+ * inversés) ; envoyer `"20/05/2026"` (20 mai) ferait un overflow (mois 20 → an+1).
+ * On envoie donc de l'ISO 8601, qui tombe sur le fallback `new DateTime()` PHP
+ * qui parse correctement. Cohérent avec `useCreateAction` qui fait déjà ça.
  */
 export const useEditAction = createActionMutation<EditActionParams>({
   action: async (ctx, params) => {
+    const normalizedUpdates: Record<string, UpdatePathValueData["value"]> = { ...params.updates };
+    for (const dateField of ["startDate", "endDate"] as const) {
+      const raw = normalizedUpdates[dateField];
+      if (typeof raw === "string" && raw.trim()) {
+        normalizedUpdates[dateField] = parseFrenchDateToIso(raw.trim());
+      }
+      // Si la valeur est `null` (date vidée par l'utilisateur) → laissé tel quel,
+      // le backend `setType: "isoDate"` short-circuit sur valeur vide.
+    }
+
     await updateProjectActionFields({
       source: ctx.api,
-      projectId: ctx.projectId,
-      index: params.actionId,
-      fields: params.updates,
+      actionId: params.actionId,
+      fields: normalizedUpdates,
       setType: [
         { path: "startDate", type: "isoDate" },
         { path: "endDate", type: "isoDate" },
@@ -210,19 +248,15 @@ export const useEditAction = createActionMutation<EditActionParams>({
 });
 
 // =====================================================
-// Création d'action — mutation composite (endpoint + fallback + résolution ID + metadata)
+// Création d'action — via project.action() + save() (SDK entity-oriented)
 // =====================================================
 
-import {
-  resolveCreatedActionId,
-  type ActionStatus,
-} from "@/modules/cagnotte/lib/actionIdResolvers";
-import type { FundingEnvelopeNormalizedData } from "@/modules/cagnotte/hooks/useFundingEnvelope";
+/** Statut d'une action — repris du SDK `ActionItemNormalized`. */
+export type ActionStatus = "todo" | "done";
 
 /**
- * Paramètres pour créer une action. Depuis le SDK Cocolight 1.0.127, l'endpoint
- * `costumProjectActionRequestNew` accepte nativement `startDate`, `endDate`, `tags`,
- * `mentions` — pas besoin d'un second appel pour les métadonnées.
+ * Paramètres pour créer une action. Le SDK Cocolight (`Project.action()` + `Action.save()`)
+ * accepte nativement tous ces champs dans un seul payload atomique.
  */
 export interface CreateActionParams {
   name: string;
@@ -244,30 +278,34 @@ export interface CreateActionParams {
 }
 
 /**
- * Résultat de la mutation : id de l'action créée. Retourne `""` si la résolution
- * a échoué (l'action est néanmoins créée côté backend — l'appelant peut afficher un
- * toast partiel).
+ * Résultat de la mutation : id de l'action créée. Avec `project.action()` + `save()`,
+ * le SDK peuple `action.id` automatiquement (cf. `Action._add()` : `this._draftData.id =
+ * content.id` après la réponse serveur). Retourne `""` uniquement si le SDK n'a pas
+ * pu peupler l'id (cas improbable).
  */
 export interface CreateActionResult {
   actionId: string;
 }
 
 /**
- * Hook : crée une action via le SDK Cocolight 1.0.127+.
+ * Hook : crée une action via l'API entity-oriented du SDK Cocolight.
  *
- * Étapes orchestrées par le `mutationFn` :
- *  1. Appel `apiClient.endpointApi.costumProjectActionRequestNew(data)` — **atomique** :
- *     name, status, credits, milestone, dates (ISO 8601), tags, mentions (usernames)
- *     passent tous dans le même payload. Le backend résout `mentions` en
- *     `links.contributors.{userId}` côté serveur (pas de second appel client).
- *  2. `refetchQueries(FUNDING_ENVELOPE_PREFIX)` puis `resolveCreatedActionId` pour
- *     retrouver l'id MongoDB de l'action (l'endpoint ne le renvoie pas — utile
- *     pour le scroll target côté UI).
+ * Flow :
+ *  1. `ctx.project.action({...})` crée un draft `Action` lié au project parent.
+ *  2. `await action.save()` persiste : `parentId` / `parentType` sont injectés automatiquement
+ *     depuis l'entité parente, et `action.id` est peuplé via le `content.id` de la réponse
+ *     serveur (cf. `Action._add()` SDK).
+ *  3. On retourne `action.id` — plus besoin de refetch + parse du cache RQ pour le
+ *     résoudre (workaround qui vivait dans `actionIdResolvers.ts`, désormais inutile).
  *
- * Toast et invalidation finale gérés par `createActionMutation` (factory).
+ * Toast et invalidation gérés par `createActionMutation` (factory).
  */
 export const useCreateAction = createActionMutation<CreateActionParams, CreateActionResult>({
   action: async (ctx, params): Promise<CreateActionResult> => {
+    if (!ctx.project) {
+      throw new ActionContextError("milestone.errors.projectMissing");
+    }
+
     const startDateIso = params.startDate?.trim()
       ? parseFrenchDateToIso(params.startDate.trim())
       : null;
@@ -279,11 +317,9 @@ export const useCreateAction = createActionMutation<CreateActionParams, CreateAc
       .filter((u): u is string => u.length > 0);
     const cleanedTags = (params.tags ?? []).filter((tag) => tag && tag.length > 0);
 
-    await ctx.api.endpointApi.costumProjectActionRequestNew({
+    const action = await ctx.project.action({
       name: params.name,
       status: params.status,
-      parentId: ctx.projectId,
-      parentType: "projects",
       credits: params.credits,
       milestone: { milestoneId: params.milestoneId },
       ...(startDateIso ? { startDate: startDateIso } : {}),
@@ -291,46 +327,9 @@ export const useCreateAction = createActionMutation<CreateActionParams, CreateAc
       ...(cleanedTags.length > 0 ? { tags: cleanedTags } : {}),
       ...(cleanedUsernames.length > 0 ? { mentions: cleanedUsernames } : {}),
     });
+    await action.save();
 
-    // Refetch + résolution de l'actionId — uniquement pour permettre au parent de
-    // positionner un scroll target sur la nouvelle action. Si la résolution échoue,
-    // on retourne actionId="" (l'action est créée, mais sans highlight).
-    await ctx.queryClient.refetchQueries({
-      queryKey: CAGNOTTE_QUERY_KEYS.FUNDING_ENVELOPE_PREFIX(),
-      type: "active",
-    });
-
-    let actionId = "";
-    try {
-      const cachedQueries = ctx.queryClient.getQueriesData<FundingEnvelopeNormalizedData>({
-        queryKey: CAGNOTTE_QUERY_KEYS.FUNDING_ENVELOPE_PREFIX(),
-      });
-      for (const [, data] of cachedQueries) {
-        if (!data) continue;
-        const milestoneRefreshed = data.milestones?.find((m) => m.id === params.milestoneId);
-        const candidate = (milestoneRefreshed?.actions ?? []).find(
-          (a) =>
-            a.name.trim().toLowerCase() === params.name.trim().toLowerCase() &&
-            Number(a.credits) === params.credits &&
-            a.status === params.status,
-        );
-        actionId = resolveCreatedActionId({
-          rawEnvelope: data.rawEnvelope,
-          projectId: ctx.projectId,
-          milestoneId: params.milestoneId,
-          name: params.name,
-          credits: params.credits,
-          expectedStatus: params.status,
-          fallbackId: candidate?.id,
-        });
-        if (actionId) break;
-      }
-    } catch (resolveError) {
-      // Échec non-bloquant : l'action est créée, juste pas de scroll target.
-      console.warn("[useCreateAction] resolveCreatedActionId failed:", resolveError);
-    }
-
-    return { actionId };
+    return { actionId: action.id ?? "" };
   },
   i18n: {
     successKey: "ActionsSection.toasts.actionCreated.title",

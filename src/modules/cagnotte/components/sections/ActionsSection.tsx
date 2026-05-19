@@ -144,6 +144,10 @@ export default function ActionsSection({ id, props }: { id?: string; props: Acti
   const actionCtx = {
     api,
     projectId: resolvedProjectId,
+    // Entité Project SDK Cocolight requise par `useCreateAction` (API entity-oriented :
+    // `project.action()` + `save()` — cf. mutations/action.ts). Les autres mutations
+    // (edit/delete/candidate/markDone) ignorent ce champ et passent par `updatePathValue`.
+    project: projectEntity,
   };
 
   const editMilestoneMutation = useEditMilestone(milestoneCtx);

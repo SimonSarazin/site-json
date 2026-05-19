@@ -1,8 +1,14 @@
 /**
- * Helpers de résolution d'identifiants d'actions, principalement pour récupérer
- * l'ID d'une action **fraîchement créée** par l'endpoint `COSTUM_PROJECT_ACTION_REQUEST_NEW`
- * — qui ne retourne pas l'ID — en cherchant dans l'envelope post-refetch une action
- * matchant les attributs (`milestoneId`, `name`, `credits`, `status`).
+ * @unused 2026-05-19 — workaround historique pour récupérer l'id d'une action créée.
+ *
+ * Devenu obsolète : `useCreateAction` (cf. `actions/mutations/action.ts`) utilise
+ * désormais l'API entity-oriented du SDK (`project.action()` + `action.save()`),
+ * qui peuple `action.id` automatiquement après la réponse serveur. Plus besoin de
+ * refetcher l'envelope et de matcher l'action par `name`/`credits`/`status`.
+ *
+ * Conservé selon la politique projet (ne pas supprimer les exports non utilisés).
+ * À déprécier complètement quand le SDK exposera des opérations entity-oriented
+ * pour les autres mutations (edit/delete) — qui passent encore par updatePathValue.
  */
 import { asRecord } from "@/modules/cagnotte/utils/dataTransform";
 import type { FundingAction } from "@/modules/cagnotte/types";
