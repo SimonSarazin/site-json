@@ -13,6 +13,7 @@ import {
   getEnvelopeProjects,
   resolveMilestoneSyncContext,
 } from '@/modules/cagnotte/lib/milestoneSyncContext';
+import type { FundingMilestoneStatus } from "@/modules/cagnotte/types";
 
 const t = (key: string): string =>
   String(i18n.t(key, { ns: "modules/cagnotte" }));
@@ -30,7 +31,7 @@ type MilestoneMutationBaseParams = {
 type EditMilestoneParams = MilestoneMutationBaseParams & {
   name: string;
   description: string;
-  status: 'open' | 'done' | 'close';
+  status: FundingMilestoneStatus;
   targetAmount: number;
 };
 

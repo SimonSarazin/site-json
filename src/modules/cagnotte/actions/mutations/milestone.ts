@@ -17,6 +17,7 @@ import type { QueryKey } from "@tanstack/react-query";
 import type { Api } from "@communecter/cocolight-api-client";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
+import type { FundingMilestoneStatus } from "@/modules/cagnotte/types";
 import {
   appendAnswerDepense,
   appendProjectMilestone,
@@ -145,7 +146,7 @@ export interface EditMilestoneParams {
   milestoneId: string;
   name: string;
   description: string;
-  status: "open" | "done" | "close";
+  status: FundingMilestoneStatus;
   targetAmount: number;
 }
 

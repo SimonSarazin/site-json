@@ -43,7 +43,6 @@ import {
   isValidEntityId,
   resolveActionEntityId,
 } from '@/modules/cagnotte/lib/actionIdResolvers';
-import { getServerData } from '@/modules/cagnotte/utils/dataTransform';
 
 type ScrollTarget =
   | { type: 'milestone'; milestoneId: string }
@@ -73,7 +72,7 @@ export default function ActionsSection({ id, props }: { id?: string; props: Acti
   // Déterminer le selectedProjectId via recherche par slug de profil
   const selectedProjectId = getSelectedProjectIdByProfileSlug(fundingData?.projects || []) || fundingData?.selectedProject?.id || '';
 
-  const { apiClient, api, me, entity } = useCocolight();
+  const { apiClient, api, entity } = useCocolight();
   // Création d'action : seuls subsistent l'open/close + l'identifiant du milestone ciblé.
   // Le form (name, credits, status, tags, contributors, dates) vit maintenant dans
   // `ActionCreateDialog` via `useForm<ActionCreateFormData>` + zodResolver.
@@ -120,10 +119,8 @@ export default function ActionsSection({ id, props }: { id?: string; props: Acti
   const cagnotteCtx = useCagnotteContext();
   const isConnected = cagnottePerms.isConnected;
   const currentUserId = cagnottePerms.currentUserId;
-  // `me` est une Entity Cocolight — les données du document sont sous `serverData`.
-  const currentUserName =
-    (getServerData(me).name as string | undefined) ||
-    String(t('ActionsSection.fallbacks.contributorName'));
+  // `currentUserName` n'est plus nécessaire depuis la migration `useCandidateAction` vers
+  // `action.joinContributor()` du SDK (qui self-join le user connecté côté serveur).
 
   // Contextes pour les mutations factory.
   // Le projectId / answerId effectifs sont calculés en flux (selectedProjectId est dérivé plus haut).
@@ -399,11 +396,7 @@ export default function ActionsSection({ id, props }: { id?: string; props: Acti
 
     setCandidateActionId(actionId);
     candidateActionMutation.mutate(
-      {
-        actionId,
-        currentUserId,
-        currentUserName,
-      },
+      { actionId },
       {
         onSuccess: () => {
           void refetchFundingEnvelope();

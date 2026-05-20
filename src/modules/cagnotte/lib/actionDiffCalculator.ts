@@ -15,10 +15,12 @@
  *    sur les noms initiaux de `previous.contributors`.
  */
 
+import type { ActionStatus } from "@communecter/cocolight-api-client";
+
 export type DiffActionPrevious = {
   name: string;
   credits: number;
-  status: "todo" | "done";
+  status: ActionStatus;
   tags: string[];
   contributors: Array<{ id: string; name?: string }>;
   /** Timestamp ms — converti via `timestampToFrenchDate` pour la comparaison. */
@@ -37,7 +39,7 @@ export type DiffContributor = {
 export type DiffActionNext = {
   name: string;
   credits: number;
-  status: "todo" | "done";
+  status: ActionStatus;
   tags: string[];
   contributors: DiffContributor[];
   /** Format FR `DD/MM/YYYY` ou `""`. */
@@ -53,11 +55,28 @@ export interface CalculateActionDiffParams {
   formatTimestampToFrenchDate: (ts?: number) => string;
 }
 
-import type { UpdatePathValueData } from "@communecter/cocolight-api-client";
+/**
+ * Shape des champs éditables d'une Action côté front. Sert de contrat entre
+ * `calculateActionDiff` (producteur) et `useEditAction` (consommateur).
+ *
+ * Le champ `"links.contributors"` est dotté volontairement : il représente une
+ * sous-clé de `links` (le SDK expose `links` à plat — la mutation encapsule).
+ * Les dates sont au format français `DD/MM/YYYY` ou `null` (vidées) — la mutation
+ * convertit en ISO 8601 avant de transmettre au SDK.
+ */
+export interface ActionUpdateFields {
+  name?: string;
+  credits?: number;
+  status?: ActionStatus;
+  tags?: string[];
+  "links.contributors"?: Record<string, { type: string; isAdmin: boolean; name: string }>;
+  startDate?: string | null;
+  endDate?: string | null;
+}
 
-export function calculateActionDiff(params: CalculateActionDiffParams): Record<string, UpdatePathValueData["value"]> {
+export function calculateActionDiff(params: CalculateActionDiffParams): ActionUpdateFields {
   const { previous, next, formatTimestampToFrenchDate } = params;
-  const updates: Record<string, UpdatePathValueData["value"]> = {};
+  const updates: ActionUpdateFields = {};
 
   if (next.name !== previous.name) updates.name = next.name;
   if (next.credits !== previous.credits) updates.credits = next.credits;

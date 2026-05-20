@@ -12,14 +12,11 @@
 
 import type { QueryClient, QueryKey } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
-import type { Api, Project, UpdatePathValueData } from "@communecter/cocolight-api-client";
+import type { ActionStatus, Api, Project } from "@communecter/cocolight-api-client";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
-import { normalizeUpdatePathValuePayload } from "@/lib/updatePathValue";
-import {
-  deleteActionById,
-  updateProjectActionFields,
-} from "@/modules/cagnotte/lib/actionMilestonePathUpdates";
+import { deleteActionById } from "@/modules/cagnotte/lib/actionMilestonePathUpdates";
+import type { ActionUpdateFields } from "@/modules/cagnotte/lib/actionDiffCalculator";
 import { parseFrenchDateToIso } from "@/modules/cagnotte/utils/actionDateHelpers";
 
 export interface ActionMutationContext {
@@ -127,27 +124,22 @@ export function createActionMutation<TParams = void, TData = void>(
 
 export interface CandidateActionParams {
   actionId: string;
-  currentUserId: string;
-  currentUserName: string;
 }
 
 /**
  * Hook : ajoute l'utilisateur courant comme contributeur d'une action.
+ *
+ * Utilise l'API entity-oriented du SDK Cocolight (`action.joinContributor()`)
+ * qui résout automatiquement le `userId` côté serveur. Plus besoin de passer
+ * `currentUserId` / `currentUserName` (le SDK lit le user connecté).
  */
 export const useCandidateAction = createActionMutation<CandidateActionParams>({
   action: async (ctx, params) => {
-    await ctx.api.endpointApi.updatePathValue(
-      normalizeUpdatePathValuePayload({
-        id: params.actionId,
-        collection: "actions",
-        path: `links.contributors.${params.currentUserId}`,
-        value: {
-          type: "citoyens",
-          isAdmin: true,
-          name: params.currentUserName,
-        },
-      }),
-    );
+    if (!ctx.project) {
+      throw new ActionContextError("milestone.errors.projectMissing");
+    }
+    const action = await ctx.project.action({ id: params.actionId });
+    await action.joinContributor();
   },
   i18n: {
     successKey: "ActionsSection.toasts.candidateSuccess.title",
@@ -163,14 +155,22 @@ export interface MarkActionDoneParams {
 
 /**
  * Hook : marque une action comme terminée (status = done).
+ *
+ * Utilise l'endpoint dédié `set_status` du SDK Cocolight via `action.updateStatus()` :
+ *  - Ajoute une entrée dans `updateStatus[]` (historique des changements).
+ *  - Auto-injecte `endDate` côté backend (timestamp de la complétion).
+ *  - Status "discuter" force `status=todo` + ajoute tag "discuter" (cas spécial backend).
+ *
+ * Avantage vs ancien `updatePathValue({ status: "done" })` : on récupère
+ * l'historique de transitions de statut côté backend (utile pour audit/analytics).
  */
 export const useMarkActionDone = createActionMutation<MarkActionDoneParams>({
   action: async (ctx, params) => {
-    await updateProjectActionFields({
-      source: ctx.api,
-      actionId: params.actionId,
-      fields: { status: "done" },
-    });
+    if (!ctx.project) {
+      throw new ActionContextError("milestone.errors.projectMissing");
+    }
+    const action = await ctx.project.action({ id: params.actionId });
+    await action.updateStatus("done");
   },
   i18n: {
     successKey: "ActionsSection.toasts.actionCompleted.title",
@@ -200,45 +200,72 @@ export const useDeleteAction = createActionMutation<DeleteActionParams>({
 
 export interface EditActionParams {
   actionId: string;
-  /** Champs à mettre à jour (filtrés par le call-site pour ne contenir que les diffs) */
-  updates: Record<string, UpdatePathValueData["value"]>;
+  /**
+   * Champs à mettre à jour (filtrés par le call-site pour ne contenir que les diffs
+   * via `calculateActionDiff`). Type strict aligné avec ce que produit le diff —
+   * pas de dépendance à l'API SDK plate (`UpdatePathValueData`) car on passe par
+   * `action.save()` entity-oriented.
+   */
+  updates: ActionUpdateFields;
   /** Nom utilisé pour les paramètres de toast */
   name?: string;
 }
 
 /**
- * Hook : édite les champs d'une action (avec setType pour les dates ISO).
- * Le call-site est responsable de filtrer `updates` pour ne contenir que les diffs.
+ * Hook : édite les champs d'une action via l'API entity-oriented du SDK.
  *
- * ⚠️ Conversion DD/MM/YYYY → ISO 8601 obligatoire pour `startDate` / `endDate` :
- * le parser PHP backend (`UpdatePathValuedAction::string_set_type`, branche
- * `setType: "isoDate"`) priorise le format `m-d-Y` (US) avant `d-m-Y` (FR).
- * Envoyer `"05/08/2026"` (5 août côté FR) ferait stocker `8 mai` (mois ↔ jour
- * inversés) ; envoyer `"20/05/2026"` (20 mai) ferait un overflow (mois 20 → an+1).
- * On envoie donc de l'ISO 8601, qui tombe sur le fallback `new DateTime()` PHP
- * qui parse correctement. Cohérent avec `useCreateAction` qui fait déjà ça.
+ * Flow :
+ *  1. `ctx.project.action({ id })` charge l'entité Action existante.
+ *  2. On assigne les diffs sur `action.data.*` (proxy du SDK qui track les changements).
+ *  3. `action.save()` envoie uniquement les champs modifiés au backend (diff fait
+ *     par le SDK via `_extractChangedFields`).
+ *
+ * Conversions et garanties SDK :
+ *  - **Dates** : le SDK exige ISO 8601 et throw sinon. On convertit DD/MM/YYYY →
+ *    ISO ici (les call-sites passent encore du DD/MM/YYYY via `<DatePickerInput>`).
+ *  - **Champs entiers** (`credits`, `min`, `max`) : le SDK rejette les non-entiers
+ *    (1.5 → throw `/entier/i`).
+ *  - **Diff atomique** : `save()` est no-op si `action.hasChanges()` est faux.
+ *  - **Champs read-only** : `parentId`, `parentType` throw si assignés.
+ *  - **Champs create-only** : `mentions`, `timeSpent`, `idParentRoom`, `is_contributor`,
+ *    `assign`, `urls` throw si assignés en update (cf. SDK CREATE_ONLY_FIELDS).
+ *
+ * Le call-site (`<ActionEditDialog>`) calcule encore les diffs via `calculateActionDiff`
+ * pour éviter d'envoyer au SDK des assignments inutiles. À long terme, on peut
+ * supprimer `calculateActionDiff` puisque `action.hasChanges()` fait le même boulot.
  */
 export const useEditAction = createActionMutation<EditActionParams>({
   action: async (ctx, params) => {
-    const normalizedUpdates: Record<string, UpdatePathValueData["value"]> = { ...params.updates };
-    for (const dateField of ["startDate", "endDate"] as const) {
-      const raw = normalizedUpdates[dateField];
-      if (typeof raw === "string" && raw.trim()) {
-        normalizedUpdates[dateField] = parseFrenchDateToIso(raw.trim());
-      }
-      // Si la valeur est `null` (date vidée par l'utilisateur) → laissé tel quel,
-      // le backend `setType: "isoDate"` short-circuit sur valeur vide.
+    if (!ctx.project) {
+      throw new ActionContextError("milestone.errors.projectMissing");
+    }
+    const action = await ctx.project.action({ id: params.actionId });
+    const updates = params.updates;
+
+    // Assignment direct sur les champs typés du SDK (le proxy `action.data` track
+    // les modifications). Tout est strictement typé grâce à `ActionUpdateFields`.
+
+    if (updates.name !== undefined) action.data.name = updates.name;
+    if (updates.credits !== undefined) action.data.credits = updates.credits;
+    if (updates.status !== undefined) action.data.status = updates.status;
+    if (updates.tags !== undefined) action.data.tags = updates.tags;
+    if (updates["links.contributors"] !== undefined) {
+      // `calculateActionDiff` produit la clé dotée `"links.contributors"`. Le SDK
+      // expose le champ `links` à plat, donc on encapsule l'objet contributors.
+      action.data.links = { contributors: updates["links.contributors"] };
+    }
+    if (updates.startDate !== undefined) {
+      const raw = updates.startDate;
+      action.data.startDate =
+        typeof raw === "string" && raw.trim() ? parseFrenchDateToIso(raw.trim()) : null;
+    }
+    if (updates.endDate !== undefined) {
+      const raw = updates.endDate;
+      action.data.endDate =
+        typeof raw === "string" && raw.trim() ? parseFrenchDateToIso(raw.trim()) : null;
     }
 
-    await updateProjectActionFields({
-      source: ctx.api,
-      actionId: params.actionId,
-      fields: normalizedUpdates,
-      setType: [
-        { path: "startDate", type: "isoDate" },
-        { path: "endDate", type: "isoDate" },
-      ],
-    });
+    await action.save();
   },
   i18n: {
     successKey: "ActionsSection.toasts.actionUpdated.title",
@@ -251,8 +278,18 @@ export const useEditAction = createActionMutation<EditActionParams>({
 // Création d'action — via project.action() + save() (SDK entity-oriented)
 // =====================================================
 
-/** Statut d'une action — repris du SDK `ActionItemNormalized`. */
-export type ActionStatus = "todo" | "done";
+/**
+ * Re-export du type `ActionStatus` du SDK (source de vérité). Le SDK fait un
+ * `export type *` depuis `serverDataType/Action.d.ts` au root, donc on peut
+ * importer directement sans deep path. Re-exporté ici pour les call-sites du
+ * module cagnotte qui n'ont pas à connaître la provenance SDK.
+ *
+ * Note : côté form, la validation Zod (`actionCreateFormSchema`) restreint à
+ * `"todo" | "done"` que l'utilisateur peut sélectionner. Les autres statuts
+ * (`closed`, `disabled`, `tracking`, etc.) sont produits par les méthodes
+ * dédiées du SDK (`action.cancel()`, `action.archive()`, `action.updateStatus()`).
+ */
+export type { ActionStatus };
 
 /**
  * Paramètres pour créer une action. Le SDK Cocolight (`Project.action()` + `Action.save()`)

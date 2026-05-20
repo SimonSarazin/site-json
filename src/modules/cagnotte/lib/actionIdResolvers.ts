@@ -11,9 +11,14 @@
  * pour les autres mutations (edit/delete) — qui passent encore par updatePathValue.
  */
 import { asRecord } from "@/modules/cagnotte/utils/dataTransform";
-import type { FundingAction } from "@/modules/cagnotte/types";
+import type { FundingAction, FundingActionStatus } from "@/modules/cagnotte/types";
 
-export type ActionStatus = "todo" | "done";
+/**
+ * Alias rétro-compat. Le type canonique est `FundingActionStatus` (sous-ensemble
+ * explicite de `ActionStatus` SDK). Conservé en re-export car cet helper est
+ * actuellement `@unused` (workaround remplacé par `action.id` peuplé par le SDK).
+ */
+export type ActionStatus = FundingActionStatus;
 
 /**
  * Garde-fou : un id MongoDB est une chaîne non-vide après trim. On évite ici

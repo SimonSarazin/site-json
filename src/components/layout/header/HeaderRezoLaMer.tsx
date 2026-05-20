@@ -180,7 +180,13 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                         })}
 
                         {header.utilities?.piggyBank && (
-                            <PiggyBankHeaderButton />
+                            // ClientOnly : la cagnotte est member-only (le composant lit `me`
+                            // pour décider de rendre ou pas). Sans ClientOnly, SSR rend le bouton
+                            // (me=null → null), client le rend après auth → hydration mismatch
+                            // (cf. PiggyBankHeaderButton:if (!me?.id) return null).
+                            <ClientOnly>
+                                {() => <PiggyBankHeaderButton />}
+                            </ClientOnly>
                         )}
 
                         {header.urgenceButton && (

@@ -13,9 +13,20 @@
  * plutôt que de redéclarer une interface locale.
  */
 
-import type { Action } from "@communecter/cocolight-api-client";
+import type { Action, ActionStatus } from "@communecter/cocolight-api-client";
 
-export type FundingActionStatus = "todo" | "done";
+/**
+ * Sous-ensemble explicite des statuts SDK (`ActionStatus` = 8 valeurs) que le form
+ * de cagnotte expose à l'utilisateur. Les autres statuts (`closed`, `disabled`,
+ * `tracking`, `discuter`, `next`, `totest`) sont produits côté SDK par les méthodes
+ * dédiées (`action.cancel()`, `action.archive()`, `action.updateStatus(...)`) et
+ * ne transitent pas par les composants form.
+ *
+ * Utiliser `Extract<ActionStatus, ...>` plutôt qu'une union locale `"todo" | "done"` :
+ *  - Source de vérité = SDK ; si une de ces 2 valeurs disparaissait du SDK, TS le détecte.
+ *  - Lien explicite documenté avec le type SDK.
+ */
+export type FundingActionStatus = Extract<ActionStatus, "todo" | "done">;
 export type FundingPaymentStatus = "pending" | "paid" | "failed" | "refunded";
 export type FundingMilestoneStatus = "open" | "done" | "close";
 
