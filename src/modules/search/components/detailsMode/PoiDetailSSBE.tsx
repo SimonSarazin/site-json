@@ -5,20 +5,17 @@ import { useCocolight } from "@/hooks/useCocolight";
 import type { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
 import {
   Accessibility,
-  BedDouble,
   Building2,
   Bus,
   Calendar,
   CheckCircle2,
+  Droplet,
   Heart,
   History,
   Info,
   MapPin,
   Settings,
-  Shield,
-  Star,
   Tag,
-  UtensilsCrossed,
   Users,
   Lightbulb,
   Unlock,
@@ -46,7 +43,7 @@ interface PoiParent {
 interface PoiDetail {
   name: string;
   category?: string;
-  subCategory?: string;
+  categorie?: string;
   enqueteStatut?: string;
   installation?: string;
   sportPratiquer?: string;
@@ -54,7 +51,6 @@ interface PoiDetail {
   dateEnquete?: string;
   lastUpdate?: string;
   familleEquipement?: string;
-  type?: string;
   nature?: string;
   sole?: string;
   surface?: string;
@@ -62,13 +58,27 @@ interface PoiDetail {
   libreAccess?: string;
   partenariat?: string;
   typePartenariat?: string;
+  entrepriseFonciere?: string;
+  equipGestType?: string;
+  equipLocType?: string;
+  equipUtilisateur?: string;
+  equipDouche?: string;
   handicap?: string;
   transportCommun?: string;
-  restaurant?: string;
-  hebergement?: string;
-  gardiennage?: string;
   typeAccessiblHandicap?: string;
   typeTransportCommun?: string;
+  equipPmrAcc?: string;
+  equipPmrChem?: string;
+  equipPmrDouche?: string;
+  equipPmrSanit?: string;
+  equipPmrTrib?: string;
+  equipPmrVest?: string;
+  equipPshsAire?: string;
+  equipPshsChem?: string;
+  equipPshsSanit?: string;
+  equipPshsTrib?: string;
+  equipPshsVest?: string;
+  equipPshsSign?: string;
   address: PoiAddress;
   geo?: PoiGeo;
   parent?: PoiParent;
@@ -96,6 +106,8 @@ const isTrue = (value?: string) => {
   const normalized = value.trim().toLowerCase();
   return normalized === "true" || normalized === "1" || normalized === "oui" || normalized === "yes";
 };
+
+const yesNo = (value?: string) => (isTrue(value) ? "Oui" : "Non");
 
 const formatDateFr = (iso?: string) => {
   if (!iso) return "—";
@@ -255,8 +267,9 @@ function resolveParentData(parentData: Record<string, unknown> | undefined): Poi
 const COSTUM_FIELD_KEYS = new Set([
   "name",
   "category",
-  "subCategory",
+  "categorie",
   "sportPratiquer",
+  "aps_name",
   "nature",
   "surface",
   "sole",
@@ -266,14 +279,44 @@ const COSTUM_FIELD_KEYS = new Set([
   "typeTransportCommun",
   "familleEquipement",
   "installation",
-  "type",
   "handicap",
   "transportCommun",
-  "restaurant",
-  "hebergement",
-  "gardiennage",
   "eclairage",
   "libreAccess",
+  "equip_type_name",
+  "equip_type_famille",
+  "inst_nom",
+  "inst_date_creation",
+  "inst_enqu_date",
+  "equip_maj_date",
+  "equip_nature",
+  "equip_sol",
+  "equip_surf",
+  "equip_eclair",
+  "equip_acc_libre",
+  "inst_acc_handi_bool",
+  "inst_acc_handi_type",
+  "inst_trans_bool",
+  "inst_trans_type",
+  "equip_prop_type",
+  "inst_part_bool",
+  "inst_part_type",
+  "equip_loc_type",
+  "equip_utilisateur",
+  "equip_gest_type",
+  "equip_douche",
+  "equip_pmr_acc",
+  "equip_pmr_chem",
+  "equip_pmr_douche",
+  "equip_pmr_sanit",
+  "equip_pmr_trib",
+  "equip_pmr_vest",
+  "equip_pshs_aire",
+  "equip_pshs_chem",
+  "equip_pshs_sanit",
+  "equip_pshs_trib",
+  "equip_pshs_vest",
+  "equip_pshs_sign",
   "dateCreation",
   "dateEnquete",
   "lastUpdate",
@@ -322,20 +365,7 @@ function findCostumCandidate(
   return best;
 }
 
-function unwrapCostumData(raw: unknown, sourceKey?: string): Record<string, unknown> | undefined {
-  if (!raw) return undefined;
-  const visited = new Set<object>();
 
-  if (sourceKey && typeof raw === "object" && raw !== null) {
-    const record = raw as Record<string, unknown>;
-    const sourceValue = record[sourceKey];
-    const fromSource = findCostumCandidate(sourceValue, visited);
-    if (fromSource) return fromSource.record;
-  }
-
-  const candidate = findCostumCandidate(raw, visited);
-  return candidate?.record;
-}
 
 function getPoiImage(category?: string, name?: string) {
   const text = (category || name || "POI").trim().slice(0, 2).toUpperCase();
@@ -353,22 +383,18 @@ function toPoi(item: DetailsModeProps["item"]): PoiDetail {
   const sourceKeyFromList = Array.isArray(sourceData?.keys)
     ? toStringValue(sourceData.keys.find((value) => typeof value === "string"))
     : undefined;
-  const sourceKey =
-    toStringValue(sourceData?.key ?? serverData.sourceKey ?? entityData.sourceKey) ??
-    sourceKeyFromList;
-  const costumData = unwrapCostumData(serverData.costum ?? entityData.costum, sourceKey);
   const address =
-    (serverData.address ?? entityData.address ?? costumData?.address) as
+    (serverData.address ?? entityData.address) as
       | Record<string, unknown>
       | undefined;
   const geoData =
-    (serverData.geo ?? entityData.geo ?? costumData?.geo) as Record<string, unknown> | undefined;
+    (serverData.geo ?? entityData.geo) as Record<string, unknown> | undefined;
   const geoPosition =
-    (serverData.geoPosition ?? entityData.geoPosition ?? costumData?.geoPosition) as
+    (serverData.geoPosition ?? entityData.geoPosition) as
       | Record<string, unknown>
       | undefined;
   const parentData =
-    (serverData.parent ?? entityData.parent ?? costumData?.parent) as
+    (serverData.parent ?? entityData.parent) as
       | Record<string, unknown>
       | undefined;
 
@@ -398,105 +424,189 @@ function toPoi(item: DetailsModeProps["item"]): PoiDetail {
     longitudeFromArray ?? toNumberValue(geoData?.longitude ?? geoData?.lng ?? geoData?.lon);
 
   const familleEquipement = resolveText(
-    serverData.familleEquipement,
-    entityData.familleEquipement,
-    costumData?.familleEquipement,
+    serverData.equip_type_famille,
+    entityData.equip_type_famille
   );
   const category =
-    resolveText(serverData.category, entityData.category, costumData?.category) ??
+    resolveText(
+      serverData.equip_type_name,
+      entityData.equip_type_name
+    ) ??
     familleEquipement;
   const resolvedParent = resolveParentData(parentData);
   const parentName = resolvedParent?.name ?? "Sport Santé Bien-être";
   const parentType = resolvedParent?.type ?? "organizations";
+  const categorie = resolveText(serverData.categorie, entityData.categorie);
+  const entrepriseFonciere = resolveText(
+    serverData.equip_prop_type,
+    entityData.equip_prop_type,
+  );
+  const equipGestType = resolveText(
+    serverData.equip_gest_type,
+    entityData.equip_gest_type,
+  );
+  const equipLocType = resolveText(
+    serverData.equip_loc_type,
+    entityData.equip_loc_type,
+  );
+  const equipUtilisateur = resolveText(
+    serverData.equip_utilisateur,
+    entityData.equip_utilisateur,
+  );
+  const equipDouche = resolveText(
+    serverData.equip_douche,
+    entityData.equip_douche,
+  );
+  const equipPmrAcc = resolveText(
+    serverData.equip_pmr_acc,
+    entityData.equip_pmr_acc,
+  );
+  const equipPmrChem = resolveText(
+    serverData.equip_pmr_chem,
+    entityData.equip_pmr_chem,
+  );
+  const equipPmrDouche = resolveText(
+    serverData.equip_pmr_douche,
+    entityData.equip_pmr_douche,
+  );
+  const equipPmrSanit = resolveText(
+    serverData.equip_pmr_sanit,
+    entityData.equip_pmr_sanit,
+  );
+  const equipPmrTrib = resolveText(
+    serverData.equip_pmr_trib,
+    entityData.equip_pmr_trib,
+  );
+  const equipPmrVest = resolveText(
+    serverData.equip_pmr_vest,
+    entityData.equip_pmr_vest,
+  );
+  const equipPshsAire = resolveText(
+    serverData.equip_pshs_aire,
+    entityData.equip_pshs_aire,
+  );
+  const equipPshsChem = resolveText(
+    serverData.equip_pshs_chem,
+    entityData.equip_pshs_chem,
+  );
+  const equipPshsSanit = resolveText(
+    serverData.equip_pshs_sanit,
+    entityData.equip_pshs_sanit,
+  );
+  const equipPshsTrib = resolveText(
+    serverData.equip_pshs_trib,
+    entityData.equip_pshs_trib,
+  );
+  const equipPshsVest = resolveText(
+    serverData.equip_pshs_vest,
+    entityData.equip_pshs_vest,
+  );
+  const equipPshsSign = resolveText(
+    serverData.equip_pshs_sign,
+    entityData.equip_pshs_sign,
+  );
 
   return {
-    name: resolveText(serverData.name, entityData.name, costumData?.name) ?? "",
+    name: resolveText(serverData.name, entityData.name) ?? "",
     category,
-    subCategory: resolveText(
-      serverData.subCategory,
-      entityData.subCategory,
-      costumData?.subCategory,
-    ),
+    categorie,
+
     enqueteStatut: resolveText(
       serverData.enqueteStatut,
       entityData.enqueteStatut,
-      costumData?.enqueteStatut,
     ),
     installation: resolveText(
-      serverData.installation,
-      entityData.installation,
-      costumData?.installation,
+      serverData.inst_nom,
+      entityData.inst_nom,
     ),
     sportPratiquer: resolveText(
-      serverData.sportPratiquer,
-      entityData.sportPratiquer,
-      costumData?.sportPratiquer,
+      serverData.aps_name,
+      entityData.aps_name,
     ),
     dateCreation: resolveDate(
+      serverData.inst_date_creation,
+      entityData.inst_date_creation,
       serverData.dateCreation,
       entityData.dateCreation,
-      costumData?.dateCreation,
       serverData.created,
       entityData.created,
-      costumData?.created,
     ),
     dateEnquete: resolveDate(
+      serverData.inst_enqu_date,
+      entityData.inst_enqu_date,
       serverData.dateEnquete,
       entityData.dateEnquete,
-      costumData?.dateEnquete,
     ),
     lastUpdate: resolveDate(
+      serverData.equip_maj_date,
+      entityData.equip_maj_date,
       serverData.lastUpdate,
       entityData.lastUpdate,
-      costumData?.lastUpdate,
       serverData.updated,
       entityData.updated,
-      costumData?.updated,
     ),
     familleEquipement,
-    type: resolveText(serverData.type, entityData.type, costumData?.type),
-    nature: resolveText(serverData.nature, entityData.nature, costumData?.nature),
-    sole: resolveText(serverData.sole, entityData.sole, costumData?.sole),
-    surface: resolveText(serverData.surface, entityData.surface, costumData?.surface),
-    eclairage: resolveText(serverData.eclairage, entityData.eclairage, costumData?.eclairage),
-    libreAccess: resolveText(serverData.libreAccess, entityData.libreAccess, costumData?.libreAccess),
-    partenariat: resolveText(serverData.partenariat, entityData.partenariat, costumData?.partenariat),
+    nature: resolveText(
+      serverData.equip_nature,
+      entityData.equip_nature
+    ),
+    sole: resolveText(
+      serverData.equip_sol,
+      entityData.equip_sol,
+    ),
+    surface: resolveText(
+      serverData.equip_surf,
+      entityData.equip_surf,
+    ),
+    eclairage: resolveText(
+      serverData.equip_eclair,
+      entityData.equip_eclair,
+    ),
+    libreAccess: resolveText(
+      serverData.equip_acc_libre,
+      entityData.equip_acc_libre,
+    ),
+    partenariat: resolveText(
+      serverData.inst_part_bool,
+      entityData.inst_part_bool,
+    ),
     typePartenariat: resolveText(
-      serverData.typePartenariat,
-      entityData.typePartenariat,
-      costumData?.typePartenariat,
+      serverData.inst_part_type,
+      entityData.inst_part_type,
     ),
-    handicap: resolveText(serverData.handicap, entityData.handicap, costumData?.handicap),
+    entrepriseFonciere,
+    equipGestType,
+    equipLocType,
+    equipUtilisateur,
+    equipDouche,
+    handicap: resolveText(
+      serverData.inst_acc_handi_bool,
+      entityData.inst_acc_handi_bool,
+    ),
     transportCommun: resolveText(
-      serverData.transportCommun,
-      entityData.transportCommun,
-      costumData?.transportCommun,
-    ),
-    restaurant: resolveText(
-      serverData.restaurant,
-      entityData.restaurant,
-      costumData?.restaurant,
-    ),
-    hebergement: resolveText(
-      serverData.hebergement,
-      entityData.hebergement,
-      costumData?.hebergement,
-    ),
-    gardiennage: resolveText(
-      serverData.gardiennage,
-      entityData.gardiennage,
-      costumData?.gardiennage,
+      serverData.inst_trans_bool,
+      entityData.inst_trans_bool
     ),
     typeAccessiblHandicap: resolveText(
-      serverData.typeAccessiblHandicap,
-      entityData.typeAccessiblHandicap,
-      costumData?.typeAccessiblHandicap,
+      serverData.inst_acc_handi_type,
+      entityData.inst_acc_handi_type
     ),
     typeTransportCommun: resolveText(
-      serverData.typeTransportCommun,
-      entityData.typeTransportCommun,
-      costumData?.typeTransportCommun,
+      serverData.inst_trans_type,
+      entityData.inst_trans_type
     ),
+    equipPmrAcc,
+    equipPmrChem,
+    equipPmrDouche,
+    equipPmrSanit,
+    equipPmrTrib,
+    equipPmrVest,
+    equipPshsAire,
+    equipPshsChem,
+    equipPshsSanit,
+    equipPshsTrib,
+    equipPshsVest,
+    equipPshsSign,
     address: {
       streetAddress: toStringValue(address?.streetAddress),
       postalCode: toStringValue(address?.postalCode),
@@ -718,12 +828,6 @@ export default function PoiDetailSSBE({ openDetails, setOpenDetails, item }: Det
                   {poi.category}
                 </span>
               )}
-              {poi.subCategory && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-primary-foreground">
-                  <Star className="h-3.5 w-3.5" />
-                  {poi.subCategory}
-                </span>
-              )}
               {poi.enqueteStatut === "Validé" && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-primary-foreground">
                   <CheckCircle2 className="h-3.5 w-3.5" />
@@ -774,11 +878,112 @@ export default function PoiDetailSSBE({ openDetails, setOpenDetails, item }: Det
                 </div>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   <InfoRow label="Catégorie" value={poi.category || "—"} />
+                  <InfoRow label="Categorie (source)" value={poi.categorie || "—"} />
                   <InfoRow label="Famille d'équipement" value={poi.familleEquipement || "—"} />
-                  <InfoRow label="Sous-catégorie" value={poi.subCategory || "—"} />
-                  <InfoRow label="Type" value={poi.type || "—"} />
-                  <InfoRow label="Sport pratiqué" value={poi.sportPratiquer || "—"} />
                   <InfoRow label="Installation" value={poi.installation || "—"} />
+                  <div className="sm:col-span-2">
+                    <InfoRow label="Sport pratiqué" value={poi.sportPratiquer || "—"} />
+                  </div>
+                </div>
+              </section>
+
+              <section className="rounded-2xl border border-border bg-card/70 p-5 shadow-sm">
+                <div className="flex items-center gap-2 text-primary">
+                  <Users className="h-5 w-5" />
+                  <h2 className="text-base font-semibold">Gestion & usages</h2>
+                </div>
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <InfoRow label="Type de propriété" value={poi.entrepriseFonciere || "—"} />
+                  <InfoRow label="Type de gestion" value={poi.equipGestType || "—"} />
+                  <InfoRow label="Locaux disponibles" value={poi.equipLocType || "—"} />
+                  <InfoRow label="Utilisateurs" value={poi.equipUtilisateur || "—"} />
+                </div>
+              </section>
+
+              <section className="rounded-2xl border border-border bg-card/70 p-5 shadow-sm">
+                <div className="flex items-center gap-2 text-primary">
+                  <Accessibility className="h-5 w-5" />
+                  <h2 className="text-base font-semibold">Accessibilité & services</h2>
+                </div>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <Feature label="Accès PMR" active={isTrue(poi.handicap)} Icon={Accessibility} />
+                  <Feature
+                    label="Transports en commun"
+                    active={isTrue(poi.transportCommun)}
+                    Icon={Bus}
+                  />
+                  <Feature label="Éclairage" active={isTrue(poi.eclairage)} Icon={Lightbulb} />
+                  <Feature label="Libre accès" active={isTrue(poi.libreAccess)} Icon={Unlock} />
+                  <Feature label="Douches" active={isTrue(poi.equipDouche)} Icon={Droplet} />
+                </div>
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <InfoRow
+                    label="Type d'accessibilité PMR"
+                    value={poi.typeAccessiblHandicap || "—"}
+                    muted
+                  />
+                  <InfoRow
+                    label="Type de transport"
+                    value={poi.typeTransportCommun || "—"}
+                    muted
+                  />
+                </div>
+                <div className="mt-6 space-y-4">
+                  <div className="h-px bg-border/60" />
+                  <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Details PMR
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <InfoRow label="Acces" value={yesNo(poi.equipPmrAcc)} muted />
+                    <InfoRow label="Cheminement" value={yesNo(poi.equipPmrChem)} muted />
+                    <InfoRow label="Douches PMR" value={yesNo(poi.equipPmrDouche)} muted />
+                    <InfoRow label="Sanitaires PMR" value={yesNo(poi.equipPmrSanit)} muted />
+                    <InfoRow label="Tribunes PMR" value={yesNo(poi.equipPmrTrib)} muted />
+                    <InfoRow label="Vestiaires PMR" value={yesNo(poi.equipPmrVest)} muted />
+                  </div>
+                  <div className="h-px bg-border/60" />
+                  <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Details PSHS
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <InfoRow label="Aire de pratique" value={yesNo(poi.equipPshsAire)} muted />
+                    <InfoRow label="Cheminement PSHS" value={yesNo(poi.equipPshsChem)} muted />
+                    <InfoRow label="Sanitaires PSHS" value={yesNo(poi.equipPshsSanit)} muted />
+                    <InfoRow label="Tribunes PSHS" value={yesNo(poi.equipPshsTrib)} muted />
+                    <InfoRow label="Vestiaires PSHS" value={yesNo(poi.equipPshsVest)} muted />
+                    <InfoRow label="Signaletique PSHS" value={yesNo(poi.equipPshsSign)} muted />
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <aside className="space-y-6">
+              <section className="overflow-hidden rounded-2xl">
+                <img
+                  src={imageSrc}
+                  alt={poi.name || "Point d'intérêt"}
+                  loading="lazy"
+                  className={
+                    hasImage
+                      ? "h-56 w-full object-cover"
+                      : "h-40 w-full bg-muted/40 object-contain"
+                  }
+                />
+              </section>
+              <section className="rounded-2xl border border-border bg-card/70 p-5 shadow-sm">
+                <div className="flex items-center gap-2 text-primary">
+                  <MapPin className="h-5 w-5" />
+                  <h2 className="text-base font-semibold">Localisation</h2>
+                </div>
+                <div className="mt-4 space-y-2 text-sm text-muted-foreground">
+                  <p className="font-semibold text-foreground">{poi.address.streetAddress || "—"}</p>
+                  <p>{cityLine || "—"}</p>
+                  {poi.address.level1Name && (
+                    <p>
+                      {poi.address.level1Name}
+                      {poi.address.addressCountry ? ` (${poi.address.addressCountry})` : ""}
+                    </p>
+                  )}
                 </div>
               </section>
 
@@ -849,83 +1054,41 @@ export default function PoiDetailSSBE({ openDetails, setOpenDetails, item }: Det
                   <Settings className="h-5 w-5" />
                   <h2 className="text-base font-semibold">Caractéristiques techniques</h2>
                 </div>
-                <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                  <InfoRow label="Nature" value={poi.nature || "—"} />
-                  <InfoRow label="Revêtement" value={poi.sole || "—"} />
-                  <InfoRow label="Surface" value={surfaceLabel} />
-                  <InfoRow label="Éclairage" value={isTrue(poi.eclairage) ? "Oui" : "Non"} />
-                  <InfoRow label="Libre accès" value={isTrue(poi.libreAccess) ? "Oui" : "Non"} />
-                  <InfoRow
-                    label="Partenariat"
-                    value={isTrue(poi.partenariat) ? poi.typePartenariat || "Oui" : "Non"}
-                  />
+                <div className="mt-4 divide-y divide-border/60 text-sm">
+                  <div className="flex items-center justify-between gap-4 py-2">
+                    <span className="text-muted-foreground">Nature</span>
+                    <span className="font-medium text-foreground">{poi.nature || "—"}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 py-2">
+                    <span className="text-muted-foreground">Revêtement</span>
+                    <span className="font-medium text-foreground">{poi.sole || "—"}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 py-2">
+                    <span className="text-muted-foreground">Surface</span>
+                    <span className="font-medium text-foreground">{surfaceLabel}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 py-2">
+                    <span className="text-muted-foreground">Éclairage</span>
+                    <span className="font-medium text-foreground">
+                      {isTrue(poi.eclairage) ? "Oui" : "Non"}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 py-2">
+                    <span className="text-muted-foreground">Libre accès</span>
+                    <span className="font-medium text-foreground">
+                      {isTrue(poi.libreAccess) ? "Oui" : "Non"}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 py-2">
+                    <span className="text-muted-foreground">Partenariat</span>
+                    <span className="font-medium text-foreground">
+                      {isTrue(poi.partenariat) ? poi.typePartenariat || "Oui" : "Non"}
+                    </span>
+                  </div>
                 </div>
               </section>
 
-              <section className="rounded-2xl border border-border bg-card/70 p-5 shadow-sm">
-                <div className="flex items-center gap-2 text-primary">
-                  <Accessibility className="h-5 w-5" />
-                  <h2 className="text-base font-semibold">Accessibilité & services</h2>
-                </div>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  <Feature label="Accès PMR" active={isTrue(poi.handicap)} Icon={Accessibility} />
-                  <Feature
-                    label="Transports en commun"
-                    active={isTrue(poi.transportCommun)}
-                    Icon={Bus}
-                  />
-                   <Feature label="Éclairage" active={isTrue(poi.eclairage)} Icon={Lightbulb} />
-                   <Feature label="Libre accès" active={isTrue(poi.libreAccess)} Icon={Unlock} />
-                  <Feature label="Restaurant" active={isTrue(poi.restaurant)} Icon={UtensilsCrossed} />
-                  <Feature label="Hébergement" active={isTrue(poi.hebergement)} Icon={BedDouble} />
-                  <Feature label="Gardiennage" active={isTrue(poi.gardiennage)} Icon={Shield} />
-                </div>
-                <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                  <InfoRow
-                    label="Type d'accessibilité PMR"
-                    value={poi.typeAccessiblHandicap || "—"}
-                    muted
-                  />
-                  <InfoRow
-                    label="Type de transport"
-                    value={poi.typeTransportCommun || "—"}
-                    muted
-                  />
-                </div>
-              </section>
-            </div>
-
-            <aside className="space-y-6">
-              <section className="overflow-hidden rounded-2xl">
-                <img
-                  src={imageSrc}
-                  alt={poi.name || "Point d'intérêt"}
-                  loading="lazy"
-                  className={
-                    hasImage
-                      ? "h-56 w-full object-cover"
-                      : "h-40 w-full bg-muted/40 object-contain"
-                  }
-                />
-              </section>
-              <section className="rounded-2xl border border-border bg-card/70 p-5 shadow-sm">
-                <div className="flex items-center gap-2 text-primary">
-                  <MapPin className="h-5 w-5" />
-                  <h2 className="text-base font-semibold">Localisation</h2>
-                </div>
-                <div className="mt-4 space-y-2 text-sm text-muted-foreground">
-                  <p className="font-semibold text-foreground">{poi.address.streetAddress || "—"}</p>
-                  <p>{cityLine || "—"}</p>
-                  {poi.address.level1Name && (
-                    <p>
-                      {poi.address.level1Name}
-                      {poi.address.addressCountry ? ` (${poi.address.addressCountry})` : ""}
-                    </p>
-                  )}
-                </div>
-              </section>
-
-              <section className="rounded-2xl border border-border bg-card/70 p-5 shadow-sm">
+              {/* <section className="rounded-2xl border border-border bg-card/70 p-5 shadow-sm">
                 <div className="flex items-center gap-2 text-primary">
                   <Users className="h-5 w-5" />
                   <h2 className="text-base font-semibold">Organisation</h2>
@@ -939,7 +1102,7 @@ export default function PoiDetailSSBE({ openDetails, setOpenDetails, item }: Det
                     <div className="text-xs text-muted-foreground">{parent.type}</div>
                   </div>
                 </div>
-              </section>
+              </section> */}
 
               <section className="rounded-2xl border border-border bg-card/70 p-5 shadow-sm">
                 <div className="flex items-center gap-2 text-primary">

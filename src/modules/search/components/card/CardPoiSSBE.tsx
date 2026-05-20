@@ -5,10 +5,10 @@ import {
 	Building2,
 	Accessibility,
 	Bus,
-	Shield,
-	UtensilsCrossed,
-	BedDouble,
 	Tag,
+	Lightbulb,
+	Droplet,
+	DoorOpen,
 } from "lucide-react";
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -19,10 +19,9 @@ import { SearchCardProps } from "../../schema";
 
 interface Poi {
 	name: string;
-	category: string;
+	categorie: string;
 	installation?: string;
 	familleEquipement?: string;
-	enqueteStatut?: string;
 	dateCreation?: string;
 	address: {
 		streetAddress?: string;
@@ -31,15 +30,20 @@ interface Poi {
 	};
 	handicap?: string;
 	transportCommun?: string;
-	hebergement?: string;
-	restaurant?: string;
-	gardiennage?: string;
+	eclairage?: string;
+	douche?: string;
+	libreAcces?: string;
 }
 
 const isTrue = (v?: string) => {
 	if (!v) return false;
 	const normalized = v.trim().toLowerCase();
-	return normalized === "true" || normalized === "1";
+	return (
+		normalized === "true" ||
+		normalized === "1" ||
+		normalized === "oui" ||
+		normalized === "yes"
+	);
 };
 
 function formatDateFr(dateStr?: string): string | null {
@@ -85,7 +89,16 @@ function Feature({
 }
 
 function toStringValue(value: unknown): string | undefined {
-	if (typeof value === "string") return value;
+	if (Array.isArray(value)) {
+		const parts = value
+			.map((entry) => toStringValue(entry))
+			.filter((entry): entry is string => Boolean(entry));
+		return parts.length > 0 ? parts.join(", ") : undefined;
+	}
+	if (typeof value === "string") {
+		const trimmed = value.trim();
+		return trimmed.length > 0 ? trimmed : undefined;
+	}
 	if (typeof value === "number" || typeof value === "boolean") {
 		return String(value);
 	}
@@ -100,6 +113,27 @@ function toStringValue(value: unknown): string | undefined {
 	return undefined;
 }
 
+function normalizeDateValue(value: unknown): string | undefined {
+	if (value instanceof Date) return value.toISOString();
+	if (typeof value === "number") {
+		const ms = value < 1_000_000_000_000 ? value * 1000 : value;
+		const date = new Date(ms);
+		return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
+	}
+	if (typeof value === "string") {
+		const trimmed = value.trim();
+		if (!trimmed) return undefined;
+		if (/^\d+(\.\d+)?$/.test(trimmed)) {
+			const numeric = Number(trimmed);
+			const ms = numeric < 1_000_000_000_000 ? numeric * 1000 : numeric;
+			const date = new Date(ms);
+			return Number.isNaN(date.getTime()) ? trimmed : date.toISOString();
+		}
+		return trimmed;
+	}
+	return undefined;
+}
+
 function toPoi(item: SearchCardProps["item"]): Poi {
 	const entityData = ((item ?? {}) as unknown) as Record<string, unknown>;
 	const serverData = (item?.serverData ?? {}) as Record<string, unknown>;
@@ -108,41 +142,66 @@ function toPoi(item: SearchCardProps["item"]): Poi {
 			| Record<string, unknown>
 			| undefined) ?? {};
 
+	const resolveText = (...values: unknown[]) => {
+		for (const value of values) {
+			const resolved = toStringValue(value);
+			if (resolved !== undefined) return resolved;
+		}
+		return undefined;
+	};
+	const resolveDate = (...values: unknown[]) => {
+		const candidate = values.find((value) => value !== undefined && value !== null);
+		return normalizeDateValue(candidate);
+	};
+
 	return {
-		name: toStringValue(serverData.name ?? entityData.name) ?? "",
-		category:
-			toStringValue(serverData.category ?? entityData.category) ??
-			toStringValue(
-				serverData.familleEquipement ?? entityData.familleEquipement,
+		name: resolveText(serverData.name, entityData.name) ?? "",
+		categorie:
+			resolveText(
+				serverData.equip_type_name,
+				entityData.equip_type_name,
+				serverData.categorie,
+				entityData.categorie,
+			) ??
+			resolveText(
+				serverData.equip_type_famille,
+				entityData.equip_type_famille,
+				serverData.familleEquipement,
+				entityData.familleEquipement,
 			) ??
 			"",
-		installation: toStringValue(
-			serverData.installation ?? entityData.installation,
+		installation: resolveText(
+			serverData.inst_nom,
+			entityData.inst_nom
 		),
-		familleEquipement: toStringValue(
-			serverData.familleEquipement ?? entityData.familleEquipement,
+		familleEquipement: resolveText(
+			serverData.equip_type_famille,
+			entityData.equip_type_famille
 		),
-		enqueteStatut: toStringValue(
-			serverData.enqueteStatut ?? entityData.enqueteStatut,
-		),
-		dateCreation: toStringValue(
-			serverData.dateCreation ??
-				entityData.dateCreation ??
-				serverData.created ??
-				entityData.created,
+		dateCreation: resolveDate(
+			serverData.inst_date_creation,
+			entityData.inst_date_creation,
+			serverData.dateCreation,
+			entityData.dateCreation,
+			serverData.created,
+			entityData.created,
 		),
 		address: {
 			streetAddress: toStringValue(address.streetAddress),
 			postalCode: toStringValue(address.postalCode),
 			addressLocality: toStringValue(address.addressLocality),
 		},
-		handicap: toStringValue(serverData.handicap ?? entityData.handicap),
-		transportCommun: toStringValue(
-			serverData.transportCommun ?? entityData.transportCommun,
+		handicap: resolveText(
+			serverData.inst_acc_handi_bool,
+			entityData.inst_acc_handi_bool
 		),
-		hebergement: toStringValue(serverData.hebergement ?? entityData.hebergement),
-		restaurant: toStringValue(serverData.restaurant ?? entityData.restaurant),
-		gardiennage: toStringValue(serverData.gardiennage ?? entityData.gardiennage),
+		transportCommun: resolveText(
+			serverData.inst_trans_bool,
+			entityData.inst_trans_bool
+		),
+		eclairage: resolveText(serverData.equip_eclair, entityData.equip_eclair),
+		douche: resolveText(serverData.equip_douche, entityData.equip_douche),
+		libreAcces: resolveText(serverData.equip_acc_libre, entityData.equip_acc_libre),
 	};
 }
 
@@ -156,10 +215,10 @@ export default function CardPoiSSBE({ item, onClick }: SearchCardProps) {
 		.filter(Boolean)
 		.join(" ");
 
-	function getPoiImage(category?: string, name?: string) {
-		const text = (category || name || "POI").trim().slice(0, 2).toUpperCase();
+	function getPoiImage(categorie?: string, name?: string) {
+		const text = (categorie || name || "POI").trim().slice(0, 2).toUpperCase();
 		const colors = ["#60a5fa", "#34d399", "#f97316", "#ef4444", "#a78bfa", "#f59e0b"];
-		const hash = (category || name || "").split("").reduce((s, c) => s + c.charCodeAt(0), 0);
+		const hash = (categorie || name || "").split("").reduce((s, c) => s + c.charCodeAt(0), 0);
 		const color = colors[Math.abs(hash) % colors.length];
 		const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='112' height='112' viewBox='0 0 112 112'><rect width='112' height='112' fill='${color}' rx='56'/><text x='50%' y='50%' dominant-baseline='central' text-anchor='middle' font-size='40' font-family='Arial, Helvetica, sans-serif' fill='white'>${text}</text></svg>`;
 		return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
@@ -167,9 +226,13 @@ export default function CardPoiSSBE({ item, onClick }: SearchCardProps) {
 
 	const serverData = (item?.serverData ?? {}) as Record<string, unknown>;
 	const serverImage = toStringValue(
-		(serverData.profilImageUrl as unknown) ?? (serverData.profileImageUrl as unknown) ?? (serverData.image as unknown),
+		(serverData.profilImageUrl as unknown) ??
+			(serverData.profileImageUrl as unknown) ??
+			(serverData.profilMediumImageUrl as unknown) ??
+			(serverData.profilThumbImageUrl as unknown) ??
+			(serverData.image as unknown),
 	);
-	const imageSrc = serverImage ?? getPoiImage(poi.category, poi.name);
+	const imageSrc = serverImage ?? getPoiImage(poi.categorie, poi.name);
 
 	return (
 		<Card
@@ -182,7 +245,7 @@ export default function CardPoiSSBE({ item, onClick }: SearchCardProps) {
 					<div className="relative shrink-0">
 						<img
 							src={imageSrc}
-							alt={poi.category || poi.name}
+							alt={poi.categorie || poi.name}
 							loading="lazy"
 							width={56}
 							height={56}
@@ -195,19 +258,9 @@ export default function CardPoiSSBE({ item, onClick }: SearchCardProps) {
 						</h3>
 						<div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
 							<Tag className="h-3 w-3" />
-							<span className="truncate">{poi.category}</span>
+							<span className="truncate">{poi.categorie}</span>
 						</div>
 					</div>
-					{poi.enqueteStatut === "Validé" && (
-						<Badge
-							variant="secondary"
-							className="shrink-0 gap-1 bg-success-light text-success"
-							style={{ color: "var(--badge-valid)" }}
-						>
-							<CheckCircle2 className="h-3 w-3" />
-							Validé
-						</Badge>
-					)}
 				</div>
 
 				{poi.installation && (
@@ -235,7 +288,7 @@ export default function CardPoiSSBE({ item, onClick }: SearchCardProps) {
 
 				<div>
 					<p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-						Sur place
+						amenagement
 					</p>
 					<div className="grid grid-cols-2 gap-1.5">
 						<Feature
@@ -244,24 +297,25 @@ export default function CardPoiSSBE({ item, onClick }: SearchCardProps) {
 							Icon={Accessibility}
 						/>
 						<Feature
-							label="Bus"
+							label="transport en commun"
 							active={isTrue(poi.transportCommun)}
 							Icon={Bus}
 						/>
+						
 						<Feature
-							label="Restaurant"
-							active={isTrue(poi.restaurant)}
-							Icon={UtensilsCrossed}
+							label="Éclairage"
+							active={isTrue(poi.eclairage)}
+							Icon={Lightbulb}
 						/>
 						<Feature
-							label="Hébergement"
-							active={isTrue(poi.hebergement)}
-							Icon={BedDouble}
+							label="Douches"
+							active={isTrue(poi.douche)}
+							Icon={Droplet}
 						/>
 						<Feature
-							label="Gardiennage"
-							active={isTrue(poi.gardiennage)}
-							Icon={Shield}
+							label="Libre accès"
+							active={isTrue(poi.libreAcces)}
+							Icon={DoorOpen}
 						/>
 					</div>
 				</div>
