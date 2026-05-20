@@ -28,7 +28,7 @@
   "header": {
     "type": "rezo-la-mer",
     "path": "/",
-    "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path></svg>",
+    "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-20 h-20\"><rect x=\"2\" y=\"10\" width=\"4\" height=\"4\" rx=\"1\"></rect><rect x=\"18\" y=\"10\" width=\"4\" height=\"4\" rx=\"1\"></rect><rect x=\"4\" y=\"8\" width=\"3\" height=\"8\" rx=\"1\"></rect><rect x=\"17\" y=\"8\" width=\"3\" height=\"8\" rx=\"1\"></rect><line x1=\"7\" y1=\"12\" x2=\"17\" y2=\"12\"></line></svg>",
     "logoTitle": {
       "fr": "Equipement sportif - Région Réunion",
       "en": "Sports Facilities - Réunion Region"
@@ -50,8 +50,8 @@
       },
       {
         "label": {
-          "fr": "Liste des équipements",
-          "en": "List of Facilities"
+          "fr": "Equipements",
+          "en": "Facilities"
         },
         "path": "/equipements-sportifs"
       }
@@ -60,7 +60,7 @@
     "transparent": false,
     "height": "lg",
     "utilities": {
-      "piggyBank": true,
+      "piggyBank": false,
       "themeSwitch": true,
       "langSwitch": true,
       "search": false,
@@ -377,7 +377,7 @@
                   "fr": "Catégorie",
                   "en": "Category"
                 },
-                "field": "category",
+                "field": "equip_type_name",
                 "multiple": true,
                 "options": [
                   {
@@ -1257,7 +1257,7 @@
               {
                 "id": "poi-amenities",
                 "label": {
-                  "fr": "Sur place",
+                  "fr": "Amenagements",
                   "en": "Amenities"
                 },
                 "field": "amenity",
@@ -1266,7 +1266,7 @@
                   {
                     "id": "handicap",
                     "value": "true",
-                    "field": "handicap",
+                    "field": "inst_acc_handi_bool",
                     "icon": "accessibility",
                     "label": {
                       "fr": "Acces PMR",
@@ -1276,7 +1276,7 @@
                   {
                     "id": "transport-commun",
                     "value": "true",
-                    "field": "transportCommun",
+                    "field": "inst_trans_bool",
                     "icon": "bus",
                     "label": {
                       "fr": "Transport en commun",
@@ -1284,33 +1284,33 @@
                     }
                   },
                   {
-                    "id": "restaurant",
+                    "id": "eclairage",
                     "value": "true",
-                    "field": "restaurant",
-                    "icon": "utensils-crossed",
+                    "field": "equip_eclair",
+                    "icon": "lightbulb",
                     "label": {
-                      "fr": "Restaurant",
-                      "en": "Restaurant"
+                      "fr": "Éclairage",
+                      "en": "Lighting"
                     }
                   },
                   {
-                    "id": "hebergement",
+                    "id": "douche",
                     "value": "true",
-                    "field": "hebergement",
-                    "icon": "bed-double",
+                    "field": "equip_douche",
+                    "icon": "droplet",
                     "label": {
-                      "fr": "Hebergement",
-                      "en": "Accommodation"
+                      "fr": "Douche",
+                      "en": "Shower"
                     }
                   },
                   {
-                    "id": "gardiennage",
+                    "id": "libreAcces",
                     "value": "true",
-                    "field": "gardiennage",
-                    "icon": "shield",
+                    "field": "equip_acc_libre",
+                    "icon": "door-open",
                     "label": {
-                      "fr": "Gardiennage",
-                      "en": "Security"
+                      "fr": "Accès libre",
+                      "en": "Free access"
                     }
                   }
                 ]
@@ -1342,36 +1342,61 @@
               ],
               "defaultFields": [
                 "name",
-                "category",
-                "subCategory",
-                "installation",
-                "familleEquipement",
-                "type",
-                "sportPratiquer",
-                "nature",
-                "surface",
-                "sole",
-                "eclairage",
-                "libreAccess",
-                "partenariat",
-                "typePartenariat",
-                "enqueteStatut",
-                "dateCreation",
-                "dateEnquete",
-                "lastUpdate",
+
+                "equip_type_name",
+                "equip_type_famille",
+                "categorie",
+                "equip_nature",
+                "equip_sol",
+                "equip_surf",
+                "aps_name",
+
+                "inst_nom",
+                "equip_prop_nom",
+                "equip_prop_type",
+                "equip_gest_type",
+
+                "inst_acc_handi_bool",
+                "inst_acc_handi_type",
+                "equip_pmr_acc",
+                "equip_pmr_chem",
+                "equip_pmr_douche",
+                "equip_pmr_sanit",
+                "equip_pmr_trib",
+                "equip_pmr_vest",
+
+                "equip_pshs_aire",
+                "equip_pshs_chem",
+                "equip_pshs_sanit",
+                "equip_pshs_trib",
+                "equip_pshs_vest",
+                "equip_pshs_sign",
+
+                "equip_acc_libre",
+                "inst_trans_bool",
+                "inst_trans_type",
+                "equip_eclair",
+                "equip_douche",
+
+                "inst_part_bool",
+                "inst_part_type",
+
+                "equip_loc_type",
+                "equip_utilisateur",
+
+                "inst_date_creation",
+                "inst_enqu_date",
+                "equip_maj_date",
                 "created",
                 "updated",
+                "modified",
+
                 "address",
-                "handicap",
-                "transportCommun",
-                "typeTransportCommun",
-                "typeAccessiblHandicap",
-                "hebergement",
-                "restaurant",
-                "gardiennage",
                 "geo",
                 "geoPosition",
+
                 "parent"
+
               ],
               "defaultFilters": {
                 "$or": {
