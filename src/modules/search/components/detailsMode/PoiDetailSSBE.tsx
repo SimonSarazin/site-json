@@ -3,6 +3,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useEffect, useState } from "react";
 import { useCocolight } from "@/hooks/useCocolight";
 import type { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
+import ProfileMapLeaflet from "@/modules/profil/components/sections/ProfileMapLeaflet";
 import {
   Accessibility,
   Building2,
@@ -52,12 +53,13 @@ interface PoiDetail {
   lastUpdate?: string;
   familleEquipement?: string;
   nature?: string;
-  sole?: string;
+  sol?: string;
   surface?: string;
   eclairage?: string;
   libreAccess?: string;
   partenariat?: string;
   typePartenariat?: string;
+  equipPropNom?: string;
   entrepriseFonciere?: string;
   equipGestType?: string;
   equipLocType?: string;
@@ -264,109 +266,6 @@ function resolveParentData(parentData: Record<string, unknown> | undefined): Poi
   };
 }
 
-const COSTUM_FIELD_KEYS = new Set([
-  "name",
-  "category",
-  "categorie",
-  "sportPratiquer",
-  "aps_name",
-  "nature",
-  "surface",
-  "sole",
-  "partenariat",
-  "typePartenariat",
-  "typeAccessiblHandicap",
-  "typeTransportCommun",
-  "familleEquipement",
-  "installation",
-  "handicap",
-  "transportCommun",
-  "eclairage",
-  "libreAccess",
-  "equip_type_name",
-  "equip_type_famille",
-  "inst_nom",
-  "inst_date_creation",
-  "inst_enqu_date",
-  "equip_maj_date",
-  "equip_nature",
-  "equip_sol",
-  "equip_surf",
-  "equip_eclair",
-  "equip_acc_libre",
-  "inst_acc_handi_bool",
-  "inst_acc_handi_type",
-  "inst_trans_bool",
-  "inst_trans_type",
-  "equip_prop_type",
-  "inst_part_bool",
-  "inst_part_type",
-  "equip_loc_type",
-  "equip_utilisateur",
-  "equip_gest_type",
-  "equip_douche",
-  "equip_pmr_acc",
-  "equip_pmr_chem",
-  "equip_pmr_douche",
-  "equip_pmr_sanit",
-  "equip_pmr_trib",
-  "equip_pmr_vest",
-  "equip_pshs_aire",
-  "equip_pshs_chem",
-  "equip_pshs_sanit",
-  "equip_pshs_trib",
-  "equip_pshs_vest",
-  "equip_pshs_sign",
-  "dateCreation",
-  "dateEnquete",
-  "lastUpdate",
-  "created",
-  "updated",
-  "address",
-  "geo",
-  "geoPosition",
-  "parent",
-]);
-
-function findCostumCandidate(
-  value: unknown,
-  visited: Set<object>,
-): { record: Record<string, unknown>; score: number } | undefined {
-  if (!value || typeof value !== "object") return undefined;
-  if (visited.has(value)) return undefined;
-  visited.add(value);
-
-  if (Array.isArray(value)) {
-    return value.reduce<{ record: Record<string, unknown>; score: number } | undefined>(
-      (best, entry) => {
-        const candidate = findCostumCandidate(entry, visited);
-        if (!candidate) return best;
-        if (!best || candidate.score > best.score) return candidate;
-        return best;
-      },
-      undefined,
-    );
-  }
-
-  const record = value as Record<string, unknown>;
-  const score = Array.from(COSTUM_FIELD_KEYS).reduce(
-    (count, key) => (key in record ? count + 1 : count),
-    0,
-  );
-  let best: { record: Record<string, unknown>; score: number } | undefined =
-    score > 0 ? { record, score } : undefined;
-
-  for (const entry of Object.values(record)) {
-    const candidate = findCostumCandidate(entry, visited);
-    if (!candidate) continue;
-    if (!best || candidate.score > best.score) best = candidate;
-  }
-
-  return best;
-}
-
-
-
 function getPoiImage(category?: string, name?: string) {
   const text = (category || name || "POI").trim().slice(0, 2).toUpperCase();
   const colors = ["#60a5fa", "#34d399", "#f97316", "#ef4444", "#a78bfa", "#f59e0b"];
@@ -379,10 +278,6 @@ function getPoiImage(category?: string, name?: string) {
 function toPoi(item: DetailsModeProps["item"]): PoiDetail {
   const entityData = (item ?? {}) as unknown as Record<string, unknown>;
   const serverData = (item?.serverData ?? {}) as unknown as Record<string, unknown>;
-  const sourceData = (serverData.source ?? entityData.source) as Record<string, unknown> | undefined;
-  const sourceKeyFromList = Array.isArray(sourceData?.keys)
-    ? toStringValue(sourceData.keys.find((value) => typeof value === "string"))
-    : undefined;
   const address =
     (serverData.address ?? entityData.address) as
       | Record<string, unknown>
@@ -434,9 +329,13 @@ function toPoi(item: DetailsModeProps["item"]): PoiDetail {
     ) ??
     familleEquipement;
   const resolvedParent = resolveParentData(parentData);
-  const parentName = resolvedParent?.name ?? "Sport Santé Bien-être";
-  const parentType = resolvedParent?.type ?? "organizations";
+  const parentName = resolvedParent?.name ?? "";
+  const parentType = resolvedParent?.type ?? "";
   const categorie = resolveText(serverData.categorie, entityData.categorie);
+  const equipPropNom = resolveText(
+    serverData.equip_prop_nom,
+    entityData.equip_prop_nom,
+  );
   const entrepriseFonciere = resolveText(
     serverData.equip_prop_type,
     entityData.equip_prop_type,
@@ -525,32 +424,22 @@ function toPoi(item: DetailsModeProps["item"]): PoiDetail {
     ),
     dateCreation: resolveDate(
       serverData.inst_date_creation,
-      entityData.inst_date_creation,
-      serverData.dateCreation,
-      entityData.dateCreation,
-      serverData.created,
-      entityData.created,
+      entityData.inst_date_creation
     ),
     dateEnquete: resolveDate(
       serverData.inst_enqu_date,
-      entityData.inst_enqu_date,
-      serverData.dateEnquete,
-      entityData.dateEnquete,
+      entityData.inst_enqu_date
     ),
     lastUpdate: resolveDate(
       serverData.equip_maj_date,
-      entityData.equip_maj_date,
-      serverData.lastUpdate,
-      entityData.lastUpdate,
-      serverData.updated,
-      entityData.updated,
+      entityData.equip_maj_date
     ),
     familleEquipement,
     nature: resolveText(
       serverData.equip_nature,
       entityData.equip_nature
     ),
-    sole: resolveText(
+    sol: resolveText(
       serverData.equip_sol,
       entityData.equip_sol,
     ),
@@ -574,6 +463,7 @@ function toPoi(item: DetailsModeProps["item"]): PoiDetail {
       serverData.inst_part_type,
       entityData.inst_part_type,
     ),
+    equipPropNom,
     entrepriseFonciere,
     equipGestType,
     equipLocType,
@@ -689,9 +579,13 @@ export default function PoiDetailSSBE({ openDetails, setOpenDetails, item }: Det
   const cityLine = [poi.address.postalCode, poi.address.addressLocality]
     .filter(Boolean)
     .join(" ");
-  const parent = poi.parent ?? { name: "Sport Santé Bien-être", type: "organizations" };
   const surfaceValue = toNumberValue(poi.surface);
   const surfaceLabel = surfaceValue !== undefined ? `${surfaceValue} m²` : poi.surface || "—";
+  const hasGeo = Boolean(
+    poi.geo &&
+      Number.isFinite(poi.geo.latitude) &&
+      Number.isFinite(poi.geo.longitude)
+  );
   const poiId = resolveItemId(item);
   const [activities, setActivities] = useState<PoiActivity[]>([]);
   const [isActivitiesLoading, setIsActivitiesLoading] = useState(false);
@@ -893,6 +787,7 @@ export default function PoiDetailSSBE({ openDetails, setOpenDetails, item }: Det
                   <h2 className="text-base font-semibold">Gestion & usages</h2>
                 </div>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <InfoRow label="Nom de propriété" value={poi.equipPropNom || "—"} />
                   <InfoRow label="Type de propriété" value={poi.entrepriseFonciere || "—"} />
                   <InfoRow label="Type de gestion" value={poi.equipGestType || "—"} />
                   <InfoRow label="Locaux disponibles" value={poi.equipLocType || "—"} />
@@ -969,6 +864,21 @@ export default function PoiDetailSSBE({ openDetails, setOpenDetails, item }: Det
                       : "h-40 w-full bg-muted/40 object-contain"
                   }
                 />
+              </section>
+              <section className="rounded-2xl border border-border bg-card/70 shadow-sm overflow-hidden">
+                {hasGeo && poi.geo ? (
+                  <ProfileMapLeaflet
+                    lat={poi.geo.latitude}
+                    lng={poi.geo.longitude}
+                    height="200px"
+                    zoom={15}
+                    showMarker
+                  />
+                ) : (
+                  <div className="flex h-[200px] items-center justify-center text-sm text-muted-foreground">
+                    Coordonnees indisponibles.
+                  </div>
+                )}
               </section>
               <section className="rounded-2xl border border-border bg-card/70 p-5 shadow-sm">
                 <div className="flex items-center gap-2 text-primary">
@@ -1061,23 +971,11 @@ export default function PoiDetailSSBE({ openDetails, setOpenDetails, item }: Det
                   </div>
                   <div className="flex items-center justify-between gap-4 py-2">
                     <span className="text-muted-foreground">Revêtement</span>
-                    <span className="font-medium text-foreground">{poi.sole || "—"}</span>
+                    <span className="font-medium text-foreground">{poi.sol || "—"}</span>
                   </div>
                   <div className="flex items-center justify-between gap-4 py-2">
                     <span className="text-muted-foreground">Surface</span>
                     <span className="font-medium text-foreground">{surfaceLabel}</span>
-                  </div>
-                  <div className="flex items-center justify-between gap-4 py-2">
-                    <span className="text-muted-foreground">Éclairage</span>
-                    <span className="font-medium text-foreground">
-                      {isTrue(poi.eclairage) ? "Oui" : "Non"}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between gap-4 py-2">
-                    <span className="text-muted-foreground">Libre accès</span>
-                    <span className="font-medium text-foreground">
-                      {isTrue(poi.libreAccess) ? "Oui" : "Non"}
-                    </span>
                   </div>
                   <div className="flex items-center justify-between gap-4 py-2">
                     <span className="text-muted-foreground">Partenariat</span>
