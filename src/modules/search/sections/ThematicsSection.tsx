@@ -1,7 +1,7 @@
 import { useCocolight } from "@/hooks/useCocolight";
 import * as LucideIcons from "lucide-react";
-import type { ThematicsSectionProps } from "../../schema";
-import { FILIERE_ICON_MAPPING } from "../../schema";
+import type { ThematicsSectionProps } from "../schema";
+import { FILIERE_ICON_MAPPING } from "../schema";
 import "@/modules/search/i18n";
 import { useT } from "@/hooks/useT";
 import { ComponentType } from "react";

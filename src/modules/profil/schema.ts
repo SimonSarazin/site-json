@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { LocalizedString } from "../../types/locale-schema";
+import { VisibilityConditionSchema } from "@/lib/visibility/schema";
 
 // Types d'entités supportés
 export const ProfileTypeSchema = z.enum([
@@ -18,6 +19,21 @@ export const AddConfigSchema = z.object({
   project: z.boolean().optional().default(true),
   event: z.boolean().optional().default(true),
   poi: z.boolean().optional().default(true),
+  /**
+   * Items personnalisés à afficher dans le dropdown "Ajouter". Chaque entrée pointe vers
+   * un modal du `ModalRegistry` (ex: `add-tiers-lieux`). Permet à un site costum
+   * d'ajouter ses propres types d'entités sans modifier le code.
+   */
+  custom: z.array(z.object({
+    modalKey: z.string(),
+    label: LocalizedString,
+    icon: z.string().optional(),
+    /**
+     * Condition de visibilité optionnelle (auth, routes, permissions…).
+     * Si absente → toujours visible.
+     */
+    condition: VisibilityConditionSchema,
+  })).optional(),
 }).optional();
 
 // Variantes de sections de profil
@@ -317,6 +333,12 @@ export const ProfileConfigSchema = z.object({
   sections: z.array(ProfileSectionSchema), // sections globales (hors tabs)
   hideHeader: z.boolean().optional().default(false), // Option pour cacher le header principal
   hideFooter: z.boolean().optional().default(false), // Option pour cacher le footer principal
+  /**
+   * Clé du modal d'édition à utiliser (ex: "edit-tiers-lieux"). Si absent → "edit-profile" (générique).
+   * Le modal est résolu via `EditModalRegistry`. N'a d'effet que pour les entités correspondant
+   * au costum du site (cf. `site.costum`).
+   */
+  editModal: z.string().optional(),
   seo: z.object({
     titleTemplate: z.string().optional(),
     descriptionTemplate: z.string().optional(),

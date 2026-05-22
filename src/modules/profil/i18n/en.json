@@ -1194,6 +1194,17 @@
       "error": "Error creating the third-place"
     }
   },
+  "EditTiersLieux": {
+    "title": "Edit your third-place",
+    "buttons": {
+      "submit": "Save changes",
+      "submitting": "Saving..."
+    },
+    "toast": {
+      "success": "Third-place updated",
+      "error": "Error updating the third-place"
+    }
+  },
   "ProfileRelated": {
     "empty": {
       "projects": "No related projects",

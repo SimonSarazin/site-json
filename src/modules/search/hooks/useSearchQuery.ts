@@ -13,6 +13,12 @@ export interface UseSearchQueryParams {
   searchType: Record<string, string[]> | null;
   mapUsed: boolean;
   graphUsed?: boolean;
+  /**
+   * Variant SDK pour `searchCostum`. Cf. `SearchVariantSchema`. Si absent ou
+   * `"default"`, on appelle `searchCostum(payload)` sans le 2e argument
+   * (comportement préservé). Sinon on passe `{ variant }` → endpoint alternatif.
+   */
+  variant?: "default" | "navigator-tl";
   baseParams?: {
     fediverse?: boolean;
     indexStepList?: number;
@@ -22,6 +28,9 @@ export interface UseSearchQueryParams {
     defaultFilters?: Record<string, unknown>;
     defaultFields?: string[];
     defaultSortBy?: Record<string, 1 | -1>;
+    // Cf. `SearchBySchema` — "ALL" | CSV | string[]. Propagé au payload SDK
+    // dès qu'il est défini ; sinon le backend applique son comportement par défaut.
+    searchBy?: string | string[];
     // Accepte `boolean` (ne pas sourcer) ou `number` (limite custom) — cf.
     // schema search.ts (config historique avec valeur numérique).
     notSourceKey?: boolean | number;
@@ -48,6 +57,7 @@ export function useSearchQuery({
   searchType,
   mapUsed,
   graphUsed = false,
+  variant,
   baseParams = {},
 }: UseSearchQueryParams) {
   const { entity, helper } = useCocolight();
@@ -61,6 +71,7 @@ export function useSearchQuery({
     mapUsed,
     graphUsed,
     baseParams,
+    variant,
   });
 
   const {
@@ -97,6 +108,7 @@ export function useSearchQuery({
         defaultFilters,
         defaultFields,
         defaultSortBy,
+        searchBy,
         notSourceKey,
         locality,
       } = baseParams;
@@ -127,6 +139,9 @@ export function useSearchQuery({
           sortBy: defaultSortBy,
         }),
         ...(locality && Object.keys(locality).length > 0 && { locality: locality as GlobalAutocompleteCostumData["locality"] }),
+        ...(searchBy !== undefined && {
+          searchBy: searchBy as GlobalAutocompleteCostumData["searchBy"],
+        }),
         ...(notSourceKey ? { notSourceKey: true } : {}),
         ...(extra.contextId ? { contextId: extra.contextId as string } : {}),
         ...(extra.contextType ? { contextType: extra.contextType as GlobalAutocompleteCostumData["contextType"] } : {}),
@@ -147,7 +162,11 @@ export function useSearchQuery({
       }
 
       try {
-        const result = await entity.searchCostum(param);
+        // Passe `{ variant }` au SDK uniquement quand non-default — préserve
+        // le call site existant pour les sites qui n'utilisent pas le variant.
+        const result = variant && variant !== "default"
+          ? await entity.searchCostum(param, { variant })
+          : await entity.searchCostum(param);
         if (
           page &&
           page?.pageNumber > 1 &&

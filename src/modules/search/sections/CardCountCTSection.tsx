@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 import { useCocolight } from "@/hooks/useCocolight";
-import { useSearchQuery } from "./hooks/useSearchQuery";
+import { useSearchQuery } from "../hooks/useSearchQuery";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
-import CardCountCT from "./components/card/CardCountCT";
-import type { CardCountCTSectionProps } from "./schema";
+import CardCountCT from "../components/card/CardCountCT";
+import type { CardCountCTSectionProps } from "../schema";
 import { Loader2 } from "lucide-react";
 import "@/modules/search/i18n";
 

@@ -3,6 +3,56 @@ import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { IconName } from "lucide-react/dynamic";
 import { z } from "zod";
 
+//──────────────── Filters Section
+// Section sidebar qui pilote le state des filtres (selectedFilters,
+// searchByFields, searchQuery) consommé par SearchPro/SearchProStatic via
+// PageFiltersContext. Vit dans le module search car elle n'a de sens qu'avec
+// un consommateur search dans le même PageFiltersProvider.
+
+export const FiltersSectionSchema = z.object({
+  type: z.literal("filters"),
+  id: z.string().optional(),
+  props: z.object({
+    title: LocalizedString.optional(),
+    filterGroups: z.array(z.object({
+      id: z.string(),
+      label: LocalizedString,
+      type: z.enum(['scopeList', "filters"]).default("filters"),
+      field: z.string().optional(),
+      options: z.array(z.object({
+        id: z.string(),
+        label: LocalizedString,
+        level: z.string().optional(),
+        name: z.string().optional(),
+        defaultChecked: z.boolean().optional(),
+      })).optional(),
+      config: z.object({
+        countryCode: z.array(z.string()).optional(),
+        level: z.array(z.string()).optional(),
+        upperLevelId: z.string().optional(),
+        sortBy: z.string().optional(),
+      }).optional(),
+    })),
+    filtersByAnswers: z.record(z.string(), z.object({
+      id: z.string().optional(),
+      label: LocalizedString,
+      type: z.enum(["form", 'answers']).default("answers"),
+      path: z.string().optional(),
+      forms: z.string().optional(),
+      finderPath: z.string().optional(),
+      value: z.record(z.string(), z.object({
+        id: z.string(),
+        finder: z.string(),
+      })).optional(),
+    })).optional(),
+    defaultOpenGroups: z.array(z.string()).optional(),
+    className: z.string().optional(),
+  }),
+});
+
+export type FiltersSection = z.infer<typeof FiltersSectionSchema>;
+export type FiltersSectionProps = z.infer<typeof FiltersSectionSchema>["props"];
+
 //──────────────── Search Pro Section
 const TagsFilterSchema = z.object({
   type: z.union([z.literal("tags"), z.literal("type")]),
@@ -69,6 +119,25 @@ const SearchTypeSchema = z.enum([
 
 export type SearchType = z.infer<typeof SearchTypeSchema>;
 
+/**
+ * Variant du endpoint backend pour `searchCostum` (cf. SDK v1.0.132).
+ * - `default` (ou absent) → `/co2/search/globalautocomplete` (comportement historique)
+ * - `navigator-tl` → `/costum/navigator/gettl` (payload enrichi avec auto-link Answer)
+ */
+export const SearchVariantSchema = z.enum(["default", "navigator-tl"]);
+export type SearchVariant = z.infer<typeof SearchVariantSchema>;
+
+/**
+ * Champs sur lesquels le backend effectue la recherche texte (`searchCostum.name`).
+ * 3 formes acceptées par le SDK v1.0.132+ :
+ * - `"ALL"` — mot-clé spécial, tous les champs par défaut côté backend
+ * - `"name,slug,tags"` — CSV de noms de champs
+ * - `["name", "address.addressLocality"]` — array de paths (supporte les paths imbriqués)
+ * Le fix paginator du SDK v1.0.132 rend la pagination cohérente entre les 3 formes.
+ */
+export const SearchBySchema = z.union([z.string(), z.array(z.string())]);
+export type SearchBy = z.infer<typeof SearchBySchema>;
+
 export const SEARCH_TYPE_ICON_NAMES: Record<SearchType, IconName> = {
   NGO: "hand-heart",
   LocalBusiness: "store",
@@ -101,6 +170,13 @@ export const SearchProSectionSchema = z.object({
     showActiveFiltersTags: z.boolean().default(true),
     disableInfiniteScroll: z.boolean().optional(),
     showDetailedViewToggle: z.boolean().optional(),
+    /**
+     * Variant SDK pour `searchCostum`. Absent ou `"default"` → endpoint
+     * historique `globalautocomplete`. `"navigator-tl"` → endpoint enrichi
+     * `costum/navigator/gettl` (auto-link Answer dans `serverData.answers`).
+     * Le backend du site doit supporter le variant choisi.
+     */
+    searchVariant: SearchVariantSchema.optional(),
     customHeader: z.object({
       title: LocalizedString.optional(),
       linkText: LocalizedString.optional(),
@@ -119,6 +195,8 @@ export const SearchProSectionSchema = z.object({
       defaultFilters: z.record(z.string(), z.unknown()).optional(),
       defaultFields: z.array(z.string()).optional(),
       defaultSortBy: z.record(z.string(), z.union([z.literal(1), z.literal(-1)])).optional(),
+      // Champs sur lesquels le texte de recherche est matché (cf. SearchBySchema).
+      searchBy: SearchBySchema.optional(),
       // Accepte `boolean` (ne pas sourcer par clé) ou `number` (limite custom).
       // Certaines configs historiques utilisent un nombre — schéma assoupli pour compat.
       notSourceKey: z.union([z.boolean(), z.number()]).optional(),
@@ -221,6 +299,10 @@ export const SearchProStaticSectionSchema = z.object({
     showDetailedViewToggle: z.boolean().optional(),
     width: z.enum(["container"]).optional(),
     defaultDetailedView: z.boolean().optional(),
+    /**
+     * Variant SDK pour `searchCostum`. Cf. note sur `SearchProSectionSchema`.
+     */
+    searchVariant: SearchVariantSchema.optional(),
     addButton: AddButtonConfigSchema,
     zoneSelector: ZoneSelectorConfigSchema,
     tagSelector: TagSelectorConfigSchema,
@@ -243,6 +325,8 @@ export const SearchProStaticSectionSchema = z.object({
       defaultFilters: z.record(z.string(), z.unknown()).optional(),
       defaultFields: z.array(z.string()).optional(),
       defaultSortBy: z.record(z.string(), z.union([z.literal(1), z.literal(-1)])).optional(),
+      // Champs sur lesquels le texte de recherche est matché (cf. SearchBySchema).
+      searchBy: SearchBySchema.optional(),
       // Accepte `boolean` (ne pas sourcer par clé) ou `number` (limite custom).
       // Certaines configs historiques utilisent un nombre — schéma assoupli pour compat.
       notSourceKey: z.union([z.boolean(), z.number()]).optional(),

@@ -3,7 +3,7 @@ import { Edit, Mail, ChevronRight } from "lucide-react";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
 import { useProfilPermissions } from "../../hooks/useProfilPermissions";
 import { EntityActionButtons } from "../EntityActionButtons";
-import { EditProfileModal } from "../profile-edit/EditProfileModal";
+import { DynamicEditModal } from "../profile-edit/EditModalRegistry";
 import { AddEntityDropdown } from "../action-buttons/AddEntityDropdown";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/hooks/useT";
@@ -101,7 +101,7 @@ export default function ProfileActions({ section }: ProfileActionsProps) {
 
       {/* Modal d'édition du profil */}
       {canEditProfile && (
-        <EditProfileModal
+        <DynamicEditModal
           open={editModalOpen}
           onOpenChange={setEditModalOpen}
           entity={entity}

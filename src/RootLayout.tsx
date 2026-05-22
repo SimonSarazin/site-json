@@ -63,6 +63,7 @@ function SiteShell() {
             label={config.floatingActionButton.label}
             icon={config.floatingActionButton.icon}
             position={config.floatingActionButton.position}
+            condition={config.floatingActionButton.condition}
           />
         )}
       </I18nBridge>

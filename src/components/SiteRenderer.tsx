@@ -7,7 +7,7 @@ import { useSite } from "@/hooks/useSite";
 import { Seo } from "./layout/Seo";
 import { usePageGuards } from "@/hooks/usePageGuards";
 import { PageProvider } from "@/contexts/PageProvider";
-import { PageFiltersProvider } from "@/contexts/PageFiltersContext";
+import { PageFiltersProvider } from "@/modules/search/contexts/PageFiltersProvider";
 // import { SiteHeader2 } from "./layout/SiteHeader2";
 
 export function SiteRenderer() {

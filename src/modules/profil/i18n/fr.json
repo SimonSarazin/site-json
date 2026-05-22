@@ -1194,6 +1194,17 @@
       "error": "Erreur lors de la création du tiers-lieu"
     }
   },
+  "EditTiersLieux": {
+    "title": "Modifier votre tiers-lieu",
+    "buttons": {
+      "submit": "Enregistrer les modifications",
+      "submitting": "Enregistrement..."
+    },
+    "toast": {
+      "success": "Tiers-lieu mis à jour",
+      "error": "Erreur lors de la mise à jour du tiers-lieu"
+    }
+  },
   "ProfileRelated": {
     "empty": {
       "projects": "Aucun projet lié",

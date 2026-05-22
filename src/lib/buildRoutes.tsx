@@ -5,7 +5,12 @@ import RootLayout from "@/RootLayout";
 import type { QueryClient } from "@tanstack/react-query";
 import type { LoaderFunctionArgs } from "react-router";
 import { discoverModules, getModuleRoutes, getModuleRoutesSync } from "./modules";
-import { prefetchSearchResults } from "@/modules/search/prefetch";
+import {
+  prefetchSearchResults,
+  findFiltersSections,
+  prefetchFilterSection,
+} from "@/modules/search/prefetch";
+import { canonicalSearchProStaticBaseParams } from "@/modules/search/lib/canonicalBaseParams";
 
 /**
  * Helper pour parser les paramètres JSON depuis l'URL
@@ -135,14 +140,23 @@ async function buildRoutesAsync(
       // Détecter les sections searchPro/searchProStatic (y compris dans gridLayout, tabs, etc.)
       const searchSections = findSearchSections(p.sections);
 
+      // Détecter les sections `filters` (zones + filtersByAnswers) pour les
+      // précharger en parallèle des résultats de recherche. Réduit le LCP
+      // côté client (les filtres apparaissent dès l'hydratation).
+      const filterSections = findFiltersSections(p.sections);
+      const filterPrefetch = Promise.all(
+        filterSections.map((section) => prefetchFilterSection(queryClient, section))
+      );
+
       // Pré-charger les résultats pour chaque section de recherche      console.log(`[SSR Prefetch] Found ${searchSections.length} search sections to prefetch`);
-      await Promise.all(
+      const searchPrefetch = Promise.all(
         searchSections.map(async (section: { type: string; props?: Record<string, unknown> }) => {
           const props = section.props || {};
           const baseParams = (props.baseParams as Record<string, unknown>) || {};
           const queryKeyPrefix = section.type === 'searchPro'
             ? 'searchCostum'
             : 'searchCostumStatic';
+          const searchVariant = props.searchVariant as string | undefined;
 
           // Pour searchProStatic, ne pas utiliser les params URL
           const params = section.type === 'searchPro'
@@ -156,16 +170,29 @@ async function buildRoutesAsync(
                 map: (props.showMap as boolean) || false,
               };
 
+          // Aligner le shape de baseParams avec celui produit côté client par
+          // `SearchProStatic.mergedBaseParams`. Sans ça la queryKey diffère et
+          // le cache RQ est manqué post-hydratation → refetch inutile.
+          // Cf. `canonicalSearchProStaticBaseParams` (source unique).
+          const ssrBaseParams = section.type === 'searchProStatic'
+            ? canonicalSearchProStaticBaseParams(baseParams)
+            : baseParams;
+
           return prefetchSearchResults(queryClient, {
             queryKeyPrefix,
             searchText: params.q,
             searchTags: params.tags,
             searchType: params.type,
             mapUsed: params.map,
-            baseParams,
+            baseParams: ssrBaseParams,
+            variant: searchVariant,
           });
         })
       );
+
+      // Attendre filtres + résultats en parallèle. Si l'un échoue, on n'empêche
+      // pas l'autre — chaque prefetch a son propre try/catch interne.
+      await Promise.all([filterPrefetch, searchPrefetch]);
       return null;
     },
   }));

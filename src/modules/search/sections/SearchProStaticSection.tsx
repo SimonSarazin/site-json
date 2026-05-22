@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import SearchProStatic from "@/modules/search/SearchProStatic";
 import { SearchProStaticSectionProps } from "@/modules/search/schema";
 // import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
-import { SearchPropsProvider } from "./contexts/SearchPropsProvider";
+import { SearchPropsProvider } from "../contexts/SearchPropsProvider";
 import useInSections from "@/hooks/useInSection";
 import { useCocolight } from "@/hooks/useCocolight";
 

@@ -1,11 +1,14 @@
-import { useLocalization } from "@/hooks/useLocalization";
+import { useT } from "@/hooks/useT";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import "@/modules/search/i18n";
 import { cn } from "@/lib/utils";
-import type { FiltersSectionProps, SectionPropsMap } from "@/types/site";
+import type { FiltersSectionProps } from "../schema";
 import { useState, useEffect, useMemo } from "react";
 import { ChevronDown, SlidersHorizontal } from "lucide-react";
-import { usePageFilters } from "@/contexts/PageFiltersContext";
-import { useFiltersByAnswersQuery } from "@/hooks/useFiltersByAnswers";
-import { useSearchZoneQuery } from "@/hooks/useSearchZone";
+import { usePageFilters } from "../hooks/usePageFilters";
+import { useFiltersByAnswersQuery } from "../hooks/useFiltersByAnswers";
+import { useSearchZoneQuery } from "../hooks/useSearchZone";
+import { useDebounce } from "@/hooks/useDebounce";
 import { useSearchParams } from "react-router";
 
 export function FiltersSection({
@@ -13,9 +16,10 @@ export function FiltersSection({
   props
 }: {
   id?: string;
-  props: SectionPropsMap["filters"]
+  props: FiltersSectionProps
 }) {
-  const { t } = useLocalization();
+  useLoadNamespace("modules/search");
+  const t = useT("modules/search");
   const { title, filterGroups: propsFiltersGroups, defaultOpenGroups = [], filtersByAnswers, className } = props;
   const [filterGroups, setFilterGroups] = useState<FiltersSectionProps["filterGroups"]>([]);
   const [openGroups, setOpenGroups] = useState<string[]>(defaultOpenGroups);
@@ -53,6 +57,28 @@ export function FiltersSection({
 
   // Utiliser le context partagé
   const { selectedFilters, setSelectedFilters, searchQuery, setSearchQuery, clearFilters: clearFiltersContext, searchByFields, setSearchByFields } = usePageFilters();
+
+  // Input texte : état local réactif visuellement + debounce avant de publier
+  // dans le context (sinon chaque frappe relance `searchCostum` côté backend).
+  const [searchInput, setSearchInput] = useState<string>(searchQuery);
+  const debouncedSearchInput = useDebounce(searchInput, 400);
+
+  useEffect(() => {
+    if (debouncedSearchInput !== searchQuery) {
+      setSearchQuery(debouncedSearchInput);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchInput]);
+
+  // Synchro inverse : si le context est vidé de l'extérieur (clearFilters,
+  // navigation, etc.), l'input local doit suivre pour ne pas afficher du texte
+  // fantôme.
+  useEffect(() => {
+    if (searchQuery === "" && searchInput !== "") {
+      setSearchInput("");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery]);
   // Initialiser les filtres par défaut (defaultChecked)
   useEffect(() => {
     const initialFilters: Record<string, string[]> = {};
@@ -248,7 +274,7 @@ export function FiltersSection({
         <div className="flex items-center gap-2">
           <SlidersHorizontal className="w-4 h-4 text-muted-foreground" />
           <h3 className="font-semibold text-foreground">
-            {title ? t(title) : "Filtres"}
+            {title ? t(title) : t("Filtres")}
           </h3>
         </div>
 
@@ -263,7 +289,7 @@ export function FiltersSection({
           )}
           disabled={!hasActiveFilters}
         >
-          Effacer
+          {t("Effacer")}
         </button>
       </div>
 
@@ -271,9 +297,9 @@ export function FiltersSection({
         <div className="relative">
           <input
             type="text"
-            placeholder={t({ fr: "Rechercher par nom...", en: "Search by name..." })}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={t("Rechercher par nom...")}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             className="w-full px-4 py-2 pl-10 border border-input bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
           />
           <svg

@@ -7,7 +7,7 @@ import { useFormatProfileEntity } from "../../../hooks/useFormatProfileEntity";
 import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../../hooks/useProfileEntity";
 import { useProfilPermissions } from "../../../hooks/useProfilPermissions";
-import { EditProfileModal } from "../../profile-edit/EditProfileModal";
+import { DynamicEditModal } from "../../profile-edit/EditModalRegistry";
 import { ProfileEditDropdown } from "../../profile-edit/ProfileEditDropdown";
 import { EntityActionButtons } from "../../EntityActionButtons";
 import { AddEntityDropdown } from "../../action-buttons/AddEntityDropdown";
@@ -125,7 +125,7 @@ export function ProfileHeaderCover({ section }: ProfileHeaderCoverProps) {
       </div>
 
       {canEditProfile && entity && (
-        <EditProfileModal
+        <DynamicEditModal
           open={editModalOpen}
           onOpenChange={setEditModalOpen}
           entity={entity}

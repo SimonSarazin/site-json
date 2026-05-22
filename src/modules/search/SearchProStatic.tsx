@@ -23,8 +23,9 @@ import "@/modules/search/styles.css";
 import { SearchProStaticSectionProps } from "./schema";
 import { useSearchQuery } from "./hooks/useSearchQuery";
 import { useCsvExport } from "./hooks/useCsvExport";
+import { canonicalSearchProStaticBaseParams } from "./lib/canonicalBaseParams";
 import { useZonesQuery, getZoneId, getZoneName } from "./hooks/useZonesQuery";
-import { usePageFiltersOptional } from "@/contexts/PageFiltersContext";
+import { usePageFiltersOptional } from "./hooks/usePageFilters";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useLocalization } from "@/hooks/useLocalization";
 import { DynamicModal } from "@/modules/profil/components/add/ModalRegistry";
@@ -58,6 +59,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     csvButton,
     baseParams = {},
     list,
+    searchVariant,
   } = props;
 
   const { me, entity, helper } = useCocolight();
@@ -224,14 +226,10 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     return combined;
   }, [contextLocality, zoneLocality]);
 
-  const mergedBaseParams = useMemo<Record<string, unknown>>(() => ({
-    ...baseParams,
-    defaultFilters: {
-      ...baseParams.defaultFilters,
-      ...filters,
-    },
-    locality: locality,
-  }), [baseParams, filters, locality]);
+  const mergedBaseParams = useMemo<Record<string, unknown>>(
+    () => canonicalSearchProStaticBaseParams(baseParams, filters, locality),
+    [baseParams, filters, locality]
+  );
 
   const csvSearchParams = useMemo(() => ({
     searchText,
@@ -264,6 +262,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     mapUsed: viewMode === "map",
     graphUsed: viewMode === "graph",
     baseParams: mergedBaseParams,
+    variant: searchVariant,
   });
 
   if (!loaded) {

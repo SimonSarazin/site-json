@@ -11,6 +11,12 @@ export interface SearchQueryKeyParams {
   mapUsed: boolean;
   graphUsed?: boolean;
   baseParams: Record<string, unknown>;
+  /**
+   * Variant SDK (`default` ou `navigator-tl`). Inclus dans la queryKey pour
+   * éviter qu'un cache de variant `default` ne contamine un consommateur
+   * `navigator-tl` (les résultats ont des champs différents).
+   */
+  variant?: string;
 }
 
 export const SEARCH_QUERY_KEYS = {
@@ -26,6 +32,7 @@ export const SEARCH_QUERY_KEYS = {
     params.mapUsed,
     params.graphUsed ?? false,
     JSON.stringify(params.baseParams),
+    params.variant ?? "default",
   ] as const,
 } as const;
 

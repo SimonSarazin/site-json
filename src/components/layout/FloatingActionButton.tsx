@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { useLocalization } from "@/hooks/useLocalization";
 import { DynamicModal } from "@/modules/profil/components/add/ModalRegistry";
 import type { LocalizedString } from "@/types/site-schema";
+import { useVisibility, type VisibilityCondition } from "@/lib/visibility";
 
 type Position = "bottom-right" | "bottom-left" | "top-right" | "top-left";
 
@@ -12,6 +13,7 @@ interface FloatingActionButtonProps {
   label: LocalizedString;
   icon?: string;
   position?: Position;
+  condition?: VisibilityCondition;
 }
 
 const positionClasses: Record<Position, string> = {
@@ -26,9 +28,13 @@ export function FloatingActionButton({
   label,
   icon = "plus",
   position = "bottom-right",
+  condition,
 }: FloatingActionButtonProps) {
   const { t } = useLocalization();
   const [isOpen, setIsOpen] = useState(false);
+  const visible = useVisibility(condition);
+
+  if (!visible) return null;
 
   return (
     <>

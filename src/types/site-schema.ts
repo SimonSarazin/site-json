@@ -6,13 +6,14 @@
 // Validation : Zod 4.x – le schéma sert à la fois de typings, de runtime‑guard,
 //               et d'autocomplétion dans VS Code.
 // ------------------------------------------------------------
-import { SearchProSectionSchema, SearchProStaticSectionSchema, CardCountCTSectionSchema, ThematicsSectionSchema } from "@/modules/search/schema";
+import { SearchProSectionSchema, SearchProStaticSectionSchema, CardCountCTSectionSchema, ThematicsSectionSchema, FiltersSectionSchema } from "@/modules/search/schema";
 import { NewsSectionSchema } from "@/modules/news/schema";
 import { z } from "zod";
 import { LocalizedString, LOCALES } from "./locale-schema";
 export { LocalizedString, LOCALES };
 import { ProfilesConfigSchema } from "../modules/profil/schema";
 import { AmpliConfigSchema } from "@/modules/ampli/schema";
+import { VisibilityConditionSchema } from "@/lib/visibility/schema";
 
 /**
  * Schéma réutilisable pour les champs qui acceptent soit un nom d'icône
@@ -1302,51 +1303,6 @@ export type TitleSection = z.infer<typeof TitleSectionSchema>;
 
 export type TitleSectionProps = z.infer<typeof TitleSectionSchema>["props"];
 
-const FiltersSectionSchema = z.object({
-  type: z.literal("filters"),
-  id: z.string().optional(),
-  props: z.object({
-    title: LocalizedString.optional(),
-    filterGroups: z.array(z.object({
-      id: z.string(),
-      label: LocalizedString,
-      type: z.enum(['scopeList', "filters"]).default("filters"),
-      field: z.string().optional(),
-      options: z.array(z.object({
-        id: z.string(),
-        label: LocalizedString,
-        level: z.string().optional(),
-        name: z.string().optional(),
-        defaultChecked: z.boolean().optional(),
-      })).optional(),
-      config: z.object({
-        countryCode: z.array(z.string()).optional(),
-        level: z.array(z.string()).optional(),
-        upperLevelId: z.string().optional(),
-        sortBy: z.string().optional(),
-      }).optional(),
-    })),
-    filtersByAnswers: z.record(z.string() , z.object({
-      id: z.string().optional(),
-      label: LocalizedString,
-      type: z.enum(["form", 'answers']).default("answers"),
-      path: z.string().optional(),
-      forms: z.string().optional(),
-      finderPath: z.string().optional(),
-      value: z.record(z.string(), z.object({
-        id: z.string(),
-        finder: z.string(),
-      })).optional(),
-    })).optional(),
-    defaultOpenGroups: z.array(z.string()).optional(),
-    className: z.string().optional(),
-  }),
-});
-
-export type FiltersSection = z.infer<typeof FiltersSectionSchema>;
-
-export type FiltersSectionProps = z.infer<typeof FiltersSectionSchema>["props"];
-
 const GridLayoutSectionPropsSchema = z.object({
   leftSection: z.lazy(() => SectionSchemaLazy).optional(),
   rightSection: z.lazy(() => SectionSchemaLazy).optional(),
@@ -1977,6 +1933,14 @@ export const SiteConfig = z.object({
       subtitle: LocalizedString.optional(),
     }).optional(),
   }).optional(),
+  costum: z.object({
+    slug: z.string(),
+    id: z.string(),
+    type: z.string(),
+    editMode: z.boolean().optional().default(false),
+    mainTag: z.string().optional(),
+    compagnon: z.string().optional(),
+  }).optional(),
   profiles: ProfilesConfigSchema,
   floatingQRCode: z.object({
     enabled: z.boolean().default(false),
@@ -2002,6 +1966,7 @@ export const SiteConfig = z.object({
     label: LocalizedString,
     icon: z.string().optional().default("plus"),
     position: z.enum(["bottom-right", "bottom-left", "top-right", "top-left"]).default("bottom-right"),
+    condition: VisibilityConditionSchema,
   }).optional(),
   ampli: z.array(AmpliConfigSchema).optional(),
 });

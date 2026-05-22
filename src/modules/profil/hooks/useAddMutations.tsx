@@ -14,6 +14,9 @@ import {
   buildParentReference,
   buildOrganizerReference,
 } from "./mutationUtils";
+import { buildTiersLieuxPayload } from "../utils/tiersLieuxMapping";
+import type { TiersLieuxSubmitPayload } from "../components/add/TiersLieuxForm";
+import { useSite } from "@/hooks/useSite";
 
 /**
  * Hook pour créer une nouvelle organisation
@@ -236,162 +239,30 @@ export function useAddPoi(entity?: EntityTypes | null) {
   });
 }
 
-const TIERS_LIEU_COSTUM = {
-  costumSlug: "navigatorDesTierslieux",
-  costumEditMode: false,
-  costumId: "649ed498f93ee7202e6c8b12",
-  costumType: "projects",
-  mainTag: "TiersLieux",
-  compagnon: "Compagnon France Tiers-Lieux",
-} as const;
-
-interface AddTiersLieuFormData {
-  name: string;
-  openingMonth?: string;
-  openingYear?: string;
-  shortDescription?: string;
-  structureName?: string;
-  managementType?: string;
-  managementTypeOther?: string;
-  family?: string[];
-  familyOther?: string;
-  surfaceBuilt?: string;
-  surfaceOutdoor?: string;
-  // Adresse
-  addressCountry?: string;
-  addressLocality?: string;
-  postalCode?: string;
-  streetAddress?: string;
-  localityId?: string;
-  videoUrl?: string;
-  _logoFile?: File | null;
-  _photoFiles?: File[];
-  // Présence en ligne
-  websiteUrl?: string;
-  socialLinks?: Array<{ platform: string; url: string }>;
-  // Horaires
-  hours?: Record<string, { enabled: boolean; start: string; end: string }>;
-  // Contact
-  email: string;
-  phone?: string;
-  // Description
-  description?: string;
-}
-
-const DAY_TO_DOW: Record<string, string> = {
-  monday: "Mo",
-  tuesday: "Tu",
-  wednesday: "We",
-  thursday: "Th",
-  friday: "Fr",
-  saturday: "Sa",
-  sunday: "Su",
-};
-
-function buildOpeningHoursPayload(hours?: AddTiersLieuFormData["hours"]) {
-  if (!hours) return [];
-  return Object.entries(hours)
-    .filter(([, h]) => h.enabled)
-    .map(([day, h]) => ({
-      dayOfWeek: DAY_TO_DOW[day] ?? day,
-      hours: [{ opens: h.start, closes: h.end }],
-    }));
-}
-
-function buildOpeningDatePayload(month?: string, year?: string): string | undefined {
-  if (!month && !year) return undefined;
-  if (month && year) return `01/${month}/${year}`;
-  return month || year;
-}
-
+export type AddTiersLieuFormData = TiersLieuxSubmitPayload;
 
 export function useAddTiersLieu(entity?: EntityTypes | null) {
   const { me } = useCocolight();
   const navigate = useNavigate();
+  const { config } = useSite();
   const targetEntity = entity || me;
+  const costum = config.costum;
 
   return useMutationWithToast<{ organization: Organization }, AddTiersLieuFormData>({
     mutationFn: async (data) => {
       if (!targetEntity) {
         throw new Error("No entity provided");
       }
+      if (!costum) {
+        throw new Error("useAddTiersLieu requires a 'costum' block in the site config");
+      }
 
-      // Construire le payload backend (forme attendue par /co2/element/save)
-      const transformedAddress = transformFormDataWithAddress({
-        addressCountry: data.addressCountry,
-        addressLocality: data.addressLocality,
-        postalCode: data.postalCode,
-        streetAddress: data.streetAddress,
-        localityId: data.localityId,
-      });
+      const payload = buildTiersLieuxPayload(data, { costum });
 
-      // Champs structurels (`id`, `collection`, `key`, `scope`) sont implicites quand on
-      // passe par la façade `targetEntity.organization(data)` : la lib crée une instance,
-      // génère l'id, puis `.save()` persiste. Le précédent code passait un `id` hardcodé
-      // ce qui faisait pointer toutes les créations vers la même org (bug latent).
-      const payload: Record<string, unknown> = {
-        name: data.name,
-        type: "NGO",
-        role: "admin",
-        ...transformedAddress,
-        // Description / contenu
-        ...(data.shortDescription ? { shortDescription: data.shortDescription } : {}),
-        ...(data.description ? { description: data.description } : {}),
-        // Champs custom navigatorDesTierslieux
-        ...(buildOpeningDatePayload(data.openingMonth, data.openingYear)
-          ? { openingDate: buildOpeningDatePayload(data.openingMonth, data.openingYear) }
-          : {}),
-        ...(data.structureName ? { holderOrganization: data.structureName } : {}),
-        ...(data.managementType
-          ? { manageModel: data.managementType === "autre" && data.managementTypeOther ? data.managementTypeOther : data.managementType }
-          : {}),
-        ...(data.family && data.family.length > 0
-          ? { typePlace: data.family.join(", ") }
-          : {}),
-        ...(data.familyOther ? { typePlaceOther: data.familyOther } : {}),
-        ...(data.surfaceBuilt ? { buildingSurfaceArea: Number(data.surfaceBuilt) } : {}),
-        ...(data.surfaceOutdoor ? { siteSurfaceArea: Number(data.surfaceOutdoor) } : {}),
-        ...(data.videoUrl ? { video: [data.videoUrl] } : {}),
-        // Site web + réseaux
-        ...(data.websiteUrl ? { url: data.websiteUrl } : {}),
-        ...(data.socialLinks && data.socialLinks.length > 0
-          ? {
-              socialNetwork: data.socialLinks.filter((s) => s.platform && s.url),
-            }
-          : {}),
-        // Contact
-        email: data.email,
-        ...(data.phone ? { telephone: data.phone } : {}),
-        // Horaires
-        ...((() => {
-          const oh = buildOpeningHoursPayload(data.hours);
-          return oh.length > 0 ? { openingHours: oh } : {};
-        })()),
-        // Constantes navigatorDesTierslieux
-        mainTag: TIERS_LIEU_COSTUM.mainTag,
-        compagnon: TIERS_LIEU_COSTUM.compagnon,
-        preferences: {
-          isOpenData: true,
-          isOpenEdition: true,
-        },
-        source: {
-          insertOrign: "costum",
-          keys: [TIERS_LIEU_COSTUM.costumSlug],
-          key: TIERS_LIEU_COSTUM.costumSlug,
-        },
-        costumSlug: TIERS_LIEU_COSTUM.costumSlug,
-        costumEditMode: TIERS_LIEU_COSTUM.costumEditMode,
-        costumId: TIERS_LIEU_COSTUM.costumId,
-        costumType: TIERS_LIEU_COSTUM.costumType,
-      };
-
-      // Pattern uniforme avec `useAddOrganization` (cf. useOrganizationMutations.tsx:33-46) :
-      //  1. Façade `targetEntity.organization(data)` (BaseEntity.d.ts:1066) crée l'instance
-      //     et génère un id (les champs custom tiers-lieu passent via `OrganizationInput`
-      //     qui accepte `Record<string, any>`).
-      //  2. `.save()` persiste — transmet désormais les champs custom (mainTag, compagnon,
-      //     costumSlug, etc.) sans filtrage côté SDK.
-      //  3. `.updateImageProfil()` (BaseEntity.d.ts:1036) gère l'upload sur la même instance.
+      // Pattern uniforme avec `useAddOrganization` :
+      //  1. Façade `targetEntity.organization(payload)` crée l'instance et génère un id.
+      //  2. `.save()` persiste les champs custom (mainTag, compagnon, costumSlug, etc.).
+      //  3. `.updateImageProfil()` gère l'upload sur la même instance.
       const organization = await targetEntity.organization(payload);
       await organization.save();
 

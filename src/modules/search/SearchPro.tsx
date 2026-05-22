@@ -68,6 +68,7 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
     filters = {},
     baseParams = {},
     list,
+    searchVariant,
   } = props;
 
   const customHeader = props.customHeader;
@@ -121,6 +122,7 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
     searchType,
     mapUsed,
     baseParams,
+    variant: searchVariant,
   });
 
   /* ------------------------------------------------------------------ */

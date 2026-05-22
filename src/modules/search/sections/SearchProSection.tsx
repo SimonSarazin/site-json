@@ -1,7 +1,7 @@
-import { SearchPropsProvider } from "./contexts/SearchPropsProvider";
-import { SearchProSectionProps } from "./schema";
-import SearchPro from "./SearchPro";
-import useInSections from "../../hooks/useInSection";
+import { SearchPropsProvider } from "../contexts/SearchPropsProvider";
+import { SearchProSectionProps } from "../schema";
+import SearchPro from "../SearchPro";
+import useInSections from "@/hooks/useInSection";
 
 export interface SearchSectionWrapperProps {
   id?: string;

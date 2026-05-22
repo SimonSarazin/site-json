@@ -1196,11 +1196,31 @@
                 "showActiveFiltersTags": true,
                 "disableInfiniteScroll": false,
                 "showDetailedViewToggle": true,
+                "searchVariant": "navigator-tl",
                 "baseParams": {
                   "defaultTypes": [
                     "organizations"
                   ],
-                  "indexStepList": 20
+                  "defaultFilters": {
+                    "tags": [
+                      "TiersLieux"
+                    ],
+                    "address.addressCountry": { "$in" : ["BE", "FR", "GP", "GF", "IT", "RE", "MQ", "YT", "NC", "CH"] }
+                  },
+                  "defaultSortBy": {
+                    "updated": -1
+                  },
+                  "searchBy": [
+                    "name",
+                    "address.addressLocality",
+                    "address.level4Name",
+                    "address.level3Name",
+                    "address.level2Name",
+                    "address.level1Name",
+                    "address.postalCode"
+                  ],
+                  "indexStepList": 20,
+                  "notSourceKey": true
                 },
                 "list": {
                   "columns": {
@@ -1762,6 +1782,14 @@
       }
     }
   },
+  "costum": {
+    "slug": "navigatorDesTierslieux",
+    "id": "649ed498f93ee7202e6c8b12",
+    "type": "projects",
+    "editMode": false,
+    "mainTag": "TiersLieux",
+    "compagnon": "Compagnon France Tiers-Lieux"
+  },
   "profiles": {
     "default": {
       "layout": "default",
@@ -1893,7 +1921,18 @@
             "organization": true,
             "project": true,
             "event": true,
-            "poi": true
+            "poi": true,
+            "custom": [
+              {
+                "modalKey": "add-tiers-lieux",
+                "label": {
+                  "fr": "Ajouter un tiers-lieu",
+                  "en": "Add a third place"
+                },
+                "icon": "building-2",
+                "condition": { "auth": "required", "permissions": ["canAddOrganization"] }
+              }
+            ]
           }
         },
         {
@@ -2007,6 +2046,7 @@
       "layout": "default",
       "hideHeader": false,
       "hideFooter": false,
+      "editModal": "edit-tiers-lieux",
       "sections": [
         {
           "type": "profile-header",
@@ -2885,6 +2925,9 @@
       "en": "Add a Third Place"
     },
     "icon": "square-plus",
-    "modal": "add-tiers-lieux"
+    "modal": "add-tiers-lieux",
+    "condition": {
+      "auth": "required"
+    }
   }
 }
