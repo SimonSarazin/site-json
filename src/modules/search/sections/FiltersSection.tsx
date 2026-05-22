@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import type { FiltersSectionProps } from "../schema";
 import { useState, useEffect, useMemo } from "react";
 import { ChevronDown, SlidersHorizontal } from "lucide-react";
-import { usePageFilters } from "../hooks/usePageFilters";
+import { usePageFilters } from "../contexts/pageFilters";
 import { useFiltersByAnswersQuery } from "../hooks/useFiltersByAnswers";
 import { useSearchZoneQuery } from "../hooks/useSearchZone";
 import { useDebounce } from "@/hooks/useDebounce";

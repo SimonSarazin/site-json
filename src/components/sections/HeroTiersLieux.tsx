@@ -10,7 +10,7 @@ import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { cn } from "@/lib/utils";
 import { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
 import { Link, useSearchParams, useLocation } from "react-router";
-import { usePageFiltersOptional } from "@/modules/search/hooks/usePageFilters";
+import { usePageFiltersOptional } from "@/modules/search/contexts/pageFilters";
 import { getEntityIcon } from "@/lib/entityIcons";
 
 const getEntityTitle = (entity: SearchEntity): string => {

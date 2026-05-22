@@ -25,7 +25,7 @@ import { useSearchQuery } from "./hooks/useSearchQuery";
 import { useCsvExport } from "./hooks/useCsvExport";
 import { canonicalSearchProStaticBaseParams } from "./lib/canonicalBaseParams";
 import { useZonesQuery, getZoneId, getZoneName } from "./hooks/useZonesQuery";
-import { usePageFiltersOptional } from "./hooks/usePageFilters";
+import { usePageFiltersOptional } from "./contexts/pageFilters";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useLocalization } from "@/hooks/useLocalization";
 import { DynamicModal } from "@/modules/profil/components/add/ModalRegistry";

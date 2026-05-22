@@ -1,4 +1,5 @@
 // src/SiteRenderer.tsx
+import { useMemo, type ReactNode } from "react";
 import { useLocation } from "react-router";
 import { SiteHeader } from "./layout/SiteHeader";
 import { SiteFooter } from "./layout/SiteFooter";
@@ -7,8 +8,22 @@ import { useSite } from "@/hooks/useSite";
 import { Seo } from "./layout/Seo";
 import { usePageGuards } from "@/hooks/usePageGuards";
 import { PageProvider } from "@/contexts/PageProvider";
-import { PageFiltersProvider } from "@/modules/search/contexts/PageFiltersProvider";
+import { discoverModules, getPageProviders } from "@/lib/modules";
 // import { SiteHeader2 } from "./layout/SiteHeader2";
+
+/**
+ * Compose la liste des `PageProvider` des modules autour de `children`.
+ * L'ordre est celui de découverte (`discoverModules`). Si un module B a besoin
+ * de lire le context d'un module A, il faudra introduire un champ `priority`
+ * — pas implémenté car aucun cas d'usage à ce jour.
+ */
+function PageProvidersComposer({ children }: { children: ReactNode }) {
+  const Providers = useMemo(() => getPageProviders(discoverModules()), []);
+  return Providers.reduceRight<ReactNode>(
+    (acc, Provider) => <Provider>{acc}</Provider>,
+    children
+  ) as React.ReactElement;
+}
 
 export function SiteRenderer() {
   const { config } = useSite();
@@ -50,13 +65,13 @@ function getLayoutClasses(layout: string) {
         {!currentPage.hideHeader && <SiteHeader />}
 
          <main id="main" role="main" className="flex-1">
-          <PageFiltersProvider>
+          <PageProvidersComposer>
             <PageProvider page={currentPage}>
               {currentPage.sections.map((s, i) => (
                 <SectionRenderer key={s.id ?? `section-${i}`} section={s} index={i} />
               ))}
             </PageProvider>
-          </PageFiltersProvider>
+          </PageProvidersComposer>
         </main>
 
         {!currentPage.hideFooter && <SiteFooter />}

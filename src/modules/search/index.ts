@@ -63,18 +63,21 @@ export type {
 } from "./schema";
 
 // ──────────────── Contexts & Providers ───────────────────────────────────
-export { PageFiltersContext } from "./contexts/PageFiltersContext";
+export {
+  PageFilters,
+  PageFiltersProvider,
+  usePageFilters,
+  usePageFiltersOptional,
+} from "./contexts/pageFilters";
 export type {
-  PageFiltersContextType,
+  PageFiltersState,
   SearchByFieldValue,
-} from "./contexts/PageFiltersContext";
-export { PageFiltersProvider } from "./contexts/PageFiltersProvider";
+} from "./contexts/pageFilters";
 
 export { SearchPropsContext } from "./contexts/SearchPropsContext";
 export { SearchPropsProvider } from "./contexts/SearchPropsProvider";
 
 // ──────────────── Hooks ──────────────────────────────────────────────────
-export { usePageFilters, usePageFiltersOptional } from "./hooks/usePageFilters";
 export { useSearchProps, useSearchPropsOptional } from "./hooks/useSearchProps";
 export { useSearchQuery, type UseSearchQueryParams } from "./hooks/useSearchQuery";
 export {

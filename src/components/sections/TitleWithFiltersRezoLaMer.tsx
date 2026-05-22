@@ -16,7 +16,7 @@ import {
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { ChevronDown, ExternalLink } from "lucide-react";
 import { Link } from "react-router";
-import { usePageFiltersOptional } from "@/modules/search/hooks/usePageFilters";
+import { usePageFiltersOptional } from "@/modules/search/contexts/pageFilters";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useOrgEntityActions } from "@/modules/profil/actions/hooks/useOrgEntityActions";
 import { ConfirmationDialog } from "@/modules/profil/components/action-buttons/ConfirmationDialog";
