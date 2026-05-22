@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback, lazy, Suspense } from "react";
 import {
     Dialog,
     DialogContent,
@@ -17,7 +17,11 @@ import { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useQueryClient } from "@tanstack/react-query";
 import { ClientOnly } from "@/components/layout/ClientOnly";
-import PaymentConfigPage from "./PaymentConfigPage";
+// Lazy-load : `PaymentConfigPage` tire `@stripe/stripe-js` + `@stripe/react-stripe-js`
+// par chaîne d'imports statique. En lazy, Stripe loader n'est plus dans le bundle
+// initial — il est téléchargé uniquement quand l'utilisateur déclenche
+// `showPaymentConfig` (clic sur "Contribuer").
+const PaymentConfigPage = lazy(() => import("./PaymentConfigPage"));
 import { CagnotteSuccessScreen } from "./parts/CagnotteSuccessScreen";
 import { CagnotteAmountPicker } from "./parts/CagnotteAmountPicker";
 import { CagnotteProjectSelector } from "./parts/CagnotteProjectSelector";
@@ -575,20 +579,26 @@ const CagnotteDialogContent = ({ totalAmount, defaultProjectId, onRefresh, openC
                         {paymentSuccess ? (
                             <CagnotteSuccessScreen milestoneReached={milestoneReached} />
                         ) : showPaymentConfig && pendingContributionAmount ? (
-                            <PaymentConfigPage
-                                projectName={selectedProjectName}
-                                projectId={selectedProjectId}
-                                projectImage={typeof projectImage === "string" ? projectImage : undefined}
-                                amount={pendingContributionAmount}
-                                milestones={activeProjectMilestones}
-                                activeMilestoneIds={activeMilestones}
-                                answerId={selectedProjectAnswerId} //  Passer l'answerId pour enregistrer les financements
-                                onBack={() => setShowPaymentConfig(false)}
-                                onPaymentSuccess={handlePaymentConfigSuccess}
-                                onContributionSaved={handleContributionSaved}
-                                onClose={() => setOpen(false)} //  Fermer la modale après paiement réussi
-                                currentUser={null}
-                            />
+                            <Suspense fallback={
+                                <div className="flex items-center justify-center py-12 text-muted-foreground">
+                                    {t("CagnotteDialog.loadingPayment", "Chargement du paiement…")}
+                                </div>
+                            }>
+                                <PaymentConfigPage
+                                    projectName={selectedProjectName}
+                                    projectId={selectedProjectId}
+                                    projectImage={typeof projectImage === "string" ? projectImage : undefined}
+                                    amount={pendingContributionAmount}
+                                    milestones={activeProjectMilestones}
+                                    activeMilestoneIds={activeMilestones}
+                                    answerId={selectedProjectAnswerId} //  Passer l'answerId pour enregistrer les financements
+                                    onBack={() => setShowPaymentConfig(false)}
+                                    onPaymentSuccess={handlePaymentConfigSuccess}
+                                    onContributionSaved={handleContributionSaved}
+                                    onClose={() => setOpen(false)} //  Fermer la modale après paiement réussi
+                                    currentUser={null}
+                                />
+                            </Suspense>
                         ) : (
                             <div className="space-y-6 py-4">
                                 {/* Sélection du projet */}
