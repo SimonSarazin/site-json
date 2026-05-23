@@ -8,6 +8,7 @@ import dotenv from "dotenv";
 import { helloassoCheckoutIntentHandler, helloassoTokenHandler, helloassoCallbackHandler, helloassoCheckoutStatusHandler, helloassoDiagnosticHandler } from "./api/helloasso-checkout.js";
 import { createImageOptimizer } from "./middleware/imageOptimizer.js";
 import { createImageUpload } from "./middleware/imageUpload.js";
+import { normalizeSiteConfig } from "./utils/normalizeSiteConfig.js";
 
 dotenv.config();
 
@@ -100,6 +101,8 @@ async function createServer() {
     const { demoSiteConfig } = await vite.ssrLoadModule("/src/data/demo-site.ts");
     cachedConfig = demoSiteConfig;
   }
+  // Pré-sanitize les champs HTML/SVG pour SSR/client identiques (cf. utils/normalizeSiteConfig.js)
+  cachedConfig = normalizeSiteConfig(cachedConfig);
   console.log("Config chargée :", cachedConfig?.meta?.title?.fr || "Config OK");
 
   if (process.env.SITE_CONFIG_PATH) {
@@ -107,7 +110,7 @@ async function createServer() {
     const configPath = path.isAbsolute(envPath) ? envPath : path.resolve(process.cwd(), envPath);
     fs.watchFile(configPath, { interval: 500 }, () => {
       try {
-        cachedConfig = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+        cachedConfig = normalizeSiteConfig(JSON.parse(fs.readFileSync(configPath, "utf-8")));
         console.log("[HMR] Config reloaded, sending to clients...");
         vite.ws.send({ type: "custom", event: "config-update", data: cachedConfig });
       } catch (e) { console.error("[HMR] Config reload error:", e.message); }
@@ -120,7 +123,7 @@ async function createServer() {
     const envPath = process.env.SITE_CONFIG_PATH;
     const configPath = path.isAbsolute(envPath) ? envPath : path.resolve(process.cwd(), envPath);
     fs.writeFileSync(configPath, JSON.stringify(data, null, 2) + "\n", "utf-8");
-    cachedConfig = data;
+    cachedConfig = normalizeSiteConfig(data);
     console.log("[Admin] Config saved to", configPath);
   });
 

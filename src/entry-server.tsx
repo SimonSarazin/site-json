@@ -8,7 +8,7 @@ import {
 }                                               from 'react-router';
 import { type SiteConfig }                      from '@/types/site';
 import { buildRoutes }                          from '@/lib/buildRoutes';
-import { Writable, Transform }                  from 'node:stream';
+import { Writable } from 'node:stream';
 import { dehydrate, type DehydratedState, HydrationBoundary, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { getBaseUrl } from './lib/constant/common';
 import { initApi, resetApiState } from './lib/apiClient';
@@ -111,37 +111,44 @@ export async function render(
   await new Promise<void>((resolve, reject) => {
     let streamFinished = false;
 
-    // Transform stream qui ajoute les closing tags automatiquement
-    // quand le pipe React se termine (via flush)
-    const appendTransform = new Transform({
-      transform(chunk, _encoding, callback) {
-        callback(null, chunk);
-      },
-      flush(callback) {
-        this.push(closingTags);
-        callback();
-      },
-    });
+    // Approche directe : pipe React → res, mais on intercept `res.end()` pour
+    // y injecter les closing tags `</div></body></html>` JUSTE AVANT que la
+    // response soit fermée. Pas de Transform/Relay intermédiaire → pas de
+    // problème de timing entre les chunks Suspense résolus tardivement.
+    //
+    // React 19 streaming appelle `res.end()` quand TOUT a été drainé (après
+    // tous les Suspense résolus + `$RC` scripts envoyés). C'est là qu'on
+    // insère les closing tags.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const resAny = res as any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const originalEnd: (...args: any[]) => unknown = resAny.end.bind(resAny);
+    let endIntercepted = false;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resAny.end = function (this: unknown, ...args: any[]) {
+      if (!endIntercepted) {
+        endIntercepted = true;
+        try {
+          resAny.write(closingTags);
+        } catch { /* res déjà fermée */ }
+        streamFinished = true;
+        setImmediate(() => {
+          originalEnd(...args);
+          resolve();
+        });
+        return resAny;
+      }
+      return originalEnd(...args);
+    };
 
-    // Quand le transform stream se termine, on résout la promesse
-    appendTransform.on('finish', () => {
-      streamFinished = true;
-      resolve();
-    });
-
-    appendTransform.on('error', (err: NodeJS.ErrnoException) => {
+    (res as unknown as Writable).on('error', (err: NodeJS.ErrnoException) => {
       if (err.code === 'ERR_STREAM_WRITE_AFTER_END' || err.code === 'ERR_STREAM_DESTROYED') {
-        resolve();
+        if (!streamFinished) {
+          streamFinished = true;
+          resolve();
+        }
         return;
       }
-      console.error('[SSR] Transform error:', err);
-      reject(err);
-    });
-
-    // Pipe le transform vers la response
-    appendTransform.pipe(res as unknown as Writable);
-    (res as unknown as Writable).on('error', (err: NodeJS.ErrnoException) => {
-      if (err.code === 'ERR_STREAM_WRITE_AFTER_END' || err.code === 'ERR_STREAM_DESTROYED') return;
       console.error('[SSR] Response error:', err);
     });
 
@@ -193,14 +200,15 @@ export async function render(
              dehydratedState
           );
 
-          /* Pipe vers le transform qui ajoutera les closing tags */
-          pipe(appendTransform);
+          /* Pipe direct vers res — l'override de `res.end()` ci-dessus
+             ajoutera les closingTags avant la vraie fermeture. */
+          pipe(res as unknown as Writable);
         },
 
         onAllReady() {
-          // Terminer le transform stream, ce qui déclenchera flush()
-          // et ajoutera les closing tags automatiquement
-          appendTransform.end();
+          // Rien à faire ici : React 19 appelle `res.end()` après avoir
+          // drainé tous les chunks ; l'override `res.end()` plus haut
+          // intercepte et écrit les closingTags avant la vraie fermeture.
         },
 
 
@@ -211,13 +219,14 @@ export async function render(
         },
 
         onError(err) {
-          console.error('Streaming error', err);
+          console.error('[SSR] Streaming error:', err);
         },
       },
     );
 
-    /* Sécurité : on n’attend pas indéfiniment */
+    /* Sécurité : on n'attend pas indéfiniment */
     const timer = setTimeout(() => {
+      console.error('[SSR] STREAM_TIMEOUT_MS atteint — abort() forcé');
       abort();
       resolve();
     }, STREAM_TIMEOUT_MS);
@@ -227,7 +236,7 @@ export async function render(
       if (!streamFinished) {
         // Seulement abort si le stream n'est pas terminé normalement
         abort();
-        appendTransform.destroy();
+        try { (res as unknown as Writable).destroy(); } catch { /* déjà fermée */ }
         resolve();
       }
     });

@@ -5,6 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import serialize from "serialize-javascript";
 import { createImageOptimizer } from "./middleware/imageOptimizer.js";
+import { normalizeSiteConfig } from "./utils/normalizeSiteConfig.js";
 import { helloassoCheckoutIntentHandler, helloassoTokenHandler, helloassoCallbackHandler, helloassoCheckoutStatusHandler } from "./api/helloasso-checkout.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -43,7 +44,9 @@ function loadSiteConfig() {
 }
 
 /* ---- Charger la config UNE SEULE FOIS au démarrage -------------------- */
-const cachedConfig = loadSiteConfig();
+// Normaliser au chargement : pré-sanitize les champs HTML/SVG pour que SSR et
+// client utilisent strictement le même contenu (évite mismatch hydration).
+const cachedConfig = normalizeSiteConfig(loadSiteConfig());
 const configScript = `<script>window.__CONFIG__=${serialize(cachedConfig, { isJSON: true })}</script>`;
 console.log("Config chargée :", cachedConfig?.meta?.title?.fr || "Config OK");
 
