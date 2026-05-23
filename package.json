@@ -20,6 +20,7 @@
     "test:integration": "vitest run -c vitest.config.integration.ts",
     "test:e2e": "playwright test",
     "test:preflight": "vitest run -c vitest.config.unit.ts tests/preflight/",
+    "test:coverage": "vitest run -c vitest.config.unit.ts --coverage",
     "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e",
     "test:watch": "vitest --watch"
   },
@@ -134,6 +135,7 @@
     "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^5.1.1",
+    "@vitest/coverage-v8": "^4.1.7",
     "baseline-browser-mapping": "^2.10.19",
     "cross-env": "^10.1.0",
     "dotenv": "^17.2.3",

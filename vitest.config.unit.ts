@@ -27,5 +27,22 @@ export default defineConfig({
       "tests/preflight/**/*.test.ts",
       "server/**/*.test.ts",
     ],
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "html", "json-summary"],
+      reportsDirectory: "./coverage",
+      include: ["src/**/*.{ts,tsx}", "server/**/*.{js,ts}"],
+      exclude: [
+        "**/*.test.{ts,tsx}",
+        "**/__tests__/**",
+        "**/types/**",
+        "**/*.d.ts",
+        "src/entry-server.tsx",
+        "src/entry-client.tsx",
+        "src/main.tsx",
+        "**/*.config.{ts,js}",
+        "**/i18n/**",
+      ],
+    },
   },
 });
