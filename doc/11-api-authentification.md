@@ -845,6 +845,146 @@ return <div dangerouslySetInnerHTML={{ __html: cleanHtml }} />;
 
 ---
 
+## Single Sign-On (SSO)
+
+Connexion via providers OAuth externes (Communecter, tierslieuxorg, etc.).
+Le frontend ouvre une popup vers le backend Cocolight qui orchestre le flux
+OAuth, puis récupère les JWT tokens via `postMessage`.
+
+### Architecture
+
+| Fichier | Rôle |
+|---|---|
+| `src/hooks/useSSOAuth.ts` (~118 lignes) | Hook qui ouvre la popup, écoute `postMessage`, injecte les tokens dans `ApiClient`, émet `userLoggedIn` |
+| `src/components/auth/SSOLoginButton.tsx` | Composant bouton React avec logo provider, loading state, gestion des erreurs |
+| `src/components/auth/LoginForm.tsx` (L.46, L.172-191) | Affiche un `<SSOLoginButton>` pour chaque provider listé dans `entity.serverData.costum.sso` |
+
+### Flow complet
+
+```
+1. User clique sur le bouton SSO d'un provider X
+   ↓
+2. Frontend ouvre une popup centrée :
+     <backend>/co2/sso/services?authclient=X&origin=<frontendOrigin>
+   ↓
+3. Backend Cocolight redirige la popup vers le provider OAuth externe
+   ↓
+4. User s'authentifie chez le provider (login + autorisation)
+   ↓
+5. Provider redirige la popup vers le backend avec un code OAuth
+   ↓
+6. Backend échange ce code contre des JWT tokens (accessToken + refreshToken)
+   ↓
+7. Backend envoie au popup parent :
+     window.opener.postMessage(
+       { type: "SSO_AUTH_SUCCESS", accessToken, refreshToken },
+       <frontendOrigin>
+     )
+   ↓
+8. Frontend (`useSSOAuth`) reçoit le message, vérifie l'origine, puis :
+     - apiClient.setToken(accessToken)
+     - apiClient.setRefreshToken(refreshToken)
+     - apiClient.emit("userLoggedIn")
+   ↓
+9. `CocolightProvider` écoute `userLoggedIn` et re-fetch l'utilisateur connecté
+```
+
+### API : `useSSOAuth`
+
+```ts
+import { useSSOAuth } from "@/hooks/useSSOAuth";
+
+const { openSSOPopup } = useSSOAuth();
+
+const result = await openSSOPopup("tierslieuxorg");
+// result: { success: boolean; error?: string }
+```
+
+**Comportements** :
+- Popup centrée (600×700) sur l'écran.
+- Si le popup est bloqué par le navigateur → `{ success: false, error: "Popup bloqué par le navigateur" }`.
+- Si l'user ferme manuellement le popup → `{ success: false }` (sans `error`, annulation silencieuse).
+- Détection toutes les 500 ms via `setInterval(() => popup.closed && resolve(...))`.
+
+### Composant `SSOLoginButton`
+
+```tsx
+import SSOLoginButton from "@/components/auth/SSOLoginButton";
+
+<SSOLoginButton
+  provider="tierslieuxorg"
+  label="Se connecter avec Tiers-Lieux.org"  // optionnel, défaut = provider
+  onSuccess={() => navigate("/")}
+  className="..."
+/>
+```
+
+- Logo : automatiquement chargé depuis `${backendUrl}/images/logoOauth/<provider>.jpg`.
+  Fallback texte si l'image échoue (`imgError` state).
+- Le label par défaut est le nom du provider lui-même.
+
+### Configuration
+
+**Pas de configuration JSON côté SiteForge** : la liste des providers vient
+**exclusivement du backend** via l'entity costum :
+
+```ts
+// LoginForm.tsx:46
+const ssoProviders: string[] = (entity?.serverData.costum as { sso?: string[] })?.sso || [];
+```
+
+```jsonc
+// Exemple de payload backend (entity.serverData.costum)
+{
+  "slug": "tiers-lieux",
+  "sso": ["tierslieuxorg", "communecter"]
+  // ...
+}
+```
+
+Si `entity.serverData.costum.sso` est vide ou absent → aucun bouton SSO n'est affiché ; le formulaire login classique (email/mot de passe) reste fonctionnel.
+
+### Sécurité
+
+`useSSOAuth` applique plusieurs garde-fous :
+
+1. **Vérification stricte de l'origine** — n'accepte que les messages venant du backend :
+   ```ts
+   if (event.origin !== backendOrigin) return;
+   ```
+   `backendOrigin` est dérivé de `getBaseUrl()`. Si une page tierce essaie d'injecter un faux `SSO_AUTH_SUCCESS`, il sera ignoré.
+
+2. **Cleanup au démontage** — les listeners `message` et le `setInterval` sont retirés si le composant est démonté avant la fin du flux (évite les leaks).
+
+3. **Pas de fallback dangereux** si la popup est bloquée — on signale juste une erreur, on n'essaie pas de basculer en redirect (qui exposerait le token dans l'URL).
+
+4. **Tokens injectés directement dans `ApiClient`** — ils sont stockés via `MultiServerTokenStorageStrategy` (cf. § "Stratégies de stockage des tokens"). En SSR : cookies. En CSR : `localStorage` ou `sessionStorage` selon l'environnement.
+
+### Ajouter un nouveau provider
+
+Côté **SiteForge** : rien à faire dans le code frontend. Le bouton apparaît automatiquement dès que le provider est listé dans `entity.serverData.costum.sso`.
+
+Côté **backend Communecter (Yii2)** :
+1. Déclarer le client OAuth dans `/co2/sso/services` (configuration backend).
+2. Déposer le logo dans `<backend>/images/logoOauth/<provider>.jpg`.
+3. Ajouter `<provider>` au tableau `costum.sso` de l'organisation.
+
+### Limites & risques
+
+| Limite | Détail |
+|---|---|
+| **Popup bloquée** | Certains navigateurs bloquent les popups non déclenchées par un click direct. `useSSOAuth.openSSOPopup` est appelé depuis `onClick`, donc OK. Hors d'un handler click direct (ex: ouverture programmatique au mount) → blocage très probable. |
+| **`postMessage` cross-origin** | Le flow ne fonctionne que si le backend et le frontend partagent le bon `origin` et le bon protocole. En dev, vérifier que `VITE_BASE_URL_BACKEND` pointe vers le bon backend. |
+| **Pas de revocation côté frontend** | Si l'user "se déconnecte" du provider externe (ex: logout sur tierslieux.org), le token JWT côté SiteForge reste valide jusqu'à expiration. La revocation effective nécessite que le backend Cocolight invalide aussi le refresh token. |
+| **Pas de PKCE explicite côté front** | Le flux PKCE/state est entièrement géré par le backend Cocolight (qui agit comme client OAuth confidentiel). Le frontend ne voit que les JWT finaux. |
+| **Mobile** | Les popups OAuth ne fonctionnent pas toujours bien sur navigateurs mobiles (Safari iOS notamment). Pas de fallback redirect implémenté actuellement. |
+
+### Historique
+
+Implémenté dans le commit `7835da0 SSO login`.
+
+---
+
 ## Voir aussi
 
 - [Architecture](03-architecture.md)

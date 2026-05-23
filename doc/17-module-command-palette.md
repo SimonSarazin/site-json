@@ -1,6 +1,20 @@
-# Module Command Palette (Cmd+K)
+[← Retour à l'index](README.md)
 
-> Document d'architecture — vision pour l'ajout d'un module `commandPalette` fournissant une palette de commandes globale accessible via raccourci clavier (Cmd/Ctrl+K), disponible sur toutes les pages d'un site SiteForge.
+# Module Command Palette (Cmd+K) — RFC
+
+> 🚧 **Statut : document d'architecture (RFC), pas encore implémenté.**
+>
+> Vision pour l'ajout d'un module `commandPalette` fournissant une palette de
+> commandes globale accessible via raccourci clavier (Cmd/Ctrl+K), disponible
+> sur toutes les pages d'un site SiteForge.
+>
+> **Analyse de faisabilité** : voir [§ 11 Faisabilité & révision](#11-faisabilité--révision-mai-2026)
+> en fin de document — pré-requis tous OK, estimation réaliste 4-6.5 jours
+> (RFC initial sous-estimait à 3-4 jours).
+>
+> ⚠ Certaines références à des numéros de ligne dans ce document datent
+> d'avant la session de mai 2026 (fix SSR streaming + optimisations bundle).
+> Vérifier le code avant d'implémenter ; un re-check global est listé en § 11.
 
 ## 1. Contexte & objectifs
 
@@ -89,27 +103,42 @@ L'enregistrement se fait **par side-effect d'import** : `import "@/modules/profi
 
 ### 2.4. RootLayout (`src/RootLayout.tsx`)
 
-Hiérarchie actuelle des providers (vérifiée ligne par ligne) :
+Hiérarchie actuelle des providers (à jour mai 2026 — vérifier le code avant
+implémentation, plusieurs composants supplémentaires ont été ajoutés et
+plusieurs sont désormais en `vite-preload.lazy`) :
 
 ```
-<ErrorBoundary>                        L.69
-  <Suspense>                           L.70
-    <CocolightProvider>                L.71
-      <ThemeProvider>                  L.72
-        <SiteProvider>                 L.73
-          <SiteShell>                  L.23-58
-            <LocalizationProvider>     L.27
-              <I18nBridge>             L.31
+<ErrorBoundary>                        L.86
+  <Suspense fallback="loading">        L.87
+    <CocolightProvider>                L.88
+      <ThemeProvider>                  L.89
+        <SiteProvider>                 L.90
+          <SiteShell>                  L.29-76
+            <LocalizationProvider>     L.33
+              <I18nBridge>             L.37
                 <SiteTheme />
                 <GoogleFontsLoader />
-                <Outlet />             L.35  ← pages rendues ici
+                <Outlet />             L.41  ← pages rendues ici
                 <IntegrationsLoader />
-                <Toaster />            L.37
-                {AdminPanel}           L.39-43 (DEV)
-                {FloatingQRCode}       L.45-55 (conditionnel)
+                <Toaster />            L.43
+                <DiscourseGlobalModal /> L.44 (lazy)
+                {AdminPanel}           L.46-50 (DEV, lazy)
+                {floatingQRCode?.enabled && <FloatingQRCode />}      (lazy)
+                {floatingActionButton?.enabled && <FloatingActionButton />} (lazy)
 ```
 
-**Point d'insertion identifié pour la palette** : ligne 43 (entre `AdminPanel` et `FloatingQRCode`), à l'intérieur de `I18nBridge` pour avoir accès à `useT` et au provider de localisation. Le `CommandPaletteProvider` doit envelopper au minimum ce qui consomme son contexte (en pratique, rien n'a besoin de le consommer sauf le `SiteHeader` et le composant lui-même — donc un provider placé juste avant `<Outlet />` suffit).
+**Point d'insertion identifié pour la palette** : juste avant `<Outlet />`
+(à l'intérieur de `I18nBridge` pour avoir accès à `useT` et au provider de
+localisation). Le `CommandPaletteProvider` doit envelopper au minimum ce qui
+consomme son contexte (en pratique, rien n'a besoin de le consommer sauf le
+`SiteHeader` et le composant lui-même — donc un provider placé juste avant
+`<Outlet />` suffit).
+
+**Note SSR streaming** : depuis la session de mai 2026, le pipeline SSR
+utilise `pipe(res)` direct + override de `res.end()` pour injecter les
+closing tags (cf. [doc/14-backend-ssr.md](14-backend-ssr.md)). Le provider de la palette
+doit rester SSR-safe (state initial `open: false`, aucun accès `window` ou
+`document` au mount) — sinon risque de mismatch hydration #418/#419.
 
 ### 2.5. SiteHeader et `header.utilities`
 
@@ -120,7 +149,12 @@ Le `DefaultHeader` rend ligne 260 un bouton `search` passif (juste une icône, p
 {header.utilities.search && <Button variant="ghost" size="sm"><Search /></Button>}
 ```
 
-**Décision** : on **ne remplace pas** le flag `search` existant (rétro-compat). On ajoute un flag sibling `commandPalette` dans `header.utilities`, qui doit être déclaré **à la fois** dans le Zod `src/types/site-schema.ts:1485` et dans l'interface TS `src/types/site.ts:13-20` (la seconde est un miroir manuel, pas généré). Le bouton devient actif : `onClick={() => openCommandPalette()}` et affiche le raccourci `⌘K` via `<kbd>`.
+**Décision** : on **ne remplace pas** le flag `search` existant (rétro-compat). On ajoute un flag sibling `commandPalette` dans `header.utilities`, qui doit être déclaré **à la fois** dans le Zod (`src/types/site-schema.ts` — actuellement L.~1603, vérifier avant édition) et dans l'interface TS `src/types/site.ts` (L.~11-19 — miroir manuel, pas généré). Le bouton devient actif : `onClick={() => openCommandPalette()}` et affiche le raccourci `⌘K` via `<kbd>`.
+
+**Note** : la structure `utilities` a été étendue depuis l'écriture du RFC
+initial : `piggyBank: z.boolean().default(false)` a été ajouté (entre
+`notifications` et la fin de l'objet). Tenir compte de cet ajout pour ne pas
+écraser le champ.
 
 ### 2.6. Schéma JSON (`src/types/site-schema.ts`)
 
@@ -463,7 +497,8 @@ export const SiteConfig = z.object({
 
 **Extension `header.utilities`** — à modifier aux **deux endroits** (la vérité runtime est le Zod, l'interface TS est le miroir) :
 
-1. **Zod (source de vérité runtime)** — `src/types/site-schema.ts:1485-1492` :
+1. **Zod (source de vérité runtime)** — `src/types/site-schema.ts` (chercher
+   `utilities: z.object({` — actuellement vers L.1603, mais à revérifier) :
 ```ts
 utilities: z.object({
   themeSwitch: z.boolean().default(true),
@@ -472,12 +507,14 @@ utilities: z.object({
   auth: z.boolean().default(false),
   cart: z.boolean().default(false),
   notifications: z.boolean().default(false),
+  piggyBank: z.boolean().default(false),
   commandPalette: z.boolean().default(false),  // ← AJOUT
 }),
 ```
-Ne pas oublier de mettre à jour les **exemples par défaut** plus bas dans le même fichier (lignes ~1822 et ~1868 : blocs `utilities: { themeSwitch: true, ... }`).
+Ne pas oublier de mettre à jour les **exemples par défaut** plus bas dans le
+même fichier (actuellement vers L.1997 et L.2044 : blocs `utilities: { themeSwitch: true, ... }`).
 
-2. **Interface TS (miroir)** — `src/types/site.ts:13-20` :
+2. **Interface TS (miroir)** — `src/types/site.ts` (L.~11-19) :
 ```ts
 utilities: {
   themeSwitch: boolean;
@@ -486,25 +523,38 @@ utilities: {
   auth: boolean;
   cart: boolean;
   notifications: boolean;
+  piggyBank: boolean;
   commandPalette: boolean;  // ← AJOUT
 };
 ```
 
 ### 3.10. Intégration RootLayout
 
-Une seule modification à `src/RootLayout.tsx` dans `SiteShell` (ligne 35, juste avant `<Outlet />`) :
+Une seule modification à `src/RootLayout.tsx` dans `SiteShell` (autour de la
+L.41 actuellement, juste avant `<Outlet />`) :
 
 ```tsx
 <CommandPaletteProvider>
   <Outlet />
   <IntegrationsLoader />
   <Toaster />
+  <DiscourseGlobalModal />
   {AdminPanel && <Suspense fallback={null}><AdminPanel /></Suspense>}
   {config.floatingQRCode?.enabled && <FloatingQRCode ... />}
+  {config.floatingActionButton?.enabled && <FloatingActionButton ... />}
 </CommandPaletteProvider>
 ```
 
-Le provider enveloppe `Outlet` pour que `useCommandPalette()` soit accessible depuis les headers, et le composant `<CommandPalette />` est rendu à l'intérieur du provider (déjà dans son JSX).
+Le provider enveloppe `Outlet` pour que `useCommandPalette()` soit accessible
+depuis les headers, et le composant `<CommandPalette />` est rendu à
+l'intérieur du provider (déjà dans son JSX).
+
+**Choix lazy vs core** : le RFC marque le module comme `type: "core"` pour
+être bundlé avec le main et éviter le flash. Alternative : `vite-preload.lazy()`
+sur le composant `<CommandPalette />` lui-même → le code n'est téléchargé
+qu'à la première ouverture (utile si le module devient lourd, et la palette
+reste fermée la majorité du temps). Recommandé : démarrer en `core`, basculer
+en lazy si le bundle main grossit trop.
 
 ### 3.11. Intégration SiteHeader
 
@@ -724,3 +774,95 @@ Breaking change ?                               Non, tout est optionnel / par d�
 | `doc/02-configuration.md` | **Mettre à jour** | Documenter le bloc `commandPalette` |
 | `doc/10-permissions.md` | **Mettre à jour** | Ajouter namespace `commandPalette` |
 | `e2e/command-palette.spec.ts` | **Créer** | Tests E2E |
+
+## 11. Faisabilité & révision (mai 2026)
+
+### 11.1. Vérification des pré-requis
+
+| Pré-requis | Statut | Note |
+|---|---|---|
+| `cmdk@1.1.1` installé | ✅ | déjà via `src/components/ui/command.tsx` |
+| Pattern `registerPermissions` (`src/lib/permissions/registry.ts`) | ✅ | reproductible tel quel |
+| Pattern side-effect imports | ✅ | déjà 2 occurrences dans `useUserPermissions.tsx` |
+| `discoverModules()` + `module.config.ts` | ✅ | infrastructure prête |
+| Pattern i18n `addResourceBundle` | ✅ | 5 modules l'utilisent (ampli, interop, news, profil, search) |
+| Hooks `useDebounce`/`useT`/`useLoadNamespace`/`useCocolight`/`useSite`/`useLocalization` | ✅ | tous présents |
+| Structure `header.utilities` Zod | ✅ | déjà étendue depuis (ajout `piggyBank`) — toujours extensible |
+| Composant `CommandDialog` shadcn complet | ✅ | tous les sous-composants exportés |
+
+**→ Aucun blocage technique. Tous les pré-requis sont présents dans le code actuel.**
+
+### 11.2. Risques cachés (non listés dans le RFC initial)
+
+1. **`api.search()` public n'existe pas** — c'est `entity.searchCostum()` (méthode du SDK Cocolight, accessible via `useCocolight().entity`). La source `profil` (entities backend) devra réutiliser ce pattern (cf. `src/modules/search/hooks/useSearchQuery.ts:167-169`). Implication : la palette ne peut chercher des entités **que si une entity costum est chargée** (c'est-à-dire après l'init du SDK et l'identification de l'organisation costum du site).
+
+2. **`useGlobalShortcut` custom à coder** — le RFC propose une implémentation maison. Compter ~50 lignes + edge cases (multi-OS Cmd/Ctrl, ignorer si focus dans input, `preventDefault` selon contexte, repeat events). Alternative recommandée : utiliser **`react-hotkeys-hook`** (~5 KB gzip, bien testé) pour éviter de réinventer la roue.
+
+3. **Fuzzy search "maison" inutile** — le RFC propose Levenshtein simple. Mais `cmdk` a déjà un **scoring fuzzy intégré** via les props `shouldFilter` (default `true`) et `filter` callback. Recommandation : **utiliser le filter built-in de cmdk** plutôt que de coder un fuzzy custom.
+
+4. **Synchronisation registry + React** — `registerCommandSource` mute un `Map` global au moment de l'import (side-effect). Mais React ne sait pas quand le Map change. Le hook `useCommands` doit donc :
+   - Soit s'abonner à des changements via `useSyncExternalStore` (idéal, supporte SSR + concurrent rendering)
+   - Soit utiliser un `EventEmitter` interne + `useEffect` pour re-render
+
+   Non mentionné dans le RFC initial. À prévoir lors de l'implémentation du registry.
+
+5. **Lazy modules (`optional`)** — le RFC note que les modules `optional` ne doivent pas être importés dans `bootstrap.ts`. Pour les inclure quand même, il faudrait un mécanisme d'enregistrement à la demande au moment où le module se charge (ex: dans son `routes.tsx` async). Solution concrète à concevoir — pas bloquant pour Phase 1.
+
+6. **Sources async côté `cmdk`** — `cmdk` attend des `<CommandItem>` synchrones dans le JSX. Pour les sources async (entités backend), il faut :
+   - Stocker les résultats dans un state local
+   - Re-render quand la promesse résout
+   - Utiliser `useTransition` pour ne pas bloquer l'UI
+
+7. **`isMac` au SSR** — la détection se fait via `navigator.platform`. SSR n'a pas accès → fallback `"Ctrl"`. Au client, ré-évaluation post-mount. Possible mismatch hydration sur le `<kbd>` (visible au premier render). Mitigation : garde `useHydrated()` (déjà disponible dans `src/hooks/useHydrated.ts`) pour rendre le kbd uniquement après hydration.
+
+### 11.3. Estimation révisée
+
+| Phase | RFC initial | Réaliste | Justification |
+|---|---|---|---|
+| **Phase 1 MVP** | 1-2 j | **2-3 j** | Beaucoup de glue à coder (provider + hooks + registry + types + schema + i18n + tests + RootLayout + 1 source) |
+| **Phase 2 Actions + Profil entities** | 1 j | **1-1.5 j** | OK avec `entity.searchCostum` |
+| **Phase 3 Finitions (6 headers)** | 1 j | **1-2 j** | 6 variantes de header à modifier individuellement |
+| **Phase 4 Extensions** | à la demande | à la demande | — |
+| **Total Phases 1-3** | 3-4 j | **4-6.5 j** | +30% à +60% |
+
+### 11.4. Décisions à valider avant implémentation
+
+- [ ] **Priorité métier** : le besoin utilisateur est-il prioritaire vs autres features (perf, tests, bugs) ?
+- [ ] **Effort accepté** : +30% à +60% vs estimation RFC ?
+- [ ] **`react-hotkeys-hook` ou hook maison** ? (recommandation : librairie)
+- [ ] **Filter cmdk built-in ou fuzzy custom** ? (recommandation : built-in)
+- [ ] **Source `profil` Phase 1 ou Phase 2** ?
+- [ ] **6 headers tous mis à jour, ou juste `DefaultHeader` au début** ?
+- [ ] **Toujours rendu (flag header inutile) ou conditionné par `header.utilities.commandPalette`** ?
+- [ ] **Provider top-level toujours monté ou conditionné par `config.commandPalette?.enabled`** ?
+
+### 11.5. POC minimal recommandé (1 jour)
+
+Avant de s'engager sur 5-7 jours, valider l'UX en 1 jour avec un POC :
+
+1. `src/modules/commandPalette/module.config.ts` minimaliste
+2. `CommandPaletteProvider` avec state local + `useGlobalShortcut` simple
+3. Composant `<CommandPalette />` branché sur `CommandDialog`
+4. **Une seule source en dur** : `config.pages` → liste de navigations (pas de registry encore)
+5. Pas de schéma JSON, pas de permissions, pas d'i18n, pas de tests
+
+Si l'UX valide (raccourci confortable, recherche pertinente), étendre selon le RFC complet. Sinon, ajuster avant d'investir dans le registry.
+
+### 11.6. Re-check obligatoire avant implémentation
+
+Avant de démarrer l'implémentation effective, mettre à jour :
+
+- **Numéros de ligne** dans le RFC (RootLayout, site-schema.ts) — peuvent encore avoir bougé
+- **Vérifier que `header.utilities` n'a pas reçu d'autres ajouts** depuis (au-delà de `piggyBank`)
+- **Vérifier que `useUserPermissions.tsx`** liste toujours les modules cibles (profil, news) sans changement de signature
+- **Vérifier que `cmdk` n'a pas mis à jour son API** (version installée vs API actuelle)
+
+### 11.7. Avis général
+
+Le RFC est **bien pensé architecturalement** et tous les pré-requis sont en place. Le module est **faisable** sans dépendance externe majeure (cmdk déjà présent). Cependant :
+
+- **Pas urgent** : c'est un "nice to have" UX, pas une feature bloquante.
+- **Coût** : 4-6.5 jours réalistes. Peut être ajusté en commençant par un POC.
+- **Maintenance** : la palette agrège des sources de plusieurs modules ; chaque module qui change ses entités/permissions devra penser à mettre à jour sa source de commandes.
+
+Recommandation : **POC en 1 jour** pour valider l'UX, puis décision go/no-go pour le RFC complet.
