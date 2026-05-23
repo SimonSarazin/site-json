@@ -111,14 +111,41 @@ export async function render(
   await new Promise<void>((resolve, reject) => {
     let streamFinished = false;
 
-    // Approche directe : pipe React → res, mais on intercept `res.end()` pour
-    // y injecter les closing tags `</div></body></html>` JUSTE AVANT que la
-    // response soit fermée. Pas de Transform/Relay intermédiaire → pas de
-    // problème de timing entre les chunks Suspense résolus tardivement.
-    //
-    // React 19 streaming appelle `res.end()` quand TOUT a été drainé (après
-    // tous les Suspense résolus + `$RC` scripts envoyés). C'est là qu'on
-    // insère les closing tags.
+    /* -------------------------------------------------------------
+     * Pattern non-documenté : Vite + React 19 streaming.
+     * -------------------------------------------------------------
+     *
+     * Contexte architectural :
+     *  - Le template HTML (`index.html`) reste géré par Vite pour bénéficier
+     *    de `transformIndexHtml` : injection du client HMR en dev, preambles
+     *    `@vitejs/plugin-react` (React Fast Refresh), substitution des chunks
+     *    hashés en prod, hooks des plugins (PWA, sitemap…).
+     *  - Conséquence : React n'a PAS `<html>`/`<body>` dans son tree, et
+     *    `pipe(res)` n'écrit que le contenu de `<div id="root">`.
+     *
+     * Le pattern officiel React 19 (`<App>` rend `<html>...</html>`,
+     * cf. https://react.dev/reference/react-dom/server/renderToPipeableStream)
+     * imposerait de renoncer à toutes ces transformations Vite. La doc Vite
+     * SSR (https://vite.dev/guide/ssr.html) ne couvre que `renderToString`
+     * synchrone — pas de pattern officiel pour le streaming.
+     *
+     * Solution retenue : `pipe(res)` direct + override de `res.end()` pour
+     * injecter `</div></body></html>` JUSTE AVANT la vraie fermeture. C'est
+     * la réponse pragmatique à la tension React↔Vite, faute de support
+     * officiel d'une option `{ end: false }` sur `pipe()`.
+     *
+     * ⚠ Alternatives tentées sans succès (cf. historique git) :
+     *  - `pipe(appendTransform)` via un Transform Node intermédiaire
+     *    → `pipe()` appelle `appendTransform.end()` dès la fin du SHELL,
+     *       AVANT que les Suspense résolus tardifs soient écrits → templates
+     *       vides, RC manquants, HTML tronqué.
+     *  - `PassThrough` avec `end()` override → React Writable bufferise les
+     *    chunks différemment, mêmes symptômes.
+     *
+     * React 19 streaming appelle `res.end()` quand TOUT est drainé (shell +
+     * tous les Suspense résolus + `$RC`). On intercepte ce point pour
+     * injecter les closing tags avant la vraie fermeture.
+     */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const resAny = res as any;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
