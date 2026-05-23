@@ -197,3 +197,5 @@ export function ProfileHeaderBannerOverlay({ section }: ProfileHeaderBannerOverl
     </>
   );
 }
+
+export default ProfileHeaderBannerOverlay;

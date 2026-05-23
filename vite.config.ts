@@ -141,10 +141,12 @@ export default defineConfig(({ mode, isSsrBuild }) => ({
             return 'query-vendor';
           }
 
-          // Lucide React icons - separate chunk for icons
-          if (id.includes('node_modules/lucide-react/')) {
-            return 'icons-vendor';
-          }
+          // Lucide React : pas de manualChunks → Vite décide.
+          // Les icônes individuelles chargées via `lucide-react/dynamic`
+          // (`DynamicIcon`) sont chunkées à la demande (1 chunk par icône),
+          // les icônes nommées statiquement sont tree-shakées vers le chunk
+          // qui les utilise. Plus économe que tout regrouper dans
+          // `icons-vendor` (qui forçait ~1900 icônes via le manifest dynamic).
 
           // Utility libraries
           if (id.includes('node_modules/clsx') ||

@@ -1,5 +1,6 @@
 import type { UseFormRegister, FieldErrors } from "react-hook-form";
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
+import { lazy } from "vite-preload";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";

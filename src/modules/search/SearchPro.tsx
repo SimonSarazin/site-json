@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 
 import ActiveFiltersBar from "./components/ActiveFiltersBar";
 import SearchFilters from "./components/SearchFilters";
+import { lazy } from "vite-preload";
 import SearchListView from "./components/SearchListView";
 import SearchListSkeleton from "./components/SearchListSkeleton";
-import SearchMapWrapper from "./components/SearchMapWrapper";
+// Vue map en lazy : téléchargée uniquement quand l'user clique sur "Map".
+const SearchMapWrapper = lazy(() => import("./components/SearchMapWrapper"));
 import { Skeleton } from "@/components/ui/skeleton";
 
 import useSearchFilters from "@/modules/search/hooks/useSearchFilters";

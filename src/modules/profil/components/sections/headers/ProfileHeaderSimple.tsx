@@ -136,3 +136,5 @@ export function ProfileHeaderSimple({ section }: ProfileHeaderSimpleProps) {
     </div>
   );
 }
+
+export default ProfileHeaderSimple;

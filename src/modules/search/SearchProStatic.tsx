@@ -1,16 +1,19 @@
 import { Loader2, Map, List, LayoutGrid, Search, MapPin, Download, Plus, GitBranch } from "lucide-react";
-import * as LucideIcons from "lucide-react";
+import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import React, { useState, useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 import { useDebounce } from "@/hooks/useDebounce";
+import { lazy } from "vite-preload";
 import SearchListView from "./components/SearchListView";
 import SearchListSkeleton from "./components/SearchListSkeleton";
-import SearchMapWrapper from "./components/SearchMapWrapper";
-import SearchBubbleChart from "./components/SearchBubbleChart";
-import FranceRegionsMap from "./components/FranceRegionsMap";
+// Vues alternatives en lazy : `viewMode` est "list" par défaut. Les chunks
+// map/graph/regions ne sont téléchargés que si l'utilisateur change de vue.
+const SearchMapWrapper = lazy(() => import("./components/SearchMapWrapper"));
+const SearchBubbleChart = lazy(() => import("./components/SearchBubbleChart"));
+const FranceRegionsMap = lazy(() => import("./components/FranceRegionsMap"));
 import { SwitchDetailsMode } from "./components/SwitchDetailsMode";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
@@ -66,7 +69,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   const isConnected = !!me;
   const permissions = useProfilPermissions(entity || null);
 
-  const IconComponent = icon ? (LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[icon.charAt(0).toUpperCase() + icon.slice(1).replace(/-./g, x => x[1].toUpperCase())] : null;
+  const iconName = icon as IconName | undefined;
 
   const customHeader = props.customHeader;
   const showDetailedViewToggle = props.showDetailedViewToggle ?? false;
@@ -300,7 +303,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
           <div className="flex flex-col gap-3 p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center space-x-2">
-                {IconComponent && <IconComponent className="h-5 w-5" />}
+                {iconName && <DynamicIcon name={iconName} className="h-5 w-5" />}
                 {title && (
                   <span className="text-xl font-semibold">
                     {t(title)}{" "}

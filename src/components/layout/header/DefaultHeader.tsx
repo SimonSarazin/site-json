@@ -312,3 +312,5 @@ export function DefaultHeader() {
     </header>
   );
 }
+
+export default DefaultHeader;

@@ -1,8 +1,16 @@
 import { SwitchDetailsModeProps } from "../schema";
-import DetailsModeDialog from "./detailsMode/DetailsModeDialog";
-import DetailsModeDrawer from "./detailsMode/DetailsModeDrawer";
-import AnswerDetailModeDialog from "./detailsMode/AnswerDetailModeDialog";
-import PoiDetailSSBE from "./detailsMode/PoiDetailSSBE";
+import { lazy } from "vite-preload";
+
+/**
+ * Variants de détail (modal/dialog/drawer) en `lazy()`. Au runtime, un seul
+ * variant est utilisé selon `card.detailsMode` (+ variant pour les cas
+ * spécifiques `card-answer`, `poi-ssbe`). Les chunks non utilisés ne sont
+ * pas téléchargés côté client.
+ */
+const DetailsModeDialog = lazy(() => import("./detailsMode/DetailsModeDialog"));
+const DetailsModeDrawer = lazy(() => import("./detailsMode/DetailsModeDrawer"));
+const AnswerDetailModeDialog = lazy(() => import("./detailsMode/AnswerDetailModeDialog"));
+const PoiDetailSSBE = lazy(() => import("./detailsMode/PoiDetailSSBE"));
 
 export function SwitchDetailsMode({ openDetails, setOpenDetails, item, card, preview }: SwitchDetailsModeProps) {
       const cardType = card?.variant || card?.type;

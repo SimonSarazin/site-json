@@ -1,4 +1,4 @@
-import { lazy } from "react";
+import { lazy } from "vite-preload";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { AmpliConfig } from "./schema";

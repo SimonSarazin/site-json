@@ -1,4 +1,5 @@
 import { useMemo, Suspense, useEffect } from "react";
+import { lazy } from "vite-preload";
 import { useHydrated } from "@/hooks/useHydrated";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,10 +8,11 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { ProfileSectionRenderer } from "../../ProfileSectionRenderer";
 import { TabDetailRenderer } from "../TabDetailRenderer";
 
-// Import direct des composants tab
-import { SocialTab } from "../tabs/SocialTab";
-import { MembershipTab } from "../tabs/MembershipTab";
-import { NewsTab } from "../tabs/NewsTab";
+// Tabs en lazy() : à un profil donné, l'utilisateur ne consulte qu'un tab
+// à la fois. Les autres ne sont téléchargés qu'au clic.
+const SocialTab = lazy(() => import("../tabs/SocialTab"));
+const MembershipTab = lazy(() => import("../tabs/MembershipTab"));
+const NewsTab = lazy(() => import("../tabs/NewsTab"));
 import { useLocalization } from "@/hooks/useLocalization";
 import type { ProfileType } from "../../schema";
 

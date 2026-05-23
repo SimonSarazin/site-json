@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef, useMemo, useCallback, lazy, Suspense } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback, Suspense } from "react";
+import { lazy } from "vite-preload";
 import {
     Dialog,
     DialogContent,

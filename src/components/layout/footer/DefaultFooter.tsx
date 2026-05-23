@@ -123,3 +123,5 @@ export function DefaultFooter() {
     </footer>
   );
 }
+
+export default DefaultFooter;

@@ -1,5 +1,9 @@
 import { useCocolight } from "@/hooks/useCocolight";
-import * as LucideIcons from "lucide-react";
+import {
+    Utensils, Heart, Link, Globe, Bus, Book, CircleUser, Sun, Accessibility,
+    TreePine, Laptop, CircleDot, Trash2, Smartphone, Leaf, Banknote, Move, Hand,
+    FlaskConical, Lightbulb, Cross, Scale, Anchor, HelpCircle,
+} from "lucide-react";
 import type { ThematicsSectionProps } from "../schema";
 import { FILIERE_ICON_MAPPING } from "../schema";
 import "@/modules/search/i18n";
@@ -12,25 +16,50 @@ export interface ThematicsSectionWrapperProps {
 }
 
 /**
+ * Mapping kebab-case → composant lucide importé en nommé.
+ * Couvre les valeurs de `FILIERE_ICON_MAPPING` (24 icônes) + le fallback
+ * `HelpCircle`. Imports statiques → tree-shaking actif (sinon `import *`
+ * forcerait le bundling complet de lucide-react ~880KB raw).
+ */
+const ICON_MAP: Record<string, ComponentType<{ className?: string }>> = {
+    "utensils": Utensils,
+    "heart": Heart,
+    "link": Link,
+    "globe": Globe,
+    "bus": Bus,
+    "book": Book,
+    "circle-user": CircleUser,
+    "sun": Sun,
+    "accessibility": Accessibility,
+    "tree-pine": TreePine,
+    "laptop": Laptop,
+    "circle-dot": CircleDot,
+    "trash-2": Trash2,
+    "smartphone": Smartphone,
+    "leaf": Leaf,
+    "banknote": Banknote,
+    "move": Move,
+    "hand": Hand,
+    "flask-conical": FlaskConical,
+    "lightbulb": Lightbulb,
+    "cross": Cross,
+    "scale": Scale,
+    "anchor": Anchor,
+};
+
+/**
  * Convertir un nom d'icône FontAwesome en icône Lucide
  */
 function resolveLucideIcon(faIconName: string): ComponentType<{ className?: string }> | null {
-    // Chercher dans le mapping (normaliser l'espace final)
     const normalizedName = faIconName.trim();
-    const lucideName = FILIERE_ICON_MAPPING[normalizedName.toLowerCase()] 
+    const lucideName = FILIERE_ICON_MAPPING[normalizedName.toLowerCase()]
         || FILIERE_ICON_MAPPING[faIconName.toLowerCase()];
-    
+
     if (!lucideName) {
         console.warn(`[ThematicsSection] Icon mapping not found for: ${faIconName}`);
-        return LucideIcons.HelpCircle || null;
+        return HelpCircle;
     }
-
-    // Convertir kebab-case en PascalCase (ex: "map-pin" → "MapPin")
-    const pascalName = lucideName
-        .split("-")
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join("");
-    return (LucideIcons as unknown as Record<string, ComponentType<{ className?: string }>>)[pascalName] ?? null;
+    return ICON_MAP[lucideName] ?? null;
 }
 
 /**

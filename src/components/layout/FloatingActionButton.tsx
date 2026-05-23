@@ -65,3 +65,5 @@ export function FloatingActionButton({
     </>
   );
 }
+
+export default FloatingActionButton;

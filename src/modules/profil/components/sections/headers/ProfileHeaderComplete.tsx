@@ -197,3 +197,5 @@ export function ProfileHeaderComplete({ section }: ProfileHeaderCompleteProps) {
     </>
   );
 }
+
+export default ProfileHeaderComplete;

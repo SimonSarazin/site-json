@@ -143,3 +143,5 @@ export function ProfileHeaderHero({ section }: ProfileHeaderHeroProps) {
     </>
   );
 }
+
+export default ProfileHeaderHero;

@@ -1,4 +1,4 @@
-import { lazy } from "react";
+import { lazy } from "vite-preload";
 import { useInteropUserLinks } from "./hooks/useUserInteropLinks";
 
 const DiscoursePod = lazy(() => import("./components/DiscoursePod"));

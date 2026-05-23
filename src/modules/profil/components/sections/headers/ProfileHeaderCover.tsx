@@ -134,3 +134,5 @@ export function ProfileHeaderCover({ section }: ProfileHeaderCoverProps) {
     </>
   );
 }
+
+export default ProfileHeaderCover;

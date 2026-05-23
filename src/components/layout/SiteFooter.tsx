@@ -1,8 +1,14 @@
 import { useSite } from "@/hooks/useSite";
-import { DefaultFooter } from "./footer/DefaultFooter";
-import FooterTiersLieux from "./footer/FooterTiersLieux";
-import FooterRezoLaMer from "./footer/FooterRezoLaMer";
-import FooterSSBE from "./footer/FooterSSBE";
+import { lazy } from "vite-preload";
+
+/**
+ * Footers en `lazy()` — même pattern que SiteHeader.
+ * Cf. `SiteHeader.tsx` pour la rationale.
+ */
+const DefaultFooter = lazy(() => import("./footer/DefaultFooter"));
+const FooterTiersLieux = lazy(() => import("./footer/FooterTiersLieux"));
+const FooterRezoLaMer = lazy(() => import("./footer/FooterRezoLaMer"));
+const FooterSSBE = lazy(() => import("./footer/FooterSSBE"));
 
 export function SiteFooter() {
   const { config } = useSite();

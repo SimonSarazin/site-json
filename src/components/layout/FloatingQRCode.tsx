@@ -109,3 +109,5 @@ export function FloatingQRCode({
     </div>
   );
 }
+
+export default FloatingQRCode;

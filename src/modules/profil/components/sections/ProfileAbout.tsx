@@ -4,7 +4,7 @@ import { renderMarkdown } from "@/helpers/renderMarkdown";
 import { useProfileSetup } from "../../hooks/useProfileSetup";
 import type { ProfileAboutSection } from "../../schema";
 import { useInteropConfig } from "@/modules/interop";
-import { lazy } from "react";
+import { lazy } from "vite-preload";
 
 interface ProfileAboutProps {
   section: ProfileAboutSection;

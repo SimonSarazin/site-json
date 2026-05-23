@@ -86,3 +86,5 @@ export function ProfileHeaderMinimal({ section }: ProfileHeaderMinimalProps) {
     </>
   );
 }
+
+export default ProfileHeaderMinimal;

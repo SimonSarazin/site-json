@@ -1,8 +1,33 @@
 import { ComponentType, useMemo } from "react";
-import * as LucideIcons from "lucide-react";
+import {
+  HandHeart, Store, Users, LandPlot, Handshake, Building2,
+  LayoutDashboard, CalendarDays, User, MapPin, FileText, Newspaper, Lightbulb,
+} from "lucide-react";
 import { useT } from "@/hooks/useT";
 import type { CardCountCTSectionProps } from "../../schema";
 import { SEARCH_TYPE_ICON_NAMES } from "../../schema";
+
+/**
+ * Mapping kebab-case → composant lucide importé en nommé.
+ * Couvre les valeurs de `SEARCH_TYPE_ICON_NAMES` (13 icônes). Imports
+ * statiques → tree-shaking actif (`import *` désactivait le tree-shaking
+ * et forçait le bundling complet de lucide-react).
+ */
+const ICON_MAP: Record<string, ComponentType<{ className?: string }>> = {
+  "hand-heart": HandHeart,
+  "store": Store,
+  "users": Users,
+  "land-plot": LandPlot,
+  "handshake": Handshake,
+  "building-2": Building2,
+  "layout-dashboard": LayoutDashboard,
+  "calendar-days": CalendarDays,
+  "user": User,
+  "map-pin": MapPin,
+  "file-text": FileText,
+  "newspaper": Newspaper,
+  "lightbulb": Lightbulb,
+};
 
 /** Couleurs par défaut par type (border + icon) */
 const DEFAULT_COLORS: Record<string, string> = {
@@ -39,12 +64,7 @@ const DEFAULT_LABELS: Record<string, { fr: string; en: string }> = {
 
 /** Résoudre un nom d'icône Lucide en composant */
 function resolveLucideIcon(iconName: string): ComponentType<{ className?: string }> | null {
-  // Convertir kebab-case en PascalCase (ex: "map-pin" → "MapPin")
-  const pascalName = iconName
-    .split("-")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join("");
-  return (LucideIcons as unknown as Record<string, ComponentType<{ className?: string }>>)[pascalName] ?? null;
+  return ICON_MAP[iconName] ?? null;
 }
 
 export interface CardCountCTProps {

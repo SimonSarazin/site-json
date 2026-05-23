@@ -1,16 +1,23 @@
 import { SearchCardProps } from "../schema";
-import CardDefault from "./card/CardDefault";
-import CardEvent from "./card/CardEvent";
-import CardOverlay from "./card/CardOverlay";
-import CardTiersLieux from "./card/CardTiersLieux";
-import CardRezoLaMer from "./card/CardRezoLaMer";
-import CardProfile from "./card/CardProfile";
-import CardEventRezoLaMer from "./card/CardEventRezoLaMer";
-import CardPoiRezoLaMer from "./card/CardPoiRezoLaMer";
-import CardPoiSSBE from "./card/CardPoiSSBE";
-import CardSsbe from "./card/CardSsbe";
-import CardElts from "./card/CardElts";
-import CardAnswer from "./card/CardAnswer";
+import { lazy } from "vite-preload";
+
+/**
+ * Variants de Card en `lazy()`. À une page donnée, un seul type est utilisé
+ * (cf. config `list.card.type`/`variant`). Les 10 autres chunks ne sont pas
+ * téléchargés côté client.
+ */
+const CardDefault = lazy(() => import("./card/CardDefault"));
+const CardEvent = lazy(() => import("./card/CardEvent"));
+const CardOverlay = lazy(() => import("./card/CardOverlay"));
+const CardTiersLieux = lazy(() => import("./card/CardTiersLieux"));
+const CardRezoLaMer = lazy(() => import("./card/CardRezoLaMer"));
+const CardProfile = lazy(() => import("./card/CardProfile"));
+const CardEventRezoLaMer = lazy(() => import("./card/CardEventRezoLaMer"));
+const CardPoiRezoLaMer = lazy(() => import("./card/CardPoiRezoLaMer"));
+const CardPoiSSBE = lazy(() => import("./card/CardPoiSSBE"));
+const CardSsbe = lazy(() => import("./card/CardSsbe"));
+const CardElts = lazy(() => import("./card/CardElts"));
+const CardAnswer = lazy(() => import("./card/CardAnswer"));
 
 export default function SearchCard({
   item,
