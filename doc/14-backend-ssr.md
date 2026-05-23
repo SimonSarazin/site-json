@@ -13,7 +13,8 @@
   - [`src/entry-server.tsx`](#srcentry-servertsx)
     - [Intégration vite-preload](#intégration-vite-preload)
     - [Extraction des ressources critiques](#extraction-des-ressources-critiques)
-    - [Pattern Transform stream](#pattern-transform-stream)
+    - [Pattern `pipe(res)` + override `res.end()` (React 19 + Vite)](#pattern-piperes--override-resend-react-19--vite)
+    - [Pré-normalisation HTML/SVG : `server/utils/normalizeSiteConfig.js`](#pré-normalisation-htmlsvg--serverutilsnormalizesiteconfigjs)
   - [`src/entry-client.tsx` - Hydratation avec detection Sync/Async](#srcentry-clienttsx---hydratation-avec-detection-syncasync)
     - [Import CSS virtuel](#import-css-virtuel)
     - [Gestion du loader et des stylesheets](#gestion-du-loader-et-des-stylesheets)
@@ -348,43 +349,79 @@ Cette section décrit en détail le fonctionnement des fichiers responsables du 
    * `generateImagePreloadTags()` / `generateFontPreloadTags()` : genere les balises `<link rel="preload">` correspondantes
    * Les fonts et images sont injectees **en premier** dans le head pour une priorite maximale
 
-### Pattern Transform stream
+### Pattern `pipe(res)` + override `res.end()` (React 19 + Vite)
 
-   Au lieu d'ecrire directement les closing tags dans `onAllReady`, le serveur utilise un `Transform` stream qui les ajoute automatiquement via `flush()` :
+   **Contexte architectural :** le template HTML (`index.html`) reste géré par Vite pour bénéficier de `transformIndexHtml` (injection du client HMR en dev, preambles React Fast Refresh, substitution des chunks hashés en prod, hooks des plugins). En conséquence, React ne rend PAS `<html>`/`<body>` dans son arbre et `pipe(res)` n'écrit que le contenu de `<div id="root">`.
 
-   ```ts
-   const appendTransform = new Transform({
-     transform(chunk, _encoding, callback) {
-       callback(null, chunk);
-     },
-     flush(callback) {
-       this.push(closingTags);
-       callback();
-     },
-   });
+   Le pattern officiel React 19 (où `<App>` rend `<html>…</html>`) impose de renoncer à toutes ces transformations Vite. La documentation Vite SSR ne couvre que `renderToString` synchrone — **aucun pattern officiel n'existe pour le streaming avec Vite**.
 
-   appendTransform.pipe(res as unknown as Writable);
-   ```
-
-   Dans les callbacks de `renderToPipeableStream` :
+   **Solution retenue :** `pipe(res)` direct + override de `res.end()` pour injecter les `closingTags` JUSTE AVANT la vraie fermeture :
 
    ```ts
-   onShellReady() {
-     onHead(headHtml, dehydratedState);
-     pipe(appendTransform);  // Pipe vers le transform, pas directement vers res
-   },
-   onAllReady() {
-     // Terminer le transform stream, ce qui déclenche flush()
-     // et ajoute les closing tags automatiquement
-     appendTransform.end();
-   },
+   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   const resAny = res as any;
+   const originalEnd = resAny.end.bind(resAny);
+   let endIntercepted = false;
+   resAny.end = function (...args: unknown[]) {
+     if (!endIntercepted) {
+       endIntercepted = true;
+       resAny.write(closingTags);            // inject </div></body></html>
+       streamFinished = true;
+       setImmediate(() => { originalEnd(...args); resolve(); });
+       return resAny;
+     }
+     return originalEnd(...args);
+   };
+
+   // ... dans onShellReady :
+   pipe(res as unknown as Writable);
+
+   // onAllReady est vide : React 19 appelle res.end() quand TOUT est drainé.
+   // L'override ci-dessus intercepte ce point et injecte les closingTags.
    ```
 
-   Ce pattern garantit que les closing tags sont toujours emis, meme en cas d'erreur partielle dans le streaming.
+   **Pourquoi pas un Transform Node intermédiaire ?** Deux approches ont été tentées et échouent :
+   - `pipe(appendTransform)` + `appendTransform.end()` dans `onAllReady` : `pipe()` appelle `appendTransform.end()` dès la fin du SHELL, AVANT que les Suspense résolus tardifs soient écrits → HTML tronqué.
+   - `PassThrough` avec `end()` override : React Writable bufferise différemment, mêmes symptômes.
 
-   * `bootstrapModules` indique au client quel module charger pour hydrater.
+   React 19 appelle `res.end()` **uniquement** quand tout est drainé (shell + tous les Suspense résolus + scripts `$RC`). L'override intercepte précisément ce moment.
+
+   > **Gotcha :** ce pattern est non-documenté officiellement (voir entrée dans Known Issues de `CLAUDE.md`). Il fait parti de la tension React 19 ↔ Vite SSR faute de support officiel d'une option `{ end: false }` sur `pipe()`.
+
    * `onHead` callback injecte fonts, images, preload tags, `<title>`, `<meta>` et le script React Query.
-   * Un timeout de 30 secondes (`STREAM_TIMEOUT_MS`) appelle `abort()` pour ne pas bloquer indefiniment.
+   * Un timeout de 30 secondes (`STREAM_TIMEOUT_MS`) appelle `abort()` pour ne pas bloquer indéfiniment.
+   * `bootstrapModules` **n'est pas utilisé** : le `<script type="module" src="/src/entry-client.tsx">` présent dans le template HTML suffit — le rajouter en double provoquerait deux instances du module côté client.
+
+### Pré-normalisation HTML/SVG : `server/utils/normalizeSiteConfig.js`
+
+   Au boot serveur, **avant** le premier rendu SSR, la config est passée à `normalizeSiteConfig()` pour sanitizer une seule fois tous les champs susceptibles de contenir du HTML/SVG injecté via `dangerouslySetInnerHTML`.
+
+   **Problème sans ce mécanisme :** `jsdom-DOMPurify` (SSR) normalise le HTML légèrement différemment du DOMPurify natif côté client (whitespace, ordre d'attributs, fermeture explicite de tags) → mismatch hydration.
+
+   **Solution :** un seul passage DOMPurify côté serveur au démarrage. SSR et client utilisent ensuite strictement la même chaîne — aucun diff DOM possible.
+
+   ```js
+   // server/utils/normalizeSiteConfig.js
+   const HTML_FIELDS = new Set([
+     "html",      // HTMLSection.props.html
+     "svg",       // ContentSection iconCard.svg
+     "iconSvg",   // CardsSection items.iconSvg
+     "infoText",  // ContentSection (HTML brut)
+     "extra",     // DefaultFooter footer.extra
+     "content",   // TabsSection/AccordionSection/BlogPostSection/MarkdownSection
+     "icon",      // HeroSSBE/HeroRezoLaMer (SVG inline ou nom lucide)
+     "logoIcon",  // HeroRezoLaMer props.logoIcon
+   ]);
+
+   export function normalizeSiteConfig(value) {
+     return walk(value);
+   }
+   ```
+
+   - Parcours récursif de toute la config.
+   - Détection de type : seules les chaînes sont sanitizées ; les objets/arrays sont traversés récursivement.
+   - Les `LocalizedString` (`{ fr: "...", en: "..." }`) sont gérées : chaque valeur string est sanitizée.
+   - Le sanitize côté composants reste actif (défense en profondeur) mais devient **idempotent** (sanitize d'un HTML déjà propre = identique).
 
 ---
 

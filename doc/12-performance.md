@@ -8,7 +8,11 @@
   - [Lazy loading des sections et des images](#lazy-loading-des-sections-et-des-images)
     - [Chargement asynchrone des sections](#chargement-asynchrone-des-sections)
     - [Optimisation et lazy loading des images](#optimisation-et-lazy-loading-des-images)
+  - [Lazy-loading des variants conditionnels](#lazy-loading-des-variants-conditionnels)
+    - [Composants avec variants lazy](#composants-avec-variants-lazy)
+    - [Migration `React.lazy` → `vite-preload.lazy`](#migration-reactlazy--vite-preloadlazy)
   - [Code splitting et bundling](#code-splitting-et-bundling)
+    - [Tree-shaking de lucide-react](#tree-shaking-de-lucide-react)
     - [Configuration SSR](#configuration-ssr)
   - [Optimisation des images — Middleware sharp](#optimisation-des-images--middleware-sharp)
     - [Architecture](#architecture)
@@ -173,10 +177,40 @@ import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 ---
 
+## Lazy-loading des variants conditionnels
+
+Les composants avec plusieurs variantes d'affichage (header, cards, etc.) sont lazy-loadés conditionnellement : seule la variante utilisée est chargée, pas toutes les alternatives.
+
+### Composants avec variants lazy
+
+| Composant | Variants lazy | Détails |
+|---|---|---|
+| `SiteHeader` | 6 variants | default, compact, sticky, transparent, minimal, hero |
+| `SiteFooter` | 4 variants | default, minimal, extended, dark |
+| `SearchCard` | 12 variants | organization, event, project, user, poi, tiers-lieux, etc. |
+| `ProfileHeader` | 6 variants | `ProfileHeaderHero`, `ProfileHeaderSimple`, `ProfileHeaderCover`, `ProfileHeaderBannerOverlay`, `ProfileHeaderComplete`, `ProfileHeaderMinimal` |
+| `SwitchDetailsMode` | 4 variants | list, grid, map, calendar |
+| `FloatingActionButton` | — | lazy-monté uniquement si configuré |
+| `DiscourseGlobalModal` | — | lazy-monté uniquement si Discourse configuré |
+
+### Migration `React.lazy` → `vite-preload.lazy`
+
+7 fichiers supplémentaires ont été migrés de `React.lazy()` vers `lazy()` de `vite-preload` pour bénéficier de `preloadAll()` SSR et de l'injection automatique de `<link modulepreload>` :
+
+- `AmpliSectionRenderer.tsx` — sous-composants `AmpliHeader`, `AmpliIntro`, `AmpliFeatures`, `AmpliMessages`
+- `ProfileAbout.tsx`
+- `DiscourseSection.tsx`
+- `MediawikiSection.tsx`
+- `CagnotteDialog.tsx` (+ lazy-mount de `PaymentConfigPage` à l'intérieur)
+- `FormFields.tsx` (coform)
+- `RootLayout.tsx` — providers lazy
+
+**Règle :** utiliser `lazy()` de `vite-preload` pour **tout** composant lazy afin de garantir le tracking SSR.
+
 ## Code splitting et bundling
 
 * **Entrées multiples** : Vite sépare le code `entry-client.tsx` et `entry-server.tsx` en bundles distincts.
-* **Chunks par import dynamique** : chaque `React.lazy` crée un nouveau chunk, optimisant le cache et le parallélisme.
+* **Chunks par import dynamique** : chaque `lazy()` crée un nouveau chunk, optimisant le cache et le parallélisme.
 * **Configuration Vite** (`vite.config.ts`) :
 
   ```ts
@@ -191,6 +225,32 @@ import { OptimizedImage } from "@/components/ui/OptimizedImage";
     }
   }
   ```
+
+### Tree-shaking de lucide-react
+
+La règle `manualChunks` qui forçait **tout** lucide-react dans un chunk `icons-vendor` unique a été supprimée. Chaque icône a désormais son propre chunk et est chargée à la demande.
+
+**Cela impose des règles strictes selon le type d'usage :**
+
+| Usage | Pattern correct | Pattern incorrect (casse le tree-shaking) |
+|---|---|---|
+| Icônes dynamiques (nom en variable) | `<DynamicIcon name={iconName} />` | `import * as LucideIcons from "lucide-react"` |
+| Mapping statique | `import { MapPin, Clock } from "lucide-react"` | `import * as Icons from "lucide-react"` |
+
+Le composant `DynamicIcon` (`src/lib/entityIcons.tsx`) encapsule l'import dynamique d'icône par nom sans casser le tree-shaking.
+
+**Fichiers migrés (4) :**
+- `SearchProStatic` → `DynamicIcon` (usages dynamiques)
+- `JsonFormModal` → `DynamicIcon` (usages dynamiques)
+- `ThematicsSection` → imports nommés (mapping statique)
+- `CardCountCT` → imports nommés (mapping statique)
+
+**Bilan mesuré (page `/lieux`) :**
+
+| Métrique | Avant | Après | Gain |
+|---|---|---|---|
+| Bundle initial total | ~1280 KB | ~793 KB | -38% |
+| Bundle main chunk | ~975 KB | ~260 KB | -73% |
 
 ### Configuration SSR
 

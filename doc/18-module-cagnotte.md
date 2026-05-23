@@ -317,21 +317,25 @@ Avantages :
 - `useRestoreMilestone` — `status: open` + `include: true`
 - `useDeleteMilestone` — refuse si financé ; supprime actions liées puis milestone et dépense
 
-**Action** (5) :
-- `useCreateAction` — composite : appelle `endpointApi.costumProjectActionRequestNew` (méthode typée SDK depuis 1.0.126) → `refetchQueries` → `resolveCreatedActionId` → `updateProjectActionFields` pour metadata (tags, contributeurs, dates). Retourne `{ actionId }`.
-- `useEditAction` — met à jour les champs édités (diff calculé via `calculateActionDiff`)
-- `useMarkActionDone` — `status: done`
-- `useDeleteAction` — supprime l'action
-- `useCandidateAction` — ajoute l'user comme contributor
+**Action** (5) — API **entity-oriented** du SDK (depuis SDK 1.0.130) :
+- `useCreateAction` — via `project.action({ ... })` + `action.save()`. La méthode `project.action()` crée un draft `Action` lié au projet parent. L'`id` de l'action créée est résolu via `resolveCreatedActionId` après `save()`. Retourne `{ actionId }`.
+- `useEditAction` — charge l'entité via `project.action({ id })`, applique le diff via `calculateActionDiff`, appelle `action.save()`. Les dates sont converties depuis le format français picker (`parseFrenchDateToIso`) avant envoi.
+- `useMarkActionDone` — charge l'entité via `project.action({ id })`, appelle `action.markDone()`
+- `useDeleteAction` — charge l'entité, appelle `entity.delete()`
+- `useCandidateAction` — charge l'entité via `project.action({ id })`, appelle `action.joinContributor()`
+
+**Pourquoi entity-oriented ?** Le SDK 1.0.130 expose `Action` comme une entité à part entière. Les méthodes de l'entité (`save()`, `markDone()`, `joinContributor()`) sont type-safe et maintenues par le SDK. L'approche précédente utilisait `endpointApi.costumProjectActionRequestNew` (appel direct API endpoint) qui ne bénéficiait pas des types.
 
 ### Context requis
 
 ```ts
 MilestoneMutationContext = { apiClient, rawEnvelope, projectId, answerId }
-ActionMutationContext    = { apiClient, api, projectId }
+ActionMutationContext    = { apiClient, project, projectId }
+// `project` est l'entité Project du SDK (chargée via `api.project(...)`)
+// Non plus `api` mais `project` directement — le contexte résolu expose project.action()
 ```
 
-`api` est l'instance `Api` du SDK Cocolight, nécessaire pour accéder à `endpointApi.<method>` (méthodes typées). Récupéré via `useCocolight()`.
+`ActionMutationContext.project` est l'entité `Project` du SDK Cocolight (depuis 1.0.130), nécessaire pour accéder à `project.action()`. Récupéré et injecté par `ActionsSection` qui charge le projet courant.
 
 ---
 

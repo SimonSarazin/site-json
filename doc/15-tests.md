@@ -26,6 +26,8 @@
     - [ImageOptimizer (`server/__tests__/imageOptimizer.test.ts`)](#imageoptimizer-server__tests__imageoptimizertestts)
     - [Sanitize (`src/lib/__tests__/sanitize.test.ts`)](#sanitize-srclib__tests__sanitizetestts)
     - [Permissions (`src/lib/__tests__/permissions.test.ts`)](#permissions-srclib__tests__permissionstestts)
+    - [CoForm helpers (`src/modules/coform/utils/helpers.test.ts`)](#coform-helpers-srcmodulescoformutilshelperstestts)
+    - [Tests UI MeeteemSection (`src/modules/ampli/components/sections/MeeteemSection.test.ts`)](#tests-ui-meeteemSection-srcmodulesamplicomponentssectionsmeeteemSectiontestts)
     - [Validation configs multi-sites (`tests/preflight/sites-configs.test.ts`)](#validation-configs-multi-sites-testspreflightsites-configstestts)
   - [Tests E2E par domaine](#tests-e2e-par-domaine)
     - [Recherche (`search.spec.ts`)](#recherche-searchspects)
@@ -79,6 +81,10 @@ source .env.test && npm run test:e2e
 │   ├── configValidation.test.ts # Validation schéma Zod
 │   ├── sanitize.test.ts         # Tests XSS (scripts, event handlers, iframes)
 │   └── permissions.test.ts      # Registre permissions (register, get, overwrite)
+├── src/modules/coform/utils/
+│   └── helpers.test.ts          # 24 tests fonctions utilitaires CoForm
+├── src/modules/ampli/components/sections/
+│   └── MeeteemSection.test.ts   # 30 tests UI sous-composants Ampli (Header/Intro/Features/Messages)
 ├── server/__tests__/
 │   └── imageOptimizer.test.ts   # Fonctions pures (allowlist, format, magic bytes, MIME)
 ├── tests/
@@ -375,6 +381,26 @@ Teste le registre central des calculateurs de permissions (10 tests) :
 - Namespace inconnu → `undefined`
 - `_resetForTesting()` : nettoyage entre les tests
 - Le contexte (`entity`, `me`, `data`) est bien passé au calculateur
+
+### CoForm helpers (`src/modules/coform/utils/helpers.test.ts`)
+
+24 tests pour les fonctions utilitaires du module CoForm :
+
+- `convertBootstrapWidth()` : conversion `col-md-6` → `w-1/2`, fallback `w-full`
+- `generateFieldId()` : génère des IDs prévisibles (`subFormId_fieldKey`)
+- `extractMongoId()` : extrait l'`$id` d'un `{ $id: "..." }` ou retourne la string directement
+- `formatTimestamp()` : timestamps Unix → date lisible locale
+- `isStepComplete()` : vérifie que tous les champs requis sont non-vides
+- `mergeStepsData()` : fusionne les données de plusieurs étapes en un objet plat
+
+### Tests UI MeeteemSection (`src/modules/ampli/components/sections/MeeteemSection.test.ts`)
+
+30 tests couvrant les 4 sous-composants du module Ampli :
+
+- `AmpliHeader` : affichage du titre, statut de chargement
+- `AmpliIntro` : rendu de l'introduction (contenu, état vide)
+- `AmpliFeatures` : liste des features, icônes, liens
+- `AmpliMessages` : liste des messages, avatar, votes
 
 ### Validation configs multi-sites (`tests/preflight/sites-configs.test.ts`)
 

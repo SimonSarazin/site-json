@@ -829,6 +829,245 @@ Le module profil expose de nombreux hooks specialises :
 
 ---
 
+## Création de Tiers-lieu (modale 5 étapes)
+
+La modale `AddTiersLieuxModal` (`src/modules/profil/components/add/AddTiersLieuxModal.tsx`) permet de créer un tiers-lieu en 5 étapes via un formulaire structuré.
+
+### Composants
+
+- `AddTiersLieuxModal` — Dialog principal, branche sur `useAddTiersLieu()` et délègue le rendu à `TiersLieuxForm`
+- `TiersLieuxForm` (`src/modules/profil/components/add/TiersLieuxForm.tsx`) — Formulaire react-hook-form + Zod en 5 onglets :
+  1. **Identification** : nom, description courte, type de structure, mode de gestion
+  2. **Localisation** : adresse, code postal, localité (via `EditLocationTab`)
+  3. **Médias** : logo, photos (upload)
+  4. **Contacts & réseaux** : email, téléphone, site web, liens sociaux, URL vidéo
+  5. **Horaires & description** : horaires d'ouverture par jour de la semaine, description longue (Markdown)
+
+### Schéma Zod (`tiersLieuxSchema`)
+
+```ts
+// src/modules/profil/components/add/TiersLieuxForm.tsx
+export const tiersLieuxSchema = z.object({
+  name: z.string().min(1),
+  shortDescription: z.string().min(1),
+  managementType: z.string().min(1),
+  email: z.string().email().min(1),
+  hours: z.object({ monday: dayHoursSchema, /* ... 7 jours */ }),
+  // ... autres champs optionnels
+});
+```
+
+### Mapping config → payload API (`tiersLieuxMapping.ts`)
+
+Le fichier `src/modules/profil/utils/tiersLieuxMapping.ts` contient toutes les fonctions de conversion entre les données du formulaire et le format attendu par l'API :
+
+- `buildOpeningHoursPayload(hours)` — convertit `{ monday: { enabled, start, end } }` en `[{ dayOfWeek: "Mo", hours: [{ opens, closes }] }]`
+- `buildTiersLieuxPayload(data, parent?)` — construit le payload de création complet
+- `entityToTiersLieuxFormData(entity)` — convertit une entité API en données de formulaire (pour l'édition)
+
+Les jours sont mappés avec les codes `Mo/Tu/We/Th/Fr/Sa/Su` (format schema.org).
+
+### Édition de Tiers-lieu
+
+- `EditTiersLieuxModal` (`src/modules/profil/components/edit/EditTiersLieuxModal.tsx`) — même formulaire en mode édition, pré-rempli via `entityToTiersLieuxFormData()`
+- `EditModalRegistry` (`src/modules/profil/components/profile-edit/EditModalRegistry.tsx`) — registry lazy des modales d'édition
+
+Le registry permet d'associer un nom logique à une modale chargée en lazy :
+
+```ts
+const editModalRegistry: Record<string, () => Promise<{ default: ComponentType<EditModalProps> }>> = {
+  "edit-profile": () => import("./EditProfileModal").then(/* wrap */),
+  "edit-tiers-lieux": () => import("../edit/EditTiersLieuxModal").then(/* wrap */),
+};
+```
+
+La fonction `resolveEditModalName(entity, config)` lit `profiles[kind].editModal` depuis la config pour déterminer quel modal ouvrir. Si l'entité correspond au `costum` du site, le modal configuré est utilisé ; sinon le modal générique `"edit-profile"` est appliqué.
+
+### `useEditTiersLieu(organization)`
+
+Mutation d'édition d'une organisation tiers-lieu existante. Pattern entity-oriented :
+
+1. Construit le payload via `buildTiersLieuxPayload(data)`
+2. Assigne les champs directement sur `organization.data` (mutation de l'objet SDK)
+3. Appelle `organization.save()` pour persister (diff/patch géré par le SDK)
+4. Si `data._logoFile` présent → `organization.updateImageProfil({ profil_avatar: file })`
+
+Invalide `QUERY_KEYS.ELEMENT_ABOUT_PREFIX(slug)` après succès.
+
+---
+
+### Condition d'auth sur les tabs
+
+Depuis la branche `review`, les tabs de profil supportent une `condition.auth` en config JSON :
+
+```json
+{
+  "id": "mes-actions",
+  "label": { "fr": "Mes actions" },
+  "condition": {
+    "auth": "required"
+  }
+}
+```
+
+Valeurs : `"required"` (connecté seulement), `"anonymous"` (déconnecté seulement), `"any"` (tous). Évalué via `useVisibility()` du système de visibilité.
+
+---
+
+## Système d'actions (entity-actions)
+
+Le système d'actions est **config-driven** : un tableau de configuration déclaratif définit toutes les actions disponibles, que les hooks du module assemblent et filtrent selon les permissions.
+
+### Architecture
+
+```
+actions/
+├── config/
+│   ├── entity-actions.ts   # ENTITY_ACTION_CONFIG — configuration déclarative des actions
+│   ├── member-actions.ts   # Configuration des actions membres (promote, remove, etc.)
+│   └── icons.ts            # ActionIconKey → mapping icône Lucide
+├── hooks/
+│   ├── useEntityActions.tsx         # Routeur principal : délègue selon type d'entité
+│   ├── useUserEntityActions.tsx     # Actions User (ami, follow, message)
+│   ├── useOrgEntityActions.tsx      # Actions Organisation (follow, join, leave)
+│   ├── useProjectEntityActions.tsx  # Actions Projet (follow, join, leave)
+│   ├── useEventEntityActions.tsx    # Actions Événement (follow, register)
+│   └── useAdminActions.tsx          # Actions admin (promote, demote, remove)
+├── mutations/
+│   ├── core.ts           # Factories createEntityMutation + createUserMutation
+│   ├── friend.ts         # useFollowEntity, useUnfollowEntity, useFriendRequest, etc.
+│   ├── member.ts         # useLeaveMember, useJoinRequest, useAcceptMember, etc.
+│   └── relationship.ts   # Mutations de relations sociales
+└── builders/
+    ├── buildEntityAction.tsx  # Construit un objet EntityAction depuis la config
+    └── buildUserAction.tsx    # Construit une action de type user
+```
+
+### `ENTITY_ACTION_CONFIG`
+
+Registre déclaratif de toutes les actions supportées :
+
+| Action | Type | Icon | Confirmation |
+|---|---|---|---|
+| `follow` | follow | userPlus | Non |
+| `unfollow` | unfollow | userCheck | Oui |
+| `sendFriendRequest` | friend | userPlus | Non |
+| `removeFriend` | unfriend | userX | Non |
+| `acceptFriendRequest` | accept | check | Non |
+| `declineFriendRequest` | decline | x | Non |
+| `join` | join | userPlus | Non |
+| `leave` | leave | userMinus | Oui (destructive) |
+| `cancelJoinRequest` | cancelJoin | x | Oui |
+| `adminActions` | admin | shield | Non |
+
+### Factory `createEntityMutation`
+
+```ts
+// actions/mutations/core.ts
+interface EntityMutationConfig<TParams = void> {
+  entityTypes?: EntityType[];
+  action: (entity: EntityTypes, params: TParams) => Promise<void>;
+  i18n: { successKey: string; errorKey: string };
+  invalidate: (entity: EntityTypes, me: User | null) => QueryKey[];
+  getSuccessParams?: (entity, params) => Record<string, string>;
+  getErrorParams?: (error, entity, params) => Record<string, string>;
+}
+
+function createEntityMutation<TParams>(config) → (entity: EntityTypes | null) => UseMutationResult
+```
+
+**Ce que la factory encapsule :**
+- `useMutationWithToast` (namespace `modules/profil`)
+- Validation entity non-null + validation entityType si `config.entityTypes` défini
+- Invalidation React Query via `config.invalidate(entity, me)` au succès
+
+**Factory `createUserMutation`** — similaire mais reçoit un `User` en paramètre (ex: actions admin sur un membre spécifique).
+
+### `useEntityActions(entity)`
+
+Hook routeur principal. Détecte le type d'entité et délègue :
+
+```ts
+function useEntityActions(entity: EntityTypes | null): EntityActionsResult | null
+
+interface EntityActionsResult {
+  actions: EntityAction[];
+  layout: "separate-buttons" | "status-dropdown";
+}
+```
+
+Les hooks par type (`useOrgEntityActions`, `useUserEntityActions`, etc.) filtrent les actions selon les permissions de l'utilisateur courant et construisent les objets `EntityAction` via `buildEntityAction`.
+
+---
+
+## EditModalRegistry
+
+`src/modules/profil/components/profile-edit/EditModalRegistry.tsx` implémente un système de modales d'édition lazy par nom logique.
+
+**Registry déclaratif :**
+
+```ts
+const editModalRegistry: Record<string, () => Promise<{ default: ComponentType<EditModalProps> }>> = {
+  "edit-profile":     () => import("./EditProfileModal"),
+  "edit-tiers-lieux": () => import("../edit/EditTiersLieuxModal"),
+};
+```
+
+**`resolveEditModalName(entity, config)`** — Détermine quel modal ouvrir :
+1. Si `entity.serverData.costumSlug !== config.costum?.slug` → `"edit-profile"` (profil générique)
+2. Sinon lit `config.profiles[kind].editModal` pour le modal customisé du costum
+3. Fallback → `"edit-profile"`
+
+**`DynamicEditModal`** — Wrapper config-driven utilisé par les headers et `ProfileActions` :
+
+```tsx
+<DynamicEditModal
+  open={editModalOpen}
+  onOpenChange={setEditModalOpen}
+  entity={entity}
+/>
+```
+
+Le chargement est lazy via `React.lazy()` + cache dans `lazyComponents` pour éviter les imports dupliqués.
+
+---
+
+## Gestion des membres
+
+### `InviteMemberDialog`
+
+Modale d'invitation par email ou recherche. Supporte :
+- Recherche d'utilisateurs existants (autocomplete)
+- Invitation par email si non trouvé
+- Rôle assignable (member, admin, etc.)
+
+### `MemberManagementDialog`
+
+Modale de gestion d'un membre spécifique. Actions disponibles selon permissions :
+- Promouvoir en admin (`useAdminActions`)
+- Rétrograder
+- Retirer de l'organisation
+
+### `MemberListRenderer`
+
+Liste les membres avec `UserListItem`. Supporte pagination et rôles.
+
+---
+
+## `TabDetailRenderer`
+
+`src/modules/profil/components/TabDetailRenderer.tsx` gère le rendu des pages de détail dans les tabs (ex: `NewsDetailPage` dans le tab "news").
+
+Il lit le paramètre `component` de la sous-route active et rend dynamiquement le composant correspondant. Supporte actuellement `"NewsDetailPage"`.
+
+---
+
+## `ProfileErrorBoundary`
+
+`src/modules/profil/components/ProfileErrorBoundary.tsx` est défini comme `errorElement` sur la route principale `profil/:slug`. Affiche un message d'erreur adapté (profil non trouvé, accès refusé, erreur réseau) sans casser le layout global.
+
+---
+
 ## Récapitulatif
 
 | Module | Type | Routes | Usage |

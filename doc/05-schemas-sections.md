@@ -55,6 +55,8 @@
   - [`cta-rezo-la-mer`](#cta-rezo-la-mer)
   - [`title-with-filters-rezo-la-mer`](#title-with-filters-rezo-la-mer)
   - [`commune-transparente-actions`](#commune-transparente-actions)
+  - [`hero-ssbe`](#hero-ssbe)
+  - [`categories-grid`](#categories-grid)
   - [`meeteem`](#meeteem)
   - [`cardCountCT`](#cardcountct)
   - [`thematics`](#thematics)
@@ -1990,6 +1992,88 @@ export const NewsSectionSchema = z.object({
 | `showFilters` | `boolean` | Afficher les filtres |
 | `showComments` | `boolean` | Afficher les commentaires |
 | `showReactions` | `boolean` | Afficher les reactions |
+
+---
+
+## `hero-ssbe`
+
+Section hero spécialisée pour les sites sport-santé-bien-être. Variante avec badges, boutons CTA et cartes d'accès rapide.
+
+```ts
+const HeroSSBESchema = z.object({
+  type: z.literal("hero-ssbe"),
+  id: z.string().optional(),
+  props: z.object({
+    headline: LocalizedString,
+    subhead: LocalizedString.optional(),
+    backgroundImage: z.string().optional(),
+    backgroundImageAlt: LocalizedString.optional(),
+    overlayOpacity: z.string().optional(),
+    badges: z.array(z.object({
+      label: LocalizedString,
+      icon: z.string().optional(),
+    })).optional(),
+    ctaButtons: z.array(z.object({
+      label: LocalizedString,
+      path: z.string().optional(),
+      variant: z.enum(["default", "secondary", "accent", "primary", "outline"]).optional(),
+    })).optional(),
+    quickAccessTitle: LocalizedString.optional(),
+    quickAccessCards: z.array(z.object({
+      path: z.string(),
+      label: LocalizedString,
+      title: LocalizedString,
+      description: LocalizedString,
+      icon: z.string().optional(),
+    })).optional(),
+  }),
+});
+```
+
+| Propriete | Type | Description |
+|---|---|---|
+| `headline` | `LocalizedString` | Titre principal |
+| `subhead` | `LocalizedString?` | Sous-titre |
+| `backgroundImage` | `string?` | URL image de fond |
+| `badges` | `array?` | Badges texte/icône affichés sous le titre |
+| `ctaButtons` | `array?` | Boutons CTA avec variante de style |
+| `quickAccessTitle` | `LocalizedString?` | Titre de la section d'accès rapide |
+| `quickAccessCards` | `array?` | Cartes d'accès rapide (path, label, title, description, icon) |
+
+---
+
+## `categories-grid`
+
+Grille de catégories thématiques avec icônes, titres et liens. Variantes visuelles: `ocean`, `cyber`, `ssbe`.
+
+```ts
+const CategoriesGridSectionSchema = z.object({
+  type: z.literal("categories-grid"),
+  id: z.string().optional(),
+  props: z.object({
+    headline: LocalizedString.optional(),
+    subhead: LocalizedString.optional(),
+    variant: z.enum(["ocean", "cyber", "ssbe"]).optional().default("ssbe"),
+    columns: z.number().min(2).max(6).optional().default(3),
+    cards: z.array(z.object({
+      icon: z.string().optional(),
+      title: LocalizedString.optional(),
+      subtitle: LocalizedString.optional(),
+      link: z.string().optional(),
+    })),
+  }),
+});
+```
+
+| Propriete | Type | Description |
+|---|---|---|
+| `headline` | `LocalizedString?` | Titre de la grille |
+| `subhead` | `LocalizedString?` | Sous-titre |
+| `variant` | `"ocean"\|"cyber"\|"ssbe"` | Style visuel de la grille |
+| `columns` | `number` | Nombre de colonnes (2–6, défaut 3) |
+| `cards` | `array` | Cartes de catégorie (icon optionnel, title/subtitle/link optionnels) |
+
+Note : `icon` et `title` sont rendus optionnels car certaines configs utilisent uniquement `subtitle` (cf. `config.prod.sport-sante-bien-etre.json`).
 
 ---
 

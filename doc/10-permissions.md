@@ -12,6 +12,8 @@
   - [Créer des permissions pour un module](#créer-des-permissions-pour-un-module)
   - [Permissions du module Profil](#permissions-du-module-profil)
   - [Permissions du module News](#permissions-du-module-news)
+  - [Permissions du module Cagnotte](#permissions-du-module-cagnotte)
+  - [Permissions du module CoForm](#permissions-du-module-coform)
   - [Hook rétrocompatible `useUserPermissions`](#hook-rétrocompatible-useuserpermissions)
   - [Avantages de l'architecture modulaire](#avantages-de-larchitecture-modulaire)
   - [Type helper `PermissionsResult`](#type-helper-permissionsresult)
@@ -296,6 +298,30 @@ import { useNewsPermissions } from "@/modules/news/hooks/useNewsPermissions";
 
 const { canAddNews, canEditNews, canModerateNews } = useNewsPermissions(entity, news);
 ```
+
+## Permissions du module Cagnotte
+
+Le module cagnotte enregistre le namespace `"cagnotte"`. Contexte attendu dans `data.cagnotte` : un objet `CagnottePermissionData` (action courante, montants, membres, etc.). Voir `src/modules/cagnotte/permissions/types.ts`.
+
+**Hook local** :
+
+```ts
+import { useCagnottePermissions } from "@/modules/cagnotte/hooks/useCagnottePermissions";
+const { canEditAction, canCandidateToAction, canMarkDone } = useCagnottePermissions(entity, cagnotteData);
+```
+
+## Permissions du module CoForm
+
+Le module coform enregistre le namespace `"coform"`. Contexte attendu dans `data.coform` : un objet `CoFormPermissionData` (form, currentAnswer, accessInfo). Retourne `CoFormPermissions` — voir [Module CoForm](21-module-coform.md#permissions).
+
+**Hook local** :
+
+```ts
+import { useCoFormPermissions } from "@/modules/coform/permissions";
+const { canSubmitAnswer, canViewForm, isConnected } = useCoFormPermissions(entity, formData);
+```
+
+---
 
 ## Hook rétrocompatible `useUserPermissions`
 
