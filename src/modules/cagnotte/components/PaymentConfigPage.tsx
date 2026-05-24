@@ -106,7 +106,7 @@ const PaymentConfigPage = ({
     onClose,
 }: PaymentConfigPageProps) => {
     const navigate = useNavigate();
-    const { entity, me, api, apiClient, contextId, contextType } = useCocolight();
+    const { entity, me, api, contextId, contextType } = useCocolight();
     const queryClient = useQueryClient();
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(null);
     const [contributorType, setContributorType] = useState<ContributorType>("citoyens");
@@ -233,7 +233,7 @@ const PaymentConfigPage = ({
     ) => {
         try {
             //  Enregistrer les financements dans Answer (si answerId disponible)
-            if (answerId && apiClient) {
+            if (answerId && api) {
                 // Préparer les données structurées pour le hook
                 const milestoneFundingData = fundingData.map((f) => ({
                     milestoneId: f.milestoneId,
@@ -241,15 +241,13 @@ const PaymentConfigPage = ({
                     amount: f.amount,
                 }));
 
-                //  Récupérer les données actuelles de l'answer via apiClient
-                const currentAnswerResponse = await (apiClient as unknown as {
-                    callEndpoint: (endpoint: string, payload: Record<string, unknown>) => Promise<{ data?: Record<string, unknown> }>;
-                }).callEndpoint('COFORM_ANSWERS_BY_ID', {
+                //  Récupérer les données actuelles de l'answer via l'endpoint typé du SDK
+                const currentAnswerResponse = await api.endpointApi.coformAnswersById({
                     answerId,
                     fields: ['answers', 'project', 'id', '_id', 'formId', 'form_id', 'form', 'links'],
                 });
                 const responseRecord = asRecord(currentAnswerResponse);
-                const responseData = asRecord(responseRecord.data);
+                const responseData = asRecord(responseRecord.serverData ?? responseRecord.data);
                 const currentAnswerData = Object.keys(responseData).length > 0 ? responseData : responseRecord;
 
                 // Sécurise les métadonnées minimales pour les fallbacks de sauvegarde.
@@ -276,7 +274,7 @@ const PaymentConfigPage = ({
                     throw new Error(String(t("PaymentConfigPage.errors.saveFailed")));
                 }
             } else {
-                console.warn('Pas d\'answerId ou apiClient - skip sauvegarde BDD');
+                console.warn('Pas d\'answerId ou api - skip sauvegarde BDD');
             }
 
             //  Continuer le flux normal
@@ -298,7 +296,7 @@ const PaymentConfigPage = ({
             //scheduleRedirectToHome(3000, false);
             await refreshAfterContributionSave();
         }
-    }, [answerId, apiClient, me, contributorType, contributorName, contributorId, t, onPaymentSuccess, saveContribution, refreshAfterContributionSave]);
+    }, [answerId, api, me, contributorType, contributorName, contributorId, t, onPaymentSuccess, saveContribution, refreshAfterContributionSave]);
 
     // Récupérer les organisations où l'utilisateur courant est admin (recherche server-side)
     const currentUserEntity = (me && isUser(me) ? me : null) as User | null;
