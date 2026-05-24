@@ -9,6 +9,7 @@ import { Calendar, MapPin, Star } from "lucide-react";
 import { useState } from "react";
 import { useCocolight } from "@/hooks/useCocolight";
 import { Button } from "@/components/ui/button";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 
 export default function CardEventRezoLaMer({
   item,
@@ -30,35 +31,34 @@ export default function CardEventRezoLaMer({
     const image = serverData?.profilImageUrl;
     const location = getLocation(item);
 
-  const [isUpdating, setIsUpdating] = useState(false);
   const [localIsStarred, setLocalIsStarred] = useState(isStarred);
 
-  const handleToggleStar = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    
-    if (!entity || !item?.id || isUpdating || localIsStarred === undefined) return;
-
-    try {
-      setIsUpdating(true);
-      const newStarredValue = !localIsStarred;
-
+  const { mutate: toggleStar, isPending: isUpdating } = useMutationWithToast<boolean, boolean>({
+    namespace: "modules/search",
+    successKey: "toast.card.starSuccess",
+    errorKey: "toast.card.starError",
+    mutationFn: async (newStarredValue) => {
+      if (!entity || !item?.id) throw new Error("Entité ou item manquant");
       await entity.endpointApi.updatePathValue({
         id: item.id,
         collection: "events",
         path: "isStarred",
         value: newStarredValue,
       });
-
-      setLocalIsStarred(newStarredValue);
-
-      if ('reload' in item && typeof item.reload === 'function') {
+      if ("reload" in item && typeof item.reload === "function") {
         await item.reload();
       }
-    } catch (error) {
-      console.error("Erreur lors de la mise à jour de l'étoile:", error);
-    } finally {
-      setIsUpdating(false);
-    }
+      return newStarredValue;
+    },
+    onSuccessCallback: (newStarredValue) => {
+      setLocalIsStarred(newStarredValue);
+    },
+  });
+
+  const handleToggleStar = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!entity || !item?.id || isUpdating || localIsStarred === undefined) return;
+    toggleStar(!localIsStarred);
   };
 
   // Cacher la carte si isStarred est false

@@ -6,11 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { MapPin, Users, ArrowRight, Zap } from "lucide-react";
-import { useState } from "react";
 import { useFundingEnvelope } from "@/modules/cagnotte/hooks/useFundingEnvelope";
 import { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
 import { useCocolight } from "@/hooks/useCocolight";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 
 export default function CardRezoLaMer({
   item,
@@ -40,38 +39,29 @@ export default function CardRezoLaMer({
   // Pour activer le financement
   const { data: fundingEnvelope } = useFundingEnvelope();
   const { entity } = useCocolight();
-  const queryClient = useQueryClient();
-  const [isActivatingFunding, setIsActivatingFunding] = useState(false);
 
   const formId = fundingEnvelope?.rawEnvelope ? extractFormIdFromEnvelope(fundingEnvelope.rawEnvelope) : null;
 
-   const handleActivateFunding = async () => {
-    if (!formId || !projectId || !entity) {
-      console.warn("Missing formId, projectId, or entity for coremuOperation");
-      return;
-    }
-
-    setIsActivatingFunding(true);
-    try {
+  const { mutate: activateFunding, isPending: isActivatingFunding } = useMutationWithToast({
+    namespace: "modules/search",
+    successKey: "toast.card.activateFundingSuccess",
+    errorKey: "toast.card.activateFundingError",
+    mutationFn: async () => {
+      if (!formId || !projectId || !entity) {
+        throw new Error("Missing formId, projectId, or entity for coremuOperation");
+      }
       await entity.coremuOperation({ form: formId, project: projectId });
-
-      // Invalider le cache pour rafraîchir les données
-      queryClient.invalidateQueries({
-        queryKey: CAGNOTTE_QUERY_KEYS.FUNDING_ENVELOPE_PREFIX(),
-      });
-
-      // Appeler le callback du parent si disponible
+    },
+    invalidateQueries: [CAGNOTTE_QUERY_KEYS.FUNDING_ENVELOPE_PREFIX()],
+    onSuccessCallback: () => {
       onClick?.();
-    } catch (error) {
-      console.error("Erreur lors de l'activation du financement:", error);
-    } finally {
-      setIsActivatingFunding(false);
-    }
-  };
+    },
+  });
 
   const handleActivateFundingClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    handleActivateFunding();
+    if (!formId || !projectId || !entity) return;
+    activateFunding();
   };
 
   const handleViewProjectClick = (e: React.MouseEvent<HTMLButtonElement>) => {

@@ -6,7 +6,7 @@ import { renderHook, act, waitFor } from "@testing-library/react";
 const mockUseCocolight = vi.fn();
 const mockUseInteropConfig = vi.fn();
 const mockCheckDiscourseEmailMatch = vi.fn();
-const mockAsInteropEntity = vi.fn(() => ({
+const mockAsInteropEntity = vi.fn((_e: unknown) => ({
   checkDiscourseEmailMatch: mockCheckDiscourseEmailMatch,
 }));
 

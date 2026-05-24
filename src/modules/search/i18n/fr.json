@@ -29,5 +29,9 @@
     "type.projects": "Projet",
     "type.events": "Événement",
     "type.citoyens": "Citoyen",
-    "type.poi": "Point d'intérêt"
+    "type.poi": "Point d'intérêt",
+    "toast.card.starSuccess": "Mis à jour",
+    "toast.card.starError": "Impossible de mettre à jour les favoris",
+    "toast.card.activateFundingSuccess": "Financement activé",
+    "toast.card.activateFundingError": "Impossible d'activer le financement"
 }

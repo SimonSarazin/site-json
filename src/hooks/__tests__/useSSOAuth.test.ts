@@ -99,9 +99,9 @@ describe("useSSOAuth", () => {
       const popup = setupPopup();
       const { result } = renderHook(() => useSSOAuth());
 
-      let resolved: { success: boolean; error?: string } | null = null;
+      const resolved: { current: { success: boolean; error?: string } | null } = { current: null };
       void result.current.openSSOPopup("google").then((r) => {
-        resolved = r;
+        resolved.current = r;
       });
 
       // message d'origine MALICIEUSE
@@ -117,7 +117,7 @@ describe("useSSOAuth", () => {
       // les tokens ne doivent PAS être injectés
       expect(mockSetToken).not.toHaveBeenCalled();
       expect(mockEmit).not.toHaveBeenCalled();
-      expect(resolved).toBeNull();
+      expect(resolved.current).toBeNull();
 
       // cleanup : fermer le popup pour terminer la promesse
       act(() => {
@@ -130,9 +130,9 @@ describe("useSSOAuth", () => {
       setupPopup();
       const { result } = renderHook(() => useSSOAuth());
 
-      let resolved: { success: boolean } | null = null;
+      const resolved: { current: { success: boolean } | null } = { current: null };
       void result.current.openSSOPopup("google").then((r) => {
-        resolved = r as { success: boolean };
+        resolved.current = r as { success: boolean };
       });
 
       act(() => {
@@ -149,7 +149,7 @@ describe("useSSOAuth", () => {
       });
       // flush microtasks
       await vi.advanceTimersByTimeAsync(0);
-      expect(resolved?.success).toBe(true);
+      expect(resolved.current?.success).toBe(true);
       expect(mockSetToken).toHaveBeenCalledWith("valid-token");
       expect(mockSetRefreshToken).toHaveBeenCalledWith("refresh-token");
       expect(mockEmit).toHaveBeenCalledWith("userLoggedIn");
@@ -161,9 +161,9 @@ describe("useSSOAuth", () => {
       setupPopup();
       const { result } = renderHook(() => useSSOAuth());
 
-      let resolved: { success: boolean } | null = null;
+      const resolved: { current: { success: boolean } | null } = { current: null };
       void result.current.openSSOPopup("google").then((r) => {
-        resolved = r as { success: boolean };
+        resolved.current = r as { success: boolean };
       });
 
       act(() => {
@@ -179,7 +179,7 @@ describe("useSSOAuth", () => {
       expect(mockEmit).not.toHaveBeenCalled();
       // mais success quand même (le backend a dit success, le client n'a pas
       // de tokens à injecter)
-      expect(resolved?.success).toBe(true);
+      expect(resolved.current?.success).toBe(true);
     });
 
     it("setRefreshToken seulement si fourni", async () => {
@@ -205,9 +205,9 @@ describe("useSSOAuth", () => {
       setupPopup();
       const { result } = renderHook(() => useSSOAuth());
 
-      let resolved: { success: boolean; error?: string } | null = null;
+      const resolved: { current: { success: boolean; error?: string } | null } = { current: null };
       void result.current.openSSOPopup("google").then((r) => {
-        resolved = r;
+        resolved.current = r;
       });
 
       act(() => {
@@ -219,8 +219,8 @@ describe("useSSOAuth", () => {
         );
       });
       await vi.advanceTimersByTimeAsync(0);
-      expect(resolved?.success).toBe(false);
-      expect(resolved?.error).toBe("Access denied");
+      expect(resolved.current?.success).toBe(false);
+      expect(resolved.current?.error).toBe("Access denied");
       expect(mockSetToken).not.toHaveBeenCalled();
     });
 
@@ -228,9 +228,9 @@ describe("useSSOAuth", () => {
       const popup = setupPopup();
       const { result } = renderHook(() => useSSOAuth());
 
-      let resolved: unknown = null;
+      const resolved: { current: unknown } = { current: null };
       void result.current.openSSOPopup("google").then((r) => {
-        resolved = r;
+        resolved.current = r;
       });
 
       act(() => {
@@ -242,7 +242,7 @@ describe("useSSOAuth", () => {
         );
       });
       await vi.advanceTimersByTimeAsync(0);
-      expect(resolved).toBeNull();
+      expect(resolved.current).toBeNull();
       expect(mockSetToken).not.toHaveBeenCalled();
 
       // cleanup via fermeture popup
@@ -258,9 +258,9 @@ describe("useSSOAuth", () => {
       const popup = setupPopup();
       const { result } = renderHook(() => useSSOAuth());
 
-      let resolved: { success: boolean; error?: string } | null = null;
+      const resolved: { current: { success: boolean; error?: string } | null } = { current: null };
       void result.current.openSSOPopup("google").then((r) => {
-        resolved = r;
+        resolved.current = r;
       });
 
       act(() => {
@@ -268,8 +268,8 @@ describe("useSSOAuth", () => {
         vi.advanceTimersByTime(500);
       });
       await vi.advanceTimersByTimeAsync(0);
-      expect(resolved?.success).toBe(false);
-      expect(resolved?.error).toBeUndefined();
+      expect(resolved.current?.success).toBe(false);
+      expect(resolved.current?.error).toBeUndefined();
     });
   });
 
@@ -279,9 +279,9 @@ describe("useSSOAuth", () => {
       mockUseCocolight.mockReturnValue({ apiClient: null });
       const { result } = renderHook(() => useSSOAuth());
 
-      let resolved: { success: boolean } | null = null;
+      const resolved: { current: { success: boolean } | null } = { current: null };
       void result.current.openSSOPopup("google").then((r) => {
-        resolved = r as { success: boolean };
+        resolved.current = r as { success: boolean };
       });
 
       act(() => {
@@ -295,7 +295,7 @@ describe("useSSOAuth", () => {
       await vi.advanceTimersByTimeAsync(0);
       expect(mockSetToken).not.toHaveBeenCalled();
       expect(mockEmit).not.toHaveBeenCalled();
-      expect(resolved?.success).toBe(true);
+      expect(resolved.current?.success).toBe(true);
     });
   });
 

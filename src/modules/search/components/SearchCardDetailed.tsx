@@ -10,6 +10,7 @@ import { getBaseUrl } from "@/lib/constant/common";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { useCocolight } from "@/hooks/useCocolight";
 import { cn } from "@/lib/utils";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 
 function shortenTag(tag: string, maxLength = 20): string {
   if (tag.length <= maxLength) return tag;
@@ -56,36 +57,35 @@ export default function SearchCardDetailed({
     [name]
   );
 
-  const [isUpdating, setIsUpdating] = useState(false);
   const [localIsStarred, setLocalIsStarred] = useState(isStarred);
 
-  const handleToggleStar = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    
-    if (!entity || !item?.id || isUpdating) return;
-
-    try {
-      setIsUpdating(true);
-      const newStarredValue = !localIsStarred;
+  const { mutate: toggleStar, isPending: isUpdating } = useMutationWithToast<boolean, boolean>({
+    namespace: "modules/search",
+    successKey: "toast.card.starSuccess",
+    errorKey: "toast.card.starError",
+    mutationFn: async (newStarredValue) => {
+      if (!entity || !item?.id) throw new Error("Entité ou item manquant");
       const entityType = item?.getEntityType?.();
-
       await entity.endpointApi.updatePathValue({
         id: item.id,
         collection: (entityType || "events") as "citoyens" | "organizations" | "projects" | "events" | "poi",
         path: "isStarred",
         value: newStarredValue,
       });
-
-      setLocalIsStarred(newStarredValue);
-
-      if ('reload' in item && typeof item.reload === 'function') {
+      if ("reload" in item && typeof item.reload === "function") {
         await item.reload();
       }
-    } catch (error) {
-      console.error("Erreur lors de la mise à jour de l'étoile:", error);
-    } finally {
-      setIsUpdating(false);
-    }
+      return newStarredValue;
+    },
+    onSuccessCallback: (newStarredValue) => {
+      setLocalIsStarred(newStarredValue);
+    },
+  });
+
+  const handleToggleStar = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!entity || !item?.id || isUpdating) return;
+    toggleStar(!localIsStarred);
   };
 
   const fullDescription = description || shortDescription;
