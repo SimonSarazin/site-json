@@ -4,7 +4,13 @@
  */
 
 import { useCallback } from "react";
-import type { Answer, Api, SaveCoformAnswerData, UpdatePathValueData } from "@communecter/cocolight-api-client";
+import type {
+  Answer,
+  Api,
+  AnswerItemNormalized,
+  SaveCoformAnswerData,
+  UpdatePathValueData,
+} from "@communecter/cocolight-api-client";
 import { showErrorToast, showSuccessToast } from "@/lib/toastUtils";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -40,7 +46,7 @@ interface financerData {
 function createFinancerEntry(params: {
   milestoneId: string;
   amount: number;
-  currentAnswerData: Record<string, unknown>;
+  currentAnswerData: AnswerItemNormalized;
   financerData: financerData;
   userId: string;
 }): FinancerEntry {
@@ -55,12 +61,16 @@ function createFinancerEntry(params: {
   };
 }
 
-function getFormIdFromAnswerData(currentAnswerData: Record<string, unknown>): string {
+function getFormIdFromAnswerData(currentAnswerData: AnswerItemNormalized): string {
   const project = toRecord(currentAnswerData.project);
   const answers = toRecord(currentAnswerData.answers);
   const answerMeta = toRecord(currentAnswerData.answer);
 
   const candidates = [
+    // `form` est le champ canonique de AnswerItemNormalized ; les autres alias couvrent
+    // les variantes legacy (form_id snake_case, formId imbriqué) renvoyées par
+    // certains endpoints backend.
+    currentAnswerData.form,
     currentAnswerData.formId,
     currentAnswerData.form_id,
     answerMeta.formId,
@@ -80,7 +90,7 @@ function getFormIdFromAnswerData(currentAnswerData: Record<string, unknown>): st
   return "";
 }
 
-function getAnswerIdFromAnswerData(currentAnswerData: Record<string, unknown>): string {
+function getAnswerIdFromAnswerData(currentAnswerData: AnswerItemNormalized): string {
   const directId = currentAnswerData.id;
   if (typeof directId === "string" && directId.trim()) return directId.trim();
 
@@ -95,7 +105,7 @@ function getAnswerIdFromAnswerData(currentAnswerData: Record<string, unknown>): 
 }
 
 function applyMilestoneFundingsToAnswerData(
-  currentAnswerData: Record<string, unknown>,
+  currentAnswerData: AnswerItemNormalized,
   milestoneFundings: MilestoneFunding[],
   financerData: financerData,
   userId: string,
@@ -173,7 +183,7 @@ export const useSaveCagnotteContribution = (
     async (
       answerId: string,
       milestoneFundings: MilestoneFunding[],
-      currentAnswerData: Record<string, unknown>,
+      currentAnswerData: AnswerItemNormalized,
       financerData: financerData,
       userId: string
     ): Promise<boolean> => {
@@ -181,8 +191,11 @@ export const useSaveCagnotteContribution = (
         if (!api) {
           throw new Error(String(t("toasts.errors.noApiClient")));
         }
-        const data = currentAnswerData?.data as Record<string, unknown>;
-        const answers = (data.answers as Record<string, unknown>) || {};
+        // `serverData` est déjà les champs de l'Answer (cf. AnswerItemNormalized).
+        // L'ancien wrap `{ data: { answers: ... } }` provenait de l'endpoint
+        // bas-niveau `callEndpoint('COFORM_ANSWERS_BY_ID')` et n'existe plus
+        // depuis qu'on charge via `api.answer({id}).serverData`.
+        const answers = (currentAnswerData.answers as Record<string, unknown> | undefined) ?? {};
         const aapStep1 = (answers.aapStep1 as Record<string, unknown>) || {};
         const depensesRaw = aapStep1.depense;
         const depenses = Array.isArray(depensesRaw)
@@ -273,7 +286,7 @@ export const useSaveCagnotteContribution = (
     async (
       answerId: string,
       milestoneFundings: MilestoneFunding[],
-      currentAnswerData: Record<string, unknown>,
+      currentAnswerData: AnswerItemNormalized,
       financerData: financerData,
       userId: string
     ): Promise<boolean> => {
@@ -318,7 +331,7 @@ export const useSaveCagnotteContribution = (
     async (
       answerId: string,
       milestoneFundings: MilestoneFunding[],
-      currentAnswerData: Record<string, unknown>,
+      currentAnswerData: AnswerItemNormalized,
       financerData: financerData,
       userId: string
     ): Promise<boolean> => {

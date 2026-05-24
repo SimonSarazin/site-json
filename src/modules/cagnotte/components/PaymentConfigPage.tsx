@@ -241,27 +241,16 @@ const PaymentConfigPage = ({
                     amount: f.amount,
                 }));
 
-                //  Récupérer les données actuelles de l'answer via l'endpoint typé du SDK
-                const currentAnswerResponse = await api.endpointApi.coformAnswersById({
-                    answerId,
-                    fields: ['answers', 'project', 'id', '_id', 'formId', 'form_id', 'form', 'links'],
-                });
-                const responseRecord = asRecord(currentAnswerResponse);
-                const responseData = asRecord(responseRecord.serverData ?? responseRecord.data);
-                const currentAnswerData = Object.keys(responseData).length > 0 ? responseData : responseRecord;
-
-                // Sécurise les métadonnées minimales pour les fallbacks de sauvegarde.
-                if (!currentAnswerData.id && answerId) {
-                    currentAnswerData.id = answerId;
-                }
-                if (!currentAnswerData.formId && typeof currentAnswerData.form_id === 'string') {
-                    currentAnswerData.formId = currentAnswerData.form_id;
-                }
+                // Charge l'Answer via l'instance Entity du SDK (équivalent typé de
+                // `api.endpointApi.coformAnswersById({answerId})` — Answer.get() délègue à
+                // ce même endpoint). `answer.serverData` est typé AnswerItemNormalized,
+                // donc pas besoin de fallbacks paranoïaques sur id/formId/form_id.
+                const answer = await api.answer({ id: answerId });
 
                 const saved = await saveContribution(
                     answerId,
                     milestoneFundingData,
-                    currentAnswerData,
+                    answer.serverData,
                     {
                         type: contributorType,
                         name: contributorName,
