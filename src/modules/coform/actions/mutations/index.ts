@@ -19,25 +19,8 @@ export {
   type CoFormFinalMutationData,
 } from "./file";
 
-// Re-export des helpers d'upload pour les call-sites avancés (tests, integration).
-export {
-  isObjectRecord,
-  isDataUri,
-  isPendingUploadValue,
-  parseMimeType,
-  inferExtensionFromMimeType,
-  sanitizeBaseName,
-  dataUriToFile,
-  cleanUrlToRelativePath,
-  shouldCleanUrls,
-  cleanUploaderUrls,
-  collectPendingUploads,
-  getUploadKeys,
-  normalizeUploaderValue,
-  normalizeAnswerData,
-  getValueAtPath,
-  setValueAtPath,
-  uploadInBatches,
-  type PendingUpload,
-  type PendingUploadValue,
-} from "./uploadHelpers";
+// Note : les helpers d'upload (collectPendingUploads, uploadInBatches, etc.)
+// vivaient ici jusqu'au refactor Module 2 — ils sont maintenant centralisés
+// dans `@communecter/cocolight-api-client` (Answer.processUploads + co).
+// Pour les types lib (PendingUpload, PendingUploadValue, ProcessUploadsOptions),
+// importer directement depuis "@communecter/cocolight-api-client".

@@ -1,9 +1,12 @@
 /**
  * Hooks de query CoForm — chargement de formulaires et de réponses.
  *
- * Le pipeline upload + `useCoFormFinalMutation` ont été extraits vers
- * `../actions/mutations/file.ts` au Sprint 3 (réduction 797 l. → ~250 l.).
- * Les helpers de transformation sont dans `../actions/mutations/uploadHelpers.ts`.
+ * Le pipeline d'upload et la mutation finale (`useCoFormFinalMutation`) vivent
+ * dans `../actions/mutations/file.ts` et délèguent désormais à la lib
+ * (`Answer.processUploads` + `Answer.save`, cf. `@communecter/cocolight-api-client`
+ * ≥ 1.0.134). Les anciens helpers `uploadHelpers.ts` ont été supprimés au
+ * Module 2 du refactor — toute la logique upload-batching-normalisation est
+ * centralisée côté lib.
  *
  * Ce fichier conserve :
  *  - `useCoFormQuery` : charge la structure d'un formulaire.
