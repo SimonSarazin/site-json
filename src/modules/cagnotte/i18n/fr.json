@@ -549,21 +549,11 @@
       },
       "errorTitle": "Erreur",
       "saveError": {
-        "title": "Erreur de sauvegarde",
-        "fallback": "Impossible de sauvegarder le projet (base et local)."
-      },
-      "savePartial": {
-        "title": "Sauvegarde partielle",
-        "description": "Sauvegarde en base impossible. Le projet est conservé localement sur ce navigateur."
+        "title": "Erreur de sauvegarde"
       },
       "saveSuccess": {
-        "title": "Succès",
-        "description": "Projet principal enregistré dans la base de données."
+        "title": "Succès"
       }
-    },
-    "errors": {
-      "entityUnavailable": "Entité indisponible pour la sauvegarde distante.",
-      "dbError": "Base: {{message}}"
     }
   },
   "FinanceSection": {

@@ -549,21 +549,11 @@
       },
       "errorTitle": "Error",
       "saveError": {
-        "title": "Save error",
-        "fallback": "Unable to save the project (database and local)."
-      },
-      "savePartial": {
-        "title": "Partial save",
-        "description": "Database save failed. Project saved locally in this browser only."
+        "title": "Save error"
       },
       "saveSuccess": {
-        "title": "Success",
-        "description": "Main project saved to database."
+        "title": "Success"
       }
-    },
-    "errors": {
-      "entityUnavailable": "Entity unavailable for remote save.",
-      "dbError": "DB: {{message}}"
     }
   },
   "FinanceSection": {

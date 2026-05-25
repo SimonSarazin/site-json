@@ -494,14 +494,12 @@ const CagnotteDialogContent = ({ totalAmount, defaultProjectId, onRefresh, openC
 
     const isContributionEnabled = getSelectedAmount() > 0 && activeMilestones.size > 0 && !!selectedProjectId;
 
-    // Hook qui encapsule la logique save (BDD + fallback localStorage + toasts).
+    // Hook qui encapsule la logique save (BDD + toasts via useMutationWithToast).
     const { save: saveProjectModal, isSaving: isSavingProjectModal } = useProjectModalPreference(entity ?? null);
 
     const handleSaveProjectModal = async () => {
-        const result = await saveProjectModal(selectedProjectId);
-        // L'optimistic update n'a de sens que si la sauvegarde principale (BDD) a réussi.
-        // En mode dégradé (localStorage seul), on évite de mentir aux autres clients.
-        if (result === "db") {
+        const success = await saveProjectModal(selectedProjectId);
+        if (success) {
             setOptimisticProjectModalId(normalizeIdOrNull(selectedProjectId));
         }
     };
