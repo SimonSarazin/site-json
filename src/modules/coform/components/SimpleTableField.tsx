@@ -388,11 +388,11 @@ export function SimpleTableField({
             <TableHeader>
                 <TableRow className="bg-muted/50">
                 {headers.map((header, colIndex) => (
-                    <TableHead key={colIndex} className="text-xs font-semibold border border-border">
+                    <TableHead key={colIndex} scope="col" className="text-xs font-semibold border border-border">
                     {typeof header === "string" ? header : String(header)}
                     </TableHead>
                 ))}
-                {activeNewLine && !readOnly && <TableHead className="w-10 border border-border" />}
+                {activeNewLine && !readOnly && <TableHead scope="col" aria-hidden="true" className="w-10 border border-border" />}
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -401,7 +401,7 @@ export function SimpleTableField({
                 return (
                     <TableRow key={dataIndex}>
                     {/* Column 0: row label */}
-                    <TableHead className={cn("bg-muted/30 min-w-30 border border-border", CELL_CN)}>
+                    <TableHead scope="row" className={cn("bg-muted/30 min-w-30 border border-border", CELL_CN)}>
                         <Input
                         value={typeof row[0] === "string" ? row[0] : ""}
                         onChange={(e) => handleRowLabelChange(actualRowIndex, e.target.value)}

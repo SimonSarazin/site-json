@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { toast } from "sonner";
+import { Spinner } from "@/components/ui/spinner";
 import { useCoFormQuery, useCoFormFinalMutation } from "../hooks/useCoFormQuery";
 import { DynamicCoForm } from "./DynamicCoForm";
 import { MultiStepCoForm } from "./MultiStepCoForm";
@@ -69,11 +70,12 @@ interface LoadingStateProps {
 
 const LoadingState = ({ message }: LoadingStateProps) => {
   const t = useT("modules/coform");
+  const text = message ?? String(t("coform.smart.loading"));
   return (
     <div className="flex items-center justify-center p-8">
       <div className="flex flex-col items-center gap-4">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        <p className="text-muted-foreground">{message ?? String(t("coform.smart.loading"))}</p>
+        <Spinner className="h-8 w-8" label={text} />
+        <p className="text-muted-foreground">{text}</p>
       </div>
     </div>
   );

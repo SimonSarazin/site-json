@@ -127,10 +127,12 @@ export function CoFormReadOnly({
       </div>
       )}
 
-      {/* Sections (une card par étape) */}
+      {/* Sections (une card par étape). `<dl>` parent obligatoire HTML5 pour
+          que les `<dt>/<dd>` rendus par ReadOnlyField soient valides et lus
+          correctement par les lecteurs d'écran. */}
       {subFormsFields.map((step) =>
         hideStepHeaders ? (
-          <div key={step.subFormId} className="grid grid-cols-12 gap-x-6 gap-y-4">
+          <dl key={step.subFormId} className="grid grid-cols-12 gap-x-6 gap-y-4">
             {step.fields.map((field) => (
               <ReadOnlyField
                 key={field.name}
@@ -141,7 +143,7 @@ export function CoFormReadOnly({
                 subFormId={step.subFormId}
               />
             ))}
-          </div>
+          </dl>
         ) : (
           <ReadOnlySection
             key={step.subFormId}
@@ -175,7 +177,8 @@ function ReadOnlySection({
         <CardTitle className="text-xl">{step.subFormName}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-12 gap-x-6 gap-y-4">
+        {/* `<dl>` parent : oblige HTML5 pour les `<dt>/<dd>` enfants. */}
+        <dl className="grid grid-cols-12 gap-x-6 gap-y-4">
           {step.fields.map((field) => (
             <ReadOnlyField
               key={field.name}
@@ -186,7 +189,7 @@ function ReadOnlySection({
               subFormId={step.subFormId}
             />
           ))}
-        </div>
+        </dl>
       </CardContent>
     </Card>
   );

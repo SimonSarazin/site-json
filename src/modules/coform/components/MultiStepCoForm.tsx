@@ -3,6 +3,7 @@ import { Controller } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -470,10 +471,7 @@ function MultiStepCoFormContent({
               >
                 {isSubmitting || isFinalSubmitting ? (
                   <>
-                    <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
+                    <Spinner label={String(t("coform.status.submitting"))} />
                     {t("coform.status.submitting")}
                   </>
                 ) : (
@@ -495,10 +493,7 @@ function MultiStepCoFormContent({
               >
                 {isSubmitting ? (
                   <>
-                    <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
+                    <Spinner label={String(t("coform.status.submitting"))} />
                     {t("coform.status.submitting")}
                   </>
                 ) : (
@@ -546,49 +541,65 @@ function StepIndicator({
   onStepClick?: (index: number) => void;
 }) {
   return (
-    <div className="flex items-center justify-between">
-      {Array.from({ length: totalSteps }).map((_, index) => {
-        const subForm = subFormsFields[index];
-        const isCompleted = subForm && completedSteps.includes(subForm.subFormId);
-        const isCurrent = index === currentStep;
-        const isPending = !isCompleted && !isCurrent;
+    <nav aria-label="Étapes du formulaire">
+      <ol className="flex items-center justify-between list-none p-0 m-0">
+        {Array.from({ length: totalSteps }).map((_, index) => {
+          const subForm = subFormsFields[index];
+          const isCompleted = subForm && completedSteps.includes(subForm.subFormId);
+          const isCurrent = index === currentStep;
+          const isPending = !isCompleted && !isCurrent;
 
-        // Contenu du bouton: ✓ si complété, numéro si showStepNumbers, sinon point
-        const buttonContent = isCompleted 
-          ? "✓" 
-          : showStepNumbers 
-            ? index + 1 
-            : "•";
+          // Contenu du bouton: ✓ si complété, numéro si showStepNumbers, sinon point
+          const buttonContent = isCompleted
+            ? "✓"
+            : showStepNumbers
+              ? index + 1
+              : "•";
 
-        return (
-          <Fragment key={index}>
-            <button
-              type="button"
-              onClick={() => allowFreeNavigation && onStepClick?.(index)}
-              disabled={!allowFreeNavigation}
-              className={cn(
-                "flex items-center justify-center w-10 h-10 rounded-full border-2 font-medium transition-colors",
-                isCompleted && "bg-primary border-primary text-primary-foreground",
-                isCurrent && "border-primary text-primary",
-                isPending && "border-muted text-muted-foreground",
-                allowFreeNavigation && "cursor-pointer hover:border-primary/80"
+          // Label parlant pour SR : "Étape X : Nom du sub-form (complétée|en cours|à venir)"
+          const stateLabel = isCompleted
+            ? "complétée"
+            : isCurrent
+              ? "en cours"
+              : "à venir";
+          const stepLabel = `Étape ${index + 1}${subForm?.subFormName ? ` : ${subForm.subFormName}` : ""} (${stateLabel})`;
+
+          return (
+            <Fragment key={index}>
+              <li className="contents">
+                <button
+                  type="button"
+                  onClick={() => allowFreeNavigation && onStepClick?.(index)}
+                  disabled={!allowFreeNavigation}
+                  aria-current={isCurrent ? "step" : undefined}
+                  aria-label={stepLabel}
+                  className={cn(
+                    "flex items-center justify-center w-10 h-10 rounded-full border-2 font-medium transition-colors",
+                    isCompleted && "bg-primary border-primary text-primary-foreground",
+                    isCurrent && "border-primary text-primary",
+                    isPending && "border-muted text-muted-foreground",
+                    allowFreeNavigation && "cursor-pointer hover:border-primary/80"
+                  )}
+                >
+                  <span aria-hidden="true">{buttonContent}</span>
+                </button>
+              </li>
+
+              {index < totalSteps - 1 && (
+                <li aria-hidden="true" className="contents">
+                  <div
+                    className={cn(
+                      "flex-1 h-1 mx-2",
+                      isCompleted ? "bg-primary" : "bg-muted"
+                    )}
+                  />
+                </li>
               )}
-            >
-              {buttonContent}
-            </button>
-
-            {index < totalSteps - 1 && (
-              <div
-                className={cn(
-                  "flex-1 h-1 mx-2",
-                  isCompleted ? "bg-primary" : "bg-muted"
-                )}
-              />
-            )}
-          </Fragment>
-        );
-      })}
-    </div>
+            </Fragment>
+          );
+        })}
+      </ol>
+    </nav>
   );
 };
 

@@ -190,6 +190,8 @@ export function EvaluationField({
             <tr className="border-b border-border">
               <th
                 colSpan={categoryNumber}
+                scope="colgroup"
+                aria-hidden="true"
                 className="text-center p-2 font-medium"
               >
                 &nbsp;
@@ -197,6 +199,7 @@ export function EvaluationField({
               {criteriaIds.length > 0 && (
                 <th
                   colSpan={criteriaIds.length}
+                  scope="colgroup"
                   className="text-center p-2 font-medium border-l border-border"
                 >
                   {criteriaLabel}
@@ -208,6 +211,7 @@ export function EvaluationField({
             <tr className="border-b border-border bg-muted/50">
               <th
                 colSpan={categoryNumber}
+                scope="colgroup"
                 className="text-center p-2 font-medium min-w-24"
               >
                 {categoryTitle}
@@ -215,6 +219,7 @@ export function EvaluationField({
               {criteriaIds.map((criteriaId) => (
                 <th
                   key={criteriaId}
+                  scope="col"
                   className="text-center p-2 font-medium border-l border-border min-w-20"
                 >
                   {criterias[criteriaId]?.name || criteriaId}
