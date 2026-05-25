@@ -166,10 +166,12 @@ export function EvaluationField({
 
   return (
     <div className={cn("space-y-2", field.width || "col-span-12")}>
-      {/* Label */}
+      {/* Label — `<div>` car le control n'est pas un input ciblable
+          (la <table> ne peut pas être focusée). `aria-labelledby` ci-dessous
+          lie le titre à la table pour les screen readers. */}
       {!hideLabel && (
-        <label
-          htmlFor={field.name}
+        <div
+          id={`${field.name}-label`}
           className={cn(
             "block text-sm font-medium",
             hasError && "text-destructive"
@@ -177,7 +179,7 @@ export function EvaluationField({
         >
           {field.label}
           {field.isRequired && <span className="text-destructive ml-1">*</span>}
-        </label>
+        </div>
       )}
 
       {/* Info/description */}
@@ -187,6 +189,7 @@ export function EvaluationField({
       <div className="overflow-x-auto border rounded-md">
         <table
           className="w-full border-collapse text-sm min-w-max"
+          aria-labelledby={!hideLabel ? `${field.name}-label` : undefined}
           aria-invalid={hasError || undefined}
           aria-describedby={hasError ? `${field.name}-error` : undefined}
         >

@@ -1,5 +1,7 @@
 import { X, Pencil, User, Building2, Calendar, Briefcase, MapPin, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import type { FinderElement, FinderElementType } from "../types";
@@ -119,11 +121,10 @@ export function FinderElementCard({
       {/* Checkbox en mode sélection */}
       {selectionMode && (
         <div className="shrink-0">
-          <input
-            type="checkbox"
+          <Checkbox
             checked={isSelected}
-            onChange={() => onSelect?.(element)}
-            className="h-4 w-4 rounded border-input text-primary focus:ring-primary"
+            onCheckedChange={() => onSelect?.(element)}
+            aria-label={`${isSelected ? "Désélectionner" : "Sélectionner"} ${element.name}`}
           />
         </div>
       )}
@@ -148,17 +149,19 @@ export function FinderElementCard({
         <div className="flex items-center gap-2">
           <span className="font-medium text-sm truncate">{element.name}</span>
           {canEdit && onEdit && (
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={(e) => {
                 e.stopPropagation();
                 onEdit(element);
               }}
-              className="text-destructive hover:text-destructive/80 flex items-center gap-1 text-xs"
+              className="h-auto py-0.5 px-1.5 gap-1 text-xs text-destructive hover:text-destructive/80"
             >
-              <Pencil className="w-3 h-3" />
+              <Pencil aria-hidden="true" className="w-3 h-3" />
               <span>{String(t("coform.finder.elementCard.edit"))}</span>
-            </button>
+            </Button>
           )}
         </div>
         <div className="text-xs text-muted-foreground">{typeLabel}</div>

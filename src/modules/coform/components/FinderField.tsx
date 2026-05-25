@@ -152,31 +152,36 @@ export function FinderField({
 
   return (
     <div className={cn("space-y-2", field.width || "col-span-12")}>
-      {/* Label */}
+      {/* Label — `<div>` (et pas `<label>`) car le control n'est pas un input
+          mais un bouton ouvrant un modal. Un `<label>` sans `htmlFor` n'a aucun
+          effet a11y. Le bouton ci-dessous porte son propre `aria-label`. */}
       {!hideLabel && (
-        <label className="block">
-          <span className="text-sm font-medium">
-            {field.label}
-            {field.isRequired && <span className="text-destructive ml-1">*</span>}
-          </span>
-        </label>
+        <div id={`${field.name}-label`} className="text-sm font-medium">
+          {field.label}
+          {field.isRequired && <span className="text-destructive ml-1">*</span>}
+        </div>
       )}
 
       {/* Info/Description */}
       {field.info && <HintText text={field.info} />}
 
-      {/* Bouton de recherche */}
+      {/* Bouton de recherche — relié au label via `aria-labelledby` pour lier
+          le titre du champ au control effectif (un bouton, pas un input). */}
       {!readOnly && (
         <button
           type="button"
           onClick={handleOpenSearch}
+          aria-labelledby={!hideLabel ? `${field.name}-label` : undefined}
+          aria-invalid={hasError || undefined}
+          aria-describedby={hasError ? `${field.name}-error` : undefined}
           className={cn(
             "w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed rounded-lg",
             "text-muted-foreground hover:bg-muted/50 hover:border-primary/50 transition-colors",
+            "outline-none focus-visible:ring-2 focus-visible:ring-ring",
             hasError && "border-destructive"
           )}
         >
-          <Search className="w-5 h-5" />
+          <Search aria-hidden="true" className="w-5 h-5" />
           <span>{config.buttonLabel}</span>
         </button>
       )}

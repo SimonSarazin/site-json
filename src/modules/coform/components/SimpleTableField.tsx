@@ -366,10 +366,10 @@ export function SimpleTableField({
 
   return (
     <div className={cn("space-y-2", field.width || "col-span-12")}>
-      {/* Label */}
+      {/* Label — `<div>` car le control n'est pas un input ciblable. */}
       {!hideLabel && (
-        <label
-          htmlFor={field.name}
+        <div
+          id={`${field.name}-label`}
           className={cn(
             "block text-sm font-medium",
             hasError && "text-destructive"
@@ -377,13 +377,18 @@ export function SimpleTableField({
         >
           {field.label}
           {field.isRequired && <span className="text-destructive ml-1">*</span>}
-        </label>
+        </div>
       )}
 
       {field.info && <HintText text={field.info} />}
 
       {/* Table */}
-      <div className="rounded-md border border-border">
+      <div
+        className="rounded-md border border-border"
+        aria-labelledby={!hideLabel ? `${field.name}-label` : undefined}
+        aria-invalid={hasError || undefined}
+        aria-describedby={hasError ? `${field.name}-error` : undefined}
+      >
         <ScrollArea className="w-full whitespace-nowrap">
             <Table className="w-max min-w-full border-collapse">
             <TableHeader>

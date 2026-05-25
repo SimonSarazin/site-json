@@ -1,7 +1,17 @@
 import { useState, useMemo } from "react";
-import { Search, X, Plus, Loader2, Mail, UserPlus } from "lucide-react";
+import { Search, Plus, Mail, UserPlus } from "lucide-react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import type { FinderConfig, FinderElement, FinderElementType, FinderSearchResult } from "../types";
@@ -128,49 +138,40 @@ export function FinderSearchModal({
     toast.info(`Fonctionnalité à implémenter : créer un nouvel élément de type « ${config.elementLabel} »`);
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+  const dialogTitle = config.elementLabel
+    ? String(t("coform.finder.modal.titleWithLabel", undefined, { label: config.elementLabel }))
+    : String(t("coform.finder.modal.title"));
 
-      {/* Modal */}
-      <div className="relative bg-background rounded-lg shadow-xl w-full max-w-lg mx-4 max-h-[80vh] flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b">
-          <h3 className="font-semibold">
-            {config.elementLabel
-              ? String(t("coform.finder.modal.titleWithLabel", undefined, { label: config.elementLabel }))
-              : String(t("coform.finder.modal.title"))}
-          </h3>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1 rounded-md hover:bg-muted transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+  return (
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto p-0 gap-0 flex flex-col">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b">
+          <DialogTitle>{dialogTitle}</DialogTitle>
+        </DialogHeader>
 
         {/* Search input */}
-        <div className="p-4 border-b">
+        <div className="px-6 py-4 border-b">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input
+            <Search aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
               autoFocus
               type="text"
               value={searchQuery}
               onChange={handleSearchChange}
               placeholder={config.placeholderSearchField || String(t("coform.finder.modal.searchPlaceholder"))}
-              className="w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
+              aria-label={String(t("coform.finder.modal.searchPlaceholder"))}
+              className="pl-10"
             />
             {isSearching && (
-              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                <Spinner label={String(t("coform.status.loading", "Chargement"))} />
+              </span>
             )}
           </div>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto px-6 py-4">
           {/* Zone sélectionnés */}
           {Object.keys(selectedInModal).length > 0 && (
             <div className="mb-4">
@@ -235,14 +236,10 @@ export function FinderSearchModal({
                       label: config.elementLabel || String(t("coform.finder.fallbackElement")),
                     }))}
                   </p>
-                  <button
-                    type="button"
-                    onClick={handleAddNew}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-                  >
-                    <Plus className="w-4 h-4" />
+                  <Button type="button" onClick={handleAddNew} className="gap-2">
+                    <Plus aria-hidden="true" className="w-4 h-4" />
                     <span>{String(t("coform.finder.modal.addNewButton"))}</span>
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>
@@ -252,33 +249,36 @@ export function FinderSearchModal({
           {showInviteForm && (
             <div className="bg-muted/50 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-4">
-                <UserPlus className="w-5 h-5 text-primary" />
+                <UserPlus aria-hidden="true" className="w-5 h-5 text-primary" />
                 <span className="font-medium">{String(t("coform.finder.modal.inviteTitle"))}</span>
               </div>
               <div className="space-y-3">
                 <div>
-                  <label className="text-sm font-medium">{String(t("coform.finder.modal.inviteNameLabel"))}</label>
-                  <input
+                  <Label htmlFor="finder-invite-name" className="text-sm font-medium">
+                    {String(t("coform.finder.modal.inviteNameLabel"))}
+                  </Label>
+                  <Input
+                    id="finder-invite-name"
                     type="text"
                     placeholder={String(t("coform.finder.modal.inviteNamePlaceholder"))}
-                    className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    className="mt-1"
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium">{String(t("coform.finder.modal.inviteEmailLabel"))}</label>
-                  <input
+                  <Label htmlFor="finder-invite-email" className="text-sm font-medium">
+                    {String(t("coform.finder.modal.inviteEmailLabel"))}
+                  </Label>
+                  <Input
+                    id="finder-invite-email"
                     type="email"
                     placeholder={String(t("coform.finder.modal.inviteEmailPlaceholder"))}
-                    className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    className="mt-1"
                   />
                 </div>
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-                >
-                  <Mail className="w-4 h-4" />
+                <Button type="button" className="gap-2">
+                  <Mail aria-hidden="true" className="w-4 h-4" />
                   <span>{String(t("coform.finder.modal.inviteSendButton"))}</span>
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -286,36 +286,25 @@ export function FinderSearchModal({
           {/* Placeholder initial */}
           {searchQuery.length < 2 && !isSearching && (
             <div className="text-center py-8 text-muted-foreground">
-              <Search className="w-12 h-12 mx-auto mb-2 opacity-50" />
+              <Search aria-hidden="true" className="w-12 h-12 mx-auto mb-2 opacity-50" />
               <p>{String(t("coform.finder.modal.searchHint"))}</p>
             </div>
           )}
         </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-2 p-4 border-t">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 border rounded-md hover:bg-muted transition-colors"
-          >
+        <DialogFooter className="px-6 py-4 border-t">
+          <Button type="button" variant="outline" onClick={onClose}>
             {String(t("coform.finder.modal.cancel"))}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={handleValidate}
             disabled={Object.keys(selectedInModal).length === 0}
-            className={cn(
-              "px-4 py-2 rounded-md transition-colors",
-              Object.keys(selectedInModal).length > 0
-                ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                : "bg-muted text-muted-foreground cursor-not-allowed"
-            )}
           >
             {String(t("coform.finder.modal.validate"))}
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
