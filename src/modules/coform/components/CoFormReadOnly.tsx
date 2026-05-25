@@ -166,7 +166,7 @@ function ReadOnlySection({
 }: {
   step: SubFormFields;
   data: Record<string, FormFieldValue>;
-  formId?: string;
+  formId: string;
   answerId?: string;
 }) {
   return (
@@ -203,7 +203,7 @@ function ReadOnlyField({
 }: {
   field: FormFieldMapping;
   value: FormFieldValue;
-  formId?: string;
+  formId: string;
   answerId?: string;
   subFormId?: string;
 }) {

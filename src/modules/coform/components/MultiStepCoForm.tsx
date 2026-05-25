@@ -161,9 +161,12 @@ function MultiStepCoFormContent({
     }
   };
 
-  if (!fields) {
+  if (!fields || !coform.formData) {
     return <div>{t("coform.status.loading")}</div>;
   }
+  // Narrow local : permet aux callbacks (Controller.render, etc.) d'utiliser
+  // formId sans avoir à re-vérifier le null.
+  const formId = coform.formData.id;
 
   return (
     <div ref={containerRef} className={cn("space-y-6", className)}>
@@ -422,7 +425,7 @@ function MultiStepCoFormContent({
                           errors={form.formState.errors}
                           value={controllerField.value as import("../types").UploaderValue}
                           onChange={controllerField.onChange}
-                          formId={coform.formData?.id}
+                          formId={formId}
                           answerId={coform.answerId}
                           subKey={fields.subFormId ? `${fields.subFormId}.${field.name}` : undefined}
                         />

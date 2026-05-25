@@ -33,8 +33,8 @@ interface UploaderFieldProps {
   errors: FieldErrors;
   value?: UploaderValue | UploaderLegacyValue;
   onChange?: (value: UploaderValue | UploaderLegacyValue) => void;
-  /** ID du formulaire parent (requis pour charger les fichiers via la lib) */
-  formId?: string;
+  /** ID du formulaire parent (requis pour charger les fichiers legacy via la lib) */
+  formId: string;
   /** ID de la réponse CoForm (pour charger les fichiers legacy depuis la DB) */
   answerId?: string;
   /** SubKey de l'input (format "subFormId.fieldName") */
@@ -92,10 +92,10 @@ export function UploaderField({ field, errors, value = [], onChange, formId, ans
 
   // Récupération depuis la DB pour les valeurs legacy sans fichiers
   const { files: fetchedFiles, isLoading: isLoadingFiles } = useCoFormAnswerFiles({
-    formId: formId ?? "",
+    formId,
     answerId: answerId ?? "",
     subKey: subKey ?? "",
-    enabled: isLegacyWithoutFiles && !!formId && !!answerId && !!subKey,
+    enabled: isLegacyWithoutFiles && !!answerId && !!subKey,
   });
 
   type FileItem = string | ImageUploadValue | ExistingUploadFile;
