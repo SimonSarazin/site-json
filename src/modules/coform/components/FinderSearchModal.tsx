@@ -6,10 +6,10 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
-import type { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
+import type { GlobalAutocompleteCostumData, SearchEntity } from "@communecter/cocolight-api-client";
 import type { FinderConfig, FinderElement, FinderSearchResult, FinderElementType } from "../types";
 import { FinderElementCard } from "./FinderElementCard";
-import { toRelativeImageUrl } from "../utils";
+import { toFinderSearchResult, toRelativeImageUrl } from "../utils";
 
 interface FinderSearchModalProps {
   /** Configuration du finder */
@@ -40,7 +40,7 @@ export function FinderSearchModal({
 }: FinderSearchModalProps) {
   useLoadNamespace("modules/coform");
   const t = useT("modules/coform");
-  const { entity } = useCocolight();
+  const { entity, helper } = useCocolight();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<FinderSearchResult[]>([]);
@@ -116,43 +116,32 @@ export function FinderSearchModal({
         // Appel API via le client Cocolight
         const result = await entity.searchCostum(param);
 
-        // Les results sont un objet avec des IDs comme clés (ou un array)
-        const resultsObj = result?.results || {};
-        
-        // Convertir les résultats et filtrer les déjà sélectionnés
-        // Le SDK Cocolight encapsule les données dans _serverData
-        const results = Object.entries(resultsObj)
-          .map(([key, item]: [string, unknown]) => {
-            // Le SDK encapsule les données dans _serverData (avec underscore)
-            const entityItem = item as { _serverData?: Record<string, unknown>; serverData?: Record<string, unknown> };
-            const rawData = entityItem._serverData || entityItem.serverData || item as Record<string, unknown>;
-            
-            // Obtenir le vrai MongoDB ID depuis _serverData.id
-            let mongoId: string = key;
-            if (rawData.id && typeof rawData.id === "string") {
-              mongoId = rawData.id;
-            } else if (rawData._id) {
-              if (typeof rawData._id === "object" && rawData._id !== null && "$oid" in (rawData._id as object)) {
-                mongoId = (rawData._id as { $oid: string }).$oid;
-              } else if (typeof rawData._id === "string") {
-                mongoId = rawData._id;
-              }
+        // `PaginatorPage.results` est typé array dans le SDK, mais on supporte les
+        // 2 formes (array ou object `{id: item}`) par défense — pareil que
+        // `useAutocomplete`. `Object.values` couvre les 2 cas.
+        const rawResults = Object.values(result?.results ?? {}) as unknown[];
+
+        // Transforme les items JSON bruts en instances SDK via `helper.fromEntityJSON`.
+        // Si l'item est déjà une instance (typeof "object" + getEntityType), on le garde
+        // tel quel. Cela évite l'extraction manuelle de `_id.$oid` (MongoDB EJSON).
+        const fallbackType: FinderElementType = Array.isArray(config.type)
+          ? config.type[0]
+          : config.type;
+
+        const results: FinderSearchResult[] = rawResults
+          .map((item): SearchEntity => {
+            if (item && typeof item === "object" && "getEntityType" in item) {
+              return item as SearchEntity;
             }
-            
-            return {
-              id: mongoId,
-              name: (rawData.name as string) || String(t("coform.finder.fallbackElement")),
-              type: (rawData.collection as string) || (rawData.type as string) || (Array.isArray(config.type) ? config.type[0] : config.type),
-              profilThumbImageUrl: rawData.profilThumbImageUrl as string | undefined,
-              email: rawData.email as string | undefined,
-              address: rawData.address as {
-                streetAddress?: string;
-                postalCode?: string;
-                addressLocality?: string;
-              } | undefined,
-            };
+            return helper.fromEntityJSON(item, entity) as SearchEntity;
           })
-          .filter((result) => !selectedElements[result.id]);
+          .map((sdkEntity) => {
+            const r = toFinderSearchResult(sdkEntity, fallbackType);
+            return r.name
+              ? r
+              : { ...r, name: String(t("coform.finder.fallbackElement")) };
+          })
+          .filter((r) => r.id && !selectedElements[r.id]);
 
         setSearchResults(results);
 
@@ -173,7 +162,7 @@ export function FinderSearchModal({
     };
 
     performSearch();
-  }, [debouncedSearchQuery, isOpen, entity, config, selectedElements]);
+  }, [debouncedSearchQuery, isOpen, entity, helper, config, selectedElements, t]);
 
   /**
    * Gestion de la saisie - le debounce est géré par useDebounce
