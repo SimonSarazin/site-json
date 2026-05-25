@@ -9,6 +9,7 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import type { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
 import type { FinderConfig, FinderElement, FinderSearchResult, FinderElementType } from "../types";
 import { FinderElementCard } from "./FinderElementCard";
+import { toRelativeImageUrl } from "../utils";
 
 interface FinderSearchModalProps {
   /** Configuration du finder */
@@ -182,7 +183,12 @@ export function FinderSearchModal({
   };
 
   /**
-   * Sélectionner/désélectionner un élément
+   * Sélectionner/désélectionner un élément.
+   *
+   * Le store interne `selectedInModal` conserve l'URL d'image **absolue** (telle que
+   * renvoyée par le backend) pour pouvoir l'afficher immédiatement via `<img src>` sans
+   * passer par `baseUrl`. La conversion absolue → relative se fait au moment de la
+   * persistance (cf. `handleValidate`).
    */
   const toggleSelection = (result: FinderSearchResult) => {
     setSelectedInModal((prev) => {
@@ -194,23 +200,11 @@ export function FinderSearchModal({
         if (!config.multiple) {
           Object.keys(newSelection).forEach((key) => delete newSelection[key]);
         }
-        // Convertir l'URL d'image en chemin relatif (sans le domaine)
-        let relativeImg: string | undefined;
-        if (result.profilThumbImageUrl) {
-          try {
-            const url = new URL(result.profilThumbImageUrl, window.location.origin);
-            relativeImg = url.pathname + url.search;
-          } catch {
-            // Si ce n'est pas une URL complète, utiliser tel quel
-            relativeImg = result.profilThumbImageUrl;
-          }
-        }
-        
         newSelection[result.id] = {
           id: result.id,
           name: result.name,
           type: result.type as FinderElementType,
-          img: relativeImg,
+          img: result.profilThumbImageUrl,
         };
       }
       return newSelection;
@@ -218,10 +212,17 @@ export function FinderSearchModal({
   };
 
   /**
-   * Valider la sélection
+   * Valider la sélection.
+   *
+   * On convertit les URLs d'image en chemins relatifs **avant** de remonter au parent
+   * (cf. `toRelativeImageUrl`) — c'est la frontière "affichage interne ↔ persistance".
+   * `FinderElementCard` (côté lecture) sait rebaser via la prop `baseUrl`.
    */
   const handleValidate = () => {
-    const elements = Object.values(selectedInModal);
+    const elements = Object.values(selectedInModal).map<FinderElement>((el) => ({
+      ...el,
+      img: toRelativeImageUrl(el.img),
+    }));
     if (elements.length > 0) {
       onValidate(elements);
     }
