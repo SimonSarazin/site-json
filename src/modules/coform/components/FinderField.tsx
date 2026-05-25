@@ -198,15 +198,17 @@ export function FinderField({
         </p>
       )}
 
-      {/* Modal de recherche */}
-      <FinderSearchModal
-        config={config}
-        selectedElements={selectedElements}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onValidate={handleAddElements}
-        baseUrl={baseUrl}
-      />
+      {/* Modal de recherche — mount conditionnel : à chaque ouverture, le composant
+          est créé à neuf et son state interne est frais (plus de useEffect reset). */}
+      {isModalOpen && (
+        <FinderSearchModal
+          config={config}
+          selectedElements={selectedElements}
+          onClose={() => setIsModalOpen(false)}
+          onValidate={handleAddElements}
+          baseUrl={baseUrl}
+        />
+      )}
     </div>
   );
 }

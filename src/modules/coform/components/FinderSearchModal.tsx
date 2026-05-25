@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Search, X, Plus, Loader2, Mail, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -14,8 +14,6 @@ interface FinderSearchModalProps {
   config: FinderConfig;
   /** Éléments déjà sélectionnés (pour les exclure des résultats) */
   selectedElements: Record<string, FinderElement>;
-  /** Modal ouvert */
-  isOpen: boolean;
   /** Fermer le modal */
   onClose: () => void;
   /** Callback de validation des éléments sélectionnés */
@@ -27,11 +25,15 @@ interface FinderSearchModalProps {
 /**
  * Modal de recherche d'éléments pour le Finder
  * Utilise le client API Cocolight pour les recherches
+ *
+ * Le composant est mount conditionnellement par `FinderField` (`{isModalOpen && ...}`),
+ * donc son state interne est toujours frais à l'ouverture — pas de useEffect de reset
+ * nécessaire. Le focus initial sur l'input est géré par `autoFocus` qui marche
+ * naturellement puisque le composant est nouvellement monté.
  */
 export function FinderSearchModal({
   config,
   selectedElements,
-  isOpen,
   onClose,
   onValidate,
   baseUrl = "",
@@ -40,13 +42,11 @@ export function FinderSearchModal({
   const t = useT("modules/coform");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedInModal, setSelectedInModal] = useState<Record<string, FinderElement>>({});
-  const inputRef = useRef<HTMLInputElement>(null);
 
   // Hook React Query — encapsule debounce + searchCostum + transformation.
   const { results: rawSearchResults, isFetching: isSearching } = useFinderSearchResults({
     query: searchQuery,
     config,
-    enabled: isOpen,
   });
 
   // Filtrage local des éléments déjà sélectionnés + fallback name.
@@ -64,21 +64,6 @@ export function FinderSearchModal({
   const noResults = hasMinChars && !isSearching && searchResults.length === 0;
   const showAddNew = noResults && config.addNew;
   const showInviteForm = noResults && !config.addNew && config.invite;
-
-  // Reset state quand le modal s'ouvre.
-  // TODO (étape E du refactor) : remplacer par une `key={isOpen}` sur le parent
-  // pour re-mounter le composant et nettoyer le state naturellement.
-  /* eslint-disable react-hooks/set-state-in-effect -- reset volontaire à l'ouverture; sera supprimé en étape E */
-  useEffect(() => {
-    if (isOpen) {
-      setSearchQuery("");
-      setSelectedInModal({});
-      // Focus sur l'input — `autoFocus` ne marche pas car le composant est déjà
-      // monté avant l'ouverture (isOpen=true puis on rend l'input).
-      setTimeout(() => inputRef.current?.focus(), 100);
-    }
-  }, [isOpen]);
-  /* eslint-enable react-hooks/set-state-in-effect */
 
   /**
    * Gestion de la saisie - le debounce est géré par useDebounce
@@ -143,8 +128,6 @@ export function FinderSearchModal({
     toast.info(`Fonctionnalité à implémenter : créer un nouvel élément de type « ${config.elementLabel} »`);
   };
 
-  if (!isOpen) return null;
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
@@ -173,7 +156,7 @@ export function FinderSearchModal({
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
-              ref={inputRef}
+              autoFocus
               type="text"
               value={searchQuery}
               onChange={handleSearchChange}
