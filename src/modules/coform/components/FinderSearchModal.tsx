@@ -1,15 +1,13 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Search, X, Plus, Loader2, Mail, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { useCocolight } from "@/hooks/useCocolight";
-import { useDebounce } from "@/hooks/useDebounce";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
-import type { GlobalAutocompleteCostumData, SearchEntity } from "@communecter/cocolight-api-client";
-import type { FinderConfig, FinderElement, FinderSearchResult, FinderElementType } from "../types";
+import type { FinderConfig, FinderElement, FinderElementType, FinderSearchResult } from "../types";
 import { FinderElementCard } from "./FinderElementCard";
-import { toFinderSearchResult, toRelativeImageUrl } from "../utils";
+import { toRelativeImageUrl } from "../utils";
+import { useFinderSearchResults } from "../hooks/useFinderSearchResults";
 
 interface FinderSearchModalProps {
   /** Configuration du finder */
@@ -40,129 +38,47 @@ export function FinderSearchModal({
 }: FinderSearchModalProps) {
   useLoadNamespace("modules/coform");
   const t = useT("modules/coform");
-  const { entity, helper } = useCocolight();
   const [searchQuery, setSearchQuery] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<FinderSearchResult[]>([]);
   const [selectedInModal, setSelectedInModal] = useState<Record<string, FinderElement>>({});
-  const [showInviteForm, setShowInviteForm] = useState(false);
-  const [showAddNew, setShowAddNew] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  
-  // Debounce de la requête de recherche
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
-  // Reset state when modal opens
+  // Hook React Query — encapsule debounce + searchCostum + transformation.
+  const { results: rawSearchResults, isFetching: isSearching } = useFinderSearchResults({
+    query: searchQuery,
+    config,
+    enabled: isOpen,
+  });
+
+  // Filtrage local des éléments déjà sélectionnés + fallback name.
+  // Volontairement local au composant (hors hook) pour que le cache RQ reste
+  // stable même quand l'utilisateur sélectionne/désélectionne.
+  const searchResults = useMemo(() => {
+    const fallbackName = String(t("coform.finder.fallbackElement"));
+    return rawSearchResults
+      .filter((r) => !selectedElements[r.id])
+      .map((r) => (r.name ? r : { ...r, name: fallbackName }));
+  }, [rawSearchResults, selectedElements, t]);
+
+  // CTA dérivés : pas besoin de useState, ils sont fonction du flow courant.
+  const hasMinChars = searchQuery.length >= 2;
+  const noResults = hasMinChars && !isSearching && searchResults.length === 0;
+  const showAddNew = noResults && config.addNew;
+  const showInviteForm = noResults && !config.addNew && config.invite;
+
+  // Reset state quand le modal s'ouvre.
+  // TODO (étape E du refactor) : remplacer par une `key={isOpen}` sur le parent
+  // pour re-mounter le composant et nettoyer le state naturellement.
+  /* eslint-disable react-hooks/set-state-in-effect -- reset volontaire à l'ouverture; sera supprimé en étape E */
   useEffect(() => {
     if (isOpen) {
       setSearchQuery("");
-      setSearchResults([]);
       setSelectedInModal({});
-      setShowInviteForm(false);
-      setShowAddNew(false);
-      // Focus sur l'input
+      // Focus sur l'input — `autoFocus` ne marche pas car le composant est déjà
+      // monté avant l'ouverture (isOpen=true puis on rend l'input).
       setTimeout(() => inputRef.current?.focus(), 100);
     }
   }, [isOpen]);
-
-  /**
-   * Recherche via l'API Cocolight (searchCostum) - déclenchée par le debounce
-   */
-  useEffect(() => {
-    // Ne pas rechercher si moins de 2 caractères ou modal fermé
-    if (debouncedSearchQuery.length < 2 || !isOpen) {
-      if (debouncedSearchQuery.length < 2) {
-        setSearchResults([]);
-        setShowInviteForm(false);
-        setShowAddNew(false);
-      }
-      return;
-    }
-
-    if (!entity) {
-      console.warn("Finder: entity not available for search");
-      return;
-    }
-
-    const performSearch = async () => {
-      setIsSearching(true);
-      setShowInviteForm(false);
-      setShowAddNew(false);
-
-      try {
-        // Construire les paramètres de recherche
-        const searchType = Array.isArray(config.type) ? config.type : [config.type];
-        
-        const param: Partial<GlobalAutocompleteCostumData> = {
-          name: debouncedSearchQuery,
-          searchType: searchType as GlobalAutocompleteCostumData["searchType"],
-          indexMin: 0,
-          indexStep: 30,
-        };
-
-        // Ajouter les filtres si présents
-        if (config.filters && config.filters.length > 0) {
-          const filters: Record<string, string> = {};
-          config.filters.forEach((f) => {
-            filters[f.attributeName] = f.valueName;
-          });
-          param.filters = filters;
-        }
-
-        if (config.notSourceKey) {
-          param.notSourceKey = true;
-        }
-
-        // Appel API via le client Cocolight
-        const result = await entity.searchCostum(param);
-
-        // `PaginatorPage.results` est typé array dans le SDK, mais on supporte les
-        // 2 formes (array ou object `{id: item}`) par défense — pareil que
-        // `useAutocomplete`. `Object.values` couvre les 2 cas.
-        const rawResults = Object.values(result?.results ?? {}) as unknown[];
-
-        // Transforme les items JSON bruts en instances SDK via `helper.fromEntityJSON`.
-        // Si l'item est déjà une instance (typeof "object" + getEntityType), on le garde
-        // tel quel. Cela évite l'extraction manuelle de `_id.$oid` (MongoDB EJSON).
-        const fallbackType: FinderElementType = Array.isArray(config.type)
-          ? config.type[0]
-          : config.type;
-
-        const results: FinderSearchResult[] = rawResults
-          .map((item): SearchEntity => {
-            if (item && typeof item === "object" && "getEntityType" in item) {
-              return item as SearchEntity;
-            }
-            return helper.fromEntityJSON(item, entity) as SearchEntity;
-          })
-          .map((sdkEntity) => {
-            const r = toFinderSearchResult(sdkEntity, fallbackType);
-            return r.name
-              ? r
-              : { ...r, name: String(t("coform.finder.fallbackElement")) };
-          })
-          .filter((r) => r.id && !selectedElements[r.id]);
-
-        setSearchResults(results);
-
-        // Afficher "Ajouter nouveau" si aucun résultat et addNew activé
-        if (results.length === 0 && config.addNew) {
-          setShowAddNew(true);
-        }
-        // Afficher formulaire d'invitation si aucun résultat et invite activé
-        else if (results.length === 0 && config.invite) {
-          setShowInviteForm(true);
-        }
-      } catch (error) {
-        console.error("Erreur de recherche:", error);
-        setSearchResults([]);
-      } finally {
-        setIsSearching(false);
-      }
-    };
-
-    performSearch();
-  }, [debouncedSearchQuery, isOpen, entity, helper, config, selectedElements, t]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   /**
    * Gestion de la saisie - le debounce est géré par useDebounce
