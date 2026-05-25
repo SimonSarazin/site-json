@@ -73,10 +73,14 @@ export function DynamicCoForm({
   const zodSchema = useMemo(() => generateZodSchema(subFormsFields), [subFormsFields]);
   const generatedDefaults = useMemo(() => generateDefaultValues(subFormsFields), [subFormsFields]);
 
-  // Fusionner : valeurs externes (mode édition) écrasent les défauts générés
-  const defaultValues = externalDefaults
-    ? { ...generatedDefaults, ...externalDefaults }
-    : generatedDefaults;
+  // Fusionner : valeurs externes (mode édition) écrasent les défauts générés.
+  // useMemo pour stabiliser la référence — sinon `lastSubmittedValuesRef` (qui
+  // dépend de `defaultValues`) re-sérialise à chaque render et la sync async
+  // mode édition peut déclencher un faux auto-submit.
+  const defaultValues = useMemo(
+    () => (externalDefaults ? { ...generatedDefaults, ...externalDefaults } : generatedDefaults),
+    [externalDefaults, generatedDefaults],
+  );
 
   type FormValues = z.infer<typeof zodSchema>;
 
@@ -107,9 +111,20 @@ export function DynamicCoForm({
     }));
   }, []);
 
-  // Ref pour auto-submit : dernier état soumis
-  const lastSubmittedValuesRef = useRef<string>(JSON.stringify(defaultValues));
+  // Ref pour auto-submit : dernier état soumis.
+  // Initialisé à null + syncé via useEffect ci-dessous quand `defaultValues`
+  // change (cas mode édition où les valeurs arrivent en async via
+  // `useCoFormAnswerQuery`). Évite un faux auto-submit au premier blur quand
+  // les `externalDefaults` arrivent après le mount initial.
+  const lastSubmittedValuesRef = useRef<string | null>(null);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Sync de la baseline d'auto-submit quand les defaults changent (mode édition
+  // async). On stringify les defaults eux-mêmes plutôt que les watchedValues,
+  // car useForm n'expose les valeurs courantes qu'après le premier render.
+  useEffect(() => {
+    lastSubmittedValuesRef.current = JSON.stringify(defaultValues);
+  }, [defaultValues]);
 
   const handleFormSubmit = useCallback(async (data: FormValues) => {
     const hasAddedOptions = Object.keys(addedOptionsMap).some(k => addedOptionsMap[k].length > 0);
@@ -135,8 +150,14 @@ export function DynamicCoForm({
     };
   }, [submitRef, handleSubmit, handleFormSubmit]);
 
+  // Auto-submit debounced : déclenché 600 ms après le dernier changement de
+  // valeur, uniquement si la valeur courante diffère de la dernière soumise.
+  // La baseline `lastSubmittedValuesRef` est null tant que `defaultValues`
+  // n'est pas synchronisé (mode édition async) → on skip pour éviter un faux
+  // submit avec des valeurs encore non-hydratées.
   useEffect(() => {
     if (!autoSubmitOnBlur) return;
+    if (lastSubmittedValuesRef.current === null) return;
     const current = JSON.stringify(watchedValues);
     if (current === lastSubmittedValuesRef.current) return;
 
@@ -149,7 +170,7 @@ export function DynamicCoForm({
     return () => {
       if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     };
-  });
+  }, [watchedValues, autoSubmitOnBlur, handleSubmit, handleFormSubmit]);
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">

@@ -1,6 +1,7 @@
 import { useMemo, useRef, useCallback, useState } from "react";
 import type { FieldErrors } from "react-hook-form";
 import { FileText, Upload, X, Loader2, FolderOpen } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getBaseUrl } from "@/lib/constant/common";
@@ -12,6 +13,7 @@ import { useT } from "@/hooks/useT";
 import "../i18n/i18n";
 import type { FormFieldMapping, UploaderValue, UploaderLegacyValue, ImageUploadValue, ExistingUploadFile } from "../types";
 import { useCoFormAnswerFiles } from "../hooks/useCoFormAnswerFiles";
+import { COFORM_QUERY_KEYS } from "../constants";
 
 function HintText({ text }: { text: string }) {
   return (
@@ -68,6 +70,7 @@ function isExistingFile(item: unknown): item is ExistingUploadFile {
 export function UploaderField({ field, errors, value = [], onChange, formId, answerId, subKey }: UploaderFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const { api } = useCocolight();
+  const queryClient = useQueryClient();
   const baseUrl = getBaseUrl();
   const t = useT("modules/coform");
   const hasError = !!errors[field.name];
@@ -168,13 +171,30 @@ export function UploaderField({ field, errors, value = [], onChange, formId, ans
     if (!onChange) return;
     const item = files[index];
 
-    // Si c'est un fichier existant en DB, le supprimer côté serveur
+    // Si c'est un fichier existant en DB, le supprimer côté serveur.
+    // Note : la lib SDK 1.0.134 ne fournit pas (encore) de méthode entity
+    // `answer.deleteFile(docId)` — son AnswerFileItem.docId pointe explicitement
+    // vers `deleteDocumentById` (cf. Answer.d.ts:111). Migration future possible
+    // si la lib expose un helper entity. Pour l'instant, on garde l'appel raw
+    // mais on invalide proprement le cache RQ après succès.
     if (isExistingFile(item)) {
+      if (!api) {
+        showErrorToast(
+          new Error("API non initialisée"),
+          "coform.uploader.deleteFileError",
+          t,
+        );
+        return;
+      }
       setDeletingIndex(index);
       try {
-        if (api) {
-          await api.endpointApi.deleteDocumentById({
-            pathParams: { id: item.docId },
+        await api.endpointApi.deleteDocumentById({
+          pathParams: { id: item.docId },
+        });
+        // Invalidation : la liste des fichiers de l'answer doit être refetchée.
+        if (answerId && subKey) {
+          await queryClient.invalidateQueries({
+            queryKey: COFORM_QUERY_KEYS.answerFiles(answerId, subKey),
           });
         }
       } catch (error) {
@@ -190,7 +210,7 @@ export function UploaderField({ field, errors, value = [], onChange, formId, ans
     } else {
       onChange((Array.isArray(value) ? value : []).filter((_, i) => i !== index));
     }
-  }, [files, onChange, legacyVal, value, api]);
+  }, [files, onChange, legacyVal, value, api, queryClient, answerId, subKey, t]);
 
   const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
