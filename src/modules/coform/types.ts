@@ -235,35 +235,89 @@ export interface MultiCheckboxPlusSelectedOption {
  */
 export type MultiCheckboxPlusValue = Array<Record<string, MultiCheckboxPlusSelectedOption>>;
 
-export interface CoFormParams {
-  [fieldKey: string]: {
+/**
+ * Configuration d'un champ (sous-objet de `params[fieldKey]`).
+ *
+ * Couvre les patterns concrets utilisés par le backend Cocolight :
+ * - multiCheckboxPlus / multiRadio : list, tofill, optinfo, placeholders, optimage
+ * - finder    : filter (filtres `attributeName/valueName`)
+ * - simpleTable : columns, rows, tableName, activeNewLine, singleAnswerByLine
+ * - sectionTitle : showBar, barPosition, align, textDecoration
+ * - uploader  : itemLimit, sizeLimit, fileType, displayMode
+ *
+ * Pour les clés non explicites, l'index signature `unknown` permet l'accès
+ * sans cast — le call-site doit alors faire son narrow.
+ */
+export interface CoFormFieldConfig {
+  list?: string[];
+  positionType?: "column" | "row";
+  rowMode?: "fixed" | "auto";
+  nbPerRow?: string;
+  attributeValueRadio?: boolean;
+  // Spécifique multiCheckboxPlus
+  global?: {
     list?: string[];
-    positionType?: "column" | "row";
-    rowMode?: "fixed" | "auto";
-    nbPerRow?: string;
-    attributeValueRadio?: boolean;
-    // Spécifique multiCheckboxPlus
-    global?: {
-      list?: string[];
-      nbAnswersMax?: number;
-      rank?: "true" | "false" | boolean;
-      addValue?: "true" | "false" | boolean;
-      newValuePlaceholder?: string;
-      width?: string;
-      dependOn?: string;
-    };
-    /** Type par option: simple (checkbox seul) ou cplx (checkbox + input texte) */
-    tofill?: Record<string, MultiCheckboxPlusOptionType>;
-    /** Info supplémentaire par option */
-    optinfo?: Record<string, string>;
-    /** Placeholder du champ texte par option (pour type cplx) */
-    placeholdersckb?: Record<string, string>;
-    /** Champ texte obligatoire si option cplx cochée */
-    mandatoryCplx?: boolean;
-    /** Images par option (array d'objets avec docPath) */
-    optimage?: Record<string, Array<{ docPath?: string; [key: string]: unknown }> | null>;
-    [key: string]: unknown;
+    nbAnswersMax?: number;
+    rank?: "true" | "false" | boolean;
+    addValue?: "true" | "false" | boolean;
+    newValuePlaceholder?: string;
+    width?: string;
+    dependOn?: string;
   };
+  /** Type par option : simple (checkbox seul) ou cplx (checkbox + input texte) */
+  tofill?: Record<string, MultiCheckboxPlusOptionType>;
+  /** Info supplémentaire par option */
+  optinfo?: Record<string, string>;
+  /** Placeholder radio (multiRadio) */
+  placeholdersradio?: Record<string, string>;
+  /** Placeholder du champ texte par option (pour type cplx) */
+  placeholdersckb?: Record<string, string>;
+  /** Champ texte obligatoire si option cplx cochée */
+  mandatoryCplx?: boolean;
+  /** Images par option (array d'objets avec docPath) */
+  optimage?: Record<string, Array<{ docPath?: string; [key: string]: unknown }> | null>;
+  // ─── Finder ─────────────────────────────────────────────────────────────
+  /** Filtres backend (id de filtre → `{attributeName, valueName}`) */
+  filter?: Record<string, { attributeName?: string; valueName?: string }>;
+  // ─── SimpleTable ────────────────────────────────────────────────────────
+  /** Colonnes : array OU object keyé par id de colonne */
+  columns?:
+    | Array<{ label?: string; type?: string }>
+    | Record<string, { label?: string; type?: string }>;
+  /** Rows : array OU object keyé par id de ligne */
+  rows?: Array<{ label?: string }> | Record<string, { label?: string }>;
+  tableName?: string;
+  activeNewLine?: boolean | string;
+  singleAnswerByLine?: boolean | string;
+  // ─── SectionTitle ──────────────────────────────────────────────────────
+  showBar?: boolean | string;
+  barPosition?: string;
+  align?: string;
+  textDecoration?: string;
+  // ─── Uploader ──────────────────────────────────────────────────────────
+  itemLimit?: number | string;
+  sizeLimit?: number | string;
+  fileType?: string | string[];
+  displayMode?: string;
+  [key: string]: unknown;
+}
+
+/**
+ * `formData.params` côté backend Cocolight — sac de paramètres très libre.
+ *
+ * **2 patterns mixés** dans le même objet :
+ *  1. **Sous-config par fieldKey** : `params["finderXXX"]`, `params["simpleTableXXX"]`,
+ *     `params["uploaderXXX"]`, etc. → objet de type `CoFormFieldConfig`
+ *  2. **Valeurs à la racine avec suffixe fieldKey** (pattern evaluation) :
+ *     `params["categoriesXXX"]`, `params["criteriasXXX"]`, `params["criteriaLabelXXX"]`,
+ *     `params["categoryNumberXXX"]`, `params["voteTypeXXX"]`, etc. → valeurs scalaires
+ *     ou records typés par le call-site
+ *
+ * Le type valeur est `CoFormFieldConfig` (l'index signature `[k: string]: unknown`
+ * de `CoFormFieldConfig` couvre les patterns racine via cast côté call-site).
+ */
+export interface CoFormParams {
+  [key: string]: CoFormFieldConfig;
 }
 
 export interface CoFormData {
