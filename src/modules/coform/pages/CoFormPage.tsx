@@ -170,11 +170,11 @@ export default function CoFormPage() {
                             </p>
                             {isConnectionError && (
                                 <div className="bg-muted/50 p-4 rounded-lg text-sm text-left space-y-2">
-                                    <p className="font-medium">💡 Deux options :</p>
-                                    <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
-                                        <li>Démarrer le backend PHP Communecter sur le port 3000</li>
-                                        <li>Utiliser la <Link to="/coform/test" className="text-primary hover:underline">page de test</Link> avec des données statiques</li>
-                                    </ol>
+                                    <p className="font-medium">💡 Que faire :</p>
+                                    <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                                        <li>Vérifier que le backend Communecter est démarré sur le port 3000</li>
+                                        <li>Vérifier votre connexion réseau</li>
+                                    </ul>
                                 </div>
                             )}
                             {!isConnectionError && (
@@ -184,21 +184,13 @@ export default function CoFormPage() {
                             )}
                         </div>
                         <div className="pt-4 flex gap-3 justify-center">
-                            {isConnectionError ? (
-                                <Button asChild variant="default" className="gap-2">
-                                    <Link to="/coform/test">
-                                        Voir la page de test
-                                    </Link>
-                                </Button>
-                            ) : (
-                                <Button 
-                                    variant="outline" 
-                                    className="gap-2"
-                                    onClick={() => window.location.reload()}
-                                >
-                                    Réessayer
-                                </Button>
-                            )}
+                            <Button
+                                variant="outline"
+                                className="gap-2"
+                                onClick={() => window.location.reload()}
+                            >
+                                Réessayer
+                            </Button>
                             <Button asChild variant="outline" className="gap-2">
                                 <Link to="/">
                                     <Home className="w-4 h-4" />

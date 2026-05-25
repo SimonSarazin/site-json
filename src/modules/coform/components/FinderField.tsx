@@ -134,7 +134,13 @@ export function FinderField({
 
   /**
    * Édite un élément (placeholder).
-   * TODO: Ouvrir le formulaire d'édition de l'élément.
+   *
+   * @future Hook prévu pour ouvrir un formulaire d'édition contextuel d'un
+   * élément sélectionné par le Finder (org/citoyen/etc.). Tant que la feature
+   * n'est pas implémentée, le bouton "Edit" est désactivé côté UI (cf. prop
+   * `canEdit={false}` ci-dessous) — la config backend `editElement: true` est
+   * donc ignorée volontairement. À activer en remplaçant le toast par
+   * l'ouverture d'un modal d'édition + en restaurant `canEdit={config.editElement && !readOnly}`.
    */
   const handleEditElement = (element: FinderElement) => {
     console.log("Edit element:", element);
@@ -182,7 +188,11 @@ export function FinderField({
               key={element.id}
               element={element}
               canRemove={!readOnly}
-              canEdit={config.editElement && !readOnly}
+              // canEdit forcé false tant que handleEditElement est un placeholder
+              // (cf. @future ci-dessus). La config backend `editElement: true`
+              // est volontairement ignorée pour ne pas afficher un bouton qui
+              // mènerait à un toast "à implémenter".
+              canEdit={false}
               onRemove={handleRemoveElement}
               onEdit={handleEditElement}
               baseUrl={baseUrl}

@@ -18,6 +18,7 @@ import { EvaluationField } from "./EvaluationField";
 import { FinderField } from "./FinderField";
 import { SimpleTableField } from "./SimpleTableField";
 import { UploaderField } from "./UploaderField";
+import { CoFormBanner } from "./CoFormBanner";
 import { useConditionalFields } from "../hooks/useConditionalFields";
 import type { CoFormData, SubFormData, AllStepsData, MultiCheckboxPlusValue, MultiRadioValue, EvaluationValue, FinderValue, SimpleTableValue } from "../types";
 import type { CoFormSubmitMode, CoFormVariant } from "../schema";
@@ -172,30 +173,7 @@ function MultiStepCoFormContent({
 
   return (
     <div ref={containerRef} className={cn("space-y-6", className)}>
-      {/* Bannière du formulaire avec titre en overlay */}
-      {coform.formData?.useBannerImg && coform.formData.profilBannerUrl ? (
-        <div className="relative w-full overflow-hidden rounded-lg">
-          <img
-            src={coform.formData.profilBannerUrl}
-            alt="Bannière du formulaire"
-            className="w-full h-48 object-cover"
-          />
-          <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent" />
-          {coform.formData.name && (
-            <div className="absolute bottom-0 left-0 right-0 p-8">
-              <h1 className="text-4xl font-bold text-white drop-shadow-lg">
-                {coform.formData.name}
-              </h1>
-            </div>
-          )}
-        </div>
-      ) : coform.formData?.name ? (
-        <div className="w-full rounded-lg bg-linear-to-r from-primary/10 via-primary/5 to-background p-8 border">
-          <h1 className="text-4xl font-bold text-foreground">
-            {coform.formData.name}
-          </h1>
-        </div>
-      ) : null}
+      <CoFormBanner formData={coform.formData} />
 
       {/* Barre de progression - Style amélioré */}
       {showProgress && (

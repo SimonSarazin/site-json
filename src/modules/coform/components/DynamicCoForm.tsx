@@ -11,6 +11,7 @@ import { EvaluationField } from "./EvaluationField";
 import { FinderField } from "./FinderField";
 import { SimpleTableField } from "./SimpleTableField";
 import { UploaderField } from "./UploaderField";
+import { CoFormBanner } from "./CoFormBanner";
 import type { CoFormData, SubFormData, AddedOptionsMap, EvaluationValue, FinderValue, SimpleTableValue, MultiRadioValue } from "../types";
 import { parseCoFormFields, generateZodSchema, generateDefaultValues } from "../utils/formParser";
 import { useConditionalFields } from "../hooks/useConditionalFields";
@@ -174,32 +175,7 @@ export function DynamicCoForm({
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
-      {/* Bannière du formulaire avec titre en overlay */}
-      {!hideBanner && (
-        formData.useBannerImg && formData.profilBannerUrl ? (
-          <div className="relative w-full overflow-hidden rounded-lg">
-            <img
-              src={formData.profilBannerUrl}
-              alt={t("coform.banner.alt")}
-              className="w-full h-48 object-cover"
-            />
-            <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent" />
-            {formData.name && (
-              <div className="absolute bottom-0 left-0 right-0 p-8">
-                <h1 className="text-4xl font-bold text-white drop-shadow-lg">
-                  {formData.name}
-                </h1>
-              </div>
-            )}
-          </div>
-        ) : formData.name ? (
-          <div className="w-full rounded-lg bg-linear-to-r from-primary/10 via-primary/5 to-background p-8 border">
-            <h1 className="text-4xl font-bold text-foreground">
-              {formData.name}
-            </h1>
-          </div>
-        ) : null
-      )}
+      <CoFormBanner formData={formData} hidden={hideBanner} />
 
       {subFormsFields.map((subForm) => {
           const fieldsGrid = (
