@@ -103,14 +103,30 @@ interface StepSubmitData {
 }
 
 /**
- * Hook pour soumettre les données d'une étape.
- * Sauvegarde locale en cache — pas d'appel API intermédiaire.
+ * Hook pour soumettre les données d'une étape (placeholder — non câblé en prod).
  *
- * @unused Pas de consommateur dans le repo au 2026-05-17 (vérifié `grep -rn`).
- * Conservé pour usage futur prévu — potentiellement pour ajouter du tracking
- * analytics par étape, ou pour un mode autosave qui appellerait `saveStepData`
- * du Provider. Son comportement actuel (`console.log` + `invalidateQueries`)
- * est volontairement minimal.
+ * @future Placeholder pour la fonctionnalité "submit étape par étape" du module
+ * CoForm. L'infrastructure côté `CoFormProvider` est en place :
+ *  - `submitMode: "step" | "both"` route les soumissions vers `onStepSubmit`
+ *  - `useCoFormStep.submitStep()` valide via Zod puis appelle `submitStepData`
+ *  - `MultiStepCoForm.handleSubmit` invoque `submitStep()` à chaque "Next"
+ *
+ * Ce qui manque pour activer :
+ *  1. Un endpoint backend dédié (ex: `SAVE_COFORM_STEP`) ou réutiliser
+ *     `saveCoformAnswer` avec un payload partiel
+ *  2. Câbler `onStepSubmit` dans les pages (`CoFormPage`, `CoFormAnswerPage`)
+ *     en remplaçant ou complétant le `useCoFormFinalMutation` actuel
+ *  3. Décider du contrat de retour (id provisoire ? validation côté serveur ?)
+ *
+ * Cas d'usage prévus :
+ *  - Brouillons auto-sauvés à chaque "Next" (UX longue forme)
+ *  - Tracking analytics par étape (drop-off rate)
+ *  - Validation backend par étape (avant le submit final)
+ *
+ * Comportement actuel (`console.log` + `invalidateQueries`) est intentionnel :
+ *  → permet de tester le câblage côté front sans backend, et de logger en dev.
+ *
+ * Ne pas supprimer — voir `README.md#step-mode` pour le statut produit.
  */
 export function useCoFormStepMutation({ formId, onSuccess, onError }: UseCoFormStepMutationOptions) {
   const queryClient = useQueryClient();

@@ -50,7 +50,9 @@ interface MultiStepCoFormProps {
  */
 export function MultiStepCoForm({
   formData,
-  submitMode = "step",
+  // Aligné sur le default de `CoFormProvider` : "final" pour éviter le no-op
+  // silencieux quand le caller ne précise pas le mode. Voir README.md#step-mode.
+  submitMode = "final",
   onStepSubmit,
   onFinalSubmit,
   onSuccess,
