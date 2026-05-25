@@ -42,6 +42,27 @@ function HintText({ text }: { text: string }) {
   );
 }
 
+/**
+ * Message d'erreur de champ avec ARIA — id stable pour `aria-describedby`
+ * et `role="alert"` pour annonce SR immédiate. Réutilisé par tous les
+ * composants de champs CoForm (export pour usage cross-fichier).
+ */
+export function FieldError({ name, message }: { name: string; message: string | undefined }) {
+  if (!message) return null;
+  return (
+    <p
+      id={`${name}-error`}
+      role="alert"
+      className="text-xs text-destructive flex items-center gap-1 mt-1"
+    >
+      <svg aria-hidden="true" className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+      </svg>
+      {message}
+    </p>
+  );
+}
+
 interface FormFieldProps {
   field: FormFieldMapping;
   register?: UseFormRegister<Record<string, unknown>>;
@@ -80,18 +101,14 @@ export function TextField({ field, register, errors }: FormFieldProps) {
           id={field.name}
           type={field.inputType || "text"}
           placeholder={field.placeholder}
+          aria-invalid={hasError || undefined}
+          aria-describedby={hasError ? `${field.name}-error` : undefined}
+          aria-required={field.isRequired || undefined}
           {...(register ? register(field.name) : {})}
           className="border border-input focus-visible:ring-0 focus-visible:border-input"
         />
       </div>
-      {hasError && (
-        <p className="text-xs text-destructive flex items-center gap-1 mt-1">
-          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-          </svg>
-          {errors[field.name]?.message as string}
-        </p>
-      )}
+      <FieldError name={field.name} message={errors[field.name]?.message as string | undefined} />
     </div>
   );
 }
@@ -140,20 +157,16 @@ export function TextAreaField({ field, register, errors, value, onChange }: Form
           <Textarea
             id={field.name}
             placeholder={field.placeholder}
+            aria-invalid={hasError || undefined}
+            aria-describedby={hasError ? `${field.name}-error` : undefined}
+            aria-required={field.isRequired || undefined}
             {...(register ? register(field.name) : {})}
             className="min-h-25 border border-input focus-visible:ring-0 focus-visible:border-input"
           />
         </div>
       )}
 
-      {hasError && (
-        <p className="text-xs text-destructive flex items-center gap-1 mt-1">
-          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-          </svg>
-          {errors[field.name]?.message as string}
-        </p>
-      )}
+      <FieldError name={field.name} message={errors[field.name]?.message as string | undefined} />
     </div>
   );
 }
@@ -252,18 +265,21 @@ export function RadioField({ field, errors, value, onChange }: FormFieldProps) {
       <RadioGroup
         value={selectedValue}
         onValueChange={onChange}
+        aria-invalid={hasError || undefined}
+        aria-describedby={hasError ? `${field.name}-error` : undefined}
+        aria-required={field.isRequired || undefined}
         className={cn(
           isRow ? "flex flex-row flex-wrap gap-4" : "flex-col space-y-0.5"
         )}
       >
         {options.map((option, index) => (
-          <div 
-            key={index} 
+          <div
+            key={index}
             className="flex items-center space-x-2.5 cursor-pointer"
           >
             <RadioGroupItem value={option} id={`${field.name}-${index}`} />
-            <Label 
-              htmlFor={`${field.name}-${index}`} 
+            <Label
+              htmlFor={`${field.name}-${index}`}
               className="font-normal cursor-pointer flex-1"
             >
               {option}
@@ -272,14 +288,7 @@ export function RadioField({ field, errors, value, onChange }: FormFieldProps) {
         ))}
       </RadioGroup>
 
-      {hasError && (
-        <p className="text-xs text-destructive flex items-center gap-1 mt-1">
-          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-          </svg>
-          {errors[field.name]?.message as string}
-        </p>
-      )}
+      <FieldError name={field.name} message={errors[field.name]?.message as string | undefined} />
     </div>
   );
 }
@@ -312,6 +321,9 @@ export function CheckboxField({ field, errors, value = [], onChange }: FormField
       {field.info && <HintText text={field.info} />}
 
       <div
+        role="group"
+        aria-invalid={hasError || undefined}
+        aria-describedby={hasError ? `${field.name}-error` : undefined}
         className={cn(
           isRow ? "flex flex-row flex-wrap gap-4" : "flex-col space-y-0.5"
         )}
@@ -319,8 +331,8 @@ export function CheckboxField({ field, errors, value = [], onChange }: FormField
         {options.map((option, index) => {
           const isChecked = selectedValues.includes(option);
           return (
-            <div 
-              key={index} 
+            <div
+              key={index}
               className="flex items-center space-x-2.5 py-1 cursor-pointer"
             >
               <Checkbox
@@ -328,8 +340,8 @@ export function CheckboxField({ field, errors, value = [], onChange }: FormField
                 checked={isChecked}
                 onCheckedChange={(checked) => handleCheckboxChange(option, checked as boolean)}
               />
-              <Label 
-                htmlFor={`${field.name}-${index}`} 
+              <Label
+                htmlFor={`${field.name}-${index}`}
                 className="font-normal cursor-pointer flex-1"
               >
                 {option}
@@ -339,14 +351,7 @@ export function CheckboxField({ field, errors, value = [], onChange }: FormField
         })}
       </div>
 
-      {hasError && (
-        <p className="text-xs text-destructive flex items-center gap-1 mt-1">
-          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-          </svg>
-          {errors[field.name]?.message as string}
-        </p>
-      )}
+      <FieldError name={field.name} message={errors[field.name]?.message as string | undefined} />
     </div>
   );
 }

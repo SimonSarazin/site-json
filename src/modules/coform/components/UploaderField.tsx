@@ -14,6 +14,7 @@ import "../i18n/i18n";
 import type { FormFieldMapping, UploaderValue, UploaderLegacyValue, ImageUploadValue, ExistingUploadFile } from "../types";
 import { useCoFormAnswerFiles } from "../hooks/useCoFormAnswerFiles";
 import { COFORM_QUERY_KEYS } from "../constants";
+import { FieldError } from "./FormFields";
 
 function HintText({ text }: { text: string }) {
   return (
@@ -286,6 +287,11 @@ export function UploaderField({ field, errors, value = [], onChange, formId, ans
               role="button"
               tabIndex={0}
               aria-label={addLabel}
+              aria-invalid={hasError || undefined}
+              aria-describedby={cn(
+                `${field.name}-constraints`,
+                hasError && `${field.name}-error`,
+              )}
               className={cn(
                 "relative flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed px-6 py-8 transition-colors cursor-pointer select-none outline-none",
                 isDragOver
@@ -301,7 +307,7 @@ export function UploaderField({ field, errors, value = [], onChange, formId, ans
               onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); inputRef.current?.click(); } }}
             >
               <div className={cn("flex h-12 w-12 items-center justify-center rounded-full transition-colors", isDragOver ? "bg-primary/10" : "bg-muted")}>
-                <Upload className={cn("h-6 w-6 transition-colors", isDragOver ? "text-primary" : "text-muted-foreground")} />
+                <Upload aria-hidden="true" className={cn("h-6 w-6 transition-colors", isDragOver ? "text-primary" : "text-muted-foreground")} />
               </div>
               <div className="text-center">
                 <p className="text-sm font-medium text-foreground">
@@ -314,9 +320,9 @@ export function UploaderField({ field, errors, value = [], onChange, formId, ans
                   <span>{t("coform.uploader.pasteHint", "Ctrl+V pour coller")}</span>
                 </p>
               </div>
-              <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+              <div id={`${field.name}-constraints`} className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                 <span>{t("coform.uploader.maxFiles", "Maximum {{max}} fichier(s)").replace("{{max}}", String(maxFiles))}</span>
-                <span>·</span>
+                <span aria-hidden="true">·</span>
                 <span>{t("coform.uploader.maxSize", "Taille max : {{size}} Mo").replace("{{size}}", String(Math.round(maxSize / 1_000_000)))}</span>
               </div>
             </div>
@@ -404,11 +410,7 @@ export function UploaderField({ field, errors, value = [], onChange, formId, ans
         </div>
       )}
 
-      {hasError && (
-        <p className="text-xs text-destructive flex items-center gap-1 mt-1">
-          {errors[field.name]?.message as string}
-        </p>
-      )}
+      <FieldError name={field.name} message={errors[field.name]?.message as string | undefined} />
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import type { FormFieldMapping, FinderValue, FinderElement, FinderConfig } from "../types";
 import { FinderElementCard } from "./FinderElementCard";
 import { FinderSearchModal } from "./FinderSearchModal";
+import { FieldError } from "./FormFields";
 
 // Import HintText pour afficher l'info en markdown
 import ReactMarkdown from "react-markdown";
@@ -202,11 +203,14 @@ export function FinderField({
       )}
 
       {/* Message d'erreur */}
-      {hasError && (
-        <p className="text-sm text-destructive">
-          {errors[field.name]?.message?.toString() || String(t("coform.finder.requiredField"))}
-        </p>
-      )}
+      <FieldError
+        name={field.name}
+        message={
+          hasError
+            ? (errors[field.name]?.message?.toString() || String(t("coform.finder.requiredField")))
+            : undefined
+        }
+      />
 
       {/* Modal de recherche — mount conditionnel : à chaque ouverture, le composant
           est créé à neuf et son state interne est frais (plus de useEffect reset). */}

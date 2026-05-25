@@ -8,6 +8,7 @@ import type {
   EvaluationVoteValue,
 } from "../types";
 import { EvaluationVoteCell } from "./EvaluationVoteCell";
+import { FieldError } from "./FormFields";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import "../i18n/i18n";
@@ -184,7 +185,11 @@ export function EvaluationField({
 
       {/* Table d'évaluation */}
       <div className="overflow-x-auto border rounded-md">
-        <table className="w-full border-collapse text-sm min-w-max">
+        <table
+          className="w-full border-collapse text-sm min-w-max"
+          aria-invalid={hasError || undefined}
+          aria-describedby={hasError ? `${field.name}-error` : undefined}
+        >
           <thead>
             {/* Ligne 1: Label catégorie + Label critères */}
             <tr className="border-b border-border">
@@ -279,11 +284,7 @@ export function EvaluationField({
       </div>
 
       {/* Message d'erreur */}
-      {hasError && (
-        <p className="text-sm text-destructive">
-          {errors[field.name]?.message as string}
-        </p>
-      )}
+      <FieldError name={field.name} message={errors[field.name]?.message as string | undefined} />
     </div>
   );
 }

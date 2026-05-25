@@ -4,6 +4,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { FieldError } from "./FormFields";
 import type { FormFieldMapping, MultiRadioValue } from "../types";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -85,6 +86,9 @@ export function MultiRadioField({
       <RadioGroup
         value={selectedValue}
         onValueChange={handleRadioChange}
+        aria-invalid={hasError || undefined}
+        aria-describedby={hasError ? `${field.name}-error` : undefined}
+        aria-required={field.isRequired || undefined}
         className="flex-col space-y-1"
       >
         {options.map((option, index) => {
@@ -120,14 +124,7 @@ export function MultiRadioField({
         })}
       </RadioGroup>
 
-      {hasError && (
-        <p className="text-xs text-destructive flex items-center gap-1 mt-1">
-          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-          </svg>
-          {errors[field.name]?.message as string}
-        </p>
-      )}
+      <FieldError name={field.name} message={errors[field.name]?.message as string | undefined} />
     </div>
   );
 }
