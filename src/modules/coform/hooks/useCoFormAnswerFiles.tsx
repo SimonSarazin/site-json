@@ -4,6 +4,8 @@ import { COFORM_QUERY_KEYS } from "../constants";
 import type { ExistingUploadFile } from "../types";
 
 interface UseCoFormAnswerFilesOptions {
+  /** ID du formulaire parent (requis pour propager le contexte costum). */
+  formId: string;
   /** ID de la réponse CoForm */
   answerId: string;
   /** SubKey utilisé lors de l'upload (ex: "formId.inputId") */
@@ -12,16 +14,6 @@ interface UseCoFormAnswerFilesOptions {
   docType?: "image" | "file";
   /** Activer/désactiver la requête */
   enabled?: boolean;
-}
-
-interface AnswerFile {
-  id: string | null;
-  name: string | null;
-  size: number | null;
-  docPath: string;
-  imagePath: string | null;
-  imageThumbPath: string | null;
-  imageMediumPath: string | null;
 }
 
 interface UseCoFormAnswerFilesReturn {
@@ -35,13 +27,19 @@ interface UseCoFormAnswerFilesReturn {
 }
 
 /**
- * Hook pour récupérer les fichiers d'un input uploader dans une réponse CoForm
- * 
- * Utilisé pour charger les fichiers de l'ancien système qui n'ont que la clé 'updateDate'
- * sans la clé 'files' dans la réponse.
- * 
+ * Hook pour récupérer les fichiers d'un input uploader dans une réponse CoForm.
+ *
+ * Utilisé pour charger les fichiers de l'ancien système qui n'ont que la clé
+ * `updateDate` sans la clé `files` dans la réponse.
+ *
+ * Délégation à la lib (1.0.134+) :
+ *   form.answer({id}).getFiles({ subKey, docType }) → AnswerFileItem[]
+ *
+ * `AnswerFileItem` du SDK expose déjà `docId`, `docPath`, `name?` — mapping
+ * direct sur `ExistingUploadFile` côté site-json.
  */
 export function useCoFormAnswerFiles({
+  formId,
   answerId,
   subKey,
   docType = "file",
@@ -55,32 +53,19 @@ export function useCoFormAnswerFiles({
     queryFn: async () => {
       if (!api) throw new Error("API non initialisée");
 
-      const response = await api.endpointApi.coformGetAnswerFiles({
-        answerId,
-        subKey,
-        docType,
-      });
+      const form = await api.form({ id: formId });
+      const answer = await form.answer({ id: answerId });
+      const fetched = await answer.getFiles({ subKey, docType });
 
-      const result = response?.serverData ?? response;
-      
-      if (!result.result) {
-        throw new Error(result.msg || "Erreur lors de la récupération des fichiers");
-      }
+      const files: ExistingUploadFile[] = fetched.map((f) => ({
+        docId: f.docId,
+        docPath: f.docPath,
+        name: f.name,
+      }));
 
-      const files: ExistingUploadFile[] = (result.files || [])
-        .filter((f: AnswerFile) => f.id && f.docPath)
-        .map((f: AnswerFile) => ({
-          docId: f.id!,
-          docPath: f.docPath,
-          name: f.name ?? undefined,
-        }));
-
-      return {
-        files,
-        count: result.count || 0,
-      };
+      return { files, count: files.length };
     },
-    enabled: enabled && isReady && !!answerId && !!subKey,
+    enabled: enabled && isReady && !!formId && !!answerId && !!subKey,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 

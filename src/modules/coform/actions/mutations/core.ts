@@ -86,12 +86,11 @@ function resolveContextOrThrow(ctx: CoFormMutationContext): ResolvedCoFormContex
  * Factory pour créer un hook de mutation CoForm avec toasts + invalidation automatique.
  *
  * @example
- * export const useDeleteAnswer = createCoFormMutation<{ answerId: string }>({
- *   action: async (ctx, { answerId }) => {
- *     await ctx.api.endpointApi.deleteElement({
- *       reason: "delete coform answer",
- *       pathParams: { type: "answers", id: answerId },
- *     });
+ * export const useDeleteAnswer = createCoFormMutation<{ formId: string; answerId: string }>({
+ *   action: async (ctx, { formId, answerId }) => {
+ *     const form = await ctx.api.form({ id: formId });
+ *     const answer = await form.answer({ id: answerId });
+ *     await answer.delete();
  *   },
  *   i18n: {
  *     successKey: "toasts.answerDeleted",

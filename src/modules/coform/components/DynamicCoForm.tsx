@@ -361,6 +361,7 @@ export function DynamicCoForm({
                           errors={errors}
                           value={controllerField.value as import("../types").UploaderValue}
                           onChange={controllerField.onChange}
+                          formId={formData.id}
                           answerId={answerId}
                           subKey={`${subForm.subFormId}.${field.name}`}
                         />

@@ -32,11 +32,13 @@ function getFileExtension(path: string): string {
 
 interface ReadOnlyUploaderGalleryProps {
   value: unknown;
+  /** ID du formulaire parent (requis pour charger les fichiers via la lib) */
+  formId?: string;
   answerId?: string;
   subKey?: string;
 }
 
-export function ReadOnlyUploaderGallery({ value, answerId, subKey }: ReadOnlyUploaderGalleryProps) {
+export function ReadOnlyUploaderGallery({ value, formId, answerId, subKey }: ReadOnlyUploaderGalleryProps) {
   const baseUrl = getBaseUrl();
   const t = useT("modules/coform");
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
@@ -53,9 +55,10 @@ export function ReadOnlyUploaderGallery({ value, answerId, subKey }: ReadOnlyUpl
   const isLegacyWithoutFiles = isLegacyVal && !hasLegacyFiles;
 
   const { files: fetchedFiles } = useCoFormAnswerFiles({
+    formId: formId ?? "",
     answerId: answerId ?? "",
     subKey: subKey ?? "",
-    enabled: isLegacyWithoutFiles && !!answerId && !!subKey,
+    enabled: isLegacyWithoutFiles && !!formId && !!answerId && !!subKey,
   });
 
   // Normaliser en liste de FileEntry

@@ -1,6 +1,19 @@
 /**
  * Types pour les données CoForm
  * Basés sur la structure retournée par l'API GET_COFORM_BY_ID
+ *
+ * TODO (Round 3 — migration types vers @communecter/cocolight-api-client) :
+ *  - CoFormData                → FormItemNormalized (drop cast dans useCoFormQuery)
+ *  - CoFormAnswer              → AnswerItemNormalized
+ *  - CoFormAccessInfo          → FormAccess
+ *  - CoFormParent              → ParentsMap
+ *  - CoFormAccessReason        → AnswerEditDeniedReason-like (vérifier compat)
+ *  - AllStepsData              → AllStepsData (re-export depuis lib)
+ *
+ * Les types très spécifiques (EvaluationConfig, FinderConfig, MultiCheckboxPlusValue,
+ * UploaderConfig, etc.) restent ici — ils ne dupliquent rien de la lib.
+ *
+ * Voir MIGRATION_COFORM.md Module 6.
  */
 
 /**

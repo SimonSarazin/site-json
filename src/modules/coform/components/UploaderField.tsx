@@ -33,6 +33,8 @@ interface UploaderFieldProps {
   errors: FieldErrors;
   value?: UploaderValue | UploaderLegacyValue;
   onChange?: (value: UploaderValue | UploaderLegacyValue) => void;
+  /** ID du formulaire parent (requis pour charger les fichiers via la lib) */
+  formId?: string;
   /** ID de la réponse CoForm (pour charger les fichiers legacy depuis la DB) */
   answerId?: string;
   /** SubKey de l'input (format "subFormId.fieldName") */
@@ -63,7 +65,7 @@ function isExistingFile(item: unknown): item is ExistingUploadFile {
   return typeof item === "object" && item !== null && "docId" in item && "docPath" in item;
 }
 
-export function UploaderField({ field, errors, value = [], onChange, answerId, subKey }: UploaderFieldProps) {
+export function UploaderField({ field, errors, value = [], onChange, formId, answerId, subKey }: UploaderFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const { api } = useCocolight();
   const baseUrl = getBaseUrl();
@@ -90,9 +92,10 @@ export function UploaderField({ field, errors, value = [], onChange, answerId, s
 
   // Récupération depuis la DB pour les valeurs legacy sans fichiers
   const { files: fetchedFiles, isLoading: isLoadingFiles } = useCoFormAnswerFiles({
+    formId: formId ?? "",
     answerId: answerId ?? "",
     subKey: subKey ?? "",
-    enabled: isLegacyWithoutFiles && !!answerId && !!subKey,
+    enabled: isLegacyWithoutFiles && !!formId && !!answerId && !!subKey,
   });
 
   type FileItem = string | ImageUploadValue | ExistingUploadFile;

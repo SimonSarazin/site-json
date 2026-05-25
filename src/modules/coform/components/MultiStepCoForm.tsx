@@ -422,6 +422,7 @@ function MultiStepCoFormContent({
                           errors={form.formState.errors}
                           value={controllerField.value as import("../types").UploaderValue}
                           onChange={controllerField.onChange}
+                          formId={coform.formData?.id}
                           answerId={coform.answerId}
                           subKey={fields.subFormId ? `${fields.subFormId}.${field.name}` : undefined}
                         />

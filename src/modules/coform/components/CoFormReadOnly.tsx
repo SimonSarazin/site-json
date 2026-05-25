@@ -136,6 +136,7 @@ export function CoFormReadOnly({
                 key={field.name}
                 field={field}
                 value={(normalizedAnswers[step.subFormId] ?? {})[field.name]}
+                formId={formData.id}
                 answerId={answerId}
                 subFormId={step.subFormId}
               />
@@ -146,6 +147,7 @@ export function CoFormReadOnly({
             key={step.subFormId}
             step={step}
             data={normalizedAnswers[step.subFormId] ?? {}}
+            formId={formData.id}
             answerId={answerId}
           />
         )
@@ -159,10 +161,12 @@ export function CoFormReadOnly({
 function ReadOnlySection({
   step,
   data,
+  formId,
   answerId,
 }: {
   step: SubFormFields;
   data: Record<string, FormFieldValue>;
+  formId?: string;
   answerId?: string;
 }) {
   return (
@@ -177,6 +181,7 @@ function ReadOnlySection({
               key={field.name}
               field={field}
               value={data[field.name]}
+              formId={formId}
               answerId={answerId}
               subFormId={step.subFormId}
             />
@@ -192,11 +197,13 @@ function ReadOnlySection({
 function ReadOnlyField({
   field,
   value,
+  formId,
   answerId,
   subFormId,
 }: {
   field: FormFieldMapping;
   value: FormFieldValue;
+  formId?: string;
   answerId?: string;
   subFormId?: string;
 }) {
@@ -223,6 +230,7 @@ function ReadOnlyField({
           ) : (
             <ReadOnlyUploaderGallery
               value={value}
+              formId={formId}
               answerId={answerId}
               subKey={subKey}
             />

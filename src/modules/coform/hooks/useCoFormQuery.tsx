@@ -18,7 +18,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCocolight } from "@/hooks/useCocolight";
 import { COFORM_QUERY_KEYS } from "../constants";
 import type { CoFormData, CoFormAccessInfo, CoFormAnswer, SubFormData, AllStepsData } from "../types";
-import { normalizeAnswerData } from "../actions/mutations/uploadHelpers";
 
 // Re-export du hook de soumission finale (compat ascendante).
 export {
@@ -151,9 +150,15 @@ interface UseCoFormAnswerQueryReturn {
 
 /**
  * Hook pour charger une réponse CoForm existante par son ID.
- * Utilise l'endpoint `COFORM_ANSWERS_BY_ID` (findanswered).
  *
- * Normalise les données uploader (legacy format) via `normalizeAnswerData`.
+ * Délégation à la lib (1.0.134+) :
+ *  - `form.answer({id})` puis `.get()` interne via `Answer.get()` qui auto-injecte
+ *    `formId` depuis le parent Form.
+ *  - `_transformServerData` côté lib normalise automatiquement les valeurs d'inputs
+ *    `*.uploader` du format Array `[{docId, docPath}]` vers `{updateDate, files}` —
+ *    plus besoin de `normalizeAnswerData` côté site-json (Round 2 P1).
+ *  - `canEdit` / `editDeniedReason` sont calculés backend et présents dans
+ *    `answer.serverData`.
  */
 export function useCoFormAnswerQuery({
   formId,
@@ -161,7 +166,6 @@ export function useCoFormAnswerQuery({
   enabled = true,
 }: UseCoFormAnswerQueryOptions): UseCoFormAnswerQueryReturn {
   const { api, loading } = useCocolight();
-  const queryClient = useQueryClient();
   const isReady = !loading && !!api;
 
   const { data, isLoading, error, refetch } = useQuery({
@@ -169,23 +173,11 @@ export function useCoFormAnswerQuery({
     queryFn: async () => {
       if (!api) throw new Error("API non initialisée");
 
-      const response = await api.endpointApi.coformAnswersById({
-        answerId,
-        fields: ["answers", "user", "created", "updated", "draft", "finished", "form", "canEdit", "editDeniedReason"],
-        // Transmettre le formId pour le calcul des droits d'édition côté serveur
-        ...(formId ? { formId } : {}),
-      });
-
-      const raw = response?.serverData?.data ?? response?.data;
-      if (!raw) throw new Error("Réponse introuvable");
-
-      // Normaliser les données pour gérer la rétrocompatibilité des inputs uploader
-      const formData = queryClient.getQueryData<CoFormData>(COFORM_QUERY_KEYS.form(formId)) ?? null;
-      const normalizedAnswers = raw.answers
-        ? normalizeAnswerData(raw.answers, formData)
-        : raw.answers;
-
-      return { ...raw, answers: normalizedAnswers } as CoFormAnswer;
+      // form.answer({id}) → get() auto-injecte formId via parent ; serverData
+      // contient canEdit/editDeniedReason calculés backend.
+      const form = await api.form({ id: formId });
+      const answer = await form.answer({ id: answerId });
+      return answer.serverData as unknown as CoFormAnswer;
     },
     enabled: enabled && isReady && !!answerId,
     staleTime: 2 * 60 * 1000,
