@@ -35,7 +35,6 @@ export default function MeeteemSection({ id, props }: { id?: string; props: Meet
   const { coform, path: dataPath } = props;
 
   const { lastItemRef, transformedResults: rawResults, isLoading } = useFetchAnswerQuery({
-    queryKeyPrefix: `Meeteem-${coform}`,
     coformId: coform,
     view: viewMode,
     baseParams: {

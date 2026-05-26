@@ -24,7 +24,6 @@ export function AmpliSectionRenderer({ activeTab, config }: AmpliSectionRenderer
         transformedResults,
         isLoading
     } = useFetchAnswerQuery({
-        queryKeyPrefix: `Meeteem-${config.coform}`,
         coformId: config.coform,
         view: "map",
         baseParams: {

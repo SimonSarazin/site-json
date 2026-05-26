@@ -3,9 +3,9 @@ import { useMemo } from "react";
 import { useCocolight } from "../../../hooks/useCocolight";
 import { useInfiniteQueryScrollNext } from "../../../hooks/useInfiniteQueryScroll";
 import getMultipleValuesByPaths from "@/helpers/getMultipleValuesByPaths";
+import { AMPLI_QUERY_KEYS } from "../constants/queryKeys";
 
 export interface UseFetchAnswerQueryParams {
-    queryKeyPrefix: string;
     coformId: string;
     view: 'answers' | 'map' | 'split';
     baseParams?: {
@@ -25,7 +25,6 @@ export interface UseFetchAnswerQueryParams {
 }
 
 export function useFetchAnswerQuery({
-    queryKeyPrefix,
     coformId,
     view,
     baseParams = {},
@@ -42,12 +41,7 @@ export function useFetchAnswerQuery({
         isPending,
         refetch,
     } = useInfiniteQueryScrollNext({
-        queryKey: [
-            queryKeyPrefix,
-            coformId,
-            view,
-            JSON.stringify(baseParams),
-        ],
+        queryKey: AMPLI_QUERY_KEYS.FETCH_ANSWERS(coformId, view, baseParams),
         queryFn: async ({ pageParam } = { pageParam: undefined }) => {
             if (!entity) {
                 throw new Error("API non initialisée - ni organization ni entity disponible");
