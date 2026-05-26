@@ -172,16 +172,16 @@ export function UploaderField({ field, errors, value = [], onChange, formId, ans
     if (!onChange) return;
     const item = files[index];
 
-    // Si c'est un fichier existant en DB, le supprimer côté serveur.
-    // Note : la lib SDK 1.0.134 ne fournit pas (encore) de méthode entity
-    // `answer.deleteFile(docId)` — son AnswerFileItem.docId pointe explicitement
-    // vers `deleteDocumentById` (cf. Answer.d.ts:111). Migration future possible
-    // si la lib expose un helper entity. Pour l'instant, on garde l'appel raw
-    // mais on invalide proprement le cache RQ après succès.
+    // Si c'est un fichier existant en DB, le supprimer côté serveur via la
+    // méthode entity `answer.deleteFile(docId)` (lib ≥ 1.0.135). La lib fait
+    // le cleanup local automatique des structures `{updateDate, files}` dans
+    // `serverData.answers` post-suppression, donc le caller n'a pas besoin de
+    // refetch — on conserve quand même l'invalidation RQ pour le cache des
+    // listes d'answer files éventuellement préchargées.
     if (isExistingFile(item)) {
-      if (!api) {
+      if (!api || !answerId) {
         showErrorToast(
-          new Error("API non initialisée"),
+          new Error("API ou answerId manquants"),
           "coform.uploader.deleteFileError",
           t,
         );
@@ -189,11 +189,12 @@ export function UploaderField({ field, errors, value = [], onChange, formId, ans
       }
       setDeletingIndex(index);
       try {
-        await api.endpointApi.deleteDocumentById({
-          pathParams: { id: item.docId },
-        });
-        // Invalidation : la liste des fichiers de l'answer doit être refetchée.
-        if (answerId && subKey) {
+        const form = await api.form({ id: formId });
+        const answer = await form.answer({ id: answerId });
+        await answer.deleteFile(item.docId);
+        // Invalidation : la liste des fichiers de l'answer doit être refetchée
+        // si un consommateur (ReadOnlyUploaderGallery) en a affiché.
+        if (subKey) {
           await queryClient.invalidateQueries({
             queryKey: COFORM_QUERY_KEYS.answerFiles(answerId, subKey),
           });
@@ -211,7 +212,7 @@ export function UploaderField({ field, errors, value = [], onChange, formId, ans
     } else {
       onChange((Array.isArray(value) ? value : []).filter((_, i) => i !== index));
     }
-  }, [files, onChange, legacyVal, value, api, queryClient, answerId, subKey, t]);
+  }, [files, onChange, legacyVal, value, api, queryClient, formId, answerId, subKey, t]);
 
   const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
