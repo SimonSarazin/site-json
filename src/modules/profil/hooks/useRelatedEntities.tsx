@@ -4,6 +4,7 @@ import { isOrganization, isProject } from "@/lib/getTypedEntity";
 import { useMemo } from "react";
 import type { RelationType, RelatedEntitiesParams, UseRelatedEntitiesResult } from "../types";
 import { useCocolight } from "@/hooks/useCocolight";
+import { PROFIL_QUERY_KEYS } from "../constants/queryKeys";
 
 export type { RelationType, RelatedEntitiesParams, UseRelatedEntitiesResult };
 
@@ -28,7 +29,7 @@ export function useRelatedEntities(
     error,
     refetch,
   } = useInfiniteQueryScrollNextWithTransform<Project | Event | Poi>({
-    queryKey: ["related-entities", entity?.slug, relationType, params],
+    queryKey: PROFIL_QUERY_KEYS.RELATED_ENTITIES(entity?.slug ?? null, relationType, params),
     queryFn: async ({ pageParam }) => {
       if (!entity) {
         throw new Error("Entity is required");

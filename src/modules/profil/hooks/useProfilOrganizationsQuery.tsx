@@ -1,6 +1,7 @@
 import { useInfiniteQueryScroll } from "@/hooks/useInfiniteQueryScroll";
 import type { EntityTypes, Organization, GetMembersNoAdminData } from "@communecter/cocolight-api-client";
 import { useState } from "react";
+import { PROFIL_QUERY_KEYS } from "../constants/queryKeys";
 
 interface UseProfilOrganizationsQueryProps {
   entity: EntityTypes;
@@ -40,7 +41,7 @@ export function useProfilOrganizationsQuery({
     error,
     refetch,
   } = useInfiniteQueryScroll<Organization[]>({
-    queryKey: ["profile-organizations", entity?.id, entityType, searchQuery],
+    queryKey: PROFIL_QUERY_KEYS.PROFILE_ORGANIZATIONS(entity?.id ?? null, entityType, searchQuery),
     queryFn: async ({ pageParam = 0 }) => {
       if (!canFetchOrganizations || !entity?.id) {
         return [];

@@ -99,6 +99,66 @@ export const PROFIL_QUERY_KEYS = {
     userContextId: string | null = null,
   ) => ["answers-by-forms", entityId, formIds, userContextId] as const,
   ANSWERS_BY_FORMS_PREFIX: (entityId: string | null) => ["answers-by-forms", entityId] as const,
+
+  /**
+   * Liste paginée des abonnés d'une entité.
+   * Producteur : `useProfilSubscribersQuery`
+   */
+  PROFILE_SUBSCRIBERS: (entityId: string | null, searchQuery: string | null = "") =>
+    ["profile-subscribers", entityId, searchQuery] as const,
+  PROFILE_SUBSCRIBERS_PREFIX: (entityId: string | null) =>
+    ["profile-subscribers", entityId] as const,
+
+  /**
+   * Liste paginée des organisations liées à un user/entité.
+   * Producteur : `useProfilOrganizationsQuery`
+   * Consommateurs invalidants : `useOrganizationMutations` (add/remove)
+   */
+  PROFILE_ORGANIZATIONS: (
+    entityId: string | null,
+    entityType: string | null,
+    searchQuery: string | null = "",
+  ) => ["profile-organizations", entityId, entityType, searchQuery] as const,
+  PROFILE_ORGANIZATIONS_PREFIX: (entityId: string | null) =>
+    ["profile-organizations", entityId] as const,
+
+  /**
+   * Liste paginée des projets liés à un user/entité.
+   * Producteur : `useProfilProjectsQuery`
+   * Consommateurs invalidants : `useProjectMutations` (add/remove)
+   */
+  PROFILE_PROJECTS: (entityId: string | null, searchQuery: string | null = "") =>
+    ["profile-projects", entityId, searchQuery] as const,
+  PROFILE_PROJECTS_PREFIX: (entityId: string | null) =>
+    ["profile-projects", entityId] as const,
+
+  /**
+   * Liste paginée des membres d'une entité (User|Organization).
+   * Producteur : `useProfilMembersQuery`
+   */
+  PROFILE_MEMBERS: (entityId: string | null, searchQuery: string | null = "") =>
+    ["profile-members", entityId, searchQuery] as const,
+  PROFILE_MEMBERS_PREFIX: (entityId: string | null) =>
+    ["profile-members", entityId] as const,
+
+  /**
+   * Entités liées (Projects/Events/POI) à une entité parent par type de relation.
+   * Producteur : `useRelatedEntities`
+   */
+  RELATED_ENTITIES: (
+    slug: string | null,
+    relationType: string | null,
+    params: unknown = null,
+  ) => ["related-entities", slug, relationType, params] as const,
+  RELATED_ENTITIES_PREFIX: (slug: string | null) =>
+    ["related-entities", slug] as const,
+
+  /**
+   * Détails de votes (likes/reactions) sur un commentaire.
+   * Producteur : `useCommentVotes`
+   */
+  COMMENT_VOTES: (commentId: string | null) => ["comment-votes", commentId] as const,
+  COMMENT_VOTES_PREFIX: (commentId: string | null) => ["comment-votes", commentId] as const,
 } as const;
 
 export type ProfilQueryKeyType = ReturnType<

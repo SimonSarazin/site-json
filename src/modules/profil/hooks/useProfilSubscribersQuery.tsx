@@ -1,5 +1,6 @@
 import { useInfiniteQueryScroll } from "@/hooks/useInfiniteQueryScroll";
 import type { EntityTypes, User } from "@communecter/cocolight-api-client";
+import { PROFIL_QUERY_KEYS } from "../constants/queryKeys";
 
 interface UseProfilSubscribersQueryProps {
   entity: EntityTypes;
@@ -29,7 +30,7 @@ export function useProfilSubscribersQuery({
     error,
     refetch,
   } = useInfiniteQueryScroll<User[]>({
-    queryKey: ["profile-subscribers", entity.id, searchQuery],
+    queryKey: PROFIL_QUERY_KEYS.PROFILE_SUBSCRIBERS(entity.id ?? null, searchQuery),
     queryFn: async ({ pageParam = 0 }) => {
       if (!canFetchSubscribers) {
         return [];

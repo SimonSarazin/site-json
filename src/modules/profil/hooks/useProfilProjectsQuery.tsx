@@ -1,6 +1,7 @@
 import { useInfiniteQueryScroll } from "@/hooks/useInfiniteQueryScroll";
 import type { EntityTypes, Project } from "@communecter/cocolight-api-client";
 import { useState } from "react";
+import { PROFIL_QUERY_KEYS } from "../constants/queryKeys";
 
 interface UseProfilProjectsQueryProps {
   entity: EntityTypes;
@@ -31,7 +32,7 @@ export function useProfilProjectsQuery({
     error,
     refetch,
   } = useInfiniteQueryScroll<Project[]>({
-    queryKey: ["profile-projects", entity?.id, searchQuery],
+    queryKey: PROFIL_QUERY_KEYS.PROFILE_PROJECTS(entity?.id ?? null, searchQuery),
     queryFn: async ({ pageParam = 0 }) => {
       if (!canFetchProjects || !entity?.id) {
         return [];
