@@ -17,22 +17,24 @@
  * - JSDoc obligatoire : Producteur + Consommateurs invalidants
  */
 
-// Re-export des query keys des 6 modules (cagnotte, coform, news, profil,
-// search, ampli — ordre alphabétique).
+// Re-export des query keys des 7 modules (ampli, cagnotte, coform, interop,
+// news, profil, search — ordre alphabétique).
+export { AMPLI_QUERY_KEYS } from "@/modules/ampli/constants/queryKeys";
 export { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
 export { COFORM_QUERY_KEYS } from "@/modules/coform/constants/queryKeys";
+export { INTEROP_QUERY_KEYS } from "@/modules/interop/constants/queryKeys";
 export { NEWS_QUERY_KEYS } from "@/modules/news/constants/queryKeys";
 export { PROFIL_QUERY_KEYS } from "@/modules/profil/constants/queryKeys";
 export { SEARCH_QUERY_KEYS } from "@/modules/search/constants/queryKeys";
-export { AMPLI_QUERY_KEYS } from "@/modules/ampli/constants/queryKeys";
 
 // Re-export des types associés
+export type { AmpliQueryKeyType } from "@/modules/ampli/constants/queryKeys";
 export type { CagnotteQueryKeyType } from "@/modules/cagnotte/constants/queryKeys";
 export type { CoformQueryKeyType } from "@/modules/coform/constants/queryKeys";
+export type { InteropQueryKeyType } from "@/modules/interop/constants/queryKeys";
 export type { NewsQueryKeyType } from "@/modules/news/constants/queryKeys";
 export type { ProfilQueryKeyType } from "@/modules/profil/constants/queryKeys";
 export type {
   SearchQueryKeyParams,
   SearchQueryKeyType,
 } from "@/modules/search/constants/queryKeys";
-export type { AmpliQueryKeyType } from "@/modules/ampli/constants/queryKeys";

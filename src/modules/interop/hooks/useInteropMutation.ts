@@ -14,6 +14,7 @@
 import { useQueryClient, type QueryKey } from "@tanstack/react-query";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { INTEROP_QUERY_KEYS } from "../constants/queryKeys";
 import {
   asInteropEntity,
   type EntityWithInterop,
@@ -48,7 +49,7 @@ interface InteropMutationConfig<TParams, TData> {
  * export const useDiscourseLink = createInteropMutation<string, DiscourseLinkResult>({
  *   action: (entity, username) => entity.linkDiscourseAccount(username),
  *   i18n: { successKey: "toasts.discourse.linkSuccess", errorKey: "toasts.discourse.linkError" },
- *   invalidate: [["discourse-profil"]],
+ *   invalidate: [INTEROP_QUERY_KEYS.DISCOURSE_PROFIL_PREFIX()],
  * });
  */
 function createInteropMutation<TParams = void, TData = unknown>(
@@ -84,15 +85,6 @@ function createInteropMutation<TParams = void, TData = unknown>(
 }
 
 // ============================================================================
-// QUERY KEYS
-// ============================================================================
-
-const QUERY_KEYS = {
-  DISCOURSE_PROFIL: ["discourse-profil"] as const,
-  MEDIAWIKI_CONTRIBS: ["mediawiki-contribs"] as const,
-};
-
-// ============================================================================
 // DISCOURSE
 // ============================================================================
 
@@ -102,7 +94,7 @@ export const useDiscourseLink = createInteropMutation<string, DiscourseLinkResul
     successKey: "toasts.discourse.linkSuccess",
     errorKey: "toasts.discourse.linkError",
   },
-  invalidate: [QUERY_KEYS.DISCOURSE_PROFIL],
+  invalidate: [INTEROP_QUERY_KEYS.DISCOURSE_PROFIL_PREFIX()],
 });
 
 export const useDiscourseUnlink = createInteropMutation<void, DiscourseSimpleResult>({
@@ -111,7 +103,7 @@ export const useDiscourseUnlink = createInteropMutation<void, DiscourseSimpleRes
     successKey: "toasts.discourse.unlinkSuccess",
     errorKey: "toasts.discourse.unlinkError",
   },
-  invalidate: [QUERY_KEYS.DISCOURSE_PROFIL],
+  invalidate: [INTEROP_QUERY_KEYS.DISCOURSE_PROFIL_PREFIX()],
 });
 
 /**
@@ -148,7 +140,7 @@ export const useMediawikiLink = createInteropMutation<string, MediawikiResult>({
     successKey: "toasts.mediawiki.linkSuccess",
     errorKey: "toasts.mediawiki.linkError",
   },
-  invalidate: [QUERY_KEYS.MEDIAWIKI_CONTRIBS],
+  invalidate: [INTEROP_QUERY_KEYS.MEDIAWIKI_CONTRIBS_PREFIX()],
 });
 
 export const useMediawikiUnlink = createInteropMutation<void, MediawikiResult>({
@@ -157,5 +149,5 @@ export const useMediawikiUnlink = createInteropMutation<void, MediawikiResult>({
     successKey: "toasts.mediawiki.unlinkSuccess",
     errorKey: "toasts.mediawiki.unlinkError",
   },
-  invalidate: [QUERY_KEYS.MEDIAWIKI_CONTRIBS],
+  invalidate: [INTEROP_QUERY_KEYS.MEDIAWIKI_CONTRIBS_PREFIX()],
 });

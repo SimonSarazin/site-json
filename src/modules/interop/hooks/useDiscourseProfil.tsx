@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useInteropConfig } from "./useInteropConfigQuery";
 import { useInteropUserLinks } from "./useUserInteropLinks";
 import { useCocolight } from "@/hooks/useCocolight";
+import { INTEROP_QUERY_KEYS } from "../constants/queryKeys";
 import { asInteropEntity, type DiscourseProfilResult } from "./_interopEntity";
 
 // Re-export pour les consommateurs qui importent via `@/modules/interop`.
@@ -13,7 +14,7 @@ export function useDiscourseProfilQuery() {
   const { discourseUsername, isDiscourseLinked } = useInteropUserLinks();
 
   return useQuery<DiscourseProfilResult>({
-    queryKey: ["discourse-profil", entity?.id, discourseUsername],
+    queryKey: INTEROP_QUERY_KEYS.DISCOURSE_PROFIL(entity?.id ?? null, discourseUsername ?? null),
     queryFn: async () => {
       if (!entity || !discourseUsername) {
         throw new Error("Discourse profile query enabled without entity/username");

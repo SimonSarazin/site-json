@@ -13,6 +13,10 @@
  *    directement par chemin profond — ils ne dépendent pas de ce barrel.
  */
 
+// Query keys centralisés (single source of truth)
+export { INTEROP_QUERY_KEYS } from "./constants/queryKeys";
+export type { InteropQueryKeyType } from "./constants/queryKeys";
+
 // Composants Discourse
 /** @unused Pas de consommateur dans le repo au 2026-05-17. Conservé pour usage futur prévu. */
 export { default as DiscourseLink } from "./components/DiscourseLink";
