@@ -28,7 +28,7 @@ export async function prefetchSearchResults(
   params: SearchPrefetchParams
 ) {
   // Utilise la query key centralisée
-  const queryKey = SEARCH_QUERY_KEYS.results(params);
+  const queryKey = SEARCH_QUERY_KEYS.RESULTS(params);
 
   try {
     return await queryClient.ensureQueryData({

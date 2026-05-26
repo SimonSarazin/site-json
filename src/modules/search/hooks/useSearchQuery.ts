@@ -63,7 +63,7 @@ export function useSearchQuery({
   const { entity, helper } = useCocolight();
 
   // Query key centralisée (single source of truth)
-  const queryKey = SEARCH_QUERY_KEYS.results({
+  const queryKey = SEARCH_QUERY_KEYS.RESULTS({
     queryKeyPrefix,
     searchText,
     searchTags,
