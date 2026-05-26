@@ -1,6 +1,4 @@
 import type { UseFormRegister, FieldErrors } from "react-hook-form";
-import { Suspense } from "react";
-import { lazy } from "vite-preload";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
@@ -11,9 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import type { FormFieldMapping } from "../types";
-
-// Import dynamique pour éviter les erreurs SSR avec les imports CSS
-const MDEditor = lazy(() => import("@uiw/react-md-editor").then(mod => ({ default: mod.default })));
+import { MarkdownEditor } from "./MarkdownEditor";
 
 /**
  * Détecte si une chaîne est du HTML déjà rendu (ex: Parsedown PHP) ou du markdown brut.
@@ -135,16 +131,12 @@ export function TextAreaField({ field, register, errors, value, onChange }: Form
       {field.info && <HintText text={field.info} />}
 
       {isMarkdown ? (
-        <div data-color-mode="light">
-          <Suspense fallback={<div className="min-h-50 border rounded-md p-4 bg-muted/20 flex items-center justify-center text-sm text-muted-foreground">Chargement de l'éditeur...</div>}>
-            <MDEditor
-              value={textValue}
-              onChange={(val) => onChange?.(val || "")}
-              height={200}
-              preview="edit"
-            />
-          </Suspense>
-        </div>
+        <MarkdownEditor
+          value={textValue}
+          onChange={(val) => onChange?.(val || "")}
+          height={200}
+          preview="edit"
+        />
       ) : (
         <div className={cn(
           "relative",

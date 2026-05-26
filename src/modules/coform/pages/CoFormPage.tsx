@@ -4,6 +4,8 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { AlertCircle, Home, Info, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import LoginForm from "@/components/auth/LoginForm";
 import { SmartCoForm } from "../components/SmartCoForm";
 import { CoFormAccessGuard } from "../components/CoFormAccessGuard";
 import { CoFormAnswerPicker } from "../components/CoFormAnswerPicker";
@@ -57,10 +59,15 @@ export default function CoFormPage() {
     const isEditMode = pageState.view === "form" && pageState.isEditMode;
 
     // Charger les données du formulaire + informations d'accès
-    const { formData, access, isLoading, error } = useCoFormQuery({
+    const { formData, access, isLoading, error, refetch } = useCoFormQuery({
         formId: formId || "",
         enabled: !!formId,
     });
+
+    // Modal de login — affichée quand l'utilisateur clique "Se connecter" depuis
+    // le CoFormAccessGuard (cas `not_logged_in`). Après succès, on refetch les
+    // données du form pour recalculer l'access (canAnswer, existingAnswerId, ...).
+    const [loginDialogOpen, setLoginDialogOpen] = useState(false);
 
     const effectiveAnswerId = answerIdFromUrl
         ?? (isEditMode ? (access?.existingAnswerId ?? undefined) : undefined);
@@ -362,9 +369,7 @@ export default function CoFormPage() {
                     <CoFormAccessGuard
                         access={(isEditMode || answerIdFromUrl) ? null : access}
                         onEditExisting={handleEditExisting}
-                        onLogin={() => {
-                            
-                        }}
+                        onLogin={() => setLoginDialogOpen(true)}
                     >
                         {/* Bandeau mode édition */}
                         {(!!effectiveAnswerId && !isStandalone) && (
@@ -391,6 +396,26 @@ export default function CoFormPage() {
                 </div>
             </main>
             <SiteFooter />
+
+            {/* Modal de login (déclenchée depuis CoFormAccessGuard quand
+                `not_logged_in`). Pattern aligné sur HeaderTiersLieux / RezoLaMer :
+                - `sm:max-w-md bg-card border-border` : largeur responsive + tokens carte
+                - `DialogTitle sr-only` : pas de double-titre (LoginForm rend déjà son propre header)
+                Après succès, refetch des données coform pour recalculer access. */}
+            <Dialog open={loginDialogOpen} onOpenChange={setLoginDialogOpen}>
+                <DialogContent className="sm:max-w-md bg-card border-border">
+                    <DialogTitle className="sr-only">
+                        {String(t("coform.access.notLoggedIn.loginButton"))}
+                    </DialogTitle>
+                    <LoginForm
+                        hideBackButton
+                        onSuccess={() => {
+                            setLoginDialogOpen(false);
+                            refetch();
+                        }}
+                    />
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
