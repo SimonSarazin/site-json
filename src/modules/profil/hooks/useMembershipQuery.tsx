@@ -2,7 +2,7 @@ import { useInfiniteQueryScrollNextWithTransform } from "@/hooks/useInfiniteQuer
 import type { EntityTypes, Organization, Project, Poi, Event, PaginatorPage } from "@communecter/cocolight-api-client";
 import { isUser } from "@/lib/getTypedEntity";
 import { useMemo } from "react";
-import { QUERY_KEYS } from "../constants/queryKeys";
+import { PROFIL_QUERY_KEYS } from "../constants/queryKeys";
 import { useHydratedUserContextId } from "@/hooks/useHydratedUserContextId";
 import { useCocolight } from "@/hooks/useCocolight";
 
@@ -29,7 +29,7 @@ export function useUserOrganizations(user: EntityTypes | null, params?: Membersh
     error,
     refetch,
   } = useInfiniteQueryScrollNextWithTransform<Organization>({
-    queryKey: [...QUERY_KEYS.USER_ORGANIZATIONS(user?.slug ?? null, userContextId), params],
+    queryKey: [...PROFIL_QUERY_KEYS.USER_ORGANIZATIONS(user?.slug ?? null, userContextId), params],
     queryFn: async ({ pageParam }) => {
       if (!user || !isUser(user)) {
         throw new Error("User is required");
@@ -98,7 +98,7 @@ export function useUserProjects(user: EntityTypes | null, params?: MembershipQue
     error,
     refetch,
   } = useInfiniteQueryScrollNextWithTransform<Project>({
-    queryKey: [...QUERY_KEYS.USER_PROJECTS(user?.slug ?? null, userContextId), params],
+    queryKey: [...PROFIL_QUERY_KEYS.USER_PROJECTS(user?.slug ?? null, userContextId), params],
     queryFn: async ({ pageParam }) => {
       if (!user || !isUser(user)) {
         throw new Error("User is required");
@@ -166,7 +166,7 @@ export function useUserPois(user: EntityTypes | null, params?: MembershipQueryPa
     error,
     refetch,
   } = useInfiniteQueryScrollNextWithTransform<Poi>({
-    queryKey: [...QUERY_KEYS.USER_POIS(user?.slug ?? null, userContextId), params],
+    queryKey: [...PROFIL_QUERY_KEYS.USER_POIS(user?.slug ?? null, userContextId), params],
     queryFn: async ({ pageParam }) => {
       if (!user || !isUser(user)) {
         throw new Error("User is required");
@@ -234,7 +234,7 @@ export function useUserEvents(user: EntityTypes | null, params?: MembershipQuery
     error,
     refetch,
   } = useInfiniteQueryScrollNextWithTransform<Event>({
-    queryKey: [...QUERY_KEYS.USER_EVENTS(user?.slug ?? null, userContextId), params],
+    queryKey: [...PROFIL_QUERY_KEYS.USER_EVENTS(user?.slug ?? null, userContextId), params],
     queryFn: async ({ pageParam }) => {
       if (!user || !isUser(user)) {
         throw new Error("User is required");

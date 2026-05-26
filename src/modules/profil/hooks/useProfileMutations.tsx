@@ -1,6 +1,6 @@
 import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
-import { QUERY_KEYS } from "../constants";
+import { PROFIL_QUERY_KEYS } from "../constants";
 
 interface BannerUploadData {
   file: File;
@@ -31,7 +31,7 @@ export function useUpdateProfile(entity: EntityTypes | null) {
     namespace: "modules/profil",
     successKey: "toast.profile.updateSuccess",
     errorKey: "toast.profile.updateError",
-    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : [],
+    invalidateQueries: entity ? [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : [],
   });
 }
 
@@ -53,7 +53,7 @@ export function useUploadProfileImage(entity: EntityTypes | null) {
     namespace: "modules/profil",
     successKey: "toast.profile.imageUploadSuccess",
     errorKey: "toast.profile.imageUploadError",
-    invalidateQueries: entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : [],
+    invalidateQueries: entity ? [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : [],
   });
 }
 

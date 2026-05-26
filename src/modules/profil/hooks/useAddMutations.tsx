@@ -1,6 +1,6 @@
 import type { EntityTypes, Organization, Project, Event, Poi } from "@communecter/cocolight-api-client";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
-import { QUERY_KEYS } from "../constants";
+import { PROFIL_QUERY_KEYS } from "../constants";
 import { useCocolight } from "@/hooks/useCocolight";
 import type {
   AddOrganizationFormData,
@@ -52,7 +52,7 @@ export function useAddOrganization(entity?: EntityTypes | null) {
     namespace: "modules/profil",
     successKey: "toast.add.organizationSuccess",
     errorKey: "toast.add.organizationError",
-    invalidateQueries: targetEntity ? [QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(targetEntity.slug)] : [],
+    invalidateQueries: targetEntity ? [PROFIL_QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(targetEntity.slug)] : [],
     onSuccessCallback: (data) => {
       // Rediriger vers le profil de la nouvelle organisation
       if (data.organization.slug) {
@@ -104,8 +104,8 @@ export function useAddProject(entity?: EntityTypes | null) {
     successKey: "toast.add.projectSuccess",
     errorKey: "toast.add.projectError",
     invalidateQueries: [
-      ...(targetEntity ? [QUERY_KEYS.USER_PROJECTS_PREFIX(targetEntity.slug)] : []),
-      ...(entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : []),
+      ...(targetEntity ? [PROFIL_QUERY_KEYS.USER_PROJECTS_PREFIX(targetEntity.slug)] : []),
+      ...(entity ? [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : []),
     ],
     onSuccessCallback: (data) => {
       // Rediriger vers le profil du nouveau projet
@@ -173,8 +173,8 @@ export function useAddEvent(entity?: EntityTypes | null) {
     successKey: "toast.add.eventSuccess",
     errorKey: "toast.add.eventError",
     invalidateQueries: [
-      ...(targetEntity ? [QUERY_KEYS.USER_EVENTS_PREFIX(targetEntity.slug)] : []),
-      ...(entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : []),
+      ...(targetEntity ? [PROFIL_QUERY_KEYS.USER_EVENTS_PREFIX(targetEntity.slug)] : []),
+      ...(entity ? [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : []),
     ],
     onSuccessCallback: (data) => {
       // Rediriger vers le profil du nouvel événement
@@ -227,8 +227,8 @@ export function useAddPoi(entity?: EntityTypes | null) {
     successKey: "toast.add.poiSuccess",
     errorKey: "toast.add.poiError",
     invalidateQueries: [
-      ...(targetEntity ? [QUERY_KEYS.USER_POIS_PREFIX(targetEntity.slug)] : []),
-      ...(entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : []),
+      ...(targetEntity ? [PROFIL_QUERY_KEYS.USER_POIS_PREFIX(targetEntity.slug)] : []),
+      ...(entity ? [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : []),
     ],
     onSuccessCallback: (data) => {
       // Rediriger vers le profil du nouveau POI
@@ -279,7 +279,7 @@ export function useAddTiersLieu(entity?: EntityTypes | null) {
     namespace: "modules/profil",
     successKey: "AddTiersLieux.toast.success",
     errorKey: "AddTiersLieux.toast.error",
-    invalidateQueries: targetEntity ? [QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(targetEntity.slug)] : [],
+    invalidateQueries: targetEntity ? [PROFIL_QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(targetEntity.slug)] : [],
     onSuccessCallback: (data) => {
       if (data.organization.slug) {
         navigate(`/profil/${data.organization.slug}`);

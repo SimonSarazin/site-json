@@ -1,6 +1,6 @@
 import type { Organization } from "@communecter/cocolight-api-client";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
-import { QUERY_KEYS } from "../constants";
+import { PROFIL_QUERY_KEYS } from "../constants";
 import { buildTiersLieuxPayload } from "../utils/tiersLieuxMapping";
 import type { TiersLieuxSubmitPayload } from "../components/add/TiersLieuxForm";
 
@@ -37,7 +37,7 @@ export function useEditTiersLieu(organization: Organization) {
     successKey: "EditTiersLieux.toast.success",
     errorKey: "EditTiersLieux.toast.error",
     invalidateQueries: organization.slug
-      ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(organization.slug)]
+      ? [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(organization.slug)]
       : [],
   });
 }

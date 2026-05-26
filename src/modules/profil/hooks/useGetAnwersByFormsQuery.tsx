@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useHydratedUserContextId } from "@/hooks/useHydratedUserContextId";
-import { QUERY_KEYS } from "../constants/queryKeys";
+import { PROFIL_QUERY_KEYS } from "../constants/queryKeys";
 import type { ProfileTiersLieuxInfoSection } from "../schema";
 import type { SearchEntity, Answer } from "@communecter/cocolight-api-client";
 
@@ -81,7 +81,7 @@ export function useGetAnswersByFormsQuery({
   const hasLinkedForms = linkedFormIds.length > 0;
 
   return useQuery({
-    queryKey: QUERY_KEYS.ANSWERS_BY_FORMS(entityId, linkedFormIds, userContextId),
+    queryKey: PROFIL_QUERY_KEYS.ANSWERS_BY_FORMS(entityId, linkedFormIds, userContextId),
     queryFn: async () => {
       if (!entity || !entityId || !forms) {
         throw new Error("Entité ou formulaires manquants.");

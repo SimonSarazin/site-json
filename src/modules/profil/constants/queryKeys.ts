@@ -1,49 +1,106 @@
 /**
- * Constantes centralisées pour les query keys React Query
- * Évite les magic strings et assure la cohérence des invalidations
+ * Query keys du module profil — centralisées (single source of truth).
+ *
+ * Convention : chaque producteur a sa clé complète + une variante `_PREFIX`
+ * minimaliste pour invalidation cross-contexte (matche toutes les queries
+ * peu importe `userContextId`).
+ *
+ * `userContextId` est inclus pour refetch auto quand le contexte utilisateur
+ * change (logout/login) — sans cette dimension, deux users distincts dans la
+ * même session pourraient se voir servir les données du premier depuis le
+ * cache.
+ *
+ * Nommage : `PROFIL_QUERY_KEYS` (préfixé du module — convention identique à
+ * `CAGNOTTE_QUERY_KEYS`, `NEWS_QUERY_KEYS`, `SEARCH_QUERY_KEYS`).
  */
-
-export const QUERY_KEYS = {
-  // Element/Entity queries (userContextId pour refetch auto quand le contexte change)
-  ELEMENT_ABOUT: (slug: string | null, userContextId: string | null = null) => ["element-about", slug, userContextId] as const,
-  // Préfixe pour invalidations (matche toutes les queries peu importe userContextId)
+export const PROFIL_QUERY_KEYS = {
+  /**
+   * Détails d'une entité (about: bio, address, links, etc.).
+   * Producteur : `useElementAbout` (lecture profil)
+   * Consommateurs invalidants : `useProfileMutations` (edit), `useAddMutations`,
+   *   `useEditTiersLieu`, `useFriendsMutations`, `useRelationshipMutations`
+   */
+  ELEMENT_ABOUT: (slug: string | null, userContextId: string | null = null) =>
+    ["element-about", slug, userContextId] as const,
   ELEMENT_ABOUT_PREFIX: (slug: string | null) => ["element-about", slug] as const,
 
-  // User friends queries (un seul queryKey "user-friends" partagé par useFriendsQuery
-  // pour les 3 statuts friends/pending/sent — différenciés via params)
-  USER_FRIENDS: (slug: string | null, userContextId: string | null = null) => ["user-friends", slug, userContextId] as const,
+  /**
+   * Liste des amis d'un user (3 statuts friends/pending/sent partagent la même
+   * queryKey racine — différenciés via params du hook).
+   * Producteur : `useFriendsQuery`
+   * Consommateurs invalidants : `useFriendMutations` (accept/decline/remove)
+   */
+  USER_FRIENDS: (slug: string | null, userContextId: string | null = null) =>
+    ["user-friends", slug, userContextId] as const,
   USER_FRIENDS_PREFIX: (slug: string | null) => ["user-friends", slug] as const,
 
-  // Organization queries
-  ORGANIZATION_MEMBERS: (slug: string | null, userContextId: string | null = null) => ["organization-members", slug, userContextId] as const,
+  /**
+   * Membres d'une organisation.
+   * Producteur : `useMembersQuery`
+   * Consommateurs invalidants : `useRelationshipMutations` (join/leave/promote/demote)
+   */
+  ORGANIZATION_MEMBERS: (slug: string | null, userContextId: string | null = null) =>
+    ["organization-members", slug, userContextId] as const,
   ORGANIZATION_MEMBERS_PREFIX: (slug: string | null) => ["organization-members", slug] as const,
 
-  // Project queries
-  PROJECT_CONTRIBUTORS: (slug: string | null, userContextId: string | null = null) => ["project-contributors", slug, userContextId] as const,
+  /**
+   * Contributeurs d'un projet.
+   * Producteur : `useMembersQuery` (avec contextType=project)
+   * Consommateurs invalidants : `useRelationshipMutations`
+   */
+  PROJECT_CONTRIBUTORS: (slug: string | null, userContextId: string | null = null) =>
+    ["project-contributors", slug, userContextId] as const,
   PROJECT_CONTRIBUTORS_PREFIX: (slug: string | null) => ["project-contributors", slug] as const,
 
-  // Event queries
-  EVENT_ATTENDEES: (slug: string | null, userContextId: string | null = null) => ["event-attendees", slug, userContextId] as const,
+  /**
+   * Participants d'un événement.
+   * Producteur : `useMembersQuery` (avec contextType=event)
+   * Consommateurs invalidants : `useRelationshipMutations` (attend/cancel)
+   */
+  EVENT_ATTENDEES: (slug: string | null, userContextId: string | null = null) =>
+    ["event-attendees", slug, userContextId] as const,
   EVENT_ATTENDEES_PREFIX: (slug: string | null) => ["event-attendees", slug] as const,
 
-  // Membership queries
-  USER_ORGANIZATIONS: (slug: string | null, userContextId: string | null = null) => ["user-organizations", slug, userContextId] as const,
+  /**
+   * Memberships d'un user (les orgs/projets/events/POI auxquels il appartient).
+   * Producteur : `useMembershipQuery`
+   * Consommateurs invalidants : `useRelationshipMutations`, `useAddMutations`
+   */
+  USER_ORGANIZATIONS: (slug: string | null, userContextId: string | null = null) =>
+    ["user-organizations", slug, userContextId] as const,
   USER_ORGANIZATIONS_PREFIX: (slug: string | null) => ["user-organizations", slug] as const,
-  USER_PROJECTS: (slug: string | null, userContextId: string | null = null) => ["user-projects", slug, userContextId] as const,
+  USER_PROJECTS: (slug: string | null, userContextId: string | null = null) =>
+    ["user-projects", slug, userContextId] as const,
   USER_PROJECTS_PREFIX: (slug: string | null) => ["user-projects", slug] as const,
-  USER_EVENTS: (slug: string | null, userContextId: string | null = null) => ["user-events", slug, userContextId] as const,
+  USER_EVENTS: (slug: string | null, userContextId: string | null = null) =>
+    ["user-events", slug, userContextId] as const,
   USER_EVENTS_PREFIX: (slug: string | null) => ["user-events", slug] as const,
-  USER_POIS: (slug: string | null, userContextId: string | null = null) => ["user-pois", slug, userContextId] as const,
+  USER_POIS: (slug: string | null, userContextId: string | null = null) =>
+    ["user-pois", slug, userContextId] as const,
   USER_POIS_PREFIX: (slug: string | null) => ["user-pois", slug] as const,
 
-  // Search queries
+  /**
+   * Recherche d'utilisateurs (autocomplete contributeurs, etc.).
+   * Producteur : composants Finder, modales de contributeurs
+   * Consommateurs invalidants : aucun (cache court via staleTime)
+   */
   SEARCH_USERS: (userContextId: string | null = null) => ["search-users", userContextId] as const,
   SEARCH_USERS_PREFIX: () => ["search-users"] as const,
 
-  // Answers by forms queries
-  ANSWERS_BY_FORMS: (entityId: string | null, formIds: string[], userContextId: string | null = null) =>
-    ["answers-by-forms", entityId, formIds, userContextId] as const,
+  /**
+   * Réponses CoForm liées à une entité (utilisé par profile sections custom :
+   * ProfilTiersLieuxAbout, ProfileTiersLieuxInfo).
+   * Producteur : `useGetAnswersByFormsQuery`
+   * Consommateurs invalidants : `useEditTiersLieu`, `useAddMutations` (add tiers-lieu)
+   */
+  ANSWERS_BY_FORMS: (
+    entityId: string | null,
+    formIds: string[],
+    userContextId: string | null = null,
+  ) => ["answers-by-forms", entityId, formIds, userContextId] as const,
   ANSWERS_BY_FORMS_PREFIX: (entityId: string | null) => ["answers-by-forms", entityId] as const,
 } as const;
 
-export type QueryKeyType = ReturnType<(typeof QUERY_KEYS)[keyof typeof QUERY_KEYS]>;
+export type ProfilQueryKeyType = ReturnType<
+  (typeof PROFIL_QUERY_KEYS)[keyof typeof PROFIL_QUERY_KEYS]
+>;

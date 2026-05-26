@@ -1,1 +1,1 @@
-export { QUERY_KEYS, type QueryKeyType } from "./queryKeys";
+export { PROFIL_QUERY_KEYS, type ProfilQueryKeyType } from "./queryKeys";

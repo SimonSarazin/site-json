@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { CoFormModal } from "@/modules/coform/components/CoFormModal";
 import type { AllStepsData } from "@/modules/coform/types";
-import { QUERY_KEYS } from "@/modules/profil/constants/queryKeys";
+import { PROFIL_QUERY_KEYS } from "@/modules/profil/constants/queryKeys";
 import {
     MapPin,
     Mail,
@@ -196,7 +196,7 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
     const entityId = entity?.id ?? null;
     const invalidateAnswers = useCallback(() => {
         queryClient.invalidateQueries({
-            queryKey: QUERY_KEYS.ANSWERS_BY_FORMS_PREFIX(entityId),
+            queryKey: PROFIL_QUERY_KEYS.ANSWERS_BY_FORMS_PREFIX(entityId),
         });
     }, [queryClient, entityId]);
 

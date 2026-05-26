@@ -34,7 +34,7 @@ import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermission
 import { type Answer, type UpdatePathValueData } from "@communecter/cocolight-api-client";
 import { CoFormModal } from "@/modules/coform/components/CoFormModal";
 import type { AllStepsData } from "@/modules/coform/types";
-import { QUERY_KEYS } from "@/modules/profil/constants/queryKeys";
+import { PROFIL_QUERY_KEYS } from "@/modules/profil/constants/queryKeys";
 
 /** A form answer array entry with dynamic indexed fields */
 type FormAnswerRow = Record<string | number, unknown>;
@@ -150,7 +150,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
   const entityId = entity?.id ?? null;
   const invalidateAnswers = () => {
     queryClient.invalidateQueries({
-      queryKey: QUERY_KEYS.ANSWERS_BY_FORMS_PREFIX(entityId),
+      queryKey: PROFIL_QUERY_KEYS.ANSWERS_BY_FORMS_PREFIX(entityId),
     });
   };
 
