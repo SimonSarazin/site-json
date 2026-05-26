@@ -177,6 +177,35 @@
         "placeholder": "Solution utilisée…",
         "button": "Ajouter cette solution"
       },
+      "validation": {
+        "required": "{{label}} est requis",
+        "formatInvalid": "Format de réponse invalide pour {{label}}",
+        "minLength": "{{label}} doit contenir au moins {{min}} caractère(s)",
+        "simpleTableRequired": "{{label}} est requis (au moins une ligne de données)",
+        "multiCheckboxPlusCplxRequired": "Tous les champs complémentaires doivent être remplis"
+      },
+      "contributors": {
+        "title": "Contributions sur ce besoin",
+        "description": "Voir qui a renseigné une solution pour : {{usage}}",
+        "loading": "Chargement des contributions…",
+        "error": "Impossible de charger les contributions.",
+        "empty": "Aucun contributeur n'a encore renseigné de solution sur ce besoin.",
+        "openTooltip_one": "Voir {{count}} contribution",
+        "openTooltip_other": "Voir {{count}} contributions"
+      },
+      "addUsage": {
+        "buttonLabel": "Ajouter un besoin",
+        "dialog": {
+          "title": "Ajouter un nouveau besoin",
+          "description": "Ce besoin apparaîtra comme une nouvelle ligne du tableau. Vous pourrez y ajouter des solutions ensuite.",
+          "usageLabel": "Nom du besoin",
+          "usagePlaceholder": "Ex : Réservation des outils",
+          "submit": "Ajouter",
+          "cancel": "Annuler",
+          "errorEmpty": "Le nom du besoin est requis",
+          "errorDuplicate": "Ce besoin existe déjà dans le tableau"
+        }
+      },
       "deleteSolution": "Supprimer cette solution",
       "selectSolutionFirst": "Ajoutez une solution pour évaluer",
       "happiness": {
@@ -189,11 +218,11 @@
       "note": {
         "level": {
           "0": "Non renseigné",
-          "1": "Très faible",
-          "2": "Faible",
+          "1": "Acceptable",
+          "2": "Tolérable",
           "3": "Modéré",
-          "4": "Élevé",
-          "5": "Urgent"
+          "4": "Urgent",
+          "5": "Critique"
         }
       },
       "yesNo": { "yes": "Oui", "no": "Non" },

@@ -450,7 +450,15 @@ export function SmartCoForm({
           // Le userId courant est requis pour les inputs multi-eval — il est
           // injecté dans `_multiEval.{userId}` au format `{value, date, answer}`.
           const rawData = { [subFormId]: data } as Record<string, unknown>;
-          const dataForServer = denormalizeAnswerData(rawData, subFormsFields, userId) as AllStepsData;
+          // `defaultValues` est le payload serveur original (avant normalize).
+          // Il sert à `denormalizeAnswerData` pour décider si un commonTable
+          // vide doit être envoyé (clear) ou omis (jamais rempli).
+          const dataForServer = denormalizeAnswerData(
+            rawData,
+            subFormsFields,
+            userId,
+            (defaultValues as Record<string, unknown> | undefined) ?? null,
+          ) as AllStepsData;
           const links = extractFinderLinks(rawData, subFormsFields);
           const formattedAddedOptions = addedOptions ? { [subFormId]: addedOptions } : undefined;
           const linksOrUndef = Object.keys(links).length > 0 ? links : undefined;

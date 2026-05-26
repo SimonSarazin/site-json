@@ -284,6 +284,15 @@ export interface CommonTableMyCatalogEntry {
   /** Clé technique de l'usage parent */
   usageKey: string;
   coeff?: number;
+  /**
+   * Métadonnées posées par le backend au save : indiquent qui a contribué
+   * cette entrée et depuis quelle réponse. Préservés à travers les saves
+   * suivants pour ne pas écraser les entrées d'autres users (cas d'une
+   * réponse partagée éditée par plusieurs personnes).
+   */
+  me?: boolean;
+  userId?: string;
+  fromAnswerId?: string;
 }
 
 /** Catalogue propre à l'utilisateur — match avec MongoDB `answers.criterias{key}`. */

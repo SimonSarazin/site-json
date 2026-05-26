@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { useForm, type UseFormReturn, type FieldValues } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useT } from "@/hooks/useT";
 import { useCoForm } from "./useCoForm";
 import { generateZodSchema, generateDefaultValues } from "../utils/formParser";
 import type { SubFormFields, SubFormData } from "../types";
@@ -38,6 +39,7 @@ interface UseCoFormStepReturn {
 export function useCoFormStep(options: UseCoFormStepOptions = {}): UseCoFormStepReturn {
   const { stepIndex, defaultValues: customDefaultValues, onSuccess, onError } = options;
   const coform = useCoForm();
+  const t = useT("modules/coform");
 
   // Déterminer l'étape à utiliser
   const effectiveStepIndex = stepIndex ?? coform.stepState.currentStepIndex;
@@ -50,7 +52,7 @@ export function useCoFormStep(options: UseCoFormStepOptions = {}): UseCoFormStep
       return { schema: null, defaults: {} };
     }
 
-    const schema = generateZodSchema([stepFields]);
+    const schema = generateZodSchema([stepFields], t);
     const defaults = {
       ...generateDefaultValues([stepFields]),
       ...(coform.stepState.stepsData[subFormId!] ?? {}),
@@ -58,7 +60,7 @@ export function useCoFormStep(options: UseCoFormStepOptions = {}): UseCoFormStep
     };
 
     return { schema, defaults };
-  }, [stepFields, subFormId, coform.stepState.stepsData, customDefaultValues]);
+  }, [stepFields, subFormId, coform.stepState.stepsData, customDefaultValues, t]);
 
   // Configurer react-hook-form
   const form = useForm({

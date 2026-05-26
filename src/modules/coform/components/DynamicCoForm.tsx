@@ -115,7 +115,7 @@ export function DynamicCoForm({
 
   // Mémoiser pour éviter l'erreur React Compiler "dependency may be modified later"
   const subFormsFields = useMemo(() => parseCoFormFields(formData), [formData]);
-  const zodSchema = useMemo(() => generateZodSchema(subFormsFields), [subFormsFields]);
+  const zodSchema = useMemo(() => generateZodSchema(subFormsFields, t), [subFormsFields, t]);
   const generatedDefaults = useMemo(() => generateDefaultValues(subFormsFields), [subFormsFields]);
 
   // Fusionner : valeurs externes (mode édition) écrasent les défauts générés
@@ -474,6 +474,7 @@ export function DynamicCoForm({
                           value={controllerField.value as CommonTableValue}
                           onChange={controllerField.onChange}
                           readOnly={isLocked}
+                          formId={formId}
                         />
                       )}
                     />

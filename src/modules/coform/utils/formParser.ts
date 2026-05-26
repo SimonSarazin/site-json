@@ -308,13 +308,20 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
         const flag = (v: unknown): boolean =>
           v === undefined || v === null ? true : v === true || v === "true";
 
+        // Variante stricte (défaut false) : la colonne n'apparaît que si la
+        // config admin l'active explicitement. Utilisé pour `yesNo` qui est
+        // caché par défaut côté legacy (cf. typo `yesNoColumnnnnn` ligne 599
+        // de `commonTableV2.php` qui rend la condition d'affichage toujours
+        // fausse — alignement sur l'intention legacy).
+        const strictFlag = (v: unknown): boolean => v === true || v === "true";
+
         // Le PHP nomme les colonnes de manières variées selon les versions ; on accepte
         // les alias les plus courants pour rester tolérant.
         const showColumns = {
           criteria: flag(rawConfig?.criteriaColumn ?? rawConfig?.criteria),
           happiness: flag(rawConfig?.humourColumn ?? rawConfig?.happinessColumn ?? rawConfig?.happiness),
           note: flag(rawConfig?.starColumn ?? rawConfig?.noteColumn ?? rawConfig?.note),
-          yesNo: flag(rawConfig?.yesNoColumn ?? rawConfig?.yesNo),
+          yesNo: strictFlag(rawConfig?.yesNoColumn ?? rawConfig?.yesNo),
           comment: flag(rawConfig?.commentColumn ?? rawConfig?.comment),
         };
 
@@ -575,9 +582,53 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
 }
 
 /**
- * Génère un schéma Zod dynamique basé sur les champs CoForm
+ * Type minimal de la fonction `t` exposée par `useT(namespace)`. Accepte
+ * une clé i18n + un `fallback` optionnel + des paramètres d'interpolation.
  */
-export function generateZodSchema(subFormsFields: SubFormFields[]) {
+type ZodValidationT = (
+  key: string,
+  fallback?: string,
+  params?: Record<string, unknown>
+) => string;
+
+/**
+ * Helper de fallback quand `t` n'est pas fourni (rétro-compat).
+ * Reproduit les messages FR par défaut + interpole les `{{var}}`.
+ */
+function fallbackT(key: string, _fallback?: string, params?: Record<string, unknown>): string {
+  const interpolate = (s: string) =>
+    s.replace(/\{\{(\w+)\}\}/g, (_, k) => String(params?.[k] ?? ""));
+  switch (key) {
+    case "coform.validation.required":
+      return interpolate("{{label}} est requis");
+    case "coform.validation.formatInvalid":
+      return interpolate("Format de réponse invalide pour {{label}}");
+    case "coform.validation.minLength":
+      return interpolate("{{label}} doit contenir au moins {{min}} caractère(s)");
+    case "coform.validation.simpleTableRequired":
+      return interpolate("{{label}} est requis (au moins une ligne de données)");
+    case "coform.validation.multiCheckboxPlusCplxRequired":
+      return "Tous les champs complémentaires doivent être remplis";
+    default:
+      return _fallback ?? key;
+  }
+}
+
+/**
+ * Génère un schéma Zod dynamique basé sur les champs CoForm.
+ *
+ * @param subFormsFields - Structure parsée du formulaire.
+ * @param t - Fonction d'i18n (depuis `useT("modules/coform")`). Si absente,
+ *            fallback sur des messages FR hardcodés (rétro-compat).
+ */
+export function generateZodSchema(
+  subFormsFields: SubFormFields[],
+  t: ZodValidationT = fallbackT,
+) {
+  const requiredMsg = (label: string) =>
+    t("coform.validation.required", undefined, { label });
+  const formatInvalidMsg = (label: string) =>
+    t("coform.validation.formatInvalid", undefined, { label });
   const schemaShape: Record<string, z.ZodTypeAny> = {};
 
   subFormsFields.forEach(({ fields }) => {
@@ -586,7 +637,7 @@ export function generateZodSchema(subFormsFields: SubFormFields[]) {
         case "text":
         case "textarea":
           schemaShape[field.name] = field.isRequired
-            ? z.string().min(1, `${field.label} est requis`)
+            ? z.string().min(1, requiredMsg(field.label))
             : z.string().optional();
           break;
 
@@ -605,7 +656,7 @@ export function generateZodSchema(subFormsFields: SubFormFields[]) {
 
         case "checkbox":
           schemaShape[field.name] = field.isRequired
-            ? z.array(z.string()).min(1, `${field.label} est requis`)
+            ? z.array(z.string()).min(1, requiredMsg(field.label))
             : z.array(z.string()).optional();
           break;
 
@@ -619,7 +670,7 @@ export function generateZodSchema(subFormsFields: SubFormFields[]) {
           schemaShape[field.name] = field.isRequired
             ? multiRadioSchema.refine(
                 (v) => v.value.trim() !== "",
-                { message: `${field.label} est requis` }
+                { message: requiredMsg(field.label) }
               )
             : multiRadioSchema.optional();
           break;
@@ -631,16 +682,16 @@ export function generateZodSchema(subFormsFields: SubFormFields[]) {
           const baseSchema = z.array(z.record(z.string(), z.object({
             value: z.string(),
             type: z.enum(["simple", "cplx"]),
-            rank: z.union([z.number(), z.string()]).optional().transform(v => 
+            rank: z.union([z.number(), z.string()]).optional().transform(v =>
               v !== undefined ? (typeof v === "string" ? parseInt(v, 10) || undefined : v) : undefined
             ),
             textsup: z.string().optional(),
           })));
-          
+
           // Ajouter validation cplx required si activée
           const validateCplx = field.multiCheckboxPlusConfig?.validateCplxRequired;
           const tofill = field.multiCheckboxPlusConfig?.tofill || {};
-          
+
           if (validateCplx) {
             const refinedSchema = baseSchema.refine((arr) => {
               return arr.every(item => {
@@ -652,14 +703,14 @@ export function generateZodSchema(subFormsFields: SubFormFields[]) {
                 }
                 return true;
               });
-            }, { message: "Tous les champs complémentaires doivent être remplis" });
-            
+            }, { message: t("coform.validation.multiCheckboxPlusCplxRequired") });
+
             schemaShape[field.name] = field.isRequired
-              ? refinedSchema.min(1, `${field.label} est requis`)
+              ? refinedSchema.min(1, requiredMsg(field.label))
               : refinedSchema.optional();
           } else {
             schemaShape[field.name] = field.isRequired
-              ? baseSchema.min(1, `${field.label} est requis`)
+              ? baseSchema.min(1, requiredMsg(field.label))
               : baseSchema.optional();
           }
           break;
@@ -667,7 +718,7 @@ export function generateZodSchema(subFormsFields: SubFormFields[]) {
 
         case "select":
           schemaShape[field.name] = field.isRequired
-            ? z.string().min(1, `${field.label} est requis`)
+            ? z.string().min(1, requiredMsg(field.label))
             : z.string().optional();
           break;
 
@@ -679,19 +730,20 @@ export function generateZodSchema(subFormsFields: SubFormFields[]) {
             z.record(
               z.string(), // criteriaId
               z.union([z.string(), z.number(), z.literal("")]) // voteValue
-            )
+            ),
+            { error: formatInvalidMsg(field.label) }
           );
-          
+
           if (field.isRequired) {
             // Vérifier qu'au moins un vote a été fait
             schemaShape[field.name] = evaluationSchema.refine(
               (obj) => {
                 // Au moins une entrée avec un vote non vide
-                return Object.values(obj).some(criteria => 
+                return Object.values(obj).some(criteria =>
                   Object.values(criteria).some(vote => vote !== "" && vote !== 0)
                 );
               },
-              { message: `${field.label} est requis` }
+              { message: requiredMsg(field.label) }
             );
           } else {
             schemaShape[field.name] = evaluationSchema.optional();
@@ -717,11 +769,21 @@ export function generateZodSchema(subFormsFields: SubFormFields[]) {
             usage: z.string(),
             usageKey: z.string(),
             coeff: z.number().optional(),
+            // Métadonnées préservées depuis la BDD — posées par le backend
+            // au save (cf. SaveAnswerAction::enrichCommonTableCriteriaEntries).
+            me: z.boolean().optional(),
+            userId: z.string().optional(),
+            fromAnswerId: z.string().optional(),
           });
+          // Messages d'erreur i18n-isés — sinon Zod tombe sur ses messages
+          // par défaut anglais (ex: "Invalid input: expected record,
+          // received array") quand la donnée serveur est polluée et que
+          // `coerceServerAnswerShape` n'a pas pu la recouvrer.
+          const fmt = formatInvalidMsg(field.label);
           const commonTableSchema = z.object({
-            scores: z.record(z.string(), solutionSchema),
-            myCatalog: z.record(z.string(), myCatalogEntrySchema),
-          });
+            scores: z.record(z.string(), solutionSchema, { error: fmt }),
+            myCatalog: z.record(z.string(), myCatalogEntrySchema, { error: fmt }),
+          }, { error: fmt });
 
           if (field.isRequired) {
             schemaShape[field.name] = commonTableSchema.refine(
@@ -729,7 +791,7 @@ export function generateZodSchema(subFormsFields: SubFormFields[]) {
                 Object.values(v.scores).some(
                   (sol) => sol.happiness !== "" || sol.note > 0 || sol.yesOrNo || sol.comment.trim() !== ""
                 ),
-              { message: `${field.label} est requis` }
+              { message: requiredMsg(field.label) }
             );
           } else {
             schemaShape[field.name] = commonTableSchema.optional();
@@ -751,14 +813,18 @@ export function generateZodSchema(subFormsFields: SubFormFields[]) {
               addressLocality: z.string().optional(),
             }).optional(),
           });
-          
-          const finderSchema = z.record(z.string(), finderElementSchema).nullable();
-          
+
+          const finderSchema = z.record(
+            z.string(),
+            finderElementSchema,
+            { error: formatInvalidMsg(field.label) }
+          ).nullable();
+
           if (field.isRequired) {
             // Vérifier qu'au moins un élément est sélectionné
             schemaShape[field.name] = finderSchema.refine(
               (obj) => obj !== null && Object.keys(obj).length > 0,
-              { message: `${field.label} est requis` }
+              { message: requiredMsg(field.label) }
             );
           } else {
             schemaShape[field.name] = finderSchema.optional();
@@ -773,7 +839,7 @@ export function generateZodSchema(subFormsFields: SubFormFields[]) {
           if (field.isRequired) {
             schemaShape[field.name] = simpleTableSchema.refine(
               (arr) => arr.length >= 2,
-              { message: `${field.label} est requis (au moins une ligne de données)` }
+              { message: t("coform.validation.simpleTableRequired", undefined, { label: field.label }) }
             );
           } else {
             schemaShape[field.name] = simpleTableSchema.optional();
@@ -792,7 +858,7 @@ export function generateZodSchema(subFormsFields: SubFormFields[]) {
           schemaShape[field.name] = field.isRequired
             ? uploaderSchema.refine(
                 (v) => (Array.isArray(v) ? v.length > 0 : true),
-                `${field.label} est requis`
+                requiredMsg(field.label)
               )
             : uploaderSchema.optional();
           break;
@@ -880,14 +946,147 @@ export function generateDefaultValues(subFormsFields: SubFormFields[]): Record<s
 }
 
 /**
+ * Type de structure attendue pour la valeur d'un input. Utilisé par
+ * `coerceServerAnswerShape` pour réparer les données polluées par MongoDB.
+ *
+ * Pollution typique : MongoDB sérialise un document `{}` vide comme tableau
+ * `[]`, et inversement un array PHP avec clés string mixtes peut ressortir
+ * comme objet. Le schéma Zod du form attend un type précis ; si on lui
+ * passe la mauvaise forme, la validation échoue (`expected record,
+ * received array` ou similaires).
+ */
+type FieldShape = "string" | "array" | "record" | "skip";
+
+function getFieldShape(componentType: FormFieldMapping["componentType"]): FieldShape {
+  switch (componentType) {
+    case "text":
+    case "textarea":
+    case "radio":
+    case "select":
+      return "string";
+    case "checkbox":
+    case "multiCheckboxPlus":
+    case "simpleTable":
+      return "array";
+    case "multiRadio":
+    case "finder":
+    case "evaluation":
+      return "record";
+    // Cas non triviaux : le shape attendu varie (uploader = union, sectionTitle
+    // n'a pas de valeur, commonTable = composite split en deux clés top-level
+    // gérées séparément). On laisse passer.
+    default:
+      return "skip";
+  }
+}
+
+function isPlainObject(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+
+/**
+ * Coerce une valeur reçue du serveur vers le shape attendu par le schéma
+ * Zod. Conserve la valeur d'origine si elle est déjà du bon type ;
+ * remplace par une valeur par défaut neutre seulement si la forme est
+ * incompatible.
+ */
+function coerceValueToShape(value: unknown, shape: FieldShape): unknown {
+  switch (shape) {
+    case "string":
+      if (typeof value === "string") return value;
+      if (typeof value === "number" || typeof value === "boolean") return String(value);
+      // `[]`, `{}`, `null`, `undefined` → ""
+      return "";
+    case "array":
+      if (Array.isArray(value)) return value;
+      // `{}` → `[]` ; null/undefined → laisser tel quel (le default form joue)
+      if (isPlainObject(value)) return [];
+      return value;
+    case "record":
+      // null préservé (certains schemas l'acceptent explicitement, ex: finder)
+      if (value === null) return value;
+      if (Array.isArray(value)) return {};
+      if (isPlainObject(value)) return value;
+      return value;
+    default:
+      return value;
+  }
+}
+
+/**
+ * Coerce les valeurs reçues du serveur pour qu'elles correspondent aux types
+ * attendus par les schémas Zod du formulaire. Point unique de défense
+ * contre la pollution de format causée par la sérialisation MongoDB
+ * (`{}` ↔ `[]` ambigus selon les inputs PHP en amont).
+ *
+ * Couvre :
+ * - **Champs nested** (radio, checkbox, select, multiRadio, multiCheckboxPlus,
+ *   finder, simpleTable, text, textarea) sous `rawAnswers[subFormId][fieldName]`
+ * - **Champs root-level** (evaluation, commonTable) sous `rawAnswers[fieldName]`
+ *   et leur clé jumelle pour commonTable (`criteriasXXX`)
+ *
+ * Extensible : ajouter un cas dans `getFieldShape` si un nouveau type est
+ * sensible à cette pollution.
+ */
+function coerceServerAnswerShape(
+  rawAnswers: Record<string, unknown>,
+  subFormsFields: SubFormFields[]
+): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...rawAnswers };
+
+  for (const { subFormId, fields } of subFormsFields) {
+    // Le subForm lui-même peut arriver comme `[]` si jamais aucun champ
+    // n'a été rempli. On le ramène à `{}` pour pouvoir y accéder.
+    let subData: Record<string, unknown>;
+    if (isPlainObject(out[subFormId])) {
+      subData = { ...(out[subFormId] as Record<string, unknown>) };
+    } else if (Array.isArray(out[subFormId])) {
+      subData = {};
+    } else {
+      subData = {};
+    }
+
+    for (const field of fields) {
+      // commonTable : split en deux clés top-level (`yesOrNoXXX` et
+      // `criteriasXXX`), tous deux Records. `field.name` est déjà
+      // `yesOrNoXXX` (cf. FIELD_PREFIX_MAP).
+      if (field.componentType === "commonTable") {
+        const fieldKey = getOriginalFieldKey(field);
+        const myCatalogKey = `criterias${fieldKey}`;
+        if (Array.isArray(out[field.name])) out[field.name] = {};
+        if (Array.isArray(out[myCatalogKey])) out[myCatalogKey] = {};
+        continue;
+      }
+
+      // evaluation : root-level Record (un seul top-level key = field.name).
+      if (field.componentType === "evaluation") {
+        if (Array.isArray(out[field.name])) out[field.name] = {};
+        continue;
+      }
+
+      // Champ nested : applique la coercion selon son shape attendu.
+      const shape = getFieldShape(field.componentType);
+      if (shape === "skip") continue;
+      if (!(field.name in subData)) continue;
+      const coerced = coerceValueToShape(subData[field.name], shape);
+      if (coerced !== subData[field.name]) subData[field.name] = coerced;
+    }
+
+    out[subFormId] = subData;
+  }
+
+  return out;
+}
+
+/**
  * Normalise les données de réponse brutes depuis la DB vers le format attendu par le formulaire
- * 
+ *
  * Le PHP stocke certains champs à la racine de `answers` au lieu de dans leur sous-formulaire :
  * - evaluation: answers["evaluationXXX"] au lieu de answers[subFormId]["evaluationXXX"]
- * 
+ *
  * Cette fonction déplace ces champs dans leur sous-formulaire approprié en se basant
  * sur la structure du formulaire (subFormsFields).
- * 
+ *
  * @param rawAnswers - Données brutes depuis la DB (answers)
  * @param subFormsFields - Structure parsée du formulaire (pour connaître quel champ appartient à quel subform)
  * @returns Données normalisées avec les champs root-level déplacés dans leurs subforms
@@ -899,8 +1098,12 @@ export function normalizeAnswerData(
 ): Record<string, unknown> | undefined {
   if (!rawAnswers) return undefined;
 
+  // Coerce d'abord les valeurs reçues vers le shape attendu par les schémas
+  // Zod, pour neutraliser la pollution `{}` ↔ `[]` typique de MongoDB.
+  const cleaned = coerceServerAnswerShape(rawAnswers, subFormsFields);
+
   // Copie profonde pour ne pas muter l'original
-  const normalized = JSON.parse(JSON.stringify(rawAnswers)) as Record<string, unknown>;
+  const normalized = JSON.parse(JSON.stringify(cleaned)) as Record<string, unknown>;
 
   // Debug: collecter les champs root-level attendus
   const rootLevelFieldNames: string[] = [];
@@ -921,14 +1124,25 @@ export function normalizeAnswerData(
 
         // commonTable : valeur composite reconstruite depuis DEUX entrées root-level
         // (yesOrNo{key} pour les scores, criterias{key} pour le catalogue de l'utilisateur).
+        // La coercion `[]` → `{}` est déjà faite par `coerceServerAnswerShape`
+        // en amont, mais on garde la garde `isPlainObject` par defense in
+        // depth (cas où la donnée arrive non normalisée pour une autre raison).
         if (field.componentType === "commonTable") {
           const fieldKey = getOriginalFieldKey(field);
-          const scoresRoot = normalized[`yesOrNo${fieldKey}`];
-          const myCatalogRoot = normalized[`criterias${fieldKey}`];
+          const scoresKey = `yesOrNo${fieldKey}`;
+          const myCatalogKey = `criterias${fieldKey}`;
+          const scoresRoot = normalized[scoresKey];
+          const myCatalogRoot = normalized[myCatalogKey];
           subFormData[field.name] = {
-            scores: typeof scoresRoot === "object" && scoresRoot !== null ? scoresRoot : {},
-            myCatalog: typeof myCatalogRoot === "object" && myCatalogRoot !== null ? myCatalogRoot : {},
+            scores: isPlainObject(scoresRoot) ? scoresRoot : {},
+            myCatalog: isPlainObject(myCatalogRoot) ? myCatalogRoot : {},
           };
+          // Retire les clés root-level pour éviter qu'un merge en aval (ex:
+          // `{ ...generatedDefaults, ...normalizedDefaults }` dans
+          // DynamicCoForm) écrase le composite par la shape brute serveur
+          // (scores OU myCatalog seul) — Zod attend `{scores, myCatalog}`.
+          delete normalized[scoresKey];
+          delete normalized[myCatalogKey];
           continue;
         }
 
@@ -937,9 +1151,11 @@ export function normalizeAnswerData(
         if (field.name in normalized && !(field.name in subFormData)) {
           // Déplacer le champ de la racine vers le subform
           subFormData[field.name] = normalized[field.name];
-          // Optionnel: supprimer de la racine (on garde pour compatibilité)
-          // delete normalized[field.name];
         }
+        // Retire la clé root-level — le composant React lit dans le subForm.
+        // Sans ça, un merge `{...generatedDefaults, ...normalized}` en aval
+        // écraserait la valeur du subForm par la version brute serveur.
+        delete normalized[field.name];
       }
 
       // ── Multi-eval (radioNew + activeMultieval=true) ─────────────
@@ -1012,10 +1228,41 @@ export function normalizeAnswerData(
 export function denormalizeAnswerData(
   formData: Record<string, unknown>,
   subFormsFields: SubFormFields[],
-  currentUserId: string | null = null
+  currentUserId: string | null = null,
+  /**
+   * Réponse d'origine au format serveur (telle que reçue de l'API). Utilisée
+   * pour décider, sur les commonTable, si on doit envoyer un objet vide ou
+   * skip le champ : si l'original était vide/absent ET que l'utilisateur n'a
+   * rien rempli, on n'inclut pas le champ dans le payload pour ne pas
+   * polluer la BDD avec des `{}` (sérialisés `[]` par MongoDB) sur des
+   * inputs jamais touchés. Si l'original avait du contenu et que c'est
+   * désormais vide, on envoie bien `{}` pour le clearer côté serveur.
+   */
+  originalAnswers?: Record<string, unknown> | null
 ): Record<string, unknown> {
   // Copie profonde pour ne pas muter l'original
   const denormalized = JSON.parse(JSON.stringify(formData)) as Record<string, unknown>;
+
+  // Helper : true si la valeur représente "rien" (absent, null, chaîne vide,
+  // array vide, objet vide). Couvre le cas MongoDB où `{}` revient en `[]`.
+  // `false` et `0` ne sont PAS vides (ce sont des états valides : checkbox
+  // décochée explicitement, note=0, etc.).
+  const isEmptyContainer = (v: unknown): boolean => {
+    if (v === undefined || v === null) return true;
+    if (typeof v === "string") return v === "";
+    if (Array.isArray(v)) return v.length === 0;
+    if (typeof v === "object") return Object.keys(v as Record<string, unknown>).length === 0;
+    return false;
+  };
+
+  // Récupère la valeur d'origine au format serveur pour un field nested.
+  // Robuste à `originalAnswers[subFormId]` typé comme array (cas pollué) ou
+  // null/undefined.
+  const readOriginalNested = (subFormId: string, fieldName: string): unknown => {
+    const sub = originalAnswers?.[subFormId];
+    if (!sub || typeof sub !== "object" || Array.isArray(sub)) return undefined;
+    return (sub as Record<string, unknown>)[fieldName];
+  };
 
   // Pour chaque subform, déplacer les champs root-level vers la racine
   for (const { subFormId, fields } of subFormsFields) {
@@ -1061,7 +1308,19 @@ export function denormalizeAnswerData(
         // le bloc root-level qui vient. (Le `if !root` ci-dessous filtre.)
       }
 
-      if (!isRootLevelField(field.componentType)) continue;
+      // Champs nested (= restent dans le subForm) : on omet la valeur si elle
+      // est vide ET que l'original l'était aussi (jamais touchée). Cohérent
+      // avec le traitement des root-level — évite de polluer la BDD avec des
+      // valeurs vides sur des inputs intacts.
+      if (!isRootLevelField(field.componentType)) {
+        if (!(field.name in subFormData)) continue;
+        const currentValue = subFormData[field.name];
+        const originalValue = readOriginalNested(subFormId, field.name);
+        if (isEmptyContainer(currentValue) && isEmptyContainer(originalValue)) {
+          delete subFormData[field.name];
+        }
+        continue;
+      }
       if (!(field.name in subFormData)) continue;
 
       // commonTable : valeur composite { scores, myCatalog } à splitter en DEUX
@@ -1071,19 +1330,48 @@ export function denormalizeAnswerData(
           | { scores?: Record<string, unknown>; myCatalog?: Record<string, unknown> }
           | undefined;
         const fieldKey = getOriginalFieldKey(field);
-        denormalized[`yesOrNo${fieldKey}`] = composite?.scores ?? {};
-        denormalized[`criterias${fieldKey}`] = composite?.myCatalog ?? {};
+        const scoresKey = `yesOrNo${fieldKey}`;
+        const myCatalogKey = `criterias${fieldKey}`;
+        const currentScores = composite?.scores ?? {};
+        const currentMyCatalog = composite?.myCatalog ?? {};
+        // On n'émet le champ que si :
+        //   1. il y a du contenu côté React (l'utilisateur a saisi quelque
+        //      chose), ou
+        //   2. l'original chargé depuis le serveur n'était pas vide et l'est
+        //      maintenant — il faut envoyer `{}` pour clearer en BDD.
+        // Sinon on omet la clé : pas de pollution `[]` sur les inputs jamais
+        // touchés.
+        const originalScoresHadContent = !isEmptyContainer(originalAnswers?.[scoresKey]);
+        const originalMyCatalogHadContent = !isEmptyContainer(originalAnswers?.[myCatalogKey]);
+        if (!isEmptyContainer(currentScores) || originalScoresHadContent) {
+          denormalized[scoresKey] = currentScores;
+        } else {
+          delete denormalized[scoresKey];
+        }
+        if (!isEmptyContainer(currentMyCatalog) || originalMyCatalogHadContent) {
+          denormalized[myCatalogKey] = currentMyCatalog;
+        } else {
+          delete denormalized[myCatalogKey];
+        }
         delete subFormData[field.name];
         if (import.meta.env.DEV) {
           console.log(
-            `[denormalizeAnswerData] commonTable ${field.name} split → yesOrNo${fieldKey} + criterias${fieldKey}`
+            `[denormalizeAnswerData] commonTable ${field.name} split → ${scoresKey} + ${myCatalogKey}`
           );
         }
         continue;
       }
 
-      // Cas générique : déplacer le champ du subform vers la racine
-      denormalized[field.name] = subFormData[field.name];
+      // Cas générique root-level (ex: evaluation) : déplacer du subform vers
+      // la racine, puis appliquer la règle skip-if-empty-and-original-empty —
+      // évite d'envoyer un objet vide pour un evaluation jamais touché.
+      const currentValue = subFormData[field.name];
+      const originalValue = originalAnswers?.[field.name];
+      if (!isEmptyContainer(currentValue) || !isEmptyContainer(originalValue)) {
+        denormalized[field.name] = currentValue;
+      } else {
+        delete denormalized[field.name];
+      }
       delete subFormData[field.name];
       if (import.meta.env.DEV) {
         console.log(`[denormalizeAnswerData] Moved ${field.name} from subform ${subFormId} to root`);

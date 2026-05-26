@@ -1,6 +1,6 @@
 import { memo, useCallback, useMemo, useRef, useState } from "react";
 import type { FieldErrors } from "react-hook-form";
-import { Search, X, Plus } from "lucide-react";
+import { Search, X, Plus, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -21,6 +21,8 @@ import { MessageSquare } from "lucide-react";
 import "../i18n/i18n";
 import { useCommonTableCatalog } from "../hooks/useCommonTableCatalog";
 import { getOriginalFieldKey } from "../utils/formParser";
+import { getNoteAppearance } from "../utils/commonTableNote";
+import { CommonTableContributorsDialog } from "./CommonTableContributorsDialog";
 import type {
   FormFieldMapping,
   CommonTableValue,
@@ -35,6 +37,13 @@ interface CommonTableFieldProps {
   onChange?: (value: CommonTableValue) => void;
   readOnly?: boolean;
   hideLabel?: boolean;
+  /**
+   * ID du formulaire parent — requis pour fetcher la liste détaillée des
+   * contributeurs au clic sur le badge de la colonne solution. Si absent,
+   * les badges restent affichés (lecture du `count` du catalogue local) mais
+   * ne sont pas cliquables.
+   */
+  formId?: string;
 }
 
 type HappinessKey = Exclude<HappinessValue, "">;
@@ -47,11 +56,16 @@ const HAPPINESS_EMOJI: Record<Exclude<HappinessValue, "">, string> = {
   cry: "😭",
 };
 
+/**
+ * Format aligné sur le legacy `commonTableV2.php` (qui produit
+ * `criteria${time()}` — soit "criteria" + timestamp en secondes). On reste
+ * sur ce format pour que les outils legacy qui parsent les criteriaId
+ * (statistiques, exports, etc.) restent compatibles. On utilise les
+ * millisecondes pour réduire les collisions si l'utilisateur crée
+ * plusieurs entries rapidement.
+ */
 function generateCriteriaId(): string {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
-    return crypto.randomUUID();
-  }
-  return `c_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+  return `criteria${Date.now()}`;
 }
 
 function makeDefaultSolution(name: string, usageKey: string, usageLabel: string): CommonTableSolution {
@@ -182,15 +196,8 @@ const UrgencyGauge = memo(function UrgencyGauge({
   disabled,
   levelLabels,
 }: UrgencyGaugeProps) {
-  const idx = Math.max(0, Math.min(5, Math.round(value)));
+  const { idx, trackTint, textColor } = getNoteAppearance(value);
   const label = levelLabels[idx] ?? "";
-  // Couleur progressive : vert → orange → rouge (basée sur la valeur)
-  const trackTint =
-    value <= 1.5
-      ? "[&_[data-slot=slider-range]]:bg-success"
-      : value <= 3.5
-        ? "[&_[data-slot=slider-range]]:bg-warning"
-        : "[&_[data-slot=slider-range]]:bg-destructive";
 
   return (
     <div className="flex flex-col gap-1 min-w-32">
@@ -204,7 +211,7 @@ const UrgencyGauge = memo(function UrgencyGauge({
         aria-valuetext={label}
         className={cn("w-full", trackTint)}
       />
-      <span className="text-xs text-muted-foreground text-center">{label}</span>
+      <span className={cn("text-xs text-center font-medium", textColor)}>{label}</span>
     </div>
   );
 });
@@ -450,48 +457,57 @@ const AddSolutionInput = memo(function AddSolutionInput({
   // aucun contenu et n'élargit pas la cellule.
   const showDropdown = open && filtered.length > 0;
 
+  const canSubmit = !disabled && draft.trim() !== "";
+
   return (
     <Popover open={showDropdown} onOpenChange={(o) => !o && setOpen(false)}>
-      <div className="flex gap-1">
-        <PopoverAnchor asChild>
-          <div className="relative flex-1">
-            <Input
-              ref={inputRef}
-              value={draft}
-              onChange={(e) => {
-                setDraft(e.target.value);
-                setOpen(true);
-                setActiveIndex(-1);
-              }}
-              onFocus={() => {
-                setOpen(true);
-                setActiveIndex(-1);
-              }}
-              onKeyDown={onKeyDown}
-              placeholder={placeholder}
-              disabled={disabled}
-              className="h-8 text-sm w-full"
-              role="combobox"
-              aria-expanded={showDropdown}
-              aria-autocomplete="list"
-            />
-          </div>
-        </PopoverAnchor>
-        <button
-          type="button"
-          onClick={() => submit()}
-          disabled={disabled || draft.trim() === ""}
-          aria-label={buttonLabel}
-          title={buttonLabel}
-          className={cn(
-            "inline-flex items-center justify-center h-8 w-8 rounded-md shrink-0",
-            "bg-primary text-primary-foreground transition-opacity cursor-pointer",
-            "hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
-          )}
-        >
-          <Plus className="h-4 w-4" />
-        </button>
-      </div>
+      <PopoverAnchor asChild>
+        <div className="relative">
+          <Input
+            ref={inputRef}
+            value={draft}
+            onChange={(e) => {
+              setDraft(e.target.value);
+              setOpen(true);
+              setActiveIndex(-1);
+            }}
+            onFocus={() => {
+              setOpen(true);
+              setActiveIndex(-1);
+            }}
+            onKeyDown={onKeyDown}
+            placeholder={placeholder}
+            disabled={disabled}
+            // pr-8 réserve la place du bouton intégré à droite.
+            className="h-8 text-sm w-full pr-8"
+            role="combobox"
+            aria-expanded={showDropdown}
+            aria-autocomplete="list"
+          />
+          <button
+            type="button"
+            onMouseDown={(e) => {
+              // mousedown avant le blur de l'input : sinon Radix ferme la
+              // popover et perd la sélection en cours.
+              e.preventDefault();
+              if (canSubmit) submit();
+            }}
+            disabled={!canSubmit}
+            aria-label={buttonLabel}
+            title={buttonLabel}
+            className={cn(
+              "absolute right-1 top-1/2 -translate-y-1/2",
+              "inline-flex items-center justify-center h-6 w-6 rounded-sm",
+              "text-muted-foreground transition-colors cursor-pointer",
+              canSubmit
+                ? "bg-primary text-primary-foreground hover:opacity-90"
+                : "bg-transparent opacity-40 cursor-not-allowed"
+            )}
+          >
+            <Plus className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </PopoverAnchor>
       <PopoverContent
         align="start"
         sideOffset={4}
@@ -564,6 +580,7 @@ interface CommonTableRowProps {
     commentPlaceholderTitle: string;
     commentPlaceholderDescription: string;
     commentPlaceholderClose: string;
+    contributorsTooltip: string;
   };
   onAddSolution: (usageKey: string, usageLabel: string, name: string) => void;
   onActivate: (id: string) => void;
@@ -571,6 +588,13 @@ interface CommonTableRowProps {
   onSolutionChange: (id: string, patch: Partial<CommonTableSolution>) => void;
   /** Suggestions de solutions pour CET usage (issues du catalogue collaboratif). */
   suggestions: SolutionSuggestion[];
+  /**
+   * Nombre total de contributions sur cette ligne (agrégé via le
+   * groupKeyResolver). Si > 0, un badge cliquable s'affiche pour ouvrir
+   * la liste détaillée.
+   */
+  contributorCount: number;
+  onShowContributors?: () => void;
   readOnly?: boolean;
 }
 
@@ -585,6 +609,8 @@ const CommonTableRow = memo(function CommonTableRow({
   onDelete,
   onSolutionChange,
   suggestions,
+  contributorCount,
+  onShowContributors,
   readOnly,
 }: CommonTableRowProps) {
   const active = solutions.find((s) => s.criteriaId === activeSolutionId) ?? null;
@@ -603,13 +629,35 @@ const CommonTableRow = memo(function CommonTableRow({
       {/* Solutions (input + tags) */}
       {showColumns.criteria && (
         <td className="p-2 align-top space-y-2 wrap-break-word border-r border-border/60">
-          {!readOnly && (
-            <AddSolutionInput
-              onAdd={handleAdd}
-              placeholder={i18n.addPlaceholder}
-              buttonLabel={i18n.addButton}
-              suggestions={suggestions}
-            />
+          {(!readOnly || (contributorCount > 0 && onShowContributors)) && (
+            <div className="flex items-center gap-1.5">
+              {!readOnly && (
+                <div className="flex-1 min-w-0">
+                  <AddSolutionInput
+                    onAdd={handleAdd}
+                    placeholder={i18n.addPlaceholder}
+                    buttonLabel={i18n.addButton}
+                    suggestions={suggestions}
+                  />
+                </div>
+              )}
+              {contributorCount > 0 && onShowContributors && (
+                <button
+                  type="button"
+                  onClick={onShowContributors}
+                  title={i18n.contributorsTooltip}
+                  aria-label={i18n.contributorsTooltip}
+                  className={cn(
+                    "inline-flex items-center gap-1 rounded-full border border-border shrink-0",
+                    "bg-muted/40 h-7 px-2 text-xs font-medium",
+                    "hover:bg-muted hover:border-primary/50 transition-colors cursor-pointer"
+                  )}
+                >
+                  <User className="h-3 w-3" />
+                  {contributorCount}
+                </button>
+              )}
+            </div>
           )}
           <SolutionsTagList
             solutions={solutions}
@@ -697,6 +745,7 @@ export function CommonTableField({
   onChange,
   readOnly,
   hideLabel,
+  formId,
 }: CommonTableFieldProps) {
   useLoadNamespace("modules/coform");
   const t = useT("modules/coform");
@@ -829,6 +878,23 @@ export function CommonTableField({
   // Odoo, EBP COMPTA pour "Comptabilité"). Sans cette agrégation, on ne
   // verrait que la solution majoritaire. Pour les anciens entries qui
   // n'auraient pas encore `names`, fallback sur `name` seul.
+  // Pour chaque ligne du tableau (= un usage / groupKey), on a besoin de :
+  //   - `count` : total des contributions (pour le badge cliquable)
+  //   - `criteriaIds` : toutes les criterias dédupées par le resolver — passées
+  //     à l'API `getCommonTableContributors` au moment d'ouvrir le dialog.
+  // On parcourt `collabCatalog` une seule fois (en plus de `suggestionsByUsage`
+  // pour rester DRY, sinon double itération pour la même donnée).
+  const contributorsByUsage = useMemo(() => {
+    const out: Record<string, { count: number; criteriaIds: string[] }> = {};
+    for (const [criteriaId, entry] of Object.entries(collabCatalog)) {
+      const gk = groupKeyResolver(entry.usageKey, entry.usage);
+      const bucket = (out[gk] ??= { count: 0, criteriaIds: [] });
+      bucket.count += entry.count ?? 0;
+      bucket.criteriaIds.push(criteriaId);
+    }
+    return out;
+  }, [collabCatalog, groupKeyResolver]);
+
   const suggestionsByUsage = useMemo(() => {
     const accumulator: Record<string, Record<string, number>> = {};
     for (const entry of Object.values(collabCatalog)) {
@@ -898,7 +964,35 @@ export function CommonTableField({
         return;
       }
 
-      // STEP 2 — match par nom dans le catalogue collaboratif : réutiliser le
+      // STEP 2 — réutiliser une "stub orpheline" du myCatalog : entry créée
+      // précédemment par "Ajouter un besoin" (label vide, pas encore associée
+      // à une solution dans scores). Permet d'éviter le doublon où on aurait
+      // une entry "stub besoin" + une entry "première solution" dans
+      // myCatalog pour le même besoin.
+      const stubEntry = Object.entries(cur.myCatalog).find(
+        ([criteriaId, entry]) =>
+          !entry.label &&
+          !cur.scores[criteriaId] &&
+          groupKeyResolver(entry.usageKey, entry.usage) === usageKey
+      );
+      if (stubEntry) {
+        const [stubCriteriaId, oldEntry] = stubEntry;
+        const sol = makeDefaultSolution(trimmed, usageKey, usageLabel);
+        sol.criteriaId = stubCriteriaId;
+        onChange?.({
+          scores: { ...cur.scores, [stubCriteriaId]: sol },
+          myCatalog: {
+            ...cur.myCatalog,
+            // Met à jour l'usageKey (de "" à la valeur résolue) sans
+            // toucher au reste de la stub.
+            [stubCriteriaId]: { ...oldEntry, usageKey, coeff: oldEntry.coeff ?? 1 },
+          },
+        });
+        setActiveByUsage((prev) => ({ ...prev, [usageKey]: stubCriteriaId }));
+        return;
+      }
+
+      // STEP 3 — match par nom dans le catalogue collaboratif : réutiliser le
       // criteriaId existant pour ne pas dupliquer (et bénéficier du `count`
       // agrégé). On matche sur le groupKey résolu — sinon les entries
       // legacy (usageKey brut vide) ne seraient jamais retrouvées.
@@ -979,6 +1073,59 @@ export function CommonTableField({
     setActiveByUsage((prev) => ({ ...prev, [sol.usageKey]: id }));
   }, []);
 
+  // Dialog "voir les contributeurs" : ouvert au clic sur le badge d'une ligne.
+  // L'état mémorise la ligne ciblée (criteriaIds + label) — un seul Dialog
+  // monté pour toutes les lignes, contexte rebuilt au moment du clic.
+  const [contributorsContext, setContributorsContext] = useState<
+    { criteriaIds: string[]; usageLabel: string } | null
+  >(null);
+  const openContributorsDialog = useCallback(
+    (criteriaIds: string[], usageLabel: string) => {
+      setContributorsContext({ criteriaIds, usageLabel });
+    },
+    []
+  );
+
+  // ─── Ajout d'un nouveau besoin (usage) par l'utilisateur ─────────────────
+  // Pattern aligné sur le legacy `commonTableV2.php` (`addEditDeleteLine`)
+  // qui crée une entry minimale {label:"", coeff:1, usage} dans le catalogue
+  // de la réponse. Côté React on persiste dans `value.myCatalog` ; au save,
+  // `denormalizeAnswerData` transforme `myCatalog` → `criterias{key}` qui
+  // sera agrégé au catalogue collaboratif au prochain GET.
+  const [addUsageDialogOpen, setAddUsageDialogOpen] = useState(false);
+  const [newUsageDraft, setNewUsageDraft] = useState("");
+  const [addUsageError, setAddUsageError] = useState<string | null>(null);
+
+  const openAddUsageDialog = useCallback(() => {
+    setNewUsageDraft("");
+    setAddUsageError(null);
+    setAddUsageDialogOpen(true);
+  }, []);
+
+  const submitAddUsage = useCallback(() => {
+    const trimmed = newUsageDraft.trim();
+    if (!trimmed) {
+      setAddUsageError(t("coform.commonTable.addUsage.dialog.errorEmpty"));
+      return;
+    }
+    const norm = normalizeUsage(trimmed);
+    const exists = augmentedUsages.some((u) => normalizeUsage(u.label) === norm);
+    if (exists) {
+      setAddUsageError(t("coform.commonTable.addUsage.dialog.errorDuplicate"));
+      return;
+    }
+    const cur = valueRef.current;
+    const newCriteriaId = generateCriteriaId();
+    onChange?.({
+      ...cur,
+      myCatalog: {
+        ...cur.myCatalog,
+        [newCriteriaId]: { label: "", usage: trimmed, usageKey: "", coeff: 1 },
+      },
+    });
+    setAddUsageDialogOpen(false);
+  }, [newUsageDraft, augmentedUsages, onChange, t]);
+
   // i18n bundle stable, mémoïsé pour éviter de churner les memos enfants.
   const rowI18n = useMemo(
     () => ({
@@ -1007,6 +1154,8 @@ export function CommonTableField({
       commentPlaceholderTitle: t("coform.commonTable.comment.placeholder.title"),
       commentPlaceholderDescription: t("coform.commonTable.comment.placeholder.description"),
       commentPlaceholderClose: t("coform.commonTable.comment.placeholder.close"),
+      // Surchargé par ligne dans le map (interpolation `count` du badge).
+      contributorsTooltip: "",
     }),
     [t]
   );
@@ -1121,6 +1270,12 @@ export function CommonTableField({
               const rowSuggestions = (suggestionsByUsage[u.usageKey] ?? []).filter(
                 (s) => !myNames.has(s.name.toLowerCase())
               );
+              const rowContributors = contributorsByUsage[u.usageKey];
+              const rowCount = rowContributors?.count ?? 0;
+              const rowCriteriaIds = rowContributors?.criteriaIds ?? [];
+              // Pluralisation gérée par i18next (clé `_one` / `_other`).
+              const rowTooltip = t("coform.commonTable.contributors.openTooltip", undefined, { count: rowCount });
+              const rowI18nWithTooltip = { ...rowI18n, contributorsTooltip: rowTooltip };
               return (
                 <CommonTableRow
                   key={u.usageKey}
@@ -1128,12 +1283,18 @@ export function CommonTableField({
                   solutions={solutions}
                   activeSolutionId={active}
                   showColumns={showColumns}
-                  i18n={rowI18n}
+                  i18n={rowI18nWithTooltip}
                   onAddSolution={handleAddSolution}
                   onActivate={handleActivate}
                   onDelete={handleDelete}
                   onSolutionChange={handleSolutionChange}
                   suggestions={rowSuggestions}
+                  contributorCount={rowCount}
+                  onShowContributors={
+                    rowCount > 0 && formId
+                      ? () => openContributorsDialog(rowCriteriaIds, u.label)
+                      : undefined
+                  }
                   readOnly={readOnly}
                 />
               );
@@ -1141,6 +1302,95 @@ export function CommonTableField({
           </tbody>
         </table>
       </div>
+      )}
+
+      {/* Bouton "Ajouter un besoin" — créera une nouvelle ligne du tableau.
+          Disponible aussi en cas de tableau vide (utile pour démarrer le form). */}
+      {!readOnly && (
+        <div className="flex justify-center pt-1">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={openAddUsageDialog}
+            className="gap-1"
+          >
+            <Plus className="h-4 w-4" />
+            {t("coform.commonTable.addUsage.buttonLabel")}
+          </Button>
+        </div>
+      )}
+
+      <Dialog open={addUsageDialogOpen} onOpenChange={setAddUsageDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("coform.commonTable.addUsage.dialog.title")}</DialogTitle>
+            <DialogDescription>
+              {t("coform.commonTable.addUsage.dialog.description")}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor={`add-usage-input-${field.name}`}>
+              {t("coform.commonTable.addUsage.dialog.usageLabel")}
+            </Label>
+            <Input
+              id={`add-usage-input-${field.name}`}
+              autoFocus
+              value={newUsageDraft}
+              onChange={(e) => {
+                setNewUsageDraft(e.target.value);
+                if (addUsageError) setAddUsageError(null);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  submitAddUsage();
+                }
+              }}
+              placeholder={t("coform.commonTable.addUsage.dialog.usagePlaceholder")}
+              aria-invalid={!!addUsageError || undefined}
+              aria-errormessage={addUsageError ? `add-usage-error-${field.name}` : undefined}
+            />
+            {addUsageError && (
+              <p
+                id={`add-usage-error-${field.name}`}
+                role="alert"
+                className="text-sm text-destructive"
+              >
+                {addUsageError}
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setAddUsageDialogOpen(false)}
+            >
+              {t("coform.commonTable.addUsage.dialog.cancel")}
+            </Button>
+            <Button type="button" onClick={submitAddUsage}>
+              {t("coform.commonTable.addUsage.dialog.submit")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Liste détaillée des contributeurs sur une ligne donnée. Le dialog est
+          contrôlé par `contributorsContext` ; on le démonte (open=false) quand
+          `null` plutôt que de garder un montage permanent — évite tout fetch
+          inutile quand l'utilisateur n'a jamais cliqué un badge. */}
+      {formId && (
+        <CommonTableContributorsDialog
+          open={contributorsContext !== null}
+          onOpenChange={(o) => {
+            if (!o) setContributorsContext(null);
+          }}
+          formId={formId}
+          inputKey={getOriginalFieldKey(field)}
+          criteriaIds={contributorsContext?.criteriaIds ?? []}
+          usageLabel={contributorsContext?.usageLabel ?? ""}
+        />
       )}
 
       {hasError && (

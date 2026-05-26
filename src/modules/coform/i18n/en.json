@@ -177,6 +177,35 @@
         "placeholder": "Solution used…",
         "button": "Add this solution"
       },
+      "validation": {
+        "required": "{{label}} is required",
+        "formatInvalid": "Invalid response format for {{label}}",
+        "minLength": "{{label}} must be at least {{min}} character(s)",
+        "simpleTableRequired": "{{label}} is required (at least one data row)",
+        "multiCheckboxPlusCplxRequired": "All complementary fields must be filled"
+      },
+      "contributors": {
+        "title": "Contributions for this need",
+        "description": "See who has filled a solution for: {{usage}}",
+        "loading": "Loading contributions…",
+        "error": "Unable to load contributions.",
+        "empty": "No contributor has filled a solution for this need yet.",
+        "openTooltip_one": "View {{count}} contribution",
+        "openTooltip_other": "View {{count}} contributions"
+      },
+      "addUsage": {
+        "buttonLabel": "Add a need",
+        "dialog": {
+          "title": "Add a new need",
+          "description": "This need will appear as a new row of the table. You can add solutions to it afterwards.",
+          "usageLabel": "Need name",
+          "usagePlaceholder": "Ex: Tool booking",
+          "submit": "Add",
+          "cancel": "Cancel",
+          "errorEmpty": "Need name is required",
+          "errorDuplicate": "This need already exists in the table"
+        }
+      },
       "deleteSolution": "Delete this solution",
       "selectSolutionFirst": "Add a solution to rate",
       "happiness": {
@@ -189,11 +218,11 @@
       "note": {
         "level": {
           "0": "Not set",
-          "1": "Very low",
-          "2": "Low",
+          "1": "Acceptable",
+          "2": "Tolerable",
           "3": "Moderate",
-          "4": "High",
-          "5": "Urgent"
+          "4": "Urgent",
+          "5": "Critical"
         }
       },
       "yesNo": { "yes": "Yes", "no": "No" },

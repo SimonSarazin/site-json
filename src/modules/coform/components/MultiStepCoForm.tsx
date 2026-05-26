@@ -122,6 +122,7 @@ export function MultiStepCoForm({
         restrictedFields={restrictedFields}
         className={className}
         existingAnswerMeta={existingAnswerMeta}
+        formId={formId}
       />
     </CoFormProvider>
   );
@@ -141,6 +142,7 @@ function MultiStepCoFormContent({
   restrictedFields,
   className,
   existingAnswerMeta,
+  formId,
 }: {
   variant: CoFormVariant;
   showProgress: boolean;
@@ -152,6 +154,7 @@ function MultiStepCoFormContent({
   restrictedFields?: string[];
   className?: string;
   existingAnswerMeta?: ExistingAnswerMeta | null;
+  formId?: string;
 }) {
   useLoadNamespace("modules/coform");
   const t = useT("modules/coform");
@@ -517,6 +520,7 @@ function MultiStepCoFormContent({
                           value={controllerField.value as CommonTableValue}
                           onChange={controllerField.onChange}
                           readOnly={isLocked}
+                          formId={formId}
                         />
                       )}
                     />

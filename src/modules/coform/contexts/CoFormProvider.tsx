@@ -232,10 +232,13 @@ export function CoFormProvider({
         
         // Dénormaliser les données pour le format PHP (champs root-level à la
         // racine + pack des inputs multi-eval dans `_multiEval.{userId}`).
+        // `defaultValues` (format serveur) sert à décider, sur les commonTable
+        // vides, si on doit envoyer `{}` (clear) ou omettre (jamais rempli).
         const dataForServer = denormalizeAnswerData(
           stepsDataRef.current as Record<string, unknown>,
           subFormsFields,
-          userId ?? null
+          userId ?? null,
+          (defaultValues as Record<string, unknown> | undefined) ?? null
         ) as AllStepsData;
         
         await onFinalSubmit(
@@ -253,7 +256,7 @@ export function CoFormProvider({
     } finally {
       setIsLoading(false);
     }
-  }, [submitMode, onFinalSubmit, stepState.addedOptions, subFormsFields, purgeDraft, userId]);
+  }, [submitMode, onFinalSubmit, stepState.addedOptions, subFormsFields, purgeDraft, userId, defaultValues]);
 
   // Réinitialisation
   const resetForm = useCallback(() => {
