@@ -45,11 +45,11 @@ export function useCoFormAnswerFiles({
   docType = "file",
   enabled = true,
 }: UseCoFormAnswerFilesOptions): UseCoFormAnswerFilesReturn {
-  const { api, loading } = useCocolight();
+  const { api, loading, me } = useCocolight();
   const isReady = !loading && !!api;
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: COFORM_QUERY_KEYS.ANSWER_FILES(answerId, subKey),
+    queryKey: COFORM_QUERY_KEYS.ANSWER_FILES(answerId, subKey, me?.id ?? null),
     queryFn: async () => {
       if (!api) throw new Error("API non initialisée");
 

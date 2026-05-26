@@ -184,11 +184,11 @@ export function useCoFormAnswerQuery({
   answerId,
   enabled = true,
 }: UseCoFormAnswerQueryOptions): UseCoFormAnswerQueryReturn {
-  const { api, loading } = useCocolight();
+  const { api, loading, me } = useCocolight();
   const isReady = !loading && !!api;
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: COFORM_QUERY_KEYS.FORM_ANSWER(formId, answerId),
+    queryKey: COFORM_QUERY_KEYS.FORM_ANSWER(formId, answerId, me?.id ?? null),
     queryFn: async () => {
       if (!api) throw new Error("API non initialisée");
 

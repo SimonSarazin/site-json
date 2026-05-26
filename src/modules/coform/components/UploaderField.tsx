@@ -70,7 +70,7 @@ function isExistingFile(item: unknown): item is ExistingUploadFile {
 
 export function UploaderField({ field, errors, value = [], onChange, formId, answerId, subKey }: UploaderFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const { api } = useCocolight();
+  const { api, me } = useCocolight();
   const queryClient = useQueryClient();
   const baseUrl = getBaseUrl();
   const t = useT("modules/coform");
@@ -196,7 +196,7 @@ export function UploaderField({ field, errors, value = [], onChange, formId, ans
         // si un consommateur (ReadOnlyUploaderGallery) en a affiché.
         if (subKey) {
           await queryClient.invalidateQueries({
-            queryKey: COFORM_QUERY_KEYS.ANSWER_FILES(answerId, subKey),
+            queryKey: COFORM_QUERY_KEYS.ANSWER_FILES(answerId, subKey, me?.id ?? null),
           });
         }
       } catch (error) {

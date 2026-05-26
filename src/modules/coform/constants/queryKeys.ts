@@ -42,9 +42,19 @@ export const COFORM_QUERY_KEYS = {
    *
    * Producteur : `useCoFormQuery` (mode answer)
    * Consommateurs invalidants : `useCoFormFinalMutation` (après save)
+   *
+   * `userId` est inclus pour éviter une fuite de cache cross-user : sans cette
+   * dimension, user A submit un answer, puis user B se logger dans la même
+   * session (sans full reload) → B verrait l'answer de A en cache. Le même
+   * pattern est appliqué à `CAGNOTTE_QUERY_KEYS.FUNDING_ENVELOPE`.
+   *
+   * Les hooks doivent passer `me?.id ?? null` (récupéré via `useCocolight()`).
    */
-  FORM_ANSWER: (formId: string | null, answerId: string | null) =>
-    ["coform", "answer", formId, answerId] as const,
+  FORM_ANSWER: (
+    formId: string | null,
+    answerId: string | null,
+    userId: string | null = null,
+  ) => ["coform", "answer", formId, answerId, userId] as const,
   /** Invalide une answer précise ou toutes les answers d'un form (si `answerId` omis). */
   FORM_ANSWER_PREFIX: (formId: string | null, answerId: string | null = null) =>
     answerId === null
@@ -58,9 +68,15 @@ export const COFORM_QUERY_KEYS = {
    * Producteur : `useCoFormAnswerFiles`
    * Consommateurs invalidants : `UploaderField` (après delete) — invalidation
    *   manuelle via `queryClient.invalidateQueries`
+   *
+   * `userId` inclus pour la même raison que `FORM_ANSWER` (fuite de cache
+   * cross-user).
    */
-  ANSWER_FILES: (answerId: string | null, subKey: string | null) =>
-    ["coform", "answerFiles", answerId, subKey] as const,
+  ANSWER_FILES: (
+    answerId: string | null,
+    subKey: string | null,
+    userId: string | null = null,
+  ) => ["coform", "answerFiles", answerId, subKey, userId] as const,
   ANSWER_FILES_PREFIX: (answerId: string | null) =>
     ["coform", "answerFiles", answerId] as const,
 } as const;
