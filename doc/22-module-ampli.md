@@ -89,7 +89,8 @@ src/modules/ampli/
 │           └── MeeteemMapPlaceholder.tsx # Placeholder vue Carte (map non encore implémentée)
 │
 ├── constants/
-│   └── queryKeys.ts               # AMPLI_QUERY_KEYS (si définis)
+│   └── queryKeys.ts               # AMPLI_QUERY_KEYS — FETCH_ANSWERS + FETCH_ANSWERS_PREFIX
+│                                  # (préfixe figé "ampli-meeteem", utilisé par useFetchAnswerQuery)
 │
 ├── pages/
 │   └── AmpliPage.tsx              # Page principale (RR v7 route handler)
@@ -250,8 +251,7 @@ Accès dans les sous-composants via `useAmpliContext()` (`hooks/useAmpliContext.
 
 ```ts
 function useFetchAnswerQuery({
-  queryKeyPrefix,  // Préfixe pour la queryKey (évite les conflits entre instances)
-  coformId,        // ID du CoForm
+  coformId,        // ID du CoForm — utilisé par AMPLI_QUERY_KEYS.FETCH_ANSWERS
   view,            // "answers" | "map" | "split" — détermine indexStepList vs indexStepMap
   baseParams?: {
     fediverse?: boolean;
@@ -522,9 +522,11 @@ Le hook est `enabled: !!entity`. Tant que le `CocolightProvider` n'a pas initial
 
 Le mapping `config.props.path.*` doit correspondre exactement aux noms des champs dans `answers.*` du CoForm. Une erreur de typo résulte en champs `undefined` dans les cartes. Aucune validation runtime n'est faite sur ces chemins.
 
-### 5. Déduplication des answers par `queryKeyPrefix`
+### 5. Cache des answers via `AMPLI_QUERY_KEYS.FETCH_ANSWERS`
 
-`useFetchAnswerQuery` est utilisé deux fois sur la même page (AmpliSectionRenderer + potentiellement MeeteemSection). Le préfixe `queryKeyPrefix` doit être différent pour éviter que les deux instances partagent le même cache React Query et s'interfèrent.
+Depuis le commit `363cd41`, le préfixe de la queryKey est **figé** dans `AMPLI_QUERY_KEYS.FETCH_ANSWERS(coformId, view, baseParams)` → `["ampli-meeteem", coformId, view, JSON.stringify(baseParams)]`. Le paramètre `queryKeyPrefix` runtime a été supprimé du hook : les variations entre instances sont déjà couvertes par `coformId` + `view` + `baseParams`.
+
+Pour invalider toutes les vues d'un coform donné, utiliser `AMPLI_QUERY_KEYS.FETCH_ANSWERS_PREFIX(coformId)` → `["ampli-meeteem", coformId]`.
 
 ---
 

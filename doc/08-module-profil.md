@@ -162,11 +162,19 @@ src/modules/profil/
 ├── contexts/
 │   ├── ProfileEntityContext.tsx    // Context React pour l'entité du profil
 │   └── ProfileEntityProvider.tsx   // Provider du context
+├── actions/
+│   ├── index.ts                    // Barrel
+│   └── mutations/                  // Factories de mutations (createEntityMutation, etc.)
+│       ├── core.ts                 // Factory générique createEntityMutation
+│       ├── friend.ts               // Mutations amis (add/accept/decline/remove)
+│       ├── member.ts               // Mutations members (join/leave/promote/demote)
+│       └── relationship.ts         // Mutations relations entité↔entité
 ├── hooks/
 │   ├── mutationUtils.ts            // Utilitaires pour mutations
 │   ├── useAddMutations.tsx         // Mutations d'ajout d'entités
 │   ├── useCommentVotes.tsx         // Votes sur commentaires
 │   ├── useConfirmationDialog.tsx   // Dialog de confirmation
+│   ├── useEditTiersLieu.tsx        // Mutation édition tiers-lieu (entity-oriented)
 │   ├── useEntityLabels.tsx         // Labels d'entité
 │   ├── useFormatProfileEntity.tsx  // Hook pour formater les données
 │   ├── useFriendsQuery.tsx         // Query amis
@@ -175,22 +183,21 @@ src/modules/profil/
 │   ├── useMembersQuery.tsx         // Query membres
 │   ├── useNewsDetailUrlGenerator.tsx // Générateur URL détail news
 │   ├── useOrganizationMutations.tsx // Mutations organisation
-│   ├── useProfilContributorsQuery.tsx // Query contributeurs
 │   ├── useProfileEntity.tsx        // Hook pour accéder à l'entité typée
 │   ├── useProfileFormData.tsx      // Données formulaire profil
 │   ├── useProfileMutations.tsx     // Mutations profil
 │   ├── useProfileSetup.ts          // Setup profil
-│   ├── useProfilFriendsQuery.tsx   // Query amis profil
 │   ├── useProfilMembersQuery.tsx   // Query membres profil
 │   ├── useProfilOrganizationsQuery.tsx // Query organisations
 │   ├── useProfilPermissions.ts     // Hook local pour permissions profil
 │   ├── useProfilProjectsQuery.tsx  // Query projets
 │   ├── useProfilSubscribersQuery.tsx // Query abonnés
-│   ├── useProfilSubscriptionsQuery.tsx // Query abonnements
 │   ├── useProjectMutations.tsx     // Mutations projet
 │   ├── useRelatedEntities.tsx      // Entités liées
-│   ├── useRelationshipMutations.ts // Mutations relations
 │   └── useUserStatusBadge.tsx      // Badge statut utilisateur
+│   // Note : les anciens hooks useProfilContributorsQuery, useProfilFriendsQuery,
+│   // useProfilSubscriptionsQuery, useRelationshipMutations ont été supprimés
+│   // (commit 60454d0) — remplacés par les factories de mutations dans actions/.
 ├── permissions/                    // Système de permissions modulaire (voir 10-permissions.md)
 │   ├── types.ts                    // ProfilPermissions (27 champs)
 │   ├── defaults.ts                 // DEFAULT_PROFIL_PERMISSIONS
@@ -892,7 +899,9 @@ Mutation d'édition d'une organisation tiers-lieu existante. Pattern entity-orie
 3. Appelle `organization.save()` pour persister (diff/patch géré par le SDK)
 4. Si `data._logoFile` présent → `organization.updateImageProfil({ profil_avatar: file })`
 
-Invalide `QUERY_KEYS.ELEMENT_ABOUT_PREFIX(slug)` après succès.
+Invalide `PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(slug)` après succès.
+
+> Note : depuis le commit `2fb46b8`, la constante a été renommée `QUERY_KEYS` → `PROFIL_QUERY_KEYS` (préfixée par le module pour cohérence avec `CAGNOTTE_QUERY_KEYS`, `COFORM_QUERY_KEYS`, etc.). Type associé : `ProfilQueryKeyType` (via `ReturnType<...>`).
 
 ---
 

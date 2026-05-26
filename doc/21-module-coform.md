@@ -416,7 +416,7 @@ const {
 });
 ```
 
-**queryKey** : `COFORM_QUERY_KEYS.form(formId)` → `["coform", "form", formId]`
+**queryKey** : `COFORM_QUERY_KEYS.FORM(formId)` → `["coform", "form", formId]`
 
 Charge le formulaire via `entity.coform.getFormById(formId)`. Les informations d'accès (`CoFormAccessInfo`) sont incluses dans `formData.access`.
 
@@ -711,11 +711,28 @@ interface CoFormContextType {
 ## Constantes
 
 ```ts
-// COFORM_QUERY_KEYS
-COFORM_QUERY_KEYS.form(formId)          // ["coform", "form", formId]
-COFORM_QUERY_KEYS.formAnswers(formId)   // ["coform", "answers", formId]
-COFORM_QUERY_KEYS.formAnswer(formId, answerId) // ["coform", "answer", formId, answerId]
-COFORM_QUERY_KEYS.answerFiles(answerId, subKey) // ["coform", "answerFiles", answerId, subKey]
+// COFORM_QUERY_KEYS — vit dans src/modules/coform/constants/queryKeys.ts
+// (fichier dédié depuis le commit b03db2c, conforme aux 11 règles de
+// la convention "or" — cf. commentaire/retour-equipe-refactor-mai-2026.md
+// section 2.17). Re-export propre depuis ./constants/index.ts.
+//
+// `userId` (3ᵉ param de FORM_ANSWER / ANSWER_FILES) isole le cache par
+// utilisateur connecté pour éviter une fuite cross-user (commit 7837d57).
+// Les hooks coform passent automatiquement `me?.id ?? null`.
+COFORM_QUERY_KEYS.FORM(formId)                        // ["coform", "form", formId]
+COFORM_QUERY_KEYS.FORM_PREFIX(formId?)                // ["coform", "form"] OU ["coform", "form", formId]
+COFORM_QUERY_KEYS.FORM_ANSWERS(formId)                // ["coform", "answers", formId]
+COFORM_QUERY_KEYS.FORM_ANSWERS_PREFIX(formId?)        // idem avec/sans formId
+COFORM_QUERY_KEYS.FORM_ANSWER(formId, answerId, userId?)
+                                                       // ["coform", "answer", formId, answerId, userId]
+COFORM_QUERY_KEYS.FORM_ANSWER_PREFIX(formId, answerId?)
+                                                       // ["coform", "answer", formId] OU [..., answerId]
+COFORM_QUERY_KEYS.ANSWER_FILES(answerId, subKey, userId?)
+                                                       // ["coform", "answerFiles", answerId, subKey, userId]
+COFORM_QUERY_KEYS.ANSWER_FILES_PREFIX(answerId)       // ["coform", "answerFiles", answerId]
+
+// Type associé (consommateurs externes)
+type CoformQueryKeyType = ReturnType<(typeof COFORM_QUERY_KEYS)[keyof typeof COFORM_QUERY_KEYS]>;
 
 // Modes
 SUBMIT_MODES = { STEP: "step", FINAL: "final", BOTH: "both" }
