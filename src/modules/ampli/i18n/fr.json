@@ -1,102 +1,108 @@
 {
-    "AmpliTemplateDefault": {
-        "tabs" : {
-            "home" : "Accueil",
-            "message": "Messages",
-            "network" : "Réseau",
-            "dashboard": "Tableau de bord",
-            "news": "Actualités"
-        },
-        "comingSoon": {
-            "title": "Bientôt disponible",
-            "description": "Cette section est en cours d'implémentation. Repassez plus tard !"
-        }
+  "AmpliTemplateDefault": {
+    "tabs": {
+      "home": "Accueil",
+      "message": "Messages",
+      "network": "Réseau",
+      "dashboard": "Tableau de bord",
+      "news": "Actualités"
     },
-    "AmpliHero": {
-        "headline": "Amplifions le bon sens",
-        "subhead": "Une armée d'humains travaillant pour le bien commun. Un réseau de confiance entre pairs qui amplifie vos idées dans le monde entier.",
-        "proposal": "Proposer une idée",
-        "join": "Rejoindre la communauté",
-        "mediaPulse": "Pulsation médiatique",
-        "globalAmplification": "Amplification mondiale",
-        "trustedNetwork": "Réseau de confiance"
-    },
-    "AmpliIntro": {
-        "headline": "Comment ça fonctionne ?",
-        "subhead": "Une plateforme collaborative qui transforme les bonnes idées en actions concrètes grâce à la force du collectif.",
-        "trustedNetwork": "Réseau de Confiance",
-        "trustedNetworkText": "Un écosystème pair-à-pair où chaque membre est validé par la communauté",
-        "collectiveValidation": "Validation Collective",
-        "collectiveValidationText": "Vos idées sont évaluées par des pairs qui partagent vos valeurs",
-        "globalAmplification": "Amplification Mondiale",
-        "globalAmplificationText": "Les meilleures propositions sont diffusées massivement en dehors du réseau",
-        "mediaPulse": "Pulsation médiatique",
-        "mediaPulseText": "Création d'un rythme régulier pour maintenir l'attention du public",
-        "networkEffect": "Effet de réseau",
-        "networkEffectText": "Plus nous sommes nombreux, plus notre impact grandit exponentiellement",
-        "commonGood": "Bien commun",
-        "commonGoodText": "Chaque action vise à améliorer la société dans son ensemble"
-    },
-    "AmpliFeatures": {
-        "headline": "Proposez votre idée",
-        "subhead": "Partagez vos idées pour le bien commun avec notre communauté",
-        "button": "Soumettre à la communauté",
-        "summary": {
-            "headline": "Statistiques du réseau",
-            "submitted": "Idées soumises",
-            "members": "Membres actifs",
-            "amplified": "Idées amplifiées",
-            "comments": "Discussions générées"
-        },
-        "howItWork": {
-            "headline": "Comment ça marche ?",
-            "stepOne": "Vous soumettez votre idée.",
-            "stepTwo": "La communauté l'évalue et vote.",
-            "stepThree": "Les meilleures sont amplifiées massivement."
-        }
-    },
-    "AmpliMessage": {
-        "headline": "Messages populaires",
-        "subhead": "Découvrez les idées qui mobilisent notre communauté."
-    },
-    "AmpliCommunity": {
-        "headline": "Réseau de Confiance",
-        "subhead": "Un écosystème pair-à-pair où chaque membre est validé par la communauté."
-    },
-    "AmpliDashboard": {
-        "headline": "Vision Globale",
-        "subhead": "Voir la globalité sur les données fournit par votre communauté."
-    },
-    "AmpliNews": {
-        "headline": "Dernières actualités",
-        "subhead": "Restez informé des développements et des succès de notre communauté."
-    },
-    "AmpliPage": {
-        "notFoundTitle": "Ampli non trouvé",
-        "notFoundDescription": "La configuration pour l'ampli \"{{slug}}\" est introuvable.",
-        "backHome": "Retour à l'accueil"
-    },
-    "AmpliUserCard": {
-        "noLocation": "Localisation non renseignée",
-        "contributions_one": "{{count}} contribution",
-        "contributions_other": "{{count}} contributions"
-    },
-    "MeeteemSection": {
-        "viewToggle": {
-            "answers": "Annuaire",
-            "map": "Carte",
-            "split": "Split"
-        },
-        "filters": {
-            "title": "Filtres"
-        },
-        "map": {
-            "placeholderTitle": "Carte interactive",
-            "placeholderSubtitle": "(nécessite Leaflet.js)"
-        },
-        "card": {
-            "noDate": "N/A",
-            "noUser": "Anonyme"
-        }
+    "comingSoon": {
+      "title": "Bientôt disponible",
+      "description": "Cette section est en cours d'implémentation. Repassez plus tard !"
     }
+  },
+  "AmpliHero": {
+    "headline": "Amplifions le bon sens",
+    "subhead": "Une armée d'humains travaillant pour le bien commun. Un réseau de confiance entre pairs qui amplifie vos idées dans le monde entier.",
+    "proposal": "Proposer une idée",
+    "join": "Rejoindre la communauté",
+    "mediaPulse": "Pulsation médiatique",
+    "globalAmplification": "Amplification mondiale",
+    "trustedNetwork": "Réseau de confiance"
+  },
+  "AmpliIntro": {
+    "headline": "Comment ça fonctionne ?",
+    "subhead": "Une plateforme collaborative qui transforme les bonnes idées en actions concrètes grâce à la force du collectif.",
+    "trustedNetwork": "Réseau de Confiance",
+    "trustedNetworkText": "Un écosystème pair-à-pair où chaque membre est validé par la communauté",
+    "collectiveValidation": "Validation Collective",
+    "collectiveValidationText": "Vos idées sont évaluées par des pairs qui partagent vos valeurs",
+    "globalAmplification": "Amplification Mondiale",
+    "globalAmplificationText": "Les meilleures propositions sont diffusées massivement en dehors du réseau",
+    "mediaPulse": "Pulsation médiatique",
+    "mediaPulseText": "Création d'un rythme régulier pour maintenir l'attention du public",
+    "networkEffect": "Effet de réseau",
+    "networkEffectText": "Plus nous sommes nombreux, plus notre impact grandit exponentiellement",
+    "commonGood": "Bien commun",
+    "commonGoodText": "Chaque action vise à améliorer la société dans son ensemble"
+  },
+  "AmpliFeatures": {
+    "headline": "Proposez votre idée",
+    "subhead": "Partagez vos idées pour le bien commun avec notre communauté",
+    "button": "Soumettre à la communauté",
+    "summary": {
+      "headline": "Statistiques du réseau",
+      "submitted": "Idées soumises",
+      "members": "Membres actifs",
+      "amplified": "Idées amplifiées",
+      "comments": "Discussions générées"
+    },
+    "howItWork": {
+      "headline": "Comment ça marche ?",
+      "stepOne": "Vous soumettez votre idée.",
+      "stepTwo": "La communauté l'évalue et vote.",
+      "stepThree": "Les meilleures sont amplifiées massivement."
+    }
+  },
+  "AmpliMessage": {
+    "headline": "Messages populaires",
+    "subhead": "Découvrez les idées qui mobilisent notre communauté."
+  },
+  "AmpliCommunity": {
+    "headline": "Réseau de Confiance",
+    "subhead": "Un écosystème pair-à-pair où chaque membre est validé par la communauté."
+  },
+  "AmpliDashboard": {
+    "headline": "Vision Globale",
+    "subhead": "Voir la globalité sur les données fournit par votre communauté."
+  },
+  "AmpliNews": {
+    "headline": "Dernières actualités",
+    "subhead": "Restez informé des développements et des succès de notre communauté."
+  },
+  "AmpliPage": {
+    "notFoundTitle": "Ampli non trouvé",
+    "notFoundDescription": "La configuration pour l'ampli \"{{slug}}\" est introuvable.",
+    "backHome": "Retour à l'accueil"
+  },
+  "AmpliUserCard": {
+    "noLocation": "Localisation non renseignée",
+    "contributions_one": "{{count}} contribution",
+    "contributions_other": "{{count}} contributions"
+  },
+  "MeeteemSection": {
+    "viewToggle": {
+      "answers": "Annuaire",
+      "map": "Carte",
+      "split": "Split"
+    },
+    "filters": {
+      "title": "Filtres"
+    },
+    "map": {
+      "placeholderTitle": "Carte interactive",
+      "placeholderSubtitle": "(nécessite Leaflet.js)"
+    },
+    "card": {
+      "noDate": "N/A",
+      "noUser": "Anonyme"
+    }
+  },
+  "a11y": {
+    "toggleFilters": "Afficher / masquer les filtres",
+    "toggleTag": "Basculer le filtre {{tag}}",
+    "selectUser": "Voir les contributions de {{name}}",
+    "loading": "Chargement de la section…"
+  }
 }

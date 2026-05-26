@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { useAmpliContext } from "./hooks/useAmpliContext";
-import { Loader2 } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
+import { useT } from "@/hooks/useT";
 import { AmpliSectionRenderer } from "./AmpliSectionRenderer";
 
 interface AmpliRendererProps {
@@ -10,6 +11,7 @@ interface AmpliRendererProps {
 export function AmpliRenderer({ activeTab }: AmpliRendererProps) {
 
     const { config } = useAmpliContext();
+    const t = useT("modules/ampli");
 
     const layoutClass = {
         "default": "max-w-4xl mx-auto",
@@ -23,7 +25,7 @@ export function AmpliRenderer({ activeTab }: AmpliRendererProps) {
             <Suspense
                 fallback={
                     <div className="flex items-center justify-center min-h-[400px]">
-                        <Loader2 className="h-8 w-8 animate-spin" />
+                        <Spinner className="h-8 w-8" label={String(t("a11y.loading"))} />
                     </div>
                 }
             >

@@ -1,6 +1,7 @@
 import { Heart, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useT } from "@/hooks/useT";
+import { Button } from "@/components/ui/button";
 import type { MeeteemCard as MeeteemCardType } from "../../../types";
 
 interface MeeteemCardProps {
@@ -49,20 +50,24 @@ export function MeeteemCard({
           {data.tags?.map((tag) => {
             const active = activeFilters.includes(tag);
             return (
-              <button
+              <Button
                 key={tag}
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => onToggleFilter(tag)}
+                aria-pressed={active}
+                aria-label={String(t("a11y.toggleTag", undefined, { tag }))}
                 className={cn(
-                  "rounded-full text-xs font-medium border cursor-pointer transition-colors",
+                  "h-auto rounded-full text-xs font-medium border transition-colors",
                   isCompact ? "px-2 py-1" : "px-3 py-1",
                   active
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-muted text-muted-foreground border-border",
+                    ? "bg-primary text-primary-foreground border-primary hover:bg-primary"
+                    : "bg-muted text-muted-foreground border-border hover:bg-muted",
                 )}
               >
                 {tag}
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -92,10 +97,12 @@ export function MeeteemCard({
           isCompact ? "gap-3 mt-3" : "gap-4 pt-3",
         )}>
           {/* Auteur */}
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={() => onSelectUser(user?.name || "")}
-            className="flex items-center gap-2 cursor-pointer transition-all rounded-lg p-1 hover:bg-primary/10 text-left"
+            aria-label={String(t("a11y.selectUser", undefined, { name: user?.name || fallbackUser }))}
+            className="h-auto justify-start gap-2 rounded-lg p-1 hover:bg-primary/10 text-left"
           >
             <div className={cn(
               "rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold",
@@ -111,7 +118,7 @@ export function MeeteemCard({
                 {answer.serverData.created?.toLocaleDateString() ?? fallbackDate}
               </span>
             </div>
-          </button>
+          </Button>
 
           {/* Stats */}
           <div className="flex items-center gap-2">
