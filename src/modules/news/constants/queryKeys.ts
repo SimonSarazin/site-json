@@ -1,26 +1,61 @@
 /**
- * Constantes centralisées pour les query keys React Query
- * Évite les magic strings et assure la cohérence des invalidations
+ * Query keys du module news — centralisés (single source of truth).
+ *
+ * Convention : chaque producteur a sa clé complète + une variante `_PREFIX`
+ * minimaliste pour invalidation cross-contexte (matche toutes les variantes
+ * peu importe `userContextId`).
+ *
+ * `userContextId` est inclus dans les clés complètes pour refetch auto quand
+ * le contexte utilisateur change (logout/login) — sans cette dimension, deux
+ * users distincts dans la même session pourraient se voir servir les données
+ * du premier depuis le cache.
  */
-
 export const NEWS_QUERY_KEYS = {
-  // News list for an entity (userContextId pour refetch auto quand le contexte change)
-  NEWS: (entityId: string | null, userContextId: string | null = null) => ["news", entityId, userContextId] as const,
-  // Préfixe pour invalidations (matche toutes les queries peu importe userContextId)
+  /**
+   * Liste des news d'une entité.
+   *
+   * Producteurs : `useNewsQuery`, `prefetchNews`
+   * Consommateurs invalidants : `useNewsMutations` (create/update/delete),
+   *   `useCommentMutations` (count comments change) — invalident via `NEWS_PREFIX`
+   */
+  NEWS: (entityId: string | null, userContextId: string | null = null) =>
+    ["news", entityId, userContextId] as const,
+  /** Préfixe pour invalidations (matche toutes les queries peu importe userContextId). */
   NEWS_PREFIX: (entityId: string | null) => ["news", entityId] as const,
 
-  // Single news by id (userContextId pour refetch auto quand le contexte change)
-  NEWS_BY_ID: (entityId: string | null, newsId: string | null, userContextId: string | null = null) =>
-    ["news-by-id", entityId, newsId, userContextId] as const,
+  /**
+   * Single news par id.
+   *
+   * Producteur : `useNewsByIdQuery`
+   * Note : pas matché par `NEWS_PREFIX` (clé racine différente — `news-by-id`).
+   *   Invalider explicitement via `NEWS_BY_ID_PREFIX` après update/delete.
+   */
+  NEWS_BY_ID: (
+    entityId: string | null,
+    newsId: string | null,
+    userContextId: string | null = null,
+  ) => ["news-by-id", entityId, newsId, userContextId] as const,
   NEWS_BY_ID_PREFIX: (entityId: string | null, newsId: string | null) =>
     ["news-by-id", entityId, newsId] as const,
 
-  // Comments for a news (userContextId pour refetch auto quand le contexte change)
+  /**
+   * Commentaires d'une news.
+   *
+   * Producteur : `useNewsCommentsQuery`
+   * Consommateurs invalidants : `useCommentMutations` (add/edit/delete/like)
+   *   via `NEWS_COMMENTS_PREFIX`
+   */
   NEWS_COMMENTS: (newsId: string | null, userContextId: string | null = null) =>
     ["news-comments", newsId, userContextId] as const,
   NEWS_COMMENTS_PREFIX: (newsId: string | null) => ["news-comments", newsId] as const,
 
-  // Votes for a news (userContextId pour refetch auto quand le contexte change)
+  /**
+   * Votes (likes/reactions) d'une news.
+   *
+   * Producteur : `useNewsVotes`
+   * Consommateurs invalidants : la mutation de vote optimiste mute directement
+   *   le cache local (`setQueryData`) ; pas d'invalidation explicite côté lib.
+   */
   NEWS_VOTES: (newsId: string | null, userContextId: string | null = null) =>
     ["news-votes", newsId, userContextId] as const,
   NEWS_VOTES_PREFIX: (newsId: string | null) => ["news-votes", newsId] as const,
