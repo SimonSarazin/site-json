@@ -1301,5 +1301,11 @@
     "bed": "bed",
     "reserve": "Book now",
     "confirmDelete": "Are you sure you want to delete this item?"
+  },
+  "a11y": {
+    "moreOptions": "More options",
+    "contactEmail": "Send email",
+    "callPhone": "Call",
+    "visitWebsite": "Visit website"
   }
 }

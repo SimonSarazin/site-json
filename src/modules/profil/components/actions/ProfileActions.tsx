@@ -353,6 +353,7 @@ export function ProfileActions({ email, phone, url }: ProfileActionsProps) {
               onClick={handleEmail}
               className="h-9 w-9"
               title={email}
+              aria-label={String(t("a11y.contactEmail"))}
             >
               <Mail className="w-4 h-4" />
             </Button>
@@ -364,6 +365,7 @@ export function ProfileActions({ email, phone, url }: ProfileActionsProps) {
               onClick={handlePhone}
               className="h-9 w-9"
               title={phone}
+              aria-label={String(t("a11y.callPhone"))}
             >
               <Phone className="w-4 h-4" />
             </Button>
@@ -375,6 +377,7 @@ export function ProfileActions({ email, phone, url }: ProfileActionsProps) {
               onClick={handleWebsite}
               className="h-9 w-9"
               title={url}
+              aria-label={String(t("a11y.visitWebsite"))}
             >
               <Globe className="w-4 h-4" />
             </Button>
@@ -384,7 +387,7 @@ export function ProfileActions({ email, phone, url }: ProfileActionsProps) {
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="icon" className="h-9 w-9" disabled={isLoading}>
+          <Button variant="outline" size="icon" className="h-9 w-9" disabled={isLoading} aria-label={String(t("a11y.moreOptions"))}>
             {isLoading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : (

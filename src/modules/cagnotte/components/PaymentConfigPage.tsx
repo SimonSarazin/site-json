@@ -534,7 +534,7 @@ const PaymentConfigPage = ({
         <div className="space-y-6 py-4">
             <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-foreground">{t("PaymentConfigPage.title")}</h2>
-                <Button onClick={onBack} variant="ghost" size="icon" disabled={isHelloAssoProcessing}>
+                <Button onClick={onBack} variant="ghost" size="icon" aria-label={String(t("a11y.back"))} disabled={isHelloAssoProcessing}>
                     <ArrowLeft className="w-5 h-5" />
                 </Button>
             </div>

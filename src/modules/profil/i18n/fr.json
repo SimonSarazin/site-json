@@ -1301,5 +1301,11 @@
     "bed": "lit",
     "reserve": "Réserver",
     "confirmDelete": "Êtes-vous sûr de vouloir supprimer cet élément ?"
+  },
+  "a11y": {
+    "moreOptions": "Plus d'options",
+    "contactEmail": "Envoyer un email",
+    "callPhone": "Appeler",
+    "visitWebsite": "Visiter le site web"
   }
 }

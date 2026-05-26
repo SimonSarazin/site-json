@@ -723,5 +723,8 @@
         "title": "Erreur de paiement"
       }
     }
+  },
+  "a11y": {
+    "back": "Retour"
   }
 }

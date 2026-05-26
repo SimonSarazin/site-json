@@ -169,7 +169,7 @@ export function NewsItem({ item, entity, isLastItem, lastItemRef, onEdit, onDele
             </span>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" aria-label={String(t("a11y.moreOptions"))}>
                   <MoreVertical />
                 </Button>
               </DropdownMenuTrigger>

@@ -723,5 +723,8 @@
         "title": "Payment error"
       }
     }
+  },
+  "a11y": {
+    "back": "Back"
   }
 }
