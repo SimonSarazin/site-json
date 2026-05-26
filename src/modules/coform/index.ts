@@ -65,6 +65,7 @@ export {
   DISPLAY_VARIANTS,
   STEP_STATUS,
 } from "./constants";
+export type { CoformQueryKeyType } from "./constants";
 
 // Prefetch
 export {

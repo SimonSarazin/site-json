@@ -26,3 +26,7 @@ export type {
 export {
     AmpliConfigSchema,
 } from "./schema";
+
+// Query keys centralisés (single source of truth)
+export { AMPLI_QUERY_KEYS } from "./constants/queryKeys";
+export type { AmpliQueryKeyType } from "./constants/queryKeys";

@@ -89,3 +89,7 @@ export {
   ProfileOpeningHoursSectionSchema,
   ProfileTabLayoutSectionSchema,
 } from "./schema";
+
+// Query keys centralisés (single source of truth)
+export { PROFIL_QUERY_KEYS } from "./constants/queryKeys";
+export type { ProfilQueryKeyType } from "./constants/queryKeys";
