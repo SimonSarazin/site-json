@@ -49,7 +49,7 @@ export function useCoFormAnswerFiles({
   const isReady = !loading && !!api;
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: COFORM_QUERY_KEYS.answerFiles(answerId, subKey),
+    queryKey: COFORM_QUERY_KEYS.ANSWER_FILES(answerId, subKey),
     queryFn: async () => {
       if (!api) throw new Error("API non initialisée");
 

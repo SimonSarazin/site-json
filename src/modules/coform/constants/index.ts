@@ -30,15 +30,9 @@ export const BOOTSTRAP_TO_TAILWIND_WIDTH: Record<string, string> = {
   "col-lg-9 col-md-9 col-xs-12": "w-full md:w-3/4",
 };
 
-/**
- * Clés de query React Query
- */
-export const COFORM_QUERY_KEYS = {
-  form: (formId: string) => ["coform", "form", formId] as const,
-  formAnswers: (formId: string) => ["coform", "answers", formId] as const,
-  formAnswer: (formId: string, answerId: string) => ["coform", "answer", formId, answerId] as const,
-  answerFiles: (answerId: string, subKey: string) => ["coform", "answerFiles", answerId, subKey] as const,
-};
+// Query keys React Query — vivent dans leur propre fichier dédié pour rester
+// cohérent avec les autres modules (cagnotte, news, profil, search, ampli).
+export { COFORM_QUERY_KEYS, type CoformQueryKeyType } from "./queryKeys";
 
 /**
  * Modes de soumission

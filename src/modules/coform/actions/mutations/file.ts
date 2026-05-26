@@ -75,8 +75,8 @@ export function useCoFormFinalMutation({
     },
     onSuccess: (data) => {
       // Invalider les caches : formulaire (pour rafraîchir l'access) + réponses
-      queryClient.invalidateQueries({ queryKey: COFORM_QUERY_KEYS.form(formId) });
-      queryClient.invalidateQueries({ queryKey: COFORM_QUERY_KEYS.formAnswers(formId) });
+      queryClient.invalidateQueries({ queryKey: COFORM_QUERY_KEYS.FORM(formId) });
+      queryClient.invalidateQueries({ queryKey: COFORM_QUERY_KEYS.FORM_ANSWERS(formId) });
       onSuccess?.(data);
     },
     onError: (error: Error) => {

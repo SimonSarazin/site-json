@@ -59,7 +59,7 @@ export function useCoFormQuery({ formId, enabled = true }: UseCoFormQueryOptions
   const isReady = !loading && !!api;
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: COFORM_QUERY_KEYS.form(formId),
+    queryKey: COFORM_QUERY_KEYS.FORM(formId),
     queryFn: async () => {
       if (!api) throw new Error("API non initialisée");
       const form = await api.form({ id: formId });
@@ -137,7 +137,7 @@ export function useCoFormStepMutation({ formId, onSuccess, onError }: UseCoFormS
       return { success: true, subFormId, data };
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: COFORM_QUERY_KEYS.formAnswers(formId) });
+      queryClient.invalidateQueries({ queryKey: COFORM_QUERY_KEYS.FORM_ANSWERS(formId) });
       onSuccess?.(data);
     },
     onError: (error: Error) => {
@@ -188,7 +188,7 @@ export function useCoFormAnswerQuery({
   const isReady = !loading && !!api;
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: COFORM_QUERY_KEYS.formAnswer(formId, answerId),
+    queryKey: COFORM_QUERY_KEYS.FORM_ANSWER(formId, answerId),
     queryFn: async () => {
       if (!api) throw new Error("API non initialisée");
 

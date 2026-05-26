@@ -196,7 +196,7 @@ export function UploaderField({ field, errors, value = [], onChange, formId, ans
         // si un consommateur (ReadOnlyUploaderGallery) en a affiché.
         if (subKey) {
           await queryClient.invalidateQueries({
-            queryKey: COFORM_QUERY_KEYS.answerFiles(answerId, subKey),
+            queryKey: COFORM_QUERY_KEYS.ANSWER_FILES(answerId, subKey),
           });
         }
       } catch (error) {

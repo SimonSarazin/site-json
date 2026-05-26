@@ -96,7 +96,7 @@ function resolveContextOrThrow(ctx: CoFormMutationContext): ResolvedCoFormContex
  *     successKey: "toasts.answerDeleted",
  *     errorKey: "toasts.answerDeleteFailed",
  *   },
- *   invalidate: (ctx) => [COFORM_QUERY_KEYS.formAnswers(ctx.formId)],
+ *   invalidate: (ctx) => [COFORM_QUERY_KEYS.FORM_ANSWERS(ctx.formId)],
  * });
  */
 export function createCoFormMutation<TParams = void, TData = void>(
