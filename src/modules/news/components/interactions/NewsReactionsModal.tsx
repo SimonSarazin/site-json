@@ -4,7 +4,7 @@ import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { useT } from "@/hooks/useT";
 import { useNewsVotes } from "../../hooks/useNewsVotes";
 import { useState } from "react";
-import { voteTypes } from "../../constants/voteTypes";
+import { voteTypes, voteTypeMap } from "../../constants/voteTypes";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 interface NewsReactionsModalProps {
@@ -19,19 +19,9 @@ export function NewsReactionsModal({ open, onOpenChange, voteCount, newsId }: Ne
   const [activeTab, setActiveTab] = useState<string>("all");
   const { data: voteData, isLoading } = useNewsVotes(open ? newsId : null);
 
-  const getColorClasses = (color: string) => {
-    const colorMap: Record<string, { bg: string; text: string; border: string }> = {
-      red: { bg: "bg-red-100 dark:bg-red-900/20", text: "text-red-500", border: "border-red-200 dark:border-red-800" },
-      blue: { bg: "bg-blue-100 dark:bg-blue-900/20", text: "text-blue-500", border: "border-blue-200 dark:border-blue-800" },
-      green: { bg: "bg-green-100 dark:bg-green-900/20", text: "text-green-500", border: "border-green-200 dark:border-green-800" },
-      primary: { bg: "bg-primary/10 dark:bg-primary/20", text: "text-primary", border: "border-primary/30 dark:border-primary/40" },
-      yellow: { bg: "bg-yellow-100 dark:bg-yellow-900/20", text: "text-yellow-500", border: "border-yellow-200 dark:border-yellow-800" },
-      gray: { bg: "bg-gray-100 dark:bg-gray-700", text: "text-gray-500 dark:text-gray-400", border: "border-gray-200 dark:border-gray-600" },
-      purple: { bg: "bg-purple-100 dark:bg-purple-900/20", text: "text-purple-500", border: "border-purple-200 dark:border-purple-800" },
-      indigo: { bg: "bg-indigo-100 dark:bg-indigo-900/20", text: "text-indigo-500", border: "border-indigo-200 dark:border-indigo-800" },
-    };
-    return colorMap[color] || colorMap.gray;
-  };
+  /** Récupère la classe `text-X` depuis le type de vote (fallback muted). */
+  const getIconClass = (voteType: string | undefined) =>
+    (voteType && voteTypeMap[voteType]?.iconClass) || "text-muted-foreground";
 
   const allVotes = voteData?.vote
     ? Object.entries(voteData.vote).map(([userId, userData]) => ({
@@ -84,7 +74,7 @@ export function NewsReactionsModal({ open, onOpenChange, voteCount, newsId }: Ne
                 <TabsTrigger key={tab.value} value={tab.value}>
                   <div className="flex items-center gap-1">
                     {tab.icon && (
-                      <tab.icon className={`w-4 h-4 ${tab.color ? getColorClasses(tab.color).text : ""}`} />
+                      <tab.icon className={`w-4 h-4 ${getIconClass(tab.value)}`} />
                     )}
                     <span className="text-xs truncate">{tab.label}</span>
                     <span className="text-xs">({tab.count})</span>
@@ -119,7 +109,7 @@ export function NewsReactionsModal({ open, onOpenChange, voteCount, newsId }: Ne
                       </div>
                       {tab.icon && (
                         <div className="flex-shrink-0">
-                          <tab.icon className={`w-5 h-5 ${tab.color ? getColorClasses(tab.color).text : ""}`} />
+                          <tab.icon className={`w-5 h-5 ${getIconClass(tab.value)}`} />
                         </div>
                       )}
                     </div>
