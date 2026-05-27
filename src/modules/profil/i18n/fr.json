@@ -1282,6 +1282,7 @@
     "latestNews": "Dernières actualités",
     "allNews": "Toutes les actualités",
     "rooms": "Salles de réunion",
+    "room": "Salle",
     "allRooms": "Voir toutes les salles",
     "learnMore": "En savoir plus",
     "capacity": "pers.",
@@ -1300,7 +1301,12 @@
     "nightly": "Nuitée",
     "bed": "lit",
     "reserve": "Réserver",
-    "confirmDelete": "Êtes-vous sûr de vouloir supprimer cet élément ?"
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer cet élément ?",
+    "confirmDeleteTitle": "Supprimer cet élément",
+    "confirmDeleteCancel": "Annuler",
+    "confirmDeleteAction": "Supprimer",
+    "deleteSuccess": "Élément supprimé",
+    "deleteError": "Impossible de supprimer l'élément"
   },
   "a11y": {
     "moreOptions": "Plus d'options",

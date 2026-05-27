@@ -1282,6 +1282,7 @@
     "latestNews": "Latest news",
     "allNews": "All news",
     "rooms": "Meeting rooms",
+    "room": "Meeting room",
     "allRooms": "View all rooms",
     "learnMore": "Learn more",
     "capacity": "pers.",
@@ -1300,7 +1301,12 @@
     "nightly": "Night",
     "bed": "bed",
     "reserve": "Book now",
-    "confirmDelete": "Are you sure you want to delete this item?"
+    "confirmDelete": "Are you sure you want to delete this item?",
+    "confirmDeleteTitle": "Delete this item",
+    "confirmDeleteCancel": "Cancel",
+    "confirmDeleteAction": "Delete",
+    "deleteSuccess": "Item deleted",
+    "deleteError": "Could not delete the item"
   },
   "a11y": {
     "moreOptions": "More options",
