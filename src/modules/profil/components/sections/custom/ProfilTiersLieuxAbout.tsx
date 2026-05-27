@@ -31,7 +31,7 @@ import { useGetAnswersByFormsQuery } from "@/modules/profil/hooks/useGetAnwersBy
 import z from "zod";
 import { getServerUrl } from "@/lib/constant/common";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
-import { type Answer, type UpdatePathValueData } from "@communecter/cocolight-api-client";
+import { type Answer } from "@communecter/cocolight-api-client";
 import { CoFormModal } from "@/modules/coform/components/CoFormModal";
 import type { AllStepsData } from "@/modules/coform/types";
 import { PROFIL_QUERY_KEYS } from "@/modules/profil/constants/queryKeys";
@@ -190,38 +190,24 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
     inputKey?: string;
     lockedFields?: string[];
   }) => {
-    // Façade `BaseEntity.generateNewAnswerId(formId)` — retourne `Promise<any>` côté lib.
-    // On narrow vers les champs effectivement utilisés (`id` direct + `_serverData.id` du Mongo).
-    const answer = (await entity.generateNewAnswerId(formId)) as
-      | (Pick<Answer, "id"> & { _serverData?: { id?: string } })
-      | undefined;
-    if (!answer?.id) {
+    // Façade `BaseEntity.generateNewAnswerId(formId)` — peuple l'id côté answer,
+    // prêt à recevoir un updateField.
+    const answer = await entity.generateNewAnswerId(formId);
+    if (!answer.id) {
       console.error("Failed to generate new answer ID for form:", formId);
       return;
     }
     const finderPath = finder ?? section.forms?.[formId]?.finder;
     if (finderPath) {
-      const params: UpdatePathValueData = {
-        id: answer.id,
-        collection: "answers",
-        path: `${finderPath}.${entity.id}`,
-        value: {
-          id: entity.id,
-          type: entity.serverData.collection,
-          name: entity.serverData.name,
-        },
-      };
-      const paramsLinks: UpdatePathValueData = {
-        id: answer.id,
-        collection: "answers",
-        path: `links.${entity.serverData.collection}.${entity.id}`,
-        value: {
-          type: entity.serverData.collection,
-          name: entity.serverData.name,
-        },
-      };
-      await entity.endpointApi.updatePathValue(params);
-      await entity.endpointApi.updatePathValue(paramsLinks);
+      await answer.updateField(`${finderPath}.${entity.id}`, {
+        id: entity.id,
+        type: entity.serverData.collection,
+        name: entity.serverData.name,
+      });
+      await answer.updateField(`links.${entity.serverData.collection}.${entity.id}`, {
+        type: entity.serverData.collection,
+        name: entity.serverData.name,
+      });
     }
     // Build defaultValues from finderPath so the finder field is pre-populated in the modal
     let defaultValues: AllStepsData | undefined;
