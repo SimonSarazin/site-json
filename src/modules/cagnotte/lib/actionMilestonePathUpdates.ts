@@ -2,67 +2,6 @@ import type { Action, Answer, Project, SetTypeValue } from "@communecter/cocolig
 
 type SetType = SetTypeValue | Array<{ path: string; type: SetTypeValue }>;
 
-/**
- * Met à jour un champ unique d'une action via `Action.updateField` (lib 1.0.137+).
- *
- * Note historique : ce wrapper avait un cousin `kind: "milestone"` qui ciblait
- * `answers.aapStep1.depense.{i}.{field}`, mais cette branche n'a jamais été utilisée
- * (les opérations milestone passent par `updateAnswerDepenseFields` /
- * `updateProjectMilestoneFields` plus bas).
- */
-export async function updateActionField(params: {
-  action: Action;
-  field: string;
-  value: unknown;
-  setType?: SetType;
-}) {
-  return params.action.updateField(
-    params.field,
-    params.value,
-    params.setType ? { setType: params.setType } : {},
-  );
-}
-
-export async function updateProjectActionFields(params: {
-  action: Action;
-  fields: Record<string, unknown>;
-  setType?: SetType;
-}) {
-  const entries = Object.entries(params.fields);
-  const isDateField = (field: string) => field === "startDate" || field === "endDate";
-
-  const dateEntries = entries.filter(([field]) => isDateField(field));
-  const otherEntries = entries.filter(([field]) => !isDateField(field));
-
-  // Champs non-date: jamais de setType (séquentiel pour conserver l'ordre côté backend)
-  for (const [field, value] of otherEntries) {
-    await params.action.updateField(field, value);
-  }
-
-  // Champs date: parallèle. R0 (lib) auto-pose `setType: "isoDate"` si la value est
-  // une instance Date. Sinon, un setType array peut être passé par le caller.
-  if (dateEntries.length > 0) {
-    const dateSetType = Array.isArray(params.setType)
-      ? params.setType.filter((item) => isDateField(item.path))
-      : undefined;
-    const safeDateSetType = dateSetType && dateSetType.length > 0 ? dateSetType : undefined;
-
-    await Promise.all(
-      dateEntries.map(([field, value]) =>
-        params.action.updateField(
-          field,
-          value,
-          typeof value === "string" && safeDateSetType
-            ? { setType: "isoDate" }
-            : safeDateSetType
-              ? { setType: safeDateSetType }
-              : {},
-        ),
-      ),
-    );
-  }
-}
-
 export async function appendProjectMilestone(params: {
   project: Project;
   milestone: {

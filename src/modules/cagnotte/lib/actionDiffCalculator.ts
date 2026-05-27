@@ -4,7 +4,8 @@
  *
  * Pattern : on construit un objet `updates: Record<string, unknown>` qui ne contient
  * que les champs changés. Chaque champ utilise sa **clé de chemin backend** (notamment
- * `links.contributors` pour les contributeurs, conformément à `updateProjectActionFields`).
+ * `links.contributors` pour les contributeurs, conformément au mapping côté `useEditAction`
+ * qui pose `action.data.links = { contributors: ... }` avant `action.save()`).
  *
  * Cas particuliers :
  *  - **Aucun changement** → retourne un objet vide ; l'appelant peut alors afficher un

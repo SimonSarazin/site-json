@@ -71,8 +71,6 @@ export {
   getApiErrorMessage,
 } from "./lib/milestoneMutationHandlers";
 export {
-  updateActionField,
-  updateProjectActionFields,
   appendProjectMilestone,
   appendAnswerDepense,
   deleteActionById,
