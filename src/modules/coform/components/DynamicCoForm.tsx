@@ -89,6 +89,7 @@ export function DynamicCoForm({
   const {
     register,
     handleSubmit,
+    getValues,
     control,
     formState: { errors, isSubmitting, isDirty },
   } = useForm<FormValues>({
@@ -121,11 +122,18 @@ export function DynamicCoForm({
   const lastSubmittedValuesRef = useRef<string | null>(null);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Sync de la baseline d'auto-submit quand les defaults changent (mode édition
-  // async). On stringify les defaults eux-mêmes plutôt que les watchedValues,
-  // car useForm n'expose les valeurs courantes qu'après le premier render.
+  // Initialise la baseline d'auto-submit UNE SEULE fois, dès que `defaultValues`
+  // est réellement défini (mode édition async : la prop est undefined au mount
+  // puis arrive via useCoFormAnswerQuery). On NE reset PAS sur les refetches
+  // ultérieurs : ça créait une boucle d'autosave quand le backend renvoie + de
+  // champs que le form (links auto-ajoutés, userContext, etc.) — la comparaison
+  // watchedValues vs baseline était toujours fausse → re-trigger save → refetch
+  // → ... loop. La baseline est désormais mise à jour uniquement dans l'autosave
+  // après chaque submit réussi (ligne ~168).
   useEffect(() => {
-    lastSubmittedValuesRef.current = JSON.stringify(defaultValues);
+    if (lastSubmittedValuesRef.current === null && defaultValues !== undefined) {
+      lastSubmittedValuesRef.current = JSON.stringify(defaultValues);
+    }
   }, [defaultValues]);
 
   const handleFormSubmit = useCallback(async (data: FormValues) => {
@@ -157,6 +165,13 @@ export function DynamicCoForm({
   // La baseline `lastSubmittedValuesRef` est null tant que `defaultValues`
   // n'est pas synchronisé (mode édition async) → on skip pour éviter un faux
   // submit avec des valeurs encore non-hydratées.
+  //
+  // IMPORTANT : on appelle `handleFormSubmit` directement (sans passer par
+  // `handleSubmit` du react-hook-form) pour **bypass la validation Zod** —
+  // l'autosave persiste l'état partiel en cours d'édition (typiquement la
+  // suppression d'une ligne d'un SimpleTableField alors que d'autres champs
+  // requis sont encore vides). La validation reste active pour le submit
+  // explicite via le bouton (qui passe lui par `handleSubmit`).
   useEffect(() => {
     if (!autoSubmitOnBlur) return;
     if (lastSubmittedValuesRef.current === null) return;
@@ -166,13 +181,13 @@ export function DynamicCoForm({
     if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     debounceTimerRef.current = setTimeout(() => {
       lastSubmittedValuesRef.current = current;
-      handleSubmit(handleFormSubmit)();
+      handleFormSubmit(getValues() as FormValues);
     }, 600);
 
     return () => {
       if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     };
-  }, [watchedValues, autoSubmitOnBlur, handleSubmit, handleFormSubmit]);
+  }, [watchedValues, autoSubmitOnBlur, getValues, handleFormSubmit]);
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
