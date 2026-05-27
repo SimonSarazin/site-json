@@ -335,10 +335,24 @@ export const ProfileConfigSchema = z.object({
   hideFooter: z.boolean().optional().default(false), // Option pour cacher le footer principal
   /**
    * Clé du modal d'édition à utiliser (ex: "edit-tiers-lieux"). Si absent → "edit-profile" (générique).
-   * Le modal est résolu via `EditModalRegistry`. N'a d'effet que pour les entités correspondant
-   * au costum du site (cf. `site.costum`).
+   * Le modal est résolu via `EditModalRegistry`.
+   *
+   * Si `editModalMatch` est défini, le modal custom n'est utilisé que pour les entités dont
+   * `serverData` satisfait la condition. Sinon (absent), le modal s'applique à TOUTES les
+   * entités du kind concerné (cf. `profiles.{kind}`).
    */
   editModal: z.string().optional(),
+  /**
+   * Condition optionnelle pour cibler quelles entités ouvrent `editModal`.
+   * Objet plain `{ key: value }` — AND implicite sur toutes les clés.
+   * Pour chaque clé : strict equality si `serverData[key]` est primitif,
+   * ou `.includes(value)` si c'est un array.
+   *
+   * @example { tags: "TiersLieux" }     // tags est un array → tags.includes("TiersLieux")
+   * @example { costumSlug: "tl" }       // strict equality sur la string
+   * @example { tags: "TL", type: "Lab" } // les deux conditions doivent matcher
+   */
+  editModalMatch: z.record(z.string(), z.unknown()).optional(),
   seo: z.object({
     titleTemplate: z.string().optional(),
     descriptionTemplate: z.string().optional(),

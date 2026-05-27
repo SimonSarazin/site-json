@@ -2047,6 +2047,9 @@
       "hideHeader": false,
       "hideFooter": false,
       "editModal": "edit-tiers-lieux",
+      "editModalMatch": {
+        "tags": "TiersLieux"
+      },
       "sections": [
         {
           "type": "profile-header",

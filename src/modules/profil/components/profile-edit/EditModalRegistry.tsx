@@ -45,10 +45,36 @@ function ensureLazyEditModal(modalName: string): void {
 }
 
 /**
+ * Vérifie si une condition `editModalMatch` est satisfaite par `serverData`.
+ *
+ * Objet plain `{ key: value }` — AND implicite sur toutes les clés.
+ * Pour chaque paire :
+ *  - Si `serverData[key]` est un array → `.includes(expectedValue)`
+ *  - Sinon → strict equality (`===`)
+ *
+ * Si `match` est absent/undefined → renvoie `true` (pas de filtre = match always).
+ */
+function matchesEditModalCondition(
+  serverData: Record<string, unknown>,
+  match: Record<string, unknown> | undefined
+): boolean {
+  if (!match) return true;
+  return Object.entries(match).every(([key, expected]) => {
+    const actual = serverData[key];
+    if (Array.isArray(actual)) return actual.includes(expected);
+    return actual === expected;
+  });
+}
+
+/**
  * Résout le nom du modal d'édition à utiliser pour une entité donnée.
  *
- * Règle : si l'entité correspond au `costum` du site (via `costumSlug`), on lit
- * `profiles[kind].editModal` de la config. Sinon → `"edit-profile"` (générique).
+ * Règle :
+ *  1. Lit `profiles[kind+'s'].editModal` de la config (kind = "organization", "project", ...).
+ *  2. Si absent → `"edit-profile"` (générique).
+ *  3. Si présent + pas de `editModalMatch` → utilise le custom pour TOUTES les entités du kind.
+ *  4. Si présent + `editModalMatch` défini → utilise le custom uniquement si `serverData`
+ *     satisfait la condition (cf. `matchesEditModalCondition`). Sinon → générique.
  *
  * Cette fonction est exportée pour permettre aux composants de pré-décider sans
  * monter le DynamicEditModal (ex. afficher/masquer un bouton).
@@ -57,17 +83,22 @@ export function resolveEditModalName(
   entity: EntityTypes,
   config: ReturnType<typeof useSite>["config"]
 ): string {
-  const data = entity.serverData as Record<string, unknown> | null | undefined;
-  const isCostumEntity =
-    config.costum?.slug && data?.costumSlug === config.costum.slug;
-
-  if (!isCostumEntity) return "edit-profile";
-
-  const kind = typeof entity.getEntityType === "function" ? entity.getEntityType() : null;
-  const profileKey = kind ? `${kind}s` : null;
-  const profiles = config.profiles as Record<string, { editModal?: string } | undefined> | undefined;
+  // `getEntityType()` retourne déjà le pluriel ("organizations", "projects", "events", ...).
+  // Pas besoin de pluraliser à nouveau.
+  const profileKey = typeof entity.getEntityType === "function" ? entity.getEntityType() : null;
+  const profiles = config.profiles as
+    | Record<string, { editModal?: string; editModalMatch?: Record<string, unknown> } | undefined>
+    | undefined;
   const profileConfig = profileKey ? profiles?.[profileKey] : undefined;
-  return profileConfig?.editModal ?? "edit-profile";
+
+  if (!profileConfig?.editModal) return "edit-profile";
+
+  const serverData = (entity.serverData ?? {}) as Record<string, unknown>;
+  if (!matchesEditModalCondition(serverData, profileConfig.editModalMatch)) {
+    return "edit-profile";
+  }
+
+  return profileConfig.editModal;
 }
 
 /**
