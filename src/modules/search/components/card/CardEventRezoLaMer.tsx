@@ -40,9 +40,9 @@ export default function CardEventRezoLaMer({
     mutationFn: async (newStarredValue) => {
       if (!item?.id) throw new Error("Entité ou item manquant");
       await item.updateField("isStarred", newStarredValue);
-      if ("reload" in item && typeof item.reload === "function") {
-        await item.reload();
-      }
+      // `updateField` ne touche pas `_serverData` local — resync via `get()`
+      // pour que les lectures ultérieures de `item.serverData.isStarred` soient à jour.
+      await item.get();
       return newStarredValue;
     },
     onSuccessCallback: (newStarredValue) => {
