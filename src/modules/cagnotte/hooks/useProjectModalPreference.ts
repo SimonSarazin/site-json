@@ -1,5 +1,4 @@
 import type { EntityTypes } from "@communecter/cocolight-api-client";
-import { normalizeUpdatePathValuePayload } from "@/lib/updatePathValue";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { readEntityPreferences } from "@/modules/cagnotte/utils/dataTransform";
 
@@ -21,10 +20,10 @@ interface UseProjectModalPreferenceResult {
  * affichée. Le nom reflète l'intention : on persiste une **préférence** côté
  * `organizations.preferences`, pas une entité métier.
  *
- * Flux : `entity.endpointApi.updatePathValue` sur `organizations.preferences`,
- * suivi d'un `entity.get()` non bloquant pour resynchroniser les données locales.
- * Toasts succès/erreur gérés en interne via le namespace `modules/cagnotte`
- * (clés `CagnotteDialog.toasts.saveSuccess` / `CagnotteDialog.toasts.saveError`).
+ * Flux : `entity.updateField("preferences", merged)` sur l'orga, suivi d'un
+ * `entity.get()` non bloquant pour resynchroniser les données locales. Toasts
+ * succès/erreur gérés en interne via le namespace `modules/cagnotte` (clés
+ * `CagnotteDialog.toasts.saveSuccess` / `CagnotteDialog.toasts.saveError`).
  *
  * @example
  *   const { save, isSaving } = useProjectModalPreference(entity);
@@ -54,14 +53,7 @@ export function useProjectModalPreference(entity: EntityTypes | null): UseProjec
         projectModalId: projectId,
       };
 
-      await entity.endpointApi.updatePathValue(
-        normalizeUpdatePathValuePayload({
-          id: entity.id,
-          collection: "organizations",
-          path: "preferences",
-          value: mergedPreferences,
-        }),
-      );
+      await entity.updateField("preferences", mergedPreferences);
 
       // Refresh non-bloquant pour resynchroniser les données locales.
       // `entity.get()` est typé natif sur BaseEntity.

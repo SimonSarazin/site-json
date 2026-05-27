@@ -1,6 +1,6 @@
 /**
  * Hook pour sauvegarder les données de contribution cagnotte dans Answer
- * Utilise le wrapper `updatePathValue` (atomique par milestone) avec fallback vers `entity.save()`
+ * Utilise `Answer.updateField` (atomique par milestone) avec fallback vers `entity.save()`
  */
 
 import { useCallback } from "react";
@@ -9,12 +9,10 @@ import type {
   Api,
   AnswerItemNormalized,
   SaveCoformAnswerData,
-  UpdatePathValueData,
 } from "@communecter/cocolight-api-client";
 import { showErrorToast, showSuccessToast } from "@/lib/toastUtils";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
-import { normalizeUpdatePathValuePayload } from "@/lib/updatePathValue";
 import { launchConfettiBurst } from "@/lib/confetti";
 import { asRecord as toRecord } from "@/modules/cagnotte/utils/dataTransform";
 
@@ -176,7 +174,7 @@ export const useSaveCagnotteContribution = (
   const t = useT("modules/cagnotte");
 
   /**
-   * Approche 1 : Atomique avec `updatePathValue`
+   * Approche 1 : Atomique avec `Answer.updateField`
    * Plus fiable en cas de concurrence (pas de risque de overwrite)
    */
   const saveViaUpdatePathValue = useCallback(
@@ -203,6 +201,9 @@ export const useSaveCagnotteContribution = (
           : depensesRaw && typeof depensesRaw === "object"
             ? [depensesRaw as Record<string, unknown>]
             : [];
+
+        // Préfère l'entité déjà chargée pour éviter un GET supplémentaire.
+        const answer = answerEntity ?? (await api.answer({ id: answerId }));
 
         let successCount = 0;
         const errors: string[] = [];
@@ -237,26 +238,18 @@ export const useSaveCagnotteContribution = (
             continue;
           }
 
-          const updatePayload: UpdatePathValueData = {
-            id: answerId,
-            collection: "answers",
-            path: `answers.aapStep1.depense.${depenseIndex}.financer`,
-            arrayForm: true,
-            setType: [
-              {
-                path: 'amount',
-                type: 'int',
-              },
-              {
-                path: 'date',
-                type: 'isoDate',
-              },
-            ],
-            value: financerEntry,
-          };
-
           // Ecriture atomique de la depense complete (meme logique que la modif depense)
-          await api.endpointApi.updatePathValue(normalizeUpdatePathValuePayload(updatePayload));
+          await answer.updateField(
+            `answers.aapStep1.depense.${depenseIndex}.financer`,
+            financerEntry,
+            {
+              arrayForm: true,
+              setType: [
+                { path: "amount", type: "int" },
+                { path: "date", type: "isoDate" },
+              ],
+            },
+          );
 
           successCount++;
         }
@@ -271,11 +264,11 @@ export const useSaveCagnotteContribution = (
 
         return successCount > 0;
       } catch (error) {
-        console.error("Erreur updatePathValue:", error);
+        console.error("Erreur Answer.updateField:", error);
         throw error;
       }
     },
-    [api]
+    [api, answerEntity]
   );
 
   /**
