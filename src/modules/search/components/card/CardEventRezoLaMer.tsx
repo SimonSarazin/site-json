@@ -38,13 +38,8 @@ export default function CardEventRezoLaMer({
     successKey: "toast.card.starSuccess",
     errorKey: "toast.card.starError",
     mutationFn: async (newStarredValue) => {
-      if (!entity || !item?.id) throw new Error("Entité ou item manquant");
-      await entity.endpointApi.updatePathValue({
-        id: item.id,
-        collection: "events",
-        path: "isStarred",
-        value: newStarredValue,
-      });
+      if (!item?.id) throw new Error("Entité ou item manquant");
+      await item.updateField("isStarred", newStarredValue);
       if ("reload" in item && typeof item.reload === "function") {
         await item.reload();
       }

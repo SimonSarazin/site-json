@@ -64,14 +64,8 @@ export default function SearchCardDetailed({
     successKey: "toast.card.starSuccess",
     errorKey: "toast.card.starError",
     mutationFn: async (newStarredValue) => {
-      if (!entity || !item?.id) throw new Error("Entité ou item manquant");
-      const entityType = item?.getEntityType?.();
-      await entity.endpointApi.updatePathValue({
-        id: item.id,
-        collection: (entityType || "events") as "citoyens" | "organizations" | "projects" | "events" | "poi",
-        path: "isStarred",
-        value: newStarredValue,
-      });
+      if (!item?.id) throw new Error("Entité ou item manquant");
+      await item.updateField("isStarred", newStarredValue);
       if ("reload" in item && typeof item.reload === "function") {
         await item.reload();
       }
