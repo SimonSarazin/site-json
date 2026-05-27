@@ -110,7 +110,7 @@ src/modules/cagnotte/
 ├── lib/
 │   ├── milestoneSyncContext.ts         # resolveMilestoneSyncContext, getEnvelopeProjects
 │   ├── milestoneMutationHandlers.ts    # edit/close/restore/deleteMilestoneWithSync
-│   ├── actionMilestonePathUpdates.ts   # Helpers bas-niveau (updatePathValue, deleteElement)
+│   ├── actionMilestonePathUpdates.ts   # Wrappers entity-oriented (Action.updateField, Answer.updateField, Action.delete)
 │   ├── actionIdResolvers.ts            # resolveActionEntityId, resolveCreatedActionId
 │   └── actionDiffCalculator.ts         # calculateActionDiff (helper pur)
 │
@@ -266,7 +266,7 @@ Les **sections JSON** (`ActionsSection`, `FinanceSection`, etc.) ne sont **pas**
 
 | Hook | Rôle |
 |---|---|
-| `useSaveCagnotteContribution(answerEntity, apiClient)` | Sauvegarde une contribution dans `answers.aapStep1.depense[N].financer[]` (atomique via `updatePathValue`, fallback `entity.save()`) |
+| `useSaveCagnotteContribution()` | Sauvegarde une contribution dans `answers.aapStep1.depense[N].financer[]`. Se branche au context (`useCocolight()` → `api` + `me`). Signature `saveContribution(answerOrId: Answer \| string, milestoneFundings, financerData)` — accepte une entity ou un id. Mutation atomique via `Answer.updateField` (R0-R9 auto côté lib 1.0.137+) |
 | `useProjectModalPreference(entity)` | Persiste le `projectModalId` côté DB (`organizations.preferences`) + miroir localStorage |
 
 ### Context/Permissions/Guards
@@ -473,7 +473,7 @@ PaymentConfigPage (sélection financeur + méthode)
         → verification.isValid === true
   ↓
 useSaveCagnotteContribution.saveContribution()
-  └─ updatePathValue atomique sur answers.aapStep1.depense[N].financer[]
+  └─ Answer.updateField("aapStep1.depense.N.financer", [...]) atomique (lib 1.0.137+, R0-R9 auto)
   ↓
 launchConfettiBurst + toast succès
 ```

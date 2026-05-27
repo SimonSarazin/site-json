@@ -1115,7 +1115,6 @@ Fonctions utilitaires internes disponibles dans `src/lib/` — référence rapid
 |---|---|---|
 | `queryKeys.ts` | `src/lib/queryKeys.ts` | Constantes des clés React Query partagées entre modules |
 | `toastUtils.ts` | `src/lib/toastUtils.ts` | Helpers pour les notifications sonner |
-| `updatePathValue.ts` | `src/lib/updatePathValue.ts` | Utilitaire pour mettre à jour une valeur dans un objet imbriqué via un chemin en points (`"a.b.c"`) — utilisé par AdminPanel |
 | `confetti.ts` | `src/lib/confetti.ts` | Lance une animation confetti (module cagnotte) |
 | `fundingProjectUtils.ts` | `src/lib/fundingProjectUtils.ts` | Calculs de financement (pourcentage atteint, formatage montant) |
 

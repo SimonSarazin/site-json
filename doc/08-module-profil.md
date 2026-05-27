@@ -888,18 +888,44 @@ const editModalRegistry: Record<string, () => Promise<{ default: ComponentType<E
 };
 ```
 
-La fonction `resolveEditModalName(entity, config)` lit `profiles[kind].editModal` depuis la config pour déterminer quel modal ouvrir. Si l'entité correspond au `costum` du site, le modal configuré est utilisé ; sinon le modal générique `"edit-profile"` est appliqué.
+La fonction `resolveEditModalName(entity, config)` lit `profiles[kind].editModal` depuis la config pour déterminer quel modal ouvrir. La résolution est désormais **config-driven via `editModalMatch`** (commit `88fa18d`) :
+
+- Si `profiles[kind].editModalMatch` est **absent** → le modal configuré s'applique à **toutes** les entités du kind
+- Si `editModalMatch` est **présent** (objet `{key: value}`) → le modal s'applique uniquement aux entités dont chaque clé satisfait :
+  - `serverData[key].includes(value)` si `serverData[key]` est un array
+  - `serverData[key] === value` sinon (strict equality)
+  - AND implicite sur toutes les clés
+- Fallback → `"edit-profile"` (modal générique)
+
+Exemple JSON pour cibler uniquement les organisations avec `tags: ["TiersLieux", ...]` :
+
+```jsonc
+{
+  "profiles": {
+    "organizations": {
+      "editModal": "edit-tiers-lieux",
+      "editModalMatch": { "tags": "TiersLieux" }
+    }
+  }
+}
+```
+
+> Avant `88fa18d` : la condition était hardcodée — `serverData.costumSlug === config.costum.slug`. Trop restrictif (orga avec tag "TiersLieux" sans `costumSlug` = pas de modal custom). Désormais le matching est explicite côté config.
 
 ### `useEditTiersLieu(organization)`
 
 Mutation d'édition d'une organisation tiers-lieu existante. Pattern entity-oriented :
 
-1. Construit le payload via `buildTiersLieuxPayload(data)`
-2. Assigne les champs directement sur `organization.data` (mutation de l'objet SDK)
-3. Appelle `organization.save()` pour persister (diff/patch géré par le SDK)
-4. Si `data._logoFile` présent → `organization.updateImageProfil({ profil_avatar: file })`
+1. Lit `existingTags = organization.serverData?.tags ?? []` (tags déjà présents sur l'entité)
+2. Calcule `addTags = config.costum?.mainTag ? [config.costum.mainTag] : []` (tag costum à garantir)
+3. Construit le payload via `buildTiersLieuxPayload(data, { existingTags, addTags })` — merge sans dupliquer (Set), n'écrase pas
+4. Assigne les champs directement sur `organization.data` (mutation de l'objet SDK)
+5. Appelle `organization.save()` pour persister (diff/patch géré par le SDK)
+6. Si `data._logoFile` présent → `organization.updateImageProfil({ profil_avatar: file })`
 
 Invalide `PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(slug)` après succès.
+
+> **Merge tags (commit `7460856`)** : `organization.save()` écrase `tags` avec la valeur du payload. Sans merge explicite, on perdait les tags existants (notamment le `costum.mainTag`). Les options `existingTags` + `addTags` de `buildTiersLieuxPayload` dédoublonnent via `Set` et préservent l'ordre.
 
 > Note : depuis le commit `2fb46b8`, la constante a été renommée `QUERY_KEYS` → `PROFIL_QUERY_KEYS` (préfixée par le module pour cohérence avec `CAGNOTTE_QUERY_KEYS`, `COFORM_QUERY_KEYS`, etc.). Type associé : `ProfilQueryKeyType` (via `ReturnType<...>`).
 
@@ -1022,10 +1048,10 @@ const editModalRegistry: Record<string, () => Promise<{ default: ComponentType<E
 };
 ```
 
-**`resolveEditModalName(entity, config)`** — Détermine quel modal ouvrir :
-1. Si `entity.serverData.costumSlug !== config.costum?.slug` → `"edit-profile"` (profil générique)
-2. Sinon lit `config.profiles[kind].editModal` pour le modal customisé du costum
-3. Fallback → `"edit-profile"`
+**`resolveEditModalName(entity, config)`** — Détermine quel modal ouvrir (résolution **config-driven via `editModalMatch`**, cf. section "Édition de Tiers-lieu") :
+1. Lit `config.profiles[kind].editModal` pour le modal customisé déclaré pour ce kind
+2. Si `profiles[kind].editModalMatch` est défini → vérifie que `serverData` matche (AND implicite, `includes` si array, sinon strict equality)
+3. Si le match échoue ou si aucun `editModal` n'est déclaré → `"edit-profile"` (modal générique)
 
 **`DynamicEditModal`** — Wrapper config-driven utilisé par les headers et `ProfileActions` :
 
