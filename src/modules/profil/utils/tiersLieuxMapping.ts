@@ -181,8 +181,22 @@ export interface BuildPayloadOptions {
    * Si fourni, injecte les constantes costum (mainTag, compagnon, costumSlug…) dans le payload.
    * À utiliser pour la **création** d'une entité costum (les valeurs viennent du site config).
    * Pour l'**édition**, on omet ce champ : l'entité existante porte déjà ses costum fields.
+   *
+   * Note : si `costum.mainTag` est défini, il est aussi auto-ajouté à `payload.tags`
+   * (mergé sans dupliquer avec `existingTags` + `addTags`).
    */
   costum?: CostumConfig;
+  /**
+   * Tags supplémentaires à garantir présents dans `payload.tags` (mergés sans dupliquer).
+   * Combiné avec `costum.mainTag` (auto-ajouté si fourni).
+   */
+  addTags?: string[];
+  /**
+   * Tags actuels de l'entité (depuis `serverData.tags`) — mergés sans écrasement.
+   * Au CREATE : omettre (rien à merger). À l'EDIT : passer `organization.serverData.tags`
+   * pour préserver les tags existants quand `payload.tags` écrase via `.save()`.
+   */
+  existingTags?: string[];
 }
 
 export function buildTiersLieuxPayload(
@@ -247,6 +261,18 @@ export function buildTiersLieuxPayload(
     payload.costumEditMode = c.editMode ?? false;
     payload.costumId = c.id;
     payload.costumType = c.type;
+  }
+
+  // Merge tags : `costum.mainTag` (auto) + `addTags` (manuel) mergés à `existingTags`.
+  // Dédoublonne via Set (préserve l'ordre d'insertion). N'écrase pas, n'enlève rien.
+  const tagsToAdd: string[] = [];
+  if (options.costum?.mainTag) tagsToAdd.push(options.costum.mainTag);
+  if (options.addTags) tagsToAdd.push(...options.addTags);
+
+  const existing = options.existingTags ?? [];
+  const allTags = [...existing, ...tagsToAdd].filter(Boolean);
+  if (allTags.length > 0) {
+    payload.tags = Array.from(new Set(allTags));
   }
 
   return payload;
