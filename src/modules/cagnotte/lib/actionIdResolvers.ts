@@ -7,8 +7,8 @@
  * refetcher l'envelope et de matcher l'action par `name`/`credits`/`status`.
  *
  * Conservé selon la politique projet (ne pas supprimer les exports non utilisés).
- * À déprécier complètement quand le SDK exposera des opérations entity-oriented
- * pour les autres mutations (edit/delete) — qui passent encore par updatePathValue.
+ * Toutes les mutations action passent désormais par l'API entity-oriented du
+ * SDK (`project.action().save()` / `.delete()` / `.updateStatus()` / etc.).
  */
 import { asRecord } from "@/modules/cagnotte/utils/dataTransform";
 import type { FundingAction, FundingActionStatus } from "@/modules/cagnotte/types";

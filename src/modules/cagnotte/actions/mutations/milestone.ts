@@ -262,9 +262,13 @@ export interface CreateMilestoneParams {
  */
 export const useCreateMilestone = createMilestoneMutation<CreateMilestoneParams>({
   action: async (ctx, params) => {
+    const [project, answer] = await Promise.all([
+      ctx.api.project({ id: ctx.projectId }),
+      ctx.api.answer({ id: ctx.answerId }),
+    ]);
+
     await appendProjectMilestone({
-      source: ctx.api,
-      projectId: ctx.projectId,
+      project,
       milestone: {
         milestoneId: params.milestoneId,
         name: params.name,
@@ -274,8 +278,7 @@ export const useCreateMilestone = createMilestoneMutation<CreateMilestoneParams>
     });
 
     await appendAnswerDepense({
-      source: ctx.api,
-      answerId: ctx.answerId,
+      answer,
       depense: {
         poste: params.name,
         price: params.targetAmount,

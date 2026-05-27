@@ -52,6 +52,13 @@ export function getApiErrorMessage(error: unknown, fallback: string): string {
   return apiMessage || (error instanceof Error ? error.message : fallback);
 }
 
+function requireSource(source: UpdateSource): Api {
+  if (!source) {
+    throw new Error(t("milestone.errors.apiClientUnavailable"));
+  }
+  return source;
+}
+
 function resolveSyncContextOrThrow(params: MilestoneMutationBaseParams) {
   const syncContext = resolveMilestoneSyncContext({
     rawEnvelope: params.rawEnvelope,
@@ -107,7 +114,7 @@ function getMilestoneConstraints(params: MilestoneMutationBaseParams): Milestone
         ? depensesFromAnswer
         : [];
 
-    const canClose = actionsForMilestone.length === 0 || allActionsDone; 
+    const canClose = actionsForMilestone.length === 0 || allActionsDone;
 
     const depensesForMilestone = depenses.filter(
       (rawDepense) => String(asRecord(rawDepense).milestone ?? '').trim() === params.milestoneId
@@ -125,6 +132,7 @@ function getMilestoneConstraints(params: MilestoneMutationBaseParams): Milestone
 }
 
 export async function editMilestoneWithSync(params: EditMilestoneParams): Promise<void> {
+  const api = requireSource(params.source);
   const syncContext = resolveSyncContextOrThrow(params);
 
   if (syncContext.projectMilestoneIndex === null) {
@@ -134,9 +142,13 @@ export async function editMilestoneWithSync(params: EditMilestoneParams): Promis
     throw new Error(t("milestone.errors.incompleteForEdit.missingAnswerSide"));
   }
 
+  const [project, answer] = await Promise.all([
+    api.project({ id: params.projectId }),
+    api.answer({ id: params.answerId }),
+  ]);
+
   await updateProjectMilestoneFields({
-    source: params.source,
-    projectId: params.projectId,
+    project,
     index: syncContext.projectMilestoneIndex,
     fields: {
       name: params.name,
@@ -146,8 +158,7 @@ export async function editMilestoneWithSync(params: EditMilestoneParams): Promis
   });
 
   await updateAnswerDepenseFields({
-    source: params.source,
-    answerId: params.answerId,
+    answer,
     index: syncContext.answerDepenseIndex,
     fields: {
       poste: params.name,
@@ -157,6 +168,7 @@ export async function editMilestoneWithSync(params: EditMilestoneParams): Promis
 }
 
 export async function closeMilestoneWithSync(params: CloseMilestoneParams): Promise<void> {
+  const api = requireSource(params.source);
   const syncContext = resolveSyncContextOrThrow(params);
   const constraints = getMilestoneConstraints(params);
 
@@ -171,9 +183,13 @@ export async function closeMilestoneWithSync(params: CloseMilestoneParams): Prom
     throw new Error(t("milestone.errors.cannotCloseWithOpenActions"));
   }
 
+  const [project, answer] = await Promise.all([
+    api.project({ id: params.projectId }),
+    api.answer({ id: params.answerId }),
+  ]);
+
   await updateProjectMilestoneFields({
-    source: params.source,
-    projectId: params.projectId,
+    project,
     index: syncContext.projectMilestoneIndex,
     fields: {
       status: 'close',
@@ -181,8 +197,7 @@ export async function closeMilestoneWithSync(params: CloseMilestoneParams): Prom
   });
 
   await updateAnswerDepenseFields({
-    source: params.source,
-    answerId: params.answerId,
+    answer,
     index: syncContext.answerDepenseIndex,
     fields: {
       include: false,
@@ -191,6 +206,7 @@ export async function closeMilestoneWithSync(params: CloseMilestoneParams): Prom
 }
 
 export async function restoreMilestoneWithSync(params: RestoreMilestoneParams): Promise<void> {
+  const api = requireSource(params.source);
   const syncContext = resolveSyncContextOrThrow(params);
 
   if (syncContext.projectMilestoneIndex === null) {
@@ -200,9 +216,13 @@ export async function restoreMilestoneWithSync(params: RestoreMilestoneParams): 
     throw new Error(t("milestone.errors.incompleteForRestore.missingAnswerSide"));
   }
 
+  const [project, answer] = await Promise.all([
+    api.project({ id: params.projectId }),
+    api.answer({ id: params.answerId }),
+  ]);
+
   await updateProjectMilestoneFields({
-    source: params.source,
-    projectId: params.projectId,
+    project,
     index: syncContext.projectMilestoneIndex,
     fields: {
       status: 'open',
@@ -210,8 +230,7 @@ export async function restoreMilestoneWithSync(params: RestoreMilestoneParams): 
   });
 
   await updateAnswerDepenseFields({
-    source: params.source,
-    answerId: params.answerId,
+    answer,
     index: syncContext.answerDepenseIndex,
     fields: {
       include: true,
@@ -220,6 +239,7 @@ export async function restoreMilestoneWithSync(params: RestoreMilestoneParams): 
 }
 
 export async function deleteMilestoneWithSync(params: MilestoneMutationBaseParams): Promise<void> {
+  const api = requireSource(params.source);
   const syncContext = resolveSyncContextOrThrow(params);
   const constraints = getMilestoneConstraints(params);
 
@@ -227,26 +247,30 @@ export async function deleteMilestoneWithSync(params: MilestoneMutationBaseParam
     throw new Error(t("milestone.errors.cannotDeleteIfFunded"));
   }
 
+  // Charge le project (utilisé pour résoudre les actions et pull la milestone).
+  const project = await api.project({ id: params.projectId });
+
   for (const actionId of constraints.actionIds) {
-    await deleteActionById({ source: params.source, actionId });
+    const action = await project.action({ id: actionId });
+    await deleteActionById({ action });
   }
 
   const deletions: Promise<unknown>[] = [];
   if (typeof syncContext.projectMilestoneIndex === 'number') {
     deletions.push(
       deleteProjectMilestoneAtIndex({
-        source: params.source,
-        projectId: params.projectId,
+        project,
         index: syncContext.projectMilestoneIndex,
       })
     );
   }
 
   if (typeof syncContext.answerDepenseIndex === 'number' && params.answerId) {
+    // Charge l'answer en parallèle uniquement si on a une dépense à pull.
+    const answer = await api.answer({ id: params.answerId });
     deletions.push(
       deleteAnswerDepenseAtIndex({
-        source: params.source,
-        answerId: params.answerId,
+        answer,
         index: syncContext.answerDepenseIndex,
       })
     );

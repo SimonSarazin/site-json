@@ -21,23 +21,21 @@ import { parseFrenchDateToIso } from "@/modules/cagnotte/utils/actionDateHelpers
 
 export interface ActionMutationContext {
   /**
-   * Instance Cocolight `Api` — expose `endpointApi.updatePathValue` typé +
-   * tous les autres endpoints (`costumProjectActionRequestNew`, etc.).
-   * Disponible dès que `useCocolight()` est résolu (anonyme ou connecté) ;
-   * les mutations throw via `resolveContextOrThrow` si null.
+   * Instance Cocolight `Api` — point d'entrée vers les entités SDK et les
+   * endpoints (`costumProjectActionRequestNew`, etc.). Disponible dès que
+   * `useCocolight()` est résolu (anonyme ou connecté) ; les mutations throw
+   * via `resolveContextOrThrow` si null.
    */
   api: Api | null;
   projectId: string;
   /**
-   * Entité Cocolight `Project` du projet parent. Requise uniquement pour
-   * `useCreateAction` qui utilise l'API entity-oriented `project.action()` +
-   * `save()` du SDK (cf. Action.ts du SDK : `parentId` est injecté automatiquement
-   * depuis `this.parent.id` et l'`actionId` est peuplé dans `_draftData` après
-   * la réponse serveur — plus besoin de résoudre l'id manuellement).
-   *
-   * Les autres mutations (`useEditAction`, `useDeleteAction`, etc.) passent
-   * encore par `endpointApi.updatePathValue` / `deleteElement` et n'utilisent
-   * que `api` + `projectId` — `project` peut être `null` pour elles.
+   * Entité Cocolight `Project` du projet parent. Requise par toutes les
+   * mutations action — elles utilisent l'API entity-oriented `project.action()` :
+   *  - `useCreateAction` : `project.action({...})` + `save()` (création atomique)
+   *  - `useEditAction` : `project.action({id}).save()` (diff via `action.data.*`)
+   *  - `useMarkActionDone` : `action.updateStatus("done")` (endpoint dédié)
+   *  - `useCandidateAction` : `action.joinContributor()` (résolution userId backend)
+   *  - `useDeleteAction` : `action.delete(reason)` (guard isAuthorOrAdmin)
    */
   project: Project | null;
 }
@@ -161,8 +159,8 @@ export interface MarkActionDoneParams {
  *  - Auto-injecte `endDate` côté backend (timestamp de la complétion).
  *  - Status "discuter" force `status=todo` + ajoute tag "discuter" (cas spécial backend).
  *
- * Avantage vs ancien `updatePathValue({ status: "done" })` : on récupère
- * l'historique de transitions de statut côté backend (utile pour audit/analytics).
+ * Avantage vs ancien path-update direct : on récupère l'historique de transitions
+ * de statut côté backend (utile pour audit/analytics).
  */
 export const useMarkActionDone = createActionMutation<MarkActionDoneParams>({
   action: async (ctx, params) => {
@@ -185,11 +183,18 @@ export interface DeleteActionParams {
 }
 
 /**
- * Hook : supprime une action.
+ * Hook : supprime une action via `Action.delete(reason?)` du SDK Cocolight (1.0.137+).
+ *
+ * Guard côté entité : `isAuthorOrAdmin({checkHierarchy: true})` — autorise l'auteur
+ * de l'Action OU les admins du projet parent (via la hiérarchie).
  */
 export const useDeleteAction = createActionMutation<DeleteActionParams>({
   action: async (ctx, params) => {
-    await deleteActionById({ source: ctx.api, actionId: params.actionId });
+    if (!ctx.project) {
+      throw new ActionContextError("milestone.errors.projectMissing");
+    }
+    const action = await ctx.project.action({ id: params.actionId });
+    await deleteActionById({ action });
   },
   i18n: {
     successKey: "ActionsSection.toasts.actionDeleted.title",
