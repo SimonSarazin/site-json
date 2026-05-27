@@ -133,7 +133,7 @@ const PaymentConfigPage = ({
         ? String(t("PaymentConfigPage.errors.stripeUnavailable"))
         : null;
 
-    // Hook pour sauvegarder les contributions (dual-strategy: updatePathValue + fallback save)
+    // Hook pour sauvegarder les contributions (dual-strategy: Answer.updateField + fallback save)
     const { saveContribution } = useSaveCagnotteContribution(null, api);
 
     const refreshAfterContributionSave = useCallback(async () => {

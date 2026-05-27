@@ -273,7 +273,7 @@ export const useSaveCagnotteContribution = (
 
   /**
    * Approche 2 : Fallback vers `entity.save()` (modifications brouillons)
-   * À utiliser si updatePathValue n'est pas disponible
+   * À utiliser si Answer.updateField n'est pas disponible
    */
   const saveViaDraftAndSave = useCallback(
     async (
@@ -318,7 +318,7 @@ export const useSaveCagnotteContribution = (
   );
 
   /**
-   * Méthode principale : essaie updatePathValue d'abord, fallback vers save()
+   * Méthode principale : essaie Answer.updateField d'abord, fallback vers save()
    */
   const saveContribution = useCallback(
     async (
@@ -342,7 +342,7 @@ export const useSaveCagnotteContribution = (
             return true;
           }
         } catch (pathError) {
-          console.warn("updatePathValue échoué", pathError);
+          console.warn("Answer.updateField échoué", pathError);
           // Continuer vers fallback
         }
 
