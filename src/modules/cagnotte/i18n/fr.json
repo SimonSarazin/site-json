@@ -42,6 +42,7 @@
       "saveMethodUnavailable": "Aucune méthode de sauvegarde CoForm disponible (formId ou answerEntity manquant)",
       "saveFuncMissing": "Méthode save() indisponible",
       "noApiClient": "apiClient indisponible",
+      "notLoggedIn": "Vous devez être connecté pour contribuer",
       "noMilestoneForId": "Depense non trouvée pour milestone {{milestoneId}}",
       "invalidAmount": "Montant invalide pour milestone {{milestoneId}}",
       "invalidFinancer": "Financeur invalide pour milestone {{milestoneId}}",

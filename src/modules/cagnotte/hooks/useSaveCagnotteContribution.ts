@@ -1,18 +1,20 @@
 /**
  * Hook pour sauvegarder les données de contribution cagnotte dans Answer
- * Utilise `Answer.updateField` (atomique par milestone) avec fallback vers `entity.save()`
+ * Utilise `Answer.updateField` (atomique par milestone) avec fallback vers `answer.save()`
+ *
+ * Signature : le caller passe l'entité `Answer` déjà chargée (évite un GET en double).
  */
 
 import { useCallback } from "react";
 import type {
   Answer,
-  Api,
   AnswerItemNormalized,
   SaveCoformAnswerData,
 } from "@communecter/cocolight-api-client";
 import { showErrorToast, showSuccessToast } from "@/lib/toastUtils";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { useCocolight } from "@/hooks/useCocolight";
 import { launchConfettiBurst } from "@/lib/confetti";
 import { asRecord as toRecord } from "@/modules/cagnotte/utils/dataTransform";
 
@@ -42,9 +44,7 @@ interface financerData {
 }
 
 function createFinancerEntry(params: {
-  milestoneId: string;
   amount: number;
-  currentAnswerData: AnswerItemNormalized;
   financerData: financerData;
   userId: string;
 }): FinancerEntry {
@@ -88,20 +88,6 @@ function getFormIdFromAnswerData(currentAnswerData: AnswerItemNormalized): strin
   return "";
 }
 
-function getAnswerIdFromAnswerData(currentAnswerData: AnswerItemNormalized): string {
-  const directId = currentAnswerData.id;
-  if (typeof directId === "string" && directId.trim()) return directId.trim();
-
-  const mongoId = toRecord(currentAnswerData._id);
-  const mongoStr = mongoId._str;
-  if (typeof mongoStr === "string" && mongoStr.trim()) return mongoStr.trim();
-
-  const mongoDollar = mongoId.$id;
-  if (typeof mongoDollar === "string" && mongoDollar.trim()) return mongoDollar.trim();
-
-  return "";
-}
-
 function applyMilestoneFundingsToAnswerData(
   currentAnswerData: AnswerItemNormalized,
   milestoneFundings: MilestoneFunding[],
@@ -130,13 +116,7 @@ function applyMilestoneFundingsToAnswerData(
     if (!depense) return;
 
     const currentFinancers = Array.isArray(depense.financer) ? depense.financer : [];
-    const financerEntry = createFinancerEntry({
-      milestoneId,
-      amount,
-      currentAnswerData,
-      financerData,
-      userId
-    });
+    const financerEntry = createFinancerEntry({ amount, financerData, userId });
 
     depense.financer = [...currentFinancers, financerEntry];
     depenseMap.set(milestoneId, depense);
@@ -166,12 +146,10 @@ function resolveDepenseIndex(params: {
   return depenses.findIndex((d) => String(d.milestone ?? "").trim() === milestoneId);
 }
 
-export const useSaveCagnotteContribution = (
-  answerEntity: Answer | null,
-  api: Api | null
-) => {
+export const useSaveCagnotteContribution = () => {
   useLoadNamespace("modules/cagnotte");
   const t = useT("modules/cagnotte");
+  const { api, me } = useCocolight();
 
   /**
    * Approche 1 : Atomique avec `Answer.updateField`
@@ -179,20 +157,21 @@ export const useSaveCagnotteContribution = (
    */
   const saveViaUpdatePathValue = useCallback(
     async (
-      answerId: string,
+      answer: Answer,
       milestoneFundings: MilestoneFunding[],
-      currentAnswerData: AnswerItemNormalized,
-      financerData: financerData,
-      userId: string
+      financerData: financerData
     ): Promise<boolean> => {
       try {
         if (!api) {
           throw new Error(String(t("toasts.errors.noApiClient")));
         }
-        // `serverData` est déjà les champs de l'Answer (cf. AnswerItemNormalized).
-        // L'ancien wrap `{ data: { answers: ... } }` provenait de l'endpoint
-        // bas-niveau `callEndpoint('COFORM_ANSWERS_BY_ID')` et n'existe plus
-        // depuis qu'on charge via `api.answer({id}).serverData`.
+        const userId = me?.serverData?.id;
+        if (!userId) {
+          throw new Error(String(t("toasts.errors.notLoggedIn")));
+        }
+        // `answer.serverData` est typé AnswerItemNormalized (rempli par api.answer({id}) qui
+        // appelle get() automatiquement).
+        const currentAnswerData = answer.serverData;
         const answers = (currentAnswerData.answers as Record<string, unknown> | undefined) ?? {};
         const aapStep1 = (answers.aapStep1 as Record<string, unknown>) || {};
         const depensesRaw = aapStep1.depense;
@@ -201,9 +180,6 @@ export const useSaveCagnotteContribution = (
           : depensesRaw && typeof depensesRaw === "object"
             ? [depensesRaw as Record<string, unknown>]
             : [];
-
-        // Préfère l'entité déjà chargée pour éviter un GET supplémentaire.
-        const answer = answerEntity ?? (await api.answer({ id: answerId }));
 
         let successCount = 0;
         const errors: string[] = [];
@@ -221,13 +197,7 @@ export const useSaveCagnotteContribution = (
             errors.push(String(t("toasts.errors.noMilestoneForId", undefined, { milestoneId })));
             continue;
           }
-          const financerEntry = createFinancerEntry({
-            milestoneId,
-            amount,
-            currentAnswerData,
-            financerData,
-            userId
-          });
+          const financerEntry = createFinancerEntry({ amount, financerData, userId });
 
           if (!Number.isFinite(financerEntry.amount) || financerEntry.amount <= 0) {
             errors.push(String(t("toasts.errors.invalidAmount", undefined, { milestoneId })));
@@ -268,34 +238,32 @@ export const useSaveCagnotteContribution = (
         throw error;
       }
     },
-    [api, answerEntity]
+    [api, me, t]
   );
 
   /**
-   * Approche 2 : Fallback vers `entity.save()` (modifications brouillons)
+   * Approche 2 : Fallback vers `answer.save()` (modifications brouillons)
    * À utiliser si Answer.updateField n'est pas disponible
    */
   const saveViaDraftAndSave = useCallback(
     async (
-      answerId: string,
+      answer: Answer,
       milestoneFundings: MilestoneFunding[],
-      currentAnswerData: AnswerItemNormalized,
-      financerData: financerData,
-      userId: string
+      financerData: financerData
     ): Promise<boolean> => {
       try {
-        const updatedAnswerData = applyMilestoneFundingsToAnswerData(currentAnswerData, milestoneFundings,financerData,userId);
+        const userId = me?.serverData?.id;
+        if (!userId) {
+          throw new Error(String(t("toasts.errors.notLoggedIn")));
+        }
+        const currentAnswerData = answer.serverData;
+        const updatedAnswerData = applyMilestoneFundingsToAnswerData(currentAnswerData, milestoneFundings, financerData, userId);
         const formId = getFormIdFromAnswerData(currentAnswerData);
 
         if (api && formId) {
-          const resolvedAnswerId =
-            (typeof answerId === "string" && answerId.trim()) ||
-            getAnswerIdFromAnswerData(currentAnswerData) ||
-            undefined;
-
           const payload: SaveCoformAnswerData = {
             formId,
-            answerId: resolvedAnswerId,
+            answerId: answer.id ?? undefined,
             answers: JSON.stringify(updatedAnswerData.answers ?? {}),
             links: JSON.stringify(updatedAnswerData.links ?? currentAnswerData.links ?? {}),
           };
@@ -303,37 +271,46 @@ export const useSaveCagnotteContribution = (
           return true;
         }
 
-        if (answerEntity) {
-          await answerEntity.save();
-          return true;
-        }
-
-        throw new Error(String(t("toasts.errors.saveMethodUnavailable")));
+        // Fallback ultime : `answer.save()` persiste le draft local.
+        await answer.save();
+        return true;
       } catch (error) {
         console.error("Erreur saveViaDraftAndSave:", error);
         throw error;
       }
     },
-    [answerEntity, api]
+    [api, me, t]
   );
 
   /**
    * Méthode principale : essaie Answer.updateField d'abord, fallback vers save()
+   *
+   * @param answerOrId - L'entité Answer déjà chargée (0 GET) ou son id (le hook
+   *   charge l'entité via `api.answer({id})`). Préférer l'entity si déjà sous la main.
    */
   const saveContribution = useCallback(
     async (
-      answerId: string,
+      answerOrId: Answer | string,
       milestoneFundings: MilestoneFunding[],
-      currentAnswerData: AnswerItemNormalized,
-      financerData: financerData,
-      userId: string
+      financerData: financerData
     ): Promise<boolean> => {
       try {
-        if (!answerId) throw new Error(String(t("toasts.errors.noAnswerId")));
         if (!milestoneFundings.length) throw new Error(String(t("toasts.errors.noMilestoneFundings")));
+        if (typeof answerOrId === "string" && !answerOrId.trim()) {
+          throw new Error(String(t("toasts.errors.noAnswerId")));
+        }
+        if (!api) {
+          throw new Error(String(t("toasts.errors.noApiClient")));
+        }
+
+        const answer = typeof answerOrId === "string"
+          ? await api.answer({ id: answerOrId })
+          : answerOrId;
+
+        if (!answer.id) throw new Error(String(t("toasts.errors.noAnswerId")));
 
         try {
-          const success = await saveViaUpdatePathValue(answerId, milestoneFundings, currentAnswerData, financerData, userId);
+          const success = await saveViaUpdatePathValue(answer, milestoneFundings, financerData);
           if (success) {
             showSuccessToast("toasts.contributionSaved.title", t, {
               count: String(milestoneFundings.length),
@@ -360,7 +337,7 @@ export const useSaveCagnotteContribution = (
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [saveViaUpdatePathValue, saveViaDraftAndSave, t]
+    [api, saveViaUpdatePathValue, saveViaDraftAndSave, t]
   );
 
   return { saveContribution, saveViaUpdatePathValue, saveViaDraftAndSave };

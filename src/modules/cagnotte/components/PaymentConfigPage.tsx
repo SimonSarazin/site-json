@@ -134,7 +134,7 @@ const PaymentConfigPage = ({
         : null;
 
     // Hook pour sauvegarder les contributions (dual-strategy: Answer.updateField + fallback save)
-    const { saveContribution } = useSaveCagnotteContribution(null, api);
+    const { saveContribution } = useSaveCagnotteContribution();
 
     const refreshAfterContributionSave = useCallback(async () => {
         // `invalidateQueries` déclenche déjà le refetch des queries actives et await
@@ -241,22 +241,17 @@ const PaymentConfigPage = ({
                     amount: f.amount,
                 }));
 
-                // Charge l'Answer via l'instance Entity du SDK (équivalent typé de
-                // `api.endpointApi.coformAnswersById({answerId})` — Answer.get() délègue à
-                // ce même endpoint). `answer.serverData` est typé AnswerItemNormalized,
-                // donc pas besoin de fallbacks paranoïaques sur id/formId/form_id.
-                const answer = await api.answer({ id: answerId });
-
+                // `saveContribution` accepte directement un id — il charge l'Answer
+                // via api.answer({id}) en interne et utilise `answer.updateField` pour
+                // la mutation atomique de chaque dépense.
                 const saved = await saveContribution(
                     answerId,
                     milestoneFundingData,
-                    answer.serverData,
                     {
                         type: contributorType,
                         name: contributorName,
                         id: contributorId
-                    },
-                    me?.serverData?.id || ""
+                    }
                 );
 
                 if (!saved) {
@@ -285,7 +280,7 @@ const PaymentConfigPage = ({
             //scheduleRedirectToHome(3000, false);
             await refreshAfterContributionSave();
         }
-    }, [answerId, api, me, contributorType, contributorName, contributorId, t, onPaymentSuccess, saveContribution, refreshAfterContributionSave]);
+    }, [answerId, api, contributorType, contributorName, contributorId, t, onPaymentSuccess, saveContribution, refreshAfterContributionSave]);
 
     // Récupérer les organisations où l'utilisateur courant est admin (recherche server-side)
     const currentUserEntity = (me && isUser(me) ? me : null) as User | null;
