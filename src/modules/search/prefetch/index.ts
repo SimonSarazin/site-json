@@ -3,5 +3,7 @@ export {
   findFiltersSections,
   prefetchSearchZones,
   prefetchFiltersByAnswers,
+  prefetchFiltersByPath,
+  prefetchFilterEntities,
   prefetchFilterSection,
 } from "./prefetchFilters";

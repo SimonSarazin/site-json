@@ -17,7 +17,7 @@ export const FiltersSectionSchema = z.object({
     filterGroups: z.array(z.object({
       id: z.string(),
       label: LocalizedString,
-      type: z.enum(['scopeList', "filters"]).default("filters"),
+      type: z.enum(['scopeList', "filters", "entityList"]).default("filters"),
       field: z.string().optional(),
       options: z.array(z.object({
         id: z.string(),
@@ -32,6 +32,17 @@ export const FiltersSectionSchema = z.object({
         upperLevelId: z.string().optional(),
         sortBy: z.string().optional(),
       }).optional(),
+      // Pour `type: "entityList"` — recherche backend qui peuple les options
+      // dynamiquement (réseaux régionaux, etc.). Réutilise le shape baseParams
+      // des sections search. Forward-ref car SearchBaseParamsSchema est défini
+      // plus bas dans le fichier.
+      baseParams: z.lazy(() => SearchBaseParamsSchema).optional(),
+      // Comment l'option sélectionnée filtre les résultats à droite.
+      // "sourceKey" → injecte la valeur dans baseParams.sourceKey (param natif
+      // SDK : matching source.key/source.keys/reference.costum côté backend).
+      filterType: z.enum(["sourceKey"]).optional(),
+      // Champ de l'entité utilisé comme valeur de filtre (défaut: "slug").
+      filterBy: z.string().optional(),
     })),
     filtersByAnswers: z.record(z.string(), z.object({
       id: z.string().optional(),
@@ -44,6 +55,18 @@ export const FiltersSectionSchema = z.object({
         id: z.string(),
         finder: z.string(),
       })).optional(),
+    })).optional(),
+    // Filtres par thématique CoForm via `coformFilterByPath` (un appel par
+    // entrée). Découverte dynamique des valeurs distinctes d'une thématique
+    // (réseaux thématiques, etc.). Même structure de sortie que filtersByAnswers
+    // (sélection → filters._id.$in = orgaNameArray) mais appel backend différent.
+    filtersByPath: z.record(z.string(), z.object({
+      id: z.string().optional(),
+      label: LocalizedString,
+      thematicPath: z.string(),
+      finderPath: z.string().optional(),
+      // notSourceKey: true → cherche dans tout le réseau (cf. coformFilterByPath).
+      notSourceKey: z.boolean().optional(),
     })).optional(),
     defaultOpenGroups: z.array(z.string()).optional(),
     className: z.string().optional(),
@@ -141,6 +164,42 @@ export type SearchVariant = z.infer<typeof SearchVariantSchema>;
  */
 export const SearchBySchema = z.union([z.string(), z.array(z.string())]);
 export type SearchBy = z.infer<typeof SearchBySchema>;
+
+/**
+ * Paramètres de recherche backend (searchCostum). Partagé entre les sections
+ * search (searchPro / searchProStatic) et les groupes de filtre dynamiques
+ * (`entityList`) qui peuplent leurs options via une recherche d'entités.
+ */
+export const SearchBaseParamsSchema = z.object({
+  fediverse:     z.boolean().optional(),
+  indexStepList: z.number().optional(),
+  indexStepMap:  z.number().optional(),
+  defaultTypes: z.array(SearchTypeSchema).optional(),
+  defaultTags:   z.array(z.string()).optional(),
+  defaultFilters: z.record(z.string(), z.unknown()).optional(),
+  defaultFields: z.array(z.string()).optional(),
+  defaultSortBy: z.record(z.string(), z.union([z.literal(1), z.literal(-1)])).optional(),
+  // Champs sur lesquels le texte de recherche est matché (cf. SearchBySchema).
+  searchBy: SearchBySchema.optional(),
+  // Accepte `boolean` (ne pas sourcer par clé) ou `number` (limite custom).
+  // Certaines configs historiques utilisent un nombre — schéma assoupli pour compat.
+  notSourceKey: z.union([z.boolean(), z.number()]).optional(),
+  locality: z.record(z.string(), z.object({
+    id: z.string(),
+    type: z.string(),
+    name: z.string().optional(),
+    countryCode: z.string().optional(),
+    level: z.union([z.string(), z.number()]).optional(),
+    active: z.boolean().optional(),
+    key: z.string().optional(),
+  })).optional(),
+  contextId: z.string().optional(),
+  contextType: z.enum(["projects", "organizations"]).optional(),
+  costumSlug: z.string().optional(),
+  costumEditMode: z.union([z.boolean(), z.string(), z.number()]).optional(),
+  sourceKey: z.array(z.string()).optional(),
+});
+export type SearchBaseParams = z.infer<typeof SearchBaseParamsSchema>;
 
 export const SEARCH_TYPE_ICON_NAMES: Record<SearchType, IconName> = {
   NGO: "hand-heart",
@@ -290,6 +349,14 @@ export const SearchProStaticSectionSchema = z.object({
     showMap:     z.boolean().default(false),
     enableMap: z.boolean().default(true),
     enableRegions: z.boolean().default(false),
+    // Cible de navigation quand on clique sur la carte regions : on redirige
+    // vers `path` avec `filterId=<slugs>` en query (le groupe entityList
+    // correspondant dans la page cible pré-coche le filtre). Ex. cliquer un
+    // réseau régional → /lieux?reseauxRegionaux=<slug>.
+    regionsTarget: z.object({
+      path: z.string(),
+      filterId: z.string(),
+    }).optional(),
     enableGraph: z.boolean().default(false),
     graphTags: z.array(z.string()).optional(),
     graphCategories: z.array(z.string()).optional(),
@@ -320,35 +387,7 @@ export const SearchProStaticSectionSchema = z.object({
 
     filters: z.record(z.string(), TagsFilterSchema).optional(),
 
-    baseParams: z.object({
-      fediverse:     z.boolean().optional(),
-      indexStepList: z.number().optional(),
-      indexStepMap:  z.number().optional(),
-      defaultTypes: z.array(SearchTypeSchema).optional(),
-      defaultTags:   z.array(z.string()).optional(),
-      defaultFilters: z.record(z.string(), z.unknown()).optional(),
-      defaultFields: z.array(z.string()).optional(),
-      defaultSortBy: z.record(z.string(), z.union([z.literal(1), z.literal(-1)])).optional(),
-      // Champs sur lesquels le texte de recherche est matché (cf. SearchBySchema).
-      searchBy: SearchBySchema.optional(),
-      // Accepte `boolean` (ne pas sourcer par clé) ou `number` (limite custom).
-      // Certaines configs historiques utilisent un nombre — schéma assoupli pour compat.
-      notSourceKey: z.union([z.boolean(), z.number()]).optional(),
-      locality: z.record(z.string(), z.object({
-        id: z.string(),
-        type: z.string(),
-        name: z.string().optional(),
-        countryCode: z.string().optional(),
-        level: z.union([z.string(), z.number()]).optional(),
-        active: z.boolean().optional(),
-        key: z.string().optional(),
-      })).optional(),
-      contextId: z.string().optional(),
-      contextType: z.enum(["projects", "organizations"]).optional(),
-      costumSlug: z.string().optional(),
-      costumEditMode: z.union([z.boolean(), z.string(), z.number()]).optional(),
-      sourceKey: z.array(z.string()).optional(),
-    }).optional(),
+    baseParams: SearchBaseParamsSchema.optional(),
 
     list: ListConfSchema.optional(),
     map:  MapConfSchema.optional(),

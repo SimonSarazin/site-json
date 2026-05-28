@@ -870,9 +870,35 @@
                 },
                 "defaultOpenGroups": [
                   "typologies",
-                  "reseaux"
+                  "reseauxThematiques"
                 ],
                 "filterGroups": [
+                  {
+                    "id": "reseauxRegionaux",
+                    "type": "entityList",
+                    "label": {
+                      "fr": "Réseaux régionaux",
+                      "en": "Regional networks"
+                    },
+                    "filterType": "sourceKey",
+                    "filterBy": "slug",
+                    "baseParams": {
+                      "defaultTypes": [
+                        "organizations"
+                      ],
+                      "defaultFilters": {
+                        "tags": [
+                          "RéseauTiersLieux"
+                        ]
+                      },
+                      "defaultFields": [
+                        "name",
+                        "slug"
+                      ],
+                      "notSourceKey": true,
+                      "indexStepList": 100
+                    }
+                  },
                   {
                     "id": "typologies",
                     "label": {
@@ -880,15 +906,6 @@
                       "en": "Types"
                     },
                     "options": [
-                      {
-                        "id": "tous",
-                        "label": {
-                          "fr": "Tous les lieux",
-                          "en": "All places"
-                        },
-                        "name": "",
-                        "defaultChecked": false
-                      },
                       {
                         "id": "ateliers-artisanaux",
                         "label": {
@@ -978,43 +995,6 @@
                       ],
                       "sortBy": "name"
                     }
-                  },
-                  {
-                    "id": "reseaux",
-                    "label": {
-                      "fr": "Réseaux thématiques",
-                      "en": "Thematic networks"
-                    },
-                    "options": [
-                      {
-                        "id": "basqinterlieux",
-                        "label": {
-                          "fr": "Le BâL (Basq inter-lieux)",
-                          "en": "Le BâL (Basq inter-lieux)"
-                        }
-                      },
-                      {
-                        "id": "cerclelittoral",
-                        "label": {
-                          "fr": "Cercle littoral des Hauts-de-Fr...",
-                          "en": "Hauts-de-France coastal circle"
-                        }
-                      },
-                      {
-                        "id": "rflabs",
-                        "label": {
-                          "fr": "RFFLabs",
-                          "en": "RFFLabs"
-                        }
-                      },
-                      {
-                        "id": "lieux-intermediaires",
-                        "label": {
-                          "fr": "Lieux intermédiaires et indépen...",
-                          "en": "Intermediate and independent..."
-                        }
-                      }
-                    ]
                   },
                   {
                     "id": "regions",
@@ -1171,6 +1151,17 @@
                     "finderPath": "answers.navigatorDesTierslieux1572025_2311_0.findernavigatorDesTierslieux1572025_2311_0md5u4tkmsz33mya3xvb"
                   }
                 },
+                "filtersByPath": {
+                  "reseauxThematiques": {
+                    "label": {
+                      "fr": "Réseaux thématiques",
+                      "en": "Thematic networks"
+                    },
+                    "thematicPath": "lesCommunsDesTierslieux17102023_108_0.multiCheckboxPluslesCommunsDesTierslieux17102023_108_0lntzgckrxocls9xuwxo",
+                    "finderPath": "answers.lesCommunsDesTierslieux17102023_108_0.finderlesCommunsDesTierslieux17102023_108_0lo5zvgqitv0b2mx2rl",
+                    "notSourceKey": true
+                  }
+                },
                 "className": "sticky top-20"
               }
             },
@@ -1308,7 +1299,11 @@
               }
             },
             "defaultViewMode": "regions",
-            "enableRegions": true
+            "enableRegions": true,
+            "regionsTarget": {
+              "path": "/lieux",
+              "filterId": "reseauxRegionaux"
+            }
           }
         }
       ]

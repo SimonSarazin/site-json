@@ -1,5 +1,6 @@
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { useLocalization } from "@/hooks/useLocalization";
 import "@/modules/search/i18n";
 import { cn } from "@/lib/utils";
 import type { FiltersSectionProps } from "../schema";
@@ -8,6 +9,8 @@ import { ChevronDown, SlidersHorizontal } from "lucide-react";
 import { usePageFilters } from "../contexts/pageFilters";
 import { useFiltersByAnswersQuery } from "../hooks/useFiltersByAnswers";
 import { useSearchZoneQuery } from "../hooks/useSearchZone";
+import { useFilterEntitiesQuery } from "../hooks/useFilterEntities";
+import { useFiltersByPathQuery } from "../hooks/useFiltersByPath";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useSearchParams } from "react-router";
 
@@ -20,13 +23,36 @@ export function FiltersSection({
 }) {
   useLoadNamespace("modules/search");
   const t = useT("modules/search");
-  const { title, filterGroups: propsFiltersGroups, defaultOpenGroups = [], filtersByAnswers, className } = props;
+  const { currentLocale } = useLocalization();
+  // Tri alphabétique des options de filtre par libellé localisé (tous les groupes).
+  // `.trim()` neutralise les espaces/caractères invisibles en tête de certaines
+  // valeurs backend (sinon elles remontent en haut de liste).
+  const byLabel = (a: string, b: string) =>
+    (a ?? "").trim().localeCompare((b ?? "").trim(), currentLocale, { sensitivity: "base" });
+  // Normalise la casse d'affichage des valeurs backend (casse incohérente :
+  // "bar" / "Bureautiques") → 1ʳᵉ lettre en majuscule.
+  const capitalizeFirst = (s: string) => {
+    const v = (s ?? "").trim();
+    return v ? v.charAt(0).toUpperCase() + v.slice(1) : v;
+  };
+  const { title, filterGroups: propsFiltersGroups, defaultOpenGroups = [], filtersByAnswers, filtersByPath, className } = props;
   const [filterGroups, setFilterGroups] = useState<FiltersSectionProps["filterGroups"]>([]);
   const [openGroups, setOpenGroups] = useState<string[]>(defaultOpenGroups);
 
+  // Deux sources de filtres "par réponses" produisant le même shape :
+  //  - filtersByAnswers → coformFiltersSearch (batch, existant)
+  //  - filtersByPath    → coformFilterByPath (par thématique, nouveau)
+  // On les merge dans un seul `filterAnswerData` → rendu + sélection communs.
   const filtersByAnswersOptions = filtersByAnswers ?? {};
   const filterAnswerResult = useFiltersByAnswersQuery(`filters-answers-${id}`, filtersByAnswersOptions as Parameters<typeof useFiltersByAnswersQuery>[1]);
-  const filterAnswerData = filtersByAnswers ? filterAnswerResult.data : null;
+
+  const filtersByPathOptions = filtersByPath ?? {};
+  const filterByPathResult = useFiltersByPathQuery(`filters-by-path-${id}`, filtersByPathOptions as Parameters<typeof useFiltersByPathQuery>[1]);
+
+  const filterAnswerData = useMemo(() => {
+    if (!filtersByAnswers && !filtersByPath) return null;
+    return { ...(filtersByAnswers ? filterAnswerResult.data : {}), ...(filtersByPath ? filterByPathResult.data : {}) };
+  }, [filtersByAnswers, filtersByPath, filterAnswerResult.data, filterByPathResult.data]);
 
   const zoneQueryParams = useMemo(() => {
     const hasScopeList = propsFiltersGroups.some(group => group.type === "scopeList");
@@ -54,6 +80,20 @@ export function FiltersSection({
 
   const zoneResult = useSearchZoneQuery(`filters-zone-${id}`, zoneQueryParams ?? { countryCode: [], level: [] });
   const filterZoneData = zoneQueryParams ? zoneResult.data : null;
+
+  // entityList : un seul groupe supporté par section (suffit pour les réseaux
+  // régionaux). La query est désactivée si aucun groupe entityList n'est déclaré
+  // (baseParams vide → enabled false côté hook).
+  const entityListGroup = useMemo(
+    () => propsFiltersGroups?.find((g) => g.type === "entityList"),
+    [propsFiltersGroups]
+  );
+  const entityResult = useFilterEntitiesQuery(
+    `filters-entities-${id}-${entityListGroup?.id ?? "none"}`,
+    entityListGroup?.baseParams ?? {},
+    entityListGroup?.filterBy ?? "slug"
+  );
+  const filterEntityData = entityListGroup ? entityResult.data : null;
 
   // Utiliser le context partagé
   const { selectedFilters, setSelectedFilters, searchQuery, setSearchQuery, clearFilters: clearFiltersContext, searchByFields, setSearchByFields } = usePageFilters();
@@ -114,6 +154,15 @@ export function FiltersSection({
           group.options!.push(data);
         });
         newFilterGroups.push(group);
+      } else if (group.type === "entityList") {
+        // Options peuplées dynamiquement depuis la recherche d'entités.
+        // `name` = slug (valeur utilisée par le filtre sourceKey).
+        group.options = (filterEntityData ?? []).map((e) => ({
+          id: e.value,
+          label: { fr: e.name, en: e.name, es: e.name },
+          name: e.value,
+        }));
+        newFilterGroups.push(group);
       } else {
         const defaultCheckedIds = (group.options ?? [])
           .filter(option => option.defaultChecked)
@@ -130,7 +179,7 @@ export function FiltersSection({
       setSelectedFilters(initialFilters);
     }
     setFilterGroups(newFilterGroups);
-  }, [propsFiltersGroups, filterZoneData, setSelectedFilters]);
+  }, [propsFiltersGroups, filterZoneData, filterEntityData, setSelectedFilters]);
 
   const [searchParams] = useSearchParams();
   useEffect(() => {
@@ -144,6 +193,12 @@ export function FiltersSection({
     Object.values(filterAnswerData ?? {}).forEach(g => {
       Object.keys(g.values).forEach(k => managedAnswerOptionKeys.add(k));
     });
+    // Clés searchByFields gérées par les groupes entityList (= leurs options).
+    // Permet de les reconstruire depuis l'URL au lieu de les préserver.
+    const managedEntityOptionKeys = new Set<string>();
+    filterGroups.filter(g => g.type === "entityList").forEach(g => {
+      (g.options ?? []).forEach(o => managedEntityOptionKeys.add(o.name || o.id));
+    });
 
     searchParams.forEach((rawValue, groupId) => {
       const values = rawValue.split(",").map(v => v.trim()).filter(Boolean);
@@ -151,6 +206,18 @@ export function FiltersSection({
 
       const group = filterGroups.find(g => g.id === groupId);
       if (group) {
+        // entityList → searchByFields (type sourceKey), comme le toggle manuel.
+        if (group.type === "entityList") {
+          const fType = group.filterType ?? "sourceKey";
+          values.forEach(v => {
+            const opt = (group.options ?? []).find(o => (o.name || o.id) === v || o.id === v);
+            const slug = opt ? (opt.name || opt.id) : null;
+            if (slug) {
+              nextSearchFields[slug] = { field: fType, type: fType, value: [slug] };
+            }
+          });
+          return;
+        }
         const matchedNames = values
           .map(v => {
             const opt = (group.options ?? []).find(o => (o.name || o.id) === v || o.id === v);
@@ -191,7 +258,7 @@ export function FiltersSection({
     setSearchByFields(prev => {
       const preserved: typeof prev = {};
       Object.entries(prev).forEach(([key, val]) => {
-        if (!managedAnswerOptionKeys.has(key)) preserved[key] = val;
+        if (!managedAnswerOptionKeys.has(key) && !managedEntityOptionKeys.has(key)) preserved[key] = val;
       });
       return { ...preserved, ...nextSearchFields };
     });
@@ -206,7 +273,7 @@ export function FiltersSection({
     );
   };
 
-  const toggleFilter = (groupId: string, filterName: string, field: string | null = null, value: string | string[] | null = null, level: "cities" | "level1" | "level2" | "level3" | "level4" | "level5" | null = null) => {
+  const toggleFilter = (groupId: string, filterName: string, field: string | null = null, value: string | string[] | null = null, level: "cities" | "level1" | "level2" | "level3" | "level4" | "level5" | null = null, fieldType: string | null = null) => {
     if (field && value !== null) {
       setSearchByFields(prev => {
         const isActive = Object.keys(prev).includes(filterName);
@@ -226,6 +293,18 @@ export function FiltersSection({
                   type: level
                 }
               } as unknown as typeof prev[string]
+            };
+          } else if (fieldType) {
+            // Filtre par champ natif typé (ex. "sourceKey") — routé par
+            // SearchProStatic vers baseParams plutôt que vers filters MongoDB.
+            const valueToSet = Array.isArray(value) ? value : [value];
+            return {
+              ...prev,
+              [filterName]: {
+                field,
+                type: fieldType,
+                value: valueToSet
+              }
             };
           } else {
             const valueToSet = Array.isArray(value) ? value : [value];
@@ -349,7 +428,9 @@ export function FiltersSection({
             {/* Group Content */}
             {isGroupOpen(group.id) && (
               <div className="pb-3 px-2 space-y-2">
-                {(group.options ?? []).map((option) => {
+                {[...(group.options ?? [])]
+                  .sort((a, b) => byLabel(t(a.label), t(b.label)))
+                  .map((option) => {
                   const filterName = option.name || option.id;
                   return (
                     <label
@@ -361,7 +442,16 @@ export function FiltersSection({
                         <input
                           type="checkbox"
                           checked={isFilterSelected(group.id, filterName)}
-                          onChange={() => group.type === "scopeList" ? toggleFilter(group.id, filterName, group.field ?? `${option.id}${option.level}`, filterName, option.level as "cities" | "level1" | "level2" | "level3" | "level4" | "level5") : toggleFilter(group.id, filterName)}
+                          onChange={() => {
+                            if (group.type === "scopeList") {
+                              toggleFilter(group.id, filterName, group.field ?? `${option.id}${option.level}`, filterName, option.level as "cities" | "level1" | "level2" | "level3" | "level4" | "level5");
+                            } else if (group.type === "entityList") {
+                              const fType = group.filterType ?? "sourceKey";
+                              toggleFilter(group.id, filterName, fType, filterName, null, fType);
+                            } else {
+                              toggleFilter(group.id, filterName);
+                            }
+                          }}
                           className="w-4 h-4 border-2 border-border rounded cursor-pointer appearance-none checked:bg-primary checked:border-primary transition"
                         />
                         {isFilterSelected(group.id, filterName) && (
@@ -451,7 +541,9 @@ export function FiltersSection({
               {/* Group Content */}
               {isGroupOpen(group) && (
                 <div className="pb-3 px-2 space-y-2">
-                  {Object.keys(groupData.values).map((optionKey) => {
+                  {Object.keys(groupData.values)
+                    .sort((a, b) => byLabel(groupData.values[a].name, groupData.values[b].name))
+                    .map((optionKey) => {
                     const option = groupData.values[optionKey];
                     const filterName = optionKey;
                     return (
@@ -480,7 +572,7 @@ export function FiltersSection({
                         </div>
 
                         <span className="text-sm text-muted-foreground group-hover:text-foreground flex-1">
-                          {option.name}
+                          {capitalizeFirst(option.name)}
                         </span>
                       </label>
                     );

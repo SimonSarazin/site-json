@@ -11,6 +11,16 @@ import {
   fetchFiltersByAnswers,
   type FiltersByAnswersOptions,
 } from "../hooks/useFiltersByAnswers";
+import {
+  filterEntitiesQueryKey,
+  fetchFilterEntities,
+  type FilterEntitiesOptions,
+} from "../hooks/useFilterEntities";
+import {
+  filtersByPathQueryKey,
+  fetchFiltersByPath,
+  type FiltersByPathOptions,
+} from "../hooks/useFiltersByPath";
 
 /**
  * Section JSON minimaliste pour les helpers de découverte. Le schéma complet
@@ -111,8 +121,68 @@ export async function prefetchFiltersByAnswers(
 }
 
 /**
+ * Pré-charge les entités d'un groupe de filtre `entityList` (réseaux régionaux…)
+ * pour le SSR — hydrate React Query avec la même `queryKey` que
+ * `useFilterEntitiesQuery`.
+ */
+export async function prefetchFilterEntities(
+  queryClient: QueryClient,
+  query: string,
+  options: FilterEntitiesOptions,
+  filterBy = "slug"
+) {
+  if (!options.defaultTypes?.length) return null;
+
+  try {
+    return await queryClient.ensureQueryData({
+      queryKey: filterEntitiesQueryKey(query, options),
+      queryFn: async () => {
+        const { entity, api } = await initApi({ baseURL: getBaseUrl() });
+        const target = entity || api;
+        if (!target || typeof (target as { searchCostum?: unknown }).searchCostum !== "function") {
+          return [];
+        }
+        return fetchFilterEntities(target as Parameters<typeof fetchFilterEntities>[0], options, filterBy);
+      },
+    });
+  } catch (error) {
+    console.error("Erreur préchargement entités filtre:", error);
+    return null;
+  }
+}
+
+/**
+ * Pré-charge les filtres par thématique CoForm (`coformFilterByPath`) pour le
+ * SSR — hydrate React Query avec la même `queryKey` que `useFiltersByPathQuery`.
+ */
+export async function prefetchFiltersByPath(
+  queryClient: QueryClient,
+  query: string,
+  options: FiltersByPathOptions
+) {
+  if (Object.keys(options).length === 0) return null;
+
+  try {
+    return await queryClient.ensureQueryData({
+      queryKey: filtersByPathQueryKey(query, options),
+      queryFn: async () => {
+        const { entity, api } = await initApi({ baseURL: getBaseUrl() });
+        const target = entity || api;
+        if (!target || typeof (target as { coformFilterByPath?: unknown }).coformFilterByPath !== "function") {
+          return {};
+        }
+        return fetchFiltersByPath(target as Parameters<typeof fetchFiltersByPath>[0], options);
+      },
+    });
+  } catch (error) {
+    console.error("Erreur préchargement filtersByPath:", error);
+    return null;
+  }
+}
+
+/**
  * Helper haut niveau : pour une section `filters`, déclenche le préchargement
- * des deux dépendances (zones + filtersByAnswers) en parallèle.
+ * des dépendances (zones + filtersByAnswers + filtersByPath + entityList) en parallèle.
  *
  * Les paramètres dérivés des `filterGroups[type="scopeList"]` sont fusionnés
  * en une seule requête zone (cohérent avec `FiltersSection.tsx` côté client).
@@ -123,10 +193,14 @@ export async function prefetchFilterSection(
 ) {
   const props = (section.props ?? {}) as {
     filterGroups?: Array<{
+      id?: string;
       type?: string;
       config?: { countryCode?: string[]; level?: string[] };
+      baseParams?: FilterEntitiesOptions;
+      filterBy?: string;
     }>;
     filtersByAnswers?: FiltersByAnswersOptions;
+    filtersByPath?: FiltersByPathOptions;
   };
   const sectionId = section.id ?? "anonymous";
 
@@ -151,6 +225,32 @@ export async function prefetchFilterSection(
         queryClient,
         `filters-answers-${sectionId}`,
         props.filtersByAnswers
+      )
+    );
+  }
+
+  // filtersByPath : un appel coformFilterByPath par entrée.
+  if (props.filtersByPath && Object.keys(props.filtersByPath).length > 0) {
+    tasks.push(
+      prefetchFiltersByPath(
+        queryClient,
+        `filters-by-path-${sectionId}`,
+        props.filtersByPath
+      )
+    );
+  }
+
+  // entityList : un prefetch par groupe (chacun a ses propres baseParams).
+  const entityGroups = (props.filterGroups ?? []).filter(
+    (g) => g.type === "entityList" && g.baseParams
+  );
+  for (const g of entityGroups) {
+    tasks.push(
+      prefetchFilterEntities(
+        queryClient,
+        `filters-entities-${sectionId}-${g.id ?? "anonymous"}`,
+        g.baseParams!,
+        g.filterBy ?? "slug"
       )
     );
   }

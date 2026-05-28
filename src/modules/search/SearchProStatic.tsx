@@ -1,6 +1,7 @@
 import { Loader2, Map, List, LayoutGrid, Search, MapPin, Download, Plus, GitBranch } from "lucide-react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
+import { useNavigate } from "react-router";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -86,6 +87,19 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedZoneId, setSelectedZoneId] = useState<string>("");
   const [selectedTagValue, setSelectedTagValue] = useState<string>("");
+
+  const navigate = useNavigate();
+  const regionsTarget = props.regionsTarget;
+  // Clic sur la carte regions → navigue vers la page cible avec les slugs en
+  // query (le groupe entityList correspondant pré-coche le filtre). Stable
+  // (useCallback) pour ne pas re-déclencher le redraw d3 de FranceRegionsMap.
+  const handleRegionsSelect = useCallback(
+    (slugs: string[]) => {
+      if (!regionsTarget || slugs.length === 0) return;
+      navigate(`${regionsTarget.path}?${regionsTarget.filterId}=${encodeURIComponent(slugs.join(","))}`);
+    },
+    [navigate, regionsTarget]
+  );
 
   const enableGraph = props.enableGraph ?? false;
   const graphTags = props.graphTags ?? props.graphCategories;
@@ -192,7 +206,8 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     if (searchByFields) {
       const obj: Record<string, Record<string, string[]>> = {};
       for (const { field, type, value } of Object.values(searchByFields)) {
-        if (type && type === "scopeList") continue;
+        // scopeList → locality ; sourceKey → baseParams.sourceKey (param natif).
+        if (type === "scopeList" || type === "sourceKey") continue;
         if (Array.isArray(value) && value.length > 0) {
           if (!obj[field]) {
             obj[field] = { "$in": value };
@@ -229,10 +244,26 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     return combined;
   }, [contextLocality, zoneLocality]);
 
-  const mergedBaseParams = useMemo<Record<string, unknown>>(
-    () => canonicalSearchProStaticBaseParams(baseParams, filters, locality),
-    [baseParams, filters, locality]
-  );
+  // sourceKey dynamiques issus des filtres `entityList` (réseaux régionaux) :
+  // param natif SDK (matching source.key/source.keys/reference.costum backend).
+  const dynamicSourceKeys = useMemo<string[]>(() => {
+    if (!searchByFields) return [];
+    const keys: string[] = [];
+    for (const { type, value } of Object.values(searchByFields)) {
+      if (type === "sourceKey" && Array.isArray(value)) keys.push(...value);
+    }
+    return keys;
+  }, [searchByFields]);
+
+  const mergedBaseParams = useMemo<Record<string, unknown>>(() => {
+    const merged = canonicalSearchProStaticBaseParams(baseParams, filters, locality);
+    // Un sourceKey actif prend le dessus sur notSourceKey (qui dit l'inverse).
+    if (dynamicSourceKeys.length > 0) {
+      merged.sourceKey = dynamicSourceKeys;
+      delete merged.notSourceKey;
+    }
+    return merged;
+  }, [baseParams, filters, locality, dynamicSourceKeys]);
 
   const csvSearchParams = useMemo(() => ({
     searchText,
@@ -609,10 +640,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                 {() => (
                   <FranceRegionsMap
                     results={transformedResults}
-                    onItemClick={(item) => {
-                      const slug = (item.serverData as { slug?: string })?.slug;
-                      if (slug) window.open(`/profil/${slug}`, "_blank", "noopener,noreferrer");
-                    }}
+                    onSelect={handleRegionsSelect}
                     height={550}
                   />
                 )}

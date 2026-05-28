@@ -31,7 +31,12 @@ interface EntityGeoData {
 
 interface FranceRegionsMapProps {
   results: SearchEntity[];
-  onItemClick?: (item: SearchEntity) => void;
+  /**
+   * Appelé au clic. Reçoit les slugs des réseaux sélectionnés :
+   * - clic sur une région → tous les slugs des réseaux de la région
+   * - clic sur un item du tooltip → [slug] de ce réseau seul
+   */
+  onSelect?: (slugs: string[]) => void;
   height?: number;
 }
 
@@ -145,9 +150,12 @@ function matchRegion(
   return null;
 }
 
-export default function FranceRegionsMap({ results, onItemClick, height = 600 }: FranceRegionsMapProps) {
+export default function FranceRegionsMap({ results, onSelect, height = 600 }: FranceRegionsMapProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
+  // Timer de masquage différé du tooltip : laisse le temps de déplacer la souris
+  // de la région vers le tooltip (sinon il disparaît avant qu'on clique un item).
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [geoData, setGeoData] = useState<FeatureCollection<Geometry, RegionProperties> | null>(null);
 
   useEffect(() => {
@@ -193,6 +201,7 @@ export default function FranceRegionsMap({ results, onItemClick, height = 600 }:
 
     function showTooltip(event: MouseEvent, regionName: string) {
       if (!tooltip) return;
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
       const regionResults = resultsByRegion.get(regionName) || [];
       if (regionResults.length === 0) {
         tooltip.style.display = "none";
@@ -220,7 +229,10 @@ export default function FranceRegionsMap({ results, onItemClick, height = 600 }:
 
         const row = document.createElement("div");
         row.className = "flex items-center gap-2 py-1.5 px-1 cursor-pointer hover:bg-accent rounded";
-        row.addEventListener("click", () => onItemClick?.(entity));
+        row.addEventListener("click", () => {
+          const slug = getData(entity).slug;
+          if (slug) onSelect?.([slug]);
+        });
 
         if (img) {
           const imgEl = document.createElement("img");
@@ -268,20 +280,22 @@ export default function FranceRegionsMap({ results, onItemClick, height = 600 }:
       return {
         mouseover(event: MouseEvent) {
           d3.select(event.currentTarget as SVGPathElement).attr("stroke", "#444").attr("stroke-width", 2);
-          showTooltip(event, regionName);
-        },
-        mousemove(event: MouseEvent) {
+          // Positionné une seule fois à l'entrée — pas de repositionnement sur
+          // mousemove, sinon le tooltip fuit le curseur et devient incliquable.
           showTooltip(event, regionName);
         },
         mouseout(event: MouseEvent) {
           d3.select(event.currentTarget as SVGPathElement).attr("stroke", "#fff").attr("stroke-width", 0.5);
-          hideTooltip();
+          // Masquage différé : laisse le temps d'atteindre le tooltip pour cliquer.
+          hideTimerRef.current = setTimeout(hideTooltip, 200);
         },
         click() {
+          // Clic région → tous les réseaux de la région (multi-slug).
           const regionResults = resultsByRegion.get(regionName) || [];
-          if (regionResults.length >= 1) {
-            onItemClick?.(regionResults[0]);
-          }
+          const slugs = regionResults
+            .map((e) => getData(e).slug)
+            .filter((s): s is string => !!s);
+          if (slugs.length > 0) onSelect?.(slugs);
         },
       };
     }
@@ -301,7 +315,6 @@ export default function FranceRegionsMap({ results, onItemClick, height = 600 }:
         const handlers = regionHover(d.properties.nom);
         d3.select(this)
           .on("mouseover", handlers.mouseover)
-          .on("mousemove", handlers.mousemove)
           .on("mouseout", handlers.mouseout)
           .on("click", handlers.click);
       });
@@ -357,7 +370,6 @@ export default function FranceRegionsMap({ results, onItemClick, height = 600 }:
         .attr("stroke", "#fff").attr("stroke-width", 0.5)
         .attr("cursor", "pointer")
         .on("mouseover", handlers.mouseover)
-        .on("mousemove", handlers.mousemove)
         .on("mouseout", handlers.mouseout)
         .on("click", handlers.click);
 
@@ -378,7 +390,7 @@ export default function FranceRegionsMap({ results, onItemClick, height = 600 }:
           .text(count);
       }
     });
-  }, [geoData, resultsByRegion, height, onItemClick]);
+  }, [geoData, resultsByRegion, height, onSelect]);
 
   if (!geoData) {
     return (
@@ -395,7 +407,10 @@ export default function FranceRegionsMap({ results, onItemClick, height = 600 }:
         ref={tooltipRef}
         className="absolute z-50 hidden w-[200px] px-3 py-2 rounded-xl bg-popover text-popover-foreground border border-border shadow-xl text-sm"
         style={{ pointerEvents: "auto" }}
-        onMouseEnter={() => { if (tooltipRef.current) tooltipRef.current.style.display = "block"; }}
+        onMouseEnter={() => {
+          if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+          if (tooltipRef.current) tooltipRef.current.style.display = "block";
+        }}
         onMouseLeave={() => { if (tooltipRef.current) tooltipRef.current.style.display = "none"; }}
       />
     </div>
