@@ -15,11 +15,32 @@ export default function CardRezoLaMer({
   item,
   onClick,
   card,
-  fundingByProjectId,
 }: SearchCardProps) {
   const serverData = item?.serverData;
   const entityType = item?.getEntityType?.() || "";
   const projectId = String(serverData?.id || item?.id || "").trim();
+
+  // Le funding est activable via `card.showFunding` (cf. schema). Défaut :
+  // actif pour le variant "rezo-la-mer" (rétrocompat). Pilote à la fois la
+  // query `useFundingEnvelope` (enabled) et l'affichage de la barre.
+  const cardType = card?.variant || card?.type;
+  const showFunding = card?.showFunding ?? (cardType === "rezo-la-mer");
+
+  const { entity } = useCocolight();
+  const { data: fundingEnvelope } = useFundingEnvelope(undefined, { enabled: showFunding });
+
+  // Reconstruit la donnée de financement du projet courant depuis l'enveloppe
+  // (autonome : plus de prop drilling depuis SearchListView).
+  const fundingProject = showFunding
+    ? fundingEnvelope?.projects?.find((p) => String(p?.id || "").trim() === projectId)
+    : undefined;
+  const fundingFromMap = fundingProject
+    ? (() => {
+        const goal = Number(fundingProject.totalCouts ?? 0);
+        const raised = Number(fundingProject.totalFinancement ?? 0);
+        return { goal, raised, percentage: goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0 };
+      })()
+    : undefined;
 
   const image = serverData?.profilImageUrl;
   const title = serverData?.name;
@@ -28,17 +49,12 @@ export default function CardRezoLaMer({
   const avatarIcon = getEntityIcon(entityType, "w-16 h-16 text-muted-foreground/50");
   const tags = serverData?.tags || [];
   const category = tags.length > 0 ? String(tags[0]) : "Pas de tags";
-  const fundingFromMap = projectId ? fundingByProjectId?.[projectId] : undefined;
   const status = getStatus(serverData, fundingFromMap);
   const links = serverData?.links as Record<string, Record<string, unknown>> | undefined;
   const contributors = links?.contributors ? Object.keys(links.contributors).length : 0;
   const funding = getFunding(serverData, fundingFromMap);
   const hasRealFunding = !!fundingFromMap || Number.isFinite(Number(serverData?.fundingGoal)) || Number.isFinite(Number(serverData?.goal)) || Number.isFinite(Number(serverData?.fundingRaised)) || Number.isFinite(Number(serverData?.raised)) || Number.isFinite(Number(serverData?.collected));
   const displayDescription = description ? String(description) : "Pas de description";
-  
-  // Pour activer le financement
-  const { data: fundingEnvelope } = useFundingEnvelope();
-  const { entity } = useCocolight();
 
   const formId = fundingEnvelope?.rawEnvelope ? extractFormIdFromEnvelope(fundingEnvelope.rawEnvelope) : null;
 
@@ -124,41 +140,45 @@ export default function CardRezoLaMer({
           </span>
         </div>
 
-        <div className="mb-4">
-          <div className="flex justify-between text-sm mb-2">
-            {hasRealFunding ? (
-              <>
-                <span className="font-semibold text-foreground">
-                  {funding.raised.toLocaleString()} €
-                </span>
-                <span className="text-muted-foreground">
-                  sur {funding.goal.toLocaleString()} €
-                </span>
-              </>
-            ) : (
-              <span className="text-sm text-muted-foreground">Donnée non disponible</span>
-            )}
-          </div>
-          <Progress value={hasRealFunding ? funding.percentage : 0} className="h-2" />
-        </div>
+        {showFunding && (
+          <>
+            <div className="mb-4">
+              <div className="flex justify-between text-sm mb-2">
+                {hasRealFunding ? (
+                  <>
+                    <span className="font-semibold text-foreground">
+                      {funding.raised.toLocaleString()} €
+                    </span>
+                    <span className="text-muted-foreground">
+                      sur {funding.goal.toLocaleString()} €
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-sm text-muted-foreground">Donnée non disponible</span>
+                )}
+              </div>
+              <Progress value={hasRealFunding ? funding.percentage : 0} className="h-2" />
+            </div>
 
-        {!hasRealFunding ? (
-          <Button
-            onClick={handleActivateFundingClick}
-            disabled={isActivatingFunding || !formId}
-            className="w-full bg-amber-500 hover:bg-amber-600 text-white border-0"
-          >
-            <Zap className="mr-2 w-4 h-4" />
-            {isActivatingFunding ? "Activation..." : "Activer financement"}
-          </Button>
-        ) : (
-          <Button
-            onClick={handleViewProjectClick}
-            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground border-0"
-          >
-            Voir le projet
-            <ArrowRight className="ml-2 w-4 h-4" />
-          </Button>
+            {!hasRealFunding ? (
+              <Button
+                onClick={handleActivateFundingClick}
+                disabled={isActivatingFunding || !formId}
+                className="w-full bg-amber-500 hover:bg-amber-600 text-white border-0"
+              >
+                <Zap className="mr-2 w-4 h-4" />
+                {isActivatingFunding ? "Activation..." : "Activer financement"}
+              </Button>
+            ) : (
+              <Button
+                onClick={handleViewProjectClick}
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground border-0"
+              >
+                Voir le projet
+                <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
+            )}
+          </>
         )}
       </div>
     </article>

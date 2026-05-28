@@ -79,6 +79,10 @@ const ListConfSchema = z.object({
     showAddress:     z.boolean().optional(),
     shareButton:     z.boolean().optional(),
     showStar:        z.boolean().optional(),
+    // Affiche la barre de progression de financement (cagnotte) sur la carte +
+    // déclenche la query useFundingEnvelope. Découple la feature funding du style
+    // de carte. Défaut : actif uniquement pour le variant "rezo-la-mer" (rétrocompat).
+    showFunding:     z.boolean().optional(),
     detailsMode: z.enum(["drawer", "dialog"]).default("drawer"),
     type: z.enum(["overlay", "default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer", "poi-ssbe", "card-elts","ssbe", "card-answer"]).default("default"),
     variant: z.enum(["default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer", "poi-ssbe", "card-elts","ssbe", "card-answer"]).optional(),
@@ -484,7 +488,6 @@ export interface SearchCardProps<T extends SearchEntity = SearchEntity> {
   item: T;
   onClick?: () => void;
   card?: ListConf["card"];
-  fundingByProjectId?: Record<string, { goal: number; raised: number; percentage: number }>;
 }
 
 export interface PreviewProps<T extends SearchEntity = SearchEntity> {

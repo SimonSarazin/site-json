@@ -527,7 +527,7 @@ function getProfileSlugFromLocation(): string {
   return parts[profileIndex + 1].trim();
 }
 
-export function useFundingEnvelope(idProjet?: string) {
+export function useFundingEnvelope(idProjet?: string, opts?: { enabled?: boolean }) {
   const { entity, contextId, contextType, me } = useCocolight();
 
   const entityId = contextId || entity?.id || '';
@@ -596,7 +596,7 @@ export function useFundingEnvelope(idProjet?: string) {
     //  - `me?.id` : `getFormData` (qui enrichit `projects[].totalFinancement`)
     //    nécessite un `financerId`. Sans `me`, la requête tombe en fallback
     //    `getEnvelopeData` qui ne calcule pas les totaux.
-    enabled: typeof window !== 'undefined' && Boolean(entity && entityId && effectiveContextType && me?.id),
+    enabled: (opts?.enabled ?? true) && typeof window !== 'undefined' && Boolean(entity && entityId && effectiveContextType && me?.id),
     staleTime: 2 * 60 * 1000,
   });
 }

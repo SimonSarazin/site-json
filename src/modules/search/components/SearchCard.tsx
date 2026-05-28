@@ -22,7 +22,6 @@ const CardAnswer = lazy(() => import("./card/CardAnswer"));
 export default function SearchCard({
   item,
   onClick,
-  fundingByProjectId,
   card = {
     tagLimit: 5,
     showDescription: false,
@@ -44,7 +43,7 @@ export default function SearchCard({
     case "event":
       return <CardEvent item={item} onClick={onClick} card={card} />;
     case "rezo-la-mer":
-      return <CardRezoLaMer item={item} onClick={onClick} card={card} fundingByProjectId={fundingByProjectId} />;
+      return <CardRezoLaMer item={item} onClick={onClick} card={card} />;
     case "profile":
       return <CardProfile item={item as import("@communecter/cocolight-api-client").User | import("@communecter/cocolight-api-client").Organization} onClick={onClick} card={card} />;
     case "event-rezo-la-mer":
