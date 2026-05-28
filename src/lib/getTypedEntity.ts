@@ -1,4 +1,4 @@
-import type { User, Organization, Project, Event, Poi, EntityTypes } from "@communecter/cocolight-api-client";
+import type { User, Organization, Project, Event, Poi, Answer, Form, Classified, Action, EntityTypes } from "@communecter/cocolight-api-client";
 
 /**
  * Type guards pour permettre à TypeScript de faire le narrowing automatique
@@ -46,4 +46,32 @@ export function isEvent(entity: EntityTypes): entity is Event {
  */
 export function isPoi(entity: EntityTypes): entity is Poi {
   return entity.getEntityType() === "poi";
+}
+
+/**
+ * Type guard pour vérifier si une entité est un Answer
+ */
+export function isAnswer(entity: EntityTypes): entity is Answer {
+  return entity.getEntityType() === "answers";
+}
+
+/**
+ * Type guard pour vérifier si une entité est un Form
+ */
+export function isForm(entity: EntityTypes): entity is Form {
+  return entity.getEntityType() === "forms";
+}
+
+/**
+ * Type guard pour vérifier si une entité est un Classified
+ */
+export function isClassified(entity: EntityTypes): entity is Classified {
+  return entity.getEntityType() === "classifieds";
+}
+
+/**
+ * Type guard pour vérifier si une entité est une Action
+ */
+export function isAction(entity: EntityTypes): entity is Action {
+  return entity.getEntityType() === "actions";
 }
