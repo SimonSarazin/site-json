@@ -1,29 +1,37 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 import * as d3 from "d3";
 import type { FeatureCollection, Geometry } from "geojson";
+import type { SearchEntity } from "@communecter/cocolight-api-client";
+import { Spinner } from "@/components/ui/spinner";
 
 interface RegionProperties {
   code: string;
   nom: string;
 }
 
-interface SearchResult {
-  _id?: { $id: string } | string;
+/**
+ * Vue minimale du `serverData` d'une entité utilisée par la carte régionale.
+ * Les `SearchEntity` (`User | Organization | Project | Event | Poi`) exposent
+ * toutes leur document via `entity.serverData` ; on n'en lit ici qu'un sous-
+ * ensemble commun (champs géo + affichage). Cf. mémoire entity.serverData.
+ */
+interface EntityGeoData {
   name?: string;
   slug?: string;
   address?: {
     level1Name?: string;
-    level1?: string;
     addressLocality?: string;
   };
-  profilMediumImageUrl?: string;
+  geo?: { latitude?: number | string; longitude?: number | string };
+  geoPosition?: { coordinates?: [number, number] };
   tags?: string[];
-  [key: string]: unknown;
+  profilMediumImageUrl?: string;
+  profilThumbImageUrl?: string;
 }
 
 interface FranceRegionsMapProps {
-  results: SearchResult[];
-  onItemClick?: (item: SearchResult) => void;
+  results: SearchEntity[];
+  onItemClick?: (item: SearchEntity) => void;
   height?: number;
 }
 
@@ -71,35 +79,32 @@ const NAME_REGION_HINTS: Record<string, string> = {
   "sud": "Provence-Alpes-Côte d'Azur",
 };
 
-function getData(result: SearchResult): Record<string, unknown> {
-  const sd = (result as unknown as { serverData?: Record<string, unknown> }).serverData
-    || (result as unknown as { _serverData?: Record<string, unknown> })._serverData
-    || (result as unknown as { data?: Record<string, unknown> }).data
-    || result;
-  return sd as Record<string, unknown>;
+function getData(entity: SearchEntity): EntityGeoData {
+  return entity.serverData as EntityGeoData;
 }
 
-function getCoordinates(result: SearchResult): [number, number] | null {
-  const data = getData(result);
-  const geoPos = data.geoPosition as { coordinates?: [number, number] } | undefined;
-  if (geoPos?.coordinates && geoPos.coordinates.length >= 2) {
-    return [geoPos.coordinates[0], geoPos.coordinates[1]];
+function getCoordinates(entity: SearchEntity): [number, number] | null {
+  const data = getData(entity);
+  const coords = data.geoPosition?.coordinates;
+  if (coords && coords.length >= 2) {
+    return [coords[0], coords[1]];
   }
-  const geo = data.geo as { latitude?: number | string; longitude?: number | string } | undefined;
+  const geo = data.geo;
   if (geo?.latitude && geo?.longitude) {
     return [Number(geo.longitude), Number(geo.latitude)];
   }
   return null;
 }
 
-let _geoFeatures: FeatureCollection<Geometry, RegionProperties> | null = null;
-
-function matchRegionByGeo(result: SearchResult): string | null {
-  if (!_geoFeatures) return null;
-  const coords = getCoordinates(result);
+function matchRegionByGeo(
+  entity: SearchEntity,
+  geoFeatures: FeatureCollection<Geometry, RegionProperties> | null,
+): string | null {
+  if (!geoFeatures) return null;
+  const coords = getCoordinates(entity);
   if (!coords) return null;
 
-  for (const feature of _geoFeatures.features) {
+  for (const feature of geoFeatures.features) {
     if (d3.geoContains(feature as unknown as d3.GeoPermissibleObjects, coords)) {
       return feature.properties.nom;
     }
@@ -107,23 +112,24 @@ function matchRegionByGeo(result: SearchResult): string | null {
   return null;
 }
 
-function matchRegion(result: SearchResult): string | null {
-  const data = getData(result);
+function matchRegion(
+  entity: SearchEntity,
+  geoFeatures: FeatureCollection<Geometry, RegionProperties> | null,
+): string | null {
+  const data = getData(entity);
 
-  const geoMatch = matchRegionByGeo(result);
+  const geoMatch = matchRegionByGeo(entity, geoFeatures);
   if (geoMatch) return geoMatch;
 
-  const address = data.address as { level1Name?: string; addressLocality?: string } | undefined;
-  const level1Name = address?.level1Name;
+  const level1Name = data.address?.level1Name;
   if (level1Name) {
     for (const [region, aliases] of Object.entries(REGION_ALIASES)) {
       if (aliases.some((a) => level1Name.toLowerCase().includes(a.toLowerCase()))) return region;
     }
   }
 
-  const tags = data.tags as string[] | undefined;
-  if (Array.isArray(tags)) {
-    for (const tag of tags) {
+  if (Array.isArray(data.tags)) {
+    for (const tag of data.tags) {
       if (typeof tag !== "string") continue;
       for (const [region, aliases] of Object.entries(REGION_ALIASES)) {
         if (aliases.some((a) => tag.toLowerCase().includes(a.toLowerCase()))) return region;
@@ -131,7 +137,7 @@ function matchRegion(result: SearchResult): string | null {
     }
   }
 
-  const name = ((data.name as string) || "").toLowerCase();
+  const name = (data.name ?? "").toLowerCase();
   for (const [hint, region] of Object.entries(NAME_REGION_HINTS)) {
     if (name.includes(hint)) return region;
   }
@@ -148,30 +154,22 @@ export default function FranceRegionsMap({ results, onItemClick, height = 600 }:
     fetch("/france-regions.geojson")
       .then((res) => res.json())
       .then((data) => {
-        const geo = data as FeatureCollection<Geometry, RegionProperties>;
-        _geoFeatures = geo;
-        setGeoData(geo);
+        setGeoData(data as FeatureCollection<Geometry, RegionProperties>);
       })
       .catch((err) => console.error("Erreur chargement GeoJSON:", err));
   }, []);
 
   const resultsByRegion = useMemo(() => {
-    const map = new Map<string, SearchResult[]>();
-    if (results.length > 0) {
-      console.log("[FranceRegionsMap] Sample results:", results.slice(0, 3).map(r => {
-        const d = getData(r);
-        return { name: d.name, address: d.address, geo: d.geo, geoPosition: d.geoPosition, tags: d.tags, slug: d.slug };
-      }));
-    }
+    const map = new Map<string, SearchEntity[]>();
     for (const result of results) {
-      const region = matchRegion(result);
+      const region = matchRegion(result, geoData);
       if (region) {
         if (!map.has(region)) map.set(region, []);
         map.get(region)!.push(result);
       }
     }
     return map;
-  }, [results]);
+  }, [results, geoData]);
 
   useEffect(() => {
     if (!geoData || !svgRef.current) return;
@@ -201,22 +199,58 @@ export default function FranceRegionsMap({ results, onItemClick, height = 600 }:
         return;
       }
 
-      const items = regionResults.map((r) => {
-        const d = getData(r);
-        const name = (d.name as string) || "Sans nom";
-        const img = (d.profilMediumImageUrl as string) || (d.profilThumbImageUrl as string) || "";
-        const locality = (d.address as Record<string, unknown>)?.addressLocality as string || "";
-        const slug = (d.slug as string) || "";
-        return `<div class="flex items-center gap-2 py-1.5 px-1 cursor-pointer hover:bg-gray-50 rounded" data-slug="${slug}">
-          ${img ? `<img src="${img}" class="w-8 h-8 rounded object-cover shrink-0" />` : `<div class="w-8 h-8 rounded bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-400 shrink-0">${name.slice(0, 2).toUpperCase()}</div>`}
-          <div class="min-w-0"><div class="text-sm font-semibold text-gray-800 truncate">${name}</div>${locality ? `<div class="text-xs text-gray-500">${locality}</div>` : ""}</div>
-        </div>`;
-      }).join("");
+      // Construction via DOM API (textContent) plutôt que innerHTML : les champs
+      // (name, locality, img) viennent du backend (données utilisateur) — une
+      // interpolation dans innerHTML serait une faille XSS.
+      tooltip.replaceChildren();
 
-      tooltip.innerHTML = `
-        <div class="font-bold text-sm text-gray-700 mb-1.5 pb-1.5 border-b border-gray-100">${regionName}</div>
-        <div class="max-h-[200px] overflow-y-auto">${items}</div>
-      `;
+      const title = document.createElement("div");
+      title.className = "font-bold text-sm text-foreground mb-1.5 pb-1.5 border-b border-border";
+      title.textContent = regionName;
+      tooltip.appendChild(title);
+
+      const list = document.createElement("div");
+      list.className = "max-h-[200px] overflow-y-auto";
+
+      for (const entity of regionResults) {
+        const d = getData(entity);
+        const name = d.name || "Sans nom";
+        const img = d.profilMediumImageUrl || d.profilThumbImageUrl || "";
+        const locality = d.address?.addressLocality || "";
+
+        const row = document.createElement("div");
+        row.className = "flex items-center gap-2 py-1.5 px-1 cursor-pointer hover:bg-accent rounded";
+        row.addEventListener("click", () => onItemClick?.(entity));
+
+        if (img) {
+          const imgEl = document.createElement("img");
+          imgEl.src = img;
+          imgEl.alt = name;
+          imgEl.className = "w-8 h-8 rounded object-cover shrink-0";
+          row.appendChild(imgEl);
+        } else {
+          const ph = document.createElement("div");
+          ph.className = "w-8 h-8 rounded bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground shrink-0";
+          ph.textContent = name.slice(0, 2).toUpperCase();
+          row.appendChild(ph);
+        }
+
+        const textWrap = document.createElement("div");
+        textWrap.className = "min-w-0";
+        const nameEl = document.createElement("div");
+        nameEl.className = "text-sm font-semibold text-foreground truncate";
+        nameEl.textContent = name;
+        textWrap.appendChild(nameEl);
+        if (locality) {
+          const locEl = document.createElement("div");
+          locEl.className = "text-xs text-muted-foreground";
+          locEl.textContent = locality;
+          textWrap.appendChild(locEl);
+        }
+        row.appendChild(textWrap);
+        list.appendChild(row);
+      }
+      tooltip.appendChild(list);
       tooltip.style.display = "block";
 
       const svgRect = svgRef.current!.getBoundingClientRect();
@@ -224,13 +258,6 @@ export default function FranceRegionsMap({ results, onItemClick, height = 600 }:
       const y = event.clientY - svgRect.top - 10;
       tooltip.style.left = `${Math.min(x, svgRect.width - 220)}px`;
       tooltip.style.top = `${Math.max(0, y)}px`;
-
-      tooltip.querySelectorAll("[data-slug]").forEach((el) => {
-        el.addEventListener("click", () => {
-          const slug = el.getAttribute("data-slug");
-          if (slug) window.open(`/s/${slug}`, "_blank");
-        });
-      });
     }
 
     function hideTooltip() {
@@ -253,9 +280,7 @@ export default function FranceRegionsMap({ results, onItemClick, height = 600 }:
         click() {
           const regionResults = resultsByRegion.get(regionName) || [];
           if (regionResults.length >= 1) {
-            const d = getData(regionResults[0]);
-            const slug = d.slug as string;
-            if (slug) window.open(`/s/${slug}`, "_blank");
+            onItemClick?.(regionResults[0]);
           }
         },
       };
@@ -353,12 +378,12 @@ export default function FranceRegionsMap({ results, onItemClick, height = 600 }:
           .text(count);
       }
     });
-  }, [geoData, results, resultsByRegion, height, onItemClick]);
+  }, [geoData, resultsByRegion, height, onItemClick]);
 
   if (!geoData) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
+        <Spinner />
       </div>
     );
   }
@@ -368,7 +393,7 @@ export default function FranceRegionsMap({ results, onItemClick, height = 600 }:
       <svg ref={svgRef} className="w-full" style={{ height }} />
       <div
         ref={tooltipRef}
-        className="absolute z-50 hidden w-[200px] px-3 py-2 rounded-xl bg-white border border-gray-200 shadow-xl text-sm"
+        className="absolute z-50 hidden w-[200px] px-3 py-2 rounded-xl bg-popover text-popover-foreground border border-border shadow-xl text-sm"
         style={{ pointerEvents: "auto" }}
         onMouseEnter={() => { if (tooltipRef.current) tooltipRef.current.style.display = "block"; }}
         onMouseLeave={() => { if (tooltipRef.current) tooltipRef.current.style.display = "none"; }}

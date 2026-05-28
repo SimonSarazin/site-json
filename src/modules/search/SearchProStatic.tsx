@@ -608,11 +608,10 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
               <ClientOnly>
                 {() => (
                   <FranceRegionsMap
-                    results={transformedResults as unknown as Record<string, unknown>[]}
+                    results={transformedResults}
                     onItemClick={(item) => {
-                      if (item && typeof item === "object" && "slug" in item) {
-                        window.open(`/profil/${(item as { slug: string }).slug}`, "_blank");
-                      }
+                      const slug = (item.serverData as { slug?: string })?.slug;
+                      if (slug) window.open(`/profil/${slug}`, "_blank", "noopener,noreferrer");
                     }}
                     height={550}
                   />
