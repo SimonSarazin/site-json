@@ -65,7 +65,13 @@ function getLayoutClasses(layout: string) {
         {!currentPage.hideHeader && <SiteHeader />}
 
          <main id="main" role="main" className="flex-1">
-          <PageProvidersComposer>
+          {/* key={pathname} : remonte les page-providers (PageFilters) à chaque
+              changement de page config. Sans ça, React Router réutilise la même
+              instance <SiteRenderer/> entre deux pages config (ex. /lieux ↔
+              /reseaux-regionaux) et l'état page-scoped (filtres) fuite d'une
+              page à l'autre. pathname exclut les query params → filtrer sur la
+              même page ne remonte pas. */}
+          <PageProvidersComposer key={pathname}>
             <PageProvider page={currentPage}>
               {currentPage.sections.map((s, i) => (
                 <SectionRenderer key={s.id ?? `section-${i}`} section={s} index={i} />
