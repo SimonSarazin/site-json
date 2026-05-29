@@ -357,13 +357,32 @@ export const SearchProStaticSectionSchema = z.object({
       path: z.string(),
       filterId: z.string(),
     }).optional(),
+    // Vue "thematics" : grille de cards (nom + image) des valeurs d'un filtre
+    // thématique CoForm (`coformFilterByPath`). S'active via
+    // `defaultViewMode: "thematics"` + `thematicSource` (page dédiée, sans toggle).
+    // Source de l'appel coformFilterByPath (même forme qu'une entrée
+    // `filtersByPath` de la section `filters`).
+    thematicSource: z.object({
+      id: z.string().optional(),
+      label: LocalizedString,
+      thematicPath: z.string(),
+      finderPath: z.string().optional(),
+      notSourceKey: z.boolean().optional(),
+    }).optional(),
+    // Cible de navigation au clic sur une card thématique : `path` avec
+    // `filterId=<name>` en query → la page cible pré-active le filtre. Ex.
+    // cliquer un réseau thématique → /lieux?reseauxThematiques=<name>.
+    thematicsTarget: z.object({
+      path: z.string(),
+      filterId: z.string(),
+    }).optional(),
     enableGraph: z.boolean().default(false),
     graphTags: z.array(z.string()).optional(),
     graphCategories: z.array(z.string()).optional(),
     graphDefaultGroupMode: z.enum(["country", "category"]).optional(),
     graphEnableCountryGrouping: z.boolean().optional(),
     graphDetailsMode: z.enum(["drawer", "dialog", "link"]).default("drawer"),
-    defaultViewMode: z.enum(["list", "map", "graph", "regions"]).optional(),
+    defaultViewMode: z.enum(["list", "map", "graph", "regions", "thematics"]).optional(),
     showActiveFiltersTypes: z.boolean().default(false),
     showActiveFiltersTags: z.boolean().default(false),
     disableInfiniteScroll: z.boolean().optional(),

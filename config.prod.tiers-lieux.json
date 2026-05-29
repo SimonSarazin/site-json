@@ -329,8 +329,8 @@
     {
       "path": "/",
       "title": {
-        "fr": "Accueil - Le réseau social des tiers-lieux",
-        "en": "Home - Le réseau social des tiers-lieux"
+        "fr": "Le réseau social des tiers-lieux",
+        "en": "The social network for third places"
       },
       "layout": "default",
       "sections": [
@@ -848,8 +848,8 @@
     {
       "path": "/lieux",
       "title": {
-        "fr": "Accueil - Le réseau social des tiers-lieux",
-        "en": "Home - Le réseau social des tiers-lieux"
+        "fr": "Les tiers-lieux - Le réseau social des tiers-lieux",
+        "en": "Third places - The third places social network"
       },
       "layout": "default",
       "sections": [
@@ -1235,8 +1235,16 @@
     {
       "path": "/reseaux-regionaux",
       "title": {
-        "fr": "Réseaux Régionaux - Le réseau social des tiers-lieux",
-        "en": "Regional Networks - The third places social network"
+        "fr": "Réseaux régionaux - Le réseau social des tiers-lieux",
+        "en": "Regional networks - The third places social network"
+      },
+      "seo": {
+        "description": {
+          "fr": "Découvrez les réseaux régionaux de tiers-lieux sur la carte de France et accédez aux lieux de chaque réseau régional.",
+          "en": "Discover the regional third-places networks on the map of France and browse the places of each regional network."
+        },
+        "ogType": "website",
+        "twitterCard": "summary_large_image"
       },
       "layout": "default",
       "sections": [
@@ -1311,8 +1319,16 @@
     {
       "path": "/reseaux-thematiques",
       "title": {
-        "fr": "Réseaux Thématiques - Le réseau social des tiers-lieux",
-        "en": "Thematic Networks - The third places social network"
+        "fr": "Réseaux thématiques - Le réseau social des tiers-lieux",
+        "en": "Thematic networks - The third places social network"
+      },
+      "seo": {
+        "description": {
+          "fr": "Explorez les réseaux thématiques de tiers-lieux et découvrez les lieux associés à chaque thématique.",
+          "en": "Explore the thematic third-places networks and discover the places linked to each theme."
+        },
+        "ogType": "website",
+        "twitterCard": "summary_large_image"
       },
       "layout": "default",
       "sections": [
@@ -1373,6 +1389,20 @@
                 "variant": "tiers-lieux",
                 "detailsMode": "drawer"
               }
+            },
+            "defaultViewMode": "thematics",
+            "thematicSource": {
+              "label": {
+                "fr": "Réseaux thématiques",
+                "en": "Thematic networks"
+              },
+              "thematicPath": "lesCommunsDesTierslieux17102023_108_0.multiCheckboxPluslesCommunsDesTierslieux17102023_108_0lntzgckrxocls9xuwxo",
+              "finderPath": "answers.lesCommunsDesTierslieux17102023_108_0.finderlesCommunsDesTierslieux17102023_108_0lo5zvgqitv0b2mx2rl",
+              "notSourceKey": true
+            },
+            "thematicsTarget": {
+              "path": "/lieux",
+              "filterId": "reseauxThematiques"
             }
           }
         }
@@ -1534,7 +1564,8 @@
     {
       "path": "/api-donnees",
       "title": {
-        "fr": "API et données ouvertes"
+        "fr": "API et données ouvertes - Le réseau social des tiers-lieux",
+        "en": "Open API and data - The third places social network"
       },
       "sections": [
         {

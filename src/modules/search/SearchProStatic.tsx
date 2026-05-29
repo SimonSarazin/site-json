@@ -15,6 +15,7 @@ import SearchListSkeleton from "./components/SearchListSkeleton";
 const SearchMapWrapper = lazy(() => import("./components/SearchMapWrapper"));
 const SearchBubbleChart = lazy(() => import("./components/SearchBubbleChart"));
 const FranceRegionsMap = lazy(() => import("./components/FranceRegionsMap"));
+const ThematicCards = lazy(() => import("./components/ThematicCards"));
 import { SwitchDetailsMode } from "./components/SwitchDetailsMode";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
@@ -80,7 +81,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
 
   // État local (pas de sync URL)
   const defaultViewMode = props.defaultViewMode || (showMap ? "map" : "list");
-  const [viewMode, setViewMode] = useState<"list" | "map" | "graph" | "regions">(defaultViewMode);
+  const [viewMode, setViewMode] = useState<"list" | "map" | "graph" | "regions" | "thematics">(defaultViewMode);
   const [isDetailedView, setIsDetailedView] = useState(defaultDetailedView);
   const [localSearchInput, setLocalSearchInput] = useState("");
   const debouncedLocalSearch = useDebounce(localSearchInput, 500);
@@ -99,6 +100,22 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
       navigate(`${regionsTarget.path}?${regionsTarget.filterId}=${encodeURIComponent(slugs.join(","))}`);
     },
     [navigate, regionsTarget]
+  );
+
+  const thematicsTarget = props.thematicsTarget;
+  const thematicSource = props.thematicSource;
+  // Nombre de thématiques remonté par ThematicCards (compteur du header en mode
+  // thematics — le totalCount du moteur compte les orgas, pas les thématiques).
+  const [thematicCount, setThematicCount] = useState(0);
+  // Clic sur une card thématique → navigue vers la page cible avec le `name` en
+  // query (le groupe filtersByPath correspondant pré-coche le filtre, match par
+  // name). Ex. /lieux?reseauxThematiques=<name>.
+  const handleThematicSelect = useCallback(
+    (name: string) => {
+      if (!thematicsTarget || !name) return;
+      navigate(`${thematicsTarget.path}?${thematicsTarget.filterId}=${encodeURIComponent(name)}`);
+    },
+    [navigate, thematicsTarget]
   );
 
   const enableGraph = props.enableGraph ?? false;
@@ -586,11 +603,16 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                       {typeof customHeader.title === "string"
                         ? customHeader.title
                         : t(customHeader.title)}
-                      {totalCount !== undefined && totalCount !== null ? (
-                        <span className="ml-2 text-base font-normal text-muted-foreground">
-                          ({totalCount})
-                        </span>
-                      ) : null}
+                      {(() => {
+                        // En mode thematics, le compteur reflète le nombre de
+                        // thématiques (pas les orgas du moteur de recherche).
+                        const headerCount = viewMode === "thematics" ? thematicCount : totalCount;
+                        return headerCount !== undefined && headerCount !== null && headerCount > 0 ? (
+                          <span className="ml-2 text-base font-normal text-muted-foreground">
+                            ({headerCount})
+                          </span>
+                        ) : null;
+                      })()}
                     </h2>
                   )}
                 </div>
@@ -618,7 +640,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                       )}
                     </Button>
                   )}
-                  {showDetailedViewToggle && viewMode !== "regions" && (
+                  {showDetailedViewToggle && viewMode !== "regions" && viewMode !== "thematics" && (
                     <Button
                       variant={isDetailedView ? "default" : "outline"}
                       size="sm"
@@ -647,7 +669,16 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
               </ClientOnly>
             )}
 
-            {viewMode !== "regions" && (
+            {viewMode === "thematics" && thematicSource && (
+              <ThematicCards
+                queryId={thematicSource.id ?? thematicSource.thematicPath}
+                source={thematicSource}
+                onSelect={handleThematicSelect}
+                onCountChange={setThematicCount}
+              />
+            )}
+
+            {viewMode !== "regions" && viewMode !== "thematics" && (
               <>
                 {isPending && <SearchListSkeleton />}
 

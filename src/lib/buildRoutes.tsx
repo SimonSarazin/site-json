@@ -9,7 +9,9 @@ import {
   prefetchSearchResults,
   findFiltersSections,
   prefetchFilterSection,
+  prefetchFiltersByPath,
 } from "@/modules/search/prefetch";
+import type { FiltersByPathOptions } from "@/modules/search/hooks/useFiltersByPath";
 import { canonicalSearchProStaticBaseParams } from "@/modules/search/lib/canonicalBaseParams";
 
 /**
@@ -190,9 +192,22 @@ async function buildRoutesAsync(
         })
       );
 
+      // Pré-charger les filtres thématiques (vue "thematics" de searchProStatic,
+      // page réseaux thématiques) : même queryKey/options que `ThematicCards`
+      // (`useFiltersByPathQuery`) pour un cache RQ hydraté dès le SSR.
+      type ThematicSrc = FiltersByPathOptions[string];
+      const thematicPrefetch = Promise.all(
+        searchSections
+          .map((s) => (s.props?.thematicSource as ThematicSrc | undefined))
+          .filter((src): src is ThematicSrc => !!src)
+          .map((src) =>
+            prefetchFiltersByPath(queryClient, src.id ?? src.thematicPath, { thematic: src })
+          )
+      );
+
       // Attendre filtres + résultats en parallèle. Si l'un échoue, on n'empêche
       // pas l'autre — chaque prefetch a son propre try/catch interne.
-      await Promise.all([filterPrefetch, searchPrefetch]);
+      await Promise.all([filterPrefetch, searchPrefetch, thematicPrefetch]);
       return null;
     },
   }));
