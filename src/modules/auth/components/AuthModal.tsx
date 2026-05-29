@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -25,12 +25,10 @@ interface AuthModalProps {
 export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
   useLoadNamespace("modules/auth");
   const t = useT("modules/auth");
+  // Repart sur "login" à chaque ouverture : `AuthModalLazy` démonte la modal
+  // quand elle est fermée (`{open && …}`), donc ce state est réinitialisé au
+  // remontage — pas besoin d'un effet de reset.
   const [mode, setMode] = useState<AuthMode>("login");
-
-  // Repart sur le login à chaque réouverture du modal.
-  useEffect(() => {
-    if (open) setMode("login");
-  }, [open]);
 
   const close = () => onOpenChange(false);
 
