@@ -25,7 +25,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { AuthModal } from "@/modules/auth";
+import { AuthModalLazy } from "@/modules/auth";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
@@ -394,7 +394,7 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                 )}
             </nav>
 
-            <AuthModal open={loginDialogOpen} onOpenChange={setLoginDialogOpen} />
+            <AuthModalLazy open={loginDialogOpen} onOpenChange={setLoginDialogOpen} />
         </header>
     );
 }

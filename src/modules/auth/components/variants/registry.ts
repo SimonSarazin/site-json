@@ -1,7 +1,17 @@
-import LoginForm from "../forms/LoginForm";
-import RegisterForm from "../forms/RegisterForm";
-import RecoverPasswordForm from "../forms/RecoverPasswordForm";
-import AuthModal from "../AuthModal";
+import { lazy } from "vite-preload";
+
+// Tout le set est chargé en lazy() vite-preload : ni la modal ni les formulaires
+// ne sont dans le bundle initial. Les chunks sont tirés à l'usage —
+//  - AuthModal au clic sur « Se connecter » (cf. AuthModalLazy),
+//  - chaque formulaire en visitant /login, /register, /recover-password (les
+//    pages restent des routes core eager, mais leur contenu est lazy via Suspense
+//    dans AuthPageLayout).
+// lazy() est évalué une seule fois (constantes module-level) pour rester stable
+// entre les rendus. Pattern identique aux sections / RootLayout / profil.
+const LoginForm = lazy(() => import("../forms/LoginForm"));
+const RegisterForm = lazy(() => import("../forms/RegisterForm"));
+const RecoverPasswordForm = lazy(() => import("../forms/RecoverPasswordForm"));
+const AuthModal = lazy(() => import("../AuthModal"));
 
 /**
  * Jeu de composants d'auth pour un variant de design donné.

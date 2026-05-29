@@ -5,6 +5,7 @@ export { routes } from "./routes";
 
 // Composants
 export { default as AuthModal } from "./components/AuthModal";
+export { AuthModalLazy } from "./components/AuthModalLazy";
 export { default as LoginForm } from "./components/forms/LoginForm";
 export { default as RegisterForm } from "./components/forms/RegisterForm";
 export { default as RecoverPasswordForm } from "./components/forms/RecoverPasswordForm";

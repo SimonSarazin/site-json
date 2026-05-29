@@ -11,6 +11,7 @@
 - [Variants de design](#variants-de-design)
 - [Configuration `config.auth`](#configuration-configauth)
 - [Composants](#composants)
+- [Chargement (lazy)](#chargement-lazy)
 - [Sections](#sections)
 - [SEO (`AuthSeo`)](#seo-authseo)
 - [SSO](#sso)
@@ -42,14 +43,15 @@ src/modules/auth/
   AuthSeo.tsx             Helmet noindex + titre/description (pattern AmpliSeo/ProfileSeo)
   components/
     AuthModal.tsx         modal multi-mode (login / register / recover)
-    AuthPageLayout.tsx    layout des pages auth (header/footer configurables + AuthSeo)
+    AuthModalLazy.tsx     point de montage lazy de la modal (Suspense + montage au clic)
+    AuthPageLayout.tsx    layout des pages auth (header/footer configurables + AuthSeo + Suspense)
     forms/
       LoginForm.tsx
       RegisterForm.tsx
       RecoverPasswordForm.tsx
       SSOLoginButton.tsx
     variants/
-      registry.ts         resolveAuthVariant(variant?) → AuthVariantSet
+      registry.ts         resolveAuthVariant(variant?) → AuthVariantSet (composants lazy)
   pages/
     LoginPage.tsx
     RegisterPage.tsx
@@ -144,14 +146,35 @@ Bloc top-level optionnel de la config site (validé par `AuthConfigSchema`) :
 - **`AuthModal`** — `Dialog` shadcn multi-mode. Repart sur `login` à chaque
   réouverture, fournit le cadre (`DialogContent`) ; les formulaires sont rendus
   « plats » (pas de bordure/ombre propre) pour éviter un double cadre.
+- **`AuthModalLazy`** — point de montage utilisé par les headers : résout le
+  variant, ne monte `AuthModal` qu'à l'ouverture (`{open && …}`), sous `Suspense`.
 - **`AuthPageLayout`** — enveloppe les pages : `<AuthSeo>`, `<SiteHeader>` /
   `<SiteFooter>` conditionnels (`config.auth.hideHeader` / `hideFooter`),
-  formulaire centré (`max-w-md`).
+  formulaire centré (`max-w-md`) sous `Suspense` (le form est lazy).
 - **`LoginForm` / `RegisterForm` / `RecoverPasswordForm`** — formulaires en
   `<form onSubmit>` (soumission clavier), composants shadcn (`Input`, `Button`,
   `Label`, `Checkbox`), `PasswordToggleTextInput`, validation `isValidEmail`,
   retours utilisateur via `sonner`.
 - **`SSOLoginButton`** — bouton par provider (voir [SSO](#sso)).
+
+## Chargement (lazy)
+
+Bien que le module soit `core` (sa **découverte** et ses **routes** sont eager,
+pour le routing SSR sans flash), ses composants lourds sont **code-splittés** via
+`lazy()` de vite-preload — rien de tout ça n'est dans le bundle initial :
+
+| Chunk | Chargé quand |
+|---|---|
+| `AuthModal` (+ forms) | au clic sur « Se connecter » (`AuthModalLazy` monte au `open`) |
+| `LoginForm` | modal ouverte, `/login`, ou dialog login de CoForm |
+| `RegisterForm` | bascule register ou `/register` |
+| `RecoverPasswordForm` | bascule recover ou `/recover-password` |
+
+Le `registry` expose donc des composants lazy ; les consommateurs les rendent
+sous `Suspense` (`AuthPageLayout` pour les pages, `AuthModalLazy` pour la modal,
+`CoFormPage` pour son dialog login). Les `import` directs de `LoginForm` /
+`AuthModal` qui subsistent (dans `AuthModal` et les `*Section`) sont eux-mêmes
+contenus dans des chunks déjà lazy.
 
 ## Sections
 

@@ -15,7 +15,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { AuthModal } from "@/modules/auth";
+import { AuthModalLazy } from "@/modules/auth";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
 import { PiggyBankHeaderButton } from "@/modules/cagnotte/components/PiggyBankHeaderButton";
@@ -432,7 +432,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
             </div>
             )}
 
-            <AuthModal open={loginDialogOpen} onOpenChange={setLoginDialogOpen} />
+            <AuthModalLazy open={loginDialogOpen} onOpenChange={setLoginDialogOpen} />
         </nav>
     );
 }

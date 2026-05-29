@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";
-import { AuthModal } from "@/modules/auth";
+import { AuthModalLazy } from "@/modules/auth";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
 
 interface HeaderCommuneTransparenteProps {
@@ -259,7 +259,7 @@ export default function HeaderCommuneTransparente({ header }: HeaderCommuneTrans
             )}
 
             {/* Login / inscription / récupération mot de passe */}
-            <AuthModal open={loginDialogOpen} onOpenChange={setLoginDialogOpen} />
+            <AuthModalLazy open={loginDialogOpen} onOpenChange={setLoginDialogOpen} />
         </nav>
     );
 }

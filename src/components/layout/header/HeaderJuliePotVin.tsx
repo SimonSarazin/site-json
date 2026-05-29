@@ -13,7 +13,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { AuthModal } from "@/modules/auth";
+import { AuthModalLazy } from "@/modules/auth";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import { ChevronDown, User, LogOut, Globe, Menu, X } from "lucide-react";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";
@@ -222,7 +222,7 @@ export default function HeaderJuliePotVin({ header }: HeaderJuliePotVinProps) {
                 )}
             </nav>
 
-            <AuthModal open={loginDialogOpen} onOpenChange={setLoginDialogOpen} />
+            <AuthModalLazy open={loginDialogOpen} onOpenChange={setLoginDialogOpen} />
         </>
     )
 }

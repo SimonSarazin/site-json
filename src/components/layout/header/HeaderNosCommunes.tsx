@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";
-import { AuthModal } from "@/modules/auth";
+import { AuthModalLazy } from "@/modules/auth";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
 
@@ -396,7 +396,7 @@ export default function HeaderNosCommunes({ header }: HeaderNosCommunesProps) {
             </div>
             )}
 
-            <AuthModal open={loginDialogOpen} onOpenChange={setLoginDialogOpen} />
+            <AuthModalLazy open={loginDialogOpen} onOpenChange={setLoginDialogOpen} />
         </nav>
     );
 }

@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { Link, useLoaderData, useNavigate, useParams, useSearchParams } from "react-router";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { AlertCircle, Home, Info, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { LoginForm } from "@/modules/auth";
+import { resolveAuthVariant } from "@/modules/auth";
+import { useSite } from "@/hooks/useSite";
 import { SmartCoForm } from "../components/SmartCoForm";
 import { CoFormAccessGuard } from "../components/CoFormAccessGuard";
 import { CoFormAnswerPicker } from "../components/CoFormAnswerPicker";
@@ -38,6 +39,11 @@ export default function CoFormPage() {
     const t = useT("modules/coform");
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
+
+    // LoginForm résolu en lazy via le registry de variants (chunk chargé à
+    // l'ouverture du dialog, pas dans le bundle de la page).
+    const { config } = useSite();
+    const { LoginForm } = resolveAuthVariant(config.auth?.variant);
 
     // Paramètres URL standalone
     const stepKeyFromUrl = searchParams.get("step") || undefined;
@@ -407,13 +413,23 @@ export default function CoFormPage() {
                     <DialogTitle className="sr-only">
                         {String(t("coform.access.notLoggedIn.loginButton"))}
                     </DialogTitle>
-                    <LoginForm
-                        hideBackButton
-                        onSuccess={() => {
-                            setLoginDialogOpen(false);
-                            refetch();
-                        }}
-                    />
+                    {loginDialogOpen && (
+                        <Suspense
+                            fallback={
+                                <div className="flex items-center justify-center py-10 text-muted-foreground">
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                </div>
+                            }
+                        >
+                            <LoginForm
+                                hideBackButton
+                                onSuccess={() => {
+                                    setLoginDialogOpen(false);
+                                    refetch();
+                                }}
+                            />
+                        </Suspense>
+                    )}
                 </DialogContent>
             </Dialog>
         </div>
