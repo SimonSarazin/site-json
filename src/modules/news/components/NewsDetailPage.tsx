@@ -70,12 +70,10 @@ export const NewsDetailPage = ({ params, entity, sectionProps }: NewsDetailPageP
     setReportDialogOpen(true);
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleEdit = (_newsItem: News) => {
     setEditModalOpen(true);
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleDelete = (_newsItem: News) => {
     setDeleteDialogOpen(true);
   };

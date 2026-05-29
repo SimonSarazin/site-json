@@ -161,12 +161,10 @@ export function MultiCheckboxPlusField({
       
       // Nettoyer le texte local et l'état touched
       setTextInputs(prev => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [option]: _removed, ...rest } = prev;
         return rest;
       });
       setTouchedInputs(prev => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [option]: _removed, ...rest } = prev;
         return rest;
       });

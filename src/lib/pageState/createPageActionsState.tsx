@@ -1,6 +1,7 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -116,13 +117,17 @@ export function createPageActionsState<
   const Provider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [rawState, setRawState] = useState<S>(config.initialState);
 
-    // Ref toujours fraîche — permet aux actions de lire l'état courant sans
-    // closure stale.
+    // Ref toujours fraîche — permet aux actions (mémoïsées une seule fois) de
+    // lire l'état courant sans closure stale. Synchronisée en post-commit
+    // (useEffect) et non pendant le render : muter un ref pendant le render
+    // casse le rendu concurrent. `get()` n'est appelé que dans des handlers
+    // (post-commit), donc la valeur lue est toujours à jour.
     const stateRef = useRef(rawState);
-    stateRef.current = rawState;
-
     const initialFactory = useRef(config.initialState);
-    initialFactory.current = config.initialState;
+    useEffect(() => {
+      stateRef.current = rawState;
+      initialFactory.current = config.initialState;
+    });
 
     // Actions mémoïsées une seule fois — référence stable.
     const actions = useMemo<A>(() => {
@@ -134,6 +139,11 @@ export function createPageActionsState<
         },
         get: () => stateRef.current,
       };
+      // get()/reset() lisent les refs dans des closures appelées dans des
+      // handlers (post-commit), jamais pendant le render → pattern valide. Le
+      // React Compiler le signale à tort (il ne peut pas prouver que config.actions
+      // n'appelle pas get() immédiatement).
+      // eslint-disable-next-line react-hooks/refs
       return config.actions(helpers);
     }, []);
 

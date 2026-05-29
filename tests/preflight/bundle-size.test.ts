@@ -108,7 +108,6 @@ describe("Preflight — Bundle size", () => {
 
   if (skipReason) {
     test.skip("(les tests bundle-size sont skippés)", () => {});
-    // eslint-disable-next-line no-console
     console.warn(`[bundle-size] ${skipReason}`);
   }
 });

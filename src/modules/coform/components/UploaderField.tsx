@@ -168,6 +168,10 @@ export function UploaderField({ field, errors, value = [], onChange, formId, ans
     if (inputRef.current) inputRef.current.value = "";
   }, [onChange, files, legacyVal, value, maxFiles, maxSize, config?.formats, t]);
 
+  // Callback async (suppression de fichier serveur) : le React Compiler ne peut
+  // pas préserver cette mémoïsation manuelle, mais le useCallback reste correct
+  // et nécessaire (référence stable passée aux items de la liste).
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const handleRemove = useCallback(async (index: number) => {
     if (!onChange) return;
     const item = files[index];
