@@ -1178,7 +1178,8 @@
       "emailInvalid": "Invalid email",
       "emailRequired": "Email is required",
       "imageOnly": "File must be an image",
-      "uploadFailed": "Upload failed"
+      "uploadFailed": "Upload failed",
+      "validationFailed": "Please fix the highlighted fields (see the flagged tabs)."
     },
     "days": {
       "monday": "Monday",

@@ -3,7 +3,7 @@ import { useForm, useFieldArray, type Resolver, type FieldValues, type UseFormRe
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Loader2, Plus, Trash2, Building2, MapPin, Image as ImageIcon, Share2,
-  Globe, Clock, Phone, Video, FileText, X, Upload,
+  Globe, Clock, Phone, Video, FileText, X, Upload, AlertCircle,
 } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -248,6 +248,13 @@ export function TiersLieuxForm({
     details: [],
   };
 
+  // Un onglet est "en erreur" si un de ses champs requis a une erreur de
+  // validation. Sert à afficher un badge sur l'onglet + naviguer vers le 1er
+  // onglet fautif au submit (sinon une erreur dans un onglet inactif est
+  // invisible — l'onglet est caché en CSS par Radix Tabs).
+  const hasStepErrors = (stepId: string): boolean =>
+    (STEP_REQUIRED_FIELDS[stepId] ?? []).some((field) => !!form.formState.errors[field]);
+
   const goNext = async () => {
     const fields = STEP_REQUIRED_FIELDS[STEPS[currentStep].id] ?? [];
     const isValid = fields.length === 0 ? true : await form.trigger(fields);
@@ -291,7 +298,15 @@ export function TiersLieuxForm({
 
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit(handleSubmit)}
+          onSubmit={form.handleSubmit(handleSubmit, () => {
+            // Validation échouée : l'erreur peut être dans un onglet inactif
+            // (caché). On prévient via toast + on saute au 1er onglet fautif.
+            const firstErrorStep = STEPS.findIndex((s) => hasStepErrors(s.id));
+            if (firstErrorStep >= 0) setCurrentStep(firstErrorStep);
+            toast.error(
+              t("AddTiersLieux.errors.validationFailed", "Veuillez corriger les champs en erreur."),
+            );
+          })}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !(e.target instanceof HTMLTextAreaElement)) {
               e.preventDefault();
@@ -305,6 +320,7 @@ export function TiersLieuxForm({
                 {STEPS.map((step, idx) => {
                   const Icon = step.icon;
                   const isCompleted = idx < currentStep;
+                  const stepHasError = hasStepErrors(step.id);
                   return (
                     <TabsTrigger
                       key={step.id}
@@ -313,7 +329,11 @@ export function TiersLieuxForm({
                       onClick={() => setCurrentStep(idx)}
                       className="flex-col sm:flex-row gap-1 px-2 sm:px-3 py-2 text-xs sm:text-sm min-w-0 data-[state=active]:shadow-md data-[state=active]:font-semibold transition-all"
                     >
-                      <Icon className={`w-4 h-4 shrink-0 ${isCompleted ? "text-primary" : ""}`} />
+                      {stepHasError ? (
+                        <AlertCircle className="w-4 h-4 shrink-0 text-destructive" />
+                      ) : (
+                        <Icon className={`w-4 h-4 shrink-0 ${isCompleted ? "text-primary" : ""}`} />
+                      )}
                       <span className="truncate">{t(`AddTiersLieux.steps.${step.id}`)}</span>
                     </TabsTrigger>
                   );

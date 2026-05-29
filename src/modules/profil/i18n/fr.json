@@ -1178,7 +1178,8 @@
       "emailInvalid": "Email invalide",
       "emailRequired": "L'email est requis",
       "imageOnly": "Le fichier doit être une image",
-      "uploadFailed": "Upload échoué"
+      "uploadFailed": "Upload échoué",
+      "validationFailed": "Veuillez corriger les champs en erreur (voir les onglets signalés)."
     },
     "days": {
       "monday": "Lundi",
