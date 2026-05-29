@@ -418,6 +418,12 @@ const ContactFormSectionSchema = z.object({
 
 Ces trois formulaires ont des props **vides** (`z.object({})`). Le rendu est entierement gere par le composant React correspondant.
 
+> Ces schémas vivent dans `src/modules/auth/schema.ts` (ré-exportés par
+> `src/types/site-schema.ts` pour rétro-compat). Les pages `/login`, `/register`
+> et `/recover-password` sont fournies par le [module auth](23-module-auth.md) :
+> ces sections ne servent qu'à embarquer un formulaire dans une page config
+> existante.
+
 ```ts
 const LoginFormSectionSchema = z.object({
   type: z.literal("loginForm"),

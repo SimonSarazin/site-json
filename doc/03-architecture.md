@@ -61,7 +61,7 @@ Cette section décrit l'organisation générale du code, le flux d'exécution et
 │   ├── helpers/           # Fonctions utilitaires (ex. email validation)
 │   ├── hooks/             # Hooks React (useToast, useInfiniteQueryScroll…)
 │   ├── lib/               # Bibliothèques internes (apiClient, buildRoutes, sanitize, imageUtils)
-│   ├── modules/           # Modules fonctionnels (search, profil, news, ampli, coform)
+│   ├── modules/           # Modules fonctionnels (search, profil, news, ampli, coform, auth, cagnotte, interop)
 │   ├── types/             # Schémas Zod & types TS (site-schema, locale-schema…)
 │   ├── entry-client.tsx   # Point d'entrée bundler client (hydrate React)
 │   ├── entry-server.tsx   # Point d'entrée SSR (renderToPipeableStream)

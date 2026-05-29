@@ -851,13 +851,15 @@ Connexion via providers OAuth externes (Communecter, tierslieuxorg, etc.).
 Le frontend ouvre une popup vers le backend Cocolight qui orchestre le flux
 OAuth, puis récupère les JWT tokens via `postMessage`.
 
+> Tous ces fichiers font partie du [module auth](23-module-auth.md).
+
 ### Architecture
 
 | Fichier | Rôle |
 |---|---|
-| `src/hooks/useSSOAuth.ts` (~118 lignes) | Hook qui ouvre la popup, écoute `postMessage`, injecte les tokens dans `ApiClient`, émet `userLoggedIn` |
-| `src/components/auth/SSOLoginButton.tsx` | Composant bouton React avec logo provider, loading state, gestion des erreurs |
-| `src/components/auth/LoginForm.tsx` (L.46, L.172-191) | Affiche un `<SSOLoginButton>` pour chaque provider listé dans `entity.serverData.costum.sso` |
+| `src/modules/auth/hooks/useSSOAuth.ts` (~118 lignes) | Hook qui ouvre la popup, écoute `postMessage`, injecte les tokens dans `ApiClient`, émet `userLoggedIn` |
+| `src/modules/auth/components/forms/SSOLoginButton.tsx` | Composant bouton React avec logo provider, loading state, gestion des erreurs |
+| `src/modules/auth/components/forms/LoginForm.tsx` | Affiche un `<SSOLoginButton>` pour chaque provider listé dans `entity.serverData.costum.sso` |
 
 ### Flow complet
 
@@ -892,7 +894,7 @@ OAuth, puis récupère les JWT tokens via `postMessage`.
 ### API : `useSSOAuth`
 
 ```ts
-import { useSSOAuth } from "@/hooks/useSSOAuth";
+import { useSSOAuth } from "@/modules/auth";
 
 const { openSSOPopup } = useSSOAuth();
 
@@ -909,7 +911,7 @@ const result = await openSSOPopup("tierslieuxorg");
 ### Composant `SSOLoginButton`
 
 ```tsx
-import SSOLoginButton from "@/components/auth/SSOLoginButton";
+import { SSOLoginButton } from "@/modules/auth";
 
 <SSOLoginButton
   provider="tierslieuxorg"
