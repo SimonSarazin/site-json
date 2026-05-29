@@ -13,12 +13,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-    Dialog,
-    DialogContent,
-    DialogTitle,
-} from "@/components/ui/dialog";
-import LoginForm from "@/components/auth/LoginForm";
+import { AuthModal } from "@/modules/auth";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import { ChevronDown, User, LogOut, Globe, Menu, X } from "lucide-react";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";
@@ -227,15 +222,7 @@ export default function HeaderJuliePotVin({ header }: HeaderJuliePotVinProps) {
                 )}
             </nav>
 
-            <Dialog open={loginDialogOpen} onOpenChange={setLoginDialogOpen}>
-                <DialogContent className="sm:max-w-md bg-background border-border">
-                    <DialogTitle className="sr-only">{t('Se connecter')}</DialogTitle>
-                    <LoginForm
-                        onSuccess={() => setLoginDialogOpen(false)}
-                        hideBackButton={true}
-                    />
-                </DialogContent>
-            </Dialog>
+            <AuthModal open={loginDialogOpen} onOpenChange={setLoginDialogOpen} />
         </>
     )
 }

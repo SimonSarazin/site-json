@@ -6,7 +6,8 @@ import React, {
 
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
-import "@/components/auth/i18n";
+import { useSite } from "@/hooks/useSite";
+import "@/modules/auth/i18n";
 
 import { useCocolight } from "@/hooks/useCocolight";
 import PasswordToggleTextInput from "@/components/form/PasswordToggleTextInput";
@@ -24,7 +25,12 @@ interface RegisterFormState {
   confirmPassword: string;
 }
 
-export default function RegisterForm(): React.ReactNode {
+interface RegisterFormProps {
+  // Mode modal : bascule vers le login interne au lieu de naviguer vers /login.
+  onSwitchToLogin?: () => void;
+}
+
+export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps = {}): React.ReactNode {
   /* ------------------------------------------------------------------- */
   const [formData, setFormData] = useState<RegisterFormState>({
     name: "",
@@ -38,8 +44,12 @@ export default function RegisterForm(): React.ReactNode {
 
   const navigate                     = useNavigate();
   const { userApi, loading, me }     = useCocolight();
-  const { loaded }                   = useLoadNamespace("components/auth");
-  const t                            = useT("components/auth");
+  const { loaded }                   = useLoadNamespace("modules/auth");
+  const t                            = useT("modules/auth");
+  const { config }                   = useSite();
+
+  const registerTitle = config.auth?.register?.title || { fr: "Créer un compte", en: "Create an account" };
+  const registerSubtitle = config.auth?.register?.subtitle || { fr: "Rejoignez SiteForge dès aujourd'hui", en: "Join SiteForge today" };
 
   /* Redirige l’utilisateur déjà connecté ------------------------------- */
   useEffect(() => {
@@ -123,7 +133,8 @@ export default function RegisterForm(): React.ReactNode {
             "Votre compte a été créé avec succès ! Vous pouvez maintenant vous connecter."
           ),
         });
-        navigate("/login");
+        if (onSwitchToLogin) onSwitchToLogin();
+        else navigate("/login");
       } else {
         toast.error(t("Erreur"), {
           description:
@@ -156,17 +167,23 @@ export default function RegisterForm(): React.ReactNode {
   }
 
   return (
-    <div className="w-full space-y-6 p-8 rounded-lg bg-card shadow-lg border">
+    <div className="w-full space-y-6 p-4 rounded-lg bg-card">
       <div className="text-center">
         <h2 className="text-3xl font-bold text-foreground mb-2">
-          {t("Créer un compte")}
+          {t(registerTitle)}
         </h2>
         <p className="text-muted-foreground">
-          {t("Rejoignez SiteForge dès aujourd'hui")}
+          {t(registerSubtitle)}
         </p>
       </div>
 
-      <div className="space-y-4">
+      <form
+        className="space-y-4"
+        onSubmit={(e) => {
+          e.preventDefault();
+          void handleRegister();
+        }}
+      >
         <Input
           type="text"
           placeholder={t("Nom complet")}
@@ -217,7 +234,7 @@ export default function RegisterForm(): React.ReactNode {
 
         <Button
           className="w-full"
-          onClick={handleRegister}
+          type="submit"
           disabled={loadingRegister}
           variant="default"
           size="lg"
@@ -229,22 +246,27 @@ export default function RegisterForm(): React.ReactNode {
 
         <div className="text-center space-y-2">
           <Button
+            type="button"
             variant="ghost"
-            onClick={() => navigate("/login")}
+            onClick={() => (onSwitchToLogin ? onSwitchToLogin() : navigate("/login"))}
             className="text-sm text-muted-foreground hover:text-foreground"
           >
             {t("Déjà un compte ? Se connecter")}
           </Button>
 
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/")}
-            className="text-sm text-muted-foreground hover:text-foreground"
-          >
-            {t("Retour à l'accueil")}
-          </Button>
+          {/* "Retour à l'accueil" : sans objet en modal (la croix ferme). */}
+          {!onSwitchToLogin && (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => navigate("/")}
+              className="text-sm text-muted-foreground hover:text-foreground"
+            >
+              {t("Retour à l'accueil")}
+            </Button>
+          )}
         </div>
-      </div>
+      </form>
     </div>
   );
 }

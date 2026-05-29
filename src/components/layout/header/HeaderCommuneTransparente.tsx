@@ -13,14 +13,9 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-    Dialog,
-    DialogContent,
-    DialogTitle,
-} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";
-import LoginForm from "@/components/auth/LoginForm";
+import { AuthModal } from "@/modules/auth";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
 
 interface HeaderCommuneTransparenteProps {
@@ -263,13 +258,8 @@ export default function HeaderCommuneTransparente({ header }: HeaderCommuneTrans
                 </div>
             )}
 
-            {/* Login dialog */}
-            <Dialog open={loginDialogOpen} onOpenChange={setLoginDialogOpen}>
-                <DialogContent className="max-w-md">
-                    <DialogTitle>{t({ fr: "Se connecter", en: "Sign in" })}</DialogTitle>
-                    <LoginForm onSuccess={() => setLoginDialogOpen(false)} />
-                </DialogContent>
-            </Dialog>
+            {/* Login / inscription / récupération mot de passe */}
+            <AuthModal open={loginDialogOpen} onOpenChange={setLoginDialogOpen} />
         </nav>
     );
 }

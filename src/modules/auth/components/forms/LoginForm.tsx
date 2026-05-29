@@ -6,7 +6,7 @@ import React, {
 
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
-import "@/components/auth/i18n";
+import "@/modules/auth/i18n";
 
 import { useCocolight } from "@/hooks/useCocolight";
 import { useSite } from "@/hooks/useSite";
@@ -14,19 +14,24 @@ import PasswordToggleTextInput from "@/components/form/PasswordToggleTextInput";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { isValidEmail } from "@/helpers/isValidEmail";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
-import SSOLoginButton from "@/components/auth/SSOLoginButton";
+import SSOLoginButton from "./SSOLoginButton";
 
 type RadixCheckboxState = boolean | "indeterminate";
 
 interface LoginFormProps {
   onSuccess?: () => void;
   hideBackButton?: boolean;
+  // Mode modal : bascule interne au lieu de naviguer vers /register et
+  // /recover-password (qui n'existent pas forcément selon la config).
+  onSwitchToRegister?: () => void;
+  onSwitchToRecover?: () => void;
 }
 
-export default function LoginForm({ onSuccess, hideBackButton = false }: LoginFormProps = {}): React.ReactNode {
+export default function LoginForm({ onSuccess, hideBackButton = false, onSwitchToRegister, onSwitchToRecover }: LoginFormProps = {}): React.ReactNode {
   const [email, setEmail]           = useState<string>("");
   const [password, setPassword]     = useState<string>("");
   const [remember, setRemember]     = useState<boolean>(false);
@@ -35,8 +40,8 @@ export default function LoginForm({ onSuccess, hideBackButton = false }: LoginFo
   const navigate                     = useNavigate();
   const { userApi, loading, me, entity }     = useCocolight();
   const { config }                   = useSite();
-  const { loaded }                   = useLoadNamespace("components/auth");
-  const t                            = useT("components/auth");
+  const { loaded }                   = useLoadNamespace("modules/auth");
+  const t                            = useT("modules/auth");
 
   // Récupérer les textes personnalisés depuis config.prod.json
   const loginTitle = config.auth?.login?.title || { fr: "Se connecter", en: "Sign in" };
@@ -118,12 +123,18 @@ export default function LoginForm({ onSuccess, hideBackButton = false }: LoginFo
         <h2 className="text-3xl text-foreground font-bold mb-2">
           {t(loginTitle)}
         </h2>
-        <p className="text-gray-600">
+        <p className="text-muted-foreground">
           {t(loginSubtitle)}
         </p>
       </div>
 
-      <div className="space-y-4">
+      <form
+        className="space-y-4"
+        onSubmit={(e) => {
+          e.preventDefault();
+          void handleLogin();
+        }}
+      >
         <Input
           type="email"
           placeholder={t("Adresse e-mail")}
@@ -135,6 +146,7 @@ export default function LoginForm({ onSuccess, hideBackButton = false }: LoginFo
         />
 
         <PasswordToggleTextInput
+          placeholder={t("Mot de passe")}
           value={password}
           onChange={(e: ChangeEvent<HTMLInputElement>) =>
             setPassword(e.target.value)
@@ -151,17 +163,17 @@ export default function LoginForm({ onSuccess, hideBackButton = false }: LoginFo
               setRemember(Boolean(checked))
             }
           />
-          <label
+          <Label
             htmlFor="remember"
             className="text-sm text-muted-foreground"
           >
             {t("Se souvenir de moi")}
-          </label>
+          </Label>
         </div>
 
         <Button
           className="w-full"
-          onClick={handleLogin}
+          type="submit"
           disabled={loadingLogin}
           variant="default"
           size="lg"
@@ -193,8 +205,9 @@ export default function LoginForm({ onSuccess, hideBackButton = false }: LoginFo
 
         <div className="text-center space-y-2">
           <Button
+            type="button"
             variant="ghost"
-            onClick={() => navigate("/recover-password")}
+            onClick={() => (onSwitchToRecover ? onSwitchToRecover() : navigate("/recover-password"))}
             className="text-sm text-primary hover:text-primary/80"
           >
             {t("Mot de passe oublié ?")}
@@ -203,8 +216,9 @@ export default function LoginForm({ onSuccess, hideBackButton = false }: LoginFo
           <div className="text-sm text-muted-foreground">
             {t("Pas encore de compte ?")} {" "}
             <Button
+              type="button"
               variant="ghost"
-              onClick={() => navigate("/register")}
+              onClick={() => (onSwitchToRegister ? onSwitchToRegister() : navigate("/register"))}
               className="text-primary hover:text-primary/80 p-0 h-auto font-normal"
             >
               {t("S'inscrire")}
@@ -213,6 +227,7 @@ export default function LoginForm({ onSuccess, hideBackButton = false }: LoginFo
 
           {!hideBackButton && (
             <Button
+              type="button"
               variant="ghost"
               onClick={() => navigate("/")}
               className="text-sm text-muted-foreground hover:text-foreground"
@@ -221,7 +236,7 @@ export default function LoginForm({ onSuccess, hideBackButton = false }: LoginFo
             </Button>
           )}
         </div>
-      </div>
+      </form>
     </div>
   );
 }

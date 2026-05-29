@@ -1766,6 +1766,9 @@
     "customCSS": ""
   },
   "auth": {
+    "variant": "default",
+    "hideHeader": false,
+    "hideFooter": false,
     "login": {
       "title": {
         "fr": "Se connecter",
@@ -1774,6 +1777,26 @@
       "subtitle": {
         "fr": "Accédez à votre réseau des tiers-lieux",
         "en": "Access your third places network"
+      }
+    },
+    "register": {
+      "title": {
+        "fr": "Créer un compte",
+        "en": "Create an account"
+      },
+      "subtitle": {
+        "fr": "Rejoignez le réseau des tiers-lieux",
+        "en": "Join the third places network"
+      }
+    },
+    "recover": {
+      "title": {
+        "fr": "Mot de passe oublié",
+        "en": "Forgot password"
+      },
+      "subtitle": {
+        "fr": "Saisissez votre adresse e-mail pour recevoir un lien de réinitialisation",
+        "en": "Enter your email to receive a reset link"
       }
     }
   },

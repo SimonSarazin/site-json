@@ -1,5 +1,5 @@
-import { RecoverPasswordFormSectionProps } from "@/types/site-schema";
-import RecoverPasswordForm from "../auth/RecoverPasswordForm";
+import { RecoverPasswordFormSectionProps } from "../schema";
+import RecoverPasswordForm from "../components/forms/RecoverPasswordForm";
 
  
 export function RecoverPasswordFormSection({ id }: { id?: string; props: RecoverPasswordFormSectionProps }) {

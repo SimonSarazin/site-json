@@ -3,7 +3,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { useSSOAuth } from "@/hooks/useSSOAuth";
+import { useSSOAuth } from "@/modules/auth/hooks/useSSOAuth";
 import { getBaseUrl } from "@/lib/constant/common";
 
 interface SSOLoginButtonProps {
@@ -43,6 +43,7 @@ export default function SSOLoginButton({
 
   return (
     <Button
+      type="button"
       variant="outline"
       onClick={handleClick}
       disabled={loading}

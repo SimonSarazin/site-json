@@ -24,13 +24,8 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-    Dialog,
-    DialogContent,
-    DialogTitle,
-} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import LoginForm from "@/components/auth/LoginForm";
+import { AuthModal } from "@/modules/auth";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
@@ -399,15 +394,7 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                 )}
             </nav>
 
-            <Dialog open={loginDialogOpen} onOpenChange={setLoginDialogOpen}>
-                <DialogContent className="sm:max-w-md bg-card border-border">
-                    <DialogTitle className="sr-only">{t('Se connecter')}</DialogTitle>
-                    <LoginForm
-                        onSuccess={() => setLoginDialogOpen(false)}
-                        hideBackButton={true}
-                    />
-                </DialogContent>
-            </Dialog>
+            <AuthModal open={loginDialogOpen} onOpenChange={setLoginDialogOpen} />
         </header>
     );
 }

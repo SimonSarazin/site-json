@@ -254,33 +254,6 @@
                     }
                 }
             ]
-        },
-        {
-            "path": "/login",
-            "title": {
-                "fr": "Connexion - Meeteem",
-                "en": "Login - Meeteem"
-            },
-            "seo": {
-                "title": {
-                    "fr": "Connexion - Meeteem"
-                },
-                "description": {
-                    "fr": "Bienvenue sur la page d'accueil de Meeteem, votre plateforme de co-construction."
-                },
-                "keywords": [],
-                "ogImage": "",
-                "noIndex": false,
-                "noFollow": false
-            },
-            "layout": "fullwidth",
-            "sections": [
-                {
-                    "type": "loginForm",
-                    "id": "login-form-section",
-                    "props": {}
-                }
-            ]
         }
     ],
     "footer": {

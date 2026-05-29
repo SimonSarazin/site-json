@@ -2,12 +2,12 @@ import React, {
   useState,
   useEffect,
   type ChangeEvent,
-  type KeyboardEvent,
 } from "react";
 
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
-import "@/components/auth/i18n";
+import { useSite } from "@/hooks/useSite";
+import "@/modules/auth/i18n";
 
 import { useCocolight } from "@/hooks/useCocolight";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,12 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router";
 import { CheckCircle, ArrowLeft } from "lucide-react";
 
-export default function RecoverPasswordForm(): React.ReactNode {
+interface RecoverPasswordFormProps {
+  // Mode modal : bascule vers le login interne au lieu de naviguer vers /login.
+  onSwitchToLogin?: () => void;
+}
+
+export default function RecoverPasswordForm({ onSwitchToLogin }: RecoverPasswordFormProps = {}): React.ReactNode {
   /* ------------------------------------------------------------------- */
   const [email, setEmail]           = useState<string>("");
   const [loadingRecover, setLoad]   = useState<boolean>(false);
@@ -26,8 +31,12 @@ export default function RecoverPasswordForm(): React.ReactNode {
   const navigate                     = useNavigate();
   const { userApi, loading, me }     = useCocolight();
   
-  const { loaded }                   = useLoadNamespace("components/auth");
-  const t                            = useT("components/auth");
+  const { loaded }                   = useLoadNamespace("modules/auth");
+  const t                            = useT("modules/auth");
+  const { config }                   = useSite();
+
+  const recoverTitle = config.auth?.recover?.title || { fr: "Mot de passe oublié", en: "Forgot password" };
+  const recoverSubtitle = config.auth?.recover?.subtitle || { fr: "Saisissez votre adresse e-mail pour recevoir un lien de réinitialisation", en: "Enter your email to receive a reset link" };
 
   /* Redirige si l’utilisateur est déjà connecté ------------------------ */
   useEffect(() => {
@@ -108,7 +117,7 @@ export default function RecoverPasswordForm(): React.ReactNode {
 
   if (emailSent) {
     return (
-      <div className="w-full space-y-6 p-8 rounded-lg bg-card shadow-lg border">
+      <div className="w-full space-y-6 p-4 rounded-lg bg-card">
         <div className="text-center">
           <div className="mx-auto w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mb-4">
             <CheckCircle className="w-8 h-8 text-success" />
@@ -128,7 +137,7 @@ export default function RecoverPasswordForm(): React.ReactNode {
         <div className="space-y-3">
           <Button
             className="w-full"
-            onClick={() => navigate("/login")}
+            onClick={() => (onSwitchToLogin ? onSwitchToLogin() : navigate("/login"))}
             variant="default"
             size="lg"
           >
@@ -153,17 +162,23 @@ export default function RecoverPasswordForm(): React.ReactNode {
 
   /* ------------------------------------------------------------------- */
   return (
-    <div className="w-full space-y-6 p-8 rounded-lg bg-card shadow-lg border">
+    <div className="w-full space-y-6 p-4 rounded-lg bg-card">
       <div className="text-center">
         <h2 className="text-3xl font-bold text-foreground mb-2">
-          {t("Mot de passe oublié")}
+          {t(recoverTitle)}
         </h2>
         <p className="text-muted-foreground">
-          {t("Saisissez votre adresse e-mail pour recevoir un lien de réinitialisation")}
+          {t(recoverSubtitle)}
         </p>
       </div>
 
-      <div className="space-y-4">
+      <form
+        className="space-y-4"
+        onSubmit={(e) => {
+          e.preventDefault();
+          void handleRecoverPassword();
+        }}
+      >
         <Input
           type="email"
           placeholder={t("Adresse e-mail")}
@@ -172,14 +187,11 @@ export default function RecoverPasswordForm(): React.ReactNode {
             setEmail(e.target.value)
           }
           className="h-12"
-          onKeyPress={(e: KeyboardEvent<HTMLInputElement>) => {
-            if (e.key === "Enter") handleRecoverPassword();
-          }}
         />
 
         <Button
           className="w-full"
-          onClick={handleRecoverPassword}
+          type="submit"
           disabled={loadingRecover}
           variant="default"
           size="lg"
@@ -191,23 +203,28 @@ export default function RecoverPasswordForm(): React.ReactNode {
 
         <div className="text-center space-y-2">
           <Button
+            type="button"
             variant="ghost"
-            onClick={() => navigate("/login")}
+            onClick={() => (onSwitchToLogin ? onSwitchToLogin() : navigate("/login"))}
             className="text-sm text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             {t("Retour à la connexion")}
           </Button>
 
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/")}
-            className="text-sm text-muted-foreground hover:text-foreground"
-          >
-            {t("Retour à l'accueil")}
-          </Button>
+          {/* "Retour à l'accueil" : sans objet en modal (la croix ferme). */}
+          {!onSwitchToLogin && (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => navigate("/")}
+              className="text-sm text-muted-foreground hover:text-foreground"
+            >
+              {t("Retour à l'accueil")}
+            </Button>
+          )}
         </div>
-      </div>
+      </form>
     </div>
   );
 }

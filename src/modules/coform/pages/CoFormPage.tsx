@@ -5,7 +5,7 @@ import { SiteFooter } from "@/components/layout/SiteFooter";
 import { AlertCircle, Home, Info, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import LoginForm from "@/components/auth/LoginForm";
+import { LoginForm } from "@/modules/auth";
 import { SmartCoForm } from "../components/SmartCoForm";
 import { CoFormAccessGuard } from "../components/CoFormAccessGuard";
 import { CoFormAnswerPicker } from "../components/CoFormAnswerPicker";

@@ -1,5 +1,5 @@
-import { RegisterFormSectionProps } from "@/types/site-schema";
-import RegisterForm from "../auth/RegisterForm";
+import { RegisterFormSectionProps } from "../schema";
+import RegisterForm from "../components/forms/RegisterForm";
 
  
 export function RegisterFormSection({ id }: { id?: string; props: RegisterFormSectionProps }) {

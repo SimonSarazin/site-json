@@ -1,5 +1,5 @@
-import { LoginFormSectionProps } from "@/types/site-schema";
-import LoginForm from "../auth/LoginForm";
+import { LoginFormSectionProps } from "../schema";
+import LoginForm from "../components/forms/LoginForm";
 
  
 export function LoginFormSection({ id }: { id?: string; props: LoginFormSectionProps }) {

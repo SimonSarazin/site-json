@@ -1241,38 +1241,8 @@ export type NewsletterSection = z.infer<typeof NewsletterSectionSchema>;
 
 export type NewsletterSectionProps = z.infer<typeof NewsletterSectionSchema>["props"];
 
-//──────────────── Login Form
-const LoginFormSectionSchema = z.object({
-  type: z.literal("loginForm"),
-  id: z.string().optional(),
-  props: z.object({}),
-});
-
-export type LoginFormSection = z.infer<typeof LoginFormSectionSchema>;
-
-export type LoginFormSectionProps = z.infer<typeof LoginFormSectionSchema>["props"];
-
-//──────────────── Register Form
-const RegisterFormSectionSchema = z.object({
-  type: z.literal("registerForm"),
-  id: z.string().optional(),
-  props: z.object({}),
-});
-
-export type RegisterFormSection = z.infer<typeof RegisterFormSectionSchema>;
-
-export type RegisterFormSectionProps = z.infer<typeof RegisterFormSectionSchema>["props"];
-
-//──────────────── Recover Password Form
-const RecoverPasswordFormSectionSchema = z.object({
-  type: z.literal("recoverPasswordForm"),
-  id: z.string().optional(),
-  props: z.object({}),
-});
-
-export type RecoverPasswordFormSection = z.infer<typeof RecoverPasswordFormSectionSchema>;
-
-export type RecoverPasswordFormSectionProps = z.infer<typeof RecoverPasswordFormSectionSchema>["props"];
+// Sections auth (loginForm / registerForm / recoverPasswordForm) : schémas
+// déplacés dans `@/modules/auth/schema` (importés + ré-exportés plus haut).
 
 const HTMLSectionSchema = z.object({
   type: z.literal("html"),
@@ -1399,6 +1369,12 @@ import {
   CagnotteLayoutSectionSchema,
 } from "@/modules/cagnotte/schema";
 import { CoFormSectionSchema } from "@/modules/coform/schema";
+import {
+  LoginFormSectionSchema,
+  RegisterFormSectionSchema,
+  RecoverPasswordFormSectionSchema,
+  AuthConfigSchema,
+} from "@/modules/auth/schema";
 
 // Re-exports pour la backward-compat (les consommateurs peuvent continuer à
 // importer depuis `@/types/site-schema`, mais l'origine est `@/modules/cagnotte/schema`).
@@ -1423,6 +1399,19 @@ export type {
   CagnotteLayoutSectionProps,
 } from "@/modules/cagnotte/schema";
 export type { CoFormSection } from "@/modules/coform/schema";
+export {
+  LoginFormSectionSchema,
+  RegisterFormSectionSchema,
+  RecoverPasswordFormSectionSchema,
+};
+export type {
+  LoginFormSection,
+  LoginFormSectionProps,
+  RegisterFormSection,
+  RegisterFormSectionProps,
+  RecoverPasswordFormSection,
+  RecoverPasswordFormSectionProps,
+} from "@/modules/auth/schema";
 
 //───────────────────────────────────────────────────────────────
 // Union de toutes les sections
@@ -1923,16 +1912,7 @@ export const SiteConfig = z.object({
     message: LocalizedString.optional(),
     allowedIPs: z.array(z.string()).optional(),
   }).optional(),
-  auth: z.object({
-    login: z.object({
-      title: LocalizedString.optional(),
-      subtitle: LocalizedString.optional(),
-    }).optional(),
-    register: z.object({
-      title: LocalizedString.optional(),
-      subtitle: LocalizedString.optional(),
-    }).optional(),
-  }).optional(),
+  auth: AuthConfigSchema.optional(),
   costum: z.object({
     slug: z.string(),
     id: z.string(),
