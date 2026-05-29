@@ -1,0 +1,852 @@
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import type { EntityTypes } from "@communecter/cocolight-api-client";
+import { Loader2 } from "lucide-react";
+import type { FieldPath, FieldValues, Resolver, UseFormReturn } from "react-hook-form";
+import { useT } from "@/hooks/useT";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+	DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { SelectObject } from "@/components/ui/select-objet";
+import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
+import { addPoiSchema, type AddPoiFormData } from "../../schemaForm";
+import { useAddPoi } from "../../hooks/useAddMutations";
+import { TranslatedFormMessage } from "../profile-edit/fields/TranslatedFormMessage";
+import { EditLocationTab } from "../profile-edit/EditLocationTab";
+import { FormFieldName, FormFieldTags, ParentInfoReadonly } from "../profile-edit/fields";
+import { useCocolight } from "@/hooks/useCocolight";
+
+const STEP_ORDER = ["general", "legal", "structure", "usage"] as const;
+type StepKey = (typeof STEP_ORDER)[number];
+
+const STEP_TITLES: Record<StepKey, string> = {
+	general: "Informations generales",
+	legal: "Caracteristiques juridiques",
+	structure: "Caracteristiques structurantes",
+	usage: "Caracteristiques d'usages",
+};
+
+const EQUIP_UTILISATEUR_OPTIONS = [
+	"Individuel(s)",
+	"famille(s)",
+	"Scolaires",
+	"universites",
+	"Clubs sportifs",
+	"comites",
+	"ligues",
+	"federations",
+	"Autre - association(s) et groupes divers",
+];
+
+const EQUIP_LOC_TYPE_OPTIONS = [
+	"Reception / Accueil",
+	"Bureau(x) Club(s)",
+	"Buvette",
+	"Club(s) house",
+	"Infirmerie",
+	"Local de rangement",
+	"Salle(s) de reunion / cours",
+	"Centre medico-sportif",
+	"Local controle anti-dopage",
+	"Autre",
+];
+
+const PSHS_FIELDS = [
+	{ name: "equip_pshs_aire", label: "Aire de jeu" },
+	{ name: "equip_pshs_sanit", label: "Sanitaires" },
+	{ name: "equip_pshs_trib", label: "Tribunes" },
+	{ name: "equip_pshs_sign", label: "Accueil / Signaletique" },
+	{ name: "equip_pshs_vest", label: "Vestiaires" },
+	{ name: "equip_pshs_chem", label: "Cheminements" },
+] as const;
+
+const SearchableSelect = SelectObject;
+
+const toggleArrayValue = (values: string[] | undefined, value: string) => {
+	const current = Array.isArray(values) ? values : [];
+	return current.includes(value)
+		? current.filter((item) => item !== value)
+		: [...current, value];
+};
+
+interface AddPoiEquipementModalProps {
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
+	parent?: EntityTypes | null;
+}
+
+function isFilled(value: unknown): boolean {
+	return typeof value === "string" ? value.trim().length > 0 : !!value;
+}
+
+export function AddPoiEquipementModal({
+	open,
+	onOpenChange,
+	parent,
+}: AddPoiEquipementModalProps) {
+	const t = useT("modules/profil");
+	const addMutation = useAddPoi(parent);
+	const { entity } = useCocolight();
+	const [activeStep, setActiveStep] = useState<StepKey>("general");
+	const [stepAttempted, setStepAttempted] = useState<Record<StepKey, boolean>>({
+		general: false,
+		legal: false,
+		structure: false,
+		usage: false,
+	});
+
+	const serverLists = entity?.serverData?.lists as
+		| Partial<
+			Record<
+				| "equip_type_name"
+				| "equip_type_famille"
+				| "equip_prop_type"
+				| "equip_nature"
+				| "equip_sol"
+				| "categorie",
+				unknown
+			>
+		>
+		| undefined;
+
+	const getListOptions = (
+		field:
+			| "equip_type_name"
+			| "equip_type_famille"
+			| "equip_prop_type"
+			| "equip_nature"
+			| "equip_sol"
+			| "categorie"
+	) => {
+		const values = serverLists?.[field];
+		if (!Array.isArray(values)) {
+			return [] as string[];
+		}
+		return values.filter((value): value is string => typeof value === "string");
+	};
+
+	const form = useForm<AddPoiFormData>({
+		resolver: zodResolver(addPoiSchema) as Resolver<AddPoiFormData>,
+		defaultValues: {
+			name: "",
+			type: "recoveryCenter",
+			description: "",
+			tags: [],
+			urls: [],
+			addressCountry: "RE",
+			addressLocality: "",
+			localityId: "",
+			postalCode: "",
+			streetAddress: "",
+			inst_acc_handi_bool: false,
+			inst_trans_bool: false,
+			equip_type_name: "",
+			equip_type_famille: "",
+			inst_date_creation: "",
+			inst_enqu_date: "",
+			equip_maj_date: "",
+			equip_nature: "",
+			equip_sol: "",
+			equip_surf: "",
+			equip_eclair: false,
+			categorie: "",
+			aps_name: [],
+			equip_acc_libre: false,
+			inst_acc_handi_type: "",
+			inst_trans_type: "",
+			inst_part_bool: false,
+			inst_part_type: [],
+			equip_prop_nom: "",
+			equip_prop_type: "",
+			equip_gest_type: "",
+			equip_pmr_acc: false,
+			equip_pmr_chem: false,
+			equip_pmr_douche: false,
+			equip_pmr_sanit: false,
+			equip_pmr_trib: false,
+			equip_pmr_vest: false,
+			equip_pshs_aire: false,
+			equip_pshs_chem: false,
+			equip_pshs_sanit: false,
+			equip_pshs_trib: false,
+			equip_pshs_vest: false,
+			equip_pshs_sign: false,
+			equip_larg: "",
+			equip_long: "",
+			equip_douche: false,
+			equip_loc_type: [],
+			equip_utilisateur: [],
+		},
+	});
+
+	const equipLong = form.watch("equip_long");
+	const equipLarg = form.watch("equip_larg");
+	const equipSurf = form.watch("equip_surf");
+	const instPartBool = form.watch("inst_part_bool");
+	const equipPmrAcc = form.watch("equip_pmr_acc");
+	const [
+		name,
+		equipTypeName,
+		addressCountry,
+		addressLocality,
+		postalCode,
+		streetAddress,
+		apsName,
+	] = form.watch([
+		"name",
+		"equip_type_name",
+		"addressCountry",
+		"addressLocality",
+		"postalCode",
+		"streetAddress",
+		"aps_name",
+	]);
+
+	const isGeneralStepIncomplete =
+		!isFilled(name) ||
+		!isFilled(equipTypeName) ||
+		!isFilled(addressCountry) ||
+		!isFilled(addressLocality) ||
+		!isFilled(postalCode) ||
+		!isFilled(streetAddress);
+	const isUsageStepIncomplete = !Array.isArray(apsName) || apsName.length === 0;
+	const stepHasMissingRequired = (step: StepKey) => {
+		switch (step) {
+			case "general":
+				return stepAttempted.general && isGeneralStepIncomplete;
+			case "usage":
+				return stepAttempted.usage && isUsageStepIncomplete;
+			default:
+				return false;
+		}
+	};
+
+	useEffect(() => {
+		const length = Number.parseFloat(equipLong || "");
+		const width = Number.parseFloat(equipLarg || "");
+
+		if (!Number.isFinite(length) || !Number.isFinite(width)) {
+			if (equipSurf !== "") {
+				form.setValue("equip_surf", "", { shouldDirty: true });
+			}
+			return;
+		}
+
+		const computed = String(length * width);
+		if (computed !== equipSurf) {
+			form.setValue("equip_surf", computed, { shouldDirty: true });
+		}
+	}, [equipLong, equipLarg, equipSurf, form]);
+
+	const handleClose = () => {
+		form.reset();
+		setActiveStep("general");
+		onOpenChange(false);
+	};
+
+	const handleSubmit = async (data: AddPoiFormData) => {
+		try {
+			await addMutation.mutateAsync(data);
+			form.reset();
+			setActiveStep("general");
+			onOpenChange(false);
+		} catch {
+			// Error handling is done in the mutation
+		}
+	};
+
+	const handleFinalSubmit = async (data: AddPoiFormData) => {
+		if (activeStep !== "usage") return;
+
+		setStepAttempted((prev) => ({ ...prev, usage: true }));
+
+		form.clearErrors();
+
+		const requiredAddressFields = ["addressCountry", "addressLocality", "postalCode", "streetAddress"] as const;
+		for (const fieldName of requiredAddressFields) {
+			if (!isFilled(data[fieldName])) {
+				form.setError(fieldName, { message: "validation.required" });
+				setActiveStep("general");
+				return;
+			}
+		}
+
+		await handleSubmit(data);
+	};
+
+	const onFormSubmit = form.handleSubmit(handleFinalSubmit);
+
+	const handleNext = async () => {
+		setStepAttempted((prev) => ({ ...prev, [activeStep]: true }));
+
+		const isValid = await form.trigger();
+		if (!isValid) return;
+
+		if (activeStep === "general") {
+			const requiredAddressFields = ["addressCountry", "addressLocality", "postalCode", "streetAddress"] as const;
+			for (const fieldName of requiredAddressFields) {
+				if (!isFilled(form.getValues(fieldName))) {
+					form.setError(fieldName, { message: "validation.required" });
+					return;
+				}
+			}
+		}
+
+		const currentIndex = STEP_ORDER.indexOf(activeStep);
+		const nextStep = STEP_ORDER[currentIndex + 1];
+		if (nextStep) {
+			setStepAttempted((prev) => ({ ...prev, [activeStep]: false }));
+			setActiveStep(nextStep);
+		}
+	};
+
+	const handlePrevious = () => {
+		const currentIndex = STEP_ORDER.indexOf(activeStep);
+		const previousStep = STEP_ORDER[currentIndex - 1];
+		if (previousStep) {
+			setActiveStep(previousStep);
+		}
+	};
+
+	const activeStepIndex = STEP_ORDER.indexOf(activeStep);
+	const canSubmit = activeStep === "usage";
+
+	return (
+		<Dialog open={open} onOpenChange={handleClose}>
+			<DialogContent className="sm:max-w-[840px] max-h-[90vh] flex flex-col">
+				<DialogHeader>
+					<DialogTitle>Ajouter un equipement</DialogTitle>
+					<DialogDescription>Completer les informations de l'equipement.</DialogDescription>
+				</DialogHeader>
+
+				<Form {...form}>
+					<form
+						onSubmit={(event) => {
+							if (activeStep !== "usage") {
+								event.preventDefault();
+								return;
+							}
+
+							void onFormSubmit(event);
+						}}
+						className="flex-1 flex flex-col min-h-0"
+					>
+						<div className="flex items-center justify-between gap-4 rounded-lg border border-border/60 bg-background/60 px-4 py-3">
+							<div>
+								<div className="text-xs uppercase tracking-wide text-muted-foreground">
+									Étape {activeStepIndex + 1} / {STEP_ORDER.length}
+								</div>
+								<div className="text-sm font-medium text-foreground">{STEP_TITLES[activeStep]}</div>
+							</div>
+							<div className="flex flex-wrap items-center justify-end gap-2">
+								{STEP_ORDER.map((step, index) => (
+									<Button
+										key={step}
+										type="button"
+										variant={step === activeStep ? "default" : "outline"}
+										size="sm"
+										className={step === activeStep ? "relative h-8 rounded-full px-3" : "relative h-8 w-8 rounded-full p-0"}
+										onClick={() => setActiveStep(step)}
+										aria-label={`Étape ${index + 1}`}
+									>
+										<span className="text-xs font-semibold">{index + 1}</span>
+										{step === activeStep && <span className="ml-2 text-xs font-medium">{STEP_TITLES[step]}</span>}
+										{stepHasMissingRequired(step) && (
+											<span
+												className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-destructive"
+												aria-hidden="true"
+											/>
+										)}
+									</Button>
+								))}
+							</div>
+						</div>
+						<div className="mt-4 flex-1 overflow-y-auto pr-4 space-y-6">
+							{activeStep === "general" && (
+								<div className="space-y-4">
+									<ParentInfoReadonly parent={parent} />
+									<FormFieldName control={form.control} required showDescription />
+
+									<div className="grid gap-4 sm:grid-cols-2">
+										<FormField
+											control={form.control}
+											name="equip_type_name"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>Type de l'equipement *</FormLabel>
+													<SearchableSelect
+														value={typeof field.value === "string" ? field.value : ""}
+														onChange={(value) => field.onChange(typeof value === "string" ? value : "")}
+														options={getListOptions("equip_type_name").map((option) => ({ id: option, label: option, value: option }))}
+														placeholder="Selectionner un type"
+														placeholderSearch="Rechercher un type"
+													/>
+													<TranslatedFormMessage />
+												</FormItem>
+											)}
+										/>
+
+										<FormField
+											control={form.control}
+											name="equip_type_famille"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>Famille d'equipement</FormLabel>
+													<SearchableSelect
+														value={typeof field.value === "string" ? field.value : ""}
+														onChange={(value) => field.onChange(typeof value === "string" ? value : "")}
+														options={getListOptions("equip_type_famille").map((option) => ({ id: option, label: option, value: option }))}
+														placeholder="Selectionner une famille"
+														placeholderSearch="Rechercher une famille"
+													/>
+													<TranslatedFormMessage />
+												</FormItem>
+											)}
+										/>
+									</div>
+
+									<div className="rounded-xl border border-border/60 bg-background/40 p-4 space-y-4">
+										<div className="text-sm font-medium">Adresse *</div>
+										<EditLocationTab form={form as unknown as UseFormReturn<FieldValues>} />
+									</div>
+								</div>
+							)}
+
+							{activeStep === "legal" && (
+								<div className="space-y-4">
+									<div className="grid gap-4 sm:grid-cols-2">
+										<FormField
+											control={form.control}
+											name="equip_prop_nom"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>Nom du proprietaire</FormLabel>
+													<FormControl>
+														<Input value={typeof field.value === "string" ? field.value : ""} onChange={field.onChange} onBlur={field.onBlur} ref={field.ref} name={field.name} />
+													</FormControl>
+													<TranslatedFormMessage />
+												</FormItem>
+											)}
+										/>
+
+										<FormField
+											control={form.control}
+											name="equip_prop_type"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>Type de proprietaire</FormLabel>
+													<SearchableSelect
+														value={typeof field.value === "string" ? field.value : ""}
+														onChange={(value) => field.onChange(typeof value === "string" ? value : "")}
+														options={getListOptions("equip_prop_type").map((option) => ({ id: option, label: option, value: option }))}
+														placeholder="Selectionner un type"
+														placeholderSearch="Rechercher un type"
+													/>
+													<TranslatedFormMessage />
+												</FormItem>
+											)}
+										/>
+									</div>
+
+									<div className="grid gap-4 sm:grid-cols-3">
+										<FormField
+											control={form.control}
+											name="inst_date_creation"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>Date de creation</FormLabel>
+													<FormControl>
+														<Input type="date" value={typeof field.value === "string" ? field.value : ""} onChange={field.onChange} onBlur={field.onBlur} ref={field.ref} name={field.name} />
+													</FormControl>
+													<TranslatedFormMessage />
+												</FormItem>
+											)}
+										/>
+
+										<FormField
+											control={form.control}
+											name="inst_enqu_date"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>Date d'enquete</FormLabel>
+													<FormControl>
+														<Input type="date" value={typeof field.value === "string" ? field.value : ""} onChange={field.onChange} onBlur={field.onBlur} ref={field.ref} name={field.name} />
+													</FormControl>
+													<TranslatedFormMessage />
+												</FormItem>
+											)}
+										/>
+
+										<FormField
+											control={form.control}
+											name="equip_maj_date"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>Date de mise a jour</FormLabel>
+													<FormControl>
+														<Input type="date" value={typeof field.value === "string" ? field.value : ""} onChange={field.onChange} onBlur={field.onBlur} ref={field.ref} name={field.name} />
+													</FormControl>
+													<TranslatedFormMessage />
+												</FormItem>
+											)}
+										/>
+									</div>
+
+									<FormField
+										control={form.control}
+										name="categorie"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>Categorie</FormLabel>
+												<FormControl>
+													<Input value={typeof field.value === "string" ? field.value : ""} onChange={field.onChange} onBlur={field.onBlur} ref={field.ref} name={field.name} />
+												</FormControl>
+												<TranslatedFormMessage />
+											</FormItem>
+										)}
+									/>
+
+									<FormField
+										control={form.control}
+										name="equip_gest_type"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>Type de gestionnaire</FormLabel>
+												<FormControl>
+													<Input value={typeof field.value === "string" ? field.value : ""} onChange={field.onChange} onBlur={field.onBlur} ref={field.ref} name={field.name} />
+												</FormControl>
+												<TranslatedFormMessage />
+											</FormItem>
+										)}
+									/>
+
+									<FormField
+										control={form.control}
+										name="inst_part_bool"
+										render={({ field }) => (
+											<FormItem className="flex items-center justify-between rounded-lg border border-border px-3 py-2">
+												<FormLabel className="m-0">Partenariat disponible</FormLabel>
+												<FormControl>
+													<Switch checked={Boolean(field.value)} onCheckedChange={field.onChange} />
+												</FormControl>
+											</FormItem>
+										)}
+									/>
+
+									{instPartBool && (
+										<FormField
+											control={form.control}
+											name="inst_part_type"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>Type de partenariat</FormLabel>
+													<FormControl>
+														<Input
+															value={Array.isArray(field.value) ? field.value.join(", ") : ""}
+															onChange={(event) => {
+																const next = event.target.value
+																	.split(",")
+																	.map((item) => item.trim())
+																	.filter((item) => item.length > 0);
+															field.onChange(next);
+															}}
+															placeholder="Séparer les valeurs par une virgule"
+														/>
+													</FormControl>
+													<TranslatedFormMessage />
+												</FormItem>
+											)}
+										/>
+									)}
+								</div>
+							)}
+
+							{activeStep === "structure" && (
+								<div className="space-y-6">
+                                    <div className="grid gap-4 sm:grid-cols-2">
+										<FormField
+											control={form.control}
+											name="equip_nature"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>Nature de l'equipement</FormLabel>
+													<SearchableSelect
+														value={typeof field.value === "string" ? field.value : ""}
+														onChange={(value) => field.onChange(typeof value === "string" ? value : "")}
+														options={getListOptions("equip_nature").map((option) => ({ id: option, label: option, value: option }))}
+														placeholder="Selectionner une nature"
+														placeholderSearch="Rechercher un type"
+													/>
+													<TranslatedFormMessage />
+												</FormItem>
+											)}
+										/>
+
+										<FormField
+											control={form.control}
+											name="equip_sol"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>Type de sol</FormLabel>
+													<SearchableSelect
+														value={typeof field.value === "string" ? field.value : ""}
+														onChange={(value) => field.onChange(typeof value === "string" ? value : "")}
+														options={getListOptions("equip_sol").map((option) => ({ id: option, label: option, value: option }))}
+														placeholder="Selectionner un type de sol"
+														placeholderSearch="Rechercher un type"
+													/>
+													<TranslatedFormMessage />
+												</FormItem>
+											)}
+										/>
+									</div>
+
+									<div className="grid gap-4 sm:grid-cols-3">
+										<FormField control={form.control} name="equip_long" render={({ field }) => (
+											<FormItem>
+												<FormLabel>Longueur</FormLabel>
+												<FormControl><Input value={typeof field.value === "string" ? field.value : ""} onChange={field.onChange} onBlur={field.onBlur} ref={field.ref} name={field.name} /></FormControl>
+												<TranslatedFormMessage />
+											</FormItem>
+										)} />
+										<FormField control={form.control} name="equip_larg" render={({ field }) => (
+											<FormItem>
+												<FormLabel>Largeur</FormLabel>
+												<FormControl><Input value={typeof field.value === "string" ? field.value : ""} onChange={field.onChange} onBlur={field.onBlur} ref={field.ref} name={field.name} /></FormControl>
+												<TranslatedFormMessage />
+											</FormItem>
+										)} />
+										<FormField control={form.control} name="equip_surf" render={({ field }) => (
+											<FormItem>
+												<FormLabel>Surface (calculee)</FormLabel>
+												<FormControl><Input value={typeof field.value === "string" ? field.value : ""} onChange={field.onChange} onBlur={field.onBlur} ref={field.ref} name={field.name} /></FormControl>
+												<TranslatedFormMessage />
+											</FormItem>
+										)} />
+									</div>
+
+									<div className="grid gap-4 sm:grid-cols-2">
+										<FormField control={form.control} name="inst_acc_handi_type" render={({ field }) => (
+											<FormItem>
+												<FormLabel>Type de handicap pris en charge</FormLabel>
+												<FormControl><Input value={typeof field.value === "string" ? field.value : ""} onChange={field.onChange} onBlur={field.onBlur} ref={field.ref} name={field.name} /></FormControl>
+												<TranslatedFormMessage />
+											</FormItem>
+										)} />
+										<FormField control={form.control} name="inst_trans_type" render={({ field }) => (
+											<FormItem>
+												<FormLabel>Moyen de transport disponible</FormLabel>
+												<FormControl><Input value={typeof field.value === "string" ? field.value : ""} onChange={field.onChange} onBlur={field.onBlur} ref={field.ref} name={field.name} /></FormControl>
+												<TranslatedFormMessage />
+											</FormItem>
+										)} />
+									</div>
+
+									<div className="grid gap-3 sm:grid-cols-2">
+										<FormField control={form.control} name="inst_acc_handi_bool" render={({ field }) => (
+											<FormItem className="flex items-center justify-between rounded-lg border border-border px-3 py-2">
+												<FormLabel className="m-0">Accessible aux personnes en situation de handicap</FormLabel>
+												<FormControl><Switch checked={Boolean(field.value)} onCheckedChange={field.onChange} /></FormControl>
+											</FormItem>
+										)} />
+										<FormField control={form.control} name="inst_trans_bool" render={({ field }) => (
+											<FormItem className="flex items-center justify-between rounded-lg border border-border px-3 py-2">
+												<FormLabel className="m-0">Accessible en transport en commun</FormLabel>
+												<FormControl><Switch checked={Boolean(field.value)} onCheckedChange={field.onChange} /></FormControl>
+											</FormItem>
+										)} />
+										<FormField control={form.control} name="equip_eclair" render={({ field }) => (
+											<FormItem className="flex items-center justify-between rounded-lg border border-border px-3 py-2">
+												<FormLabel className="m-0">Eclairage de l'aire</FormLabel>
+												<FormControl><Switch checked={Boolean(field.value)} onCheckedChange={field.onChange} /></FormControl>
+											</FormItem>
+										)} />
+                                        <FormField control={form.control} name="equip_douche" render={({ field }) => (
+											<FormItem className="flex items-center justify-between rounded-lg border border-border px-3 py-2">
+												<FormLabel className="m-0">Douche accessible</FormLabel>
+												<FormControl><Switch checked={Boolean(field.value)} onCheckedChange={field.onChange} /></FormControl>
+											</FormItem>
+										)} />
+									</div>
+
+									<FormField control={form.control} name="equip_pmr_acc" render={({ field }) => (
+										<FormItem className="flex items-center justify-between rounded-lg border border-border px-3 py-2">
+											<FormLabel className="m-0">Acces PMR disponible</FormLabel>
+											<FormControl><Switch checked={Boolean(field.value)} onCheckedChange={field.onChange} /></FormControl>
+										</FormItem>
+									)} />
+
+									{equipPmrAcc && (
+										<div className="space-y-4">
+											<div className="text-sm font-medium">Accessibilite PMR</div>
+											<div className="grid gap-3 sm:grid-cols-2">
+												<FormField control={form.control} name="equip_pmr_chem" render={({ field }) => (
+													<FormItem className="flex items-center justify-between rounded-lg border border-border px-3 py-2">
+														<FormLabel className="m-0">Cheminement PMR adapte</FormLabel>
+														<FormControl><Switch checked={Boolean(field.value)} onCheckedChange={field.onChange} /></FormControl>
+													</FormItem>
+												)} />
+												<FormField control={form.control} name="equip_pmr_douche" render={({ field }) => (
+													<FormItem className="flex items-center justify-between rounded-lg border border-border px-3 py-2">
+														<FormLabel className="m-0">Douches accessibles PMR</FormLabel>
+														<FormControl><Switch checked={Boolean(field.value)} onCheckedChange={field.onChange} /></FormControl>
+													</FormItem>
+												)} />
+												<FormField control={form.control} name="equip_pmr_trib" render={({ field }) => (
+													<FormItem className="flex items-center justify-between rounded-lg border border-border px-3 py-2">
+														<FormLabel className="m-0">Tribunes accessibles PMR</FormLabel>
+														<FormControl><Switch checked={Boolean(field.value)} onCheckedChange={field.onChange} /></FormControl>
+													</FormItem>
+												)} />
+												<FormField control={form.control} name="equip_pmr_vest" render={({ field }) => (
+													<FormItem className="flex items-center justify-between rounded-lg border border-border px-3 py-2">
+														<FormLabel className="m-0">Vestiaires accessibles PMR</FormLabel>
+														<FormControl><Switch checked={Boolean(field.value)} onCheckedChange={field.onChange} /></FormControl>
+													</FormItem>
+												)} />
+                                                <FormField control={form.control} name="equip_pmr_sanit" render={({ field }) => (
+													<FormItem className="flex items-center justify-between rounded-lg border border-border px-3 py-2">
+														<FormLabel className="m-0">Sanitaires accessibles PMR</FormLabel>
+														<FormControl><Switch checked={Boolean(field.value)} onCheckedChange={field.onChange} /></FormControl>
+													</FormItem>
+												)} />
+											</div>
+										</div>
+									)}
+
+									<FormField
+										control={form.control}
+										name="equip_loc_type"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>Locaux complementaires</FormLabel>
+												<div className="grid gap-2 sm:grid-cols-2">
+													{EQUIP_LOC_TYPE_OPTIONS.map((option) => (
+														<label key={option} className="flex items-center gap-2 text-sm">
+															<Checkbox checked={Array.isArray(field.value) && field.value.includes(option)} onCheckedChange={() => field.onChange(toggleArrayValue(field.value as string[] | undefined, option))} />
+															<span>{option}</span>
+														</label>
+													))}
+												</div>
+												<TranslatedFormMessage />
+											</FormItem>
+										)}
+									/>
+
+									<div className="space-y-4">
+										<div className="text-sm font-medium">Accessibilite PSHS</div>
+										<div className="grid gap-3 sm:grid-cols-2">
+											{PSHS_FIELDS.map((config) => (
+												<FormField
+													key={config.name}
+													control={form.control}
+													name={config.name}
+													render={({ field }) => (
+														<FormItem className="flex items-center justify-between rounded-lg border border-border px-3 py-2">
+															<FormLabel className="m-0">{config.label}</FormLabel>
+															<FormControl><Switch checked={Boolean(field.value)} onCheckedChange={field.onChange} /></FormControl>
+														</FormItem>
+													)}
+												/>
+											))}
+										</div>
+									</div>
+								</div>
+							)}
+
+							{activeStep === "usage" && (
+								<div className="space-y-6">
+									<FormField control={form.control} name="urls" render={({ field }) => (
+										<FormItem>
+											<FormLabel>Site internet</FormLabel>
+											<FormControl>
+												<Input
+													value={Array.isArray(field.value) ? field.value.join(", ") : ""}
+													onChange={(event) => {
+													const next = event.target.value.split(",").map((item) => item.trim()).filter((item) => item.length > 0);
+													field.onChange(next);
+												}}
+												placeholder="https://"
+												/>
+											</FormControl>
+											<TranslatedFormMessage />
+										</FormItem>
+									)} />
+
+									<FormField control={form.control} name="equip_utilisateur" render={({ field }) => (
+										<FormItem>
+											<FormLabel>Types d'utilisateurs</FormLabel>
+											<div className="grid gap-2 sm:grid-cols-2">
+												{EQUIP_UTILISATEUR_OPTIONS.map((option) => (
+													<label key={option} className="flex items-center gap-2 text-sm">
+														<Checkbox checked={Array.isArray(field.value) && field.value.includes(option)} onCheckedChange={() => field.onChange(toggleArrayValue(field.value as string[] | undefined, option))} />
+														<span>{option}</span>
+													</label>
+												))}
+											</div>
+											<TranslatedFormMessage />
+										</FormItem>
+									)} />
+
+									<FormField control={form.control} name="equip_acc_libre" render={({ field }) => (
+										<FormItem className="flex items-center justify-between rounded-lg border border-border px-3 py-2">
+											<FormLabel className="m-0">Acces libre</FormLabel>
+											<FormControl><Switch checked={Boolean(field.value)} onCheckedChange={field.onChange} /></FormControl>
+										</FormItem>
+									)} />
+
+									<FormFieldTags control={form.control} name={"aps_name" as FieldPath<AddPoiFormData>} label="Sports pratiques *" extendedTexts />
+								</div>
+							)}
+						</div>
+
+						<DialogFooter className="mt-6 pt-4 border-t border-border">
+							<div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+								<Button type="button" variant="outline" onClick={handlePrevious} disabled={activeStep === "general" || addMutation.isPending}>
+									Precedent
+								</Button>
+								<div className="flex items-center gap-2">
+									{canSubmit ? (
+										<Button type="submit" onClick={() => form.clearErrors()} disabled={addMutation.isPending}>
+											{addMutation.isPending ? (
+												<>
+													<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+													{t("ProfileEdit.saving")}
+												</>
+											) : (
+												t("AddEntity.create")
+											)}
+										</Button>
+									) : (
+										<Button
+											type="button"
+											onClick={(event) => {
+												event.preventDefault();
+												void handleNext();
+											}}
+											disabled={addMutation.isPending}
+										>
+											Suivant
+										</Button>
+									)}
+								</div>
+							</div>
+						</DialogFooter>
+					</form>
+				</Form>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
+export default AddPoiEquipementModal;
