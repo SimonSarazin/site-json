@@ -1743,7 +1743,15 @@
         "chart2": "hsl(43, 91%, 52%)",
         "chart3": "hsl(182, 40%, 60%)",
         "chart4": "hsl(43, 70%, 70%)",
-        "chart5": "hsl(200, 60%, 50%)"
+        "chart5": "hsl(200, 60%, 50%)",
+        "sidebar": "hsl(182, 18%, 96%)",
+        "sidebarForeground": "hsl(210, 20%, 14%)",
+        "sidebarPrimary": "hsl(182, 56%, 40%)",
+        "sidebarPrimaryForeground": "hsl(0, 0%, 100%)",
+        "sidebarAccent": "hsl(182, 40%, 88%)",
+        "sidebarAccentForeground": "hsl(182, 56%, 22%)",
+        "sidebarBorder": "hsl(182, 18%, 88%)",
+        "sidebarRing": "hsl(182, 56%, 40%)"
       },
       "dark": {
         "primary": "hsl(182, 56%, 50%)",
@@ -1775,7 +1783,15 @@
         "chart2": "hsl(43, 85%, 48%)",
         "chart3": "hsl(182, 40%, 65%)",
         "chart4": "hsl(43, 70%, 65%)",
-        "chart5": "hsl(200, 60%, 55%)"
+        "chart5": "hsl(200, 60%, 55%)",
+        "sidebar": "hsl(210, 20%, 10%)",
+        "sidebarForeground": "hsl(182, 10%, 93%)",
+        "sidebarPrimary": "hsl(182, 56%, 50%)",
+        "sidebarPrimaryForeground": "hsl(0, 0%, 100%)",
+        "sidebarAccent": "hsl(182, 30%, 22%)",
+        "sidebarAccentForeground": "hsl(182, 56%, 80%)",
+        "sidebarBorder": "hsl(182, 15%, 22%)",
+        "sidebarRing": "hsl(182, 56%, 50%)"
       }
     },
     "typography": {
