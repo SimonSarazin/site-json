@@ -2327,6 +2327,14 @@
                       "linked": true,
                       "category": "salle-reunion",
                       "hide": true
+                    },
+                    "6876c3e58fa8df3c7f024253": {
+                      "name": "Diagnostic Licoop",
+                      "finder": "answers.navigatorDesTierslieux1572025_2311_0.findernavigatorDesTierslieux1572025_2311_0md5u4tkmsz33mya3xvb",
+                      "linked": true,
+                      "category": "evaluation",
+                      "openMode": "modal",
+                      "hide": true
                     }
                   }
                 }
