@@ -17,6 +17,7 @@ import { AuthModalLazy } from "@/modules/auth";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import { ChevronDown, User, LogOut, Globe, Menu, X } from "lucide-react";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";
+import NotificationBell from "@/modules/notification/components/NotificationBell";
 
 interface HeaderJuliePotVinProps {
     header: Header;
@@ -89,6 +90,8 @@ export default function HeaderJuliePotVin({ header }: HeaderJuliePotVinProps) {
                                 {t(item.label)}
                             </Link>
                         ))}
+
+                        {header.utilities?.notifications && <NotificationBell />}
 
                         {header.utilities?.langSwitch && availableLocales.length > 1 && (
                              <DropdownMenu>
@@ -163,6 +166,7 @@ export default function HeaderJuliePotVin({ header }: HeaderJuliePotVinProps) {
                     </div>
 
                     <div className="md:hidden flex items-center gap-4">
+                         {header.utilities?.notifications && <NotificationBell />}
                          {header.utilities?.themeSwitch !== false && (
                             <ClientOnly fallback={<div className="w-4 h-4" />}>
                                 {() => <ToggleButtonTheme />}

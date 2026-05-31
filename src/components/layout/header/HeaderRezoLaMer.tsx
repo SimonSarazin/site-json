@@ -3,7 +3,7 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
 import { Header } from "@/types/site-schema";
-import { ChevronDown, User, LogOut, Globe, Bell, Menu, X } from "lucide-react";
+import { ChevronDown, User, LogOut, Globe, Menu, X } from "lucide-react";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";
 import { Link, useNavigate, useLocation } from "react-router";
 import { useCocolight } from "@/hooks/useCocolight";
@@ -19,6 +19,7 @@ import { AuthModalLazy } from "@/modules/auth";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
 import { PiggyBankHeaderButton } from "@/modules/cagnotte/components/PiggyBankHeaderButton";
+import NotificationBell from "@/modules/notification/components/NotificationBell";
 
 interface HeaderRezoLaMerProps {
     header: Header;
@@ -199,17 +200,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                             </Link>
                         )}
 
-                        {header.utilities?.notifications && (
-                            <button
-                                className="relative p-2 text-muted-foreground hover:text-primary transition-colors"
-                                aria-label="Notifications"
-                            >
-                                <Bell className="w-5 h-5" />
-                                <span className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold pulse">
-                                    3
-                                </span>
-                            </button>
-                        )}
+                        {header.utilities?.notifications && <NotificationBell />}
 
                         {header.utilities?.themeSwitch !== false && (
                             <ClientOnly fallback={<div className="w-10 h-10" />}>
@@ -298,6 +289,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                     </div>
 
                     <div className="md:hidden flex items-center gap-2">
+                        {header.utilities?.notifications && <NotificationBell />}
                         {header.utilities?.themeSwitch !== false && (
                             <ClientOnly fallback={<div className="w-8 h-8" />}>
                                 {() => <ToggleButtonTheme />}

@@ -322,7 +322,7 @@
       "search": false,
       "auth": true,
       "cart": false,
-      "notifications": false
+      "notifications": true
     }
   },
   "pages": [

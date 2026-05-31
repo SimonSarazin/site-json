@@ -1,0 +1,27 @@
+{
+  "bell": {
+    "ariaLabel": "Notifications"
+  },
+  "panel": {
+    "title": "Notifications",
+    "empty": "Aucune notification",
+    "loading": "Chargement…",
+    "markAllRead": "Tout marquer comme lu",
+    "clearAll": "Tout effacer",
+    "loadMore": "Voir plus"
+  },
+  "section": {
+    "loginRequired": "Connectez-vous pour voir vos notifications."
+  },
+  "toast": {
+    "markAllReadSuccess": "Toutes les notifications ont été marquées comme lues",
+    "clearAllSuccess": "Notifications effacées",
+    "error": "Une erreur est survenue"
+  },
+  "time": {
+    "now": "à l'instant",
+    "minutesAgo": "il y a {{count}} min",
+    "hoursAgo": "il y a {{count}} h",
+    "daysAgo": "il y a {{count}} j"
+  }
+}

@@ -8,6 +8,7 @@
 // ------------------------------------------------------------
 import { SearchProSectionSchema, SearchProStaticSectionSchema, CardCountCTSectionSchema, ThematicsSectionSchema, FiltersSectionSchema } from "@/modules/search/schema";
 import { NewsSectionSchema } from "@/modules/news/schema";
+import { NotificationsSectionSchema } from "@/modules/notification/schema";
 import { z } from "zod";
 import { LocalizedString, LOCALES } from "./locale-schema";
 export { LocalizedString, LOCALES };
@@ -1475,6 +1476,7 @@ export const Section = z.discriminatedUnion("type", [
   ThematicsSectionSchema,
   GridLayoutSectionSchema,
   NewsSectionSchema,
+  NotificationsSectionSchema,
   MemberSectionSchema,
   ActionsSectionSchema,
   FinanceSectionSchema,

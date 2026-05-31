@@ -77,6 +77,7 @@ const LazySections: {
   filters: lazy(() => import("@/modules/search/sections/FiltersSection")),
   gridLayout: lazy(() => import("./GridLayoutSection")),
   news: lazy(() => import("@/modules/news/components/sections/NewsSection")),
+  notifications: lazy(() => import("@/modules/notification/components/sections/NotificationsSection")),
   member: lazy(() => import("./MemberSection")),
   heroWithIcon: lazy(() => import("./HeroWithIconSection")),
   meeteem: lazy(() => import("@/modules/ampli/components/sections/MeeteemSection")),

@@ -29,6 +29,7 @@ import { AuthModalLazy } from "@/modules/auth";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
+import NotificationBell from "@/modules/notification/components/NotificationBell";
 
 interface HeaderTiersLieuxProps {
     header: Header;
@@ -183,6 +184,8 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                     </div>
 
                     <div className="hidden md:flex items-center space-x-4 text-sm shrink-0 ml-4">
+                        {header.utilities?.notifications && <NotificationBell />}
+
                         <ClientOnly fallback={<div className="w-10 h-10" />}>
                             {() => <ToggleButtonTheme />}
                         </ClientOnly>
@@ -268,6 +271,7 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                     </div>
 
                     <div className="md:hidden flex items-center gap-1 xs:gap-2 shrink-0 ml-3">
+                        {header.utilities?.notifications && <NotificationBell />}
                         <ClientOnly fallback={<div className="w-7 h-7 xs:w-8 xs:h-8" />}>
                             {() => <ToggleButtonTheme />}
                         </ClientOnly>

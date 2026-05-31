@@ -21,7 +21,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Bell, Menu as MenuIcon, Search, ShoppingCart } from "lucide-react";
+import { Menu as MenuIcon, Search, ShoppingCart } from "lucide-react";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
@@ -35,6 +35,7 @@ import { EnhancedNavItemType } from "@/types/site";
 import { cn } from "@/lib/utils";
 import { DynamicIcon, IconName } from "lucide-react/dynamic";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import NotificationBell from "@/modules/notification/components/NotificationBell";
 
 export function SiteHeader2() {
   const { config } = useSite();
@@ -139,11 +140,7 @@ export function SiteHeader2() {
               </Button>
             )}
 
-            {header.utilities.notifications && (
-              <Button variant="ghost" size="sm">
-                <Bell className="h-4 w-4" />
-              </Button>
-            )}
+            {header.utilities.notifications && <NotificationBell />}
 
             {header.utilities.auth && (
               <ClientOnly

@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";
 import { AuthModalLazy } from "@/modules/auth";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
+import NotificationBell from "@/modules/notification/components/NotificationBell";
 
 interface HeaderCommuneTransparenteProps {
     header: Header & {
@@ -154,6 +155,8 @@ export default function HeaderCommuneTransparente({ header }: HeaderCommuneTrans
 
                     {/* Right utilities */}
                     <div className="flex items-center gap-2">
+                        {header.utilities?.notifications && <NotificationBell />}
+
                         {/* Lang switcher */}
                         {header.utilities?.langSwitch && availableLocales.length > 1 && (
                             <DropdownMenu>
