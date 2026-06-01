@@ -1054,6 +1054,7 @@ export const SearchProSectionSchema = z.object({
     enableMap: z.boolean().default(true),
     showActiveFiltersTypes: z.boolean().default(true),
     showActiveFiltersTags: z.boolean().default(true),
+    defaultViewMode: z.enum(["list", "map", "graph"]).optional(),
     disableInfiniteScroll: z.boolean().optional(),
     showDetailedViewToggle: z.boolean().optional(),
     customHeader: z.object({
@@ -1067,7 +1068,27 @@ export const SearchProSectionSchema = z.object({
 
     filters: z.record(z.string(), TagsFilterSchema).optional(),
 
-    baseParams: SearchBaseParamsSchema.optional(),
+    baseParams: z.object({
+      fediverse:     z.boolean().optional(),
+      indexStepList: z.number().optional(),
+      indexStepMap:  z.number().optional(),
+      defaultTypes: z.array(SearchTypeSchema).optional(),
+      defaultTags:   z.array(z.string()).optional(),
+      defaultFilters: z.record(z.string(), z.unknown()).optional(),
+      defaultFields: z.array(z.string()).optional(),
+      defaultSortBy: z.record(z.string(), z.union([z.literal(1), z.literal(-1)])).optional(),
+      searchBy: SearchBySchema.optional(),
+      notSourceKey: z.union([z.boolean(), z.number()]).optional(),
+      locality: z.record(z.string(), z.object({
+        id: z.string(),
+        type: z.string(),
+        name: z.string().optional(),
+        countryCode: z.string().optional(),
+        level: z.union([z.string(), z.number()]).optional(),
+        active: z.boolean().optional(),
+        key: z.string().optional(),
+      })).optional(),
+    }).optional(),
 
     list: ListConfSchema.optional(),
     map:  MapConfSchema.optional(),
@@ -1075,8 +1096,7 @@ export const SearchProSectionSchema = z.object({
 });
 ```
 
-> `baseParams` utilise désormais le schéma partagé `SearchBaseParamsSchema` de
-> `src/modules/search/schema.ts` (plus de duplication inline).
+> `baseParams` de `searchPro` est un objet **inline** (pas le schéma partagé `SearchBaseParamsSchema`). Il ne contient pas `contextId`, `contextType`, `costumSlug`, `costumEditMode`, ni `sourceKey` — ces champs appartiennent uniquement au schéma partagé utilisé par `searchProStatic` et le hero.
 
 | Propriete | Type | Description |
 | --------- | ---- | ----------- |
@@ -1088,6 +1108,7 @@ export const SearchProSectionSchema = z.object({
 | `enableMap` | `boolean` | Charger les ressources cartographiques |
 | `showActiveFiltersTypes` | `boolean` | Afficher les types actifs |
 | `showActiveFiltersTags` | `boolean` | Afficher les tags actifs |
+| `defaultViewMode` | `"list" \| "map" \| "graph"?` | Vue par defaut au chargement |
 | `disableInfiniteScroll` | `boolean?` | Desactiver le scroll infini |
 | `showDetailedViewToggle` | `boolean?` | Afficher le bouton vue detaillee |
 | `searchVariant` | `"default" \| "navigator-tl"?` | Variant SDK endpoint backend |
@@ -1095,7 +1116,7 @@ export const SearchProSectionSchema = z.object({
 | `customHeader.linkHref` | `string?` | URL du lien "voir sur la page complete" |
 | `customHeader.linkIcon` | `IconName?` | Icone Lucide du lien (type `IconName`, pas `string`) |
 | `filters` | `Record<string, TagsFilterSchema>?` | Filtres personnalises (tags, categories) |
-| `baseParams` | `SearchBaseParamsSchema?` | Parametres de base pour la recherche avancee |
+| `baseParams` | `object?` | Parametres de base pour la recherche (objet inline, voir code block) |
 | `list` | `ListConfSchema?` | Configuration de l'affichage en liste |
 | `map` | `MapConfSchema?` | Configuration de l'affichage sur la carte |
 
@@ -1115,9 +1136,10 @@ const ListConfSchema = z.object({
     showAddress:     z.boolean().optional(),
     shareButton:     z.boolean().optional(),
     showStar:        z.boolean().optional(),
+    showFunding:     z.boolean().optional(),
     detailsMode: z.enum(["drawer", "dialog"]).default("drawer"),
-    type: z.enum(["overlay", "default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer", "card-elts","ssbe"]).default("default"),
-    variant: z.enum(["default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer", "card-elts","ssbe"]).optional(),
+    type: z.enum(["overlay", "default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer", "poi-ssbe", "card-elts","ssbe", "card-answer"]).default("default"),
+    variant: z.enum(["default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer", "poi-ssbe", "card-elts","ssbe", "card-answer"]).optional(),
   }).partial().optional(),
   preview: z.object({
     type: z.enum(["default"]).default("default"),
@@ -1125,10 +1147,11 @@ const ListConfSchema = z.object({
 }).partial();
 ```
 
-* **`card.type`** : `overlay` (texte sur l'image), `default`, `tiers-lieux`, `event`, `rezo-la-mer`, `profile`, `event-rezo-la-mer`, `poi-rezo-la-mer`, `card-elts`, `ssbe`.
-* **`card.variant`** : variante visuelle de la carte.
+* **`card.type`** : `overlay` (texte sur l'image), `default`, `tiers-lieux`, `event`, `rezo-la-mer`, `profile`, `event-rezo-la-mer`, `poi-rezo-la-mer`, `poi-ssbe`, `card-elts`, `ssbe`, `card-answer`.
+* **`card.variant`** : variante visuelle de la carte (memes valeurs que `card.type`, sauf `overlay`).
 * **`card.detailsMode`** : affichage des details dans un `drawer` ou un `dialog`.
 * **`card.showStar`** : afficher le bouton favori.
+* **`card.showFunding`** : afficher la barre de progression de financement (cagnotte) sur la carte ; declenche la query `useFundingEnvelope`. Actif par defaut uniquement pour le variant `rezo-la-mer` (retrocompat).
 * **`preview.type`** : type de previsualisation (actuellement `default`).
 
 ### Details de `MapConfSchema`

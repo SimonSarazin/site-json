@@ -577,7 +577,7 @@ D'autres tests CoForm couvrent : `formParser.test.ts` (parsing schéma de form),
 
 #### Validation configs multi-sites (`tests/preflight/sites-configs.test.ts`)
 
-Valide automatiquement **toutes** les configs référencées dans `sites.json` (56 tests) :
+Valide automatiquement **toutes** les configs référencées dans `sites.json` (66 tests) :
 
 **Intégrité de `sites.json`** :
 - Format valide (array non-vide)

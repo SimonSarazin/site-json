@@ -70,7 +70,8 @@ src/modules/ampli/
 │
 ├── helpers/
 │   └── summary.ts                 # getSummaryData() : aggrégation totalAnswers/Users/Likes/Comments
-│                                  # (ré-exporte aussi AmpliDataResponse et UserWithContributions)
+│                                  # (définit AmpliDataResponse et UserWithContributions localement —
+│                                  #  dupliqué indépendamment dans types.ts, dette technique potentielle)
 │
 ├── utils/
 │   └── cardFilters.ts             # collectAvailableTags(), filterCards() — purs, testés
@@ -320,7 +321,7 @@ function getSummaryData(data: AmpliDataResponse[]): {
 }
 ```
 
-**Important** : `summary.ts` ré-exporte aussi `AmpliDataResponse` et `UserWithContributions` (définis initialement dans `types.ts`). Les imports existants depuis `helpers/summary` fonctionnent mais la source canonique est `types.ts`.
+**Important** : `AmpliDataResponse` et `UserWithContributions` sont définies localement dans `summary.ts` (`export interface`) sans aucun import depuis `types.ts`. Ces mêmes interfaces sont redéfinies indépendamment dans `types.ts` : il s'agit d'une **duplication de types** entre les deux fichiers, et non d'un ré-export. C'est une dette technique potentielle à unifier si les définitions venaient à diverger.
 
 Utilisé par `AmpliFeatures` (affichage des statistiques dans la carte summary) et `AmpliCommunity` (liste des contributeurs).
 

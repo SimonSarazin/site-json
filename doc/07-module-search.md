@@ -240,7 +240,7 @@ Même structure que `searchPro` mais avec état local. Plusieurs instances peuve
 
 **Lien « voir sur la page complète »** : si `customHeader.linkText` est renseigné, un bouton `<Link>` est rendu dans le cluster du `customHeader`. La href est construite depuis `customHeader.linkHref` (défaut `/lieux`) en recopiant les query params courants (`useSearchParams`) PLUS `?search=` si une recherche texte est active — de sorte que les filtres posés par le hero (typologies, services) et le texte saisi soient tous transportés vers la page de liste.
 
-**Lecture de `?search=`** : `SearchProStatic` lit `searchParams.get("search")` pour initialiser la recherche texte quand on arrive depuis un lien avec ce paramètre.
+**Lecture de `?search=`** : c'est `FiltersSection` (ligne ~190) qui lit `searchParams.get("search")` pour reporter la recherche texte dans son champ local quand on arrive depuis un lien — voir [§`filters` — sidebar de filtres partagée](#filters--sidebar-de-filtres-partagée).
 
 ### `cardCountCT` — compteurs par type
 
@@ -264,7 +264,7 @@ Section de compteurs pour Commune Transparente. Affiche une grille de cartes ave
 
 ### `thematics` — filières dynamiques
 
-Charge dynamiquement les filières (tags agrégés) depuis l'API et les affiche comme liens de navigation.
+Affiche les filières de l'entité courante sous forme de liens de navigation. Les filières sont lues depuis le champ statique `entity?.serverData?.filiere` de l'entité Cocolight déjà initialisée — aucune requête API supplémentaire n'est effectuée.
 
 ```json
 {
@@ -687,7 +687,7 @@ Quand `list.card.detailsMode` est configuré, `<SwitchDetailsMode>` ouvre les d�
 
 ### SearchBubbleChart
 
-Graphique en bulles pour visualiser la distribution des entités par catégorie. Activé via `enableGraph: true`. Rendu via [Recharts](https://recharts.org/) (`ScatterChart`). Clic sur une bulle → ouvre les détails via `graphDetailsMode`.
+Graphique en bulles pour visualiser la distribution des entités par catégorie. Activé via `enableGraph: true`. Rendu via D3 circle-packing (`import * as d3`, `d3.pack`, `<svg>` brut) — aucune dépendance Recharts. Clic sur une bulle → ouvre les détails via `graphDetailsMode`.
 
 ### FranceRegionsMap
 
@@ -801,15 +801,24 @@ Utilisé pour les sites tiers-lieux qui enrichissent les fiches avec des donnée
 
 Namespace : **`modules/search`**. Enregistré en side-effect par `i18n.ts`.
 
-Groupes de clés dans `fr.json` / `en.json` :
-- `SearchPro.*` — labels interface de recherche
-- `SearchFilters.*` — labels filtres
-- `ActiveFiltersBar.*` — boutons de suppression
-- `CardCountCT.*` — labels compteurs
-- `Thematics.*` — messages section filières
-- `FiltersSection.*` — labels sidebar filtres
-- `AddEntityModal.*` — labels modal création
-- `export.*` — labels export CSV
+Structure de `fr.json` / `en.json` : fichiers **plats** (~35 clés), sans préfixes ni namespaces imbriqués. Les clés sont des chaînes françaises littérales utilisées directement dans les appels `t()`. Exemples représentatifs :
+
+| Clé (fr) | Valeur en (en.json) |
+|----------|----------------------|
+| `"Filtres actifs :"` | `"Active filters:"` |
+| `"Filtres"` | `"Filters"` |
+| `"Effacer"` | `"Clear"` |
+| `"Carte"` | `"Map"` |
+| `"Voir en liste"` | `"See in list"` |
+| `"Chargement…"` | `"Loading…"` |
+| `"Aucune image"` | `"No image"` |
+| `"Description"` | `"Description"` |
+| `"Tags"` | `"Tags"` |
+| `"Partager"` | `"Share"` |
+| `"type.organizations"` | `"Organizations"` |
+| `"toast.card.starSuccess"` | `"Updated"` |
+
+Aucun des préfixes hiérarchiques (`SearchPro.*`, `SearchFilters.*`, `ActiveFiltersBar.*`, etc.) n'existe dans les fichiers réels.
 
 ---
 

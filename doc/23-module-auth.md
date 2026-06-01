@@ -52,7 +52,7 @@ src/modules/auth/
       RecoverPasswordForm.tsx
       SSOLoginButton.tsx
     variants/
-      registry.ts         resolveAuthVariant(variant?) → AuthVariantSet (composants lazy)
+      registry.ts         resolveAuthVariant(variant?) → AuthVariantSet (constantes lazy vite-preload)
   pages/
     LoginPage.tsx
     RegisterPage.tsx
@@ -105,11 +105,17 @@ qui résout le header par `header.type`, mais **découplé** : un site peut comb
 un header X et un variant d'auth Y.
 
 ```ts
+// Constantes module-level (évaluées une seule fois pour la stabilité entre rendus)
+const LoginForm          = lazy(() => import("../forms/LoginForm"));
+const RegisterForm       = lazy(() => import("../forms/RegisterForm"));
+const RecoverPasswordForm = lazy(() => import("../forms/RecoverPasswordForm"));
+const AuthModal          = lazy(() => import("../AuthModal"));
+
 export interface AuthVariantSet {
-  LoginForm: LazyComponent;
-  RegisterForm: LazyComponent;
-  RecoverPasswordForm: LazyComponent;
-  AuthModal: LazyComponent;
+  LoginForm: typeof LoginForm;
+  RegisterForm: typeof RegisterForm;
+  RecoverPasswordForm: typeof RecoverPasswordForm;
+  AuthModal: typeof AuthModal;
 }
 
 export function resolveAuthVariant(variant?: string): AuthVariantSet {
@@ -123,9 +129,10 @@ export function resolveAuthVariant(variant?: string): AuthVariantSet {
 Aujourd'hui un seul variant (`default`). Le switch est extensible : ajouter
 `case "mon-variant": return MON_SET;` et un dossier de composants dédié.
 
-Tous les composants du `DEFAULT_SET` sont des constantes module-level créées avec
-`lazy()` de `vite-preload` (évaluées une seule fois pour rester stables entre les
-rendus).
+Les membres de `AuthVariantSet` sont typés `typeof <constante>` (référence directe
+à la constante `lazy()` locale) — il n'existe pas de type `LazyComponent` dans ce
+module. Le `DEFAULT_SET` réutilise ces mêmes constantes module-level (évaluées une
+seule fois pour rester stables entre les rendus).
 
 ## Configuration `config.auth`
 
@@ -231,10 +238,14 @@ interface LoginFormProps {
 }
 ```
 
-- En mode modal (`hideBackButton=true`, callbacks fournis) : après succès appelle
-  `onSuccess()` sans naviguer vers `/`.
-- En mode page (pas de callbacks) : navigue vers `/register` ou `/recover-password`
-  via les boutons de bascule ; navigue vers `/` après connexion réussie.
+- Après connexion réussie : `onSuccess?.()` est toujours appelé (si fourni), puis
+  `navigate("/")` est déclenché **uniquement si `hideBackButton === false`** (valeur
+  par défaut). C'est `hideBackButton` — et lui seul — qui discrimine le comportement
+  de navigation, pas la présence ou l'absence des callbacks.
+- En mode modal (`hideBackButton=true`) : pas de navigation vers `/` après succès.
+- En mode page (`hideBackButton=false`) : navigue vers `/register` ou
+  `/recover-password` via les boutons de bascule ; navigue vers `/` après connexion
+  réussie.
 - Erreurs HTTP 401/404 → message "Email ou mot de passe incorrect".
 - Affiche les `SSOLoginButton` si `entity?.serverData.costum.sso` contient des
   providers (voir [SSO](#sso)).
@@ -346,7 +357,9 @@ interface AuthSeoProps {
 ## SSO
 
 Le SSO est piloté par le **backend**, pas par la config JSON : les providers
-viennent de `entity?.serverData.costum.sso` (liste de slugs, typé `string[]`).
+viennent de `entity?.serverData.costum.sso`, extraits via un cast local
+(`(entity?.serverData.costum as { sso?: string[] })?.sso || []`) — il n'y a pas
+de garantie de type en amont sur ce champ.
 `LoginForm` affiche un `SSOLoginButton` par provider si la liste est non vide,
 précédé d'un séparateur "ou continuer avec".
 
@@ -374,8 +387,10 @@ interface SSOAuthResult {
 5. `SSO_AUTH_ERROR` → résout `{ success: false, error: event.data.error }`.
 6. Polling (`setInterval` 500 ms) : si popup fermé manuellement avant réponse →
    résout `{ success: false }` sans `error`.
-7. Cleanup au démontage du composant (`useEffect` retournant la fonction de
-   nettoyage via `cleanupRef`).
+7. Cleanup au démontage du composant : un `useEffect` à deps `[]` appelle
+   `cleanupRef.current?.()` lors du démontage. La fonction de nettoyage effective
+   est assignée dans `openSSOPopup` via `cleanupRef.current = cleanup` — le
+   `useEffect` se contente de la déclencher si elle existe.
 
 Le hook est testé par `hooks/__tests__/useSSOAuth.test.ts` (Vitest + jsdom,
 `@testing-library/react`). Les cas couverts : ouverture popup, encodage service,

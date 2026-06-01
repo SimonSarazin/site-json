@@ -448,9 +448,9 @@ Le fichier `src/modules/interop/index.ts` documente précisément le statut de c
 |---|---|
 | `INTEROP_QUERY_KEYS`, `InteropQueryKeyType` | Actif — single source of truth des query keys |
 | `useInteropConfig` | Actif — consommé en externe par `ProfileAbout.tsx` et conditionnement de l'affichage des sections |
-| `useInteropUserLinks` | `@unused` au 2026-05-17 — conservé pour usage futur |
-| `useDiscourseProfilQuery`, `DiscourseProfilResult` | `@unused` au 2026-05-17 — conservé avec son type |
-| `useDiscourseLink`, `useDiscourseUnlink`, `useDiscourseCheckEmail`, `useDiscourseDismiss` | `@unused` via barrel — les composants importent par chemin profond |
+| `useInteropUserLinks` | Actif — hook central au rendu des pods/sections ; consommé par `DiscourseSection.tsx`, `MediawikiSection.tsx`, `DiscoursePod.tsx`, `MediawikiPod.tsx` |
+| `useDiscourseProfilQuery`, `DiscourseProfilResult` | Actif — producteur des données du pod Discourse ; consommé par `DiscoursePod.tsx` |
+| `useDiscourseLink`, `useDiscourseUnlink`, `useDiscourseCheckEmail`, `useDiscourseDismiss` | Partiellement actifs via chemin profond — `useDiscourseLink` (DiscourseLink.tsx, DiscourseAutoLinkModal.tsx), `useDiscourseUnlink` (DiscoursePod.tsx), `useDiscourseDismiss` (DiscourseAutoLinkModal.tsx) sont consommés ; seul `useDiscourseCheckEmail` est réellement non consommé |
 | `DiscourseLink`, `DiscoursePod`, `DiscourseSection` | `@unused` via barrel — importés par chemin profond |
 | `MediawikiLink`, `MediawikiPod`, `MediawikiSection` | `@unused` via barrel — importés par chemin profond |
 

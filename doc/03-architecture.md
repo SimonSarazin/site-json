@@ -808,11 +808,13 @@ const { canEditProfile, canAddNews } = useUserPermissions(entity, news?);
 
 ```ts
 // src/modules/search/hooks/useAutocomplete.ts
-const { suggestions, search, setSearch, isLoading } = useAutocomplete({
-  baseParams,         // scope réseau (meme format que searchPro)
-  searchVariant,      // "default" | "navigator-tl"
-  minLength: 2,
-  debounce: 300,
+// query est le 1er argument positionnel (string contrôlé par le composant parent)
+const { suggestions, isLoading, error } = useAutocomplete(search, {
+  baseParams,      // scope réseau (même format que searchProStatic)
+  variant,         // "default" | "navigator-tl"
+  tags,            // tags de filtres actifs
+  minChars: 2,     // (défaut 2)
+  debounceMs: 300, // (défaut 300)
 });
 ```
 
@@ -1036,6 +1038,7 @@ Composant qui reçoit un objet `Section` (type + props + id) et rend le composan
 | **Sections génériques** | `hero`, `cards`, `gallery`, `video`, `testimonials`, `pricing`, `faq`, `table`, `blogPost`, `blogList`, `team`, `stats`, `cta`, `logoCloud`, `chart`, `accordion`, `tabs`, `steps`, `timeline`, `banner`, `map`, `newsletter`, `contactForm`, `comparison`, `featureComparison`, `socialFeed`, `eventList`, `productShowcase`, `breadcrumb`, `cookieConsent`, `html`, `markdown`, `title`, `content`, `loginForm`, `registerForm`, `recoverPasswordForm`, `member`, `heroWithIcon`, `gridLayout` |
 | **Sections search** | `searchPro`, `searchProStatic`, `cardCountCT`, `thematics`, `filters` |
 | **Sections news** | `news` |
+| **Sections notification** | `notifications` |
 | **Sections ampli** | `meeteem` |
 | **Sections coform** | `coform` |
 | **Sections cagnotte** | `actions`, `finance`, `actions-summary`, `finance-summary`, `cagnotte-layout` |
@@ -1134,9 +1137,9 @@ Ces utilitaires dans `src/modules/search/` sont la source de vérité pour la lo
 | Utilitaire | Fichier | Description |
 |---|---|---|
 | `buildSearchPayload` | `lib/buildSearchPayload.ts` | Construit le payload `searchCostum` depuis `baseParams` + state courant. Utilisé par `useSearchQuery` et `useAutocomplete` — garantit la coherence entre la liste et l'autocompletion. |
-| `searchByFieldsToQuery` | `lib/searchByFieldsToQuery.ts` | Convertit le champ `searchBy` (string CSV, array, ou `"ALL"`) en parametre backend. |
-| `computeFiltersFromUrl` | `lib/computeFiltersFromUrl.ts` | Parse les query params URL (`q`, `tags`, `type`, `map`) en state de filtres exploitable par les sections. |
-| `usePageFiltersUrlSync` | `hooks/usePageFiltersUrlSync.ts` | Applicateur headless : synchronise `PageFiltersContext` avec l'URL (`searchPro`) sans couplage direct aux composants. Permet a des sections tierces (hero, filters) d'écrire dans le state sans connaitre l'URL. |
+| `searchByFieldsToQuery` | `lib/searchByFieldsToQuery.ts` | Prend `searchByFields: Record<string, SearchByFieldValue>` (filtres dynamiques du `PageFilters`) et retourne `{ filters, locality, sourceKeys }` — dispatch selon le `type` de chaque entrée (`scopeList` → `locality`, `sourceKey` → `sourceKeys`, form-based → `filters` MongoDB). Source unique partagée par `SearchProStatic` et `useAutocomplete`. |
+| `computeFiltersFromUrl` | `lib/computeFiltersFromUrl.ts` | Traduit les query params d'URL en mutations `PageFilters`. Signature : `(searchParams, filterGroups, filterAnswerData)` → `{ applySelected, applySearchFields }`. Itère sur les `groupId` arbitraires issus de `filterGroups` (typologies, entityList, services form-based) ; les params `q`/`tags`/`type`/`map` sont gérés par le loader de `buildRoutes.tsx`, pas ici. |
+| `usePageFiltersUrlSync` | `hooks/usePageFiltersUrlSync.ts` | Applicateur headless **unidirectionnel URL → PageFilters** : lit les query params, appelle `computeFiltersFromUrl` et publie le résultat dans `PageFiltersContext`. Rattaché à `FiltersSection` (page `/lieux`) et à la home via le hero — pas spécifique à `searchPro`. |
 | `useAutocomplete` | `hooks/useAutocomplete.ts` | Autocompletion scopée réseau. Partagee par la barre de recherche et le hero `hero-tiers-lieux`. |
 | `findFiltersSections` | `prefetch/prefetchFilters.ts` | Recherche récursive de toute section déclarant `filterGroups`/`filtersByAnswers`/`filtersByPath` pour le prefetch SSR (générique — pas de cas en dur par `type`). |
 

@@ -684,12 +684,12 @@ Le module profil gère ses propres traductions:
 
 ```ts
 // i18n.ts
-import i18n from "@/lib/i18n";
+import i18n from "@/i18n";
 import enTranslations from "./i18n/en.json";
 import frTranslations from "./i18n/fr.json";
 
-i18n.addResourceBundle("en", "modules/profil", enTranslations);
-i18n.addResourceBundle("fr", "modules/profil", frTranslations);
+i18n.addResourceBundle("en", "modules/profil", enTranslations, true, true);
+i18n.addResourceBundle("fr", "modules/profil", frTranslations, true, true);
 ```
 
 Utilisation dans les composants:
@@ -710,7 +710,7 @@ Clés i18n ajoutées récemment :
 
 | Clé | fr | en |
 |-----|----|----|
-| `ProfileRelated.empty.organizations` | `"Aucune organisation liée"` | `"No linked organizations"` |
+| `ProfileRelated.empty.organizations` | `"Aucune organisation liée"` | `"No related organizations"` |
 
 Ces clés sont utilisées par `ProfileRelated.tsx` dans `getEmptyTitle()` pour le cas `relationType === "organizations"`.
 
@@ -905,11 +905,11 @@ La modale `AddTiersLieuxModal` (`src/modules/profil/components/add/AddTiersLieux
 
 - `AddTiersLieuxModal` — Dialog principal, branche sur `useAddTiersLieu()` et délègue le rendu à `TiersLieuxForm`
 - `TiersLieuxForm` (`src/modules/profil/components/add/TiersLieuxForm.tsx`) — Formulaire react-hook-form + Zod en 5 onglets :
-  1. **Identification** : nom, description courte, type de structure, mode de gestion
-  2. **Localisation** : adresse, code postal, localité (via `EditLocationTab`)
-  3. **Médias** : logo + URL vidéo. **L'upload de photos est désactivé** (UI, state et handlers commentés via `TODO(photos)`) — non géré côté backend pour l'instant. Seul le logo reste fonctionnel dans cet onglet.
-  4. **Contacts & réseaux** : email, téléphone, site web, liens sociaux, URL vidéo
-  5. **Horaires & description** : horaires d'ouverture par jour de la semaine, description longue (Markdown)
+  1. **Identification** (`info`) : nom, description courte, type de structure, mode de gestion
+  2. **Contact** (`contact`) : localisation (via `EditLocationTab`) + email + téléphone
+  3. **Médias** (`media`) : logo + URL vidéo. **L'upload de photos est désactivé** (UI, state et handlers commentés via `TODO(photos)`) — non géré côté backend pour l'instant. Seul le logo reste fonctionnel dans cet onglet.
+  4. **En ligne** (`online`) : site web, liens sociaux
+  5. **Détails** (`details`) : horaires d'ouverture par jour de la semaine, description longue (Markdown)
 
 ### Schéma Zod (`tiersLieuxSchema`)
 

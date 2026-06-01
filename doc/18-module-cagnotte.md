@@ -93,7 +93,7 @@ src/modules/cagnotte/
 │           └── badges.tsx                     # MilestoneStatusBadge, ActionStatusBadge, ContributorsAvatars
 │
 ├── constants/
-│   └── queryKeys.ts                    # CAGNOTTE_QUERY_KEYS (5 keys dont 2 préfixes)
+│   └── queryKeys.ts                    # CAGNOTTE_QUERY_KEYS (6 keys dont 3 préfixes)
 │
 ├── contexts/
 │   ├── CagnotteContext.tsx             # Type CagnotteContextValue
@@ -270,7 +270,7 @@ Exports principaux consommés hors du module :
 | `useCagnotteContext`, `useCagnotteContextSafe` | Hooks | Composants dans un `CagnotteLayout` |
 | `useUserAdminOrganizations` | Hook | `PaymentConfigPage` |
 | `useSaveCagnotteContribution` | Hook | `PaymentConfigPage` |
-| `useProjectModalCagnotte`, `useProjectModalPreference` | Hooks | `PiggyBankHeaderButton` / headers |
+| `useProjectModalCagnotte` | Hook | `PiggyBankHeaderButton` / headers |
 | `CagnotteProvider`, `CagnotteContext` | Context | Usage avancé externe |
 | `createMilestoneMutation` + 5 hooks mutation milestone | Hooks | `FinanceSection`, `ActionsSection` |
 | `createActionMutation` + 6 hooks mutation action (incl. `useCreateAction`) | Hooks | `ActionsSection` |
@@ -489,7 +489,7 @@ Le module enregistre un namespace `cagnotte` via `register.ts` (side-effect). 11
 
 | Permission | Règle |
 |---|---|
-| `canContribute` | `projectId` non vide + `hasActiveMilestones === true` (passé via `data`) |
+| `canContribute` | connecté (`isConnected`) + `projectId` non vide + `hasActiveMilestones === true` (passé via `data`) |
 | `canCreateMilestone` | admin du projet |
 | `canEditMilestone(m)` | admin + milestone non `close` (statut `open` ou `done`) |
 | `canCloseMilestone(m)` | admin + milestone en statut `open` exactement |
@@ -503,7 +503,7 @@ Le module enregistre un namespace `cagnotte` via `register.ts` (side-effect). 11
 
 Métadonnées exposées : `isConnected`, `isAdmin`, `isContributor`, `currentUserId`.
 
-**Différence vs `canContribute`** : `canContribute` ne requiert **pas** que `me` soit connecté — il signale simplement que la modale de contribution peut être ouverte (un projet avec milestones actifs existe). La vérification de connexion est faite en amont par le composant.
+**Note sur `canContribute`** : `canContribute` requiert que `me` soit connecté (`isConnected`). Si l'utilisateur n'est pas connecté ou si `entity` est absent, le calculateur fait un early-return vers `DEFAULT_CAGNOTTE_PERMISSIONS` (`canContribute: false`). La condition complète est : connecté + `projectId` non vide + `hasActiveMilestones === true`.
 
 **Usage** :
 ```ts
@@ -559,7 +559,7 @@ launchConfettiBurst + toast succès
 
 ## React Query
 
-5 clés (dont 2 préfixes pour invalidations) dans `constants/queryKeys.ts` :
+6 clés (dont 3 préfixes pour invalidations) dans `constants/queryKeys.ts` :
 
 | Key | Forme |
 |---|---|
@@ -680,20 +680,7 @@ Le module suppose que le CoForm cible contient `answers.aapStep1.depense[]`. Pou
 
 ## Décisions design en attente
 
-1. **HelloAsso côté serveur non branché** : `server/api/helloasso-checkout.js` exporte 5 handlers Express mais n'est pas mounté dans `server/dev-server.js` ni `prod-server.js`. Les routes `/api/helloasso/*` retournent 404. Pour activer :
-   ```js
-   import {
-     helloassoCheckoutIntentHandler,
-     helloassoCheckoutStatusHandler,
-     helloassoCallbackHandler,
-     ...
-   } from "./api/helloasso-checkout.js";
-   app.post("/api/helloasso/checkout-intent", helloassoCheckoutIntentHandler);
-   app.get("/api/helloasso/checkout-status/:checkoutIntentId", helloassoCheckoutStatusHandler);
-   app.get("/api/helloasso/callback", helloassoCallbackHandler);
-   ```
-
-2. **Webhook HelloAsso vs polling** : `services/helloAssoWebhook.ts` contient le handler webhook (validation HMAC + processing) mais n'est pas branché. Le front utilise polling à la place. Choix à acter.
+1. **Webhook HelloAsso vs polling** : `services/helloAssoWebhook.ts` contient le handler webhook (validation HMAC + processing) mais n'est pas branché. Le front utilise polling à la place. Choix à acter.
 
 3. **Prefetch SSR non câblé** : `prefetchFundingEnvelope` est exporté mais pas invoqué côté loader. Raison : pas d'auth SSR (`me` est null côté serveur), donc `getFormData` ne serait pas appelé — le bénéfice est limité. À reconsidérer si auth SSR est mise en place.
 

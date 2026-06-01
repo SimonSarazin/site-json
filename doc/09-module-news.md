@@ -363,7 +363,8 @@ Retourne un objet `FormattedComment` (ou `null`) :
 | `totalVotes` | number | Total des réactions |
 | `replies` | FormattedReply[] | Réponses formatées (récursif, 1 niveau) |
 | `repliesCount` | number | Nombre de réponses |
-| `canEdit`, `canDelete` | boolean | Auteur OU `canModerateNews` |
+| `canEdit` | boolean | Auteur du commentaire uniquement |
+| `canDelete` | boolean | Auteur OU `canModerateNews` |
 | `id`, `text` | string | Identifiant et texte |
 
 Chaque `FormattedReply` contient les mêmes champs de base + `comment: Comment` (objet complet pour les mutations).

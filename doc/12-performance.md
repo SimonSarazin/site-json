@@ -447,7 +447,7 @@ Navigateur  →  GET /img?url=/images/bg.jpg&w=800&f=auto
 * **SVG locaux** (`url` se termine par `.svg`) : redirect 301 vers l'URL source, pas de transformation
 * **SVG distants** (Content-Type `image/svg+xml`) : proxié sans transformation avec `Cache-Control: public, max-age=86400` (1 jour, pas immutable)
 * **data URIs** (`url` commence par `data:`) : redirect 301 vers l'URL source
-* **Fetch distant** : timeout de 10 secondes (`AbortSignal.timeout(10_000)`), erreur 502 si l'upstream retourne un status non-2xx ou si la réponse n'est pas de type `image/*`
+* **Fetch distant** : timeout de 10 secondes (`AbortSignal.timeout(10_000)`), erreur 502 si l'upstream retourne un status non-2xx ou si le fetch échoue, erreur 400 si la réponse n'est pas de type `image/*` (message « Not an image »)
 
 ### Securite
 
