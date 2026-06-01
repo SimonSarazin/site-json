@@ -1208,6 +1208,7 @@
   },
   "ProfileRelated": {
     "empty": {
+      "organizations": "No related organizations",
       "projects": "No related projects",
       "events": "No related events",
       "poi": "No related places"

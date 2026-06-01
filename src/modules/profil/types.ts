@@ -6,7 +6,7 @@
  */
 
 import type React from "react";
-import type { Project, Event, Poi } from "@communecter/cocolight-api-client";
+import type { Organization, Project, Event, Poi } from "@communecter/cocolight-api-client";
 
 // ============================================
 // Types d'actions (EntityActions)
@@ -68,7 +68,7 @@ export interface UserAction {
 /**
  * Types de relations supportés pour ProfileRelated
  */
-export type RelationType = "projects" | "events" | "poi";
+export type RelationType = "organizations" | "projects" | "events" | "poi";
 
 /**
  * Paramètres pour la requête d'entités liées
@@ -82,7 +82,7 @@ export interface RelatedEntitiesParams {
  * Résultat du hook useRelatedEntities
  */
 export interface UseRelatedEntitiesResult {
-  entities: (Project | Event | Poi)[];
+  entities: (Organization | Project | Event | Poi)[];
   totalCount: number;
   isLoading: boolean;
   isFetchingNextPage: boolean;

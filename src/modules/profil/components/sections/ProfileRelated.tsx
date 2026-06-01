@@ -15,7 +15,7 @@ interface ProfileRelatedProps {
 
 function mapRelationType(type: string | undefined): RelationType {
   // Valider que le type est supporté par le hook
-  if (type === "projects" || type === "events" || type === "poi") {
+  if (type === "organizations" || type === "projects" || type === "events" || type === "poi") {
     return type;
   }
   return "projects";
@@ -45,6 +45,8 @@ export default function ProfileRelated({ section }: ProfileRelatedProps) {
 
   const getEmptyTitle = () => {
     switch (relationType) {
+      case "organizations":
+        return t("ProfileRelated.empty.organizations");
       case "projects":
         return t("ProfileRelated.empty.projects");
       case "events":

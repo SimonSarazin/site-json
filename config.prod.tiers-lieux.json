@@ -768,13 +768,6 @@
           }
         },
         {
-          "type": "html",
-          "id": "show-more-button",
-          "props": {
-            "html": "<div class=\"container pb-5 mx-auto px-6\"><div class=\"text-center\"><button class=\"text-gray-700 font-light hover:text-primary transition\">Afficher plus +</button></div></div>"
-          }
-        },
-        {
           "type": "searchProStatic",
           "id": "section-events",
           "props": {
@@ -794,6 +787,11 @@
               "defaultTypes": [
                 "events"
               ],
+              "defaultFilters": {
+                "$or": {
+                    "source.key":      { "$in": ["franceTierslieux", "tierslieuxbelgique", "navigatorDesTierslieux"] }
+                  } 
+              },
               "indexStepList": 4
             },
             "list": {
@@ -2686,6 +2684,37 @@
           ]
         },
         {
+          "id": "organizations",
+          "label": {
+            "fr": "Organisations",
+            "en": "Organizations"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-related",
+                  "relationType": "organizations",
+                  "title": {
+                    "fr": "Organisations partenaires",
+                    "en": "Partner Organizations"
+                  }
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true
+                }
+              ]
+            }
+          ]
+        },
+        {
           "id": "projects",
           "label": {
             "fr": "Projets",
@@ -2863,37 +2892,6 @@
                   "showCounts": true,
                   "showAddress": true,
                   "showOrganizer": true
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "id": "organizations",
-          "label": {
-            "fr": "Organisations",
-            "en": "Organizations"
-          },
-          "sections": [
-            {
-              "type": "profile-tab-layout",
-              "leftSections": [
-                {
-                  "type": "profile-related",
-                  "relationType": "projects",
-                  "title": {
-                    "fr": "Organisations partenaires",
-                    "en": "Partner Organizations"
-                  }
-                }
-              ],
-              "rightSections": [
-                {
-                  "type": "profile-info",
-                  "variant": "sidebar",
-                  "sticky": true,
-                  "showCounts": true,
-                  "showAddress": true
                 }
               ]
             }
