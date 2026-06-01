@@ -1,9 +1,14 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useEffect, useState } from "react";
 import { useCocolight } from "@/hooks/useCocolight";
+import { useSite } from "@/hooks/useSite";
 import type { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
 import ProfileMapLeaflet from "@/modules/profil/components/sections/ProfileMapLeaflet";
+import { Button } from "@/components/ui/button";
+import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
+import { EditProfileModal } from "@/modules/profil/components/profile-edit/EditProfileModal";
+import { ProfileEntityProvider, type ProfileConfig, type ProfileType } from "@/modules/profil";
 import {
   Accessibility,
   Building2,
@@ -11,6 +16,7 @@ import {
   Calendar,
   CheckCircle2,
   Droplet,
+  Edit,
   Heart,
   History,
   Info,
@@ -20,6 +26,7 @@ import {
   Users,
   Lightbulb,
   Unlock,
+  X,
 } from "lucide-react";
 import type { DetailsModeProps } from "../../schema";
 
@@ -55,6 +62,8 @@ interface PoiDetail {
   nature?: string;
   sol?: string;
   surface?: string;
+  longueur?: string;
+  largeur?: string;
   eclairage?: string;
   libreAccess?: string;
   partenariat?: string;
@@ -102,6 +111,10 @@ const ACTIVITY_FORM_SUFFIX = "2172025_854_0";
 const ACTIVITY_NAME_SUFFIX = "mdegc9sgox76p87n27";
 const ACTIVITY_PARENT_SUFFIX = "mdn1fzoewyjg66n85p";
 const ACTIVITY_POI_FINDER_SUFFIX = "mocno9muqzznoo0gyx";
+
+function isValidProfileKey(key: string): key is ProfileType | "default" {
+  return ["events", "organizations", "projects", "citoyens", "poi", "default"].includes(key);
+}
 
 const isTrue = (value?: string) => {
   if (!value) return false;
@@ -447,6 +460,14 @@ function toPoi(item: DetailsModeProps["item"]): PoiDetail {
       serverData.equip_surf,
       entityData.equip_surf,
     ),
+    longueur: resolveText( 
+      serverData.equip_long,
+      entityData.equip_long,
+    ),
+    largeur : resolveText(
+      serverData.equip_larg,
+      entityData.equip_larg,
+    ),
     eclairage: resolveText(
       serverData.equip_eclair,
       entityData.equip_eclair,
@@ -558,6 +579,9 @@ function Feature({
 
 export default function PoiDetailSSBE({ openDetails, setOpenDetails, item }: DetailsModeProps) {
   const { entity } = useCocolight();
+  const { config: siteConfig } = useSite();
+  const { canEditProfile } = useProfilPermissions(item ?? null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const poi = toPoi(item);
   const entityData = (item ?? {}) as unknown as Record<string, unknown>;
   const serverData = (item?.serverData ?? {}) as unknown as Record<string, unknown>;
@@ -581,15 +605,40 @@ export default function PoiDetailSSBE({ openDetails, setOpenDetails, item }: Det
     .join(" ");
   const surfaceValue = toNumberValue(poi.surface);
   const surfaceLabel = surfaceValue !== undefined ? `${surfaceValue} m²` : poi.surface || "—";
+  const longueurValue = toNumberValue(poi.longueur);
+  const longueurLabel = longueurValue !== undefined ? `${longueurValue} m` : poi.longueur || "—";
+  const largeurValue = toNumberValue(poi.largeur);
+  const largeurLabel = largeurValue !== undefined ? `${largeurValue} m` : poi.largeur || "—";
   const hasGeo = Boolean(
     poi.geo &&
       Number.isFinite(poi.geo.latitude) &&
       Number.isFinite(poi.geo.longitude)
   );
   const poiId = resolveItemId(item);
+    const rawEntityType = item?.getEntityType?.() || "";
+    const entityType = isValidProfileKey(rawEntityType) ? rawEntityType : "default";
+    const profileConfig: ProfileConfig =
+      (entityType !== "default" && siteConfig?.profiles?.[entityType]) ||
+      siteConfig?.profiles?.default ||
+      {
+        layout: "default",
+        sections: [
+          { type: "profile-header" as const, variant: "hero" as const },
+          { type: "profile-info" as const },
+          { type: "profile-about" as const },
+          { type: "profile-organizer" as const },
+        ],
+        hideHeader: false,
+        hideFooter: false,
+      };
   const [activities, setActivities] = useState<PoiActivity[]>([]);
   const [isActivitiesLoading, setIsActivitiesLoading] = useState(false);
   const [activitiesError, setActivitiesError] = useState<Error | null>(null);
+
+  const handleEdit = () => {
+    setEditModalOpen(true);
+    setOpenDetails(false);
+  };
 
   useEffect(() => {
     if (!openDetails) return;
@@ -711,8 +760,32 @@ export default function PoiDetailSSBE({ openDetails, setOpenDetails, item }: Det
   }, [entity, openDetails, poiId]);
 
   return (
-    <Dialog open={openDetails} onOpenChange={setOpenDetails}>
-      <DialogContent className="sm:max-w-5xl max-h-[90vh] p-0 overflow-hidden gap-0">
+    <>
+      <Dialog open={openDetails} onOpenChange={setOpenDetails}>
+        <DialogContent
+          className="sm:max-w-5xl max-h-[90vh] p-0 overflow-hidden gap-0"
+          showCloseButton={false}
+        >
+          <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+            {canEditProfile && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleEdit}
+                className="text-primary-foreground hover:bg-white/15"
+              >
+                <Edit className="h-4 w-4" />
+                Editer
+              </Button>
+            )}
+            <DialogClose
+              className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+            >
+              <X />
+              <span className="sr-only">Fermer</span>
+            </DialogClose>
+          </div>
         <div className="px-6 py-5" style={{ background: "var(--card-header-gradient)" }}>
           <DialogHeader className="text-left space-y-3">
             <div className="flex flex-wrap items-center gap-2">
@@ -825,8 +898,8 @@ export default function PoiDetailSSBE({ openDetails, setOpenDetails, item }: Det
                 </div>
                 <div className="mt-6 space-y-4">
                   <div className="h-px bg-border/60" />
-                  <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    Details PMR
+                  <div className="font-semibold text-base">
+                    Details PMR (Personnes à Mobilité Réduite)
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
                     <InfoRow label="Acces" value={yesNo(poi.equipPmrAcc)} muted />
@@ -837,8 +910,8 @@ export default function PoiDetailSSBE({ openDetails, setOpenDetails, item }: Det
                     <InfoRow label="Vestiaires PMR" value={yesNo(poi.equipPmrVest)} muted />
                   </div>
                   <div className="h-px bg-border/60" />
-                  <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    Details PSHS
+                  <div className="font-semibold text-base">
+                    Details PSHS (Personnes en Situation de Handicap Sensoriel)
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
                     <InfoRow label="Aire de pratique" value={yesNo(poi.equipPshsAire)} muted />
@@ -853,11 +926,12 @@ export default function PoiDetailSSBE({ openDetails, setOpenDetails, item }: Det
             </div>
 
             <aside className="space-y-6">
-              <section className="overflow-hidden rounded-2xl">
-                <img
-                  src={imageSrc}
-                  alt={poi.name || "Point d'intérêt"}
-                  loading="lazy"
+              {hasImage && (
+                <section className="overflow-hidden rounded-2xl">
+                  <img
+                    src={imageSrc}
+                    alt={poi.name || "Point d'intérêt"}
+                    loading="lazy"
                   className={
                     hasImage
                       ? "h-56 w-full object-cover"
@@ -865,6 +939,7 @@ export default function PoiDetailSSBE({ openDetails, setOpenDetails, item }: Det
                   }
                 />
               </section>
+              )}
               <section className="rounded-2xl border border-border bg-card/70 shadow-sm overflow-hidden">
                 {hasGeo && poi.geo ? (
                   <ProfileMapLeaflet
@@ -978,6 +1053,14 @@ export default function PoiDetailSSBE({ openDetails, setOpenDetails, item }: Det
                     <span className="font-medium text-foreground">{surfaceLabel}</span>
                   </div>
                   <div className="flex items-center justify-between gap-4 py-2">
+                    <span className="text-muted-foreground">Longueur</span>
+                    <span className="font-medium text-foreground">{longueurLabel}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 py-2">
+                    <span className="text-muted-foreground">Largeur</span>
+                    <span className="font-medium text-foreground">{largeurLabel}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 py-2">
                     <span className="text-muted-foreground">Partenariat</span>
                     <span className="font-medium text-foreground">
                       {isTrue(poi.partenariat) ? poi.typePartenariat || "Oui" : "Non"}
@@ -1046,7 +1129,18 @@ export default function PoiDetailSSBE({ openDetails, setOpenDetails, item }: Det
             </aside>
           </div>
         </ScrollArea>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+
+      {canEditProfile && item && (
+        <ProfileEntityProvider entity={item} config={profileConfig} entityType={entityType}>
+          <EditProfileModal
+            open={editModalOpen}
+            onOpenChange={setEditModalOpen}
+            entity={item}
+          />
+        </ProfileEntityProvider>
+      )}
+    </>
   );
 }
