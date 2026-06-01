@@ -130,28 +130,31 @@ const SECTION_EXTRACTORS: Record<string, (props: Record<string, unknown>) => unk
 };
 ```
 
-**`findSearchSections()` recursive function** : Recherche récursive des sections de recherche (`searchPro`/`searchProStatic`) dans l'arbre des sections, y compris dans les containers imbriqués (`gridLayout`, `tabs`). Utilise `SECTION_EXTRACTORS` pour parcourir les containers :
+**`findSearchSections()` recursive function** : Recherche récursive des sections de recherche (`searchPro`/`searchProStatic`) dans l'arbre des sections, y compris dans les containers imbriqués (`gridLayout`, `tabs`). Utilise `SECTION_EXTRACTORS` pour parcourir les containers.
+
+**`findFiltersSections()` (module search, `src/modules/search/prefetch/prefetchFilters.ts`)** : Homologue générique pour le prefetch SSR des filtres. Au lieu de matcher un `type` en dur, il détecte toute section qui **déclare** des props de filtres (`filterGroups`, `filtersByAnswers`, `filtersByPath`) — ce qui couvre la `FiltersSection` classique ET le `hero-tiers-lieux` (applicateur headless de la home) sans cas particulier.
 
 ```typescript
-function findSearchSections(
-  sections: Array<{ type: string; props?: Record<string, unknown> }>
-): Array<{ type: string; props?: Record<string, unknown> }> {
-  const result: Array<{ type: string; props?: Record<string, unknown> }> = [];
-
+// src/modules/search/prefetch/prefetchFilters.ts
+export function findFiltersSections(sections: RawSection[]): RawSection[] {
+  const result: RawSection[] = [];
   for (const section of sections) {
-    if (section.type === 'searchPro' || section.type === 'searchProStatic') {
+    const props = (section.props ?? {}) as Record<string, unknown>;
+    // Générique : toute section déclarant des filtres est pré-chargée
+    if (props.filterGroups || props.filtersByAnswers || props.filtersByPath) {
       result.push(section);
     }
-    else if (SECTION_EXTRACTORS[section.type] && section.props) {
+    if (SECTION_EXTRACTORS[section.type] && section.props) {
       const nested = SECTION_EXTRACTORS[section.type](section.props)
-        .filter(Boolean) as Array<{ type: string; props?: Record<string, unknown> }>;
-      result.push(...findSearchSections(nested));
+        .filter(Boolean) as RawSection[];
+      result.push(...findFiltersSections(nested));
     }
   }
-
   return result;
 }
 ```
+
+Cette approche garantit que l'ajout de tout nouveau composant déclarant `filterGroups` est automatiquement pré-chargé côté SSR sans modifier la fonction.
 
 ---
 
@@ -801,13 +804,19 @@ const { canEditProfile, canAddNews } = useUserPermissions(entity, news?);
 
 ### Autocomplete
 
+`useAutocomplete` vit dans `src/modules/search/hooks/useAutocomplete.ts` (module search, pas dans `src/hooks/`). Il est partagé par les sections de recherche ET par le hero `hero-tiers-lieux` qui l'utilise pour l'autocompletion scopee réseau.
+
 ```ts
+// src/modules/search/hooks/useAutocomplete.ts
 const { suggestions, search, setSearch, isLoading } = useAutocomplete({
-  queryFn: (q) => api.globalAutocomplete(q),
+  baseParams,         // scope réseau (meme format que searchPro)
+  searchVariant,      // "default" | "navigator-tl"
   minLength: 2,
   debounce: 300,
 });
 ```
+
+Il construit son payload via `buildSearchPayload` (meme logique que `useSearchQuery`) pour garantir la coherence entre autocompletion et liste.
 
 ### Debounce
 
@@ -1020,7 +1029,7 @@ Tous les variants sont lazy-loadés via `vite-preload`. Pour un site donné, seu
 
 Composant qui reçoit un objet `Section` (type + props + id) et rend le composant lazy correspondant.
 
-**Liste complète des 65 types de section enregistrés** (dans `LazySections`) :
+**Liste complète des 66 types de section enregistrés** (dans `LazySections`) :
 
 | Groupe | Types |
 |---|---|
@@ -1117,6 +1126,19 @@ Fonctions utilitaires internes disponibles dans `src/lib/` — référence rapid
 | `toastUtils.ts` | `src/lib/toastUtils.ts` | Helpers pour les notifications sonner |
 | `confetti.ts` | `src/lib/confetti.ts` | Lance une animation confetti (module cagnotte) |
 | `fundingProjectUtils.ts` | `src/lib/fundingProjectUtils.ts` | Calculs de financement (pourcentage atteint, formatage montant) |
+
+### Helpers du module search (source unique)
+
+Ces utilitaires dans `src/modules/search/` sont la source de vérité pour la logique de recherche, partagée entre les sections `searchPro`, `searchProStatic`, le hero `hero-tiers-lieux`, et le prefetch SSR.
+
+| Utilitaire | Fichier | Description |
+|---|---|---|
+| `buildSearchPayload` | `lib/buildSearchPayload.ts` | Construit le payload `searchCostum` depuis `baseParams` + state courant. Utilisé par `useSearchQuery` et `useAutocomplete` — garantit la coherence entre la liste et l'autocompletion. |
+| `searchByFieldsToQuery` | `lib/searchByFieldsToQuery.ts` | Convertit le champ `searchBy` (string CSV, array, ou `"ALL"`) en parametre backend. |
+| `computeFiltersFromUrl` | `lib/computeFiltersFromUrl.ts` | Parse les query params URL (`q`, `tags`, `type`, `map`) en state de filtres exploitable par les sections. |
+| `usePageFiltersUrlSync` | `hooks/usePageFiltersUrlSync.ts` | Applicateur headless : synchronise `PageFiltersContext` avec l'URL (`searchPro`) sans couplage direct aux composants. Permet a des sections tierces (hero, filters) d'écrire dans le state sans connaitre l'URL. |
+| `useAutocomplete` | `hooks/useAutocomplete.ts` | Autocompletion scopée réseau. Partagee par la barre de recherche et le hero `hero-tiers-lieux`. |
+| `findFiltersSections` | `prefetch/prefetchFilters.ts` | Recherche récursive de toute section déclarant `filterGroups`/`filtersByAnswers`/`filtersByPath` pour le prefetch SSR (générique — pas de cas en dur par `type`). |
 
 ---
 

@@ -191,14 +191,14 @@ Ces conventions garantissent que `SectionRenderer` peut traiter **toutes** les s
 
 ## Description rapide des principaux types de section
 
-Le système supporte actuellement **57 types de sections** :
+Le système supporte actuellement **66 types de sections** :
 
 ### Sections de contenu & layout
 
 | Type               | Composant                | Usage principal                                                        |
 | ------------------ | ------------------------ | ---------------------------------------------------------------------- |
 | **hero**           | `HeroSection`            | Bandeau d'accueil avec titre, sous-titre, image de fond et boutons CTA |
-| **hero-tiers-lieux** | `HeroTiersLieux`       | Hero spécialisé pour Tiers-Lieux avec recherche intégrée               |
+| **hero-tiers-lieux** | `HeroTiersLieux`       | Hero spécialisé pour Tiers-Lieux avec recherche intégrée, applicateur de filtres headless (`filterGroups`/`filtersByAnswers`) et autocompletion scopée réseau (`searchVariant`/`baseParams`). Le mode sous-site (`/s/`) et ses props (`headlineSubsite`, `subheadSubsite`) ont été supprimés. |
 | **cards**          | `CardsSection`           | Grille de cartes (grid/masonry/carousel/list)                          |
 | **content**        | `ContentSection`         | Bloc de contenu riche avec image, texte, tags et liens                 |
 | **title**          | `TitleSection`           | Titre centré pour séparer les parties d'une page                       |

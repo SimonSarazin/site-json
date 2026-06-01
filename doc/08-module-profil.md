@@ -521,7 +521,7 @@ Le module profil propose **17 types de sections** configurables:
 | `profile-organizer`        | ProfileOrganizerSection      | showLogo, showDescription, showLink            | Organisateur/Porteur de projet            |
 | `profile-members`          | ProfileMembersSection        | limit, showRole, showManagement                | Liste des membres                         |
 | `profile-gallery`          | ProfileGallerySection        | columns, lightbox                              | Galerie d'images avec lightbox            |
-| `profile-related`          | ProfileRelatedSection        | relationType, limit                            | Entités liées (projects, events, poi)     |
+| `profile-related`          | ProfileRelatedSection        | relationType, limit                            | Entités liées (projects, events, poi, organizations) |
 | `profile-actions`          | ProfileActionsSectionSchema  | showEditButton, showAddDropdown, layout        | Boutons d'action (éditer, ajouter, email) |
 | `profile-event-dates`      | ProfileEventDatesSectionSchema | showType, dateFormat                         | Dates d'événement (start/end)             |
 | `profile-badges`           | ProfileBadgesSectionSchema   | layout (grid, flex, list), maxDisplay          | Badges et certifications                  |
@@ -552,6 +552,10 @@ export const ProfileHeaderSectionSchema = z.object({
   addDropdownLabel: LocalizedString.optional(),
   showEmailButton: z.boolean().optional().default(true),
   showReservationButton: z.boolean().optional().default(false),
+  // Opt-in : le bouton « Voir toutes les photos » ne s'affiche QUE si le type de
+  // profil courant possède un onglet `gallery` dans sa config (`profiles[type].tabs`).
+  // Ce flag permet de le forcer masqué même si l'onglet gallery existe.
+  // Lien généré via buildProfileTabUrl(siteConfig, entity, tab => tab.id === "gallery").
   showAllPhotosButton: z.boolean().optional().default(true),
 });
 ```
@@ -643,6 +647,18 @@ export function ProfileSectionRenderer({ section }: ProfileSectionRendererProps)
 * Les sections non-profil sont deleguees au `SectionRenderer` global
 * Les sections `news` recoivent automatiquement le `entitySlug` du profil courant
 
+### Variante `complete` — comportements spécifiques
+
+`ProfileHeaderComplete` (`components/sections/headers/ProfileHeaderComplete.tsx`) intègre deux comportements notables :
+
+**Bouton « Voir toutes les photos » — opt-in** :
+Le bouton n'est rendu que si le type de profil courant a un onglet `gallery` configuré. Le check est fait via `buildProfileTabUrl(siteConfig, entity, tab => tab.id === "gallery")` : si aucun onglet `gallery` n'existe pour ce type, `galleryHref` est `null` et le bouton est supprimé. Le flag `showAllPhotosButton: false` dans la config permet de le masquer même quand l'onglet existe. Le lien pointe vers `/profil/:slug/gallery`.
+
+**Bouton « Contacter par email »** :
+Utilise `<Button asChild>` avec un `<a href="mailto:…">` natif au lieu de `window.location.href`. Cette approche est plus fiable (respect du client mail par défaut, ouverture dans un nouvel onglet possible) et accessible.
+
+**`ProfileActions` (`components/sections/ProfileActions.tsx`)** applique le même correctif mailto (`<Button asChild><a href="mailto:…">`), alignant le comportement de la section `profile-actions` avec la variante `complete`.
+
 ## SEO dynamique (ProfileSeo)
 
 Le composant `ProfileSeo` génère les meta tags dynamiquement:
@@ -689,6 +705,14 @@ function ProfilePage() {
   return <h1>{t("ProfilePage.title")}</h1>;
 }
 ```
+
+Clés i18n ajoutées récemment :
+
+| Clé | fr | en |
+|-----|----|----|
+| `ProfileRelated.empty.organizations` | `"Aucune organisation liée"` | `"No linked organizations"` |
+
+Ces clés sont utilisées par `ProfileRelated.tsx` dans `getEmptyTitle()` pour le cas `relationType === "organizations"`.
 
 ## Configuration JSON dans site-config.json
 
@@ -756,6 +780,13 @@ Exemple de configuration des profils avec **tabs** dans `site-config.json`:
           "id": "social",
           "label": { "fr": "Réseau", "en": "Network" },
           "component": "SocialTab"
+        },
+        {
+          "id": "organizations",
+          "label": { "fr": "Organisations partenaires", "en": "Partner organizations" },
+          "sections": [
+            { "type": "profile-related", "relationType": "organizations" }
+          ]
         }
       ],
       "seo": {
@@ -789,6 +820,9 @@ Exemple de configuration des profils avec **tabs** dans `site-config.json`:
 - Chaque tab génère une route: `/profil/:slug/{tabId}`
 - Les sous-routes permettent des pages de détail: `/profil/:slug/news/:newsId`
 - `condition` contrôle l'affichage selon le type d'entité ou les permissions
+
+**Onglet « Organisations partenaires » (`relationType: "organizations"`)** :
+L'onglet affichant les organisations partenaires doit être placé sous `profiles.organizations` (pas `projects`). Il repose sur le cas `"organizations"` de `useRelatedEntities` qui n'est accessible que si `isOrganization(entity)` est vrai. En config `config.prod.tiers-lieux.json`, le tab est déclaré avec `"id": "organizations"` et `"relationType": "organizations"` directement dans `profiles.organizations.tabs`.
 
 **Hiérarchie de configuration**:
 1. Configuration spécifique au type (`organizations`, `events`, etc.)
@@ -828,11 +862,38 @@ Le module profil expose de nombreux hooks specialises :
 | `useMembershipQuery` | `hooks/useMembershipQuery.tsx` | Query membership |
 | `useMembersQuery` | `hooks/useMembersQuery.tsx` | Query membres |
 | `useProfileMutations` | `hooks/useProfileMutations.tsx` | Mutations profil (edit, upload) |
-| `useRelatedEntities` | `hooks/useRelatedEntities.tsx` | Entités liées (projets, events, poi) |
+| `useRelatedEntities` | `hooks/useRelatedEntities.tsx` | Entités liées (projets, events, poi, organisations partenaires) |
 | `useRelationshipMutations` | `hooks/useRelationshipMutations.ts` | Mutations relations (follow, friend) |
 | `useProfileSetup` | `hooks/useProfileSetup.ts` | Setup initial du profil |
 | `useOrganizationMutations` | `hooks/useOrganizationMutations.tsx` | Mutations organisation |
 | `useProjectMutations` | `hooks/useProjectMutations.tsx` | Mutations projet |
+
+### `useRelatedEntities` — détail
+
+```ts
+// types.ts
+export type RelationType = "organizations" | "projects" | "events" | "poi";
+
+export interface UseRelatedEntitiesResult {
+  entities: (Organization | Project | Event | Poi)[];
+  // ...
+}
+```
+
+Le hook `useRelatedEntities(entity, relationType, params?)` gère quatre `case` dans son switch :
+
+| `relationType` | Condition sur `entity` | Appel API |
+|---|---|---|
+| `"projects"` | `isOrganization(entity)` | `entity.getProjects(queryParams)` |
+| `"events"` | `isOrganization` ou `isProject` | `entity.getEvents(queryParams)` |
+| `"poi"` | `isOrganization(entity)` | `entity.getPois(queryParams)` |
+| `"organizations"` | `isOrganization(entity)` | `entity.searchCostum({ searchType: ["organizations"], filters: { ["links.members." + entity.id]: { $exists: true } }, count: true, countType: ["organizations"], notSourceKey: true, ... })` |
+
+Le cas `"organizations"` remonte les **organisations partenaires** : les entités `Organization` dont le champ `links.members` contient l'id de l'organisation courante (c'est-à-dire les organisations dont la courante est membre). Il n'existe pas de méthode dédiée dans le SDK, d'où le recours à `searchCostum` avec un filtre MongoDB.
+
+> `UseRelatedEntitiesResult.entities` est typé `(Organization | Project | Event | Poi)[]` — l'union inclut donc `Organization` depuis l'ajout de ce cas.
+
+**Note schéma** : `ProfileRelatedSectionSchema.relationType` dans `schema.ts` énumère `["organizations", "projects", "events", "poi"]` — `"organizations"` est validé par le schéma Zod, géré par `mapRelationType`/`getEmptyTitle` dans `ProfileRelated.tsx`, et utilisé en config (`config.prod.tiers-lieux.json`).
 
 ---
 
@@ -846,7 +907,7 @@ La modale `AddTiersLieuxModal` (`src/modules/profil/components/add/AddTiersLieux
 - `TiersLieuxForm` (`src/modules/profil/components/add/TiersLieuxForm.tsx`) — Formulaire react-hook-form + Zod en 5 onglets :
   1. **Identification** : nom, description courte, type de structure, mode de gestion
   2. **Localisation** : adresse, code postal, localité (via `EditLocationTab`)
-  3. **Médias** : logo, photos (upload)
+  3. **Médias** : logo + URL vidéo. **L'upload de photos est désactivé** (UI, state et handlers commentés via `TODO(photos)`) — non géré côté backend pour l'instant. Seul le logo reste fonctionnel dans cet onglet.
   4. **Contacts & réseaux** : email, téléphone, site web, liens sociaux, URL vidéo
   5. **Horaires & description** : horaires d'ouverture par jour de la semaine, description longue (Markdown)
 
@@ -860,9 +921,18 @@ export const tiersLieuxSchema = z.object({
   managementType: z.string().min(1),
   email: z.string().email().min(1),
   hours: z.object({ monday: dayHoursSchema, /* ... 7 jours */ }),
+  photos: z.array(z.string()).default([]), // conservé dans le schéma, toujours vide
   // ... autres champs optionnels
 });
+
+// Le payload inclut les fichiers binaires non couverts par Zod :
+export interface TiersLieuxSubmitPayload extends TiersLieuxFormData {
+  _logoFile: File | null;
+  _photoFiles: File[];  // toujours [] tant que TODO(photos) est actif
+}
 ```
+
+> **TODO(photos)** : Le state `photoFiles`, les handlers `handlePhotosUpload`/`removePhoto`, et le bloc UI « Photos » de l'onglet Médias sont commentés dans `TiersLieuxForm.tsx`. `handleSubmit` passe `_photoFiles: []` en dur. Réactiver en décommentant ces trois blocs et en remettant `_photoFiles: photoFiles`.
 
 ### Mapping config → payload API (`tiersLieuxMapping.ts`)
 

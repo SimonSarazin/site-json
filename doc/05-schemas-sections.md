@@ -69,6 +69,13 @@
 
 ---
 
+> **Schémas partagés (module search)** : `FilterGroupSchema`, `FilterGroupsSchema`,
+> `FiltersByAnswersSchema`, `FiltersByPathSchema`, `SearchBaseParamsSchema`,
+> `SearchVariantSchema` et `IconNameSchema` sont définis dans
+> `src/modules/search/schema.ts` et réutilisés par `FiltersSectionSchema`,
+> `SearchProSectionSchema`, `SearchProStaticSectionSchema` et
+> `HeroTiersLieuxSchema` — aucune duplication inline.
+
 Chaque section est un objet :
 
 ```ts
@@ -1053,37 +1060,23 @@ export const SearchProSectionSchema = z.object({
       title: LocalizedString.optional(),
       linkText: LocalizedString.optional(),
       linkHref: z.string().optional(),
-      showMapButton: z.boolean().default(true),
+      linkIcon: IconNameSchema.optional(),
+      // Note: showMapButton a été SUPPRIMÉ (était une config morte jamais lue —
+      // le bouton carte est gated sur `enableMap`)
     }).optional(),
 
     filters: z.record(z.string(), TagsFilterSchema).optional(),
 
-    baseParams: z.object({
-      fediverse:     z.boolean().optional(),
-      indexStepList: z.number().optional(),
-      indexStepMap:  z.number().optional(),
-      defaultTypes:  z.array(SearchTypeSchema).optional(),
-      defaultTags:   z.array(z.string()).optional(),
-      defaultFilters: z.record(z.string(), z.unknown()).optional(),
-      defaultFields:  z.array(z.string()).optional(),
-      defaultSortBy: z.record(z.string(), z.union([z.literal(1), z.literal(-1)])).optional(),
-      notSourceKey: z.boolean().optional(),
-      locality: z.record(z.string(), z.object({
-        id: z.string(),
-        type: z.string(),
-        name: z.string().optional(),
-        countryCode: z.string().optional(),
-        level: z.union([z.string(), z.number()]).optional(),
-        active: z.boolean().optional(),
-        key: z.string().optional(),
-      })).optional(),
-    }).optional(),
+    baseParams: SearchBaseParamsSchema.optional(),
 
     list: ListConfSchema.optional(),
     map:  MapConfSchema.optional(),
   }),
 });
 ```
+
+> `baseParams` utilise désormais le schéma partagé `SearchBaseParamsSchema` de
+> `src/modules/search/schema.ts` (plus de duplication inline).
 
 | Propriete | Type | Description |
 | --------- | ---- | ----------- |
@@ -1097,9 +1090,12 @@ export const SearchProSectionSchema = z.object({
 | `showActiveFiltersTags` | `boolean` | Afficher les tags actifs |
 | `disableInfiniteScroll` | `boolean?` | Desactiver le scroll infini |
 | `showDetailedViewToggle` | `boolean?` | Afficher le bouton vue detaillee |
-| `customHeader` | `object?` | Configuration de l'en-tete personnalise |
+| `searchVariant` | `"default" \| "navigator-tl"?` | Variant SDK endpoint backend |
+| `customHeader` | `object?` | En-tete personnalise (`title`, `linkText`, `linkHref`, `linkIcon`) |
+| `customHeader.linkHref` | `string?` | URL du lien "voir sur la page complete" |
+| `customHeader.linkIcon` | `IconName?` | Icone Lucide du lien (type `IconName`, pas `string`) |
 | `filters` | `Record<string, TagsFilterSchema>?` | Filtres personnalises (tags, categories) |
-| `baseParams` | `object?` | Parametres de base pour la recherche avancee |
+| `baseParams` | `SearchBaseParamsSchema?` | Parametres de base pour la recherche avancee |
 | `list` | `ListConfSchema?` | Configuration de l'affichage en liste |
 | `map` | `MapConfSchema?` | Configuration de l'affichage sur la carte |
 
@@ -1191,11 +1187,12 @@ export const SearchProStaticSectionSchema = z.object({
       title: LocalizedString.optional(),
       linkText: LocalizedString.optional(),
       linkHref: z.string().optional(),
-      showMapButton: z.boolean().default(true),
+      linkIcon: IconNameSchema.optional(),
+      // Note: showMapButton a été SUPPRIMÉ (gated sur enableMap)
     }).optional(),
 
     filters: z.record(z.string(), TagsFilterSchema).optional(),
-    baseParams: z.object({ /* meme structure que searchPro */ }).optional(),
+    baseParams: SearchBaseParamsSchema.optional(),
     list: ListConfSchema.optional(),
     map:  MapConfSchema.optional(),
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
@@ -1209,12 +1206,24 @@ export const SearchProStaticSectionSchema = z.object({
 - **Placeholder optionnel** : contrairement a `searchPro` ou il est obligatoire
 - **Fonctionnalites supplementaires** : `addButton`, `zoneSelector`, `tagSelector`, `csvButton`, `enableGraph`, `bg`
 - **Ideal pour** : integrer plusieurs recherches sur une meme page sans conflits de query params
+- **`customHeader.linkHref` + `customHeader.linkIcon`** : lien "voir sur la page complete" utilise avec `linkText` pour pointer vers la version `searchPro` complète. `showMapButton` a été supprimé.
+- **`defaultFilters.$or`** : peut contenir un filtre `$or` sous forme d'**objet** (pas de tableau MongoDB standard) pour scoper a des costums précis :
+  ```json
+  "defaultFilters": {
+    "$or": {
+      "source.keys": { "$in": ["my-key"] },
+      "source.key":  { "$in": ["my-key"] },
+      "reference.costum": { "$in": ["my-costum"] }
+    }
+  }
+  ```
+  > **Attention** : le DSL Communecter attend `$or` comme un objet. Un tableau provoque une erreur 500 backend.
 
 ---
 
 ## `hero-tiers-lieux`
 
-Hero specialise pour les sites Tiers-Lieux avec recherche integree.
+Hero specialise pour les sites Tiers-Lieux avec recherche integree. Ce hero peut piloter un **applicateur de filtres headless** (memes schémas de filtres que la `FiltersSection` de `/lieux`) et une **autocompletion scopee réseau** — sans passer par l'URL. Le mode "sous-site" (`/s/`) ainsi que les props `headlineSubsite`/`subheadSubsite` et `header.navSubsite` ont été entièrement supprimés.
 
 ```ts
 export const HeroTiersLieuxSchema = z.object({
@@ -1228,24 +1237,39 @@ export const HeroTiersLieuxSchema = z.object({
       .array(
         z.object({
           label: LocalizedString,
-          variant: z.enum(["default", "secondary", "accent"]).optional(),
+          variant: z.enum(["default", "secondary", "accent", "primary", "outline"]).optional(),
         })
       )
       .optional(),
     placeholder: LocalizedString.optional(),
     searchButtonText: LocalizedString.optional(),
+    // Scope de l'autocompletion — aligner sur le searchProStatic de la page
+    searchVariant: SearchVariantSchema.optional(),
+    baseParams: SearchBaseParamsSchema.optional(),
+    // Filtres de l'applicateur headless (catégories du hero)
+    // Memes schémas partagés que FiltersSection (/lieux)
+    filterGroups: FilterGroupsSchema.optional(),
+    filtersByAnswers: FiltersByAnswersSchema.optional(),
   }),
 });
 ```
+
+> `SearchVariantSchema`, `SearchBaseParamsSchema`, `FilterGroupsSchema` et
+> `FiltersByAnswersSchema` sont définis dans `src/modules/search/schema.ts` et
+> réutilisés sans duplication par ce schema et par `FiltersSectionSchema`.
 
 | Propriete | Type | Description |
 | --------- | ---- | ----------- |
 | `headline` | `LocalizedString` | Titre principal |
 | `subhead` | `LocalizedString?` | Sous-titre |
 | `backgroundImage` | `string?` | Image de fond |
-| `ctaButtons` | `array?` | Boutons d'action (variant: `"default" \| "secondary" \| "accent"`) |
+| `ctaButtons` | `array?` | Boutons d'action (variant: `"default" \| "secondary" \| "accent" \| "primary" \| "outline"`) |
 | `placeholder` | `LocalizedString?` | Placeholder du champ de recherche |
 | `searchButtonText` | `LocalizedString?` | Texte du bouton de recherche |
+| `searchVariant` | `"default" \| "navigator-tl"` | Variant SDK de l'endpoint backend pour l'autocompletion |
+| `baseParams` | `SearchBaseParamsSchema?` | Parametres de filtrage du périmetre réseau (scope de l'autocompletion) |
+| `filterGroups` | `FilterGroupSchema[]?` | Groupes de filtres headless (typologies, services — meme format que `FiltersSection`) |
+| `filtersByAnswers` | `Record<string, ...>?` | Filtres par réponses de formulaires CoForm |
 
 ---
 
@@ -1760,7 +1784,7 @@ export const CardCountCTSectionSchema = z.object({
 | ------------ | ----------------- | ------------------------------------- |
 | `title`      | `LocalizedString?` | Titre de la section                  |
 | `subtitle`   | `LocalizedString?` | Sous-titre                           |
-| `bg`         | `enum`            | Couleur de fond (inclut des gradients) |
+| `bg`         | `enum \| string`  | Couleur de fond : tokens sémantiques énumérés OU classe Tailwind brute (ex. `bg-cyan-500`) |
 | `baseParams` | `object?`         | Parametres de recherche de base       |
 | `cards`      | `array?`          | Cartes de compteur (countKey, label, icon, color, href) |
 
@@ -1870,45 +1894,67 @@ const ContentSectionSchema = z.object({
 
 ## `filters`
 
-Section de filtres avec groupes depliables.
+Section de filtres avec groupes depliables. Pilote `PageFiltersContext` consomme par `SearchPro`/`SearchProStatic` sur la meme page.
+
+> **Source** : `FiltersSectionSchema` est défini dans `src/modules/search/schema.ts` et réutilise les schémas partagés `FilterGroupSchema`/`FilterGroupsSchema`/`FiltersByAnswersSchema`/`FiltersByPathSchema` — sources uniques pour tous les consommateurs (section `filters`, section `hero-tiers-lieux`, schéma du prefetch SSR).
 
 ```ts
-const FiltersSectionSchema = z.object({
+// Depuis src/modules/search/schema.ts
+export const FilterGroupSchema = z.object({
+  id: z.string(),
+  label: LocalizedString,
+  type: z.enum(['scopeList', "filters", "entityList"]).default("filters"),
+  field: z.string().optional(),
+  options: z.array(z.object({
+    id: z.string(),
+    label: LocalizedString,
+    level: z.string().optional(),
+    name: z.string().optional(),
+    defaultChecked: z.boolean().optional(),
+  })).optional(),
+  config: z.object({
+    countryCode: z.array(z.string()).optional(),
+    level: z.array(z.string()).optional(),
+    upperLevelId: z.string().optional(),
+    sortBy: z.string().optional(),
+  }).optional(),
+  // Pour type "entityList" : recherche backend qui peuple les options
+  baseParams: SearchBaseParamsSchema.optional(),
+  filterType: z.enum(["sourceKey"]).optional(),
+  filterBy: z.string().optional(),
+});
+export const FilterGroupsSchema = z.array(FilterGroupSchema);
+
+export const FiltersByAnswersSchema = z.record(z.string(), z.object({
+  id: z.string().optional(),
+  label: LocalizedString,
+  type: z.enum(["form", "answers"]).default("answers"),
+  path: z.string().optional(),
+  forms: z.string().optional(),
+  finderPath: z.string().optional(),
+  value: z.record(z.string(), z.object({
+    id: z.string(),
+    finder: z.string(),
+  })).optional(),
+}));
+
+// Filtres par thématique CoForm (appel coformFilterByPath)
+export const FiltersByPathSchema = z.record(z.string(), z.object({
+  id: z.string().optional(),
+  label: LocalizedString,
+  thematicPath: z.string(),
+  finderPath: z.string().optional(),
+  notSourceKey: z.boolean().optional(),
+}));
+
+export const FiltersSectionSchema = z.object({
   type: z.literal("filters"),
   id: z.string().optional(),
   props: z.object({
     title: LocalizedString.optional(),
-    filterGroups: z.array(z.object({
-      id: z.string(),
-      label: LocalizedString,
-      type: z.enum(['scopeList', "filters"]).default("filters"),
-      field: z.string().optional(),
-      options: z.array(z.object({
-        id: z.string(),
-        label: LocalizedString,
-        level: z.string().optional(),
-        name: z.string().optional(),
-        defaultChecked: z.boolean().optional(),
-      })).optional(),
-      config: z.object({
-        countryCode: z.array(z.string()).optional(),
-        level: z.array(z.string()).optional(),
-        upperLevelId: z.string().optional(),
-        sortBy: z.string().optional(),
-      }).optional(),
-    })),
-    filtersByAnswers: z.record(z.string(), z.object({
-      id: z.string().optional(),
-      label: LocalizedString,
-      type: z.enum(["form", 'answers']).default("answers"),
-      path: z.string().optional(),
-      forms: z.string().optional(),
-      finderPath: z.string().optional(),
-      value: z.record(z.string(), z.object({
-        id: z.string(),
-        finder: z.string(),
-      })).optional(),
-    })).optional(),
+    filterGroups: FilterGroupsSchema,
+    filtersByAnswers: FiltersByAnswersSchema.optional(),
+    filtersByPath: FiltersByPathSchema.optional(),
     defaultOpenGroups: z.array(z.string()).optional(),
     className: z.string().optional(),
   }),
@@ -1918,12 +1964,15 @@ const FiltersSectionSchema = z.object({
 | Propriete          | Type      | Description                              |
 | ------------------ | --------- | ---------------------------------------- |
 | `title`            | `LocalizedString?` | Titre de la section filtres      |
-| `filterGroups`     | `array`   | Groupes de filtres                       |
-| `filterGroups[].type` | `enum` | Type de filtre (`"scopeList" \| "filters"`) |
-| `filterGroups[].field` | `string?` | Champ cible du filtre                |
+| `filterGroups`     | `FilterGroupSchema[]` | Groupes de filtres              |
+| `filterGroups[].type` | `"scopeList" \| "filters" \| "entityList"` | Type de filtre (`"entityList"` charge les options dynamiquement via `baseParams`) |
+| `filterGroups[].field` | `string?` | Champ cible du filtre               |
 | `filterGroups[].config` | `object?` | Configuration du filtre (countryCode, level, etc.) |
-| `filtersByAnswers` | `Record?` | Filtres par reponses de formulaires      |
-| `defaultOpenGroups` | `string[]?` | IDs des groupes ouverts par defaut     |
+| `filterGroups[].baseParams` | `SearchBaseParamsSchema?` | Pour `entityList` : périmetre de la recherche backend |
+| `filterGroups[].filterType` | `"sourceKey"?` | Comment l'option filtre les résultats (injection dans baseParams.sourceKey) |
+| `filtersByAnswers` | `Record?` | Filtres par réponses de formulaires CoForm |
+| `filtersByPath`    | `Record?` | Filtres par thématique CoForm via `coformFilterByPath` |
+| `defaultOpenGroups` | `string[]?` | IDs des groupes ouverts par defaut    |
 
 ---
 

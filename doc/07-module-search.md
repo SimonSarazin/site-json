@@ -13,10 +13,19 @@
   - [`thematics` — filières dynamiques](#thematics--filières-dynamiques)
   - [`filters` — sidebar de filtres partagée](#filters--sidebar-de-filtres-partagée)
 - [Context et filtres page-scoped (`pageFilters.ts`)](#context-et-filtres-page-scoped-pagefiltersts)
+- [Helpers purs partagés (`lib/`)](#helpers-purs-partagés-lib)
+  - [buildSearchPayload](#buildsearchpayload)
+  - [searchByFieldsToQuery](#searchbyfieldstoquery)
+  - [computeFiltersFromUrl](#computefiltersfromurl)
+  - [canonicalBaseParams](#canonicalbaseparams)
 - [Hooks](#hooks)
   - [useSearchQuery](#usesearchquery)
+  - [useAutocomplete](#useautocomplete)
+  - [usePageFiltersUrlSync](#usepagefiltersurlsync)
   - [useSearchFilters](#usesearchfilters)
   - [useFiltersByAnswersQuery](#usefiltersbyanswersquery)
+  - [useFiltersByPathQuery](#usefiltersbypathquery)
+  - [useFilterEntitiesQuery](#usefilterentitiesquery)
   - [useSearchZoneQuery](#usesearchzonequery)
   - [useCsvExport](#usecsvexport)
   - [useZonesQuery](#usezonesquery)
@@ -35,6 +44,7 @@
   - [AddEntityModal](#addentitymodal)
   - [SwitchDetailsMode](#switchdetailsmode)
 - [SSR — Prefetch](#ssr--prefetch)
+- [Flux « Design A » — filtres hero → liste cohérente](#flux-design-a--filtres-hero--liste-cohérente)
 - [Variantes de carte JSON (`list.card.type`)](#variantes-de-carte-json-listcardtype)
 - [Variante SDK `searchVariant`](#variante-sdk-searchvariant)
 - [i18n](#i18n)
@@ -48,7 +58,7 @@
 
 Le module **Search** (`src/modules/search/`) implémente l'interface de recherche avancée de SiteForge. Il expose plusieurs sections JSON, gère la pagination infinie, les filtres multidimensionnels (tags, types, zones géographiques, réponses CoForm), la vue carte Leaflet, l'export CSV, et les graphiques en bulles.
 
-**Type de module** : pas de `module.config.ts` avec routes propres. Le module expose des **sections** chargées lazily par `SectionRenderer`.
+**Type de module** : `core` (module.config.ts présent). Pas de routes propres — le module expose des **sections** chargées lazily par `SectionRenderer` et monte automatiquement un `PageFiltersProvider` via `module.config.PageProvider`.
 
 **Particularité** : `SearchPro` synchronise ses filtres avec les URL query params (navigable, partage de lien). `SearchProStatic` utilise un état local — plusieurs instances peuvent coexister sur la même page.
 
@@ -62,9 +72,13 @@ src/modules/search/
 ├── SearchProStatic.tsx            # Version sans sync URL (multi-instances)
 ├── schema.ts                      # Zod : FiltersSectionSchema, SearchProSectionSchema,
 │                                  #   SearchProStaticSectionSchema, CardCountCTSectionSchema,
-│                                  #   ThematicsSectionSchema (+ types dérivés)
+│                                  #   ThematicsSectionSchema, FilterGroupSchema,
+│                                  #   FilterGroupsSchema, FiltersByAnswersSchema,
+│                                  #   FiltersByPathSchema, IconNameSchema, SearchBaseParamsSchema
+│                                  #   (+ types dérivés)
 ├── styles.css                     # Styles spécifiques (carte, overrides Leaflet)
-├── index.ts                       # Exports publics
+├── module.config.ts               # type: "core", PageProvider: PageFiltersProvider
+├── index.ts                       # Exports publics (incl. useAutocomplete, buildSearchPayload)
 │
 ├── sections/
 │   ├── SearchProSection.tsx        # Wrapper section → SearchPro
@@ -89,6 +103,7 @@ src/modules/search/
 │   ├── SearchMapWrapper.tsx       # Wrapper (lazy-loads Leaflet via useClientModule)
 │   ├── FranceRegionsMap.tsx       # Carte choroplèthe régions France (type: "regions")
 │   ├── SearchBubbleChart.tsx      # Graphique en bulles (enableGraph: true)
+│   ├── ThematicCards.tsx          # Grille cards thématiques (defaultViewMode: "thematics")
 │   ├── renderMapPopup.tsx         # Dispatcher → variante de popup carte
 │   ├── AddEntityModal.tsx         # Modal création entité depuis la recherche
 │   │
@@ -126,8 +141,12 @@ src/modules/search/
 │
 ├── hooks/
 │   ├── useSearchQuery.ts          # Query principale (infinite + normalisation)
+│   ├── useAutocomplete.ts         # Suggestions de recherche (DANS le module, ex-src/hooks/)
+│   ├── usePageFiltersUrlSync.ts   # Applicateur headless URL → PageFilters
 │   ├── useSearchFilters.tsx       # Gestion locale des filtres (non-URL)
 │   ├── useFiltersByAnswers.ts     # Filtres dérivés des réponses CoForm (SSR-ready)
+│   ├── useFiltersByPath.ts        # Filtres par thématique CoForm (coformFilterByPath)
+│   ├── useFilterEntities.ts       # Entités pour groupes entityList (réseaux régionaux)
 │   ├── useSearchZone.ts           # Zones géographiques (SSR-ready)
 │   ├── useCsvExport.ts            # Export CSV des résultats actuels
 │   ├── useZonesQuery.ts           # Query zones pour le ZoneSelector
@@ -136,12 +155,16 @@ src/modules/search/
 │   └── loadLeaflet.ts             # Import dynamique Leaflet (client only)
 │
 ├── lib/
+│   ├── buildSearchPayload.ts      # SOURCE UNIQUE : baseParams → payload searchCostum
+│   ├── searchByFieldsToQuery.ts   # searchByFields → { filters, locality, sourceKeys }
+│   ├── computeFiltersFromUrl.ts   # URL query params → mutations PageFilters
 │   └── canonicalBaseParams.ts     # canonicalSearchProStaticBaseParams()
 │
 ├── prefetch/
 │   ├── prefetchSearchResults.ts   # prefetchSearchQuery (SSR)
 │   ├── prefetchFilters.ts         # prefetchFilterSection, prefetchSearchZones,
-│   │                              #   prefetchFiltersByAnswers, findFiltersSections
+│   │                              #   prefetchFiltersByAnswers, prefetchFiltersByPath,
+│   │                              #   prefetchFilterEntities, findFiltersSections (générique)
 │   └── index.ts
 │
 ├── constants/
@@ -175,12 +198,14 @@ Schéma principal (`SearchProSectionSchema`) — props clés :
 | `disableInfiniteScroll` | boolean | — | Désactiver le scroll infini |
 | `showDetailedViewToggle` | boolean | — | Bouton bascule vue détaillée |
 | `searchVariant` | `"default"\|"navigator-tl"` | — | Variant SDK backend (cf. §Variante SDK) |
-| `customHeader` | objet | — | En-tête personnalisé (titre + lien + bouton carte) |
+| `customHeader` | objet | — | En-tête personnalisé (titre + lien + icône) |
 | `filters` | `Record<string, TagsFilter>` | — | Filtres tags/type (structure héritée) |
 | `baseParams` | objet | — | Paramètres API (types, tags, tri, champs, locality…) |
 | `list.card.type` | string | `"default"` | Variante de carte |
 | `list.card.detailsMode` | `"drawer"\|"dialog"` | `"drawer"` | Mode ouverture détails |
 | `map.initialZoom` | number | — | Zoom initial de la carte |
+
+**`customHeader`** : `{ title?, linkText?, linkHref?, linkIcon? }`. `linkIcon` est typé `IconName` (via `IconNameSchema`). Le champ `showMapButton` a été **supprimé** — le bouton carte est toujours présent quand `enableMap: true`.
 
 **`baseParams.searchBy`** : contrôle les champs de recherche texte. Valeurs : `"ALL"` (tous les champs), `"name,slug,tags"` (CSV), ou `["name", "address.addressLocality"]` (array de paths). Fix SDK v1.0.132 : pagination cohérente pour les 3 formes.
 
@@ -198,16 +223,24 @@ Même structure que `searchPro` mais avec état local. Plusieurs instances peuve
 | `graphDefaultGroupMode` | `"country"\|"category"` | — | Mode de groupement graphique |
 | `graphDetailsMode` | `"drawer"\|"dialog"\|"link"` | `"drawer"` | Mode ouverture depuis graphique |
 | `enableRegions` | boolean | `false` | Activer la carte des régions France |
-| `defaultViewMode` | `"list"\|"map"\|"graph"\|"regions"` | — | Vue par défaut |
+| `regionsTarget` | `{ path, filterId }` | — | Cible de navigation au clic sur une région |
+| `defaultViewMode` | `"list"\|"map"\|"graph"\|"regions"\|"thematics"` | — | Vue par défaut |
+| `thematicSource` | `{ thematicPath, finderPath?, notSourceKey? }` | — | Source pour la vue thematics (coformFilterByPath) |
+| `thematicsTarget` | `{ path, filterId }` | — | Cible de navigation au clic sur une card thématique |
 | `addButton` | `AddButtonConfig` | — | Bouton ajout entité (show, label, types) |
 | `zoneSelector` | `ZoneSelectorConfig` | — | Sélecteur de zones géographiques |
 | `tagSelector` | `TagSelectorConfig` | — | Sélecteur de tags prédéfinis |
 | `csvButton` | `CsvButtonConfig` | — | Export CSV (colonnes configurables) |
+| `customHeader` | objet | — | En-tête (titre + lien + icône). Affiche aussi un lien « voir sur la page complète » qui reporte les filtres courants et la recherche texte (`?search=`) via `linkText`/`linkHref`/`linkIcon` |
 | `bg` | string | — | Fond de section |
 | `width` | `"container"` | — | Contrainte de largeur |
 | `baseParams.contextId` + `contextType` | string | — | Scope de recherche à une entité |
 | `baseParams.costumSlug` + `costumEditMode` | string | — | Config multi-costum |
 | `baseParams.sourceKey` | string[] | — | Filtrer par sourceKey |
+
+**Lien « voir sur la page complète »** : si `customHeader.linkText` est renseigné, un bouton `<Link>` est rendu dans le cluster du `customHeader`. La href est construite depuis `customHeader.linkHref` (défaut `/lieux`) en recopiant les query params courants (`useSearchParams`) PLUS `?search=` si une recherche texte est active — de sorte que les filtres posés par le hero (typologies, services) et le texte saisi soient tous transportés vers la page de liste.
+
+**Lecture de `?search=`** : `SearchProStatic` lit `searchParams.get("search")` pour initialiser la recherche texte quand on arrive depuis un lien avec ce paramètre.
 
 ### `cardCountCT` — compteurs par type
 
@@ -248,6 +281,8 @@ Charge dynamiquement les filières (tags agrégés) depuis l'API et les affiche 
 
 Section sidebar qui pilote le `PageFiltersContext` partagé. Doit être montée dans le même `PageFiltersProvider` que les `SearchProStatic` consommateurs (via `gridLayout` ou `profile-tab-layout`).
 
+Les schémas de filtres (`FilterGroupSchema`, `FilterGroupsSchema`, `FiltersByAnswersSchema`, `FiltersByPathSchema`) sont extraits dans `schema.ts` comme exports partagés — réutilisés par `FiltersSectionSchema` ET par les sections hero qui déclarent des filtres (ex. section hero de la home avec `filterGroups`/`filtersByAnswers`).
+
 ```json
 {
   "type": "filters",
@@ -270,6 +305,13 @@ Section sidebar qui pilote le `PageFiltersContext` partagé. Doit être montée 
         "label": { "fr": "Zone" },
         "type": "scopeList",
         "config": { "countryCode": ["RE"], "level": ["1"] }
+      },
+      {
+        "id": "reseauxRegionaux",
+        "label": { "fr": "Réseaux régionaux" },
+        "type": "entityList",
+        "filterType": "sourceKey",
+        "baseParams": { "defaultTypes": ["organizations"], "costumSlug": "mon-reseau" }
       }
     ],
     "filtersByAnswers": {
@@ -278,12 +320,22 @@ Section sidebar qui pilote le `PageFiltersContext` partagé. Doit être montée 
         "forms": "monFormId",
         "path": "thematique"
       }
+    },
+    "filtersByPath": {
+      "reseauxThematiques": {
+        "label": { "fr": "Réseaux thématiques" },
+        "thematicPath": "reseaux.thematiques"
+      }
     }
   }
 }
 ```
 
-Les filtres `scopeList` chargent les zones géographiques via `useSearchZoneQuery`. Les `filtersByAnswers` chargent les options depuis les réponses CoForm via `useFiltersByAnswersQuery`.
+Les filtres `scopeList` chargent les zones géographiques via `useSearchZoneQuery`. Les `filtersByAnswers` chargent les options depuis les réponses CoForm via `useFiltersByAnswersQuery`. Les `filtersByPath` chargent les options via `useFiltersByPathQuery` (`coformFilterByPath`). Les `entityList` peuplent leurs options dynamiquement via `useFilterEntitiesQuery`.
+
+`FiltersSection` utilise `computeFiltersFromUrl` pour lire les query params d'URL et appliquer les filtres correspondants au montage et à chaque changement d'URL — la même logique que `usePageFiltersUrlSync` (source unique).
+
+`FiltersSection` lit également `?search=` pour reporter la recherche texte dans son champ local quand on arrive depuis un lien.
 
 ---
 
@@ -320,7 +372,112 @@ const ctx = usePageFiltersOptional();
 // Alias compat : PageFiltersProvider = PageFilters.Provider
 ```
 
-`SearchByFieldValue` : `{ field: string, type?: string, value: string[] | Record<string, unknown> }` — permet aux filtres sidebar de transmettre des critères de recherche structurés (scopeList, answers) aux composants search.
+`SearchByFieldValue` : `{ field: string, type?: string, value: string[] | Record<string, unknown> }` — permet aux filtres sidebar de transmettre des critères de recherche structurés (scopeList, answers, sourceKey) aux composants search.
+
+---
+
+## Helpers purs partagés (`lib/`)
+
+### buildSearchPayload
+
+`src/modules/search/lib/buildSearchPayload.ts` — **source unique** de la transformation `baseParams → payload searchCostum`.
+
+Réutilisé par :
+- `useSearchQuery` (liste paginée pour `searchPro`/`searchProStatic`)
+- `useAutocomplete` (suggestions du hero)
+
+Garantit que l'autocomplete interroge le **même périmètre réseau** que la liste (mêmes `costumSlug`, `contextId`, `sourceKey`, `searchType`…).
+
+```ts
+export interface SearchBaseParamsInput {
+  fediverse?: boolean;
+  indexStepList?: number;
+  indexStepMap?: number;
+  defaultTypes?: SearchType[];
+  defaultTags?: string[];
+  defaultFilters?: Record<string, unknown>;
+  defaultFields?: string[];
+  defaultSortBy?: Record<string, 1 | -1>;
+  searchBy?: string | string[];
+  notSourceKey?: boolean | number;
+  locality?: Record<string, { id: string; type: string; ... }>;
+  // contextId, contextType, costumSlug, costumEditMode, sourceKey
+  // lus via cast Record<string, unknown> (présents en config)
+}
+
+export interface BuildSearchPayloadOverrides {
+  name: string;          // Texte recherché
+  tags?: string[];       // Tags à plat (filtres cochés)
+  type?: string[];       // searchType — undefined = retombe sur defaultTypes
+  mapUsed?: boolean;
+  graphUsed?: boolean;
+  indexStep?: number;    // Override explicit de l'indexStep (autocomplete)
+}
+
+export function buildSearchPayload(
+  baseParams: SearchBaseParamsInput,
+  overrides: BuildSearchPayloadOverrides,
+): Partial<GlobalAutocompleteCostumData>
+```
+
+`buildSearchPayload` et le type `SearchBaseParamsInput` sont exportés depuis le barrel `index.ts`.
+
+### searchByFieldsToQuery
+
+`src/modules/search/lib/searchByFieldsToQuery.ts` — traduit le `searchByFields` du `PageFilters` en les 3 morceaux de requête consommés par `searchCostum`.
+
+**Source unique** réutilisée par `SearchProStatic` (liste) **et** `useAutocomplete` (suggestions) — garantit des filtres dynamiques identiques des deux côtés.
+
+```ts
+export function searchByFieldsToQuery(
+  searchByFields: Record<string, SearchByFieldValue>,
+): {
+  filters: Record<string, Record<string, string[]>>;  // ex. { "_id": { "$in": [...] } }
+  locality: Record<string, unknown>;                   // zones scopeList
+  sourceKeys: string[];                                // entityList → sourceKey SDK
+}
+```
+
+Règles de mapping :
+- `type === "scopeList"` → `locality`
+- `type === "sourceKey"` → `sourceKeys` (injecté dans `baseParams.sourceKey`)
+- autres → `filters[field] = { $in: value }` (merge des valeurs si le champ apparaît plusieurs fois)
+
+### computeFiltersFromUrl
+
+`src/modules/search/lib/computeFiltersFromUrl.ts` — traduit les query params d'URL en mutations de l'état `PageFilters`.
+
+**Source unique** réutilisée par `FiltersSection` (UI `/lieux`) **et** `usePageFiltersUrlSync` (applicateur headless de la home) — garantit exactement les mêmes filtres produits dans les deux contextes.
+
+```ts
+export function computeFiltersFromUrl(
+  searchParams: URLSearchParams,
+  filterGroups: FilterGroupLike[],
+  filterAnswerData: FilterAnswerDataLike,
+): {
+  applySelected: (prev: Record<string, string[]>) => Record<string, string[]>;
+  applySearchFields: (prev: Record<string, SearchByFieldValue>) => Record<string, SearchByFieldValue>;
+}
+```
+
+Logique de mapping des query params :
+- Groupe `type === "entityList"` → `searchByFields` (type `sourceKey`)
+- Groupe statique (options en config) → `selectedFilters[groupId]`
+- Clé matchant une entrée `filterAnswerData` → `searchByFields[optionKey] = { field: "_id", value: orgaNameArray }`
+
+Les fonctions retournées sont des **fonctions de merge** (elles préservent les clés non gérées par les groupes déclarés) — sûres à passer directement à `setSelectedFilters` / `setSearchByFields`.
+
+### canonicalBaseParams
+
+`src/modules/search/lib/canonicalBaseParams.ts` — normalise les `baseParams` (déterminisme de la queryKey, merge filters/locality dynamiques).
+
+```ts
+export function canonicalSearchProStaticBaseParams(
+  baseParams: Record<string, unknown>,
+  filters?: Record<string, unknown>,
+  locality?: Record<string, unknown>,
+): Record<string, unknown>
+```
 
 ---
 
@@ -332,18 +489,60 @@ Hook principal de chargement des résultats via `entity.searchCostum()` (infinit
 
 ```ts
 const {
-  results,            // SearchEntity[] normalisés
+  transformedResults, // SearchEntity[] normalisés
   isLoading,
+  isPending,
   isFetchingNextPage,
-  hasNextPage,
+  hasCount,
   lastItemRef,        // Ref pour infinite scroll
   totalCount,
   error,
   refetch,
-} = useSearchQuery(props, filters, options);
+} = useSearchQuery(params);
 ```
 
-`props` : props de la section search (baseParams, etc.). `filters` : état courant des filtres. La queryKey inclut une serialization JSON de tous les paramètres actifs.
+`params` : `UseSearchQueryParams` (queryKeyPrefix, searchText, searchTags, searchType, mapUsed, graphUsed, variant, baseParams). Utilise désormais `buildSearchPayload` pour construire le payload — le `console.log` de debug et la construction inline ont été retirés.
+
+### useAutocomplete
+
+`src/modules/search/hooks/useAutocomplete.ts` — suggestions de recherche texte. Précédemment dans `src/hooks/`, **déplacé dans le module** lors du refactoring.
+
+```ts
+const { suggestions, isLoading, error } = useAutocomplete(query, {
+  baseParams,    // Même périmètre réseau que le searchProStatic de la page
+  variant,       // Même variant SDK que la liste ("navigator-tl", etc.)
+  tags,          // Tags de filtres actifs — appliqués comme la liste
+  indexMax,      // Nombre de suggestions (défaut: 30)
+  debounceMs,    // Délai de debounce (défaut: 300)
+  minChars,      // Caractères minimum (défaut: 2)
+});
+```
+
+Construit son payload via `buildSearchPayload(baseParams, { name, type, tags, indexStep })` — **exactement le même périmètre** que `useSearchQuery`. Avant ce refactoring, l'autocomplete faisait un `searchCostum` global non scopé (sans `costumSlug`/`contextId`/`sourceKey`).
+
+Exporté depuis le barrel `index.ts`.
+
+### usePageFiltersUrlSync
+
+`src/modules/search/hooks/usePageFiltersUrlSync.ts` — applicateur de filtres **headless** (sans UI).
+
+Permet à une section hero de la home de filtrer **exactement comme `/lieux`** en lisant les query params de l'URL et en publiant l'état `PageFilters` — sans aucun composant de filtre visible.
+
+```ts
+usePageFiltersUrlSync({
+  id?: string;                          // Seed de la queryKey filtersByAnswers
+  filterGroups?: FilterGroupLike[];     // Groupes de filtres statiques (typologies…)
+  filtersByAnswers?: Record<string, unknown>; // Filtres form-based (services…)
+});
+```
+
+Fonctionnement :
+1. Lit `useSearchParams()` pour détecter les changements d'URL
+2. Résout `filtersByAnswers` via `useFiltersByAnswersQuery` avec la queryKey `filters-answers-${id}` — **alignée sur la convention du prefetch SSR** (`findFiltersSections`), donc le cache SSR est consommé sans refetch
+3. Appelle `computeFiltersFromUrl` (même logique que `FiltersSection`)
+4. Publie via `setSelectedFilters(applySelected)` + `setSearchByFields(applySearchFields)` dans le `PageFiltersContext` courant
+
+Ne fait rien si `usePageFiltersOptional()` retourne `null` (hors Provider).
 
 ### useSearchFilters
 
@@ -363,6 +562,35 @@ const { data, isLoading, error } = useFiltersByAnswersQuery(
 ```
 
 **SSR-ready** : `filtersByAnswersQueryKey()` et `fetchFiltersByAnswers()` sont exportés séparément pour les prefetch SSR.
+
+### useFiltersByPathQuery
+
+`src/modules/search/hooks/useFiltersByPath.ts` — filtres par thématique CoForm via `entity.coformFilterByPath()`. Produit le **même shape** que `useFiltersByAnswersQuery` → les deux sont mergeables dans le `filterAnswerData` de `FiltersSection`.
+
+```ts
+const { data, isLoading, error } = useFiltersByPathQuery(
+  queryId,    // string
+  options,    // FiltersByPathOptions — { [key]: { thematicPath, finderPath?, notSourceKey? } }
+);
+// data : Record<string, FilterAnswerType>
+```
+
+Un appel `coformFilterByPath` par entrée (en parallèle). `staleTime: 5 minutes`. **SSR-ready** via `filtersByPathQueryKey()` + `fetchFiltersByPath()`.
+
+### useFilterEntitiesQuery
+
+`src/modules/search/hooks/useFilterEntities.ts` — peuple les options d'un groupe `type: "entityList"` (réseaux régionaux…) via `entity.searchCostum()`.
+
+```ts
+const { data, isLoading, error } = useFilterEntitiesQuery(
+  queryId,    // string
+  options,    // FilterEntitiesOptions (= SearchBaseParams)
+  filterBy,   // string — champ de l'entité utilisé comme valeur (défaut: "slug")
+);
+// data : FilterEntity[] — { name: string, value: string }
+```
+
+`staleTime: 30 minutes`. **SSR-ready** via `filterEntitiesQueryKey()` + `fetchFilterEntities()`.
 
 ### useSearchZoneQuery
 
@@ -412,7 +640,8 @@ Accès typé aux props de configuration de la section courante via `SearchPropsC
 | Sync URL | Oui (query params) | Non |
 | Multi-instances / page | Non | Oui |
 | PageFiltersProvider | Oui (contexte global) | Oui (local ou partagé) |
-| Sections extras | — | `addButton`, `zoneSelector`, `tagSelector`, `csvButton`, `enableGraph`, `enableRegions` |
+| Sections extras | — | `addButton`, `zoneSelector`, `tagSelector`, `csvButton`, `enableGraph`, `enableRegions`, `thematicSource`, `thematicsTarget`, `regionsTarget` |
+| Lien « voir sur page complète » | Non | Oui (via `customHeader.linkText` + report des filtres URL + `?search=`) |
 
 Les deux composants partagent les mêmes sous-composants (`SearchListView`, `SearchCard`, etc.) via `SearchPropsProvider`.
 
@@ -462,7 +691,7 @@ Graphique en bulles pour visualiser la distribution des entités par catégorie.
 
 ### FranceRegionsMap
 
-Carte choroplèthe des régions françaises. Activée via `enableRegions: true` (mode `"regions"`). Utilise des données GeoJSON et D3 pour le rendu SVG.
+Carte choroplèthe des régions françaises. Activée via `enableRegions: true` (mode `"regions"`). Utilise des données GeoJSON et D3 pour le rendu SVG. Clic sur une région → navigue vers `regionsTarget.path?${regionsTarget.filterId}=<slugs>`.
 
 ### Preview et MapPopup
 
@@ -486,26 +715,67 @@ Composant qui gère l'ouverture du détail (drawer ou dialog) selon `list.card.d
 
 ## SSR — Prefetch
 
-Trois helpers exportés depuis `prefetch/` :
+Helpers exportés depuis `prefetch/` :
 
 **`prefetchSearchResults(queryClient, props, filters)`** — pré-charge la première page de résultats sur le serveur.
 
-**`prefetchFilterSection(queryClient, section)`** — pré-charge zones + filtersByAnswers pour une section `filters` donnée :
+**`prefetchFilterSection(queryClient, section)`** — pré-charge zones + filtersByAnswers + filtersByPath + entités entityList pour une section donnée (en parallèle) :
 
 ```ts
 await prefetchFilterSection(queryClient, {
   type: "filters",
   id: "sidebar",
   props: {
-    filterGroups: [{ type: "scopeList", config: { countryCode: ["RE"], level: ["1"] } }],
+    filterGroups: [
+      { type: "scopeList", config: { countryCode: ["RE"], level: ["1"] } },
+      { id: "reseaux", type: "entityList", baseParams: { defaultTypes: ["organizations"] } },
+    ],
     filtersByAnswers: { thematique: { forms: "abc123", path: "thematique", label: {...} } },
+    filtersByPath: { reseauxThematiques: { thematicPath: "reseaux.thematiques", label: {...} } },
   },
 });
 ```
 
-**`findFiltersSections(sections)`** — découverte récursive des sections `filters` dans un arbre de sections (travers `gridLayout` et `tabs`). Synchronisée avec `findSearchSections` dans `buildRoutes.tsx`.
+**`findFiltersSections(sections)`** — découverte récursive des sections éligibles au prefetch dans un arbre de sections (travers `gridLayout` et `tabs`).
 
-Les queryKeys générées par `prefetchSearchZones` et `prefetchFiltersByAnswers` matchent exactement celles de `useSearchZoneQuery` et `useFiltersByAnswersQuery` → cache correctement consommé à l'hydratation.
+La fonction est désormais **générique** : elle détecte toute section qui déclare `filterGroups`, `filtersByAnswers`, ou `filtersByPath` dans ses props — **indépendamment de son `type`**. Auparavant, seule la section `type === "filters"` était détectée. Ce changement permet au hero de la home (qui déclare `filterGroups`/`filtersByAnswers` sans être de type `"filters"`) d'être préfetché en SSR.
+
+La queryKey générée pour `filtersByAnswers` est `filters-answers-${sectionId}` — identique à celle utilisée par `useFiltersByAnswersQuery` dans `FiltersSection` et `usePageFiltersUrlSync`, ce qui garantit que le cache SSR est consommé sans refetch à l'hydratation.
+
+**Prefetchers individuels** (bas niveau, disponibles pour usages ciblés) :
+- `prefetchSearchZones(queryClient, queryId, options)` — zones géographiques
+- `prefetchFiltersByAnswers(queryClient, queryId, options)` — filtres CoForm answers
+- `prefetchFiltersByPath(queryClient, queryId, options)` — filtres CoForm by path
+- `prefetchFilterEntities(queryClient, queryId, options, filterBy?)` — entités entityList
+
+---
+
+## Flux « Design A » — filtres hero → liste cohérente
+
+Le « Design A » désigne le pattern où le hero de la page d'accueil pose des filtres dans l'URL (via des liens de navigation ou une action utilisateur) qui sont ensuite repris par la section de liste en-dessous — exactement comme si l'utilisateur avait cliqué sur les filtres de la sidebar de `/lieux`.
+
+**Flux complet** :
+
+1. Le hero (ou le nav) pose `?typologies=orga` / `?services=agriculture` dans l'URL (même format que les query params de `/lieux`).
+
+2. `usePageFiltersUrlSync` (monté dans la section hero via un wrapper sans UI) :
+   - Lit `useSearchParams()`
+   - Résout `filtersByAnswers` via `useFiltersByAnswersQuery("filters-answers-${id}", ...)` — cache SSR disponible grâce à `findFiltersSections` générique
+   - Appelle `computeFiltersFromUrl(searchParams, filterGroups, filterAnswerData)` — même logique que `FiltersSection`
+   - Publie dans `PageFiltersContext` via `setSelectedFilters(applySelected)` + `setSearchByFields(applySearchFields)`
+
+3. `SearchProStatic` (consommateur dans le même `PageFiltersProvider`) :
+   - Lit `contextFilters.filterNames` → `searchTags`
+   - Lit `contextFilters.searchByFields` → `searchByFieldsToQuery()` → `filters`/`locality`/`dynamicSourceKeys`
+   - Construit `mergedBaseParams` via `canonicalSearchProStaticBaseParams`
+   - Appelle `useSearchQuery({ baseParams: mergedBaseParams, ... })`
+
+4. `useAutocomplete` (champ de recherche du hero) :
+   - Reçoit les mêmes `baseParams` et `tags` que `SearchProStatic`
+   - Utilise `buildSearchPayload(baseParams, { name, tags })` → même périmètre réseau
+   - Les suggestions correspondent aux résultats affichés dans la liste
+
+**Résultat** : saisir dans le hero, cliquer un filtre, ou arriver avec un lien `?typologies=orga` produit exactement les mêmes résultats que sur `/lieux` avec les mêmes filtres cochés.
 
 ---
 
@@ -594,6 +864,26 @@ Groupes de clés dans `fr.json` / `en.json` :
 }
 ```
 
+**SearchProStatic avec lien « voir sur la page complète »** (Design A — hero de la home) :
+```json
+{
+  "type": "searchProStatic",
+  "id": "hero-search",
+  "props": {
+    "baseParams": { "defaultTypes": ["organizations"], "costumSlug": "mon-reseau" },
+    "list": { "card": { "type": "tiers-lieux" } },
+    "customHeader": {
+      "title": { "fr": "Espaces de travail" },
+      "linkText": { "fr": "Voir tous les lieux" },
+      "linkHref": "/lieux",
+      "linkIcon": "arrow-right"
+    }
+  }
+}
+```
+
+Le lien généré reporte automatiquement les filtres actifs (`?typologies=orga&services=coworking`) et la recherche texte (`&search=paris`) vers `/lieux`.
+
 **Section filters + SearchProStatic dans gridLayout** :
 ```json
 {
@@ -648,6 +938,18 @@ Ce variant utilise un endpoint différent qui n'est pas disponible sur tous les 
 ### 5. queryKeys et `prefetchSearchResults`
 
 La queryKey de `useSearchQuery` sérialise tous les paramètres actifs en JSON. Pour que le prefetch SSR corresponde au cache client, il faut passer exactement les mêmes paramètres (même ordre de clés dans les objets JSON). Utiliser `canonicalSearchProStaticBaseParams()` de `lib/canonicalBaseParams.ts` pour la normalisation.
+
+### 6. `useAutocomplete` est maintenant dans le module
+
+`useAutocomplete` a été déplacé de `src/hooks/` vers `src/modules/search/hooks/`. Mettre à jour les imports si vous l'utilisiez depuis l'ancien chemin. Il est exporté depuis `src/modules/search/index.ts`.
+
+### 7. `customHeader.showMapButton` supprimé
+
+Le champ `customHeader.showMapButton` (ancienne config) n'existe plus dans le schéma. Le bouton carte dans le `customHeader` s'affiche dès que `enableMap: true`. Retirer ce champ des configs existantes.
+
+### 8. Alignement queryKey `usePageFiltersUrlSync` ↔ prefetch SSR
+
+`usePageFiltersUrlSync` utilise la queryKey `filters-answers-${id}` pour `filtersByAnswers` — identique à la convention de `prefetchFilterSection`. Si vous utilisez un `id` différent dans `usePageFiltersUrlSync` et dans le `prefetchFilterSection` correspondant, le cache SSR ne sera pas consommé (refetch client). Utiliser le même `id`.
 
 ---
 

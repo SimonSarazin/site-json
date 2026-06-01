@@ -2,7 +2,35 @@
 
 # Module Command Palette (Cmd+K) — RFC
 
-> 🚧 **Statut : document d'architecture (RFC), pas encore implémenté.**
+> ⚠️ **Statut : non implémenté — vérifié au 2026-06-01**
+>
+> Un audit complet du dépôt a confirmé qu'**aucune ligne de ce RFC n'a été
+> implémentée à ce jour**. Recherches effectuées :
+>
+> - `src/modules/` ne contient **aucun répertoire** `commandPalette` (modules
+>   présents : `ampli`, `auth`, `cagnotte`, `coform`, `interop`, `news`,
+>   `notification`, `profil`, `search`).
+> - Grep exhaustif sur `command-palette`, `CommandPalette`, `commandPalette`,
+>   `CommandDialog`, `CommandInput`, `registerCommandSource`, `useCommandPalette`,
+>   `useGlobalShortcut`, `useCommands`, `CommandPaletteProvider`,
+>   `CommandPaletteContext`, `metaKey && key === 'k'`, `mod+k` dans tout `src/`
+>   → **zéro résultat**.
+> - `src/types/site-schema.ts` : le bloc `utilities` ne contient **pas** de
+>   champ `commandPalette` (champs actuels : `themeSwitch`, `langSwitch`,
+>   `search`, `auth`, `cart`, `notifications`, `piggyBank`).
+> - `src/types/site.ts` : idem, pas de champ `commandPalette`.
+> - Seul élément lié existant : `src/components/ui/command.tsx` (composant
+>   shadcn/ui) et la dépendance `cmdk@1.1.1` dans `package.json` — présents
+>   uniquement parce qu'ils font partie de la bibliothèque shadcn, sans
+>   consommateur dans le code applicatif.
+>
+> Ce document reste conservé comme **spécification et analyse de faisabilité**
+> pour une implémentation future. Tout le contenu ci-dessous est à considérer
+> comme une spec, pas comme une description du code existant.
+>
+> ---
+>
+> 🚧 **Statut original : document d'architecture (RFC), pas encore implémenté.**
 >
 > Vision pour l'ajout d'un module `commandPalette` fournissant une palette de
 > commandes globale accessible via raccourci clavier (Cmd/Ctrl+K), disponible

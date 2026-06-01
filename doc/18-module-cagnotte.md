@@ -51,27 +51,30 @@ src/modules/cagnotte/
 ├── i18n/
 │   ├── fr.json
 │   └── en.json
-├── schema.ts                           # 5 schémas Zod des sections JSON site-config
+├── schema.ts                           # 5 schémas Zod des sections JSON site-config (+ props étendues)
 ├── schemaForm.ts                       # Schémas Zod pour forms RHF (milestone + action + contribution)
 ├── types.ts                            # Types canoniques (FundingMilestone, FundingAction, …)
 │
 ├── actions/mutations/
-│   ├── milestone.ts                    # Factory + 5 mutations (Create/Edit/Close/Restore/Delete)
-│   ├── action.ts                       # Factory <TParams, TData> + 5 mutations (incl. useCreateAction)
+│   ├── milestone.ts                    # Factory createMilestoneMutation + 5 mutations (Create/Edit/Close/Restore/Delete)
+│   ├── action.ts                       # Factory createActionMutation<TParams, TData> + 6 mutations (incl. useCreateAction)
 │   └── index.ts
 │
 ├── components/
 │   ├── CagnotteDialog.tsx              # Modal principal de contribution
 │   ├── PaymentConfigPage.tsx           # Page configuration Stripe + HelloAsso
 │   ├── StripePaymentForm.tsx           # Formulaire carte Stripe Elements
+│   ├── PiggyBankHeaderButton.tsx       # Bouton piggy-bank header (montant live + dialog)
 │   ├── ProjectsFinancingDisplay.tsx    # @deprecated PLACEHOLDER vide
 │   ├── parts/                          # Sous-composants de CagnotteDialog
 │   │   ├── CagnotteAmountPicker.tsx
+│   │   ├── CagnotteContributeButton.tsx
 │   │   ├── CagnotteMilestoneList.tsx
+│   │   ├── CagnotteProjectProgressCard.tsx
 │   │   ├── CagnotteProjectSelector.tsx
 │   │   └── CagnotteSuccessScreen.tsx
 │   └── sections/
-│       ├── ActionsSection.tsx          # 731 l. — section JSON `actions` (orchestrateur)
+│       ├── ActionsSection.tsx          # Section JSON `actions` (orchestrateur)
 │       ├── FinanceSection.tsx          # Section JSON `finance`
 │       ├── ActionsSummarySection.tsx   # Section JSON `actions-summary` (sidebar)
 │       ├── FinanceSummarySection.tsx   # Section JSON `finance-summary` (sidebar)
@@ -80,6 +83,7 @@ src/modules/cagnotte/
 │       ├── MilestoneCreateTrigger.tsx
 │       ├── MilestoneManageActions.tsx  # UI boutons edit/close/restore/delete
 │       ├── SummaryMilestoneCreateCard.tsx
+│       ├── projectMilestonesSummary.ts # @deprecated NON UTILISÉ — helpers summary (non branchés)
 │       └── parts/
 │           ├── MilestoneCard.tsx              # Rendu d'une carte milestone open
 │           ├── ClosedMilestonesSection.tsx    # Section repliable jalons clôturés
@@ -89,7 +93,7 @@ src/modules/cagnotte/
 │           └── badges.tsx                     # MilestoneStatusBadge, ActionStatusBadge, ContributorsAvatars
 │
 ├── constants/
-│   └── queryKeys.ts                    # CAGNOTTE_QUERY_KEYS (4 keys)
+│   └── queryKeys.ts                    # CAGNOTTE_QUERY_KEYS (5 keys dont 2 préfixes)
 │
 ├── contexts/
 │   ├── CagnotteContext.tsx             # Type CagnotteContextValue
@@ -97,51 +101,57 @@ src/modules/cagnotte/
 │   └── index.ts
 │
 ├── hooks/
-│   ├── useFundingEnvelope.ts           # Query React Query principale (envelope normalisée)
+│   ├── useFundingEnvelope.ts           # Query React Query principale (envelope normalisée) + exports normalizeFundingEnvelope, extractFormIdFromEnvelope, mergeEnvelopePayloads
 │   ├── useCagnottePermissions.ts       # Wrapper typé sur usePermissions
 │   ├── useCagnotteContext.ts           # Accès au CagnotteProvider (safe + strict)
 │   ├── useActionGuards.ts              # requireConnected + requireApiContext
 │   ├── useOrganizationProjectsWithAnswers.ts  # Liste projets org + réponses CoForm
 │   ├── useProjectModalCagnotte.ts      # Query : projet par défaut d'une org
-│   ├── useProjectModalPreference.ts    # Mutation : persiste la préférence (DB + localStorage)
+│   ├── useProjectModalPreference.ts    # Mutation : persiste la préférence côté DB (entity.updateField)
 │   ├── useSaveCagnotteContribution.ts  # Mutation contribution (atomique)
 │   └── useUserAdminOrganizations.ts    # Query : orgs admin du user (filtre MongoDB)
 │
 ├── lib/
-│   ├── milestoneSyncContext.ts         # resolveMilestoneSyncContext, getEnvelopeProjects
-│   ├── milestoneMutationHandlers.ts    # edit/close/restore/deleteMilestoneWithSync
-│   ├── actionMilestonePathUpdates.ts   # Wrappers entity-oriented (Action.updateField, Answer.updateField, Action.delete)
-│   ├── actionIdResolvers.ts            # resolveActionEntityId, resolveCreatedActionId
-│   └── actionDiffCalculator.ts         # calculateActionDiff (helper pur)
+│   ├── milestoneSyncContext.ts         # resolveMilestoneSyncContext, getEnvelopeProjects, getEntityIdFromUnknown (alias)
+│   ├── milestoneMutationHandlers.ts    # edit/close/restore/deleteMilestoneWithSync + getApiErrorMessage
+│   ├── actionMilestonePathUpdates.ts   # Wrappers entity-oriented (appendProjectMilestone, appendAnswerDepense, updateProjectMilestoneFields, updateAnswerDepenseFields, deleteProjectMilestoneAtIndex, deleteAnswerDepenseAtIndex, deleteActionById)
+│   ├── actionIdResolvers.ts            # @unused — resolveActionEntityId, resolveCreatedActionId (workaround remplacé par action.id SDK)
+│   ├── actionDiffCalculator.ts         # calculateActionDiff (helper pur), types DiffActionPrevious/Next, ActionUpdateFields
+│   ├── actionDiffCalculator.test.ts    # Tests unitaires calculateActionDiff
+│   └── actionIdResolvers.test.ts       # Tests unitaires resolveActionEntityId / resolveCreatedActionId
 │
 ├── pages/
 │   └── FinancingPages.tsx              # @deprecated PLACEHOLDER vide
 │
 ├── permissions/
-│   ├── calculators/cagnotte.ts         # 11 permissions calculées
+│   ├── calculators/cagnotte.ts         # 11 permissions calculées (calculateCagnottePermissions)
 │   ├── defaults.ts                     # DEFAULT_CAGNOTTE_PERMISSIONS
 │   ├── register.ts                     # registerPermissions(namespace: "cagnotte")
-│   ├── types.ts                        # CagnottePermissions, CagnottePermissionData
+│   ├── types.ts                        # CagnottePermissions, CagnottePermissionData, CagnotteMilestoneLike, CagnotteActionLike
 │   └── index.ts
 │
 ├── prefetch/
 │   ├── prefetchFundingEnvelope.ts      # Helper SSR (exporté, voir §SSR)
-│   └── index.ts
+│   └── index.ts                        # prefetchFundingEnvelope + hasCagnotteSection + CAGNOTTE_SECTION_TYPES
 │
 ├── services/
 │   ├── stripeService.ts                # Stripe public key + error mapping
 │   ├── helloAssoCheckoutIntent.ts      # Création checkout HelloAsso + popup
 │   ├── helloAssoVerification.ts        # Polling statut paiement
-│   ├── helloAssoService.ts             # 4 exports @deprecated + 2 actifs
+│   ├── helloAssoService.ts             # 4 exports @deprecated + 2 actifs (buildHelloAssoPaymentData, validateHelloAssoConfig)
 │   ├── helloAssoWebhook.ts             # @deprecated PAS BRANCHÉ
 │   ├── fundingEnvelopePayment.ts       # @deprecated REMPLACÉ
 │   └── paymentDataProcessor.ts         # @deprecated SCHEMA OBSOLÈTE
 │
 └── utils/
-    ├── dataTransform.ts                # asRecord, getServerData, toNumber, toArray, getEntityId, …
+    ├── dataTransform.ts                # asRecord, getServerData, getEntityId, toNumber, toString, toArray, toArrayOrValues, toSafeInt, normalizeIdOrNull, getNonEmptyRecord, readEntityPreferences
+    ├── dataTransform.test.ts           # Tests unitaires de tous les helpers dataTransform
     ├── format.ts                       # formatCurrency (Intl.NumberFormat), formatDate, initials
+    ├── format.test.ts                  # Tests unitaires format
     ├── actionDateHelpers.ts            # parseFrenchDateToIso, frenchDate↔pickerValue, timestampToFrenchDate
-    └── idGeneration.ts                 # generateMilestoneId (24-char hex Mongo-like)
+    ├── actionDateHelpers.test.ts       # Tests unitaires actionDateHelpers
+    ├── idGeneration.ts                 # generateMilestoneId (24-char hex Mongo-like)
+    └── idGeneration.test.ts            # Tests unitaires generateMilestoneId
 ```
 
 ---
@@ -202,6 +212,10 @@ FundingEnvelopeNormalizedData
 └─ rawEnvelope : unknown                     # conservé pour les handlers de sync
 ```
 
+Deux types supplémentaires définis dans `types.ts` servent à l'orchestration interne :
+- `EditActionContext` — bag passé du parent à `ActionEditDialog` (`{ milestoneId, action, actionEntityId }`)
+- `PendingDeleteActionContext` — bag pour les confirmations de suppression (`{ milestoneId, action }`)
+
 Tous les types sont exportés depuis `@/modules/cagnotte/types`. Le hook `useFundingEnvelope` les ré-exporte pour compat ascendante.
 
 ### Entity Cocolight et `serverData`
@@ -222,6 +236,21 @@ export function getServerData(value: unknown): UnknownRecord {
 }
 ```
 
+`utils/dataTransform.ts` exporte également d'autres helpers utilisés à travers le module :
+
+| Fonction | Description |
+|---|---|
+| `asRecord(value)` | Coerce en `Record<string, unknown>`, retourne `{}` pour les non-objets |
+| `getNonEmptyRecord(value)` | Retourne l'objet si non-vide, sinon `null` |
+| `toArrayOrValues<T>(value)` | Tableaux pass-through, objets → `Object.values`, sinon `[]` |
+| `toArray<T>(value)` | `null/undefined → []`, tableau pass-through, scalaire → `[value]` |
+| `toNumber(value)` | Coerce en number fini, retourne `0` pour NaN/Infinity |
+| `toString(value)` | Retourne la string identique, `''` pour tout non-string |
+| `normalizeIdOrNull(value)` | Trim + retourne `null` si vide ou non-string |
+| `toSafeInt(value)` | `Math.trunc` + parse string FR (`"1 234,5"` → `1234`) |
+| `getEntityId(value)` | Extrait un id depuis string, `{ id }`, `{ _id.$id }`, `{ _id._str }`, `{ $id }` |
+| `readEntityPreferences(entity, source)` | Lit `entity.data.preferences` ou `entity.serverData.preferences` |
+
 Cas piège : accéder à `entity.oceco.milestones` retourne `undefined` car `oceco` est sous `entity.serverData.oceco`. Ce bug a été corrigé dans `milestoneSyncContext.ts` et `useFundingEnvelope.ts` (cf. [Pièges connus](#pièges-connus)).
 
 ---
@@ -233,21 +262,29 @@ Exports principaux consommés hors du module :
 | Export | Type | Consommateurs externes |
 |---|---|---|
 | `moduleConfig` | `ModuleConfigSchema` | `discoverModules()` |
-| `CagnotteDialog` | Composant | `HeaderRezoLaMer`, `FinanceSection`, `FinanceSummarySection` |
+| `CagnotteDialog` | Composant | `PiggyBankHeaderButton`, `FinanceSection`, `FinanceSummarySection` |
 | `PaymentConfigPage` | Composant | Interne (rendu par `CagnotteDialog`) |
-| `useFundingEnvelope` | Hook | Sections cagnotte, cartes profil |
+| `StripePaymentForm` | Composant | `PaymentConfigPage` |
+| `useFundingEnvelope` | Hook | Sections cagnotte, `PiggyBankHeaderButton` |
 | `useCagnottePermissions` | Hook | Sections cagnotte (gates UI) |
+| `useCagnotteContext`, `useCagnotteContextSafe` | Hooks | Composants dans un `CagnotteLayout` |
 | `useUserAdminOrganizations` | Hook | `PaymentConfigPage` |
 | `useSaveCagnotteContribution` | Hook | `PaymentConfigPage` |
-| `useProjectModalCagnotte`, `useProjectModalPreference` | Hooks | `HeaderRezoLaMer` |
-| Factory + 5 hooks mutation milestone | Hooks | `FinanceSection`, `ActionsSection` |
-| Factory + 5 hooks mutation action (incl. `useCreateAction`) | Hooks | `ActionsSection` |
-| Helpers lib (`editMilestoneWithSync`, …) | Fonctions | Composants qui veulent appeler directement (rare) |
-| Types : `FundingMilestone`, `FundingAction`, `FundingProject`, `CagnottePermissions`, … | Types | DTO publics |
+| `useProjectModalCagnotte`, `useProjectModalPreference` | Hooks | `PiggyBankHeaderButton` / headers |
+| `CagnotteProvider`, `CagnotteContext` | Context | Usage avancé externe |
+| `createMilestoneMutation` + 5 hooks mutation milestone | Hooks | `FinanceSection`, `ActionsSection` |
+| `createActionMutation` + 6 hooks mutation action (incl. `useCreateAction`) | Hooks | `ActionsSection` |
+| Helpers lib (`editMilestoneWithSync`, `appendProjectMilestone`, `getApiErrorMessage`, …) | Fonctions | Composants qui veulent appeler directement (rare) |
+| Types : `FundingMilestone`, `FundingAction`, `FundingProject`, `CagnottePermissions`, `MilestoneSyncContext`, … | Types | DTO publics |
 | `CAGNOTTE_QUERY_KEYS` | Constants | Invalidations cross-modules |
-| `prefetchFundingEnvelope`, `hasCagnotteSection` | Helpers SSR | Loader / entry-server (cf. §SSR) |
+| `prefetchFundingEnvelope`, `hasCagnotteSection`, `CAGNOTTE_SECTION_TYPES` | Helpers SSR | Loader / entry-server (cf. §SSR) |
+| `calculateCagnottePermissions`, `DEFAULT_CAGNOTTE_PERMISSIONS` | Fonctions | Système de permissions central |
 
 Les **sections JSON** (`ActionsSection`, `FinanceSection`, etc.) ne sont **pas** exposées via `index.ts` — elles sont chargées en lazy par `SectionRenderer` via import dynamique pour préserver le code-splitting `vite-preload`.
+
+`index.ts` charge également deux **side-effects** au montage :
+- `import "./i18n"` — enregistre le namespace `modules/cagnotte` auprès d'i18next
+- `import "./permissions/register"` — enregistre le calculateur `cagnotte` auprès du registre central des permissions
 
 ---
 
@@ -257,25 +294,30 @@ Les **sections JSON** (`ActionsSection`, `FinanceSection`, etc.) ne sont **pas**
 
 | Hook | Signature | Rôle |
 |---|---|---|
-| `useFundingEnvelope(projectId?)` | `() => UseQueryResult<FundingEnvelopeNormalizedData>` | **Hook central** — appelle `entity.fundingEnvelope()` 2x (`getEnvelopeData` puis `getFormData` si user connecté), normalise et expose milestones/actions/contributors/finance |
+| `useFundingEnvelope(idProjet?, opts?)` | `(idProjet?: string, opts?: { enabled?: boolean }) => UseQueryResult<FundingEnvelopeNormalizedData>` | **Hook central** — appelle `entity.fundingEnvelope()` 2x (`getEnvelopeData` puis `getFormData` si user connecté), normalise et expose milestones/actions/contributors/finance. Enabled uniquement côté client (`typeof window !== 'undefined'`) et si `me?.id` est défini |
 | `useOrganizationProjectsWithAnswers(entityId?)` | `() => UseQueryResult<{ projects, answers }>` | Liste projets de l'org + réponses CoForm — utilisé par `PaymentConfigPage` et `CagnotteDialog` |
 | `useProjectModalCagnotte(entityId, projectModalId)` | `() => UseQueryResult<ProjectModalCagnotteData>` | Stats financières du projet "principal" sélectionné (header) |
 | `useUserAdminOrganizations(currentUser, params?)` | `() => UseQueryResult<AdminOrganization[]>` | Orgs où l'user est admin (filtre serveur strict) |
+
+`useFundingEnvelope.ts` exporte également trois fonctions utilitaires consommées par `prefetchFundingEnvelope` :
+- `normalizeFundingEnvelope(rawEnvelope, _contextEntityId?, _contextType?, forcedProjectId?, forcedProfileSlug?)` — normalisation pure, appelable côté SSR
+- `extractFormIdFromEnvelope(rawEnvelope)` — extrait le `formId` depuis l'enveloppe `getEnvelopeData`
+- `mergeEnvelopePayloads(envelopeData, formData)` — merge minimal des deux réponses backend
 
 ### Mutation
 
 | Hook | Rôle |
 |---|---|
-| `useSaveCagnotteContribution()` | Sauvegarde une contribution dans `answers.aapStep1.depense[N].financer[]`. Se branche au context (`useCocolight()` → `api` + `me`). Signature `saveContribution(answerOrId: Answer \| string, milestoneFundings, financerData)` — accepte une entity ou un id. Mutation atomique via `Answer.updateField` (R0-R9 auto côté lib 1.0.137+) |
-| `useProjectModalPreference(entity)` | Persiste le `projectModalId` côté DB (`organizations.preferences`) + miroir localStorage |
+| `useSaveCagnotteContribution()` | Sauvegarde une contribution dans `answers.aapStep1.depense[N].financer[]`. Se branche au context (`useCocolight()` → `api` + `me`). Mutation atomique via `Answer.updateField` (R0-R9 auto côté lib 1.0.137+) |
+| `useProjectModalPreference(entity)` | Persiste le `projectModalId` côté DB via `entity.updateField("preferences", merged)` + appel non-bloquant `entity.get()` pour resynchroniser. Retourne `{ save(projectId): Promise<boolean>, isSaving }` |
 
 ### Context/Permissions/Guards
 
 | Hook | Rôle |
 |---|---|
-| `useCagnotteContext()` / `useCagnotteContextSafe()` | Accès à l'event-bus typé du `CagnotteProvider` (`requestEditMilestone`, `requestDeleteMilestone`, `requestScrollToMilestone`) |
+| `useCagnotteContext()` / `useCagnotteContextSafe()` | Accès à l'event-bus typé du `CagnotteProvider` (`requestEditMilestone`, `requestDeleteMilestone`, `requestScrollToMilestone`, + 3 `on*` listeners avec `Unsubscribe`) |
 | `useCagnottePermissions(entity, data?)` | Wrapper sur `usePermissions(["cagnotte"], entity, ...)` avec mémoisation |
-| `useActionGuards({ isConnected, apiClient, projectId, answerId })` | Retourne `{ requireConnected(suffix), requireApiContext(namespace) }` — centralise les gardes répétés dans 9+ handlers |
+| `useActionGuards({ isConnected, apiClient, projectId, answerId })` | Retourne `{ requireConnected(suffix), requireApiContext(namespace) }` — centralise les gardes répétés dans 6+ handlers |
 
 ---
 
@@ -283,20 +325,28 @@ Les **sections JSON** (`ActionsSection`, `FinanceSection`, etc.) ne sont **pas**
 
 ### Pattern factory
 
-`milestone.ts` et `action.ts` exposent chacune une factory `create*Mutation` qui wrappe `useMutationWithToast` :
+`milestone.ts` et `action.ts` exposent chacune une factory `create*Mutation` qui wrappe `useMutationWithToast`. Exemple pour la factory action :
 
 ```ts
-export function createActionMutation<TParams, TData = void>(
+export function createActionMutation<TParams = void, TData = void>(
   config: ActionMutationConfig<TParams, TData>,
 ) {
   return function useActionMutation(ctx: ActionMutationContext) {
     const queryClient = useQueryClient();
     return useMutationWithToast<TData, TParams>({
-      mutationFn: async (params) => config.action(resolveContextOrThrow(ctx, queryClient), params),
+      mutationFn: async (params) => {
+        const resolved = resolveContextOrThrow(ctx, queryClient);
+        return await config.action(resolved, params);
+      },
       namespace: "modules/cagnotte",
       successKey: config.i18n.successKey,
       errorKey: config.i18n.errorKey,
-      invalidateQueries: config.invalidate?.(ctx) ?? [CAGNOTTE_QUERY_KEYS.FUNDING_ENVELOPE_PREFIX()],
+      getSuccessParams: config.getSuccessParams
+        ? (data, variables) => config.getSuccessParams!(variables, data)
+        : undefined,
+      invalidateQueries: config.invalidate
+        ? config.invalidate(ctx)
+        : [CAGNOTTE_QUERY_KEYS.FUNDING_ENVELOPE_PREFIX()],
     });
   };
 }
@@ -317,25 +367,24 @@ Avantages :
 - `useRestoreMilestone` — `status: open` + `include: true`
 - `useDeleteMilestone` — refuse si financé ; supprime actions liées puis milestone et dépense
 
-**Action** (5) — API **entity-oriented** du SDK (depuis SDK 1.0.130) :
-- `useCreateAction` — via `project.action({ ... })` + `action.save()`. La méthode `project.action()` crée un draft `Action` lié au projet parent. L'`id` de l'action créée est résolu via `resolveCreatedActionId` après `save()`. Retourne `{ actionId }`.
-- `useEditAction` — charge l'entité via `project.action({ id })`, applique le diff via `calculateActionDiff`, appelle `action.save()`. Les dates sont converties depuis le format français picker (`parseFrenchDateToIso`) avant envoi.
-- `useMarkActionDone` — charge l'entité via `project.action({ id })`, appelle `action.markDone()`
-- `useDeleteAction` — charge l'entité, appelle `entity.delete()`
-- `useCandidateAction` — charge l'entité via `project.action({ id })`, appelle `action.joinContributor()`
+**Action** (6) — API **entity-oriented** du SDK (depuis SDK 1.0.130) :
+- `useCreateAction` — via `project.action({ ... })` + `action.save()`. La méthode `project.action()` crée un draft `Action` lié au projet parent. Les contributeurs sont passés via `mentions` (liste de `username`s — le backend résout username → userId). `action.id` est peuplé automatiquement après `save()` depuis `content.id` de la réponse serveur. Retourne `{ actionId: string }`.
+- `useEditAction` — charge l'entité via `project.action({ id })`, assigne les diffs sur `action.data.*` (proxy SDK), appelle `action.save()`. Les dates DD/MM/YYYY sont converties en ISO 8601 via `parseFrenchDateToIso` avant assignation.
+- `useMarkActionDone` — charge l'entité via `project.action({ id })`, appelle `action.updateStatus("done")` (endpoint `set_status` dédié — peuple l'historique des transitions + auto-injecte `endDate` côté backend)
+- `useDeleteAction` — charge l'entité via `project.action({ id })`, appelle `action.delete("delete action via cagnotte")` (guard `isAuthorOrAdmin({ checkHierarchy: true })`)
+- `useCandidateAction` — charge l'entité via `project.action({ id })`, appelle `action.joinContributor()` (le userId courant est résolu côté serveur)
+- `useEditMilestone`, `useCloseMilestone`, `useRestoreMilestone`, `useDeleteMilestone`, `useCreateMilestone` — voir §Milestone ci-dessus
 
-**Pourquoi entity-oriented ?** Le SDK 1.0.130 expose `Action` comme une entité à part entière. Les méthodes de l'entité (`save()`, `markDone()`, `joinContributor()`) sont type-safe et maintenues par le SDK. L'approche précédente utilisait `endpointApi.costumProjectActionRequestNew` (appel direct API endpoint) qui ne bénéficiait pas des types.
+**Pourquoi entity-oriented ?** Le SDK 1.0.130 expose `Action` comme une entité à part entière. Les méthodes de l'entité (`save()`, `updateStatus()`, `joinContributor()`, `delete()`) sont type-safe et maintenues par le SDK. `actionIdResolvers.ts` (workaround historique qui refetchait l'envelope pour récupérer l'id créé) est désormais `@unused` — marqué explicitement dans le fichier.
 
 ### Context requis
 
 ```ts
-MilestoneMutationContext = { apiClient, rawEnvelope, projectId, answerId }
-ActionMutationContext    = { apiClient, project, projectId }
-// `project` est l'entité Project du SDK (chargée via `api.project(...)`)
-// Non plus `api` mais `project` directement — le contexte résolu expose project.action()
+MilestoneMutationContext = { api: Api | null, rawEnvelope: unknown, projectId: string, answerId: string }
+ActionMutationContext    = { api: Api | null, project: Project | null, projectId: string }
 ```
 
-`ActionMutationContext.project` est l'entité `Project` du SDK Cocolight (depuis 1.0.130), nécessaire pour accéder à `project.action()`. Récupéré et injecté par `ActionsSection` qui charge le projet courant.
+`ActionMutationContext.project` est l'entité `Project` du SDK Cocolight (depuis 1.0.130), nécessaire pour accéder à `project.action()`. Récupéré et injecté par `ActionsSection` qui charge le projet courant. `ActionMutationContext.api` est passé en plus de `project` car `ResolvedActionContext` expose un `queryClient` pour les mutations composites.
 
 ---
 
@@ -347,9 +396,11 @@ Tous les dialogs de saisie utilisent **React Hook Form** + **`@hookform/resolver
 |---|---|---|
 | `milestoneCreateFormSchema` | `{ name, description, targetAmount }` | `CreateMilestoneDialog` |
 | `milestoneEditFormSchema` | `{ name, description, targetAmount, status }` | `MilestoneEditDialog`, modal inline dans `FinanceSection` |
-| `actionCreateFormSchema` | `{ name, credits, status, milestoneId, tags, contributorIds, startDate, endDate }` | `ActionCreateDialog` |
-| `actionEditFormSchema` | `{ id, name, credits, status, tags, contributorIds, startDate, endDate }` | `ActionEditDialog` |
+| `actionCreateFormSchema` | `{ name, credits, status, milestoneId, tags, contributors: SelectMemberValue[], startDate, endDate }` | `ActionCreateDialog` |
+| `actionEditFormSchema` | `{ id, name, credits, status, tags, contributors: SelectMemberValue[], startDate, endDate }` | `ActionEditDialog` |
 | `contributionFormSchema` | `{ projectId, totalAmount, financerType, financerId, allocations[], paymentMethod? }` | `CagnotteDialog` / `PaymentConfigPage` (déclaratif, validation runtime) |
+
+**Note** : les champs `contributors` (création et édition d'action) sont de type `SelectMemberValue[]` (`{ id, type, name, username? }`) — défini par `selectMemberValueSchema` interne à `schemaForm.ts`, miroir structurel de `SelectMemberValue` dans `src/components/form/SelectMember.tsx`.
 
 Validation cross-field via `.superRefine` (ex. `startDate ≤ endDate`).
 
@@ -373,6 +424,14 @@ Erreurs affichées via `form.formState.errors.<field>?.message` (les messages so
 
 Schéma commun (4 premières) : `CagnotteBaseSectionPropsSchema = { idProjet?: string, maxItems?: number = 10 }` mutualisé via `.extend()`.
 
+Les 4 sections data-driven ont des props étendues au-delà de la base :
+- `actions` : `showStatus`, `showProgress`, `showDates` (boolean, défaut `true`), `layout` (`"list" | "grid" | "timeline"`, défaut `"list"`)
+- `finance` : `showProgress`, `showFundingGoal`, `showContributors` (boolean, défaut `true`), `showTimeline` (défaut `false`), `layout` (`"cards" | "list" | "compact"`, défaut `"cards"`)
+- `actions-summary` : `showKpis`, `showCharts` (boolean, défaut `true`), `charts.statusDistribution.type` (`"pie" | "bar" | "list"`), `charts.timeline.type` (`"bar" | "line" | "list"`)
+- `finance-summary` : `showKpis`, `showCharts` (boolean, défaut `true`), `charts.fundingProgress.type` (`"progress" | "bar" | "list"`), `charts.amountByMilestone.type` (`"bar" | "list"`)
+
+**Attention** : ces props étendues sont déclarées dans `schema.ts` mais leur implémentation effective dans les composants peut différer — les schémas servent principalement à la validation JSON de la config site.
+
 ### Dialogs autonomes RHF
 
 Chaque dialog embarque son propre `useForm + zodResolver` + sa mutation. API uniforme :
@@ -392,8 +451,8 @@ interface MilestoneEditDialogProps {
 4 dialogs autonomes :
 - `CreateMilestoneDialog` (`components/sections/`)
 - `MilestoneEditDialog` (`parts/`)
-- `ActionCreateDialog` (`parts/`) — utilise `useCreateAction`, callback `onSuccess(actionId, status)` pour orchestrer le scroll target côté parent
-- `ActionEditDialog` (`parts/`) — calcule le diff via `calculateActionDiff` avant la mutation ; si delta vide, affiche toast "noModification" et ferme sans appel API
+- `ActionCreateDialog` (`parts/`) — utilise `useCreateAction`, retourne `CreateActionResult` (`{ actionId }`) en callback `onSuccess` pour orchestrer le scroll target côté parent
+- `ActionEditDialog` (`parts/`) — calcule le diff via `calculateActionDiff` avant la mutation ; si delta vide (`Object.keys(diff).length === 0`), affiche toast `"noModification"` et ferme sans appel API
 
 ### Parts présentationnels
 
@@ -406,6 +465,22 @@ Sans state interne, callbacks remontés au parent :
 | `parts/badges.tsx` | `MilestoneStatusBadge`, `ActionStatusBadge`, `ContributorsAvatars` |
 | `MilestoneManageActions.tsx` | Trio boutons admin (edit/close/restore/delete) avec spinners |
 
+### `PiggyBankHeaderButton`
+
+Composant header (`components/PiggyBankHeaderButton.tsx`) affiché dans les headers de site (ex. `HeaderRezoLaMer`) :
+
+- Lit `entity.serverData.preferences.projectModalId` via `useReactiveProperty` (réactif aux mutations live)
+- Consomme `useFundingEnvelope(projectModalId)` — partage le cache React Query avec `CagnotteDialog` (0 fetch supplémentaire à l'ouverture)
+- Affiche le montant `targetProject.totalFinancement` en temps réel (PiggyBank icon + montant en €)
+- Masqué si `me?.id` est nul (feature member-only, évite d'afficher "0 €" pour les anonymes)
+- Ouvre `<CagnotteDialog>` au clic avec `defaultProjectId` pré-sélectionné
+
+### `CagnotteDialog` — parts supplémentaires
+
+En plus des 4 parts documentés, `components/parts/` contient :
+- `CagnotteContributeButton.tsx` — bouton "Contribuer" (standalone)
+- `CagnotteProjectProgressCard.tsx` — carte de progression d'un projet sélectionné
+
 ---
 
 ## Permissions
@@ -414,19 +489,21 @@ Le module enregistre un namespace `cagnotte` via `register.ts` (side-effect). 11
 
 | Permission | Règle |
 |---|---|
-| `canContribute` | `projectId` non vide + au moins un milestone non clôturé |
-| `canCreateMilestone` | connecté + admin du projet |
-| `canEditMilestone(m)` | admin + milestone non `close` |
-| `canCloseMilestone(m)` | admin + milestone `open` |
-| `canRestoreMilestone(m)` | admin + milestone `close` |
-| `canDeleteMilestone(m)` | admin + pas de transactions |
+| `canContribute` | `projectId` non vide + `hasActiveMilestones === true` (passé via `data`) |
+| `canCreateMilestone` | admin du projet |
+| `canEditMilestone(m)` | admin + milestone non `close` (statut `open` ou `done`) |
+| `canCloseMilestone(m)` | admin + milestone en statut `open` exactement |
+| `canRestoreMilestone(m)` | admin + milestone en statut `close` exactement |
+| `canDeleteMilestone(m)` | admin + `m.hasTransactions !== true` |
 | `canCreateAction(m)` | admin + milestone non `close` |
-| `canEditAction(a)` | admin OU contributeur de l'action (pas si `done` pour non-admin) |
-| `canMarkActionDone(a)` | (admin OU contributeur) + action `todo` |
-| `canDeleteAction(a)` | admin uniquement |
-| `canCandidateAction(a)` | connecté + action `todo` + pas déjà contributeur |
+| `canEditAction(a)` | si `a.status === "done"` : admin uniquement ; sinon : admin OU contributeur (`a.contributorIds.includes(currentUserId)`) |
+| `canMarkActionDone(a)` | (admin OU contributeur) + `a.status === "todo"` |
+| `canDeleteAction(a)` | admin uniquement (signature `(action) => isAdmin` — le paramètre `action` est ignoré) |
+| `canCandidateAction(a)` | `currentUserId` non vide + `a.status === "todo"` + pas déjà contributeur |
 
 Métadonnées exposées : `isConnected`, `isAdmin`, `isContributor`, `currentUserId`.
+
+**Différence vs `canContribute`** : `canContribute` ne requiert **pas** que `me` soit connecté — il signale simplement que la modale de contribution peut être ouverte (un projet avec milestones actifs existe). La vérification de connexion est faite en amont par le composant.
 
 **Usage** :
 ```ts
@@ -482,14 +559,16 @@ launchConfettiBurst + toast succès
 
 ## React Query
 
-4 query keys (`constants/queryKeys.ts`) :
+5 clés (dont 2 préfixes pour invalidations) dans `constants/queryKeys.ts` :
 
 | Key | Forme |
 |---|---|
-| `FUNDING_ENVELOPE` | `["funding-envelope", entityId, contextType, projectId, profileSlug, userId]` |
-| `FUNDING_ENVELOPE_PREFIX` | `["funding-envelope"]` (invalidations globales) |
-| `ORGANIZATION_PROJECTS_WITH_ANSWERS` | `["organization-projects-with-answers", entityId]` |
-| `PROJECT_MODAL_CAGNOTTE` | `["projectModalCagnotte", entityId, projectModalId]` |
+| `FUNDING_ENVELOPE(entityId, contextType, projectId, profileSlug, userId)` | `["funding-envelope", entityId, contextType, projectId, profileSlug, userId]` |
+| `FUNDING_ENVELOPE_PREFIX()` | `["funding-envelope"]` (invalidations globales) |
+| `ORGANIZATION_PROJECTS_WITH_ANSWERS(entityId)` | `["organization-projects-with-answers", entityId]` |
+| `ORGANIZATION_PROJECTS_WITH_ANSWERS_PREFIX()` | `["organization-projects-with-answers"]` |
+| `PROJECT_MODAL_CAGNOTTE(entityId, projectModalId)` | `["projectModalCagnotte", entityId, projectModalId]` |
+| `PROJECT_MODAL_CAGNOTTE_PREFIX()` | `["projectModalCagnotte"]` |
 
 **Invalidation** : toutes les mutations milestone/action invalident `FUNDING_ENVELOPE_PREFIX()` via la factory. `CagnotteDialog` invalide en plus `ORGANIZATION_PROJECTS_WITH_ANSWERS_PREFIX` après contribution.
 
@@ -514,6 +593,10 @@ await prefetchFundingEnvelope(queryClient, {
 
 La queryKey générée par le prefetch match celle de `useFundingEnvelope` (incluant `me?.id ?? null`), donc le cache est correctement consommé à l'hydratation. Échec silencieux si l'entité n'expose pas `fundingEnvelope()` → le client fera le fetch normalement.
 
+**`prefetch/index.ts`** exporte également :
+- `CAGNOTTE_SECTION_TYPES` — `Set<string>` des 4 types de sections (`"actions"`, `"finance"`, `"actions-summary"`, `"finance-summary"`)
+- `hasCagnotteSection(sections)` — walk récursif sur une liste de sections JSON (inclut les `leftSections`/`rightSections` de `profile-tab-layout`) pour détecter la présence d'une section cagnotte
+
 **Statut au repo** : exporté mais pas branché côté loader / entry-server (cf. [Décisions design en attente](#décisions-design-en-attente)).
 
 ---
@@ -525,9 +608,20 @@ Namespace : **`modules/cagnotte`**. Enregistré en side-effect par `i18n.ts`.
 Sections dans `i18n/fr.json` et `i18n/en.json` :
 
 - `validation.*` — erreurs Zod (milestone/action/amount/date/id/contribution)
-- `toasts.*` — succès/erreurs des mutations (contributionSaved, milestoneCreated, …)
-- `CreateMilestoneDialog.*`, `FinanceSection.*`, `ActionsSection.*`, `CagnotteDialog.*`, `PaymentConfigPage.*`, `StripePaymentForm.*` — labels UI
-- `milestone.errors.*` — messages levés depuis les handlers `lib/`
+- `toasts.*` — succès/erreurs des mutations contribution (`contributionSaved`, `contributionPartial`, `errors.*`)
+- `milestone.errors.*` — messages levés depuis les handlers `lib/` (apiClientUnavailable, projectIdMissing, answerIdMissing, syncContextMissing, cannotCloseWithOpenActions, cannotDeleteIfFunded, noIndexForDelete, actionIdMissing, deleteActionUnavailable, projectMissing)
+- `CreateMilestoneDialog.*` — labels + toasts de création milestone
+- `MilestoneCreateTrigger.*` — toast connexion requise (trigger)
+- `MilestoneManageActions.*` — labels boutons admin
+- `FinanceSection.*` — section finance complète (milestones, toasts, dialogs inline)
+- `ActionsSection.*` — section actions complète (toasts, dialogs, erreurs, badges, confirm)
+- `ActionsSummarySection.*` — synthèse jalons (stats, contributeurs)
+- `FinanceSummarySection.*` — synthèse financement (stats, financeurs)
+- `CagnotteDialog.*` — dialog principale (labels, toasts, success screen, celebration)
+- `PaymentConfigPage.*` — configuration paiement (Stripe, HelloAsso, toasts, erreurs)
+- `StripePaymentForm.*` — formulaire Stripe Elements (erreurs, actions, toasts, configErrors)
+- `common.*` — labels partagés (loading, addMilestone, progress, supportProject)
+- `a11y.*` — labels accessibilité (back)
 
 Usage hors composant React (libs) :
 ```ts
@@ -549,11 +643,13 @@ Fix : utiliser `getServerData(entity)` (`utils/dataTransform.ts`) qui résout l'
 
 ### 2. `useFundingEnvelope` fait deux appels backend
 
-`getEnvelopeData` toujours appelé. `getFormData` appelé en plus si `formId` extractible **et** `me?.id` non null (cf. `useFundingEnvelope.ts:570-600`). Le merge écrase certains champs (`projects`, `links`, `contextData`, `nopropProject`). Implication : côté SSR (sans auth), seul `getEnvelopeData` est consommé ; le client ré-appelle si l'utilisateur est connecté.
+`getEnvelopeData` toujours appelé. `getFormData` appelé en plus si `formId` extractible **et** `me?.id` non null. Le merge (`mergeEnvelopePayloads`) écrase certains champs : `projects`, `links`, `contextData`, `nopropProject`. Implication : côté SSR (sans auth), seul `getEnvelopeData` est consommé ; le client ré-appelle si l'utilisateur est connecté.
 
-### 3. AJV — flatten objet imbriqué (résolu SDK 1.0.126)
+La query est également **désactivée côté SSR** (`enabled: typeof window !== 'undefined' && ...`) : le serveur n'a pas de session, donc `me` est null, ce qui retournerait une enveloppe anonyme avec `totalFinancement: 0`. Le prefetch SSR passe par `prefetchFundingEnvelope` qui réutilise le même `queryFn` avec les mêmes règles.
 
-Avant `1.0.126`, le schéma AJV de `COSTUM_PROJECT_ACTION_REQUEST_NEW` déclarait `"milestone[milestoneId]": string` (notation bracket) et refusait `milestone: { milestoneId }` (objet imbriqué). Un fallback hacky utilisait `apiClient._client.request()` (API privée). Depuis `1.0.126`, le schéma accepte l'objet imbriqué et `endpointApi.costumProjectActionRequestNew(...)` est la méthode typée à utiliser. Plus de fallback.
+### 3. AJV — flatten objet imbriqué (résolu SDK 1.0.126, puis supplanté)
+
+Avant `1.0.126`, le schéma AJV de `COSTUM_PROJECT_ACTION_REQUEST_NEW` déclarait `"milestone[milestoneId]": string` (notation bracket) et refusait `milestone: { milestoneId }` (objet imbriqué). Depuis `1.0.126`, le schéma accepte l'objet imbriqué. Cette correction est désormais sans portée pratique car `useCreateAction` utilise l'API entity-oriented `project.action()` + `action.save()` depuis SDK 1.0.130, qui ne passe plus par `endpointApi.costumProjectActionRequestNew`.
 
 ### 4. Permissions : entité du profil vs entité du site
 
@@ -605,7 +701,15 @@ Le module suppose que le CoForm cible contient `answers.aapStep1.depense[]`. Pou
 
 5. **`CagnotteDialog.tsx` (>900 lignes)** : refactor envisageable en sous-composants (sélecteur projet, sélecteur milestones, sélecteur montant, écran succès).
 
-6. **Tests** : aucun test dédié cagnotte (`tests/` ni `e2e/`). Priorités envisagées : tests unitaires des helpers purs (`actionDateHelpers`, `actionDiffCalculator`, `actionIdResolvers`), tests d'intégration des factories de mutations, E2E du flux contribution.
+6. **Tests** : les helpers purs disposent déjà de tests unitaires (Vitest) :
+   - `utils/dataTransform.test.ts` — 9 fonctions testées
+   - `utils/format.test.ts`
+   - `utils/actionDateHelpers.test.ts`
+   - `utils/idGeneration.test.ts`
+   - `lib/actionDiffCalculator.test.ts`
+   - `lib/actionIdResolvers.test.ts`
+
+   Manquent encore : tests d'intégration des factories de mutations, E2E du flux contribution.
 
 ---
 
