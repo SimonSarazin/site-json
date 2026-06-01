@@ -52,9 +52,15 @@ const SECTION_EXTRACTORS: Record<string, (props: Record<string, unknown>) => unk
 export function findFiltersSections(sections: RawSection[]): RawSection[] {
   const result: RawSection[] = [];
   for (const section of sections) {
-    if (section.type === "filters") {
+    const props = (section.props ?? {}) as Record<string, unknown>;
+    // Générique (pas de cas en dur par `type`) : toute section qui DÉCLARE une
+    // config de filtres est préfetchée — la section `filters` classique OU une
+    // section qui pilote les filtres via les mêmes props (ex. le hero de la home).
+    // `prefetchFilterSection` lit déjà `props.*` sans regarder le type.
+    if (props.filterGroups || props.filtersByAnswers || props.filtersByPath) {
       result.push(section);
-    } else if (SECTION_EXTRACTORS[section.type] && section.props) {
+    }
+    if (SECTION_EXTRACTORS[section.type] && section.props) {
       const nested = SECTION_EXTRACTORS[section.type](section.props).filter(Boolean) as RawSection[];
       result.push(...findFiltersSections(nested));
     }

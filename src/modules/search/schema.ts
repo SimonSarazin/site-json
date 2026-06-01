@@ -3,71 +3,87 @@ import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { IconName } from "lucide-react/dynamic";
 import { z } from "zod";
 
+/**
+ * Nom d'icône lucide. Typé `IconName` (au lieu de `z.string()`) sans énumérer les
+ * ~1500 littéraux : `z.custom` est permissif au runtime mais expose le bon type
+ * → plus de cast `as IconName` côté composant. Réutilisable par tous les champs icône.
+ */
+export const IconNameSchema = z.custom<IconName>();
+
 //──────────────── Filters Section
 // Section sidebar qui pilote le state des filtres (selectedFilters,
 // searchByFields, searchQuery) consommé par SearchPro/SearchProStatic via
 // PageFiltersContext. Vit dans le module search car elle n'a de sens qu'avec
 // un consommateur search dans le même PageFiltersProvider.
 
+// ─── Schémas de filtres (partagés) ───────────────────────────────────────────
+// Source unique réutilisée par `FiltersSectionSchema` (UI /lieux) ET par le hero
+// (applicateur headless de la home) — évite la duplication inline.
+export const FilterGroupSchema = z.object({
+  id: z.string(),
+  label: LocalizedString,
+  type: z.enum(['scopeList', "filters", "entityList"]).default("filters"),
+  field: z.string().optional(),
+  options: z.array(z.object({
+    id: z.string(),
+    label: LocalizedString,
+    level: z.string().optional(),
+    name: z.string().optional(),
+    defaultChecked: z.boolean().optional(),
+  })).optional(),
+  config: z.object({
+    countryCode: z.array(z.string()).optional(),
+    level: z.array(z.string()).optional(),
+    upperLevelId: z.string().optional(),
+    sortBy: z.string().optional(),
+  }).optional(),
+  // Pour `type: "entityList"` — recherche backend qui peuple les options
+  // dynamiquement (réseaux régionaux, etc.). Réutilise le shape baseParams
+  // des sections search. Forward-ref car SearchBaseParamsSchema est défini
+  // plus bas dans le fichier.
+  baseParams: z.lazy(() => SearchBaseParamsSchema).optional(),
+  // Comment l'option sélectionnée filtre les résultats à droite.
+  // "sourceKey" → injecte la valeur dans baseParams.sourceKey (param natif
+  // SDK : matching source.key/source.keys/reference.costum côté backend).
+  filterType: z.enum(["sourceKey"]).optional(),
+  // Champ de l'entité utilisé comme valeur de filtre (défaut: "slug").
+  filterBy: z.string().optional(),
+});
+export const FilterGroupsSchema = z.array(FilterGroupSchema);
+
+export const FiltersByAnswersSchema = z.record(z.string(), z.object({
+  id: z.string().optional(),
+  label: LocalizedString,
+  type: z.enum(["form", 'answers']).default("answers"),
+  path: z.string().optional(),
+  forms: z.string().optional(),
+  finderPath: z.string().optional(),
+  value: z.record(z.string(), z.object({
+    id: z.string(),
+    finder: z.string(),
+  })).optional(),
+}));
+
+// Filtres par thématique CoForm via `coformFilterByPath` (un appel par entrée).
+// Même structure de sortie que filtersByAnswers (sélection → filters._id.$in =
+// orgaNameArray) mais appel backend différent.
+export const FiltersByPathSchema = z.record(z.string(), z.object({
+  id: z.string().optional(),
+  label: LocalizedString,
+  thematicPath: z.string(),
+  finderPath: z.string().optional(),
+  // notSourceKey: true → cherche dans tout le réseau (cf. coformFilterByPath).
+  notSourceKey: z.boolean().optional(),
+}));
+
 export const FiltersSectionSchema = z.object({
   type: z.literal("filters"),
   id: z.string().optional(),
   props: z.object({
     title: LocalizedString.optional(),
-    filterGroups: z.array(z.object({
-      id: z.string(),
-      label: LocalizedString,
-      type: z.enum(['scopeList', "filters", "entityList"]).default("filters"),
-      field: z.string().optional(),
-      options: z.array(z.object({
-        id: z.string(),
-        label: LocalizedString,
-        level: z.string().optional(),
-        name: z.string().optional(),
-        defaultChecked: z.boolean().optional(),
-      })).optional(),
-      config: z.object({
-        countryCode: z.array(z.string()).optional(),
-        level: z.array(z.string()).optional(),
-        upperLevelId: z.string().optional(),
-        sortBy: z.string().optional(),
-      }).optional(),
-      // Pour `type: "entityList"` — recherche backend qui peuple les options
-      // dynamiquement (réseaux régionaux, etc.). Réutilise le shape baseParams
-      // des sections search. Forward-ref car SearchBaseParamsSchema est défini
-      // plus bas dans le fichier.
-      baseParams: z.lazy(() => SearchBaseParamsSchema).optional(),
-      // Comment l'option sélectionnée filtre les résultats à droite.
-      // "sourceKey" → injecte la valeur dans baseParams.sourceKey (param natif
-      // SDK : matching source.key/source.keys/reference.costum côté backend).
-      filterType: z.enum(["sourceKey"]).optional(),
-      // Champ de l'entité utilisé comme valeur de filtre (défaut: "slug").
-      filterBy: z.string().optional(),
-    })),
-    filtersByAnswers: z.record(z.string(), z.object({
-      id: z.string().optional(),
-      label: LocalizedString,
-      type: z.enum(["form", 'answers']).default("answers"),
-      path: z.string().optional(),
-      forms: z.string().optional(),
-      finderPath: z.string().optional(),
-      value: z.record(z.string(), z.object({
-        id: z.string(),
-        finder: z.string(),
-      })).optional(),
-    })).optional(),
-    // Filtres par thématique CoForm via `coformFilterByPath` (un appel par
-    // entrée). Découverte dynamique des valeurs distinctes d'une thématique
-    // (réseaux thématiques, etc.). Même structure de sortie que filtersByAnswers
-    // (sélection → filters._id.$in = orgaNameArray) mais appel backend différent.
-    filtersByPath: z.record(z.string(), z.object({
-      id: z.string().optional(),
-      label: LocalizedString,
-      thematicPath: z.string(),
-      finderPath: z.string().optional(),
-      // notSourceKey: true → cherche dans tout le réseau (cf. coformFilterByPath).
-      notSourceKey: z.boolean().optional(),
-    })).optional(),
+    filterGroups: FilterGroupsSchema,
+    filtersByAnswers: FiltersByAnswersSchema.optional(),
+    filtersByPath: FiltersByPathSchema.optional(),
     defaultOpenGroups: z.array(z.string()).optional(),
     className: z.string().optional(),
   }),
@@ -244,7 +260,7 @@ export const SearchProSectionSchema = z.object({
       title: LocalizedString.optional(),
       linkText: LocalizedString.optional(),
       linkHref: z.string().optional(),
-      showMapButton: z.boolean().default(true),
+      linkIcon: IconNameSchema.optional(),
     }).optional(),
 
     filters: z.record(z.string(), TagsFilterSchema).optional(),
@@ -401,7 +417,7 @@ export const SearchProStaticSectionSchema = z.object({
       title: LocalizedString.optional(),
       linkText: LocalizedString.optional(),
       linkHref: z.string().optional(),
-      showMapButton: z.boolean().default(true),
+      linkIcon: IconNameSchema.optional(),
     }).optional(),
 
     filters: z.record(z.string(), TagsFilterSchema).optional(),

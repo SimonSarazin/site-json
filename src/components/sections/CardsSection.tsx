@@ -109,6 +109,15 @@ export function CardsSection({ id, props }: { id?: string; props: SectionPropsMa
 
   const CardWrapper = ({ children, href, target }: { children: React.ReactNode; href?: string; target?: string }) => {
     if (href) {
+      // Lien externe (http/https) → <a> natif (sinon React-Router <Link> le traite
+      // comme un chemin relatif et casse la navigation).
+      if (/^https?:\/\//.test(href)) {
+        return (
+          <a href={href} target={target || '_blank'} rel="noopener noreferrer" className="block">
+            {children}
+          </a>
+        );
+      }
       return (
         <Link
           to={href}

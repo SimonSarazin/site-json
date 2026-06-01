@@ -3,8 +3,9 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { useInfiniteQueryScrollNextWithTransform } from "@/hooks/useInfiniteQueryScroll";
 import { SearchType } from "../schema";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
-import type { GlobalAutocompleteCostumData, PaginatorPage } from "@communecter/cocolight-api-client";
+import type { PaginatorPage } from "@communecter/cocolight-api-client";
 import { SEARCH_QUERY_KEYS } from "../constants/queryKeys";
+import { buildSearchPayload } from "../lib/buildSearchPayload";
 
 export interface UseSearchQueryParams {
   queryKeyPrefix: string;
@@ -99,63 +100,13 @@ export function useSearchQuery({
       const tags = Object.values(searchTags).flat() as string[];
       const page = pageParam as PaginatorPage<SearchEntity> | undefined;
 
-      const {
-        fediverse = false,
-        indexStepList = 10,
-        indexStepMap = 0,
-        defaultTypes,
-        defaultTags,
-        defaultFilters,
-        defaultFields,
-        defaultSortBy,
-        searchBy,
-        notSourceKey,
-        locality,
-      } = baseParams;
-
-      const extra = baseParams as Record<string, unknown>;
-
-      const graphIndexStep = 0;
-
-      const param: Partial<GlobalAutocompleteCostumData> = {
+      const param = buildSearchPayload(baseParams, {
         name: searchText,
-        fediverse,
-        ...(graphUsed
-          ? { indexMin: 0, indexStep: graphIndexStep }
-          : mapUsed
-            ? { mapUsed: true, indexMin: 0, indexStep: indexStepMap }
-            : { indexMin: 0, indexStep: indexStepList }),
-        ...(tags.length > 0 && {
-          searchTags: tags,
-          options: { tags: { verb: "$all" } },
-        }),
-        ...(defaultFilters && Object.keys(defaultFilters).length > 0 && {
-          filters: defaultFilters,
-        }),
-        ...(defaultFields && defaultFields.length > 0 && {
-          fields: defaultFields,
-        }),
-        ...(defaultSortBy && Object.keys(defaultSortBy).length > 0 && {
-          sortBy: defaultSortBy,
-        }),
-        ...(locality && Object.keys(locality).length > 0 && { locality: locality as GlobalAutocompleteCostumData["locality"] }),
-        ...(searchBy !== undefined && {
-          searchBy: searchBy as GlobalAutocompleteCostumData["searchBy"],
-        }),
-        ...(notSourceKey ? { notSourceKey: true } : {}),
-        ...(extra.contextId ? { contextId: extra.contextId as string } : {}),
-        ...(extra.contextType ? { contextType: extra.contextType as GlobalAutocompleteCostumData["contextType"] } : {}),
-        ...(extra.costumSlug ? { costumSlug: extra.costumSlug as string } : {}),
-        ...(extra.costumEditMode !== undefined ? { costumEditMode: extra.costumEditMode as boolean } : {}),
-        ...(extra.sourceKey ? { sourceKey: extra.sourceKey as string[] } : {}),
-      } as Partial<GlobalAutocompleteCostumData>;
-      console.log("Search params:", param);
-
-      if (type && type.length > 0) param.searchType = type as unknown as GlobalAutocompleteCostumData["searchType"];
-      if (!type && defaultTypes) param.searchType = defaultTypes as unknown as GlobalAutocompleteCostumData["searchType"];
-      if (defaultTags && defaultTags.length > 0) {
-        param.searchTags = defaultTags;
-      }
+        tags,
+        type,
+        mapUsed,
+        graphUsed,
+      });
 
       if (!param.searchType) {
         return { results: [], count: { total: 0 }, hasNext: false, hasPrev: false, pageNumber: 1, pageIndex: 0 };

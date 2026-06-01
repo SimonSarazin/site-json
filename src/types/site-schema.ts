@@ -6,7 +6,7 @@
 // Validation : Zod 4.x – le schéma sert à la fois de typings, de runtime‑guard,
 //               et d'autocomplétion dans VS Code.
 // ------------------------------------------------------------
-import { SearchProSectionSchema, SearchProStaticSectionSchema, CardCountCTSectionSchema, ThematicsSectionSchema, FiltersSectionSchema } from "@/modules/search/schema";
+import { SearchProSectionSchema, SearchProStaticSectionSchema, CardCountCTSectionSchema, ThematicsSectionSchema, FiltersSectionSchema, SearchVariantSchema, SearchBaseParamsSchema, FilterGroupsSchema, FiltersByAnswersSchema } from "@/modules/search/schema";
 import { NewsSectionSchema } from "@/modules/news/schema";
 import { NotificationsSectionSchema } from "@/modules/notification/schema";
 import { z } from "zod";
@@ -151,9 +151,7 @@ export const HeroTiersLieuxSchema = z.object({
   id: z.string().optional(),
   props: z.object({
     headline: LocalizedString,
-    headlineSubsite: LocalizedString.optional(),
     subhead: LocalizedString.optional(),
-    subheadSubsite: LocalizedString.optional(),
     backgroundImage: z.string().optional(),
     ctaButtons: z
       .array(
@@ -165,6 +163,14 @@ export const HeroTiersLieuxSchema = z.object({
       .optional(),
     placeholder: LocalizedString.optional(),
     searchButtonText: LocalizedString.optional(),
+    // Scope de l'autocomplétion du hero — aligner sur le `searchProStatic` de la page
+    // (mêmes valeurs que `section-lieux`) pour interroger le même périmètre réseau.
+    searchVariant: SearchVariantSchema.optional(),
+    baseParams: SearchBaseParamsSchema.optional(),
+    // Filtres de l'applicateur headless de la home (catégories du hero) — mêmes
+    // schémas partagés que la `FiltersSection` de /lieux (typologies + services).
+    filterGroups: FilterGroupsSchema.optional(),
+    filtersByAnswers: FiltersByAnswersSchema.optional(),
   }),
 });
 
@@ -1584,7 +1590,6 @@ export const Header = z.object({
   logoIcon: LucideIconOrSvg.optional(),
   path: z.string().min(1).optional(),
   nav: z.array(EnhancedNavItem),
-  navSubsite: z.array(EnhancedNavItem).optional(),
   navVisibleOnlyForListedPages: z.boolean().optional(),
   secondaryNav: z.array(EnhancedNavItem).optional(),
   secondaryNavVisibleOnlyForListedPages: z.boolean().optional(),

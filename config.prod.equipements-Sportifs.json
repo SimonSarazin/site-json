@@ -1326,8 +1326,7 @@
             "customHeader": {
                 "title": {
                   "fr": "Tous les équipements sportifs"
-                },
-                "showMapButton": true
+                }
               },
             "useFilter": true,
             "showMap": false,

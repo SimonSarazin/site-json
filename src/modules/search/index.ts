@@ -81,6 +81,12 @@ export { SearchPropsProvider } from "./contexts/SearchPropsProvider";
 export { useSearchProps, useSearchPropsOptional } from "./hooks/useSearchProps";
 export { useSearchQuery, type UseSearchQueryParams } from "./hooks/useSearchQuery";
 export {
+  buildSearchPayload,
+  type SearchBaseParamsInput,
+  type BuildSearchPayloadOverrides,
+} from "./lib/buildSearchPayload";
+export { useAutocomplete } from "./hooks/useAutocomplete";
+export {
   useFiltersByAnswersQuery,
   filtersByAnswersQueryKey,
   fetchFiltersByAnswers,

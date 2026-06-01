@@ -79,12 +79,11 @@ export default function ProfileActions({ section }: ProfileActionsProps) {
           <>
             {/* Bouton Email */}
             {showEmailButton && entity.serverData?.email && typeof entity.serverData.email === "string" && (
-              <Button
-                variant="outline"
-                onClick={() => window.location.href = `mailto:${entity.serverData.email}`}
-              >
-                <Mail className="w-4 h-4" />
-                {emailButtonLabel ? t(emailButtonLabel) : t("ProfileTemplateDefault.sendEmail")}
+              <Button variant="outline" asChild>
+                <a href={`mailto:${entity.serverData.email}`}>
+                  <Mail className="w-4 h-4" />
+                  {emailButtonLabel ? t(emailButtonLabel) : t("ProfileTemplateDefault.sendEmail")}
+                </a>
               </Button>
             )}
 

@@ -2380,9 +2380,7 @@
             "showActiveFiltersTypes": true,
             "showActiveFiltersTags": false,
             "disableInfiniteScroll": false,
-            "customHeader": {
-              "showMapButton": false
-            },
+            "customHeader": {},
             "defaultViewMode" : "list",
             "baseParams": {
               "defaultTypes": [
@@ -3759,8 +3757,7 @@
             "customHeader": {
                 "title": {
                   "fr": "Tous les équipements sportifs"
-                },
-                "showMapButton": true
+                }
               },
             "useFilter": true,
             "showMap": false,

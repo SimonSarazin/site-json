@@ -4,9 +4,8 @@ import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
 import { Header } from "@/types/site-schema";
 import { ChevronDown, User, LogOut, Globe } from "lucide-react";
-import { Link, useNavigate, useLocation } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useCocolight } from "@/hooks/useCocolight";
-import { useEntityBySlugQuery } from "@/hooks/useEntityBySlugQuery";
 
 function NavLink({ to, className, children }: { to: string; className?: string; children: React.ReactNode }) {
   if (!to || to === "#") {
@@ -40,20 +39,9 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
     const t = useT("components/layout");
     const { currentLocale, setLocale, availableLocales } = useLocalization();
     const navigate = useNavigate();
-    const location = useLocation();
     const { me, api } = useCocolight();
 
-    // En mode sous-site (/s/:slug), utiliser navSubsite si disponible
-    const isSubsite = location.pathname.startsWith("/s/");
-    const nav = isSubsite && header.navSubsite ? header.navSubsite : header.nav;
-
-    // Extraire le slug depuis l'URL /s/{slug}/... pour afficher l'icône du sous-réseau
-    const subsiteSlug = isSubsite ? location.pathname.split("/")[2] : undefined;
-    const { data: subsiteEntity } = useEntityBySlugQuery({ slug: subsiteSlug });
-    const subsiteImage = subsiteEntity?.serverData?.profilThumbImageUrl
-        ?? subsiteEntity?.serverData?.profilImageUrl
-        ?? null;
-    const subsiteName = subsiteEntity?.serverData?.name ?? "";
+    const nav = header.nav;
 
     const profilThumbImageUrl = useReactiveProperty<string>(me?.serverData, 'profilThumbImageUrl') ?? null;
     const name = useReactiveProperty<string>(me?.serverData, 'name') ?? null;
@@ -93,19 +81,6 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                                 />
                             )}
                         </Link>
-
-                        {isSubsite && subsiteImage && (
-                            <>
-                                <span className="text-border text-2xl font-light select-none" aria-hidden="true">/</span>
-                                <OptimizedImage
-                                    src={subsiteImage}
-                                    alt={subsiteName}
-                                    width={207}
-                                    height={48}
-                                    className="h-6 xs:h-8 sm:h-9 w-auto object-contain"
-                                />
-                            </>
-                        )}
                     </div>
 
                     {/* Menu desktop */}

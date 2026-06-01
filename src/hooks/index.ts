@@ -11,7 +11,6 @@ export { useIsMobile } from "./use-mobile";
 
 // API & Data
 export { useCocolightInit } from "./useCocolightInit";
-export { useAutocomplete } from "./useAutocomplete";
 export { useInfiniteEntityQuery } from "./useInfiniteEntityQuery";
 export { useSearchTags } from "./useSearchTags";
 

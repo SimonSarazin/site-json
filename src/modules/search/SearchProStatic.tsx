@@ -1,7 +1,7 @@
-import { Loader2, Map, List, LayoutGrid, Search, MapPin, Download, Plus, GitBranch } from "lucide-react";
+import { Loader2, Map, List, LayoutGrid, Search, MapPin, Download, Plus, GitBranch, ArrowRight } from "lucide-react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import React, { useState, useMemo, useCallback } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, Link, useSearchParams } from "react-router";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,7 @@ import { useCsvExport } from "./hooks/useCsvExport";
 import { canonicalSearchProStaticBaseParams } from "./lib/canonicalBaseParams";
 import { useZonesQuery, getZoneId, getZoneName } from "./hooks/useZonesQuery";
 import { usePageFiltersOptional } from "./contexts/pageFilters";
+import { searchByFieldsToQuery } from "./lib/searchByFieldsToQuery";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useLocalization } from "@/hooks/useLocalization";
 import { DynamicModal } from "@/modules/profil/components/add/ModalRegistry";
@@ -74,6 +75,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   const iconName = icon as IconName | undefined;
 
   const customHeader = props.customHeader;
+  const [searchParams] = useSearchParams();
   const showDetailedViewToggle = props.showDetailedViewToggle ?? false;
   const defaultDetailedView = props.defaultDetailedView ?? false;
 
@@ -199,6 +201,18 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     [showSearch, debouncedLocalSearch, searchQuery]
   );
 
+  // Lien « voir sur la page complète » (ex. /lieux) AVEC les filtres courants :
+  // on recopie les query params actifs (typologies/services, déjà dans l'URL) +
+  // la recherche texte (`?search=`). Affiché seulement si `customHeader.linkText`.
+  const viewAllHref = useMemo(() => {
+    if (!customHeader?.linkText) return null;
+    const base = customHeader.linkHref || "/lieux";
+    const params = new URLSearchParams(searchParams);
+    if (searchQuery) params.set("search", searchQuery);
+    const qs = params.toString();
+    return qs ? `${base}?${qs}` : base;
+  }, [customHeader, searchParams, searchQuery]);
+
   const searchTags = useMemo<Record<string, string[]>>(() => {
     const tags: string[] = [];
 
@@ -219,58 +233,17 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
 
   const searchByFields = contextFilters?.searchByFields;
 
-  const filters = useMemo<Record<string, unknown>>(() => {
-    if (searchByFields) {
-      const obj: Record<string, Record<string, string[]>> = {};
-      for (const { field, type, value } of Object.values(searchByFields)) {
-        // scopeList → locality ; sourceKey → baseParams.sourceKey (param natif).
-        if (type === "scopeList" || type === "sourceKey") continue;
-        if (Array.isArray(value) && value.length > 0) {
-          if (!obj[field]) {
-            obj[field] = { "$in": value };
-          } else {
-            obj[field]["$in"] = Array.from(new Set([...obj[field]["$in"], ...value]));
-          }
-        };
-      }
-      return obj;
-    }
-    return {};
+  // Traduction `searchByFields` → filtres MongoDB / locality / sourceKeys (helper
+  // partagé avec l'autocomplete du hero → mêmes filtres dynamiques des deux côtés).
+  const { filters, contextLocality, dynamicSourceKeys } = useMemo(() => {
+    const { filters, locality, sourceKeys } = searchByFieldsToQuery(searchByFields ?? {});
+    return { filters, contextLocality: locality, dynamicSourceKeys: sourceKeys };
   }, [searchByFields]);
 
-  const contextLocality = useMemo<Record<string, unknown>>(() => {
-    if (searchByFields) {
-      const obj: Record<string, unknown> = {};
-      for (const { field, type, value } of Object.values(searchByFields)) {
-        if (type && type === "scopeList") {
-          if (!obj[field]) {
-            obj[field] = value;
-          }
-        }
-      }
-      return obj;
-    }
-    return {};
-  }, [searchByFields]);
-
-  const locality = useMemo<Record<string, unknown>>(() => {
-    const combined = {
-      ...contextLocality,
-      ...zoneLocality,
-    };
-    return combined;
-  }, [contextLocality, zoneLocality]);
-
-  // sourceKey dynamiques issus des filtres `entityList` (réseaux régionaux) :
-  // param natif SDK (matching source.key/source.keys/reference.costum backend).
-  const dynamicSourceKeys = useMemo<string[]>(() => {
-    if (!searchByFields) return [];
-    const keys: string[] = [];
-    for (const { type, value } of Object.values(searchByFields)) {
-      if (type === "sourceKey" && Array.isArray(value)) keys.push(...value);
-    }
-    return keys;
-  }, [searchByFields]);
+  const locality = useMemo<Record<string, unknown>>(
+    () => ({ ...contextLocality, ...zoneLocality }),
+    [contextLocality, zoneLocality],
+  );
 
   const mergedBaseParams = useMemo<Record<string, unknown>>(() => {
     const merged = canonicalSearchProStaticBaseParams(baseParams, filters, locality);
@@ -625,6 +598,24 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                     >
                       <Map className="h-4 w-4 sm:mr-1" />
                       <span className="hidden sm:inline">{t("Carte")}</span>
+                    </Button>
+                  )}
+                  {customHeader.linkText && viewAllHref && (
+                    // `text-foreground` : le lien est un <a> (asChild) → sinon il hérite
+                    // du style global `a { text-primary }` et tranche avec les autres boutons.
+                    <Button asChild variant="outline" size="sm" className="text-foreground">
+                      <Link to={viewAllHref}>
+                        {customHeader.linkIcon ? (
+                          <DynamicIcon name={customHeader.linkIcon} className="h-4 w-4 sm:mr-1" />
+                        ) : (
+                          <ArrowRight className="h-4 w-4 sm:mr-1" />
+                        )}
+                        <span className="hidden sm:inline">
+                          {typeof customHeader.linkText === "string"
+                            ? customHeader.linkText
+                            : t(customHeader.linkText)}
+                        </span>
+                      </Link>
                     </Button>
                   )}
                   {enableRegions && (

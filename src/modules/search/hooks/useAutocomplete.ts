@@ -3,9 +3,16 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { useDebounce } from "@/hooks/useDebounce";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 import type { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
+import { buildSearchPayload, type SearchBaseParamsInput } from "../lib/buildSearchPayload";
 
 interface UseAutocompleteOptions {
   searchTypes?: GlobalAutocompleteCostumData["searchType"];
+  /** Scope réseau — mêmes `baseParams` que le `searchProStatic` de la page. */
+  baseParams?: SearchBaseParamsInput;
+  /** Variant SDK `searchCostum` (ex. `"navigator-tl"`) — comme la liste. */
+  variant?: "default" | "navigator-tl";
+  /** Tags de filtres actifs (catégorie/tab) — appliqués comme la liste. */
+  tags?: string[];
   indexMax?: number;
   debounceMs?: number;
   minChars?: number;
@@ -22,7 +29,12 @@ export function useAutocomplete(
   options: UseAutocompleteOptions = {}
 ): UseAutocompleteResult {
   const {
-    searchTypes = ["NGO", "LocalBusiness", "citoyens", "projects", "poi"] as GlobalAutocompleteCostumData["searchType"],
+    // Pas de default : par défaut les types viennent de `baseParams.defaultTypes`
+    // (parité avec la liste). Un override explicite reste possible.
+    searchTypes,
+    baseParams,
+    variant,
+    tags,
     indexMax = 30,
     debounceMs = 300,
     minChars = 2,
@@ -47,13 +59,18 @@ export function useAutocomplete(
       setError(null);
 
       try {
-        const param: Partial<GlobalAutocompleteCostumData> = {
+        // Même construction de payload que la liste (`useSearchQuery`) → l'autocomplete
+        // interroge le même périmètre réseau (costumSlug/contextId/sourceKey…).
+        const param = buildSearchPayload(baseParams, {
           name: searchQuery,
-          searchType: searchTypes,
-          indexMin: 0,
+          type: searchTypes as unknown as string[] | undefined,
+          tags,
           indexStep: indexMax,
-        };
-        const result = await entity.searchCostum(param);
+        });
+        const result =
+          variant && variant !== "default"
+            ? await entity.searchCostum(param, { variant })
+            : await entity.searchCostum(param);
 
         // Les results sont un objet avec des IDs comme clés, pas un tableau
         const resultsObj = result?.results || {};
@@ -74,7 +91,7 @@ export function useAutocomplete(
         setIsLoading(false);
       }
     },
-    [entity, helper, searchTypes, indexMax, minChars]
+    [entity, helper, searchTypes, baseParams, variant, tags, indexMax, minChars]
   );
 
   useEffect(() => {

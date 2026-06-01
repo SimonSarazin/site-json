@@ -192,14 +192,18 @@ export function TiersLieuxForm({
   });
 
   const [logoFile, setLogoFile] = useState<File | null>(null);
-  const [photoFiles, setPhotoFiles] = useState<File[]>([]);
   const [logoUploading] = useState(false);
-  const [photosUploading] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
-  const photosInputRef = useRef<HTMLInputElement>(null);
 
   const logoPreview = logoFile ? URL.createObjectURL(logoFile) : null;
-  const photoPreviews = photoFiles.map((f) => URL.createObjectURL(f));
+
+  // TODO(photos) — Upload de photos désactivé tant que non géré côté backend.
+  // Réactiver : ce state + les handlers + le bloc UI « Photos » de l'onglet Médias,
+  // et remettre `_photoFiles: photoFiles` dans `handleSubmit`.
+  // const [photoFiles, setPhotoFiles] = useState<File[]>([]);
+  // const [photosUploading] = useState(false);
+  // const photosInputRef = useRef<HTMLInputElement>(null);
+  // const photoPreviews = photoFiles.map((f) => URL.createObjectURL(f));
 
   const handleLogoUpload = (file: File) => {
     if (!file.type.startsWith("image/")) {
@@ -209,6 +213,8 @@ export function TiersLieuxForm({
     setLogoFile(file);
   };
 
+  // TODO(photos) — handlers désactivés (cf. state commenté ci-dessus) :
+  /*
   const handlePhotosUpload = (files: FileList) => {
     const valid = Array.from(files).filter((f) => {
       if (!f.type.startsWith("image/")) {
@@ -227,6 +233,7 @@ export function TiersLieuxForm({
       return next;
     });
   };
+  */
 
   const removeLogo = () => setLogoFile(null);
 
@@ -237,7 +244,8 @@ export function TiersLieuxForm({
   };
 
   const handleSubmit = async (data: TiersLieuxFormData) => {
-    await onSubmit({ ...data, _logoFile: logoFile, _photoFiles: photoFiles });
+    // _photoFiles: [] tant que l'upload photos est désactivé (cf. TODO(photos)).
+    await onSubmit({ ...data, _logoFile: logoFile, _photoFiles: [] });
   };
 
   const STEP_REQUIRED_FIELDS: Record<string, Array<keyof TiersLieuxFormData>> = {
@@ -650,6 +658,8 @@ export function TiersLieuxForm({
                   />
                 </div>
 
+                {/* TODO(photos) — bloc upload photos désactivé tant que non géré côté backend.
+                    Réactiver avec le state + les handlers commentés plus haut.
                 <div className="space-y-3">
                   <div className="text-center">
                     <FormLabel className="text-base font-semibold">{t("AddTiersLieux.fields.photos")}</FormLabel>
@@ -715,6 +725,7 @@ export function TiersLieuxForm({
                     }}
                   />
                 </div>
+                */}
 
                 <div className="border-t pt-6">
                   <FormField

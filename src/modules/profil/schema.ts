@@ -63,6 +63,10 @@ export const ProfileHeaderSectionSchema = z.object({
   addDropdownLabel: LocalizedString.optional(),
   showEmailButton: z.boolean().optional().default(true),
   showReservationButton: z.boolean().optional().default(false),
+  // Le bouton « Voir toutes les photos » s'affiche automatiquement quand le type de
+  // profil a un onglet `gallery` (cf. ProfileHeaderComplete → lien vers cet onglet).
+  // Ce flag permet de le forcer masqué (`false`) même si l'onglet existe. La galerie
+  // elle-même (section `profile-gallery`) reste à implémenter.
   showAllPhotosButton: z.boolean().optional().default(true),
 });
 

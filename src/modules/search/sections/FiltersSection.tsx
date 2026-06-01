@@ -13,6 +13,7 @@ import { useFilterEntitiesQuery } from "../hooks/useFilterEntities";
 import { useFiltersByPathQuery } from "../hooks/useFiltersByPath";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useSearchParams } from "react-router";
+import { computeFiltersFromUrl } from "../lib/computeFiltersFromUrl";
 
 export function FiltersSection({
   id,
@@ -182,86 +183,27 @@ export function FiltersSection({
   }, [propsFiltersGroups, filterZoneData, filterEntityData, setSelectedFilters]);
 
   const [searchParams] = useSearchParams();
+
+  // Recherche texte reportée depuis l'URL (`?search=`) — ex. lien « voir sur /lieux »
+  // de la home, qui transporte la saisie texte en plus des filtres catégorie.
+  useEffect(() => {
+    const urlSearch = searchParams.get("search");
+    if (urlSearch && urlSearch !== searchQuery) {
+      setSearchInput(urlSearch);
+      setSearchQuery(urlSearch);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
   useEffect(() => {
     if (filterGroups.length === 0 && !filterAnswerData) return;
-
-    const nextSelected: Record<string, string[]> = {};
-    const nextSearchFields: Record<string, { field: string; value: string[]; type?: string }> = {};
-
-    const managedFilterGroupIds = new Set(filterGroups.map(g => g.id));
-    const managedAnswerOptionKeys = new Set<string>();
-    Object.values(filterAnswerData ?? {}).forEach(g => {
-      Object.keys(g.values).forEach(k => managedAnswerOptionKeys.add(k));
-    });
-    // Clés searchByFields gérées par les groupes entityList (= leurs options).
-    // Permet de les reconstruire depuis l'URL au lieu de les préserver.
-    const managedEntityOptionKeys = new Set<string>();
-    filterGroups.filter(g => g.type === "entityList").forEach(g => {
-      (g.options ?? []).forEach(o => managedEntityOptionKeys.add(o.name || o.id));
-    });
-
-    searchParams.forEach((rawValue, groupId) => {
-      const values = rawValue.split(",").map(v => v.trim()).filter(Boolean);
-      if (values.length === 0) return;
-
-      const group = filterGroups.find(g => g.id === groupId);
-      if (group) {
-        // entityList → searchByFields (type sourceKey), comme le toggle manuel.
-        if (group.type === "entityList") {
-          const fType = group.filterType ?? "sourceKey";
-          values.forEach(v => {
-            const opt = (group.options ?? []).find(o => (o.name || o.id) === v || o.id === v);
-            const slug = opt ? (opt.name || opt.id) : null;
-            if (slug) {
-              nextSearchFields[slug] = { field: fType, type: fType, value: [slug] };
-            }
-          });
-          return;
-        }
-        const matchedNames = values
-          .map(v => {
-            const opt = (group.options ?? []).find(o => (o.name || o.id) === v || o.id === v);
-            return opt ? (opt.name || opt.id) : null;
-          })
-          .filter((n): n is string => n !== null);
-        if (matchedNames.length > 0) {
-          nextSelected[groupId] = matchedNames;
-        }
-        return;
-      }
-
-      const answerGroup = filterAnswerData?.[groupId];
-      if (answerGroup) {
-        values.forEach(v => {
-          const optionEntry = Object.entries(answerGroup.values).find(
-            ([key, val]) => key === v || val.name === v
-          );
-          if (optionEntry) {
-            const [optionKey, optionValue] = optionEntry;
-            nextSearchFields[optionKey] = {
-              field: "_id",
-              value: optionValue.orgaNameArray as string[]
-            };
-          }
-        });
-      }
-    });
-
-    setSelectedFilters(prev => {
-      const preserved: Record<string, string[]> = {};
-      Object.entries(prev).forEach(([gid, arr]) => {
-        if (!managedFilterGroupIds.has(gid)) preserved[gid] = arr;
-      });
-      return { ...preserved, ...nextSelected };
-    });
-
-    setSearchByFields(prev => {
-      const preserved: typeof prev = {};
-      Object.entries(prev).forEach(([key, val]) => {
-        if (!managedAnswerOptionKeys.has(key) && !managedEntityOptionKeys.has(key)) preserved[key] = val;
-      });
-      return { ...preserved, ...nextSearchFields };
-    });
+    const { applySelected, applySearchFields } = computeFiltersFromUrl(
+      searchParams,
+      filterGroups,
+      filterAnswerData,
+    );
+    setSelectedFilters(applySelected);
+    setSearchByFields(applySearchFields);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, filterGroups, filterAnswerData]);
 
