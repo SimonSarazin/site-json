@@ -188,14 +188,18 @@ interface CocolightHydratedData {
 function getHydratedCocolightData(): CocolightHydratedData | null {
   if (typeof window === "undefined") return null;
 
-  const reactQueryState = window.__REACT_QUERY_STATE__;
-  if (!reactQueryState?.queries) return null;
+  try {
+    const reactQueryState = window.__REACT_QUERY_STATE__;
+    if (!reactQueryState?.queries) return null;
 
-  const cocolightDataQuery = reactQueryState.queries.find(
-    (q) => q.queryKey?.[0] === "cocolight-data"
-  );
+    const cocolightDataQuery = reactQueryState.queries.find(
+      (q) => q.queryKey?.[0] === "cocolight-data"
+    );
 
-  return cocolightDataQuery?.state?.data ?? null;
+    return (cocolightDataQuery?.state?.data as CocolightHydratedData | undefined) ?? null;
+  } catch {
+    return null;
+  }
 }
 ```
 
@@ -271,7 +275,7 @@ export function resetApiState(): void {
 }
 ```
 
-> **Note** : Cette fonction n'est plus nécessaire côté serveur car le serveur ne touche plus aux globals. Elle reste utile pour les tests unitaires ou un éventuel re-login côté client.
+> **Note** : `entry-server.tsx` appelle `resetApiState()` au début de chaque requête SSR (`render()`) afin de garantir un état propre. Côté client, elle est utile après logout pour forcer une ré-initialisation et pour les tests unitaires.
 
 ### Types et interfaces
 
@@ -467,43 +471,42 @@ Le SDK `@communecter/cocolight-api-client` gère automatiquement le refresh des 
 
 ### Gestion des erreurs de refresh
 
-Si le `refreshToken` est également expiré:
+Si le `refreshToken` est également expiré, le SDK émet un événement `sessionReset` que `CocolightProvider` écoute via son handler `handleSessionReset`. Ce handler :
 
-1. Le SDK émet un événement `token-refresh-failed`
-2. L'utilisateur est automatiquement déconnecté
-3. Les tokens sont supprimés du storage
-4. Redirection vers la page de login (si configurée)
+1. Remet `me` à `null`
+2. Crée une nouvelle instance `Api` non connectée
+3. Re-résout l'entité contextuelle via l'API publique (`apiReset.entitySlug(slug)`)
 
-**Gestion dans l'application**:
-
-```ts
-// Dans un provider React ou l'entrée de l'application
-client.on('token-refresh-failed', () => {
-  console.warn('Tokens expirés, déconnexion automatique');
-  // Optionnel: Rediriger vers /login
-  window.location.href = '/login';
-});
-```
+L'application ne gère pas de redirection automatique vers `/login` — c'est laissé à la charge des composants individuels (ex : `useEffect` de `LoginForm` qui redirige l'utilisateur déjà connecté).
 
 ### Clear tokens (logout)
 
-Pour déconnecter un utilisateur et supprimer ses tokens:
+L'application utilise `api.logout()` (accessible via `useCocolight()`) pour déconnecter l'utilisateur. Le SDK émet ensuite `sessionReset`, que `CocolightProvider` intercepte pour réinitialiser l'état React. Exemple réel dans les composants header :
+
+```ts
+// Dans un composant header (ex : DefaultHeader.tsx)
+const { api } = useCocolight();
+
+function handleLogout() {
+  api.logout();
+  navigate("/");
+}
+```
+
+Pour un reset bas niveau du storage des tokens (cas avancé) :
 
 ```ts
 import { getApiClient } from "@/lib/apiClient";
 
-async function logout() {
+async function clearTokensLowLevel() {
   const client = await getApiClient();
   const baseURL = client.config.baseURL;
 
-  // Supprimer les tokens du storage
+  // Supprimer les tokens du storage pour ce serveur
   await client.tokenStorageStrategy.clear(baseURL);
 
   // Optionnel: Clear tous les tokens (multi-serveurs)
   await client.tokenStorageStrategy.clearAll();
-
-  // Réinitialiser l'état de connexion
-  window.location.href = '/';
 }
 ```
 
@@ -566,6 +569,8 @@ export interface CocolightContextType {
   /** Données temporaires transmises au profil */
   dataToProfile: unknown
   setDataToProfile: Dispatch<SetStateAction<unknown>>
+  /** Recharge les données de l'utilisateur connecté depuis l'API */
+  refreshMe: () => Promise<void>
 }
 
 export const CocolightContext = createContext<CocolightContextType | null>(null);
@@ -578,7 +583,7 @@ Le provider utilise `useCocolightInit()` (qui s'appuie sur `useSuspenseQuery`) p
 ```tsx
 // src/contexts/CocolightProvider.tsx
 import Cocolight, { type Api, type Organization, type User, type Project } from "@communecter/cocolight-api-client";
-import { useEffect, useState, ReactNode, useMemo } from "react";
+import { useEffect, useState, ReactNode, useMemo, useCallback } from "react";
 import { InitApiOptions } from "../lib/apiClient";
 import { getSlug } from "../lib/constant/common";
 import { CocolightContext } from "./CocolightContext";
@@ -596,7 +601,7 @@ export function CocolightProvider({
   clientOptions = DEFAULT_CLIENT_OPTIONS,
 }: CocolightProviderProps) {
 
-    /* 1 -- données initiales, déjà prêtes grâce à Suspense */
+    /* 1 — données initiales, déjà prêtes grâce à Suspense */
   const {
     client,
     userApiInstance,
@@ -669,6 +674,17 @@ export function CocolightProvider({
     };
   }, [userApiInstance]);
 
+  // ------------------- refresh me ----------------------------------------
+  const refreshMe = useCallback(async () => {
+    if (!api) return;
+    try {
+      const freshMe = await api.me();
+      setMe(freshMe);
+    } catch (e) {
+      console.error("[CocolightProvider] refreshMe failed:", e);
+    }
+  }, [api]);
+
   // ------------------------- Memo du contexte -----------------------------
   const contextValue = useMemo(
     () => ({
@@ -683,8 +699,9 @@ export function CocolightProvider({
       dataToProfile,
       setDataToProfile,
       loading: false,
+      refreshMe,
     }),
-    [client, userApiInstance, api, me, contextType, contextId, entity, dataToProfile],
+    [client, userApiInstance, api, me, contextType, contextId, entity, dataToProfile, refreshMe],
   );
 
   return (
@@ -697,9 +714,10 @@ export function CocolightProvider({
 
 **Points clés** :
 * `useCocolightInit()` est appelé **dans** le provider (pas en dehors) -- il utilise `useSuspenseQuery` pour bloquer le rendu tant que l'API n'est pas prête
-* L'état mutable (`me`, `api`, `entity`, etc.) est mis a jour via les event listeners `userLoggedIn` et `sessionReset`
-* Le contexte est memoise via `useMemo` pour eviter les re-renders inutiles
-* `loading` est toujours `false` car `useSuspenseQuery` garantit que les donnees sont pretes avant le rendu
+* L'état mutable (`me`, `api`, `entity`, etc.) est mis à jour via les event listeners `userLoggedIn` et `sessionReset`
+* `refreshMe` (via `useCallback`) recharge `me` depuis `api.me()` sans déclencher une ré-initialisation complète
+* Le contexte est mémoïsé via `useMemo` pour éviter les re-renders inutiles
+* `loading` est toujours `false` car `useSuspenseQuery` garantit que les données sont prêtes avant le rendu
 
 ---
 
@@ -721,7 +739,7 @@ export function useCocolight() {
 }
 ```
 
-* Retourne le `CocolightContextType` complet (pas un simple `ApiClient`) -- inclut `apiClient`, `userApi`, `api`, `me`, `entity`, `helper`, `contextType`, `contextId`, `dataToProfile`, `setDataToProfile`, `loading`.
+* Retourne le `CocolightContextType` complet (pas un simple `ApiClient`) -- inclut `apiClient`, `userApi`, `api`, `me`, `entity`, `helper`, `contextType`, `contextId`, `dataToProfile`, `setDataToProfile`, `loading`, `refreshMe`.
 * Lève une erreur si le provider n'est pas monté.
 
 ### `useCocolightInit`
@@ -750,7 +768,7 @@ export function useCocolightInit(opts: InitApiOptions = {}) {
 
 1. **Login**
 
-   * Le component `LoginForm` appelle `client.user().login({ email, password })`.
+   * Le composant `LoginForm` récupère `userApi` via `useCocolight()` et appelle `userApi.login(email, password)` (paramètres positionnels).
    * En cas de succès, les tokens sont stockés via la stratégie configurée.
 
 2. **Requête API**
@@ -760,26 +778,35 @@ export function useCocolightInit(opts: InitApiOptions = {}) {
 
 3. **Logout**
 
-   * Appel de `client.user().logout()`, puis `tokenStorage.clear()`.
+   * L'application appelle `api.logout()` (récupéré via `useCocolight()`). Le SDK émet l'événement `sessionReset` que `CocolightProvider` écoute pour remettre `me` à `null` et recréer une `Api` non connectée.
    * Redirection ou mise à jour du state d'authentification.
 
 ---
 
 ## Exemple d'intégration
 
-`useCocolightInit` est appele **dans** `CocolightProvider` (pas en dehors). Le `RootLayout` utilise simplement le provider :
+`useCocolightInit` est appelé **dans** `CocolightProvider` (pas en dehors). Le `RootLayout` monte le provider avec les options de base URL, enveloppé dans un `<Suspense>` (car `useSuspenseQuery` bloque le rendu) et un `<ErrorBoundary>` :
 
 ```tsx
 // RootLayout.tsx
 import { CocolightProvider } from "@/contexts/CocolightProvider";
+import { getBaseUrl } from "@/lib/constant/common";
 
-const Layout: FC = ({ children }) => {
+function RootLayout({ config }: { config: SiteConfig }) {
   return (
-    <CocolightProvider>
-      {children}
-    </CocolightProvider>
+    <ErrorBoundary fallback={<p>Une erreur est survenue.</p>}>
+      <Suspense fallback={<p>loading</p>}>
+        <CocolightProvider clientOptions={{ baseURL: getBaseUrl() }}>
+          <ThemeProvider ...>
+            <SiteProvider config={config}>
+              <SiteShell />
+            </SiteProvider>
+          </ThemeProvider>
+        </CocolightProvider>
+      </Suspense>
+    </ErrorBoundary>
   );
-};
+}
 ```
 
 Dans un composant :
@@ -879,13 +906,15 @@ OAuth, puis récupère les JWT tokens via `postMessage`.
    ↓
 7. Backend envoie au popup parent :
      window.opener.postMessage(
-       { type: "SSO_AUTH_SUCCESS", accessToken, refreshToken },
+       { type: "SSO_AUTH_SUCCESS", accessToken, refreshToken? },
        <frontendOrigin>
      )
+     ou en cas d'erreur :
+     { type: "SSO_AUTH_ERROR", error: "..." }
    ↓
 8. Frontend (`useSSOAuth`) reçoit le message, vérifie l'origine, puis :
      - apiClient.setToken(accessToken)
-     - apiClient.setRefreshToken(refreshToken)
+     - apiClient.setRefreshToken(refreshToken)  // uniquement si refreshToken présent
      - apiClient.emit("userLoggedIn")
    ↓
 9. `CocolightProvider` écoute `userLoggedIn` et re-fetch l'utilisateur connecté
@@ -905,8 +934,10 @@ const result = await openSSOPopup("tierslieuxorg");
 **Comportements** :
 - Popup centrée (600×700) sur l'écran.
 - Si le popup est bloqué par le navigateur → `{ success: false, error: "Popup bloqué par le navigateur" }`.
+- Si le backend renvoie `{ type: "SSO_AUTH_ERROR", error: "..." }` via `postMessage` → `{ success: false, error: event.data.error }`.
 - Si l'user ferme manuellement le popup → `{ success: false }` (sans `error`, annulation silencieuse).
 - Détection toutes les 500 ms via `setInterval(() => popup.closed && resolve(...))`.
+- `refreshToken` est optionnel dans le payload `SSO_AUTH_SUCCESS` : `setRefreshToken` n'est appelé que s'il est présent.
 
 ### Composant `SSOLoginButton`
 
@@ -960,7 +991,7 @@ Si `entity.serverData.costum.sso` est vide ou absent → aucun bouton SSO n'est 
 
 3. **Pas de fallback dangereux** si la popup est bloquée — on signale juste une erreur, on n'essaie pas de basculer en redirect (qui exposerait le token dans l'URL).
 
-4. **Tokens injectés directement dans `ApiClient`** — ils sont stockés via `MultiServerTokenStorageStrategy` (cf. § "Stratégies de stockage des tokens"). En SSR : cookies. En CSR : `localStorage` ou `sessionStorage` selon l'environnement.
+4. **Tokens injectés directement dans `ApiClient`** — ils sont stockés via `MultiServerTokenStorageStrategy` (cf. § "Stratégies de stockage des tokens"). Le flux SSO s'exécute toujours côté client (popup navigateur) ; le storage utilisé est donc `localStorage`.
 
 ### Ajouter un nouveau provider
 
