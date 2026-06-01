@@ -1,44 +1,25 @@
 import "dotenv/config";
 
 /**
- * @deprecated FICHIER NON BRANCHÉ — 2026-05-14
+ * Handlers Express HelloAsso (OAuth2 Client Credentials).
  *
- * Statut : PAS BRANCHÉ
- * Raison : ce fichier exporte 5 handlers Express (`helloassoCallbackHandler`,
- *   `helloassoTokenHandler`, `helloassoCheckoutIntentHandler`,
- *   `helloassoCheckoutStatusHandler`, `helloassoDiagnosticHandler`) mais
- *   **aucun n'est importé** par `server/dev-server.js` ni
- *   `server/prod-server.js`. Les routes attendues côté front
- *   (`/api/helloasso/checkout-intent`, `/api/helloasso/checkout-status/:id`,
- *   `/api/helloasso/callback`, etc.) renvoient donc 404.
+ * Statut : BRANCHÉ. Les handlers sont montés dans les deux serveurs :
+ *   - `server/dev-server.js` (l.8, 88-92) : 5 routes, dont `/api/helloasso/orgs`
+ *     (diagnostic, dev uniquement).
+ *   - `server/prod-server.js` (l.9, 76-79) : 4 routes (sans le diagnostic).
  *
- * Conséquence runtime : le bouton HelloAsso dans `PaymentConfigPage` ne peut
- *   pas fonctionner en l'état (les appels `fetch("/api/helloasso/...")` du
- *   front échouent).
+ *   Routes :
+ *     GET  /api/helloasso/token
+ *     POST /api/helloasso/checkout-intent
+ *     GET  /api/helloasso/callback
+ *     GET  /api/helloasso/checkout-status/:checkoutIntentId
+ *     GET  /api/helloasso/orgs            (dev uniquement — diagnostic)
  *
- * Alternative active : Stripe (typeof PaymentMethod === "stripe") via le
- *   composant `StripePaymentForm`, qui ne dépend pas de ce fichier.
+ * Exporte : `helloassoTokenHandler`, `helloassoCheckoutIntentHandler`,
+ *   `helloassoCallbackHandler`, `helloassoCheckoutStatusHandler`,
+ *   `helloassoDiagnosticHandler`.
  *
- * À reviewer en priorité : brancher les handlers dans les serveurs Express
- *   pour rendre HelloAsso fonctionnel, OU retirer le mode HelloAsso côté
- *   front si Stripe seul suffit.
- *
- * Pour brancher : ajouter dans `dev-server.js` et `prod-server.js` :
- *   ```js
- *   import {
- *     helloassoCallbackHandler,
- *     helloassoTokenHandler,
- *     helloassoCheckoutIntentHandler,
- *     helloassoCheckoutStatusHandler,
- *     helloassoDiagnosticHandler,
- *   } from "./api/helloasso-checkout.js";
- *
- *   app.get("/api/helloasso/callback", helloassoCallbackHandler);
- *   app.get("/api/helloasso/token", helloassoTokenHandler);
- *   app.post("/api/helloasso/checkout-intent", helloassoCheckoutIntentHandler);
- *   app.get("/api/helloasso/checkout-status/:checkoutIntentId", helloassoCheckoutStatusHandler);
- *   app.get("/api/helloasso/orgs", helloassoDiagnosticHandler);
- *   ```
+ * Alternative de paiement : Stripe (`StripePaymentForm`), indépendante de ce fichier.
  *
  * Endpoint backend pour créer un checkout-intent HelloAsso.
  * Flux: Frontend → Ce endpoint → API HelloAsso → URL paiement.

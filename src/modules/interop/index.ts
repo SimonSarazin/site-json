@@ -6,9 +6,10 @@
  * @remarks
  * Statut des exports (vérifié 2026-05-17 via `grep -rn` sur `src/`) :
  *  - **Seul `useInteropConfig` est consommé en externe** (1 import dans `ProfileAbout.tsx`).
- *  - Tous les autres exports sont `@unused` actuellement : ils sont conservés car
- *    l'intention est de les exploiter dans une future intégration (modale globale
- *    Discourse, vue dédiée Mediawiki, etc.). Suppression non recommandée.
+ *  - Les autres exports ne sont pas consommés *via ce barrel*, mais plusieurs
+ *    (hooks `useInteropUserLinks`/`useDiscourseProfilQuery`, mutations Discourse,
+ *    composants pods/sections) SONT activement utilisés en interne par chemin
+ *    profond — voir les annotations par export ci-dessous. Suppression non recommandée.
  *  - Les consommateurs internes (`RootLayout.tsx`, `DiscourseSection.tsx`) importent
  *    directement par chemin profond — ils ne dépendent pas de ce barrel.
  */
@@ -35,16 +36,18 @@ export { default as MediawikiSection } from "./MediawikiSection";
 
 // Hooks
 export { useInteropConfig } from "./hooks/useInteropConfigQuery";
-/** @unused Pas de consommateur dans le repo au 2026-05-17. Conservé pour usage futur prévu. */
+/** Consommé en interne (import par chemin profond) par DiscourseSection / MediawikiSection / DiscoursePod / MediawikiPod — pas via ce barrel. */
 export { useInteropUserLinks } from "./hooks/useUserInteropLinks";
-/** @unused Pas de consommateur dans le repo au 2026-05-17. Conservé pour usage futur prévu. */
+/** Consommé en interne (import par chemin profond) par DiscoursePod — pas via ce barrel. */
 export { useDiscourseProfilQuery } from "./hooks/useDiscourseProfil";
 /** @unused Type de retour de `useDiscourseProfilQuery` — Conservé avec son hook. */
 export type { DiscourseProfilResult } from "./hooks/useDiscourseProfil";
 /**
- * @unused Aucune des 4 mutations n'a de consommateur externe via ce barrel au 2026-05-17.
- * Conservées pour usage futur prévu (link/unlink/dismiss/checkEmail Discourse).
- * Note : ces mutations n'utilisent pas `useMutationWithToast` — TODO sprint suivant.
+ * Mutations Discourse (link / unlink / dismiss / checkEmail). Elles utilisent
+ * `useMutationWithToast` (via `createInteropMutation`). Consommées en interne par
+ * chemin profond : `useDiscourseLink` (DiscourseLink, DiscourseAutoLinkModal),
+ * `useDiscourseUnlink` (DiscoursePod), `useDiscourseDismiss` (DiscourseAutoLinkModal).
+ * Seul `useDiscourseCheckEmail` n'a aucun consommateur actuel.
  */
 export {
   useDiscourseLink,

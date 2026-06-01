@@ -162,8 +162,9 @@ let cachedEntity: Organization | Project | null = null;
 let initialized = false;
 let initPromise: Promise<InitApiResult> | null = null;
 
-// Reset pour SSR — conservé pour rétro-compatibilité mais plus nécessaire
-// car le serveur ne touche plus aux globals
+// Reset des globals module-level entre requêtes SSR. Appelé en tête de render()
+// (entry-server.tsx) à chaque requête : nécessaire car ce module garde un état
+// (client/api/cachedMe/...) qui fuiterait sinon d'une requête à l'autre.
 export function resetApiState(): void {
   client = null;
   userApiInstance = null;
