@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { EntityTypes } from "@communecter/cocolight-api-client";
+import type { EntityTypes, GlobalAutocompleteCostumData, SearchEntity } from "@communecter/cocolight-api-client";
 import { Loader2 } from "lucide-react";
 import type { FieldPath, FieldValues, Resolver, UseFormReturn } from "react-hook-form";
 import { useT } from "@/hooks/useT";
+import { useDebounce } from "@/hooks/useDebounce";
 import {
 	Dialog,
 	DialogContent,
@@ -25,6 +26,7 @@ import { TranslatedFormMessage } from "../profile-edit/fields/TranslatedFormMess
 import { EditLocationTab } from "../profile-edit/EditLocationTab";
 import { FormFieldName, FormFieldTags, ParentInfoReadonly } from "../profile-edit/fields";
 import { useCocolight } from "@/hooks/useCocolight";
+import PoiDetailSSBE from "@/modules/search/components/detailsMode/PoiDetailSSBE";
 
 const STEP_ORDER = ["general", "legal", "structure", "usage"] as const;
 type StepKey = (typeof STEP_ORDER)[number];
@@ -61,6 +63,59 @@ const EQUIP_LOC_TYPE_OPTIONS = [
 	"Autre",
 ];
 
+const POI_DETAIL_FIELDS = [
+	"name",
+	"equip_type_name",
+	"equip_type_famille",
+	"categorie",
+	"enqueteStatut",
+	"equip_nature",
+	"equip_sol",
+	"equip_surf",
+	"equip_larg",
+	"equip_long",
+	"aps_name",
+	"inst_nom",
+	"equip_prop_nom",
+	"equip_prop_type",
+	"equip_gest_type",
+	"inst_acc_handi_bool",
+	"inst_acc_handi_type",
+	"equip_pmr_acc",
+	"equip_pmr_chem",
+	"equip_pmr_douche",
+	"equip_pmr_sanit",
+	"equip_pmr_trib",
+	"equip_pmr_vest",
+	"equip_pshs_aire",
+	"equip_pshs_chem",
+	"equip_pshs_sanit",
+	"equip_pshs_trib",
+	"equip_pshs_vest",
+	"equip_pshs_sign",
+	"equip_acc_libre",
+	"inst_trans_bool",
+	"inst_trans_type",
+	"equip_eclair",
+	"equip_douche",
+	"inst_part_bool",
+	"inst_part_type",
+	"equip_loc_type",
+	"equip_utilisateur",
+	"inst_date_creation",
+	"inst_enqu_date",
+	"equip_maj_date",
+	"address",
+	"geo",
+	"geoPosition",
+	"parent",
+	"profilImageUrl",
+	"profileImageUrl",
+	"profilMediumImageUrl",
+	"profilThumbImageUrl",
+	"image",
+] as const;
+
 const PSHS_FIELDS = [
 	{ name: "equip_pshs_aire", label: "Aire de jeu" },
 	{ name: "equip_pshs_sanit", label: "Sanitaires" },
@@ -89,6 +144,26 @@ function isFilled(value: unknown): boolean {
 	return typeof value === "string" ? value.trim().length > 0 : !!value;
 }
 
+function resolvePoiId(value: unknown): string | undefined {
+	if (!value || typeof value !== "object") return undefined;
+	const record = value as Record<string, unknown>;
+	const directId = record.id;
+	if (typeof directId === "string" || typeof directId === "number") return String(directId);
+	const rawId = record._id;
+	if (typeof rawId === "string" || typeof rawId === "number") return String(rawId);
+	if (rawId && typeof rawId === "object") {
+		const rawRecord = rawId as Record<string, unknown>;
+		const nestedId = rawRecord.$oid ?? rawRecord.$id ?? rawRecord._str ?? rawRecord.$numberLong;
+		if (typeof nestedId === "string" || typeof nestedId === "number") return String(nestedId);
+	}
+	const serverData = record.serverData as Record<string, unknown> | undefined;
+	if (serverData) {
+		const serverId = resolvePoiId(serverData);
+		if (serverId) return serverId;
+	}
+	return undefined;
+}
+
 export function AddPoiEquipementModal({
 	open,
 	onOpenChange,
@@ -96,7 +171,7 @@ export function AddPoiEquipementModal({
 }: AddPoiEquipementModalProps) {
 	const t = useT("modules/profil");
 	const addMutation = useAddPoi(parent);
-	const { entity } = useCocolight();
+	const { entity, helper } = useCocolight();
 	const [activeStep, setActiveStep] = useState<StepKey>("general");
 	const [stepAttempted, setStepAttempted] = useState<Record<StepKey, boolean>>({
 		general: false,
@@ -104,6 +179,13 @@ export function AddPoiEquipementModal({
 		structure: false,
 		usage: false,
 	});
+	const [matchingPois, setMatchingPois] = useState<SearchEntity[]>([]);
+	const [isMatchingPoisLoading, setIsMatchingPoisLoading] = useState(false);
+	const [matchingPoisError, setMatchingPoisError] = useState<Error | null>(null);
+	const [matchingPoisSearched, setMatchingPoisSearched] = useState(false);
+	const [detailItem, setDetailItem] = useState<SearchEntity | null>(null);
+	const [detailOpen, setDetailOpen] = useState(false);
+	const detailRequestId = useRef(0);
 
 	const serverLists = entity?.serverData?.lists as
 		| Partial<
@@ -211,6 +293,10 @@ export function AddPoiEquipementModal({
 		"streetAddress",
 		"aps_name",
 	]);
+	const debouncedPoiSearchKey = useDebounce(
+		`${postalCode}|${streetAddress}|${equipTypeName}`,
+		400
+	);
 
 	const isGeneralStepIncomplete =
 		!isFilled(name) ||
@@ -232,6 +318,98 @@ export function AddPoiEquipementModal({
 	};
 
 	useEffect(() => {
+		if (!isFilled(postalCode) || !isFilled(equipTypeName)) {
+			setMatchingPois([]);
+			setMatchingPoisError(null);
+			setMatchingPoisSearched(false);
+			setIsMatchingPoisLoading(false);
+		}
+	}, [postalCode, equipTypeName]);
+
+	useEffect(() => {
+		if (!entity || !helper) return;
+
+		if (!isFilled(postalCode) || !isFilled(equipTypeName)) {
+			return;
+		}
+
+		let isActive = true;
+
+		const fetchMatchingPois = async () => {
+			setIsMatchingPoisLoading(true);
+			setMatchingPoisError(null);
+			setMatchingPoisSearched(true);
+
+			const filters: Record<string, unknown> = {
+				"address.postalCode": postalCode,
+				equip_type_name: equipTypeName,
+				$or: {
+					"source.key": "sportSanteBienetre",
+					"source.keys": "sportSanteBienetre",
+					"parent.6a04155ed047177b92399685": { $exists: true },
+				},
+				type: "recoveryCenter",
+			};
+
+			if (isFilled(streetAddress)) {
+				filters["address.streetAddress"] = streetAddress;
+			}
+
+			const params: Partial<GlobalAutocompleteCostumData> = {
+				name: "",
+				searchType: ["poi"],
+				indexMin: 0,
+				indexStep: 50,
+				notSourceKey: true,
+				fields: [...POI_DETAIL_FIELDS],
+				filters,
+			};
+
+			try {
+				const result = await entity.searchCostum(params);
+				const rawResults = Array.isArray(result?.results)
+					? result.results
+					: Object.values(result?.results ?? {});
+				const transformed = rawResults.flatMap((entry) => {
+					if (entry && typeof entry === "object" && "getEntityType" in entry) {
+						return [entry as SearchEntity];
+					}
+					try {
+						return [helper.fromEntityJSON(entry, entity) as SearchEntity];
+					} catch {
+						return [];
+					}
+				});
+
+				if (isActive) {
+					setMatchingPois(transformed);
+				}
+			} catch (error) {
+				if (isActive) {
+					setMatchingPois([]);
+					setMatchingPoisError(error instanceof Error ? error : new Error("Unknown error"));
+				}
+			} finally {
+				if (isActive) {
+					setIsMatchingPoisLoading(false);
+				}
+			}
+		};
+
+		void fetchMatchingPois();
+
+		return () => {
+			isActive = false;
+		};
+	}, [debouncedPoiSearchKey, entity, helper]);
+
+	useEffect(() => {
+		if (!detailOpen) {
+			setDetailItem(null);
+		}
+	}, [detailOpen]);
+
+	useEffect(() => {
 		const length = Number.parseFloat(equipLong || "");
 		const width = Number.parseFloat(equipLarg || "");
 
@@ -251,7 +429,88 @@ export function AddPoiEquipementModal({
 	const handleClose = () => {
 		form.reset();
 		setActiveStep("general");
+		setDetailOpen(false);
 		onOpenChange(false);
+	};
+
+	const handleOpenDetails = async (poi: SearchEntity) => {
+		const requestId = ++detailRequestId.current;
+		setDetailItem(poi);
+		setDetailOpen(true);
+
+		if (!entity || !helper) return;
+
+		const poiId = resolvePoiId(poi);
+
+		const pickEntry = (results: unknown[]) => {
+			if (poiId) {
+				const match = results.find((entry) => resolvePoiId(entry) === poiId);
+				if (match) return match;
+			}
+			return results[0];
+		};
+
+		const fetchEntry = async (filters: Record<string, unknown>) => {
+			const params: Partial<GlobalAutocompleteCostumData> = {
+				name: "",
+				searchType: ["poi"],
+				indexMin: 0,
+				indexStep: 50,
+				notSourceKey: true,
+				fields: [...POI_DETAIL_FIELDS],
+				filters,
+			};
+
+			const result = await entity.searchCostum(params);
+			const rawResults = Array.isArray(result?.results)
+				? result.results
+				: Object.values(result?.results ?? {});
+			return pickEntry(rawResults);
+		};
+
+		let entry: unknown;
+
+		if (poiId) {
+			try {
+				entry = await fetchEntry({ _id: poiId });
+			} catch {
+				entry = undefined;
+			}
+		}
+
+		if (!entry) {
+			const fallbackFilters: Record<string, unknown> = {
+				"address.postalCode": postalCode,
+				equip_type_name: equipTypeName,
+				$or: {
+					"source.key": "sportSanteBienetre",
+					"source.keys": "sportSanteBienetre",
+					"parent.6a04155ed047177b92399685": { $exists: true },
+				},
+				type: "recoveryCenter",
+			};
+
+			if (isFilled(streetAddress)) {
+				fallbackFilters["address.streetAddress"] = streetAddress;
+			}
+
+			try {
+				entry = await fetchEntry(fallbackFilters);
+			} catch {
+				entry = undefined;
+			}
+		}
+
+		if (!entry || detailRequestId.current !== requestId) return;
+		if (entry && typeof entry === "object" && "getEntityType" in entry) {
+			setDetailItem(entry as SearchEntity);
+			return;
+		}
+		try {
+			setDetailItem(helper.fromEntityJSON(entry, entity) as SearchEntity);
+		} catch {
+			setDetailItem(poi);
+		}
 	};
 
 	const handleSubmit = async (data: AddPoiFormData) => {
@@ -419,6 +678,69 @@ export function AddPoiEquipementModal({
 										<div className="text-sm font-medium">Adresse *</div>
 										<EditLocationTab form={form as unknown as UseFormReturn<FieldValues>} />
 									</div>
+
+									{(isMatchingPoisLoading || matchingPoisError || matchingPois.length > 0 || matchingPoisSearched) && (
+										<div className="rounded-lg border border-border/60 bg-muted/30 p-3 space-y-2">
+											<div className="text-sm font-medium"><span className="font-bold text-primary">{matchingPois.length}</span> Equipement existants a la meme adresse</div>
+											{isMatchingPoisLoading && (
+												<div className="flex items-center gap-2 text-xs text-muted-foreground">
+													<Loader2 className="h-4 w-4 animate-spin" />
+													Recherche en cours...
+												</div>
+											)}
+											{matchingPoisError && (
+												<div className="text-xs text-destructive">
+													Erreur lors de la recherche des POI.
+												</div>
+											)}
+											{!isMatchingPoisLoading && !matchingPoisError && matchingPois.length === 0 && matchingPoisSearched && (
+												<div className="text-xs text-muted-foreground">Aucun Equipement trouve.</div>
+											)}
+											{matchingPois.length > 0 && (
+												<div className="space-y-2">
+													{matchingPois.map((poi, index) => {
+														const serverData = (poi?.serverData ?? {}) as Record<string, unknown>;
+														const address = (serverData.address ?? {}) as Record<string, unknown>;
+														const addressLine = [
+															address.streetAddress,
+															address.postalCode,
+															address.addressLocality,
+														]
+															.map((value) => (typeof value === "string" ? value.trim() : ""))
+															.filter((value) => value.length > 0)
+															.join(", ");
+														const name =
+															typeof serverData.name === "string" && serverData.name.trim().length > 0
+																? serverData.name
+																: typeof (poi as { name?: string }).name === "string"
+																	? (poi as { name?: string }).name
+																	: "Sans nom";
+														const idValue =
+															typeof serverData.id === "string"
+																? serverData.id
+																: typeof serverData._id === "string"
+																	? serverData._id
+																	: `${name}-${index}`;
+														return (
+															<button
+																key={idValue}
+																type="button"
+																className="w-full rounded-md border border-border/60 bg-background/60 p-3 text-left transition hover:bg-background"
+																onClick={() => {
+																	void handleOpenDetails(poi);
+																}}
+															>
+																<div className="text-sm font-semibold text-foreground">{name}</div>
+																<div className="text-xs text-muted-foreground">
+																	{addressLine || "Adresse inconnue"}
+																</div>
+															</button>
+														);
+													})}
+												</div>
+											)}
+										</div>
+									)}
 								</div>
 							)}
 
@@ -844,6 +1166,14 @@ export function AddPoiEquipementModal({
 						</DialogFooter>
 					</form>
 				</Form>
+
+				{detailItem && (
+					<PoiDetailSSBE
+						openDetails={detailOpen}
+						setOpenDetails={setDetailOpen}
+						item={detailItem}
+					/>
+				)}
 			</DialogContent>
 		</Dialog>
 	);
