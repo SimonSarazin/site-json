@@ -40,15 +40,15 @@ const FORBIDDEN_PATTERN = /import\s*\*\s*as\s+\w+\s+from\s+['"]lucide-react['"]/
 
 describe("Preflight — Lucide React tree-shaking", () => {
   const sourceFiles = walkSource(SRC_DIR);
+  // Lecture unique du contenu au moment de la collecte (hors timeout de test) —
+  // évite de relire le disque dans chaque test, ce qui devenait flaky/timeout
+  // (> 5 s par défaut) à mesure que le nombre de fichiers source grossit.
+  const sources = sourceFiles.map((file) => ({ file, content: fs.readFileSync(file, "utf-8") }));
 
   test("aucun fichier ne fait `import * as X from \"lucide-react\"`", () => {
-    const offenders: string[] = [];
-    for (const file of sourceFiles) {
-      const content = fs.readFileSync(file, "utf-8");
-      if (FORBIDDEN_PATTERN.test(content)) {
-        offenders.push(path.relative(PROJECT_ROOT, file));
-      }
-    }
+    const offenders = sources
+      .filter(({ content }) => FORBIDDEN_PATTERN.test(content))
+      .map(({ file }) => path.relative(PROJECT_ROOT, file));
     if (offenders.length > 0) {
       console.error(
         "\n❌ Régression tree-shaking lucide-react détectée. Fichiers à corriger :\n" +
@@ -62,13 +62,9 @@ describe("Preflight — Lucide React tree-shaking", () => {
   test("aucun fichier n'importe l'icône-set complet depuis 'lucide-react/icons'", () => {
     // Variante : `import * as Icons from "lucide-react/icons"` (chemin alternatif)
     const altPattern = /import\s*\*\s*as\s+\w+\s+from\s+['"]lucide-react\/icons['"]/;
-    const offenders: string[] = [];
-    for (const file of sourceFiles) {
-      const content = fs.readFileSync(file, "utf-8");
-      if (altPattern.test(content)) {
-        offenders.push(path.relative(PROJECT_ROOT, file));
-      }
-    }
+    const offenders = sources
+      .filter(({ content }) => altPattern.test(content))
+      .map(({ file }) => path.relative(PROJECT_ROOT, file));
     expect(offenders).toEqual([]);
   });
 

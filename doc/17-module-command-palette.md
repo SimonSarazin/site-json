@@ -2,47 +2,65 @@
 
 # Module Command Palette (Cmd+K) — RFC
 
-> ⚠️ **Statut : non implémenté — vérifié au 2026-06-01**
->
-> Un audit complet du dépôt a confirmé qu'**aucune ligne de ce RFC n'a été
-> implémentée à ce jour**. Recherches effectuées :
->
-> - `src/modules/` ne contient **aucun répertoire** `commandPalette` (modules
->   présents : `ampli`, `auth`, `cagnotte`, `coform`, `interop`, `news`,
->   `notification`, `profil`, `search`).
-> - Grep exhaustif sur `command-palette`, `CommandPalette`, `commandPalette`,
->   `CommandDialog`, `CommandInput`, `registerCommandSource`, `useCommandPalette`,
->   `useGlobalShortcut`, `useCommands`, `CommandPaletteProvider`,
->   `CommandPaletteContext`, `metaKey && key === 'k'`, `mod+k` dans tout `src/`
->   → **zéro résultat**.
-> - `src/types/site-schema.ts` : le bloc `utilities` ne contient **pas** de
->   champ `commandPalette` (champs actuels : `themeSwitch`, `langSwitch`,
->   `search`, `auth`, `cart`, `notifications`, `piggyBank`).
-> - `src/types/site.ts` : idem, pas de champ `commandPalette`.
-> - Seul élément lié existant : `src/components/ui/command.tsx` (composant
->   shadcn/ui) et la dépendance `cmdk@1.1.1` dans `package.json` — présents
->   uniquement parce qu'ils font partie de la bibliothèque shadcn, sans
->   consommateur dans le code applicatif.
->
-> Ce document reste conservé comme **spécification et analyse de faisabilité**
-> pour une implémentation future. Tout le contenu ci-dessous est à considérer
-> comme une spec, pas comme une description du code existant.
->
-> ---
->
-> 🚧 **Statut original : document d'architecture (RFC), pas encore implémenté.**
->
-> Vision pour l'ajout d'un module `commandPalette` fournissant une palette de
-> commandes globale accessible via raccourci clavier (Cmd/Ctrl+K), disponible
-> sur toutes les pages d'un site SiteForge.
->
-> **Analyse de faisabilité** : voir [§ 11 Faisabilité & révision](#11-faisabilité--révision-mai-2026)
-> en fin de document — pré-requis tous OK, estimation réaliste 4-6.5 jours
-> (RFC initial sous-estimait à 3-4 jours).
->
-> ⚠ Certaines références à des numéros de ligne dans ce document datent
-> d'avant la session de mai 2026 (fix SSR streaming + optimisations bundle).
-> Vérifier le code avant d'implémenter ; un re-check global est listé en § 11.
+> ✅ **Statut : IMPLÉMENTÉ.** Le module `src/modules/commandPalette/` existe et
+> est fonctionnel. Ce document conserve le RFC d'origine (sections 1-11) comme
+> **rationale de conception** ; le résumé ci-dessous décrit ce qui a été
+> **réellement livré**, avec les écarts assumés vs le RFC.
+
+## Implémentation livrée
+
+**Module** `src/modules/commandPalette/` (type `core`) — palette Cmd/Ctrl+K
+globale, montée dans `RootLayout`/`SiteShell` autour de `<Outlet/>`.
+
+**Arborescence réelle :**
+
+| Dossier | Contenu |
+|---|---|
+| `registry/` | `types.ts` ; `registry.ts` (`registerCommandSource` / `getCommandSources` / `getCommandGroup` / `_resetForTesting`, miroir de `lib/permissions`) ; `index.ts` |
+| `lib/` | `resolveText` (LocalizedString→string) ; `matchCommand` (filtrage sous-chaîne AND) ; `commandFilter` (`filterCommands` + `groupCommands`) |
+| `hooks/` | `useGlobalShortcut` (listener maison, sans dépendance) ; `useCommands` (agrège sources sync + async via React Query) ; `useCommandRunContext` ; `useCommandPalette` (+ `…Optional`) |
+| `contexts/` | `CommandPaletteContext` + `CommandPaletteProvider` |
+| `components/` | `CommandPalette` (dialog `cmdk`, `shouldFilter={false}`) ; `CommandItemRenderer` ; `CommandTriggerButton` (bouton header, `export default`) |
+| `sources/` | `navigationSource` (pages + `header.nav`) ; `actionsSource` (thème, langues, accueil, déconnexion) ; `bootstrap` (enregistrement, side-effect) |
+| racine | `schema.ts` (`CommandPaletteConfigSchema`) ; `i18n.ts` + `i18n/{fr,en}.json` ; `module.config.ts` ; `index.ts` |
+| `__tests__/` | 41 tests (registry, matchCommand, commandFilter, sources, useGlobalShortcut, CommandTriggerButton, CommandPalette) |
+
+**Source externe** : `src/modules/profil/commands/register.tsx` — recherche
+d'entités backend (`entity.searchCostum`), source **async**, dégradée en `[]`
+sans backend/entité costum.
+
+**Intégration** : `header.utilities.commandPalette` (flag Zod dans
+`site-schema.ts` + miroir TS `site.ts`) câblé dans les **7 variantes de header**
+(comme `NotificationBell`) ; champ top-level optionnel `commandPalette` dans
+`SiteConfig`. Activé sur `config.prod.tiers-lieux.json`.
+
+**Décisions / écarts assumés vs RFC** (cf. § 11.4) :
+
+1. **Pas de `react-hotkeys-hook`** → `useGlobalShortcut` maison (objectif « zéro
+   dépendance nouvelle »).
+2. **`cmdk` `shouldFilter={false}` + filtrage maison** (et non le filter intégré
+   de cmdk) — gère proprement le mélange sources **synchrones** (nav/actions,
+   filtrées localement) et **asynchrones** backend (déjà filtrées) ; le piège
+   était signalé § 11.2.6.
+3. **Pas de namespace `permissions`** : le `canRunAdminActions` du RFC n'a aucun
+   consommateur (code mort). Les commandes s'auto-gatent (ex. la déconnexion
+   n'apparaît que si `me`). À ajouter quand une source admin existera.
+4. **Sources = fonctions PURES d'un `CommandReadContext`** résolu par
+   `useCommands` (config, me, entity, locale, theme) ; les capacités impératives
+   (navigate, setTheme, setLocale, api) passent par le `CommandRunContext` de
+   `command.perform`. Ceci résout la tension « sources plain-function mais besoin
+   de hooks » que le RFC laissait implicite.
+5. **`isMac`/`<kbd>` gardés par `useIsMounted`** (évite le mismatch d'hydratation).
+6. Sources **enregistrées à l'import** (`bootstrap`) → `useCommands` lit
+   `getCommandSources()` directement (pas de `useSyncExternalStore` — toutes les
+   sources core s'enregistrent avant le premier rendu).
+
+**Vérifs** : `npm run typecheck` clean ; `npm run test:unit` (41 tests palette,
+suite globale verte) ; SSR-safe (`open:false` initial, listener client-only).
+
+> ⚠ *RFC d'origine ci-dessous (sections 1-11) conservé comme rationale.
+> Certaines références à des numéros de ligne datent et ne reflètent pas le code
+> actuel ; les écarts réellement retenus sont listés ci-dessus.*
 
 ## 1. Contexte & objectifs
 

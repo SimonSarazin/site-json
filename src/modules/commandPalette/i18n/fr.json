@@ -1,0 +1,8 @@
+{
+  "dialogTitle": "Recherche rapide",
+  "dialogDescription": "Naviguez et lancez des actions au clavier",
+  "placeholder": "Rechercher une page, une action…",
+  "empty": "Aucun résultat",
+  "loading": "Recherche…",
+  "triggerLabel": "Rechercher"
+}

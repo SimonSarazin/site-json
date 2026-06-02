@@ -14,6 +14,7 @@ import { getBaseUrl } from "@/lib/constant/common";
 import { GoogleFontsLoader } from "@/components/layout/GoogleFontsLoader";
 import { SiteProvider } from "@/contexts/SiteProvider";
 import { useSite } from "@/hooks/useSite";
+import { CommandPaletteProvider } from "@/modules/commandPalette/contexts/CommandPaletteProvider";
 
 // Composants optionnels lazy-loadés : rendus seulement si configurés/activés.
 // Évite d'inclure leur code (et leurs dépendances) dans le bundle initial.
@@ -38,6 +39,7 @@ function SiteShell() {
         <SiteTheme />
         <GoogleFontsLoader />
 
+        <CommandPaletteProvider>
         <Outlet />
         <IntegrationsLoader />
         <Toaster />
@@ -70,6 +72,7 @@ function SiteShell() {
             condition={config.floatingActionButton.condition}
           />
         )}
+        </CommandPaletteProvider>
       </I18nBridge>
     </LocalizationProvider>
   );

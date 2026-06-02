@@ -14,6 +14,7 @@ import { LocalizedString, LOCALES } from "./locale-schema";
 export { LocalizedString, LOCALES };
 import { ProfilesConfigSchema } from "../modules/profil/schema";
 import { AmpliConfigSchema } from "@/modules/ampli/schema";
+import { CommandPaletteConfigSchema } from "@/modules/commandPalette/schema";
 import { VisibilityConditionSchema } from "@/lib/visibility/schema";
 
 /**
@@ -1604,6 +1605,7 @@ export const Header = z.object({
     cart: z.boolean().default(false),
     notifications: z.boolean().default(false),
     piggyBank: z.boolean().default(false),
+    commandPalette: z.boolean().default(false),
   }),
   ctaButton: z.object({
     label: LocalizedString,
@@ -1956,6 +1958,7 @@ export const SiteConfig = z.object({
     condition: VisibilityConditionSchema,
   }).optional(),
   ampli: z.array(AmpliConfigSchema).optional(),
+  commandPalette: CommandPaletteConfigSchema.optional(),
 });
 export type SiteConfig = z.infer<typeof SiteConfig>;
 
@@ -1988,7 +1991,8 @@ export function getDefaultSiteConfig(): Partial<SiteConfig> {
         auth: false,
         cart: false,
         notifications: false,
-        piggyBank: false
+        piggyBank: false,
+        commandPalette: false
       },
       sticky: false,
       transparent: false,
@@ -2035,7 +2039,8 @@ export const example: SiteConfig = {
       auth: false,
       cart: false,
       notifications: false,
-      piggyBank: false
+      piggyBank: false,
+      commandPalette: false
     }
   },
   pages: [

@@ -36,6 +36,7 @@ import { cn } from "@/lib/utils";
 import { DynamicIcon, IconName } from "lucide-react/dynamic";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
+import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
 
 export function SiteHeader2() {
   const { config } = useSite();
@@ -141,6 +142,7 @@ export function SiteHeader2() {
             )}
 
             {header.utilities.notifications && <NotificationBell />}
+            {header.utilities.commandPalette && <CommandTriggerButton />}
 
             {header.utilities.auth && (
               <ClientOnly

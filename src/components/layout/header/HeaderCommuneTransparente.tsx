@@ -18,6 +18,7 @@ import { IconOrSvg } from "@/components/ui/icon-or-svg";
 import { AuthModalLazy } from "@/modules/auth";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
+import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
 
 interface HeaderCommuneTransparenteProps {
     header: Header & {
@@ -156,6 +157,7 @@ export default function HeaderCommuneTransparente({ header }: HeaderCommuneTrans
                     {/* Right utilities */}
                     <div className="flex items-center gap-2">
                         {header.utilities?.notifications && <NotificationBell />}
+                        {header.utilities?.commandPalette && <CommandTriggerButton />}
 
                         {/* Lang switcher */}
                         {header.utilities?.langSwitch && availableLocales.length > 1 && (
