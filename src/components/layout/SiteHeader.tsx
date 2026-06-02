@@ -1,10 +1,18 @@
 import { useSite } from "@/hooks/useSite";
-import { DefaultHeader } from "./header/DefaultHeader";
-import HeaderTiersLieux from "./header/HeaderTiersLieux";
-import HeaderNosCommunes from "./header/HeaderNosCommunes";
-import HeaderCommuneTransparente from "./header/HeaderCommuneTransparente";
-import HeaderRezoLaMer from "./header/HeaderRezoLaMer";
-import HeaderJuliePotVin from "./header/HeaderJuliePotVin";
+import { lazy } from "vite-preload";
+
+/**
+ * Headers en `lazy()` : à un site donné, on n'utilise qu'UN seul type de
+ * header. Le chunk du header non utilisé n'est donc pas téléchargé côté
+ * client. Côté SSR, `preloadAll()` charge tous les modules en mémoire Node
+ * (pas d'impact perf SSR).
+ */
+const DefaultHeader = lazy(() => import("./header/DefaultHeader"));
+const HeaderTiersLieux = lazy(() => import("./header/HeaderTiersLieux"));
+const HeaderNosCommunes = lazy(() => import("./header/HeaderNosCommunes"));
+const HeaderCommuneTransparente = lazy(() => import("./header/HeaderCommuneTransparente"));
+const HeaderRezoLaMer = lazy(() => import("./header/HeaderRezoLaMer"));
+const HeaderJuliePotVin = lazy(() => import("./header/HeaderJuliePotVin"));
 
 export function SiteHeader() {
   const { config } = useSite();

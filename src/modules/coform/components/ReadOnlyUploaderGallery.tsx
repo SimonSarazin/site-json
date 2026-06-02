@@ -32,11 +32,13 @@ function getFileExtension(path: string): string {
 
 interface ReadOnlyUploaderGalleryProps {
   value: unknown;
+  /** ID du formulaire parent (requis pour charger les fichiers legacy via la lib) */
+  formId: string;
   answerId?: string;
   subKey?: string;
 }
 
-export function ReadOnlyUploaderGallery({ value, answerId, subKey }: ReadOnlyUploaderGalleryProps) {
+export function ReadOnlyUploaderGallery({ value, formId, answerId, subKey }: ReadOnlyUploaderGalleryProps) {
   const baseUrl = getBaseUrl();
   const t = useT("modules/coform");
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
@@ -53,6 +55,7 @@ export function ReadOnlyUploaderGallery({ value, answerId, subKey }: ReadOnlyUpl
   const isLegacyWithoutFiles = isLegacyVal && !hasLegacyFiles;
 
   const { files: fetchedFiles } = useCoFormAnswerFiles({
+    formId,
     answerId: answerId ?? "",
     subKey: subKey ?? "",
     enabled: isLegacyWithoutFiles && !!answerId && !!subKey,
@@ -125,7 +128,7 @@ export function ReadOnlyUploaderGallery({ value, answerId, subKey }: ReadOnlyUpl
                 key={idx}
                 entry={entry}
                 baseUrl={baseUrl}
-                label={t("uploader.gallery.openPdf", "Ouvrir le PDF")}
+                label={t("coform.uploader.gallery.openPdf", "Ouvrir le PDF")}
               />
             );
           }
@@ -134,7 +137,7 @@ export function ReadOnlyUploaderGallery({ value, answerId, subKey }: ReadOnlyUpl
               key={idx}
               entry={entry}
               baseUrl={baseUrl}
-              downloadLabel={t("uploader.gallery.download", "Télécharger")}
+              downloadLabel={t("coform.uploader.gallery.download", "Télécharger")}
             />
           );
         })}
@@ -183,7 +186,7 @@ function PdfTile({ entry, baseUrl, label }: { entry: FileEntry; baseUrl: string;
       rel="noopener noreferrer"
       className="group flex flex-col items-center justify-center gap-2 aspect-square rounded-lg border bg-muted/30 p-3 hover:bg-muted/50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-red-500/10 text-red-600">
+      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-destructive/10 text-destructive">
         <FileText className="h-7 w-7" />
       </div>
       <span className="text-xs font-medium text-foreground truncate max-w-full text-center">

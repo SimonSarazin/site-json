@@ -63,7 +63,7 @@ export function CoFormThankYou({
             config?.accentColor
               ? undefined
               : isUpdate
-                ? "bg-amber-500"
+                ? "bg-warning"
                 : "bg-primary"
           )}
           style={config?.accentColor ? { backgroundColor: config.accentColor } : undefined}
@@ -76,7 +76,7 @@ export function CoFormThankYou({
               className={cn(
                 "rounded-full p-4 animate-in zoom-in duration-500",
                 isUpdate
-                  ? "bg-amber-100 dark:bg-amber-950/40"
+                  ? "bg-warning/15"
                   : "bg-primary/10"
               )}
             >
@@ -84,7 +84,7 @@ export function CoFormThankYou({
                 className={cn(
                   "w-12 h-12",
                   isUpdate
-                    ? "text-amber-600 dark:text-amber-400"
+                    ? "text-warning"
                     : "text-primary"
                 )}
                 strokeWidth={1.5}

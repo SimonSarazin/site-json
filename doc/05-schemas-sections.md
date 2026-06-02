@@ -55,6 +55,8 @@
   - [`cta-rezo-la-mer`](#cta-rezo-la-mer)
   - [`title-with-filters-rezo-la-mer`](#title-with-filters-rezo-la-mer)
   - [`commune-transparente-actions`](#commune-transparente-actions)
+  - [`hero-ssbe`](#hero-ssbe)
+  - [`categories-grid`](#categories-grid)
   - [`meeteem`](#meeteem)
   - [`cardCountCT`](#cardcountct)
   - [`thematics`](#thematics)
@@ -66,6 +68,13 @@
   - [Voir aussi](#voir-aussi)
 
 ---
+
+> **Schémas partagés (module search)** : `FilterGroupSchema`, `FilterGroupsSchema`,
+> `FiltersByAnswersSchema`, `FiltersByPathSchema`, `SearchBaseParamsSchema`,
+> `SearchVariantSchema` et `IconNameSchema` sont définis dans
+> `src/modules/search/schema.ts` et réutilisés par `FiltersSectionSchema`,
+> `SearchProSectionSchema`, `SearchProStaticSectionSchema` et
+> `HeroTiersLieuxSchema` — aucune duplication inline.
 
 Chaque section est un objet :
 
@@ -415,6 +424,12 @@ const ContactFormSectionSchema = z.object({
 ## `registerForm`, `loginForm`, `recoverPasswordForm`
 
 Ces trois formulaires ont des props **vides** (`z.object({})`). Le rendu est entierement gere par le composant React correspondant.
+
+> Ces schémas vivent dans `src/modules/auth/schema.ts` (ré-exportés par
+> `src/types/site-schema.ts` pour rétro-compat). Les pages `/login`, `/register`
+> et `/recover-password` sont fournies par le [module auth](23-module-auth.md) :
+> ces sections ne servent qu'à embarquer un formulaire dans une page config
+> existante.
 
 ```ts
 const LoginFormSectionSchema = z.object({
@@ -1039,13 +1054,16 @@ export const SearchProSectionSchema = z.object({
     enableMap: z.boolean().default(true),
     showActiveFiltersTypes: z.boolean().default(true),
     showActiveFiltersTags: z.boolean().default(true),
+    defaultViewMode: z.enum(["list", "map", "graph"]).optional(),
     disableInfiniteScroll: z.boolean().optional(),
     showDetailedViewToggle: z.boolean().optional(),
     customHeader: z.object({
       title: LocalizedString.optional(),
       linkText: LocalizedString.optional(),
       linkHref: z.string().optional(),
-      showMapButton: z.boolean().default(true),
+      linkIcon: IconNameSchema.optional(),
+      // Note: showMapButton a été SUPPRIMÉ (était une config morte jamais lue —
+      // le bouton carte est gated sur `enableMap`)
     }).optional(),
 
     filters: z.record(z.string(), TagsFilterSchema).optional(),
@@ -1054,12 +1072,13 @@ export const SearchProSectionSchema = z.object({
       fediverse:     z.boolean().optional(),
       indexStepList: z.number().optional(),
       indexStepMap:  z.number().optional(),
-      defaultTypes:  z.array(SearchTypeSchema).optional(),
+      defaultTypes: z.array(SearchTypeSchema).optional(),
       defaultTags:   z.array(z.string()).optional(),
       defaultFilters: z.record(z.string(), z.unknown()).optional(),
-      defaultFields:  z.array(z.string()).optional(),
+      defaultFields: z.array(z.string()).optional(),
       defaultSortBy: z.record(z.string(), z.union([z.literal(1), z.literal(-1)])).optional(),
-      notSourceKey: z.boolean().optional(),
+      searchBy: SearchBySchema.optional(),
+      notSourceKey: z.union([z.boolean(), z.number()]).optional(),
       locality: z.record(z.string(), z.object({
         id: z.string(),
         type: z.string(),
@@ -1077,6 +1096,8 @@ export const SearchProSectionSchema = z.object({
 });
 ```
 
+> `baseParams` de `searchPro` est un objet **inline** (pas le schéma partagé `SearchBaseParamsSchema`). Il ne contient pas `contextId`, `contextType`, `costumSlug`, `costumEditMode`, ni `sourceKey` — ces champs appartiennent uniquement au schéma partagé utilisé par `searchProStatic` et le hero.
+
 | Propriete | Type | Description |
 | --------- | ---- | ----------- |
 | `title` | `LocalizedString?` | Titre affiche au-dessus de la recherche |
@@ -1087,11 +1108,15 @@ export const SearchProSectionSchema = z.object({
 | `enableMap` | `boolean` | Charger les ressources cartographiques |
 | `showActiveFiltersTypes` | `boolean` | Afficher les types actifs |
 | `showActiveFiltersTags` | `boolean` | Afficher les tags actifs |
+| `defaultViewMode` | `"list" \| "map" \| "graph"?` | Vue par defaut au chargement |
 | `disableInfiniteScroll` | `boolean?` | Desactiver le scroll infini |
 | `showDetailedViewToggle` | `boolean?` | Afficher le bouton vue detaillee |
-| `customHeader` | `object?` | Configuration de l'en-tete personnalise |
+| `searchVariant` | `"default" \| "navigator-tl"?` | Variant SDK endpoint backend |
+| `customHeader` | `object?` | En-tete personnalise (`title`, `linkText`, `linkHref`, `linkIcon`) |
+| `customHeader.linkHref` | `string?` | URL du lien "voir sur la page complete" |
+| `customHeader.linkIcon` | `IconName?` | Icone Lucide du lien (type `IconName`, pas `string`) |
 | `filters` | `Record<string, TagsFilterSchema>?` | Filtres personnalises (tags, categories) |
-| `baseParams` | `object?` | Parametres de base pour la recherche avancee |
+| `baseParams` | `object?` | Parametres de base pour la recherche (objet inline, voir code block) |
 | `list` | `ListConfSchema?` | Configuration de l'affichage en liste |
 | `map` | `MapConfSchema?` | Configuration de l'affichage sur la carte |
 
@@ -1111,9 +1136,10 @@ const ListConfSchema = z.object({
     showAddress:     z.boolean().optional(),
     shareButton:     z.boolean().optional(),
     showStar:        z.boolean().optional(),
+    showFunding:     z.boolean().optional(),
     detailsMode: z.enum(["drawer", "dialog"]).default("drawer"),
-    type: z.enum(["overlay", "default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer", "card-elts","ssbe"]).default("default"),
-    variant: z.enum(["default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer", "card-elts","ssbe"]).optional(),
+    type: z.enum(["overlay", "default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer", "poi-ssbe", "card-elts","ssbe", "card-answer"]).default("default"),
+    variant: z.enum(["default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer", "poi-ssbe", "card-elts","ssbe", "card-answer"]).optional(),
   }).partial().optional(),
   preview: z.object({
     type: z.enum(["default"]).default("default"),
@@ -1121,10 +1147,11 @@ const ListConfSchema = z.object({
 }).partial();
 ```
 
-* **`card.type`** : `overlay` (texte sur l'image), `default`, `tiers-lieux`, `event`, `rezo-la-mer`, `profile`, `event-rezo-la-mer`, `poi-rezo-la-mer`, `card-elts`, `ssbe`.
-* **`card.variant`** : variante visuelle de la carte.
+* **`card.type`** : `overlay` (texte sur l'image), `default`, `tiers-lieux`, `event`, `rezo-la-mer`, `profile`, `event-rezo-la-mer`, `poi-rezo-la-mer`, `poi-ssbe`, `card-elts`, `ssbe`, `card-answer`.
+* **`card.variant`** : variante visuelle de la carte (memes valeurs que `card.type`, sauf `overlay`).
 * **`card.detailsMode`** : affichage des details dans un `drawer` ou un `dialog`.
 * **`card.showStar`** : afficher le bouton favori.
+* **`card.showFunding`** : afficher la barre de progression de financement (cagnotte) sur la carte ; declenche la query `useFundingEnvelope`. Actif par defaut uniquement pour le variant `rezo-la-mer` (retrocompat).
 * **`preview.type`** : type de previsualisation (actuellement `default`).
 
 ### Details de `MapConfSchema`
@@ -1183,11 +1210,12 @@ export const SearchProStaticSectionSchema = z.object({
       title: LocalizedString.optional(),
       linkText: LocalizedString.optional(),
       linkHref: z.string().optional(),
-      showMapButton: z.boolean().default(true),
+      linkIcon: IconNameSchema.optional(),
+      // Note: showMapButton a été SUPPRIMÉ (gated sur enableMap)
     }).optional(),
 
     filters: z.record(z.string(), TagsFilterSchema).optional(),
-    baseParams: z.object({ /* meme structure que searchPro */ }).optional(),
+    baseParams: SearchBaseParamsSchema.optional(),
     list: ListConfSchema.optional(),
     map:  MapConfSchema.optional(),
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
@@ -1201,12 +1229,24 @@ export const SearchProStaticSectionSchema = z.object({
 - **Placeholder optionnel** : contrairement a `searchPro` ou il est obligatoire
 - **Fonctionnalites supplementaires** : `addButton`, `zoneSelector`, `tagSelector`, `csvButton`, `enableGraph`, `bg`
 - **Ideal pour** : integrer plusieurs recherches sur une meme page sans conflits de query params
+- **`customHeader.linkHref` + `customHeader.linkIcon`** : lien "voir sur la page complete" utilise avec `linkText` pour pointer vers la version `searchPro` complète. `showMapButton` a été supprimé.
+- **`defaultFilters.$or`** : peut contenir un filtre `$or` sous forme d'**objet** (pas de tableau MongoDB standard) pour scoper a des costums précis :
+  ```json
+  "defaultFilters": {
+    "$or": {
+      "source.keys": { "$in": ["my-key"] },
+      "source.key":  { "$in": ["my-key"] },
+      "reference.costum": { "$in": ["my-costum"] }
+    }
+  }
+  ```
+  > **Attention** : le DSL Communecter attend `$or` comme un objet. Un tableau provoque une erreur 500 backend.
 
 ---
 
 ## `hero-tiers-lieux`
 
-Hero specialise pour les sites Tiers-Lieux avec recherche integree.
+Hero specialise pour les sites Tiers-Lieux avec recherche integree. Ce hero peut piloter un **applicateur de filtres headless** (memes schémas de filtres que la `FiltersSection` de `/lieux`) et une **autocompletion scopee réseau** — sans passer par l'URL. Le mode "sous-site" (`/s/`) ainsi que les props `headlineSubsite`/`subheadSubsite` et `header.navSubsite` ont été entièrement supprimés.
 
 ```ts
 export const HeroTiersLieuxSchema = z.object({
@@ -1220,24 +1260,39 @@ export const HeroTiersLieuxSchema = z.object({
       .array(
         z.object({
           label: LocalizedString,
-          variant: z.enum(["default", "secondary", "accent"]).optional(),
+          variant: z.enum(["default", "secondary", "accent", "primary", "outline"]).optional(),
         })
       )
       .optional(),
     placeholder: LocalizedString.optional(),
     searchButtonText: LocalizedString.optional(),
+    // Scope de l'autocompletion — aligner sur le searchProStatic de la page
+    searchVariant: SearchVariantSchema.optional(),
+    baseParams: SearchBaseParamsSchema.optional(),
+    // Filtres de l'applicateur headless (catégories du hero)
+    // Memes schémas partagés que FiltersSection (/lieux)
+    filterGroups: FilterGroupsSchema.optional(),
+    filtersByAnswers: FiltersByAnswersSchema.optional(),
   }),
 });
 ```
+
+> `SearchVariantSchema`, `SearchBaseParamsSchema`, `FilterGroupsSchema` et
+> `FiltersByAnswersSchema` sont définis dans `src/modules/search/schema.ts` et
+> réutilisés sans duplication par ce schema et par `FiltersSectionSchema`.
 
 | Propriete | Type | Description |
 | --------- | ---- | ----------- |
 | `headline` | `LocalizedString` | Titre principal |
 | `subhead` | `LocalizedString?` | Sous-titre |
 | `backgroundImage` | `string?` | Image de fond |
-| `ctaButtons` | `array?` | Boutons d'action (variant: `"default" \| "secondary" \| "accent"`) |
+| `ctaButtons` | `array?` | Boutons d'action (variant: `"default" \| "secondary" \| "accent" \| "primary" \| "outline"`) |
 | `placeholder` | `LocalizedString?` | Placeholder du champ de recherche |
 | `searchButtonText` | `LocalizedString?` | Texte du bouton de recherche |
+| `searchVariant` | `"default" \| "navigator-tl"` | Variant SDK de l'endpoint backend pour l'autocompletion |
+| `baseParams` | `SearchBaseParamsSchema?` | Parametres de filtrage du périmetre réseau (scope de l'autocompletion) |
+| `filterGroups` | `FilterGroupSchema[]?` | Groupes de filtres headless (typologies, services — meme format que `FiltersSection`) |
+| `filtersByAnswers` | `Record<string, ...>?` | Filtres par réponses de formulaires CoForm |
 
 ---
 
@@ -1752,7 +1807,7 @@ export const CardCountCTSectionSchema = z.object({
 | ------------ | ----------------- | ------------------------------------- |
 | `title`      | `LocalizedString?` | Titre de la section                  |
 | `subtitle`   | `LocalizedString?` | Sous-titre                           |
-| `bg`         | `enum`            | Couleur de fond (inclut des gradients) |
+| `bg`         | `enum \| string`  | Couleur de fond : tokens sémantiques énumérés OU classe Tailwind brute (ex. `bg-cyan-500`) |
 | `baseParams` | `object?`         | Parametres de recherche de base       |
 | `cards`      | `array?`          | Cartes de compteur (countKey, label, icon, color, href) |
 
@@ -1862,45 +1917,67 @@ const ContentSectionSchema = z.object({
 
 ## `filters`
 
-Section de filtres avec groupes depliables.
+Section de filtres avec groupes depliables. Pilote `PageFiltersContext` consomme par `SearchPro`/`SearchProStatic` sur la meme page.
+
+> **Source** : `FiltersSectionSchema` est défini dans `src/modules/search/schema.ts` et réutilise les schémas partagés `FilterGroupSchema`/`FilterGroupsSchema`/`FiltersByAnswersSchema`/`FiltersByPathSchema` — sources uniques pour tous les consommateurs (section `filters`, section `hero-tiers-lieux`, schéma du prefetch SSR).
 
 ```ts
-const FiltersSectionSchema = z.object({
+// Depuis src/modules/search/schema.ts
+export const FilterGroupSchema = z.object({
+  id: z.string(),
+  label: LocalizedString,
+  type: z.enum(['scopeList', "filters", "entityList"]).default("filters"),
+  field: z.string().optional(),
+  options: z.array(z.object({
+    id: z.string(),
+    label: LocalizedString,
+    level: z.string().optional(),
+    name: z.string().optional(),
+    defaultChecked: z.boolean().optional(),
+  })).optional(),
+  config: z.object({
+    countryCode: z.array(z.string()).optional(),
+    level: z.array(z.string()).optional(),
+    upperLevelId: z.string().optional(),
+    sortBy: z.string().optional(),
+  }).optional(),
+  // Pour type "entityList" : recherche backend qui peuple les options
+  baseParams: SearchBaseParamsSchema.optional(),
+  filterType: z.enum(["sourceKey"]).optional(),
+  filterBy: z.string().optional(),
+});
+export const FilterGroupsSchema = z.array(FilterGroupSchema);
+
+export const FiltersByAnswersSchema = z.record(z.string(), z.object({
+  id: z.string().optional(),
+  label: LocalizedString,
+  type: z.enum(["form", "answers"]).default("answers"),
+  path: z.string().optional(),
+  forms: z.string().optional(),
+  finderPath: z.string().optional(),
+  value: z.record(z.string(), z.object({
+    id: z.string(),
+    finder: z.string(),
+  })).optional(),
+}));
+
+// Filtres par thématique CoForm (appel coformFilterByPath)
+export const FiltersByPathSchema = z.record(z.string(), z.object({
+  id: z.string().optional(),
+  label: LocalizedString,
+  thematicPath: z.string(),
+  finderPath: z.string().optional(),
+  notSourceKey: z.boolean().optional(),
+}));
+
+export const FiltersSectionSchema = z.object({
   type: z.literal("filters"),
   id: z.string().optional(),
   props: z.object({
     title: LocalizedString.optional(),
-    filterGroups: z.array(z.object({
-      id: z.string(),
-      label: LocalizedString,
-      type: z.enum(['scopeList', "filters"]).default("filters"),
-      field: z.string().optional(),
-      options: z.array(z.object({
-        id: z.string(),
-        label: LocalizedString,
-        level: z.string().optional(),
-        name: z.string().optional(),
-        defaultChecked: z.boolean().optional(),
-      })).optional(),
-      config: z.object({
-        countryCode: z.array(z.string()).optional(),
-        level: z.array(z.string()).optional(),
-        upperLevelId: z.string().optional(),
-        sortBy: z.string().optional(),
-      }).optional(),
-    })),
-    filtersByAnswers: z.record(z.string(), z.object({
-      id: z.string().optional(),
-      label: LocalizedString,
-      type: z.enum(["form", 'answers']).default("answers"),
-      path: z.string().optional(),
-      forms: z.string().optional(),
-      finderPath: z.string().optional(),
-      value: z.record(z.string(), z.object({
-        id: z.string(),
-        finder: z.string(),
-      })).optional(),
-    })).optional(),
+    filterGroups: FilterGroupsSchema,
+    filtersByAnswers: FiltersByAnswersSchema.optional(),
+    filtersByPath: FiltersByPathSchema.optional(),
     defaultOpenGroups: z.array(z.string()).optional(),
     className: z.string().optional(),
   }),
@@ -1910,12 +1987,15 @@ const FiltersSectionSchema = z.object({
 | Propriete          | Type      | Description                              |
 | ------------------ | --------- | ---------------------------------------- |
 | `title`            | `LocalizedString?` | Titre de la section filtres      |
-| `filterGroups`     | `array`   | Groupes de filtres                       |
-| `filterGroups[].type` | `enum` | Type de filtre (`"scopeList" \| "filters"`) |
-| `filterGroups[].field` | `string?` | Champ cible du filtre                |
+| `filterGroups`     | `FilterGroupSchema[]` | Groupes de filtres              |
+| `filterGroups[].type` | `"scopeList" \| "filters" \| "entityList"` | Type de filtre (`"entityList"` charge les options dynamiquement via `baseParams`) |
+| `filterGroups[].field` | `string?` | Champ cible du filtre               |
 | `filterGroups[].config` | `object?` | Configuration du filtre (countryCode, level, etc.) |
-| `filtersByAnswers` | `Record?` | Filtres par reponses de formulaires      |
-| `defaultOpenGroups` | `string[]?` | IDs des groupes ouverts par defaut     |
+| `filterGroups[].baseParams` | `SearchBaseParamsSchema?` | Pour `entityList` : périmetre de la recherche backend |
+| `filterGroups[].filterType` | `"sourceKey"?` | Comment l'option filtre les résultats (injection dans baseParams.sourceKey) |
+| `filtersByAnswers` | `Record?` | Filtres par réponses de formulaires CoForm |
+| `filtersByPath`    | `Record?` | Filtres par thématique CoForm via `coformFilterByPath` |
+| `defaultOpenGroups` | `string[]?` | IDs des groupes ouverts par defaut    |
 
 ---
 
@@ -1990,6 +2070,88 @@ export const NewsSectionSchema = z.object({
 | `showFilters` | `boolean` | Afficher les filtres |
 | `showComments` | `boolean` | Afficher les commentaires |
 | `showReactions` | `boolean` | Afficher les reactions |
+
+---
+
+## `hero-ssbe`
+
+Section hero spécialisée pour les sites sport-santé-bien-être. Variante avec badges, boutons CTA et cartes d'accès rapide.
+
+```ts
+const HeroSSBESchema = z.object({
+  type: z.literal("hero-ssbe"),
+  id: z.string().optional(),
+  props: z.object({
+    headline: LocalizedString,
+    subhead: LocalizedString.optional(),
+    backgroundImage: z.string().optional(),
+    backgroundImageAlt: LocalizedString.optional(),
+    overlayOpacity: z.string().optional(),
+    badges: z.array(z.object({
+      label: LocalizedString,
+      icon: z.string().optional(),
+    })).optional(),
+    ctaButtons: z.array(z.object({
+      label: LocalizedString,
+      path: z.string().optional(),
+      variant: z.enum(["default", "secondary", "accent", "primary", "outline"]).optional(),
+    })).optional(),
+    quickAccessTitle: LocalizedString.optional(),
+    quickAccessCards: z.array(z.object({
+      path: z.string(),
+      label: LocalizedString,
+      title: LocalizedString,
+      description: LocalizedString,
+      icon: z.string().optional(),
+    })).optional(),
+  }),
+});
+```
+
+| Propriete | Type | Description |
+|---|---|---|
+| `headline` | `LocalizedString` | Titre principal |
+| `subhead` | `LocalizedString?` | Sous-titre |
+| `backgroundImage` | `string?` | URL image de fond |
+| `badges` | `array?` | Badges texte/icône affichés sous le titre |
+| `ctaButtons` | `array?` | Boutons CTA avec variante de style |
+| `quickAccessTitle` | `LocalizedString?` | Titre de la section d'accès rapide |
+| `quickAccessCards` | `array?` | Cartes d'accès rapide (path, label, title, description, icon) |
+
+---
+
+## `categories-grid`
+
+Grille de catégories thématiques avec icônes, titres et liens. Variantes visuelles: `ocean`, `cyber`, `ssbe`.
+
+```ts
+const CategoriesGridSectionSchema = z.object({
+  type: z.literal("categories-grid"),
+  id: z.string().optional(),
+  props: z.object({
+    headline: LocalizedString.optional(),
+    subhead: LocalizedString.optional(),
+    variant: z.enum(["ocean", "cyber", "ssbe"]).optional().default("ssbe"),
+    columns: z.number().min(2).max(6).optional().default(3),
+    cards: z.array(z.object({
+      icon: z.string().optional(),
+      title: LocalizedString.optional(),
+      subtitle: LocalizedString.optional(),
+      link: z.string().optional(),
+    })),
+  }),
+});
+```
+
+| Propriete | Type | Description |
+|---|---|---|
+| `headline` | `LocalizedString?` | Titre de la grille |
+| `subhead` | `LocalizedString?` | Sous-titre |
+| `variant` | `"ocean"\|"cyber"\|"ssbe"` | Style visuel de la grille |
+| `columns` | `number` | Nombre de colonnes (2–6, défaut 3) |
+| `cards` | `array` | Cartes de catégorie (icon optionnel, title/subtitle/link optionnels) |
+
+Note : `icon` et `title` sont rendus optionnels car certaines configs utilisent uniquement `subtitle` (cf. `config.prod.sport-sante-bien-etre.json`).
 
 ---
 

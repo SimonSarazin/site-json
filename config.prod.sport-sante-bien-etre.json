@@ -2380,9 +2380,7 @@
             "showActiveFiltersTypes": true,
             "showActiveFiltersTags": false,
             "disableInfiniteScroll": false,
-            "customHeader": {
-              "showMapButton": false
-            },
+            "customHeader": {},
             "defaultViewMode" : "list",
             "baseParams": {
               "defaultTypes": [
@@ -2412,8 +2410,8 @@
     {
       "path": "/formation",
       "title": {
-        "fr": "Formation ",
-        "en": ""
+        "fr": "Formation",
+        "en": "Training"
       },
       "layout": "fullwidth",
       "sections": [
@@ -3759,8 +3757,7 @@
             "customHeader": {
                 "title": {
                   "fr": "Tous les équipements sportifs"
-                },
-                "showMapButton": true
+                }
               },
             "useFilter": true,
             "showMap": false,

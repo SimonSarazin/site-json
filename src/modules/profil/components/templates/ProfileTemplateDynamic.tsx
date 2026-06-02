@@ -1,4 +1,6 @@
-import { useMemo, Suspense } from "react";
+import { useMemo, Suspense, useEffect } from "react";
+import { lazy } from "vite-preload";
+import { useHydrated } from "@/hooks/useHydrated";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
@@ -6,10 +8,11 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { ProfileSectionRenderer } from "../../ProfileSectionRenderer";
 import { TabDetailRenderer } from "../TabDetailRenderer";
 
-// Import direct des composants tab
-import { SocialTab } from "../tabs/SocialTab";
-import { MembershipTab } from "../tabs/MembershipTab";
-import { NewsTab } from "../tabs/NewsTab";
+// Tabs en lazy() : à un profil donné, l'utilisateur ne consulte qu'un tab
+// à la fois. Les autres ne sont téléchargés qu'au clic.
+const SocialTab = lazy(() => import("../tabs/SocialTab"));
+const MembershipTab = lazy(() => import("../tabs/MembershipTab"));
+const NewsTab = lazy(() => import("../tabs/NewsTab"));
 import { useLocalization } from "@/hooks/useLocalization";
 import type { ProfileType } from "../../schema";
 
@@ -37,6 +40,12 @@ export default function ProfileTemplateDynamic() {
   const currentTab = pathSegments.length > 2 ? pathSegments[2] : (config.tabs?.[0]?.id || 'about');
   const isSubRoute = pathSegments.length > 3; // /profil/:slug/:tab/:subRoute...
 
+  // `hydrated` reste à `false` pendant le SSR et le 1er render client → on rend
+  // alors la liste complète des tabs (identique HTML SSR/client → pas de mismatch).
+  // Une fois l'effet exécuté (post-hydration), `me` est résolu et on peut filtrer
+  // les tabs dépendantes de l'auth.
+  const hydrated = useHydrated();
+
   // Filtrer les tabs selon les conditions
   const availableTabs = useMemo(() => {
     if (!config.tabs || config.tabs.length === 0) {
@@ -61,12 +70,32 @@ export default function ProfileTemplateDynamic() {
         if (tab.condition.userContext === "other" && isOwnProfile) return false;
       }
 
+      // Vérifier l'authentification (uniquement après hydration côté client pour
+      // éviter le mismatch SSR — `me` est toujours `null` côté serveur).
+      if (tab.condition.auth && hydrated) {
+        const isAuth = !!me?.id;
+        if (tab.condition.auth === "required" && !isAuth) return false;
+        if (tab.condition.auth === "anonymous" && isAuth) return false;
+      }
+
       // TODO: Implémenter la vérification des permissions
       // if (tab.condition.permissions) { ... }
 
       return true;
     });
-  }, [config.tabs, entity, me]);
+  }, [config.tabs, entity, me, hydrated]);
+
+  // Garde-fou URL directe : si on arrive sur `/profil/x/finance` en anonyme alors
+  // que la tab a été filtrée, on redirige vers le tab par défaut. Indispensable
+  // car les routes générées par `generateTabRoutes` ne sont pas filtrées par auth
+  // (le router est figé après le boot — cf. entry-client.tsx).
+  useEffect(() => {
+    if (!hydrated) return;
+    if (availableTabs.length === 0) return;
+    if (!availableTabs.find(t => t.id === currentTab)) {
+      navigate(`/profil/${slug}`, { replace: true });
+    }
+  }, [hydrated, currentTab, availableTabs, slug, navigate]);
 
   // Navigation vers un nouveau tab
   const handleTabChange = (newTab: string) => {

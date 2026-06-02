@@ -16,6 +16,8 @@
   "Mode de gestion": "Management mode",
   "Non précisé": "Not specified",
   "Filtres": "Filters",
+  "Effacer": "Clear",
+  "Rechercher par nom...": "Search by name...",
   "Carte": "Map",
   "Voir en liste": "See in list",
   "type.NGO": "NGO",
@@ -27,5 +29,9 @@
   "type.projects": "Project",
   "type.events": "Event",
   "type.citoyens": "Citizen",
-  "type.poi": "Point of Interest"
+  "type.poi": "Point of Interest",
+  "toast.card.starSuccess": "Updated",
+  "toast.card.starError": "Could not update favorites",
+  "toast.card.activateFundingSuccess": "Funding activated",
+  "toast.card.activateFundingError": "Could not activate funding"
 }

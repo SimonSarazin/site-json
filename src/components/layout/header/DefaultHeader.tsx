@@ -21,9 +21,7 @@ import {
   ChevronDown,
   User,
   LogOut,
-  Search,
   ShoppingCart,
-  Bell,
 } from "lucide-react";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
@@ -38,6 +36,8 @@ import { AnnouncementBanner } from "../AnnouncementBanner";
 import ToggleButtonTheme from "../ToggleButtonTheme";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { ClientOnly } from "../ClientOnly";
+import NotificationBell from "@/modules/notification/components/NotificationBell";
+import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
 
 interface NavItemProps {
   item: EnhancedNavItemType;
@@ -257,9 +257,9 @@ export function DefaultHeader() {
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
-            {header.utilities.search && <Button variant="ghost" size="sm"><Search className="h-4 w-4" /></Button>}
+            {header.utilities.search && <CommandTriggerButton />}
             {header.utilities.cart && <Button variant="ghost" size="sm"><ShoppingCart className="h-4 w-4" /></Button>}
-            {header.utilities.notifications && <Button variant="ghost" size="sm"><Bell className="h-4 w-4" /></Button>}
+            {header.utilities.notifications && <NotificationBell />}
             {header.utilities.auth && (
               <ClientOnly fallback={<div className="hidden md:flex items-center"><Button variant="ghost" disabled size="sm">…</Button></div>}>
                 {() => (
@@ -312,3 +312,5 @@ export function DefaultHeader() {
     </header>
   );
 }
+
+export default DefaultHeader;

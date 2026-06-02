@@ -1,43 +1,78 @@
 import path from 'path';
 import fs from 'fs';
-import { execSync } from 'child_process';
 import tailwindcss from "@tailwindcss/vite"
 import react from '@vitejs/plugin-react';
-import { defineConfig, type Plugin } from 'vite';
+import { defineConfig, loadEnv, type Plugin } from 'vite';
 import { visualizer } from 'rollup-plugin-visualizer';
 import preloadPlugin from 'vite-preload/plugin';
 
-function buildAllSiteCssPlugin(): Plugin {
-  let outDir: string;
-  let root: string;
+function siteCssPlugin(): Plugin {
+  const virtualId = 'virtual:site-css';
+  const resolvedId = '\0' + virtualId;
+  let cssFile: string | null = null;
 
   return {
-    name: 'build-all-site-css',
+    name: 'site-css-resolver',
     configResolved(config) {
-      outDir = config.build.outDir;
-      root = config.root;
-    },
-    closeBundle() {
-      const srcDir = path.resolve(root, 'src');
-      const cssOutDir = path.resolve(root, outDir, 'css');
+      const env = loadEnv(config.mode, config.root, '');
+      const defaultCss = path.resolve(config.root, 'src', 'index.css');
 
-      const cssFiles = fs.readdirSync(srcDir).filter(f => f.startsWith('index-') && f.endsWith('.css'));
-      if (cssFiles.length === 0) return;
+      // 1. Contenu CSS inline via env (pour CI/CD, Docker build sans fichier dans le repo)
+      const cssContent = env.SITE_CSS_CONTENT;
+      if (cssContent) {
+        const tmpFile = path.resolve(config.root, 'src', '.tmp-site-theme.css');
+        fs.writeFileSync(tmpFile, cssContent, 'utf-8');
+        cssFile = tmpFile;
+        console.log(`[site-css] SITE_CSS_CONTENT → src/.tmp-site-theme.css`);
+        return;
+      }
 
-      fs.mkdirSync(cssOutDir, { recursive: true });
-
-      for (const cssFile of cssFiles) {
-        const input = path.resolve(srcDir, cssFile);
-        const output = path.resolve(cssOutDir, cssFile);
-        try {
-          execSync(`npx @tailwindcss/cli -i "${input}" -o "${output}" --minify`, {
-            cwd: root,
-            stdio: 'pipe',
-          });
-          console.log(`[site-css] ${cssFile} → css/${cssFile}`);
-        } catch (e: unknown) {
-          console.error(`[site-css] ${cssFile}:`, (e as Error).message);
+      // 2. Chemin CSS explicite (comme SITE_CONFIG_PATH pour la config)
+      const cssPath = env.SITE_CSS_PATH;
+      if (cssPath) {
+        const resolved = path.isAbsolute(cssPath)
+          ? cssPath
+          : path.resolve(config.root, cssPath);
+        if (fs.existsSync(resolved)) {
+          cssFile = resolved;
+          console.log(`[site-css] SITE_CSS_PATH → ${resolved}`);
+          return;
         }
+        console.warn(`[site-css] SITE_CSS_PATH "${cssPath}" introuvable, fallback sur default`);
+      }
+
+      // 3. Lookup via sites.json + VITE_SLUG
+      const slug = env.VITE_SLUG;
+      if (slug) {
+        const sitesPath = path.resolve(config.root, 'sites.json');
+        if (fs.existsSync(sitesPath)) {
+          const sites = JSON.parse(fs.readFileSync(sitesPath, 'utf-8'));
+          const site = sites.find((s: { slug: string }) => s.slug === slug);
+          if (site?.css) {
+            const slugCss = path.resolve(config.root, 'src', `${site.css}.css`);
+            if (fs.existsSync(slugCss)) {
+              cssFile = slugCss;
+              console.log(`[site-css] ${slug} → src/${site.css}.css`);
+              return;
+            }
+            console.warn(`[site-css] src/${site.css}.css introuvable pour slug "${slug}", fallback sur default`);
+          } else {
+            console.warn(`[site-css] Pas de CSS pour le slug "${slug}" dans sites.json, fallback sur default`);
+          }
+        }
+      }
+
+      // 4. Fallback : src/index.css (thème par défaut)
+      cssFile = defaultCss;
+      console.log(`[site-css] fallback → src/index.css`);
+    },
+    resolveId(id) {
+      if (id === virtualId) return resolvedId;
+    },
+    load(id) {
+      if (id === resolvedId) {
+        if (!cssFile) return '/* no site css */';
+        return `import "${cssFile}";`;
       }
     },
   };
@@ -52,6 +87,7 @@ export default defineConfig(({ mode, isSsrBuild }) => ({
     },
   },
   plugins: [
+    siteCssPlugin(),
     preloadPlugin(), // Doit être AVANT react() pour tracer les lazy imports
     react(),
     tailwindcss(),
@@ -61,8 +97,7 @@ export default defineConfig(({ mode, isSsrBuild }) => ({
       open: false,
       gzipSize: true,
       brotliSize: true,
-    }),
-    !isSsrBuild && buildAllSiteCssPlugin(),
+    })
   ].filter(Boolean),
   resolve: {
     alias: {
@@ -106,10 +141,12 @@ export default defineConfig(({ mode, isSsrBuild }) => ({
             return 'query-vendor';
           }
 
-          // Lucide React icons - separate chunk for icons
-          if (id.includes('node_modules/lucide-react/')) {
-            return 'icons-vendor';
-          }
+          // Lucide React : pas de manualChunks → Vite décide.
+          // Les icônes individuelles chargées via `lucide-react/dynamic`
+          // (`DynamicIcon`) sont chunkées à la demande (1 chunk par icône),
+          // les icônes nommées statiquement sont tree-shakées vers le chunk
+          // qui les utilise. Plus économe que tout regrouper dans
+          // `icons-vendor` (qui forçait ~1900 icônes via le manifest dynamic).
 
           // Utility libraries
           if (id.includes('node_modules/clsx') ||

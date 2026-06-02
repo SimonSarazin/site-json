@@ -1,9 +1,10 @@
 import { useInfiniteQueryScrollNextWithTransform } from "@/hooks/useInfiniteQueryScroll";
-import type { EntityTypes, Project, Event, Poi, PaginatorPage } from "@communecter/cocolight-api-client";
+import type { EntityTypes, Organization, Project, Event, Poi, PaginatorPage } from "@communecter/cocolight-api-client";
 import { isOrganization, isProject } from "@/lib/getTypedEntity";
 import { useMemo } from "react";
 import type { RelationType, RelatedEntitiesParams, UseRelatedEntitiesResult } from "../types";
 import { useCocolight } from "@/hooks/useCocolight";
+import { PROFIL_QUERY_KEYS } from "../constants/queryKeys";
 
 export type { RelationType, RelatedEntitiesParams, UseRelatedEntitiesResult };
 
@@ -27,14 +28,14 @@ export function useRelatedEntities(
     lastItemRef,
     error,
     refetch,
-  } = useInfiniteQueryScrollNextWithTransform<Project | Event | Poi>({
-    queryKey: ["related-entities", entity?.slug, relationType, params],
+  } = useInfiniteQueryScrollNextWithTransform<Organization | Project | Event | Poi>({
+    queryKey: PROFIL_QUERY_KEYS.RELATED_ENTITIES(entity?.slug ?? null, relationType, params),
     queryFn: async ({ pageParam }) => {
       if (!entity) {
         throw new Error("Entity is required");
       }
 
-      const page = pageParam as PaginatorPage<Project | Event | Poi> |  undefined
+      const page = pageParam as PaginatorPage<Organization | Project | Event | Poi> |  undefined
 
       const queryParams = {
         name: params?.search,
@@ -42,7 +43,7 @@ export function useRelatedEntities(
         indexStep: params?.indexStep || 20,
       };
 
-      let result: PaginatorPage<Project | Event | Poi>
+      let result: PaginatorPage<Organization | Project | Event | Poi>
 
       // Récupérer les entités liées selon le type de relation
       switch (relationType) {
@@ -87,6 +88,29 @@ export function useRelatedEntities(
               pageNumber: 1,
               pageIndex: 0,
             };
+          }
+          break;
+
+        case "organizations":
+          // Organisations partenaires : les orgas dont les `links.members`
+          // contiennent l'orga courante (= orgas où elle est membre). Pas de
+          // méthode dédiée -> searchCostum avec le filtre links.members.<id>.
+          if (isOrganization(entity)) {
+            const orgParam = {
+              searchType: ["organizations"],
+              filters: { ["links.members." + entity.id]: { $exists: true } },
+              indexMin: 0,
+              indexStep: params?.indexStep || 20,
+              count: true,
+              countType: ["organizations"],
+              notSourceKey: true,
+              name: params?.search,
+            };
+            result = (await entity.searchCostum(
+              orgParam as unknown as Parameters<typeof entity.searchCostum>[0],
+            )) as PaginatorPage<Organization | Project | Event | Poi>;
+          } else {
+            return { results: [], count: { total: 0 }, hasNext: false, hasPrev: false, pageNumber: 1, pageIndex: 0 };
           }
           break;
 

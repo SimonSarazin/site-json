@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { ImageViewer } from "@/components/ui/image-viewer";
+import { FieldError } from "./FormFields";
 import {
   Table,
   TableHeader,
@@ -365,10 +366,10 @@ export function SimpleTableField({
 
   return (
     <div className={cn("space-y-2", field.width || "col-span-12")}>
-      {/* Label */}
+      {/* Label — `<div>` car le control n'est pas un input ciblable. */}
       {!hideLabel && (
-        <label
-          htmlFor={field.name}
+        <div
+          id={`${field.name}-label`}
           className={cn(
             "block text-sm font-medium",
             hasError && "text-destructive"
@@ -376,23 +377,28 @@ export function SimpleTableField({
         >
           {field.label}
           {field.isRequired && <span className="text-destructive ml-1">*</span>}
-        </label>
+        </div>
       )}
 
       {field.info && <HintText text={field.info} />}
 
       {/* Table */}
-      <div className="rounded-md border border-border">
+      <div
+        className="rounded-md border border-border"
+        aria-labelledby={!hideLabel ? `${field.name}-label` : undefined}
+        aria-invalid={hasError || undefined}
+        aria-describedby={hasError ? `${field.name}-error` : undefined}
+      >
         <ScrollArea className="w-full whitespace-nowrap">
             <Table className="w-max min-w-full border-collapse">
             <TableHeader>
                 <TableRow className="bg-muted/50">
                 {headers.map((header, colIndex) => (
-                    <TableHead key={colIndex} className="text-xs font-semibold border border-border">
+                    <TableHead key={colIndex} scope="col" className="text-xs font-semibold border border-border">
                     {typeof header === "string" ? header : String(header)}
                     </TableHead>
                 ))}
-                {activeNewLine && !readOnly && <TableHead className="w-10 border border-border" />}
+                {activeNewLine && !readOnly && <TableHead scope="col" aria-hidden="true" className="w-10 border border-border" />}
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -401,7 +407,7 @@ export function SimpleTableField({
                 return (
                     <TableRow key={dataIndex}>
                     {/* Column 0: row label */}
-                    <TableHead className={cn("bg-muted/30 min-w-30 border border-border", CELL_CN)}>
+                    <TableHead scope="row" className={cn("bg-muted/30 min-w-30 border border-border", CELL_CN)}>
                         <Input
                         value={typeof row[0] === "string" ? row[0] : ""}
                         onChange={(e) => handleRowLabelChange(actualRowIndex, e.target.value)}
@@ -483,18 +489,7 @@ export function SimpleTableField({
       )}
 
       {/* Error message */}
-      {hasError && (
-        <p className="text-xs text-destructive flex items-center gap-1 mt-1">
-          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fillRule="evenodd"
-              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-              clipRule="evenodd"
-            />
-          </svg>
-          {errors[field.name]?.message as string}
-        </p>
-      )}
+      <FieldError name={field.name} message={errors[field.name]?.message as string | undefined} />
     </div>
   );
 }

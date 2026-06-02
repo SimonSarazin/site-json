@@ -68,7 +68,7 @@ const SETTING_ENTRIES: { key: string; label: string; icon: string }[] = (() => {
 })();
 
 type NavItem = Header['nav'][number];
-type FooterColumn = Footer['columns'][number];
+type FooterColumn = NonNullable<Footer['columns']>[number];
 type FooterLink = FooterColumn['links'][number];
 
 function SectionPicker({ value, onChange, onAdd }: { value: string; onChange: (v: string) => void; onAdd: () => void }) {

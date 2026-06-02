@@ -1,3 +1,5 @@
+import type { Api } from "@communecter/cocolight-api-client";
+import i18n from "@/i18n";
 import {
   deleteAnswerDepenseAtIndex,
   deleteProjectMilestoneAtIndex,
@@ -11,8 +13,12 @@ import {
   getEnvelopeProjects,
   resolveMilestoneSyncContext,
 } from '@/modules/cagnotte/lib/milestoneSyncContext';
+import type { FundingMilestoneStatus } from "@/modules/cagnotte/types";
 
-type UpdateSource = unknown;
+const t = (key: string): string =>
+  String(i18n.t(key, { ns: "modules/cagnotte" }));
+
+type UpdateSource = Api | null;
 
 type MilestoneMutationBaseParams = {
   source: UpdateSource;
@@ -25,7 +31,7 @@ type MilestoneMutationBaseParams = {
 type EditMilestoneParams = MilestoneMutationBaseParams & {
   name: string;
   description: string;
-  status: 'open' | 'done' | 'close';
+  status: FundingMilestoneStatus;
   targetAmount: number;
 };
 
@@ -46,6 +52,13 @@ export function getApiErrorMessage(error: unknown, fallback: string): string {
   return apiMessage || (error instanceof Error ? error.message : fallback);
 }
 
+function requireSource(source: UpdateSource): Api {
+  if (!source) {
+    throw new Error(t("milestone.errors.apiClientUnavailable"));
+  }
+  return source;
+}
+
 function resolveSyncContextOrThrow(params: MilestoneMutationBaseParams) {
   const syncContext = resolveMilestoneSyncContext({
     rawEnvelope: params.rawEnvelope,
@@ -55,7 +68,7 @@ function resolveSyncContextOrThrow(params: MilestoneMutationBaseParams) {
   });
 
   if (!syncContext) {
-    throw new Error('Impossible de localiser ce jalon dans projects/answers.');
+    throw new Error(t("milestone.errors.syncContextMissing"));
   }
 
   return syncContext;
@@ -65,7 +78,7 @@ function getMilestoneConstraints(params: MilestoneMutationBaseParams): Milestone
   const projects = getEnvelopeProjects(params.rawEnvelope);
 
   for (const projectRow of projects) {
-    const projectData = asRecord(projectRow._serverData ?? projectRow.serverData ?? projectRow);
+    const projectData = asRecord(projectRow.serverData ?? projectRow);
     const candidateAnswerId = getEntityIdFromUnknown(projectData) || String(projectData.answer ?? '').trim();
     const candidateProjectId =
       String(asRecord(projectData.project).id ?? '').trim() ||
@@ -87,7 +100,7 @@ function getMilestoneConstraints(params: MilestoneMutationBaseParams): Milestone
       .filter((id): id is string => id.trim().length > 0);
 
     if (actionsForMilestone.length > 0 && actionIds.length !== actionsForMilestone.length) {
-      throw new Error('Certaines actions du jalon n\'ont pas d\'identifiant valide.');
+      throw new Error(t("milestone.errors.actionIdMissing"));
     }
 
     const allActionsDone =
@@ -101,7 +114,7 @@ function getMilestoneConstraints(params: MilestoneMutationBaseParams): Milestone
         ? depensesFromAnswer
         : [];
 
-    const canClose = actionsForMilestone.length === 0 || allActionsDone; 
+    const canClose = actionsForMilestone.length === 0 || allActionsDone;
 
     const depensesForMilestone = depenses.filter(
       (rawDepense) => String(asRecord(rawDepense).milestone ?? '').trim() === params.milestoneId
@@ -119,15 +132,23 @@ function getMilestoneConstraints(params: MilestoneMutationBaseParams): Milestone
 }
 
 export async function editMilestoneWithSync(params: EditMilestoneParams): Promise<void> {
+  const api = requireSource(params.source);
   const syncContext = resolveSyncContextOrThrow(params);
 
-  if (syncContext.projectMilestoneIndex === null || syncContext.answerDepenseIndex === null) {
-    throw new Error('Ce jalon est incomplet dans projects/answers et ne peut pas être modifié.');
+  if (syncContext.projectMilestoneIndex === null) {
+    throw new Error(t("milestone.errors.incompleteForEdit.missingProjectSide"));
+  }
+  if (syncContext.answerDepenseIndex === null) {
+    throw new Error(t("milestone.errors.incompleteForEdit.missingAnswerSide"));
   }
 
+  const [project, answer] = await Promise.all([
+    api.project({ id: params.projectId }),
+    api.answer({ id: params.answerId }),
+  ]);
+
   await updateProjectMilestoneFields({
-    source: params.source,
-    projectId: params.projectId,
+    project,
     index: syncContext.projectMilestoneIndex,
     fields: {
       name: params.name,
@@ -137,8 +158,7 @@ export async function editMilestoneWithSync(params: EditMilestoneParams): Promis
   });
 
   await updateAnswerDepenseFields({
-    source: params.source,
-    answerId: params.answerId,
+    answer,
     index: syncContext.answerDepenseIndex,
     fields: {
       poste: params.name,
@@ -148,20 +168,28 @@ export async function editMilestoneWithSync(params: EditMilestoneParams): Promis
 }
 
 export async function closeMilestoneWithSync(params: CloseMilestoneParams): Promise<void> {
+  const api = requireSource(params.source);
   const syncContext = resolveSyncContextOrThrow(params);
   const constraints = getMilestoneConstraints(params);
 
-  if (syncContext.projectMilestoneIndex === null || syncContext.answerDepenseIndex === null) {
-    throw new Error('Ce jalon est incomplet dans projects/answers et ne peut pas être clôturé.');
+  if (syncContext.projectMilestoneIndex === null) {
+    throw new Error(t("milestone.errors.incompleteForClose.missingProjectSide"));
+  }
+  if (syncContext.answerDepenseIndex === null) {
+    throw new Error(t("milestone.errors.incompleteForClose.missingAnswerSide"));
   }
 
   if (!constraints.canClose) {
-    throw new Error('Clôture impossible: toutes les actions doivent être terminées.');
+    throw new Error(t("milestone.errors.cannotCloseWithOpenActions"));
   }
 
+  const [project, answer] = await Promise.all([
+    api.project({ id: params.projectId }),
+    api.answer({ id: params.answerId }),
+  ]);
+
   await updateProjectMilestoneFields({
-    source: params.source,
-    projectId: params.projectId,
+    project,
     index: syncContext.projectMilestoneIndex,
     fields: {
       status: 'close',
@@ -169,8 +197,7 @@ export async function closeMilestoneWithSync(params: CloseMilestoneParams): Prom
   });
 
   await updateAnswerDepenseFields({
-    source: params.source,
-    answerId: params.answerId,
+    answer,
     index: syncContext.answerDepenseIndex,
     fields: {
       include: false,
@@ -179,15 +206,23 @@ export async function closeMilestoneWithSync(params: CloseMilestoneParams): Prom
 }
 
 export async function restoreMilestoneWithSync(params: RestoreMilestoneParams): Promise<void> {
+  const api = requireSource(params.source);
   const syncContext = resolveSyncContextOrThrow(params);
 
-  if (syncContext.projectMilestoneIndex === null || syncContext.answerDepenseIndex === null) {
-    throw new Error('Ce jalon est incomplet dans projects/answers et ne peut pas être restauré.');
+  if (syncContext.projectMilestoneIndex === null) {
+    throw new Error(t("milestone.errors.incompleteForRestore.missingProjectSide"));
+  }
+  if (syncContext.answerDepenseIndex === null) {
+    throw new Error(t("milestone.errors.incompleteForRestore.missingAnswerSide"));
   }
 
+  const [project, answer] = await Promise.all([
+    api.project({ id: params.projectId }),
+    api.answer({ id: params.answerId }),
+  ]);
+
   await updateProjectMilestoneFields({
-    source: params.source,
-    projectId: params.projectId,
+    project,
     index: syncContext.projectMilestoneIndex,
     fields: {
       status: 'open',
@@ -195,8 +230,7 @@ export async function restoreMilestoneWithSync(params: RestoreMilestoneParams): 
   });
 
   await updateAnswerDepenseFields({
-    source: params.source,
-    answerId: params.answerId,
+    answer,
     index: syncContext.answerDepenseIndex,
     fields: {
       include: true,
@@ -205,40 +239,45 @@ export async function restoreMilestoneWithSync(params: RestoreMilestoneParams): 
 }
 
 export async function deleteMilestoneWithSync(params: MilestoneMutationBaseParams): Promise<void> {
+  const api = requireSource(params.source);
   const syncContext = resolveSyncContextOrThrow(params);
   const constraints = getMilestoneConstraints(params);
 
   if (constraints.hasFunding) {
-    throw new Error('Suppression impossible: ce jalon est déjà financé.');
+    throw new Error(t("milestone.errors.cannotDeleteIfFunded"));
   }
 
+  // Charge le project (utilisé pour résoudre les actions et pull la milestone).
+  const project = await api.project({ id: params.projectId });
+
   for (const actionId of constraints.actionIds) {
-    await deleteActionById({ source: params.source, actionId });
+    const action = await project.action({ id: actionId });
+    await deleteActionById({ action });
   }
 
   const deletions: Promise<unknown>[] = [];
   if (typeof syncContext.projectMilestoneIndex === 'number') {
     deletions.push(
       deleteProjectMilestoneAtIndex({
-        source: params.source,
-        projectId: params.projectId,
+        project,
         index: syncContext.projectMilestoneIndex,
       })
     );
   }
 
   if (typeof syncContext.answerDepenseIndex === 'number' && params.answerId) {
+    // Charge l'answer en parallèle uniquement si on a une dépense à pull.
+    const answer = await api.answer({ id: params.answerId });
     deletions.push(
       deleteAnswerDepenseAtIndex({
-        source: params.source,
-        answerId: params.answerId,
+        answer,
         index: syncContext.answerDepenseIndex,
       })
     );
   }
 
   if (deletions.length === 0) {
-    throw new Error('Aucun index valide trouvé pour supprimer ce jalon.');
+    throw new Error(t("milestone.errors.noIndexForDelete"));
   }
 
   await Promise.all(deletions);

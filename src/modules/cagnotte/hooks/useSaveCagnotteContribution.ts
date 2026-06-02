@@ -1,16 +1,22 @@
 /**
  * Hook pour sauvegarder les données de contribution cagnotte dans Answer
- * Utilise le wrapper `updatePathValue` (atomique par milestone) avec fallback vers `entity.save()`
+ * Utilise `Answer.updateField` (atomique par milestone) avec fallback vers `answer.save()`
+ *
+ * Signature : le caller passe l'entité `Answer` déjà chargée (évite un GET en double).
  */
 
 import { useCallback } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { updatePathValue } from "@/lib/updatePathValue";
+import type {
+  Answer,
+  AnswerItemNormalized,
+  SaveCoformAnswerData,
+} from "@communecter/cocolight-api-client";
+import { showErrorToast, showSuccessToast } from "@/lib/toastUtils";
+import { useT } from "@/hooks/useT";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { useCocolight } from "@/hooks/useCocolight";
 import { launchConfettiBurst } from "@/lib/confetti";
-
-type EndpointCaller = {
-  callEndpoint?: (endpointName: string, payload: Record<string, unknown>) => Promise<unknown>;
-};
+import { asRecord as toRecord } from "@/modules/cagnotte/utils/dataTransform";
 
 interface MilestoneFunding {
   milestoneId: string;
@@ -28,6 +34,7 @@ interface FinancerEntry {
   name: string;
   type: string;
   fundingType: string;
+  [k: string]: unknown;
 }
 
 interface financerData {
@@ -37,9 +44,7 @@ interface financerData {
 }
 
 function createFinancerEntry(params: {
-  milestoneId: string;
   amount: number;
-  currentAnswerData: Record<string, unknown>;
   financerData: financerData;
   userId: string;
 }): FinancerEntry {
@@ -54,16 +59,16 @@ function createFinancerEntry(params: {
   };
 }
 
-function toRecord(value: unknown): Record<string, unknown> {
-  return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
-}
-
-function getFormIdFromAnswerData(currentAnswerData: Record<string, unknown>): string {
+function getFormIdFromAnswerData(currentAnswerData: AnswerItemNormalized): string {
   const project = toRecord(currentAnswerData.project);
   const answers = toRecord(currentAnswerData.answers);
   const answerMeta = toRecord(currentAnswerData.answer);
 
   const candidates = [
+    // `form` est le champ canonique de AnswerItemNormalized ; les autres alias couvrent
+    // les variantes legacy (form_id snake_case, formId imbriqué) renvoyées par
+    // certains endpoints backend.
+    currentAnswerData.form,
     currentAnswerData.formId,
     currentAnswerData.form_id,
     answerMeta.formId,
@@ -83,22 +88,8 @@ function getFormIdFromAnswerData(currentAnswerData: Record<string, unknown>): st
   return "";
 }
 
-function getAnswerIdFromAnswerData(currentAnswerData: Record<string, unknown>): string {
-  const directId = currentAnswerData.id;
-  if (typeof directId === "string" && directId.trim()) return directId.trim();
-
-  const mongoId = toRecord(currentAnswerData._id);
-  const mongoStr = mongoId._str;
-  if (typeof mongoStr === "string" && mongoStr.trim()) return mongoStr.trim();
-
-  const mongoDollar = mongoId.$id;
-  if (typeof mongoDollar === "string" && mongoDollar.trim()) return mongoDollar.trim();
-
-  return "";
-}
-
 function applyMilestoneFundingsToAnswerData(
-  currentAnswerData: Record<string, unknown>,
+  currentAnswerData: AnswerItemNormalized,
   milestoneFundings: MilestoneFunding[],
   financerData: financerData,
   userId: string,
@@ -125,13 +116,7 @@ function applyMilestoneFundingsToAnswerData(
     if (!depense) return;
 
     const currentFinancers = Array.isArray(depense.financer) ? depense.financer : [];
-    const financerEntry = createFinancerEntry({
-      milestoneId,
-      amount,
-      currentAnswerData,
-      financerData,
-      userId
-    });
+    const financerEntry = createFinancerEntry({ amount, financerData, userId });
 
     depense.financer = [...currentFinancers, financerEntry];
     depenseMap.set(milestoneId, depense);
@@ -161,30 +146,33 @@ function resolveDepenseIndex(params: {
   return depenses.findIndex((d) => String(d.milestone ?? "").trim() === milestoneId);
 }
 
-export const useSaveCagnotteContribution = (
-  answerEntity: unknown | null,
-  apiClient: unknown | null
-) => {
-  const { toast } = useToast();
+export const useSaveCagnotteContribution = () => {
+  useLoadNamespace("modules/cagnotte");
+  const t = useT("modules/cagnotte");
+  const { api, me } = useCocolight();
 
   /**
-   * Approche 1 : Atomique avec `updatePathValue`
+   * Approche 1 : Atomique avec `Answer.updateField`
    * Plus fiable en cas de concurrence (pas de risque de overwrite)
    */
   const saveViaUpdatePathValue = useCallback(
     async (
-      answerId: string,
+      answer: Answer,
       milestoneFundings: MilestoneFunding[],
-      currentAnswerData: Record<string, unknown>,
-      financerData: financerData,
-      userId: string
+      financerData: financerData
     ): Promise<boolean> => {
       try {
-        if (!apiClient) {
-          throw new Error("apiClient indisponible");
+        if (!api) {
+          throw new Error(String(t("toasts.errors.noApiClient")));
         }
-        const data = currentAnswerData?.data as Record<string, unknown>;
-        const answers = (data.answers as Record<string, unknown>) || {};
+        const userId = me?.serverData?.id;
+        if (!userId) {
+          throw new Error(String(t("toasts.errors.notLoggedIn")));
+        }
+        // `answer.serverData` est typé AnswerItemNormalized (rempli par api.answer({id}) qui
+        // appelle get() automatiquement).
+        const currentAnswerData = answer.serverData;
+        const answers = (currentAnswerData.answers as Record<string, unknown> | undefined) ?? {};
         const aapStep1 = (answers.aapStep1 as Record<string, unknown>) || {};
         const depensesRaw = aapStep1.depense;
         const depenses = Array.isArray(depensesRaw)
@@ -206,160 +194,150 @@ export const useSaveCagnotteContribution = (
           });
 
           if (depenseIndex === -1) {
-            errors.push(`Depense non trouvee pour milestone ${milestoneId}`);
+            errors.push(String(t("toasts.errors.noMilestoneForId", undefined, { milestoneId })));
             continue;
           }
-          const financerEntry = createFinancerEntry({
-            milestoneId,
-            amount,
-            currentAnswerData,
-            financerData,
-            userId
-          });
+          const financerEntry = createFinancerEntry({ amount, financerData, userId });
 
           if (!Number.isFinite(financerEntry.amount) || financerEntry.amount <= 0) {
-            errors.push(`Montant invalide pour milestone ${milestoneId}`);
+            errors.push(String(t("toasts.errors.invalidAmount", undefined, { milestoneId })));
             continue;
           }
           if (!financerEntry.id || !financerEntry.user) {
-            errors.push(`Financeur invalide pour milestone ${milestoneId}`);
+            errors.push(String(t("toasts.errors.invalidFinancer", undefined, { milestoneId })));
             continue;
           }
 
-          const updatePayload = {
-            id: answerId,
-            collection: "answers",
-            path: `answers.aapStep1.depense.${depenseIndex}.financer`,
-            arrayForm: true,
-            setType: [
-              {
-                path: 'amount',
-                type: 'int',
-              },
-              {
-                path: 'date',
-                type: 'isoDate',
-              },
-            ],
-            value: financerEntry,
-          };
-
           // Ecriture atomique de la depense complete (meme logique que la modif depense)
-          await updatePathValue(apiClient, updatePayload);
+          await answer.updateField(
+            `answers.aapStep1.depense.${depenseIndex}.financer`,
+            financerEntry,
+            {
+              arrayForm: true,
+              setType: [
+                { path: "amount", type: "int" },
+                { path: "date", type: "isoDate" },
+              ],
+            },
+          );
 
           successCount++;
         }
 
         if (errors.length > 0 && successCount === 0) {
-          throw new Error(`Aucun milestone enregistre: ${errors.join(" | ")}`);
+          throw new Error(String(t("toasts.errors.noneSaved", undefined, { reasons: errors.join(" | ") })));
         }
 
         if (errors.length > 0) {
-          console.warn(`⚠️ ${errors.length} milestone(s) non enregistre(s): ${errors.join(" | ")}`);
+          console.warn(`${errors.length} milestone(s) non enregistre(s): ${errors.join(" | ")}`);
         }
 
         return successCount > 0;
       } catch (error) {
-        console.error("❌ Erreur updatePathValue:", error);
+        console.error("Erreur Answer.updateField:", error);
         throw error;
       }
     },
-    [apiClient]
+    [api, me, t]
   );
 
   /**
-   * Approche 2 : Fallback vers `entity.save()` (modifications brouillons)
-   * À utiliser si updatePathValue n'est pas disponible
+   * Approche 2 : Fallback vers `answer.save()` (modifications brouillons)
+   * À utiliser si Answer.updateField n'est pas disponible
    */
   const saveViaDraftAndSave = useCallback(
     async (
-      answerId: string,
+      answer: Answer,
       milestoneFundings: MilestoneFunding[],
-      currentAnswerData: Record<string, unknown>,
-      financerData: financerData,
-      userId: string
+      financerData: financerData
     ): Promise<boolean> => {
       try {
-        const updatedAnswerData = applyMilestoneFundingsToAnswerData(currentAnswerData, milestoneFundings,financerData,userId);
+        const userId = me?.serverData?.id;
+        if (!userId) {
+          throw new Error(String(t("toasts.errors.notLoggedIn")));
+        }
+        const currentAnswerData = answer.serverData;
+        const updatedAnswerData = applyMilestoneFundingsToAnswerData(currentAnswerData, milestoneFundings, financerData, userId);
         const formId = getFormIdFromAnswerData(currentAnswerData);
-        const api = apiClient as EndpointCaller | null;
 
-        if (api && typeof api.callEndpoint === "function" && formId) {
-          const resolvedAnswerId =
-            (typeof answerId === "string" && answerId.trim()) ||
-            getAnswerIdFromAnswerData(currentAnswerData) ||
-            undefined;
-
-          await api.callEndpoint("SAVE_COFORM_ANSWER", {
+        if (api && formId) {
+          const payload: SaveCoformAnswerData = {
             formId,
-            answerId: resolvedAnswerId,
+            answerId: answer.id ?? undefined,
             answers: JSON.stringify(updatedAnswerData.answers ?? {}),
             links: JSON.stringify(updatedAnswerData.links ?? currentAnswerData.links ?? {}),
-          });
+          };
+          await api.endpointApi.saveCoformAnswer(payload);
           return true;
         }
 
-        if (answerEntity) {
-          const saveFunc = (answerEntity as Record<string, unknown>)?.save;
-          if (typeof saveFunc !== "function") throw new Error("Méthode save() indisponible");
-          await (saveFunc as unknown as () => Promise<unknown>).call(answerEntity);
-          return true;
-        }
-
-        throw new Error("Aucune méthode de sauvegarde CoForm disponible (formId ou answerEntity manquant)");
+        // Fallback ultime : `answer.save()` persiste le draft local.
+        await answer.save();
+        return true;
       } catch (error) {
-        console.error("❌ Erreur saveViaDraftAndSave:", error);
+        console.error("Erreur saveViaDraftAndSave:", error);
         throw error;
       }
     },
-    [answerEntity, apiClient]
+    [api, me, t]
   );
 
   /**
-   * Méthode principale : essaie updatePathValue d'abord, fallback vers save()
+   * Méthode principale : essaie Answer.updateField d'abord, fallback vers save()
+   *
+   * @param answerOrId - L'entité Answer déjà chargée (0 GET) ou son id (le hook
+   *   charge l'entité via `api.answer({id})`). Préférer l'entity si déjà sous la main.
    */
   const saveContribution = useCallback(
     async (
-      answerId: string,
+      answerOrId: Answer | string,
       milestoneFundings: MilestoneFunding[],
-      currentAnswerData: Record<string, unknown>,
-      financerData: financerData,
-      userId: string
+      financerData: financerData
     ): Promise<boolean> => {
       try {
-        if (!answerId) throw new Error("answerId manquant");
-        if (!milestoneFundings.length) throw new Error("Aucun milestone à financer");
+        if (!milestoneFundings.length) throw new Error(String(t("toasts.errors.noMilestoneFundings")));
+        if (typeof answerOrId === "string" && !answerOrId.trim()) {
+          throw new Error(String(t("toasts.errors.noAnswerId")));
+        }
+        if (!api) {
+          throw new Error(String(t("toasts.errors.noApiClient")));
+        }
+
+        const answer = typeof answerOrId === "string"
+          ? await api.answer({ id: answerOrId })
+          : answerOrId;
+
+        if (!answer.id) throw new Error(String(t("toasts.errors.noAnswerId")));
 
         try {
-          const success = await saveViaUpdatePathValue(answerId, milestoneFundings, currentAnswerData, financerData, userId);
+          const success = await saveViaUpdatePathValue(answer, milestoneFundings, financerData);
           if (success) {
-            toast({
-              title: "✅ Contribution enregistrée",
-              description: `${milestoneFundings.length} milestone(s) financer(s)`,
-              duration: 4000,
+            showSuccessToast("toasts.contributionSaved.title", t, {
+              count: String(milestoneFundings.length),
             });
             launchConfettiBurst({ originY: 0.36, spread: 78, count: Math.min(36, 18 + milestoneFundings.length * 6) });
             return true;
           }
         } catch (pathError) {
-          console.warn("⚠️ updatePathValue échoué", pathError);
+          console.warn("Answer.updateField échoué", pathError);
           // Continuer vers fallback
         }
 
-        throw new Error("updatePathValue échoué");
+        throw new Error(String(t("toasts.errors.updatePathValueFailed")));
       } catch (error) {
         const msg = error instanceof Error ? error.message : "Erreur inconnue";
-        console.error("❌ Erreur sauvegarde contribution:", msg);
-        toast({
-          title: "⚠️ Avertissement",
-          description: `Paiement réussi. Enregistrement incomplet: ${msg}`,
-          variant: "destructive",
-        });
+        console.error("Erreur sauvegarde contribution:", msg);
+        showErrorToast(
+          error instanceof Error ? error : new Error(msg),
+          "toasts.contributionPartial.title",
+          t,
+          { reason: msg },
+        );
         return false;
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [saveViaUpdatePathValue, saveViaDraftAndSave, toast]
+    [api, saveViaUpdatePathValue, saveViaDraftAndSave, t]
   );
 
   return { saveContribution, saveViaUpdatePathValue, saveViaDraftAndSave };

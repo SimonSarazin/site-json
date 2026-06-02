@@ -4,7 +4,7 @@
  */
 import type { User } from "@communecter/cocolight-api-client";
 import { createEntityMutation } from "./core";
-import { QUERY_KEYS } from "../../constants/queryKeys";
+import { PROFIL_QUERY_KEYS } from "../../constants/queryKeys";
 
 // =====================================================
 // FOLLOW / UNFOLLOW (toutes entités)
@@ -23,7 +23,7 @@ export const useFollowEntity = createEntityMutation({
     successKey: "toast.relationship.followSuccess",
     errorKey: "toast.relationship.followError",
   },
-  invalidate: (entity) => [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)],
+  invalidate: (entity) => [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)],
 });
 
 /**
@@ -39,7 +39,7 @@ export const useUnfollowEntity = createEntityMutation({
     successKey: "toast.relationship.unfollowSuccess",
     errorKey: "toast.relationship.unfollowError",
   },
-  invalidate: (entity) => [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)],
+  invalidate: (entity) => [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)],
 });
 
 // =====================================================
@@ -61,8 +61,8 @@ export const useRequestToJoin = createEntityMutation({
     errorKey: "toast.relationship.memberRequestError",
   },
   invalidate: (entity, me) => [
-    QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug),
-    ...(me ? [QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(me.slug)] : []),
+    PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug),
+    ...(me ? [PROFIL_QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(me.slug)] : []),
   ],
 });
 
@@ -81,8 +81,8 @@ export const useRequestToJoinAdmin = createEntityMutation({
     errorKey: "toast.relationship.orgAdminRequestError",
   },
   invalidate: (entity, me) => [
-    QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug),
-    ...(me ? [QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(me.slug)] : []),
+    PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug),
+    ...(me ? [PROFIL_QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(me.slug)] : []),
   ],
 });
 
@@ -101,8 +101,8 @@ export const useLeaveEntity = createEntityMutation({
     errorKey: "toast.relationship.memberLeftError",
   },
   invalidate: (entity, me) => [
-    QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug),
-    ...(me ? [QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(me.slug)] : []),
+    PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug),
+    ...(me ? [PROFIL_QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(me.slug)] : []),
   ],
 });
 
@@ -125,8 +125,8 @@ export const useAcceptInvitation = createEntityMutation({
     errorKey: "toast.invitation.acceptError",
   },
   invalidate: (entity, me) => [
-    QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug),
-    ...(me ? [QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(me.slug)] : []),
+    PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug),
+    ...(me ? [PROFIL_QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(me.slug)] : []),
   ],
 });
 
@@ -145,8 +145,8 @@ export const useRejectInvitation = createEntityMutation({
     errorKey: "toast.invitation.rejectError",
   },
   invalidate: (entity, me) => [
-    QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug),
-    ...(me ? [QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(me.slug)] : []),
+    PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug),
+    ...(me ? [PROFIL_QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(me.slug)] : []),
   ],
 });
 
@@ -169,7 +169,7 @@ export const useRequestPromoteToAdmin = createEntityMutation({
     errorKey: "toast.members.requestPromoteError",
   },
   invalidate: (entity, me: User | null) => [
-    QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug),
-    ...(me ? [QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(me.slug)] : []),
+    PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug),
+    ...(me ? [PROFIL_QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(me.slug)] : []),
   ],
 });

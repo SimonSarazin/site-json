@@ -1,4 +1,6 @@
-import { lazy } from "react";
+import { lazy } from "vite-preload";
+import { useT } from "@/hooks/useT";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { AmpliConfig } from "./schema";
 import { useFetchAnswerQuery } from "./hooks/useFetchAnswerQuery";
 import { AmpliDataResponse } from "./helpers/summary";
@@ -16,11 +18,12 @@ const AmpliMessages = lazy(() => import("./components/sections/AmpliMessages"));
 
 
 export function AmpliSectionRenderer({ activeTab, config }: AmpliSectionRendererProps) {
+    useLoadNamespace("modules/ampli");
+    const t = useT("modules/ampli");
     const {
         transformedResults,
         isLoading
     } = useFetchAnswerQuery({
-        queryKeyPrefix: `Meeteem-${config.coform}`,
         coformId: config.coform,
         view: "map",
         baseParams: {
@@ -64,9 +67,23 @@ export function AmpliSectionRenderer({ activeTab, config }: AmpliSectionRenderer
                     <AmpliMessages props={config.message} coform={config.coform} path={config.path} />
                 </>
             );
-        case "community": 
+        case "community":
             return (
                 <AmpliCommunity props={config.community} data={transformedResults as AmpliDataResponse[]} />
+            );
+        case "stats":
+        case "news":
+            // Routes déclarées dans routes.tsx mais sections pas encore implémentées.
+            // Fallback UI explicite plutôt que `null` silencieux.
+            return (
+                <div className="container mx-auto px-4 py-16 text-center">
+                    <h2 className="text-2xl font-semibold mb-3 text-foreground">
+                        {String(t("AmpliTemplateDefault.comingSoon.title"))}
+                    </h2>
+                    <p className="text-muted-foreground max-w-md mx-auto">
+                        {String(t("AmpliTemplateDefault.comingSoon.description"))}
+                    </p>
+                </div>
             );
         default:
             console.warn(`Unknown tab activate type: ${activeTab}`);

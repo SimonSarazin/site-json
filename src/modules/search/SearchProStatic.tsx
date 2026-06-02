@@ -1,16 +1,21 @@
-import { Loader2, Map, List, LayoutGrid, Search, MapPin, Download, Plus, GitBranch, XIcon, Tag, Filter } from "lucide-react";
-import * as LucideIcons from "lucide-react";
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import { Loader2, Map, List, LayoutGrid, Search, MapPin, Download, Plus, GitBranch, ArrowRight } from "lucide-react";
+import { DynamicIcon, type IconName } from "lucide-react/dynamic";
+import React, { useState, useMemo, useCallback } from "react";
+import { useNavigate, Link, useSearchParams } from "react-router";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 import { useDebounce } from "@/hooks/useDebounce";
+import { lazy } from "vite-preload";
 import SearchListView from "./components/SearchListView";
 import SearchListSkeleton from "./components/SearchListSkeleton";
-import SearchMapWrapper from "./components/SearchMapWrapper";
-import SearchBubbleChart from "./components/SearchBubbleChart";
-import FranceRegionsMap from "./components/FranceRegionsMap";
+// Vues alternatives en lazy : `viewMode` est "list" par défaut. Les chunks
+// map/graph/regions ne sont téléchargés que si l'utilisateur change de vue.
+const SearchMapWrapper = lazy(() => import("./components/SearchMapWrapper"));
+const SearchBubbleChart = lazy(() => import("./components/SearchBubbleChart"));
+const FranceRegionsMap = lazy(() => import("./components/FranceRegionsMap"));
+const ThematicCards = lazy(() => import("./components/ThematicCards"));
 import { SwitchDetailsMode } from "./components/SwitchDetailsMode";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
@@ -23,8 +28,10 @@ import "@/modules/search/styles.css";
 import { SearchProStaticSectionProps, ALL_THEME, DEFAULT_12_THEMATICS } from "./schema";
 import { useSearchQuery } from "./hooks/useSearchQuery";
 import { useCsvExport } from "./hooks/useCsvExport";
+import { canonicalSearchProStaticBaseParams } from "./lib/canonicalBaseParams";
 import { useZonesQuery, getZoneId, getZoneName } from "./hooks/useZonesQuery";
-import { usePageFiltersOptional } from "@/contexts/PageFiltersContext";
+import { usePageFiltersOptional } from "./contexts/pageFilters";
+import { searchByFieldsToQuery } from "./lib/searchByFieldsToQuery";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useLocalization } from "@/hooks/useLocalization";
 import { DynamicModal } from "@/modules/profil/components/add/ModalRegistry";
@@ -60,15 +67,17 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     csvButton,
     baseParams = {},
     list,
+    searchVariant,
   } = props;
 
   const { me, entity, helper } = useCocolight();
   const isConnected = !!me;
   const permissions = useProfilPermissions(entity || null);
 
-  const IconComponent = icon ? (LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[icon.charAt(0).toUpperCase() + icon.slice(1).replace(/-./g, x => x[1].toUpperCase())] : null;
+  const iconName = icon as IconName | undefined;
 
   const customHeader = props.customHeader;
+  const [searchParams] = useSearchParams();
   const showDetailedViewToggle = props.showDetailedViewToggle ?? false;
   const defaultDetailedView = props.defaultDetailedView ?? false;
 
@@ -76,7 +85,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
 
   // État local (pas de sync URL)
   const defaultViewMode = props.defaultViewMode || (showMap ? "map" : "list");
-  const [viewMode, setViewMode] = useState<"list" | "map" | "graph" | "regions">(defaultViewMode);
+  const [viewMode, setViewMode] = useState<"list" | "map" | "graph" | "regions" | "thematics">(defaultViewMode);
   const [isDetailedView, setIsDetailedView] = useState(defaultDetailedView);
   const [localSearchInput, setLocalSearchInput] = useState("");
   const debouncedLocalSearch = useDebounce(localSearchInput, 500);
@@ -86,19 +95,34 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   const [selectedDynamicTags, setSelectedDynamicTags] = useState<string[]>([]);
   const [selectedThematics, setSelectedThematics] = useState<string[]>([]);
 
-  // Lecture des pré-filtres passés via sessionStorage au montage
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const raw = sessionStorage.getItem("searchProStaticPrefilter");
-    if (!raw) return;
-    try {
-      const parsed = JSON.parse(raw) as { tags?: string[] };
-      if (parsed.tags?.length) setSelectedDynamicTags(parsed.tags);
-    } catch {
-      // ignore JSON parsing errors
-    }
-    sessionStorage.removeItem("searchProStaticPrefilter");
-  }, []);
+  const navigate = useNavigate();
+  const regionsTarget = props.regionsTarget;
+  // Clic sur la carte regions → navigue vers la page cible avec les slugs en
+  // query (le groupe entityList correspondant pré-coche le filtre). Stable
+  // (useCallback) pour ne pas re-déclencher le redraw d3 de FranceRegionsMap.
+  const handleRegionsSelect = useCallback(
+    (slugs: string[]) => {
+      if (!regionsTarget || slugs.length === 0) return;
+      navigate(`${regionsTarget.path}?${regionsTarget.filterId}=${encodeURIComponent(slugs.join(","))}`);
+    },
+    [navigate, regionsTarget]
+  );
+
+  const thematicsTarget = props.thematicsTarget;
+  const thematicSource = props.thematicSource;
+  // Nombre de thématiques remonté par ThematicCards (compteur du header en mode
+  // thematics — le totalCount du moteur compte les orgas, pas les thématiques).
+  const [thematicCount, setThematicCount] = useState(0);
+  // Clic sur une card thématique → navigue vers la page cible avec le `name` en
+  // query (le groupe filtersByPath correspondant pré-coche le filtre, match par
+  // name). Ex. /lieux?reseauxThematiques=<name>.
+  const handleThematicSelect = useCallback(
+    (name: string) => {
+      if (!thematicsTarget || !name) return;
+      navigate(`${thematicsTarget.path}?${thematicsTarget.filterId}=${encodeURIComponent(name)}`);
+    },
+    [navigate, thematicsTarget]
+  );
 
   const enableGraph = props.enableGraph ?? false;
   const graphTags = props.graphTags ?? props.graphCategories;
@@ -181,6 +205,18 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     [showSearch, debouncedLocalSearch, searchQuery]
   );
 
+  // Lien « voir sur la page complète » (ex. /lieux) AVEC les filtres courants :
+  // on recopie les query params actifs (typologies/services, déjà dans l'URL) +
+  // la recherche texte (`?search=`). Affiché seulement si `customHeader.linkText`.
+  const viewAllHref = useMemo(() => {
+    if (!customHeader?.linkText) return null;
+    const base = customHeader.linkHref || "/lieux";
+    const params = new URLSearchParams(searchParams);
+    if (searchQuery) params.set("search", searchQuery);
+    const qs = params.toString();
+    return qs ? `${base}?${qs}` : base;
+  }, [customHeader, searchParams, searchQuery]);
+
   const searchTags = useMemo<Record<string, string[]>>(() => {
     const tags: string[] = [];
 
@@ -210,55 +246,27 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
 
   const searchByFields = contextFilters?.searchByFields;
 
-  const filters = useMemo<Record<string, unknown>>(() => {
-    if (searchByFields) {
-      const obj: Record<string, Record<string, string[]>> = {};
-      for (const { field, type, value } of Object.values(searchByFields)) {
-        if (type && type === "scopeList") continue;
-        if (Array.isArray(value) && value.length > 0) {
-          if (!obj[field]) {
-            obj[field] = { "$in": value };
-          } else {
-            obj[field]["$in"] = Array.from(new Set([...obj[field]["$in"], ...value]));
-          }
-        };
-      }
-      return obj;
-    }
-    return {};
+  // Traduction `searchByFields` → filtres MongoDB / locality / sourceKeys (helper
+  // partagé avec l'autocomplete du hero → mêmes filtres dynamiques des deux côtés).
+  const { filters, contextLocality, dynamicSourceKeys } = useMemo(() => {
+    const { filters, locality, sourceKeys } = searchByFieldsToQuery(searchByFields ?? {});
+    return { filters, contextLocality: locality, dynamicSourceKeys: sourceKeys };
   }, [searchByFields]);
 
-  const contextLocality = useMemo<Record<string, unknown>>(() => {
-    if (searchByFields) {
-      const obj: Record<string, unknown> = {};
-      for (const { field, type, value } of Object.values(searchByFields)) {
-        if (type && type === "scopeList") {
-          if (!obj[field]) {
-            obj[field] = value;
-          }
-        }
-      }
-      return obj;
+  const locality = useMemo<Record<string, unknown>>(
+    () => ({ ...contextLocality, ...zoneLocality }),
+    [contextLocality, zoneLocality],
+  );
+
+  const mergedBaseParams = useMemo<Record<string, unknown>>(() => {
+    const merged = canonicalSearchProStaticBaseParams(baseParams, filters, locality);
+    // Un sourceKey actif prend le dessus sur notSourceKey (qui dit l'inverse).
+    if (dynamicSourceKeys.length > 0) {
+      merged.sourceKey = dynamicSourceKeys;
+      delete merged.notSourceKey;
     }
-    return {};
-  }, [searchByFields]);
-
-  const locality = useMemo<Record<string, unknown>>(() => {
-    const combined = {
-      ...contextLocality,
-      ...zoneLocality,
-    };
-    return combined;
-  }, [contextLocality, zoneLocality]);
-
-  const mergedBaseParams = useMemo<Record<string, unknown>>(() => ({
-    ...baseParams,
-    defaultFilters: {
-      ...baseParams.defaultFilters,
-      ...filters,
-    },
-    locality: locality,
-  }), [baseParams, filters, locality]);
+    return merged;
+  }, [baseParams, filters, locality, dynamicSourceKeys]);
 
   const csvSearchParams = useMemo(() => ({
     searchText,
@@ -292,6 +300,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     graphUsed: viewMode === "graph",
     tagsVerb: "$in",
     baseParams: mergedBaseParams,
+    variant: searchVariant,
   });
 
   const cumulativeTagsRef = useRef<Set<string>>(new Set());
@@ -372,7 +381,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
           <div className="flex flex-col gap-3 p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center space-x-2">
-                {IconComponent && <IconComponent className="h-5 w-5" />}
+                {iconName && <DynamicIcon name={iconName} className="h-5 w-5" />}
                 {title && (
                   <span className="text-xl font-semibold">
                     {t(title)}{" "}
@@ -715,11 +724,16 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                       {typeof customHeader.title === "string"
                         ? customHeader.title
                         : t(customHeader.title)}
-                      {totalCount !== undefined && totalCount !== null ? (
-                        <span className="ml-2 text-base font-normal text-muted-foreground">
-                          ({totalCount})
-                        </span>
-                      ) : null}
+                      {(() => {
+                        // En mode thematics, le compteur reflète le nombre de
+                        // thématiques (pas les orgas du moteur de recherche).
+                        const headerCount = viewMode === "thematics" ? thematicCount : totalCount;
+                        return headerCount !== undefined && headerCount !== null && headerCount > 0 ? (
+                          <span className="ml-2 text-base font-normal text-muted-foreground">
+                            ({headerCount})
+                          </span>
+                        ) : null;
+                      })()}
                     </h2>
                   )}
                 </div>
@@ -732,6 +746,24 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                     >
                       <Map className="h-4 w-4 sm:mr-1" />
                       <span className="hidden sm:inline">{t("Carte")}</span>
+                    </Button>
+                  )}
+                  {customHeader.linkText && viewAllHref && (
+                    // `text-foreground` : le lien est un <a> (asChild) → sinon il hérite
+                    // du style global `a { text-primary }` et tranche avec les autres boutons.
+                    <Button asChild variant="outline" size="sm" className="text-foreground">
+                      <Link to={viewAllHref}>
+                        {customHeader.linkIcon ? (
+                          <DynamicIcon name={customHeader.linkIcon} className="h-4 w-4 sm:mr-1" />
+                        ) : (
+                          <ArrowRight className="h-4 w-4 sm:mr-1" />
+                        )}
+                        <span className="hidden sm:inline">
+                          {typeof customHeader.linkText === "string"
+                            ? customHeader.linkText
+                            : t(customHeader.linkText)}
+                        </span>
+                      </Link>
                     </Button>
                   )}
                   {enableRegions && (
@@ -747,7 +779,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                       )}
                     </Button>
                   )}
-                  {showDetailedViewToggle && viewMode !== "regions" && (
+                  {showDetailedViewToggle && viewMode !== "regions" && viewMode !== "thematics" && (
                     <Button
                       variant={isDetailedView ? "default" : "outline"}
                       size="sm"
@@ -768,19 +800,24 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
               <ClientOnly>
                 {() => (
                   <FranceRegionsMap
-                    results={transformedResults as unknown as Record<string, unknown>[]}
-                    onItemClick={(item) => {
-                      if (item && typeof item === "object" && "slug" in item) {
-                        window.open(`/profil/${(item as { slug: string }).slug}`, "_blank");
-                      }
-                    }}
+                    results={transformedResults}
+                    onSelect={handleRegionsSelect}
                     height={550}
                   />
                 )}
               </ClientOnly>
             )}
 
-            {viewMode !== "regions" && (
+            {viewMode === "thematics" && thematicSource && (
+              <ThematicCards
+                queryId={thematicSource.id ?? thematicSource.thematicPath}
+                source={thematicSource}
+                onSelect={handleThematicSelect}
+                onCountChange={setThematicCount}
+              />
+            )}
+
+            {viewMode !== "regions" && viewMode !== "thematics" && (
               <>
                 {isPending && <SearchListSkeleton />}
 

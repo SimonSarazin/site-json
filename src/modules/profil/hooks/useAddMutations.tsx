@@ -1,6 +1,6 @@
 import type { EntityTypes, Organization, Project, Event, Poi, Classified } from "@communecter/cocolight-api-client";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
-import { QUERY_KEYS } from "../constants";
+import { PROFIL_QUERY_KEYS } from "../constants";
 import { useCocolight } from "@/hooks/useCocolight";
 import type {
   AddOrganizationFormData,
@@ -18,6 +18,9 @@ import {
 } from "./mutationUtils";
 import { toast } from "sonner";
 import { ALL_THEME } from "@/modules/search/schema";
+import { buildTiersLieuxPayload } from "../utils/tiersLieuxMapping";
+import type { TiersLieuxSubmitPayload } from "../components/add/TiersLieuxForm";
+import { useSite } from "@/hooks/useSite";
 
 /**
  * Hook pour créer une nouvelle organisation
@@ -53,7 +56,7 @@ export function useAddOrganization(entity?: EntityTypes | null) {
     namespace: "modules/profil",
     successKey: "toast.add.organizationSuccess",
     errorKey: "toast.add.organizationError",
-    invalidateQueries: targetEntity ? [QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(targetEntity.slug)] : [],
+    invalidateQueries: targetEntity ? [PROFIL_QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(targetEntity.slug)] : [],
     onSuccessCallback: (data) => {
       // Rediriger vers le profil de la nouvelle organisation
       if (data.organization.slug) {
@@ -179,8 +182,8 @@ export function useAddProject(entity?: EntityTypes | null) {
     successKey: "toast.add.projectSuccess",
     errorKey: "toast.add.projectError",
     invalidateQueries: [
-      ...(targetEntity ? [QUERY_KEYS.USER_PROJECTS_PREFIX(targetEntity.slug)] : []),
-      ...(entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : []),
+      ...(targetEntity ? [PROFIL_QUERY_KEYS.USER_PROJECTS_PREFIX(targetEntity.slug)] : []),
+      ...(entity ? [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : []),
     ],
     onSuccessCallback: (data) => {
       // Rediriger vers le profil du nouveau projet
@@ -248,8 +251,8 @@ export function useAddEvent(entity?: EntityTypes | null) {
     successKey: "toast.add.eventSuccess",
     errorKey: "toast.add.eventError",
     invalidateQueries: [
-      ...(targetEntity ? [QUERY_KEYS.USER_EVENTS_PREFIX(targetEntity.slug)] : []),
-      ...(entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : []),
+      ...(targetEntity ? [PROFIL_QUERY_KEYS.USER_EVENTS_PREFIX(targetEntity.slug)] : []),
+      ...(entity ? [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : []),
     ],
     onSuccessCallback: (data) => {
       // Rediriger vers le profil du nouvel événement
@@ -302,8 +305,8 @@ export function useAddPoi(entity?: EntityTypes | null) {
     successKey: "toast.add.poiSuccess",
     errorKey: "toast.add.poiError",
     invalidateQueries: [
-      ...(targetEntity ? [QUERY_KEYS.USER_POIS_PREFIX(targetEntity.slug)] : []),
-      ...(entity ? [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : []),
+      ...(targetEntity ? [PROFIL_QUERY_KEYS.USER_POIS_PREFIX(targetEntity.slug)] : []),
+      ...(entity ? [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : []),
     ],
     onSuccessCallback: (data) => {
       // Rediriger vers le profil du nouveau POI
@@ -314,174 +317,36 @@ export function useAddPoi(entity?: EntityTypes | null) {
   });
 }
 
-const TIERS_LIEU_COSTUM = {
-  costumSlug: "navigatorDesTierslieux",
-  costumEditMode: false,
-  costumId: "649ed498f93ee7202e6c8b12",
-  costumType: "projects",
-  mainTag: "TiersLieux",
-  compagnon: "Compagnon France Tiers-Lieux",
-} as const;
-
-interface AddTiersLieuFormData {
-  name: string;
-  openingMonth?: string;
-  openingYear?: string;
-  shortDescription?: string;
-  structureName?: string;
-  managementType?: string;
-  managementTypeOther?: string;
-  family?: string[];
-  familyOther?: string;
-  surfaceBuilt?: string;
-  surfaceOutdoor?: string;
-  // Adresse
-  addressCountry?: string;
-  addressLocality?: string;
-  postalCode?: string;
-  streetAddress?: string;
-  localityId?: string;
-  videoUrl?: string;
-  _logoFile?: File | null;
-  _photoFiles?: File[];
-  // Présence en ligne
-  websiteUrl?: string;
-  socialLinks?: Array<{ platform: string; url: string }>;
-  // Horaires
-  hours?: Record<string, { enabled: boolean; start: string; end: string }>;
-  // Contact
-  email: string;
-  phone?: string;
-  // Description
-  description?: string;
-}
-
-const DAY_TO_DOW: Record<string, string> = {
-  monday: "Mo",
-  tuesday: "Tu",
-  wednesday: "We",
-  thursday: "Th",
-  friday: "Fr",
-  saturday: "Sa",
-  sunday: "Su",
-};
-
-function buildOpeningHoursPayload(hours?: AddTiersLieuFormData["hours"]) {
-  if (!hours) return [];
-  return Object.entries(hours)
-    .filter(([, h]) => h.enabled)
-    .map(([day, h]) => ({
-      dayOfWeek: DAY_TO_DOW[day] ?? day,
-      hours: [{ opens: h.start, closes: h.end }],
-    }));
-}
-
-function buildOpeningDatePayload(month?: string, year?: string): string | undefined {
-  if (!month && !year) return undefined;
-  if (month && year) return `01/${month}/${year}`;
-  return month || year;
-}
-
+export type AddTiersLieuFormData = TiersLieuxSubmitPayload;
 
 export function useAddTiersLieu(entity?: EntityTypes | null) {
   const { me } = useCocolight();
   const navigate = useNavigate();
+  const { config } = useSite();
   const targetEntity = entity || me;
+  const costum = config.costum;
 
   return useMutationWithToast<{ organization: Organization }, AddTiersLieuFormData>({
     mutationFn: async (data) => {
       if (!targetEntity) {
         throw new Error("No entity provided");
       }
+      if (!costum) {
+        throw new Error("useAddTiersLieu requires a 'costum' block in the site config");
+      }
 
-      // Construire le payload backend (forme attendue par /co2/element/save)
-      const transformedAddress = transformFormDataWithAddress({
-        addressCountry: data.addressCountry,
-        addressLocality: data.addressLocality,
-        postalCode: data.postalCode,
-        streetAddress: data.streetAddress,
-        localityId: data.localityId,
-      });
+      const payload = buildTiersLieuxPayload(data, { costum });
 
-      const generatedId = "69f858c451e74c3967050385";
+      // Pattern uniforme avec `useAddOrganization` :
+      //  1. Façade `targetEntity.organization(payload)` crée l'instance et génère un id.
+      //  2. `.save()` persiste les champs custom (mainTag, compagnon, costumSlug, etc.).
+      //  3. `.updateImageProfil()` gère l'upload sur la même instance.
+      const organization = await targetEntity.organization(payload);
+      await organization.save();
 
-      const payload: Record<string, unknown> = {
-        id: generatedId,
-        collection: "organizations",
-        key: "organization",
-        name: data.name,
-        type: "NGO", 
-        role: "admin",
-        scope: "",
-        ...transformedAddress,
-        // Description / contenu
-        ...(data.shortDescription ? { shortDescription: data.shortDescription } : {}),
-        ...(data.description ? { description: data.description } : {}),
-        // Champs custom navigatorDesTierslieux
-        ...(buildOpeningDatePayload(data.openingMonth, data.openingYear)
-          ? { openingDate: buildOpeningDatePayload(data.openingMonth, data.openingYear) }
-          : {}),
-        ...(data.structureName ? { holderOrganization: data.structureName } : {}),
-        ...(data.managementType
-          ? { manageModel: data.managementType === "autre" && data.managementTypeOther ? data.managementTypeOther : data.managementType }
-          : {}),
-        ...(data.family && data.family.length > 0
-          ? { typePlace: data.family.join(", ") }
-          : {}),
-        ...(data.familyOther ? { typePlaceOther: data.familyOther } : {}),
-        ...(data.surfaceBuilt ? { buildingSurfaceArea: Number(data.surfaceBuilt) } : {}),
-        ...(data.surfaceOutdoor ? { siteSurfaceArea: Number(data.surfaceOutdoor) } : {}),
-        ...(data.videoUrl ? { video: [data.videoUrl] } : {}),
-        // Site web + réseaux
-        ...(data.websiteUrl ? { url: data.websiteUrl } : {}),
-        ...(data.socialLinks && data.socialLinks.length > 0
-          ? {
-              socialNetwork: data.socialLinks.filter((s) => s.platform && s.url),
-            }
-          : {}),
-        // Contact
-        email: data.email,
-        ...(data.phone ? { telephone: data.phone } : {}),
-        // Horaires
-        ...((() => {
-          const oh = buildOpeningHoursPayload(data.hours);
-          return oh.length > 0 ? { openingHours: oh } : {};
-        })()),
-        // Constantes navigatorDesTierslieux
-        mainTag: TIERS_LIEU_COSTUM.mainTag,
-        compagnon: TIERS_LIEU_COSTUM.compagnon,
-        preferences: {
-          isOpenData: true,
-          isOpenEdition: true,
-        },
-        source: {
-          insertOrign: "costum",
-          keys: [TIERS_LIEU_COSTUM.costumSlug],
-          key: TIERS_LIEU_COSTUM.costumSlug,
-        },
-        costumSlug: TIERS_LIEU_COSTUM.costumSlug,
-        costumEditMode: TIERS_LIEU_COSTUM.costumEditMode,
-        costumId: TIERS_LIEU_COSTUM.costumId,
-        costumType: TIERS_LIEU_COSTUM.costumType,
-      };
-
-      // Utilise l'endpoint ADD_ORGANIZATION (étendu avec les champs tiers-lieu en optionnel).
-      // Appel direct via endpointApi pour bypass le filtrage de save() qui ne garderait
-      // que les champs définis dans le schéma SDK.
-      const targetWithEndpoint = targetEntity as unknown as {
-        endpointApi: { addOrganization: (data: Record<string, unknown>) => Promise<unknown> };
-      };
-      await targetWithEndpoint.endpointApi.addOrganization(payload);
-
-      const organization = await targetEntity.organization({ id: generatedId }) as Organization;
-
-      // Upload du logo vers le backend Cocolight (pas en local)
       if (data._logoFile) {
         try {
-          const orgWithUpload = organization as unknown as {
-            updateImageProfil: (data: { profil_avatar: File }) => Promise<unknown>;
-          };
-          await orgWithUpload.updateImageProfil({ profil_avatar: data._logoFile });
+          await organization.updateImageProfil({ profil_avatar: data._logoFile });
         } catch (err) {
           console.error("[useAddTiersLieu] Logo upload failed:", err);
         }
@@ -492,7 +357,7 @@ export function useAddTiersLieu(entity?: EntityTypes | null) {
     namespace: "modules/profil",
     successKey: "AddTiersLieux.toast.success",
     errorKey: "AddTiersLieux.toast.error",
-    invalidateQueries: targetEntity ? [QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(targetEntity.slug)] : [],
+    invalidateQueries: targetEntity ? [PROFIL_QUERY_KEYS.USER_ORGANIZATIONS_PREFIX(targetEntity.slug)] : [],
     onSuccessCallback: (data) => {
       if (data.organization.slug) {
         navigate(`/profil/${data.organization.slug}`);

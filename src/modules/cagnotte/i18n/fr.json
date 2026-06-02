@@ -1,0 +1,731 @@
+{
+  "validation": {
+    "milestone": {
+      "nameRequired": "Le nom du jalon est requis"
+    },
+    "action": {
+      "nameRequired": "Le nom de l'action est requis",
+      "idRequired": "Identifiant d'action manquant",
+      "tagsMax": "Au maximum 10 tags",
+      "dateRange": "La date de fin doit être postérieure à la date de début"
+    },
+    "amount": {
+      "nonNegative": "Le montant doit être positif ou nul",
+      "invalid": "Montant invalide"
+    },
+    "date": {
+      "frenchFormat": "Format attendu : JJ/MM/AAAA"
+    },
+    "id": {
+      "format": "Identifiant invalide"
+    },
+    "contribution": {
+      "amountRequired": "Saisis un montant supérieur à 0",
+      "financerRequired": "Sélectionne un financeur",
+      "allocationsRequired": "Sélectionne au moins un jalon à financer"
+    }
+  },
+  "toasts": {
+    "contributionSaved": {
+      "title": "Contribution enregistrée",
+      "description": "{{count}} milestone financé",
+      "description_plural": "{{count}} milestones financés"
+    },
+    "contributionPartial": {
+      "title": "Avertissement",
+      "description": "Paiement réussi. Enregistrement incomplet : {{reason}}"
+    },
+    "errors": {
+      "noAnswerId": "answerId manquant",
+      "noMilestoneFundings": "Aucun milestone à financer",
+      "updatePathValueFailed": "updatePathValue échoué",
+      "saveMethodUnavailable": "Aucune méthode de sauvegarde CoForm disponible (formId ou answerEntity manquant)",
+      "saveFuncMissing": "Méthode save() indisponible",
+      "noApiClient": "apiClient indisponible",
+      "notLoggedIn": "Vous devez être connecté pour contribuer",
+      "noMilestoneForId": "Depense non trouvée pour milestone {{milestoneId}}",
+      "invalidAmount": "Montant invalide pour milestone {{milestoneId}}",
+      "invalidFinancer": "Financeur invalide pour milestone {{milestoneId}}",
+      "noneSaved": "Aucun milestone enregistré : {{reasons}}"
+    }
+  },
+  "milestone": {
+    "errors": {
+      "syncContextMissing": "Impossible de localiser ce jalon dans projects/answers.",
+      "incompleteForEdit": {
+        "missingProjectSide": "Modification impossible : ce jalon est absent de projects.oceco.milestones (côté projet).",
+        "missingAnswerSide": "Modification impossible : aucune dépense liée à ce jalon dans answers.aapStep1.depense (côté answer)."
+      },
+      "incompleteForClose": {
+        "missingProjectSide": "Clôture impossible : ce jalon est absent de projects.oceco.milestones (côté projet).",
+        "missingAnswerSide": "Clôture impossible : aucune dépense liée à ce jalon dans answers.aapStep1.depense (côté answer)."
+      },
+      "incompleteForRestore": {
+        "missingProjectSide": "Restauration impossible : ce jalon est absent de projects.oceco.milestones (côté projet).",
+        "missingAnswerSide": "Restauration impossible : aucune dépense liée à ce jalon dans answers.aapStep1.depense (côté answer)."
+      },
+      "cannotCloseWithOpenActions": "Clôture impossible : toutes les actions doivent être terminées.",
+      "cannotDeleteIfFunded": "Suppression impossible : ce jalon est déjà financé.",
+      "noIndexForDelete": "Aucun index valide trouvé pour supprimer ce jalon.",
+      "actionIdMissing": "Certaines actions du jalon n'ont pas d'identifiant valide.",
+      "deleteActionUnavailable": "Suppression action indisponible : apiClient manquant.",
+      "projectMissing": "Entité Project Cocolight indisponible — création impossible."
+    }
+  },
+  "PaymentConfigPage": {
+    "title": "Formulaire du paiement",
+    "milestonesLabel": "Milestones financés :",
+    "contributorTypeLabel": "Financer en tant que",
+    "contributorOptions": {
+      "person": "Personne",
+      "organization": "Organisation"
+    },
+    "orgPicker": {
+      "searchPlaceholder": "Rechercher une organisation...",
+      "selectPlaceholder": "Choisir une organisation...",
+      "notAdminTitle": "Vous n'êtes admin d'aucune organisation",
+      "notAdminHelp": "Pour contribuer en tant qu'organisation, vous devez être administrateur"
+    },
+    "paymentMethodLabel": "Méthode de paiement",
+    "stripe": {
+      "title": "Stripe",
+      "description": "Saisie carte directement dans la modale",
+      "missingConfig": "Configuration manquante",
+      "formLabel": "Informations carte bancaire (Stripe)"
+    },
+    "helloasso": {
+      "title": "HelloAsso",
+      "description": "Ouverture dans une popup",
+      "button": "Valider le paiement ({{amount}}€)",
+      "buttonLoading": "Ouverture HelloAsso...",
+      "info": {
+        "title": "Informations HelloAsso :",
+        "li1": "Vous serez redirigé vers le site HelloAsso",
+        "li2": "Les paiements sont sécurisés via HelloAsso",
+        "li3": "Vous recevrez une confirmation par email",
+        "li4": "Fermez la popup après le paiement pour revenir",
+        "li5": "Le financement est enregistré après confirmation réelle du paiement"
+      }
+    },
+    "selectMethodPlaceholder": "Sélectionnez une méthode de paiement",
+    "successScreen": {
+      "title": "Paiement réussi",
+      "subtitle": "Retour à la page principale...",
+      "returnButton": "Retourner maintenant"
+    },
+    "verifying": {
+      "title": "Vérification en cours...",
+      "subtitle": "Nous confirmons votre paiement HelloAsso",
+      "hint": "Cela peut prendre quelques secondes"
+    },
+    "waiting": {
+      "title": "En attente du retour HelloAsso...",
+      "subtitle": "Terminez le paiement dans la popup pour continuer.",
+      "hint": "Le financement sera enregistré seulement après callback réel."
+    },
+    "toasts": {
+      "thankYou": {
+        "title": "Merci pour votre contribution !",
+        "description": "Retour à la page d'accueil..."
+      },
+      "paymentAcceptedIncomplete": {
+        "title": "Paiement accepté mais enregistrement incomplet",
+        "fallbackDescription": "Erreur d'enregistrement des financements"
+      },
+      "paymentInterrupted": {
+        "title": "Paiement interrompu",
+        "description": "Le paiement HelloAsso n'a pas été confirmé."
+      },
+      "paymentFailed": {
+        "title": "Paiement échoué",
+        "fallbackDescription": "Le paiement a échoué"
+      },
+      "stripeError": {
+        "title": "Erreur",
+        "fallbackDescription": "Impossible d'enregistrer le paiement Stripe"
+      },
+      "paymentInProgress": {
+        "title": "Paiement en cours",
+        "description": "Complétez le paiement dans la popup HelloAsso. Validation après callback réel."
+      },
+      "paymentError": {
+        "title": "Erreur de paiement",
+        "fallback": "Erreur HelloAsso"
+      },
+      "stripeMissing": {
+        "title": "Configuration Stripe manquante",
+        "fallbackDescription": "Clé publique Stripe invalide."
+      }
+    },
+    "errors": {
+      "fundingEnvelopeUnavailable": "entity.fundingEnvelope est indisponible",
+      "noContextId": "contextId introuvable pour fundingEnvelope",
+      "saveFailed": "Impossible de sauvegarder les financements",
+      "noRedirectUrl": "Aucune URL de redirection HelloAsso n'a été renvoyée par fundingEnvelope",
+      "popupFailed": "La popup HelloAsso n'a pas pu être ouverte",
+      "stripeUnavailable": "Stripe indisponible : configurez VITE_STRIPE_PUBLIC_KEY"
+    },
+    "helloAssoConfigErrors": {
+      "amountInvalid": "Le montant doit être supérieur à 0",
+      "projectNameRequired": "Le nom du projet est requis",
+      "projectIdRequired": "L'ID du projet est requis",
+      "milestoneRequired": "Au moins un milestone doit être sélectionné",
+      "contributorTypeRequired": "Le type de contributeur doit être spécifié",
+      "organizationIdRequired": "L'ID de l'organisation est requis"
+    }
+  },
+  "CreateMilestoneDialog": {
+    "title": "Ajouter un jalon",
+    "fields": {
+      "name": "Nom du jalon",
+      "targetAmount": "Montant à financer (€)",
+      "description": "Description"
+    },
+    "actions": {
+      "cancel": "Annuler",
+      "submit": "Ajouter le jalon",
+      "submitting": "Ajout..."
+    },
+    "states": {
+      "saving": "Enregistrement..."
+    },
+    "errors": {
+      "notConnected": "Vous devez être connecté pour ajouter un jalon.",
+      "noApiClient": "Client API indisponible.",
+      "noProject": "Projet introuvable.",
+      "noAnswer": "Answer introuvable pour ce projet.",
+      "nameRequired": "Le nom du jalon est obligatoire.",
+      "invalidAmount": "Le montant à financer doit être un nombre supérieur à 0.",
+      "noUser": "Utilisateur introuvable.",
+      "createFailed": "Erreur lors de la création du jalon."
+    },
+    "toasts": {
+      "added": {
+        "title": "Jalon ajouté",
+        "description": "Le jalon « {{name}} » a été ajouté"
+      },
+      "addFailed": {
+        "title": "Impossible d'ajouter le jalon"
+      }
+    }
+  },
+  "MilestoneCreateTrigger": {
+    "toasts": {
+      "loginRequired": {
+        "title": "Connexion requise",
+        "description": "Vous devez être connecté pour ajouter un jalon."
+      }
+    }
+  },
+  "MilestoneManageActions": {
+    "edit": "Modifier",
+    "restore": "Restaurer",
+    "close": "Clôturer",
+    "delete": "Supprimer"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "addMilestone": "Ajouter jalon",
+    "progress": "Progression",
+    "supportProject": "Soutenir le projet"
+  },
+  "ActionsSection": {
+    "loading": "Chargement des actions...",
+    "error": "Erreur lors du chargement des actions",
+    "emptyActions": "Aucune action disponible pour ce projet.",
+    "emptyActionsInline": "Aucune action définie",
+    "contributorsLabel": "Contributeurs:",
+    "fallbacks": {
+      "contributorName": "Contributeur"
+    },
+    "statusBadges": {
+      "milestoneOpen": "ouvert",
+      "milestoneDone": "done",
+      "milestoneClose": "clôturé",
+      "actionTodo": "En cours",
+      "actionDone": "Terminée"
+    },
+    "milestoneCard": {
+      "actions": "Actions",
+      "amount": "Montant",
+      "totalCredits": "Total crédits",
+      "addAction": "Action",
+      "activeActions": "Actions en cours ({{count}})",
+      "doneActions": "Terminées ({{count}})",
+      "endLabel": "Fin :",
+      "closedMilestones": "Jalons clôturés ({{count}})",
+      "closedHelp": "Jalon clôturé : financement, modification et suppression désactivés."
+    },
+    "actionsButtons": {
+      "candidate": "Candidater",
+      "complete": "Terminer",
+      "edit": "Modifier",
+      "delete": "Supprimer"
+    },
+    "createActionDialog": {
+      "title": "Ajouter une action",
+      "milestoneLabel": "Jalon :",
+      "noMilestoneSelected": "Non sélectionné",
+      "nameLabel": "Nom de l'action",
+      "contributorsLabel": "Contributeurs",
+      "contributorsPlaceholder": "Rechercher puis cliquer pour ajouter...",
+      "tagsLabel": "Tags",
+      "tagsPlaceholder": "Ajouter des tags",
+      "tagsMaxReached": "Maximum {{max}} tags autorisés",
+      "startDateLabel": "Date début",
+      "startDatePlaceholder": "Sélectionner une date de début",
+      "endDateLabel": "Date fin",
+      "endDatePlaceholder": "Sélectionner une date de fin",
+      "invalidDateFormat": "Format invalide (attendu: dd/MM/aaaa).",
+      "invalidDateRange": "La date de fin doit être supérieure ou égale à la date de début.",
+      "creditsLabel": "Credits",
+      "statusLabel": "Statut initial",
+      "statusPlaceholder": "Choisir un statut",
+      "statusOptionTodo": "En cours",
+      "statusOptionDone": "Terminée",
+      "savingState": "Enregistrement...",
+      "cancel": "Annuler",
+      "submit": "Créer l'action",
+      "submitting": "Création..."
+    },
+    "editActionDialog": {
+      "title": "Modifier l'action",
+      "milestoneLabel": "Jalon :",
+      "noMilestoneSelected": "Non sélectionné",
+      "nameLabel": "Nom de l'action",
+      "namePlaceholder": "Ex: Organiser un atelier de sensibilisation",
+      "contributorsLabel": "Contributeurs (citoyens)",
+      "contributorsPlaceholder": "Rechercher puis cliquer pour ajouter...",
+      "tagsLabel": "Tags",
+      "tagsPlaceholder": "Ajouter des tags pour l'action...",
+      "tagsMaxReached": "Maximum {{max}} tags autorisés",
+      "startDateLabel": "Date début",
+      "startDatePlaceholder": "Sélectionner une date de début",
+      "endDateLabel": "Date fin",
+      "endDatePlaceholder": "Sélectionner une date de fin",
+      "invalidDateFormat": "Format invalide (attendu: dd/MM/aaaa).",
+      "invalidDateRange": "La date de fin doit être supérieure ou égale à la date de début.",
+      "creditsLabel": "Credits",
+      "statusLabel": "Statut",
+      "statusPlaceholder": "Choisir un statut",
+      "statusOptionTodo": "En cours",
+      "statusOptionDone": "Terminée",
+      "updatingState": "Mise à jour...",
+      "cancel": "Annuler",
+      "submit": "Mettre à jour",
+      "submitting": "Mise à jour..."
+    },
+    "editMilestoneDialog": {
+      "title": "Modifier le jalon",
+      "nameLabel": "Nom du jalon",
+      "namePlaceholder": "Nom du jalon",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Description du jalon",
+      "targetAmountLabel": "Montant cible (€)",
+      "updatingState": "Mise à jour...",
+      "cancel": "Annuler",
+      "submit": "Mettre à jour",
+      "submitting": "Mise à jour..."
+    },
+    "deleteMilestoneConfirm": {
+      "title": "Supprimer ce jalon ?",
+      "description": "Le jalon « {{name}} » sera supprimé du projet et de l'answer associé.",
+      "confirm": "Oui, supprimer",
+      "cancel": "Annuler"
+    },
+    "deleteActionConfirm": {
+      "title": "Supprimer cette action ?",
+      "description": "L'action « {{name}} » sera supprimée définitivement.",
+      "confirm": "Oui, supprimer",
+      "cancel": "Annuler"
+    },
+    "errors": {
+      "apiClientUnavailable": "Client API indisponible.",
+      "projectNotFoundForAction": "Projet introuvable pour la création de l'action.",
+      "noMilestoneSelected": "Aucun jalon sélectionné.",
+      "actionNameRequired": "Le nom de l'action est obligatoire.",
+      "invalidCredits": "Le montant des crédits doit être supérieur ou égal à 0.",
+      "invalidDates": "Les dates doivent être au format dd/MM/aaaa et la date de fin doit être supérieure ou égale à la date de début.",
+      "projectNotFoundForEdit": "Projet introuvable pour la mise à jour de l'action.",
+      "noActionSelected": "Aucune action sélectionnée.",
+      "actionEditNameRequired": "Le nom de l'action est obligatoire.",
+      "milestoneNameRequired": "Le nom du jalon est obligatoire.",
+      "milestoneInvalidAmount": "Le montant à financer doit être un nombre >= 0.",
+      "milestoneContextInvalid": "Contexte jalon invalide.",
+      "milestoneUpdateFailed": "Erreur lors de la mise à jour du jalon.",
+      "milestoneRestoreFailed": "Erreur lors de la restauration du jalon.",
+      "milestoneDeleteFailed": "Erreur lors de la suppression du jalon.",
+      "milestoneCloseFailed": "Erreur lors de la clôture du jalon.",
+      "actionCreateFailed": "Erreur lors de la création de l'action.",
+      "actionEditFailed": "Erreur lors de la mise à jour de l'action.",
+      "actionDeleteFailed": "Erreur lors de la suppression de l'action.",
+      "candidateFailed": "Erreur lors de la candidature.",
+      "actionUpdateStatusFailed": "Erreur lors de la mise à jour du statut.",
+      "invalidActionIdMetadata": "Impossible de mettre à jour les métadonnées: id d'action invalide ou introuvable ({{value}})"
+    },
+    "toasts": {
+      "loginRequired": {
+        "title": "Connexion requise",
+        "restore": "Vous devez être connecté pour restaurer un jalon.",
+        "edit": "Vous devez être connecté pour modifier un jalon.",
+        "delete": "Vous devez être connecté pour supprimer un jalon.",
+        "close": "Vous devez être connecté pour clôturer un jalon.",
+        "openCreateAction": "Vous devez être connecté pour ouvrir la création d'action.",
+        "editAction": "Vous devez être connecté pour modifier une action.",
+        "deleteAction": "Vous devez être connecté pour supprimer une action.",
+        "completeAction": "Vous devez être connecté pour terminer une action.",
+        "candidate": "Vous devez être connecté pour candidater."
+      },
+      "restoreImpossible": {
+        "title": "Restauration impossible",
+        "description": "Contexte API incomplet (projet/answer)."
+      },
+      "deleteImpossible": {
+        "title": "Suppression impossible",
+        "description": "Contexte API incomplet (projet/answer)."
+      },
+      "closeImpossible": {
+        "title": "Clôture impossible",
+        "descriptionContext": "Contexte API incomplet (projet/answer).",
+        "descriptionActionsNotDone": "Toutes les actions du jalon doivent être terminées."
+      },
+      "milestoneRestored": {
+        "title": "Jalon restauré",
+        "description": "Le jalon « {{name}} » est de nouveau actif."
+      },
+      "milestoneUpdated": {
+        "title": "Jalon modifié",
+        "description": "Le jalon « {{name}} » a été mis à jour."
+      },
+      "milestoneDeleted": {
+        "title": "Jalon supprimé",
+        "description": "Le jalon « {{name}} » a été supprimé du projet et de l'answer."
+      },
+      "milestoneClosed": {
+        "title": "Jalon clôturé",
+        "description": "Le jalon « {{name}} » a été clôturé."
+      },
+      "milestoneRestoreFailed": {
+        "title": "Impossible de restaurer le jalon"
+      },
+      "milestoneUpdateFailed": {
+        "title": "Impossible de modifier le jalon"
+      },
+      "milestoneDeleteFailed": {
+        "title": "Impossible de supprimer le jalon"
+      },
+      "milestoneCloseFailed": {
+        "title": "Impossible de clôturer le jalon"
+      },
+      "apiClientUnavailable": {
+        "title": "Client API indisponible",
+        "descriptionContributors": "Impossible de mettre à jour les contributeurs pour le moment.",
+        "descriptionStatus": "Impossible de mettre à jour le statut pour le moment.",
+        "descriptionDeleteAction": "Impossible de supprimer cette action pour le moment."
+      },
+      "userNotFound": {
+        "title": "Utilisateur introuvable",
+        "description": "Impossible de déterminer votre identité."
+      },
+      "actionNotFound": {
+        "title": "Action introuvable",
+        "descriptionUpdate": "Impossible de retrouver l'action à mettre à jour.",
+        "descriptionComplete": "Impossible de retrouver l'action à terminer.",
+        "descriptionDelete": "Impossible de retrouver l'identifiant de l'action."
+      },
+      "candidateSuccess": {
+        "title": "Candidature enregistrée",
+        "description": "Vous avez été ajouté parmi les contributeurs de cette action."
+      },
+      "candidateFailed": {
+        "title": "Impossible de candidater"
+      },
+      "actionCompleted": {
+        "title": "Action terminée",
+        "description": "L'action « {{name}} » a été marquée comme terminée."
+      },
+      "actionCompleteFailed": {
+        "title": "Impossible de terminer l'action"
+      },
+      "actionDeleted": {
+        "title": "Action supprimée",
+        "description": "L'action « {{name}} » a été supprimée."
+      },
+      "actionDeleteFailed": {
+        "title": "Impossible de supprimer l'action"
+      },
+      "actionCreated": {
+        "title": "Action ajoutée",
+        "description": "L'action « {{name}} » a été créée avec succès."
+      },
+      "actionCreateFailed": {
+        "title": "Impossible de créer l'action"
+      },
+      "actionCreatePartial": {
+        "title": "Action créée partiellement",
+        "description": "L'action est créée mais certains champs supplémentaires n'ont pas pu être enregistrés."
+      },
+      "actionUpdated": {
+        "title": "Action modifiée",
+        "description": "L'action « {{name}} » a été mise à jour."
+      },
+      "actionUpdateFailed": {
+        "title": "Impossible de modifier l'action"
+      },
+      "editImpossible": {
+        "title": "Édition impossible",
+        "description": "Identifiant de l'action introuvable pour la mise à jour."
+      },
+      "noModification": {
+        "title": "Aucune modification",
+        "description": "Les informations de l'action sont déjà à jour."
+      }
+    }
+  },
+  "ActionsSummarySection": {
+    "loading": "Chargement de la synthèse actions...",
+    "error": "Erreur lors du chargement de la synthèse actions",
+    "titleSummary": "Synthèse jalons",
+    "stats": {
+      "milestones": "Jalons",
+      "totalActions": "Actions total",
+      "inProgressActions": "Actions en cours",
+      "completedActions": "Actions terminées",
+      "totalCredits": "Total crédits des actions"
+    },
+    "contributorsLabel": "Contributeurs ({{count}})",
+    "noContributors": "Aucun contributeur pour le moment."
+  },
+  "CagnotteDialog": {
+    "title": "Cagnotte Participative",
+    "description": "Soutenez les projets océaniques et la plateforme communautaire",
+    "fallbacks": {
+      "untitled": "Projet sans titre"
+    },
+    "labels": {
+      "supportedProject": "Projet soutenu",
+      "selectProject": "Sélectionner un projet à soutenir",
+      "noOrganization": "Aucune organisation sélectionnée",
+      "loadingProjects": "Chargement des projets...",
+      "noProjects": "Aucun projet disponible pour cette organisation",
+      "selectProjectPlaceholder": "Sélectionner un projet...",
+      "setAsMainCagnotte": "Définir comme cagnotte principale",
+      "projectCagnotte": "Cagnotte du projet",
+      "targetSuffix": "sur {{target}} € objectif",
+      "milestonesTitle": "Objectifs de la cagnotte",
+      "amountSection": "Choisissez un montant",
+      "customAmountSection": "Ou entrez un montant libre",
+      "customAmountPlaceholder": "Montant",
+      "remainingToFinance": "Reste à financer:",
+      "contribute": "Contribuer",
+      "processing": "Traitement...",
+      "fundingLabel": "Financement",
+      "infoText1": "Chaque euro récolté soutient directement les projets de protection marine et le fonctionnement de la plateforme.",
+      "infoText2": "Les fonds sont répartis équitablement entre les projets sélectionnés par la communauté et les frais de maintenance."
+    },
+    "successScreen": {
+      "title": "Paiement réussi !",
+      "subtitle": "Merci pour votre générosité envers l'océan"
+    },
+    "milestoneCelebration": {
+      "badge": "Nouveau palier débloqué !",
+      "amountReached": "{{amount}} € atteints !",
+      "thankYou": "Merci pour votre contribution !"
+    },
+    "toasts": {
+      "milestoneReached": {
+        "title": "Palier atteint : {{amount}} € !"
+      },
+      "projectRequired": {
+        "title": "Projet requis",
+        "description": "Veuillez sélectionner un projet."
+      },
+      "milestoneRequired": {
+        "title": "Objectif requis",
+        "description": "Veuillez sélectionner au moins un milestone."
+      },
+      "invalidAmount": {
+        "title": "Montant invalide",
+        "description": "Veuillez choisir ou saisir un montant valide."
+      },
+      "errorTitle": "Erreur",
+      "saveError": {
+        "title": "Erreur de sauvegarde"
+      },
+      "saveSuccess": {
+        "title": "Succès"
+      }
+    }
+  },
+  "FinanceSection": {
+    "loading": "Chargement des financements...",
+    "error": "Erreur lors du chargement des financements",
+    "noFunding": "Aucun financement disponible pour ce projet.",
+    "editDialog": {
+      "title": "Modifier le jalon",
+      "fields": {
+        "name": "Nom du jalon",
+        "namePlaceholder": "Nom du jalon",
+        "description": "Description",
+        "descriptionPlaceholder": "Description du jalon",
+        "targetAmount": "Montant cible (€)",
+        "status": "Statut",
+        "statusPlaceholder": "Choisir un statut"
+      },
+      "statusOptions": {
+        "open": "Ouvert",
+        "done": "Terminé",
+        "close": "Clôturé"
+      },
+      "actions": {
+        "cancel": "Annuler",
+        "submit": "Mettre à jour",
+        "submitting": "Mise à jour..."
+      },
+      "updatingState": "Mise à jour..."
+    },
+    "deleteConfirm": {
+      "title": "Supprimer ce jalon ?",
+      "description": "Le jalon « {{name}} » sera supprimé du projet et de l'answer associé.",
+      "confirm": "Oui, supprimer",
+      "cancel": "Annuler"
+    },
+    "errors": {
+      "noApiClient": "Client API indisponible.",
+      "invalidContext": "Contexte jalon invalide.",
+      "nameRequired": "Le nom du jalon est obligatoire.",
+      "invalidAmount": "Le montant à financer doit être un nombre >= 0.",
+      "apiContextIncomplete": "Contexte API incomplet (projet/answer).",
+      "actionsNotDone": "Toutes les actions du jalon doivent être terminées.",
+      "updateFailed": "Erreur lors de la mise à jour du jalon.",
+      "deleteFailed": "Erreur lors de la suppression du jalon.",
+      "closeFailed": "Erreur lors de la clôture du jalon.",
+      "restoreFailed": "Erreur lors de la restauration du jalon."
+    },
+    "toasts": {
+      "loginRequired": {
+        "title": "Connexion requise",
+        "edit": "Vous devez être connecté pour modifier un jalon.",
+        "delete": "Vous devez être connecté pour supprimer un jalon.",
+        "close": "Vous devez être connecté pour clôturer un jalon.",
+        "restore": "Vous devez être connecté pour restaurer un jalon."
+      },
+      "deleteImpossible": {
+        "title": "Suppression impossible"
+      },
+      "closeImpossible": {
+        "title": "Clôture impossible"
+      },
+      "restoreImpossible": {
+        "title": "Restauration impossible"
+      },
+      "updated": {
+        "title": "Jalon modifié",
+        "description": "Le jalon « {{name}} » a été mis à jour."
+      },
+      "deleted": {
+        "title": "Jalon supprimé",
+        "description": "Le jalon « {{name}} » a été supprimé du projet et de l'answer."
+      },
+      "closed": {
+        "title": "Jalon clôturé",
+        "description": "Le jalon « {{name}} » a été clôturé."
+      },
+      "restored": {
+        "title": "Jalon restauré",
+        "description": "Le jalon « {{name}} » est de nouveau actif."
+      },
+      "updateFailed": {
+        "title": "Impossible de modifier le jalon"
+      },
+      "deleteFailed": {
+        "title": "Impossible de supprimer le jalon"
+      },
+      "closeFailed": {
+        "title": "Impossible de clôturer le jalon"
+      },
+      "restoreFailed": {
+        "title": "Impossible de restaurer le jalon"
+      }
+    },
+    "milestone": {
+      "stats": {
+        "transactions": "Transactions",
+        "objective": "Objectif",
+        "funding": "Financement",
+        "remaining": "Reste"
+      },
+      "fundButton": "Financer",
+      "transactionsHistory": "Historique des transactions ({{count}})",
+      "noTransactions": "Aucune transaction enregistrée",
+      "paidTransactions": "Transactions payées",
+      "accumulatedCredits": "Crédits cumulés"
+    },
+    "closedMilestones": {
+      "label": "Jalons clôturés ({{count}})",
+      "closedHelp": "Jalon clôturé : financement, modification et suppression désactivés."
+    }
+  },
+  "FinanceSummarySection": {
+    "loading": "Chargement de la synthèse financement...",
+    "error": "Erreur lors du chargement de la synthèse financement",
+    "titleSummary": "Synthèse financement",
+    "stats": {
+      "totalCost": "Coût total",
+      "funded": "Financé",
+      "remaining": "Reste",
+      "totalActionCredits": "Total crédits actions"
+    },
+    "fundersLabel": "Financeurs ({{count}})",
+    "noFunders": "Aucun financeur pour le moment."
+  },
+  "StripePaymentForm": {
+    "errors": {
+      "notLoaded": "Stripe n'est pas chargé",
+      "incompleteCard": "Veuillez remplir les informations de la carte",
+      "cardElementMissing": "Formulaire carte indisponible",
+      "cardValidationFailed": "Erreur de validation de la carte",
+      "paymentMethodFailed": "Impossible de créer la méthode de paiement",
+      "paymentFallback": "Erreur lors du paiement",
+      "stripeNotInitialized": "Stripe n'est pas initialisé",
+      "amountMustBePositive": "Le montant doit être supérieur à 0"
+    },
+    "stripeErrors": {
+      "card_declined": "Votre carte a été refusée. Veuillez vérifier vos informations.",
+      "expired_card": "Votre carte est expirée.",
+      "incorrect_cvc": "Le code de sécurité (CVC) est incorrect.",
+      "processing_error": "Une erreur de traitement s'est produite. Veuillez réessayer.",
+      "rate_limit": "Trop de tentatives. Veuillez attendre quelques secondes.",
+      "authentication_error": "Erreur d'authentification. Veuillez vérifier vos données.",
+      "invalid_expiry_month": "Le mois d'expiration est invalide.",
+      "invalid_expiry_year": "L'année d'expiration est invalide.",
+      "invalid_number": "Le numéro de carte est invalide.",
+      "default": "Une erreur est survenue lors du paiement. Veuillez réessayer."
+    },
+    "configErrors": {
+      "amountInvalid": "Le montant doit être supérieur à 0",
+      "amountTooHigh": "Le montant ne peut pas dépasser 99 999€",
+      "projectNameRequired": "Le nom du projet est requis",
+      "projectIdRequired": "L'ID du projet est requis",
+      "milestoneRequired": "Au moins un milestone doit être sélectionné",
+      "contributorTypeRequired": "Le type de contributeur doit être spécifié"
+    },
+    "cardValid": "Carte valide, prête à être payée",
+    "actions": {
+      "processing": "Traitement du paiement...",
+      "pay": "Payer {{amount}}€"
+    },
+    "toasts": {
+      "stripeValidated": {
+        "title": "Paiement Stripe validé",
+        "description": "Carte {{brand}} •••• {{last4}}"
+      },
+      "paymentError": {
+        "title": "Erreur de paiement"
+      }
+    }
+  },
+  "a11y": {
+    "back": "Retour"
+  }
+}

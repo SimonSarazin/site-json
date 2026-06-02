@@ -5,7 +5,7 @@ import { useFormatProfileEntity } from "../../../hooks/useFormatProfileEntity";
 import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../../hooks/useProfileEntity";
 import { useProfilPermissions } from "../../../hooks/useProfilPermissions";
-import { EditProfileModal } from "../../profile-edit/EditProfileModal";
+import { DynamicEditModal } from "../../profile-edit/EditModalRegistry";
 import { EntityActionButtons } from "../../EntityActionButtons";
 import { AddEntityDropdown } from "../../action-buttons/AddEntityDropdown";
 import type { ProfileHeaderSection } from "../../../schema";
@@ -77,7 +77,7 @@ export function ProfileHeaderMinimal({ section }: ProfileHeaderMinimalProps) {
       </div>
 
       {canEditProfile && entity && (
-        <EditProfileModal
+        <DynamicEditModal
           open={editModalOpen}
           onOpenChange={setEditModalOpen}
           entity={entity}
@@ -86,3 +86,5 @@ export function ProfileHeaderMinimal({ section }: ProfileHeaderMinimalProps) {
     </>
   );
 }
+
+export default ProfileHeaderMinimal;

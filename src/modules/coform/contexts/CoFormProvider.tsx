@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { CoFormContext, type CoFormContextType, type CoFormStepState } from "./CoFormContext";
 import type { CoFormData, SubFormData, AllStepsData, AddedOptionsMap } from "../types";
 import { parseCoFormFields, denormalizeAnswerData, extractFinderLinks, type FinderLinksMap } from "../utils/formParser";
@@ -27,12 +27,29 @@ export function CoFormProvider({
   formData,
   onStepSubmit,
   onFinalSubmit,
-  submitMode = "step",
+  // Default "final" : le mode le plus safe quand le caller ne précise rien.
+  // Le mode "step" (câblage step-by-step côté backend) est un futur — cf.
+  // `useCoFormStepMutation` (placeholder). Avant de mettre "step" en default,
+  // il faut s'assurer qu'un endpoint dédié est disponible. Voir README.md#step-mode.
+  submitMode = "final",
   defaultValues,
   answerId,
   initialStepKey,
 }: CoFormProviderProps) {
   const subFormsFields = useMemo(() => parseCoFormFields(formData), [formData]);
+
+  // Warning dev : mode "step" sans onStepSubmit câblé → silencieusement no-op
+  // (les données ne partent au serveur que via submitAllData, qui est filtré).
+  useEffect(() => {
+    if (import.meta.env.DEV && (submitMode === "step" || submitMode === "both") && !onStepSubmit) {
+      console.warn(
+        "[CoFormProvider] submitMode=" + submitMode + " requiert un onStepSubmit pour soumettre " +
+        "chaque étape au backend. Sans cela, submitStepData reste local et le formulaire ne " +
+        "persiste rien tant qu'on n'arrive pas à la dernière étape (qui appelle submitAllData). " +
+        "Voir README.md#step-mode pour le statut de la feature."
+      );
+    }
+  }, [submitMode, onStepSubmit]);
 
   // Résoudre l'index initial à partir de initialStepKey
   const initialStepIndex = useMemo(() => {

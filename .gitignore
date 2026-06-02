@@ -38,6 +38,7 @@ ANALYSE_MODULE_PROFIL.md
 # Test artifacts
 playwright-report/
 test-results/
+coverage/
 
 # Test credentials
 .env.test

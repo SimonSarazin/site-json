@@ -3,8 +3,8 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
 import { Header } from "@/types/site-schema";
-import { ChevronDown, User, LogOut, Globe, Bell, Menu, X , PiggyBank} from "lucide-react";
-import { DynamicIcon, type IconName } from "lucide-react/dynamic";
+import { ChevronDown, User, LogOut, Globe, Menu, X } from "lucide-react";
+import { IconOrSvg } from "@/components/ui/icon-or-svg";
 import { Link, useNavigate, useLocation } from "react-router";
 import { useCocolight } from "@/hooks/useCocolight";
 import { ClientOnly } from "../ClientOnly";
@@ -14,18 +14,13 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-    Dialog,
-    DialogContent,
-    DialogTitle,
-} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import LoginForm from "@/components/auth/LoginForm";
+import { AuthModalLazy } from "@/modules/auth";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
-import { useProjectModalCagnotte } from "@/hooks/useProjectModalCagnotte";
-
-import CagnotteDialog from "@/components/cagnotte/CagnotteDialog";
+import { PiggyBankHeaderButton } from "@/modules/cagnotte/components/PiggyBankHeaderButton";
+import NotificationBell from "@/modules/notification/components/NotificationBell";
+import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
 
 interface HeaderRezoLaMerProps {
     header: Header;
@@ -39,7 +34,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
     const { currentLocale, setLocale, availableLocales } = useLocalization();
     const navigate = useNavigate();
     const location = useLocation();
-    const { me, api, entity } = useCocolight();
+    const { me, api } = useCocolight();
 
     const isNavItemActive = (itemPath?: string) => {
         if (!itemPath) return false;
@@ -114,21 +109,6 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
         return `/profil/${me.serverData.slug}`;
     };
 
-    const entityServerData = (entity as Record<string, unknown> | null)?._serverData as Record<string, unknown> | undefined;
-
-    // Source de vérité: preferences.projectModalId
-    const preferencesData = useReactiveProperty<Record<string, unknown>>(entityServerData, 'preferences');
-    const projectModalId = (preferencesData?.projectModalId as string | undefined) || null;
-
-    //  Utiliser le hook dédié pour charger la cagnotte du projet modal
-    const { cagnotteAmount, refresh: refreshCagnotte } = useProjectModalCagnotte(
-        entity,
-        projectModalId
-    );
-
-    // Le montant du bouton vient du hook spécialisé
-    const piggyAmount = cagnotteAmount;
-
     return (
         <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-background/90 backdrop-blur-ocean shadow-ocean' : 'bg-transparent'}`}>
             <div className="container mx-auto px-4">
@@ -141,8 +121,8 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                                 className="h-8 w-8 object-contain group-hover:scale-110 transition-transform"
                             />
                         ) : header.logoIcon ? (
-                            <DynamicIcon
-                                name={header.logoIcon as IconName}
+                            <IconOrSvg
+                                value={header.logoIcon}
                                 className="w-8 h-8 text-primary group-hover:scale-110 transition-transform"
                             />
                         ) : null}
@@ -197,20 +177,13 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                         })}
 
                         {header.utilities?.piggyBank && (
-                            <CagnotteDialog
-                                totalAmount={piggyAmount}
-                                defaultProjectId={projectModalId || undefined}
-                                onRefresh={refreshCagnotte}
-                            >
-                                <button
-                                    key={piggyAmount}
-                                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/20 hover:bg-primary/30 text-primary transition-all group"
-                                    aria-label="Cagnotte participative"
-                                >
-                                    <PiggyBank className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                                    <span className="font-semibold text-sm">{piggyAmount.toLocaleString('fr-FR')} €</span>
-                                </button>
-                            </CagnotteDialog>
+                            // ClientOnly : la cagnotte est member-only (le composant lit `me`
+                            // pour décider de rendre ou pas). Sans ClientOnly, SSR rend le bouton
+                            // (me=null → null), client le rend après auth → hydration mismatch
+                            // (cf. PiggyBankHeaderButton:if (!me?.id) return null).
+                            <ClientOnly>
+                                {() => <PiggyBankHeaderButton />}
+                            </ClientOnly>
                         )}
 
                         {header.urgenceButton && (
@@ -219,8 +192,8 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                                 className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 text-primary transition-all group"
                             >
                                 {header.urgenceButton.icon ? (
-                                    <DynamicIcon
-                                        name={header.urgenceButton.icon as IconName}
+                                    <IconOrSvg
+                                        value={header.urgenceButton.icon}
                                         className="w-5 h-5 group-hover:scale-110 transition-transform"
                                     />
                                 ) : null}
@@ -228,17 +201,8 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                             </Link>
                         )}
 
-                        {header.utilities?.notifications && (
-                            <button
-                                className="relative p-2 text-muted-foreground hover:text-primary transition-colors"
-                                aria-label="Notifications"
-                            >
-                                <Bell className="w-5 h-5" />
-                                <span className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold pulse">
-                                    3
-                                </span>
-                            </button>
-                        )}
+                        {header.utilities?.notifications && <NotificationBell />}
+                        {header.utilities?.search && <CommandTriggerButton />}
 
                         {header.utilities?.themeSwitch !== false && (
                             <ClientOnly fallback={<div className="w-10 h-10" />}>
@@ -327,6 +291,8 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                     </div>
 
                     <div className="md:hidden flex items-center gap-2">
+                        {header.utilities?.notifications && <NotificationBell />}
+                        {header.utilities?.search && <CommandTriggerButton />}
                         {header.utilities?.themeSwitch !== false && (
                             <ClientOnly fallback={<div className="w-8 h-8" />}>
                                 {() => <ToggleButtonTheme />}
@@ -374,8 +340,8 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                         >
                             <span className="flex items-center gap-2">
                                 {header.urgenceButton.icon ? (
-                                    <DynamicIcon
-                                        name={header.urgenceButton.icon as IconName}
+                                    <IconOrSvg
+                                        value={header.urgenceButton.icon}
                                         className="w-5 h-5"
                                     />
                                 ) : null}
@@ -461,15 +427,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
             </div>
             )}
 
-            <Dialog open={loginDialogOpen} onOpenChange={setLoginDialogOpen}>
-                <DialogContent className="sm:max-w-md bg-card border-border">
-                    <DialogTitle className="sr-only">{t('Se connecter')}</DialogTitle>
-                    <LoginForm
-                        onSuccess={() => setLoginDialogOpen(false)}
-                        hideBackButton={true}
-                    />
-                </DialogContent>
-            </Dialog>
+            <AuthModalLazy open={loginDialogOpen} onOpenChange={setLoginDialogOpen} />
         </nav>
     );
 }

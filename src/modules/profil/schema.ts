@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { LocalizedString } from "../../types/locale-schema";
+import { VisibilityConditionSchema } from "@/lib/visibility/schema";
 
 // Types d'entités supportés
 export const ProfileTypeSchema = z.enum([
@@ -18,6 +19,21 @@ export const AddConfigSchema = z.object({
   project: z.boolean().optional().default(true),
   event: z.boolean().optional().default(true),
   poi: z.boolean().optional().default(true),
+  /**
+   * Items personnalisés à afficher dans le dropdown "Ajouter". Chaque entrée pointe vers
+   * un modal du `ModalRegistry` (ex: `add-tiers-lieux`). Permet à un site costum
+   * d'ajouter ses propres types d'entités sans modifier le code.
+   */
+  custom: z.array(z.object({
+    modalKey: z.string(),
+    label: LocalizedString,
+    icon: z.string().optional(),
+    /**
+     * Condition de visibilité optionnelle (auth, routes, permissions…).
+     * Si absente → toujours visible.
+     */
+    condition: VisibilityConditionSchema,
+  })).optional(),
 }).optional();
 
 // Variantes de sections de profil
@@ -47,6 +63,10 @@ export const ProfileHeaderSectionSchema = z.object({
   addDropdownLabel: LocalizedString.optional(),
   showEmailButton: z.boolean().optional().default(true),
   showReservationButton: z.boolean().optional().default(false),
+  // Le bouton « Voir toutes les photos » s'affiche automatiquement quand le type de
+  // profil a un onglet `gallery` (cf. ProfileHeaderComplete → lien vers cet onglet).
+  // Ce flag permet de le forcer masqué (`false`) même si l'onglet existe. La galerie
+  // elle-même (section `profile-gallery`) reste à implémenter.
   showAllPhotosButton: z.boolean().optional().default(true),
 });
 
@@ -171,7 +191,7 @@ export const ProfileGallerySectionSchema = z.object({
 export const ProfileRelatedSectionSchema = z.object({
   type: z.literal("profile-related"),
   title: LocalizedString.optional(),
-  relationType: z.enum(["projects", "events", "poi"]).optional(),
+  relationType: z.enum(["organizations", "projects", "events", "poi"]).optional(),
   limit: z.number().optional().default(4),
 });
 
@@ -269,6 +289,13 @@ export const ProfileTabConditionSchema = z.object({
   entityTypes: z.array(ProfileTypeSchema).optional(),
   permissions: z.array(z.string()).optional(),
   userContext: z.enum(["own", "other", "any"]).optional(),
+  // `required` = visible uniquement si connecté (ex: tabs cagnotte finance/actions
+  // qui nécessitent un user pour fetcher les données financières).
+  // `anonymous` = visible uniquement si non-connecté (ex: bandeau d'incitation).
+  // `any` (ou champ absent) = visible pour tous.
+  // ⚠️ Le filtre s'applique côté client après hydration de `me` pour éviter les
+  // mismatches SSR (cf. ProfileTemplateDynamic).
+  auth: z.enum(["required", "anonymous", "any"]).optional(),
 }).optional();
 
 // Schema pour les sous-routes d'un tab
@@ -310,6 +337,26 @@ export const ProfileConfigSchema = z.object({
   sections: z.array(ProfileSectionSchema), // sections globales (hors tabs)
   hideHeader: z.boolean().optional().default(false), // Option pour cacher le header principal
   hideFooter: z.boolean().optional().default(false), // Option pour cacher le footer principal
+  /**
+   * Clé du modal d'édition à utiliser (ex: "edit-tiers-lieux"). Si absent → "edit-profile" (générique).
+   * Le modal est résolu via `EditModalRegistry`.
+   *
+   * Si `editModalMatch` est défini, le modal custom n'est utilisé que pour les entités dont
+   * `serverData` satisfait la condition. Sinon (absent), le modal s'applique à TOUTES les
+   * entités du kind concerné (cf. `profiles.{kind}`).
+   */
+  editModal: z.string().optional(),
+  /**
+   * Condition optionnelle pour cibler quelles entités ouvrent `editModal`.
+   * Objet plain `{ key: value }` — AND implicite sur toutes les clés.
+   * Pour chaque clé : strict equality si `serverData[key]` est primitif,
+   * ou `.includes(value)` si c'est un array.
+   *
+   * @example { tags: "TiersLieux" }     // tags est un array → tags.includes("TiersLieux")
+   * @example { costumSlug: "tl" }       // strict equality sur la string
+   * @example { tags: "TL", type: "Lab" } // les deux conditions doivent matcher
+   */
+  editModalMatch: z.record(z.string(), z.unknown()).optional(),
   seo: z.object({
     titleTemplate: z.string().optional(),
     descriptionTemplate: z.string().optional(),

@@ -34,8 +34,8 @@ export const CoFormSectionSchema = z.object({
     formId: z.string().min(1),
     /** Variante d'affichage */
     variant: CoFormVariantSchema.optional().default("wizard"),
-    /** Mode de soumission */
-    submitMode: CoFormSubmitModeSchema.optional().default("step"),
+    /** Mode de soumission (default "final" — le mode "step" requiert onStepSubmit câblé, cf. README.md#step-mode) */
+    submitMode: CoFormSubmitModeSchema.optional().default("final"),
     title: LocalizedString.optional(),
     description: LocalizedString.optional(),
     showProgress: z.boolean().optional().default(true),

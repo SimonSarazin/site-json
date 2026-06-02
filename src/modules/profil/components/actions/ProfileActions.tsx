@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useT } from "@/hooks/useT";
 import { useCocolight } from "@/hooks/useCocolight";
+import { isUser } from "@/lib/getTypedEntity";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
 import { useProfilPermissions } from "../../hooks/useProfilPermissions";
 import {
@@ -35,11 +36,13 @@ import {
   useUnfollowEntity,
   useRequestToJoin,
   useLeaveEntity,
+} from "../../actions/mutations/relationship";
+import {
   useSendFriendRequest,
   useRemoveFriend,
   useAcceptFriendRequest,
   useCancelFriendRequest,
-} from "../../hooks/useRelationshipMutations";
+} from "../../actions/mutations/friend";
 import { toast } from "sonner";
 
 interface ProfileActionsProps {
@@ -56,14 +59,16 @@ export function ProfileActions({ email, phone, url }: ProfileActionsProps) {
   const permissions = useProfilPermissions(entity);
   const [copied, setCopied] = useState(false);
 
-  const followMutation = useFollowEntity();
-  const unfollowMutation = useUnfollowEntity();
-  const requestToJoinMutation = useRequestToJoin();
-  const leaveMutation = useLeaveEntity();
-  const sendFriendRequestMutation = useSendFriendRequest();
-  const removeFriendMutation = useRemoveFriend();
-  const acceptFriendMutation = useAcceptFriendRequest();
-  const cancelFriendMutation = useCancelFriendRequest();
+  const currentUser = me && isUser(me) ? me : null;
+
+  const followMutation = useFollowEntity(entity);
+  const unfollowMutation = useUnfollowEntity(entity);
+  const requestToJoinMutation = useRequestToJoin(entity);
+  const leaveMutation = useLeaveEntity(entity);
+  const sendFriendRequestMutation = useSendFriendRequest(currentUser);
+  const removeFriendMutation = useRemoveFriend(currentUser);
+  const acceptFriendMutation = useAcceptFriendRequest(currentUser);
+  const cancelFriendMutation = useCancelFriendRequest(currentUser);
 
   const isOwnProfile = me?.id === entity?.id;
   const isConnected = me?.isConnected;
@@ -113,19 +118,27 @@ export function ProfileActions({ email, phone, url }: ProfileActionsProps) {
   };
 
   const handleAddFriend = () => {
-    sendFriendRequestMutation.mutate();
+    if (isUser(entity)) {
+      sendFriendRequestMutation.mutate({ user: entity });
+    }
   };
 
   const handleRemoveFriend = () => {
-    removeFriendMutation.mutate();
+    if (isUser(entity)) {
+      removeFriendMutation.mutate({ user: entity });
+    }
   };
 
   const handleAcceptFriend = () => {
-    acceptFriendMutation.mutate();
+    if (isUser(entity)) {
+      acceptFriendMutation.mutate({ user: entity });
+    }
   };
 
   const handleCancelFriendRequest = () => {
-    cancelFriendMutation.mutate();
+    if (isUser(entity)) {
+      cancelFriendMutation.mutate({ user: entity });
+    }
   };
 
   const handleFollow = () => {
@@ -340,6 +353,7 @@ export function ProfileActions({ email, phone, url }: ProfileActionsProps) {
               onClick={handleEmail}
               className="h-9 w-9"
               title={email}
+              aria-label={String(t("a11y.contactEmail"))}
             >
               <Mail className="w-4 h-4" />
             </Button>
@@ -351,6 +365,7 @@ export function ProfileActions({ email, phone, url }: ProfileActionsProps) {
               onClick={handlePhone}
               className="h-9 w-9"
               title={phone}
+              aria-label={String(t("a11y.callPhone"))}
             >
               <Phone className="w-4 h-4" />
             </Button>
@@ -362,6 +377,7 @@ export function ProfileActions({ email, phone, url }: ProfileActionsProps) {
               onClick={handleWebsite}
               className="h-9 w-9"
               title={url}
+              aria-label={String(t("a11y.visitWebsite"))}
             >
               <Globe className="w-4 h-4" />
             </Button>
@@ -371,7 +387,7 @@ export function ProfileActions({ email, phone, url }: ProfileActionsProps) {
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="icon" className="h-9 w-9" disabled={isLoading}>
+          <Button variant="outline" size="icon" className="h-9 w-9" disabled={isLoading} aria-label={String(t("a11y.moreOptions"))}>
             {isLoading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : (

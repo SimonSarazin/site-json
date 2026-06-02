@@ -6,13 +6,35 @@
 // Validation : Zod 4.x – le schéma sert à la fois de typings, de runtime‑guard,
 //               et d'autocomplétion dans VS Code.
 // ------------------------------------------------------------
-import { SearchProSectionSchema, SearchProStaticSectionSchema, CardCountCTSectionSchema, ThematicsSectionSchema } from "@/modules/search/schema";
+import { SearchProSectionSchema, SearchProStaticSectionSchema, CardCountCTSectionSchema, ThematicsSectionSchema, FiltersSectionSchema, SearchVariantSchema, SearchBaseParamsSchema, FilterGroupsSchema, FiltersByAnswersSchema } from "@/modules/search/schema";
 import { NewsSectionSchema } from "@/modules/news/schema";
+import { NotificationsSectionSchema } from "@/modules/notification/schema";
 import { z } from "zod";
 import { LocalizedString, LOCALES } from "./locale-schema";
 export { LocalizedString, LOCALES };
 import { ProfilesConfigSchema } from "../modules/profil/schema";
 import { AmpliConfigSchema } from "@/modules/ampli/schema";
+import { CommandPaletteConfigSchema } from "@/modules/commandPalette/schema";
+import { VisibilityConditionSchema } from "@/lib/visibility/schema";
+
+/**
+ * Schéma réutilisable pour les champs qui acceptent soit un nom d'icône
+ * Lucide (kebab-case, ex: `"waves"`, `"piggy-bank"`), soit un SVG inline
+ * (string commençant par `"<svg"`).
+ *
+ * Consommé côté composant via `<IconOrSvg value={...} />` (`@/components/ui/icon-or-svg`)
+ * qui détecte le format au render.
+ */
+export const LucideIconOrSvg = z.string().refine(
+  (val) => {
+    const trimmed = val.trim();
+    return /^[a-z][a-z0-9-]*$/.test(trimmed) || trimmed.startsWith("<svg");
+  },
+  {
+    message:
+      'Doit être un nom d\'icône Lucide en kebab-case (ex: "waves") ou un SVG inline (string commençant par "<svg").',
+  }
+);
 
 // export const CocolightConfig = z.object({
 //   baseUrl: z.string().url().default("http://localhost:5080"),
@@ -130,20 +152,26 @@ export const HeroTiersLieuxSchema = z.object({
   id: z.string().optional(),
   props: z.object({
     headline: LocalizedString,
-    headlineSubsite: LocalizedString.optional(),
     subhead: LocalizedString.optional(),
-    subheadSubsite: LocalizedString.optional(),
     backgroundImage: z.string().optional(),
     ctaButtons: z
       .array(
         z.object({
           label: LocalizedString,
-          variant: z.enum(["default", "secondary", "accent"]).optional(),
+          variant: z.enum(["default", "secondary", "accent", "primary", "outline"]).optional(),
         })
       )
       .optional(),
     placeholder: LocalizedString.optional(),
     searchButtonText: LocalizedString.optional(),
+    // Scope de l'autocomplétion du hero — aligner sur le `searchProStatic` de la page
+    // (mêmes valeurs que `section-lieux`) pour interroger le même périmètre réseau.
+    searchVariant: SearchVariantSchema.optional(),
+    baseParams: SearchBaseParamsSchema.optional(),
+    // Filtres de l'applicateur headless de la home (catégories du hero) — mêmes
+    // schémas partagés que la `FiltersSection` de /lieux (typologies + services).
+    filterGroups: FilterGroupsSchema.optional(),
+    filtersByAnswers: FiltersByAnswersSchema.optional(),
   }),
 });
 
@@ -158,7 +186,7 @@ export const HeroRezoLaMerSchema = z.object({
   props: z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
-    logoIcon: z.string().optional(),
+    logoIcon: LucideIconOrSvg.optional(),
     backgroundImage: z.string().optional(),
     backgroundImageAlt: LocalizedString.optional(),
     badges: z
@@ -174,7 +202,7 @@ export const HeroRezoLaMerSchema = z.object({
         z.object({
           label: LocalizedString,
           path: z.string().optional(),
-          variant: z.enum(["default", "secondary", "accent"]).optional(),
+          variant: z.enum(["default", "secondary", "accent", "primary", "outline"]).optional(),
         })
       )
       .optional(),
@@ -209,7 +237,7 @@ export const HeroSSBESchema = z.object({
         z.object({
           label: LocalizedString,
           path: z.string().optional(),
-          variant: z.enum(["default", "secondary", "accent"]).optional(),
+          variant: z.enum(["default", "secondary", "accent", "primary", "outline"]).optional(),
         })
       )
       .optional(),
@@ -248,7 +276,7 @@ export const HeroNoCommunesShema = z.object({
         z.object({
           label: LocalizedString,
           path: z.string().optional(),
-          variant: z.enum(["default", "secondary", "accent"]).optional(),
+          variant: z.enum(["default", "secondary", "accent", "primary", "outline"]).optional(),
         })
       )
       .optional(),
@@ -276,7 +304,7 @@ export const HeroCommuneTransparenteSchema = z.object({
   props: z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
-    logoIcon: z.string().optional(),
+    logoIcon: LucideIconOrSvg.optional(),
     logoImage: z.string().optional(),
     backgroundImage: z.string().optional(),
     backgroundImageAlt: LocalizedString.optional(),
@@ -312,15 +340,19 @@ export const FeaturesRezoLaMerSchema = z.object({
   type: z.literal("features-rezo-la-mer"),
   id: z.string().optional(),
   props: z.object({
-    headline: LocalizedString,
+    // `headline` rendu optionnel : utilisable en sous-section (rightSection
+    // d'un gridLayout) où le titre vit côté `leftSection`.
+    headline: LocalizedString.optional(),
     subhead: LocalizedString.optional(),
-    variant: z.enum(["ocean", "cyber"]).optional(),
+    variant: z.enum(["ocean", "cyber", "nos-communes"]).optional(),
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
     features: z.array(
       z.object({
         icon: z.string(),
         title: LocalizedString,
-        description: LocalizedString,
+        // `description` rendu optionnel : certaines features n'ont qu'un
+        // titre/icône sans corps de texte (cf. sport-sante page santé).
+        description: LocalizedString.optional(),
         color: z.enum(["turquoise", "cyan-bright", "primary", "turquoise-light", "accent", "chart-2", "chart-3"]).optional(),
         link: z.string().optional(),
       })
@@ -342,8 +374,11 @@ export const CategoriesGridSectionSchema = z.object({
     columns: z.number().min(2).max(6).optional().default(3),
     cards: z.array(
       z.object({
-        icon: z.string(),
-        title: LocalizedString,
+        // `icon` et `title` rendus optionnels : certaines configs utilisent
+        // uniquement subtitle pour un affichage minimaliste (cf.
+        // config.prod.sport-sante-bien-etre.json).
+        icon: z.string().optional(),
+        title: LocalizedString.optional(),
         subtitle: LocalizedString.optional(),
         link: z.string().optional(),
       })
@@ -361,7 +396,7 @@ export const ActionButtonsRezoLaMerSchema = z.object({
   props: z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
-    variant: z.enum(["ocean", "cyber", "ssbe"]).optional(),
+    variant: z.enum(["ocean", "cyber", "ssbe", "nos-communes"]).optional(),
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
     actions: z.array(
       z.object({
@@ -403,7 +438,7 @@ export const CommunityRezoLaMerSchema = z.object({
         z.object({
           value: z.string(),
           label: LocalizedString,
-          color: z.enum(["primary", "turquoise", "cyan-bright", "accent", "teal"]).optional(),
+          color: z.enum(["primary", "turquoise", "cyan-bright", "accent", "teal", "chart-1", "chart-2", "chart-3", "chart-4", "chart-5"]).optional(),
         })
       )
       .optional(),
@@ -1154,7 +1189,9 @@ const TimelineSectionSchema = z.object({
   type: z.literal("timeline"),
   id: z.string().optional(),
   props: z.object({
-    events: z.array(z.object({ date: z.string(), title: LocalizedString, text: LocalizedString })),
+    // `date` rendu optionnel : certaines timelines servent à raconter des étapes
+    // sans date précise (ex. parcours d'idée, jalons fonctionnels).
+    events: z.array(z.object({ date: z.string().optional(), title: LocalizedString, text: LocalizedString })),
     alternating: z.boolean().default(true),
   }),
 });
@@ -1212,43 +1249,15 @@ export type NewsletterSection = z.infer<typeof NewsletterSectionSchema>;
 
 export type NewsletterSectionProps = z.infer<typeof NewsletterSectionSchema>["props"];
 
-//──────────────── Login Form
-const LoginFormSectionSchema = z.object({
-  type: z.literal("loginForm"),
-  id: z.string().optional(),
-  props: z.object({}),
-});
-
-export type LoginFormSection = z.infer<typeof LoginFormSectionSchema>;
-
-export type LoginFormSectionProps = z.infer<typeof LoginFormSectionSchema>["props"];
-
-//──────────────── Register Form
-const RegisterFormSectionSchema = z.object({
-  type: z.literal("registerForm"),
-  id: z.string().optional(),
-  props: z.object({}),
-});
-
-export type RegisterFormSection = z.infer<typeof RegisterFormSectionSchema>;
-
-export type RegisterFormSectionProps = z.infer<typeof RegisterFormSectionSchema>["props"];
-
-//──────────────── Recover Password Form
-const RecoverPasswordFormSectionSchema = z.object({
-  type: z.literal("recoverPasswordForm"),
-  id: z.string().optional(),
-  props: z.object({}),
-});
-
-export type RecoverPasswordFormSection = z.infer<typeof RecoverPasswordFormSectionSchema>;
-
-export type RecoverPasswordFormSectionProps = z.infer<typeof RecoverPasswordFormSectionSchema>["props"];
+// Sections auth (loginForm / registerForm / recoverPasswordForm) : schémas
+// déplacés dans `@/modules/auth/schema` (importés + ré-exportés plus haut).
 
 const HTMLSectionSchema = z.object({
   type: z.literal("html"),
   id: z.string().optional(),
-  props: z.object({ html: z.string() }),
+  // `html` accepte string brute OU LocalizedString (`{ fr, en, ... }`) pour les
+  // sites multilingues (cf. config.prod.tiers-lieux.json pages.6.sections.0).
+  props: z.object({ html: z.union([z.string(), LocalizedString]) }),
 });
 
 export type HTMLSection = z.infer<typeof HTMLSectionSchema>;
@@ -1271,51 +1280,6 @@ const TitleSectionSchema = z.object({
 export type TitleSection = z.infer<typeof TitleSectionSchema>;
 
 export type TitleSectionProps = z.infer<typeof TitleSectionSchema>["props"];
-
-const FiltersSectionSchema = z.object({
-  type: z.literal("filters"),
-  id: z.string().optional(),
-  props: z.object({
-    title: LocalizedString.optional(),
-    filterGroups: z.array(z.object({
-      id: z.string(),
-      label: LocalizedString,
-      type: z.enum(['scopeList', "filters"]).default("filters"),
-      field: z.string().optional(),
-      options: z.array(z.object({
-        id: z.string(),
-        label: LocalizedString,
-        level: z.string().optional(),
-        name: z.string().optional(),
-        defaultChecked: z.boolean().optional(),
-      })).optional(),
-      config: z.object({
-        countryCode: z.array(z.string()).optional(),
-        level: z.array(z.string()).optional(),
-        upperLevelId: z.string().optional(),
-        sortBy: z.string().optional(),
-      }).optional(),
-    })),
-    filtersByAnswers: z.record(z.string() , z.object({
-      id: z.string().optional(),
-      label: LocalizedString,
-      type: z.enum(["form", 'answers']).default("answers"),
-      path: z.string().optional(),
-      forms: z.string().optional(),
-      finderPath: z.string().optional(),
-      value: z.record(z.string(), z.object({
-        id: z.string(),
-        finder: z.string(),
-      })).optional(),
-    })).optional(),
-    defaultOpenGroups: z.array(z.string()).optional(),
-    className: z.string().optional(),
-  }),
-});
-
-export type FiltersSection = z.infer<typeof FiltersSectionSchema>;
-
-export type FiltersSectionProps = z.infer<typeof FiltersSectionSchema>["props"];
 
 const GridLayoutSectionPropsSchema = z.object({
   leftSection: z.lazy(() => SectionSchemaLazy).optional(),
@@ -1403,90 +1367,59 @@ const MemberSectionSchema = z.object({
 export type MemberSection = z.infer<typeof MemberSectionSchema>;
 export type MemberSectionProps = z.infer<typeof MemberSectionSchema>["props"];
 
-//──────────────── Actions Section (Milestones/Tasks)
-const ActionsSectionSchema = z.object({
-  type: z.literal("actions"),
-  id: z.string().optional(),
-  props: z.object({
-    idProjet: z.string().optional(),
-    maxItems: z.number().optional().default(10),
-    showStatus: z.boolean().optional().default(true),
-    showProgress: z.boolean().optional().default(true),
-    showDates: z.boolean().optional().default(true),
-    layout: z.enum(["list", "grid", "timeline"]).optional().default("list"),
-  }),
-});
+//──────────────── Sections du module cagnotte (schemas définis dans le module)
+// Cf. src/modules/cagnotte/schema.ts
+import {
+  ActionsSectionSchema,
+  FinanceSectionSchema,
+  ActionsSummarySectionSchema,
+  FinanceSummarySectionSchema,
+  CagnotteLayoutSectionSchema,
+} from "@/modules/cagnotte/schema";
+import { CoFormSectionSchema } from "@/modules/coform/schema";
+import {
+  LoginFormSectionSchema,
+  RegisterFormSectionSchema,
+  RecoverPasswordFormSectionSchema,
+  AuthConfigSchema,
+} from "@/modules/auth/schema";
 
-export type ActionsSection = z.infer<typeof ActionsSectionSchema>;
-export type ActionsSectionProps = z.infer<typeof ActionsSectionSchema>["props"];
-
-//──────────────── Finance Section (Funding/Cagnotte)
-const FinanceSectionSchema = z.object({
-  type: z.literal("finance"),
-  id: z.string().optional(),
-  props: z.object({
-    idProjet: z.string().optional(),
-    maxItems: z.number().optional().default(10),
-    showProgress: z.boolean().optional().default(true),
-    showFundingGoal: z.boolean().optional().default(true),
-    showContributors: z.boolean().optional().default(true),
-    showTimeline: z.boolean().optional().default(false),
-    layout: z.enum(["cards", "list", "compact"]).optional().default("cards"),
-  }),
-});
-
-export type FinanceSection = z.infer<typeof FinanceSectionSchema>;
-export type FinanceSectionProps = z.infer<typeof FinanceSectionSchema>["props"];
-
-//──────────────── Actions Summary Section (Sidebar synthesis/charts)
-const ActionsSummarySectionSchema = z.object({
-  type: z.literal("actions-summary"),
-  id: z.string().optional(),
-  props: z.object({
-    idProjet: z.string().optional(),
-    maxItems: z.number().optional().default(10),
-    showKpis: z.boolean().optional().default(true),
-    showCharts: z.boolean().optional().default(true),
-    charts: z.object({
-      statusDistribution: z.object({
-        enabled: z.boolean().optional().default(true),
-        type: z.enum(["pie", "bar", "list"]).optional().default("pie"),
-      }).optional(),
-      timeline: z.object({
-        enabled: z.boolean().optional().default(true),
-        type: z.enum(["bar", "line", "list"]).optional().default("bar"),
-      }).optional(),
-    }).optional(),
-  }),
-});
-
-export type ActionsSummarySection = z.infer<typeof ActionsSummarySectionSchema>;
-export type ActionsSummarySectionProps = z.infer<typeof ActionsSummarySectionSchema>["props"];
-
-//──────────────── Finance Summary Section (Sidebar synthesis/charts)
-const FinanceSummarySectionSchema = z.object({
-  type: z.literal("finance-summary"),
-  id: z.string().optional(),
-  props: z.object({
-    idProjet: z.string().optional(),
-    maxItems: z.number().optional().default(10),
-    showKpis: z.boolean().optional().default(true),
-    showCharts: z.boolean().optional().default(true),
-    charts: z.object({
-      fundingProgress: z.object({
-        enabled: z.boolean().optional().default(true),
-        type: z.enum(["progress", "bar", "list"]).optional().default("progress"),
-      }).optional(),
-      amountByMilestone: z.object({
-        enabled: z.boolean().optional().default(true),
-        type: z.enum(["bar", "list"]).optional().default("bar"),
-      }).optional(),
-    }).optional(),
-  }),
-});
-
-export type FinanceSummarySection = z.infer<typeof FinanceSummarySectionSchema>;
-export type FinanceSummarySectionProps = z.infer<typeof FinanceSummarySectionSchema>["props"];
+// Re-exports pour la backward-compat (les consommateurs peuvent continuer à
+// importer depuis `@/types/site-schema`, mais l'origine est `@/modules/cagnotte/schema`).
+export {
+  ActionsSectionSchema,
+  FinanceSectionSchema,
+  ActionsSummarySectionSchema,
+  FinanceSummarySectionSchema,
+  CagnotteLayoutSectionSchema,
+  CoFormSectionSchema,
+};
+export type {
+  ActionsSection,
+  ActionsSectionProps,
+  FinanceSection,
+  FinanceSectionProps,
+  ActionsSummarySection,
+  ActionsSummarySectionProps,
+  FinanceSummarySection,
+  FinanceSummarySectionProps,
+  CagnotteLayoutSection,
+  CagnotteLayoutSectionProps,
+} from "@/modules/cagnotte/schema";
+export type { CoFormSection } from "@/modules/coform/schema";
+export {
+  LoginFormSectionSchema,
+  RegisterFormSectionSchema,
+  RecoverPasswordFormSectionSchema,
+};
+export type {
+  LoginFormSection,
+  LoginFormSectionProps,
+  RegisterFormSection,
+  RegisterFormSectionProps,
+  RecoverPasswordFormSection,
+  RecoverPasswordFormSectionProps,
+} from "@/modules/auth/schema";
 
 //───────────────────────────────────────────────────────────────
 // Union de toutes les sections
@@ -1550,23 +1483,14 @@ export const Section = z.discriminatedUnion("type", [
   ThematicsSectionSchema,
   GridLayoutSectionSchema,
   NewsSectionSchema,
+  NotificationsSectionSchema,
   MemberSectionSchema,
   ActionsSectionSchema,
   FinanceSectionSchema,
   ActionsSummarySectionSchema,
   FinanceSummarySectionSchema,
-  z.object({
-    type: z.literal("siteList"),
-    id: z.string().optional(),
-    props: z.object({
-      sites: z.array(z.object({
-        slug: z.string(),
-        title: z.string(),
-        description: z.string().optional(),
-        logo: z.string().optional(),
-      })),
-    }),
-  }),
+  CagnotteLayoutSectionSchema,
+  CoFormSectionSchema,
 ]);
 export type Section = z.infer<typeof Section>;
 
@@ -1664,10 +1588,9 @@ export const Header = z.object({
   logo: z.string().optional(),
   logoAlt: LocalizedString.optional(),
   logoTitle: LocalizedString.optional(),
-  logoIcon: z.string().optional(),
+  logoIcon: LucideIconOrSvg.optional(),
   path: z.string().min(1).optional(),
   nav: z.array(EnhancedNavItem),
-  navSubsite: z.array(EnhancedNavItem).optional(),
   navVisibleOnlyForListedPages: z.boolean().optional(),
   secondaryNav: z.array(EnhancedNavItem).optional(),
   secondaryNavVisibleOnlyForListedPages: z.boolean().optional(),
@@ -1752,14 +1675,15 @@ const FooterCtaButtonSchema = z.object({
 
 export const Footer = z.object({
   type: z.enum(["tiers-lieux", "rezo-la-mer", "cyber-reunion", "nos-communes", "commune-transparente", "ssbe", "default"]).default("default"),
-  columns: z.array(FooterColumn),
+  // Optionnel : un footer minimaliste (logo + copyright + socials sans colonnes
+  // de liens) est légitime sur certains sites (cf. equipementsSportifs974).
+  columns: z.array(FooterColumn).optional(),
   socials: z.array(z.object({ platform: z.string(), url: z.string() })).optional(),
   extra: z.string().optional(),
   newsletter: NewsletterSectionSchema.optional(),
   copyright: LocalizedString,
   logo: z.string().optional(),
-  logoImage: z.string().optional(),
-  logoIcon: z.string().optional(),
+  logoIcon: LucideIconOrSvg.optional(),
   logoTitle: LocalizedString.optional(),
   logoAlt: LocalizedString.optional(),
   description: LocalizedString.optional(),
@@ -2007,15 +1931,14 @@ export const SiteConfig = z.object({
     message: LocalizedString.optional(),
     allowedIPs: z.array(z.string()).optional(),
   }).optional(),
-  auth: z.object({
-    login: z.object({
-      title: LocalizedString.optional(),
-      subtitle: LocalizedString.optional(),
-    }).optional(),
-    register: z.object({
-      title: LocalizedString.optional(),
-      subtitle: LocalizedString.optional(),
-    }).optional(),
+  auth: AuthConfigSchema.optional(),
+  costum: z.object({
+    slug: z.string(),
+    id: z.string(),
+    type: z.string(),
+    editMode: z.boolean().optional().default(false),
+    mainTag: z.string().optional(),
+    compagnon: z.string().optional(),
   }).optional(),
   profiles: ProfilesConfigSchema,
   floatingQRCode: z.object({
@@ -2042,8 +1965,10 @@ export const SiteConfig = z.object({
     label: LocalizedString,
     icon: z.string().optional().default("plus"),
     position: z.enum(["bottom-right", "bottom-left", "top-right", "top-left"]).default("bottom-right"),
+    condition: VisibilityConditionSchema,
   }).optional(),
   ampli: z.array(AmpliConfigSchema).optional(),
+  commandPalette: CommandPaletteConfigSchema.optional(),
 });
 export type SiteConfig = z.infer<typeof SiteConfig>;
 

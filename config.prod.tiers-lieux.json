@@ -42,64 +42,78 @@
         "children": [
           {
             "label": {
-              "fr": "Afficher tous les tiers-lieux"
+              "fr": "Afficher tous les tiers-lieux",
+              "en": "Show all third places"
             },
             "description": {
-              "fr": "Découvrez tous les lieux disponibles"
+              "fr": "Découvrez tous les lieux disponibles",
+              "en": "Discover all available places"
             },
             "path": "/lieux"
           },
           {
             "label": {
-              "fr": "Se réunir"
+              "fr": "Se réunir",
+              "en": "Meet up"
             },
             "description": {
-              "fr": "Trouver la salle de réunion pour vous accueillir."
+              "fr": "Trouver la salle de réunion pour vous accueillir.",
+              "en": "Find the meeting room to host you."
             },
             "path": "/lieux?services=Salle de Réunion"
           },
           {
             "label": {
-              "fr": "Manger"
+              "fr": "Manger",
+              "en": "Eat"
             },
             "description": {
-              "fr": "Cuisines partagées, bar participatifs, tiers-lieux nourriciers."
+              "fr": "Cuisines partagées, bar participatifs, tiers-lieux nourriciers.",
+              "en": "Shared kitchens, participatory bars, food-oriented third places."
             },
             "path": "/lieux?typologies=Cuisine partagée / Foodlab"
           },
           {
             "label": {
-              "fr": "Coworker"
+              "fr": "Coworker",
+              "en": "Cowork"
             },
             "description": {
-              "fr": "Les bureaux partagés et espaces de Coworking."
+              "fr": "Les bureaux partagés et espaces de Coworking.",
+              "en": "Shared offices and coworking spaces."
             },
             "path": "/lieux?services=Coworking"
           },
           {
             "label": {
-              "fr": "S'instruire"
+              "fr": "S'instruire",
+              "en": "Learn"
             },
             "description": {
-              "fr": "Espaces culturels et livinglabs."
+              "fr": "Espaces culturels et livinglabs.",
+              "en": "Cultural spaces and living labs."
             },
             "path": "/lieux?typologies=LivingLab / Laboratoire d'innovation sociale"
           },
           {
             "label": {
-              "fr": "Fabriquer"
+              "fr": "Fabriquer",
+              "en": "Make"
             },
             "description": {
-              "fr": "Les Fablabs, Makerspace et Hackerspace."
+              "fr": "Les Fablabs, Makerspace et Hackerspace.",
+              "en": "Fab labs, makerspaces and hackerspaces."
             },
             "path": "/lieux?typologies=Fablab / Makerspace / Hackerspace (Espaces du Faire)"
           },
           {
             "label": {
-              "fr": "Séjourner"
+              "fr": "Séjourner",
+              "en": "Stay"
             },
             "description": {
-              "fr": "Les lieux pouvant vous accueillir pour plusieurs jours."
+              "fr": "Les lieux pouvant vous accueillir pour plusieurs jours.",
+              "en": "Places that can host you for several days."
             },
             "path": "/lieux?services=Hébérgement"
           }
@@ -114,55 +128,67 @@
         "children": [
           {
             "label": {
-              "fr": "Forum"
+              "fr": "Forum",
+              "en": "Forum"
             },
             "description": {
-              "fr": "Échangez et explorez les fils de discussion autour des tiers-lieux"
+              "fr": "Échangez et explorez les fils de discussion autour des tiers-lieux",
+              "en": "Exchange and explore discussion threads about third places"
             },
             "path": "https://forum.tiers-lieux.org/"
           },
           {
             "label": {
-              "fr": "Chat"
+              "fr": "Chat",
+              "en": "Chat"
             },
             "description": {
-              "fr": "Discutez dans les divers canaux de chat sur de nombreux thèmes"
+              "fr": "Discutez dans les divers canaux de chat sur de nombreux thèmes",
+              "en": "Chat across various channels on many topics"
             },
             "path": "https://chat.tiers-lieux.org/"
           },
           {
             "label": {
-              "fr": "Wiki"
+              "fr": "Wiki",
+              "en": "Wiki"
             },
             "description": {
-              "fr": "Plus de 10 000 pages de documentation sur les tiers-lieux"
+              "fr": "Plus de 10 000 pages de documentation sur les tiers-lieux",
+              "en": "Over 10,000 pages of documentation on third places"
             },
             "path": "https://movilab.org/"
           },
           {
             "label": {
-              "fr": "API et données ouvertes"
+              "fr": "API et données ouvertes",
+              "en": "API and open data"
             },
             "description": {
-              "fr": "Les données ouvertes dans les Tiers Lieux. API, CSV..."
+              "fr": "Les données ouvertes dans les Tiers Lieux. API, CSV...",
+              "en": "Open data on third places. API, CSV..."
             },
             "path": "/api-donnees"
           },
           {
             "label": {
-              "fr": "Notes"
+              "fr": "Notes",
+              "en": "Notes"
             },
             "description": {
-              "fr": "Utiliser l'outil de notes proposé, alternative à Docs !"
+              "fr": "Utiliser l'outil de notes proposé, alternative à Docs !",
+              "en": "Use the notes tool — an alternative to Docs!"
             },
             "path": "https://notes.tiers-lieux.org/"
           },
           {
             "label": {
-              "fr": "Visio"
+              "fr": "Visio",
+              "en": "Video calls"
             },
             "description": {
-              "fr": "L'outil de visio au service des tiers-lieux basé sur Meet"
+              "fr": "L'outil de visio au service des tiers-lieux basé sur Meet",
+              "en": "The video-conferencing tool for third places, based on Meet"
             },
             "path": "https://visio.tiers-lieux.org/"
           }
@@ -177,28 +203,34 @@
         "children": [
           {
             "label": {
-              "fr": "Appel à communs"
+              "fr": "Appel à communs",
+              "en": "Call for commons"
             },
             "description": {
-              "fr": "La plateforme de cofinancement des ressources communes"
+              "fr": "La plateforme de cofinancement des ressources communes",
+              "en": "The co-funding platform for shared resources"
             },
             "path": "https://lescommuns.tiers-lieux.org/#les-communs"
           },
           {
             "label": {
-              "fr": "Usages"
+              "fr": "Usages",
+              "en": "Uses"
             },
             "description": {
-              "fr": "Le recensement des usages et outils utilisés dans les tiers-lieux, pour faciliter les pratiques de mutualisation"
+              "fr": "Le recensement des usages et outils utilisés dans les tiers-lieux, pour faciliter les pratiques de mutualisation",
+              "en": "A catalogue of the uses and tools found in third places, to ease resource-sharing practices"
             },
             "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=list-tools#list-tools"
           },
           {
             "label": {
-              "fr": "La plateforme d'aiguillage"
+              "fr": "La plateforme d'aiguillage",
+              "en": "The guidance platform"
             },
             "description": {
-              "fr": "Une plateforme qui facilite les demandes d'aides et les réponses par un réseau d'acteurs"
+              "fr": "Une plateforme qui facilite les demandes d'aides et les réponses par un réseau d'acteurs",
+              "en": "A platform that streamlines support requests and responses through a network of stakeholders"
             },
             "path": "https://aiguillage.tiers-lieux.org/"
           }
@@ -213,19 +245,23 @@
         "children": [
           {
             "label": {
-              "fr": "Réseaux régionaux"
+              "fr": "Réseaux régionaux",
+              "en": "Regional networks"
             },
             "description": {
-              "fr": "Découvrez l'observatoire des réseaux régionaux"
+              "fr": "Découvrez l'observatoire des réseaux régionaux",
+              "en": "Explore the regional networks observatory"
             },
             "path": "/reseaux-regionaux"
           },
           {
             "label": {
-              "fr": "Réseaux thématiques"
+              "fr": "Réseaux thématiques",
+              "en": "Thematic networks"
             },
             "description": {
-              "fr": "Découvrez l'observatoire des réseaux thématiques"
+              "fr": "Découvrez l'observatoire des réseaux thématiques",
+              "en": "Explore the thematic networks observatory"
             },
             "path": "/reseaux-thematiques"
           }
@@ -233,84 +269,89 @@
       },
       {
         "label": {
-          "fr": "Se gouverner"
+          "fr": "Se gouverner",
+          "en": "Govern"
         },
         "path": "#",
         "children": [
           {
             "label": {
-              "fr": "Diagnostic Licoop"
+              "fr": "Diagnostic Licoop",
+              "en": "Licoop diagnostic"
             },
             "description": {
-              "fr": "Un diagnostic dédié aux lieux comme communs de proximité"
+              "fr": "Un diagnostic dédié aux lieux comme communs de proximité",
+              "en": "A diagnostic dedicated to places as local commons"
             },
             "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=licoop#licoop"
           },
           {
             "label": {
-              "fr": "Décider ensemble"
+              "fr": "Décider ensemble",
+              "en": "Decide together"
             },
             "description": {
-              "fr": "Apprendre à gouverner collectivement notre infrastructure commune et le sujet tiers-lieu"
+              "fr": "Apprendre à gouverner collectivement notre infrastructure commune et le sujet tiers-lieu",
+              "en": "Learning to collectively govern our shared infrastructure and the third-place topic"
             },
             "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=decider#decider"
           },
           {
             "label": {
-              "fr": "Votre diagnostic ?"
+              "fr": "Votre diagnostic ?",
+              "en": "Your diagnostic?"
             },
             "description": {
-              "fr": "Construisez votre propre diagnostic ici"
+              "fr": "Construisez votre propre diagnostic ici",
+              "en": "Build your own diagnostic here"
             },
             "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=diagnostic#diagnostic"
           },
           {
             "label": {
-              "fr": "La version 2 en test"
+              "fr": "La version 2 en test",
+              "en": "Version 2 in testing"
             },
             "description": {
-              "fr": "Découvrir la version 2 en cours de développement, plus rapide, et plus interopérable"
+              "fr": "Découvrir la version 2 en cours de développement, plus rapide, et plus interopérable",
+              "en": "Discover version 2 under development — faster and more interoperable"
             },
             "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=version#version"
           },
           {
             "label": {
-              "fr": "Mes lieux"
+              "fr": "Mes lieux",
+              "en": "My places"
             },
             "description": {
-              "fr": "Gérez vos tiers-lieux"
+              "fr": "Gérez vos tiers-lieux",
+              "en": "Manage your third places"
             },
             "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=favoris#favoris"
           },
           {
             "label": {
-              "fr": "Événements"
+              "fr": "Événements",
+              "en": "Events"
             },
             "description": {
-              "fr": "Les événements autour de tiers-lieux.org à venir"
+              "fr": "Les événements autour de tiers-lieux.org à venir",
+              "en": "Upcoming events around tiers-lieux.org"
             },
             "path": "/evenements"
           },
           {
             "label": {
-              "fr": "Communauté"
+              "fr": "Communauté",
+              "en": "Community"
             },
             "description": {
-              "fr": "La communauté qui anime cette plateforme"
+              "fr": "La communauté qui anime cette plateforme",
+              "en": "The community that drives this platform"
             },
             "path": "/communaute"
           }
         ]
-      }
-    ],
-    "navSubsite": [
-      {
-        "label": {
-          "fr": "Liste",
-          "en": "List"
-        },
-        "icon": "list",
-        "path": "/lieux"
       }
     ],
     "sticky": true,
@@ -319,18 +360,18 @@
     "utilities": {
       "themeSwitch": false,
       "langSwitch": true,
-      "search": false,
+      "search": true,
       "auth": true,
       "cart": false,
-      "notifications": false
+      "notifications": true
     }
   },
   "pages": [
     {
       "path": "/",
       "title": {
-        "fr": "Accueil - Le réseau social des tiers-lieux",
-        "en": "Home - Le réseau social des tiers-lieux"
+        "fr": "Le réseau social des tiers-lieux",
+        "en": "The social network for third places"
       },
       "layout": "default",
       "sections": [
@@ -342,17 +383,9 @@
               "fr": "Le réseau social des tiers-lieux",
               "en": "The third places social network"
             },
-            "headlineSubsite": {
-              "fr": "Region tiers lieux AURA",
-              "en": "Region third places AURA"
-            },
             "subhead": {
               "fr": "Trouvez le lieu pour ...",
               "en": "Find the place for ..."
-            },
-            "subheadSubsite": {
-              "fr": "Trouvez un lieu de sociabilité près de chez vous",
-              "en": "Find a social place near you"
             },
             "ctaButtons": [
               {
@@ -412,7 +445,145 @@
               "fr": "Rechercher",
               "en": "Search"
             },
-            "backgroundImage": "images/tiersLieux/BG_Illus.png"
+            "backgroundImage": "images/tiersLieux/BG_Illus.png",
+            "searchVariant": "navigator-tl",
+            "baseParams": {
+              "defaultTypes": [
+                "organizations"
+              ],
+              "indexStepList": 5,
+              "defaultFilters": {
+                "tags": [
+                  "TiersLieux"
+                ],
+                "address.addressCountry": {
+                  "$in": [
+                    "BE",
+                    "FR",
+                    "GP",
+                    "GF",
+                    "IT",
+                    "RE",
+                    "MQ",
+                    "YT",
+                    "NC",
+                    "CH"
+                  ]
+                }
+              },
+              "defaultSortBy": {
+                "updated": -1
+              },
+              "searchBy": [
+                "name",
+                "address.addressLocality",
+                "address.level4Name",
+                "address.level3Name",
+                "address.level2Name",
+                "address.level1Name",
+                "address.postalCode"
+              ],
+              "notSourceKey": true
+            },
+            "filterGroups": [
+              {
+                "id": "typologies",
+                "label": {
+                  "fr": "Typologies",
+                  "en": "Types"
+                },
+                "options": [
+                  {
+                    "id": "ateliers-artisanaux",
+                    "label": {
+                      "fr": "Ateliers artisanaux partagés",
+                      "en": "Shared craft workshops"
+                    },
+                    "name": "Ateliers artisanaux partagés"
+                  },
+                  {
+                    "id": "coworking",
+                    "label": {
+                      "fr": "Bureaux partagés / Coworking",
+                      "en": "Shared offices / Coworking"
+                    },
+                    "name": "Bureaux partagés / Coworking"
+                  },
+                  {
+                    "id": "foodlab",
+                    "label": {
+                      "fr": "Cuisine partagée / Foodlab",
+                      "en": "Shared kitchen / Foodlab"
+                    },
+                    "name": "Cuisine partagée / Foodlab"
+                  },
+                  {
+                    "id": "fablab",
+                    "label": {
+                      "fr": "Fablab / Makerspace / Hackerspace",
+                      "en": "Fablab / Makerspace / Hackerspace"
+                    },
+                    "name": "Fablab / Makerspace / Hackerspace (Espaces du Faire)"
+                  },
+                  {
+                    "id": "livinglab",
+                    "label": {
+                      "fr": "LivingLab / Innovation sociale",
+                      "en": "LivingLab / Social innovation"
+                    },
+                    "name": "LivingLab / Laboratoire d'innovation sociale"
+                  },
+                  {
+                    "id": "nourricier",
+                    "label": {
+                      "fr": "Tiers-lieu nourricier",
+                      "en": "Food-producing third place"
+                    },
+                    "name": "Tiers-lieu nourricier"
+                  },
+                  {
+                    "id": "culturel",
+                    "label": {
+                      "fr": "Tiers-lieu culturel",
+                      "en": "Cultural third place"
+                    },
+                    "name": "Tiers-lieu culturel / Lieux intermédiaires et indépendants"
+                  },
+                  {
+                    "id": "autre",
+                    "label": {
+                      "fr": "Autre famille de tiers-lieux",
+                      "en": "Other third place types"
+                    },
+                    "name": "Autre famille de tiers-lieux"
+                  }
+                ]
+              }
+            ],
+            "filtersByAnswers": {
+              "services": {
+                "label": {
+                  "fr": "Service",
+                  "en": "Service"
+                },
+                "domGroup": ".domGroupFilters",
+                "type": "form",
+                "value": {
+                  "Coworking": {
+                    "id": "6925e2b05dd63b02ca70d6d9",
+                    "finder": "answers.navigatorDesTierslieux25112025_209_0.findernavigatorDesTierslieux25112025_209_0miem3epsztzcm9dgim"
+                  },
+                  "Salle de Réunion": {
+                    "id": "6925869ad76aaf6c5a2b2f8a",
+                    "finder": "answers.navigatorDesTierslieux25112025_1436_0.findernavigatorDesTierslieux25112025_1436_0miem3epsztzcm9dgim"
+                  },
+                  "Hébérgement": {
+                    "id": "6925ee8ac537f8056114aec7",
+                    "finder": "answers.navigatorDesTierslieux25112025_2059_0.findernavigatorDesTierslieux25112025_2059_0miem3epsztzcm9dgim"
+                  }
+                }
+              }
+            }
           }
         },
         {
@@ -425,28 +596,55 @@
                 "en": "Discover places"
               },
               "linkText": {
-                "fr": "Cartographie des lieux"
+                "fr": "Voir tous les resultats",
+                "en": "See all results"
               },
-              "showMapButton": true
+              "linkHref": "/lieux"
             },
             "useFilter": true,
             "showMap": false,
-            "enableMap": true,
+            "enableMap": false,
             "showActiveFiltersTypes": true,
             "showActiveFiltersTags": true,
             "disableInfiniteScroll": true,
+            "searchVariant": "navigator-tl",
             "baseParams": {
               "defaultTypes": [
                 "organizations"
               ],
               "indexStepList": 5,
               "defaultFilters": {
-                "$or": {
-                  "source.key": "franceTierslieux",
-                  "source.keys": "franceTierslieux",
-                  "reference.costum": "franceTierslieux"
+                "tags": [
+                  "TiersLieux"
+                ],
+                "address.addressCountry": {
+                  "$in": [
+                    "BE",
+                    "FR",
+                    "GP",
+                    "GF",
+                    "IT",
+                    "RE",
+                    "MQ",
+                    "YT",
+                    "NC",
+                    "CH"
+                  ]
                 }
-              }
+              },
+              "defaultSortBy": {
+                "updated": -1
+              },
+              "searchBy": [
+                "name",
+                "address.addressLocality",
+                "address.level4Name",
+                "address.level3Name",
+                "address.level2Name",
+                "address.level1Name",
+                "address.postalCode"
+              ],
+              "notSourceKey": true
             },
             "list": {
               "columns": {
@@ -512,7 +710,7 @@
                   "fr": "Trouver une salle de réunion",
                   "en": "Find a meeting room"
                 },
-                "href": "/se-reunir"
+                "href": "/lieux?services=Salle de Réunion"
               },
               {
                 "iconSvg": "<svg width=\"80\" height=\"66\" viewBox=\"0 0 80 66\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M51.9856 22.8031L55.7558 0.376221H11.5726C8.66415 0.376221 6.18658 2.48211 5.70184 5.34397L0.603088 35.6544H11.3572L10.1184 43.088L22.4882 35.6544H28.4847L24.7683 57.9913H52.0933L63.2424 65.4249L64.4991 57.9913H68.9695C71.8779 57.9913 74.3555 55.8854 74.8402 53.0235L79.8851 22.8031H51.9856Z\" fill=\"#FFD836\"></path></svg>",
@@ -525,7 +723,7 @@
                   "fr": "Sur le Forum des Tiers-lieux",
                   "en": "On the Third Places Forum"
                 },
-                "href": "/forum"
+                "href": "https://forum.tiers-lieux.org/"
               },
               {
                 "iconSvg": "<svg width=\"72\" height=\"72\" viewBox=\"0 0 72 72\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M59.5288 10.6815V3.20389C54.6098 3.75926 50.7421 5.46504 47.6875 7.74602V0.189026C40.2099 2.31133 37.0165 8.06338 35.7868 13.3196C34.557 8.08321 31.3636 2.31133 23.886 0.189026V7.74602C20.8314 5.46504 16.9637 3.75926 12.0447 3.20389V10.6815C6.51084 8.14271 2.10755 7.25016 0.183594 7.07164V55.6268C14.4844 59.6334 25.2942 65.8813 31.2645 69.9474C32.5934 70.8598 34.1603 71.3557 35.7669 71.3557C37.3735 71.3557 38.9405 70.8598 40.2694 69.9474C46.2396 65.8615 57.0693 59.6334 71.3503 55.6268V7.07164C69.4263 7.25016 65.023 8.14271 59.4892 10.6815H59.5288Z\" fill=\"#FFD836\"></path></svg>",
@@ -538,7 +736,7 @@
                   "fr": "Via le Wiki Movilab",
                   "en": "Via the Movilab Wiki"
                 },
-                "href": "/wiki"
+                "href": "https://movilab.org/"
               },
               {
                 "iconSvg": "<svg width=\"83\" height=\"66\" viewBox=\"0 0 83 66\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M31.0566 56.2516L82.2582 56.1904L68.1168 0.24408L2.97698 35.6441C1.41249 36.501 0.599767 38.317 1.04676 40.0512L4.39925 53.3135C4.84625 55.0478 6.41074 56.272 8.19873 56.272H17.7279L16.265 65.3311L31.0566 56.2516Z\" fill=\"#FFD836\"></path></svg>",
@@ -551,7 +749,7 @@
                   "fr": "Via l'appel à commun",
                   "en": "Via the common call"
                 },
-                "href": "/cofinancement"
+                "href": "https://lescommuns.tiers-lieux.org/#les-communs"
               },
               {
                 "iconSvg": "<svg width=\"81\" height=\"55\" viewBox=\"0 0 81 55\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M79.3151 15.4503C57.5928 -4.43436 23.9883 -4.43436 2.26601 15.4503C1.20775 16.4243 0.632202 17.821 0.632202 19.2545V35.3901C9.09831 27.0098 19.551 21.8457 30.505 19.8609C24.7123 23.5732 21.0734 30.3178 21.9274 37.8343C22.9114 46.4167 29.948 53.3818 38.6183 54.3191C50.0735 55.5687 59.7836 46.7291 59.7836 35.6473C59.7836 29.0314 56.3117 23.2057 51.0947 19.8609C62.0301 21.8457 72.5013 27.0098 80.9674 35.3901V19.2545C80.9674 17.821 80.3919 16.4243 79.3336 15.4503H79.3151Z\" fill=\"#FFD836\"></path></svg>",
@@ -564,16 +762,9 @@
                   "fr": "Les données des lieux et leurs réseaux",
                   "en": "Data on places and their networks"
                 },
-                "href": "/observatoire"
+                "href": "/reseaux-regionaux"
               }
             ]
-          }
-        },
-        {
-          "type": "html",
-          "id": "show-more-button",
-          "props": {
-            "html": "<div class=\"container pb-5 mx-auto px-6\"><div class=\"text-center\"><button class=\"text-gray-700 font-light hover:text-primary transition\">Afficher plus +</button></div></div>"
           }
         },
         {
@@ -582,22 +773,29 @@
           "props": {
             "customHeader": {
               "title": {
-                "fr": "Événements à venir"
+                "fr": "Événements à venir",
+                "en": "Upcoming events"
               },
               "linkText": {
-                "fr": "Cartographie des tiers-lieux"
+                "fr": "Voir tous les evénements",
+                "en": "See all results"
               },
-              "showMapButton": true
+              "linkHref": "/evenements"
             },
             "useFilter": true,
             "showMap": false,
-            "enableMap": true,
+            "enableMap": false,
             "showActiveFiltersTypes": true,
             "showActiveFiltersTags": true,
             "disableInfiniteScroll": true,
             "baseParams": {
               "defaultTypes": [
                 "events"
+              ],
+              "sourceKey": [
+                "franceTierslieux",
+                "tierslieuxbelgique",
+                "navigatorDesTierslieux"
               ],
               "indexStepList": 4
             },
@@ -704,14 +902,14 @@
                   "fr": "Le Forum des Tiers-lieux",
                   "en": "The Third Places Forum"
                 },
-                "href": "/forum"
+                "href": "https://forum.tiers-lieux.org/"
               },
               {
                 "label": {
                   "fr": "Le Chat",
                   "en": "The Chat"
                 },
-                "href": "/chat"
+                "href": "https://chat.tiers-lieux.org/"
               }
             ],
             "infoText": {
@@ -746,14 +944,14 @@
                   "fr": "Le Wiki Movilab",
                   "en": "The Movilab Wiki"
                 },
-                "href": "/wiki"
+                "href": "https://movilab.org/"
               },
               {
                 "label": {
                   "fr": "Les logiciels et leurs usages",
                   "en": "Software and their uses"
                 },
-                "href": "/tools"
+                "href": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=list-tools#list-tools"
               }
             ]
           }
@@ -785,14 +983,14 @@
                   "fr": "L'appel à cofinancement",
                   "en": "The call for co-financing"
                 },
-                "href": "/cofinancement"
+                "href": "https://lescommuns.tiers-lieux.org/#les-communs"
               },
               {
                 "label": {
                   "fr": "La plateforme de recommandation collaborative",
                   "en": "The collaborative recommendation platform"
                 },
-                "href": "/recommandations"
+                "href": "https://aiguillage.tiers-lieux.org/"
               }
             ],
             "decorativeElements": {
@@ -829,7 +1027,7 @@
                   "fr": "Les réseaux thématiques",
                   "en": "Thematic networks"
                 },
-                "href": "#"
+                "href": "/reseaux-thematiques"
               }
             ],
             "iconCard": {
@@ -848,8 +1046,8 @@
     {
       "path": "/lieux",
       "title": {
-        "fr": "Accueil - Le réseau social des tiers-lieux",
-        "en": "Home - Le réseau social des tiers-lieux"
+        "fr": "Les tiers-lieux - Le réseau social des tiers-lieux",
+        "en": "Third places - The third places social network"
       },
       "layout": "default",
       "sections": [
@@ -870,9 +1068,35 @@
                 },
                 "defaultOpenGroups": [
                   "typologies",
-                  "reseaux"
+                  "reseauxThematiques"
                 ],
                 "filterGroups": [
+                  {
+                    "id": "reseauxRegionaux",
+                    "type": "entityList",
+                    "label": {
+                      "fr": "Réseaux régionaux",
+                      "en": "Regional networks"
+                    },
+                    "filterType": "sourceKey",
+                    "filterBy": "slug",
+                    "baseParams": {
+                      "defaultTypes": [
+                        "organizations"
+                      ],
+                      "defaultFilters": {
+                        "tags": [
+                          "RéseauTiersLieux"
+                        ]
+                      },
+                      "defaultFields": [
+                        "name",
+                        "slug"
+                      ],
+                      "notSourceKey": true,
+                      "indexStepList": 100
+                    }
+                  },
                   {
                     "id": "typologies",
                     "label": {
@@ -880,15 +1104,6 @@
                       "en": "Types"
                     },
                     "options": [
-                      {
-                        "id": "tous",
-                        "label": {
-                          "fr": "Tous les lieux",
-                          "en": "All places"
-                        },
-                        "name": "",
-                        "defaultChecked": false
-                      },
                       {
                         "id": "ateliers-artisanaux",
                         "label": {
@@ -978,43 +1193,6 @@
                       ],
                       "sortBy": "name"
                     }
-                  },
-                  {
-                    "id": "reseaux",
-                    "label": {
-                      "fr": "Réseaux thématiques",
-                      "en": "Thematic networks"
-                    },
-                    "options": [
-                      {
-                        "id": "basqinterlieux",
-                        "label": {
-                          "fr": "Le BâL (Basq inter-lieux)",
-                          "en": "Le BâL (Basq inter-lieux)"
-                        }
-                      },
-                      {
-                        "id": "cerclelittoral",
-                        "label": {
-                          "fr": "Cercle littoral des Hauts-de-Fr...",
-                          "en": "Hauts-de-France coastal circle"
-                        }
-                      },
-                      {
-                        "id": "rflabs",
-                        "label": {
-                          "fr": "RFFLabs",
-                          "en": "RFFLabs"
-                        }
-                      },
-                      {
-                        "id": "lieux-intermediaires",
-                        "label": {
-                          "fr": "Lieux intermédiaires et indépen...",
-                          "en": "Intermediate and independent..."
-                        }
-                      }
-                    ]
                   },
                   {
                     "id": "regions",
@@ -1171,6 +1349,17 @@
                     "finderPath": "answers.navigatorDesTierslieux1572025_2311_0.findernavigatorDesTierslieux1572025_2311_0md5u4tkmsz33mya3xvb"
                   }
                 },
+                "filtersByPath": {
+                  "reseauxThematiques": {
+                    "label": {
+                      "fr": "Réseaux thématiques",
+                      "en": "Thematic networks"
+                    },
+                    "thematicPath": "lesCommunsDesTierslieux17102023_108_0.multiCheckboxPluslesCommunsDesTierslieux17102023_108_0lntzgckrxocls9xuwxo",
+                    "finderPath": "answers.lesCommunsDesTierslieux17102023_108_0.finderlesCommunsDesTierslieux17102023_108_0lo5zvgqitv0b2mx2rl",
+                    "notSourceKey": true
+                  }
+                },
                 "className": "sticky top-20"
               }
             },
@@ -1182,12 +1371,7 @@
                   "title": {
                     "fr": "Tous les tiers-lieux",
                     "en": "All third places"
-                  },
-                  "linkText": {
-                    "fr": "Cartographie des événements",
-                    "en": "Event mapping"
-                  },
-                  "showMapButton": true
+                  }
                 },
                 "useFilter": true,
                 "showMap": false,
@@ -1196,11 +1380,44 @@
                 "showActiveFiltersTags": true,
                 "disableInfiniteScroll": false,
                 "showDetailedViewToggle": true,
+                "searchVariant": "navigator-tl",
                 "baseParams": {
                   "defaultTypes": [
                     "organizations"
                   ],
-                  "indexStepList": 20
+                  "defaultFilters": {
+                    "tags": [
+                      "TiersLieux"
+                    ],
+                    "address.addressCountry": {
+                      "$in": [
+                        "BE",
+                        "FR",
+                        "GP",
+                        "GF",
+                        "IT",
+                        "RE",
+                        "MQ",
+                        "YT",
+                        "NC",
+                        "CH"
+                      ]
+                    }
+                  },
+                  "defaultSortBy": {
+                    "updated": -1
+                  },
+                  "searchBy": [
+                    "name",
+                    "address.addressLocality",
+                    "address.level4Name",
+                    "address.level3Name",
+                    "address.level2Name",
+                    "address.level1Name",
+                    "address.postalCode"
+                  ],
+                  "indexStepList": 20,
+                  "notSourceKey": true
                 },
                 "list": {
                   "columns": {
@@ -1224,8 +1441,16 @@
     {
       "path": "/reseaux-regionaux",
       "title": {
-        "fr": "Réseaux Régionaux - Le réseau social des tiers-lieux",
-        "en": "Regional Networks - The third places social network"
+        "fr": "Réseaux régionaux - Le réseau social des tiers-lieux",
+        "en": "Regional networks - The third places social network"
+      },
+      "seo": {
+        "description": {
+          "fr": "Découvrez les réseaux régionaux de tiers-lieux sur la carte de France et accédez aux lieux de chaque réseau régional.",
+          "en": "Discover the regional third-places networks on the map of France and browse the places of each regional network."
+        },
+        "ogType": "website",
+        "twitterCard": "summary_large_image"
       },
       "layout": "default",
       "sections": [
@@ -1235,9 +1460,9 @@
           "props": {
             "customHeader": {
               "title": {
-                "fr": "Les réseaux régionaux"
-              },
-              "showMapButton": false
+                "fr": "Les réseaux régionaux",
+                "en": "Regional networks"
+              }
             },
             "useFilter": true,
             "showMap": false,
@@ -1288,7 +1513,11 @@
               }
             },
             "defaultViewMode": "regions",
-            "enableRegions": true
+            "enableRegions": true,
+            "regionsTarget": {
+              "path": "/lieux",
+              "filterId": "reseauxRegionaux"
+            }
           }
         }
       ]
@@ -1296,8 +1525,16 @@
     {
       "path": "/reseaux-thematiques",
       "title": {
-        "fr": "Réseaux Thématiques - Le réseau social des tiers-lieux",
-        "en": "Thematic Networks - The third places social network"
+        "fr": "Réseaux thématiques - Le réseau social des tiers-lieux",
+        "en": "Thematic networks - The third places social network"
+      },
+      "seo": {
+        "description": {
+          "fr": "Explorez les réseaux thématiques de tiers-lieux et découvrez les lieux associés à chaque thématique.",
+          "en": "Explore the thematic third-places networks and discover the places linked to each theme."
+        },
+        "ogType": "website",
+        "twitterCard": "summary_large_image"
       },
       "layout": "default",
       "sections": [
@@ -1307,9 +1544,9 @@
           "props": {
             "customHeader": {
               "title": {
-                "fr": "Les réseaux thématiques"
-              },
-              "showMapButton": false
+                "fr": "Les réseaux thématiques",
+                "en": "Thematic networks"
+              }
             },
             "useFilter": true,
             "showMap": false,
@@ -1358,6 +1595,20 @@
                 "variant": "tiers-lieux",
                 "detailsMode": "drawer"
               }
+            },
+            "defaultViewMode": "thematics",
+            "thematicSource": {
+              "label": {
+                "fr": "Réseaux thématiques",
+                "en": "Thematic networks"
+              },
+              "thematicPath": "lesCommunsDesTierslieux17102023_108_0.multiCheckboxPluslesCommunsDesTierslieux17102023_108_0lntzgckrxocls9xuwxo",
+              "finderPath": "answers.lesCommunsDesTierslieux17102023_108_0.finderlesCommunsDesTierslieux17102023_108_0lo5zvgqitv0b2mx2rl",
+              "notSourceKey": true
+            },
+            "thematicsTarget": {
+              "path": "/lieux",
+              "filterId": "reseauxThematiques"
             }
           }
         }
@@ -1379,8 +1630,7 @@
               "title": {
                 "fr": "La communauté",
                 "en": "The community"
-              },
-              "showMapButton": false
+              }
             },
             "useFilter": true,
             "showMap": false,
@@ -1464,8 +1714,7 @@
               "title": {
                 "fr": "Les événements autour de tiers-lieux.org",
                 "en": "events around tiers-lieux.org"
-              },
-              "showMapButton": true
+              }
             },
             "useFilter": true,
             "showMap": false,
@@ -1478,10 +1727,13 @@
               "defaultTypes": [
                 "events"
               ],
+              "sourceKey": [
+                "franceTierslieux",
+                "tierslieuxbelgique",
+                "navigatorDesTierslieux"
+              ],
               "indexStepList": 20,
-              "notSourceKey": true,
               "fediverse": false,
-              "costumId": "649ed498f93ee7202e6c8b12",
               "costumEditMode": false,
               "defaultSortBy": {
                 "startDate": 1
@@ -1519,7 +1771,8 @@
     {
       "path": "/api-donnees",
       "title": {
-        "fr": "API et données ouvertes"
+        "fr": "API et données ouvertes - Le réseau social des tiers-lieux",
+        "en": "Open API and data - The third places social network"
       },
       "sections": [
         {
@@ -1527,7 +1780,68 @@
           "id": "api-donnees",
           "props": {
             "html": {
-              "fr": "<div class=\"container mx-auto max-w-4xl py-16 px-4\"><h1 class=\"text-3xl font-bold mb-6\">API et données ouvertes</h1><p class=\"text-lg text-muted-foreground mb-8\">Toutes les datas des Tiers Lieux et des réseaux.<br/>Récupérez, Naviguez, Retravaillez la data des Tiers Lieux à votre guise. Créer plus de collaboration, de valeurs ajoutées, communiquez.</p><h2 class=\"text-xl font-bold mb-4\">Tiers-lieux :</h2><div class=\"flex gap-3 mb-8\"><span class=\"px-3 py-1 bg-primary/10 text-primary rounded font-mono text-sm\">API</span><span class=\"px-3 py-1 bg-primary/10 text-primary rounded font-mono text-sm\">JSON</span><span class=\"px-3 py-1 bg-primary/10 text-primary rounded font-mono text-sm\">CSV</span></div><h2 class=\"text-xl font-bold mb-4\">Réseaux :</h2><div class=\"grid grid-cols-2 md:grid-cols-3 gap-2 mb-8 text-sm text-muted-foreground\"><span>Auvergne-Rhône-Alpes</span><span>Bourgogne-Franche-Comté</span><span>Bretagne</span><span>Centre-Val de Loire</span><span>Corse</span><span>Grand Est</span><span>Guadeloupe</span><span>Hauts-de-France</span><span>Normandie</span><span>Nouvelle-Aquitaine</span><span>Occitanie</span><span>Pays de la Loire</span><span>Provence-Alpes-Côte d'Azur</span><span>Île-de-France</span><span>Guyane</span><span>Martinique</span><span>Réunion</span><span>Mayotte</span></div><hr class=\"my-6\"/><p class=\"text-sm text-muted-foreground\">Les données sont sous licence <strong>ODBL</strong>.</p><p class=\"text-sm text-muted-foreground\">La plateforme est basée sur le logiciel libre <strong>Communecter</strong>, qui est sous licence <strong>GPL</strong>.</p></div>"
+              "fr": "<div class=\"container mx-auto max-w-4xl py-16 px-4\"><h1 class=\"text-3xl font-bold mb-6\">API et données ouvertes</h1><p class=\"text-lg text-muted-foreground mb-8\">Toutes les datas des Tiers Lieux et des réseaux.<br/>Récupérez, Naviguez, Retravaillez la data des Tiers Lieux à votre guise. Créer plus de collaboration, de valeurs ajoutées, communiquez.</p><h2 class=\"text-xl font-bold mb-4\">Tiers-lieux :</h2><div class=\"flex gap-3 mb-8\"><span class=\"px-3 py-1 bg-primary/10 text-primary rounded font-mono text-sm\">API</span><span class=\"px-3 py-1 bg-primary/10 text-primary rounded font-mono text-sm\">JSON</span><span class=\"px-3 py-1 bg-primary/10 text-primary rounded font-mono text-sm\">CSV</span></div><h2 class=\"text-xl font-bold mb-4\">Réseaux :</h2><div class=\"grid grid-cols-2 md:grid-cols-3 gap-2 mb-8 text-sm text-muted-foreground\"><span>Auvergne-Rhône-Alpes</span><span>Bourgogne-Franche-Comté</span><span>Bretagne</span><span>Centre-Val de Loire</span><span>Corse</span><span>Grand Est</span><span>Guadeloupe</span><span>Hauts-de-France</span><span>Normandie</span><span>Nouvelle-Aquitaine</span><span>Occitanie</span><span>Pays de la Loire</span><span>Provence-Alpes-Côte d'Azur</span><span>Île-de-France</span><span>Guyane</span><span>Martinique</span><span>Réunion</span><span>Mayotte</span></div><hr class=\"my-6\"/><p class=\"text-sm text-muted-foreground\">Les données sont sous licence <strong>ODBL</strong>.</p><p class=\"text-sm text-muted-foreground\">La plateforme est basée sur le logiciel libre <strong>Communecter</strong>, qui est sous licence <strong>GPL</strong>.</p></div>",
+              "en": "<div class=\"container mx-auto max-w-4xl py-16 px-4\"><h1 class=\"text-3xl font-bold mb-6\">API and open data</h1><p class=\"text-lg text-muted-foreground mb-8\">All the data of third places and networks.<br/>Retrieve, browse and rework third-place data as you wish. Create more collaboration, more added value, communicate.</p><h2 class=\"text-xl font-bold mb-4\">Third places:</h2><div class=\"flex gap-3 mb-8\"><span class=\"px-3 py-1 bg-primary/10 text-primary rounded font-mono text-sm\">API</span><span class=\"px-3 py-1 bg-primary/10 text-primary rounded font-mono text-sm\">JSON</span><span class=\"px-3 py-1 bg-primary/10 text-primary rounded font-mono text-sm\">CSV</span></div><h2 class=\"text-xl font-bold mb-4\">Networks:</h2><div class=\"grid grid-cols-2 md:grid-cols-3 gap-2 mb-8 text-sm text-muted-foreground\"><span>Auvergne-Rhône-Alpes</span><span>Bourgogne-Franche-Comté</span><span>Bretagne</span><span>Centre-Val de Loire</span><span>Corse</span><span>Grand Est</span><span>Guadeloupe</span><span>Hauts-de-France</span><span>Normandie</span><span>Nouvelle-Aquitaine</span><span>Occitanie</span><span>Pays de la Loire</span><span>Provence-Alpes-Côte d'Azur</span><span>Île-de-France</span><span>Guyane</span><span>Martinique</span><span>Réunion</span><span>Mayotte</span></div><hr class=\"my-6\"/><p class=\"text-sm text-muted-foreground\">The data is licensed under <strong>ODBL</strong>.</p><p class=\"text-sm text-muted-foreground\">The platform is built on the open-source software <strong>Communecter</strong>, licensed under <strong>GPL</strong>.</p></div>"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/mentions-legales",
+      "title": {
+        "fr": "Mentions légales - Le réseau social des tiers-lieux",
+        "en": "Legal notice - The third places social network"
+      },
+      "layout": "default",
+      "sections": [
+        {
+          "type": "html",
+          "id": "mentions-legales",
+          "props": {
+            "html": {
+              "fr": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Mentions légales</h1>\n<p class=\"text-muted-foreground mb-8\">Conformément à l'article 6-III de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique (LCEN).</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Éditeur du site</h2>\n<p class=\"text-muted-foreground mb-2\">[Dénomination de l'association] — association régie par la loi du 1<sup>er</sup> juillet 1901.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\">\n<li>Siège social : [adresse complète]</li>\n<li>N° RNA / déclaration en préfecture : [W000000000]</li>\n<li>SIRET (le cas échéant) : [000 000 000 00000]</li>\n<li>Courriel : [contact@exemple.org]</li>\n<li>Téléphone : [+33 0 00 00 00 00]</li>\n<li>Directeur / Directrice de la publication : [Nom Prénom]</li>\n</ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Hébergeur</h2>\n<p class=\"text-muted-foreground mb-6\">[Nom de l'hébergeur] — [adresse] — [téléphone].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Propriété intellectuelle</h2>\n<p class=\"text-muted-foreground mb-6\">L'ensemble des contenus (textes, logos, éléments graphiques) est, sauf mention contraire, la propriété de l'éditeur ou de ses partenaires. Les contenus publiés par les utilisateurs restent la propriété de leurs auteurs. La plateforme s'appuie sur le logiciel libre <strong>Communecter</strong> (licence GPL) ; les données des tiers-lieux sont diffusées sous licence <strong>ODbL</strong>.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Données personnelles</h2>\n<p class=\"text-muted-foreground mb-6\">Le traitement de vos données personnelles est décrit dans notre <a href=\"/confidentialite\" class=\"text-primary hover:underline\">politique de confidentialité</a>.</p>\n</div>",
+              "en": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Legal notice</h1>\n<p class=\"text-muted-foreground mb-8\">In accordance with Article 6-III of French Act No. 2004-575 of 21 June 2004 on confidence in the digital economy (LCEN).</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Publisher</h2>\n<p class=\"text-muted-foreground mb-2\">[Association name] — a non-profit association governed by the French Act of 1 July 1901.</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\">\n<li>Registered office: [full address]</li>\n<li>Registration no. (RNA / prefecture): [W000000000]</li>\n<li>SIRET (where applicable): [000 000 000 00000]</li>\n<li>Email: [contact@exemple.org]</li>\n<li>Phone: [+33 0 00 00 00 00]</li>\n<li>Publication director: [Full name]</li>\n</ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Host</h2>\n<p class=\"text-muted-foreground mb-6\">[Host name] — [address] — [phone].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Intellectual property</h2>\n<p class=\"text-muted-foreground mb-6\">Unless otherwise stated, all content (text, logos, graphics) is the property of the publisher or its partners. Content published by users remains the property of its authors. The platform is built on the open-source software <strong>Communecter</strong> (GPL licence); third-place data is published under the <strong>ODbL</strong> licence.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Personal data</h2>\n<p class=\"text-muted-foreground mb-6\">The processing of your personal data is described in our <a href=\"/confidentialite\" class=\"text-primary hover:underline\">privacy policy</a>.</p>\n</div>"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/confidentialite",
+      "title": {
+        "fr": "Politique de confidentialité - Le réseau social des tiers-lieux",
+        "en": "Privacy policy - The third places social network"
+      },
+      "layout": "default",
+      "sections": [
+        {
+          "type": "html",
+          "id": "confidentialite",
+          "props": {
+            "html": {
+              "fr": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Politique de confidentialité</h1>\n<p class=\"text-muted-foreground mb-8\">Dernière mise à jour : [JJ/MM/AAAA]. La présente politique décrit comment vos données personnelles sont traitées lorsque vous utilisez ce site, conformément au Règlement général sur la protection des données (RGPD) et à la loi Informatique et Libertés.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">1. Responsable du traitement</h2>\n<p class=\"text-muted-foreground mb-6\">[Dénomination de l'association], [adresse du siège]. Contact : <a href=\"mailto:[contact@exemple.org]\" class=\"text-primary hover:underline\">[contact@exemple.org]</a>. Délégué à la protection des données (DPO), le cas échéant : [nom / courriel].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">2. Données que nous traitons</h2>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\">\n<li><strong>Données de compte</strong> : adresse e-mail, nom d'affichage, mot de passe (chiffré) et les informations de profil que vous renseignez.</li>\n<li><strong>Contenus que vous publiez</strong> : fiches de tiers-lieux, actualités, commentaires, médias.</li>\n<li><strong>Données techniques</strong> : informations strictement nécessaires au fonctionnement du service (jeton de connexion, préférences d'affichage), stockées localement sur votre appareil (voir section 4).</li>\n</ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">3. Finalités et bases légales</h2>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\">\n<li>Création et gestion de votre compte — <em>exécution du service</em>.</li>\n<li>Publication et mise en relation au sein du réseau des tiers-lieux — <em>exécution du service</em>.</li>\n<li>Mémorisation de vos préférences (langue, thème) — <em>intérêt légitime / bon fonctionnement du service</em>.</li>\n</ul>\n<p class=\"text-muted-foreground mb-6\">Nous n'effectuons <strong>aucun profilage publicitaire</strong> et <strong>aucune mesure d'audience</strong>.</p>\n<h2 id=\"cookies\" class=\"text-xl font-bold mb-3 mt-8\">4. Cookies et stockage local</h2>\n<p class=\"text-muted-foreground mb-4\">Ce site <strong>ne dépose aucun cookie publicitaire ni de mesure d'audience</strong> et n'utilise <strong>aucun traceur tiers</strong> (Google Analytics, Matomo, Meta Pixel, etc.). Il enregistre uniquement, dans le stockage local de votre navigateur, des informations <strong>strictement nécessaires</strong> à son fonctionnement :</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\">\n<li><strong>Jeton de connexion</strong> : vous maintient connecté entre les pages (supprimé à la déconnexion).</li>\n<li><strong>Préférence de langue</strong> : mémorise la langue choisie.</li>\n<li><strong>Préférence de thème</strong> : mémorise le mode clair ou sombre.</li>\n<li><strong>Choix relatif aux cookies</strong> : mémorise vos préférences pour ne plus vous les redemander.</li>\n</ul>\n<p class=\"text-muted-foreground mb-6\">Ces éléments étant exemptés de consentement au titre des lignes directrices de la CNIL, aucune demande de consentement préalable n'est requise. Vous pouvez les effacer à tout moment via les réglages de votre navigateur.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">5. Services tiers et transferts hors Union européenne</h2>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\">\n<li><strong>Google Fonts</strong> : les polices de caractères du site sont chargées depuis les serveurs de Google (<span class=\"font-mono text-sm\">fonts.googleapis.com</span>). À ce titre, votre adresse IP est transmise à Google LLC (États-Unis). Aucun cookie n'est déposé par ce service.</li>\n<li><strong>Fonds de carte</strong> : sur les pages comportant une carte, les tuiles cartographiques sont fournies par OpenStreetMap et CARTO ; votre adresse IP leur est transmise lors de l'affichage de la carte. Aucun cookie n'est déposé.</li>\n<li><strong>Hébergement et plateforme</strong> : les données de votre compte sont traitées par notre hébergeur et la plateforme libre Communecter qui propulse le service.</li>\n</ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">6. Durées de conservation</h2>\n<p class=\"text-muted-foreground mb-6\">Vos données de compte sont conservées tant que votre compte est actif. Après suppression de votre compte, elles sont effacées ou anonymisées dans un délai de [à compléter]. Les informations stockées localement sur votre appareil persistent jusqu'à leur effacement par vos soins.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">7. Vos droits</h2>\n<p class=\"text-muted-foreground mb-4\">Conformément au RGPD, vous disposez des droits d'accès, de rectification, d'effacement, d'opposition, de limitation et de portabilité de vos données. Pour les exercer, écrivez à <a href=\"mailto:[contact@exemple.org]\" class=\"text-primary hover:underline\">[contact@exemple.org]</a>.</p>\n<p class=\"text-muted-foreground mb-6\">Vous pouvez également introduire une réclamation auprès de la <strong>CNIL</strong> (Commission nationale de l'informatique et des libertés) — <a href=\"https://www.cnil.fr\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"text-primary hover:underline\">www.cnil.fr</a>.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">8. Sécurité</h2>\n<p class=\"text-muted-foreground mb-6\">Nous mettons en œuvre des mesures techniques et organisationnelles appropriées pour protéger vos données. Les mots de passe sont stockés sous forme chiffrée et les échanges avec le serveur sont chiffrés (HTTPS).</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">9. Contact</h2>\n<p class=\"text-muted-foreground mb-6\">Pour toute question relative à cette politique, contactez-nous à <a href=\"mailto:[contact@exemple.org]\" class=\"text-primary hover:underline\">[contact@exemple.org]</a>.</p>\n</div>",
+              "en": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Privacy Policy</h1>\n<p class=\"text-muted-foreground mb-8\">Last updated: [DD/MM/YYYY]. This policy describes how your personal data is processed when you use this website, in accordance with the General Data Protection Regulation (GDPR) and the French Data Protection Act.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">1. Data controller</h2>\n<p class=\"text-muted-foreground mb-6\">[Association name], [registered address]. Contact: <a href=\"mailto:[contact@exemple.org]\" class=\"text-primary hover:underline\">[contact@exemple.org]</a>. Data Protection Officer (DPO), where applicable: [name / email].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">2. Data we process</h2>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\">\n<li><strong>Account data</strong>: email address, display name, password (encrypted) and the profile information you provide.</li>\n<li><strong>Content you publish</strong>: third-place listings, news, comments, media.</li>\n<li><strong>Technical data</strong>: information strictly necessary for the service to work (session token, display preferences), stored locally on your device (see section 4).</li>\n</ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">3. Purposes and legal bases</h2>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\">\n<li>Creating and managing your account — <em>performance of the service</em>.</li>\n<li>Publishing and networking within the third-places network — <em>performance of the service</em>.</li>\n<li>Remembering your preferences (language, theme) — <em>legitimate interest / proper functioning of the service</em>.</li>\n</ul>\n<p class=\"text-muted-foreground mb-6\">We carry out <strong>no advertising profiling</strong> and <strong>no audience measurement</strong>.</p>\n<h2 id=\"cookies-en\" class=\"text-xl font-bold mb-3 mt-8\">4. Cookies and local storage</h2>\n<p class=\"text-muted-foreground mb-4\">This site <strong>sets no advertising or analytics cookies</strong> and uses <strong>no third-party trackers</strong> (Google Analytics, Matomo, Meta Pixel, etc.). It only stores, in your browser's local storage, information <strong>strictly necessary</strong> for it to work:</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\">\n<li><strong>Session token</strong>: keeps you logged in across pages (removed on logout).</li>\n<li><strong>Language preference</strong>: remembers your chosen language.</li>\n<li><strong>Theme preference</strong>: remembers light or dark mode.</li>\n<li><strong>Cookie choice</strong>: remembers your preferences so we don't ask again.</li>\n</ul>\n<p class=\"text-muted-foreground mb-6\">As these items are exempt from consent under the French data protection authority (CNIL) guidelines, no prior consent is required. You can erase them at any time through your browser settings.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">5. Third-party services and transfers outside the EU</h2>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\">\n<li><strong>Google Fonts</strong>: the site's fonts are loaded from Google's servers (<span class=\"font-mono text-sm\">fonts.googleapis.com</span>). As a result, your IP address is transmitted to Google LLC (United States). This service sets no cookies.</li>\n<li><strong>Map tiles</strong>: on pages featuring a map, tiles are provided by OpenStreetMap and CARTO; your IP address is transmitted to them when the map is displayed. No cookies are set.</li>\n<li><strong>Hosting and platform</strong>: your account data is processed by our host and the open-source Communecter platform that powers the service.</li>\n</ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">6. Retention periods</h2>\n<p class=\"text-muted-foreground mb-6\">Your account data is kept for as long as your account is active. After your account is deleted, it is erased or anonymised within [to be completed]. Information stored locally on your device persists until you erase it.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">7. Your rights</h2>\n<p class=\"text-muted-foreground mb-4\">Under the GDPR, you have the right to access, rectify, erase, object to, restrict and port your data. To exercise these rights, email <a href=\"mailto:[contact@exemple.org]\" class=\"text-primary hover:underline\">[contact@exemple.org]</a>.</p>\n<p class=\"text-muted-foreground mb-6\">You may also lodge a complaint with the <strong>CNIL</strong> (French data protection authority) — <a href=\"https://www.cnil.fr\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"text-primary hover:underline\">www.cnil.fr</a>.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">8. Security</h2>\n<p class=\"text-muted-foreground mb-6\">We implement appropriate technical and organisational measures to protect your data. Passwords are stored encrypted and exchanges with the server are encrypted (HTTPS).</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">9. Contact</h2>\n<p class=\"text-muted-foreground mb-6\">For any question about this policy, contact us at <a href=\"mailto:[contact@exemple.org]\" class=\"text-primary hover:underline\">[contact@exemple.org]</a>.</p>\n</div>"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/cgu",
+      "title": {
+        "fr": "Conditions générales d'utilisation - Le réseau social des tiers-lieux",
+        "en": "Terms of use - The third places social network"
+      },
+      "layout": "default",
+      "sections": [
+        {
+          "type": "html",
+          "id": "cgu",
+          "props": {
+            "html": {
+              "fr": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Conditions générales d'utilisation</h1>\n<p class=\"text-muted-foreground mb-8\">Dernière mise à jour : [JJ/MM/AAAA]. Les présentes conditions générales d'utilisation (« CGU ») régissent l'accès et l'utilisation du site et des services proposés par [Dénomination de l'association] (« la Plateforme »).</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">1. Objet</h2>\n<p class=\"text-muted-foreground mb-6\">La Plateforme est un service en ligne, gratuit, qui met en réseau les tiers-lieux et leurs communautés : référencement de lieux, publication d'actualités, mise en relation et collaboration entre membres. Les présentes CGU définissent les conditions dans lesquelles tout utilisateur (« vous », « l'Utilisateur ») peut accéder au service et y contribuer.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">2. Acceptation des CGU</h2>\n<p class=\"text-muted-foreground mb-6\">L'utilisation de la Plateforme implique l'acceptation pleine et entière des présentes CGU. Si vous n'acceptez pas ces conditions, vous ne devez pas utiliser le service. La création d'un compte vaut acceptation expresse.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">3. Accès au service et inscription</h2>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\">\n<li>La consultation de la Plateforme est libre. Certaines fonctionnalités (publication, mise en relation) nécessitent la création d'un compte.</li>\n<li>Vous vous engagez à fournir des informations exactes et à les maintenir à jour.</li>\n<li>L'inscription est réservée aux personnes disposant de la capacité juridique. Les mineurs doivent obtenir l'autorisation de leur représentant légal.</li>\n</ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">4. Compte utilisateur</h2>\n<p class=\"text-muted-foreground mb-6\">Vous êtes responsable de la confidentialité de vos identifiants et de toute activité réalisée depuis votre compte. En cas d'utilisation non autorisée, vous devez en informer sans délai la Plateforme. Un compte est strictement personnel.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">5. Règles de conduite</h2>\n<p class=\"text-muted-foreground mb-4\">En utilisant la Plateforme, vous vous engagez à ne pas publier ou diffuser de contenu :</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\">\n<li>illicite, diffamatoire, injurieux, haineux, discriminatoire ou incitant à la violence ;</li>\n<li>portant atteinte aux droits de tiers (propriété intellectuelle, vie privée, droit à l'image) ;</li>\n<li>à caractère pornographique ou inadapté à un service ouvert ;</li>\n<li>trompeur, frauduleux, ou constituant du spam ou de la publicité non sollicitée ;</li>\n<li>contenant des virus ou tout code destiné à nuire au fonctionnement du service.</li>\n</ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">6. Contenus publiés par les utilisateurs</h2>\n<p class=\"text-muted-foreground mb-4\">Vous conservez la propriété des contenus que vous publiez. En les publiant, vous accordez à la Plateforme une licence non exclusive et gratuite pour les héberger, afficher et diffuser dans le cadre du service et de ses finalités (notamment la mise en réseau des tiers-lieux). Les données ouvertes des tiers-lieux sont diffusées sous licence <strong>ODbL</strong>.</p>\n<p class=\"text-muted-foreground mb-6\">Vous êtes seul responsable des contenus que vous publiez et garantissez détenir les droits nécessaires à leur diffusion.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">7. Modération et sanctions</h2>\n<p class=\"text-muted-foreground mb-6\">En cas de manquement aux présentes CGU, la Plateforme peut modérer, masquer ou supprimer tout contenu, et suspendre ou supprimer le compte concerné — sans préavis en cas de manquement grave. Vous pouvez signaler un contenu litigieux à <a href=\"mailto:[contact@exemple.org]\" class=\"text-primary hover:underline\">[contact@exemple.org]</a>.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">8. Propriété intellectuelle de la Plateforme</h2>\n<p class=\"text-muted-foreground mb-6\">La Plateforme s'appuie sur le logiciel libre <strong>Communecter</strong>, diffusé sous licence <strong>GPL</strong>. Les marques, logos et éléments graphiques propres à [Dénomination de l'association] demeurent sa propriété ou celle de ses partenaires et ne peuvent être réutilisés sans autorisation.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">9. Données personnelles</h2>\n<p class=\"text-muted-foreground mb-6\">Le traitement de vos données personnelles est décrit dans notre <a href=\"/confidentialite\" class=\"text-primary hover:underline\">politique de confidentialité</a>.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">10. Disponibilité et responsabilité</h2>\n<p class=\"text-muted-foreground mb-6\">La Plateforme est fournie « en l'état », sans garantie de disponibilité continue. Service gratuit reposant sur des moyens associatifs, elle ne saurait être tenue responsable des interruptions, pertes de données ou dommages indirects résultant de l'utilisation du service, dans les limites permises par la loi. Elle n'est pas responsable des contenus publiés par les utilisateurs.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">11. Modification des CGU</h2>\n<p class=\"text-muted-foreground mb-6\">La Plateforme peut modifier les présentes CGU à tout moment. Les modifications entrent en vigueur dès leur publication ; il vous appartient de consulter régulièrement la version en vigueur.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">12. Résiliation</h2>\n<p class=\"text-muted-foreground mb-6\">Vous pouvez supprimer votre compte à tout moment. La Plateforme peut résilier votre accès en cas de manquement aux présentes CGU.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">13. Droit applicable et litiges</h2>\n<p class=\"text-muted-foreground mb-6\">Les présentes CGU sont régies par le droit français. En cas de litige, et à défaut de résolution amiable, les tribunaux français sont compétents.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">14. Contact</h2>\n<p class=\"text-muted-foreground mb-6\">Pour toute question relative aux présentes CGU : <a href=\"mailto:[contact@exemple.org]\" class=\"text-primary hover:underline\">[contact@exemple.org]</a>.</p>\n</div>",
+              "en": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Terms of use</h1>\n<p class=\"text-muted-foreground mb-8\">Last updated: [DD/MM/YYYY]. These terms of use (\"Terms\") govern access to and use of the website and services offered by [Association name] (the \"Platform\").</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">1. Purpose</h2>\n<p class=\"text-muted-foreground mb-6\">The Platform is a free online service connecting third places and their communities: listing of places, publishing of news, networking and collaboration between members. These Terms set out the conditions under which any user (\"you\", the \"User\") may access and contribute to the service.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">2. Acceptance of the Terms</h2>\n<p class=\"text-muted-foreground mb-6\">Using the Platform implies full acceptance of these Terms. If you do not accept them, you must not use the service. Creating an account constitutes express acceptance.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">3. Access and registration</h2>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\">\n<li>Browsing the Platform is open to all. Some features (publishing, networking) require an account.</li>\n<li>You undertake to provide accurate information and to keep it up to date.</li>\n<li>Registration is reserved for persons with legal capacity. Minors must obtain authorisation from their legal guardian.</li>\n</ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">4. User account</h2>\n<p class=\"text-muted-foreground mb-6\">You are responsible for keeping your credentials confidential and for all activity carried out from your account. In the event of unauthorised use, you must notify the Platform without delay. An account is strictly personal.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">5. Rules of conduct</h2>\n<p class=\"text-muted-foreground mb-4\">When using the Platform, you undertake not to publish or share content that is:</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\">\n<li>unlawful, defamatory, insulting, hateful, discriminatory or inciting violence;</li>\n<li>infringing the rights of third parties (intellectual property, privacy, image rights);</li>\n<li>pornographic or unsuitable for an open service;</li>\n<li>misleading, fraudulent, or constituting spam or unsolicited advertising;</li>\n<li>containing viruses or any code intended to harm the service.</li>\n</ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">6. User-published content</h2>\n<p class=\"text-muted-foreground mb-4\">You retain ownership of the content you publish. By publishing it, you grant the Platform a non-exclusive, free licence to host, display and distribute it as part of the service and its purposes (in particular networking of third places). Open third-place data is published under the <strong>ODbL</strong> licence.</p>\n<p class=\"text-muted-foreground mb-6\">You are solely responsible for the content you publish and warrant that you hold the rights necessary for its distribution.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">7. Moderation and sanctions</h2>\n<p class=\"text-muted-foreground mb-6\">In the event of a breach of these Terms, the Platform may moderate, hide or remove any content, and suspend or delete the account concerned — without notice for serious breaches. You can report disputed content to <a href=\"mailto:[contact@exemple.org]\" class=\"text-primary hover:underline\">[contact@exemple.org]</a>.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">8. Platform intellectual property</h2>\n<p class=\"text-muted-foreground mb-6\">The Platform is built on the open-source software <strong>Communecter</strong>, released under the <strong>GPL</strong> licence. The trademarks, logos and graphics specific to [Association name] remain its property or that of its partners and may not be reused without authorisation.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">9. Personal data</h2>\n<p class=\"text-muted-foreground mb-6\">The processing of your personal data is described in our <a href=\"/confidentialite\" class=\"text-primary hover:underline\">privacy policy</a>.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">10. Availability and liability</h2>\n<p class=\"text-muted-foreground mb-6\">The Platform is provided \"as is\", with no guarantee of continuous availability. As a free service relying on non-profit resources, it cannot be held liable for interruptions, data loss or indirect damage resulting from use of the service, within the limits permitted by law. It is not responsible for content published by users.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">11. Changes to the Terms</h2>\n<p class=\"text-muted-foreground mb-6\">The Platform may amend these Terms at any time. Changes take effect upon publication; it is your responsibility to review the current version regularly.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">12. Termination</h2>\n<p class=\"text-muted-foreground mb-6\">You may delete your account at any time. The Platform may terminate your access in the event of a breach of these Terms.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">13. Governing law and disputes</h2>\n<p class=\"text-muted-foreground mb-6\">These Terms are governed by French law. In the event of a dispute, and failing an amicable settlement, the French courts shall have jurisdiction.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">14. Contact</h2>\n<p class=\"text-muted-foreground mb-6\">For any question regarding these Terms: <a href=\"mailto:[contact@exemple.org]\" class=\"text-primary hover:underline\">[contact@exemple.org]</a>.</p>\n</div>"
             }
           }
         }
@@ -1556,21 +1870,21 @@
             }
           },
           {
-            "href": "/outils",
+            "href": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=list-tools#list-tools",
             "label": {
               "fr": "Outils et ressources",
               "en": "Tools & resources"
             }
           },
           {
-            "href": "/entraide",
+            "href": "https://lescommuns.tiers-lieux.org/#les-communs",
             "label": {
               "fr": "S'entraider",
               "en": "Help each other"
             }
           },
           {
-            "href": "/observatoire",
+            "href": "/reseaux-regionaux",
             "label": {
               "fr": "Observatoire",
               "en": "Observatory"
@@ -1584,7 +1898,7 @@
             }
           },
           {
-            "href": "/marques",
+            "href": "/lieux",
             "label": {
               "fr": "Les marques",
               "en": "Brands"
@@ -1595,24 +1909,31 @@
     ],
     "bottomLinks": [
       {
-        "href": "/privacy",
+        "href": "/mentions-legales",
+        "label": {
+          "fr": "Mentions légales",
+          "en": "Legal notice"
+        }
+      },
+      {
+        "href": "/cgu",
+        "label": {
+          "fr": "CGU",
+          "en": "Terms of use"
+        }
+      },
+      {
+        "href": "/confidentialite",
         "label": {
           "fr": "Politique de confidentialité",
           "en": "Privacy Policy"
         }
       },
       {
-        "href": "/terms",
+        "href": "/confidentialite#cookies",
         "label": {
-          "fr": "Conditions d'utilisation",
-          "en": "Terms of Service"
-        }
-      },
-      {
-        "href": "/cookies",
-        "label": {
-          "fr": "Paramètres des cookies",
-          "en": "Cookies Settings"
+          "fr": "Cookies & traceurs",
+          "en": "Cookies & tracking"
         }
       }
     ],
@@ -1671,7 +1992,15 @@
         "chart2": "hsl(43, 91%, 52%)",
         "chart3": "hsl(182, 40%, 60%)",
         "chart4": "hsl(43, 70%, 70%)",
-        "chart5": "hsl(200, 60%, 50%)"
+        "chart5": "hsl(200, 60%, 50%)",
+        "sidebar": "hsl(182, 18%, 96%)",
+        "sidebarForeground": "hsl(210, 20%, 14%)",
+        "sidebarPrimary": "hsl(182, 56%, 40%)",
+        "sidebarPrimaryForeground": "hsl(0, 0%, 100%)",
+        "sidebarAccent": "hsl(182, 40%, 88%)",
+        "sidebarAccentForeground": "hsl(182, 56%, 22%)",
+        "sidebarBorder": "hsl(182, 18%, 88%)",
+        "sidebarRing": "hsl(182, 56%, 40%)"
       },
       "dark": {
         "primary": "hsl(182, 56%, 50%)",
@@ -1703,7 +2032,15 @@
         "chart2": "hsl(43, 85%, 48%)",
         "chart3": "hsl(182, 40%, 65%)",
         "chart4": "hsl(43, 70%, 65%)",
-        "chart5": "hsl(200, 60%, 55%)"
+        "chart5": "hsl(200, 60%, 55%)",
+        "sidebar": "hsl(210, 20%, 10%)",
+        "sidebarForeground": "hsl(182, 10%, 93%)",
+        "sidebarPrimary": "hsl(182, 56%, 50%)",
+        "sidebarPrimaryForeground": "hsl(0, 0%, 100%)",
+        "sidebarAccent": "hsl(182, 30%, 22%)",
+        "sidebarAccentForeground": "hsl(182, 56%, 80%)",
+        "sidebarBorder": "hsl(182, 15%, 22%)",
+        "sidebarRing": "hsl(182, 56%, 50%)"
       }
     },
     "typography": {
@@ -1751,6 +2088,9 @@
     "customCSS": ""
   },
   "auth": {
+    "variant": "default",
+    "hideHeader": false,
+    "hideFooter": false,
     "login": {
       "title": {
         "fr": "Se connecter",
@@ -1760,7 +2100,35 @@
         "fr": "Accédez à votre réseau des tiers-lieux",
         "en": "Access your third places network"
       }
+    },
+    "register": {
+      "title": {
+        "fr": "Créer un compte",
+        "en": "Create an account"
+      },
+      "subtitle": {
+        "fr": "Rejoignez le réseau des tiers-lieux",
+        "en": "Join the third places network"
+      }
+    },
+    "recover": {
+      "title": {
+        "fr": "Mot de passe oublié",
+        "en": "Forgot password"
+      },
+      "subtitle": {
+        "fr": "Saisissez votre adresse e-mail pour recevoir un lien de réinitialisation",
+        "en": "Enter your email to receive a reset link"
+      }
     }
+  },
+  "costum": {
+    "slug": "navigatorDesTierslieux",
+    "id": "649ed498f93ee7202e6c8b12",
+    "type": "projects",
+    "editMode": false,
+    "mainTag": "TiersLieux",
+    "compagnon": "Compagnon France Tiers-Lieux"
   },
   "profiles": {
     "default": {
@@ -1893,7 +2261,23 @@
             "organization": true,
             "project": true,
             "event": true,
-            "poi": true
+            "poi": true,
+            "custom": [
+              {
+                "modalKey": "add-tiers-lieux",
+                "label": {
+                  "fr": "Ajouter un tiers-lieu",
+                  "en": "Add a third place"
+                },
+                "icon": "building-2",
+                "condition": {
+                  "auth": "required",
+                  "permissions": [
+                    "canAddOrganization"
+                  ]
+                }
+              }
+            ]
           }
         },
         {
@@ -2007,6 +2391,10 @@
       "layout": "default",
       "hideHeader": false,
       "hideFooter": false,
+      "editModal": "edit-tiers-lieux",
+      "editModalMatch": {
+        "tags": "TiersLieux"
+      },
       "sections": [
         {
           "type": "profile-header",
@@ -2235,6 +2623,14 @@
                       "linked": true,
                       "category": "salle-reunion",
                       "hide": true
+                    },
+                    "6876c3e58fa8df3c7f024253": {
+                      "name": "Diagnostic Licoop",
+                      "finder": "answers.navigatorDesTierslieux1572025_2311_0.findernavigatorDesTierslieux1572025_2311_0md5u4tkmsz33mya3xvb",
+                      "linked": true,
+                      "category": "evaluation",
+                      "openMode": "modal",
+                      "hide": true
                     }
                   }
                 }
@@ -2290,6 +2686,37 @@
                   "showCounts": true,
                   "showAddress": true,
                   "showOrganizer": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "organizations",
+          "label": {
+            "fr": "Organisations",
+            "en": "Organizations"
+          },
+          "sections": [
+            {
+              "type": "profile-tab-layout",
+              "leftSections": [
+                {
+                  "type": "profile-related",
+                  "relationType": "organizations",
+                  "title": {
+                    "fr": "Organisations partenaires",
+                    "en": "Partner Organizations"
+                  }
+                }
+              ],
+              "rightSections": [
+                {
+                  "type": "profile-info",
+                  "variant": "sidebar",
+                  "sticky": true,
+                  "showCounts": true,
+                  "showAddress": true
                 }
               ]
             }
@@ -2473,37 +2900,6 @@
                   "showCounts": true,
                   "showAddress": true,
                   "showOrganizer": true
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "id": "organizations",
-          "label": {
-            "fr": "Organisations",
-            "en": "Organizations"
-          },
-          "sections": [
-            {
-              "type": "profile-tab-layout",
-              "leftSections": [
-                {
-                  "type": "profile-related",
-                  "relationType": "projects",
-                  "title": {
-                    "fr": "Organisations partenaires",
-                    "en": "Partner Organizations"
-                  }
-                }
-              ],
-              "rightSections": [
-                {
-                  "type": "profile-info",
-                  "variant": "sidebar",
-                  "sticky": true,
-                  "showCounts": true,
-                  "showAddress": true
                 }
               ]
             }
@@ -2877,6 +3273,22 @@
       }
     }
   ],
+  "commandPalette": { 
+    "enabled": true, 
+    "triggerVariant": "compact",
+    "entitySearch": {
+      "enabled": true,
+      "searchType": ["organizations", "projects", "events", "citoyens"],
+      "limit": 8,
+      "params": { 
+        "sourceKey": [
+          "franceTierslieux",
+          "tierslieuxbelgique",
+          "navigatorDesTierslieux"
+        ]
+      }
+    }
+  },
   "floatingActionButton": {
     "enabled": true,
     "position": "bottom-left",
@@ -2885,6 +3297,9 @@
       "en": "Add a Third Place"
     },
     "icon": "square-plus",
-    "modal": "add-tiers-lieux"
+    "modal": "add-tiers-lieux",
+    "condition": {
+      "auth": "required"
+    }
   }
 }

@@ -46,11 +46,17 @@ export function Seo({ page }: SeoProps) {
     nameElt = entity?.serverData?.name || "Votre ville";
   }
 
-  /** 2. Fusion des valeurs (page > site > fallback vide) */
-  const title       = isCity ? nameElt
-                    : seo.title        ? t(seo.title)
-                    : meta.title       ? t(meta.title)
-                    : t(page.title);
+  /** 2. Fusion des valeurs (page > site > fallback vide).
+   * Priorité du titre : seo.title (override page) > page.title (titre propre de
+   * la page) > meta.title (défaut du site). Le titre du site ne doit jamais
+   * masquer le titre d'une page — sinon toutes les pages partagent le même
+   * <title> (mauvais SEO). */
+  const pageTitle   = page.title ? t(page.title) : "";
+  const title       = isCity         ? nameElt
+                    : seo.title      ? t(seo.title)
+                    : pageTitle      ? pageTitle
+                    : meta.title     ? t(meta.title)
+                    : "";
 
   const description = seo.description  ? t(seo.description)
                     : meta.description ? t(meta.description)

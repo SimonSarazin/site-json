@@ -1,10 +1,30 @@
 import "dotenv/config";
 
 /**
- * Endpoint backend pour créer un checkout-intent HelloAsso
- * Flux: Frontend → Ce endpoint → API HelloAsso → URL paiement
+ * Handlers Express HelloAsso (OAuth2 Client Credentials).
  *
- * Utilise OAuth2 (Client Credentials) pour communiquer avec HelloAsso
+ * Statut : BRANCHÉ. Les handlers sont montés dans les deux serveurs :
+ *   - `server/dev-server.js` (l.8, 88-92) : 5 routes, dont `/api/helloasso/orgs`
+ *     (diagnostic, dev uniquement).
+ *   - `server/prod-server.js` (l.9, 76-79) : 4 routes (sans le diagnostic).
+ *
+ *   Routes :
+ *     GET  /api/helloasso/token
+ *     POST /api/helloasso/checkout-intent
+ *     GET  /api/helloasso/callback
+ *     GET  /api/helloasso/checkout-status/:checkoutIntentId
+ *     GET  /api/helloasso/orgs            (dev uniquement — diagnostic)
+ *
+ * Exporte : `helloassoTokenHandler`, `helloassoCheckoutIntentHandler`,
+ *   `helloassoCallbackHandler`, `helloassoCheckoutStatusHandler`,
+ *   `helloassoDiagnosticHandler`.
+ *
+ * Alternative de paiement : Stripe (`StripePaymentForm`), indépendante de ce fichier.
+ *
+ * Endpoint backend pour créer un checkout-intent HelloAsso.
+ * Flux: Frontend → Ce endpoint → API HelloAsso → URL paiement.
+ *
+ * Utilise OAuth2 (Client Credentials) pour communiquer avec HelloAsso.
  */
 
 const HELLOASSO_API_BASE = "https://api.helloasso.com/v5";

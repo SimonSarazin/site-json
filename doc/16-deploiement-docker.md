@@ -12,6 +12,11 @@
   - [Volumes](#volumes)
   - [Ajouter des images de contenu en production](#ajouter-des-images-de-contenu-en-production)
   - [Exemple complet docker-compose.yml](#exemple-complet-docker-composeyml)
+  - [Comportement du serveur de production](#comportement-du-serveur-de-production)
+    - [Compression](#compression)
+    - [Politique de cache HTTP](#politique-de-cache-http)
+    - [Gestion des 404 statiques](#gestion-des-404-statiques)
+    - [Routes API HelloAsso](#routes-api-helloasso)
   - [Recapitulatif du flux build / runtime](#recapitulatif-du-flux-build--runtime)
   - [Voir aussi](#voir-aussi)
 
@@ -19,11 +24,13 @@
 
 ## Dockerfile — Build multi-stage
 
-Le Dockerfile utilise deux etapes :
+Le Dockerfile utilise deux etapes (image de base : `node:22-alpine`) :
 
-**Etape 1 (builder)** : compile le client et le serveur SSR. Le CSS est determine au build par les arguments `SITE_CSS_CONTENT`, `SITE_CSS_PATH` ou `VITE_SLUG`.
+**Etape 1 (builder)** : compile le client et le serveur SSR. Le CSS est determine au build par les arguments `SITE_CSS_CONTENT`, `SITE_CSS_PATH` ou `VITE_SLUG`. La commande `npm run build` execute d'abord un `clean` (suppression de `dist/` et `tsconfig.tsbuildinfo`), puis `build:client` (TypeScript + Vite client) et `build:server` (bundle SSR).
 
-**Etape 2 (runner)** : image de production legere contenant uniquement le build et les dependances runtime. Les dependances installees sont : `express@5`, `compression`, `serialize-javascript`, `isomorphic-dompurify`, `@communecter/cocolight-api-client`, `sharp`, `multer`, `react`, `react-dom`.
+**Etape 2 (runner)** : image de production legere contenant le build et les dependances runtime. Un `package.json` minimal (`{"type":"module"}`) est genere, puis les dependances suivantes sont installees : `express@5`, `compression`, `serialize-javascript`, `isomorphic-dompurify`, `@communecter/cocolight-api-client`, `sharp`, `multer`, `dotenv`, `react`, `react-dom`.
+
+Le repertoire `server/` est copie en entier (pas uniquement `prod-server.js`) car il contient les sous-repertoires `server/api/`, `server/middleware/` et `server/utils/` necessaires a l'execution. `dev-server.js` est inclus dans la copie mais n'est jamais execute en production (le `CMD` lance `prod-server.js`).
 
 ### Arguments de build (ARG)
 
@@ -76,16 +83,18 @@ Ces variables sont lues par `prod-server.js` au demarrage du conteneur. Elles so
 
 | Variable | Obligatoire | Description | Valeur par defaut |
 |----------|-------------|-------------|-------------------|
-| `SITE_CONFIG_PATH` | oui* | Chemin vers le fichier JSON de configuration du site | — |
+| `SITE_CONFIG_PATH` | oui* | Chemin vers le fichier JSON de configuration du site. Les chemins relatifs sont resolus depuis `process.cwd()` (le repertoire de travail du processus, `/app` dans le conteneur). | — |
 | `SITE_CONFIG_JSON` | oui* | Alternative : JSON complet de la config inline | — |
 | `VITE_BASE_URL_BACKEND` | non | URL du backend API, injectee dans `window.__ENV__` | `""` |
 | `VITE_SERVER_URL` | non | URL publique du serveur, injectee dans `window.__ENV__` | `""` |
 | `VITE_SLUG` | non | Slug du site, injecte dans `window.__ENV__` (utilise cote client) | `""` |
 | `IMAGE_OPTIMIZER_ALLOWED_DOMAINS` | non | Domaines autorises pour le proxy d'images, separes par des virgules | localhost + hostname du backend |
 | `NODE_ENV` | non | Mode Node.js | `production` |
-| `PORT` | non | Port d'ecoute du serveur | `80` |
+| `PORT` | non | Port d'ecoute du serveur | `3000` |
 
 > \* L'un des deux (`SITE_CONFIG_PATH` ou `SITE_CONFIG_JSON`) est obligatoire. Sans configuration, le serveur refuse de demarrer.
+
+> **Note `window.__ENV__`** : le bloc `window.__ENV__` n'est injecte dans le HTML que si au moins une des trois variables (`VITE_BASE_URL_BACKEND`, `VITE_SERVER_URL`, `VITE_SLUG`) est definie. Si aucune n'est renseignee, aucun script `__ENV__` n'est emis.
 
 ## Volumes
 
@@ -128,6 +137,8 @@ volumes:
 
 ## Exemple complet docker-compose.yml
 
+Le `docker-compose.yml` du depot est directement utilisable :
+
 ```yaml
 version: "3.8"
 
@@ -140,32 +151,79 @@ services:
     ports:
       - "3000:3000"
     environment:
-      SITE_CONFIG_PATH: "./config.prod.json"
       VITE_BASE_URL_BACKEND: "https://www.communecter.org"
       VITE_SERVER_URL: "https://www.communecter.org"
       VITE_SLUG: "franceTierslieux"
+      SITE_CONFIG_PATH: "./config.prod.json"
     volumes:
-      # Config JSON (obligatoire)
       - ./config.prod.json:/app/config.prod.json
-      # Cache d'images optimisees (persistant)
       - image-cache:/app/.cache/images
 
 volumes:
   image-cache:
 ```
 
+> **Port** : le Dockerfile declare `EXPOSE 80` mais `prod-server.js` ecoute sur `process.env.PORT || 3000`. Le port expose dans `docker-compose.yml` est `3000:3000`. Pour ecouter sur le port 80 sans reverse proxy, definir `PORT=80` dans les variables d'environnement.
+
+## Comportement du serveur de production
+
+### Compression
+
+`prod-server.js` applique la compression gzip avec les options suivantes :
+
+- `level: 6` — compromis vitesse/taux de compression
+- `threshold: 1024` — les reponses inferieures a 1 Ko ne sont pas compressees
+
+### Politique de cache HTTP
+
+| Chemin | Cache-Control | Justification |
+|--------|---------------|---------------|
+| `/assets/*` | `public, max-age=31536000, immutable` | Assets Vite avec hash de contenu — jamais changes |
+| `/images/*` | `public, max-age=86400, stale-while-revalidate=604800` | Images statiques servies depuis `dist/client/images/` |
+| Autres statiques | ETag + Last-Modified | Geres par `express.static` |
+
+Un ETag fort (`app.set('etag', 'strong')`) est active globalement pour permettre les reponses `304 Not Modified`.
+
+### Gestion des 404 statiques
+
+Les requetes vers des extensions de fichiers statiques inexistants (`.png`, `.jpg`, `.css`, `.js`, `.json`, `.ico`, `.webp`, `.mp4`, `.woff2`, `.woff`, etc.) retournent un 404 immediat sans passer par le rendu SSR. Les routes `/api/*` sont exemptees de cette verification.
+
+### Routes API HelloAsso
+
+`prod-server.js` enregistre quatre routes pour l'integration HelloAsso (paiement) :
+
+| Methode | Route | Description |
+|---------|-------|-------------|
+| `GET` | `/api/helloasso/token` | Obtention du token OAuth HelloAsso |
+| `POST` | `/api/helloasso/checkout-intent` | Creation d'une intention de paiement |
+| `GET` | `/api/helloasso/callback` | Callback apres paiement |
+| `GET` | `/api/helloasso/checkout-status/:checkoutIntentId` | Statut d'un paiement |
+
+Ces routes sont servies directement par Express avant le rendu SSR. Elles requierent que les variables d'environnement HelloAsso soient configurees dans le conteneur (voir la documentation du module `cagnotte`).
+
 ## Recapitulatif du flux build / runtime
 
 ```
-BUILD (docker build)                        RUNTIME (docker run)
-────────────────────                        ────────────────────
-ARG SITE_CSS_CONTENT ──┐                    ENV SITE_CONFIG_PATH ──→ prod-server.js
-ARG SITE_CSS_PATH ─────┼→ Vite/Tailwind    ENV VITE_BASE_URL_BACKEND ──→ window.__ENV__
-ARG VITE_SLUG ─────────┘   compile CSS     ENV VITE_SERVER_URL ──→ window.__ENV__
-(sinon src/index.css)       │               ENV VITE_SLUG ──→ window.__ENV__
-                            ▼
-               dist/client/assets/*.css     Volume config.json ──→ loadSiteConfig()
-               (fige dans l'image)          Volume images/ ──→ express.static
+BUILD (docker build)                        RUNTIME (docker run / docker-compose)
+────────────────────                        ──────────────────────────────────────
+ARG SITE_CSS_CONTENT ──┐                    ENV SITE_CONFIG_PATH ──→ loadSiteConfig()
+ARG SITE_CSS_PATH ─────┼→ Vite/Tailwind    ENV SITE_CONFIG_JSON ──→ loadSiteConfig()
+ARG VITE_SLUG ─────────┘   compile CSS     ENV VITE_BASE_URL_BACKEND ─┐
+(sinon src/index.css)       │               ENV VITE_SERVER_URL ────────┼→ window.__ENV__
+                            ▼               ENV VITE_SLUG ──────────────┘  (si ≥ 1 defini)
+               dist/client/assets/*.css
+               dist/server/entry-server.js  ENV PORT ──→ port d'ecoute (defaut : 3000)
+               server/ (prod-server.js      ENV IMAGE_OPTIMIZER_ALLOWED_DOMAINS
+                        api/, middleware/,         ──→ proxy /img
+                        utils/)
+                                            Volume config.json ──→ loadSiteConfig()
+npm run build =                             Volume images/ ──→ express.static
+  rimraf dist                               Volume .cache/images ──→ cache sharp
+  + tsc -b + vite build (client)
+  + vite build --ssr (server)               Routes API : /api/helloasso/* (HelloAsso)
+                                            Cache : /assets/* immutable 1 an
+                                                    /images/* 1 jour + SWR 7 jours
+                                            Compression gzip : level 6, threshold 1 Ko
 ```
 
 ---

@@ -37,12 +37,14 @@ ENV IMAGE_OPTIMIZER_ALLOWED_DOMAINS=""
 
 # Copier les builds
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/server/prod-server.js ./server/prod-server.js
-COPY --from=builder /app/server/middleware ./server/middleware
+# server/ entier (prod-server + middleware + utils + api). Copie complète plutôt
+# que fichier par fichier pour éviter les oublis (dev-server.js est inclus mais
+# jamais exécuté en prod — CMD lance prod-server.js).
+COPY --from=builder /app/server ./server
 
 # Package.json minimal (juste pour ESM) + deps externalisées
 RUN echo '{"type":"module"}' > package.json && \
-    npm install express@5 compression serialize-javascript isomorphic-dompurify @communecter/cocolight-api-client sharp multer react react-dom && \
+    npm install express@5 compression serialize-javascript isomorphic-dompurify @communecter/cocolight-api-client sharp multer dotenv react react-dom && \
     npm cache clean --force
 
 # Volume pour le cache d'images optimisées (persiste entre les redémarrages)

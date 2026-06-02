@@ -1,14 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { useInteropConfig } from "./useInteropConfigQuery";
 import { useInteropUserLinks } from "./useUserInteropLinks";
-import type { EntityTypes } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
+import { INTEROP_QUERY_KEYS } from "../constants/queryKeys";
+import { asInteropEntity, type DiscourseProfilResult } from "./_interopEntity";
 
-export interface DiscourseProfilResult {
-  summary?: Record<string, unknown>;
-  profileUrl?: string;
-  error?: string;
-}
+// Re-export pour les consommateurs qui importent via `@/modules/interop`.
+export type { DiscourseProfilResult };
 
 export function useDiscourseProfilQuery() {
   const { entity } = useCocolight();
@@ -16,9 +14,12 @@ export function useDiscourseProfilQuery() {
   const { discourseUsername, isDiscourseLinked } = useInteropUserLinks();
 
   return useQuery<DiscourseProfilResult>({
-    queryKey: ["discourse-profil", entity?.id, discourseUsername],
+    queryKey: INTEROP_QUERY_KEYS.DISCOURSE_PROFIL(entity?.id ?? null, discourseUsername ?? null),
     queryFn: async () => {
-      return (entity as EntityTypes & { getDiscourseProfile(username: string): Promise<DiscourseProfilResult> }).getDiscourseProfile(discourseUsername!);
+      if (!entity || !discourseUsername) {
+        throw new Error("Discourse profile query enabled without entity/username");
+      }
+      return asInteropEntity(entity).getDiscourseProfile(discourseUsername);
     },
     enabled: !!entity && hasDiscourse && isDiscourseLinked && !!discourseUsername,
     staleTime: 5 * 60 * 1000,

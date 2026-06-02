@@ -3,10 +3,9 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
 import { Header } from "@/types/site-schema";
-import { ChevronDown, User, LogOut, Settings, Globe } from "lucide-react";
-import { Link, useNavigate, useLocation } from "react-router";
+import { ChevronDown, User, LogOut, Globe } from "lucide-react";
+import { Link, useNavigate } from "react-router";
 import { useCocolight } from "@/hooks/useCocolight";
-import { useEntityBySlugQuery } from "@/hooks/useEntityBySlugQuery";
 
 function NavLink({ to, className, children }: { to: string; className?: string; children: React.ReactNode }) {
   if (!to || to === "#") {
@@ -24,16 +23,13 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-    Dialog,
-    DialogContent,
-    DialogTitle,
-} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import LoginForm from "@/components/auth/LoginForm";
+import { AuthModalLazy } from "@/modules/auth";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
+import NotificationBell from "@/modules/notification/components/NotificationBell";
+import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
 
 interface HeaderTiersLieuxProps {
     header: Header;
@@ -44,20 +40,9 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
     const t = useT("components/layout");
     const { currentLocale, setLocale, availableLocales } = useLocalization();
     const navigate = useNavigate();
-    const location = useLocation();
     const { me, api } = useCocolight();
 
-    // En mode sous-site (/s/:slug), utiliser navSubsite si disponible
-    const isSubsite = location.pathname.startsWith("/s/");
-    const nav = isSubsite && header.navSubsite ? header.navSubsite : header.nav;
-
-    // Extraire le slug depuis l'URL /s/{slug}/... pour afficher l'icône du sous-réseau
-    const subsiteSlug = isSubsite ? location.pathname.split("/")[2] : undefined;
-    const { data: subsiteEntity } = useEntityBySlugQuery({ slug: subsiteSlug });
-    const subsiteImage = subsiteEntity?.serverData?.profilThumbImageUrl
-        ?? subsiteEntity?.serverData?.profilImageUrl
-        ?? null;
-    const subsiteName = subsiteEntity?.serverData?.name ?? "";
+    const nav = header.nav;
 
     const profilThumbImageUrl = useReactiveProperty<string>(me?.serverData, 'profilThumbImageUrl') ?? null;
     const name = useReactiveProperty<string>(me?.serverData, 'name') ?? null;
@@ -97,19 +82,6 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                                 />
                             )}
                         </Link>
-
-                        {isSubsite && subsiteImage && (
-                            <>
-                                <span className="text-border text-2xl font-light select-none" aria-hidden="true">/</span>
-                                <OptimizedImage
-                                    src={subsiteImage}
-                                    alt={subsiteName}
-                                    width={207}
-                                    height={48}
-                                    className="h-6 xs:h-8 sm:h-9 w-auto object-contain"
-                                />
-                            </>
-                        )}
                     </div>
 
                     {/* Menu desktop */}
@@ -188,6 +160,9 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                     </div>
 
                     <div className="hidden md:flex items-center space-x-4 text-sm shrink-0 ml-4">
+                        {header.utilities?.notifications && <NotificationBell />}
+                        {header.utilities?.search && <CommandTriggerButton />}
+
                         <ClientOnly fallback={<div className="w-10 h-10" />}>
                             {() => <ToggleButtonTheme />}
                         </ClientOnly>
@@ -253,14 +228,6 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                                                         </DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
-                                                <button className="text-foreground hover:text-primary transition" onClick={() => navigate('/settings')}>
-                                                    <Settings className="w-5 h-5" />
-                                                </button>
-                                                <button className="text-foreground hover:text-primary transition" onClick={() => navigate(getProfileUrl())}>
-                                                    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                        <path d="M21 15H22C22 14.4477 21.5523 14 21 14V15ZM21 21V22C21.5523 22 22 21.5523 22 21H21ZM1 21H0C0 21.5523 0.447715 22 1 22L1 21ZM1 15V14C0.447715 14 0 14.4477 0 15H1ZM6 8C5.44772 8 5 8.44772 5 9C5 9.55229 5.44772 10 6 10V9V8ZM11 10C11.5523 10 12 9.55229 12 9C12 8.44772 11.5523 8 11 8V9V10ZM13.24 7.05C13.599 7.4697 14.2302 7.51892 14.6499 7.15993C15.0696 6.80095 15.1189 6.1697 14.7599 5.75L13.9999 6.4L13.24 7.05ZM14.7599 12.25C15.1189 11.8303 15.0696 11.1991 14.6499 10.8401C14.2302 10.4811 13.599 10.5303 13.24 10.95L13.9999 11.6L14.7599 12.25ZM21 15H20V21H21H22V15H21ZM21 21V20H1V21V22H21V21ZM1 21H2V15H1H0V21H1ZM16.5556 15V16H21V15V14H16.5556V15ZM1 15V16H5.44444V15V14H1V15ZM19 9H18C18 12.866 14.866 16 11 16V17V18C15.9706 18 20 13.9706 20 9H19ZM11 17V16C7.13401 16 4 12.866 4 9H3H2C2 13.9706 6.02944 18 11 18V17ZM3 9H4C4 5.13401 7.13401 2 11 2V1V0C6.02944 0 2 4.02944 2 9H3ZM11 1V2C14.866 2 18 5.13401 18 9H19H20C20 4.02944 15.9706 0 11 0V1ZM6 9V10H11V9V8H6V9ZM13.9999 6.4L14.7599 5.75C14.0955 4.9733 13.2091 4.41884 12.22 4.16132L11.9681 5.12905L11.7161 6.09679C12.3096 6.25131 12.8414 6.58398 13.24 7.05L13.9999 6.4ZM11.9681 5.12905L12.22 4.16132C11.2309 3.90379 10.1867 3.95557 9.22792 4.30967L9.57437 5.24774L9.92083 6.1858C10.4961 5.97334 11.1226 5.94228 11.7161 6.09679L11.9681 5.12905ZM9.57437 5.24774L9.22792 4.30967C8.26915 4.66378 7.44193 5.30319 6.85768 6.14181L7.67818 6.71344L8.49869 7.28508C8.84924 6.78192 9.34557 6.39827 9.92083 6.1858L9.57437 5.24774ZM7.67818 6.71344L6.85768 6.14181C6.27343 6.98042 5.96021 7.97793 5.96021 9H6.96021H7.96021C7.96021 8.38676 8.14814 7.78825 8.49869 7.28508L7.67818 6.71344ZM6.96021 9H5.96021C5.96021 10.0221 6.27343 11.0196 6.85768 11.8582L7.67818 11.2866L8.49869 10.7149C8.14814 10.2118 7.96021 9.61324 7.96021 9H6.96021ZM7.67818 11.2866L6.85768 11.8582C7.44193 12.6968 8.26915 13.3362 9.22792 13.6903L9.57437 12.7523L9.92083 11.8142C9.34557 11.6017 8.84924 11.2181 8.49869 10.7149L7.67818 11.2866ZM9.57437 12.7523L9.22792 13.6903C10.1867 14.0444 11.2309 14.0962 12.22 13.8387L11.9681 12.8709L11.7161 11.9032C11.1226 12.0577 10.4961 12.0267 9.92083 11.8142L9.57437 12.7523ZM11.9681 12.8709L12.22 13.8387C13.2091 13.5812 14.0955 13.0267 14.7599 12.25L13.9999 11.6L13.24 10.95C12.8414 11.416 12.3096 11.7487 11.7161 11.9032L11.9681 12.8709Z" fill="currentColor"></path>
-                                                    </svg>
-                                                </button>
                                             </>
                                         ) : (
                                             <button
@@ -281,6 +248,8 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                     </div>
 
                     <div className="md:hidden flex items-center gap-1 xs:gap-2 shrink-0 ml-3">
+                        {header.utilities?.notifications && <NotificationBell />}
+                        {header.utilities?.search && <CommandTriggerButton />}
                         <ClientOnly fallback={<div className="w-7 h-7 xs:w-8 xs:h-8" />}>
                             {() => <ToggleButtonTheme />}
                         </ClientOnly>
@@ -407,15 +376,7 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                 )}
             </nav>
 
-            <Dialog open={loginDialogOpen} onOpenChange={setLoginDialogOpen}>
-                <DialogContent className="sm:max-w-md bg-card border-border">
-                    <DialogTitle className="sr-only">{t('Se connecter')}</DialogTitle>
-                    <LoginForm
-                        onSuccess={() => setLoginDialogOpen(false)}
-                        hideBackButton={true}
-                    />
-                </DialogContent>
-            </Dialog>
+            <AuthModalLazy open={loginDialogOpen} onOpenChange={setLoginDialogOpen} />
         </header>
     );
 }

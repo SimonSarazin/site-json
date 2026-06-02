@@ -225,7 +225,7 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
 
           multiRadioConfig = {
             tofill,
-            placeholdersradio: (paramData.placeholdersradio as Record<string, string>) || {},
+            placeholdersradio: paramData.placeholdersradio || {},
           };
         }
       }
@@ -263,9 +263,9 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
           
           multiCheckboxPlusConfig = {
             tofill,
-            optinfo: (paramData.optinfo as Record<string, string>) || {},
+            optinfo: paramData.optinfo || {},
             optimage,
-            placeholdersckb: (paramData.placeholdersckb as Record<string, string>) || {},
+            placeholdersckb: paramData.placeholdersckb || {},
             nbAnswersMax: paramData.global?.nbAnswersMax || 20,
             rank: toBool(paramData.global?.rank),
             mandatoryCplx: paramData.mandatoryCplx !== false,
@@ -278,10 +278,10 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
 
       // Config spécifique pour evaluation
       if (componentType === "evaluation" && formData.params) {
-        // Les données sont directement dans params avec le fieldKey comme suffixe
-        // Ex: params.categories{fieldKey}, params.criterias{fieldKey}, etc.
-        // On utilise Record<string, unknown> pour accéder aux clés dynamiques
-        const params = formData.params as unknown as Record<string, unknown>;
+        // Pattern racine : params["categoriesXXX"], params["criteriasXXX"], etc.
+        // L'index signature `[k: string]: unknown` de CoFormFieldConfig retourne
+        // `unknown` pour ces clés non-typées → narrow via cast au call-site.
+        const params = formData.params;
         const categories = params[`categories${fieldKey}`];
         const criterias = params[`criterias${fieldKey}`];
         const criteriaLabel = params[`criteriaLabel${fieldKey}`];
@@ -290,14 +290,17 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
         const multiVotePerLine = params[`multiVotePerLine${fieldKey}`];
         const voteType = params[`voteType${fieldKey}`];
         
+        // Casts `as unknown as TargetType` : idiom TS standard pour accès via
+        // une clé non explicite de l'index signature. Le narrow runtime est
+        // assuré par les fallbacks `|| defaultValue`.
         evaluationConfig = {
-          categories: (categories as EvaluationConfig["categories"]) || {},
-          criterias: (criterias as Record<string, { name: string; coeff: number }>) || {},
-          criteriaLabel: (criteriaLabel as string) || "Critères",
-          categoryNumber: (categoryNumber as number) || 1,
-          categoryTitle: (categoryTitle as string) || "Catégories",
-          multiVotePerLine: (multiVotePerLine as boolean) || false,
-          voteType: ((voteType as string) || "colour") as EvaluationConfig["voteType"],
+          categories: (categories as unknown as EvaluationConfig["categories"]) || {},
+          criterias: (criterias as unknown as Record<string, { name: string; coeff: number }>) || {},
+          criteriaLabel: (criteriaLabel as unknown as string) || "Critères",
+          categoryNumber: (categoryNumber as unknown as number) || 1,
+          categoryTitle: (categoryTitle as unknown as string) || "Catégories",
+          multiVotePerLine: (multiVotePerLine as unknown as boolean) || false,
+          voteType: ((voteType as unknown as string) || "colour") as EvaluationConfig["voteType"],
           colours: { OK: "#9fbd38", NotOK: "#D7193B" },
         };
       }
@@ -312,10 +315,11 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
         const paramData = formData.params[paramKey];
 
         if (paramData) {
-          // Parser les filtres
+          // Parser les filtres — `filter` est typé `Record<string, {attributeName?, valueName?}>`
+          // dans CoFormFieldConfig, plus de cast nécessaire.
           const filters: FinderFilter[] = [];
           if (paramData.filter && typeof paramData.filter === "object") {
-            Object.values(paramData.filter as Record<string, { attributeName?: string; valueName?: string }>).forEach((f) => {
+            Object.values(paramData.filter).forEach((f) => {
               if (f.attributeName && f.valueName) {
                 filters.push({ attributeName: f.attributeName, valueName: f.valueName });
               }
@@ -363,14 +367,14 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
 
           const columns: SimpleTableColumn[] = [];
           if (Array.isArray(paramData.columns)) {
-            for (const col of paramData.columns as Array<{ label?: string; type?: string }>) {
+            for (const col of paramData.columns) {
               columns.push({
                 label: col.label || "",
                 type: (col.type as SimpleTableColumn["type"]) || "Text",
               });
             }
           } else if (paramData.columns && typeof paramData.columns === "object") {
-            for (const col of Object.values(paramData.columns as Record<string, { label?: string; type?: string }>)) {
+            for (const col of Object.values(paramData.columns)) {
               columns.push({
                 label: col.label || "",
                 type: (col.type as SimpleTableColumn["type"]) || "Text",
@@ -380,11 +384,11 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
 
           const rows: SimpleTableRow[] = [];
           if (Array.isArray(paramData.rows)) {
-            for (const row of paramData.rows as Array<{ label?: string }>) {
+            for (const row of paramData.rows) {
               rows.push({ label: row.label || "" });
             }
           } else if (paramData.rows && typeof paramData.rows === "object") {
-            for (const row of Object.values(paramData.rows as Record<string, { label?: string }>)) {
+            for (const row of Object.values(paramData.rows)) {
               rows.push({ label: row.label || "" });
             }
           }
@@ -403,7 +407,7 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
       let sectionTitleConfig: FormFieldMapping["sectionTitleConfig"] | undefined;
 
       if (componentType === "sectionTitle") {
-        const p = (formData.params as Record<string, Record<string, unknown>> | undefined)?.[fieldKey] || {};
+        const p = formData.params?.[fieldKey] || {};
         sectionTitleConfig = {
           showBar: p.showBar !== false && p.showBar !== "false",
           barPosition: (["above", "between", "below"].includes(p.barPosition as string) ? p.barPosition : "between") as "above" | "between" | "below",

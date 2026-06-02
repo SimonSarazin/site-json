@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 import { TextField, TextAreaField, RadioField, CheckboxField, ProseContent, SectionTitleField, SectionDescriptionField } from "./FormFields";
 import { MultiCheckboxPlusField } from "./MultiCheckboxPlusField";
 import { MultiRadioField } from "./MultiRadioField";
@@ -11,6 +12,7 @@ import { EvaluationField } from "./EvaluationField";
 import { FinderField } from "./FinderField";
 import { SimpleTableField } from "./SimpleTableField";
 import { UploaderField } from "./UploaderField";
+import { CoFormBanner } from "./CoFormBanner";
 import type { CoFormData, SubFormData, AddedOptionsMap, EvaluationValue, FinderValue, SimpleTableValue, MultiRadioValue } from "../types";
 import { parseCoFormFields, generateZodSchema, generateDefaultValues } from "../utils/formParser";
 import { useConditionalFields } from "../hooks/useConditionalFields";
@@ -73,16 +75,21 @@ export function DynamicCoForm({
   const zodSchema = useMemo(() => generateZodSchema(subFormsFields), [subFormsFields]);
   const generatedDefaults = useMemo(() => generateDefaultValues(subFormsFields), [subFormsFields]);
 
-  // Fusionner : valeurs externes (mode édition) écrasent les défauts générés
-  const defaultValues = externalDefaults
-    ? { ...generatedDefaults, ...externalDefaults }
-    : generatedDefaults;
+  // Fusionner : valeurs externes (mode édition) écrasent les défauts générés.
+  // useMemo pour stabiliser la référence — sinon `lastSubmittedValuesRef` (qui
+  // dépend de `defaultValues`) re-sérialise à chaque render et la sync async
+  // mode édition peut déclencher un faux auto-submit.
+  const defaultValues = useMemo(
+    () => (externalDefaults ? { ...generatedDefaults, ...externalDefaults } : generatedDefaults),
+    [externalDefaults, generatedDefaults],
+  );
 
   type FormValues = z.infer<typeof zodSchema>;
 
   const {
     register,
     handleSubmit,
+    getValues,
     control,
     formState: { errors, isSubmitting, isDirty },
   } = useForm<FormValues>({
@@ -107,9 +114,27 @@ export function DynamicCoForm({
     }));
   }, []);
 
-  // Ref pour auto-submit : dernier état soumis
-  const lastSubmittedValuesRef = useRef<string>(JSON.stringify(defaultValues));
+  // Ref pour auto-submit : dernier état soumis.
+  // Initialisé à null + syncé via useEffect ci-dessous quand `defaultValues`
+  // change (cas mode édition où les valeurs arrivent en async via
+  // `useCoFormAnswerQuery`). Évite un faux auto-submit au premier blur quand
+  // les `externalDefaults` arrivent après le mount initial.
+  const lastSubmittedValuesRef = useRef<string | null>(null);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Initialise la baseline d'auto-submit UNE SEULE fois, dès que `defaultValues`
+  // est réellement défini (mode édition async : la prop est undefined au mount
+  // puis arrive via useCoFormAnswerQuery). On NE reset PAS sur les refetches
+  // ultérieurs : ça créait une boucle d'autosave quand le backend renvoie + de
+  // champs que le form (links auto-ajoutés, userContext, etc.) — la comparaison
+  // watchedValues vs baseline était toujours fausse → re-trigger save → refetch
+  // → ... loop. La baseline est désormais mise à jour uniquement dans l'autosave
+  // après chaque submit réussi (ligne ~168).
+  useEffect(() => {
+    if (lastSubmittedValuesRef.current === null && defaultValues !== undefined) {
+      lastSubmittedValuesRef.current = JSON.stringify(defaultValues);
+    }
+  }, [defaultValues]);
 
   const handleFormSubmit = useCallback(async (data: FormValues) => {
     const hasAddedOptions = Object.keys(addedOptionsMap).some(k => addedOptionsMap[k].length > 0);
@@ -135,50 +160,38 @@ export function DynamicCoForm({
     };
   }, [submitRef, handleSubmit, handleFormSubmit]);
 
+  // Auto-submit debounced : déclenché 600 ms après le dernier changement de
+  // valeur, uniquement si la valeur courante diffère de la dernière soumise.
+  // La baseline `lastSubmittedValuesRef` est null tant que `defaultValues`
+  // n'est pas synchronisé (mode édition async) → on skip pour éviter un faux
+  // submit avec des valeurs encore non-hydratées.
+  //
+  // IMPORTANT : on appelle `handleFormSubmit` directement (sans passer par
+  // `handleSubmit` du react-hook-form) pour **bypass la validation Zod** —
+  // l'autosave persiste l'état partiel en cours d'édition (typiquement la
+  // suppression d'une ligne d'un SimpleTableField alors que d'autres champs
+  // requis sont encore vides). La validation reste active pour le submit
+  // explicite via le bouton (qui passe lui par `handleSubmit`).
   useEffect(() => {
     if (!autoSubmitOnBlur) return;
+    if (lastSubmittedValuesRef.current === null) return;
     const current = JSON.stringify(watchedValues);
     if (current === lastSubmittedValuesRef.current) return;
 
     if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     debounceTimerRef.current = setTimeout(() => {
       lastSubmittedValuesRef.current = current;
-      handleSubmit(handleFormSubmit)();
+      handleFormSubmit(getValues() as FormValues);
     }, 600);
 
     return () => {
       if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     };
-  });
+  }, [watchedValues, autoSubmitOnBlur, getValues, handleFormSubmit]);
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
-      {/* Bannière du formulaire avec titre en overlay */}
-      {!hideBanner && (
-        formData.useBannerImg && formData.profilBannerUrl ? (
-          <div className="relative w-full overflow-hidden rounded-lg">
-            <img
-              src={formData.profilBannerUrl}
-              alt={t("coform.banner.alt")}
-              className="w-full h-48 object-cover"
-            />
-            <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent" />
-            {formData.name && (
-              <div className="absolute bottom-0 left-0 right-0 p-8">
-                <h1 className="text-4xl font-bold text-white drop-shadow-lg">
-                  {formData.name}
-                </h1>
-              </div>
-            )}
-          </div>
-        ) : formData.name ? (
-          <div className="w-full rounded-lg bg-linear-to-r from-primary/10 via-primary/5 to-background p-8 border">
-            <h1 className="text-4xl font-bold text-foreground">
-              {formData.name}
-            </h1>
-          </div>
-        ) : null
-      )}
+      <CoFormBanner formData={formData} hidden={hideBanner} />
 
       {subFormsFields.map((subForm) => {
           const fieldsGrid = (
@@ -361,6 +374,7 @@ export function DynamicCoForm({
                           errors={errors}
                           value={controllerField.value as import("../types").UploaderValue}
                           onChange={controllerField.onChange}
+                          formId={formData.id}
                           answerId={answerId}
                           subKey={`${subForm.subFormId}.${field.name}`}
                         />
@@ -430,10 +444,7 @@ export function DynamicCoForm({
         >
           {isSubmitting || isLoading ? (
             <>
-              <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-              </svg>
+              <Spinner label={String(t("coform.status.submitting"))} />
               {t("coform.status.submitting")}
             </>
           ) : (

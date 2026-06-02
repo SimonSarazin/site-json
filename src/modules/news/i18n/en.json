@@ -208,5 +208,8 @@
     "error": {
       "generic": "An error occurred"
     }
+  },
+  "a11y": {
+    "moreOptions": "More options"
   }
 }

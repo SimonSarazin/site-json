@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { useT } from "@/hooks/useT";
 import { useCocolight } from "@/hooks/useCocolight";
 import type { Organization } from "@communecter/cocolight-api-client";
+import { PROFIL_QUERY_KEYS } from "../constants/queryKeys";
 
 export type OrganizationType = "NGO" | "LocalBusiness" | "Group" | "GovernmentOrganization" | "Cooperative";
 export type OrganizationRole = "admin" | "member";
@@ -76,7 +77,7 @@ export function useAddOrganization() {
         }
       );
 
-      queryClient.invalidateQueries({ queryKey: ["profile-organizations", userId] });
+      queryClient.invalidateQueries({ queryKey: PROFIL_QUERY_KEYS.PROFILE_ORGANIZATIONS_PREFIX(userId) });
 
       toast.success(t("toast.organization.addSuccess"));
     },

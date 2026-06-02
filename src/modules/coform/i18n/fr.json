@@ -118,6 +118,71 @@
       "updated": "modifié le",
       "newAnswer": "Nouvelle réponse"
     },
+    "finder": {
+      "fallbackElement": "élément",
+      "requiredField": "Ce champ est requis",
+      "elementCard": {
+        "edit": "Modifier",
+        "removeAria": "Supprimer"
+      },
+      "modal": {
+        "title": "Rechercher",
+        "titleWithLabel": "Rechercher un {{label}}",
+        "searchPlaceholder": "Entrez le nom de l'élément recherché",
+        "selectedHeading_one": "Sélectionné",
+        "selectedHeading_other": "Sélectionnés",
+        "resultsHeading": "Résultats ({{count}})",
+        "noResults": "Aucun résultat trouvé pour \"{{query}}\"",
+        "addNewPrompt": "Votre {{label}} n'existe pas encore ?",
+        "addNewButton": "Ajouter",
+        "inviteTitle": "Inviter par email",
+        "inviteNameLabel": "Nom",
+        "inviteNamePlaceholder": "Nom de la personne",
+        "inviteEmailLabel": "Email",
+        "inviteEmailPlaceholder": "adresse@email.com",
+        "inviteSendButton": "Envoyer l'invitation",
+        "searchHint": "Tapez au moins 2 caractères pour lancer la recherche",
+        "cancel": "Annuler",
+        "validate": "Valider"
+      },
+      "types": {
+        "organizations": "Organisation",
+        "citoyens": "Citoyen",
+        "events": "Événement",
+        "projects": "Projet",
+        "news": "Actualité",
+        "cities": "Ville",
+        "things": "Objet",
+        "poi": "Point d'intérêt",
+        "classified": "Annonce",
+        "products": "Produit",
+        "services": "Service",
+        "surveys": "Enquête",
+        "bookmarks": "Favori",
+        "proposals": "Proposition",
+        "rooms": "Salle",
+        "actions": "Action",
+        "networks": "Réseau",
+        "urls": "Lien",
+        "circuits": "Circuit",
+        "risks": "Risque",
+        "badges": "Badge"
+      }
+    },
+    "modal": {
+      "unsavedTitle": "Modifications non enregistrées",
+      "unsavedDescription": "Vous avez des modifications en cours. Que souhaitez-vous faire ?",
+      "continueEditing": "Continuer l'édition",
+      "discardChanges": "Annuler les modifications",
+      "save": "Enregistrer",
+      "ariaTitleFallback": "Formulaire"
+    },
+    "smart": {
+      "loading": "Chargement du formulaire...",
+      "errorTitle": "Erreur de chargement",
+      "retry": "Réessayer",
+      "emptyMessage": "Aucun formulaire trouvé"
+    },
     "multiCheckboxPlus": {
       "maxSelections": "Maximum {{max}} choix",
       "withInput": "avec texte",
@@ -125,6 +190,9 @@
       "textRequired": "Ce champ est obligatoire",
       "rank": "Rang",
       "addNewValue": "Ajouter une option..."
+    },
+    "evaluation": {
+      "noCategories": "Aucune catégorie définie"
     },
     "uploader": {
       "addFile": "Ajouter un fichier",
@@ -138,6 +206,7 @@
       "fileTooLarge": "Fichier trop volumineux : {{name}}",
       "tooManyFiles": "Maximum {{max}} fichier(s) autorisé(s).",
       "deleteFile": "Supprimer {{name}}",
+      "deleteFileError": "Erreur lors de la suppression du fichier.",
       "loadingFiles": "Chargement des fichiers…",
       "noFileSelected": "Aucun fichier sélectionné",
       "pasteHint": "Ctrl+V pour coller",

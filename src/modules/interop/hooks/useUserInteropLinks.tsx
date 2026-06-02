@@ -18,7 +18,8 @@ export function useInteropUserLinks() {
     ? (interop?.mediawiki?.[costumSlug] as string | undefined)
     : undefined;
 
-  const isOwnProfile = me?.slug === entity?.slug;
+  // Guard contre `undefined === undefined === true` (cas user déconnecté + entité absente).
+  const isOwnProfile = Boolean(me?.slug && entity?.slug && me.slug === entity.slug);
 
   return {
     /** Username Discourse lié ou undefined */

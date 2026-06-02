@@ -83,6 +83,17 @@ const profileLoader = async (
         }
         // Ajouter d'autres pré-chargements ici selon les components
         // ex: SocialTab, MembershipTab, etc.
+
+        // Note : pas de prefetch SSR pour les sections cagnotte (`finance`, `actions`,
+        // `*-summary`). Raisons :
+        //  1. Côté serveur, `me` est null (pas d'auth SSR) → on prefetcherait la version
+        //     anonyme de l'enveloppe.
+        //  2. La queryKey `FUNDING_ENVELOPE` n'inclut pas `financerId`, donc le client
+        //     connecté hériterait du cache anonyme jusqu'à expiration de `staleTime`.
+        //  3. Les sections cagnotte vivent dans des tabs (`finance`/`actions`) qui ne sont
+        //     pas le tab par défaut → pas de gain LCP.
+        // Le helper `prefetchFundingEnvelope` reste exporté pour un usage futur (auth SSR
+        // + queryKey enrichie de `financerId`).
       }
     }
 

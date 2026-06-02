@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { FieldError } from "./FormFields";
 import type { FormFieldMapping, MultiCheckboxPlusValue, MultiCheckboxPlusSelectedOption } from "../types";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -57,7 +58,6 @@ export function MultiCheckboxPlusField({
   const options = useMemo(() => [...originalOptions, ...addedOptions], [originalOptions, addedOptions]);
   
   const config = field.multiCheckboxPlusConfig;
-  const hasError = !!errors[field.name];
 
   // État local pour les textes supplémentaires (pour type cplx)
   const [textInputs, setTextInputs] = useState<Record<string, string>>(() => {
@@ -161,12 +161,10 @@ export function MultiCheckboxPlusField({
       
       // Nettoyer le texte local et l'état touched
       setTextInputs(prev => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [option]: _removed, ...rest } = prev;
         return rest;
       });
       setTouchedInputs(prev => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [option]: _removed, ...rest } = prev;
         return rest;
       });
@@ -229,7 +227,7 @@ export function MultiCheckboxPlusField({
       {/* Limite de sélection */}
       {config?.nbAnswersMax && (
         <p className="text-xs text-muted-foreground">
-          {t("multiCheckboxPlus.maxSelections", `Maximum ${config.nbAnswersMax} choix`, { max: config.nbAnswersMax })}
+          {t("coform.multiCheckboxPlus.maxSelections", `Maximum ${config.nbAnswersMax} choix`, { max: config.nbAnswersMax })}
           {" "}({value.length}/{config.nbAnswersMax})
         </p>
       )}
@@ -306,7 +304,7 @@ export function MultiCheckboxPlusField({
                     <div className="mt-2">
                       <Input
                         ref={(el) => { inputRefs.current[option] = el; }}
-                        placeholder={placeholder || t("multiCheckboxPlus.enterDetails", "Précisez...")}
+                        placeholder={placeholder || t("coform.multiCheckboxPlus.enterDetails", "Précisez...")}
                         value={textInputs[option] || ""}
                         onChange={(e) => handleTextChange(option, e.target.value)}
                         onBlur={() => setTouchedInputs(prev => ({ ...prev, [option]: true }))}
@@ -317,7 +315,7 @@ export function MultiCheckboxPlusField({
                       />
                       {showCplxError && (
                         <p className="text-xs text-destructive mt-1">
-                          {t("multiCheckboxPlus.textRequired", "Ce champ est obligatoire")}
+                          {t("coform.multiCheckboxPlus.textRequired", "Ce champ est obligatoire")}
                         </p>
                       )}
                     </div>
@@ -333,7 +331,7 @@ export function MultiCheckboxPlusField({
           <div className="flex items-center gap-2 pt-2">
             <Input
               ref={newValueInputRef}
-              placeholder={config.newValuePlaceholder || t("multiCheckboxPlus.addNewValue", "Ajouter une option...")}
+              placeholder={config.newValuePlaceholder || t("coform.multiCheckboxPlus.addNewValue", "Ajouter une option...")}
               value={newValueInput}
               onChange={(e) => setNewValueInput(e.target.value)}
               onKeyDown={(e) => {
@@ -358,14 +356,7 @@ export function MultiCheckboxPlusField({
       </div>
 
       {/* Erreur de validation */}
-      {hasError && (
-        <p className="text-xs text-destructive flex items-center gap-1 mt-1">
-          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-          </svg>
-          {errors[field.name]?.message as string}
-        </p>
-      )}
+      <FieldError name={field.name} message={errors[field.name]?.message as string | undefined} />
     </div>
   );
 }

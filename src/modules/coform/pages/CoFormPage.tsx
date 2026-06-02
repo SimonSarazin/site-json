@@ -1,9 +1,12 @@
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { Link, useLoaderData, useNavigate, useParams, useSearchParams } from "react-router";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { AlertCircle, Home, Info, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { resolveAuthVariant } from "@/modules/auth";
+import { useSite } from "@/hooks/useSite";
 import { SmartCoForm } from "../components/SmartCoForm";
 import { CoFormAccessGuard } from "../components/CoFormAccessGuard";
 import { CoFormAnswerPicker } from "../components/CoFormAnswerPicker";
@@ -11,7 +14,7 @@ import { CoFormThankYou } from "../components/CoFormThankYou";
 import { useCoFormQuery, useCoFormFinalMutation } from "../hooks/useCoFormQuery";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
-import { toast } from "sonner";
+import { showErrorToast, showSuccessToast } from "@/lib/toastUtils";
 import type { AllStepsData } from "../types";
 import "../i18n/i18n";
 
@@ -37,6 +40,11 @@ export default function CoFormPage() {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
 
+    // LoginForm résolu en lazy via le registry de variants (chunk chargé à
+    // l'ouverture du dialog, pas dans le bundle de la page).
+    const { config } = useSite();
+    const { LoginForm } = resolveAuthVariant(config.auth?.variant);
+
     // Paramètres URL standalone
     const stepKeyFromUrl = searchParams.get("step") || undefined;
     const inputKeyFromUrl = searchParams.get("input") || undefined;
@@ -57,10 +65,15 @@ export default function CoFormPage() {
     const isEditMode = pageState.view === "form" && pageState.isEditMode;
 
     // Charger les données du formulaire + informations d'accès
-    const { formData, access, isLoading, error } = useCoFormQuery({
+    const { formData, access, isLoading, error, refetch } = useCoFormQuery({
         formId: formId || "",
         enabled: !!formId,
     });
+
+    // Modal de login — affichée quand l'utilisateur clique "Se connecter" depuis
+    // le CoFormAccessGuard (cas `not_logged_in`). Après succès, on refetch les
+    // données du form pour recalculer l'access (canAnswer, existingAnswerId, ...).
+    const [loginDialogOpen, setLoginDialogOpen] = useState(false);
 
     const effectiveAnswerId = answerIdFromUrl
         ?? (isEditMode ? (access?.existingAnswerId ?? undefined) : undefined);
@@ -89,9 +102,7 @@ export default function CoFormPage() {
             }
         },
         onError: (error) => {
-            toast.error(t("coform.status.error"), {
-                description: error.message,
-            });
+            showErrorToast(error, "coform.status.error", t);
         },
     });
 
@@ -172,11 +183,11 @@ export default function CoFormPage() {
                             </p>
                             {isConnectionError && (
                                 <div className="bg-muted/50 p-4 rounded-lg text-sm text-left space-y-2">
-                                    <p className="font-medium">💡 Deux options :</p>
-                                    <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
-                                        <li>Démarrer le backend PHP Communecter sur le port 3000</li>
-                                        <li>Utiliser la <Link to="/coform/test" className="text-primary hover:underline">page de test</Link> avec des données statiques</li>
-                                    </ol>
+                                    <p className="font-medium">💡 Que faire :</p>
+                                    <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                                        <li>Vérifier que le backend Communecter est démarré sur le port 3000</li>
+                                        <li>Vérifier votre connexion réseau</li>
+                                    </ul>
                                 </div>
                             )}
                             {!isConnectionError && (
@@ -186,21 +197,13 @@ export default function CoFormPage() {
                             )}
                         </div>
                         <div className="pt-4 flex gap-3 justify-center">
-                            {isConnectionError ? (
-                                <Button asChild variant="default" className="gap-2">
-                                    <Link to="/coform/test">
-                                        Voir la page de test
-                                    </Link>
-                                </Button>
-                            ) : (
-                                <Button 
-                                    variant="outline" 
-                                    className="gap-2"
-                                    onClick={() => window.location.reload()}
-                                >
-                                    Réessayer
-                                </Button>
-                            )}
+                            <Button
+                                variant="outline"
+                                className="gap-2"
+                                onClick={() => window.location.reload()}
+                            >
+                                Réessayer
+                            </Button>
                             <Button asChild variant="outline" className="gap-2">
                                 <Link to="/">
                                     <Home className="w-4 h-4" />
@@ -256,16 +259,12 @@ export default function CoFormPage() {
         addedOptions?: Record<string, Record<string, string[]>>,
         links?: Record<string, Record<string, { name: string; type: string }>>
     ) => {
-        console.log("📤 Envoi des données du formulaire:", data);
-        if (addedOptions) {
-            console.log("📤 Options ajoutées:", addedOptions);
-        }
         await mutation.mutateAsync({ allData: data, addedOptions, links });
     };
 
     // Callback standalone après soumission réussie (toast simple, pas de page remerciement)
     const handleAfterStandaloneSubmit = () => {
-        toast.success(t("coform.status.success"));
+        showSuccessToast("coform.status.success", t);
     };
 
     // Mode édition : l'utilisateur a déjà répondu et veut modifier sa réponse
@@ -376,13 +375,11 @@ export default function CoFormPage() {
                     <CoFormAccessGuard
                         access={(isEditMode || answerIdFromUrl) ? null : access}
                         onEditExisting={handleEditExisting}
-                        onLogin={() => {
-                            
-                        }}
+                        onLogin={() => setLoginDialogOpen(true)}
                     >
                         {/* Bandeau mode édition */}
                         {(!!effectiveAnswerId && !isStandalone) && (
-                            <div className="mb-6 flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-200">
+                            <div className="mb-6 flex items-center gap-3 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning-foreground">
                                 <Info className="w-5 h-5 shrink-0" />
                                 <p>{t("coform.access.editMode.description")}</p>
                             </div>
@@ -405,6 +402,36 @@ export default function CoFormPage() {
                 </div>
             </main>
             <SiteFooter />
+
+            {/* Modal de login (déclenchée depuis CoFormAccessGuard quand
+                `not_logged_in`). Pattern aligné sur HeaderTiersLieux / RezoLaMer :
+                - `sm:max-w-md bg-card border-border` : largeur responsive + tokens carte
+                - `DialogTitle sr-only` : pas de double-titre (LoginForm rend déjà son propre header)
+                Après succès, refetch des données coform pour recalculer access. */}
+            <Dialog open={loginDialogOpen} onOpenChange={setLoginDialogOpen}>
+                <DialogContent className="sm:max-w-md bg-card border-border">
+                    <DialogTitle className="sr-only">
+                        {String(t("coform.access.notLoggedIn.loginButton"))}
+                    </DialogTitle>
+                    {loginDialogOpen && (
+                        <Suspense
+                            fallback={
+                                <div className="flex items-center justify-center py-10 text-muted-foreground">
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                </div>
+                            }
+                        >
+                            <LoginForm
+                                hideBackButton
+                                onSuccess={() => {
+                                    setLoginDialogOpen(false);
+                                    refetch();
+                                }}
+                            />
+                        </Suspense>
+                    )}
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

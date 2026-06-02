@@ -127,25 +127,29 @@ export function CoFormReadOnly({
       </div>
       )}
 
-      {/* Sections (une card par étape) */}
+      {/* Sections (une card par étape). `<dl>` parent obligatoire HTML5 pour
+          que les `<dt>/<dd>` rendus par ReadOnlyField soient valides et lus
+          correctement par les lecteurs d'écran. */}
       {subFormsFields.map((step) =>
         hideStepHeaders ? (
-          <div key={step.subFormId} className="grid grid-cols-12 gap-x-6 gap-y-4">
+          <dl key={step.subFormId} className="grid grid-cols-12 gap-x-6 gap-y-4">
             {step.fields.map((field) => (
               <ReadOnlyField
                 key={field.name}
                 field={field}
                 value={(normalizedAnswers[step.subFormId] ?? {})[field.name]}
+                formId={formData.id}
                 answerId={answerId}
                 subFormId={step.subFormId}
               />
             ))}
-          </div>
+          </dl>
         ) : (
           <ReadOnlySection
             key={step.subFormId}
             step={step}
             data={normalizedAnswers[step.subFormId] ?? {}}
+            formId={formData.id}
             answerId={answerId}
           />
         )
@@ -159,10 +163,12 @@ export function CoFormReadOnly({
 function ReadOnlySection({
   step,
   data,
+  formId,
   answerId,
 }: {
   step: SubFormFields;
   data: Record<string, FormFieldValue>;
+  formId: string;
   answerId?: string;
 }) {
   return (
@@ -171,17 +177,19 @@ function ReadOnlySection({
         <CardTitle className="text-xl">{step.subFormName}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-12 gap-x-6 gap-y-4">
+        {/* `<dl>` parent : oblige HTML5 pour les `<dt>/<dd>` enfants. */}
+        <dl className="grid grid-cols-12 gap-x-6 gap-y-4">
           {step.fields.map((field) => (
             <ReadOnlyField
               key={field.name}
               field={field}
               value={data[field.name]}
+              formId={formId}
               answerId={answerId}
               subFormId={step.subFormId}
             />
           ))}
-        </div>
+        </dl>
       </CardContent>
     </Card>
   );
@@ -192,11 +200,13 @@ function ReadOnlySection({
 function ReadOnlyField({
   field,
   value,
+  formId,
   answerId,
   subFormId,
 }: {
   field: FormFieldMapping;
   value: FormFieldValue;
+  formId: string;
   answerId?: string;
   subFormId?: string;
 }) {
@@ -223,6 +233,7 @@ function ReadOnlyField({
           ) : (
             <ReadOnlyUploaderGallery
               value={value}
+              formId={formId}
               answerId={answerId}
               subKey={subKey}
             />

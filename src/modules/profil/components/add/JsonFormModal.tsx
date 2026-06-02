@@ -1,6 +1,6 @@
-import { useState, useMemo, createElement, type ComponentType } from "react";
+import { useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
-import * as LucideIcons from "lucide-react";
+import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { ChevronLeft, ChevronRight, Check, X, ChevronsUpDown } from "lucide-react";
 import {
   Dialog,
@@ -38,16 +38,10 @@ import { cn } from "@/lib/utils";
 import { useLocalization } from "@/hooks/useLocalization";
 import { toast } from "sonner";
 
-const lucideIconCache = new Map<string, ComponentType<{ className?: string }> | null>();
-
-function getLucideIcon(name?: string): ComponentType<{ className?: string }> | null {
-  if (!name) return null;
-  if (lucideIconCache.has(name)) return lucideIconCache.get(name)!;
-  const key = name.charAt(0).toUpperCase() + name.slice(1).replace(/-./g, (x) => x[1].toUpperCase());
-  const icon = (LucideIcons as unknown as Record<string, ComponentType<{ className?: string }>>)[key] || null;
-  lucideIconCache.set(name, icon);
-  return icon;
-}
+// Icônes lucide chargées à la demande via `lucide-react/dynamic` :
+// le nom (kebab-case) vient du schema JSON du form → tree-shaking
+// impossible avec `import *`, donc on délègue à DynamicIcon qui fait
+// un dynamic import par nom au runtime.
 
 function FieldRenderer({
   field,
@@ -224,7 +218,6 @@ function StepIndicator({
     <div className="py-4 px-4">
       <div className="flex items-start justify-center">
         {steps.map((step, index) => {
-          const StepIcon = getLucideIcon(step.icon);
           return (
             <div key={index} className="flex items-center">
               <div className="flex flex-col items-center" style={{ width: "100px" }}>
@@ -240,8 +233,8 @@ function StepIndicator({
                 >
                   {currentStep > index + 1 ? (
                     <Check className="h-5 w-5" />
-                  ) : StepIcon ? (
-                    <StepIcon className="h-5 w-5" />
+                  ) : step.icon ? (
+                    <DynamicIcon name={step.icon as IconName} className="h-5 w-5" />
                   ) : (
                     <span className="text-sm font-semibold">{index + 1}</span>
                   )}
@@ -272,9 +265,8 @@ function StepIndicator({
 }
 
 function renderLucideIcon(name?: string, className?: string) {
-  const Icon = getLucideIcon(name);
-  if (!Icon) return null;
-  return createElement(Icon, { className });
+  if (!name) return null;
+  return <DynamicIcon name={name as IconName} className={className} />;
 }
 
 export function JsonFormModal({ open, onOpenChange, formConfig }: ModalProps) {

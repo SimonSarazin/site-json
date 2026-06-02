@@ -5,11 +5,13 @@ import { Button } from "@/components/ui/button";
 import { SearchCardProps } from "../schema";
 import useItem from "../hooks/useItem";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { getBaseUrl } from "@/lib/constant/common";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { useCocolight } from "@/hooks/useCocolight";
 import { cn } from "@/lib/utils";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { useReactiveProperty } from "@/hooks/useReactiveProperty";
 
 function shortenTag(tag: string, maxLength = 20): string {
   if (tag.length <= maxLength) return tag;
@@ -40,8 +42,7 @@ export default function SearchCardDetailed({
     phone,
     startDate,
     endDate,
-    type,
-    isStarred
+    type
   } = data;
   const serverData = item?.serverData;
   const image = serverData?.profilImageUrl;
@@ -56,36 +57,26 @@ export default function SearchCardDetailed({
     [name]
   );
 
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [localIsStarred, setLocalIsStarred] = useState(isStarred);
+  const isStarred = useReactiveProperty<boolean>(item?.serverData, 'isStarred') ?? false;
 
-  const handleToggleStar = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    
-    if (!entity || !item?.id || isUpdating) return;
-
-    try {
-      setIsUpdating(true);
-      const newStarredValue = !localIsStarred;
-      const entityType = item?.getEntityType?.();
-
-      await entity.endpointApi.updatePathValue({
-        id: item.id,
-        collection: (entityType || "events") as "citoyens" | "organizations" | "projects" | "events" | "poi",
-        path: "isStarred",
-        value: newStarredValue as unknown as { [k: string]: unknown }
-      });
-
-      setLocalIsStarred(newStarredValue);
-
-      if ('reload' in item && typeof item.reload === 'function') {
-        await item.reload();
-      }
-    } catch (error) {
-      console.error("Erreur lors de la mise à jour de l'étoile:", error);
-    } finally {
-      setIsUpdating(false);
+  const { mutate: toggleStar, isPending: isUpdating } = useMutationWithToast<boolean, boolean>({
+    namespace: "modules/search",
+    successKey: "toast.card.starSuccess",
+    errorKey: "toast.card.starError",
+    mutationFn: async (newStarredValue) => {
+      if (!item?.id) throw new Error("Entité ou item manquant");
+      await item.updateField("isStarred", newStarredValue);
+      // `updateField` ne touche pas `_serverData` local — resync via `get()`
+      // pour que les lectures ultérieures de `item.serverData.isStarred` soient à jour.
+      await item.get();
+      return newStarredValue;
     }
+  });
+
+  const handleToggleStar = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!entity || !item?.id || isUpdating) return;
+    toggleStar(!isStarred);
   };
 
   const fullDescription = description || shortDescription;
@@ -126,12 +117,12 @@ export default function SearchCardDetailed({
                   "absolute top-2 right-2 bg-white/90 hover:bg-white transition-all",
                   isUpdating && "opacity-50 cursor-not-allowed"
                 )}
-                aria-label={localIsStarred ? "Retirer des favoris" : "Ajouter aux favoris"}
+                aria-label={isStarred ? "Retirer des favoris" : "Ajouter aux favoris"}
               >
                 <Star 
                   className={cn(
                     "w-5 h-5 transition-all",
-                    localIsStarred ? "fill-yellow-400 text-yellow-400" : "text-gray-600"
+                    isStarred ? "fill-yellow-400 text-yellow-400" : "text-gray-600"
                   )} 
                 />
               </Button>

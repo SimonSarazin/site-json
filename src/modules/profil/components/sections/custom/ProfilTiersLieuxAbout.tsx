@@ -31,29 +31,12 @@ import { useGetAnswersByFormsQuery } from "@/modules/profil/hooks/useGetAnwersBy
 import z from "zod";
 import { getServerUrl } from "@/lib/constant/common";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
-import { Answer } from "@communecter/cocolight-api-client";
+import { type Answer } from "@communecter/cocolight-api-client";
 import { CoFormModal } from "@/modules/coform/components/CoFormModal";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import type { AllStepsData } from "@/modules/coform/types";
-import { QUERY_KEYS } from "@/modules/profil/constants/queryKeys";
-
-/** Entity method not exposed in SDK types */
-interface EntityWithForms {
-  generateNewAnswerId(formId: string): Promise<Answer>;
-}
-
-/** Extended UpdatePathValue params — SDK restricts `collection` but API accepts "answers" */
-interface UpdatePathValueParams {
-  id: string;
-  collection: string;
-  path: string;
-  value: Record<string, unknown>;
-}
-
-/** EndpointApi with deleteElement (exists at runtime but may not be on the narrowed type) */
-interface EndpointApiWithDelete {
-  deleteElement(data: Record<string, unknown>): Promise<unknown>;
-  updatePathValue(data: UpdatePathValueParams): Promise<unknown>;
-}
+import { PROFIL_QUERY_KEYS } from "@/modules/profil/constants/queryKeys";
 
 /** A form answer array entry with dynamic indexed fields */
 type FormAnswerRow = Record<string | number, unknown>;
@@ -169,7 +152,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
   const entityId = entity?.id ?? null;
   const invalidateAnswers = () => {
     queryClient.invalidateQueries({
-      queryKey: QUERY_KEYS.ANSWERS_BY_FORMS_PREFIX(entityId),
+      queryKey: PROFIL_QUERY_KEYS.ANSWERS_BY_FORMS_PREFIX(entityId),
     });
   };
 
@@ -209,34 +192,24 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
     inputKey?: string;
     lockedFields?: string[];
   }) => {
-    const answer = await (entity as unknown as EntityWithForms).generateNewAnswerId(formId);
-    if (!answer?.id) {
+    // Façade `BaseEntity.generateNewAnswerId(formId)` — peuple l'id côté answer,
+    // prêt à recevoir un updateField.
+    const answer = await entity.generateNewAnswerId(formId);
+    if (!answer.id) {
       console.error("Failed to generate new answer ID for form:", formId);
       return;
     }
     const finderPath = finder ?? section.forms?.[formId]?.finder;
     if (finderPath) {
-      const params: UpdatePathValueParams = {
-        id: answer.id,
-        collection: "answers",
-        path: `${finderPath}.${entity.id}`,
-        value: {
-          id: entity.id,
-          type: entity.serverData.collection,
-          name: entity.serverData.name,
-        },
-      };
-      const paramsLinks: UpdatePathValueParams = {
-        id: answer.id,
-        collection: "answers",
-        path: `links.${entity.serverData.collection}.${entity.id}`,
-        value: {
-          type: entity.serverData.collection,
-          name: entity.serverData.name,
-        },
-      };
-      await (entity.endpointApi as unknown as EndpointApiWithDelete).updatePathValue(params);
-      await (entity.endpointApi as unknown as EndpointApiWithDelete).updatePathValue(paramsLinks);
+      await answer.updateField(`${finderPath}.${entity.id}`, {
+        id: entity.id,
+        type: entity.serverData.collection,
+        name: entity.serverData.name,
+      });
+      await answer.updateField(`links.${entity.serverData.collection}.${entity.id}`, {
+        type: entity.serverData.collection,
+        name: entity.serverData.name,
+      });
     }
     // Build defaultValues from finderPath so the finder field is pre-populated in the modal
     let defaultValues: AllStepsData | undefined;
@@ -415,17 +388,29 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
   }, [toolsRaw]);
   const externalLink = z.string().nullable().parse(parsedTools.find(t => t.key === "reservation")?.items[0]?.url ?? null);
 
-  const handleDeleteAnswer = async (answerId: string) => {
-    if (!window.confirm(t("ProfilTiersLieuxAbout.confirmDelete"))) return;
-    try {
-      await (entity.endpointApi as unknown as EndpointApiWithDelete).deleteElement({
-        reason: "delete answer from profile",
-        pathParams: { type: "answers", id: answerId }
-      });
-      window.location.reload();
-    } catch (e) {
-      console.error("Error deleting answer:", e);
-    }
+  // État du dialog de confirmation de suppression d'une réponse (room / coworking / hébergement)
+  const [deleteTarget, setDeleteTarget] = useState<Answer | null>(null);
+
+  const deleteAnswerMutation = useMutationWithToast<void, { answer: Answer }>({
+    mutationFn: async ({ answer }) => {
+      await answer.delete();
+    },
+    namespace: "modules/profil",
+    successKey: "ProfilTiersLieuxAbout.deleteSuccess",
+    errorKey: "ProfilTiersLieuxAbout.deleteError",
+    invalidateQueries: [PROFIL_QUERY_KEYS.ANSWERS_BY_FORMS_PREFIX(entityId)],
+  });
+
+  const handleDeleteAnswer = (answer: Answer) => {
+    setDeleteTarget(answer);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!deleteTarget) return;
+    deleteAnswerMutation.mutate(
+      { answer: deleteTarget },
+      { onSuccess: () => setDeleteTarget(null) },
+    );
   };
 
   // Actualités (4 max pour la preview)
@@ -720,7 +705,10 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                     return value.map((v: unknown, idx: number) => {
                       if (idx === 0) return null;
                       const row = v as FormAnswerRow;
-                      const name: string = row[section.roomPath?.name ?? 0] as string || t("ProfilTiersLieuxAbout.room");
+                      const rawName = row[section.roomPath?.name ?? 0] as string | undefined;
+                      // Skip lignes vides (name effacé par l'utilisateur) — évite le block fantôme
+                      if (!rawName || !rawName.trim()) return null;
+                      const name: string = rawName;
                       const minPers: number = section.roomPath?.minPers ? row[section.roomPath.minPers] as number : 0;
                       const maxPers: number  = section.roomPath?.maxPers ? row[section.roomPath.maxPers] as number : 0;
                       const hourly: number = section.roomPath?.hourly ? row[section.roomPath.hourly] as number : 0;
@@ -865,7 +853,10 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                     return value.map((v: unknown, idx: number) => {
                       if (idx === 0) return null;
                       const row = v as FormAnswerRow;
-                      const name: string = row[section.coworkingPath?.name ?? 0] as string || t("ProfilTiersLieuxAbout.coworking");
+                      const rawName = row[section.coworkingPath?.name ?? 0] as string | undefined;
+                      // Skip lignes vides (name effacé par l'utilisateur) — évite le block fantôme
+                      if (!rawName || !rawName.trim()) return null;
+                      const name: string = rawName;
                       const minPers: number = section.coworkingPath?.minPers ? row[section.coworkingPath.minPers] as number : 0;
                       const maxPers: number = section.coworkingPath?.maxPers ? row[section.coworkingPath.maxPers] as number : 0;
                       const hourly: number = section.coworkingPath?.hourly ? row[section.coworkingPath.hourly] as number : 0;
@@ -883,7 +874,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                                 <Button size="icon" variant="secondary" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); openEditFormModal({ formId: section.coworkingPath!.id, answerId: coworking._serverData.id, title: t("ProfilTiersLieuxAbout.coworking") as string, lockedFields: getFinderLockedField(section.coworkingPath!.id) }); }}>
                                 <Pencil className="h-3.5 w-3.5" />
                               </Button>
-                              <Button size="icon" variant="destructive" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleDeleteAnswer(coworking.id!); }}>
+                              <Button size="icon" variant="destructive" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleDeleteAnswer(coworking); }}>
                                 <Trash2 className="h-3.5 w-3.5" />
                               </Button>
                             </div>
@@ -990,7 +981,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                             <Button size="icon" variant="secondary" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); openEditFormModal({ formId: section.coworkingPath!.id, answerId: coworking._serverData.id, title: t("ProfilTiersLieuxAbout.coworking") as string, lockedFields: getFinderLockedField(section.coworkingPath!.id) }); }}>
                               <Pencil className="h-3.5 w-3.5" />
                             </Button>
-                            <Button size="icon" variant="destructive" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleDeleteAnswer(coworking.id!); }}>
+                            <Button size="icon" variant="destructive" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleDeleteAnswer(coworking); }}>
                               <Trash2 className="h-3.5 w-3.5" />
                             </Button>
                           </div>
@@ -1129,7 +1120,10 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                     return value.map((v: unknown, idx: number) => {
                       if (idx === 0) return null;
                       const row = v as FormAnswerRow;
-                      const name : string = row[section.bedRoomPath?.name ?? 0] as string || t("ProfilTiersLieuxAbout.accommodation") ;
+                      const rawName = row[section.bedRoomPath?.name ?? 0] as string | undefined;
+                      // Skip lignes vides (name effacé par l'utilisateur) — évite le block fantôme
+                      if (!rawName || !rawName.trim()) return null;
+                      const name: string = rawName;
                       const minPers : number = section.bedRoomPath?.minPers ? row[section.bedRoomPath.minPers] as number : 0;
                       const maxPers : number = section.bedRoomPath?.maxPers ? row[section.bedRoomPath.maxPers] as number : 0;
                       const hourly : number = section.bedRoomPath?.hourly ? row[section.bedRoomPath.hourly] as number : 0;
@@ -1147,7 +1141,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                               <Button size="icon" variant="secondary" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); openEditFormModal({ formId: section.bedRoomPath!.id, answerId: accommodation._serverData.id, title: t("ProfilTiersLieuxAbout.accommodation") as string }); }}>
                                 <Pencil className="h-3.5 w-3.5" />
                               </Button>
-                              <Button size="icon" variant="destructive" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleDeleteAnswer(accommodation.id!); }}>
+                              <Button size="icon" variant="destructive" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleDeleteAnswer(accommodation); }}>
                                 <Trash2 className="h-3.5 w-3.5" />
                               </Button>
                             </div>
@@ -1253,7 +1247,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                             <Button size="icon" variant="secondary" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); openEditFormModal({ formId: section.bedRoomPath!.id, answerId: accommodation._serverData.id, title: t("ProfilTiersLieuxAbout.accommodation") as string }); }}>
                               <Pencil className="h-3.5 w-3.5" />
                             </Button>
-                            <Button size="icon" variant="destructive" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleDeleteAnswer(accommodation.id!); }}>
+                            <Button size="icon" variant="destructive" className="h-7 w-7 shadow" onClick={(e) => { e.stopPropagation(); handleDeleteAnswer(accommodation); }}>
                               <Trash2 className="h-3.5 w-3.5" />
                             </Button>
                           </div>
@@ -1448,6 +1442,19 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
           onAfterSubmit={invalidateAnswers}
         />
       )}
+
+      {/* ── Confirmation suppression d'une réponse ──── */}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        onConfirm={handleConfirmDelete}
+        title={String(t("ProfilTiersLieuxAbout.confirmDeleteTitle"))}
+        description={String(t("ProfilTiersLieuxAbout.confirmDelete"))}
+        confirmLabel={String(t("ProfilTiersLieuxAbout.confirmDeleteAction"))}
+        cancelLabel={String(t("ProfilTiersLieuxAbout.confirmDeleteCancel"))}
+        isDestructive
+        isPending={deleteAnswerMutation.isPending}
+      />
     </div>
   );
 }

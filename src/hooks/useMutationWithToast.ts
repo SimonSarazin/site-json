@@ -53,7 +53,7 @@ export interface MutationWithToastConfig<TData, TVariables = void> {
  *   mutationFn: () => entity.follow(),
  *   successKey: "toast.relationship.followSuccess",
  *   errorKey: "toast.relationship.followError",
- *   invalidateQueries: [QUERY_KEYS.ELEMENT_ABOUT(entity.slug)],
+ *   invalidateQueries: [PROFIL_QUERY_KEYS.ELEMENT_ABOUT(entity.slug)],
  *   namespace: "modules/profil",
  * });
  *
@@ -64,7 +64,7 @@ export interface MutationWithToastConfig<TData, TVariables = void> {
  *   successKey: "toast.members.promoteSuccess",
  *   errorKey: "toast.members.promoteError",
  *   getSuccessParams: (_, user) => ({ name: user.serverData?.name || "Unknown" }),
- *   invalidateQueries: [QUERY_KEYS.ORGANIZATION_MEMBERS(entity.slug)],
+ *   invalidateQueries: [PROFIL_QUERY_KEYS.ORGANIZATION_MEMBERS(entity.slug)],
  *   namespace: "modules/profil",
  * });
  */

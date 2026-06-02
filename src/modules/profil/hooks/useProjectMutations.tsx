@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { useT } from "@/hooks/useT";
 import { useCocolight } from "@/hooks/useCocolight";
 import type { Project, EntityTypes } from "@communecter/cocolight-api-client";
+import { PROFIL_QUERY_KEYS } from "../constants/queryKeys";
 
 /**
  * @param entity L'entité (utilisateur ou organisation) à laquelle le projet sera associé
@@ -72,7 +73,7 @@ export function useAddProject(entity: EntityTypes) {
         }
       );
 
-      queryClient.invalidateQueries({ queryKey: ["profile-projects", entityId] });
+      queryClient.invalidateQueries({ queryKey: PROFIL_QUERY_KEYS.PROFILE_PROJECTS_PREFIX(entityId) });
 
       toast.success(t("toast.project.addSuccess"));
     },

@@ -3,8 +3,9 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { useInfiniteQueryScrollNextWithTransform } from "@/hooks/useInfiniteQueryScroll";
 import { SearchType } from "../schema";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
-import type { GlobalAutocompleteCostumData, PaginatorPage } from "@communecter/cocolight-api-client";
+import type { PaginatorPage } from "@communecter/cocolight-api-client";
 import { SEARCH_QUERY_KEYS } from "../constants/queryKeys";
+import { buildSearchPayload } from "../lib/buildSearchPayload";
 
 export interface UseSearchQueryParams {
   queryKeyPrefix: string;
@@ -14,6 +15,12 @@ export interface UseSearchQueryParams {
   mapUsed: boolean;
   graphUsed?: boolean;
   tagsVerb?: "$all" | "$in";
+  /**
+   * Variant SDK pour `searchCostum`. Cf. `SearchVariantSchema`. Si absent ou
+   * `"default"`, on appelle `searchCostum(payload)` sans le 2e argument
+   * (comportement préservé). Sinon on passe `{ variant }` → endpoint alternatif.
+   */
+  variant?: "default" | "navigator-tl";
   baseParams?: {
     fediverse?: boolean;
     indexStepList?: number;
@@ -23,7 +30,12 @@ export interface UseSearchQueryParams {
     defaultFilters?: Record<string, unknown>;
     defaultFields?: string[];
     defaultSortBy?: Record<string, 1 | -1>;
-    notSourceKey?: boolean;
+    // Cf. `SearchBySchema` — "ALL" | CSV | string[]. Propagé au payload SDK
+    // dès qu'il est défini ; sinon le backend applique son comportement par défaut.
+    searchBy?: string | string[];
+    // Accepte `boolean` (ne pas sourcer) ou `number` (limite custom) — cf.
+    // schema search.ts (config historique avec valeur numérique).
+    notSourceKey?: boolean | number;
     locality?: Record<string, {
       name?: string;
       active?: boolean;
@@ -48,12 +60,13 @@ export function useSearchQuery({
   mapUsed,
   graphUsed = false,
   tagsVerb = "$all",
+  variant,
   baseParams = {},
 }: UseSearchQueryParams) {
   const { entity, helper } = useCocolight();
 
   // Query key centralisée (single source of truth)
-  const queryKey = SEARCH_QUERY_KEYS.results({
+  const queryKey = SEARCH_QUERY_KEYS.RESULTS({
     queryKeyPrefix,
     searchText,
     searchTags,
@@ -61,6 +74,7 @@ export function useSearchQuery({
     mapUsed,
     graphUsed,
     baseParams,
+    variant,
   });
 
   const {
@@ -88,66 +102,24 @@ export function useSearchQuery({
       const tags = Object.values(searchTags).flat() as string[];
       const page = pageParam as PaginatorPage<SearchEntity> | undefined;
 
-      const {
-        fediverse = false,
-        indexStepList = 10,
-        indexStepMap = 0,
-        defaultTypes,
-        defaultTags,
-        defaultFilters,
-        defaultFields,
-        defaultSortBy,
-        notSourceKey,
-        locality,
-      } = baseParams;
-
-      const extra = baseParams as Record<string, unknown>;
-
-      const graphIndexStep = 0;
-
-      const param: Partial<GlobalAutocompleteCostumData> = {
+      const param = buildSearchPayload(baseParams, {
         name: searchText,
-        fediverse,
-        ...(graphUsed
-          ? { indexMin: 0, indexStep: graphIndexStep }
-          : mapUsed
-            ? { mapUsed: true, indexMin: 0, indexStep: indexStepMap }
-            : { indexMin: 0, indexStep: indexStepList }),
-        ...(tags.length > 0 && {
-          searchTags: tags,
-          options: { tags: { verb: tagsVerb } },
-        }),
-        ...(defaultFilters && Object.keys(defaultFilters).length > 0 && {
-          filters: defaultFilters,
-        }),
-        ...(defaultFields && defaultFields.length > 0 && {
-          fields: defaultFields,
-        }),
-        ...(defaultSortBy && Object.keys(defaultSortBy).length > 0 && {
-          sortBy: defaultSortBy,
-        }),
-        ...(locality && Object.keys(locality).length > 0 && { locality: locality as GlobalAutocompleteCostumData["locality"] }),
-        ...(notSourceKey ? { notSourceKey: true } : {}),
-        ...(extra.contextId ? { contextId: extra.contextId as string } : {}),
-        ...(extra.contextType ? { contextType: extra.contextType as GlobalAutocompleteCostumData["contextType"] } : {}),
-        ...(extra.costumSlug ? { costumSlug: extra.costumSlug as string } : {}),
-        ...(extra.costumEditMode !== undefined ? { costumEditMode: extra.costumEditMode as boolean } : {}),
-        ...(extra.sourceKey ? { sourceKey: extra.sourceKey as string[] } : {}),
-      } as Partial<GlobalAutocompleteCostumData>;
-      console.log("Search params:", param);
-
-      if (type && type.length > 0) param.searchType = type as unknown as GlobalAutocompleteCostumData["searchType"];
-      if (!type && defaultTypes) param.searchType = defaultTypes as unknown as GlobalAutocompleteCostumData["searchType"];
-      if (defaultTags && defaultTags.length > 0) {
-        param.searchTags = defaultTags;
-      }
+        tags,
+        type,
+        mapUsed,
+        graphUsed,
+      });
 
       if (!param.searchType) {
         return { results: [], count: { total: 0 }, hasNext: false, hasPrev: false, pageNumber: 1, pageIndex: 0 };
       }
 
       try {
-        const result = await entity.searchCostum(param);
+        // Passe `{ variant }` au SDK uniquement quand non-default — préserve
+        // le call site existant pour les sites qui n'utilisent pas le variant.
+        const result = variant && variant !== "default"
+          ? await entity.searchCostum(param, { variant })
+          : await entity.searchCostum(param);
         if (
           page &&
           page?.pageNumber > 1 &&

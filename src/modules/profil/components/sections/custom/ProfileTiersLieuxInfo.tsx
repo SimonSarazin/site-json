@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { CoFormModal } from "@/modules/coform/components/CoFormModal";
 import type { AllStepsData } from "@/modules/coform/types";
-import { QUERY_KEYS } from "@/modules/profil/constants/queryKeys";
+import { PROFIL_QUERY_KEYS } from "@/modules/profil/constants/queryKeys";
 import {
     MapPin,
     Mail,
@@ -40,7 +40,7 @@ import SectionTitle from "./SectionTitleTL";
 import { useGetAnswersByFormsQuery } from "@/modules/profil/hooks/useGetAnwersByFormsQuery";
 import { getServerUrl } from "@/lib/constant/common";
 import { useCocolight } from "@/hooks/useCocolight";
-import { Answer } from "@communecter/cocolight-api-client";
+import { type Answer } from "@communecter/cocolight-api-client";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
 
 interface ProfileTiersLieuxInfoProps {
@@ -196,7 +196,7 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
     const entityId = entity?.id ?? null;
     const invalidateAnswers = useCallback(() => {
         queryClient.invalidateQueries({
-            queryKey: QUERY_KEYS.ANSWERS_BY_FORMS_PREFIX(entityId),
+            queryKey: PROFIL_QUERY_KEYS.ANSWERS_BY_FORMS_PREFIX(entityId),
         });
     }, [queryClient, entityId]);
 
@@ -215,36 +215,22 @@ export default function ProfileTiersLieuxInfo({ section }: ProfileTiersLieuxInfo
             answer = dataForms.answers[0];
         } else {
             isNewAnswer = true;
-            answer = await (entity as unknown as { generateNewAnswerId(formId: string): Promise<Answer | undefined> }).generateNewAnswerId(formId);
-            if (!answer) {
-                console.error("Failed to generate new answer ID for form:", formId);
-                return;
-            }
-            if(!answer.id) {
+            // Façade `BaseEntity.generateNewAnswerId(formId)` — peuple l'id côté
+            // answer, prêt à recevoir un updateField.
+            answer = await entity.generateNewAnswerId(formId);
+            if (!answer.id) {
                 console.error("No answer ID generated for form:", formId);
                 return;
             }
-            const params = {
-                id: answer.id,
-                collection: "answers",
-                path: `${finder}.${entity.id}`,
-                value: {
-                    id: entity.id,
-                    type: entity.serverData.collection,
-                    name: entity.serverData.name,
-                }
-            };
-            const paramsLinks = {
-                id: answer.id,
-                collection: "answers",
-                path: `links.${entity.serverData.collection}.${entity.id}`,
-                value: {
-                    type: entity.serverData.collection,
-                    name: entity.serverData.name,
-                }
-            };
-            await (entity.endpointApi as unknown as { updatePathValue(p: Record<string, unknown>): Promise<unknown> }).updatePathValue(params);
-            await (entity.endpointApi as unknown as { updatePathValue(p: Record<string, unknown>): Promise<unknown> }).updatePathValue(paramsLinks);
+            await answer.updateField(`${finder}.${entity.id}`, {
+                id: entity.id,
+                type: entity.serverData.collection,
+                name: entity.serverData.name,
+            });
+            await answer.updateField(`links.${entity.serverData.collection}.${entity.id}`, {
+                type: entity.serverData.collection,
+                name: entity.serverData.name,
+            });
         }
         if (!answer) {
             console.error("No answer available to open for form:", formId);

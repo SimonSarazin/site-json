@@ -80,7 +80,8 @@ export function useFormatProfileEntity(entity: SearchEntity) {
   const tagsRaw = useReactiveProperty(entity.serverData, 'tags');
   const tags = useMemo((): string[] => {
     if (tagsRaw && Array.isArray(tagsRaw)) {
-      return tagsRaw.filter((tag: unknown): tag is string => typeof tag === "string");
+      const onlyStrings = tagsRaw.filter((tag: unknown): tag is string => typeof tag === "string");
+      return Array.from(new Set(onlyStrings));
     }
     return [];
   }, [tagsRaw]);

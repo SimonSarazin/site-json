@@ -59,15 +59,15 @@ export default function AmpliFeatures({ props, isLoading, data }: AmpliFeaturesP
                         </div>
                         <ol className="space-y-3 text-muted-foreground">
                             <li className="flex items-start">
-                                <span className="bg-primary text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3 mt-0.5 shrink-0">1</span>
+                                <span className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3 mt-0.5 shrink-0">1</span>
                                 {howItWork && howItWork.stepOne ? t(howItWork.stepOne) : t("AmpliFeatures.howItWork.stepOne")}
                             </li>
                             <li className="flex items-start">
-                                <span className="bg-primary text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3 mt-0.5 shrink-0">2</span>
+                                <span className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3 mt-0.5 shrink-0">2</span>
                                 {howItWork && howItWork.stepTwo ? t(howItWork.stepTwo) : t("AmpliFeatures.howItWork.stepTwo")}
                             </li>
                             <li className="flex items-start">
-                                <span className="bg-primary text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3 mt-0.5 shrink-0">3</span>
+                                <span className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3 mt-0.5 shrink-0">3</span>
                                 {howItWork && howItWork.stepThree ? t(howItWork.stepThree) : t("AmpliFeatures.howItWork.stepThree")}
                             </li>
                         </ol>

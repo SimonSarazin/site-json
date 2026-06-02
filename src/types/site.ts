@@ -20,6 +20,7 @@ export interface HeaderConfig {
     auth: boolean;
     cart: boolean;
     notifications: boolean;
+    piggyBank: boolean;
   };
   logoAlt?: string;
   announcement?: {

@@ -3,8 +3,8 @@ import { useLocalization } from "@/hooks/useLocalization";
 import { LocalizedString } from "@/types/site-schema";
 
 export interface SportCategoriesCard {
-  icon: string;
-  title: LocalizedString;
+  icon?: string;
+  title?: LocalizedString;
   subtitle?: LocalizedString;
   link?: string;
 }

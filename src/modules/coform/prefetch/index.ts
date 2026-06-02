@@ -12,7 +12,7 @@ export async function prefetchCoFormQuery(
   fetchFn: () => Promise<CoFormData>
 ): Promise<void> {
   await queryClient.prefetchQuery({
-    queryKey: COFORM_QUERY_KEYS.form(formId),
+    queryKey: COFORM_QUERY_KEYS.FORM(formId),
     queryFn: fetchFn,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
@@ -26,7 +26,7 @@ export function invalidateCoFormQuery(
   formId: string
 ): void {
   queryClient.invalidateQueries({
-    queryKey: COFORM_QUERY_KEYS.form(formId),
+    queryKey: COFORM_QUERY_KEYS.FORM(formId),
   });
 }
 
@@ -38,6 +38,6 @@ export function invalidateCoFormAnswersQuery(
   formId: string
 ): void {
   queryClient.invalidateQueries({
-    queryKey: COFORM_QUERY_KEYS.formAnswers(formId),
+    queryKey: COFORM_QUERY_KEYS.FORM_ANSWERS(formId),
   });
 }

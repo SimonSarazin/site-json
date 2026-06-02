@@ -3,6 +3,7 @@ import { Controller } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -18,6 +19,7 @@ import { EvaluationField } from "./EvaluationField";
 import { FinderField } from "./FinderField";
 import { SimpleTableField } from "./SimpleTableField";
 import { UploaderField } from "./UploaderField";
+import { CoFormBanner } from "./CoFormBanner";
 import { useConditionalFields } from "../hooks/useConditionalFields";
 import type { CoFormData, SubFormData, AllStepsData, MultiCheckboxPlusValue, MultiRadioValue, EvaluationValue, FinderValue, SimpleTableValue } from "../types";
 import type { CoFormSubmitMode, CoFormVariant } from "../schema";
@@ -50,7 +52,9 @@ interface MultiStepCoFormProps {
  */
 export function MultiStepCoForm({
   formData,
-  submitMode = "step",
+  // Aligné sur le default de `CoFormProvider` : "final" pour éviter le no-op
+  // silencieux quand le caller ne précise pas le mode. Voir README.md#step-mode.
+  submitMode = "final",
   onStepSubmit,
   onFinalSubmit,
   onSuccess,
@@ -161,36 +165,16 @@ function MultiStepCoFormContent({
     }
   };
 
-  if (!fields) {
+  if (!fields || !coform.formData) {
     return <div>{t("coform.status.loading")}</div>;
   }
+  // Narrow local : permet aux callbacks (Controller.render, etc.) d'utiliser
+  // formId sans avoir à re-vérifier le null.
+  const formId = coform.formData.id;
 
   return (
     <div ref={containerRef} className={cn("space-y-6", className)}>
-      {/* Bannière du formulaire avec titre en overlay */}
-      {coform.formData?.useBannerImg && coform.formData.profilBannerUrl ? (
-        <div className="relative w-full overflow-hidden rounded-lg">
-          <img
-            src={coform.formData.profilBannerUrl}
-            alt="Bannière du formulaire"
-            className="w-full h-48 object-cover"
-          />
-          <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent" />
-          {coform.formData.name && (
-            <div className="absolute bottom-0 left-0 right-0 p-8">
-              <h1 className="text-4xl font-bold text-white drop-shadow-lg">
-                {coform.formData.name}
-              </h1>
-            </div>
-          )}
-        </div>
-      ) : coform.formData?.name ? (
-        <div className="w-full rounded-lg bg-linear-to-r from-primary/10 via-primary/5 to-background p-8 border">
-          <h1 className="text-4xl font-bold text-foreground">
-            {coform.formData.name}
-          </h1>
-        </div>
-      ) : null}
+      <CoFormBanner formData={coform.formData} />
 
       {/* Barre de progression - Style amélioré */}
       {showProgress && (
@@ -422,6 +406,7 @@ function MultiStepCoFormContent({
                           errors={form.formState.errors}
                           value={controllerField.value as import("../types").UploaderValue}
                           onChange={controllerField.onChange}
+                          formId={formId}
                           answerId={coform.answerId}
                           subKey={fields.subFormId ? `${fields.subFormId}.${field.name}` : undefined}
                         />
@@ -486,10 +471,7 @@ function MultiStepCoFormContent({
               >
                 {isSubmitting || isFinalSubmitting ? (
                   <>
-                    <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
+                    <Spinner label={String(t("coform.status.submitting"))} />
                     {t("coform.status.submitting")}
                   </>
                 ) : (
@@ -511,10 +493,7 @@ function MultiStepCoFormContent({
               >
                 {isSubmitting ? (
                   <>
-                    <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
+                    <Spinner label={String(t("coform.status.submitting"))} />
                     {t("coform.status.submitting")}
                   </>
                 ) : (
@@ -562,49 +541,65 @@ function StepIndicator({
   onStepClick?: (index: number) => void;
 }) {
   return (
-    <div className="flex items-center justify-between">
-      {Array.from({ length: totalSteps }).map((_, index) => {
-        const subForm = subFormsFields[index];
-        const isCompleted = subForm && completedSteps.includes(subForm.subFormId);
-        const isCurrent = index === currentStep;
-        const isPending = !isCompleted && !isCurrent;
+    <nav aria-label="Étapes du formulaire">
+      <ol className="flex items-center justify-between list-none p-0 m-0">
+        {Array.from({ length: totalSteps }).map((_, index) => {
+          const subForm = subFormsFields[index];
+          const isCompleted = subForm && completedSteps.includes(subForm.subFormId);
+          const isCurrent = index === currentStep;
+          const isPending = !isCompleted && !isCurrent;
 
-        // Contenu du bouton: ✓ si complété, numéro si showStepNumbers, sinon point
-        const buttonContent = isCompleted 
-          ? "✓" 
-          : showStepNumbers 
-            ? index + 1 
-            : "•";
+          // Contenu du bouton: ✓ si complété, numéro si showStepNumbers, sinon point
+          const buttonContent = isCompleted
+            ? "✓"
+            : showStepNumbers
+              ? index + 1
+              : "•";
 
-        return (
-          <Fragment key={index}>
-            <button
-              type="button"
-              onClick={() => allowFreeNavigation && onStepClick?.(index)}
-              disabled={!allowFreeNavigation}
-              className={cn(
-                "flex items-center justify-center w-10 h-10 rounded-full border-2 font-medium transition-colors",
-                isCompleted && "bg-primary border-primary text-primary-foreground",
-                isCurrent && "border-primary text-primary",
-                isPending && "border-muted text-muted-foreground",
-                allowFreeNavigation && "cursor-pointer hover:border-primary/80"
+          // Label parlant pour SR : "Étape X : Nom du sub-form (complétée|en cours|à venir)"
+          const stateLabel = isCompleted
+            ? "complétée"
+            : isCurrent
+              ? "en cours"
+              : "à venir";
+          const stepLabel = `Étape ${index + 1}${subForm?.subFormName ? ` : ${subForm.subFormName}` : ""} (${stateLabel})`;
+
+          return (
+            <Fragment key={index}>
+              <li className="contents">
+                <button
+                  type="button"
+                  onClick={() => allowFreeNavigation && onStepClick?.(index)}
+                  disabled={!allowFreeNavigation}
+                  aria-current={isCurrent ? "step" : undefined}
+                  aria-label={stepLabel}
+                  className={cn(
+                    "flex items-center justify-center w-10 h-10 rounded-full border-2 font-medium transition-colors",
+                    isCompleted && "bg-primary border-primary text-primary-foreground",
+                    isCurrent && "border-primary text-primary",
+                    isPending && "border-muted text-muted-foreground",
+                    allowFreeNavigation && "cursor-pointer hover:border-primary/80"
+                  )}
+                >
+                  <span aria-hidden="true">{buttonContent}</span>
+                </button>
+              </li>
+
+              {index < totalSteps - 1 && (
+                <li aria-hidden="true" className="contents">
+                  <div
+                    className={cn(
+                      "flex-1 h-1 mx-2",
+                      isCompleted ? "bg-primary" : "bg-muted"
+                    )}
+                  />
+                </li>
               )}
-            >
-              {buttonContent}
-            </button>
-
-            {index < totalSteps - 1 && (
-              <div
-                className={cn(
-                  "flex-1 h-1 mx-2",
-                  isCompleted ? "bg-primary" : "bg-muted"
-                )}
-              />
-            )}
-          </Fragment>
-        );
-      })}
-    </div>
+            </Fragment>
+          );
+        })}
+      </ol>
+    </nav>
   );
 };
 

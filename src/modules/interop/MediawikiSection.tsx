@@ -1,4 +1,4 @@
-import { lazy } from "react";
+import { lazy } from "vite-preload";
 import { useInteropUserLinks } from "./hooks/useUserInteropLinks";
 
 const MediawikiPod = lazy(() => import("./components/MediawikiPod"));

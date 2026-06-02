@@ -251,3 +251,5 @@ export function SocialTab() {
     </div>
   );
 }
+
+export default SocialTab;

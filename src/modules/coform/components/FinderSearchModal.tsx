@@ -1,19 +1,29 @@
-import { useState, useRef, useEffect } from "react";
-import { Search, X, Plus, Loader2, Mail, UserPlus } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useCocolight } from "@/hooks/useCocolight";
-import { useDebounce } from "@/hooks/useDebounce";
-import type { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
-import type { FinderConfig, FinderElement, FinderSearchResult, FinderElementType } from "../types";
+import { useState, useMemo } from "react";
+import { Search, Plus, Mail, UserPlus } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useT } from "@/hooks/useT";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import type { FinderConfig, FinderElement, FinderElementType, FinderSearchResult } from "../types";
 import { FinderElementCard } from "./FinderElementCard";
+import { toRelativeImageUrl } from "../utils";
+import { useFinderSearchResults } from "../hooks/useFinderSearchResults";
 
 interface FinderSearchModalProps {
   /** Configuration du finder */
   config: FinderConfig;
   /** Éléments déjà sélectionnés (pour les exclure des résultats) */
   selectedElements: Record<string, FinderElement>;
-  /** Modal ouvert */
-  isOpen: boolean;
   /** Fermer le modal */
   onClose: () => void;
   /** Callback de validation des éléments sélectionnés */
@@ -25,149 +35,45 @@ interface FinderSearchModalProps {
 /**
  * Modal de recherche d'éléments pour le Finder
  * Utilise le client API Cocolight pour les recherches
+ *
+ * Le composant est mount conditionnellement par `FinderField` (`{isModalOpen && ...}`),
+ * donc son state interne est toujours frais à l'ouverture — pas de useEffect de reset
+ * nécessaire. Le focus initial sur l'input est géré par `autoFocus` qui marche
+ * naturellement puisque le composant est nouvellement monté.
  */
 export function FinderSearchModal({
   config,
   selectedElements,
-  isOpen,
   onClose,
   onValidate,
   baseUrl = "",
 }: FinderSearchModalProps) {
-  const { entity } = useCocolight();
+  useLoadNamespace("modules/coform");
+  const t = useT("modules/coform");
   const [searchQuery, setSearchQuery] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<FinderSearchResult[]>([]);
   const [selectedInModal, setSelectedInModal] = useState<Record<string, FinderElement>>({});
-  const [showInviteForm, setShowInviteForm] = useState(false);
-  const [showAddNew, setShowAddNew] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-  
-  // Debounce de la requête de recherche
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
-  // Reset state when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      setSearchQuery("");
-      setSearchResults([]);
-      setSelectedInModal({});
-      setShowInviteForm(false);
-      setShowAddNew(false);
-      // Focus sur l'input
-      setTimeout(() => inputRef.current?.focus(), 100);
-    }
-  }, [isOpen]);
+  // Hook React Query — encapsule debounce + searchCostum + transformation.
+  const { results: rawSearchResults, isFetching: isSearching } = useFinderSearchResults({
+    query: searchQuery,
+    config,
+  });
 
-  /**
-   * Recherche via l'API Cocolight (searchCostum) - déclenchée par le debounce
-   */
-  useEffect(() => {
-    // Ne pas rechercher si moins de 2 caractères ou modal fermé
-    if (debouncedSearchQuery.length < 2 || !isOpen) {
-      if (debouncedSearchQuery.length < 2) {
-        setSearchResults([]);
-        setShowInviteForm(false);
-        setShowAddNew(false);
-      }
-      return;
-    }
+  // Filtrage local des éléments déjà sélectionnés + fallback name.
+  // Volontairement local au composant (hors hook) pour que le cache RQ reste
+  // stable même quand l'utilisateur sélectionne/désélectionne.
+  const searchResults = useMemo(() => {
+    const fallbackName = String(t("coform.finder.fallbackElement"));
+    return rawSearchResults
+      .filter((r) => !selectedElements[r.id])
+      .map((r) => (r.name ? r : { ...r, name: fallbackName }));
+  }, [rawSearchResults, selectedElements, t]);
 
-    if (!entity) {
-      console.warn("Finder: entity not available for search");
-      return;
-    }
-
-    const performSearch = async () => {
-      setIsSearching(true);
-      setShowInviteForm(false);
-      setShowAddNew(false);
-
-      try {
-        // Construire les paramètres de recherche
-        const searchType = Array.isArray(config.type) ? config.type : [config.type];
-        
-        const param: Partial<GlobalAutocompleteCostumData> = {
-          name: debouncedSearchQuery,
-          searchType: searchType as GlobalAutocompleteCostumData["searchType"],
-          indexMin: 0,
-          indexStep: 30,
-        };
-
-        // Ajouter les filtres si présents
-        if (config.filters && config.filters.length > 0) {
-          const filters: Record<string, string> = {};
-          config.filters.forEach((f) => {
-            filters[f.attributeName] = f.valueName;
-          });
-          param.filters = filters;
-        }
-
-        if (config.notSourceKey) {
-          param.notSourceKey = true;
-        }
-
-        // Appel API via le client Cocolight
-        const result = await entity.searchCostum(param);
-
-        // Les results sont un objet avec des IDs comme clés (ou un array)
-        const resultsObj = result?.results || {};
-        
-        // Convertir les résultats et filtrer les déjà sélectionnés
-        // Le SDK Cocolight encapsule les données dans _serverData
-        const results = Object.entries(resultsObj)
-          .map(([key, item]: [string, unknown]) => {
-            // Le SDK encapsule les données dans _serverData (avec underscore)
-            const entityItem = item as { _serverData?: Record<string, unknown>; serverData?: Record<string, unknown> };
-            const rawData = entityItem._serverData || entityItem.serverData || item as Record<string, unknown>;
-            
-            // Obtenir le vrai MongoDB ID depuis _serverData.id
-            let mongoId: string = key;
-            if (rawData.id && typeof rawData.id === "string") {
-              mongoId = rawData.id;
-            } else if (rawData._id) {
-              if (typeof rawData._id === "object" && rawData._id !== null && "$oid" in (rawData._id as object)) {
-                mongoId = (rawData._id as { $oid: string }).$oid;
-              } else if (typeof rawData._id === "string") {
-                mongoId = rawData._id;
-              }
-            }
-            
-            return {
-              id: mongoId,
-              name: (rawData.name as string) || "Sans nom",
-              type: (rawData.collection as string) || (rawData.type as string) || (Array.isArray(config.type) ? config.type[0] : config.type),
-              profilThumbImageUrl: rawData.profilThumbImageUrl as string | undefined,
-              email: rawData.email as string | undefined,
-              address: rawData.address as {
-                streetAddress?: string;
-                postalCode?: string;
-                addressLocality?: string;
-              } | undefined,
-            };
-          })
-          .filter((result) => !selectedElements[result.id]);
-
-        setSearchResults(results);
-
-        // Afficher "Ajouter nouveau" si aucun résultat et addNew activé
-        if (results.length === 0 && config.addNew) {
-          setShowAddNew(true);
-        }
-        // Afficher formulaire d'invitation si aucun résultat et invite activé
-        else if (results.length === 0 && config.invite) {
-          setShowInviteForm(true);
-        }
-      } catch (error) {
-        console.error("Erreur de recherche:", error);
-        setSearchResults([]);
-      } finally {
-        setIsSearching(false);
-      }
-    };
-
-    performSearch();
-  }, [debouncedSearchQuery, isOpen, entity, config, selectedElements]);
+  // CTA dérivés : pas besoin de useState, ils sont fonction du flow courant.
+  const hasMinChars = searchQuery.length >= 2;
+  const noResults = hasMinChars && !isSearching && searchResults.length === 0;
+  const showAddNew = noResults && config.addNew;
+  const showInviteForm = noResults && !config.addNew && config.invite;
 
   /**
    * Gestion de la saisie - le debounce est géré par useDebounce
@@ -177,7 +83,12 @@ export function FinderSearchModal({
   };
 
   /**
-   * Sélectionner/désélectionner un élément
+   * Sélectionner/désélectionner un élément.
+   *
+   * Le store interne `selectedInModal` conserve l'URL d'image **absolue** (telle que
+   * renvoyée par le backend) pour pouvoir l'afficher immédiatement via `<img src>` sans
+   * passer par `baseUrl`. La conversion absolue → relative se fait au moment de la
+   * persistance (cf. `handleValidate`).
    */
   const toggleSelection = (result: FinderSearchResult) => {
     setSelectedInModal((prev) => {
@@ -189,23 +100,11 @@ export function FinderSearchModal({
         if (!config.multiple) {
           Object.keys(newSelection).forEach((key) => delete newSelection[key]);
         }
-        // Convertir l'URL d'image en chemin relatif (sans le domaine)
-        let relativeImg: string | undefined;
-        if (result.profilThumbImageUrl) {
-          try {
-            const url = new URL(result.profilThumbImageUrl, window.location.origin);
-            relativeImg = url.pathname + url.search;
-          } catch {
-            // Si ce n'est pas une URL complète, utiliser tel quel
-            relativeImg = result.profilThumbImageUrl;
-          }
-        }
-        
         newSelection[result.id] = {
           id: result.id,
           name: result.name,
           type: result.type as FinderElementType,
-          img: relativeImg,
+          img: result.profilThumbImageUrl,
         };
       }
       return newSelection;
@@ -213,10 +112,17 @@ export function FinderSearchModal({
   };
 
   /**
-   * Valider la sélection
+   * Valider la sélection.
+   *
+   * On convertit les URLs d'image en chemins relatifs **avant** de remonter au parent
+   * (cf. `toRelativeImageUrl`) — c'est la frontière "affichage interne ↔ persistance".
+   * `FinderElementCard` (côté lecture) sait rebaser via la prop `baseUrl`.
    */
   const handleValidate = () => {
-    const elements = Object.values(selectedInModal);
+    const elements = Object.values(selectedInModal).map<FinderElement>((el) => ({
+      ...el,
+      img: toRelativeImageUrl(el.img),
+    }));
     if (elements.length > 0) {
       onValidate(elements);
     }
@@ -224,62 +130,59 @@ export function FinderSearchModal({
   };
 
   /**
-   * Créer un nouvel élément (placeholder - à implémenter avec le formulaire de création)
+   * Créer un nouvel élément (placeholder - à implémenter avec le formulaire de création).
+   * TODO: Ouvrir un formulaire de création d'élément.
    */
   const handleAddNew = () => {
-    // TODO: Ouvrir un formulaire de création d'élément
     console.log("Add new element of type:", config.type);
-    alert(`Fonctionnalité à implémenter: créer un nouvel élément de type "${config.elementLabel}"`);
+    toast.info(`Fonctionnalité à implémenter : créer un nouvel élément de type « ${config.elementLabel} »`);
   };
 
-  if (!isOpen) return null;
+  const dialogTitle = config.elementLabel
+    ? String(t("coform.finder.modal.titleWithLabel", undefined, { label: config.elementLabel }))
+    : String(t("coform.finder.modal.title"));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-
-      {/* Modal */}
-      <div className="relative bg-background rounded-lg shadow-xl w-full max-w-lg mx-4 max-h-[80vh] flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b">
-          <h3 className="font-semibold">
-            Rechercher {config.elementLabel ? `un ${config.elementLabel}` : "un élément"}
-          </h3>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1 rounded-md hover:bg-muted transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto p-0 gap-0 flex flex-col">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b">
+          <DialogTitle>{dialogTitle}</DialogTitle>
+        </DialogHeader>
 
         {/* Search input */}
-        <div className="p-4 border-b">
+        <div className="px-6 py-4 border-b">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input
-              ref={inputRef}
+            <Search aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              autoFocus
               type="text"
               value={searchQuery}
               onChange={handleSearchChange}
-              placeholder={config.placeholderSearchField || "Entrez le nom de l'élément recherché"}
-              className="w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
+              placeholder={config.placeholderSearchField || String(t("coform.finder.modal.searchPlaceholder"))}
+              aria-label={String(t("coform.finder.modal.searchPlaceholder"))}
+              className="pl-10"
             />
             {isSearching && (
-              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                <Spinner label={String(t("coform.status.loading", "Chargement"))} />
+              </span>
             )}
           </div>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto px-6 py-4">
           {/* Zone sélectionnés */}
           {Object.keys(selectedInModal).length > 0 && (
             <div className="mb-4">
               <div className="text-xs font-medium text-muted-foreground mb-2">
-                Sélectionné{Object.keys(selectedInModal).length > 1 ? "s" : ""}
+                {String(
+                  t(
+                    Object.keys(selectedInModal).length > 1
+                      ? "coform.finder.modal.selectedHeading_other"
+                      : "coform.finder.modal.selectedHeading_one"
+                  )
+                )}
               </div>
               <div className="space-y-2">
                 {Object.values(selectedInModal).map((element) => (
@@ -300,7 +203,7 @@ export function FinderSearchModal({
           {searchResults.length > 0 && (
             <div>
               <div className="text-xs font-medium text-muted-foreground mb-2">
-                Résultats ({searchResults.length})
+                {String(t("coform.finder.modal.resultsHeading", undefined, { count: String(searchResults.length) }))}
               </div>
               <div className="space-y-2">
                 {searchResults.map((result) => (
@@ -325,20 +228,18 @@ export function FinderSearchModal({
           {/* Message si aucun résultat */}
           {searchQuery.length >= 2 && !isSearching && searchResults.length === 0 && !showInviteForm && (
             <div className="text-center py-8 text-muted-foreground">
-              <p>Aucun résultat trouvé pour "{searchQuery}"</p>
+              <p>{String(t("coform.finder.modal.noResults", undefined, { query: searchQuery }))}</p>
               {showAddNew && (
                 <div className="mt-4">
                   <p className="text-sm mb-2">
-                    Votre {config.elementLabel || "élément"} n'existe pas encore ?
+                    {String(t("coform.finder.modal.addNewPrompt", undefined, {
+                      label: config.elementLabel || String(t("coform.finder.fallbackElement")),
+                    }))}
                   </p>
-                  <button
-                    type="button"
-                    onClick={handleAddNew}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Ajouter</span>
-                  </button>
+                  <Button type="button" onClick={handleAddNew} className="gap-2">
+                    <Plus aria-hidden="true" className="w-4 h-4" />
+                    <span>{String(t("coform.finder.modal.addNewButton"))}</span>
+                  </Button>
                 </div>
               )}
             </div>
@@ -348,33 +249,36 @@ export function FinderSearchModal({
           {showInviteForm && (
             <div className="bg-muted/50 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-4">
-                <UserPlus className="w-5 h-5 text-primary" />
-                <span className="font-medium">Inviter par email</span>
+                <UserPlus aria-hidden="true" className="w-5 h-5 text-primary" />
+                <span className="font-medium">{String(t("coform.finder.modal.inviteTitle"))}</span>
               </div>
               <div className="space-y-3">
                 <div>
-                  <label className="text-sm font-medium">Nom</label>
-                  <input
+                  <Label htmlFor="finder-invite-name" className="text-sm font-medium">
+                    {String(t("coform.finder.modal.inviteNameLabel"))}
+                  </Label>
+                  <Input
+                    id="finder-invite-name"
                     type="text"
-                    placeholder="Nom de la personne"
-                    className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    placeholder={String(t("coform.finder.modal.inviteNamePlaceholder"))}
+                    className="mt-1"
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Email</label>
-                  <input
+                  <Label htmlFor="finder-invite-email" className="text-sm font-medium">
+                    {String(t("coform.finder.modal.inviteEmailLabel"))}
+                  </Label>
+                  <Input
+                    id="finder-invite-email"
                     type="email"
-                    placeholder="adresse@email.com"
-                    className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    placeholder={String(t("coform.finder.modal.inviteEmailPlaceholder"))}
+                    className="mt-1"
                   />
                 </div>
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-                >
-                  <Mail className="w-4 h-4" />
-                  <span>Envoyer l'invitation</span>
-                </button>
+                <Button type="button" className="gap-2">
+                  <Mail aria-hidden="true" className="w-4 h-4" />
+                  <span>{String(t("coform.finder.modal.inviteSendButton"))}</span>
+                </Button>
               </div>
             </div>
           )}
@@ -382,36 +286,25 @@ export function FinderSearchModal({
           {/* Placeholder initial */}
           {searchQuery.length < 2 && !isSearching && (
             <div className="text-center py-8 text-muted-foreground">
-              <Search className="w-12 h-12 mx-auto mb-2 opacity-50" />
-              <p>Tapez au moins 2 caractères pour lancer la recherche</p>
+              <Search aria-hidden="true" className="w-12 h-12 mx-auto mb-2 opacity-50" />
+              <p>{String(t("coform.finder.modal.searchHint"))}</p>
             </div>
           )}
         </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-2 p-4 border-t">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 border rounded-md hover:bg-muted transition-colors"
-          >
-            Annuler
-          </button>
-          <button
+        <DialogFooter className="px-6 py-4 border-t">
+          <Button type="button" variant="outline" onClick={onClose}>
+            {String(t("coform.finder.modal.cancel"))}
+          </Button>
+          <Button
             type="button"
             onClick={handleValidate}
             disabled={Object.keys(selectedInModal).length === 0}
-            className={cn(
-              "px-4 py-2 rounded-md transition-colors",
-              Object.keys(selectedInModal).length > 0
-                ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                : "bg-muted text-muted-foreground cursor-not-allowed"
-            )}
           >
-            Valider
-          </button>
-        </div>
-      </div>
-    </div>
+            {String(t("coform.finder.modal.validate"))}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

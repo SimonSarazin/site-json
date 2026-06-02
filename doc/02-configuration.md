@@ -6,9 +6,18 @@
 
 - [Configuration](#configuration)
   - [Variables d'environnement](#variables-denvironnement)
+    - [Variables principales (serveurs dev et prod)](#variables-principales-serveurs-dev-et-prod)
+    - [Variables HelloAsso (module cagnotte)](#variables-helloasso-module-cagnotte)
+    - [Variables injectées dans `window.__ENV__`](#variables-injectées-dans-window__env__)
+  - [Résolution de configuration en 3 niveaux](#résolution-de-configuration-en-3-niveaux)
+    - [En développement (`dev-server.js`)](#en-développement-dev-serverjs)
+    - [En production (`prod-server.js`)](#en-production-prod-serverjs)
   - [Fichiers JSON de configuration](#fichiers-json-de-configuration)
-    - [`config.prod.json`](#configprodjson)
-    - [Mécanisme `sites.json` et hot-reload config](#mécanisme-sitesjson-et-hot-reload-config)
+    - [Fichiers disponibles](#fichiers-disponibles)
+    - [Structure d'un fichier config](#structure-dun-fichier-config)
+    - [Mécanisme `sites.json`](#mécanisme-sitesjson)
+    - [Hot-reload config (dev uniquement)](#hot-reload-config-dev-uniquement)
+  - [Résolution CSS (`virtual:site-css`)](#résolution-css-virtualsite-css)
   - [Fichier de configuration Vite (`vite.config.ts`)](#fichier-de-configuration-vite-viteconfigts)
   - [Voir aussi](#voir-aussi)
 
@@ -24,24 +33,58 @@ La configuration de SiteForge se fait principalement via :
 
 ## Variables d'environnement
 
-| Variable                | Description                                                                                | Valeur par défaut              |
-| ----------------------- | ------------------------------------------------------------------------------------------ | ------------------------------ |
-| `SITE_CONFIG_JSON`      | JSON complet de la configuration du site. Si présent, il est parsé directement.            | —                              |
-| `SITE_CONFIG_PATH`      | Chemin vers un fichier JSON contenant la configuration du site.                            | —                              |
-| `VITE_BASE_URL_BACKEND` | URL de base pour les appels API depuis le client (injectée en tant que `import.meta.env`). | `http://localhost:3000`        |
-| `VITE_SERVER_URL`       | URL publique du serveur (injectée en tant que `import.meta.env`).                          | `http://localhost:3000`        |
-| `VITE_SLUG`             | « Slug » à utiliser pour les requêtes par défaut (injecté en tant que `import.meta.env`).  | `default`                      |
-| `NODE_ENV`              | Mode d'exécution Node.js (`development` ou `production`).                                  | Défini par Vite ou `npm run …` |
-| `PORT`                  | Port sur lequel le serveur écoute en mode dev ou preview.                                  | `5173` en dev, `3000` en prod  |
-| `SITE_CSS_CONTENT`      | Contenu CSS complet inline (build-time). Priorite maximale pour la resolution CSS.            | —                              |
-| `SITE_CSS_PATH`         | Chemin vers un fichier CSS personnalisé (build-time). Prioritaire sur le lookup `sites.json`. | —                              |
-| `VITE_MON_API_KEY` | Clé API pour services externes (injectée via `import.meta.env`). | `default-api-key` |
-| `VITE_MON_DOMAIN` | Domaine pour services externes (injecté via `import.meta.env`). | `default-domain.com` |
-| `IMAGE_OPTIMIZER_ALLOWED_DOMAINS` | Domaines distants autorisés pour l'optimisation d'images (séparés par des virgules). | `localhost,127.0.0.1` + hostname de `VITE_BASE_URL_BACKEND` |
+### Variables principales (serveurs dev et prod)
 
-> **En production**, au moins `SITE_CONFIG_JSON` **ou** `SITE_CONFIG_PATH` doit être défini — sinon le serveur arrête le démarrage avec une erreur.
+| Variable | Description | Valeur par défaut |
+| -------- | ----------- | ----------------- |
+| `SITE_CONFIG_JSON` | JSON complet de la configuration du site (priorité maximale). Si présent, parsé directement sans lecture de fichier. | — |
+| `SITE_CONFIG_PATH` | Chemin vers un fichier JSON contenant la configuration du site (priorité 2). | — |
+| `VITE_SLUG` | Slug de site utilisé pour la résolution via `sites.json` (priorité 3, dev uniquement). | `default` |
+| `NODE_ENV` | Mode d'exécution Node.js (`development` ou `production`). | Défini par Vite/npm |
+| `PORT` | Port d'écoute du serveur. | `5173` (dev), `3000` (prod) |
+| `VITE_BASE_URL_BACKEND` | URL de base pour les appels API depuis le client (`import.meta.env`). Injectée aussi dans `window.__ENV__` à l'exécution. | `http://localhost:3000` |
+| `VITE_SERVER_URL` | URL publique du serveur (`import.meta.env`). Injectée aussi dans `window.__ENV__`. | `http://localhost:3000` |
+| `SITE_CSS_CONTENT` | Contenu CSS complet inline (build-time). Priorité maximale pour la résolution CSS. | — |
+| `SITE_CSS_PATH` | Chemin vers un fichier CSS personnalisé (build-time). Prioritaire sur le lookup `sites.json`. | — |
+| `IMAGE_OPTIMIZER_ALLOWED_DOMAINS` | Domaines distants autorisés pour l'optimisation d'images, séparés par des virgules. | `localhost,127.0.0.1` + hostname de `VITE_BASE_URL_BACKEND` |
 
-La fonction utilitaire `readEnv` centralise la lecture :
+> **En production**, au moins `SITE_CONFIG_JSON` **ou** `SITE_CONFIG_PATH` doit être défini — sinon le serveur arrête le démarrage avec une erreur explicite.
+
+### Variables HelloAsso (module cagnotte)
+
+Ces variables sont utilisées par `server/api/helloasso-checkout.js` pour le module de financement collaboratif :
+
+| Variable | Description | Valeur par défaut |
+| -------- | ----------- | ----------------- |
+| `HELLOASSO_CLIENT_ID` | Client ID OAuth HelloAsso. | — |
+| `HELLOASSO_CLIENT_SECRET` | Client Secret OAuth HelloAsso. | — |
+| `HELLOASSO_ORGANIZATION_SLUG` | Slug de l'organisation HelloAsso (côté serveur). | — |
+| `HELLOASSO_ORGANIZATION_ID` | ID de l'organisation HelloAsso. | — |
+| `HELLOASSO_PUBLIC_BASE_URL` | URL publique de l'API HelloAsso. | — |
+| `HELLOASSO_OAUTH_TOKEN_URL` | URL du endpoint OAuth pour obtenir les tokens. | — |
+| `HELLOASSO_DEV_MODE` | Active le mode développement HelloAsso (sandbox). | — |
+| `VITE_HELLOASSO_ORGANIZATION_SLUG` | Slug de l'organisation HelloAsso (côté client, `import.meta.env`). | — |
+| `APP_BASE_URL` | URL de base de l'application (utilisée pour les callbacks HelloAsso). | — |
+| `PUBLIC_BASE_URL` | URL publique de base pour les redirections. | — |
+| `NGROK_URL` | URL ngrok pour les webhooks en développement local. | — |
+| `VITE_PUBLIC_BASE_URL` | URL publique exposée côté client (`import.meta.env`). | — |
+| `VITE_NGROK_URL` | URL ngrok exposée côté client (`import.meta.env`). | — |
+
+### Variables injectées dans `window.__ENV__`
+
+À l'exécution, les serveurs (dev et prod) injectent un script `window.__ENV__` dans chaque réponse HTML. Les variables suivantes sont disponibles dans le navigateur via `window.__ENV__` (et lues par `readEnv()` dans `src/lib/constant/common.ts`) :
+
+| Variable | Accesseurs côté client |
+| -------- | ---------------------- |
+| `VITE_BASE_URL_BACKEND` | `getBaseUrl()` |
+| `VITE_SERVER_URL` | `getServerUrl()` |
+| `VITE_SLUG` | `getSlug()` |
+| `VITE_MON_API_KEY` | `getMonApiKey()` — défaut `"default-api-key"` |
+| `VITE_MON_DOMAIN` | `getMonDomain()` — défaut `"default-domain.com"` |
+
+> **Note** : `VITE_MON_API_KEY` et `VITE_MON_DOMAIN` ne sont pas injectées par les serveurs dans `window.__ENV__` ; elles sont lues uniquement depuis `import.meta.env` (build-time) ou `process.env` (SSR). Les valeurs par défaut sont codées dans `src/lib/constant/common.ts`.
+
+La fonction utilitaire `readEnv` centralise la lecture avec priorité `window.__ENV__` > `process.env` > `import.meta.env` :
 
 ```ts
 function readEnv<K extends keyof RuntimeEnv>(
@@ -57,17 +100,68 @@ function readEnv<K extends keyof RuntimeEnv>(
 
 ---
 
+## Résolution de configuration en 3 niveaux
+
+La résolution de la configuration du site suit une hiérarchie stricte, implémentée dans `loadSingleConfig()` (dev) et `loadSiteConfig()` (prod).
+
+### En développement (`dev-server.js`)
+
+```
+SITE_CONFIG_JSON  →  parse direct
+        ↓ (absent)
+SITE_CONFIG_PATH  →  lecture fichier
+        ↓ (absent)
+VITE_SLUG + sites.json  →  résolution slug → chemin → lecture fichier
+        ↓ (slug absent ou non trouvé)
+demo-site.ts  →  config de démonstration (chargée via vite.ssrLoadModule)
+```
+
+- Si le slug n'est pas trouvé dans `sites.json`, un warning est affiché avec la liste des slugs disponibles.
+- Quand la résolution par slug réussit, `SITE_CONFIG_PATH` est automatiquement renseignée avec le chemin résolu (ce qui active le hot-reload).
+- La config est ensuite passée dans `normalizeSiteConfig()` pour pré-sanitizer les champs HTML/SVG (DOMPurify) et éviter les mismatches d'hydratation SSR/client.
+
+### En production (`prod-server.js`)
+
+```
+SITE_CONFIG_JSON  →  parse direct
+        ↓ (absent)
+SITE_CONFIG_PATH  →  lecture fichier
+        ↓ (absent)
+Erreur de démarrage  →  arrêt immédiat avec message explicite
+```
+
+- La résolution via `VITE_SLUG` + `sites.json` **n'existe pas** en production : au moins `SITE_CONFIG_JSON` ou `SITE_CONFIG_PATH` est obligatoire.
+- La config est chargée **une seule fois** au démarrage, normalisée et mise en cache. Il n'y a pas de hot-reload en production.
+
+---
+
 ## Fichiers JSON de configuration
 
-### `config.prod.json`
+### Fichiers disponibles
 
-Ce fichier contient la structure complète du site :
+Les fichiers `config.prod.*.json` présents à la racine du dépôt :
 
-* Métadonnées (titre, description, langues, favicon…)
-* Configuration du header (menus, utilities, logo…)
-* Pages et sections (hero, cards, pricing, blog, about, showcase…)
+| Fichier | Description |
+| ------- | ----------- |
+| `config.prod.json` | Config de production par défaut |
+| `config.prod.tiers-lieux.json` | Navigator des Tiers-Lieux |
+| `config.prod.rezo-la-mer.json` | Rezo la Mer |
+| `config.prod.cyber-reunion.json` | Cyber Réunion (aussi utilisée par le slug `cocolight`) |
+| `config.prod.sport-sante-bien-etre.json` | Sport Santé Bien-Être |
+| `config.prod.nos-commune.json` | Nos Communes |
+| `config.prod.commune-transparente.json` | Commune Transparente (partagée par plusieurs slugs communes) |
+| `config.prod.julie-pot-vin.json` | Julie Pot Vin |
+| `config.prod.institut-bleu.json` | Institut Bleu |
+| `config.prod.jardin-ocean.json` | Jardin Ocean |
+| `config.prod.open-atlas-test.json` | Open Atlas (test) |
+| `config.prod.equipements-Sportifs.json` | Équipements Sportifs 974 |
+| `config.prod.eXtremeDefiAdeme.json` | eXtrème Défi Ademe |
+| `config.dev.json` | Config de développement |
+| `site-config.json` | Config alternative |
 
-Extrait :
+### Structure d'un fichier config
+
+Tous les fichiers doivent être conformes au `SiteConfigSchema` défini dans `src/types/site-schema.ts` et validé par Zod :
 
 ```json
 {
@@ -90,23 +184,77 @@ Extrait :
             "headline": { "fr": "Bienvenue", "en": "Welcome" },
             "cta": [ /* … */ ]
           }
-        },
+        }
         /* … */
       ]
-    },
+    }
     /* … */
   ]
 }
 ```
 
-* En **développement**, on peut charger ce fichier localement grâce à `SITE_CONFIG_PATH=./config.prod.json`.
-* En **production**, on peut choisir `SITE_CONFIG_JSON` pour passer tout le contenu via une variable.
+### Mécanisme `sites.json`
 
-### Mécanisme `sites.json` et hot-reload config
+`sites.json` est le registre multi-site : il associe chaque `slug` à un fichier de config et à un fichier CSS. Il est lu par :
+- `dev-server.js` (résolution config au démarrage)
+- `vite.config.ts` via `siteCssPlugin()` (résolution CSS au build)
 
-Si `SITE_CONFIG_PATH` n'est pas défini mais que `VITE_SLUG` l'est, le serveur de développement cherche dans `sites.json` une entrée correspondant au slug pour résoudre le chemin du fichier config. Chaque entrée de `sites.json` associe un `slug` à un fichier `config` et un fichier `css`.
+Entrées actuelles de `sites.json` :
 
-En développement, la config est chargée **une seule fois** au démarrage et cachée en mémoire (`cachedConfig`). Le fichier config est ensuite surveillé avec `fs.watchFile` : toute modification est envoyée aux clients via le WebSocket Vite pour un hot-reload immédiat. Voir [Backend et SSR](14-backend-ssr.md) pour les détails techniques.
+| Slug | Config | CSS |
+| ---- | ------ | --- |
+| `cyberReunion` | `config.prod.cyber-reunion.json` | `index-cyber-reunion` |
+| `cocolight` | `config.prod.cyber-reunion.json` | `index-cyber-reunion` |
+| `rezoLaMer` | `config.prod.rezo-la-mer.json` | `index-rezo-la-mer` |
+| `eXtremeDefiAdeme` | `config.prod.eXtremeDefiAdeme.json` | `index-rezo-la-mer` |
+| `sportSanteBienetre` | `config.prod.sport-sante-bien-etre.json` | `index-sport-sante-bien-etre` |
+| `institutBleu` | `config.prod.institut-bleu.json` | `index-institut-bleu` |
+| `navigatorDesTierslieux` | `config.prod.tiers-lieux.json` | `index-tiers-lieux` |
+| `juliePotVin` | `config.prod.julie-pot-vin.json` | `index-julie-pot-vin` |
+| `openAtlas` | `config.prod.open-atlas-test.json` | `index-rezo-la-mer` |
+| `nosCommunes` | `config.prod.nos-commune.json` | `index-nos-communes` |
+| `etangsale1` | `config.prod.commune-transparente.json` | `index-commune-transparente` |
+| `tampon` | `config.prod.commune-transparente.json` | `index-commune-transparente` |
+| `saintbenoit4` | `config.prod.commune-transparente.json` | `index-commune-transparente` |
+| `saintemarie1` | `config.prod.commune-transparente.json` | `index-commune-transparente` |
+| `saintpaul4` | `config.prod.commune-transparente.json` | `index-commune-transparente` |
+| `saintJoseph` | `config.prod.commune-transparente.json` | `index-commune-transparente` |
+| `equipementsSportifs974` | `config.prod.equipements-Sportifs.json` | `index-rezo-la-mer` |
+
+> Plusieurs slugs peuvent pointer vers le même fichier de config ou de CSS (ex. les communes partagent toutes `config.prod.commune-transparente.json`).
+
+### Hot-reload config (dev uniquement)
+
+En développement, une fois la config chargée et `SITE_CONFIG_PATH` résolu (que ce soit par `SITE_CONFIG_PATH` direct ou par la résolution `VITE_SLUG` → `sites.json`), le serveur surveille le fichier avec `fs.watchFile` (intervalle 500 ms). Toute modification est :
+
+1. Rechargée et ré-normalisée en mémoire (`cachedConfig`)
+2. Envoyée aux clients via le WebSocket Vite (`event: "config-update"`)
+
+Le serveur écoute aussi l'événement WebSocket `"config-save"` (envoyé par l'interface d'administration) pour écrire directement les modifications dans le fichier config.
+
+> Ce mécanisme ne fonctionne que si `SITE_CONFIG_PATH` est défini. Si la config provient de `SITE_CONFIG_JSON`, le hot-reload est désactivé.
+
+Voir [Backend et SSR](14-backend-ssr.md) pour les détails techniques.
+
+---
+
+## Résolution CSS (`virtual:site-css`)
+
+Le plugin `siteCssPlugin()` dans `vite.config.ts` expose un module virtuel `virtual:site-css` importé par l'entry point. La résolution suit 4 niveaux de priorité (évalués au démarrage de Vite) :
+
+```
+1. SITE_CSS_CONTENT  →  contenu CSS inline écrit dans src/.tmp-site-theme.css
+         ↓ (absent)
+2. SITE_CSS_PATH  →  chemin de fichier CSS explicite (absolu ou relatif à la racine)
+         ↓ (absent ou fichier introuvable)
+3. VITE_SLUG + sites.json  →  src/{site.css}.css  (ex. src/index-tiers-lieux.css)
+         ↓ (slug absent, non trouvé, ou fichier CSS absent)
+4. Fallback  →  src/index.css  (thème par défaut)
+```
+
+- `SITE_CSS_CONTENT` est l'option recommandée pour CI/CD et builds Docker sans fichier CSS dans le dépôt.
+- Si `SITE_CSS_PATH` pointe vers un fichier inexistant, le plugin émet un warning et passe au niveau suivant.
+- Si le slug `sites.json` est trouvé mais que le fichier `src/{site.css}.css` n'existe pas, le plugin émet un warning et utilise `src/index.css`.
 
 ---
 
@@ -116,11 +264,11 @@ Vite est configuré pour supporter :
 
 * **Alias** : `@` → `./src`
 * **Plugins** :
-  - `siteCssPlugin()` : plugin custom de résolution CSS virtuelle (`virtual:site-css`). Résout le fichier CSS du site selon l'ordre de priorité : `SITE_CSS_CONTENT` > `SITE_CSS_PATH` > `VITE_SLUG` (lookup `sites.json`) > `src/index.css`
+  - `siteCssPlugin()` : plugin custom de résolution CSS virtuelle (`virtual:site-css`). Voir section [Résolution CSS](#résolution-css-virtualsite-css) ci-dessus.
   - `preloadPlugin()` (de `vite-preload`) : trace les imports lazy pour générer les balises `<link rel="modulepreload">` en SSR. Doit être **avant** `react()` pour tracer les lazy imports
   - `react()` : support React avec JSX automatique
   - `tailwindcss()` : compilation Tailwind CSS 4
-  - `visualizer()` (de `rollup-plugin-visualizer`) : génère `dist/stats.html` pour l'analyse de bundle (uniquement pour le build client)
+  - `visualizer()` (de `rollup-plugin-visualizer`) : génère `dist/stats.html` pour l'analyse de bundle (uniquement pour le build client, absent du build SSR)
 * **Définition d'environnements** :
 
   ```ts
@@ -157,7 +305,7 @@ Vite est configuré pour supporter :
   ```
 
   - En **build SSR** (`isSsrBuild: true`) : `noExternal: true` (tout est bundlé sauf les externes listés). Les externes incluent `react` et `react-dom` pour éviter la duplication.
-  - En **dev** (`isSsrBuild: false/undefined`) : `noExternal` n'est pas défini, seuls `@communecter/cocolight-api-client`, `pino` et `pino-pretty` sont externalisés.
+  - En **dev** (`isSsrBuild: false/undefined`) : `noExternal` n'est pas défini ; seuls `@communecter/cocolight-api-client`, `pino` et `pino-pretty` sont externalisés. Le `ssr.noExternal` local du `dev-server.js` surcharge ce comportement pour `@radix-ui/*` et `lucide-react` (traitement inline en mode dev).
 * **Server warmup** : pré-charge les fichiers SSR et client au démarrage du serveur de dev :
 
   ```ts
@@ -168,7 +316,12 @@ Vite est configuré pour supporter :
     },
   },
   ```
-* **Optimisations** : exclusion de `lucide-react` en dev, `manualChunks` pour le build client
+
+  > Ce warmup Vite est **asynchrone non-bloquant**. `dev-server.js` effectue en plus un warmup bloquant (`await vite.ssrLoadModule("/src/entry-server.tsx")`) au démarrage pour garantir que le premier hit utilisateur reçoit un rendu SSR complet.
+
+* **`optimizeDeps`** : `lucide-react` est exclu du pre-bundling en dev (les icônes individuelles sont tree-shakées).
+* **Build manifest** : `build.manifest: true` génère le manifest JSON utilisé par `vite-preload` pour les balises `<link rel="modulepreload">`.
+* **`manualChunks`** : stratégie de découpage pour le build client uniquement. Voir [Architecture — Bundle](03-architecture.md) pour le détail des chunks.
 
 ---
 
@@ -176,3 +329,4 @@ Vite est configuré pour supporter :
 
 - [Introduction & Installation](01-introduction-installation.md)
 - [Architecture](03-architecture.md)
+- [Backend et SSR](14-backend-ssr.md)

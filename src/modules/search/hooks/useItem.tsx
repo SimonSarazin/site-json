@@ -70,6 +70,14 @@ const useItem = (item: User | Organization | Project | Poi | EventType) => {
     merged.created = toDate(raw.created);
     merged.updated = toDate(raw.updated);
 
+    // Normalisation tags : le backend peut renvoyer un objet ({tag: true})
+    // ou autre chose qu'un array de strings → on garde uniquement les strings.
+    merged.tags = Array.isArray(raw.tags)
+      ? raw.tags.filter((t): t is string => typeof t === "string")
+      : raw.tags && typeof raw.tags === "object"
+        ? Object.keys(raw.tags)
+        : [];
+
     // Composition de l'adresse sous forme de chaîne unique
     const { streetAddress = "", postalCode = "", addressLocality = "" } =
       merged.address ?? {};

@@ -123,7 +123,7 @@ export function CommentItem({
               {formattedComment.isAuthor && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="ml-2 p-1 hover:bg-background/50 rounded transition-colors opacity-0 group-hover:opacity-100">
+                    <Button variant="ghost" size="icon" aria-label={String(t("a11y.moreOptions"))} className="ml-2 p-1 hover:bg-background/50 rounded transition-colors opacity-0 group-hover:opacity-100">
                       <MoreVertical />
                     </Button>
                   </DropdownMenuTrigger>

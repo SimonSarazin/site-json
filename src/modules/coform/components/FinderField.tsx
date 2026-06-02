@@ -1,10 +1,14 @@
 import { useState, useMemo } from "react";
 import { Search } from "lucide-react";
 import type { FieldErrors } from "react-hook-form";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useT } from "@/hooks/useT";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import type { FormFieldMapping, FinderValue, FinderElement, FinderConfig } from "../types";
 import { FinderElementCard } from "./FinderElementCard";
 import { FinderSearchModal } from "./FinderSearchModal";
+import { FieldError } from "./FormFields";
 
 // Import HintText pour afficher l'info en markdown
 import ReactMarkdown from "react-markdown";
@@ -68,6 +72,8 @@ export function FinderField({
   hideLabel = false,
   baseUrl = "",
 }: FinderFieldProps) {
+  useLoadNamespace("modules/coform");
+  const t = useT("modules/coform");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Fusionner la config du champ avec les valeurs par défaut
@@ -128,43 +134,54 @@ export function FinderField({
   };
 
   /**
-   * Édite un élément (placeholder)
+   * Édite un élément (placeholder).
+   *
+   * @future Hook prévu pour ouvrir un formulaire d'édition contextuel d'un
+   * élément sélectionné par le Finder (org/citoyen/etc.). Tant que la feature
+   * n'est pas implémentée, le bouton "Edit" est désactivé côté UI (cf. prop
+   * `canEdit={false}` ci-dessous) — la config backend `editElement: true` est
+   * donc ignorée volontairement. À activer en remplaçant le toast par
+   * l'ouverture d'un modal d'édition + en restaurant `canEdit={config.editElement && !readOnly}`.
    */
   const handleEditElement = (element: FinderElement) => {
-    // TODO: Ouvrir le formulaire d'édition de l'élément
     console.log("Edit element:", element);
-    alert(`Fonctionnalité à implémenter: éditer l'élément "${element.name}"`);
+    toast.info(`Fonctionnalité à implémenter : éditer l'élément « ${element.name} »`);
   };
 
   const hasError = !!errors[field.name];
 
   return (
     <div className={cn("space-y-2", field.width || "col-span-12")}>
-      {/* Label */}
+      {/* Label — `<div>` (et pas `<label>`) car le control n'est pas un input
+          mais un bouton ouvrant un modal. Un `<label>` sans `htmlFor` n'a aucun
+          effet a11y. Le bouton ci-dessous porte son propre `aria-label`. */}
       {!hideLabel && (
-        <label className="block">
-          <span className="text-sm font-medium">
-            {field.label}
-            {field.isRequired && <span className="text-destructive ml-1">*</span>}
-          </span>
-        </label>
+        <div id={`${field.name}-label`} className="text-sm font-medium">
+          {field.label}
+          {field.isRequired && <span className="text-destructive ml-1">*</span>}
+        </div>
       )}
 
       {/* Info/Description */}
       {field.info && <HintText text={field.info} />}
 
-      {/* Bouton de recherche */}
+      {/* Bouton de recherche — relié au label via `aria-labelledby` pour lier
+          le titre du champ au control effectif (un bouton, pas un input). */}
       {!readOnly && (
         <button
           type="button"
           onClick={handleOpenSearch}
+          aria-labelledby={!hideLabel ? `${field.name}-label` : undefined}
+          aria-invalid={hasError || undefined}
+          aria-describedby={hasError ? `${field.name}-error` : undefined}
           className={cn(
             "w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed rounded-lg",
             "text-muted-foreground hover:bg-muted/50 hover:border-primary/50 transition-colors",
+            "outline-none focus-visible:ring-2 focus-visible:ring-ring",
             hasError && "border-destructive"
           )}
         >
-          <Search className="w-5 h-5" />
+          <Search aria-hidden="true" className="w-5 h-5" />
           <span>{config.buttonLabel}</span>
         </button>
       )}
@@ -177,7 +194,11 @@ export function FinderField({
               key={element.id}
               element={element}
               canRemove={!readOnly}
-              canEdit={config.editElement && !readOnly}
+              // canEdit forcé false tant que handleEditElement est un placeholder
+              // (cf. @future ci-dessus). La config backend `editElement: true`
+              // est volontairement ignorée pour ne pas afficher un bouton qui
+              // mènerait à un toast "à implémenter".
+              canEdit={false}
               onRemove={handleRemoveElement}
               onEdit={handleEditElement}
               baseUrl={baseUrl}
@@ -187,21 +208,26 @@ export function FinderField({
       )}
 
       {/* Message d'erreur */}
-      {hasError && (
-        <p className="text-sm text-destructive">
-          {errors[field.name]?.message?.toString() || "Ce champ est requis"}
-        </p>
-      )}
-
-      {/* Modal de recherche */}
-      <FinderSearchModal
-        config={config}
-        selectedElements={selectedElements}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onValidate={handleAddElements}
-        baseUrl={baseUrl}
+      <FieldError
+        name={field.name}
+        message={
+          hasError
+            ? (errors[field.name]?.message?.toString() || String(t("coform.finder.requiredField")))
+            : undefined
+        }
       />
+
+      {/* Modal de recherche — mount conditionnel : à chaque ouverture, le composant
+          est créé à neuf et son state interne est frais (plus de useEffect reset). */}
+      {isModalOpen && (
+        <FinderSearchModal
+          config={config}
+          selectedElements={selectedElements}
+          onClose={() => setIsModalOpen(false)}
+          onValidate={handleAddElements}
+          baseUrl={baseUrl}
+        />
+      )}
     </div>
   );
 }

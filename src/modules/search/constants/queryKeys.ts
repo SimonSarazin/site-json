@@ -1,8 +1,19 @@
 /**
- * Query keys centralisés pour le module Search
- * Single source of truth pour les query keys de recherche
+ * Query keys du module search — centralisées (single source of truth).
+ *
+ * Producteurs : `useSearchQuery`, `prefetchSearchResults`
+ * Consommateurs invalidants : aucun explicite — refetch via `refetch()` ou
+ *   changement des params (qui change la queryKey naturellement).
+ *
+ * `variant` est inclus dans la clé pour isoler les caches de variants SDK
+ * (`default` vs `navigator-tl`) — sans cette dimension, un consommateur
+ * `navigator-tl` pourrait se voir servir un cache `default` aux champs
+ * différents.
+ *
+ * Le `queryKeyPrefix` est passé par le call-site car le module search est
+ * utilisé par plusieurs sections (annuaire, carte, graph, etc.) avec des
+ * préfixes différents — il ne peut pas être figé comme pour `ampli`.
  */
-
 export interface SearchQueryKeyParams {
   queryKeyPrefix: string;
   searchText: string;
@@ -11,22 +22,39 @@ export interface SearchQueryKeyParams {
   mapUsed: boolean;
   graphUsed?: boolean;
   baseParams: Record<string, unknown>;
+  /**
+   * Variant SDK (`default` ou `navigator-tl`). Inclus dans la queryKey pour
+   * éviter qu'un cache de variant `default` ne contamine un consommateur
+   * `navigator-tl` (les résultats ont des champs différents).
+   */
+  variant?: string;
 }
 
 export const SEARCH_QUERY_KEYS = {
   /**
-   * Génère une query key pour les résultats de recherche
-   * Utilisé par useSearchQuery et prefetchSearchResults
+   * Résultats de recherche paginés.
+   *
+   * Producteurs : `useSearchQuery`, `prefetchSearchResults`
+   * Consommateurs invalidants : aucun (refetch via params)
    */
-  results: (params: SearchQueryKeyParams) => [
-    params.queryKeyPrefix,
-    params.searchText,
-    JSON.stringify(params.searchTags),
-    JSON.stringify(params.searchType),
-    params.mapUsed,
-    params.graphUsed ?? false,
-    JSON.stringify(params.baseParams),
-  ] as const,
+  RESULTS: (params: SearchQueryKeyParams) =>
+    [
+      params.queryKeyPrefix,
+      params.searchText,
+      JSON.stringify(params.searchTags),
+      JSON.stringify(params.searchType),
+      params.mapUsed,
+      params.graphUsed ?? false,
+      JSON.stringify(params.baseParams),
+      params.variant ?? "default",
+    ] as const,
+  /**
+   * Préfixe minimal pour invalidation cross-recherche (toutes les variations
+   * de filtres pour un préfixe donné).
+   */
+  RESULTS_PREFIX: (queryKeyPrefix: string) => [queryKeyPrefix] as const,
 } as const;
 
-export type SearchQueryKeyType = typeof SEARCH_QUERY_KEYS;
+export type SearchQueryKeyType = ReturnType<
+  (typeof SEARCH_QUERY_KEYS)[keyof typeof SEARCH_QUERY_KEYS]
+>;

@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useCocolight } from "@/hooks/useCocolight";
+import { PROFIL_QUERY_KEYS } from "../constants/queryKeys";
 
 interface VoteUser {
   _id: { $id: string };
@@ -20,7 +21,7 @@ export function useCommentVotes(commentId: string | null) {
   const { api } = useCocolight();
 
   return useQuery({
-    queryKey: ["comment-votes", commentId],
+    queryKey: PROFIL_QUERY_KEYS.COMMENT_VOTES(commentId),
     queryFn: async () => {
       if (!commentId || !api) {
         throw new Error("Missing commentId or api");

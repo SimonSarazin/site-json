@@ -62,6 +62,7 @@ const LazySections: {
   hero: lazy(() => import("./HeroSection")),
   "hero-tiers-lieux": lazy(() => import("./HeroTiersLieux")),
   "hero-rezo-la-mer": lazy(() => import("./HeroRezoLaMer")),
+  "hero-ssbe": lazy(() => import("./HeroSSBE")),
   "features-rezo-la-mer": lazy(() => import("./FeaturesRezoLaMer")),
   "action-buttons-rezo-la-mer": lazy(() => import("./ActionButtonsRezoLaMer")),
   "community-rezo-la-mer": lazy(() => import("./CommunityRezoLaMer")),
@@ -70,6 +71,7 @@ const LazySections: {
   "commune-transparente-actions": lazy(() => import("./CommuneTransparenteActionsSection")),
   "hero-nos-communes": lazy(() => import("./NosCommunesBannerSection")),
   "hero-commune-transparente": lazy(() => import("./HeroCommuneTransparenteSection")),
+  "categories-grid": lazy(() => import("./CategoriesGridSection")),
   markdown: lazy(() => import("./MarkdownSection")),
   cards: lazy(() => import("./CardsSection")),
   gallery: lazy(() => import("./GallerySection")),
@@ -103,19 +105,26 @@ const LazySections: {
   html: lazy(() => import("./HTMLSection")),
   title: lazy(() => import("./TitleSection")),
   content: lazy(() => import("./ContentSection")),
-  loginForm: lazy(() => import("./LoginFormSection")),
-  registerForm: lazy(() => import("./RegisterFormSection")),
-  recoverPasswordForm: lazy(() => import("./RecoverPasswordFormSection")),
-  searchPro: lazy(() => import("@/modules/search/SearchProSection")),
-  searchProStatic: lazy(() => import("@/modules/search/SearchProStaticSection")),
-  cardCountCT: lazy(() => import("@/modules/search/CardCountCTSection")),
-  thematics: lazy(() => import("@/modules/search/components/card/ThematicsSection")),
-  filters: lazy(() => import("./FiltersSection")),
+  loginForm: lazy(() => import("@/modules/auth/sections/LoginFormSection")),
+  registerForm: lazy(() => import("@/modules/auth/sections/RegisterFormSection")),
+  recoverPasswordForm: lazy(() => import("@/modules/auth/sections/RecoverPasswordFormSection")),
+  searchPro: lazy(() => import("@/modules/search/sections/SearchProSection")),
+  searchProStatic: lazy(() => import("@/modules/search/sections/SearchProStaticSection")),
+  cardCountCT: lazy(() => import("@/modules/search/sections/CardCountCTSection")),
+  thematics: lazy(() => import("@/modules/search/sections/ThematicsSection")),
+  filters: lazy(() => import("@/modules/search/sections/FiltersSection")),
   gridLayout: lazy(() => import("./GridLayoutSection")),
   news: lazy(() => import("@/modules/news/components/sections/NewsSection")),
+  notifications: lazy(() => import("@/modules/notification/components/sections/NotificationsSection")),
   member: lazy(() => import("./MemberSection")),
   heroWithIcon: lazy(() => import("./HeroWithIconSection")),
   meeteem: lazy(() => import("@/modules/ampli/components/sections/MeeteemSection")),
+  coform: lazy(() => import("@/modules/coform/components/CoFormSection")),
+  actions: lazy(() => import("@/modules/cagnotte/components/sections/ActionsSection")),
+  finance: lazy(() => import("@/modules/cagnotte/components/sections/FinanceSection")),
+  "actions-summary": lazy(() => import("@/modules/cagnotte/components/sections/ActionsSummarySection")),
+  "finance-summary": lazy(() => import("@/modules/cagnotte/components/sections/FinanceSummarySection")),
+  "cagnotte-layout": lazy(() => import("@/modules/cagnotte/components/sections/CagnotteLayoutSection")),
 };
 
 // Fallback skeleton pour les sections en cours de chargement
@@ -191,14 +200,16 @@ Ces conventions garantissent que `SectionRenderer` peut traiter **toutes** les s
 
 ## Description rapide des principaux types de section
 
-Le système supporte actuellement **57 types de sections** :
+Le système supporte actuellement **66 types de sections** :
 
 ### Sections de contenu & layout
 
 | Type               | Composant                | Usage principal                                                        |
 | ------------------ | ------------------------ | ---------------------------------------------------------------------- |
 | **hero**           | `HeroSection`            | Bandeau d'accueil avec titre, sous-titre, image de fond et boutons CTA |
-| **hero-tiers-lieux** | `HeroTiersLieux`       | Hero spécialisé pour Tiers-Lieux avec recherche intégrée               |
+| **hero-tiers-lieux** | `HeroTiersLieux`       | Hero spécialisé pour Tiers-Lieux avec recherche intégrée, applicateur de filtres headless (`filterGroups`/`filtersByAnswers`) et autocompletion scopée réseau (`searchVariant`/`baseParams`). Le mode sous-site (`/s/`) et ses props (`headlineSubsite`, `subheadSubsite`) ont été supprimés. |
+| **hero-ssbe**      | `HeroSSBE`               | Variante hero pour le site Sport-Santé-Bien-Être (SSBE)               |
+| **categories-grid**| `CategoriesGridSection`  | Grille de catégories cliquables avec icônes et liens                   |
 | **cards**          | `CardsSection`           | Grille de cartes (grid/masonry/carousel/list)                          |
 | **content**        | `ContentSection`         | Bloc de contenu riche avec image, texte, tags et liens                 |
 | **title**          | `TitleSection`           | Titre centré pour séparer les parties d'une page                       |
@@ -238,13 +249,14 @@ Le système supporte actuellement **57 types de sections** :
 
 ### Sections de formulaires
 
-| Type                   | Composant                    | Usage principal                    |
-| ---------------------- | ---------------------------- | ---------------------------------- |
-| **contactForm**        | `ContactFormSection`         | Formulaire de contact configurable |
-| **loginForm**          | `LoginFormSection`           | Formulaire de connexion            |
-| **registerForm**       | `RegisterFormSection`        | Formulaire d'inscription           |
-| **recoverPasswordForm**| `RecoverPasswordFormSection` | Récupération de mot de passe       |
-| **newsletter**         | `NewsletterSection`          | Inscription newsletter             |
+| Type                   | Composant                    | Usage principal                                            |
+| ---------------------- | ---------------------------- | ---------------------------------------------------------- |
+| **contactForm**        | `ContactFormSection`         | Formulaire de contact configurable                         |
+| **loginForm**          | `LoginFormSection`           | Formulaire de connexion                                    |
+| **registerForm**       | `RegisterFormSection`        | Formulaire d'inscription                                   |
+| **recoverPasswordForm**| `RecoverPasswordFormSection` | Récupération de mot de passe                               |
+| **newsletter**         | `NewsletterSection`          | Inscription newsletter                                     |
+| **coform**             | `CoFormSection`              | Formulaire dynamique généré via CoForm (react-hook-form + Zod) |
 
 ### Sections de liste & événements
 
@@ -280,11 +292,22 @@ Le système supporte actuellement **57 types de sections** :
 | **hero-nos-communes**             | `NosCommunesBannerSection`             | Bannière Nos Communes                              |
 | **hero-commune-transparente**     | `HeroCommuneTransparenteSection`       | Hero Commune Transparente                          |
 
-### Section news (depuis module news)
+### Sections news & notifications (depuis modules)
 
-| Type     | Composant      | Usage principal                              |
-| -------- | -------------- | -------------------------------------------- |
-| **news** | `NewsSection`  | Flux d'actualités avec commentaires/réactions |
+| Type              | Composant              | Usage principal                                                        |
+| ----------------- | ---------------------- | ---------------------------------------------------------------------- |
+| **news**          | `NewsSection`          | Flux d'actualités avec commentaires/réactions                          |
+| **notifications** | `NotificationsSection` | Panneau de notifications (Popover desktop / Sheet mobile), badge non-lus, redirection vers profil au clic |
+
+### Sections cagnotte (depuis module cagnotte)
+
+| Type                  | Composant                 | Usage principal                                                      |
+| --------------------- | ------------------------- | -------------------------------------------------------------------- |
+| **actions**           | `ActionsSection`          | Liste des actions de financement participatif d'un projet            |
+| **finance**           | `FinanceSection`          | Tableau de bord financier (montants collectés, objectifs, Stripe/HelloAsso) |
+| **actions-summary**   | `ActionsSummarySection`   | Résumé synthétique des actions en cours                              |
+| **finance-summary**   | `FinanceSummarySection`   | Résumé financier condensé (progress bar, chiffres clés)              |
+| **cagnotte-layout**   | `CagnotteLayoutSection`   | Layout conteneur orchestrant les sous-sections cagnotte              |
 
 ### Autres
 

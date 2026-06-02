@@ -2,7 +2,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { getBaseUrl } from "@/lib/constant/common";
 import { initApi } from "@/lib/apiClient";
-import { QUERY_KEYS } from "../constants/queryKeys";
+import { PROFIL_QUERY_KEYS } from "../constants/queryKeys";
 
 /**
  * Pré-charge les données d'un profil pour le SSR
@@ -18,7 +18,7 @@ import { QUERY_KEYS } from "../constants/queryKeys";
  * @example
  * // Pour pré-charger sans attendre
  * queryClient.prefetchQuery({
- *   queryKey: QUERY_KEYS.ELEMENT_ABOUT(slug),
+ *   queryKey: PROFIL_QUERY_KEYS.ELEMENT_ABOUT(slug),
  *   queryFn: () => prefetchProfileQuery(queryClient, slug),
  * });
  */
@@ -27,7 +27,7 @@ export async function prefetchProfileQuery(
   slug: string
 ): Promise<SearchEntity> {
   return queryClient.ensureQueryData({
-    queryKey: QUERY_KEYS.ELEMENT_ABOUT(slug),
+    queryKey: PROFIL_QUERY_KEYS.ELEMENT_ABOUT(slug),
     queryFn: async () => {
       const { entity } = await initApi({
         baseURL: getBaseUrl()

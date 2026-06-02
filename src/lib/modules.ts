@@ -1,6 +1,7 @@
 import type { RouteObject } from "react-router";
 import type { QueryClient } from "@tanstack/react-query";
 import type { SiteConfig } from "@/types/site-schema";
+import type { ComponentType, ReactNode } from "react";
 
 /**
  * Factory function pour créer des routes de module
@@ -11,26 +12,43 @@ export interface ModuleRouteFactory {
 }
 
 /**
+ * Provider page-scoped exposé par un module — composé automatiquement par
+ * `SiteRenderer` autour de chaque page (ordre = ordre de découverte des
+ * modules). Pattern documenté dans `src/lib/pageState/`.
+ *
+ * Utilisé quand plusieurs sections d'une même page doivent partager du state
+ * sans coupler le générique (`SiteRenderer`) au module spécifique.
+ */
+export type ModulePageProvider = ComponentType<{ children: ReactNode }>;
+
+/**
  * Configuration d'un module
  */
 export interface ModuleConfigSchema {
   name: string;
   type: "core" | "optional";
   enabled?: boolean;
+  /**
+   * Provider React monté autour de chaque page par `SiteRenderer`. Optionnel —
+   * la plupart des modules n'en ont pas besoin (state local section-scoped
+   * dans leur Provider interne).
+   */
+  PageProvider?: ModulePageProvider;
 }
 
 /**
- * Module découvert avec config et routes
- * Union type discriminé par config.type
+ * Module découvert avec config et routes.
+ * Union type discriminé par config.type. `routes` est `null` si le module
+ * n'a pas de `routes.tsx` (ex: module qui n'expose qu'un `PageProvider`).
  */
 export type DiscoveredModule =
   | {
     config: ModuleConfigSchema & { type: "core" };
-    routes: ModuleRouteFactory;
+    routes: ModuleRouteFactory | null;
   }
   | {
     config: ModuleConfigSchema & { type: "optional" };
-    routes: () => Promise<{ routes: ModuleRouteFactory }>;
+    routes: (() => Promise<{ routes: ModuleRouteFactory }>) | null;
   };
 
 /**
@@ -76,26 +94,24 @@ export function discoverModules(): DiscoveredModule[] {
     const modulePath = configPath.replace("/module.config.ts", "/routes.tsx");
 
     if (config.type === "core") {
-      // Module core : routes chargées en eager
+      // Module core : routes chargées en eager (ou null si pas de routes.tsx)
       const routeModule = coreRoutes[modulePath];
-      if (routeModule?.routes) {
-        modules.push({
-          config: { ...config, type: "core" as const },
-          routes: routeModule.routes
-        });
-      }
+      modules.push({
+        config: { ...config, type: "core" as const },
+        routes: routeModule?.routes ?? null,
+      });
     } else {
-      // Module optional : routes en lazy
+      // Module optional : routes en lazy (ou null si pas de routes.tsx)
       const routeLoader = optionalRoutes[modulePath];
-      if (routeLoader) {
-        modules.push({
-          config: { ...config, type: "optional" as const },
-          routes: async () => {
-            const module = await routeLoader();
-            return { routes: module.routes };
-          }
-        });
-      }
+      modules.push({
+        config: { ...config, type: "optional" as const },
+        routes: routeLoader
+          ? async () => {
+              const module = await routeLoader();
+              return { routes: module.routes };
+            }
+          : null,
+      });
     }
   }
 
@@ -142,6 +158,8 @@ export function getModuleRoutesSync(
   return modules.flatMap(module => {
     if (module.config.type === "core") {
       const coreModule = module as Extract<DiscoveredModule, { config: { type: "core" } }>;
+      // Skip si le module n'a pas de routes.tsx (ex: module exposant juste un PageProvider).
+      if (!coreModule.routes) return [];
       return coreModule.routes(queryClient, config);
     }
     throw new Error(`getModuleRoutesSync ne supporte que les modules core. Module "${module.config.name}" est de type "${module.config.type}"`);
@@ -166,12 +184,12 @@ export async function getModuleRoutes(
 ): Promise<RouteObject[]> {
   const routePromises = modules.map(async (module): Promise<RouteObject[]> => {
     if (module.config.type === "core") {
-      // Core module (sync) - routes est directement un ModuleRouteFactory
       const coreModule = module as Extract<DiscoveredModule, { config: { type: "core" } }>;
+      if (!coreModule.routes) return [];
       return coreModule.routes(queryClient, config);
     } else {
-      // Optional module (async) - routes est un loader
       const optModule = module as Extract<DiscoveredModule, { config: { type: "optional" } }>;
+      if (!optModule.routes) return [];
       const loaded = await optModule.routes();
       return loaded.routes(queryClient, config);
     }
@@ -179,4 +197,23 @@ export async function getModuleRoutes(
 
   const routeArrays = await Promise.all(routePromises);
   return routeArrays.flat();
+}
+
+/**
+ * Collecte les Providers page-scoped déclarés par les modules dans leur
+ * `module.config.ts` (champ `PageProvider`). À composer autour de chaque
+ * page dans `SiteRenderer`.
+ *
+ * Ordre = ordre de découverte des modules (généralement alphabétique selon
+ * import.meta.glob). Si un module B dépend du context d'un module A, il
+ * faudrait introduire un système de priorité — pas implémenté car aucun cas
+ * d'usage à ce jour.
+ *
+ * @param modules - Modules découverts via `discoverModules()`
+ * @returns Liste de composants Provider (peut être vide)
+ */
+export function getPageProviders(modules: DiscoveredModule[]): ModulePageProvider[] {
+  return modules
+    .map((m) => m.config.PageProvider)
+    .filter((p): p is ModulePageProvider => p !== undefined);
 }

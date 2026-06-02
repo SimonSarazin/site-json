@@ -1258,7 +1258,8 @@
       "emailInvalid": "Email invalide",
       "emailRequired": "L'email est requis",
       "imageOnly": "Le fichier doit être une image",
-      "uploadFailed": "Upload échoué"
+      "uploadFailed": "Upload échoué",
+      "validationFailed": "Veuillez corriger les champs en erreur (voir les onglets signalés)."
     },
     "days": {
       "monday": "Lundi",
@@ -1274,8 +1275,20 @@
       "error": "Erreur lors de la création du tiers-lieu"
     }
   },
+  "EditTiersLieux": {
+    "title": "Modifier votre tiers-lieu",
+    "buttons": {
+      "submit": "Enregistrer les modifications",
+      "submitting": "Enregistrement..."
+    },
+    "toast": {
+      "success": "Tiers-lieu mis à jour",
+      "error": "Erreur lors de la mise à jour du tiers-lieu"
+    }
+  },
   "ProfileRelated": {
     "empty": {
+      "organizations": "Aucune organisation liée",
       "projects": "Aucun projet lié",
       "events": "Aucun événement lié",
       "poi": "Aucun lieu lié"
@@ -1358,6 +1371,7 @@
     "latestNews": "Dernières actualités",
     "allNews": "Toutes les actualités",
     "rooms": "Salles de réunion",
+    "room": "Salle",
     "allRooms": "Voir toutes les salles",
     "learnMore": "En savoir plus",
     "capacity": "pers.",
@@ -1376,6 +1390,17 @@
     "nightly": "Nuitée",
     "bed": "lit",
     "reserve": "Réserver",
-    "confirmDelete": "Êtes-vous sûr de vouloir supprimer cet élément ?"
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer cet élément ?",
+    "confirmDeleteTitle": "Supprimer cet élément",
+    "confirmDeleteCancel": "Annuler",
+    "confirmDeleteAction": "Supprimer",
+    "deleteSuccess": "Élément supprimé",
+    "deleteError": "Impossible de supprimer l'élément"
+  },
+  "a11y": {
+    "moreOptions": "Plus d'options",
+    "contactEmail": "Envoyer un email",
+    "callPhone": "Appeler",
+    "visitWebsite": "Visiter le site web"
   }
 }

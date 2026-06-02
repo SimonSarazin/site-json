@@ -5,12 +5,15 @@ import { Loader2 } from "lucide-react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 import { HeroTiersLieuxProps as SchemaHeroTiersLieuxProps } from "@/types/site-schema";
-import { useAutocomplete } from "@/hooks/useAutocomplete";
+import { useAutocomplete } from "@/modules/search/hooks/useAutocomplete";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { cn } from "@/lib/utils";
-import { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
-import { Link, useSearchParams, useLocation } from "react-router";
-import { usePageFiltersOptional } from "@/contexts/PageFiltersContext";
+import { Link, useSearchParams, useNavigate } from "react-router";
+import { usePageFiltersOptional } from "@/modules/search/contexts/pageFilters";
+import type { SearchBaseParamsInput } from "@/modules/search/lib/buildSearchPayload";
+import { searchByFieldsToQuery } from "@/modules/search/lib/searchByFieldsToQuery";
+import { canonicalSearchProStaticBaseParams } from "@/modules/search/lib/canonicalBaseParams";
+import { usePageFiltersUrlSync } from "@/modules/search/hooks/usePageFiltersUrlSync";
 import { getEntityIcon } from "@/lib/entityIcons";
 
 const getEntityTitle = (entity: SearchEntity): string => {
@@ -56,62 +59,119 @@ interface HeroTiersLieuxProps {
   props: SchemaHeroTiersLieuxProps;
 }
 
-const CATEGORY_TO_FILTERS: Record<string, { group: string; names: string[] }> = {
-  all: { group: "", names: [] },
-  coworking: { group: "typologies", names: ["Bureaux partagés / Coworking"] },
-  fablab: { group: "typologies", names: ["Fablab / Makerspace / Hackerspace (Espaces du Faire)"] },
-  meeting: { group: "tags", names: ["Salle de réunion"] },
-  food: { group: "typologies", names: ["Cuisine partagée / Foodlab"] },
-  learn: { group: "typologies", names: ["Tiers-lieu nourricier"] },
-  stay: { group: "typologies", names: ["Tiers-lieu nourricier"] },
+// Catégorie → query param `/lieux` (aligné sur le nav « Les lieux »).
+// Typologies = filtre tag ; services (Salle de Réunion / Hébergement) = form-based.
+// L'applicateur headless (`usePageFiltersUrlSync`) traduit ces params en état
+// `PageFilters` exactement comme la `FiltersSection` de /lieux.
+const CATEGORY_TO_URL: Record<string, { param: "typologies" | "services"; value: string } | null> = {
+  all: null,
+  coworking: { param: "typologies", value: "Bureaux partagés / Coworking" },
+  fablab: { param: "typologies", value: "Fablab / Makerspace / Hackerspace (Espaces du Faire)" },
+  meeting: { param: "services", value: "Salle de Réunion" },
+  food: { param: "typologies", value: "Cuisine partagée / Foodlab" },
+  learn: { param: "typologies", value: "LivingLab / Laboratoire d'innovation sociale" },
+  stay: { param: "services", value: "Hébérgement" },
 };
 
-const URL_TYPOLOGY_TO_CATEGORY: Record<string, string> = {
-  coworking: "coworking",
-  fablab: "fablab",
-  foodlab: "food",
-  livinglab: "learn",
-  nourricier: "stay",
-};
+// Dernier CTA (« + ») = `explore` → navigue vers /lieux (recherche complète),
+// au lieu d'être un doublon de « Découvrir » (`all`).
+const TAB_INDEX_TO_CATEGORY = ["all", "meeting", "coworking", "fablab", "food", "learn", "stay", "explore"];
 
-const TAB_INDEX_TO_CATEGORY = ["all", "meeting", "coworking", "fablab", "food", "learn", "stay", "all"];
-
-export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
+export function HeroTiersLieux({ id, props }: HeroTiersLieuxProps) {
   const { t } = useLocalization();
-  const [searchParams] = useSearchParams();
-  const location = useLocation();
-  const isSubsite = location.pathname.startsWith("/s/");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
 
-  const headline = isSubsite && props.headlineSubsite ? props.headlineSubsite : props.headline;
-  const subhead = isSubsite && props.subheadSubsite ? props.subheadSubsite : props.subhead;
-  // Initialiser la catégorie depuis les query params de l'URL
-  const initialCategory = useMemo(() => {
-    const typology = searchParams.get("typologies");
-    if (typology && URL_TYPOLOGY_TO_CATEGORY[typology]) {
-      return URL_TYPOLOGY_TO_CATEGORY[typology];
-    }
-    const services = searchParams.get("services");
-    if (services) {
-      return "meeting";
+  const headline = props.headline;
+  const subhead = props.subhead;
+  const [search, setSearch] = useState("");
+  const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
+
+  // Catégorie active = dérivée des query params (URL = source de vérité, comme /lieux).
+  const selectedCategory = useMemo(() => {
+    const typ = searchParams.get("typologies");
+    const svc = searchParams.get("services");
+    for (const [cat, m] of Object.entries(CATEGORY_TO_URL)) {
+      if (!m) continue;
+      if (m.param === "typologies" && m.value === typ) return cat;
+      if (m.param === "services" && m.value === svc) return cat;
     }
     return "all";
   }, [searchParams]);
-
-  const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
-  const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false);
-  const [highlightedIndex, setHighlightedIndex] = useState(0);
-  const [activeTabIndex, setActiveTabIndex] = useState(0);
+  const activeTabIndex = useMemo(() => {
+    const idx = TAB_INDEX_TO_CATEGORY.indexOf(selectedCategory);
+    return idx >= 0 ? idx : 0;
+  }, [selectedCategory]);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const pageFilters = usePageFiltersOptional();
 
+  // Applicateur headless : ?typologies=/?services= → état PageFilters (comme /lieux).
+  // `id` = id de la section → même queryKey que le prefetch SSR (cf. findFiltersSections).
+  usePageFiltersUrlSync({
+    id,
+    filterGroups: props.filterGroups,
+    filtersByAnswers: props.filtersByAnswers,
+  });
+
+  // Applique une catégorie en posant le query param /lieux correspondant.
+  const applyCategory = (category: string) => {
+    const mapping = CATEGORY_TO_URL[category];
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete("typologies");
+      next.delete("services");
+      if (mapping) next.set(mapping.param, mapping.value);
+      return next;
+    });
+  };
+
+  // CTA : `explore` (« + ») → page /lieux (recherche complète) ; sinon filtre la home.
+  const handleCta = (idx: number) => {
+    const category = TAB_INDEX_TO_CATEGORY[idx] || "all";
+    if (category === "explore") {
+      navigate("/lieux");
+    } else {
+      applyCategory(category);
+    }
+  };
+
+  // Filtres actifs (tags + searchByFields) → mêmes inputs que la liste, pour que
+  // l'autocomplete interroge le MÊME périmètre que /lieux (catégorie comprise).
+  const selectedFilters = pageFilters?.selectedFilters;
+  const searchByFields = pageFilters?.searchByFields;
+  const activeTags = useMemo(
+    () => Object.values(selectedFilters ?? {}).flat() as string[],
+    [selectedFilters],
+  );
+  const { filters, locality, sourceKeys } = useMemo(
+    () => searchByFieldsToQuery(searchByFields ?? {}),
+    [searchByFields],
+  );
+  const mergedBaseParams = useMemo(() => {
+    const merged = canonicalSearchProStaticBaseParams(
+      (props.baseParams ?? {}) as Record<string, unknown>,
+      filters,
+      locality,
+    );
+    if (sourceKeys.length > 0) {
+      merged.sourceKey = sourceKeys;
+      delete merged.notSourceKey;
+    }
+    return merged;
+  }, [props.baseParams, filters, locality, sourceKeys]);
+
   const autocompleteOptions = useMemo(() => ({
-    searchTypes: ["NGO", "LocalBusiness", "Group", "GovernmentOrganization", "Cooperative", "organizations", "projects", "events", "citoyens", "poi"] as GlobalAutocompleteCostumData["searchType"],
-    indexMax: 30,
-  }), []);
+    // Même périmètre que la liste : baseParams réseau + filtres actifs (tags +
+    // searchByFields) + variant → suggestions cohérentes avec la tab/catégorie.
+    baseParams: mergedBaseParams as SearchBaseParamsInput,
+    variant: props.searchVariant,
+    tags: activeTags,
+    indexMax: 8,
+  }), [mergedBaseParams, props.searchVariant, activeTags]);
 
   const { suggestions, isLoading } = useAutocomplete(search, autocompleteOptions);
 
@@ -142,32 +202,28 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
     }
   }, [suggestions, search]);
 
-  useEffect(() => {
-    if (pageFilters?.setSelectedFilters) {
-      const mapping = CATEGORY_TO_FILTERS[selectedCategory];
-      if (mapping && mapping.group && mapping.names.length > 0) {
-        pageFilters.setSelectedFilters({ [mapping.group]: mapping.names });
-      } else {
-        pageFilters.setSelectedFilters({});
-      }
+  /**
+   * Lance la recherche : pousse le texte saisi dans le contexte `PageFilters`
+   * (→ le `searchProStatic` de la page filtre la liste) puis scrolle vers les
+   * résultats. Déclenché par le bouton « Rechercher » et par Entrée.
+   */
+  const triggerSearch = () => {
+    pageFilters?.setSearchQuery(search);
+    setIsAutocompleteOpen(false);
+    if (typeof document !== "undefined") {
+      document.getElementById("section-lieux")?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCategory]); // Ne dépendre que de selectedCategory, pas de pageFilters
-
-  useEffect(() => {
-    const typology = searchParams.get("typologies");
-    const services = searchParams.get("services");
-    if (typology && URL_TYPOLOGY_TO_CATEGORY[typology]) {
-      setSelectedCategory(URL_TYPOLOGY_TO_CATEGORY[typology]);
-    } else if (services) {
-      setSelectedCategory("meeting");
-    } else if (!typology && !services) {
-      setSelectedCategory("all");
-    }
-  }, [searchParams]);
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!isAutocompleteOpen) return;
+    if (!isAutocompleteOpen) {
+      // Pas de suggestion ouverte → Entrée lance la recherche sur la liste.
+      if (e.key === "Enter") {
+        e.preventDefault();
+        triggerSearch();
+      }
+      return;
+    }
 
     switch (e.key) {
       case "ArrowDown":
@@ -200,6 +256,11 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
+    // Champ vidé → on réinitialise la recherche de la liste (sinon elle reste
+    // filtrée sur l'ancien texte tant qu'on ne reclique pas « Rechercher »).
+    if (value === "" && pageFilters?.searchQuery) {
+      pageFilters.setSearchQuery("");
+    }
   };
 
   if (!isFullStyle) {
@@ -222,7 +283,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                     <div className="relative w-full sm:w-auto">
                       <select
                         value={selectedCategory}
-                        onChange={(e) => setSelectedCategory(e.target.value)}
+                        onChange={(e) => applyCategory(e.target.value)}
                         className="h-full w-full sm:w-auto pl-4 sm:pl-6 pr-10 py-3 sm:py-4 bg-background text-foreground text-sm sm:text-base font-medium focus:outline-none appearance-none cursor-pointer sm:border-r border-border rounded-t-2xl sm:rounded-none"
                         style={{ minWidth: '0', }}
                       >
@@ -263,7 +324,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                       )}
                     </div>
 
-                    <button className="px-4 sm:px-8 py-3 sm:py-4 bg-primary text-primary-foreground text-sm sm:text-base font-semibold hover:bg-primary/90 transition flex items-center justify-center gap-2 rounded-b-2xl sm:rounded-none">
+                    <button type="button" onClick={triggerSearch} className="px-4 sm:px-8 py-3 sm:py-4 bg-primary text-primary-foreground text-sm sm:text-base font-semibold hover:bg-primary/90 transition flex items-center justify-center gap-2 rounded-b-2xl sm:rounded-none">
                       <span className="hidden sm:inline">{props.searchButtonText ? t(props.searchButtonText) : "Rechercher"}</span>
                       <span className="sm:hidden">{props.searchButtonText ? t(props.searchButtonText) : "Rechercher"}</span>
                       <svg
@@ -362,11 +423,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                 {props.ctaButtons?.map((btn, idx) => (
                   <button
                     key={idx}
-                    onClick={() => {
-                      setActiveTabIndex(idx);
-                      const category = TAB_INDEX_TO_CATEGORY[idx] || "all";
-                      setSelectedCategory(category);
-                    }}
+                    onClick={() => handleCta(idx)}
                     className={`px-3 sm:px-6 py-2 sm:py-3 font-semibold transition ${activeTabIndex === idx
                       ? "border-b-4 border-primary text-primary-foreground bg-primary rounded-t-md"
                       : "hover:bg-muted"
@@ -401,7 +458,7 @@ export function HeroTiersLieux({ props }: HeroTiersLieuxProps) {
                     )}
                   </div>
 
-                  <button className="px-4 sm:px-8 py-3 sm:py-4 bg-primary text-primary-foreground text-sm sm:text-base font-semibold hover:bg-primary/90 transition flex items-center justify-center gap-2 rounded-b-2xl sm:rounded-r-full sm:rounded-l-none">
+                  <button type="button" onClick={triggerSearch} className="px-4 sm:px-8 py-3 sm:py-4 bg-primary text-primary-foreground text-sm sm:text-base font-semibold hover:bg-primary/90 transition flex items-center justify-center gap-2 rounded-b-2xl sm:rounded-r-full sm:rounded-l-none">
                     <span className="hidden sm:inline">{props.searchButtonText ? t(props.searchButtonText) : "Rechercher"}</span>
                     <span className="sm:hidden">{props.searchButtonText ? t(props.searchButtonText) : "Rechercher"}</span>
                     <svg

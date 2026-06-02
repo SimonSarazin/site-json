@@ -13,15 +13,12 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-    Dialog,
-    DialogContent,
-    DialogTitle,
-} from "@/components/ui/dialog";
-import LoginForm from "@/components/auth/LoginForm";
+import { AuthModalLazy } from "@/modules/auth";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import { ChevronDown, User, LogOut, Globe, Menu, X } from "lucide-react";
-import { DynamicIcon, type IconName } from "lucide-react/dynamic";
+import { IconOrSvg } from "@/components/ui/icon-or-svg";
+import NotificationBell from "@/modules/notification/components/NotificationBell";
+import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
 
 interface HeaderJuliePotVinProps {
     header: Header;
@@ -71,7 +68,7 @@ export default function HeaderJuliePotVin({ header }: HeaderJuliePotVinProps) {
                              {header.logo ? (
                                 <img src={header.logo} alt={header.logoAlt ? t(header.logoAlt) : "Logo"} className="w-8 h-8 object-contain" />
                             ) : header.logoIcon ? (
-                                <DynamicIcon name={header.logoIcon as IconName} className="w-8 h-8 text-primary" />
+                                <IconOrSvg value={header.logoIcon} className="w-8 h-8 text-primary" />
                             ) : (
                                 <img src="images/juliePotVin/monogramme.svg" alt="Monogramme" className="w-8 h-8" />
                             )}
@@ -94,6 +91,9 @@ export default function HeaderJuliePotVin({ header }: HeaderJuliePotVinProps) {
                                 {t(item.label)}
                             </Link>
                         ))}
+
+                        {header.utilities?.notifications && <NotificationBell />}
+                        {header.utilities?.search && <CommandTriggerButton />}
 
                         {header.utilities?.langSwitch && availableLocales.length > 1 && (
                              <DropdownMenu>
@@ -168,6 +168,8 @@ export default function HeaderJuliePotVin({ header }: HeaderJuliePotVinProps) {
                     </div>
 
                     <div className="md:hidden flex items-center gap-4">
+                         {header.utilities?.notifications && <NotificationBell />}
+                         {header.utilities?.search && <CommandTriggerButton />}
                          {header.utilities?.themeSwitch !== false && (
                             <ClientOnly fallback={<div className="w-4 h-4" />}>
                                 {() => <ToggleButtonTheme />}
@@ -227,15 +229,7 @@ export default function HeaderJuliePotVin({ header }: HeaderJuliePotVinProps) {
                 )}
             </nav>
 
-            <Dialog open={loginDialogOpen} onOpenChange={setLoginDialogOpen}>
-                <DialogContent className="sm:max-w-md bg-background border-border">
-                    <DialogTitle className="sr-only">{t('Se connecter')}</DialogTitle>
-                    <LoginForm
-                        onSuccess={() => setLoginDialogOpen(false)}
-                        hideBackButton={true}
-                    />
-                </DialogContent>
-            </Dialog>
+            <AuthModalLazy open={loginDialogOpen} onOpenChange={setLoginDialogOpen} />
         </>
     )
 }

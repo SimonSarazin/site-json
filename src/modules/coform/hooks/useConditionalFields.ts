@@ -5,8 +5,9 @@ import { getOriginalFieldKey } from "../utils/formParser";
 
 /**
  * Évalue une règle conditionnelle contre la valeur actuelle du champ source.
+ * Exporté pour tests unitaires.
  */
-function evaluateRule(rule: ConditionalRule, sourceValue: unknown): boolean {
+export function evaluateRule(rule: ConditionalRule, sourceValue: unknown): boolean {
   const strValue = sourceValue == null ? "" : String(sourceValue);
 
   switch (rule.operator) {

@@ -1,6 +1,7 @@
 import { MessageSquare, Star, Diamond, Heart, ExternalLink, Unlink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 import { useT } from "@/hooks/useT";
 import { useInteropConfig } from "../hooks/useInteropConfigQuery";
 import { useInteropUserLinks } from "../hooks/useUserInteropLinks";
@@ -122,6 +123,11 @@ function BadgesSection({
       </h3>
       <div className="flex flex-wrap gap-2">
         {badges.map((badge) => {
+          // Mapping IDs Discourse → couleurs sémantiques universelles (médailles).
+          // `badge_type_id` est figé côté Discourse (1=Gold, 2=Silver, 3=Bronze) depuis
+          // 10+ ans. Couleurs amber/slate plutôt que tokens shadcn car le sens "or/argent"
+          // ne se traduit pas dans `text-primary`/`text-secondary` — cf. voteTypes.ts du
+          // module news pour le même pattern (sémantique au domaine).
           const isGold = badge.badge_type_id === 1;
           const isSilver = badge.badge_type_id === 2;
           const showStar = isGold || isSilver;
@@ -132,8 +138,10 @@ function BadgesSection({
             >
               {showStar ? (
                 <Star
-                  className="h-3 w-3 shrink-0"
-                  style={{ color: isGold ? "#f59e0b" : "#94a3b8" }}
+                  className={cn(
+                    "h-3 w-3 shrink-0",
+                    isGold ? "text-amber-500" : "text-slate-400",
+                  )}
                   fill="currentColor"
                 />
               ) : (
@@ -230,7 +238,14 @@ function CategoriesSection({
               className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-xs text-foreground hover:bg-muted/60 transition-colors"
               {...(!href ? { role: "presentation", onClick: (e) => e.preventDefault() } : {})}
             >
-              {cat.color && (
+              {cat.color && /^[0-9a-fA-F]{6}$/.test(cat.color) && (
+                // Exception légitime à l'anti-pattern 3.12 (theme tokens) :
+                // `cat.color` est une couleur hex (sans #) configurée par l'admin du
+                // forum Discourse côté serveur — donnée dynamique, pas un design choice
+                // côté front. Validation regex pour rejeter les valeurs malformées
+                // (sécurité : évite injection CSS si la lib retourne du contenu invalide).
+                // Pattern équivalent : `SearchBubbleChart` où les couleurs viennent de la
+                // data, pas du design system.
                 <span
                   className="h-2 w-2 rounded-full shrink-0"
                   style={{ backgroundColor: `#${cat.color}` }}

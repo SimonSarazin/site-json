@@ -1,0 +1,8 @@
+{
+  "dialogTitle": "Quick search",
+  "dialogDescription": "Navigate and run actions from your keyboard",
+  "placeholder": "Search for a page, an action…",
+  "empty": "No results",
+  "loading": "Searching…",
+  "triggerLabel": "Search"
+}

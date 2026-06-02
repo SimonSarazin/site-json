@@ -8,6 +8,7 @@ import type {
   EvaluationVoteValue,
 } from "../types";
 import { EvaluationVoteCell } from "./EvaluationVoteCell";
+import { FieldError } from "./FormFields";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import "../i18n/i18n";
@@ -165,10 +166,12 @@ export function EvaluationField({
 
   return (
     <div className={cn("space-y-2", field.width || "col-span-12")}>
-      {/* Label */}
+      {/* Label — `<div>` car le control n'est pas un input ciblable
+          (la <table> ne peut pas être focusée). `aria-labelledby` ci-dessous
+          lie le titre à la table pour les screen readers. */}
       {!hideLabel && (
-        <label
-          htmlFor={field.name}
+        <div
+          id={`${field.name}-label`}
           className={cn(
             "block text-sm font-medium",
             hasError && "text-destructive"
@@ -176,7 +179,7 @@ export function EvaluationField({
         >
           {field.label}
           {field.isRequired && <span className="text-destructive ml-1">*</span>}
-        </label>
+        </div>
       )}
 
       {/* Info/description */}
@@ -184,12 +187,19 @@ export function EvaluationField({
 
       {/* Table d'évaluation */}
       <div className="overflow-x-auto border rounded-md">
-        <table className="w-full border-collapse text-sm min-w-max">
+        <table
+          className="w-full border-collapse text-sm min-w-max"
+          aria-labelledby={!hideLabel ? `${field.name}-label` : undefined}
+          aria-invalid={hasError || undefined}
+          aria-describedby={hasError ? `${field.name}-error` : undefined}
+        >
           <thead>
             {/* Ligne 1: Label catégorie + Label critères */}
             <tr className="border-b border-border">
               <th
                 colSpan={categoryNumber}
+                scope="colgroup"
+                aria-hidden="true"
                 className="text-center p-2 font-medium"
               >
                 &nbsp;
@@ -197,6 +207,7 @@ export function EvaluationField({
               {criteriaIds.length > 0 && (
                 <th
                   colSpan={criteriaIds.length}
+                  scope="colgroup"
                   className="text-center p-2 font-medium border-l border-border"
                 >
                   {criteriaLabel}
@@ -208,6 +219,7 @@ export function EvaluationField({
             <tr className="border-b border-border bg-muted/50">
               <th
                 colSpan={categoryNumber}
+                scope="colgroup"
                 className="text-center p-2 font-medium min-w-24"
               >
                 {categoryTitle}
@@ -215,6 +227,7 @@ export function EvaluationField({
               {criteriaIds.map((criteriaId) => (
                 <th
                   key={criteriaId}
+                  scope="col"
                   className="text-center p-2 font-medium border-l border-border min-w-20"
                 >
                   {criterias[criteriaId]?.name || criteriaId}
@@ -230,7 +243,7 @@ export function EvaluationField({
                   colSpan={categoryNumber + criteriaIds.length}
                   className="text-center p-4 text-muted-foreground"
                 >
-                  {t("evaluation.noCategories", "Aucune catégorie définie")}
+                  {t("coform.evaluation.noCategories", "Aucune catégorie définie")}
                 </td>
               </tr>
             ) : (
@@ -274,11 +287,7 @@ export function EvaluationField({
       </div>
 
       {/* Message d'erreur */}
-      {hasError && (
-        <p className="text-sm text-destructive">
-          {errors[field.name]?.message as string}
-        </p>
-      )}
+      <FieldError name={field.name} message={errors[field.name]?.message as string | undefined} />
     </div>
   );
 }

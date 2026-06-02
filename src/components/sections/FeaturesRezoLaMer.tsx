@@ -50,7 +50,7 @@ export function FeaturesRezoLaMer({ id, props }: FeaturesRezoLaMerSectionProps) 
         <section id={id} className={`py-24 px-4 ${sectionBg}`}>
             <div className="container mx-auto max-w-6xl">
                 <div className="text-center mb-16 animate-fade-in">
-                    {props.subhead && (
+                    {props.headline && (
                         <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
                             {t(props.headline)}
                         </h2>

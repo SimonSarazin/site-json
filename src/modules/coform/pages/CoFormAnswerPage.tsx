@@ -14,7 +14,7 @@ import {
 } from "../hooks/useCoFormQuery";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
-import { toast } from "sonner";
+import { showErrorToast } from "@/lib/toastUtils";
 import type { AllStepsData } from "../types";
 import "../i18n/i18n";
 
@@ -94,9 +94,7 @@ export default function CoFormAnswerPage() {
       setPageState({ view: "thankYou" });
     },
     onError: (error) => {
-      toast.error(t("coform.status.error"), {
-        description: error.message,
-      });
+      showErrorToast(error, "coform.status.error", t);
     },
   });
 
@@ -201,7 +199,7 @@ export default function CoFormAnswerPage() {
     <PageShell>
       {/* Bandeau refus d'édition si mode=edit demandé mais non autorisé */}
       {currentMode === "edit" && !canEdit && (
-        <div className="mb-6 flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-950/50 dark:text-red-200">
+        <div className="mb-6 flex items-center gap-3 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           <Lock className="w-5 h-5 shrink-0" />
           <p>{t(`coform.answer.editDenied.${editDeniedReason || "default"}`)}</p>
         </div>
@@ -255,7 +253,7 @@ export default function CoFormAnswerPage() {
       {effectiveMode === "edit" && (
         <>
           {/* Bandeau mode édition */}
-          <div className="mb-6 flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-200">
+          <div className="mb-6 flex items-center gap-3 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning-foreground">
             <Info className="w-5 h-5 shrink-0" />
             <p>{t("coform.access.editMode.description")}</p>
           </div>

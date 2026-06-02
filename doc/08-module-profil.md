@@ -162,11 +162,19 @@ src/modules/profil/
 ├── contexts/
 │   ├── ProfileEntityContext.tsx    // Context React pour l'entité du profil
 │   └── ProfileEntityProvider.tsx   // Provider du context
+├── actions/
+│   ├── index.ts                    // Barrel
+│   └── mutations/                  // Factories de mutations (createEntityMutation, etc.)
+│       ├── core.ts                 // Factory générique createEntityMutation
+│       ├── friend.ts               // Mutations amis (add/accept/decline/remove)
+│       ├── member.ts               // Mutations members (join/leave/promote/demote)
+│       └── relationship.ts         // Mutations relations entité↔entité
 ├── hooks/
 │   ├── mutationUtils.ts            // Utilitaires pour mutations
 │   ├── useAddMutations.tsx         // Mutations d'ajout d'entités
 │   ├── useCommentVotes.tsx         // Votes sur commentaires
 │   ├── useConfirmationDialog.tsx   // Dialog de confirmation
+│   ├── useEditTiersLieu.tsx        // Mutation édition tiers-lieu (entity-oriented)
 │   ├── useEntityLabels.tsx         // Labels d'entité
 │   ├── useFormatProfileEntity.tsx  // Hook pour formater les données
 │   ├── useFriendsQuery.tsx         // Query amis
@@ -175,22 +183,21 @@ src/modules/profil/
 │   ├── useMembersQuery.tsx         // Query membres
 │   ├── useNewsDetailUrlGenerator.tsx // Générateur URL détail news
 │   ├── useOrganizationMutations.tsx // Mutations organisation
-│   ├── useProfilContributorsQuery.tsx // Query contributeurs
 │   ├── useProfileEntity.tsx        // Hook pour accéder à l'entité typée
 │   ├── useProfileFormData.tsx      // Données formulaire profil
 │   ├── useProfileMutations.tsx     // Mutations profil
 │   ├── useProfileSetup.ts          // Setup profil
-│   ├── useProfilFriendsQuery.tsx   // Query amis profil
 │   ├── useProfilMembersQuery.tsx   // Query membres profil
 │   ├── useProfilOrganizationsQuery.tsx // Query organisations
 │   ├── useProfilPermissions.ts     // Hook local pour permissions profil
 │   ├── useProfilProjectsQuery.tsx  // Query projets
 │   ├── useProfilSubscribersQuery.tsx // Query abonnés
-│   ├── useProfilSubscriptionsQuery.tsx // Query abonnements
 │   ├── useProjectMutations.tsx     // Mutations projet
 │   ├── useRelatedEntities.tsx      // Entités liées
-│   ├── useRelationshipMutations.ts // Mutations relations
 │   └── useUserStatusBadge.tsx      // Badge statut utilisateur
+│   // Note : les anciens hooks useProfilContributorsQuery, useProfilFriendsQuery,
+│   // useProfilSubscriptionsQuery, useRelationshipMutations ont été supprimés
+│   // (commit 60454d0) — remplacés par les factories de mutations dans actions/.
 ├── permissions/                    // Système de permissions modulaire (voir 10-permissions.md)
 │   ├── types.ts                    // ProfilPermissions (27 champs)
 │   ├── defaults.ts                 // DEFAULT_PROFIL_PERMISSIONS
@@ -514,7 +521,7 @@ Le module profil propose **17 types de sections** configurables:
 | `profile-organizer`        | ProfileOrganizerSection      | showLogo, showDescription, showLink            | Organisateur/Porteur de projet            |
 | `profile-members`          | ProfileMembersSection        | limit, showRole, showManagement                | Liste des membres                         |
 | `profile-gallery`          | ProfileGallerySection        | columns, lightbox                              | Galerie d'images avec lightbox            |
-| `profile-related`          | ProfileRelatedSection        | relationType, limit                            | Entités liées (projects, events, poi)     |
+| `profile-related`          | ProfileRelatedSection        | relationType, limit                            | Entités liées (projects, events, poi, organizations) |
 | `profile-actions`          | ProfileActionsSectionSchema  | showEditButton, showAddDropdown, layout        | Boutons d'action (éditer, ajouter, email) |
 | `profile-event-dates`      | ProfileEventDatesSectionSchema | showType, dateFormat                         | Dates d'événement (start/end)             |
 | `profile-badges`           | ProfileBadgesSectionSchema   | layout (grid, flex, list), maxDisplay          | Badges et certifications                  |
@@ -545,6 +552,10 @@ export const ProfileHeaderSectionSchema = z.object({
   addDropdownLabel: LocalizedString.optional(),
   showEmailButton: z.boolean().optional().default(true),
   showReservationButton: z.boolean().optional().default(false),
+  // Opt-in : le bouton « Voir toutes les photos » ne s'affiche QUE si le type de
+  // profil courant possède un onglet `gallery` dans sa config (`profiles[type].tabs`).
+  // Ce flag permet de le forcer masqué même si l'onglet gallery existe.
+  // Lien généré via buildProfileTabUrl(siteConfig, entity, tab => tab.id === "gallery").
   showAllPhotosButton: z.boolean().optional().default(true),
 });
 ```
@@ -636,6 +647,18 @@ export function ProfileSectionRenderer({ section }: ProfileSectionRendererProps)
 * Les sections non-profil sont deleguees au `SectionRenderer` global
 * Les sections `news` recoivent automatiquement le `entitySlug` du profil courant
 
+### Variante `complete` — comportements spécifiques
+
+`ProfileHeaderComplete` (`components/sections/headers/ProfileHeaderComplete.tsx`) intègre deux comportements notables :
+
+**Bouton « Voir toutes les photos » — opt-in** :
+Le bouton n'est rendu que si le type de profil courant a un onglet `gallery` configuré. Le check est fait via `buildProfileTabUrl(siteConfig, entity, tab => tab.id === "gallery")` : si aucun onglet `gallery` n'existe pour ce type, `galleryHref` est `null` et le bouton est supprimé. Le flag `showAllPhotosButton: false` dans la config permet de le masquer même quand l'onglet existe. Le lien pointe vers `/profil/:slug/gallery`.
+
+**Bouton « Contacter par email »** :
+Utilise `<Button asChild>` avec un `<a href="mailto:…">` natif au lieu de `window.location.href`. Cette approche est plus fiable (respect du client mail par défaut, ouverture dans un nouvel onglet possible) et accessible.
+
+**`ProfileActions` (`components/sections/ProfileActions.tsx`)** applique le même correctif mailto (`<Button asChild><a href="mailto:…">`), alignant le comportement de la section `profile-actions` avec la variante `complete`.
+
 ## SEO dynamique (ProfileSeo)
 
 Le composant `ProfileSeo` génère les meta tags dynamiquement:
@@ -661,12 +684,12 @@ Le module profil gère ses propres traductions:
 
 ```ts
 // i18n.ts
-import i18n from "@/lib/i18n";
+import i18n from "@/i18n";
 import enTranslations from "./i18n/en.json";
 import frTranslations from "./i18n/fr.json";
 
-i18n.addResourceBundle("en", "modules/profil", enTranslations);
-i18n.addResourceBundle("fr", "modules/profil", frTranslations);
+i18n.addResourceBundle("en", "modules/profil", enTranslations, true, true);
+i18n.addResourceBundle("fr", "modules/profil", frTranslations, true, true);
 ```
 
 Utilisation dans les composants:
@@ -682,6 +705,14 @@ function ProfilePage() {
   return <h1>{t("ProfilePage.title")}</h1>;
 }
 ```
+
+Clés i18n ajoutées récemment :
+
+| Clé | fr | en |
+|-----|----|----|
+| `ProfileRelated.empty.organizations` | `"Aucune organisation liée"` | `"No related organizations"` |
+
+Ces clés sont utilisées par `ProfileRelated.tsx` dans `getEmptyTitle()` pour le cas `relationType === "organizations"`.
 
 ## Configuration JSON dans site-config.json
 
@@ -749,6 +780,13 @@ Exemple de configuration des profils avec **tabs** dans `site-config.json`:
           "id": "social",
           "label": { "fr": "Réseau", "en": "Network" },
           "component": "SocialTab"
+        },
+        {
+          "id": "organizations",
+          "label": { "fr": "Organisations partenaires", "en": "Partner organizations" },
+          "sections": [
+            { "type": "profile-related", "relationType": "organizations" }
+          ]
         }
       ],
       "seo": {
@@ -782,6 +820,9 @@ Exemple de configuration des profils avec **tabs** dans `site-config.json`:
 - Chaque tab génère une route: `/profil/:slug/{tabId}`
 - Les sous-routes permettent des pages de détail: `/profil/:slug/news/:newsId`
 - `condition` contrôle l'affichage selon le type d'entité ou les permissions
+
+**Onglet « Organisations partenaires » (`relationType: "organizations"`)** :
+L'onglet affichant les organisations partenaires doit être placé sous `profiles.organizations` (pas `projects`). Il repose sur le cas `"organizations"` de `useRelatedEntities` qui n'est accessible que si `isOrganization(entity)` est vrai. En config `config.prod.tiers-lieux.json`, le tab est déclaré avec `"id": "organizations"` et `"relationType": "organizations"` directement dans `profiles.organizations.tabs`.
 
 **Hiérarchie de configuration**:
 1. Configuration spécifique au type (`organizations`, `events`, etc.)
@@ -821,11 +862,314 @@ Le module profil expose de nombreux hooks specialises :
 | `useMembershipQuery` | `hooks/useMembershipQuery.tsx` | Query membership |
 | `useMembersQuery` | `hooks/useMembersQuery.tsx` | Query membres |
 | `useProfileMutations` | `hooks/useProfileMutations.tsx` | Mutations profil (edit, upload) |
-| `useRelatedEntities` | `hooks/useRelatedEntities.tsx` | Entités liées (projets, events, poi) |
+| `useRelatedEntities` | `hooks/useRelatedEntities.tsx` | Entités liées (projets, events, poi, organisations partenaires) |
 | `useRelationshipMutations` | `hooks/useRelationshipMutations.ts` | Mutations relations (follow, friend) |
 | `useProfileSetup` | `hooks/useProfileSetup.ts` | Setup initial du profil |
 | `useOrganizationMutations` | `hooks/useOrganizationMutations.tsx` | Mutations organisation |
 | `useProjectMutations` | `hooks/useProjectMutations.tsx` | Mutations projet |
+
+### `useRelatedEntities` — détail
+
+```ts
+// types.ts
+export type RelationType = "organizations" | "projects" | "events" | "poi";
+
+export interface UseRelatedEntitiesResult {
+  entities: (Organization | Project | Event | Poi)[];
+  // ...
+}
+```
+
+Le hook `useRelatedEntities(entity, relationType, params?)` gère quatre `case` dans son switch :
+
+| `relationType` | Condition sur `entity` | Appel API |
+|---|---|---|
+| `"projects"` | `isOrganization(entity)` | `entity.getProjects(queryParams)` |
+| `"events"` | `isOrganization` ou `isProject` | `entity.getEvents(queryParams)` |
+| `"poi"` | `isOrganization(entity)` | `entity.getPois(queryParams)` |
+| `"organizations"` | `isOrganization(entity)` | `entity.searchCostum({ searchType: ["organizations"], filters: { ["links.members." + entity.id]: { $exists: true } }, count: true, countType: ["organizations"], notSourceKey: true, ... })` |
+
+Le cas `"organizations"` remonte les **organisations partenaires** : les entités `Organization` dont le champ `links.members` contient l'id de l'organisation courante (c'est-à-dire les organisations dont la courante est membre). Il n'existe pas de méthode dédiée dans le SDK, d'où le recours à `searchCostum` avec un filtre MongoDB.
+
+> `UseRelatedEntitiesResult.entities` est typé `(Organization | Project | Event | Poi)[]` — l'union inclut donc `Organization` depuis l'ajout de ce cas.
+
+**Note schéma** : `ProfileRelatedSectionSchema.relationType` dans `schema.ts` énumère `["organizations", "projects", "events", "poi"]` — `"organizations"` est validé par le schéma Zod, géré par `mapRelationType`/`getEmptyTitle` dans `ProfileRelated.tsx`, et utilisé en config (`config.prod.tiers-lieux.json`).
+
+---
+
+## Création de Tiers-lieu (modale 5 étapes)
+
+La modale `AddTiersLieuxModal` (`src/modules/profil/components/add/AddTiersLieuxModal.tsx`) permet de créer un tiers-lieu en 5 étapes via un formulaire structuré.
+
+### Composants
+
+- `AddTiersLieuxModal` — Dialog principal, branche sur `useAddTiersLieu()` et délègue le rendu à `TiersLieuxForm`
+- `TiersLieuxForm` (`src/modules/profil/components/add/TiersLieuxForm.tsx`) — Formulaire react-hook-form + Zod en 5 onglets :
+  1. **Identification** (`info`) : nom, description courte, type de structure, mode de gestion
+  2. **Contact** (`contact`) : localisation (via `EditLocationTab`) + email + téléphone
+  3. **Médias** (`media`) : logo + URL vidéo. **L'upload de photos est désactivé** (UI, state et handlers commentés via `TODO(photos)`) — non géré côté backend pour l'instant. Seul le logo reste fonctionnel dans cet onglet.
+  4. **En ligne** (`online`) : site web, liens sociaux
+  5. **Détails** (`details`) : horaires d'ouverture par jour de la semaine, description longue (Markdown)
+
+### Schéma Zod (`tiersLieuxSchema`)
+
+```ts
+// src/modules/profil/components/add/TiersLieuxForm.tsx
+export const tiersLieuxSchema = z.object({
+  name: z.string().min(1),
+  shortDescription: z.string().min(1),
+  managementType: z.string().min(1),
+  email: z.string().email().min(1),
+  hours: z.object({ monday: dayHoursSchema, /* ... 7 jours */ }),
+  photos: z.array(z.string()).default([]), // conservé dans le schéma, toujours vide
+  // ... autres champs optionnels
+});
+
+// Le payload inclut les fichiers binaires non couverts par Zod :
+export interface TiersLieuxSubmitPayload extends TiersLieuxFormData {
+  _logoFile: File | null;
+  _photoFiles: File[];  // toujours [] tant que TODO(photos) est actif
+}
+```
+
+> **TODO(photos)** : Le state `photoFiles`, les handlers `handlePhotosUpload`/`removePhoto`, et le bloc UI « Photos » de l'onglet Médias sont commentés dans `TiersLieuxForm.tsx`. `handleSubmit` passe `_photoFiles: []` en dur. Réactiver en décommentant ces trois blocs et en remettant `_photoFiles: photoFiles`.
+
+### Mapping config → payload API (`tiersLieuxMapping.ts`)
+
+Le fichier `src/modules/profil/utils/tiersLieuxMapping.ts` contient toutes les fonctions de conversion entre les données du formulaire et le format attendu par l'API :
+
+- `buildOpeningHoursPayload(hours)` — convertit `{ monday: { enabled, start, end } }` en `[{ dayOfWeek: "Mo", hours: [{ opens, closes }] }]`
+- `buildTiersLieuxPayload(data, parent?)` — construit le payload de création complet
+- `entityToTiersLieuxFormData(entity)` — convertit une entité API en données de formulaire (pour l'édition)
+
+Les jours sont mappés avec les codes `Mo/Tu/We/Th/Fr/Sa/Su` (format schema.org).
+
+### Édition de Tiers-lieu
+
+- `EditTiersLieuxModal` (`src/modules/profil/components/edit/EditTiersLieuxModal.tsx`) — même formulaire en mode édition, pré-rempli via `entityToTiersLieuxFormData()`
+- `EditModalRegistry` (`src/modules/profil/components/profile-edit/EditModalRegistry.tsx`) — registry lazy des modales d'édition
+
+Le registry permet d'associer un nom logique à une modale chargée en lazy :
+
+```ts
+const editModalRegistry: Record<string, () => Promise<{ default: ComponentType<EditModalProps> }>> = {
+  "edit-profile": () => import("./EditProfileModal").then(/* wrap */),
+  "edit-tiers-lieux": () => import("../edit/EditTiersLieuxModal").then(/* wrap */),
+};
+```
+
+La fonction `resolveEditModalName(entity, config)` lit `profiles[kind].editModal` depuis la config pour déterminer quel modal ouvrir. La résolution est désormais **config-driven via `editModalMatch`** (commit `88fa18d`) :
+
+- Si `profiles[kind].editModalMatch` est **absent** → le modal configuré s'applique à **toutes** les entités du kind
+- Si `editModalMatch` est **présent** (objet `{key: value}`) → le modal s'applique uniquement aux entités dont chaque clé satisfait :
+  - `serverData[key].includes(value)` si `serverData[key]` est un array
+  - `serverData[key] === value` sinon (strict equality)
+  - AND implicite sur toutes les clés
+- Fallback → `"edit-profile"` (modal générique)
+
+Exemple JSON pour cibler uniquement les organisations avec `tags: ["TiersLieux", ...]` :
+
+```jsonc
+{
+  "profiles": {
+    "organizations": {
+      "editModal": "edit-tiers-lieux",
+      "editModalMatch": { "tags": "TiersLieux" }
+    }
+  }
+}
+```
+
+> Avant `88fa18d` : la condition était hardcodée — `serverData.costumSlug === config.costum.slug`. Trop restrictif (orga avec tag "TiersLieux" sans `costumSlug` = pas de modal custom). Désormais le matching est explicite côté config.
+
+### `useEditTiersLieu(organization)`
+
+Mutation d'édition d'une organisation tiers-lieu existante. Pattern entity-oriented :
+
+1. Lit `existingTags = organization.serverData?.tags ?? []` (tags déjà présents sur l'entité)
+2. Calcule `addTags = config.costum?.mainTag ? [config.costum.mainTag] : []` (tag costum à garantir)
+3. Construit le payload via `buildTiersLieuxPayload(data, { existingTags, addTags })` — merge sans dupliquer (Set), n'écrase pas
+4. Assigne les champs directement sur `organization.data` (mutation de l'objet SDK)
+5. Appelle `organization.save()` pour persister (diff/patch géré par le SDK)
+6. Si `data._logoFile` présent → `organization.updateImageProfil({ profil_avatar: file })`
+
+Invalide `PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(slug)` après succès.
+
+> **Merge tags (commit `7460856`)** : `organization.save()` écrase `tags` avec la valeur du payload. Sans merge explicite, on perdait les tags existants (notamment le `costum.mainTag`). Les options `existingTags` + `addTags` de `buildTiersLieuxPayload` dédoublonnent via `Set` et préservent l'ordre.
+
+> Note : depuis le commit `2fb46b8`, la constante a été renommée `QUERY_KEYS` → `PROFIL_QUERY_KEYS` (préfixée par le module pour cohérence avec `CAGNOTTE_QUERY_KEYS`, `COFORM_QUERY_KEYS`, etc.). Type associé : `ProfilQueryKeyType` (via `ReturnType<...>`).
+
+---
+
+### Condition d'auth sur les tabs
+
+Depuis la branche `review`, les tabs de profil supportent une `condition.auth` en config JSON :
+
+```json
+{
+  "id": "mes-actions",
+  "label": { "fr": "Mes actions" },
+  "condition": {
+    "auth": "required"
+  }
+}
+```
+
+Valeurs : `"required"` (connecté seulement), `"anonymous"` (déconnecté seulement), `"any"` (tous). Évalué via `useVisibility()` du système de visibilité.
+
+---
+
+## Système d'actions (entity-actions)
+
+Le système d'actions est **config-driven** : un tableau de configuration déclaratif définit toutes les actions disponibles, que les hooks du module assemblent et filtrent selon les permissions.
+
+### Architecture
+
+```
+actions/
+├── config/
+│   ├── entity-actions.ts   # ENTITY_ACTION_CONFIG — configuration déclarative des actions
+│   ├── member-actions.ts   # Configuration des actions membres (promote, remove, etc.)
+│   └── icons.ts            # ActionIconKey → mapping icône Lucide
+├── hooks/
+│   ├── useEntityActions.tsx         # Routeur principal : délègue selon type d'entité
+│   ├── useUserEntityActions.tsx     # Actions User (ami, follow, message)
+│   ├── useOrgEntityActions.tsx      # Actions Organisation (follow, join, leave)
+│   ├── useProjectEntityActions.tsx  # Actions Projet (follow, join, leave)
+│   ├── useEventEntityActions.tsx    # Actions Événement (follow, register)
+│   └── useAdminActions.tsx          # Actions admin (promote, demote, remove)
+├── mutations/
+│   ├── core.ts           # Factories createEntityMutation + createUserMutation
+│   ├── friend.ts         # useFollowEntity, useUnfollowEntity, useFriendRequest, etc.
+│   ├── member.ts         # useLeaveMember, useJoinRequest, useAcceptMember, etc.
+│   └── relationship.ts   # Mutations de relations sociales
+└── builders/
+    ├── buildEntityAction.tsx  # Construit un objet EntityAction depuis la config
+    └── buildUserAction.tsx    # Construit une action de type user
+```
+
+### `ENTITY_ACTION_CONFIG`
+
+Registre déclaratif de toutes les actions supportées :
+
+| Action | Type | Icon | Confirmation |
+|---|---|---|---|
+| `follow` | follow | userPlus | Non |
+| `unfollow` | unfollow | userCheck | Oui |
+| `sendFriendRequest` | friend | userPlus | Non |
+| `removeFriend` | unfriend | userX | Non |
+| `acceptFriendRequest` | accept | check | Non |
+| `declineFriendRequest` | decline | x | Non |
+| `join` | join | userPlus | Non |
+| `leave` | leave | userMinus | Oui (destructive) |
+| `cancelJoinRequest` | cancelJoin | x | Oui |
+| `adminActions` | admin | shield | Non |
+
+### Factory `createEntityMutation`
+
+```ts
+// actions/mutations/core.ts
+interface EntityMutationConfig<TParams = void> {
+  entityTypes?: EntityType[];
+  action: (entity: EntityTypes, params: TParams) => Promise<void>;
+  i18n: { successKey: string; errorKey: string };
+  invalidate: (entity: EntityTypes, me: User | null) => QueryKey[];
+  getSuccessParams?: (entity, params) => Record<string, string>;
+  getErrorParams?: (error, entity, params) => Record<string, string>;
+}
+
+function createEntityMutation<TParams>(config) → (entity: EntityTypes | null) => UseMutationResult
+```
+
+**Ce que la factory encapsule :**
+- `useMutationWithToast` (namespace `modules/profil`)
+- Validation entity non-null + validation entityType si `config.entityTypes` défini
+- Invalidation React Query via `config.invalidate(entity, me)` au succès
+
+**Factory `createUserMutation`** — similaire mais reçoit un `User` en paramètre (ex: actions admin sur un membre spécifique).
+
+### `useEntityActions(entity)`
+
+Hook routeur principal. Détecte le type d'entité et délègue :
+
+```ts
+function useEntityActions(entity: EntityTypes | null): EntityActionsResult | null
+
+interface EntityActionsResult {
+  actions: EntityAction[];
+  layout: "separate-buttons" | "status-dropdown";
+}
+```
+
+Les hooks par type (`useOrgEntityActions`, `useUserEntityActions`, etc.) filtrent les actions selon les permissions de l'utilisateur courant et construisent les objets `EntityAction` via `buildEntityAction`.
+
+---
+
+## EditModalRegistry
+
+`src/modules/profil/components/profile-edit/EditModalRegistry.tsx` implémente un système de modales d'édition lazy par nom logique.
+
+**Registry déclaratif :**
+
+```ts
+const editModalRegistry: Record<string, () => Promise<{ default: ComponentType<EditModalProps> }>> = {
+  "edit-profile":     () => import("./EditProfileModal"),
+  "edit-tiers-lieux": () => import("../edit/EditTiersLieuxModal"),
+};
+```
+
+**`resolveEditModalName(entity, config)`** — Détermine quel modal ouvrir (résolution **config-driven via `editModalMatch`**, cf. section "Édition de Tiers-lieu") :
+1. Lit `config.profiles[kind].editModal` pour le modal customisé déclaré pour ce kind
+2. Si `profiles[kind].editModalMatch` est défini → vérifie que `serverData` matche (AND implicite, `includes` si array, sinon strict equality)
+3. Si le match échoue ou si aucun `editModal` n'est déclaré → `"edit-profile"` (modal générique)
+
+**`DynamicEditModal`** — Wrapper config-driven utilisé par les headers et `ProfileActions` :
+
+```tsx
+<DynamicEditModal
+  open={editModalOpen}
+  onOpenChange={setEditModalOpen}
+  entity={entity}
+/>
+```
+
+Le chargement est lazy via `React.lazy()` + cache dans `lazyComponents` pour éviter les imports dupliqués.
+
+---
+
+## Gestion des membres
+
+### `InviteMemberDialog`
+
+Modale d'invitation par email ou recherche. Supporte :
+- Recherche d'utilisateurs existants (autocomplete)
+- Invitation par email si non trouvé
+- Rôle assignable (member, admin, etc.)
+
+### `MemberManagementDialog`
+
+Modale de gestion d'un membre spécifique. Actions disponibles selon permissions :
+- Promouvoir en admin (`useAdminActions`)
+- Rétrograder
+- Retirer de l'organisation
+
+### `MemberListRenderer`
+
+Liste les membres avec `UserListItem`. Supporte pagination et rôles.
+
+---
+
+## `TabDetailRenderer`
+
+`src/modules/profil/components/TabDetailRenderer.tsx` gère le rendu des pages de détail dans les tabs (ex: `NewsDetailPage` dans le tab "news").
+
+Il lit le paramètre `component` de la sous-route active et rend dynamiquement le composant correspondant. Supporte actuellement `"NewsDetailPage"`.
+
+---
+
+## `ProfileErrorBoundary`
+
+`src/modules/profil/components/ProfileErrorBoundary.tsx` est défini comme `errorElement` sur la route principale `profil/:slug`. Affiche un message d'erreur adapté (profil non trouvé, accès refusé, erreur réseau) sans casser le layout global.
 
 ---
 

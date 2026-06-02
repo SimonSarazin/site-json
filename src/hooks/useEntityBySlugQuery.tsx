@@ -5,7 +5,7 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { useHydratedUserContextId } from "@/hooks/useHydratedUserContextId";
 import { transformToEntityInstance } from "@/lib/entityTransform";
 import cocolightApiClient from "@communecter/cocolight-api-client";
-import { QUERY_KEYS } from "@/modules/profil/constants/queryKeys";
+import { PROFIL_QUERY_KEYS } from "@/modules/profil/constants/queryKeys";
 
 const { isReactive } = cocolightApiClient;
 
@@ -23,7 +23,7 @@ export const useEntityBySlugQuery = ({ slug, options = {} }: QueryEntityBySlugPr
 
   // userContextId compatible SSR : null au premier render, puis la vraie valeur après hydratation
   const userContextId = useHydratedUserContextId();
-  const queryKey = QUERY_KEYS.ELEMENT_ABOUT(slug ?? null, userContextId);
+  const queryKey = PROFIL_QUERY_KEYS.ELEMENT_ABOUT(slug ?? null, userContextId);
 
   // Le type unknown car l'API peut retourner soit une instance, soit du JSON déshydraté
   const { data, isLoading, isError, error, refetch } = useQuery<unknown>({

@@ -85,12 +85,12 @@ function AccessDeniedCard({
   return (
     <div className="max-w-lg w-full mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="rounded-2xl border border-border bg-card shadow-lg overflow-hidden">
-        {/* En-tête coloré */}
+        {/* En-tête coloré — text color hérite de `headerClass` (text-{token}-foreground). */}
         <div className={`px-6 py-8 text-center ${config.headerClass}`}>
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-background/20 backdrop-blur-sm mb-4">
             {config.icon}
           </div>
-          <h2 className="text-xl font-bold text-white">
+          <h2 className="text-xl font-bold">
             {config.title}
           </h2>
         </div>
@@ -194,59 +194,61 @@ function getReasonConfig(
     }
   };
 
+  // Tokens sémantiques shadcn (warning, info, destructive, primary, muted) — mode sombre
+  // automatiquement géré. Avant : palettes Tailwind hardcodées (amber/blue/sky/rose/...).
   switch (reason) {
     case "already_answered":
       return {
-        icon: <AlertCircle className="w-8 h-8 text-white" />,
+        icon: <AlertCircle className="w-8 h-8 text-warning-foreground" />,
         title: t("coform.access.alreadyAnswered.title"),
         description: t("coform.access.alreadyAnswered.description"),
-        headerClass: "bg-gradient-to-br from-amber-500 to-orange-600",
+        headerClass: "bg-warning text-warning-foreground",
       };
     case "not_member":
       return {
-        icon: <Users className="w-8 h-8 text-white" />,
+        icon: <Users className="w-8 h-8 text-info-foreground" />,
         title: t("coform.access.notMember.title"),
         description: t("coform.access.notMember.description"),
-        headerClass: "bg-gradient-to-br from-blue-500 to-indigo-600",
+        headerClass: "bg-info text-info-foreground",
       };
     case "form_not_started":
       return {
-        icon: <Clock className="w-8 h-8 text-white" />,
+        icon: <Clock className="w-8 h-8 text-info-foreground" />,
         title: t("coform.access.formNotStarted.title"),
         description: t("coform.access.formNotStarted.description", undefined, {
           date: formatDate(access.dates.start),
         }),
-        headerClass: "bg-gradient-to-br from-sky-500 to-cyan-600",
+        headerClass: "bg-info text-info-foreground",
       };
     case "form_closed":
       return {
-        icon: <Lock className="w-8 h-8 text-white" />,
+        icon: <Lock className="w-8 h-8 text-destructive-foreground" />,
         title: t("coform.access.formClosed.title"),
         description: t("coform.access.formClosed.description", undefined, {
           date: formatDate(access.dates.end),
         }),
-        headerClass: "bg-gradient-to-br from-rose-500 to-red-600",
+        headerClass: "bg-destructive text-destructive-foreground",
       };
     case "form_inactive":
       return {
-        icon: <Power className="w-8 h-8 text-white" />,
+        icon: <Power className="w-8 h-8 text-muted-foreground" />,
         title: t("coform.access.formInactive.title"),
         description: t("coform.access.formInactive.description"),
-        headerClass: "bg-gradient-to-br from-slate-500 to-gray-600",
+        headerClass: "bg-muted text-foreground",
       };
     case "not_logged_in":
       return {
-        icon: <LogIn className="w-8 h-8 text-white" />,
+        icon: <LogIn className="w-8 h-8 text-primary-foreground" />,
         title: t("coform.access.notLoggedIn.title"),
         description: t("coform.access.notLoggedIn.description"),
-        headerClass: "bg-gradient-to-br from-violet-500 to-purple-600",
+        headerClass: "bg-primary text-primary-foreground",
       };
     default:
       return {
-        icon: <ShieldAlert className="w-8 h-8 text-white" />,
+        icon: <ShieldAlert className="w-8 h-8 text-muted-foreground" />,
         title: t("coform.access.denied"),
         description: t("coform.status.error"),
-        headerClass: "bg-gradient-to-br from-slate-500 to-gray-600",
+        headerClass: "bg-muted text-foreground",
       };
   }
 }

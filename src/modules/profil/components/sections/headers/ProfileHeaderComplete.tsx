@@ -5,8 +5,11 @@ import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { useFormatProfileEntity } from "../../../hooks/useFormatProfileEntity";
 import { useT } from "@/hooks/useT";
 import { useProfileEntity } from "../../../hooks/useProfileEntity";
+import { buildProfileTabUrl } from "../../../hooks/useNewsDetailUrlGenerator";
+import { useSite } from "@/hooks/useSite";
+import { Link } from "react-router";
 import { useProfilPermissions } from "../../../hooks/useProfilPermissions";
-import { EditProfileModal } from "../../profile-edit/EditProfileModal";
+import { DynamicEditModal } from "../../profile-edit/EditModalRegistry";
 import { ProfileImageUpload } from "../../profile-edit/ProfileImageUpload";
 import { EntityActionButtons } from "../../EntityActionButtons";
 import { AddEntityDropdown } from "../../action-buttons/AddEntityDropdown";
@@ -30,12 +33,20 @@ export function ProfileHeaderComplete({ section }: ProfileHeaderCompleteProps) {
     address,
   } = useFormatProfileEntity(entity);
   const { canEditProfile } = useProfilPermissions(entity);
+  const { config: siteConfig } = useSite();
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [imageError, setImageError] = useState(false);
 
   if (!entity) return null;
 
   const effectiveLogoUrl = imageError ? logoThumbUrl : logoUrl;
+
+  // « Voir toutes les photos » : on n'affiche le bouton que si le type de profil a
+  // un onglet `gallery` configuré (sinon le garde-fou de ProfileTemplateDynamic
+  // redirigerait vers l'onglet par défaut). Le lien pointe vers cet onglet ; son
+  // contenu (section `profile-gallery`) reste à implémenter.
+  const galleryHref = buildProfileTabUrl(siteConfig, entity, (tab) => tab.id === "gallery");
+  const showGalleryButton = !!galleryHref && section.showAllPhotosButton !== false;
 
   return (
     <>
@@ -66,11 +77,13 @@ export function ProfileHeaderComplete({ section }: ProfileHeaderCompleteProps) {
             </div>
           )}
 
-          {section.showAllPhotosButton !== false && (
+          {showGalleryButton && galleryHref && (
             <div className="absolute bottom-6 right-6 z-20">
-              <Button>
-                <ImageIcon className="w-4 h-4" />
-                {t("ProfileTemplateDefault.showAllPhotos")}
+              <Button asChild>
+                <Link to={galleryHref}>
+                  <ImageIcon className="w-4 h-4" />
+                  {t("ProfileTemplateDefault.showAllPhotos")}
+                </Link>
               </Button>
             </div>
           )}
@@ -160,12 +173,11 @@ export function ProfileHeaderComplete({ section }: ProfileHeaderCompleteProps) {
                 {!isUser(entity) && (
                   <>
                     {section.showEmailButton !== false && entity.serverData?.email && typeof entity.serverData.email === "string" && (
-                      <Button
-                        variant="outline"
-                        onClick={() => window.location.href = `mailto:${entity.serverData.email}`}
-                      >
-                        <Mail />
-                        <span className="hidden sm:inline">{t("ProfileTemplateDefault.sendEmail")}</span>
+                      <Button variant="outline" asChild>
+                        <a href={`mailto:${entity.serverData.email}`}>
+                          <Mail />
+                          <span className="hidden sm:inline">{t("ProfileTemplateDefault.sendEmail")}</span>
+                        </a>
                       </Button>
                     )}
                     {section.showReservationButton && (
@@ -188,7 +200,7 @@ export function ProfileHeaderComplete({ section }: ProfileHeaderCompleteProps) {
 
       {/* Edit Modal */}
       {canEditProfile && entity && (
-        <EditProfileModal
+        <DynamicEditModal
           open={editModalOpen}
           onOpenChange={setEditModalOpen}
           entity={entity}
@@ -197,3 +209,5 @@ export function ProfileHeaderComplete({ section }: ProfileHeaderCompleteProps) {
     </>
   );
 }
+
+export default ProfileHeaderComplete;

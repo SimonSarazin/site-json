@@ -13,14 +13,12 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-    Dialog,
-    DialogContent,
-    DialogTitle,
-} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import LoginForm from "@/components/auth/LoginForm";
+import { IconOrSvg } from "@/components/ui/icon-or-svg";
+import { AuthModalLazy } from "@/modules/auth";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
+import NotificationBell from "@/modules/notification/components/NotificationBell";
+import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
 
 interface HeaderCommuneTransparenteProps {
     header: Header & {
@@ -114,9 +112,9 @@ export default function HeaderCommuneTransparente({ header }: HeaderCommuneTrans
                                 className="h-9 w-auto object-contain group-hover:scale-105 transition-transform"
                             />
                         ) : header.logoIcon ? (
-                            <span
-                                className="w-8 h-8 text-primary group-hover:scale-110 transition-transform flex items-center justify-center [&>svg]:w-8 [&>svg]:h-8"
-                                dangerouslySetInnerHTML={{ __html: header.logoIcon }}
+                            <IconOrSvg
+                                value={header.logoIcon}
+                                className="w-8 h-8 text-primary group-hover:scale-110 transition-transform"
                             />
                         ) : null}
                         {logoTitle && (
@@ -159,6 +157,9 @@ export default function HeaderCommuneTransparente({ header }: HeaderCommuneTrans
 
                     {/* Right utilities */}
                     <div className="flex items-center gap-2">
+                        {header.utilities?.notifications && <NotificationBell />}
+                        {header.utilities?.search && <CommandTriggerButton />}
+
                         {/* Lang switcher */}
                         {header.utilities?.langSwitch && availableLocales.length > 1 && (
                             <DropdownMenu>
@@ -263,13 +264,8 @@ export default function HeaderCommuneTransparente({ header }: HeaderCommuneTrans
                 </div>
             )}
 
-            {/* Login dialog */}
-            <Dialog open={loginDialogOpen} onOpenChange={setLoginDialogOpen}>
-                <DialogContent className="max-w-md">
-                    <DialogTitle>{t({ fr: "Se connecter", en: "Sign in" })}</DialogTitle>
-                    <LoginForm onSuccess={() => setLoginDialogOpen(false)} />
-                </DialogContent>
-            </Dialog>
+            {/* Login / inscription / récupération mot de passe */}
+            <AuthModalLazy open={loginDialogOpen} onOpenChange={setLoginDialogOpen} />
         </nav>
     );
 }

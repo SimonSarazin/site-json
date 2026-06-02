@@ -1,16 +1,40 @@
 /**
- * Point d'entrée centralisé pour les query keys React Query
+ * Point d'entrée centralisé pour les query keys React Query.
  *
- * Les query keys sont définis dans chaque module (single source of truth).
- * Ce fichier re-exporte tout pour un accès unifié si besoin.
+ * Les query keys sont définies dans chaque module (single source of truth).
+ * Ce fichier re-exporte tout pour un accès unifié si besoin — mais les
+ * consommateurs doivent **préférer importer directement depuis le module**
+ * concerné (`@/modules/X/constants/queryKeys`) pour des raisons de
+ * tree-shaking et de clarté.
+ *
+ * Convention « or » des 6 fichiers (cf. `commentaire/retour-equipe-refactor-
+ * mai-2026.md` section 2.17) :
+ * - Nom préfixé `XXX_QUERY_KEYS` en SCREAMING_SNAKE_CASE
+ * - `as const` sur l'objet englobant et sur chaque retour
+ * - Type exporté via `ReturnType<...>`
+ * - `*_PREFIX()` pour invalidations cross-contexte
+ * - Dimension user (`userId`/`userContextId`) si le résultat dépend du user
+ * - JSDoc obligatoire : Producteur + Consommateurs invalidants
  */
 
-// Re-export des query keys des modules
+// Re-export des query keys des 7 modules (ampli, cagnotte, coform, interop,
+// news, profil, search — ordre alphabétique).
+export { AMPLI_QUERY_KEYS } from "@/modules/ampli/constants/queryKeys";
+export { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
+export { COFORM_QUERY_KEYS } from "@/modules/coform/constants/queryKeys";
+export { INTEROP_QUERY_KEYS } from "@/modules/interop/constants/queryKeys";
 export { NEWS_QUERY_KEYS } from "@/modules/news/constants/queryKeys";
-export { QUERY_KEYS as PROFILE_QUERY_KEYS } from "@/modules/profil/constants/queryKeys";
+export { PROFIL_QUERY_KEYS } from "@/modules/profil/constants/queryKeys";
 export { SEARCH_QUERY_KEYS } from "@/modules/search/constants/queryKeys";
 
-// Re-export des types
+// Re-export des types associés
+export type { AmpliQueryKeyType } from "@/modules/ampli/constants/queryKeys";
+export type { CagnotteQueryKeyType } from "@/modules/cagnotte/constants/queryKeys";
+export type { CoformQueryKeyType } from "@/modules/coform/constants/queryKeys";
+export type { InteropQueryKeyType } from "@/modules/interop/constants/queryKeys";
 export type { NewsQueryKeyType } from "@/modules/news/constants/queryKeys";
-export type { QueryKeyType as ProfileQueryKeyType } from "@/modules/profil/constants/queryKeys";
-export type { SearchQueryKeyParams, SearchQueryKeyType } from "@/modules/search/constants/queryKeys";
+export type { ProfilQueryKeyType } from "@/modules/profil/constants/queryKeys";
+export type {
+  SearchQueryKeyParams,
+  SearchQueryKeyType,
+} from "@/modules/search/constants/queryKeys";

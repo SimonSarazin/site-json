@@ -6,7 +6,7 @@ import type { EntityTypes, User } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { isUser, isOrganization, isProject, isEvent } from "@/lib/getTypedEntity";
-import { QUERY_KEYS } from "../../constants/queryKeys";
+import { PROFIL_QUERY_KEYS } from "../../constants/queryKeys";
 
 export type EntityType = "user" | "organization" | "project" | "event";
 
@@ -48,7 +48,7 @@ export interface EntityMutationConfig<TParams = void> {
  * export const useFollowEntity = createEntityMutation({
  *   action: (e) => e.follow(),
  *   i18n: { successKey: "toast.relationship.followSuccess", errorKey: "toast.relationship.followError" },
- *   invalidate: (e) => [QUERY_KEYS.ELEMENT_ABOUT_PREFIX(e.slug)],
+ *   invalidate: (e) => [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(e.slug)],
  * });
  */
 export function createEntityMutation<TParams = void>(config: EntityMutationConfig<TParams>) {
@@ -142,14 +142,14 @@ export function invalidateMemberQueries(
   queryClient: ReturnType<typeof useQueryClient>,
   entity: EntityTypes
 ): void {
-  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug ?? null) });
-  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SEARCH_USERS_PREFIX() });
+  queryClient.invalidateQueries({ queryKey: PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug ?? null) });
+  queryClient.invalidateQueries({ queryKey: PROFIL_QUERY_KEYS.SEARCH_USERS_PREFIX() });
 
   if (isOrganization(entity)) {
-    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ORGANIZATION_MEMBERS_PREFIX(entity.slug ?? null) });
+    queryClient.invalidateQueries({ queryKey: PROFIL_QUERY_KEYS.ORGANIZATION_MEMBERS_PREFIX(entity.slug ?? null) });
   } else if (isProject(entity)) {
-    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.PROJECT_CONTRIBUTORS_PREFIX(entity.slug ?? null) });
+    queryClient.invalidateQueries({ queryKey: PROFIL_QUERY_KEYS.PROJECT_CONTRIBUTORS_PREFIX(entity.slug ?? null) });
   } else if (isEvent(entity)) {
-    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.EVENT_ATTENDEES_PREFIX(entity.slug ?? null) });
+    queryClient.invalidateQueries({ queryKey: PROFIL_QUERY_KEYS.EVENT_ATTENDEES_PREFIX(entity.slug ?? null) });
   }
 }

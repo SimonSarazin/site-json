@@ -28,7 +28,7 @@ export async function prefetchSearchResults(
   params: SearchPrefetchParams
 ) {
   // Utilise la query key centralisée
-  const queryKey = SEARCH_QUERY_KEYS.results(params);
+  const queryKey = SEARCH_QUERY_KEYS.RESULTS(params);
 
   try {
     return await queryClient.ensureQueryData({
@@ -67,6 +67,7 @@ export async function prefetchSearchResults(
           defaultFilters,
           defaultFields,
           defaultSortBy,
+          searchBy,
           notSourceKey,
         } = params.baseParams as Record<string, unknown>;
 
@@ -85,6 +86,7 @@ export async function prefetchSearchResults(
         if (defaultFilters) apiParam.filters = defaultFilters;
         if (defaultFields) apiParam.fields = defaultFields;
         if (defaultSortBy) apiParam.sortBy = defaultSortBy;
+        if (searchBy !== undefined) apiParam.searchBy = searchBy;
         if (notSourceKey) apiParam.notSourceKey = true;
 
         if (type.length > 0) {
@@ -109,7 +111,19 @@ export async function prefetchSearchResults(
           };
         }
 
-        const result = await (searchContext as unknown as { searchCostum: (params: Record<string, unknown>) => Promise<unknown> }).searchCostum(apiParam);
+        // Propage le variant côté SSR aussi (sinon mismatch queryKey + endpoint).
+        // ⚠ Appeler la méthode SUR searchContext (pas en variable destructurée)
+        // sinon `this` est perdu → le SDK throw `_createPaginatorEngine of undefined`.
+        const variant = params.variant;
+        const target = searchContext as unknown as {
+          searchCostum: (
+            params: Record<string, unknown>,
+            options?: { variant?: string }
+          ) => Promise<unknown>;
+        };
+        const result = variant && variant !== "default"
+          ? await target.searchCostum(apiParam, { variant })
+          : await target.searchCostum(apiParam);
 
         return {
           pages: [result],

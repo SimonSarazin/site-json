@@ -255,3 +255,42 @@ Les composants utilisent shadcn/ui + Tailwind CSS. Pour personnaliser :
 - Modifier les classes Tailwind dans `FormFields.tsx`
 - Ajuster les composants UI dans `@/components/ui/`
 - Les largeurs de grille sont converties automatiquement depuis Bootstrap via `BOOTSTRAP_TO_TAILWIND_WIDTH`
+
+## Step mode
+
+Le module supporte 3 modes de soumission via la prop `submitMode` du `CoFormProvider` / `SmartCoForm` / `MultiStepCoForm` :
+
+| Mode | Comportement |
+|---|---|
+| **`"final"`** (default) | Submit unique à la dernière étape — appelle `onFinalSubmit(allData, addedOptions?, links?)` qui délègue à `useCoFormFinalMutation` (`Answer.processUploads` + `Answer.save`). Mode utilisé par toutes les pages en prod (`CoFormPage`, `CoFormAnswerPage`). |
+| **`"step"`** | À chaque "Next", appelle `onStepSubmit(subFormId, data, stepIndex)` qui doit persister l'étape côté backend. ⚠️ **Non câblé en prod actuellement** — aucune page ne fournit `onStepSubmit`. |
+| **`"both"`** | Combine les 2 — appelle `onStepSubmit` à chaque étape puis `onFinalSubmit` à la dernière. |
+
+### Statut produit : feature step en attente
+
+L'infrastructure côté frontend est en place :
+- `CoFormProvider.submitStepData()` route correctement selon `submitMode`
+- `useCoFormStep.submitStep()` valide via Zod puis délègue
+- `MultiStepCoForm.handleSubmit` invoque `submitStep()` à chaque "Next"
+- Le state machine (`completedSteps`, `errorSteps`, `submittingStep`) suit l'avancement
+
+Ce qui manque pour activer :
+1. **Backend** : endpoint dédié (ex: `SAVE_COFORM_STEP`) ou réutiliser `saveCoformAnswer` avec un payload partiel
+2. **Pages** : câbler `onStepSubmit` dans `CoFormPage` / `CoFormAnswerPage` (actuellement, elles forcent `submitMode="final"`)
+3. **Décision produit** : id provisoire ? validation backend par étape ? brouillon auto-sauvé ?
+
+Cas d'usage envisagés :
+- Brouillons auto-sauvés à chaque "Next" (UX longue forme)
+- Tracking analytics par étape (drop-off rate)
+- Validation backend par étape (avant le submit final)
+
+Le hook placeholder `useCoFormStepMutation` (`hooks/useCoFormQuery.tsx`) existe pour faciliter ce câblage futur. Son `mutationFn` actuelle (`console.log` + `invalidateQueries`) est intentionnellement minimale.
+
+### Piège à éviter
+
+Si tu utilises `<CoFormProvider>` directement avec `submitMode="step"` (ou `"both"`) **sans fournir `onStepSubmit`** :
+- Les "Next" enregistrent les données en local mais ne les envoient nulle part
+- `submitAllData` est bloqué par la condition `submitMode === "final"` → no-op
+- Le formulaire semble "marcher" mais **rien ne part au serveur**
+
+Un warning console est émis en dev pour signaler ce cas. Le default `"final"` du Provider/SmartCoForm/MultiStepCoForm évite ce piège quand le caller ne précise pas le mode.

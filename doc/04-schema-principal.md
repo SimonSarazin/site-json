@@ -58,12 +58,7 @@ export const SiteConfig = z.object({
     message: LocalizedString.optional(),
     allowedIPs: z.array(z.string()).optional(),
   }).optional(),
-  auth: z.object({
-    login: z.object({
-      title: LocalizedString.optional(),
-      subtitle: LocalizedString.optional(),
-    }).optional(),
-  }).optional(),
+  auth: AuthConfigSchema.optional(), // module auth — voir la section `auth`
   profiles: ProfilesConfigSchema,
   floatingQRCode: z.object({
     enabled: z.boolean().default(false),
@@ -669,19 +664,37 @@ floatingQRCode: z.object({
 
 ## `auth`
 
+Configuration du [module auth](23-module-auth.md). `AuthConfigSchema` est défini
+dans `src/modules/auth/schema.ts` et ré-exporté par `src/types/site-schema.ts`.
+
 ```ts
-auth: z.object({
-  login: z.object({
-    title: LocalizedString.optional(),
-    subtitle: LocalizedString.optional(),
-  }).optional(),
-}).optional()
+// src/modules/auth/schema.ts
+const AuthPageTextSchema = z.object({
+  title: LocalizedString.optional(),
+  subtitle: LocalizedString.optional(),
+});
+
+export const AuthConfigSchema = z.object({
+  variant: z.string().optional(),       // discriminant du registry de variants
+  hideHeader: z.boolean().optional(),    // masquer le SiteHeader sur les pages auth
+  hideFooter: z.boolean().optional(),    // masquer le SiteFooter sur les pages auth
+  login: AuthPageTextSchema.optional(),
+  register: AuthPageTextSchema.optional(),
+  recover: AuthPageTextSchema.optional(),
+});
 ```
 
-| Cle              | Type              | Description                        |
-| ---------------- | ----------------- | ---------------------------------- |
-| `login.title`    | `LocalizedString` | Titre de la page de connexion      |
-| `login.subtitle` | `LocalizedString` | Sous-titre de la page de connexion |
+| Cle                  | Type              | Description                                              |
+| -------------------- | ----------------- | ------------------------------------------------------- |
+| `variant`            | `string`          | Variant de design résolu par `resolveAuthVariant` (absent → `default`) |
+| `hideHeader`         | `boolean`         | Masquer le `SiteHeader` sur les pages auth              |
+| `hideFooter`         | `boolean`         | Masquer le `SiteFooter` sur les pages auth              |
+| `login.title`        | `LocalizedString` | Titre du formulaire de connexion                        |
+| `login.subtitle`     | `LocalizedString` | Sous-titre (sert aussi de description SEO)              |
+| `register.title`     | `LocalizedString` | Titre du formulaire d'inscription                       |
+| `register.subtitle`  | `LocalizedString` | Sous-titre (sert aussi de description SEO)              |
+| `recover.title`      | `LocalizedString` | Titre du formulaire de récupération                     |
+| `recover.subtitle`   | `LocalizedString` | Sous-titre (sert aussi de description SEO)              |
 
 ---
 

@@ -7,15 +7,20 @@ import { IntegrationsLoader } from "@/components/layout/IntegrationsLoader";
 import type { SiteConfig } from "@/types/site";
 import { I18nBridge } from "@/contexts/I18nBridge";
 import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
-import { Suspense, lazy } from "react";
+import { Suspense } from "react";
+import { lazy } from "vite-preload";
 import { CocolightProvider } from "@/contexts/CocolightProvider";
 import { getBaseUrl } from "@/lib/constant/common";
 import { GoogleFontsLoader } from "@/components/layout/GoogleFontsLoader";
 import { SiteProvider } from "@/contexts/SiteProvider";
-import { FloatingQRCode } from "@/components/layout/FloatingQRCode";
-import { FloatingActionButton } from "@/components/layout/FloatingActionButton";
 import { useSite } from "@/hooks/useSite";
-import DiscourseGlobalModal from "@/modules/interop/components/DiscourseGlobalModal";
+import { CommandPaletteProvider } from "@/modules/commandPalette/contexts/CommandPaletteProvider";
+
+// Composants optionnels lazy-loadés : rendus seulement si configurés/activés.
+// Évite d'inclure leur code (et leurs dépendances) dans le bundle initial.
+const FloatingQRCode = lazy(() => import("@/components/layout/FloatingQRCode"));
+const FloatingActionButton = lazy(() => import("@/components/layout/FloatingActionButton"));
+const DiscourseGlobalModal = lazy(() => import("@/modules/interop/components/DiscourseGlobalModal"));
 
 const AdminPanel = import.meta.env.DEV
   ? lazy(() => import("@/components/admin/AdminPanel"))
@@ -34,12 +39,13 @@ function SiteShell() {
         <SiteTheme />
         <GoogleFontsLoader />
 
+        <CommandPaletteProvider>
         <Outlet />
         <IntegrationsLoader />
         <Toaster />
         <DiscourseGlobalModal />
 
-        {AdminPanel && config.pages?.some((p: { sections?: { type: string }[] }) => p.sections?.some((s) => s.type !== "siteList")) && (
+        {AdminPanel && (
           <Suspense fallback={null}>
             <AdminPanel />
           </Suspense>
@@ -63,8 +69,10 @@ function SiteShell() {
             label={config.floatingActionButton.label}
             icon={config.floatingActionButton.icon}
             position={config.floatingActionButton.position}
+            condition={config.floatingActionButton.condition}
           />
         )}
+        </CommandPaletteProvider>
       </I18nBridge>
     </LocalizationProvider>
   );

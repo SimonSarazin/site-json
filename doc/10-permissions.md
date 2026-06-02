@@ -12,6 +12,8 @@
   - [Créer des permissions pour un module](#créer-des-permissions-pour-un-module)
   - [Permissions du module Profil](#permissions-du-module-profil)
   - [Permissions du module News](#permissions-du-module-news)
+  - [Permissions du module Cagnotte](#permissions-du-module-cagnotte)
+  - [Permissions du module CoForm](#permissions-du-module-coform)
   - [Hook rétrocompatible `useUserPermissions`](#hook-rétrocompatible-useuserpermissions)
   - [Avantages de l'architecture modulaire](#avantages-de-larchitecture-modulaire)
   - [Type helper `PermissionsResult`](#type-helper-permissionsresult)
@@ -224,7 +226,7 @@ export function useMyModulePermissions(entity: EntityTypes | null): MyModulePerm
 
 ## Permissions du module Profil
 
-Le module profil enregistre le namespace `"profil"` avec **27 permissions** :
+Le module profil enregistre le namespace `"profil"` avec **27 champs** :
 
 ```
 src/modules/profil/permissions/
@@ -296,6 +298,154 @@ import { useNewsPermissions } from "@/modules/news/hooks/useNewsPermissions";
 
 const { canAddNews, canEditNews, canModerateNews } = useNewsPermissions(entity, news);
 ```
+
+## Permissions du module Cagnotte
+
+Le module cagnotte enregistre le namespace `"cagnotte"`.
+
+```
+src/modules/cagnotte/permissions/
+├── types.ts              # CagnottePermissions, CagnottePermissionData, CagnotteMilestoneLike, CagnotteActionLike
+├── defaults.ts           # DEFAULT_CAGNOTTE_PERMISSIONS
+├── calculators/
+│   └── cagnotte.ts       # calculateCagnottePermissions
+├── register.ts           # Enregistrement "cagnotte"
+└── index.ts              # Exports
+```
+
+**Interface `CagnottePermissions`** :
+
+Plusieurs permissions sont des **fonctions** (prenant un objet milestone ou action) plutôt que des booléens statiques, car leur valeur dépend de l'élément courant.
+
+| Catégorie | Permission | Type | Description |
+|-----------|-----------|------|-------------|
+| **Contribution** | `canContribute` | `boolean` | Peut ouvrir la modale de contribution (connecté + projet sélectionné + milestones actifs) |
+| | `canContributeReason` | `string \| undefined` | Raison du refus si `canContribute` est false |
+| **Milestones** | `canCreateMilestone` | `boolean` | Créer un milestone (admin projet) |
+| | `canEditMilestone` | `(m) => boolean` | Éditer un milestone (admin + non clôturé) |
+| | `canCloseMilestone` | `(m) => boolean` | Clôturer un milestone (admin + statut `open`) |
+| | `canRestoreMilestone` | `(m) => boolean` | Restaurer un milestone clôturé (admin + statut `close`) |
+| | `canDeleteMilestone` | `(m) => boolean` | Supprimer un milestone (admin + pas de transactions encaissées) |
+| **Actions** | `canCreateAction` | `(m) => boolean` | Créer une action dans un milestone (admin + milestone non clôturé) |
+| | `canEditAction` | `(a) => boolean` | Éditer une action (admin OU contributeur de l'action ; si `done` : admin seulement) |
+| | `canMarkActionDone` | `(a) => boolean` | Marquer une action terminée (admin OU contributeur + action en `todo`) |
+| | `canDeleteAction` | `(a) => boolean` | Supprimer une action (admin uniquement) |
+| | `canCandidateAction` | `(a) => boolean` | Se porter candidat sur une action (connecté + `todo` + pas déjà contributeur) |
+| **Méta** | `isConnected` | `boolean` | Utilisateur connecté |
+| | `isAdmin` | `boolean` | Admin du projet |
+| | `isContributor` | `boolean` | Contributeur du projet |
+| | `currentUserId` | `string` | ID de l'utilisateur courant |
+
+**Types auxiliaires** :
+
+```ts
+export type CagnotteMilestoneStatus = "open" | "done" | "close";
+export type CagnotteActionStatus    = "todo" | "done";
+
+export interface CagnotteMilestoneLike {
+  status?: CagnotteMilestoneStatus;
+  hasTransactions?: boolean; // au moins une transaction encaissée
+}
+
+export interface CagnotteActionLike {
+  status?: CagnotteActionStatus;
+  contributorIds?: string[]; // IDs des contributeurs assignés
+}
+```
+
+**Données additionnelles `CagnottePermissionData`** (passées via `data.cagnotte`) :
+
+```ts
+export interface CagnottePermissionData {
+  hasActiveMilestones?: boolean; // au moins un milestone non clôturé sur le projet
+  projectId?: string;            // ID du projet sélectionné (pour canContribute)
+}
+```
+
+**Hook local** :
+
+```ts
+import { useCagnottePermissions } from "@/modules/cagnotte/hooks/useCagnottePermissions";
+
+const perms = useCagnottePermissions(entity, {
+  hasActiveMilestones,
+  projectId,
+});
+
+if (perms.canCreateMilestone) { ... }
+if (perms.canEditMilestone(milestone)) { ... }
+if (perms.canCandidateAction(action)) { ... }
+```
+
+Le hook mémoïse les données additionnelles (`useMemo`) pour éviter des recomputations inutiles sur chaque render.
+
+## Permissions du module CoForm
+
+Le module coform enregistre le namespace `"coform"`.
+
+```
+src/modules/coform/permissions/
+├── types.ts              # CoFormPermissions, CoFormPermissionData, CoFormAnswerLike
+├── defaults.ts           # DEFAULT_COFORM_PERMISSIONS
+├── calculators/
+│   └── coform.ts         # calculateCoFormPermissions
+├── register.ts           # Enregistrement "coform"
+└── index.ts              # Exports
+```
+
+**Interface `CoFormPermissions`** :
+
+Comme pour le module cagnotte, certaines permissions sont des **fonctions** prenant une réponse (`CoFormAnswerLike`) pour calculer leur valeur par-réponse.
+
+| Catégorie | Permission | Type | Description |
+|-----------|-----------|------|-------------|
+| **Soumission** | `canSubmitAnswer` | `boolean` | Peut soumettre une nouvelle réponse (`access.canAnswer` côté backend) |
+| | `cannotSubmitReason` | `CoFormAccessReason \| undefined` | Raison du refus si `canSubmitAnswer` est false (ex : `"not_logged_in"`, `"already_answered"`) |
+| **Édition** | `canEditAnswer` | `(a) => boolean` | Peut éditer la réponse (priorité à `answer.canEdit` backend, puis brouillon auteur, puis auteur) |
+| **Suppression** | `canDeleteAnswer` | `(a) => boolean` | Peut supprimer la réponse (auteur uniquement) |
+| **Affichage** | `canViewForm` | `boolean` | Peut voir le formulaire (false si `isOnlyMember` et `me` n'est pas membre) |
+| **Méta** | `isConnected` | `boolean` | Utilisateur connecté |
+| | `isMember` | `boolean` | Membre de l'entité courante |
+| | `currentUserId` | `string` | ID de l'utilisateur courant |
+
+**Types auxiliaires** :
+
+```ts
+// Sous-ensemble d'une réponse utilisé pour le calcul des permissions
+export interface CoFormAnswerLike {
+  user?: string;    // userId de l'auteur de la réponse
+  canEdit?: boolean; // calculé côté serveur
+  draft?: boolean;  // brouillon : toujours éditable par l'auteur
+}
+```
+
+**Données additionnelles `CoFormPermissionData`** (passées via `data.coform`) :
+
+```ts
+export interface CoFormPermissionData {
+  access?: CoFormAccessInfo | null; // info d'accès retournée par useCoFormQuery
+  answer?: CoFormAnswer | null;     // réponse spécifique pour canEditAnswer / canDeleteAnswer
+}
+```
+
+**Hook local** :
+
+```ts
+import { useCoFormPermissions } from "@/modules/coform/hooks/useCoFormPermissions";
+
+const perms = useCoFormPermissions(entity, {
+  access: formAccess,
+  answer: currentAnswer,
+});
+
+if (perms.canSubmitAnswer) { ... }
+if (perms.canViewForm) { ... }
+if (perms.canEditAnswer(answer)) { ... }
+```
+
+Le hook mémoïse les données additionnelles (`useMemo`) pour éviter des recomputations inutiles sur chaque render. Voir [Module CoForm](21-module-coform.md#permissions) pour le contexte complet.
+
+---
 
 ## Hook rétrocompatible `useUserPermissions`
 
