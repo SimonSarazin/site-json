@@ -14,6 +14,13 @@ export const CommandPaletteConfigSchema = z.object({
   /** Liste blanche de namespaces de sources. `undefined` = toutes les sources. */
   sources: z.array(z.string()).optional(),
   maxResultsPerGroup: z.number().int().positive().default(10),
+  /**
+   * Largeur du bouton de header :
+   * - `full` : icône + libellé + raccourci (défaut),
+   * - `compact` : icône + raccourci (sans libellé),
+   * - `icon` : icône seule (le plus étroit).
+   */
+  triggerVariant: z.enum(["full", "compact", "icon"]).default("full"),
 });
 
 export type CommandPaletteConfig = z.infer<typeof CommandPaletteConfigSchema>;

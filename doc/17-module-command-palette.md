@@ -34,7 +34,8 @@ sans backend/entité costum.
 loupe inerte) — câblé dans les **7 variantes de header** (`CommandTriggerButton`
 s'auto-masque si `commandPalette.enabled` est faux). Champ top-level optionnel
 `commandPalette` dans `SiteConfig` = le **moteur** (`enabled`, `keybinding`,
-`sources`…). Activé sur `config.prod.tiers-lieux.json` (`utilities.search: true`
+`sources`, `triggerVariant` = largeur du bouton `full`/`compact`/`icon`…).
+Activé sur `config.prod.tiers-lieux.json` (`utilities.search: true`
 + `commandPalette.enabled: true`).
 
 > Note : il n'y a **pas** de flag `header.utilities.commandPalette` — on a

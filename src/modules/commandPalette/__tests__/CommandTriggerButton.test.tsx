@@ -4,11 +4,16 @@ import { render, screen, fireEvent } from "@testing-library/react";
 
 const state = vi.hoisted(() => ({
   enabled: true as boolean,
+  variant: "full" as "full" | "compact" | "icon",
   openPalette: vi.fn(),
 }));
 
 vi.mock("@/hooks/useSite", () => ({
-  useSite: () => ({ config: { commandPalette: state.enabled ? { enabled: true } : undefined } }),
+  useSite: () => ({
+    config: {
+      commandPalette: state.enabled ? { enabled: true, triggerVariant: state.variant } : undefined,
+    },
+  }),
 }));
 vi.mock("../hooks/useCommandPalette", () => ({
   useCommandPaletteOptional: () => ({
@@ -28,6 +33,7 @@ import CommandTriggerButton from "../components/CommandTriggerButton";
 describe("CommandTriggerButton", () => {
   beforeEach(() => {
     state.enabled = true;
+    state.variant = "full";
     state.openPalette.mockClear();
   });
 
@@ -43,5 +49,13 @@ describe("CommandTriggerButton", () => {
     state.enabled = false;
     const { container } = render(<CommandTriggerButton />);
     expect(container).toBeEmptyDOMElement();
+  });
+
+  it("variante 'icon' : bouton accessible mais sans libellé texte", () => {
+    state.variant = "icon";
+    render(<CommandTriggerButton />);
+    // Toujours accessible (aria-label), mais pas de libellé texte visible.
+    expect(screen.getByRole("button", { name: "triggerLabel" })).toBeInTheDocument();
+    expect(screen.queryByText("triggerLabel")).not.toBeInTheDocument();
   });
 });

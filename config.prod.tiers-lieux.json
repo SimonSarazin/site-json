@@ -777,7 +777,7 @@
                 "en": "Upcoming events"
               },
               "linkText": {
-                "fr": "Voir tous les resultats",
+                "fr": "Voir tous les evénements",
                 "en": "See all results"
               },
               "linkHref": "/evenements"
@@ -3273,7 +3273,7 @@
       }
     }
   ],
-  "commandPalette": { "enabled": true },
+  "commandPalette": { "enabled": true, "triggerVariant": "compact" },
   "floatingActionButton": {
     "enabled": true,
     "position": "bottom-left",
