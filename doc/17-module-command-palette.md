@@ -27,7 +27,9 @@ globale, montée dans `RootLayout`/`SiteShell` autour de `<Outlet/>`.
 
 **Source externe** : `src/modules/profil/commands/register.tsx` — recherche
 d'entités backend (`entity.searchCostum`), source **async**, dégradée en `[]`
-sans backend/entité costum.
+sans backend/entité costum. **Payload configurable** via
+`commandPalette.entitySearch` : `enabled`, `searchType`, `limit`, et un
+passe-plat `params` (fusionné dans le payload `searchCostum` — filters, scope…).
 
 **Intégration** : le bouton de header réutilise le flag **existant**
 `header.utilities.search` — qui ouvre désormais la palette (au lieu d'un bouton

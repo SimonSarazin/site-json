@@ -6,10 +6,20 @@
  * requête fait >= 2 caractères (cf. `useCommands`). Dégradation propre :
  * renvoie `[]` si aucune entité costum n'est chargée (pas de backend) ou en cas
  * d'erreur — la palette continue de fonctionner avec les autres sources.
+ *
+ * Payload configurable via `commandPalette.entitySearch` :
+ *   { enabled?, searchType?, limit?, params? }
+ * - `enabled: false` désactive complètement la source.
+ * - `searchType` : types d'entités cherchés (défaut : les 5 types).
+ * - `limit` : nombre max de résultats (défaut 8 ; passé en `indexStep`).
+ * - `params` : champs additionnels fusionnés dans le payload `searchCostum`
+ *   (avancé : `filters`, `notSourceKey`, scope costum, …).
  */
 import { registerCommandSource } from "@/modules/commandPalette";
 import type { Command, CommandReadContext } from "@/modules/commandPalette";
 import { getEntityIcon } from "@/lib/entityIcons";
+
+const DEFAULT_ENTITY_TYPES = ["organizations", "projects", "events", "poi", "citoyens"];
 
 interface SearchResultEntity {
   id?: string;
@@ -24,15 +34,22 @@ registerCommandSource({
   groups: [{ id: "profil:entities", heading: { fr: "Annuaire", en: "Directory" }, order: 50 }],
   getCommands: async (ctx: CommandReadContext): Promise<Command[]> => {
     const { entity, query } = ctx;
+    const cfg = ctx.config.commandPalette?.entitySearch;
+
+    if (cfg?.enabled === false) return [];
     if (!entity || query.trim().length < 2) return [];
+
+    const searchType = cfg?.searchType ?? DEFAULT_ENTITY_TYPES;
+    const limit = cfg?.limit ?? 8;
 
     let results: SearchResultEntity[] = [];
     try {
       const payload = {
-        searchType: ["organizations", "projects", "events", "poi", "citoyens"],
+        searchType,
         name: query,
         indexMin: 0,
-        indexStep: 8,
+        indexStep: limit,
+        ...(cfg?.params ?? {}),
       };
       const page = (await entity.searchCostum(
         payload as unknown as Parameters<typeof entity.searchCostum>[0]
@@ -43,7 +60,7 @@ registerCommandSource({
       return [];
     }
 
-    return results.slice(0, 8).map((e): Command => {
+    return results.slice(0, limit).map((e): Command => {
       const type = e.getEntityType?.() ?? "poi";
       const slug = e.slug ?? e.serverData?.slug;
       const name = e.serverData?.name ?? slug ?? "—";

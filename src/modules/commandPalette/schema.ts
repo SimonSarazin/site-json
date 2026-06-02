@@ -21,6 +21,18 @@ export const CommandPaletteConfigSchema = z.object({
    * - `icon` : icône seule (le plus étroit).
    */
   triggerVariant: z.enum(["full", "compact", "icon"]).default("full"),
+  /** Config de la source de recherche d'entités backend (fournie par le module profil). */
+  entitySearch: z
+    .object({
+      enabled: z.boolean().default(true),
+      /** Types d'entités cherchés. Défaut : organizations / projects / events / poi / citoyens. */
+      searchType: z.array(z.string()).optional(),
+      /** Nombre max de résultats (= `indexStep`). */
+      limit: z.number().int().positive().default(8),
+      /** Champs additionnels fusionnés dans le payload `searchCostum` (avancé : filters, scope…). */
+      params: z.record(z.string(), z.unknown()).optional(),
+    })
+    .optional(),
 });
 
 export type CommandPaletteConfig = z.infer<typeof CommandPaletteConfigSchema>;
