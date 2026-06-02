@@ -64,6 +64,7 @@ SiteForge utilise une stratégie de tests à **trois niveaux**, tous pilotés pa
 | `npm run test:all` | Exécute les trois niveaux séquentiellement |
 | `npm run test:preflight` | Preflight uniquement — `vitest run -c vitest.config.unit.ts tests/preflight/` |
 | `npm run test:coverage` | Tests unitaires avec rapport de couverture V8 (HTML + JSON) |
+| `npm run audit:config` | Audit **non bloquant** de la qualité des configs (trads manquantes, liens internes morts, locales/theme) — rapport + récap. `-- --strict` pour sortir en code 1 |
 | `npm run test:watch` | Mode watch avec `vitest.config.ts` par défaut (`src/` + `tests/`, sans `.tsx` ni `server/`) |
 
 Pour les tests E2E avec authentification backend réelle :
@@ -138,7 +139,9 @@ source .env.test && npm run test:e2e
 ├── tests/
 │   ├── preflight/
 │   │   ├── bundle-size.test.ts     # Taille chunks, vendor splits, pas d'icons-vendor (skip si pas de build)
+│   │   ├── config-integrity.test.ts # meta cohérent, LocalizedString non vide, liens externes valides
 │   │   ├── environment.test.ts     # Vérification Node, deps, fichiers config
+│   │   ├── i18n-files.test.ts       # Parité des clés fr↔en par namespace + valeurs non vides
 │   │   ├── no-import-star-lucide.test.ts  # Anti-régression tree-shaking lucide-react
 │   │   └── sites-configs.test.ts   # Validation de TOUTES les configs de sites.json
 │   ├── helpers/
@@ -595,6 +598,36 @@ Valide automatiquement **toutes** les configs référencées dans `sites.json` (
 - `src/{css}.css` existe
 
 Ce test détecte automatiquement les problèmes de désynchronisation entre `sites.json`, les configs JSON et le schéma Zod.
+
+#### Intégrité des configs (`tests/preflight/config-integrity.test.ts`)
+
+Invariants **stricts** (bloquants) sur chaque config de `sites.json`, au-delà du schéma Zod :
+
+- `meta` cohérent : `meta.languages` non vide et `meta.defaultLang ∈ meta.languages`.
+- Aucune valeur de `LocalizedString` vide (`{ fr: "", … }`).
+- Liens **externes** (`href`/`url` en `http(s)://` ou `//`) bien formés (`new URL()`).
+
+Ne contient que des règles vraies sur **toutes** les configs aujourd'hui → prévient les régressions sans casser le build. Les contrôles « soft » (trads incomplètes, liens internes morts, theme absent) ont un backlog pré-existant dans les configs démo : ils vivent dans `npm run audit:config` (ci-dessous), pas en test bloquant.
+
+#### Fichiers i18n (`tests/preflight/i18n-files.test.ts`)
+
+Pour chaque namespace i18n (dossiers `i18n/` avec `fr.json` + `en.json`, auto-découverts) :
+
+- **Parité des clés `fr` ↔ `en`** dans les deux sens : une clé présente d'un seul côté = traduction manquante / non ajoutée → échec.
+- Aucune valeur de traduction vide.
+
+Les clés sont aplaties récursivement (`a.b.c`) pour comparer des JSON imbriqués.
+
+#### Audit config advisory (`npm run audit:config`)
+
+Script `scripts/audit-config.mjs` (non bloquant) qui complète les invariants stricts par des contrôles « soft » à fort backlog dans les configs démo. Pour chaque config :
+
+- traductions **manquantes** (LocalizedString incomplète vs `meta.languages`),
+- liens **internes morts** (pas de page du config ni de route module connue ; query/anchor ignorés),
+- locales présentes mais **non déclarées** dans `meta.languages`,
+- bloc **`theme` absent**.
+
+Sortie : rapport par config + récapitulatif (`tiers-lieux` = 0 constat ; les démos portent le backlog). `npm run audit:config -- --strict` sort en code 1 s'il y a au moins un constat (utilisable comme gate CI). Choisi plutôt que des tests `console.warn` car le reporter Vitest par défaut masque ces warnings.
 
 #### Anti-régression Lucide tree-shaking (`tests/preflight/no-import-star-lucide.test.ts`)
 
