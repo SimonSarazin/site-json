@@ -3273,7 +3273,22 @@
       }
     }
   ],
-  "commandPalette": { "enabled": true, "triggerVariant": "compact" },
+  "commandPalette": { 
+    "enabled": true, 
+    "triggerVariant": "compact",
+    "entitySearch": {
+      "enabled": true,
+      "searchType": ["organizations", "projects", "events", "citoyens"],
+      "limit": 8,
+      "params": { 
+        "sourceKey": [
+          "franceTierslieux",
+          "tierslieuxbelgique",
+          "navigatorDesTierslieux"
+        ]
+      }
+    }
+  },
   "floatingActionButton": {
     "enabled": true,
     "position": "bottom-left",
