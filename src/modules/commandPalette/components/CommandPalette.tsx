@@ -7,6 +7,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import {
   Command,
   CommandEmpty,
   CommandGroup,
@@ -14,6 +21,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { useSite } from "@/hooks/useSite";
@@ -39,6 +47,7 @@ export function CommandPalette() {
   const { config } = useSite();
   const { currentLocale } = useLocalization();
   const { open, setOpen } = useCommandPalette();
+  const isMobile = useIsMobile();
   const [query, setQuery] = useState("");
   const { groups, loading } = useCommands(query, open);
   const run = useCommandRunContext();
@@ -52,6 +61,50 @@ export function CommandPalette() {
     resolveText(config.commandPalette?.placeholder, currentLocale) || t("placeholder");
   const hasResults = groups.length > 0;
 
+  // Corps cmdk partagé desktop / mobile. En mobile la liste remplit la hauteur
+  // dispo (le plafond `max-h-[300px]` du `CommandList` est levé).
+  const body = (
+    <Command shouldFilter={false} className={cn(CMDK_CLASS, isMobile && "h-full")}>
+      <CommandInput placeholder={placeholder} value={query} onValueChange={setQuery} />
+      <CommandList className={isMobile ? "max-h-none flex-1" : undefined}>
+        {!loading && !hasResults && <CommandEmpty>{t("empty")}</CommandEmpty>}
+        {groups.map(({ group, commands }) => (
+          <CommandGroup key={group.id} heading={resolveText(group.heading, currentLocale)}>
+            {commands.map((cmd) => (
+              <CommandItemRenderer
+                key={cmd.id}
+                command={cmd}
+                locale={currentLocale}
+                onSelect={() => {
+                  void cmd.perform(run);
+                }}
+              />
+            ))}
+          </CommandGroup>
+        ))}
+        {loading && (
+          <div className="text-muted-foreground py-6 text-center text-sm">{t("loading")}</div>
+        )}
+      </CommandList>
+    </Command>
+  );
+
+  // Mobile : feuille plein écran (input en haut, liste qui remplit, clavier en bas).
+  if (isMobile) {
+    return (
+      <Sheet open={open} onOpenChange={handleOpenChange}>
+        <SheetContent side="top" className="h-[100dvh] gap-0 p-0">
+          <SheetHeader className="sr-only">
+            <SheetTitle>{t("dialogTitle")}</SheetTitle>
+            <SheetDescription>{t("dialogDescription")}</SheetDescription>
+          </SheetHeader>
+          {body}
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
+  // Desktop : modale centrée.
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogHeader className="sr-only">
@@ -59,29 +112,7 @@ export function CommandPalette() {
         <DialogDescription>{t("dialogDescription")}</DialogDescription>
       </DialogHeader>
       <DialogContent className="overflow-hidden p-0" showCloseButton={false}>
-        <Command shouldFilter={false} className={cn(CMDK_CLASS)}>
-          <CommandInput placeholder={placeholder} value={query} onValueChange={setQuery} />
-          <CommandList>
-            {!loading && !hasResults && <CommandEmpty>{t("empty")}</CommandEmpty>}
-            {groups.map(({ group, commands }) => (
-              <CommandGroup key={group.id} heading={resolveText(group.heading, currentLocale)}>
-                {commands.map((cmd) => (
-                  <CommandItemRenderer
-                    key={cmd.id}
-                    command={cmd}
-                    locale={currentLocale}
-                    onSelect={() => {
-                      void cmd.perform(run);
-                    }}
-                  />
-                ))}
-              </CommandGroup>
-            ))}
-            {loading && (
-              <div className="text-muted-foreground py-6 text-center text-sm">{t("loading")}</div>
-            )}
-          </CommandList>
-        </Command>
+        {body}
       </DialogContent>
     </Dialog>
   );

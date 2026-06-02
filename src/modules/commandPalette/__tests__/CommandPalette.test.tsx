@@ -7,6 +7,7 @@ const h = vi.hoisted(() => ({
   groups: [] as RenderedGroup[],
   loading: false,
   open: true,
+  isMobile: false,
 }));
 
 vi.mock("../hooks/useCommands", () => ({
@@ -20,6 +21,7 @@ vi.mock("@/hooks/useSite", () => ({ useSite: () => ({ config: {} }) }));
 vi.mock("@/hooks/useLocalization", () => ({ useLocalization: () => ({ currentLocale: "fr" }) }));
 vi.mock("@/hooks/useLoadNamespace", () => ({ useLoadNamespace: () => ({ loaded: true }) }));
 vi.mock("@/hooks/useT", () => ({ useT: () => (key: string) => key }));
+vi.mock("@/hooks/use-mobile", () => ({ useIsMobile: () => h.isMobile }));
 // Évite l'enregistrement réel des sources (et la dépendance au module profil).
 vi.mock("../sources/bootstrap", () => ({}));
 
@@ -47,6 +49,7 @@ describe("CommandPalette", () => {
     h.groups = [];
     h.loading = false;
     h.open = true;
+    h.isMobile = false;
   });
 
   it("affiche les groupes et leurs commandes quand ouverte", () => {
@@ -71,5 +74,13 @@ describe("CommandPalette", () => {
     render(<CommandPalette />);
     expect(screen.queryByText("Accueil")).not.toBeInTheDocument();
     expect(screen.queryByPlaceholderText("placeholder")).not.toBeInTheDocument();
+  });
+
+  it("rend la palette dans une feuille (Sheet) plein écran en mobile", () => {
+    h.isMobile = true;
+    h.groups = [navGroup];
+    render(<CommandPalette />);
+    expect(screen.getByText("Accueil")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("placeholder")).toBeInTheDocument();
   });
 });

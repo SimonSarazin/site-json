@@ -775,7 +775,12 @@
               "title": {
                 "fr": "Événements à venir",
                 "en": "Upcoming events"
-              }
+              },
+              "linkText": {
+                "fr": "Voir tous les resultats",
+                "en": "See all results"
+              },
+              "linkHref": "/evenements"
             },
             "useFilter": true,
             "showMap": false,
@@ -787,12 +792,11 @@
               "defaultTypes": [
                 "events"
               ],
-              "defaultFilters": {
-                "$or": {
-                    "source.key":      { "$in": ["franceTierslieux", "tierslieuxbelgique", "navigatorDesTierslieux"] }
-                  } 
-              },
-              "notSourceKey": true,
+              "sourceKey": [
+                "franceTierslieux",
+                "tierslieuxbelgique",
+                "navigatorDesTierslieux"
+              ],
               "indexStepList": 4
             },
             "list": {
@@ -1723,15 +1727,12 @@
               "defaultTypes": [
                 "events"
               ],
-              "defaultFilters": {
-                "$or": {
-                    "source.key": { 
-                      "$in": ["franceTierslieux", "tierslieuxbelgique", "navigatorDesTierslieux"] 
-                    }
-                  } 
-              },
+              "sourceKey": [
+                "franceTierslieux",
+                "tierslieuxbelgique",
+                "navigatorDesTierslieux"
+              ],
               "indexStepList": 20,
-              "notSourceKey": true,
               "fediverse": false,
               "costumEditMode": false,
               "defaultSortBy": {
