@@ -168,7 +168,7 @@ export default function HeaderNosCommunes({ header }: HeaderNosCommunesProps) {
                         )}
 
                         {header.utilities?.notifications && <NotificationBell />}
-                        {header.utilities?.commandPalette && <CommandTriggerButton />}
+                        {header.utilities?.search && <CommandTriggerButton />}
 
                         {header.utilities?.themeSwitch !== false && (
                             <ClientOnly fallback={<div className="w-10 h-10" />}>
@@ -258,7 +258,7 @@ export default function HeaderNosCommunes({ header }: HeaderNosCommunesProps) {
 
                     <div className="md:hidden flex items-center gap-2">
                         {header.utilities?.notifications && <NotificationBell />}
-                        {header.utilities?.commandPalette && <CommandTriggerButton />}
+                        {header.utilities?.search && <CommandTriggerButton />}
                         {header.utilities?.themeSwitch !== false && (
                             <ClientOnly fallback={<div className="w-8 h-8" />}>
                                 {() => <ToggleButtonTheme />}

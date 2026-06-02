@@ -21,7 +21,6 @@ export interface HeaderConfig {
     cart: boolean;
     notifications: boolean;
     piggyBank: boolean;
-    commandPalette: boolean;
   };
   logoAlt?: string;
   announcement?: {

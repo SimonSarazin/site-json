@@ -360,11 +360,10 @@
     "utilities": {
       "themeSwitch": false,
       "langSwitch": true,
-      "search": false,
+      "search": true,
       "auth": true,
       "cart": false,
-      "notifications": true,
-      "commandPalette": true
+      "notifications": true
     }
   },
   "pages": [
@@ -793,6 +792,7 @@
                     "source.key":      { "$in": ["franceTierslieux", "tierslieuxbelgique", "navigatorDesTierslieux"] }
                   } 
               },
+              "notSourceKey": true,
               "indexStepList": 4
             },
             "list": {
@@ -1723,10 +1723,16 @@
               "defaultTypes": [
                 "events"
               ],
+              "defaultFilters": {
+                "$or": {
+                    "source.key": { 
+                      "$in": ["franceTierslieux", "tierslieuxbelgique", "navigatorDesTierslieux"] 
+                    }
+                  } 
+              },
               "indexStepList": 20,
               "notSourceKey": true,
               "fediverse": false,
-              "costumId": "649ed498f93ee7202e6c8b12",
               "costumEditMode": false,
               "defaultSortBy": {
                 "startDate": 1

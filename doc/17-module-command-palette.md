@@ -29,10 +29,19 @@ globale, montée dans `RootLayout`/`SiteShell` autour de `<Outlet/>`.
 d'entités backend (`entity.searchCostum`), source **async**, dégradée en `[]`
 sans backend/entité costum.
 
-**Intégration** : `header.utilities.commandPalette` (flag Zod dans
-`site-schema.ts` + miroir TS `site.ts`) câblé dans les **7 variantes de header**
-(comme `NotificationBell`) ; champ top-level optionnel `commandPalette` dans
-`SiteConfig`. Activé sur `config.prod.tiers-lieux.json`.
+**Intégration** : le bouton de header réutilise le flag **existant**
+`header.utilities.search` — qui ouvre désormais la palette (au lieu d'un bouton
+loupe inerte) — câblé dans les **7 variantes de header** (`CommandTriggerButton`
+s'auto-masque si `commandPalette.enabled` est faux). Champ top-level optionnel
+`commandPalette` dans `SiteConfig` = le **moteur** (`enabled`, `keybinding`,
+`sources`…). Activé sur `config.prod.tiers-lieux.json` (`utilities.search: true`
++ `commandPalette.enabled: true`).
+
+> Note : il n'y a **pas** de flag `header.utilities.commandPalette` — on a
+> volontairement réutilisé `utilities.search` (jusque-là un bouton mort) pour
+> éviter un doublon de boutons « loupe » dans le header. Le RFC ci-dessous
+> évoque encore un flag dédié `commandPalette` : c'est une trace du design
+> initial, non retenue.
 
 **Décisions / écarts assumés vs RFC** (cf. § 11.4) :
 

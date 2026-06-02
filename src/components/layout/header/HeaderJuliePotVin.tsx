@@ -93,7 +93,7 @@ export default function HeaderJuliePotVin({ header }: HeaderJuliePotVinProps) {
                         ))}
 
                         {header.utilities?.notifications && <NotificationBell />}
-                        {header.utilities?.commandPalette && <CommandTriggerButton />}
+                        {header.utilities?.search && <CommandTriggerButton />}
 
                         {header.utilities?.langSwitch && availableLocales.length > 1 && (
                              <DropdownMenu>
@@ -169,7 +169,7 @@ export default function HeaderJuliePotVin({ header }: HeaderJuliePotVinProps) {
 
                     <div className="md:hidden flex items-center gap-4">
                          {header.utilities?.notifications && <NotificationBell />}
-                         {header.utilities?.commandPalette && <CommandTriggerButton />}
+                         {header.utilities?.search && <CommandTriggerButton />}
                          {header.utilities?.themeSwitch !== false && (
                             <ClientOnly fallback={<div className="w-4 h-4" />}>
                                 {() => <ToggleButtonTheme />}

@@ -21,7 +21,6 @@ import {
   ChevronDown,
   User,
   LogOut,
-  Search,
   ShoppingCart,
 } from "lucide-react";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -258,10 +257,9 @@ export function DefaultHeader() {
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
-            {header.utilities.search && <Button variant="ghost" size="sm"><Search className="h-4 w-4" /></Button>}
+            {header.utilities.search && <CommandTriggerButton />}
             {header.utilities.cart && <Button variant="ghost" size="sm"><ShoppingCart className="h-4 w-4" /></Button>}
             {header.utilities.notifications && <NotificationBell />}
-            {header.utilities.commandPalette && <CommandTriggerButton />}
             {header.utilities.auth && (
               <ClientOnly fallback={<div className="hidden md:flex items-center"><Button variant="ghost" disabled size="sm">…</Button></div>}>
                 {() => (

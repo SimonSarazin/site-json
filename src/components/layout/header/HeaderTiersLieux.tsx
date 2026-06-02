@@ -161,7 +161,7 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
 
                     <div className="hidden md:flex items-center space-x-4 text-sm shrink-0 ml-4">
                         {header.utilities?.notifications && <NotificationBell />}
-                        {header.utilities?.commandPalette && <CommandTriggerButton />}
+                        {header.utilities?.search && <CommandTriggerButton />}
 
                         <ClientOnly fallback={<div className="w-10 h-10" />}>
                             {() => <ToggleButtonTheme />}
@@ -249,7 +249,7 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
 
                     <div className="md:hidden flex items-center gap-1 xs:gap-2 shrink-0 ml-3">
                         {header.utilities?.notifications && <NotificationBell />}
-                        {header.utilities?.commandPalette && <CommandTriggerButton />}
+                        {header.utilities?.search && <CommandTriggerButton />}
                         <ClientOnly fallback={<div className="w-7 h-7 xs:w-8 xs:h-8" />}>
                             {() => <ToggleButtonTheme />}
                         </ClientOnly>

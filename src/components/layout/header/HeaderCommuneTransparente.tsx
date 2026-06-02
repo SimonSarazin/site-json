@@ -157,7 +157,7 @@ export default function HeaderCommuneTransparente({ header }: HeaderCommuneTrans
                     {/* Right utilities */}
                     <div className="flex items-center gap-2">
                         {header.utilities?.notifications && <NotificationBell />}
-                        {header.utilities?.commandPalette && <CommandTriggerButton />}
+                        {header.utilities?.search && <CommandTriggerButton />}
 
                         {/* Lang switcher */}
                         {header.utilities?.langSwitch && availableLocales.length > 1 && (

@@ -21,7 +21,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Menu as MenuIcon, Search, ShoppingCart } from "lucide-react";
+import { Menu as MenuIcon, ShoppingCart } from "lucide-react";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
@@ -129,11 +129,7 @@ export function SiteHeader2() {
               </NavigationMenu>
             )}
 
-            {header.utilities.search && (
-              <Button variant="ghost" size="sm">
-                <Search className="h-4 w-4" />
-              </Button>
-            )}
+            {header.utilities.search && <CommandTriggerButton />}
 
             {header.utilities.cart && (
               <Button variant="ghost" size="sm">
@@ -142,7 +138,6 @@ export function SiteHeader2() {
             )}
 
             {header.utilities.notifications && <NotificationBell />}
-            {header.utilities.commandPalette && <CommandTriggerButton />}
 
             {header.utilities.auth && (
               <ClientOnly
