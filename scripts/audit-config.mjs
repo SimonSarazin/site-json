@@ -90,10 +90,18 @@ for (const cf of configs) {
     }
   });
 
-  const themeMissing = !(raw.theme && typeof raw.theme === "object" && Object.keys(raw.theme).length > 0);
-  const count = missingTrad.length + deadLinks.length + extraLocales.size + (themeMissing ? 1 : 0);
+  // État du theme : "complet" (colors light+dark dans le JSON), "sans-couleurs"
+  // (theme présent mais couleurs gérées par le CSS), "absent" (aucun bloc theme).
+  const tm = raw.theme;
+  const themeStatus = !(tm && typeof tm === "object" && Object.keys(tm).length > 0)
+    ? "absent"
+    : tm.colors?.light && tm.colors?.dark
+      ? "complet"
+      : "sans-couleurs";
+  const themeDone = themeStatus === "complet";
+  const count = missingTrad.length + deadLinks.length + extraLocales.size + (themeDone ? 0 : 1);
   totalIssues += count;
-  summary.push({ cf, missingTrad: missingTrad.length, deadLinks: deadLinks.length, extraLocales: extraLocales.size, themeMissing });
+  summary.push({ cf, missingTrad: missingTrad.length, deadLinks: deadLinks.length, extraLocales: extraLocales.size, themeStatus });
 
   if (count === 0) {
     console.log(`\n✅  ${cf} — RAS`);
@@ -103,14 +111,17 @@ for (const cf of configs) {
   if (missingTrad.length) console.log(`   • ${missingTrad.length} traduction(s) manquante(s):\n${preview(missingTrad)}`);
   if (deadLinks.length) console.log(`   • ${deadLinks.length} lien(s) interne(s) sans page/route:\n${preview(deadLinks)}`);
   if (extraLocales.size) console.log(`   • locale(s) hors meta.languages: ${[...extraLocales].join(", ")}`);
-  if (themeMissing) console.log(`   • aucun bloc "theme" (fallback sur le CSS du site)`);
+  if (!themeDone)
+    console.log(
+      `   • theme ${themeStatus === "absent" ? "ABSENT" : "sans colors.light/dark dans le JSON"} → la config theme n'est pas faite (couleurs via le CSS du site)`
+    );
 }
 
 console.log("\n" + "═".repeat(60) + "\nRécapitulatif :");
 for (const s of summary) {
   console.log(
     `  ${s.cf.padEnd(38)} trad:${String(s.missingTrad).padStart(3)}  liens:${String(s.deadLinks).padStart(3)}  ` +
-      `locales+:${s.extraLocales}  theme:${s.themeMissing ? "MANQUE" : "ok"}`
+      `locales+:${s.extraLocales}  theme:${s.themeStatus.padEnd(13)}`
   );
 }
 console.log(`\nTotal constats : ${totalIssues}\n`);

@@ -626,7 +626,7 @@ Script `scripts/audit-config.mjs` (non bloquant) qui complète les invariants st
 - traductions **manquantes** (LocalizedString incomplète vs `meta.languages`),
 - liens **internes morts** (pas de page du config ni de route module connue ; query/anchor ignorés),
 - locales présentes mais **non déclarées** dans `meta.languages`,
-- bloc **`theme` absent**,
+- **état du theme** par config — `complet` (colors light+dark dans le JSON) / `sans-couleurs` (theme mais couleurs via le CSS) / `absent` (aucun bloc theme) — pour repérer où **la config theme n'est pas faite**,
 - configs prod **orphelines** (sur disque mais hors `sites.json`, ex. `config.prod.jardin-ocean.json` — non testées en strict).
 
 Sortie : rapport par config + récapitulatif (`tiers-lieux` = 0 constat ; les démos portent le backlog). `npm run audit:config -- --strict` sort en code 1 s'il y a au moins un constat (utilisable comme gate CI). Choisi plutôt que des tests `console.warn` car le reporter Vitest par défaut masque ces warnings.
