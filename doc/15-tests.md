@@ -601,7 +601,7 @@ Ce test détecte automatiquement les problèmes de désynchronisation entre `sit
 
 #### Intégrité des configs (`tests/preflight/config-integrity.test.ts`)
 
-Invariants **stricts** (bloquants) sur chaque config de `sites.json`, au-delà du schéma Zod :
+Invariants **stricts** (bloquants) sur la **config par défaut** (`config.prod.json`) **et** chaque config déployée via `sites.json`, au-delà du schéma Zod (les configs hors `sites.json` y passent aussi le Zod, que `sites-configs.test.ts` ne couvre pas) :
 
 - `meta` cohérent : `meta.languages` non vide et `meta.defaultLang ∈ meta.languages`.
 - Aucune valeur de `LocalizedString` vide (`{ fr: "", … }`).
@@ -626,7 +626,8 @@ Script `scripts/audit-config.mjs` (non bloquant) qui complète les invariants st
 - traductions **manquantes** (LocalizedString incomplète vs `meta.languages`),
 - liens **internes morts** (pas de page du config ni de route module connue ; query/anchor ignorés),
 - locales présentes mais **non déclarées** dans `meta.languages`,
-- bloc **`theme` absent**.
+- bloc **`theme` absent**,
+- configs prod **orphelines** (sur disque mais hors `sites.json`, ex. `config.prod.jardin-ocean.json` — non testées en strict).
 
 Sortie : rapport par config + récapitulatif (`tiers-lieux` = 0 constat ; les démos portent le backlog). `npm run audit:config -- --strict` sort en code 1 s'il y a au moins un constat (utilisable comme gate CI). Choisi plutôt que des tests `console.warn` car le reporter Vitest par défaut masque ces warnings.
 

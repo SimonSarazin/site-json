@@ -1,6 +1,7 @@
 import { describe, test, expect } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
+import { SiteConfig } from "@/types/site-schema";
 
 /**
  * Preflight — invariants STRICTS d'intégrité des configs (au-delà du schéma Zod).
@@ -22,7 +23,10 @@ import path from "node:path";
  * absent) sont dans le script d'audit `npm run audit:config` (rapport visible,
  * non bloquant) — voir `scripts/audit-config.mjs`.
  *
- * Itère sur les configs réellement référencées par `sites.json`.
+ * Itère sur la config par défaut (`config.prod.json`) + les configs déployées via
+ * `sites.json`. Les configs prod ORPHELINES (sur disque mais hors `sites.json`,
+ * ex. `config.prod.jardin-ocean.json` — souvent WIP/invalide) ne sont PAS testées
+ * en strict ; elles sont signalées par `npm run audit:config`.
  */
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const LOCALES = ["fr", "en", "es", "de"];
@@ -30,7 +34,11 @@ const LOCALES = ["fr", "en", "es", "de"];
 const sites: Array<{ slug: string; config: string }> = JSON.parse(
   fs.readFileSync(path.join(PROJECT_ROOT, "sites.json"), "utf-8")
 );
-const uniqueConfigs = [...new Set(sites.map((s) => s.config))];
+const sitesConfigSet = new Set(sites.map((s) => s.config));
+// Config par défaut (`config.prod.json`, fallback prod) + configs déployées.
+const uniqueConfigs = [...new Set(["config.prod.json", ...sites.map((s) => s.config)])]
+  .filter((f) => fs.existsSync(path.join(PROJECT_ROOT, f)))
+  .sort();
 
 /** Un objet dont toutes les clés sont des locales et toutes les valeurs des strings. */
 function isLocalizedString(v: unknown): v is Record<string, string> {
@@ -63,6 +71,17 @@ describe("Preflight — Config integrity", () => {
     const raw: any = JSON.parse(fs.readFileSync(path.resolve(PROJECT_ROOT, cf), "utf-8"));
 
     describe(cf, () => {
+      test("passe le schéma Zod (configs prod non couvertes par sites-configs)", () => {
+        // Les configs de sites.json sont déjà validées par sites-configs.test.ts.
+        if (sitesConfigSet.has(cf)) return;
+        const result = SiteConfig.safeParse(raw);
+        if (!result.success)
+          expect.fail(
+            `${cf} échoue le schéma Zod:\n` +
+              result.error.issues.map((i) => `  ${i.path.join(".")}: ${i.message}`).join("\n")
+          );
+      });
+
       test("meta : languages non vide et defaultLang ∈ languages", () => {
         expect(
           Array.isArray(raw.meta?.languages) && raw.meta.languages.length > 0,

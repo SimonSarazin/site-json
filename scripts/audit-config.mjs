@@ -25,7 +25,15 @@ const LOCALES = ["fr", "en", "es", "de"];
 const KNOWN_ROUTE_PREFIXES = ["/profil", "/login", "/register", "/recover-password", "/ampli", "/coform"];
 
 const sites = JSON.parse(fs.readFileSync(path.join(ROOT, "sites.json"), "utf-8"));
-const configs = [...new Set(sites.map((s) => s.config))];
+const sitesConfigs = new Set(sites.map((s) => s.config));
+// Audité : config par défaut (config.prod.json) + configs déployées via sites.json.
+const configs = [...new Set(["config.prod.json", ...sites.map((s) => s.config)])].filter((f) =>
+  fs.existsSync(path.join(ROOT, f))
+);
+// Configs prod ORPHELINES : sur disque mais ni la config par défaut ni dans sites.json.
+const orphans = fs
+  .readdirSync(ROOT)
+  .filter((f) => /^config\.prod.*\.json$/.test(f) && f !== "config.prod.json" && !sitesConfigs.has(f));
 
 const isLocalizedString = (v) =>
   v &&
@@ -44,10 +52,17 @@ function walk(node, fn, p = []) {
 const preview = (items, n = 10) =>
   items.slice(0, n).map((i) => `      - ${i}`).join("\n") + (items.length > n ? `\n      … (+${items.length - n})` : "");
 
-let totalIssues = 0;
+let totalIssues = orphans.length;
 const summary = [];
 
-console.log("\n🔎  Audit config (advisory) — basé sur sites.json\n" + "═".repeat(60));
+console.log("\n🔎  Audit config (advisory)\n" + "═".repeat(60));
+
+if (orphans.length) {
+  console.log(
+    `\n🗂️   ${orphans.length} config(s) prod ORPHELINE(S) (sur disque, hors sites.json — non testée(s) par le preflight) :`
+  );
+  for (const o of orphans) console.log(`      - ${o}  → à enregistrer dans sites.json ou supprimer`);
+}
 
 for (const cf of configs) {
   const raw = JSON.parse(fs.readFileSync(path.join(ROOT, cf), "utf-8"));
