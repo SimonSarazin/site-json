@@ -606,6 +606,7 @@ Invariants **stricts** (bloquants) sur chaque config de `sites.json`, au-delà d
 - `meta` cohérent : `meta.languages` non vide et `meta.defaultLang ∈ meta.languages`.
 - Aucune valeur de `LocalizedString` vide (`{ fr: "", … }`).
 - Liens **externes** (`href`/`url` en `http(s)://` ou `//`) bien formés (`new URL()`).
+- Parité des **tokens couleurs light/dark** du theme si `theme.colors` est défini (un token présent en light mais absent de dark = mode sombre incomplet). La *structure* du theme (`defaultMode` ∈ {light,dark,system}, présence de `colors.light`+`dark`, tokens requis de `ColorPalette`) est déjà validée par le Zod ; on n'ajoute que la parité des tokens optionnels.
 
 Ne contient que des règles vraies sur **toutes** les configs aujourd'hui → prévient les régressions sans casser le build. Les contrôles « soft » (trads incomplètes, liens internes morts, theme absent) ont un backlog pré-existant dans les configs démo : ils vivent dans `npm run audit:config` (ci-dessous), pas en test bloquant.
 

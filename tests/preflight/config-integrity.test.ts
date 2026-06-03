@@ -9,7 +9,13 @@ import path from "node:path";
  * bloquent une régression future sans casser le build actuel :
  *  - `meta` cohérent (languages non vide, defaultLang ∈ languages),
  *  - aucune valeur de `LocalizedString` vide,
- *  - liens externes (http/https) bien formés.
+ *  - liens externes (http/https) bien formés,
+ *  - parité des tokens couleurs light/dark du theme (si `theme.colors` défini).
+ *
+ * Note : la structure du theme (`defaultMode` ∈ {light,dark,system}, présence de
+ * `colors.light`+`colors.dark`, tokens requis de `ColorPalette`) est déjà validée
+ * par le schéma Zod (`sites-configs.test.ts`). On n'ajoute ici que ce que Zod ne
+ * couvre pas : la parité des tokens optionnels entre light et dark.
  *
  * Les contrôles « soft » avec un backlog pré-existant dans les configs démo
  * (traductions incomplètes, liens internes morts, locales non déclarées, theme
@@ -94,6 +100,21 @@ describe("Preflight — Config integrity", () => {
           }
         });
         expect(bad, `URL externe(s) invalide(s):${preview(bad)}`).toHaveLength(0);
+      });
+
+      test("theme : parité des tokens couleurs light/dark (si theme.colors défini)", () => {
+        const colors = raw.theme?.colors;
+        // Pas de theme.colors → couleurs gérées par le CSS du site, rien à vérifier.
+        if (!colors?.light || !colors?.dark) return;
+        const light = Object.keys(colors.light);
+        const dark = Object.keys(colors.dark);
+        const onlyLight = light.filter((k) => !dark.includes(k));
+        const onlyDark = dark.filter((k) => !light.includes(k));
+        expect(
+          onlyLight,
+          `Token(s) couleur en light mais absent(s) de dark (mode sombre incomplet): ${onlyLight.join(", ")}`
+        ).toHaveLength(0);
+        expect(onlyDark, `Token(s) couleur en dark mais absent(s) de light: ${onlyDark.join(", ")}`).toHaveLength(0);
       });
     });
   }
