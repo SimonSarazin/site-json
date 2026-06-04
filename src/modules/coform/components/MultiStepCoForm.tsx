@@ -1,5 +1,6 @@
-import { Fragment, useRef, useEffect, useMemo } from "react";
+import { Fragment, useRef, useEffect, useMemo, useState } from "react";
 import { Controller } from "react-hook-form";
+import { Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -17,11 +18,13 @@ import { MultiCheckboxPlusField } from "./MultiCheckboxPlusField";
 import { MultiRadioField } from "./MultiRadioField";
 import { EvaluationField } from "./EvaluationField";
 import { CommonTableField } from "./CommonTableField";
+import { MultiEvalChartDialog } from "./MultiEvalChartDialog";
 import { FinderField } from "./FinderField";
 import { SimpleTableField } from "./SimpleTableField";
 import { UploaderField } from "./UploaderField";
 import { CoFormBanner } from "./CoFormBanner";
 import { useConditionalFields } from "../hooks/useConditionalFields";
+import { getStepHasMultiEval } from "../utils/formParser";
 import type { CoFormData, SubFormData, AllStepsData, MultiCheckboxPlusValue, MultiRadioValue, EvaluationValue, CommonTableValue, FinderValue, SimpleTableValue } from "../types";
 import type { CoFormSubmitMode, CoFormVariant } from "../schema";
 
@@ -125,6 +128,16 @@ function MultiStepCoFormContent({
   });
   const { form, fields, stepName, isSubmitting, submitStep } = useCoFormStep();
 
+  // Multi-eval radar : on affiche un bouton "Voir les évaluations" dans le
+  // header de la step si elle contient au moins un input avec
+  // `activeMultieval=true` ET qu'on est en mode édition (answerId présent).
+  const [multiEvalOpen, setMultiEvalOpen] = useState(false);
+  const stepHasMultiEval = useMemo(
+    () => (fields ? getStepHasMultiEval(fields) : false),
+    [fields]
+  );
+  const showMultiEvalButton = stepHasMultiEval && !!coform.answerId;
+
   // Logique conditionnelle pour l'étape courante
   const { isFieldVisible } = useConditionalFields(fields?.fields ?? [], form.control);
 
@@ -214,7 +227,21 @@ function MultiStepCoFormContent({
       {/* Formulaire de l'étape actuelle */}
       <Card className="shadow-sm">
         <CardHeader className="space-y-3">
-          <CardTitle className="text-2xl">{stepName}</CardTitle>
+          <div className="flex items-start justify-between gap-3">
+            <CardTitle className="text-2xl">{stepName}</CardTitle>
+            {showMultiEvalButton && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setMultiEvalOpen(true)}
+                className="shrink-0 gap-2"
+              >
+                <Activity className="h-4 w-4" />
+                <span className="hidden sm:inline">{t("coform.multiEval.viewChart")}</span>
+              </Button>
+            )}
+          </div>
           {coform.formData?.inputs?.[fields.subFormId]?.info && (
             <CardDescription className="text-base">
               <ProseContent
@@ -534,6 +561,19 @@ function MultiStepCoFormContent({
         <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
           {coform.error.message}
         </div>
+      )}
+
+      {/* Dialog multi-eval : mount conditionnel — évite de payer le fetch
+          `useMultiEvalData` + le lazy-import recharts tant que l'utilisateur
+          n'a pas cliqué sur "Voir les évaluations". */}
+      {multiEvalOpen && (
+        <MultiEvalChartDialog
+          open
+          onOpenChange={setMultiEvalOpen}
+          answerId={coform.answerId ?? null}
+          stepKey={fields?.subFormId ?? null}
+          stepName={stepName}
+        />
       )}
     </div>
   );

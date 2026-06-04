@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useForm, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
+import { Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
@@ -10,12 +11,13 @@ import { MultiCheckboxPlusField } from "./MultiCheckboxPlusField";
 import { MultiRadioField } from "./MultiRadioField";
 import { EvaluationField } from "./EvaluationField";
 import { CommonTableField } from "./CommonTableField";
+import { MultiEvalChartDialog } from "./MultiEvalChartDialog";
 import { FinderField } from "./FinderField";
 import { SimpleTableField } from "./SimpleTableField";
 import { UploaderField } from "./UploaderField";
 import { CoFormBanner } from "./CoFormBanner";
 import type { CoFormData, SubFormData, AddedOptionsMap, EvaluationValue, CommonTableValue, FinderValue, SimpleTableValue, MultiRadioValue } from "../types";
-import { parseCoFormFields, generateZodSchema, generateDefaultValues } from "../utils/formParser";
+import { parseCoFormFields, generateZodSchema, generateDefaultValues, getStepHasMultiEval } from "../utils/formParser";
 import { useConditionalFields } from "../hooks/useConditionalFields";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -100,6 +102,13 @@ export function DynamicCoForm({
 
   // State pour collecter les options ajoutées par champ
   const [addedOptionsMap, setAddedOptionsMap] = useState<AddedOptionsMap>({});
+
+  // Multi-eval radar : un seul Dialog réutilisé pour toutes les steps. Le state
+  // mémorise la step ciblée (titre + filtre côté serveur via stepKey). `null`
+  // → dialog non monté (cf. norme jdev de mount conditionnel).
+  const [multiEvalContext, setMultiEvalContext] = useState<
+    { stepKey: string; stepName: string } | null
+  >(null);
 
   const lockedSet = useMemo(() => new Set(lockedFields), [lockedFields]);
 
@@ -434,10 +443,35 @@ export function DynamicCoForm({
             return <div key={subForm.subFormId}>{fieldsGrid}</div>;
           }
 
+          // Bouton "Voir les évaluations" — visible uniquement si la step
+          // contient au moins un input multi-eval ET qu'on est en mode édition
+          // (answerId présent : sinon il n'y a pas encore de data à agréger).
+          const stepHasMultiEval = getStepHasMultiEval(subForm);
+          const showMultiEvalButton = stepHasMultiEval && !!answerId;
+
           return (
             <Card key={subForm.subFormId} className="shadow-sm">
               <CardHeader className="space-y-3">
-                <CardTitle className="text-2xl">{subForm.subFormName}</CardTitle>
+                <div className="flex items-start justify-between gap-3">
+                  <CardTitle className="text-2xl">{subForm.subFormName}</CardTitle>
+                  {showMultiEvalButton && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        setMultiEvalContext({
+                          stepKey: subForm.subFormId,
+                          stepName: subForm.subFormName,
+                        })
+                      }
+                      className="shrink-0 gap-2"
+                    >
+                      <Activity className="h-4 w-4" />
+                      <span className="hidden sm:inline">{t("coform.multiEval.viewChart")}</span>
+                    </Button>
+                  )}
+                </div>
                 {formData.inputs?.[subForm.subFormId]?.info && (
                   <CardDescription className="text-base">
                     <ProseContent
@@ -453,6 +487,18 @@ export function DynamicCoForm({
             </Card>
           );
       })}
+
+      {/* Dialog multi-eval : mount conditionnel, contexte = step ciblée
+          (titre + stepKey). Cf. feedback_conditional_dialog_mount. */}
+      {multiEvalContext && (
+        <MultiEvalChartDialog
+          open
+          onOpenChange={(o) => { if (!o) setMultiEvalContext(null); }}
+          answerId={answerId ?? null}
+          stepKey={multiEvalContext.stepKey}
+          stepName={multiEvalContext.stepName}
+        />
+      )}
 
       {!hideSubmitButton && (
       <div className="flex justify-end pt-4">
