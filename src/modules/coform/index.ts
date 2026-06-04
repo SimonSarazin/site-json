@@ -24,6 +24,7 @@ export { MultiStepCoForm } from "./components/MultiStepCoForm";
 export { SmartCoForm, SmartCoForm as default } from "./components/SmartCoForm";
 export { TextField, TextAreaField, RadioField, CheckboxField } from "./components/FormFields";
 export { MultiCheckboxPlusField } from "./components/MultiCheckboxPlusField";
+export { CommonTableField } from "./components/CommonTableField";
 export { CoFormModal, type CoFormModalProps } from "./components/CoFormModal";
 
 // Contexts
@@ -104,6 +105,10 @@ export type {
   MultiCheckboxPlusOptionType,
   MultiCheckboxPlusSelectedOption,
   MultiCheckboxPlusValue,
+  CommonTableValue,
+  CommonTableSolution,
+  CommonTableConfig,
+  HappinessValue,
 } from "./types";
 
 // i18n

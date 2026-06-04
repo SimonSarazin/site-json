@@ -16,12 +16,13 @@ import { TextField, TextAreaField, RadioField, CheckboxField, ProseContent, Sect
 import { MultiCheckboxPlusField } from "./MultiCheckboxPlusField";
 import { MultiRadioField } from "./MultiRadioField";
 import { EvaluationField } from "./EvaluationField";
+import { CommonTableField } from "./CommonTableField";
 import { FinderField } from "./FinderField";
 import { SimpleTableField } from "./SimpleTableField";
 import { UploaderField } from "./UploaderField";
 import { CoFormBanner } from "./CoFormBanner";
 import { useConditionalFields } from "../hooks/useConditionalFields";
-import type { CoFormData, SubFormData, AllStepsData, MultiCheckboxPlusValue, MultiRadioValue, EvaluationValue, FinderValue, SimpleTableValue } from "../types";
+import type { CoFormData, SubFormData, AllStepsData, MultiCheckboxPlusValue, MultiRadioValue, EvaluationValue, CommonTableValue, FinderValue, SimpleTableValue } from "../types";
 import type { CoFormSubmitMode, CoFormVariant } from "../schema";
 
 interface MultiStepCoFormProps {
@@ -355,6 +356,24 @@ function MultiStepCoFormContent({
                           errors={form.formState.errors}
                           value={controllerField.value as EvaluationValue}
                           onChange={controllerField.onChange}
+                        />
+                      )}
+                    />
+                  );
+
+                case "commonTable":
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={form.control}
+                      render={({ field: controllerField }) => (
+                        <CommonTableField
+                          field={field}
+                          errors={form.formState.errors}
+                          value={controllerField.value as CommonTableValue}
+                          onChange={controllerField.onChange}
+                          formId={formId}
                         />
                       )}
                     />

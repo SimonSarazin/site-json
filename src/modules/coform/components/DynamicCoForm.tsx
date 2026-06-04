@@ -9,11 +9,12 @@ import { TextField, TextAreaField, RadioField, CheckboxField, ProseContent, Sect
 import { MultiCheckboxPlusField } from "./MultiCheckboxPlusField";
 import { MultiRadioField } from "./MultiRadioField";
 import { EvaluationField } from "./EvaluationField";
+import { CommonTableField } from "./CommonTableField";
 import { FinderField } from "./FinderField";
 import { SimpleTableField } from "./SimpleTableField";
 import { UploaderField } from "./UploaderField";
 import { CoFormBanner } from "./CoFormBanner";
-import type { CoFormData, SubFormData, AddedOptionsMap, EvaluationValue, FinderValue, SimpleTableValue, MultiRadioValue } from "../types";
+import type { CoFormData, SubFormData, AddedOptionsMap, EvaluationValue, CommonTableValue, FinderValue, SimpleTableValue, MultiRadioValue } from "../types";
 import { parseCoFormFields, generateZodSchema, generateDefaultValues } from "../utils/formParser";
 import { useConditionalFields } from "../hooks/useConditionalFields";
 import { useT } from "@/hooks/useT";
@@ -321,6 +322,25 @@ export function DynamicCoForm({
                           value={controllerField.value as EvaluationValue}
                           onChange={controllerField.onChange}
                           readOnly={isLocked}
+                        />
+                      )}
+                    />
+                  );
+
+                case "commonTable":
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={control}
+                      render={({ field: controllerField }) => (
+                        <CommonTableField
+                          field={field}
+                          errors={errors}
+                          value={controllerField.value as CommonTableValue}
+                          onChange={controllerField.onChange}
+                          readOnly={isLocked}
+                          formId={formData.id}
                         />
                       )}
                     />

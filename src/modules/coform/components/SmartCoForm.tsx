@@ -1,11 +1,13 @@
-import { useMemo } from "react";
+import { useMemo, type ReactNode } from "react";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 import { useCoFormQuery, useCoFormFinalMutation } from "../hooks/useCoFormQuery";
+import { useCoFormCatalogs } from "../hooks/useCoFormCatalogs";
 import { DynamicCoForm } from "./DynamicCoForm";
 import { MultiStepCoForm } from "./MultiStepCoForm";
 import { CoFormReadOnly } from "./CoFormReadOnly";
-import { parseCoFormFields, normalizeAnswerData, denormalizeAnswerData, extractFinderLinks } from "../utils/formParser";
+import { CommonTableCatalogsProvider } from "../contexts/CommonTableCatalogsProvider";
+import { parseCoFormFields, normalizeAnswerData, denormalizeAnswerData, extractFinderLinks, getOriginalFieldKey } from "../utils/formParser";
 import type { CoFormData, SubmitMode, AllStepsData, SubFormData, AddedOptionsMap } from "../types";
 import type { FinderLinksMap } from "../utils/formParser";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -225,6 +227,33 @@ export function SmartCoForm({
     ? parseCoFormFields(effectiveStandaloneData)
     : allSubFormsFields;
 
+  // Identifie les inputs commonTable du form pour fetcher leurs catalogues
+  // collaboratifs en un seul appel batch. Si le form n'en contient aucun,
+  // `inputKeys` est vide → le hook ne fait aucun appel réseau (enabled=false).
+  const commonTableInputKeys = useMemo(() => {
+    const keys: string[] = [];
+    for (const sf of subFormsFields) {
+      for (const f of sf.fields) {
+        if (f.componentType === "commonTable") {
+          keys.push(getOriginalFieldKey(f));
+        }
+      }
+    }
+    return keys;
+  }, [subFormsFields]);
+
+  const { catalogs: commonTableCatalogs } = useCoFormCatalogs({
+    formId: formId ?? "",
+    inputKeys: commonTableInputKeys,
+    enabled: !!formId && commonTableInputKeys.length > 0,
+  });
+
+  // Wrapper qui expose les catalogues commonTable aux fields. Le provider
+  // accepte un objet vide → si pas de commonTable, c'est un no-op pur.
+  const withCatalogs = (node: ReactNode) => (
+    <CommonTableCatalogsProvider catalogs={commonTableCatalogs}>{node}</CommonTableCatalogsProvider>
+  );
+
   // Normaliser les defaultValues pour les champs stockés à la racine (comme evaluation)
   const normalizedDefaults = useMemo(
     () => normalizeAnswerData(defaultValues as Record<string, unknown> | undefined, subFormsFields),
@@ -301,7 +330,7 @@ export function SmartCoForm({
 
   // Mode lecture seule : utiliser CoFormReadOnly
   if (readOnly) {
-    return (
+    return withCatalogs(
       <CoFormReadOnly
         formData={effectiveFormData}
         answerData={normalizedDefaults ?? {}}
@@ -315,7 +344,7 @@ export function SmartCoForm({
 
   // Afficher le composant approprié
   if (shouldUseMultiStep) {
-    return (
+    return withCatalogs(
       <MultiStepCoForm
         formData={formData}
         submitMode={submitMode}
@@ -347,7 +376,7 @@ export function SmartCoForm({
   // Extraire les valeurs par défaut pour cette étape
   const stepDefaults = normalizedDefaults?.[subFormId];
 
-  return (
+  return withCatalogs(
     <DynamicCoForm
       formData={effectiveFormData}
       submitButtonText={t("coform.navigation.submit")}
@@ -387,5 +416,6 @@ export function SmartCoForm({
     />
   );
 }
+
 
 export default SmartCoForm;
