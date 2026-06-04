@@ -12,6 +12,7 @@ import type { CoFormData, SubmitMode, AllStepsData, SubFormData, AddedOptionsMap
 import type { FinderLinksMap } from "../utils/formParser";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
+import { useCocolight } from "@/hooks/useCocolight";
 
 interface SmartCoFormProps {
   formId?: string;
@@ -64,6 +65,13 @@ interface SmartCoFormProps {
   submitRef?: React.RefObject<(() => void) | null>;
   /** Liste de clés d'inputs verrouillés (lecture seule, non modifiables) */
   lockedFields?: string[];
+  /** updatedAt serveur (édition) — pour détecter les drafts obsolètes. */
+  baseUpdatedAt?: number | null;
+  /**
+   * Le form est rendu dans une modale ; désactive la persistance du draft
+   * (contexte éphémère). Defaut : false.
+   */
+  inModal?: boolean;
 }
 
 interface LoadingStateProps {
@@ -160,6 +168,8 @@ export function SmartCoForm({
   onDirtyChange,
   submitRef,
   lockedFields,
+  baseUpdatedAt,
+  inModal = false,
 }: SmartCoFormProps) {
   // Charger les données depuis l'API si formId est fourni
   const {
@@ -178,6 +188,7 @@ export function SmartCoForm({
 
   useLoadNamespace("modules/coform");
   const t = useT("modules/coform");
+  const { me } = useCocolight();
 
   const allSubFormsFields = useMemo(
     () => (formData ? parseCoFormFields(formData) : []),
@@ -328,6 +339,18 @@ export function SmartCoForm({
   const isStandalone = !!standaloneFormData;
   const isInputStandalone = !!inputStandaloneFormData;
 
+  // Persistance du draft : désactivée en lecture seule, standalone (sous-composant
+  // embarqué), modal (contexte éphémère), ou quand on n'a pas d'utilisateur
+  // identifié (clé localStorage user-scopée pour éviter les fuites cross-user).
+  const enableDraft =
+    !readOnly &&
+    !inModal &&
+    !isStandalone &&
+    !isInputStandalone &&
+    !!formId &&
+    !!me?.id;
+  const draftUserId = me?.id ?? null;
+
   // Mode lecture seule : utiliser CoFormReadOnly
   if (readOnly) {
     return withCatalogs(
@@ -365,6 +388,10 @@ export function SmartCoForm({
         defaultValues={normalizedDefaults}
         answerId={answerId}
         initialStepKey={initialStepKey}
+        formId={formId}
+        userId={draftUserId}
+        baseUpdatedAt={baseUpdatedAt}
+        enableDraft={enableDraft}
       />
     );
   }
@@ -389,6 +416,10 @@ export function SmartCoForm({
       onDirtyChange={onDirtyChange}
       submitRef={submitRef}
       lockedFields={lockedFields}
+      formId={formId}
+      userId={draftUserId}
+      baseUpdatedAt={baseUpdatedAt}
+      enableDraft={enableDraft}
       onSubmit={async (data, addedOptions) => {
         try {
           // Dénormaliser pour le format PHP (champs root-level à la racine)

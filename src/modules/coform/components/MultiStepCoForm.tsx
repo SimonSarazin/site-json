@@ -1,5 +1,6 @@
-import { Fragment, useRef, useEffect, useMemo, useState } from "react";
-import { Controller } from "react-hook-form";
+import { Fragment, useCallback, useRef, useEffect, useMemo, useState } from "react";
+import { Controller, type FieldErrors } from "react-hook-form";
+import { toast } from "sonner";
 import { Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,12 +20,16 @@ import { MultiRadioField } from "./MultiRadioField";
 import { EvaluationField } from "./EvaluationField";
 import { CommonTableField } from "./CommonTableField";
 import { MultiEvalChartDialog } from "./MultiEvalChartDialog";
+import { DraftRecoveryBanner } from "./DraftRecoveryBanner";
+import { ErrorSummary } from "./ErrorSummary";
 import { FinderField } from "./FinderField";
 import { SimpleTableField } from "./SimpleTableField";
 import { UploaderField } from "./UploaderField";
 import { CoFormBanner } from "./CoFormBanner";
 import { useConditionalFields } from "../hooks/useConditionalFields";
+import { useUnsavedChangesWarning } from "../hooks/useUnsavedChangesWarning";
 import { getStepHasMultiEval } from "../utils/formParser";
+import { scrollToFieldByName } from "../utils/helpers";
 import type { CoFormData, SubFormData, AllStepsData, MultiCheckboxPlusValue, MultiRadioValue, EvaluationValue, CommonTableValue, FinderValue, SimpleTableValue } from "../types";
 import type { CoFormSubmitMode, CoFormVariant } from "../schema";
 
@@ -49,6 +54,14 @@ interface MultiStepCoFormProps {
   onDirtyChange?: (isDirty: boolean) => void;
   /** Liste de clés d'inputs verrouillés (lecture seule, non modifiables) */
   lockedFields?: string[];
+  /** ID du formulaire — clé de draft localStorage. */
+  formId?: string;
+  /** ID utilisateur connecté — clé de draft localStorage. */
+  userId?: string | null;
+  /** updatedAt serveur (édition) — pour détecter les drafts obsolètes. */
+  baseUpdatedAt?: number | null;
+  /** Active la persistance du draft. Défaut : true. */
+  enableDraft?: boolean;
 }
 
 /**
@@ -72,6 +85,10 @@ export function MultiStepCoForm({
   initialStepKey,
   onDirtyChange,
   lockedFields,
+  formId,
+  userId,
+  baseUpdatedAt,
+  enableDraft = true,
 }: MultiStepCoFormProps) {
   return (
     <CoFormProvider
@@ -82,6 +99,10 @@ export function MultiStepCoForm({
       defaultValues={defaultValues}
       answerId={answerId}
       initialStepKey={initialStepKey}
+      formId={formId}
+      userId={userId}
+      baseUpdatedAt={baseUpdatedAt}
+      enableDraft={enableDraft}
     >
       <MultiStepCoFormContent
         variant={variant}
@@ -168,16 +189,35 @@ function MultiStepCoFormContent({
     onDirtyChange?.(isDirty);
   }, [isDirty, onDirtyChange]);
 
+  // Warning navigateur avant fermeture/refresh si modifications non sauvegardées.
+  useUnsavedChangesWarning(isDirty);
+
+  // Affiche le récap d'erreurs (ErrorSummary) uniquement après une tentative
+  // de soumission échouée — évite de polluer la lecture initiale.
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
+
   // Gérer la soumission de l'étape ou la soumission finale
   const handleSubmit = async () => {
+    setHasAttemptedSubmit(false);
     await submitStep();
-    
+
     // Si dernière étape, soumettre toutes les données
     // stepsDataRef dans CoFormProvider garantit que les données sont à jour
     if (navigation.isLastStep) {
       await submitAll();
     }
   };
+
+  const handleInvalid = useCallback((invalidErrors: FieldErrors) => {
+    setHasAttemptedSubmit(true);
+    const firstErrorName = Object.keys(invalidErrors)[0];
+    if (firstErrorName) scrollToFieldByName(firstErrorName);
+    toast.error(t("coform.errors.summary.toast"));
+  }, [t]);
+
+  const handleErrorFieldClick = useCallback((name: string) => {
+    scrollToFieldByName(name);
+  }, []);
 
   if (!fields || !coform.formData) {
     return <div>{t("coform.status.loading")}</div>;
@@ -209,6 +249,24 @@ function MultiStepCoFormContent({
             {t("coform.progress.percent", undefined, { percent: navigation.progressPercent })}
           </div>
         </div>
+      )}
+
+      {/* Banner de récupération de draft (s'il y en a un en localStorage).
+          Mount conditionnel — pas de surface si rien à restaurer. */}
+      {coform.restorableDraft && (
+        <DraftRecoveryBanner
+          mode="restorable"
+          timestamp={coform.restorableDraft.timestamp}
+          onRestore={coform.restoreDraft}
+          onDiscard={coform.discardDraft}
+        />
+      )}
+      {coform.staleDraftInfo && !coform.restorableDraft && (
+        <DraftRecoveryBanner
+          mode="stale"
+          timestamp={coform.staleDraftInfo.timestamp}
+          onAcknowledge={coform.acknowledgeStaleDraft}
+        />
       )}
 
       {/* Indicateurs d'étapes */}
@@ -253,7 +311,7 @@ function MultiStepCoFormContent({
         </CardHeader>
 
         <CardContent className="space-y-6">
-          <form id="step-form" onSubmit={form.handleSubmit(handleSubmit)}>
+          <form id="step-form" onSubmit={form.handleSubmit(handleSubmit, handleInvalid)}>
             <div className="grid grid-cols-12 gap-6">
               {fields.fields.map((field) => {
                 if (!isFieldVisible(field.name)) return null;
@@ -487,6 +545,15 @@ function MultiStepCoFormContent({
             })}
             </div>
           </form>
+
+          {/* Récap d'erreurs : affiché seulement après une tentative de submit
+              échouée, listant tous les champs invalides avec leur message,
+              cliquables pour scroller au champ. */}
+          <ErrorSummary
+            errors={hasAttemptedSubmit ? form.formState.errors : {}}
+            fields={fields?.fields ?? []}
+            onFieldClick={handleErrorFieldClick}
+          />
         </CardContent>
 
         <CardFooter className="flex justify-between gap-3 border-t pt-6">
