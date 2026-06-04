@@ -19,6 +19,7 @@ import { UploaderField } from "./UploaderField";
 import { CoFormBanner } from "./CoFormBanner";
 import { DraftRecoveryBanner } from "./DraftRecoveryBanner";
 import { ErrorSummary } from "./ErrorSummary";
+import { AnswerActivityDialog } from "./AnswerActivityDialog";
 import type { CoFormData, SubFormData, AddedOptionsMap, EvaluationValue, CommonTableValue, FinderValue, SimpleTableValue, MultiRadioValue, ExistingAnswerMeta } from "../types";
 import { parseCoFormFields, generateZodSchema, generateDefaultValues, getStepHasMultiEval } from "../utils/formParser";
 import { scrollToFieldByName } from "../utils/helpers";
@@ -90,6 +91,7 @@ export function DynamicCoForm({
   userId,
   baseUpdatedAt,
   enableDraft = true,
+  existingAnswerMeta,
 }: DynamicCoFormProps) {
   const t = useT("modules/coform");
   useLoadNamespace("modules/coform");
@@ -150,6 +152,24 @@ export function DynamicCoForm({
   const [multiEvalContext, setMultiEvalContext] = useState<
     { stepKey: string; stepName: string } | null
   >(null);
+
+  // Activity dialog (historique de modifications de la réponse).
+  const [activityDialogOpen, setActivityDialogOpen] = useState(false);
+
+  // Map subFormId → display name pour rendre l'historique d'activité lisible
+  // (sinon on affiche les clés brutes type `navigatorDesTierslieux1572025_2311_0`).
+  const stepNames = useMemo(() => {
+    const map: Record<string, string> = {};
+    if (formData.inputs) {
+      for (const [stepId, stepData] of Object.entries(formData.inputs)) {
+        const name = (stepData as { name?: unknown })?.name;
+        if (typeof name === "string" && name.trim() !== "") {
+          map[stepId] = name;
+        }
+      }
+    }
+    return map;
+  }, [formData.inputs]);
 
   const lockedSet = useMemo(() => new Set(lockedFields), [lockedFields]);
 
@@ -615,6 +635,30 @@ export function DynamicCoForm({
         fields={subFormsFields.flatMap((sf) => sf.fields)}
         onFieldClick={handleErrorFieldClick}
       />
+
+      {/* Lien discret "Voir l'activité" — visible uniquement en mode édition
+          d'une réponse existante. Ouvre une modale avec l'historique des
+          modifications. */}
+      {existingAnswerMeta && answerId && (
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={() => setActivityDialogOpen(true)}
+            className="text-xs text-muted-foreground hover:text-foreground underline-offset-2 hover:underline transition-colors"
+          >
+            {t("coform.activity.link")}
+          </button>
+        </div>
+      )}
+      {activityDialogOpen && (
+        <AnswerActivityDialog
+          open
+          onOpenChange={setActivityDialogOpen}
+          answerId={answerId}
+          meta={existingAnswerMeta}
+          stepNames={stepNames}
+        />
+      )}
 
       {!hideSubmitButton && (
       <div className="flex justify-end pt-4">

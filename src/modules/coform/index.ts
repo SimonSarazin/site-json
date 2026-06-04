@@ -27,6 +27,7 @@ export { MultiCheckboxPlusField } from "./components/MultiCheckboxPlusField";
 export { CommonTableField } from "./components/CommonTableField";
 export { MultiEvalChartDialog } from "./components/MultiEvalChartDialog";
 export { MultiEvalRadarCarousel } from "./components/MultiEvalRadarCarousel";
+export { AnswerActivityDialog } from "./components/AnswerActivityDialog";
 export { CoFormModal, type CoFormModalProps } from "./components/CoFormModal";
 
 // Contexts
@@ -116,6 +117,8 @@ export type {
   MultiEvalDataset,
   MultiEvalStep,
   MultiEvalDataResponse,
+  AnswerChange,
+  ExistingAnswerMeta,
 } from "./types";
 
 // i18n

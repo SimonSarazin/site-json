@@ -22,6 +22,7 @@ import { CommonTableField } from "./CommonTableField";
 import { MultiEvalChartDialog } from "./MultiEvalChartDialog";
 import { DraftRecoveryBanner } from "./DraftRecoveryBanner";
 import { ErrorSummary } from "./ErrorSummary";
+import { AnswerActivityDialog } from "./AnswerActivityDialog";
 import { FinderField } from "./FinderField";
 import { SimpleTableField } from "./SimpleTableField";
 import { UploaderField } from "./UploaderField";
@@ -30,7 +31,7 @@ import { useConditionalFields } from "../hooks/useConditionalFields";
 import { useUnsavedChangesWarning } from "../hooks/useUnsavedChangesWarning";
 import { getStepHasMultiEval } from "../utils/formParser";
 import { scrollToFieldByName } from "../utils/helpers";
-import type { CoFormData, SubFormData, AllStepsData, MultiCheckboxPlusValue, MultiRadioValue, EvaluationValue, CommonTableValue, FinderValue, SimpleTableValue } from "../types";
+import type { CoFormData, SubFormData, AllStepsData, MultiCheckboxPlusValue, MultiRadioValue, EvaluationValue, CommonTableValue, FinderValue, SimpleTableValue, ExistingAnswerMeta } from "../types";
 import type { CoFormSubmitMode, CoFormVariant } from "../schema";
 
 interface MultiStepCoFormProps {
@@ -62,6 +63,12 @@ interface MultiStepCoFormProps {
   baseUpdatedAt?: number | null;
   /** Active la persistance du draft. Défaut : true. */
   enableDraft?: boolean;
+  /**
+   * Métadonnées de la réponse existante (créateur + dernier modifieur).
+   * Quand fournies, un lien "Voir l'activité" apparaît sous le form qui
+   * ouvre la modale AnswerActivityDialog avec l'historique des modifs.
+   */
+  existingAnswerMeta?: ExistingAnswerMeta | null;
 }
 
 /**
@@ -89,6 +96,7 @@ export function MultiStepCoForm({
   userId,
   baseUpdatedAt,
   enableDraft = true,
+  existingAnswerMeta,
 }: MultiStepCoFormProps) {
   return (
     <CoFormProvider
@@ -113,6 +121,7 @@ export function MultiStepCoForm({
         onDirtyChange={onDirtyChange}
         lockedFields={lockedFields}
         className={className}
+        existingAnswerMeta={existingAnswerMeta}
       />
     </CoFormProvider>
   );
@@ -130,6 +139,7 @@ function MultiStepCoFormContent({
   onDirtyChange,
   lockedFields,
   className,
+  existingAnswerMeta,
 }: {
   variant: CoFormVariant;
   showProgress: boolean;
@@ -139,6 +149,7 @@ function MultiStepCoFormContent({
   onDirtyChange?: (isDirty: boolean) => void;
   lockedFields?: string[];
   className?: string;
+  existingAnswerMeta?: ExistingAnswerMeta | null;
 }) {
   useLoadNamespace("modules/coform");
   const t = useT("modules/coform");
@@ -195,6 +206,25 @@ function MultiStepCoFormContent({
   // Affiche le récap d'erreurs (ErrorSummary) uniquement après une tentative
   // de soumission échouée — évite de polluer la lecture initiale.
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
+
+  // Activity dialog (historique de modifications de la réponse).
+  const [activityDialogOpen, setActivityDialogOpen] = useState(false);
+
+  // Map subFormId → display name pour rendre l'historique d'activité lisible
+  // (sinon on affiche les clés brutes type `navigatorDesTierslieux1572025_2311_0`).
+  const formInputs = coform.formData?.inputs;
+  const stepNames = useMemo(() => {
+    const map: Record<string, string> = {};
+    if (formInputs) {
+      for (const [stepId, stepData] of Object.entries(formInputs)) {
+        const name = (stepData as { name?: unknown })?.name;
+        if (typeof name === "string" && name.trim() !== "") {
+          map[stepId] = name;
+        }
+      }
+    }
+    return map;
+  }, [formInputs]);
 
   // Gérer la soumission de l'étape ou la soumission finale
   const handleSubmit = async () => {
@@ -628,6 +658,30 @@ function MultiStepCoFormContent({
         <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
           {coform.error.message}
         </div>
+      )}
+
+      {/* Lien discret "Voir l'activité" — visible uniquement en mode édition
+          d'une réponse existante. Aligné sur DynamicCoForm pour parité de
+          features entre single-step et multi-step. */}
+      {existingAnswerMeta && coform.answerId && (
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={() => setActivityDialogOpen(true)}
+            className="text-xs text-muted-foreground hover:text-foreground underline-offset-2 hover:underline transition-colors"
+          >
+            {t("coform.activity.link")}
+          </button>
+        </div>
+      )}
+      {activityDialogOpen && (
+        <AnswerActivityDialog
+          open
+          onOpenChange={setActivityDialogOpen}
+          answerId={coform.answerId ?? null}
+          meta={existingAnswerMeta}
+          stepNames={stepNames}
+        />
       )}
 
       {/* Dialog multi-eval : mount conditionnel — évite de payer le fetch

@@ -8,7 +8,7 @@ import { MultiStepCoForm } from "./MultiStepCoForm";
 import { CoFormReadOnly } from "./CoFormReadOnly";
 import { CommonTableCatalogsProvider } from "../contexts/CommonTableCatalogsProvider";
 import { parseCoFormFields, normalizeAnswerData, denormalizeAnswerData, extractFinderLinks, getOriginalFieldKey } from "../utils/formParser";
-import type { CoFormData, SubmitMode, AllStepsData, SubFormData, AddedOptionsMap } from "../types";
+import type { CoFormData, SubmitMode, AllStepsData, SubFormData, AddedOptionsMap, ExistingAnswerMeta } from "../types";
 import type { FinderLinksMap } from "../utils/formParser";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
@@ -72,6 +72,12 @@ interface SmartCoFormProps {
    * (contexte éphémère). Defaut : false.
    */
   inModal?: boolean;
+  /**
+   * Métadonnées de la réponse existante (créateur + dernier modifieur).
+   * Quand fournies, un lien "Voir l'activité" apparaît sous le form, qui
+   * ouvre la modale `AnswerActivityDialog` avec l'historique des modifs.
+   */
+  existingAnswerMeta?: ExistingAnswerMeta | null;
 }
 
 interface LoadingStateProps {
@@ -170,6 +176,7 @@ export function SmartCoForm({
   lockedFields,
   baseUpdatedAt,
   inModal = false,
+  existingAnswerMeta,
 }: SmartCoFormProps) {
   // Charger les données depuis l'API si formId est fourni
   const {
@@ -392,6 +399,7 @@ export function SmartCoForm({
         userId={draftUserId}
         baseUpdatedAt={baseUpdatedAt}
         enableDraft={enableDraft}
+        existingAnswerMeta={existingAnswerMeta}
       />
     );
   }
@@ -420,6 +428,7 @@ export function SmartCoForm({
       userId={draftUserId}
       baseUpdatedAt={baseUpdatedAt}
       enableDraft={enableDraft}
+      existingAnswerMeta={existingAnswerMeta}
       onSubmit={async (data, addedOptions) => {
         try {
           // Dénormaliser pour le format PHP (champs root-level à la racine)
