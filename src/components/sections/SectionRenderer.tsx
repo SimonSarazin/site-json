@@ -29,7 +29,8 @@ const LazySections: {
   "action-buttons-rezo-la-mer": lazy(() => import("./ActionButtonsRezoLaMer")),
   "community-rezo-la-mer": lazy(() => import("./CommunityRezoLaMer")),
   "cta-rezo-la-mer": lazy(() => import("./CallToActionRezoLaMer")),
-  "title-with-filters-rezo-la-mer": lazy(() => import("./TitleWithFiltersRezoLaMer")),
+  // Alias rétro-compat → composant relocalisé dans le module search (cf. searchHeader).
+  "title-with-filters-rezo-la-mer": lazy(() => import("@/modules/search/sections/SearchHeaderSection")),
   "commune-transparente-actions": lazy(() => import("./CommuneTransparenteActionsSection")),
   "hero-nos-communes": lazy(() => import("./NosCommunesBannerSection")),
   "hero-commune-transparente": lazy(() => import("./HeroCommuneTransparenteSection")),
@@ -75,6 +76,7 @@ const LazySections: {
   cardCountCT: lazy(() => import("@/modules/search/sections/CardCountCTSection")),
   thematics: lazy(() => import("@/modules/search/sections/ThematicsSection")),
   filters: lazy(() => import("@/modules/search/sections/FiltersSection")),
+  searchHeader: lazy(() => import("@/modules/search/sections/SearchHeaderSection")),
   gridLayout: lazy(() => import("./GridLayoutSection")),
   news: lazy(() => import("@/modules/news/components/sections/NewsSection")),
   notifications: lazy(() => import("@/modules/notification/components/sections/NotificationsSection")),

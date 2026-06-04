@@ -1,4 +1,5 @@
 import { LocalizedString } from "@/types/locale-schema";
+import { ActionButtonSchema } from "@/types/action-button-schema";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { IconName } from "lucide-react/dynamic";
 import { z } from "zod";
@@ -533,6 +534,70 @@ export const ThematicsSectionSchema = z.object({
 
 export type ThematicsSection = z.infer<typeof ThematicsSectionSchema>;
 export type ThematicsSectionProps = z.infer<typeof ThematicsSectionSchema>["props"]
+
+//──────────────── Search Header (titre + filtres + boutons)
+// Header de recherche horizontal (rendu par `sections/SearchHeaderSection`),
+// producteur du PageFiltersContext au même titre que `<FiltersSection>`.
+// Type config canonique `searchHeader` + alias rétro-compat
+// `title-with-filters-rezo-la-mer` (9 configs).
+// `ActionButtonSchema` est un contrat partagé (rendu par `modules/profil`) →
+// défini dans la feuille `@/types/action-button-schema` (cf. import ci-dessus).
+
+const TitleWithFiltersDropdownOptionSchema = z.object({
+  id: z.string(),
+  label: LocalizedString,
+  value: z.string().optional(),
+  field: z.string().optional(),
+  icon: z.string().optional(),
+});
+
+const TitleWithFiltersDropdownSchema = z.object({
+  id: z.string(),
+  label: LocalizedString,
+  field: z.string().optional(),
+  multiple: z.boolean().optional(),
+  allLabel: LocalizedString.optional(),
+  options: z.array(TitleWithFiltersDropdownOptionSchema).default([]),
+});
+
+// Props partagées entre le type canonique `searchHeader` et son alias.
+const SearchHeaderProps = z.object({
+  headline: LocalizedString.optional(),
+  subhead: LocalizedString.optional(),
+  // Override de la classe couleur du sous-titre (déf. `text-foreground`).
+  // Remplace le hack par-slug historique : un site dont le subhead ne doit pas
+  // forcer `text-foreground` met `subheadClassName: ""`.
+  subheadClassName: z.string().optional(),
+  types: z.array(
+    z.object({
+      id: z.string(),
+      label: LocalizedString,
+    })
+  ).optional(),
+  dropdownFilters: z.array(TitleWithFiltersDropdownSchema).optional(),
+  buttons: z.array(ActionButtonSchema).optional(),
+  showSearch: z.boolean().optional(),
+  searchPlaceholder: LocalizedString.optional(),
+});
+
+export const SearchHeaderSectionSchema = z.object({
+  type: z.literal("searchHeader"),
+  id: z.string().optional(),
+  props: SearchHeaderProps,
+});
+
+// Alias rétro-compat : même composant/props, ancien littéral de type. À migrer
+// vers `searchHeader` config par config (cf. plan de refactor).
+export const TitleWithFiltersRezoLaMerSchema = z.object({
+  type: z.literal("title-with-filters-rezo-la-mer"),
+  id: z.string().optional(),
+  props: SearchHeaderProps,
+});
+
+export type SearchHeaderSection = z.infer<typeof SearchHeaderSectionSchema>;
+export type SearchHeaderSectionProps = z.infer<typeof SearchHeaderSectionSchema>["props"];
+export type TitleWithFiltersRezoLaMer = z.infer<typeof TitleWithFiltersRezoLaMerSchema>;
+export type TitleWithFiltersRezoLaMerProps = z.infer<typeof TitleWithFiltersRezoLaMerSchema>["props"];
 
 
 export interface SearchListViewProps<T extends SearchEntity = SearchEntity> {
