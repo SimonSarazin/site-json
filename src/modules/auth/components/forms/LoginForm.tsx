@@ -1,6 +1,7 @@
 import React, {
   useState,
   useEffect,
+  useMemo,
   type ChangeEvent,
 } from "react";
 
@@ -48,7 +49,10 @@ export default function LoginForm({ onSuccess, hideBackButton = false, onSwitchT
   const loginTitle = config.auth?.login?.title || { fr: "Se connecter", en: "Sign in" };
   const loginSubtitle = config.auth?.login?.subtitle || { fr: "Accédez à votre compte SiteForge", en: "Access your SiteForge account" };
 
-  const ssoProviders: string[] = (entity?.serverData.costum as { sso?: string[] })?.sso || [];
+  const ssoProviders: string[] = useMemo(
+    () => (entity?.serverData.costum as { sso?: string[] })?.sso || [],
+    [entity],
+  );
   /*
    * Si l'entité costum demande à se connecter uniquement via SSO, on masque
    * le formulaire email/pwd et on n'affiche que le(s) bouton(s) SSO.
@@ -58,16 +62,21 @@ export default function LoginForm({ onSuccess, hideBackButton = false, onSwitchT
   const ssoOnly = connectOnlyBySSO && ssoProviders.length > 0;
 
   /*
-  * Auto-trigger SSO : si connectOnlyBySSO + un seul fournisseur, on déclenche
-  * la popup SSO dès que le formulaire est monté (typiquement après clic sur
-  * "Rejoindre" / "Se connecter" dans le header, donc encore dans la fenêtre
-  * de user gesture du navigateur — pas de bloqueur de popup).
-  **/
+   * Auto-trigger SSO : si connectOnlyBySSO + un seul fournisseur, on déclenche
+   * la popup SSO dès que le formulaire est monté (typiquement après clic sur
+   * "Rejoindre" / "Se connecter" dans le header, donc encore dans la fenêtre
+   * de user gesture du navigateur — pas de bloqueur de popup).
+   *
+   * État tri-valué : "idle" (pas encore tenté), "running" (popup ouverte),
+   * "failed" (annulation ou erreur). On ne re-déclenche jamais automatiquement
+   * une fois sorti de "idle" : l'utilisateur retombe sur le bouton SSO manuel
+   * pour réessayer. Évite la boucle de popups et le spinner figé.
+   */
   const { openSSOPopup } = useSSOAuth();
-  const [ssoAutoTriggered, setSsoAutoTriggered] = useState(false);
+  const [autoSSO, setAutoSSO] = useState<"idle" | "running" | "failed">("idle");
   const shouldAutoSSO = connectOnlyBySSO && ssoProviders.length === 1;
 
-  /* 
+  /*
    * Ferme le dialog et redirige dès que l'utilisateur est connecté ------
    * (quel que soit le chemin : email/pwd, SSO classique, SSO auto-trigger).
    * Évite la course entre le postMessage SSO et la détection popup.closed.
@@ -83,28 +92,28 @@ export default function LoginForm({ onSuccess, hideBackButton = false, onSwitchT
     if (!loaded || loading) return;
     if (me?.isConnected) return;
     if (!shouldAutoSSO) return;
-    if (ssoAutoTriggered) return;
+    if (autoSSO !== "idle") return;
 
-    setSsoAutoTriggered(true);
+    setAutoSSO("running");
     let cancelled = false;
     (async () => {
       const result = await openSSOPopup(ssoProviders[0]);
       if (cancelled) return;
-      if (result.success) {
-        onSuccess?.();
-        if (!hideBackButton) navigate("/");
-      } else if (result.error) {
+      // Succès : la redirection est gérée par l'effect centralisé ci-dessus.
+      if (result.success) return;
+      // Erreur explicite (popup bloquée, échec SSO…) : on prévient l'utilisateur.
+      if (result.error) {
         toast.error(t("Erreur"), { description: result.error });
-        /* 
-          * En cas d'erreur (popup bloquée, échec de connexion, etc.),
-          * on retombe sur le formulaire classique pour laisser
-          * l'utilisateur réessayer ou choisir une autre méthode de connexion.
-        */
-        setSsoAutoTriggered(false);
       }
+      /*
+       * Annulation (success:false sans error) ou erreur : on bascule sur
+       * "failed" → le bouton SSO manuel réapparaît pour permettre un nouvel
+       * essai, sans re-déclencher la popup automatiquement en boucle.
+       */
+      setAutoSSO("failed");
     })();
     return () => { cancelled = true; };
-  }, [loaded, loading, me, shouldAutoSSO, ssoAutoTriggered, openSSOPopup, ssoProviders, onSuccess, hideBackButton, navigate, t]);
+  }, [loaded, loading, me, shouldAutoSSO, autoSSO, openSSOPopup, ssoProviders, t]);
 
   /* --------------------------------------------------------------------- */
   const handleLogin = async (): Promise<void> => {
@@ -118,7 +127,7 @@ export default function LoginForm({ onSuccess, hideBackButton = false, onSwitchT
       setLoading(false);
       return;
     }
-    
+
     /* Validation rapide -------------------------------------------------- */
     if (!email || !password) {
       toast.error(t("Erreur"), {
@@ -199,6 +208,7 @@ export default function LoginForm({ onSuccess, hideBackButton = false, onSwitchT
             />
 
             <PasswordToggleTextInput
+              placeholder={t("Mot de passe")}
               value={password}
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                 setPassword(e.target.value)
@@ -215,17 +225,17 @@ export default function LoginForm({ onSuccess, hideBackButton = false, onSwitchT
                   setRemember(Boolean(checked))
                 }
               />
-              <label
+              <Label
                 htmlFor="remember"
                 className="text-sm text-muted-foreground"
               >
                 {t("Se souvenir de moi")}
-              </label>
+              </Label>
             </div>
 
             <Button
               className="w-full"
-              onClick={handleLogin}
+              type="submit"
               disabled={loadingLogin}
               variant="default"
               size="lg"
@@ -246,7 +256,7 @@ export default function LoginForm({ onSuccess, hideBackButton = false, onSwitchT
                 <div className="flex-1 border-t border-border" />
               </div>
             )}
-            {shouldAutoSSO && ssoAutoTriggered ? (
+            {shouldAutoSSO && autoSSO === "running" ? (
               <div className="flex items-center justify-center gap-3 py-4 text-muted-foreground">
                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                 <span>{t("Connexion en cours…")}</span>
@@ -270,8 +280,9 @@ export default function LoginForm({ onSuccess, hideBackButton = false, onSwitchT
           {!ssoOnly && (
             <>
               <Button
+                type="button"
                 variant="ghost"
-                onClick={() => navigate("/recover-password")}
+                onClick={() => (onSwitchToRecover ? onSwitchToRecover() : navigate("/recover-password"))}
                 className="text-sm text-primary hover:text-primary/80"
               >
                 {t("Mot de passe oublié ?")}
@@ -280,8 +291,9 @@ export default function LoginForm({ onSuccess, hideBackButton = false, onSwitchT
               <div className="text-sm text-muted-foreground">
                 {t("Pas encore de compte ?")} {" "}
                 <Button
+                  type="button"
                   variant="ghost"
-                  onClick={() => navigate("/register")}
+                  onClick={() => (onSwitchToRegister ? onSwitchToRegister() : navigate("/register"))}
                   className="text-primary hover:text-primary/80 p-0 h-auto font-normal"
                 >
                   {t("S'inscrire")}
