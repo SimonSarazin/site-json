@@ -150,6 +150,7 @@
                   "en": "Add sports facility"
                 },
                 "action": "add-poi",
+                "modal": "add-poi-equipement",
                 "variant": "outline"
               }
             ],
@@ -1314,8 +1315,288 @@
                     }
                   }
                 ]
+              },
+              {
+                "id": "propertyType",
+                "label": {
+                  "fr": "Type de propriété",
+                  "en": "Property type"
+                },
+                "field": "equip_prop_type",
+                "multiple": true,
+                "options": [
+                  {
+                    "id": "commune",
+                    "value": "Commune",
+                    "label": {
+                      "fr": "Commune",
+                      "en": "Municipality"
+                    }
+                  },
+                  {
+                    "id": "epci",
+                    "value": "EPCI",
+                    "label": {
+                      "fr": "EPCI",
+                      "en": "EPCI"
+                    }
+                  },
+                  {
+                    "id": "departement",
+                    "value": "Département",
+                    "label": {
+                      "fr": "Département",
+                      "en": "Department"
+                    }
+                  },
+                  {
+                    "id": "region",
+                    "value": "Région",
+                    "label": {
+                      "fr": "Région",
+                      "en": "Region"
+                    }
+                  },
+                  {
+                    "id": "etat",
+                    "value": "État",
+                    "label": {
+                      "fr": "État",
+                      "en": "State"
+                    }
+                  },
+                  {
+                    "id": "associations",
+                    "value": "Association(s)",
+                    "label": {
+                      "fr": "Associations",
+                      "en": "Associations"
+                    }
+                  },
+                  {
+                    "id": "prive-non-commercial",
+                    "value": "Privé non commercial",
+                    "label": {
+                      "fr": "Privé non commercial",
+                      "en": "Private non-commercial"
+                    }
+                  },
+                  {
+                    "id": "multi-proprietaire",
+                    "value": "Multi-propriétaire",
+                    "label": {
+                      "fr": "Multi-propriétaire",
+                      "en": "Multi-owner"
+                    }
+                  },
+                  {
+                    "id": "etablissement-public",
+                    "value": "Etablissement Public",
+                    "label": {
+                      "fr": "Etablissement Public",
+                      "en": "Public Establishment"
+                    }
+                  },
+                  {
+                    "id": "etablissement-prive-commercial",
+                    "value": "Etablissement privé commercial",
+                    "label": {
+                      "fr": "Etablissement privé commercial",
+                      "en": "Private commercial establishment"
+                    }
+                  },
+                  {
+                    "id": "etablissement-prive-enseignement",
+                    "value": "Etablissement d'enseignement privé",
+                    "label": {
+                      "fr": "Etablissement d'enseignement privé",
+                      "en": "Private educational establishment"
+                    }
+                  },
+                  {
+                    "id": "autre",
+                    "value": "Autre",
+                    "label": {
+                      "fr": "Autre",
+                      "en": "Other"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "utilisateur",
+                "label": {
+                  "fr": "Type d'utilisateur",
+                  "en": "User type"
+                },
+                "field": "equip_utilisateur",
+                "multiple": true,
+                "options": [
+                  {
+                    "id": "individuels",
+                    "value": "Individuel(s)",
+                    "label": {
+                      "fr": "Individuel",
+                      "en": "Individuals"
+                    }
+                  },
+                  {
+                    "id": "familles",
+                    "value": "famille(s)",
+                    "label": {
+                      "fr": "Famille",
+                      "en": "Familie"
+                    }
+                  },
+                  {
+                    "id": "clubs-sportifs",
+                    "value": "Clubs sportifs",
+                    "label": {
+                      "fr": "Clubs sportifs",
+                      "en": "Sports clubs"
+                    }
+                  },
+                  {
+                    "id": "comites",
+                    "value": "comités",
+                    "label": {
+                      "fr": "Comités",
+                      "en": "Committees"
+                    }
+                  },
+                  {
+                    "id": "ligues",
+                    "value": "ligues",
+                    "label": {
+                      "fr": "Ligues",
+                      "en": "Leagues"
+                    }
+                  },
+                  {
+                    "id": "federations",
+                    "value": "fédérations",
+                    "label": {
+                      "fr": "Fédérations",
+                      "en": "Federations"
+                    }
+                  },
+                  {
+                    "id": "scolaires-universites",
+                    "value": "Scolaires",
+                    "label": {
+                      "fr": "Scolaires",
+                      "en": "Schools"
+                    }
+                  },
+                  {
+                    "id": "universites",
+                    "value": "universités",
+                    "label": {
+                      "fr": "Universités",
+                      "en": "Universities"
+                    }
+                  },
+                  {
+                    "id": "autre-associations-groupes-divers",
+                    "value": "Autre - association(s) et groupes divers",
+                    "label": {
+                      "fr": "Associations et groupes divers",
+                      "en": "Associations and various groups"
+                    }
+                  }
+                ]
+              },
+              {
+                "id":"availableSpaces",
+                "label": {
+                  "fr": "Locaux disponibles",
+                  "en": "Available spaces"
+                },
+                "field": "equip_loc_type",
+                "multiple": true,
+                "options": [
+                  {
+                    "id": "reception-accueil",
+                    "value": "Réception / Accueil",
+                    "label": {
+                      "fr": "Réception / Accueil",
+                      "en": "Reception / Welcome"
+                    }
+                  },
+                  {
+                    "id": "bureau-clubs",
+                    "value": "Bureau(x) Club(s)",
+                    "label": {
+                      "fr": "Bureau(x) Club(s)",
+                      "en": "Club offices"
+                    }
+                  },
+                  {
+                    "id": "buvette",
+                    "value": "Buvette",
+                    "label": {
+                      "fr": "Buvette",
+                      "en": "Snack bar"
+                    }
+                  },
+                  {
+                    "id": "clubs-house",
+                    "value": "Club(s) house",
+                    "label": {
+                      "fr": "Club(s) house",
+                      "en": "Clubhouse"
+                    }
+                  },
+                  {
+                    "id": "infirmerie",
+                    "value": "Infirmerie",
+                    "label": {
+                      "fr": "Infirmerie",
+                      "en": "Infirmary"
+                    }
+                  },
+                  {
+                    "id": "local-rangement",
+                    "value": "Local de rangement",
+                    "label": {
+                      "fr": "Local de rangement",
+                      "en": "Storage room"
+                    }
+                  },
+                  {
+                    "id": "salle-reunion-cours",
+                    "value": "Salle(s) de réunion / cours",
+                    "label": {
+                      "fr": "Salle(s) de réunion / cours",
+                      "en": "Meeting / class rooms"
+                    }
+                  },
+                  {
+                    "id": "centre-medico-sportif",
+                    "value": "Centre médico-sportif",
+                    "label": {
+                      "fr": "Centre médico-sportif",
+                      "en": "Sports medical center"
+                    }
+                  },
+                  {
+                    "id": "local-controle-anti-dopage",
+                    "value": "Local contrôle anti-dopage",
+                    "label": {
+                      "fr": "Local contrôle anti-dopage",
+                      "en": "Anti-doping control room"
+                    }
+                  },
+                  {
+                    "id": "autre",
+                    "value": "Autre",
+                    "label": {
+                      "fr": "Autre",
+                      "en": "Other"
+                    }
+                  }
+                ]
               }
-
             ]
           }
         },
@@ -1349,6 +1630,8 @@
                 "equip_nature",
                 "equip_sol",
                 "equip_surf",
+                "equip_larg",
+                "equip_long",
                 "aps_name",
 
                 "inst_nom",
@@ -1387,21 +1670,19 @@
                 "inst_date_creation",
                 "inst_enqu_date",
                 "equip_maj_date",
-                "created",
-                "updated",
-                "modified",
-
                 "address",
                 "geo",
                 "geoPosition",
-
                 "parent"
 
               ],
               "defaultFilters": {
                 "$or": {
                   "source.key": "sportSanteBienetre",
-                  "source.keys": "sportSanteBienetre"
+                  "source.keys": "sportSanteBienetre",
+                  "parent.6a04155ed047177b92399685": {
+                    "$exists": true
+                  }
                 },
                 "type":"recoveryCenter"
               }
