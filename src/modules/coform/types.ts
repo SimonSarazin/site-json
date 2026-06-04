@@ -43,6 +43,34 @@ export interface CoFormAnswerSummary {
 }
 
 /**
+ * Méta d'une réponse existante (créateur, dernier modifieur, timestamps).
+ * Hydratés par `useCoFormQuery` quand on charge une réponse, propagés ensuite
+ * via `CoFormProvider` pour affichage par `AnswerActivityDialog` ou pour la
+ * détection de conflit dans `useCoFormDraft` (`baseUpdatedAt`).
+ */
+export interface ExistingAnswerMeta {
+  createdBy?: string | null;
+  createdAt?: number | null;
+  lastModifier?: string | null;
+  lastModifierName?: string | null;
+  lastModifiedAt?: number | null;
+}
+
+/**
+ * Une entrée de l'historique d'audit, retournée par GET_COFORM_ANSWER_HISTORY.
+ * `userName`/`userSlug` sont dénormalisés au moment de la modification :
+ * survivent à une suppression du user.
+ */
+export interface AnswerChange {
+  userId: string;
+  userName: string;
+  userSlug: string;
+  at: number;
+  mutationType: "create" | "update";
+  changedFields: string[];
+}
+
+/**
  * Informations d'accès retournées par le serveur
  * Contrôle d'accès enrichi : droits, dates, réponse existante
  */
@@ -209,6 +237,134 @@ export type EvaluationVoteValue = string | number | "";
  */
 export type EvaluationValue = Record<string, Record<string, EvaluationVoteValue>>;
 
+// ============================================================================
+// Types pour le champ CommonTable (calculateur de bonheur — commonTableV2)
+// ============================================================================
+
+/**
+ * Niveaux de satisfaction possibles. "" = non renseigné.
+ */
+export type HappinessValue = "" | "love" | "happySmile" | "neutral" | "sad" | "cry";
+
+/**
+ * Une solution déclarée par l'utilisateur pour un usage donné.
+ * Plusieurs solutions peuvent coexister par usage ; chacune a ses propres scores.
+ */
+export interface CommonTableSolution {
+  criteriaId: string;
+  /** Nom de la solution (ex: "Odoo") */
+  criteria: string;
+  /** Libellé de l'usage parent (ex: "Comptabilité") */
+  usage: string;
+  /** Clé technique de l'usage (lien avec config.usages) */
+  usageKey: string;
+  /** Niveau d'urgence 0..5 */
+  note: number;
+  happiness: HappinessValue;
+  yesOrNo: boolean;
+  comment: string;
+}
+
+/** Scores per-criteriaId — match avec MongoDB `answers.yesOrNo{key}`. */
+export type CommonTableScores = Record<string /* criteriaId */, CommonTableSolution>;
+
+/**
+ * Entrée du catalogue local de l'utilisateur (ses propres ajouts pour ce form).
+ * Sera persisté côté serveur dans `answers.criterias{key}` de SA réponse.
+ */
+export interface CommonTableMyCatalogEntry {
+  /** Libellé optionnel (souvent vide ; le nom de la solution vit dans scores.criteria) */
+  label?: string;
+  /** Libellé de l'usage parent (ex: "Comptabilité") */
+  usage: string;
+  /** Clé technique de l'usage parent */
+  usageKey: string;
+  coeff?: number;
+  /**
+   * Métadonnées posées par le backend au save : indiquent qui a contribué
+   * cette entrée et depuis quelle réponse. Préservés à travers les saves
+   * suivants pour ne pas écraser les entrées d'autres users (cas d'une
+   * réponse partagée éditée par plusieurs personnes).
+   */
+  me?: boolean;
+  userId?: string;
+  fromAnswerId?: string;
+}
+
+/** Catalogue propre à l'utilisateur — match avec MongoDB `answers.criterias{key}`. */
+export type CommonTableMyCatalog = Record<string /* criteriaId */, CommonTableMyCatalogEntry>;
+
+/**
+ * Valeur composite d'un champ commonTable côté React.
+ * Combine les scores (matrice utilisateur) et les ajouts de l'utilisateur au
+ * catalogue. À la dénormalisation, ces deux sous-structures sont splittées en
+ * deux entrées root-level distinctes (`yesOrNo{key}` et `criterias{key}`).
+ */
+export interface CommonTableValue {
+  scores: CommonTableScores;
+  myCatalog: CommonTableMyCatalog;
+}
+
+/**
+ * Entrée du catalogue collaboratif d'un input commonTable.
+ * Représente une criteria (solution) déclarée par n'importe quel répondant
+ * pour un usage donné — agrégée côté serveur depuis tous les
+ * `answers.criterias{key}`.
+ */
+export interface CommonTableCatalogEntry {
+  label?: string;
+  /**
+   * Nom canonique de la solution (ex: "Odoo"). Mode de la distribution
+   * `names` — celui avec le count le plus élevé. Disponible seulement si au
+   * moins un répondant a saisi un nom de solution.
+   */
+  name?: string;
+  usage: string;
+  usageKey: string;
+  coeff?: number;
+  /** Nombre de répondants ayant rempli `criteria` non-vide pour ce criteriaId */
+  count: number;
+  /**
+   * Distribution complète des noms de solutions saisis par les users pour
+   * ce criteriaId, avec leur fréquence. Permet de proposer plusieurs
+   * suggestions distinctes par ligne (cf. legacy autocomplete `accriteria`).
+   */
+  names?: Record<string, number>;
+}
+
+/** Catalogue collaboratif d'un input, keyé par criteriaId. */
+export type CommonTableCatalog = Record<string, CommonTableCatalogEntry>;
+
+/** Catalogues collaboratifs d'un formulaire, keyés par inputKey. */
+export type CommonTableCatalogs = Record<string, CommonTableCatalog>;
+
+/**
+ * Configuration admin du champ commonTable.
+ */
+export interface CommonTableConfig {
+  showColumns: {
+    criteria: boolean;
+    happiness: boolean;
+    note: boolean;
+    yesNo: boolean;
+    comment: boolean;
+  };
+  labels: {
+    usage?: string;
+    criteria?: string;
+    happiness?: string;
+    note?: string;
+    yesNo?: string;
+    comment?: string;
+  };
+  usages: Array<{
+    usageKey: string;
+    label: string;
+    /** Header de regroupement optionnel (ex: "Administration / Gestion") */
+    group?: string;
+  }>;
+}
+
 /**
  * Valeur stockée pour un champ multiRadio
  * Objet avec la valeur sélectionnée et optionnellement un texte supplémentaire
@@ -348,7 +504,7 @@ export interface FormFieldMapping {
   name: string; // Nom du champ pour react-hook-form
   label: string;
   type: string; // Type CoForm (text, textarea, tpls.forms.cplx.radioNew, etc.)
-  componentType: "text" | "textarea" | "radio" | "checkbox" | "select" | "multiCheckboxPlus" | "multiRadio" | "evaluation" | "finder" | "simpleTable" | "uploader" | "sectionTitle" | "sectionDescription" | "unknown";
+  componentType: "text" | "textarea" | "radio" | "checkbox" | "select" | "multiCheckboxPlus" | "multiRadio" | "evaluation" | "commonTable" | "finder" | "simpleTable" | "uploader" | "sectionTitle" | "sectionDescription" | "unknown";
   inputType?: string; // Type HTML pour l'input (url, email, tel, etc.) - utilisé quand componentType est "text"
   placeholder?: string;
   info?: string;
@@ -407,6 +563,75 @@ export interface FormFieldMapping {
   };
   // Logique conditionnelle
   conditionalDisplay?: ConditionalDisplay;
+  // Spécifique commonTable
+  commonTableConfig?: CommonTableConfig;
+  /**
+   * Si `true`, l'input radio active le mode "évaluation multiple" : la valeur
+   * de chaque user est stockée séparément dans `_multiEval.{userId}` au lieu
+   * de la place classique. Permet à plusieurs users de contribuer à la même
+   * réponse partagée et d'agréger les évaluations dans un radar chart.
+   * Cf. legacy `radioNew.php` + `Form.php:hasMultiEval`.
+   */
+  activeMultieval?: boolean;
+  /**
+   * Label de l'axe radar pour les inputs multi-eval (ex: "A", "B"). Utilisé
+   * comme tick du radar chart à la place du label brut de l'input pour rester
+   * compact. Si vide, on fallback sur le label de l'input.
+   */
+  evaluationKey?: string;
+}
+
+// ============================================================================
+// Types pour la multi-évaluation (datasets radar agrégés cross-contributeurs)
+// ============================================================================
+
+/**
+ * Entrée de la matrice multi-eval côté MongoDB : `multieval.{userId}.{inputKey}`.
+ *
+ * Le backend stocke le `value` (= index 1..N de l'option choisie) et parfois
+ * un `answer` (= libellé sérialisé pour rétro-compat lecture des dumps legacy
+ * non encore migrés (radar legacy, etc.).
+ *
+ * En lecture, on préfère `value` ; à défaut on parse `answer`.
+ */
+export interface MultiEvalEntry {
+  value?: string;
+  date?: string | number;
+  answer?: string;
+}
+
+/** Un axe du radar (= un input multi-eval d'une step donnée). */
+export interface MultiEvalAxis {
+  /** Clé de l'input (sans préfixe `radioNew`). */
+  key: string;
+  /** Label affiché sur le tick radar (`evaluationKey` si défini). */
+  label: string;
+  /** Options du radio dans leur ordre actuel — pour mapper les valeurs 1..N en labels. */
+  options: string[];
+}
+
+/** Un dataset = la contribution d'un user à un step (1 dataset = 1 user). */
+export interface MultiEvalDataset {
+  userId: string;
+  userName: string;
+  userSlug: string;
+  /** Unix timestamp de la dernière modification de cet user pour cette step. */
+  evaluatedAt: number | null;
+  /** Map { inputKey: index 1..N } — manquant pour les axes que ce user n'a pas évalués. */
+  values: Record<string, number>;
+}
+
+/** Une step (sous-formulaire) avec ses axes et ses contributeurs. */
+export interface MultiEvalStep {
+  stepKey: string;
+  stepName: string;
+  axes: MultiEvalAxis[];
+  datasets: MultiEvalDataset[];
+}
+
+/** Réponse de `GET_COFORM_MULTIEVAL_DATA`. */
+export interface MultiEvalDataResponse {
+  steps: MultiEvalStep[];
 }
 
 export interface SubFormFields {

@@ -760,15 +760,160 @@ export function generateDefaultValues(subFormsFields: SubFormFields[]): Record<s
   return defaultValues;
 }
 
+// ============================================================================
+// Helpers de coercion serveur (défense contre la pollution `{}` ↔ `[]`)
+// ============================================================================
+
+/**
+ * Forme attendue par le schéma Zod d'un componentType donné. `"skip"` =
+ * pas de coercion (le call-site est responsable, ex: uploader = union,
+ * sectionTitle = sans valeur, commonTable = composite traité spécialement).
+ */
+type FieldShape = "string" | "array" | "record" | "skip";
+
+function getFieldShape(componentType: FormFieldMapping["componentType"]): FieldShape {
+  switch (componentType) {
+    case "text":
+    case "textarea":
+    case "radio":
+    case "select":
+      return "string";
+    case "checkbox":
+    case "multiCheckboxPlus":
+    case "simpleTable":
+      return "array";
+    case "multiRadio":
+    case "finder":
+    case "evaluation":
+      return "record";
+    // Cas non triviaux : le shape attendu varie (uploader = union, sectionTitle
+    // n'a pas de valeur, commonTable = composite split en deux clés top-level
+    // gérées séparément). On laisse passer.
+    default:
+      return "skip";
+  }
+}
+
+function isPlainObject(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+
+/**
+ * Coerce une valeur reçue du serveur vers le shape attendu par le schéma
+ * Zod. Conserve la valeur d'origine si elle est déjà du bon type ;
+ * remplace par une valeur par défaut neutre seulement si la forme est
+ * incompatible.
+ */
+function coerceValueToShape(value: unknown, shape: FieldShape): unknown {
+  switch (shape) {
+    case "string":
+      if (typeof value === "string") return value;
+      if (typeof value === "number" || typeof value === "boolean") return String(value);
+      // `[]`, `{}`, `null`, `undefined` → ""
+      return "";
+    case "array":
+      if (Array.isArray(value)) return value;
+      // `{}` → `[]` ; null/undefined → laisser tel quel (le default form joue)
+      if (isPlainObject(value)) return [];
+      return value;
+    case "record":
+      // null préservé (certains schemas l'acceptent explicitement, ex: finder)
+      if (value === null) return value;
+      if (Array.isArray(value)) return {};
+      if (isPlainObject(value)) return value;
+      return value;
+    default:
+      return value;
+  }
+}
+
+/**
+ * Coerce les valeurs reçues du serveur pour qu'elles correspondent aux types
+ * attendus par les schémas Zod du formulaire. Point unique de défense
+ * contre la pollution de format causée par la sérialisation MongoDB
+ * (`{}` ↔ `[]` ambigus selon les inputs PHP en amont).
+ *
+ * Couvre :
+ * - **Champs nested** (radio, checkbox, select, multiRadio, multiCheckboxPlus,
+ *   finder, simpleTable, text, textarea) sous `rawAnswers[subFormId][fieldName]`
+ * - **Champs root-level** (evaluation, commonTable) sous `rawAnswers[fieldName]`
+ *   et leur clé jumelle pour commonTable (`criteriasXXX`)
+ *
+ * Extensible : ajouter un cas dans `getFieldShape` si un nouveau type est
+ * sensible à cette pollution.
+ */
+function coerceServerAnswerShape(
+  rawAnswers: Record<string, unknown>,
+  subFormsFields: SubFormFields[]
+): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...rawAnswers };
+
+  for (const { subFormId, fields } of subFormsFields) {
+    // Le subForm lui-même peut arriver comme `[]` si jamais aucun champ
+    // n'a été rempli. On le ramène à `{}` pour pouvoir y accéder.
+    let subData: Record<string, unknown>;
+    if (isPlainObject(out[subFormId])) {
+      subData = { ...(out[subFormId] as Record<string, unknown>) };
+    } else if (Array.isArray(out[subFormId])) {
+      subData = {};
+    } else {
+      subData = {};
+    }
+
+    for (const field of fields) {
+      // commonTable : split en deux clés top-level (`yesOrNoXXX` et
+      // `criteriasXXX`), tous deux Records. `field.name` est déjà
+      // `yesOrNoXXX` (cf. FIELD_PREFIX_MAP).
+      if (field.componentType === "commonTable") {
+        const fieldKey = getOriginalFieldKey(field);
+        const myCatalogKey = `criterias${fieldKey}`;
+        if (Array.isArray(out[field.name])) out[field.name] = {};
+        if (Array.isArray(out[myCatalogKey])) out[myCatalogKey] = {};
+        continue;
+      }
+
+      // evaluation : root-level Record (un seul top-level key = field.name).
+      if (field.componentType === "evaluation") {
+        if (Array.isArray(out[field.name])) out[field.name] = {};
+        continue;
+      }
+
+      // Champ nested : applique la coercion selon son shape attendu.
+      const shape = getFieldShape(field.componentType);
+      if (shape === "skip") continue;
+      if (!(field.name in subData)) continue;
+      const coerced = coerceValueToShape(subData[field.name], shape);
+      if (coerced !== subData[field.name]) subData[field.name] = coerced;
+    }
+
+    out[subFormId] = subData;
+  }
+
+  return out;
+}
+
+/**
+ * Indique si un sous-formulaire contient au moins un input multi-eval
+ * (`activeMultieval === true`). Utilisé pour afficher le bouton "Voir les
+ * évaluations" (radar) dans le header d'une step et conditionner le fetch
+ * de `useMultiEvalData`.
+ */
+export function getStepHasMultiEval(subFormFields: SubFormFields): boolean {
+  return subFormFields.fields.some((f) => f.activeMultieval === true);
+}
+
 /**
  * Normalise les données de réponse brutes depuis la DB vers le format attendu par le formulaire
- * 
+ *
  * Le PHP stocke certains champs à la racine de `answers` au lieu de dans leur sous-formulaire :
  * - evaluation: answers["evaluationXXX"] au lieu de answers[subFormId]["evaluationXXX"]
- * 
+ *
  * Cette fonction déplace ces champs dans leur sous-formulaire approprié en se basant
  * sur la structure du formulaire (subFormsFields).
- * 
+ *
+ * Applique d'abord `coerceServerAnswerShape` pour défendre contre les `{}` ↔ `[]`
+ * inconsistants venant de la sérialisation MongoDB.
+ *
  * @param rawAnswers - Données brutes depuis la DB (answers)
  * @param subFormsFields - Structure parsée du formulaire (pour connaître quel champ appartient à quel subform)
  * @returns Données normalisées avec les champs root-level déplacés dans leurs subforms
@@ -780,7 +925,9 @@ export function normalizeAnswerData(
   if (!rawAnswers) return undefined;
 
   // Copie profonde pour ne pas muter l'original
-  const normalized = JSON.parse(JSON.stringify(rawAnswers)) as Record<string, unknown>;
+  const cloned = JSON.parse(JSON.stringify(rawAnswers)) as Record<string, unknown>;
+  // Défense contre la pollution de format MongoDB (`{}` ↔ `[]`).
+  const normalized = coerceServerAnswerShape(cloned, subFormsFields);
 
   // Debug: collecter les champs root-level attendus
   const rootLevelFieldNames: string[] = [];
