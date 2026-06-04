@@ -182,9 +182,12 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
   };
 
   /**
-   * Crée une nouvelle réponse (avec finder pre-pop) puis ouvre le CoFormModal.
+   * Ouvre le CoFormModal pour une nouvelle réponse.
+   * Aucun answer n'est créé en base : le backend insère la réponse au save
+   * et gère lui-même le lien finder via `links` (extractFinderLinks côté
+   * frontend, denormalize → backend SaveAnswerAction).
    */
-  const openNewFormModal = async ({ formId, title, finder, stepKey, inputKey, lockedFields }: {
+  const openNewFormModal = ({ formId, title, finder, stepKey, inputKey, lockedFields }: {
     formId: string;
     title?: string;
     finder?: string;
@@ -192,26 +195,8 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
     inputKey?: string;
     lockedFields?: string[];
   }) => {
-    // Façade `BaseEntity.generateNewAnswerId(formId)` — peuple l'id côté answer,
-    // prêt à recevoir un updateField.
-    const answer = await entity.generateNewAnswerId(formId);
-    if (!answer.id) {
-      console.error("Failed to generate new answer ID for form:", formId);
-      return;
-    }
     const finderPath = finder ?? section.forms?.[formId]?.finder;
-    if (finderPath) {
-      await answer.updateField(`${finderPath}.${entity.id}`, {
-        id: entity.id,
-        type: entity.serverData.collection,
-        name: entity.serverData.name,
-      });
-      await answer.updateField(`links.${entity.serverData.collection}.${entity.id}`, {
-        type: entity.serverData.collection,
-        name: entity.serverData.name,
-      });
-    }
-    // Build defaultValues from finderPath so the finder field is pre-populated in the modal
+    // Build defaultValues from finderPath so the finder field is pre-populated in the modal.
     let defaultValues: AllStepsData | undefined;
     if (finderPath) {
       const entityId = entity.id as string;
@@ -231,7 +216,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
     }
     setFormModal({
       formId,
-      answerId: answer._serverData?.id ?? answer.id,
+      answerId: undefined,
       defaultValues,
       title,
       stepKey,

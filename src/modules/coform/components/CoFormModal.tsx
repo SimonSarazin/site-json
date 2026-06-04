@@ -164,6 +164,7 @@ export function CoFormModal({
               onDirtyChange={setIsDirty}
               submitRef={submitRef}
               lockedFields={lockedFields}
+              inModal
             />
           </div>
         </DialogContent>
