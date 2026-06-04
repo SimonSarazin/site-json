@@ -495,6 +495,13 @@ export interface CoFormData {
   access?: CoFormAccessInfo;
   /** Configuration de la page de remerciement (personnalisable par l'admin) */
   thankYou?: CoFormThankYouConfig | null;
+  /**
+   * Chemins `{subFormId}.{fieldName}` des questions partagées (mode collaboratif
+   * "par lieu"). Si un de ces chemins pointe vers un input finder, c'est ce
+   * finder qui détermine le lieu / l'entité ciblée pour la réponse partagée.
+   * Voir `getSharedFinderInfo` (utils/formParser).
+   */
+  sharedQuestionPath?: string[] | null;
 }
 
 /**

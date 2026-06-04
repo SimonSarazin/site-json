@@ -12,6 +12,22 @@ export interface MembershipQueryParams {
   filters?: Record<string, unknown>;
 }
 
+export interface EligiblePlacesQueryParams extends MembershipQueryParams {
+  /**
+   * Filtres MongoDB arbitraires propagés à `searchFilters` côté serveur.
+   * Ex: `{ tags: "Tiers-Lieu", "source.key": "tiersliexorg" }`. Mergé côté
+   * SDK avec les filtres `links.members.{id}` qui restreignent à memberOf.
+   */
+  filters?: Record<string, unknown>;
+  /**
+   * Désactive le filtre automatique par sourceKey du contexte (cf.
+   * SearchNew.php). Configurable selon la config du finder du formulaire.
+   */
+  notSourceKey?: boolean;
+  /** Skip le fetch si false (en plus du `user && isUser(user)` requis). */
+  enabled?: boolean;
+}
+
 /**
  * Hook pour récupérer les organisations d'un utilisateur avec infinite scroll
  */
@@ -76,6 +92,90 @@ export function useUserOrganizations(user: EntityTypes | null, params?: Membersh
     isFetchingNextPage,
     hasNextPage,
     lastItemRef,
+    error,
+    refetch,
+  };
+}
+
+/**
+ * Hook pour récupérer les organisations memberOf de l'utilisateur, filtrées
+ * côté serveur par des `filters` arbitraires et un flag `notSourceKey`.
+ *
+ * Utilisé par la vue collaborative coform/place — permet de pré-filtrer les
+ * lieux éligibles à un formulaire (tags, sourceKey, etc.) directement côté
+ * serveur, pour avoir une pagination correcte indépendamment du filtre.
+ */
+export function useUserEligiblePlaces(
+  user: EntityTypes | null,
+  params?: EligiblePlacesQueryParams
+) {
+  const userContextId = useHydratedUserContextId();
+  const { helper } = useCocolight();
+
+  const {
+    data,
+    totalCount,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    lastItemRef,
+    fetchNextPage,
+    error,
+    refetch,
+  } = useInfiniteQueryScrollNextWithTransform<Organization>({
+    queryKey: [
+      ...QUERY_KEYS.USER_ORGANIZATIONS(user?.slug ?? null, userContextId),
+      "eligible",
+      params,
+    ],
+    queryFn: async ({ pageParam }) => {
+      if (!user || !isUser(user)) {
+        throw new Error("User is required");
+      }
+
+      const page = pageParam as PaginatorPage<Organization> | undefined;
+
+      const result = await user.getEligiblePlaces({
+        name: params?.search,
+        indexMin: 0,
+        indexStep: params?.indexStep || 20,
+        filters: params?.filters,
+        notSourceKey: params?.notSourceKey,
+      });
+
+      if (
+        page &&
+        page.pageNumber &&
+        page.pageNumber > 1 &&
+        typeof page.next !== "function" &&
+        result.next
+      ) {
+        return result.next();
+      }
+
+      return result;
+    },
+    options: {
+      enabled: !!(user && isUser(user)) && (params?.enabled ?? true),
+      staleTime: 5 * 60 * 1000,
+      initialPageParam: undefined,
+    },
+    transform: user ? { entity: user, helper } : undefined,
+  });
+
+  const organizations = useMemo(() => {
+    if (!data) return [];
+    return data.pages.flatMap((page) => page.results);
+  }, [data]);
+
+  return {
+    organizations,
+    totalCount,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    lastItemRef,
+    fetchNextPage,
     error,
     refetch,
   };

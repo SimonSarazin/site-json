@@ -1206,3 +1206,62 @@ export function extractFinderLinks(
 
   return links;
 }
+
+/**
+ * Information consolidée sur le finder partagé d'un formulaire collaboratif
+ * "par lieu". Combine la cible (`sharedQuestionPath` côté serveur) et les
+ * filtres de recherche (`FinderConfig.filters` côté input).
+ */
+export interface SharedFinderInfo {
+  /** ID du sous-formulaire qui contient le finder */
+  subFormId: string;
+  /** Nom complet du champ (avec préfixe `finder`) */
+  fieldName: string;
+  /** Chemin original ("subFormId.fieldName") */
+  fullPath: string;
+  /** Filtres tags / sourceKey / etc. (mêmes que FinderSearchModal) */
+  filters: FinderFilter[];
+  /** Exclure les éléments avec sourceKey */
+  notSourceKey: boolean;
+  /** Type d'élément ciblé (organizations, projects, ...) */
+  type: FinderConfig["type"];
+}
+
+/**
+ * Extrait l'info du finder partagé du formulaire (qui détermine le lieu pour
+ * les forms collaboratifs). Retourne `null` si :
+ * - `sharedQuestionPath` absent ou vide,
+ * - aucun chemin ne pointe vers un input "finder",
+ * - le champ pointé n'a pas de FinderConfig (config malformée).
+ *
+ * Utilisé par `CoFormPlacePage` pour pré-remplir + verrouiller le finder en
+ * vue détail, et pour filtrer la liste des lieux par les mêmes critères que
+ * la recherche du finder.
+ */
+export function getSharedFinderInfo(formData: CoFormData): SharedFinderInfo | null {
+  const paths = formData.sharedQuestionPath ?? [];
+  const finderPath = paths.find((p) => typeof p === "string" && p.includes("finder"));
+  if (!finderPath) return null;
+
+  const dotIdx = finderPath.indexOf(".");
+  if (dotIdx <= 0) return null;
+  const subFormId = finderPath.slice(0, dotIdx);
+  const fieldName = finderPath.slice(dotIdx + 1);
+
+  // Récupère le FinderConfig parsé via la pipeline existante.
+  const subFormsFields = parseCoFormFields(formData);
+  const subForm = subFormsFields.find((sf) => sf.subFormId === subFormId);
+  if (!subForm) return null;
+  const field = subForm.fields.find((f) => f.name === fieldName);
+  if (!field || !field.finderConfig) return null;
+
+  const cfg = field.finderConfig;
+  return {
+    subFormId,
+    fieldName,
+    fullPath: finderPath,
+    filters: cfg.filters ?? [],
+    notSourceKey: !!cfg.notSourceKey,
+    type: cfg.type,
+  };
+}
