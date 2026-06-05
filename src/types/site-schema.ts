@@ -14,7 +14,7 @@ import { ActionButtonSchema } from "./action-button-schema";
 import { z } from "zod";
 import { LocalizedString, LOCALES } from "./locale-schema";
 export { LocalizedString, LOCALES };
-import { ProfilesConfigSchema } from "../modules/profil/schema";
+import { ProfilesConfigSchema, MemberSectionSchema } from "../modules/profil/schema";
 import { AmpliConfigSchema } from "@/modules/ampli/schema";
 import { CommandPaletteConfigSchema } from "@/modules/commandPalette/schema";
 import { VisibilityConditionSchema } from "@/lib/visibility/schema";
@@ -1259,36 +1259,11 @@ export type ContentSection = z.infer<typeof ContentSectionSchema>;
 export type ContentSectionProps = z.infer<typeof ContentSectionSchema>["props"];
 
 //───────────────────────────────────────────────────────────────
-// Section Member (for organizations and projects)
+// Section Member — schéma déplacé dans `@/modules/profil/schema`
+// (vit avec son cœur `<EntityMembers>`). Importé pour l'union + réexporté ici
+// pour rétro-compat des imports `@/types/site-schema`.
 //───────────────────────────────────────────────────────────────
-const MemberCardConfSchema = z.object({
-  type: z.enum(["default", "profile"]).default("default"),
-  showDescription: z.boolean().optional().default(true),
-  showAddress: z.boolean().optional().default(true),
-  detailsMode: z.enum(["drawer", "dialog", "link"]).default("link"),
-}).partial();
-
-export type MemberCardConf = z.infer<typeof MemberCardConfSchema>;
-
-const MemberSectionSchema = z.object({
-  type: z.literal("member"),
-  id: z.string().optional(),
-  props: z.object({
-    organizationId: z.string().optional(),
-    projectId: z.string().optional(),
-    title: LocalizedString.optional(),
-    showRole: z.boolean().optional().default(true),
-    showManagement: z.boolean().optional().default(false),
-    showCard: z.boolean().optional().default(true),
-    showMap: z.boolean().optional().default(false),
-    enableMap: z.boolean().optional().default(false),
-    limit: z.number().optional(),
-    card: MemberCardConfSchema.optional(),
-  }),
-});
-
-export type MemberSection = z.infer<typeof MemberSectionSchema>;
-export type MemberSectionProps = z.infer<typeof MemberSectionSchema>["props"];
+export type { MemberSection, MemberSectionProps, MemberCardConf } from "../modules/profil/schema";
 
 //──────────────── Sections du module cagnotte (schemas définis dans le module)
 // Cf. src/modules/cagnotte/schema.ts

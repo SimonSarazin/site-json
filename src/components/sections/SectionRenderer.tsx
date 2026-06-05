@@ -80,7 +80,7 @@ const LazySections: {
   gridLayout: lazy(() => import("./GridLayoutSection")),
   news: lazy(() => import("@/modules/news/components/sections/NewsSection")),
   notifications: lazy(() => import("@/modules/notification/components/sections/NotificationsSection")),
-  member: lazy(() => import("./MemberSection")),
+  member: lazy(() => import("@/modules/profil/components/sections/MemberSection")),
   heroWithIcon: lazy(() => import("./HeroWithIconSection")),
   meeteem: lazy(() => import("@/modules/ampli/components/sections/MeeteemSection")),
   coform: lazy(() => import("@/modules/coform/components/CoFormSection")),
