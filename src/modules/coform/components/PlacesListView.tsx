@@ -531,14 +531,16 @@ export function PlacesListView({ formData, formId }: PlacesListViewProps) {
         </Button>
       </section>
 
-      {/* Modal recherche */}
-      <FinderSearchModal
-        config={searchConfig}
-        selectedElements={{}}
-        isOpen={searchOpen}
-        onClose={() => setSearchOpen(false)}
-        onValidate={handleSelectFromSearch}
-      />
+      {/* Modal recherche — mount conditionnel (cf. pattern FinderField :
+          state interne frais à chaque ouverture, pas de useEffect reset). */}
+      {searchOpen && (
+        <FinderSearchModal
+          config={searchConfig}
+          selectedElements={{}}
+          onClose={() => setSearchOpen(false)}
+          onValidate={handleSelectFromSearch}
+        />
+      )}
 
       {/* Confirmation rejoindre */}
       <JoinConfirmDialog

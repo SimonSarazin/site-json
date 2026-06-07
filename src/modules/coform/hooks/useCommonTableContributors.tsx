@@ -63,16 +63,15 @@ export function useCommonTableContributors({
     ),
     queryFn: async () => {
       if (!api) throw new Error("API non initialisée");
+      if (!formId || !inputKey) throw new Error("formId/inputKey requis");
       const sortedIds = [...criteriaIds].sort();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const response = await (api.endpointApi as any).getCoformCommontableContributors({
-        formId,
+      // Pattern entity : on passe par `Form.getCommonTableContributors()` qui
+      // wrap l'endpoint en interne (sérialise `criteriaIds`, extrait `.data`).
+      const form = await api.form({ id: formId });
+      const list = await form.getCommonTableContributors({
         inputKey,
-        // Le contentType est form-urlencoded — l'array doit être stringifié.
-        criteriaIds: JSON.stringify(sortedIds),
+        criteriaIds: sortedIds,
       });
-      const raw = response?.serverData?.data ?? response?.data ?? response;
-      const list = Array.isArray(raw?.contributors) ? raw.contributors : [];
       return list as CommonTableContributor[];
     },
     enabled: enabled && isReady,

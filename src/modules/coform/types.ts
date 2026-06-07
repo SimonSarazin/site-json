@@ -22,6 +22,7 @@
 export type CoFormAccessReason =
   | "already_answered"
   | "not_member"
+  | "not_authorized"
   | "form_not_started"
   | "form_closed"
   | "form_inactive"
@@ -80,6 +81,12 @@ export interface CoFormAccessInfo {
   formStatus: "open" | "not_started" | "closed" | "inactive";
   existingAnswerId: string | null;
   existingAnswer: AllStepsData | null;
+  /**
+   * Méta de la réponse existante (créateur, dernier modifieur, timestamps).
+   * Peuplé côté serveur par `Coform::buildExistingAnswerMeta`, exposé pour
+   * affichage via `AnswerActivityDialog` et détection de conflit de draft.
+   */
+  existingAnswerMeta?: ExistingAnswerMeta | null;
   /** Liste des réponses existantes de l'utilisateur (mode réponse multiple) */
   existingAnswers?: CoFormAnswerSummary[];
   requiresLogin: boolean;
@@ -94,6 +101,13 @@ export interface CoFormAccessInfo {
     startNoConfirmation: string | null;
     endNoConfirmation: string | null;
   };
+  /**
+   * Liste des champs restreints calculée par le backend en mode élément
+   * (`Coform::getFormAccessInfo` avec elementId+elementType). Résultat du
+   * croisement entre `placeAdminOnlyFields` / `placeMemberOnlyFields` côté
+   * Form et le rôle de l'user sur le lieu. Vide ou absent en flow user-personal.
+   */
+  restrictedFields?: string[];
 }
 
 /**
@@ -493,6 +507,19 @@ export interface CoFormData {
   useBannerImg?: boolean;
   /** Informations d'accès enrichies par le serveur */
   access?: CoFormAccessInfo;
+  /**
+   * Forms publics : autorise tout user (même non membre) à éditer la réponse
+   * partagée d'un lieu. Bypass le flow "demande à rejoindre" dans PlacesListView.
+   */
+  publicCanEditSharedAnswer?: boolean;
+  /**
+   * Champs réservés aux admins du lieu/projet. Croisés côté serveur avec le
+   * rôle de l'user (`Coform::getFormAccessInfo`) pour produire
+   * `access.restrictedFields`.
+   */
+  placeAdminOnlyFields?: string[];
+  /** Champs réservés aux membres du lieu/projet. Cf. `placeAdminOnlyFields`. */
+  placeMemberOnlyFields?: string[];
   /** Configuration de la page de remerciement (personnalisable par l'admin) */
   thankYou?: CoFormThankYouConfig | null;
   /**

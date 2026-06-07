@@ -146,7 +146,19 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
     stepKey?: string;
     inputKey?: string;
     lockedFields?: string[];
+    elementId?: string;
+    elementType?: "organizations" | "projects" | "events" | "poi" | "citoyens";
   } | null>(null);
+
+  // L'entity du profil EST le lieu lié aux réponses partagées. On propage
+  // son id+type au backend via elementId/elementType sur chaque ouverture de
+  // modal pour que `Coform::getFormAccessInfo` entre en mode "par élément"
+  // et calcule `access.restrictedFields` (placeAdminOnly / placeMemberOnly).
+  const elementType = entity?.serverData?.collection as
+    | "organizations" | "projects" | "events" | "poi" | "citoyens" | undefined;
+  const placeContext = entity?.id && elementType
+    ? { elementId: entity.id as string, elementType }
+    : null;
 
   /** Invalidate the answers cache after a form modal submit */
   const entityId = entity?.id ?? null;
@@ -178,6 +190,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
       stepKey,
       inputKey,
       lockedFields,
+      ...placeContext,
     });
   };
 
@@ -224,6 +237,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
       lockedFields: finderPath
         ? [...(lockedFields ?? []), finderPath.split(".").pop()!]
         : lockedFields,
+      ...placeContext,
     });
   };
 
@@ -1424,6 +1438,8 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
           stepKey={formModal.stepKey}
           inputKey={formModal.inputKey}
           lockedFields={formModal.lockedFields}
+          elementId={formModal.elementId}
+          elementType={formModal.elementType}
           onAfterSubmit={invalidateAnswers}
         />
       )}

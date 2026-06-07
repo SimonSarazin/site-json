@@ -124,7 +124,7 @@ export function useUserEligiblePlaces(
     refetch,
   } = useInfiniteQueryScrollNextWithTransform<Organization>({
     queryKey: [
-      ...QUERY_KEYS.USER_ORGANIZATIONS(user?.slug ?? null, userContextId),
+      ...PROFIL_QUERY_KEYS.USER_ORGANIZATIONS(user?.slug ?? null, userContextId),
       "eligible",
       params,
     ],

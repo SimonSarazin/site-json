@@ -48,6 +48,15 @@ export interface CoFormModalProps {
   className?: string;
   /** Liste de clés d'inputs verrouillés (non modifiables dans le modal) */
   lockedFields?: string[];
+  /**
+   * ID de l'élément lié au form (lieu, projet, événement…). Active le mode
+   * "par élément" backend : `Coform::getFormAccessInfo` calcule alors
+   * `access.restrictedFields` à partir de `placeAdminOnlyFields` /
+   * `placeMemberOnlyFields`. Requis avec `elementType`.
+   */
+  elementId?: string;
+  /** Type de l'élément (collection MongoDB). Requis si `elementId` fourni. */
+  elementType?: "organizations" | "projects" | "events" | "poi" | "citoyens";
 }
 
 /**
@@ -68,6 +77,8 @@ export function CoFormModal({
   closeOnSubmit = !inputKey,
   className,
   lockedFields,
+  elementId,
+  elementType,
 }: CoFormModalProps) {
   useLoadNamespace("modules/coform");
   const t = useT("modules/coform");
@@ -164,6 +175,8 @@ export function CoFormModal({
               onDirtyChange={setIsDirty}
               submitRef={submitRef}
               lockedFields={lockedFields}
+              elementId={elementId}
+              elementType={elementType}
               inModal
             />
           </div>

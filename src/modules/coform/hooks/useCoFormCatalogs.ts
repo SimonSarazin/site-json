@@ -39,17 +39,11 @@ export function useCoFormCatalogs({
     queryKey: COFORM_QUERY_KEYS.COMMONTABLE_CATALOG(formId, inputKeys),
     queryFn: async () => {
       if (!api) throw new Error("API non initialisée");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const response = await (api.endpointApi as any).getCoformCatalogs({
-        formId,
-        // contentType form-urlencoded : on sérialise le tableau en JSON string
-        // (cf. spec endpoint dans endpoints-copie.json).
-        inputKeys: JSON.stringify(inputKeys),
-      });
-      const raw = (response?.serverData?.data ?? response?.data) as
-        | CommonTableCatalogs
-        | undefined;
-      return (raw ?? {}) as CommonTableCatalogs;
+      // Pattern entity : `Form.getCatalogs()` wrap l'endpoint, sérialise
+      // les `inputKeys` (form-urlencoded) et extrait la map de catalogues.
+      const form = await api.form({ id: formId });
+      const catalogs = await form.getCatalogs({ inputKeys });
+      return catalogs as CommonTableCatalogs;
     },
     enabled: enabled && isReady && !!formId && hasInputs,
     staleTime: 2 * 60 * 1000,

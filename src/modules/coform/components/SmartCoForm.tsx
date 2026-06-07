@@ -78,6 +78,15 @@ interface SmartCoFormProps {
    * ouvre la modale `AnswerActivityDialog` avec l'historique des modifs.
    */
   existingAnswerMeta?: ExistingAnswerMeta | null;
+  /**
+   * ID de l'élément lié au form (lieu, projet, événement…). Propagé à
+   * `useCoFormQuery` pour activer le mode "par élément" backend
+   * (`Coform::getFormAccessInfo` calcule alors `access.restrictedFields`).
+   * Requis avec `elementType`.
+   */
+  elementId?: string;
+  /** Type de l'élément (collection MongoDB). Requis si `elementId` fourni. */
+  elementType?: "organizations" | "projects" | "events" | "poi" | "citoyens";
 }
 
 interface LoadingStateProps {
@@ -177,6 +186,8 @@ export function SmartCoForm({
   baseUpdatedAt,
   inModal = false,
   existingAnswerMeta,
+  elementId,
+  elementType,
 }: SmartCoFormProps) {
   // Charger les données depuis l'API si formId est fourni
   const {
@@ -188,10 +199,18 @@ export function SmartCoForm({
   } = useCoFormQuery({
     formId: formId ?? "",
     enabled: !!formId && !externalFormData,
+    elementId,
+    elementType,
   });
 
   // Utiliser les données externes ou celles de l'API
   const formData = externalFormData ?? apiFormData;
+
+  // Restriction par rôle dans le lieu lié (placeAdminOnlyFields /
+  // placeMemberOnlyFields). Le serveur calcule la liste finale dans
+  // `access.restrictedFields` selon l'user courant ; on la propage telle
+  // quelle à DynamicCoForm / MultiStepCoForm qui skippent le rendu.
+  const restrictedFields = formData?.access?.restrictedFields;
 
   useLoadNamespace("modules/coform");
   const t = useT("modules/coform");
@@ -389,6 +408,7 @@ export function SmartCoForm({
         onSuccess={onAfterSubmit}
         onDirtyChange={onDirtyChange}
         lockedFields={lockedFields}
+        restrictedFields={restrictedFields}
         className={className}
         showProgress={showProgress}
         showStepNumbers={showStepNumbers}
@@ -424,6 +444,7 @@ export function SmartCoForm({
       onDirtyChange={onDirtyChange}
       submitRef={submitRef}
       lockedFields={lockedFields}
+      restrictedFields={restrictedFields}
       formId={formId}
       userId={draftUserId}
       baseUpdatedAt={baseUpdatedAt}

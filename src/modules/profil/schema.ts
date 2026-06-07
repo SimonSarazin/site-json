@@ -107,7 +107,7 @@ export const ProfileTiersLieuxInfoSectionSchema = z.object({
     name: z.string(),
     finder: z.string().optional(),
     linked: z.boolean(),
-    category: z.enum(["salle-reunion", "coworking", "hebergement"]).optional(),
+    category: z.enum(["salle-reunion", "coworking", "hebergement", "evaluation"]).optional(),
     hide: z.boolean().optional().default(false), // Option pour cacher le formulaire dans le profil
     /** Méthode d'ouverture : "modal" = CoFormModal intégré, "tab" = nouvel onglet (défaut) */
     openMode: z.enum(["modal", "tab"]).optional().default("tab"),
@@ -137,7 +137,7 @@ export const ProfileTiersLieuxAboutSectionSchema = z.object({
     name: z.string(),
     finder: z.string().optional(),
     linked: z.boolean(),
-    category: z.enum(["salle-reunion", "coworking", "hebergement"]).optional(),
+    category: z.enum(["salle-reunion", "coworking", "hebergement", "evaluation"]).optional(),
     hide: z.boolean().optional().default(false), // Option pour cacher le formulaire dans le profil
     /** Méthode d'ouverture : toujours "modal" dans cette section */
     openMode: z.enum(["modal", "tab"]).optional().default("modal"),

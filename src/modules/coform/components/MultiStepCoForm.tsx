@@ -29,7 +29,7 @@ import { UploaderField } from "./UploaderField";
 import { CoFormBanner } from "./CoFormBanner";
 import { useConditionalFields } from "../hooks/useConditionalFields";
 import { useUnsavedChangesWarning } from "../hooks/useUnsavedChangesWarning";
-import { getStepHasMultiEval } from "../utils/formParser";
+import { getStepHasMultiEval, getOriginalFieldKey } from "../utils/formParser";
 import { scrollToFieldByName } from "../utils/helpers";
 import type { CoFormData, SubFormData, AllStepsData, MultiCheckboxPlusValue, MultiRadioValue, EvaluationValue, CommonTableValue, FinderValue, SimpleTableValue, ExistingAnswerMeta } from "../types";
 import type { CoFormSubmitMode, CoFormVariant } from "../schema";
@@ -55,6 +55,14 @@ interface MultiStepCoFormProps {
   onDirtyChange?: (isDirty: boolean) => void;
   /** Liste de clés d'inputs verrouillés (lecture seule, non modifiables) */
   lockedFields?: string[];
+  /**
+   * Liste de clés d'inputs **complètement masqués** (skip total du rendu).
+   * Calculée serveur-side dans `access.restrictedFields` à partir de
+   * `placeAdminOnlyFields` / `placeMemberOnlyFields` croisés avec le rôle
+   * de l'user sur le lieu. Aligné sur le legacy `isAdminOnly` qui hide
+   * entirely (pas de readonly cosmétique).
+   */
+  restrictedFields?: string[];
   /** ID du formulaire — clé de draft localStorage. */
   formId?: string;
   /** ID utilisateur connecté — clé de draft localStorage. */
@@ -92,6 +100,7 @@ export function MultiStepCoForm({
   initialStepKey,
   onDirtyChange,
   lockedFields,
+  restrictedFields,
   formId,
   userId,
   baseUpdatedAt,
@@ -120,6 +129,7 @@ export function MultiStepCoForm({
         onSuccess={onSuccess}
         onDirtyChange={onDirtyChange}
         lockedFields={lockedFields}
+        restrictedFields={restrictedFields}
         className={className}
         existingAnswerMeta={existingAnswerMeta}
       />
@@ -138,6 +148,7 @@ function MultiStepCoFormContent({
   onSuccess,
   onDirtyChange,
   lockedFields,
+  restrictedFields,
   className,
   existingAnswerMeta,
 }: {
@@ -148,6 +159,7 @@ function MultiStepCoFormContent({
   onSuccess?: () => void;
   onDirtyChange?: (isDirty: boolean) => void;
   lockedFields?: string[];
+  restrictedFields?: string[];
   className?: string;
   existingAnswerMeta?: ExistingAnswerMeta | null;
 }) {
@@ -174,6 +186,7 @@ function MultiStepCoFormContent({
   const { isFieldVisible } = useConditionalFields(fields?.fields ?? [], form.control);
 
   const lockedSet = useMemo(() => new Set(lockedFields ?? []), [lockedFields]);
+  const restrictedSet = useMemo(() => new Set(restrictedFields ?? []), [restrictedFields]);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -226,13 +239,18 @@ function MultiStepCoFormContent({
     return map;
   }, [formInputs]);
 
-  // Gérer la soumission de l'étape ou la soumission finale
+  // Gérer la soumission de l'étape ou la soumission finale.
+  // Note : la validation Zod est interceptée en amont par RHF via le
+  // 2e arg de `form.handleSubmit(handleSubmit, handleInvalid)`. Ce bloc
+  // ne tourne donc QUE si Zod a passé. On lit quand même le retour de
+  // `submitStep` pour bail sur une erreur runtime (catch interne du hook,
+  // mutation backend qui throw) — sinon on enchaînerait `submitAll()` sur
+  // un état d'étape incohérent.
   const handleSubmit = async () => {
     setHasAttemptedSubmit(false);
-    await submitStep();
+    const ok = await submitStep();
+    if (!ok) return;
 
-    // Si dernière étape, soumettre toutes les données
-    // stepsDataRef dans CoFormProvider garantit que les données sont à jour
     if (navigation.isLastStep) {
       await submitAll();
     }
@@ -345,6 +363,11 @@ function MultiStepCoFormContent({
             <div className="grid grid-cols-12 gap-6">
               {fields.fields.map((field) => {
                 if (!isFieldVisible(field.name)) return null;
+                // Skip total : l'user n'a pas le droit selon les listes
+                // place(Admin|Member)OnlyFields. Calculé serveur-side dans
+                // `access.restrictedFields`. Aligné sur le legacy isAdminOnly
+                // qui hide entirely (pas de readonly cosmétique).
+                if (restrictedSet.has(getOriginalFieldKey(field))) return null;
                 const isLocked = lockedSet.has(field.name);
                 const fieldElement = (() => { switch (field.componentType) {
                 case "text":
@@ -471,6 +494,7 @@ function MultiStepCoFormContent({
                           errors={form.formState.errors}
                           value={controllerField.value as EvaluationValue}
                           onChange={controllerField.onChange}
+                          readOnly={isLocked}
                         />
                       )}
                     />
@@ -489,6 +513,7 @@ function MultiStepCoFormContent({
                           value={controllerField.value as CommonTableValue}
                           onChange={controllerField.onChange}
                           formId={formId}
+                          readOnly={isLocked}
                         />
                       )}
                     />
@@ -506,6 +531,7 @@ function MultiStepCoFormContent({
                           errors={form.formState.errors}
                           value={controllerField.value as FinderValue}
                           onChange={controllerField.onChange}
+                          readOnly={isLocked}
                         />
                       )}
                     />
@@ -523,6 +549,7 @@ function MultiStepCoFormContent({
                           errors={form.formState.errors}
                           value={controllerField.value as SimpleTableValue}
                           onChange={controllerField.onChange}
+                          readOnly={isLocked}
                         />
                       )}
                     />

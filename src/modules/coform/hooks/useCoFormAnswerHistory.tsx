@@ -40,14 +40,11 @@ export function useCoFormAnswerHistory({
       if (!api) throw new Error("API non initialisée");
       if (!answerId) throw new Error("answerId requis");
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const response = await (api.endpointApi as any).getCoformAnswerHistory({
-        answerId,
-      });
-
-      const raw = response?.serverData?.data ?? response?.data ?? response;
-      const list = Array.isArray(raw?.history) ? (raw.history as AnswerChange[]) : [];
-      return list;
+      // Pattern entity : `Answer.getHistory()` wrap l'endpoint
+      // (callIsConnected + extraction `.data.history`).
+      const answer = await api.answer({ id: answerId });
+      const list = await answer.getHistory();
+      return list as AnswerChange[];
     },
     enabled: enabled && isReady,
     // Pas de stale-while-revalidate : l'historique ne change que sur save,

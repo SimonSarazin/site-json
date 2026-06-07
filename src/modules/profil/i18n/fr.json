@@ -1272,6 +1272,10 @@
     "socialNetworks": "Réseaux sociaux",
     "keywords": "Mots clés",
     "forms": "Formulaires",
+    "evaluation": "Évaluation du lieu",
+    "evaluateButton": "Évaluer le lieu",
+    "evaluateNoData": "Aucune évaluation pour ce lieu pour le moment.",
+    "evaluateLoading": "Chargement des évaluations…",
     "noPois": "Aucun espace disponible"
   },
   "ProfilTiersLieuxAbout": {

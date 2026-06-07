@@ -41,15 +41,11 @@ export function useMultiEvalData({
       if (!api) throw new Error("API non initialisée");
       if (!answerId) throw new Error("answerId requis");
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const response = await (api.endpointApi as any).getCoformMultievalData({
-        answerId,
-        ...(stepKey ? { stepKey } : {}),
-      });
-
-      const raw = response?.serverData?.data ?? response?.data ?? response;
-      const steps = Array.isArray(raw?.steps) ? raw.steps : [];
-      return { steps } as MultiEvalDataResponse;
+      // Pattern entity : `Answer.getMultiEvalData()` wrap l'endpoint
+      // (callIsConnected + extraction `.data.steps`).
+      const answer = await api.answer({ id: answerId });
+      const data = await answer.getMultiEvalData({ stepKey });
+      return data as MultiEvalDataResponse;
     },
     enabled: enabled && isReady,
     // Les datasets ne changent qu'à un save d'une réponse multi-eval — un peu

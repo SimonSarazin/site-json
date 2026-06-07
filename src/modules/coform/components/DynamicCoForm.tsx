@@ -21,7 +21,7 @@ import { DraftRecoveryBanner } from "./DraftRecoveryBanner";
 import { ErrorSummary } from "./ErrorSummary";
 import { AnswerActivityDialog } from "./AnswerActivityDialog";
 import type { CoFormData, SubFormData, AddedOptionsMap, EvaluationValue, CommonTableValue, FinderValue, SimpleTableValue, MultiRadioValue, ExistingAnswerMeta } from "../types";
-import { parseCoFormFields, generateZodSchema, generateDefaultValues, getStepHasMultiEval } from "../utils/formParser";
+import { parseCoFormFields, generateZodSchema, generateDefaultValues, getStepHasMultiEval, getOriginalFieldKey } from "../utils/formParser";
 import { scrollToFieldByName } from "../utils/helpers";
 import { useConditionalFields } from "../hooks/useConditionalFields";
 import { useCoFormDraft } from "../hooks/useCoFormDraft";
@@ -54,6 +54,14 @@ interface DynamicCoFormProps {
   submitRef?: React.RefObject<(() => void) | null>;
   /** Liste de clés d'inputs verrouillés (lecture seule, non modifiables) */
   lockedFields?: string[];
+  /**
+   * Liste de clés d'inputs **complètement masqués** (skip total du rendu).
+   * Calculée serveur-side dans `access.restrictedFields` à partir de
+   * `placeAdminOnlyFields` / `placeMemberOnlyFields` croisés avec le rôle
+   * de l'user sur le lieu. Aligné sur le legacy `isAdminOnly` qui hide
+   * entirely (pas de readonly cosmétique).
+   */
+  restrictedFields?: string[];
   /** ID du formulaire — clé de draft localStorage */
   formId?: string;
   /** ID utilisateur connecté — clé de draft */
@@ -87,6 +95,7 @@ export function DynamicCoForm({
   onDirtyChange,
   submitRef,
   lockedFields,
+  restrictedFields,
   formId,
   userId,
   baseUpdatedAt,
@@ -172,6 +181,7 @@ export function DynamicCoForm({
   }, [formData.inputs]);
 
   const lockedSet = useMemo(() => new Set(lockedFields), [lockedFields]);
+  const restrictedSet = useMemo(() => new Set(restrictedFields ?? []), [restrictedFields]);
 
   // Logique conditionnelle : collecter tous les champs et évaluer la visibilité
   const allFields = subFormsFields.flatMap((sf) => sf.fields);
@@ -335,6 +345,11 @@ export function DynamicCoForm({
             <div className="grid grid-cols-12 gap-6">
               {subForm.fields.map((field) => {
                 if (!isFieldVisible(field.name)) return null;
+                // Skip total : l'user n'a pas le droit selon les listes
+                // place(Admin|Member)OnlyFields. Calculé serveur-side dans
+                // `access.restrictedFields`. Aligné sur le legacy isAdminOnly
+                // qui hide entirely (pas de readonly cosmétique).
+                if (restrictedSet.has(getOriginalFieldKey(field))) return null;
                 const isLocked = lockedSet.has(field.name);
                 // Rendu conditionnel selon le type de champ
                 const fieldElement = (() => { switch (field.componentType) {
