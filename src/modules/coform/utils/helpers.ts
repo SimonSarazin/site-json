@@ -62,11 +62,34 @@ export function mergeStepsData(
  * Ajoute temporairement la classe `coform-attention` pour déclencher un halo visuel
  * (animation CSS de 1.8s déclarée dans index.css) — repère l'œil vers le champ cible.
  * Impératif (hors cycle de render) — aucun ref ni subscription nécessaire.
+ *
+ * Stratégie de résolution :
+ *  1. `[data-field-name="<name>"]` — préféré (wrapper explicite posé par
+ *     DynamicCoForm / MultiStepCoForm / CommonTableField).
+ *  2. Si le wrapper trouvé est en `display:contents`, on remplace par son
+ *     premier enfant rendable — sinon `scrollIntoView` + animation `box-shadow`
+ *     n'ont rien à cibler (pas de bounding box).
+ *  3. Fallback : on cherche l'input par `[name=]` puis on remonte au plus
+ *     proche ancêtre de field via `col-span-*` (pattern grid Tailwind utilisé
+ *     par tous les composants de field).
  */
 export function scrollToFieldByName(name: string): void {
   if (typeof document === "undefined") return;
-  const el = document.querySelector<HTMLElement>(`[data-field-name="${CSS.escape(name)}"]`);
+  let el = document.querySelector<HTMLElement>(`[data-field-name="${CSS.escape(name)}"]`);
+
+  if (!el) {
+    const input = document.querySelector<HTMLElement>(`[name="${CSS.escape(name)}"]`);
+    if (input) {
+      el = input.closest<HTMLElement>('[class*="col-span-"]') ?? input;
+    }
+  }
   if (!el) return;
+
+  if (typeof window !== "undefined" && window.getComputedStyle(el).display === "contents") {
+    const child = el.firstElementChild as HTMLElement | null;
+    if (child) el = child;
+  }
+
   el.scrollIntoView({ behavior: "smooth", block: "center" });
   const focusable = el.querySelector<HTMLElement>(
     'input,textarea,select,[tabindex]:not([tabindex="-1"])'

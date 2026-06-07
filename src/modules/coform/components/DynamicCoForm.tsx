@@ -23,6 +23,7 @@ import { AnswerActivityDialog } from "./AnswerActivityDialog";
 import type { CoFormData, SubFormData, AddedOptionsMap, EvaluationValue, CommonTableValue, FinderValue, SimpleTableValue, MultiRadioValue, ExistingAnswerMeta } from "../types";
 import { parseCoFormFields, generateZodSchema, generateDefaultValues, getStepHasMultiEval, getOriginalFieldKey } from "../utils/formParser";
 import { scrollToFieldByName } from "../utils/helpers";
+import { cn } from "@/lib/utils";
 import { useConditionalFields } from "../hooks/useConditionalFields";
 import { useCoFormDraft } from "../hooks/useCoFormDraft";
 import { useUnsavedChangesWarning } from "../hooks/useUnsavedChangesWarning";
@@ -568,15 +569,31 @@ export function DynamicCoForm({
                   );
               } })();
 
-                // Wrapper verrouillé pour les champs non modifiables
-                if (isLocked && fieldElement) {
-                  return (
-                    <div key={field.name} className="contents pointer-events-none opacity-60 *:cursor-not-allowed">
-                      {fieldElement}
-                    </div>
-                  );
+                // Wrapper avec `data-field-name` pour permettre au récap
+                // d'erreurs (`ErrorSummary`) de scroller + highlight via
+                // `scrollToFieldByName`. `display: contents` → ne casse pas
+                // le grid (les enfants restent items du grid parent). Les
+                // composants de field qui ont déjà leur propre attribut (ex.
+                // `CommonTableField`) restent prioritaires côté querySelector.
+                if (!fieldElement) return null;
+                if (
+                  field.componentType === "sectionTitle" ||
+                  field.componentType === "sectionDescription"
+                ) {
+                  return fieldElement;
                 }
-                return fieldElement;
+                return (
+                  <div
+                    key={field.name}
+                    data-field-name={field.name}
+                    className={cn(
+                      "contents",
+                      isLocked && "pointer-events-none opacity-60 *:cursor-not-allowed",
+                    )}
+                  >
+                    {fieldElement}
+                  </div>
+                );
             })}
             </div>
           );

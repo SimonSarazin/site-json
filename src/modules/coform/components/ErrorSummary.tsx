@@ -1,4 +1,3 @@
-import { memo, useMemo } from "react";
 import type { FieldErrors } from "react-hook-form";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -14,20 +13,26 @@ interface ErrorSummaryProps {
   className?: string;
 }
 
-function ErrorSummaryImpl({ errors, fields, serverError, onFieldClick, className }: ErrorSummaryProps) {
+/**
+ * Pas de `memo`, pas de `useMemo` sur `entries` : RHF peut **muter**
+ * `_formState.errors` en place (path `p()/z()` pour la revalidation d'un
+ * champ unique en mode `onChange`), gardant la même référence. Toute
+ * memoization basée sur cette référence — `memo()` ou `useMemo([errors])` —
+ * masque les changements de contenu et fige le récap. Comme le composant
+ * rend au plus quelques entrées, on recalcule à chaque render du parent
+ * (déclenché par la subscription `useFormState` côté MultiStepCoForm).
+ */
+export function ErrorSummary({ errors, fields, serverError, onFieldClick, className }: ErrorSummaryProps) {
   const t = useT("modules/coform");
 
-  const entries = useMemo(() => {
-    const names = Object.keys(errors);
-    if (names.length === 0) return [];
-    const byName = new Map<string, FormFieldMapping>();
-    for (const f of fields) byName.set(f.name, f);
-    return names.map((name) => ({
-      name,
-      label: byName.get(name)?.label ?? name,
-      message: (errors[name]?.message as string | undefined) ?? "",
-    }));
-  }, [errors, fields]);
+  const names = Object.keys(errors);
+  const byName = new Map<string, FormFieldMapping>();
+  for (const f of fields) byName.set(f.name, f);
+  const entries = names.map((name) => ({
+    name,
+    label: byName.get(name)?.label ?? name,
+    message: (errors[name]?.message as string | undefined) ?? "",
+  }));
 
   if (entries.length === 0 && !serverError) return null;
 
@@ -79,5 +84,3 @@ function ErrorSummaryImpl({ errors, fields, serverError, onFieldClick, className
     </Alert>
   );
 }
-
-export const ErrorSummary = memo(ErrorSummaryImpl);
