@@ -379,6 +379,7 @@ export const addPoiSchema = z.object({
   equip_douche: z.boolean().optional(),
   equip_loc_type: z.array(z.string()).optional(),
   equip_utilisateur: z.array(z.string()).optional(),
+  inst_nom: z.string().optional(),
 
   // GEO (spécifique aux add schemas)
   geo: geoSchema.optional(),

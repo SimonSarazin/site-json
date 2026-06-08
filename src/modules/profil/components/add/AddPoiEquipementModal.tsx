@@ -178,6 +178,7 @@ const createEmptyDefaults = (): AddPoiFormData => ({
 	equip_douche: false,
 	equip_loc_type: [],
 	equip_utilisateur: [],
+	inst_nom: "",
 });
 
 const toStringValue = (value: unknown): string => {
@@ -269,6 +270,7 @@ const buildEditDefaults = (poi: EntityTypes | null | undefined): AddPoiFormData 
 		equip_douche: toBooleanValue(getField("equip_douche")),
 		equip_loc_type: toStringArray(getField("equip_loc_type")),
 		equip_utilisateur: toStringArray(getField("equip_utilisateur")),
+		inst_nom: toStringValue(getField("inst_nom")),
 	};
 };
 
@@ -988,13 +990,26 @@ export function AddPoiEquipementModal({
 											)}
 										/>
 									</div>
+									<FormField
+										control={form.control}
+										name="inst_nom"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>Nom de l'institution</FormLabel>
+												<FormControl>
+													<Input value={typeof field.value === "string" ? field.value : ""} onChange={field.onChange} onBlur={field.onBlur} ref={field.ref} name={field.name} />
+												</FormControl>
+												<TranslatedFormMessage />
+											</FormItem>
+										)}
+									/>
 
 									<FormField
 										control={form.control}
 										name="categorie"
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>Categorie</FormLabel>
+												<FormLabel>Catégorie</FormLabel>
 												<FormControl>
 													<Input value={typeof field.value === "string" ? field.value : ""} onChange={field.onChange} onBlur={field.onBlur} ref={field.ref} name={field.name} />
 												</FormControl>
