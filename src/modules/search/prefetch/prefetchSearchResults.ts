@@ -2,6 +2,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import { getBaseUrl } from "@/lib/constant/common";
 import { initApi } from "@/lib/apiClient";
 import { SEARCH_QUERY_KEYS, type SearchQueryKeyParams } from "../constants/queryKeys";
+import { buildSearchPayload, type SearchBaseParamsInput } from "../lib/buildSearchPayload";
 
 // Re-export du type pour backward compatibility
 export type SearchPrefetchParams = SearchQueryKeyParams;
@@ -53,51 +54,24 @@ export async function prefetchSearchResults(
           };
         }
 
-        const type = params.searchType
+        const typeFlat = (params.searchType
           ? Object.values(params.searchType).flat()
-          : [];
-        const tags = Object.values(params.searchTags).flat();
+          : []) as string[];
+        const tags = Object.values(params.searchTags).flat() as string[];
 
-        const {
-          fediverse = false,
-          indexStepList = 10,
-          indexStepMap = 0,
-          defaultTypes,
-          defaultTags,
-          defaultFilters,
-          defaultFields,
-          defaultSortBy,
-          searchBy,
-          notSourceKey,
-        } = params.baseParams as Record<string, unknown>;
-
-        const apiParam: Record<string, unknown> = {
+        // Construire le payload via la MÊME source que le client
+        // (`useSearchQuery` → `buildSearchPayload`). Indispensable : la
+        // construction manuelle précédente ignorait les params de scope
+        // (`sourceKey`, `costumSlug`, `contextId`, `contextType`, `costumEditMode`)
+        // → le SSR fetchait un périmètre différent du client (ex. events scopés
+        // par `sourceKey` uniquement côté client) → résultats SSR ≠ hydratés.
+        const apiParam = buildSearchPayload(params.baseParams as SearchBaseParamsInput, {
           name: params.searchText,
-          fediverse,
-          indexMin: 0,
-          indexStep: params.mapUsed ? indexStepMap : indexStepList,
-        };
-
-        if (tags.length > 0) {
-          apiParam.searchTags = tags;
-          apiParam.options = { tags: { verb: "$all" } };
-        }
-
-        if (defaultFilters) apiParam.filters = defaultFilters;
-        if (defaultFields) apiParam.fields = defaultFields;
-        if (defaultSortBy) apiParam.sortBy = defaultSortBy;
-        if (searchBy !== undefined) apiParam.searchBy = searchBy;
-        if (notSourceKey) apiParam.notSourceKey = true;
-
-        if (type.length > 0) {
-          apiParam.searchType = type;
-        } else if (defaultTypes) {
-          apiParam.searchType = defaultTypes;
-        }
-
-        if (defaultTags && Array.isArray(defaultTags) && defaultTags.length > 0) {
-          apiParam.searchTags = defaultTags;
-        }
+          tags,
+          type: typeFlat,
+          mapUsed: params.mapUsed,
+          graphUsed: params.graphUsed,
+        }) as Record<string, unknown>;
 
         if (!apiParam.searchType) {
           return {

@@ -396,3 +396,34 @@ export type ProfileOpeningHoursSection = z.infer<typeof ProfileOpeningHoursSecti
 export type ProfileTabLayoutSection = z.infer<typeof ProfileTabLayoutSectionSchema>;
 export type ProfileTiersLieuxAboutSection = z.infer<typeof ProfileTiersLieuxAboutSectionSchema>;
 export type ProfileTiersLieuxInfoSection = z.infer<typeof ProfileTiersLieuxInfoSectionSchema>;
+//──────────────── Section site `member`
+// Section JSON-driven (SectionRenderer) affichant les membres/contributeurs/
+// participants d'une entité. L'entité est résolue par `useSectionEntity`
+// (slug → fetch, sinon contexte). Rendu par le cœur générique `<EntityMembers>`.
+const MemberCardConfSchema = z.object({
+  type: z.enum(["default", "profile"]).default("default"),
+  showDescription: z.boolean().optional().default(true),
+  showAddress: z.boolean().optional().default(true),
+  detailsMode: z.enum(["drawer", "dialog", "link"]).default("link"),
+}).partial();
+
+export type MemberCardConf = z.infer<typeof MemberCardConfSchema>;
+
+export const MemberSectionSchema = z.object({
+  type: z.literal("member"),
+  id: z.string().optional(),
+  props: z.object({
+    // Slug de l'entité à afficher. Absent → entité du contexte (page profil / costum).
+    slug: z.string().optional(),
+    title: LocalizedString.optional(),
+    showRole: z.boolean().optional().default(true),
+    showManagement: z.boolean().optional().default(false),
+    showCard: z.boolean().optional().default(true),
+    // Recherche affichée par défaut (l'ancienne section l'affichait toujours).
+    search: z.boolean().optional().default(true),
+    card: MemberCardConfSchema.optional(),
+  }),
+});
+
+export type MemberSection = z.infer<typeof MemberSectionSchema>;
+export type MemberSectionProps = z.infer<typeof MemberSectionSchema>["props"];

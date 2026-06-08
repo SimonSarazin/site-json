@@ -62,6 +62,8 @@ export type {
   ProfileTagsSection,
   ProfileOpeningHoursSection,
   ProfileTabLayoutSection,
+  MemberSection,
+  MemberSectionProps,
 } from "./schema";
 
 export {
@@ -88,6 +90,7 @@ export {
   ProfileTagsSectionSchema,
   ProfileOpeningHoursSectionSchema,
   ProfileTabLayoutSectionSchema,
+  MemberSectionSchema,
 } from "./schema";
 
 // Query keys centralisés (single source of truth)
