@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { EntityTypes, GlobalAutocompleteCostumData, SearchEntity } from "@communecter/cocolight-api-client";
@@ -20,8 +20,10 @@ import { Input } from "@/components/ui/input";
 import { SelectObject } from "@/components/ui/select-objet";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { addPoiSchema, type AddPoiFormData } from "../../schemaForm";
 import { useAddPoi } from "../../hooks/useAddMutations";
+import { transformFormDataWithAddress } from "../../hooks/mutationUtils";
 import { TranslatedFormMessage } from "../profile-edit/fields/TranslatedFormMessage";
 import { EditLocationTab } from "../profile-edit/EditLocationTab";
 import { FormFieldName, FormFieldTags, ParentInfoReadonly } from "../profile-edit/fields";
@@ -127,6 +129,149 @@ const PSHS_FIELDS = [
 
 const SearchableSelect = SelectObject;
 
+const createEmptyDefaults = (): AddPoiFormData => ({
+	name: "",
+	type: "recoveryCenter",
+	description: "",
+	tags: [],
+	urls: [],
+	addressCountry: "RE",
+	addressLocality: "",
+	localityId: "",
+	postalCode: "",
+	streetAddress: "",
+	inst_acc_handi_bool: false,
+	inst_trans_bool: false,
+	equip_type_name: "",
+	equip_type_famille: "",
+	inst_date_creation: "",
+	inst_enqu_date: "",
+	equip_maj_date: "",
+	equip_nature: "",
+	equip_sol: "",
+	equip_surf: "",
+	equip_eclair: false,
+	categorie: "",
+	aps_name: [],
+	equip_acc_libre: false,
+	inst_acc_handi_type: "",
+	inst_trans_type: "",
+	inst_part_bool: false,
+	inst_part_type: [],
+	equip_prop_nom: "",
+	equip_prop_type: "",
+	equip_gest_type: "",
+	equip_pmr_acc: false,
+	equip_pmr_chem: false,
+	equip_pmr_douche: false,
+	equip_pmr_sanit: false,
+	equip_pmr_trib: false,
+	equip_pmr_vest: false,
+	equip_pshs_aire: false,
+	equip_pshs_chem: false,
+	equip_pshs_sanit: false,
+	equip_pshs_trib: false,
+	equip_pshs_vest: false,
+	equip_pshs_sign: false,
+	equip_larg: "",
+	equip_long: "",
+	equip_douche: false,
+	equip_loc_type: [],
+	equip_utilisateur: [],
+});
+
+const toStringValue = (value: unknown): string => {
+	if (typeof value === "string") return value;
+	if (typeof value === "number") return String(value);
+	return "";
+};
+
+const toBooleanValue = (value: unknown): boolean => {
+	if (typeof value === "boolean") return value;
+	if (typeof value === "number") return value === 1;
+	if (typeof value === "string") {
+		return ["true", "1", "oui", "yes"].includes(value.trim().toLowerCase());
+	}
+	return false;
+};
+
+const toStringArray = (value: unknown): string[] => {
+	if (Array.isArray(value)) {
+		return value.filter((entry): entry is string => typeof entry === "string" && entry.trim().length > 0);
+	}
+	if (typeof value === "string") {
+		return value
+			.split(",")
+			.map((entry) => entry.trim())
+			.filter((entry) => entry.length > 0);
+	}
+	return [];
+};
+
+const buildEditDefaults = (poi: EntityTypes | null | undefined): AddPoiFormData => {
+	const defaults = createEmptyDefaults();
+	if (!poi) return defaults;
+
+	const entityData = (poi ?? {}) as unknown as Record<string, unknown>;
+	const serverData = (poi?.serverData ?? {}) as Record<string, unknown>;
+	const address = (serverData.address ?? entityData.address) as Record<string, unknown> | undefined;
+	const getField = (field: string) => serverData[field] ?? entityData[field];
+
+	const resolvedType = toStringValue(getField("type"));
+
+	return {
+		...defaults,
+		name: toStringValue(getField("name")) || defaults.name,
+		type: (resolvedType || defaults.type) as AddPoiFormData["type"],
+		description: toStringValue(getField("description")) || defaults.description,
+		tags: toStringArray(getField("tags")),
+		urls: toStringArray(getField("urls")),
+		addressCountry: toStringValue(address?.addressCountry) || defaults.addressCountry,
+		addressLocality: toStringValue(address?.addressLocality),
+		localityId: toStringValue(address?.localityId),
+		postalCode: toStringValue(address?.postalCode),
+		streetAddress: toStringValue(address?.streetAddress),
+		inst_acc_handi_bool: toBooleanValue(getField("inst_acc_handi_bool")),
+		inst_trans_bool: toBooleanValue(getField("inst_trans_bool")),
+		equip_type_name: toStringValue(getField("equip_type_name")),
+		equip_type_famille: toStringValue(getField("equip_type_famille")),
+		inst_date_creation: toStringValue(getField("inst_date_creation")),
+		inst_enqu_date: toStringValue(getField("inst_enqu_date")),
+		equip_maj_date: toStringValue(getField("equip_maj_date")),
+		equip_nature: toStringValue(getField("equip_nature")),
+		equip_sol: toStringValue(getField("equip_sol")),
+		equip_surf: toStringValue(getField("equip_surf")),
+		equip_eclair: toBooleanValue(getField("equip_eclair")),
+		categorie: toStringValue(getField("categorie")),
+		aps_name: toStringArray(getField("aps_name")),
+		equip_acc_libre: toBooleanValue(getField("equip_acc_libre")),
+		inst_acc_handi_type: toStringValue(getField("inst_acc_handi_type")),
+		inst_trans_type: toStringValue(getField("inst_trans_type")),
+		inst_part_bool: toBooleanValue(getField("inst_part_bool")),
+		inst_part_type: toStringArray(getField("inst_part_type")),
+		equip_prop_nom: toStringValue(getField("equip_prop_nom")),
+		equip_prop_type: toStringValue(getField("equip_prop_type")),
+		equip_gest_type: toStringValue(getField("equip_gest_type")),
+		equip_pmr_acc: toBooleanValue(getField("equip_pmr_acc")),
+		equip_pmr_chem: toBooleanValue(getField("equip_pmr_chem")),
+		equip_pmr_douche: toBooleanValue(getField("equip_pmr_douche")),
+		equip_pmr_sanit: toBooleanValue(getField("equip_pmr_sanit")),
+		equip_pmr_trib: toBooleanValue(getField("equip_pmr_trib")),
+		equip_pmr_vest: toBooleanValue(getField("equip_pmr_vest")),
+		equip_pshs_aire: toBooleanValue(getField("equip_pshs_aire")),
+		equip_pshs_chem: toBooleanValue(getField("equip_pshs_chem")),
+		equip_pshs_sanit: toBooleanValue(getField("equip_pshs_sanit")),
+		equip_pshs_trib: toBooleanValue(getField("equip_pshs_trib")),
+		equip_pshs_vest: toBooleanValue(getField("equip_pshs_vest")),
+		equip_pshs_sign: toBooleanValue(getField("equip_pshs_sign")),
+		equip_larg: toStringValue(getField("equip_larg")),
+		equip_long: toStringValue(getField("equip_long")),
+		equip_douche: toBooleanValue(getField("equip_douche")),
+		equip_loc_type: toStringArray(getField("equip_loc_type")),
+		equip_utilisateur: toStringArray(getField("equip_utilisateur")),
+	};
+};
+
 const toggleArrayValue = (values: string[] | undefined, value: string) => {
 	const current = Array.isArray(values) ? values : [];
 	return current.includes(value)
@@ -137,6 +282,8 @@ const toggleArrayValue = (values: string[] | undefined, value: string) => {
 interface AddPoiEquipementModalProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
+	mode?: "add" | "edit";
+	poi?: EntityTypes | null;
 	parent?: EntityTypes | null;
 }
 
@@ -167,11 +314,45 @@ function resolvePoiId(value: unknown): string | undefined {
 export function AddPoiEquipementModal({
 	open,
 	onOpenChange,
+	mode = "add",
+	poi,
 	parent,
 }: AddPoiEquipementModalProps) {
 	const t = useT("modules/profil");
-	const addMutation = useAddPoi(parent);
+	const isEditMode = mode === "edit" && Boolean(poi);
 	const { entity, helper } = useCocolight();
+	const addMutation = useAddPoi(parent);
+	const updateMutation = useMutationWithToast<{ poi: EntityTypes }, AddPoiFormData>({
+		mutationFn: async (data) => {
+			if (!isEditMode || !poi) {
+				throw new Error("No entity provided");
+			}
+
+			const transformedData = transformFormDataWithAddress(data);
+
+			const isEmpty = (value: unknown): boolean => {
+				if (value === undefined || value === null) return true;
+				if (typeof value === "string" && value.trim() === "") return true;
+				if (Array.isArray(value) && value.length === 0) return true;
+				if (typeof value === "object" && Object.keys(value).length === 0 && value.constructor === Object) return true;
+				return false;
+			};
+
+			// updateField appelle endpointApi.updatePathValue()
+			for (const [path, value] of Object.entries(transformedData)) {
+				if (isEmpty(value)) continue;
+				await poi.updateField(path, value);
+			}
+
+			// Rafraîchir les données du POI depuis le serveur
+			await poi.refresh();
+
+			return { poi };
+		},
+		namespace: "modules/profil",
+		successKey: "toast.profile.updateSuccess",
+		errorKey: "toast.profile.updateError",
+	});
 	const [activeStep, setActiveStep] = useState<StepKey>("general");
 	const [stepAttempted, setStepAttempted] = useState<Record<StepKey, boolean>>({
 		general: false,
@@ -217,59 +398,34 @@ export function AddPoiEquipementModal({
 		return values.filter((value): value is string => typeof value === "string");
 	};
 
+	const emptyDefaults = useMemo(() => createEmptyDefaults(), []);
 	const form = useForm<AddPoiFormData>({
 		resolver: zodResolver(addPoiSchema) as Resolver<AddPoiFormData>,
-		defaultValues: {
-			name: "",
-			type: "recoveryCenter",
-			description: "",
-			tags: [],
-			urls: [],
-			addressCountry: "RE",
-			addressLocality: "",
-			localityId: "",
-			postalCode: "",
-			streetAddress: "",
-			inst_acc_handi_bool: false,
-			inst_trans_bool: false,
-			equip_type_name: "",
-			equip_type_famille: "",
-			inst_date_creation: "",
-			inst_enqu_date: "",
-			equip_maj_date: "",
-			equip_nature: "",
-			equip_sol: "",
-			equip_surf: "",
-			equip_eclair: false,
-			categorie: "",
-			aps_name: [],
-			equip_acc_libre: false,
-			inst_acc_handi_type: "",
-			inst_trans_type: "",
-			inst_part_bool: false,
-			inst_part_type: [],
-			equip_prop_nom: "",
-			equip_prop_type: "",
-			equip_gest_type: "",
-			equip_pmr_acc: false,
-			equip_pmr_chem: false,
-			equip_pmr_douche: false,
-			equip_pmr_sanit: false,
-			equip_pmr_trib: false,
-			equip_pmr_vest: false,
-			equip_pshs_aire: false,
-			equip_pshs_chem: false,
-			equip_pshs_sanit: false,
-			equip_pshs_trib: false,
-			equip_pshs_vest: false,
-			equip_pshs_sign: false,
-			equip_larg: "",
-			equip_long: "",
-			equip_douche: false,
-			equip_loc_type: [],
-			equip_utilisateur: [],
-		},
+		defaultValues: emptyDefaults,
 	});
+	useEffect(() => {
+		if (!open) return;
+		if (isEditMode) {
+			form.reset(buildEditDefaults(poi));
+			setActiveStep("general");
+			setStepAttempted({
+				general: false,
+				legal: false,
+				structure: false,
+				usage: false,
+			});
+			return;
+		}
+		form.reset(emptyDefaults);
+		setActiveStep("general");
+		setStepAttempted({
+			general: false,
+			legal: false,
+			structure: false,
+			usage: false,
+		});
+	}, [open, isEditMode, poi, form, emptyDefaults]);
+
 
 	const equipLong = form.watch("equip_long");
 	const equipLarg = form.watch("equip_larg");
@@ -515,12 +671,16 @@ export function AddPoiEquipementModal({
 
 	const handleSubmit = async (data: AddPoiFormData) => {
 		try {
-			await addMutation.mutateAsync(data);
-			form.reset();
+			if (isEditMode) {
+				await updateMutation.mutateAsync(data);
+			} else {
+				await addMutation.mutateAsync(data);
+			}
+			form.reset(emptyDefaults);
 			setActiveStep("general");
 			onOpenChange(false);
 		} catch {
-			// Error handling is done in the mutation
+			
 		}
 	};
 
@@ -579,13 +739,18 @@ export function AddPoiEquipementModal({
 
 	const activeStepIndex = STEP_ORDER.indexOf(activeStep);
 	const canSubmit = activeStep === "usage";
+	const isSaving = isEditMode ? updateMutation.isPending : addMutation.isPending;
 
 	return (
 		<Dialog open={open} onOpenChange={handleClose}>
 			<DialogContent className="sm:max-w-[840px] max-h-[90vh] flex flex-col">
 				<DialogHeader>
-					<DialogTitle>Ajouter un equipement</DialogTitle>
-					<DialogDescription>Completer les informations de l'equipement.</DialogDescription>
+					<DialogTitle>{isEditMode ? "Editer un equipement" : "Ajouter un equipement"}</DialogTitle>
+					<DialogDescription>
+						{isEditMode
+							? "Mettre a jour les informations de l'equipement."
+							: "Completer les informations de l'equipement."}
+					</DialogDescription>
 				</DialogHeader>
 
 				<Form {...form}>
@@ -1134,19 +1299,19 @@ export function AddPoiEquipementModal({
 
 						<DialogFooter className="mt-6 pt-4 border-t border-border">
 							<div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-								<Button type="button" variant="outline" onClick={handlePrevious} disabled={activeStep === "general" || addMutation.isPending}>
+								<Button type="button" variant="outline" onClick={handlePrevious} disabled={activeStep === "general" || isSaving}>
 									Precedent
 								</Button>
 								<div className="flex items-center gap-2">
 									{canSubmit ? (
-										<Button type="submit" onClick={() => form.clearErrors()} disabled={addMutation.isPending}>
-											{addMutation.isPending ? (
+											<Button type="submit" onClick={() => form.clearErrors()} disabled={isSaving}>
+												{isSaving ? (
 												<>
 													<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-													{t("ProfileEdit.saving")}
+														{t("ProfileEdit.saving")}
 												</>
 											) : (
-												t("AddEntity.create")
+													isEditMode ? t("ProfileEdit.save") : t("AddEntity.create")
 											)}
 										</Button>
 									) : (
@@ -1156,7 +1321,7 @@ export function AddPoiEquipementModal({
 												event.preventDefault();
 												void handleNext();
 											}}
-											disabled={addMutation.isPending}
+											disabled={isSaving}
 										>
 											Suivant
 										</Button>

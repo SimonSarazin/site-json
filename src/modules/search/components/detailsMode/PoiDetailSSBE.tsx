@@ -2,13 +2,11 @@ import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useEffect, useState } from "react";
 import { useCocolight } from "@/hooks/useCocolight";
-import { useSite } from "@/hooks/useSite";
 import type { GlobalAutocompleteCostumData } from "@communecter/cocolight-api-client";
 import ProfileMapLeaflet from "@/modules/profil/components/sections/ProfileMapLeaflet";
 import { Button } from "@/components/ui/button";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
-import { EditProfileModal } from "@/modules/profil/components/profile-edit/EditProfileModal";
-import { ProfileEntityProvider, type ProfileConfig, type ProfileType } from "@/modules/profil";
+import { AddPoiEquipementModal } from "@/modules/profil/components/add";
 import {
   Accessibility,
   Building2,
@@ -111,10 +109,6 @@ const ACTIVITY_FORM_SUFFIX = "2172025_854_0";
 const ACTIVITY_NAME_SUFFIX = "mdegc9sgox76p87n27";
 const ACTIVITY_PARENT_SUFFIX = "mdn1fzoewyjg66n85p";
 const ACTIVITY_POI_FINDER_SUFFIX = "mocno9muqzznoo0gyx";
-
-function isValidProfileKey(key: string): key is ProfileType | "default" {
-  return ["events", "organizations", "projects", "citoyens", "poi", "default"].includes(key);
-}
 
 const isTrue = (value?: string) => {
   if (!value) return false;
@@ -579,7 +573,6 @@ function Feature({
 
 export default function PoiDetailSSBE({ openDetails, setOpenDetails, item }: DetailsModeProps) {
   const { entity } = useCocolight();
-  const { config: siteConfig } = useSite();
   const { canEditProfile } = useProfilPermissions(item ?? null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const poi = toPoi(item);
@@ -615,22 +608,6 @@ export default function PoiDetailSSBE({ openDetails, setOpenDetails, item }: Det
       Number.isFinite(poi.geo.longitude)
   );
   const poiId = resolveItemId(item);
-    const rawEntityType = item?.getEntityType?.() || "";
-    const entityType = isValidProfileKey(rawEntityType) ? rawEntityType : "default";
-    const profileConfig: ProfileConfig =
-      (entityType !== "default" && siteConfig?.profiles?.[entityType]) ||
-      siteConfig?.profiles?.default ||
-      {
-        layout: "default",
-        sections: [
-          { type: "profile-header" as const, variant: "hero" as const },
-          { type: "profile-info" as const },
-          { type: "profile-about" as const },
-          { type: "profile-organizer" as const },
-        ],
-        hideHeader: false,
-        hideFooter: false,
-      };
   const [activities, setActivities] = useState<PoiActivity[]>([]);
   const [isActivitiesLoading, setIsActivitiesLoading] = useState(false);
   const [activitiesError, setActivitiesError] = useState<Error | null>(null);
@@ -1133,13 +1110,12 @@ export default function PoiDetailSSBE({ openDetails, setOpenDetails, item }: Det
       </Dialog>
 
       {canEditProfile && item && (
-        <ProfileEntityProvider entity={item} config={profileConfig} entityType={entityType}>
-          <EditProfileModal
-            open={editModalOpen}
-            onOpenChange={setEditModalOpen}
-            entity={item}
-          />
-        </ProfileEntityProvider>
+        <AddPoiEquipementModal
+          open={editModalOpen}
+          onOpenChange={setEditModalOpen}
+          mode="edit"
+          poi={item}
+        />
       )}
     </>
   );
