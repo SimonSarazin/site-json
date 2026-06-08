@@ -6,13 +6,15 @@
 // Validation : Zod 4.x – le schéma sert à la fois de typings, de runtime‑guard,
 //               et d'autocomplétion dans VS Code.
 // ------------------------------------------------------------
-import { SearchProSectionSchema, SearchProStaticSectionSchema, CardCountCTSectionSchema, ThematicsSectionSchema, FiltersSectionSchema, SearchVariantSchema, SearchBaseParamsSchema, FilterGroupsSchema, FiltersByAnswersSchema } from "@/modules/search/schema";
+import { SearchProSectionSchema, SearchProStaticSectionSchema, CardCountCTSectionSchema, ThematicsSectionSchema, FiltersSectionSchema, SearchVariantSchema, SearchBaseParamsSchema, FilterGroupsSchema, FiltersByAnswersSchema, SearchHeaderSectionSchema, TitleWithFiltersRezoLaMerSchema } from "@/modules/search/schema";
 import { NewsSectionSchema } from "@/modules/news/schema";
 import { NotificationsSectionSchema } from "@/modules/notification/schema";
+import { JsonFormModalConfigSchema } from "./form-modal-schema";
+import { ActionButtonSchema } from "./action-button-schema";
 import { z } from "zod";
 import { LocalizedString, LOCALES } from "./locale-schema";
 export { LocalizedString, LOCALES };
-import { ProfilesConfigSchema } from "../modules/profil/schema";
+import { ProfilesConfigSchema, MemberSectionSchema } from "../modules/profil/schema";
 import { AmpliConfigSchema } from "@/modules/ampli/schema";
 import { CommandPaletteConfigSchema } from "@/modules/commandPalette/schema";
 import { VisibilityConditionSchema } from "@/lib/visibility/schema";
@@ -475,101 +477,22 @@ export const CallToActionRezoLaMerSchema = z.object({
 export type CallToActionRezoLaMer = z.infer<typeof CallToActionRezoLaMerSchema>;
 export type CallToActionRezoLaMerProps = z.infer<typeof CallToActionRezoLaMerSchema>["props"];
 
-const JsonFormModalFieldSchema = z.object({
-  name: z.string(),
-  label: LocalizedString,
-  type: z.enum(["text", "email", "tel", "number", "textarea", "select", "multiselect", "checkbox", "radio", "date", "url", "location", "file"]).default("text"),
-  required: z.boolean().default(false),
-  placeholder: LocalizedString.optional(),
-  options: z.array(z.object({ value: z.string(), label: LocalizedString })).optional(),
-  validation: z.string().optional(),
-});
-
-const JsonFormModalStepSchema = z.object({
-  title: LocalizedString,
-  description: LocalizedString.optional(),
-  icon: z.string().optional(),
-  fields: z.array(JsonFormModalFieldSchema),
-});
-
-export const JsonFormModalConfigSchema = z.object({
-  title: LocalizedString,
-  icon: z.string().optional(),
-  steps: z.array(JsonFormModalStepSchema).optional(),
-  fields: z.array(JsonFormModalFieldSchema).optional(),
-  submitLabel: LocalizedString,
-  submitMode: z.enum(["fetch", "sdk"]).default("fetch"),
-  entityType: z.enum(["organization", "project", "event", "poi"]).optional(),
-  action: z.string().optional(),
-  method: z.enum(["GET", "POST"]).default("POST"),
-  successMessage: LocalizedString.optional(),
-  errorMessage: LocalizedString.optional(),
-  tagsFrom: z.array(z.string()).optional(),
-  extraData: z.record(z.string(), z.unknown()).optional(),
-});
-
-export type JsonFormModalConfig = z.infer<typeof JsonFormModalConfigSchema>;
-export type JsonFormModalField = z.infer<typeof JsonFormModalFieldSchema>;
-export type JsonFormModalStep = z.infer<typeof JsonFormModalStepSchema>;
-
-//──────────────── Title With Filters Rézo la Mer
-export const ActionButtonSchema = z.object({
-  label: LocalizedString,
-  icon: z.string().optional(),
-  href: z.string().optional(),
-  variant: z.enum(["default", "outline", "primary", "turquoise"]).optional(),
-  action: z.enum(["join-dropdown", "add-project", "add-event", "add-poi", "add-organization", "add-structure", "add-offer"]).optional(),
-  modal: z.string().optional(),
-  formConfig: JsonFormModalConfigSchema.optional(),
-  requiresAdmin: z.boolean().optional(),
-});
-
-export type ActionButton = z.infer<typeof ActionButtonSchema>;
-
-const TitleWithFiltersDropdownOptionSchema = z.object({
-  id: z.string(),
-  label: LocalizedString,
-  value: z.string().optional(),
-  field: z.string().optional(),
-  icon: z.string().optional(),
-});
-
-const TitleWithFiltersDropdownSchema = z.object({
-  id: z.string(),
-  label: LocalizedString,
-  field: z.string().optional(),
-  multiple: z.boolean().optional(),
-  allLabel: LocalizedString.optional(),
-  options: z.array(TitleWithFiltersDropdownOptionSchema).default([]),
-});
-
-export const TitleWithFiltersRezoLaMerSchema = z.object({
-  type: z.literal("title-with-filters-rezo-la-mer"),
-  id: z.string().optional(),
-  props: z.object({
-    headline: LocalizedString.optional(),
-    subhead: LocalizedString.optional(),
-    categories: z.array(
-      z.object({
-        id: z.string(),
-        label: LocalizedString,
-      })
-    ).optional(),
-    types: z.array(
-      z.object({
-        id: z.string(),
-        label: LocalizedString,
-      })
-    ).optional(),
-    dropdownFilters: z.array(TitleWithFiltersDropdownSchema).optional(),
-    buttons: z.array(ActionButtonSchema).optional(),
-    showSearch: z.boolean().optional(),
-    searchPlaceholder: LocalizedString.optional(),
-  }),
-});
-
-export type TitleWithFiltersRezoLaMer = z.infer<typeof TitleWithFiltersRezoLaMerSchema>;
-export type TitleWithFiltersRezoLaMerProps = z.infer<typeof TitleWithFiltersRezoLaMerSchema>["props"];
+// ─── Schémas déplacés — réexportés ici pour rétro-compat des imports `@/types/site-schema` ───
+// • JsonFormModal*  → `./form-modal-schema` (feuille partagée, sans cycle)
+// • ActionButton*   → `./action-button-schema` (feuille neutre : contrat partagé
+//   searchHeader ↔ profil, cf. `ActionButtonGroup`)
+// • searchHeader / title-with-filters-rezo-la-mer → `@/modules/search/schema`
+//   (vivent avec leur section). Importés ci-dessus pour l'union discriminée et
+//   l'usage local (CommuneTransparente), réexportés ci-dessous.
+export { JsonFormModalConfigSchema, ActionButtonSchema, SearchHeaderSectionSchema, TitleWithFiltersRezoLaMerSchema };
+export type { JsonFormModalConfig, JsonFormModalField, JsonFormModalStep } from "./form-modal-schema";
+export type { ActionButton } from "./action-button-schema";
+export type {
+  SearchHeaderSection,
+  SearchHeaderSectionProps,
+  TitleWithFiltersRezoLaMer,
+  TitleWithFiltersRezoLaMerProps,
+} from "@/modules/search/schema";
 
 // ──────────────── Meeteem Props
 
@@ -1336,36 +1259,11 @@ export type ContentSection = z.infer<typeof ContentSectionSchema>;
 export type ContentSectionProps = z.infer<typeof ContentSectionSchema>["props"];
 
 //───────────────────────────────────────────────────────────────
-// Section Member (for organizations and projects)
+// Section Member — schéma déplacé dans `@/modules/profil/schema`
+// (vit avec son cœur `<EntityMembers>`). Importé pour l'union + réexporté ici
+// pour rétro-compat des imports `@/types/site-schema`.
 //───────────────────────────────────────────────────────────────
-const MemberCardConfSchema = z.object({
-  type: z.enum(["default", "profile"]).default("default"),
-  showDescription: z.boolean().optional().default(true),
-  showAddress: z.boolean().optional().default(true),
-  detailsMode: z.enum(["drawer", "dialog", "link"]).default("link"),
-}).partial();
-
-export type MemberCardConf = z.infer<typeof MemberCardConfSchema>;
-
-const MemberSectionSchema = z.object({
-  type: z.literal("member"),
-  id: z.string().optional(),
-  props: z.object({
-    organizationId: z.string().optional(),
-    projectId: z.string().optional(),
-    title: LocalizedString.optional(),
-    showRole: z.boolean().optional().default(true),
-    showManagement: z.boolean().optional().default(false),
-    showCard: z.boolean().optional().default(true),
-    showMap: z.boolean().optional().default(false),
-    enableMap: z.boolean().optional().default(false),
-    limit: z.number().optional(),
-    card: MemberCardConfSchema.optional(),
-  }),
-});
-
-export type MemberSection = z.infer<typeof MemberSectionSchema>;
-export type MemberSectionProps = z.infer<typeof MemberSectionSchema>["props"];
+export type { MemberSection, MemberSectionProps, MemberCardConf } from "../modules/profil/schema";
 
 //──────────────── Sections du module cagnotte (schemas définis dans le module)
 // Cf. src/modules/cagnotte/schema.ts
@@ -1437,6 +1335,7 @@ export const Section = z.discriminatedUnion("type", [
   CommunityRezoLaMerSchema,
   CallToActionRezoLaMerSchema,
   TitleWithFiltersRezoLaMerSchema,
+  SearchHeaderSectionSchema,
   CommuneTransparenteActionsSectionSchema,
   CategoriesGridSectionSchema,
   MarkdownSectionSchema,

@@ -249,6 +249,18 @@ interface LoginFormProps {
 - Erreurs HTTP 401/404 → message "Email ou mot de passe incorrect".
 - Affiche les `SSOLoginButton` si `entity?.serverData.costum.sso` contient des
   providers (voir [SSO](#sso)).
+- **Mode SSO-only** (`costum.connectOnlyBySSO === true` + au moins un provider) :
+  le formulaire email/mot de passe **et** les liens inscription / mot de passe
+  oublié sont masqués ; seuls les `SSOLoginButton` restent (sans le séparateur
+  « ou continuer avec »). Voir [SSO → Mode SSO-only](#mode-sso-only-connectonlybysso).
+- **Auto-trigger SSO** : si `connectOnlyBySSO` est actif **et** qu'il n'y a
+  **qu'un seul** provider, la popup SSO s'ouvre automatiquement au montage du
+  formulaire (typiquement juste après le clic « Se connecter » dans le header,
+  donc encore dans la fenêtre de *user gesture* → pas de blocage popup).
+- Redirection centralisée : un `useEffect` unique observe `me.isConnected` et
+  déclenche `onSuccess?.()` + `navigate("/")` (si `!hideBackButton`), quel que soit
+  le chemin de connexion (email/pwd, SSO classique, auto-trigger). Évite la course
+  entre le `postMessage` SSO et la détection `popup.closed`.
 
 ### `RegisterForm`
 
@@ -360,8 +372,27 @@ Le SSO est piloté par le **backend**, pas par la config JSON : les providers
 viennent de `entity?.serverData.costum.sso`, extraits via un cast local
 (`(entity?.serverData.costum as { sso?: string[] })?.sso || []`) — il n'y a pas
 de garantie de type en amont sur ce champ.
-`LoginForm` affiche un `SSOLoginButton` par provider si la liste est non vide,
-précédé d'un séparateur "ou continuer avec".
+En mode standard, `LoginForm` affiche un `SSOLoginButton` par provider sous le
+formulaire email/mot de passe, précédé d'un séparateur « ou continuer avec ».
+
+### Mode SSO-only (`connectOnlyBySSO`)
+
+Quand l'entité costum définit `connectOnlyBySSO: true` (champ frère de `sso`, lu
+via `(entity?.serverData?.costum as { connectOnlyBySSO?: boolean })?.connectOnlyBySSO`),
+`LoginForm` masque entièrement le formulaire email/mot de passe et les liens
+inscription / mot de passe oublié : seuls les boutons SSO restent.
+
+- **Plusieurs providers** : la liste des `SSOLoginButton` est affichée, sans le
+  séparateur « ou continuer avec ».
+- **Un seul provider** : l'**auto-trigger** s'active — la popup SSO s'ouvre dès le
+  montage du formulaire, piloté par une machine à états
+  `"idle" | "running" | "failed"` :
+  - `running` → un spinner « Connexion en cours… » remplace le bouton SSO ;
+  - succès → redirection via l'effet centralisé `me.isConnected` ;
+  - annulation (popup fermée → `success:false` sans `error`) **ou** erreur (popup
+    bloquée, `SSO_AUTH_ERROR`) → bascule en `failed` : le bouton SSO manuel
+    réapparaît pour réessayer. Une fois sorti de `idle`, l'auto-trigger ne se
+    redéclenche **jamais** seul (ni boucle de popups, ni spinner figé).
 
 Le hook `useSSOAuth` gère le flux complet :
 

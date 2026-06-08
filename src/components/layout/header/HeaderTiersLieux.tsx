@@ -85,7 +85,7 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                     </div>
 
                     {/* Menu desktop */}
-                    <div className="hidden md:flex items-center space-x-1.5 text-sm font-medium ml-8 min-w-0">
+                    <div className="hidden xl:flex items-center space-x-1.5 text-sm font-medium ml-8 min-w-0">
                         {nav.map((item, idx) => {
                             const hasChildren = !!item.children?.length;
 
@@ -159,9 +159,9 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                         })}
                     </div>
 
-                    <div className="hidden md:flex items-center space-x-4 text-sm shrink-0 ml-4">
-                        {header.utilities?.notifications && <NotificationBell />}
+                    <div className="hidden xl:flex items-center space-x-4 text-sm shrink-0 ml-4">
                         {header.utilities?.search && <CommandTriggerButton />}
+                        {header.utilities?.notifications && <NotificationBell />}
 
                         <ClientOnly fallback={<div className="w-10 h-10" />}>
                             {() => <ToggleButtonTheme />}
@@ -197,27 +197,31 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                                             <>
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
-                                                        <button className="bg-background rounded-full px-3 lg:px-4 py-1.5 flex items-center gap-1.5 lg:gap-2 hover:bg-secondary/80 transition text-sm lg:text-base">
+                                                        <button
+                                                            aria-label={name || email || t('Mon compte')}
+                                                            className="bg-background rounded-full p-1 pr-1.5 flex items-center gap-1 hover:bg-secondary/80 transition"
+                                                        >
                                                             {profilThumbImageUrl ? (
                                                                 <OptimizedImage
                                                                     src={profilThumbImageUrl}
                                                                     alt={name || 'Profile'}
                                                                     width={32}
-                                                                    className="w-6 h-6 lg:w-8 lg:h-8 rounded-full object-cover"
+                                                                    className="w-7 h-7 lg:w-8 lg:h-8 rounded-full object-cover"
                                                                 />
                                                             ) : (
-                                                                <div className="font-medium rounded-full px-1.5 lg:px-2 py-0.5 lg:py-1 bg-background text-foreground text-[10px] lg:text-xs">
+                                                                <div className="font-medium rounded-full w-7 h-7 lg:w-8 lg:h-8 flex items-center justify-center bg-secondary text-foreground text-xs">
                                                                     {name ? name.substring(0, 2).toUpperCase() : 'CN'}
                                                                 </div>
                                                             )}
-                                                            <span className="text-muted-foreground hidden lg:inline">|</span>
-                                                            <span className="font-medium text-foreground truncate max-w-17.5 lg:max-w-30">
-                                                                {name || email || t('Mon compte')}
-                                                            </span>
                                                             <ChevronDown className="w-3 h-3 text-foreground shrink-0" />
                                                         </button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end" className="w-56">
+                                                        <div className="px-2 py-1.5">
+                                                            <p className="text-sm font-medium text-foreground truncate">{name || t('Mon compte')}</p>
+                                                            {email && <p className="text-xs text-muted-foreground truncate">{email}</p>}
+                                                        </div>
+                                                        <div className="-mx-1 my-1 h-px bg-muted" />
                                                         <DropdownMenuItem onClick={() => navigate(getProfileUrl())}>
                                                             <User className="mr-2 h-4 w-4" />
                                                             {t('Profil')}
@@ -247,9 +251,9 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                         )}
                     </div>
 
-                    <div className="md:hidden flex items-center gap-1 xs:gap-2 shrink-0 ml-3">
-                        {header.utilities?.notifications && <NotificationBell />}
+                    <div className="xl:hidden flex items-center gap-1 xs:gap-2 shrink-0 ml-3">
                         {header.utilities?.search && <CommandTriggerButton />}
+                        {header.utilities?.notifications && <NotificationBell />}
                         <ClientOnly fallback={<div className="w-7 h-7 xs:w-8 xs:h-8" />}>
                             {() => <ToggleButtonTheme />}
                         </ClientOnly>
@@ -293,7 +297,7 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                 </div>
 
                 {mobileMenuOpen && (
-                    <div className="md:hidden absolute left-0 right-0 top-full bg-popover text-popover-foreground border-b border-border shadow-lg max-h-[calc(100vh-4rem)] overflow-y-auto z-55">
+                    <div className="xl:hidden absolute left-0 right-0 top-full bg-popover text-popover-foreground border-b border-border shadow-lg max-h-[calc(100vh-4rem)] overflow-y-auto z-55">
                         <div className="px-4 py-4 space-y-4">
                             {nav.map((item, idx) => (
                                 <div key={idx} className="space-y-2">

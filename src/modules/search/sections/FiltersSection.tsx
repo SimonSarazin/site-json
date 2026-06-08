@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import type { FiltersSectionProps } from "../schema";
 import { useState, useEffect, useMemo } from "react";
 import { ChevronDown, SlidersHorizontal } from "lucide-react";
-import { usePageFilters } from "../contexts/pageFilters";
+import { useFilterToggles } from "../hooks/useFilterToggles";
 import { useFiltersByAnswersQuery } from "../hooks/useFiltersByAnswers";
 import { useSearchZoneQuery } from "../hooks/useSearchZone";
 import { useFilterEntitiesQuery } from "../hooks/useFilterEntities";
@@ -96,8 +96,8 @@ export function FiltersSection({
   );
   const filterEntityData = entityListGroup ? entityResult.data : null;
 
-  // Utiliser le context partagé
-  const { selectedFilters, setSelectedFilters, searchQuery, setSearchQuery, clearFilters: clearFiltersContext, searchByFields, setSearchByFields } = usePageFilters();
+  // Context partagé + logique de toggle mutualisée (cf. useFilterToggles).
+  const { selectedFilters, setSelectedFilters, searchQuery, setSearchQuery, clearFilters: clearFiltersContext, searchByFields, setSearchByFields, toggleFilter } = useFilterToggles();
 
   // Input texte : état local réactif visuellement + debounce avant de publier
   // dans le context (sinon chaque frappe relance `searchCostum` côté backend).
@@ -213,62 +213,6 @@ export function FiltersSection({
         ? prev.filter(id => id !== groupId)
         : [...prev, groupId]
     );
-  };
-
-  const toggleFilter = (groupId: string, filterName: string, field: string | null = null, value: string | string[] | null = null, level: "cities" | "level1" | "level2" | "level3" | "level4" | "level5" | null = null, fieldType: string | null = null) => {
-    if (field && value !== null) {
-      setSearchByFields(prev => {
-        const isActive = Object.keys(prev).includes(filterName);
-        if (isActive) {
-          const { [filterName]: _removed, ...rest } = prev;
-          void _removed;
-          return rest;
-        } else {
-          if (level) {
-            return {
-              ...prev,
-              [filterName]: {
-                field: field,
-                type: "scopeList",
-                value: {
-                  id: value,
-                  type: level
-                }
-              } as unknown as typeof prev[string]
-            };
-          } else if (fieldType) {
-            // Filtre par champ natif typé (ex. "sourceKey") — routé par
-            // SearchProStatic vers baseParams plutôt que vers filters MongoDB.
-            const valueToSet = Array.isArray(value) ? value : [value];
-            return {
-              ...prev,
-              [filterName]: {
-                field,
-                type: fieldType,
-                value: valueToSet
-              }
-            };
-          } else {
-            const valueToSet = Array.isArray(value) ? value : [value];
-            return {
-              ...prev,
-              [filterName]: {
-                field,
-                value: valueToSet
-              }
-            };
-          }
-        }
-      });
-    } else {
-      setSelectedFilters(prev => {
-        const current = prev[groupId] || [];
-        const updated = current.includes(filterName)
-          ? current.filter(name => name !== filterName)
-          : [...current, filterName];
-        return { ...prev, [groupId]: updated };
-      });
-    }
   };
 
   const clearFilters = () => {
