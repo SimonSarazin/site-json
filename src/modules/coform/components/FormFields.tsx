@@ -27,9 +27,12 @@ export function ProseContent({ text, className, forceMarkdown = false }: { text:
 }
 
 /**
- * Composant pour afficher un indice/info avec support markdown
+ * Composant pour afficher un indice/info avec support markdown ET HTML brut.
+ * Délègue à `ProseContent` qui auto-détecte HTML (rendu via
+ * `dangerouslySetInnerHTML`) vs markdown (rendu via ReactMarkdown +
+ * `rehypeRaw` pour accepter les inline HTML comme `<br/>`).
  */
-function HintText({ text }: { text: string }) {
+export function HintText({ text }: { text: string }) {
   return (
     <ProseContent
       text={text}

@@ -162,7 +162,19 @@ export function mapCoFormTypeToComponentType(
     select: "select",
   };
 
-  return typeMapping[coFormType] ?? "unknown";
+  const direct = typeMapping[coFormType];
+  if (direct) return direct;
+
+  // Fallback finder : en legacy, chaque costum a parfois son propre template
+  // (`tpls.forms.costum.<slug>.finder`, `tpls.forms.adhesion.adherentFinder`,
+  // etc.) qui ajoute des comportements custom à la création d'élément. On
+  // n'a pas encore l'extension par costum côté jdev, donc tout segment final
+  // se terminant par "finder" (case-insensitive) est aplati sur le composant
+  // <FinderField> générique — on perd le côté création custom, on garde au
+  // moins la sélection. À reraffiner si on rajoute un registry par costum.
+  if (/(?:^|\.)\w*finder$/i.test(coFormType)) return "finder";
+
+  return "unknown";
 }
 
 /**
