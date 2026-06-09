@@ -673,8 +673,8 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                   size="sm"
                   className="p-2"
                   onClick={() => rooms.length > 0
-                    ? openEditFormModal({ formId: section.roomPath!.id, answerId: rooms[0]._serverData.id, title: t("ProfilTiersLieuxAbout.rooms") as string, stepKey: section.roomPath!.step, inputKey: section.roomPath!.input })
-                    : openNewFormModal({ formId: section.roomPath!.id, title: t("ProfilTiersLieuxAbout.rooms") as string, stepKey: section.roomPath!.step, inputKey: section.roomPath!.input })
+                    ? openEditFormModal({ formId: section.roomPath!.id, answerId: rooms[0]._serverData.id, title: t("ProfilTiersLieuxAbout.rooms") as string, lockedFields: getFinderLockedField(section.roomPath!.id) })
+                    : openNewFormModal({ formId: section.roomPath!.id, title: t("ProfilTiersLieuxAbout.rooms") as string, lockedFields: getFinderLockedField(section.roomPath!.id) })
                   }
                 >
                   <Pencil className="h-4 w-4" />
