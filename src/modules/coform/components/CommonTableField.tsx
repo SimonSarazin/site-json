@@ -17,6 +17,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { MessageSquare } from "lucide-react";
 import "../i18n/i18n";
 import { useCommonTableCatalog } from "../hooks/useCommonTableCatalog";
@@ -84,7 +85,7 @@ function makeDefaultSolution(name: string, usageKey: string, usageLabel: string)
 // ─── HappinessSelector ─────────────────────────────────────────────────────────
 // Dropdown popover : trigger compact (1 cellule = emoji actuel ou placeholder),
 // ouvre une grille des 5 emojis. PopoverContent utilise Portal côté Radix,
-// donc pas de clipping par l'`overflow-x-auto` de la table.
+// donc pas de clipping par le viewport de la `<ScrollArea>` de la table.
 
 interface HappinessSelectorProps {
   value: HappinessValue;
@@ -468,8 +469,8 @@ const AddSolutionInput = memo(function AddSolutionInput({
   };
 
   // Le dropdown est rendu via Popover (Portal Radix) pour échapper au
-  // `overflow-x-auto` de la table : il flotte au-dessus du DOM, ne pousse
-  // aucun contenu et n'élargit pas la cellule.
+  // viewport de la `<ScrollArea>` de la table : il flotte au-dessus du
+  // DOM, ne pousse aucun contenu et n'élargit pas la cellule.
   const showDropdown = open && filtered.length > 0;
 
   const canSubmit = !disabled && draft.trim() !== "";
@@ -1448,12 +1449,12 @@ export function CommonTableField({
 
       {/* Tableau */}
       {!isEmpty && (
-      <div className="overflow-x-auto border rounded-md">
+      <ScrollArea className="border rounded-md w-full">
         <table className="border-collapse text-sm table-fixed w-full min-w-240">
           {/* Largeurs explicites par colonne. Les colonnes textuelles (Besoin,
               Solutions, Commentaire) ont une largeur cible large pour ne pas
-              cramper l'input ; si le viewport est étroit, le wrapper
-              `overflow-x-auto` au-dessus active un scrollbar horizontal. */}
+              cramper l'input ; si le viewport est étroit, la `<ScrollArea>`
+              au-dessus active un scrollbar horizontal fin (Radix). */}
           <colgroup>
             <col className="w-40" />
             {showColumns.criteria && <col className="w-72" />}
@@ -1541,7 +1542,8 @@ export function CommonTableField({
             })}
           </tbody>
         </table>
-      </div>
+        <ScrollBar orientation="horizontal" className="h-2" />
+      </ScrollArea>
       )}
 
       {/* Bouton "Ajouter <label>" — créera une nouvelle ligne du tableau.

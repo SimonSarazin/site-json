@@ -8,6 +8,7 @@ import type {
   EvaluationVoteValue,
 } from "../types";
 import { EvaluationVoteCell } from "./EvaluationVoteCell";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { FieldError, HintText } from "./FormFields";
 import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -174,13 +175,21 @@ export function EvaluationField({
       {field.info && <HintText text={field.info} />}
 
       {/* Table d'évaluation */}
-      <div className="overflow-x-auto border rounded-md">
+      <ScrollArea className="border rounded-md w-full">
         <table
-          className="w-full border-collapse text-sm min-w-max"
+          className="w-full border-collapse text-sm"
           aria-labelledby={!hideLabel ? `${field.name}-label` : undefined}
           aria-invalid={hasError || undefined}
           aria-describedby={hasError ? `${field.name}-error` : undefined}
         >
+          <colgroup>
+            {Array.from({ length: categoryNumber }, (_, i) => (
+              <col key={`cat-${i}`} />
+            ))}
+            {criteriaIds.map((criteriaId) => (
+              <col key={`crit-${criteriaId}`} className="w-32" />
+            ))}
+          </colgroup>
           <thead>
             {/* Ligne 1: Label catégorie + Label critères */}
             <tr className="border-b border-border">
@@ -243,11 +252,11 @@ export function EvaluationField({
                     getRowBackgroundClass(row.segments)
                   )}
                 >
-                  {/* Colonnes de catégorie */}
+                  {/* Colonnes de catégorie — */}
                   {Array.from({ length: categoryNumber }, (_, i) => (
                     <td
                       key={i}
-                      className="p-2 border-r border-border min-w-24 whitespace-nowrap"
+                      className="p-2 border-r border-border wrap-break-word min-w-176"
                     >
                       {row.segments[i] || ""}
                     </td>
@@ -272,7 +281,8 @@ export function EvaluationField({
             )}
           </tbody>
         </table>
-      </div>
+        <ScrollBar orientation="horizontal" className="h-2" />
+      </ScrollArea>
 
       {/* Message d'erreur */}
       <FieldError name={field.name} message={errors[field.name]?.message as string | undefined} />
