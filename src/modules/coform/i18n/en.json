@@ -270,7 +270,8 @@
         "openTooltip_other": "View {{count}} contributions"
       },
       "addUsage": {
-        "buttonLabel": "Add a need",
+        "buttonLabel": "Add {{label}}",
+        "defaultLabel": "a need",
         "dialog": {
           "title": "Add a new need",
           "description": "This need will appear as a new row of the table. You can add solutions to it afterwards.",

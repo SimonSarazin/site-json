@@ -198,6 +198,13 @@ const UrgencyGauge = memo(function UrgencyGauge({
 }: UrgencyGaugeProps) {
   const { idx, trackTint, textColor } = getNoteAppearance(value);
   const label = levelLabels[idx] ?? "";
+  // Note=0 = non renseigné. On garde `aria-valuetext` sur le slider (le
+  // lecteur d'écran annonce "Non renseigné"), mais on masque visuellement
+  // le label pour ne pas répéter "Non renseigné" sur chaque row vide —
+  // sinon l'UI devient bruyante. La hauteur est préservée via
+  // `invisible` (le span occupe sa place sans s'afficher) pour aligner
+  // les rows notées et non notées.
+  const isUnset = value === 0;
 
   return (
     <div className="flex flex-col gap-1 min-w-32">
@@ -211,7 +218,15 @@ const UrgencyGauge = memo(function UrgencyGauge({
         aria-valuetext={label}
         className={cn("w-full", trackTint)}
       />
-      <span className={cn("text-xs text-center font-medium", textColor)}>{label}</span>
+      <span
+        className={cn(
+          "text-xs text-center font-medium",
+          isUnset ? "invisible select-none" : textColor
+        )}
+        aria-hidden={isUnset || undefined}
+      >
+        {isUnset ? " " : label}
+      </span>
     </div>
   );
 });
@@ -586,6 +601,20 @@ interface CommonTableRowProps {
   onActivate: (id: string) => void;
   onDelete: (id: string) => void;
   onSolutionChange: (id: string, patch: Partial<CommonTableSolution>) => void;
+  /**
+   * Upsert d'une solution : utilisé en mode `!showColumns.criteria` où la
+   * notation s'applique au besoin (la row) directement, sans passer par
+   * un outil. Si la solution `criteriaId` existe → patch. Sinon → crée
+   * avec un nom vide. Pour le mode normal (avec colonne criteria), on
+   * continue d'utiliser `onAddSolution` + `onSolutionChange`.
+   */
+  onSolutionUpsert: (
+    criteriaId: string,
+    usageKey: string,
+    usageLabel: string,
+    patch: Partial<CommonTableSolution>,
+    options?: { skipMyCatalog?: boolean }
+  ) => void;
   /** Suggestions de solutions pour CET usage (issues du catalogue collaboratif). */
   suggestions: SolutionSuggestion[];
   /**
@@ -608,6 +637,7 @@ const CommonTableRow = memo(function CommonTableRow({
   onActivate,
   onDelete,
   onSolutionChange,
+  onSolutionUpsert,
   suggestions,
   contributorCount,
   onShowContributors,
@@ -618,6 +648,51 @@ const CommonTableRow = memo(function CommonTableRow({
     (name: string) => onAddSolution(usage.usageKey, usage.label, name),
     [onAddSolution, usage.usageKey, usage.label]
   );
+
+  // Mode "sans colonne criteria" : la notation s'applique au besoin
+  // (la row) directement. On synthétise une solution implicite pour
+  // l'affichage initial ; la première interaction la matérialise dans
+  // `value.scores` via `onSolutionUpsert` avec un criteriaId timestamp
+  // (`criteria${Date.now()}`) — aligné sur le format legacy `criteria${time()}`.
+  // Si la response chargée contient déjà une solution pour cette row,
+  // on la réutilise.
+  const noCriteria = !showColumns.criteria;
+  // Si la row a déjà N>1 solutions (cas d'un toggle criteriaColumn=true→false
+  // a posteriori sur une réponse existante), on respecte le dernier
+  // `activeSolutionId` mémorisé — fallback solutions[0]. Les solutions
+  // restantes restent persistées dans `value.scores` mais ne sont pas
+  // surfacées dans cette UI (limitation connue, voir review).
+  const phantomExisting = noCriteria
+    ? solutions.find((s) => s.criteriaId === activeSolutionId) ?? solutions[0] ?? null
+    : null;
+  // En mode readOnly + noCriteria + aucune solution réelle, on NE
+  // synthétise PAS de phantom : rendre des contrôles avec des défauts
+  // (`UrgencyGauge=0`, `YesNoToggle=Non`) ferait passer une row non
+  // répondue pour une réponse réelle (« 0 urgence / réponse Non »).
+  // Dans ce cas, displayActive reste null et les cellules sont vides
+  // — cohérent avec le comportement du mode criteria.
+  const displayActive: CommonTableSolution | null = noCriteria
+    ? phantomExisting ?? (readOnly
+        ? null
+        : makeDefaultSolution("", usage.usageKey, usage.label))
+    : active;
+
+  const writeChange = (patch: Partial<CommonTableSolution>) => {
+    if (noCriteria) {
+      // Re-utilise l'id existant si on a déjà matérialisé la solution ;
+      // sinon génère un criteriaId timestamp au moment du write (et pas
+      // au render) — évite l'id déterministe `criteria-row-${usageKey}`
+      // qui (a) ne correspond pas à la convention legacy `criteria${time()}`
+      // et (b) peut contenir des caractères non-ASCII (espaces, accents)
+      // qui cassent les regex PHP côté serveur.
+      const id = phantomExisting?.criteriaId ?? generateCriteriaId();
+      // skipMyCatalog: en noCriteria, le legacy n'écrit PAS de `criterias{key}`
+      // (myCatalog). Seul `yesOrNo{key}.{criteriaId}` est persisté.
+      onSolutionUpsert(id, usage.usageKey, usage.label, patch, { skipMyCatalog: true });
+      return;
+    }
+    if (active) onSolutionChange(active.criteriaId, patch);
+  };
 
   return (
     <tr className="border-b border-border align-top">
@@ -673,10 +748,10 @@ const CommonTableRow = memo(function CommonTableRow({
       {/* Happiness */}
       {showColumns.happiness && (
         <td className="p-2 align-middle border-r border-border/60">
-          {active ? (
+          {displayActive ? (
             <HappinessSelector
-              value={active.happiness}
-              onChange={(h) => onSolutionChange(active.criteriaId, { happiness: h })}
+              value={displayActive.happiness}
+              onChange={(h) => writeChange({ happiness: h })}
               disabled={readOnly}
               labels={i18n.happinessLabels}
             />
@@ -689,10 +764,10 @@ const CommonTableRow = memo(function CommonTableRow({
       {/* Note (urgence) */}
       {showColumns.note && (
         <td className="p-2 align-middle border-r border-border/60">
-          {active && (
+          {displayActive && (
             <UrgencyGauge
-              value={active.note}
-              onChange={(n) => onSolutionChange(active.criteriaId, { note: n })}
+              value={displayActive.note}
+              onChange={(n) => writeChange({ note: n })}
               disabled={readOnly}
               levelLabels={i18n.noteLevels}
             />
@@ -703,10 +778,10 @@ const CommonTableRow = memo(function CommonTableRow({
       {/* Yes/No */}
       {showColumns.yesNo && (
         <td className="p-2 align-middle border-r border-border/60">
-          {active && (
+          {displayActive && (
             <YesNoToggle
-              value={active.yesOrNo}
-              onChange={(b) => onSolutionChange(active.criteriaId, { yesOrNo: b })}
+              value={displayActive.yesOrNo}
+              onChange={(b) => writeChange({ yesOrNo: b })}
               disabled={readOnly}
               yesLabel={i18n.yesLabel}
               noLabel={i18n.noLabel}
@@ -718,7 +793,7 @@ const CommonTableRow = memo(function CommonTableRow({
       {/* Comment — bouton placeholder en attendant l'intégration du module commentaires */}
       {showColumns.comment && (
         <td className="p-2 align-middle">
-          {active && !readOnly && (
+          {displayActive && !readOnly && (
             <CommentButton
               i18n={{
                 openLabel: i18n.commentOpenLabel,
@@ -756,6 +831,39 @@ export function CommonTableField({
   // Catalogue collaboratif (lecture seule) issu du fetch batch au niveau form.
   const collabCatalog = useCommonTableCatalog(getOriginalFieldKey(field));
 
+  // Vue enrichie de `value.scores` pour l'affichage : ré-ancre les scores
+  // legacy orphelins (sans `usage`/`usageKey`) en consultant
+  // `collabCatalog[criteriaId]` — qui agrege les `criterias{key}` de tous
+  // les répondants côté serveur. Permet d'afficher un score legacy
+  // `{criteria1688469657: {note: 2}}` sous la row "Bureautiques" même
+  // quand le form admin n'a pas seedé `params.criterias{key}` (cas du form
+  // tiers-lieux Saint-Leu — équivalent legacy de
+  // `criteriasMerge = criteriasFromForms + criteriasFromAnswers` dans
+  // commonTableV2.php). Les writes continuent de muter `value.scores`.
+  const displayScores = useMemo(() => {
+    let mutated = false;
+    const out: typeof value.scores = {};
+    for (const [criteriaId, sol] of Object.entries(value.scores)) {
+      if (sol.usageKey || sol.usage) {
+        out[criteriaId] = sol;
+        continue;
+      }
+      const catalogHit = collabCatalog[criteriaId];
+      if (catalogHit?.usage || catalogHit?.usageKey) {
+        out[criteriaId] = {
+          ...sol,
+          usage: sol.usage || catalogHit.usage || "",
+          usageKey: sol.usageKey || catalogHit.usageKey || criteriaId,
+        };
+        mutated = true;
+      } else {
+        out[criteriaId] = sol;
+      }
+    }
+    return mutated ? out : value.scores;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `value.scores` est la dep réelle ; `value` complet trigger re-compute inutilement sur myCatalog
+  }, [value.scores, collabCatalog]);
+
   const usages = useMemo(() => config?.usages ?? [], [config?.usages]);
   const showColumns = useMemo(
     () =>
@@ -792,7 +900,7 @@ export function CommonTableField({
       const norm = normalizeUsage(entry.usage);
       if (!usageKeyMap[norm]) usageKeyMap[norm] = entry.usageKey;
     }
-    for (const sol of Object.values(value.scores)) {
+    for (const sol of Object.values(displayScores)) {
       if (!sol.usageKey) continue;
       const norm = normalizeUsage(sol.usage);
       if (!usageKeyMap[norm]) usageKeyMap[norm] = sol.usageKey;
@@ -807,7 +915,7 @@ export function CommonTableField({
       const norm = normalizeUsage(rawUsage);
       return usageKeyMap[norm] ?? norm;
     };
-  }, [collabCatalog, value.scores, value.myCatalog]);
+  }, [collabCatalog, displayScores, value.myCatalog]);
 
   // Augmente la liste d'usages : config admin + tous les usages effectifs qui
   // apparaissent dans le catalogue collaboratif, plus ceux de MES scores /
@@ -836,7 +944,7 @@ export function CommonTableField({
       }
     }
     // 3) MES scores / MON catalog (édition d'une réponse existante).
-    for (const sol of Object.values(value.scores)) {
+    for (const sol of Object.values(displayScores)) {
       const usageLabel = (sol.usage ?? "").trim();
       if (!usageLabel && !sol.usageKey) continue;
       const gk = resolveGroupKey(sol.usageKey, usageLabel);
@@ -855,7 +963,7 @@ export function CommonTableField({
       }
     }
     return out;
-  }, [usages, collabCatalog, value.scores, value.myCatalog, groupKeyResolver]);
+  }, [usages, collabCatalog, displayScores, value.myCatalog, groupKeyResolver]);
 
   // Filtre client-side (n'altère JAMAIS `value` — uniquement l'affichage).
   const [filter, setFilter] = useState("");
@@ -918,12 +1026,14 @@ export function CommonTableField({
     return out;
   }, [collabCatalog, groupKeyResolver]);
 
-  // Index des solutions par usageKey, basé sur `value.scores`. Cache de référence
-  // pour que React.memo sur <CommonTableRow> ne re-rende QUE la ligne modifiée.
+  // Index des solutions par usageKey, basé sur `displayScores` (vue enrichie
+  // de `value.scores` — ré-ancre les scores legacy orphelins via collabCatalog).
+  // Cache de référence pour que React.memo sur <CommonTableRow> ne re-rende
+  // QUE la ligne modifiée.
   const prevSolutionsRef = useRef<Record<string, CommonTableSolution[]>>({});
   const solutionsByUsage = useMemo(() => {
     const fresh: Record<string, CommonTableSolution[]> = {};
-    for (const sol of Object.values(value.scores)) {
+    for (const sol of Object.values(displayScores)) {
       (fresh[sol.usageKey] ??= []).push(sol);
     }
     const prev = prevSolutionsRef.current;
@@ -938,7 +1048,7 @@ export function CommonTableField({
     }
     prevSolutionsRef.current = result;
     return result;
-  }, [value.scores]);
+  }, [displayScores]);
 
   // Ref de valeur toujours à jour : évite les races sur additions multiples.
   const valueRef = useRef(value);
@@ -1064,6 +1174,135 @@ export function CommonTableField({
       });
     },
     [onChange]
+  );
+
+  // Upsert : utilisé exclusivement en mode `!showColumns.criteria` pour
+  // matérialiser à la première interaction la solution implicite d'une
+  // row (notation au besoin direct, sans outil intermédiaire). On crée
+  // alors une entry dans `scores` ET dans `myCatalog` avec un label vide
+  // (cf. `handleAddSolution` STEP 4 — même conventions, mais avec un
+  // criteriaId fourni par le caller au lieu d'être généré). Si la row
+  // contient déjà une solution réelle (cas du re-chargement), le caller
+  // passe son criteriaId existant → simple patch sans création.
+  const handleSolutionUpsert = useCallback(
+    (
+      criteriaId: string,
+      usageKey: string,
+      usageLabel: string,
+      patch: Partial<CommonTableSolution>,
+      options?: { skipMyCatalog?: boolean },
+    ) => {
+      const cur = valueRef.current;
+      const existing = cur.scores[criteriaId];
+      if (existing) {
+        onChange?.({
+          ...cur,
+          scores: { ...cur.scores, [criteriaId]: { ...existing, ...patch } },
+        });
+        return;
+      }
+      // Mode noCriteria (sans colonne outil) : le legacy ne CRÉE PAS de
+      // nouvelle entry `criterias{key}` (myCatalog) à la notation. Mais une
+      // entry locale existe quand l'user a explicitement ajouté un besoin
+      // custom via le dialog "Ajouter un besoin" (cf. submitAddUsage) —
+      // on la conserve et on la PATCH pour rester cohérent.
+      if (options?.skipMyCatalog) {
+        // ANCRAGE CANONIQUE en cascade :
+        //   1. collabCatalog (aggregate serveur des `answers.criterias{key}`
+        //      des autres répondants) → criteriaId canonical historique
+        //      genre `criteria1688469657` pour "Bureautiques".
+        //   2. value.myCatalog local → criteriaId fraîchement généré par
+        //      `submitAddUsage` (besoin custom pas encore save+reload).
+        //      Sans ce fallback, on persisterait la note sous un NOUVEAU
+        //      criteriaId disjoint de l'entry myCatalog locale → split à
+        //      la lecture (et drift visible en base).
+        //   3. fallback: le criteriaId proposé par le caller (nouveau
+        //      timestamp ms — chemin emprunté pour les rows orphelines
+        //      jamais déclarées dans aucun catalogue).
+        let anchorId: string | undefined;
+        let anchorSource: "collab" | "local" | undefined;
+        for (const [id, entry] of Object.entries(collabCatalog)) {
+          if (groupKeyResolver(entry.usageKey, entry.usage) === usageKey) {
+            anchorId = id;
+            anchorSource = "collab";
+            break;
+          }
+        }
+        if (!anchorId) {
+          for (const [id, entry] of Object.entries(cur.myCatalog)) {
+            if (groupKeyResolver(entry.usageKey, entry.usage) === usageKey) {
+              anchorId = id;
+              anchorSource = "local";
+              break;
+            }
+          }
+        }
+        const finalCriteriaId = anchorId ?? criteriaId;
+        // Quand l'ancrage est trouvé, on aligne aussi `usageKey` sur
+        // l'anchor (= criteriaId canonical). Sans ça, on persisterait
+        // `usageKey="mine equipement"` (le groupKey normalisé calculé
+        // par groupKeyResolver) alors que la row legacy ancre par
+        // criteriaId clé + `usage` texte.
+        const finalUsageKey = anchorId ?? usageKey;
+        const created: CommonTableSolution = {
+          ...makeDefaultSolution("", finalUsageKey, usageLabel),
+          criteriaId: finalCriteriaId,
+          ...patch,
+        };
+        // Si l'ancrage vient du myCatalog local, on patch l'entry pour
+        // refléter usageKey = finalUsageKey (sinon mismatch au reload :
+        // myCatalog garde usageKey="" mais scores a usageKey=criteriaId).
+        const nextMyCatalog = anchorSource === "local"
+          ? {
+              ...cur.myCatalog,
+              [finalCriteriaId]: {
+                ...cur.myCatalog[finalCriteriaId],
+                usageKey: finalUsageKey,
+              },
+            }
+          : cur.myCatalog;
+        onChange?.({
+          scores: { ...cur.scores, [finalCriteriaId]: created },
+          myCatalog: nextMyCatalog,
+        });
+        setActiveByUsage((prev) => ({ ...prev, [finalUsageKey]: finalCriteriaId }));
+        return;
+      }
+      // STUB REUSE — si l'user a précédemment cliqué « Ajouter un besoin »
+      // pour ce usage (créant un stub `myCatalog[randomId] = {label:'',
+      // usage, usageKey:''}` cf. handleAddSolution STEP 2), on doit
+      // ré-utiliser ce criteriaId au lieu d'en créer un second. Sans ça,
+      // deux entries myCatalog cohabitent pour le même besoin et
+      // polluent le catalogue collaboratif au save.
+      const stubEntry = Object.entries(cur.myCatalog).find(
+        ([id, entry]) =>
+          !entry.label &&
+          !cur.scores[id] &&
+          groupKeyResolver(entry.usageKey, entry.usage) === usageKey
+      );
+      const targetCriteriaId = stubEntry ? stubEntry[0] : criteriaId;
+      const created: CommonTableSolution = {
+        ...makeDefaultSolution("", usageKey, usageLabel),
+        criteriaId: targetCriteriaId,
+        ...patch,
+      };
+      const stubMeta = stubEntry?.[1];
+      onChange?.({
+        scores: { ...cur.scores, [targetCriteriaId]: created },
+        myCatalog: {
+          ...cur.myCatalog,
+          [targetCriteriaId]: {
+            ...(stubMeta ?? {}),
+            label: stubMeta?.label ?? "",
+            usage: usageLabel,
+            usageKey,
+            coeff: stubMeta?.coeff ?? 1,
+          },
+        },
+      });
+      setActiveByUsage((prev) => ({ ...prev, [usageKey]: targetCriteriaId }));
+    },
+    [onChange, groupKeyResolver, collabCatalog]
   );
 
   const handleActivate = useCallback((id: string) => {
@@ -1288,6 +1527,7 @@ export function CommonTableField({
                   onActivate={handleActivate}
                   onDelete={handleDelete}
                   onSolutionChange={handleSolutionChange}
+                  onSolutionUpsert={handleSolutionUpsert}
                   suggestions={rowSuggestions}
                   contributorCount={rowCount}
                   onShowContributors={
@@ -1304,7 +1544,10 @@ export function CommonTableField({
       </div>
       )}
 
-      {/* Bouton "Ajouter un besoin" — créera une nouvelle ligne du tableau.
+      {/* Bouton "Ajouter <label>" — créera une nouvelle ligne du tableau.
+          Le label dynamique reprend `labels.usage` (cf. legacy commonTableV2.php
+          `Ajouter <?= $columnLabel["usageColumn"] ?>`) → "Ajouter Equipements",
+          "Ajouter Outils", etc. Fallback générique si le form n'a pas de label.
           Disponible aussi en cas de tableau vide (utile pour démarrer le form). */}
       {!readOnly && (
         <div className="flex justify-center pt-1">
@@ -1316,7 +1559,9 @@ export function CommonTableField({
             className="gap-1"
           >
             <Plus className="h-4 w-4" />
-            {t("coform.commonTable.addUsage.buttonLabel")}
+            {t("coform.commonTable.addUsage.buttonLabel", undefined, {
+              label: labels.usage?.trim() || t("coform.commonTable.addUsage.defaultLabel"),
+            })}
           </Button>
         </div>
       )}

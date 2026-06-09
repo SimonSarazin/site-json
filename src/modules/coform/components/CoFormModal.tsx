@@ -147,7 +147,7 @@ export function CoFormModal({
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent
-          className="max-w-[calc(100%-2rem)] sm:max-w-4xl max-h-[90vh] overflow-y-auto p-0 gap-0"
+          className="max-w-[calc(100%-2rem)] sm:max-w-6xl max-h-[90vh] overflow-y-auto p-0 gap-0"
           onInteractOutside={(e) => {
             if (isSubmitting) e.preventDefault();
           }}

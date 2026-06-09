@@ -154,6 +154,11 @@ export function mapCoFormTypeToComponentType(
     "tpls.forms.evaluation.commonTableV2": "commonTable",
     "tpls.forms.cplx.finder": "finder",
     "tpls.forms.finder.finder": "finder",
+    // Template legacy `emailUser` : input HTML `type="email"`. La logique
+    // d'auto-fill avec l'email du user connecté côté legacy n'est pas
+    // portée pour l'instant — on garde juste la sémantique d'input email
+    // (validation native + clavier mobile adapté).
+    "tpls.forms.emailUser": "text",
     "tpls.forms.cplx.simpleTable": "simpleTable",
     "tpls.forms.uploader": "uploader",
     sectionTitle: "sectionTitle",
@@ -513,10 +518,15 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
         };
       }
 
-      // Déterminer le type HTML pour les inputs texte
-      const inputType = componentType === "text" && ["url", "email", "tel", "number"].includes(fieldData.type)
-        ? fieldData.type
-        : undefined;
+      // Déterminer le type HTML pour les inputs texte. On accepte les
+      // types courts (`email`, `url`, `tel`, `number`) ET les templates
+      // legacy à input typé (`tpls.forms.emailUser` → `email`).
+      const inputType: string | undefined = (() => {
+        if (componentType !== "text") return undefined;
+        if (fieldData.type === "tpls.forms.emailUser") return "email";
+        if (["url", "email", "tel", "number"].includes(fieldData.type)) return fieldData.type;
+        return undefined;
+      })();
 
       // Parser conditionalDisplay si présent
       const conditionalDisplay = fieldData.conditionalDisplay as ConditionalDisplay | undefined;
@@ -920,6 +930,75 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
 }
 
 /**
+ * Enrichit une entry de `scores` legacy (commonTable) avec les champs
+ * manquants. Le legacy pré-commonTableV2 stockait souvent uniquement
+ * `{note: N}` par criteriaId — Zod attend les 8 champs. On comble avec
+ * des défauts neutres. Le `criteriaId` est dérivé de la clé du Record
+ * (la clé EST l'id, par convention) si l'entry ne le porte pas.
+ *
+ * `usagesIndex` (optionnel) : index `usageKey → {label}` issu de
+ * `commonTableConfig.usages`. Convention legacy commonTableV2 : la
+ * structure `params.criterias{fieldKey}` mappe criteriaId → row, donc
+ * `usage.usageKey === criteriaId`. Quand un score legacy a un criteriaId
+ * qui matche une row, on ré-ancre `usage`/`usageKey` depuis la config —
+ * sinon le score reste bucketé en "sans usage" et invisible dans l'UI.
+ */
+const VALID_HAPPINESS = new Set(["", "love", "happySmile", "neutral", "sad", "cry"]);
+
+function enrichCommonTableScores(
+  raw: unknown,
+  usagesIndex?: Map<string, { label: string }>,
+): Record<string, unknown> {
+  if (!isPlainObject(raw)) return {};
+  const out: Record<string, unknown> = {};
+  for (const [criteriaId, entryRaw] of Object.entries(raw)) {
+    const entry = isPlainObject(entryRaw) ? entryRaw : {};
+    const happinessRaw = entry.happiness;
+    const rowHit = usagesIndex?.get(criteriaId);
+    const usage = typeof entry.usage === "string" && entry.usage !== ""
+      ? entry.usage
+      : rowHit?.label ?? "";
+    const usageKey = typeof entry.usageKey === "string" && entry.usageKey !== ""
+      ? entry.usageKey
+      : rowHit
+        ? criteriaId
+        : "";
+    out[criteriaId] = {
+      criteriaId: typeof entry.criteriaId === "string" ? entry.criteriaId : criteriaId,
+      criteria: typeof entry.criteria === "string" ? entry.criteria : "",
+      usage,
+      usageKey,
+      note: typeof entry.note === "number" ? entry.note : 0,
+      happiness: typeof happinessRaw === "string" && VALID_HAPPINESS.has(happinessRaw)
+        ? happinessRaw
+        : "",
+      yesOrNo: typeof entry.yesOrNo === "boolean" ? entry.yesOrNo : false,
+      comment: typeof entry.comment === "string" ? entry.comment : "",
+    };
+  }
+  return out;
+}
+
+/**
+ * Enrichit `myCatalog` legacy avec les champs requis par Zod (`usage`,
+ * `usageKey`). Les autres champs sont optionnels côté schema, on les
+ * laisse tels quels.
+ */
+function enrichCommonTableMyCatalog(raw: unknown): Record<string, unknown> {
+  if (!isPlainObject(raw)) return {};
+  const out: Record<string, unknown> = {};
+  for (const [criteriaId, entryRaw] of Object.entries(raw)) {
+    const entry = isPlainObject(entryRaw) ? entryRaw : {};
+    out[criteriaId] = {
+      ...entry,
+      usage: typeof entry.usage === "string" ? entry.usage : "",
+      usageKey: typeof entry.usageKey === "string" ? entry.usageKey : "",
+    };
+  }
+  return out;
+}
+
+/**
  * Coerce une valeur reçue du serveur vers le shape attendu par le schéma
  * Zod. Conserve la valeur d'origine si elle est déjà du bon type ;
  * remplace par une valeur par défaut neutre seulement si la forme est
@@ -1078,9 +1157,25 @@ export function normalizeAnswerData(
           const myCatalogKey = `criterias${fieldKey}`;
           const scoresRoot = normalized[scoresKey];
           const myCatalogRoot = normalized[myCatalogKey];
+          // Index des rows pour ré-ancrer les scores legacy `{note}` sur
+          // leur usageKey. Convention legacy : `params.criterias{key}` mappe
+          // criteriaId → row, donc `usage.usageKey === criteriaId`. Sans
+          // cet index, un score legacy `{criteria1688: {note:2}}` (pas
+          // de `usage`/`usageKey` en base) reste bucketé en "sans usage"
+          // et invisible dans l'UI.
+          const usagesIndex = new Map<string, { label: string }>();
+          for (const u of field.commonTableConfig?.usages ?? []) {
+            usagesIndex.set(u.usageKey, { label: u.label });
+          }
+          // Enrichit chaque entry pour matcher le shape Zod strict (8 champs
+          // requis). Les réponses legacy (pré-commonTableV2) ne stockaient
+          // souvent que `{note: N}` par criteriaId — sans cet enrichment,
+          // la validation Zod échoue au submit et empêche l'édition d'une
+          // réponse contenant ces données héritées. Le `criteriaId` est
+          // dérivé de la clé du Record (idiomatique : la clé EST l'id).
           subFormData[field.name] = {
-            scores: isPlainObject(scoresRoot) ? scoresRoot : {},
-            myCatalog: isPlainObject(myCatalogRoot) ? myCatalogRoot : {},
+            scores: enrichCommonTableScores(scoresRoot, usagesIndex),
+            myCatalog: enrichCommonTableMyCatalog(myCatalogRoot),
           };
           // Retire les clés root-level pour éviter qu'un merge en aval (ex:
           // `{ ...generatedDefaults, ...normalizedDefaults }` dans
