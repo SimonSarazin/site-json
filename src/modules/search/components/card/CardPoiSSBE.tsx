@@ -9,59 +9,27 @@ import {
 	Droplet,
 	DoorOpen,
 } from "lucide-react";
-
+import { format } from "date-fns";
+import type { Poi } from "@communecter/cocolight-api-client";
+import getDateFnsLocale from "@/dateFns";
+import "@/modules/search/i18n";
+import { useT } from "@/hooks/useT";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { SearchCardProps } from "../../schema";
 
-interface Poi {
-	name: string;
-	categorie: string;
-	installation?: string;
-	familleEquipement?: string;
-	dateCreation?: string;
-	address: {
-		streetAddress?: string;
-		postalCode?: string;
-		addressLocality?: string;
-	};
-	handicap?: string;
-	transportCommun?: string;
-	eclairage?: string;
-	douche?: string;
-	libreAcces?: string;
-}
-
-const isTrue = (v?: string) => {
-	if (!v) return false;
-	const normalized = v.trim().toLowerCase();
-	return (
-		normalized === "true" ||
-		normalized === "1" ||
-		normalized === "oui" ||
-		normalized === "yes"
-	);
+/** Champ costum d'accessibilité stocké en `"1"`/`"oui"`/`true` → booléen. */
+const isTrue = (value: unknown): boolean => {
+	if (typeof value === "boolean") return value;
+	if (typeof value === "number") return value === 1;
+	if (typeof value === "string") {
+		const n = value.trim().toLowerCase();
+		return n === "true" || n === "1" || n === "oui" || n === "yes";
+	}
+	return false;
 };
-
-function formatDateFr(dateStr?: string): string | null {
-	if (!dateStr) return null;
-	const d = new Date(dateStr);
-	if (Number.isNaN(d.getTime())) return null;
-
-	return d.toLocaleDateString("fr-FR", {
-		day: "numeric",
-		month: "long",
-		year: "numeric",
-	});
-}
-
-function yearsAgo(dateStr?: string): number | null {
-	if (!dateStr) return null;
-	const d = new Date(dateStr);
-	if (Number.isNaN(d.getTime())) return null;
-	return new Date().getFullYear() - d.getFullYear();
-}
 
 function Feature({
 	label,
@@ -86,151 +54,68 @@ function Feature({
 	);
 }
 
-function toStringValue(value: unknown): string | undefined {
-	if (Array.isArray(value)) {
-		const parts = value
-			.map((entry) => toStringValue(entry))
-			.filter((entry): entry is string => Boolean(entry));
-		return parts.length > 0 ? parts.join(", ") : undefined;
+/**
+ * `serverData` expose les dates en `Date` (entités revifiées, normalisées par la
+ * lib) ou en string ISO (après hydratation SSR où les `Date` JSON sont sérialisées).
+ * On gère Date + string ISO — sans heuristique epoch.
+ */
+function toDate(value: unknown): Date | null {
+	if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
+	if (typeof value === "string" && value.trim().length > 0) {
+		const date = new Date(value.trim());
+		return Number.isNaN(date.getTime()) ? null : date;
 	}
-	if (typeof value === "string") {
-		const trimmed = value.trim();
-		return trimmed.length > 0 ? trimmed : undefined;
-	}
-	if (typeof value === "number" || typeof value === "boolean") {
-		return String(value);
-	}
-	if (value instanceof Date) {
-		return value.toISOString();
-	}
-	if (value && typeof value === "object") {
-		const localized = value as Record<string, unknown>;
-		const preferred = localized.fr ?? localized.en;
-		if (typeof preferred === "string") return preferred;
-	}
-	return undefined;
+	return null;
 }
 
-function normalizeDateValue(value: unknown): string | undefined {
-	if (value instanceof Date) return value.toISOString();
-	if (typeof value === "number") {
-		const ms = value < 1_000_000_000_000 ? value * 1000 : value;
-		const date = new Date(ms);
-		return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
-	}
-	if (typeof value === "string") {
-		const trimmed = value.trim();
-		if (!trimmed) return undefined;
-		if (/^\d+(\.\d+)?$/.test(trimmed)) {
-			const numeric = Number(trimmed);
-			const ms = numeric < 1_000_000_000_000 ? numeric * 1000 : numeric;
-			const date = new Date(ms);
-			return Number.isNaN(date.getTime()) ? trimmed : date.toISOString();
-		}
-		return trimmed;
-	}
-	return undefined;
-}
-
-function toPoi(item: SearchCardProps["item"]): Poi {
-	const entityData = ((item ?? {}) as unknown) as Record<string, unknown>;
-	const serverData = (item?.serverData ?? {}) as Record<string, unknown>;
-	const address =
-		((serverData.address ?? entityData.address) as
-			| Record<string, unknown>
-			| undefined) ?? {};
-
-	const resolveText = (...values: unknown[]) => {
-		for (const value of values) {
-			const resolved = toStringValue(value);
-			if (resolved !== undefined) return resolved;
-		}
-		return undefined;
-	};
-	const resolveDate = (...values: unknown[]) => {
-		const candidate = values.find((value) => value !== undefined && value !== null);
-		return normalizeDateValue(candidate);
-	};
-
-	return {
-		name: resolveText(serverData.name, entityData.name) ?? "",
-		categorie:
-			resolveText(
-				serverData.equip_type_name,
-				entityData.equip_type_name,
-				serverData.categorie,
-				entityData.categorie,
-			) ??
-			resolveText(
-				serverData.equip_type_famille,
-				entityData.equip_type_famille,
-				serverData.familleEquipement,
-				entityData.familleEquipement,
-			) ??
-			"",
-		installation: resolveText(
-			serverData.inst_nom,
-			entityData.inst_nom
-		),
-		familleEquipement: resolveText(
-			serverData.equip_type_famille,
-			entityData.equip_type_famille
-		),
-		dateCreation: resolveDate(
-			serverData.inst_date_creation,
-			entityData.inst_date_creation,
-			serverData.dateCreation,
-			entityData.dateCreation,
-			serverData.created,
-			entityData.created,
-		),
-		address: {
-			streetAddress: toStringValue(address.streetAddress),
-			postalCode: toStringValue(address.postalCode),
-			addressLocality: toStringValue(address.addressLocality),
-		},
-		handicap: resolveText(
-			serverData.inst_acc_handi_bool,
-			entityData.inst_acc_handi_bool
-		),
-		transportCommun: resolveText(
-			serverData.inst_trans_bool,
-			entityData.inst_trans_bool
-		),
-		eclairage: resolveText(serverData.equip_eclair, entityData.equip_eclair),
-		douche: resolveText(serverData.equip_douche, entityData.equip_douche),
-		libreAcces: resolveText(serverData.equip_acc_libre, entityData.equip_acc_libre),
-	};
+/** Placeholder déterministe (SSR-safe) : initiales sur fond coloré par hash. */
+function getPoiImage(seed: string) {
+	const text = (seed || "POI").trim().slice(0, 2).toUpperCase();
+	const colors = ["#60a5fa", "#34d399", "#f97316", "#ef4444", "#a78bfa", "#f59e0b"];
+	const hash = (seed || "").split("").reduce((s, c) => s + c.charCodeAt(0), 0);
+	const color = colors[Math.abs(hash) % colors.length];
+	const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='112' height='112' viewBox='0 0 112 112'><rect width='112' height='112' fill='${color}' rx='56'/><text x='50%' y='50%' dominant-baseline='central' text-anchor='middle' font-size='40' font-family='Arial, Helvetica, sans-serif' fill='white'>${text}</text></svg>`;
+	return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
 export default function CardPoiSSBE({ item, onClick }: SearchCardProps) {
-	const poi = toPoi(item);
+	useLoadNamespace("modules/search");
+	const t = useT("modules/search");
 
-	const formattedDate = formatDateFr(poi.dateCreation);
-	const yearsSinceCreation = yearsAgo(poi.dateCreation);
+	// La variante `poi-ssbe` n'est routée que pour des POI (registry `SearchCard`),
+	// mais le switch runtime passe un `SearchEntity` → on narrow vers `Poi`.
+	// `serverData` est alors typé (PoiItemNormalized) : champs de base typés, champs
+	// costum (equip_*/inst_*) via l'index signature → lus sans cast `Record`.
+	const serverData = (item as Poi).serverData;
 
-	const cityLine = [poi.address.postalCode, poi.address.addressLocality]
+	const name = serverData.name ?? "";
+	const categorie =
+		(serverData.equip_type_name as string | undefined) ||
+		(serverData.categorie as string | undefined) ||
+		(serverData.equip_type_famille as string | undefined) ||
+		"";
+	const installation = serverData.inst_nom as string | undefined;
+
+	const imageSrc =
+		serverData.profilMediumImageUrl ||
+		serverData.profilThumbImageUrl ||
+		serverData.profilImageUrl ||
+		(serverData.profileImageUrl as string | undefined) ||
+		(serverData.image as string | undefined) ||
+		getPoiImage(categorie || name);
+
+	const streetAddress = serverData.address?.streetAddress;
+	const cityLine = [serverData.address?.postalCode, serverData.address?.addressLocality]
 		.filter(Boolean)
 		.join(" ");
 
-	function getPoiImage(categorie?: string, name?: string) {
-		const text = (categorie || name || "POI").trim().slice(0, 2).toUpperCase();
-		const colors = ["#60a5fa", "#34d399", "#f97316", "#ef4444", "#a78bfa", "#f59e0b"];
-		const hash = (categorie || name || "").split("").reduce((s, c) => s + c.charCodeAt(0), 0);
-		const color = colors[Math.abs(hash) % colors.length];
-		const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='112' height='112' viewBox='0 0 112 112'><rect width='112' height='112' fill='${color}' rx='56'/><text x='50%' y='50%' dominant-baseline='central' text-anchor='middle' font-size='40' font-family='Arial, Helvetica, sans-serif' fill='white'>${text}</text></svg>`;
-		return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-	}
-
-	const serverData = (item?.serverData ?? {}) as Record<string, unknown>;
-	const serverImage = toStringValue(
-		(serverData.profilImageUrl as unknown) ??
-			(serverData.profileImageUrl as unknown) ??
-			(serverData.profilMediumImageUrl as unknown) ??
-			(serverData.profilThumbImageUrl as unknown) ??
-			(serverData.image as unknown),
-	);
-	const imageSrc = serverImage ?? getPoiImage(poi.categorie, poi.name);
+	const createdDate = toDate(serverData.inst_date_creation ?? serverData.created);
+	const formattedDate = createdDate
+		? format(createdDate, "d MMMM yyyy", { locale: getDateFnsLocale() })
+		: null;
+	const yearsSinceCreation = createdDate
+		? new Date().getFullYear() - createdDate.getFullYear()
+		: null;
 
 	return (
 		<Card
@@ -241,10 +126,9 @@ export default function CardPoiSSBE({ item, onClick }: SearchCardProps) {
 			<CardHeader className="space-y-2 pb-3">
 				<div className="flex items-start gap-3">
 					<div className="relative shrink-0">
-						<img
+						<OptimizedImage
 							src={imageSrc}
-							alt={poi.categorie || poi.name}
-							loading="lazy"
+							alt={categorie || name}
 							width={56}
 							height={56}
 							className="h-14 w-14 rounded-full object-cover ring-2 ring-primary/20 shadow-sm"
@@ -252,19 +136,19 @@ export default function CardPoiSSBE({ item, onClick }: SearchCardProps) {
 					</div>
 					<div className="min-w-0 flex-1">
 						<h3 className="truncate text-base font-semibold leading-tight text-foreground">
-							{poi.name}
+							{name}
 						</h3>
 						<div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
 							<Tag className="h-3 w-3" />
-							<span className="truncate">{poi.categorie}</span>
+							<span className="truncate">{categorie}</span>
 						</div>
 					</div>
 				</div>
 
-				{poi.installation && (
+				{installation && (
 					<div className="flex items-center gap-1.5 text-xs text-muted-foreground">
 						<Building2 className="h-3.5 w-3.5 shrink-0" />
-						<span className="truncate">{poi.installation}</span>
+						<span className="truncate">{installation}</span>
 					</div>
 				)}
 			</CardHeader>
@@ -275,46 +159,21 @@ export default function CardPoiSSBE({ item, onClick }: SearchCardProps) {
 				<div className="flex gap-2.5 rounded-md bg-teal-light/60 p-2.5">
 					<MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
 					<div className="min-w-0 flex-1 space-y-0.5 text-xs">
-						{poi.address.streetAddress && (
-							<p className="font-medium text-foreground">
-								{poi.address.streetAddress}
-							</p>
-						)}
+						{streetAddress && <p className="font-medium text-foreground">{streetAddress}</p>}
 						{cityLine && <p className="text-muted-foreground">{cityLine}</p>}
 					</div>
 				</div>
 
 				<div>
 					<p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-						amenagement
+						{t("CardPoiSSBE.amenities")}
 					</p>
 					<div className="grid grid-cols-2 gap-1.5">
-						<Feature
-							label="Accès PMR"
-							active={isTrue(poi.handicap)}
-							Icon={Accessibility}
-						/>
-						<Feature
-							label="transport en commun"
-							active={isTrue(poi.transportCommun)}
-							Icon={Bus}
-						/>
-						
-						<Feature
-							label="Éclairage"
-							active={isTrue(poi.eclairage)}
-							Icon={Lightbulb}
-						/>
-						<Feature
-							label="Douches"
-							active={isTrue(poi.douche)}
-							Icon={Droplet}
-						/>
-						<Feature
-							label="Libre accès"
-							active={isTrue(poi.libreAcces)}
-							Icon={DoorOpen}
-						/>
+						<Feature label={t("CardPoiSSBE.pmrAccess")} active={isTrue(serverData.inst_acc_handi_bool)} Icon={Accessibility} />
+						<Feature label={t("CardPoiSSBE.publicTransport")} active={isTrue(serverData.inst_trans_bool)} Icon={Bus} />
+						<Feature label={t("CardPoiSSBE.lighting")} active={isTrue(serverData.equip_eclair)} Icon={Lightbulb} />
+						<Feature label={t("CardPoiSSBE.showers")} active={isTrue(serverData.equip_douche)} Icon={Droplet} />
+						<Feature label={t("CardPoiSSBE.freeAccess")} active={isTrue(serverData.equip_acc_libre)} Icon={DoorOpen} />
 					</div>
 				</div>
 
@@ -326,7 +185,7 @@ export default function CardPoiSSBE({ item, onClick }: SearchCardProps) {
 						</div>
 						{yearsSinceCreation !== null && yearsSinceCreation > 0 && (
 							<span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium">
-								Il y a {yearsSinceCreation} ans
+								{t("CardPoiSSBE.yearsAgo", undefined, { count: yearsSinceCreation })}
 							</span>
 						)}
 					</div>

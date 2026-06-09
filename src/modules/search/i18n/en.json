@@ -1,4 +1,83 @@
 {
+  "CardPoiSSBE": {
+    "amenities": "Amenities",
+    "pmrAccess": "PRM access",
+    "publicTransport": "Public transport",
+    "lighting": "Lighting",
+    "showers": "Showers",
+    "freeAccess": "Free access",
+    "yearsAgo": "{{count}} years ago"
+  },
+  "PoiDetailSSBE": {
+    "edit": "Edit",
+    "close": "Close",
+    "validated": "Validated",
+    "fallbackTitle": "Point of interest",
+    "createdOn": "Created on {{date}}",
+    "yearsAgo": "({{count}} years ago)",
+    "yes": "Yes",
+    "no": "No",
+    "sections": {
+      "general": "General information",
+      "management": "Management & uses",
+      "accessibility": "Accessibility & services",
+      "pmrDetails": "PRM details (People with Reduced Mobility)",
+      "pshsDetails": "PSHS details (People with Sensory Disabilities)",
+      "location": "Location",
+      "technical": "Technical specifications",
+      "tracking": "Tracking"
+    },
+    "fields": {
+      "category": "Category",
+      "family": "Equipment family",
+      "installation": "Installation",
+      "sport": "Sport practiced",
+      "ownerName": "Owner name",
+      "ownerType": "Owner type",
+      "managementType": "Management type",
+      "premises": "Available premises",
+      "users": "Users",
+      "pmrType": "PRM accessibility type",
+      "transportType": "Transport type",
+      "nature": "Nature",
+      "floor": "Surfacing",
+      "surface": "Surface",
+      "length": "Length",
+      "width": "Width",
+      "partnership": "Partnership"
+    },
+    "features": {
+      "pmr": "PRM access",
+      "transport": "Public transport",
+      "lighting": "Lighting",
+      "freeAccess": "Free access",
+      "showers": "Showers"
+    },
+    "pmr": {
+      "access": "Access",
+      "path": "Pathway",
+      "showers": "PRM showers",
+      "toilets": "PRM toilets",
+      "stands": "PRM stands",
+      "changing": "PRM changing rooms"
+    },
+    "pshs": {
+      "playArea": "Play area",
+      "path": "PSHS pathway",
+      "toilets": "PSHS toilets",
+      "stands": "PSHS stands",
+      "changing": "PSHS changing rooms",
+      "signage": "PSHS signage"
+    },
+    "map": {
+      "unavailable": "Coordinates unavailable."
+    },
+    "tracking": {
+      "created": "Creation",
+      "lastSurvey": "Last survey",
+      "lastUpdate": "Last update"
+    }
+  },
   "Filtres actifs :": "Active filters:",
   "Description": "Description",
   "Tags": "Tags",

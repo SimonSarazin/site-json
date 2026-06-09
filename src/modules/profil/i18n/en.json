@@ -1,4 +1,9 @@
 {
+  "ImageUploadField": {
+    "dropHint": "Drag & drop or click to choose",
+    "remove": "Remove image",
+    "imageOnly": "Only images are accepted."
+  },
   "EntityGridView": {
     "gridView": "Grid",
     "detailedView": "Details",
@@ -1102,6 +1107,101 @@
         "title": "Add a place",
         "description": "Fill in the place details"
       }
+    }
+  },
+  "AddPoiEquipement": {
+    "title": {
+      "add": "Add a facility",
+      "edit": "Edit a facility"
+    },
+    "description": {
+      "add": "Fill in the facility information.",
+      "edit": "Update the facility information."
+    },
+    "steps": {
+      "general": "General information",
+      "legal": "Legal characteristics",
+      "structure": "Structural characteristics",
+      "usage": "Usage characteristics"
+    },
+    "stepIndicator": "Step {{index}} / {{total}}",
+    "stepAria": "Step {{index}}",
+    "validationFailed": "Please fix the highlighted fields.",
+    "sections": {
+      "pmr": "PRM accessibility",
+      "pshs": "PSHS accessibility"
+    },
+    "matches": {
+      "title": "Existing facilities at the same address",
+      "loading": "Searching…",
+      "error": "Error while searching for facilities.",
+      "empty": "No facility found.",
+      "addressUnknown": "Unknown address",
+      "noName": "Untitled"
+    },
+    "fields": {
+      "equipTypeName": "Facility type",
+      "equipTypeFamille": "Facility family",
+      "address": "Address",
+      "proprietaireNom": "Owner name",
+      "proprietaireType": "Owner type",
+      "dateCreation": "Creation date",
+      "dateEnquete": "Survey date",
+      "dateMaj": "Update date",
+      "institutionNom": "Institution name",
+      "categorie": "Category",
+      "gestionnaireType": "Manager type",
+      "partenariatDisponible": "Partnership available",
+      "partenariatType": "Partnership type",
+      "nature": "Facility nature",
+      "sol": "Floor type",
+      "longueur": "Length",
+      "largeur": "Width",
+      "surface": "Area (computed)",
+      "handicapType": "Type of disability supported",
+      "transportType": "Available means of transport",
+      "accessibleHandicap": "Accessible to people with disabilities",
+      "accessibleTransport": "Accessible by public transport",
+      "eclairage": "Area lighting",
+      "doucheAccessible": "Accessible shower",
+      "pmrAcces": "PRM access available",
+      "pmrChem": "PRM-adapted pathway",
+      "pmrDouche": "PRM-accessible showers",
+      "pmrTrib": "PRM-accessible stands",
+      "pmrVest": "PRM-accessible changing rooms",
+      "pmrSanit": "PRM-accessible toilets",
+      "locauxComplementaires": "Additional premises",
+      "siteInternet": "Website",
+      "siteInternetPlaceholder": "https://example.com",
+      "typesUtilisateurs": "User types",
+      "accesLibre": "Free access",
+      "sportsPratiques": "Sports practised",
+      "image": "Facility photo",
+      "imageHint": "Square format recommended (JPG, PNG)."
+    },
+    "pshs": {
+      "aire": "Play area",
+      "sanit": "Toilets",
+      "trib": "Stands",
+      "sign": "Reception / Signage",
+      "vest": "Changing rooms",
+      "chem": "Pathways"
+    },
+    "placeholders": {
+      "selectType": "Select a type",
+      "searchType": "Search a type",
+      "selectFamille": "Select a family",
+      "searchFamille": "Search a family",
+      "selectNature": "Select a nature",
+      "selectSol": "Select a floor type",
+      "selectSport": "Select a sport",
+      "searchSport": "Search a sport"
+    },
+    "buttons": {
+      "previous": "Previous",
+      "next": "Next",
+      "addUrl": "Add a URL",
+      "removeUrl": "Remove URL"
     }
   },
   "AddTiersLieux": {

@@ -1,6 +1,6 @@
 import { lazy, Suspense, type ComponentType } from "react";
 import { Loader2 } from "lucide-react";
-import type { EntityTypes, Organization } from "@communecter/cocolight-api-client";
+import type { EntityTypes, Organization, Poi } from "@communecter/cocolight-api-client";
 import { useSite } from "@/hooks/useSite";
 
 export interface EditModalProps {
@@ -27,6 +27,17 @@ const editModalRegistry: Record<string, () => Promise<{ default: ComponentType<E
           open={props.open}
           onOpenChange={props.onOpenChange}
           organization={props.entity as Organization}
+        />
+      ),
+    })),
+  "edit-poi-equipement": () =>
+    import("../add/AddPoiEquipementModal").then((m) => ({
+      default: (props: EditModalProps) => (
+        <m.AddPoiEquipementModal
+          open={props.open}
+          onOpenChange={props.onOpenChange}
+          mode="edit"
+          poi={props.entity as Poi}
         />
       ),
     })),

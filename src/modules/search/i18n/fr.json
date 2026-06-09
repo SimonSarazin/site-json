@@ -1,4 +1,83 @@
 {
+    "CardPoiSSBE": {
+        "amenities": "Aménagement",
+        "pmrAccess": "Accès PMR",
+        "publicTransport": "Transport en commun",
+        "lighting": "Éclairage",
+        "showers": "Douches",
+        "freeAccess": "Libre accès",
+        "yearsAgo": "Il y a {{count}} ans"
+    },
+    "PoiDetailSSBE": {
+        "edit": "Éditer",
+        "close": "Fermer",
+        "validated": "Validé",
+        "fallbackTitle": "Point d'intérêt",
+        "createdOn": "Créé le {{date}}",
+        "yearsAgo": "(il y a {{count}} ans)",
+        "yes": "Oui",
+        "no": "Non",
+        "sections": {
+            "general": "Informations générales",
+            "management": "Gestion & usages",
+            "accessibility": "Accessibilité & services",
+            "pmrDetails": "Détails PMR (Personnes à Mobilité Réduite)",
+            "pshsDetails": "Détails PSHS (Personnes en Situation de Handicap Sensoriel)",
+            "location": "Localisation",
+            "technical": "Caractéristiques techniques",
+            "tracking": "Suivi"
+        },
+        "fields": {
+            "category": "Catégorie",
+            "family": "Famille d'équipement",
+            "installation": "Installation",
+            "sport": "Sport pratiqué",
+            "ownerName": "Nom de propriété",
+            "ownerType": "Type de propriété",
+            "managementType": "Type de gestion",
+            "premises": "Locaux disponibles",
+            "users": "Utilisateurs",
+            "pmrType": "Type d'accessibilité PMR",
+            "transportType": "Type de transport",
+            "nature": "Nature",
+            "floor": "Revêtement",
+            "surface": "Surface",
+            "length": "Longueur",
+            "width": "Largeur",
+            "partnership": "Partenariat"
+        },
+        "features": {
+            "pmr": "Accès PMR",
+            "transport": "Transports en commun",
+            "lighting": "Éclairage",
+            "freeAccess": "Libre accès",
+            "showers": "Douches"
+        },
+        "pmr": {
+            "access": "Accès",
+            "path": "Cheminement",
+            "showers": "Douches PMR",
+            "toilets": "Sanitaires PMR",
+            "stands": "Tribunes PMR",
+            "changing": "Vestiaires PMR"
+        },
+        "pshs": {
+            "playArea": "Aire de pratique",
+            "path": "Cheminement PSHS",
+            "toilets": "Sanitaires PSHS",
+            "stands": "Tribunes PSHS",
+            "changing": "Vestiaires PSHS",
+            "signage": "Signalétique PSHS"
+        },
+        "map": {
+            "unavailable": "Coordonnées indisponibles."
+        },
+        "tracking": {
+            "created": "Création",
+            "lastSurvey": "Dernière enquête",
+            "lastUpdate": "Dernière mise à jour"
+        }
+    },
     "Filtres actifs :": "Filtres actifs :",
     "Description": "Description",
     "Tags": "Tags",

@@ -288,10 +288,13 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
       form.setValue("level4Name", city.level4Name || "");
     }
 
-    // If only one postal code, select it automatically
+    // If only one postal code, select it automatically (+ coordonnées ville en fallback,
+    // affinées ensuite si l'utilisateur choisit une rue).
     if (city.postalCodes.length === 1) {
       const pc = city.postalCodes[0];
       form.setValue("postalCode", pc.postalCode);
+      form.setValue("geo", pc.geo);
+      form.setValue("geoPosition", pc.geoPosition);
     } else {
       form.setValue("postalCode", "");
     }
@@ -309,6 +312,12 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
 
     setSelectedStreet(street);
     form.setValue("streetAddress", street.streetAddress);
+    // Coordonnées précises (niveau numéro, API BAN) : `street.geo` = [lon, lat].
+    if (street.geo) {
+      const [lon, lat] = street.geo;
+      form.setValue("geo", { "@type": "GeoCoordinates", latitude: lat, longitude: lon });
+      form.setValue("geoPosition", { type: "Point", coordinates: [lon, lat] });
+    }
   };
 
   // Reset street
@@ -494,7 +503,18 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
             return (
               <FormItem>
                 <FormLabel>{t("ProfileEdit.fields.postalCode.label")}</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value || ""}>
+                <Select
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    // Coordonnées du code postal choisi (fallback ville).
+                    const pc = selectedLocality.postalCodes.find((p) => p.postalCode === value);
+                    if (pc) {
+                      form.setValue("geo", pc.geo);
+                      form.setValue("geoPosition", pc.geoPosition);
+                    }
+                  }}
+                  value={field.value || ""}
+                >
                   <FormControl>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder={t("ProfileEdit.fields.postalCode.placeholder")} />

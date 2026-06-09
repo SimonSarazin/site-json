@@ -1735,13 +1735,11 @@
             "disableInfiniteScroll": false,
             "showDetailedViewToggle": false,
             "baseParams": {
-              "notSourceKey": true,
               "defaultTypes": [
                 "poi"
               ],
               "defaultFields": [
                 "name",
-
                 "equip_type_name",
                 "equip_type_famille",
                 "categorie",
@@ -1751,12 +1749,10 @@
                 "equip_larg",
                 "equip_long",
                 "aps_name",
-
                 "inst_nom",
                 "equip_prop_nom",
                 "equip_prop_type",
                 "equip_gest_type",
-
                 "inst_acc_handi_bool",
                 "inst_acc_handi_type",
                 "equip_pmr_acc",
@@ -1765,26 +1761,21 @@
                 "equip_pmr_sanit",
                 "equip_pmr_trib",
                 "equip_pmr_vest",
-
                 "equip_pshs_aire",
                 "equip_pshs_chem",
                 "equip_pshs_sanit",
                 "equip_pshs_trib",
                 "equip_pshs_vest",
                 "equip_pshs_sign",
-
                 "equip_acc_libre",
                 "inst_trans_bool",
                 "inst_trans_type",
                 "equip_eclair",
                 "equip_douche",
-
                 "inst_part_bool",
                 "inst_part_type",
-
                 "equip_loc_type",
                 "equip_utilisateur",
-
                 "inst_date_creation",
                 "inst_enqu_date",
                 "equip_maj_date",
@@ -1792,16 +1783,8 @@
                 "geo",
                 "geoPosition",
                 "parent"
-
               ],
               "defaultFilters": {
-                "$or": {
-                  "source.key": "sportSanteBienetre",
-                  "source.keys": "sportSanteBienetre",
-                  "parent.6a04155ed047177b92399685": {
-                    "$exists": true
-                  }
-                },
                 "type":"recoveryCenter"
               }
             },
@@ -2863,6 +2846,8 @@
       "layout": "default",
       "hideHeader": false,
       "hideFooter": false,
+      "editModal": "edit-poi-equipement",
+      "editModalMatch": { "type": "recoveryCenter" },
       "sections": [
         {
           "type": "profile-header",

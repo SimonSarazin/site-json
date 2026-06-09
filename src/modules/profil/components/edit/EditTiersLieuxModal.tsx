@@ -26,6 +26,12 @@ export function EditTiersLieuxModal({
     [organization]
   );
 
+  // Aperçu du logo existant (lu sur `serverData` typé) affiché tant qu'aucun nouveau choisi.
+  const existingLogoUrl = useMemo(() => {
+    const sd = organization.serverData;
+    return sd.profilMediumImageUrl || sd.profilImageUrl || sd.profilThumbImageUrl || undefined;
+  }, [organization]);
+
   const handleClose = () => onOpenChange(false);
 
   const handleSubmit = async (data: TiersLieuxSubmitPayload) => {
@@ -43,6 +49,7 @@ export function EditTiersLieuxModal({
         <TiersLieuxForm
           mode="edit"
           defaultValues={defaultValues}
+          existingLogoUrl={existingLogoUrl}
           onSubmit={handleSubmit}
           onCancel={handleClose}
           isSubmitting={editMutation.isPending}
