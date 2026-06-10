@@ -1427,9 +1427,10 @@
                     "xl": 4
                   },
                   "card": {
-                    "type": "event",
-                    "variant": "event",
-                    "detailsMode": "drawer"
+                    "type": "tiers-lieux",
+                    "variant": "tiers-lieux",
+                    "detailsMode": "drawer",
+                    "detailedMode": "tiers-lieux"
                   }
                 }
               }
