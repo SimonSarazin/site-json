@@ -6,11 +6,23 @@
 
 - [Vue d'ensemble](#vue-densemble)
 - [Arborescence](#arborescence)
+- [Déclencheur global : `AuthModalProvider` + `useAuthModal()`](#déclencheur-global--authmodalprovider--useauthmodal)
 - [Routes fournies par le module](#routes-fournies-par-le-module)
 - [Deux modes d'affichage : modal et pages](#deux-modes-daffichage--modal-et-pages)
 - [Variants de design](#variants-de-design)
 - [Configuration `config.auth`](#configuration-configauth)
 - [Composants](#composants)
+  - [AuthModal](#authmodal)
+  - [AuthModalLazy](#authmodallazy)
+  - [AuthMenu](#authmenu)
+  - [LoginButton](#loginbutton)
+  - [LoginPrompt](#loginprompt)
+  - [AuthGate](#authgate)
+  - [CurrentUserAvatar](#currentuseravatar)
+  - [AuthPageLayout](#authpagelayout)
+- [Hooks](#hooks)
+  - [useAuthModal()](#useauthmodal)
+  - [useAuthActions()](#useauthactions)
 - [Formulaires — props et comportements](#formulaires--props-et-comportements)
 - [Chargement (lazy)](#chargement-lazy)
 - [Sections](#sections)
@@ -35,24 +47,32 @@ personnaliser textes, header/footer et SEO via la section `config.auth`.
 
 ```
 src/modules/auth/
-  module.config.ts        { name: "auth", type: "core", enabled: true }
-  routes.tsx              routes: ModuleRouteFactory → /login, /register, /recover-password
-  index.ts                barrel (AuthModal, forms, sections, routes, schema, hooks…)
-  i18n.ts                 addResourceBundle("fr"/"en", "modules/auth", …, true, true)
+  module.config.ts          { name: "auth", type: "core", enabled: true }
+  routes.tsx                routes: ModuleRouteFactory → /login, /register, /recover-password
+  index.ts                  barrel (composants, contexte, hooks, sections, schema…)
+  i18n.ts                   addResourceBundle("fr"/"en", "modules/auth", …, true, true)
   i18n/{fr,en}.json
-  schema.ts               schémas des sections auth + AuthConfigSchema
-  AuthSeo.tsx             Helmet noindex + titre/description (pattern AmpliSeo/ProfileSeo)
+  schema.ts                 schémas sections auth + AuthConfigSchema + AuthMenuConfigSchema
+  AuthSeo.tsx               Helmet noindex + titre/description (pattern AmpliSeo/ProfileSeo)
+  context/
+    AuthModalContext.ts     AuthMode, AuthModalOptions, AuthModalContextValue, createContext
+    AuthModalProvider.tsx   provider global monté dans SiteShell (autour de <Outlet />)
   components/
-    AuthModal.tsx         modal multi-mode (login / register / recover)
-    AuthModalLazy.tsx     point de montage lazy de la modal (montage conditionnel + Suspense)
-    AuthPageLayout.tsx    layout des pages auth (header/footer configurables + AuthSeo + Suspense)
+    AuthModal.tsx           modal multi-mode responsive (Sheet mobile / Dialog desktop)
+    AuthModalLazy.tsx       point de montage lazy + transmet onSuccess/initialMode
+    AuthPageLayout.tsx      layout des pages auth (header/footer configurables + AuthSeo + Suspense)
+    AuthMenu.tsx            widget de compte configurable (header desktop/stack mobile)
+    LoginButton.tsx         bouton générique « Se connecter » → openLogin()
+    LoginPrompt.tsx         invite de connexion inline ou card
+    AuthGate.tsx            garde client (connecté → children, sinon → LoginPrompt/fallback)
+    CurrentUserAvatar.tsx   avatar utilisateur courant (OptimizedImage + repli initiales/icône)
     forms/
       LoginForm.tsx
       RegisterForm.tsx
       RecoverPasswordForm.tsx
       SSOLoginButton.tsx
     variants/
-      registry.ts         resolveAuthVariant(variant?) → AuthVariantSet (constantes lazy vite-preload)
+      registry.ts           resolveAuthVariant(variant?) → AuthVariantSet (lazy vite-preload)
   pages/
     LoginPage.tsx
     RegisterPage.tsx
@@ -62,9 +82,90 @@ src/modules/auth/
     RegisterFormSection.tsx
     RecoverPasswordFormSection.tsx
   hooks/
+    useAuthModal.ts         accès au contexte global du modal (openLogin, close, isOpen)
+    useAuthActions.ts       état + actions auth partagés (me, isConnected, logout, profileUrl…)
     useSSOAuth.ts
     __tests__/useSSOAuth.test.ts
 ```
+
+## Déclencheur global : `AuthModalProvider` + `useAuthModal()`
+
+Depuis le commit `537a9f3`, l'ouverture du modal de connexion est **centralisée**
+en un seul point. Plus aucun header (ni aucun module) ne déclare son propre
+`<AuthModalLazy>` ni son propre état `open`.
+
+### Montage
+
+`AuthModalProvider` est monté **une seule fois** dans `SiteShell`
+(`src/RootLayout.tsx:44`), à l'intérieur de `CommandPaletteProvider`, autour
+de `<Outlet />`. Il rend en interne le `<AuthModalLazy>` global et expose le
+contexte `AuthModalContext`. Pattern calqué sur `CommandPaletteProvider`.
+
+```tsx
+// src/RootLayout.tsx (extrait)
+<CommandPaletteProvider>
+  <AuthModalProvider>
+    <Outlet />
+    {/* … Toaster, DiscourseGlobalModal, FloatingQRCode, FloatingActionButton */}
+  </AuthModalProvider>
+</CommandPaletteProvider>
+```
+
+### Contexte et types
+
+`src/modules/auth/context/AuthModalContext.ts` définit :
+
+```ts
+/** Modes d'affichage du modal (basculés en interne, sans navigation). */
+export type AuthMode = "login" | "register" | "recover";
+
+/** Options passées à `openLogin()`. */
+export interface AuthModalOptions {
+  /** Joué quand la connexion réussit, AVANT la fermeture du modal (ex. `refetch`). */
+  onSuccess?: () => void;
+  /** Mode affiché à l'ouverture (défaut : `"login"`). */
+  initialMode?: AuthMode;
+}
+
+export interface AuthModalContextValue {
+  isOpen: boolean;
+  openLogin: (options?: AuthModalOptions) => void;
+  close: () => void;
+}
+```
+
+### `useAuthModal()`
+
+`src/modules/auth/hooks/useAuthModal.ts` — accès au contexte depuis n'importe
+quel composant sous le provider :
+
+```ts
+import { useAuthModal } from "@/modules/auth";
+
+const { openLogin, close, isOpen } = useAuthModal();
+
+// Ouvrir la connexion depuis une action utilisateur :
+openLogin();
+
+// Ouvrir avec callback post-succès (ex. CoForm refetch) :
+openLogin({ onSuccess: refetch });
+
+// Ouvrir directement sur l'inscription :
+openLogin({ initialMode: "register" });
+```
+
+Lève `Error("useAuthModal doit être utilisé sous <AuthModalProvider>")` si
+appelé hors du provider.
+
+### Consommateurs actuels
+
+| Consommateur | Usage |
+|---|---|
+| Tous les headers (6 variantes) | via `<AuthMenu>` → `<LoginButton>` → `openLogin()` |
+| `CoFormPage` | `openLogin({ onSuccess: refetch })` si non connecté |
+| `NewsItem` | `openLogin()` pour réagir/commenter |
+| `ActionButtonGroup` (profil) | `openLogin()` pour adhérer/suivre |
+| `CardProfile` (search) | `openLogin()` pour suivre/contacter/ajouter |
 
 ## Routes fournies par le module
 
@@ -87,11 +188,28 @@ les routes du module.
 
 Les mêmes formulaires servent dans deux contextes :
 
-- **Modal** (`AuthModal`) — pour les sites où l'auth se fait en overlay. Les 3
+- **Modal global** (`AuthModalProvider` → `AuthModal`) — ouvert par
+  `useAuthModal().openLogin()` depuis n'importe quel composant. Les 3
   formulaires basculent en interne via les callbacks `onSwitchToRegister` /
-  `onSwitchToRecover` / `onSwitchToLogin` (pas de navigation).
-- **Pages** (`/login`, `/register`, `/recover-password`) — montés sans callbacks,
-  les formulaires naviguent alors entre les routes.
+  `onSwitchToRecover` / `onSwitchToLogin` (pas de navigation). Responsive :
+  `Sheet` ancrée en bas sur mobile, `Dialog` centré sur desktop (via
+  `useIsMobile`, même pattern que `NotificationBell` et `CommandPalette`).
+- **Pages** (`/login`, `/register`, `/recover-password`) — montés sans
+  callbacks, les formulaires naviguent alors entre les routes. Toujours
+  disponibles comme deep-links (ex. liens e-mail, guards `auth-required`).
+
+### Modal vs route : quand utiliser lequel
+
+| Contexte | Mécanisme recommandé |
+|---|---|
+| Déclenchement en cours de navigation (header, CTA, action utilisateur) | `openLogin()` → modal global |
+| Redirection forcée depuis un guard (`auth-required`, `usePageGuards`) | route `/login` (deep-link) |
+| Lien direct (e-mail, QR code) | route `/login` |
+| Intégration dans un CoForm ou une section custom | `openLogin({ onSuccess })` → modal global |
+
+La route `/login` reste disponible et fonctionnelle ; `usePageGuards` avec le
+middleware `auth-required` continue de rediriger vers `/login` (navigation, pas
+modal) pour les pages protégées (voir `src/hooks/usePageGuards.ts:11`).
 
 Chaque formulaire redirige vers `/` s'il détecte un utilisateur déjà connecté
 (`!loading && me?.isConnected` dans un `useEffect`), ce qui remplace l'ancien
@@ -136,27 +254,52 @@ seule fois pour rester stables entre les rendus).
 
 ## Configuration `config.auth`
 
-Bloc top-level optionnel de la config site (validé par `AuthConfigSchema`) :
+Bloc top-level optionnel de la config site (validé par `AuthConfigSchema`,
+`src/modules/auth/schema.ts:48`) :
 
 ```jsonc
 {
   "auth": {
     "variant": "default",     // discriminant du registry (absent → "default")
+    "menu": {                  // pilote AuthMenu dans tous les headers
+      "density": "compact",    // "compact" | "normal" (défaut "normal")
+      "showName": false,        // afficher le nom à côté de l'avatar
+      "showDropdownHeader": true, // en-tête nom+email dans le dropdown
+      "loginLabel": { "fr": "Rejoindre", "en": "Join" } // libellé bouton login
+    },
     "hideHeader": false,       // masquer le SiteHeader sur les pages auth
     "hideFooter": false,       // masquer le SiteFooter sur les pages auth
     "login":    { "title": { "fr": "Se connecter", "en": "Sign in" },
                   "subtitle": { "fr": "…", "en": "…" } },
-    "register": { "title": { … }, "subtitle": { … } },
-    "recover":  { "title": { … }, "subtitle": { … } }
+    "register": { "title": { "fr": "…" }, "subtitle": { "fr": "…" } },
+    "recover":  { "title": { "fr": "…" }, "subtitle": { "fr": "…" } }
   }
 }
 ```
 
-- `title` / `subtitle` alimentent le titre et le sous-titre de chaque formulaire.
-  En l'absence de texte, le formulaire retombe sur ses libellés i18n par défaut
-  (codés en dur dans les composants).
-- Le `subtitle` est passé comme `description` à `AuthPageLayout` → `AuthSeo`,
-  qui l'utilise comme balise `<meta name="description">`.
+### `config.auth.menu` — `AuthMenuConfigSchema`
+
+Ce sous-bloc pilote la présentation du widget de compte (`AuthMenu`) dans
+**tous les headers** simultanément. Il prime sur les props du header, qui
+restent utilisées comme défaut si le bloc `menu` est absent.
+
+| Champ | Type | Description |
+|---|---|---|
+| `density` | `"compact" \| "normal"` | Taille de l'avatar (compact : `h-7 w-7 lg:h-8 lg:w-8`, normal : `h-8 w-8`) |
+| `showName` | `boolean` | Afficher le nom de l'utilisateur à côté de l'avatar |
+| `showDropdownHeader` | `boolean` | Afficher un en-tête nom + email dans le dropdown |
+| `loginLabel` | `LocalizedString` | Libellé du bouton « Se connecter » — surchargé par la prop `loginLabel` du header |
+
+Le `tone` (défaut / onColor) et le `loginVariant` (ghost / solid / outline)
+restent couplés au design du header (props du composant), pas à `config.auth.menu`.
+
+### Autres champs
+
+- `title` / `subtitle` alimentent le titre et le sous-titre de chaque formulaire
+  des pages auth. En l'absence de texte, le formulaire retombe sur ses libellés
+  i18n par défaut.
+- Le `subtitle` est passé comme `description` à `AuthPageLayout` → `AuthSeo`
+  (`<meta name="description">`).
 - `hideHeader` / `hideFooter` s'appliquent uniquement au mode pages
   (`/login` etc.) ; la modal n'a pas de header/footer.
 
@@ -164,36 +307,170 @@ Bloc top-level optionnel de la config site (validé par `AuthConfigSchema`) :
 
 ### `AuthModal`
 
-`Dialog` shadcn multi-mode. Props :
+Modal multi-mode responsive (`src/modules/auth/components/AuthModal.tsx`). Props :
 
 ```ts
 interface AuthModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Joué quand la connexion réussit, avant fermeture (ex. `refetch` côté CoForm). */
+  onSuccess?: () => void;
+  /** Mode affiché à l'ouverture (défaut : `"login"`). */
+  initialMode?: AuthMode;  // "login" | "register" | "recover"
 }
 ```
 
-Repart sur `login` à chaque réouverture : `AuthModalLazy` démonte la modal quand
-elle est fermée (`!open → return null`), donc le state `mode` est réinitialisé au
-remontage — pas besoin d'un effet de reset. Un `<DialogTitle className="sr-only">`
-est rendu (accessible aux lecteurs d'écran) sans être visible, pour éviter un
-double titre (les formulaires rendent déjà leur propre `<h2>`).
+**Responsive** : sur mobile (`useIsMobile()`), rend un `<Sheet side="bottom">` (panel
+glissant en bas, `max-h-[90vh]`, `rounded-t-2xl`) ; sur desktop, rend un `<Dialog>`
+centré (`sm:max-w-md`). Même pattern que `NotificationBellImpl` et `CommandPalette`.
 
-Les formulaires sont rendus directement (pas de bordure/ombre propre) pour
-éviter un double cadre avec le `DialogContent`.
+Repart sur `initialMode` à chaque réouverture : `AuthModalLazy` démonte la modal
+quand elle est fermée (`!open → return null`), donc le state `mode` est réinitialisé
+au remontage — pas besoin d'un effet de reset. Un `<DialogTitle className="sr-only">`
+(ou `<SheetTitle>`) est rendu pour les lecteurs d'écran sans être visible.
+
+Quand `onSuccess` est fourni, il est appelé **avant** `close()` — ce qui permet
+de rejouer un refetch avant que l'overlay disparaisse.
 
 ### `AuthModalLazy`
 
-Point de montage utilisé par les headers. Props identiques à `AuthModal`. Ne
-monte `AuthModal` que lorsque `open === true` (`if (!open) return null`), sous
+Point de montage lazy du modal global (`src/modules/auth/components/AuthModalLazy.tsx`).
+Props :
+
+```ts
+interface AuthModalLazyProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
+  initialMode?: AuthMode;
+}
+```
+
+Ne monte `AuthModal` que lorsque `open === true` (`if (!open) return null`), sous
 `<Suspense fallback={null}>`. Le variant de design est résolu via
-`config.auth?.variant` (registry).
+`config.auth?.variant` (registry). Transmet `onSuccess` et `initialMode` à
+`AuthModal`.
 
-Utilisé par : `HeaderMegaMenu`, `HeaderTransparentScroll`, `HeaderUnderlineNav`,
-`HeaderTransparentDark`, `HeaderMinimal`.
+Utilisé exclusivement par `AuthModalProvider` (plus par les headers directement).
 
-Exporté depuis le barrel en tant que **named export** `{ AuthModalLazy }` et
-également comme default export depuis son propre fichier.
+### `AuthMenu`
+
+Widget de compte configurable pour les headers (`src/modules/auth/components/AuthMenu.tsx`).
+Remplace les anciens widgets auth dupliqués dans chaque variante de header.
+
+```ts
+interface AuthMenuProps {
+  density?: "compact" | "normal";        // surchargée par config.auth.menu.density
+  tone?: "default" | "onColor";          // "onColor" : texte blanc sur fond sombre
+  layout?: "menu" | "stack";             // "menu" = dropdown desktop ; "stack" = mobile
+  loginVariant?: "ghost" | "solid" | "outline";
+  loginLabel?: LocalizedString;          // libellé bouton — surchargé par config.auth.menu.loginLabel
+  loginClassName?: string;               // classes extras du bouton login (ex. shadow-glow)
+  showName?: boolean;                    // surchargée par config.auth.menu.showName
+  showDropdownHeader?: boolean;          // surchargée par config.auth.menu.showDropdownHeader
+  showChevron?: boolean;                 // défaut true
+  onAction?: () => void;                 // appelé après une action (ex. refermer le menu mobile)
+  className?: string;
+}
+```
+
+**Connecté** : affiche un `<DropdownMenu>` (layout `"menu"`) ou des boutons pleine
+largeur (layout `"stack"`) avec « Profil » (`/profil/:slug`) et « Se déconnecter ».
+**Déconnecté** : affiche un `<LoginButton>` qui ouvre le modal global.
+
+Toujours sous `<ClientOnly>` (pas de flash de contenu privé en SSR, cf. gotcha #10).
+
+Précédence des props affichage : `config.auth.menu` > prop du header > défaut.
+
+**Utilisé par tous les 6 headers** :
+
+| Header | `tone` | `layout desktop` | `loginVariant` |
+|---|---|---|---|
+| `HeaderStandard` | default | menu | ghost |
+| `HeaderMegaMenu` | default | menu | solid |
+| `HeaderMinimal` | default | menu | ghost |
+| `HeaderTransparentDark` | onColor | menu | outline |
+| `HeaderTransparentScroll` | default | menu | solid |
+| `HeaderUnderlineNav` | default | menu | solid |
+
+### `LoginButton`
+
+Bouton générique « Se connecter » (`src/modules/auth/components/LoginButton.tsx`).
+Ouvre le modal global via `useAuthModal().openLogin`. Props :
+
+```ts
+interface LoginButtonProps {
+  label?: ReactNode;           // libellé déjà résolu ; défaut : « Se connecter »
+  variant?: ButtonVariant;     // défaut "default"
+  size?: ButtonSize;           // défaut "sm"
+  className?: string;
+  openOptions?: AuthModalOptions;  // { onSuccess?, initialMode? }
+  onClick?: () => void;        // effet de bord avant ouverture (ex. refermer menu mobile)
+}
+```
+
+Utilisé par `AuthMenu` et `LoginPrompt`. Réutilisable partout pour déclencher
+la connexion de manière cohérente.
+
+### `LoginPrompt`
+
+Invite de connexion contextuelle (`src/modules/auth/components/LoginPrompt.tsx`).
+S'utilise à la place d'un bouton désactivé ou d'un `toast.error`. Props :
+
+```ts
+interface LoginPromptProps {
+  message?: ReactNode;             // incitation (ex. « Connectez-vous pour commenter »)
+  loginLabel?: ReactNode;          // libellé du bouton (défaut : « Se connecter »)
+  openOptions?: AuthModalOptions;
+  variant?: "inline" | "card";     // défaut "inline"
+  className?: string;
+}
+```
+
+- **`inline`** : bandeau discret (`flex`, `rounded-lg`, `bg-muted/40`) avec le
+  message à gauche et le `LoginButton` à droite.
+- **`card`** : encadré centré (`rounded-xl`, `border-border`, `bg-muted/30`) avec
+  icône `LogIn`, message et bouton empilés.
+
+### `AuthGate`
+
+Garde d'accès générique (`src/modules/auth/components/AuthGate.tsx`). Montre
+`children` si connecté, sinon une invite de connexion. Sous `ClientOnly` pour
+éviter tout flash de contenu privé en SSR. Props :
+
+```ts
+interface AuthGateProps {
+  children: ReactNode;
+  fallback?: ReactNode;        // rendu si non connecté (défaut : <LoginPrompt>)
+  message?: ReactNode;         // message du LoginPrompt par défaut
+  openOptions?: AuthModalOptions;
+}
+```
+
+Généralise le pattern `CoFormAccessGuard` (cas `not_logged_in`).
+
+### `CurrentUserAvatar`
+
+Avatar de l'utilisateur courant (`src/modules/auth/components/CurrentUserAvatar.tsx`).
+Sert via l'optimiseur `/img` (`OptimizedImage`), avec repli initiales → icône `User`.
+
+```ts
+interface CurrentUserAvatarProps {
+  avatarUrl?: string | null;
+  name?: string | null;
+  className?: string;            // taille Tailwind, ex. "h-8 w-8"
+  fallbackClassName?: string;    // couleurs du repli selon le tone
+  size?: number;                 // résolution source demandée à /img (px). Défaut 32
+}
+```
+
+Le repli est rendu **en dessous** de l'image : visible tant que l'image ne s'est
+pas peinte, et de nouveau si elle échoue (`onError` mémorise l'URL en erreur — pas
+un booléen, pour que l'image réapparaisse si `avatarUrl` change). Les initiales
+sont les 2 premières lettres des mots du nom (`"Jean Dupont"` → `"JD"`).
+
+Réservé à l'utilisateur **courant** (`me`). Pour les avatars d'autres entités
+(cards, commentaires, membres), utiliser `@/components/ui/avatar`.
 
 ### `AuthPageLayout`
 
@@ -224,6 +501,45 @@ Formulaires en `<form onSubmit>` (soumission clavier), composants shadcn (`Input
 `PasswordToggleTextInput`), validation `isValidEmail`, retours utilisateur via
 `sonner`. Chaque formulaire affiche un spinner de chargement tant que le namespace
 i18n n'est pas chargé (`useLoadNamespace` → `!loaded → return <Loading…>`).
+
+## Hooks
+
+### `useAuthModal()`
+
+`src/modules/auth/hooks/useAuthModal.ts` — consomme `AuthModalContext`. Retourne
+`{ isOpen, openLogin, close }`. Lève une erreur hors provider. Voir la section
+[Déclencheur global](#déclencheur-global--authmodalprovider--useauthmodal) pour
+l'usage complet.
+
+### `useAuthActions()`
+
+`src/modules/auth/hooks/useAuthActions.ts` — source unique de vérité pour l'état
+d'authentification partagé entre composants (indépendant de l'UI).
+
+Remplace l'ex-`useHeaderAuth` (supprimé), qui vivait dans
+`src/components/layout/header/`.
+
+```ts
+// Retour du hook
+{
+  me: User | null;           // utilisateur connecté (via useCocolight())
+  isConnected: boolean;      // !!me?.isConnected
+  logout: () => void;        // api?.logout() + navigate("/")
+  profileUrl: string;        // "/profil/:slug" ou "/profile" si slug absent
+  name: string | null;       // me.serverData.name (réactif via useReactiveProperty)
+  avatarUrl: string | null;  // me.serverData.profilThumbImageUrl (réactif)
+  email: string | null;      // me.serverData.email (réactif)
+}
+```
+
+Les propriétés réactives (`name`, `avatarUrl`, `email`) sont extraites via
+`useReactiveProperty<string>(me?.serverData, "…")` — elles se mettent à jour
+si le serveur pousse une modification sans remontage de composant.
+
+NB : le React Compiler gère la mémoïsation — pas de `useCallback`/`useMemo`
+manuels dans ce hook (règle eslint `react-hooks/preserve-manual-memoization`).
+
+**Utilisé par** : `AuthMenu`, `CurrentUserAvatar` (via `AuthMenu`), `AuthGate`.
 
 ## Formulaires — props et comportements
 
@@ -318,20 +634,21 @@ pour le routing SSR sans flash), ses composants lourds sont **code-splittés** v
 
 | Chunk | Chargé quand |
 |---|---|
-| `AuthModal` (+ forms) | au clic sur « Se connecter » (`AuthModalLazy` monte au `open`) |
-| `LoginForm` | modal ouverte, `/login`, ou dialog login de `CoFormPage` |
-| `RegisterForm` | bascule register ou `/register` |
-| `RecoverPasswordForm` | bascule recover ou `/recover-password` |
+| `AuthModal` (+ forms) | à la première ouverture du modal global (`AuthModalLazy` monte au `open === true`) |
+| `LoginForm` | modal ouverte en mode `"login"` ou page `/login` |
+| `RegisterForm` | bascule register dans le modal ou page `/register` |
+| `RecoverPasswordForm` | bascule recover dans le modal ou page `/recover-password` |
 
-Le `registry` expose donc des composants lazy ; les consommateurs les rendent
-sous `Suspense` :
-- `AuthPageLayout` pour les pages (`Suspense` avec fallback texte)
-- `AuthModalLazy` pour la modal (`Suspense fallback={null}`)
-- `CoFormPage` pour son dialog login (son propre `Dialog` + `Suspense` avec
-  spinner `Loader2`, sans passer par `AuthModal` ni `AuthModalLazy`)
+Le `registry` expose des composants lazy ; les consommateurs les rendent sous
+`Suspense` :
+- `AuthPageLayout` pour les pages (Suspense avec fallback texte `Loading…`)
+- `AuthModalLazy` (via `AuthModalProvider`) pour le modal global (`Suspense fallback={null}`)
 
-Les `import` directs de `LoginForm` / `RegisterForm` / `RecoverPasswordForm` qui
-subsistent dans `AuthModal.tsx` et les `*Section` sont eux-mêmes contenus dans
+`CoFormPage` utilise désormais `useAuthModal().openLogin({ onSuccess: refetch })`
+au lieu d'un dialog login privé.
+
+Les imports directs de `LoginForm` / `RegisterForm` / `RecoverPasswordForm`
+subsistant dans `AuthModal.tsx` et les `*Section` sont eux-mêmes contenus dans
 des chunks déjà lazy.
 
 ## Sections
@@ -459,13 +776,13 @@ Clés notables dans les bundles `i18n/{fr,en}.json` :
 
 ## Schéma
 
-`schema.ts` exporte les schémas des 3 sections auth et `AuthConfigSchema`.
+`schema.ts` (`src/modules/auth/schema.ts`) exporte les schémas des 3 sections
+auth, `AuthMenuConfigSchema`, `AuthConfigSchema` et leurs types dérivés.
 `src/types/site-schema.ts` les importe et les ré-exporte (rétro-compat) ; le
-champ `auth` de la config site est `AuthConfigSchema.optional()`. C'est le même
-pattern de modularisation des schémas que `cagnotte` et `search`.
+champ `auth` de la config site est `AuthConfigSchema.optional()`. Même pattern
+de modularisation que `cagnotte` et `search`.
 
-Les 3 schémas de sections ont des `props` vides (`z.object({})`) — aucune prop
-de config n'est attendue :
+Les 3 schémas de sections ont des `props` vides — aucune prop de config attendue :
 
 ```ts
 export const LoginFormSectionSchema = z.object({
@@ -475,12 +792,22 @@ export const LoginFormSectionSchema = z.object({
 });
 // idem RegisterFormSectionSchema, RecoverPasswordFormSectionSchema
 
+const AuthMenuConfigSchema = z.object({
+  density: z.enum(["compact", "normal"]).optional(),
+  showName: z.boolean().optional(),
+  showDropdownHeader: z.boolean().optional(),
+  loginLabel: LocalizedString.optional(),
+});
+export type AuthMenuConfig = z.infer<typeof AuthMenuConfigSchema>;
+
 export const AuthConfigSchema = z.object({
   variant: z.string().optional(),
+  menu: AuthMenuConfigSchema.optional(),   // ← nouveau
   hideHeader: z.boolean().optional(),
   hideFooter: z.boolean().optional(),
-  login:    AuthPageTextSchema.optional(),  // { title?, subtitle? }
+  login:    AuthPageTextSchema.optional(), // { title?, subtitle? }
   register: AuthPageTextSchema.optional(),
   recover:  AuthPageTextSchema.optional(),
 });
+export type AuthConfig = z.infer<typeof AuthConfigSchema>;
 ```

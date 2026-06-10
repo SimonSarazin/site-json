@@ -12,6 +12,7 @@
   - [`cardCountCT` — compteurs par type](#cardcountct--compteurs-par-type)
   - [`thematics` — filières dynamiques](#thematics--filières-dynamiques)
   - [`filters` — sidebar de filtres partagée](#filters--sidebar-de-filtres-partagée)
+  - [`searchHeader` — header de filtres horizontal](#searchheader--header-de-filtres-horizontal)
 - [Context et filtres page-scoped (`pageFilters.ts`)](#context-et-filtres-page-scoped-pagefiltersts)
 - [Helpers purs partagés (`lib/`)](#helpers-purs-partagés-lib)
   - [buildSearchPayload](#buildsearchpayload)
@@ -35,7 +36,10 @@
   - [SearchPro vs SearchProStatic](#searchpro-vs-searchprostatic)
   - [SearchListView](#searchlistview)
   - [Cartes (card variants)](#cartes-card-variants)
+    - [CardPoiSSBE — refonte SSBE](#cardpoissbe--refonte-ssbe)
+    - [CardProfile — authentification requise](#cardprofile--authentification-requise)
   - [Mode détails (detailsMode)](#mode-détails-detailsmode)
+    - [PoiDetailSSBE — refonte SSBE](#poidetailssbe--refonte-ssbe)
   - [SearchMap et vue carte](#searchmap-et-vue-carte)
   - [SearchBubbleChart](#searchbubblechart)
   - [FranceRegionsMap](#franceregionsmap)
@@ -74,8 +78,8 @@ src/modules/search/
 │                                  #   SearchProStaticSectionSchema, CardCountCTSectionSchema,
 │                                  #   ThematicsSectionSchema, FilterGroupSchema,
 │                                  #   FilterGroupsSchema, FiltersByAnswersSchema,
-│                                  #   FiltersByPathSchema, IconNameSchema, SearchBaseParamsSchema
-│                                  #   (+ types dérivés)
+│                                  #   FiltersByPathSchema, IconNameSchema, SearchBaseParamsSchema,
+│                                  #   SearchHeaderSectionSchema (+ types dérivés)
 ├── styles.css                     # Styles spécifiques (carte, overrides Leaflet)
 ├── module.config.ts               # type: "core", PageProvider: PageFiltersProvider
 ├── index.ts                       # Exports publics (incl. useAutocomplete, buildSearchPayload)
@@ -85,7 +89,9 @@ src/modules/search/
 │   ├── SearchProStaticSection.tsx  # Wrapper section → SearchProStatic
 │   ├── CardCountCTSection.tsx      # Section compteurs (CT)
 │   ├── ThematicsSection.tsx        # Section filières dynamiques
-│   └── FiltersSection.tsx         # Section sidebar de filtres partagée (PageFilters)
+│   ├── FiltersSection.tsx         # Section sidebar de filtres partagée (PageFilters)
+│   └── SearchHeaderSection.tsx    # Header horizontal : titre + dropdownFilters + types,
+│                                  #   alias rétro-compat "title-with-filters-rezo-la-mer"
 │
 ├── components/
 │   ├── SearchTextInput.tsx        # Champ de recherche texte
@@ -336,6 +342,53 @@ Les filtres `scopeList` chargent les zones géographiques via `useSearchZoneQuer
 `FiltersSection` utilise `computeFiltersFromUrl` pour lire les query params d'URL et appliquer les filtres correspondants au montage et à chaque changement d'URL — la même logique que `usePageFiltersUrlSync` (source unique).
 
 `FiltersSection` lit également `?search=` pour reporter la recherche texte dans son champ local quand on arrive depuis un lien.
+
+### `searchHeader` — header de filtres horizontal
+
+Section bandeau de filtres **horizontal** (variante de `FiltersSection` présentée en haut de page). Même `PageFiltersContext` — peut cohabiter avec `SearchProStatic` dans le même provider. Alias rétro-compat : `title-with-filters-rezo-la-mer` (9 configs existantes, même composant `SearchHeaderSection.tsx`).
+
+**Schéma** (`SearchHeaderSectionSchema`, type : `searchHeader`) — props :
+
+| Prop | Type | Défaut | Description |
+|------|------|--------|-------------|
+| `headline` | LocalizedString | — | Titre principal `h1` |
+| `subhead` | LocalizedString | — | Sous-titre |
+| `headlineClassName` | string | `"text-foreground"` | Override classe couleur du `h1`. Utile sur fonds sombres fixes (`bg-ocean-gradient`) : `"text-white dark:text-foreground"` |
+| `subheadClassName` | string | `"text-foreground"` | Override classe couleur du sous-titre. Mettre `""` pour hériter sans forcer `text-foreground` |
+| `filtersClassName` | string | `"flex flex-col lg:flex-row lg:items-center"` | Override du conteneur flex de la rangée filtres (texte + dropdowns). Ex. : `"flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:justify-center"` |
+| `types` | `Array<{id, label}>` | — | Onglets/badges de type d'entité (bascule `selectedFilters.type`) |
+| `dropdownFilters` | `TitleWithFiltersDropdownSchema[]` | — | Dropdowns de filtres multi-sélection |
+| `buttons` | `ActionButtonSchema[]` | — | Boutons d'action (modal, lien, rejoindre…) via `ActionButtonGroup` |
+| `showSearch` | boolean | — | Afficher le champ de recherche texte (lié au `PageFiltersContext.searchQuery`) |
+| `searchPlaceholder` | LocalizedString | — | Placeholder du champ de recherche |
+
+**Comportement mobile des `dropdownFilters`** : sur mobile (`lg:hidden`), les dropdowns sont regroupés derrière un unique bouton `SlidersHorizontal` qui ouvre une `Sheet` latérale du bas (`side="bottom"`). La Sheet affiche tous les dropdowns en liste, un badge avec le compteur de filtres actifs, un bouton « Réinitialiser » (si filtres actifs) et un bouton « Voir les résultats » (SheetClose). Sur desktop (`lg:flex`), les dropdowns s'affichent inline dans la barre. Le compteur `activeFilterCount` compte le nombre de dropdowns ayant au moins une valeur sélectionnée.
+
+```json
+{
+  "type": "searchHeader",
+  "id": "header-equipements",
+  "props": {
+    "headline": { "fr": "Équipements sportifs" },
+    "headlineClassName": "text-white dark:text-foreground",
+    "subheadClassName": "",
+    "showSearch": true,
+    "searchPlaceholder": { "fr": "Rechercher un équipement..." },
+    "filtersClassName": "flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:justify-center",
+    "dropdownFilters": [
+      {
+        "id": "equip_type_name",
+        "label": { "fr": "Type d'équipement" },
+        "allLabel": { "fr": "Tous les types" },
+        "field": "equip_type_name",
+        "options": [
+          { "id": "terrain-football", "label": { "fr": "Terrain de football" } }
+        ]
+      }
+    ]
+  }
+}
+```
 
 ---
 
@@ -661,12 +714,56 @@ Grille responsive des résultats. Propriétés CSS grid pilotées par `list.colu
 | `event` | `CardEvent` | Événement (dates, lieu, organisateur) |
 | `event-rezo-la-mer` | `CardEventRezoLaMer` | Événement RezoLaMer (mise en page spécifique) |
 | `poi-rezo-la-mer` | `CardPoiRezoLaMer` | POI RezoLaMer |
-| `poi-ssbe` | `CardPoiSSBE` | POI Sport-Santé Bien-Être |
+| `poi-ssbe` | `CardPoiSSBE` | POI Sport-Santé Bien-Être (refonte complète, voir ci-dessous) |
 | `profile` | `CardProfile` | Profil (avatar, nom, bio) |
 | `rezo-la-mer` | `CardRezoLaMer` | Organisation RezoLaMer |
 | `ssbe` | `CardSsbe` | Organisation SSBE |
 | `card-elts` | `CardElts` | Éléments (projets/membres) |
 | `card-answer` | `CardAnswer` | Réponse CoForm |
+
+#### CardPoiSSBE — refonte SSBE
+
+`src/modules/search/components/card/CardPoiSSBE.tsx` — carte POI équipement sportif (Sport-Santé Bien-Être). Refonte complète par rapport à la version antérieure.
+
+**Typage** : le composant caste `item` en `Poi` (type SDK `@communecter/cocolight-api-client`) et lit **uniquement `serverData`** (pas de cast `Record<string, unknown>` global). L'interface locale `Poi` a été supprimée — la lib SDK fournit le type.
+
+**Champs lus depuis `serverData`** :
+
+| Champ `serverData` | Affichage |
+|--------------------|-----------|
+| `equip_type_name` / `categorie` / `equip_type_famille` | Catégorie (dans cet ordre de priorité) |
+| `inst_nom` | Nom de l'installation (`Building2`) |
+| `profilMediumImageUrl` / `profilThumbImageUrl` / `profilImageUrl` / `profileImageUrl` / `image` | Image (par ordre de priorité) |
+| `address.streetAddress` / `address.postalCode` / `address.addressLocality` | Adresse |
+| `inst_acc_handi_bool` | Feature « Accès PMR » |
+| `inst_trans_bool` | Feature « Transport en commun » |
+| `equip_eclair` | Feature « Éclairage » |
+| `equip_douche` | Feature « Douches » |
+| `equip_acc_libre` | Feature « Libre accès » |
+| `inst_date_creation` / `created` | Date de création (affichage « il y a N ans ») |
+
+**`isTrue()`** : normalise les champs d'accessibilité en booléen depuis `boolean | number | string` (`"1"`, `"oui"`, `"yes"`, `"true"`, `true`, `1`).
+
+**`toDate()`** : gère `Date` (entités revifiées) et `string` ISO (après hydratation SSR — les `Date` JSON sont sérialisées en string). Sans heuristique epoch.
+
+**Image de fallback** : placeholder SVG déterministe (initiales + couleur par hash du nom) généré côté client — SSR-safe.
+
+**`<OptimizedImage>`** remplace `<img>` — srcSet 1x/2x, lazy loading automatique.
+
+**Labels traduits** : la section « Aménagement » et toutes les features utilisent les clés `CardPoiSSBE.*` du namespace `modules/search` (fr/en).
+
+**Badge « Validé »** (`enqueteStatut === "Validé"`) : supprimé de la carte (conservé dans la fiche détail). Plus de badge dans le header de la carte.
+
+#### CardProfile — authentification requise
+
+`src/modules/search/components/card/CardProfile.tsx` — carte profil (utilisateur ou organisation).
+
+**Changement** : les actions « Suivre » et « Contacter », quand l'utilisateur n'est pas connecté, déclenchent désormais `openLogin()` (hook `useAuthModal` du module `auth`) au lieu d'afficher un `toast.error` ou de désactiver le bouton.
+
+- Bouton « Contacter » : **plus de `disabled={!isConnected}`** — toujours cliquable ; si non connecté → `openLogin()`.
+- Bouton « Suivre » : **`disabled={isLoadingFollow}` uniquement** (plus de `disabled={!isConnected || isLoadingFollow}`) — toujours cliquable si le follow n'est pas en cours ; si non connecté → `openLogin()`.
+
+Voir [doc/23-module-auth.md](doc/23-module-auth.md) pour l'API `useAuthModal`.
 
 ### Mode détails (detailsMode)
 
@@ -677,7 +774,72 @@ Quand `list.card.detailsMode` est configuré, `<SwitchDetailsMode>` ouvre les d�
 | `drawer` | `DetailsModeDrawer` | Panneau latéral droit |
 | `dialog` | `DetailsModeDialog` | Dialog centré |
 | `AnswerDetailModeDialog` | — | Dialog spécifique réponses CoForm (SSBE) |
-| `PoiDetailSSBE` | — | Détail POI SSBE dans drawer |
+| `PoiDetailSSBE` | — | Dialog détail POI SSBE (refonte complète, voir ci-dessous) |
+
+#### PoiDetailSSBE — refonte SSBE
+
+`src/modules/search/components/detailsMode/PoiDetailSSBE.tsx` — fiche détail complète d'un POI équipement sportif. Refonte majeure.
+
+**Structure du Dialog** : layout `flex flex-col` avec header fixe (`shrink-0`) et corps défilant (`min-h-0 flex-1 overflow-y-auto`). `ScrollArea` (composant shadcn) remplacé par un `<div>` natif `overflow-y-auto` pour un scroll flex correct sans tronquement. Le bouton de fermeture est rendu comme `DialogClose` custom (icône `X`) positionné en absolu en haut à droite, aux côtés du bouton « Éditer ».
+
+**Typage** : le composant caste `item` en `Poi` (SDK) et accède à `serverData` typé via `sd`. La fonction `toPoi()` ne lit plus que `sd.*` (champs SDK + index signature pour les costum `equip_*`, `inst_*`, `pmr_*`, `pshs_*`). Toutes les heuristiques de résolution `costumData`/`entityData` ont été supprimées.
+
+**Champs `PoiDetail` lus depuis `serverData`** (mappage complet) :
+
+| Champ `serverData` | Champ `PoiDetail` | Section |
+|--------------------|-------------------|---------|
+| `equip_type_name` / `equip_type_famille` | `category` / `familleEquipement` | Général |
+| `inst_nom` | `installation` | Général |
+| `aps_name` | `sportPratiquer` | Général |
+| `categorie` | `categorie` | Général |
+| `inst_date_creation` | `dateCreation` | Suivi |
+| `inst_enqu_date` | `dateEnquete` | Suivi |
+| `equip_maj_date` | `lastUpdate` | Suivi |
+| `equip_prop_nom` | `equipPropNom` | Gestion |
+| `equip_prop_type` | `entrepriseFonciere` | Gestion |
+| `equip_gest_type` | `equipGestType` | Gestion |
+| `equip_loc_type` | `equipLocType` | Gestion |
+| `equip_utilisateur` | `equipUtilisateur` | Gestion |
+| `equip_douche` | `equipDouche` | Accessibilité |
+| `inst_acc_handi_bool` | `handicap` | Accessibilité |
+| `inst_trans_bool` | `transportCommun` | Accessibilité |
+| `inst_acc_handi_type` | `typeAccessiblHandicap` | Accessibilité |
+| `inst_trans_type` | `typeTransportCommun` | Accessibilité |
+| `equip_pmr_acc/chem/douche/sanit/trib/vest` | `equipPmr*` | Détails PMR |
+| `equip_pshs_aire/chem/sanit/trib/vest/sign` | `equipPshs*` | Détails PSHS |
+| `equip_nature` | `nature` | Technique |
+| `equip_sol` | `sol` | Technique |
+| `equip_surf` | `surface` | Technique |
+| `equip_long` / `equip_larg` | `longueur` / `largeur` | Technique |
+| `equip_eclair` | `eclairage` | Technique + Accessibilité |
+| `equip_acc_libre` | `libreAccess` | Technique + Accessibilité |
+| `inst_part_bool` / `inst_part_type` | `partenariat` / `typePartenariat` | Technique |
+
+**`toDate()`** : même logique que `CardPoiSSBE` — gère `Date` et `string` ISO.
+
+**`str()`** : coercion minimale display-only (string brut, tableau → join, number/boolean → String). Ne fait aucune résolution récursive.
+
+**Sections affichées** (dans l'ordre de la grille) :
+
+Colonne principale :
+1. **Informations générales** — catégorie, famille, installation, sport pratiqué
+2. **Gestion & usages** — propriétaire, gestionnaire, locaux, utilisateurs
+3. **Accessibilité & services** — features PMR/transport/éclairage/douches/libre accès + types ; sous-sections « Détails PMR » (6 infos) et « Détails PSHS » (6 infos)
+
+Colonne latérale :
+4. **Image** (`OptimizedImage`, masquée si aucune image réelle — le placeholder SVG n'est plus affiché dans la fiche détail)
+5. **Carte** (`ProfileMapLeaflet`, coordonnées depuis `sd.geoPosition.coordinates` ou `sd.geo.latitude/longitude` ; message « Coordonnées indisponibles » si absent)
+6. **Localisation** — adresse complète + région + pays
+7. **Caractéristiques techniques** — nature, revêtement, surface, longueur, largeur, partenariat
+8. **Suivi** — dates de création, enquête, mise à jour
+
+**Bouton Éditer** : visible uniquement si `canEditProfile` (hook `useProfilPermissions`). Ouvre `DynamicEditModal` (registry config-driven `config.profiles.poi.editModal`) et ferme la fiche (`setOpenDetails(false)`). Le formulaire d'édition est découplé de la vue détail — `PoiDetailSSBE` n'embarque plus le formulaire.
+
+**Suppression de la section Activités** : l'ancienne section « Activités qui utilisent cette installation » (rechargement dynamique via `globalAutocompleteCostum` + `useEffect`) a été retirée.
+
+**Suppression du champ `subCategory`** (badge `Star`) : retiré de l'interface `PoiDetail` et du rendu.
+
+**Labels traduits** : tous les libellés passent par `t("PoiDetailSSBE.*")` (namespace `modules/search`). La fonction helper `yesNo(value?)` retourne `t("PoiDetailSSBE.yes")` / `t("PoiDetailSSBE.no")` / `"—"` pour les champs booléens des tableaux PMR/PSHS.
 
 ### SearchMap et vue carte
 
@@ -801,12 +963,16 @@ Utilisé pour les sites tiers-lieux qui enrichissent les fiches avec des donnée
 
 Namespace : **`modules/search`**. Enregistré en side-effect par `i18n.ts`.
 
-Structure de `fr.json` / `en.json` : fichiers **plats** (~35 clés), sans préfixes ni namespaces imbriqués. Les clés sont des chaînes françaises littérales utilisées directement dans les appels `t()`. Exemples représentatifs :
+Structure de `fr.json` / `en.json` : fichiers **mixtes** — clés plates (chaînes françaises littérales) pour les libellés généraux, plus deux blocs **imbriqués** (`CardPoiSSBE` et `PoiDetailSSBE`) ajoutés lors de la refonte SSBE.
+
+**Clés plates (exemples représentatifs)** :
 
 | Clé (fr) | Valeur en (en.json) |
 |----------|----------------------|
 | `"Filtres actifs :"` | `"Active filters:"` |
 | `"Filtres"` | `"Filters"` |
+| `"Réinitialiser"` | `"Reset"` |
+| `"Voir les résultats"` | `"See results"` |
 | `"Effacer"` | `"Clear"` |
 | `"Carte"` | `"Map"` |
 | `"Voir en liste"` | `"See in list"` |
@@ -818,7 +984,45 @@ Structure de `fr.json` / `en.json` : fichiers **plats** (~35 clés), sans préfi
 | `"type.organizations"` | `"Organizations"` |
 | `"toast.card.starSuccess"` | `"Updated"` |
 
-Aucun des préfixes hiérarchiques (`SearchPro.*`, `SearchFilters.*`, `ActiveFiltersBar.*`, etc.) n'existe dans les fichiers réels.
+**Bloc `CardPoiSSBE`** (carte POI SSBE) — clés fr / en en parité :
+
+| Clé | fr | en |
+|-----|----|----|
+| `CardPoiSSBE.amenities` | `"Aménagement"` | `"Amenities"` |
+| `CardPoiSSBE.pmrAccess` | `"Accès PMR"` | `"PRM access"` |
+| `CardPoiSSBE.publicTransport` | `"Transport en commun"` | `"Public transport"` |
+| `CardPoiSSBE.lighting` | `"Éclairage"` | `"Lighting"` |
+| `CardPoiSSBE.showers` | `"Douches"` | `"Showers"` |
+| `CardPoiSSBE.freeAccess` | `"Libre accès"` | `"Free access"` |
+| `CardPoiSSBE.yearsAgo` | `"Il y a {{count}} ans"` | `"{{count}} years ago"` |
+
+**Bloc `PoiDetailSSBE`** (fiche détail POI SSBE) — structure imbriquée :
+
+```
+PoiDetailSSBE.edit / .close / .validated / .fallbackTitle
+PoiDetailSSBE.createdOn  (interpolation {{date}})
+PoiDetailSSBE.yearsAgo   (interpolation {{count}})
+PoiDetailSSBE.yes / .no
+
+PoiDetailSSBE.sections.general / .management / .accessibility
+PoiDetailSSBE.sections.pmrDetails / .pshsDetails
+PoiDetailSSBE.sections.location / .technical / .tracking
+
+PoiDetailSSBE.fields.category / .family / .installation / .sport
+PoiDetailSSBE.fields.ownerName / .ownerType / .managementType / .premises / .users
+PoiDetailSSBE.fields.pmrType / .transportType
+PoiDetailSSBE.fields.nature / .floor / .surface / .length / .width / .partnership
+
+PoiDetailSSBE.features.pmr / .transport / .lighting / .freeAccess / .showers
+
+PoiDetailSSBE.pmr.access / .path / .showers / .toilets / .stands / .changing
+PoiDetailSSBE.pshs.playArea / .path / .toilets / .stands / .changing / .signage
+
+PoiDetailSSBE.map.unavailable
+PoiDetailSSBE.tracking.created / .lastSurvey / .lastUpdate
+```
+
+Aucun des préfixes hiérarchiques génériques (`SearchPro.*`, `SearchFilters.*`, `ActiveFiltersBar.*`, etc.) n'existe dans les fichiers réels — uniquement les blocs SSBE ci-dessus.
 
 ---
 
@@ -959,6 +1163,18 @@ Le champ `customHeader.showMapButton` (ancienne config) n'existe plus dans le sc
 ### 8. Alignement queryKey `usePageFiltersUrlSync` ↔ prefetch SSR
 
 `usePageFiltersUrlSync` utilise la queryKey `filters-answers-${id}` pour `filtersByAnswers` — identique à la convention de `prefetchFilterSection`. Si vous utilisez un `id` différent dans `usePageFiltersUrlSync` et dans le `prefetchFilterSection` correspondant, le cache SSR ne sera pas consommé (refetch client). Utiliser le même `id`.
+
+### 9. `CardProfile` / `SearchProStatic` — `useAuthModal` requis dans le provider
+
+`CardProfile` et `SearchProStatic` appellent `useAuthModal()` (hook du module `auth`). Ce hook requiert que `AuthModalProvider` soit monté dans l'arbre. Si vous intégrez ces composants dans un contexte sans le module `auth` initialisé, `openLogin()` ne fera rien. Vérifier que `AuthModalProvider` est bien présent (monté via le layout global dans `SiteShell`).
+
+### 10. `PoiDetailSSBE` — `ProfileMapLeaflet` est SSR-incompatible
+
+La carte Leaflet intégrée dans `PoiDetailSSBE` (`ProfileMapLeaflet`) ne s'affiche qu'après hydratation côté client. En SSR, elle rend un `<div>` placeholder. Ce comportement est intentionnel — Leaflet ne supporte pas le SSR.
+
+### 11. `SearchProStatic` — conteneur pleine largeur
+
+La zone de résultats de `SearchProStatic` (mode liste en sidebar désactivée) utilise désormais `mx-auto w-full max-w-[1536px]` pour éviter un étalement excessif sur très grands écrans. Ce changement affecte uniquement la mise en page — pas la logique de filtres.
 
 ---
 
