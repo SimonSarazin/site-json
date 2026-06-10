@@ -1205,7 +1205,12 @@
                       "countryCode": [
                         "FR",
                         "BE",
-                        "CH"
+                        "CH",
+                        "GP",
+                        "GF",
+                        "MQ",
+                        "YT",
+                        "RE"
                       ],
                       "level": [
                         "3"
