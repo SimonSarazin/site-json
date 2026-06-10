@@ -33,6 +33,7 @@
     "title": "Forum",
     "link_account": "Lier le compte",
     "unlink": "Délier",
+    "send_message": "Envoyer un message Discourse",
     "see_full_profile": "Voir le profil complet →",
     "username_placeholder": "Votre nom d'utilisateur Discourse",
     "link_description": "Reliez votre compte <strong>Discourse</strong> à votre profil pour afficher vos dernières contributions au forum.",
