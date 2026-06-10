@@ -132,7 +132,7 @@
                   "fr": "Rejoindre le réseau",
                   "en": "Join the network"
                 },
-                "path": "/rejoindre",
+                "path": "#rejoindre",
                 "variant": "default"
               },
               {
@@ -265,7 +265,7 @@
                   "fr": "Proposez votre initiative",
                   "en": "Propose your initiative"
                 },
-                "href": "/proposer-projet",
+                "href": "#proposer-projet",
                 "color": "primary"
               },
               {
@@ -278,7 +278,7 @@
                   "fr": "Études participatives",
                   "en": "Participatory studies"
                 },
-                "href": "/participer",
+                "href": "#participer",
                 "color": "primary"
               },
               {
@@ -291,7 +291,7 @@
                   "fr": "Actions prioritaires",
                   "en": "Priority actions"
                 },
-                "href": "/actions",
+                "href": "#actions",
                 "color": "amber"
               },
               {
@@ -342,7 +342,7 @@
                   "fr": "Soumettre un projet",
                   "en": "Submit a project"
                 },
-                "href": "/proposer-projet"
+                "href": "#proposer-projet"
               },
               {
                 "icon": "lightbulb",
@@ -358,7 +358,7 @@
                   "fr": "Participer",
                   "en": "Participate"
                 },
-                "href": "/participer"
+                "href": "#participer"
               },
               {
                 "icon": "heart-handshake",
@@ -374,7 +374,7 @@
                   "fr": "Voir les actions",
                   "en": "See actions"
                 },
-                "href": "/actions"
+                "href": "#actions"
               },
               {
                 "icon": "git-branch",
@@ -459,7 +459,7 @@
                   "fr": "Explorer la plateforme",
                   "en": "Explore the platform"
                 },
-                "href": "/explorer",
+                "href": "#explorer",
                 "variant": "outline"
               },
               {
@@ -467,7 +467,7 @@
                   "fr": "Contacter l'équipe",
                   "en": "Contact the team"
                 },
-                "href": "/contact",
+                "href": "#contact",
                 "variant": "outline"
               }
             ]
@@ -706,7 +706,7 @@
                   "en": "Join the community"
                 },
                 "icon": "user",
-                "href": "/rejoindre",
+                "href": "#rejoindre",
                 "variant": "primary"
               },
               {
@@ -715,7 +715,7 @@
                   "en": "Register my organization"
                 },
                 "icon": "building-2",
-                "href": "/inscrire-organisation",
+                "href": "#inscrire-organisation",
                 "variant": "outline"
               }
             ]
@@ -887,35 +887,35 @@
         },
         "links": [
           {
-            "href": "/mission",
+            "href": "#mission",
             "label": {
               "fr": "Notre mission",
               "en": "Our mission"
             }
           },
           {
-            "href": "/equipe",
+            "href": "#equipe",
             "label": {
               "fr": "L'équipe",
               "en": "The team"
             }
           },
           {
-            "href": "/gouvernance",
+            "href": "#gouvernance",
             "label": {
               "fr": "Gouvernance",
               "en": "Governance"
             }
           },
           {
-            "href": "/partenaires",
+            "href": "#partenaires",
             "label": {
               "fr": "Partenaires",
               "en": "Partners"
             }
           },
           {
-            "href": "/blog",
+            "href": "#blog",
             "label": {
               "fr": "Blog",
               "en": "Blog"
@@ -930,35 +930,35 @@
         },
         "links": [
           {
-            "href": "/rejoindre",
+            "href": "#rejoindre",
             "label": {
               "fr": "Créer un compte",
               "en": "Create account"
             }
           },
           {
-            "href": "/proposer-projet",
+            "href": "#proposer-projet",
             "label": {
               "fr": "Proposer un projet",
               "en": "Propose a project"
             }
           },
           {
-            "href": "/cagnotte",
+            "href": "#cagnotte",
             "label": {
               "fr": "Faire un don",
               "en": "Make a donation"
             }
           },
           {
-            "href": "/benevole",
+            "href": "#benevole",
             "label": {
               "fr": "Devenir bénévole",
               "en": "Become a volunteer"
             }
           },
           {
-            "href": "/contact",
+            "href": "#contact",
             "label": {
               "fr": "Contact",
               "en": "Contact"
@@ -973,35 +973,35 @@
         },
         "links": [
           {
-            "href": "/mentions-legales",
+            "href": "#mentions-legales",
             "label": {
               "fr": "Mentions légales",
               "en": "Legal notice"
             }
           },
           {
-            "href": "/cgu",
+            "href": "#cgu",
             "label": {
               "fr": "CGU",
               "en": "Terms of use"
             }
           },
           {
-            "href": "/confidentialite",
+            "href": "#confidentialite",
             "label": {
               "fr": "Confidentialité",
               "en": "Privacy policy"
             }
           },
           {
-            "href": "/cookies",
+            "href": "#cookies",
             "label": {
               "fr": "Cookies",
               "en": "Cookies"
             }
           },
           {
-            "href": "/licences",
+            "href": "#licences",
             "label": {
               "fr": "Licences",
               "en": "Licenses"
@@ -1034,21 +1034,21 @@
     ],
     "legalLinks": [
       {
-        "href": "/accessibilite",
+        "href": "#accessibilite",
         "label": {
           "fr": "Accessibilité",
           "en": "Accessibility"
         }
       },
       {
-        "href": "/plan-du-site",
+        "href": "#plan-du-site",
         "label": {
           "fr": "Plan du site",
           "en": "Sitemap"
         }
       },
       {
-        "href": "/contribuer",
+        "href": "#contribuer",
         "label": {
           "fr": "Contribuer",
           "en": "Contribute"
