@@ -124,6 +124,7 @@ const ListConfSchema = z.object({
     // de carte. Défaut : actif uniquement pour le variant "rezo-la-mer" (rétrocompat).
     showFunding:     z.boolean().optional(),
     detailsMode: z.enum(["drawer", "dialog"]).default("drawer"),
+    detailedMode: z.enum(["default", "tiers-lieux"]).default("default"),
     type: z.enum(["overlay", "default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer", "poi-ssbe", "card-elts","ssbe", "card-answer"]).default("default"),
     variant: z.enum(["default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer", "poi-ssbe", "card-elts","ssbe", "card-answer"]).optional(),
   }).partial().optional(),
