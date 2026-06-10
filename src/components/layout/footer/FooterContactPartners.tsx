@@ -3,7 +3,7 @@ import { MapPin, Phone, Mail, Globe, Building2 } from "lucide-react";
 import { useLocalization } from "@/hooks/useLocalization";
 import { Footer } from "@/types/site-schema";
 
-interface FooterSSBEProps {
+interface FooterContactPartnersProps {
   footer: Footer;
 }
 
@@ -30,7 +30,7 @@ function getIconComponent(icon?: string) {
   return iconMap[key] ?? MapPin;
 }
 
-export default function FooterSSBE({ footer }: FooterSSBEProps) {
+export default function FooterContactPartners({ footer }: FooterContactPartnersProps) {
   const { t } = useLocalization();
   const contactItems = footer.contactSection?.items ?? [];
   const partnerLogos = footer.partners?.logos ?? [];
@@ -104,12 +104,12 @@ export default function FooterSSBE({ footer }: FooterSSBEProps) {
                     href={logo.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center"
+                    className="inline-flex items-center justify-center dark:rounded-lg dark:bg-white dark:p-3 dark:shadow-sm"
                   >
                     {logoContent}
                   </a>
                 ) : (
-                  <span key={idx} className="inline-flex items-center justify-center">
+                  <span key={idx} className="inline-flex items-center justify-center dark:rounded-lg dark:bg-white dark:p-3 dark:shadow-sm">
                     {logoContent}
                   </span>
                 );

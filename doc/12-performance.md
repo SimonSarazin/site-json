@@ -247,8 +247,8 @@ Les composants avec plusieurs variantes d'affichage (header, cards, etc.) sont l
 
 | Composant | Variants lazy | Types JSON (`header.type` / `footer.type`) |
 |---|---|---|
-| `SiteHeader` | 6 variants | `default` (`DefaultHeader`), `tiers-lieux` (`HeaderTiersLieux`), `rezo-la-mer`/`cyber-reunion` (`HeaderRezoLaMer`), `julie-pot-vin` (`HeaderJuliePotVin`), `nos-communes` (`HeaderNosCommunes`), `commune-transparente` (`HeaderCommuneTransparente`) |
-| `SiteFooter` | 4 variants | `default` (`DefaultFooter`), `tiers-lieux` (`FooterTiersLieux`), `rezo-la-mer`/`cyber-reunion` (`FooterRezoLaMer`), `ssbe` (`FooterSSBE`) |
+| `SiteHeader` | 6 variants design | `standard`/`default` (`HeaderStandard`), `mega-menu` (`HeaderMegaMenu`), `transparent-scroll` (`HeaderTransparentScroll`), `minimal` (`HeaderMinimal`), `underline-nav` (`HeaderUnderlineNav`), `transparent-dark` (`HeaderTransparentDark`) |
+| `SiteFooter` | 5 variants design | `default` (`DefaultFooter`→`FooterRich`), `rich` (`FooterRich`), `minimal-centered` (`FooterMinimalCentered`), `sidebar-columns`+`style` (`FooterSidebarColumns`), `contact-partners` (`FooterContactPartners`) |
 | `SearchCard` | 12 variants | organization, event, project, user, poi, tiers-lieux, etc. |
 | `ProfileHeader` | 6 variants | `ProfileHeaderHero`, `ProfileHeaderSimple`, `ProfileHeaderCover`, `ProfileHeaderBannerOverlay`, `ProfileHeaderComplete`, `ProfileHeaderMinimal` |
 | `SwitchDetailsMode` | 4 variants | list, grid, map, calendar |

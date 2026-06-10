@@ -614,7 +614,7 @@ Cette section décrit en détail le fonctionnement des fichiers responsables du 
      "svg",       // ContentSection iconCard.svg
      "iconSvg",   // CardsSection items.iconSvg
      "infoText",  // ContentSection (HTML brut)
-     "extra",     // DefaultFooter footer.extra
+     "extra",     // FooterRich footer.extra
      "content",   // TabsSection/AccordionSection/BlogPostSection/MarkdownSection
      "icon",      // HeroSSBE/HeroRezoLaMer/ActionButtonsRezoLaMer (SVG inline ou nom lucide)
      "logoIcon",  // HeroRezoLaMer props.logoIcon

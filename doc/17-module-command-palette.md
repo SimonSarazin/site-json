@@ -200,9 +200,9 @@ doit rester SSR-safe (state initial `open: false`, aucun accès `window` ou
 
 ### 2.5. SiteHeader et `header.utilities`
 
-`src/components/layout/SiteHeader.tsx` (lu intégralement) est un simple switch sur `config.header.type` qui délègue à 6 variantes (`HeaderTiersLieux`, `HeaderRezoLaMer`, `HeaderJuliePotVin`, `HeaderNosCommunes`, `HeaderCommuneTransparente`, `DefaultHeader`). Chaque variante consomme `header.utilities` individuellement.
+`src/components/layout/SiteHeader.tsx` (lu intégralement) est un simple switch sur `config.header.type` qui délègue à 6 variantes (`HeaderMegaMenu`, `HeaderTransparentScroll`, `HeaderMinimal`, `HeaderUnderlineNav`, `HeaderTransparentDark`, `HeaderStandard`). Chaque variante consomme `header.utilities` individuellement.
 
-Le `DefaultHeader` rend ligne 260 un bouton `search` passif (juste une icône, pas de onClick actif) :
+Le `HeaderStandard` rend ligne 260 un bouton `search` passif (juste une icône, pas de onClick actif) :
 ```tsx
 {header.utilities.search && <Button variant="ghost" size="sm"><Search /></Button>}
 ```
@@ -616,10 +616,10 @@ en lazy si le bundle main grossit trop.
 
 ### 3.11. Intégration SiteHeader
 
-Chaque variante de header (`DefaultHeader`, `HeaderTiersLieux`, `HeaderRezoLaMer`, etc.) rend conditionnellement un `<CommandTriggerButton />` basé sur `header.utilities.commandPalette` :
+Chaque variante de header (`HeaderStandard`, `HeaderMegaMenu`, `HeaderTransparentScroll`, etc.) rend conditionnellement un `<CommandTriggerButton />` basé sur `header.utilities.commandPalette` :
 
 ```tsx
-// Exemple DefaultHeader ligne ~260
+// Exemple HeaderStandard ligne ~260
 {header.utilities.commandPalette && <CommandTriggerButton />}
 ```
 
@@ -771,13 +771,13 @@ Pattern à cloner depuis `src/lib/__tests__/permissions.test.ts`.
 ### Phase 2 — Actions & Profil (1 jour)
 1. `actionsSource` : thème, langue, logout.
 2. `src/modules/profil/commands/register.ts` : recherche entités backend.
-3. `CommandTriggerButton` intégré à `DefaultHeader` derrière flag `header.utilities.commandPalette`.
+3. `CommandTriggerButton` intégré à `HeaderStandard` derrière flag `header.utilities.commandPalette`.
 4. Tests E2E basiques.
 
 ### Phase 3 — Finitions (1 jour)
 1. Historique localStorage.
 2. Raccourcis par commande (`useGlobalShortcut` générique).
-3. Intégration dans toutes les variantes de header (`HeaderTiersLieux`, etc.).
+3. Intégration dans toutes les variantes de header (`HeaderMegaMenu`, etc.).
 4. Permissions filtering.
 5. Docs utilisateur (capture vidéo, exemple JSON dans `doc/02-configuration.md`).
 
@@ -792,7 +792,7 @@ Pattern à cloner depuis `src/lib/__tests__/permissions.test.ts`.
 |---|---|---|
 | Conflit `Cmd+K` avec browser (certains navigateurs ouvrent la barre d'URL) | `preventDefault()` dans le listener + test E2E multi-browser | Fallback `Cmd+/` si détection browser connu |
 | Palette ouverte pendant une saisie dans un `<input>` | Autoriser par défaut (UX attendue) mais ignorer si `e.target.tagName === "INPUT"` **et** config le demande | — |
-| Variantes de headers custom (6 aujourd'hui) qui ne consomment pas `utilities.commandPalette` | Ajout incrémental avec un helper partagé `<HeaderUtilities />` à extraire (hors scope initial) | Tolérer que seule `DefaultHeader` expose le bouton en Phase 1 |
+| Variantes de headers custom (6 aujourd'hui) qui ne consomment pas `utilities.commandPalette` | Ajout incrémental avec un helper partagé `<HeaderUtilities />` à extraire (hors scope initial) | Tolérer que seule `HeaderStandard` expose le bouton en Phase 1 |
 | Permission `canRunAdminActions` : rôle "admin" vient d'où dans `me.serverData.roles` ? | Utiliser `userRoles["admin"] === true` (voir CLAUDE.md §TypeScript) | Faire dépendre d'une permission profil existante |
 | Sources async qui crashent silencieusement | `ErrorBoundary` autour de `CommandList` + try/catch dans `useCommands` qui marque la source comme `degraded` | Afficher une note "Source X indisponible" dans le groupe |
 
@@ -824,7 +824,7 @@ Breaking change ?                               Non, tout est optionnel / par d�
 | `src/types/site-schema.ts` | **Modifier** | (a) Ajouter `commandPalette: CommandPaletteConfigSchema.optional()` dans `SiteConfig` ; (b) Ajouter `commandPalette: z.boolean().default(false)` dans `utilities` (L.1485-1492) ; (c) Mettre à jour les blocs d'exemple `utilities` plus bas (~L.1822, ~L.1868) pour qu'ils restent conformes |
 | `src/types/site.ts` | **Modifier** | Ajouter `commandPalette: boolean` dans `HeaderConfig.utilities` (L.13-20) — **miroir TS du Zod** |
 | `src/hooks/useUserPermissions.tsx` | **Modifier** | `import "@/modules/commandPalette/permissions/register"` |
-| `src/components/layout/header/DefaultHeader.tsx` | **Modifier** | Ajouter `<CommandTriggerButton />` conditionnel (~L.260) |
+| `src/components/layout/header/HeaderStandard.tsx` | **Modifier** | Ajouter `<CommandTriggerButton />` conditionnel (~L.260) |
 | `src/modules/profil/commands/register.ts` | **Créer** | Source d'entités profil (Phase 2) |
 | `src/modules/news/commands/register.ts` | **Créer** (Phase 4) | Source news |
 | `src/modules/commandPalette/sources/bootstrap.ts` | **Créer** | Imports side-effect des sources modules |
@@ -890,7 +890,7 @@ Breaking change ?                               Non, tout est optionnel / par d�
 - [ ] **`react-hotkeys-hook` ou hook maison** ? (recommandation : librairie)
 - [ ] **Filter cmdk built-in ou fuzzy custom** ? (recommandation : built-in)
 - [ ] **Source `profil` Phase 1 ou Phase 2** ?
-- [ ] **6 headers tous mis à jour, ou juste `DefaultHeader` au début** ?
+- [ ] **6 headers tous mis à jour, ou juste `HeaderStandard` au début** ?
 - [ ] **Toujours rendu (flag header inutile) ou conditionné par `header.utilities.commandPalette`** ?
 - [ ] **Provider top-level toujours monté ou conditionné par `config.commandPalette?.enabled`** ?
 

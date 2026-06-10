@@ -189,8 +189,8 @@ monte `AuthModal` que lorsque `open === true` (`if (!open) return null`), sous
 `<Suspense fallback={null}>`. Le variant de design est résolu via
 `config.auth?.variant` (registry).
 
-Utilisé par : `HeaderTiersLieux`, `HeaderRezoLaMer`, `HeaderNosCommunes`,
-`HeaderCommuneTransparente`, `HeaderJuliePotVin`.
+Utilisé par : `HeaderMegaMenu`, `HeaderTransparentScroll`, `HeaderUnderlineNav`,
+`HeaderTransparentDark`, `HeaderMinimal`.
 
 Exporté depuis le barrel en tant que **named export** `{ AuthModalLazy }` et
 également comme default export depuis son propre fichier.

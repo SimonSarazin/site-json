@@ -564,10 +564,18 @@ const TitleWithFiltersDropdownSchema = z.object({
 const SearchHeaderProps = z.object({
   headline: LocalizedString.optional(),
   subhead: LocalizedString.optional(),
+  // Override de la classe couleur du titre `h1` (déf. `text-foreground`). Utile
+  // quand le bandeau a un fond fixe sombre (ex. `bg-ocean-gradient`) où le token
+  // `--foreground` (sombre en light) devient illisible : `text-white dark:text-foreground`.
+  headlineClassName: z.string().optional(),
   // Override de la classe couleur du sous-titre (déf. `text-foreground`).
   // Remplace le hack par-slug historique : un site dont le subhead ne doit pas
   // forcer `text-foreground` met `subheadClassName: ""`.
   subheadClassName: z.string().optional(),
+  // Override du conteneur flex de la rangée de filtres (recherche + dropdowns).
+  // Déf. `flex flex-col lg:flex-row lg:items-center`. Permet d'éviter l'étalement
+  // pleine largeur (ex. `flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:justify-center`).
+  filtersClassName: z.string().optional(),
   types: z.array(
     z.object({
       id: z.string(),

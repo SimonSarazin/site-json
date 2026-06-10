@@ -1005,23 +1005,28 @@ Dispatch vers la variante appropriée selon `config.header.type` / `config.foote
 
 **Headers disponibles** (via `lazy()` de vite-preload) :
 
+`header.type` = une **variante de design** (jamais un nom de site).
+
 | `header.type` | Composant | Fichier |
 |---|---|---|
-| `"default"` (défaut) | `DefaultHeader` | `header/DefaultHeader.tsx` |
-| `"tiers-lieux"` | `HeaderTiersLieux` | `header/HeaderTiersLieux.tsx` |
-| `"rezo-la-mer"` ou `"cyber-reunion"` | `HeaderRezoLaMer` | `header/HeaderRezoLaMer.tsx` |
-| `"julie-pot-vin"` | `HeaderJuliePotVin` | `header/HeaderJuliePotVin.tsx` |
-| `"nos-communes"` | `HeaderNosCommunes` | `header/HeaderNosCommunes.tsx` |
-| `"commune-transparente"` | `HeaderCommuneTransparente` | `header/HeaderCommuneTransparente.tsx` |
+| `"standard"` / `"default"` | `HeaderStandard` | `header/HeaderStandard.tsx` |
+| `"mega-menu"` | `HeaderMegaMenu` | `header/HeaderMegaMenu.tsx` |
+| `"transparent-scroll"` | `HeaderTransparentScroll` | `header/HeaderTransparentScroll.tsx` |
+| `"minimal"` | `HeaderMinimal` | `header/HeaderMinimal.tsx` |
+| `"underline-nav"` | `HeaderUnderlineNav` | `header/HeaderUnderlineNav.tsx` |
+| `"transparent-dark"` | `HeaderTransparentDark` | `header/HeaderTransparentDark.tsx` |
 
 **Footers disponibles** (via `lazy()` de vite-preload) :
 
+`footer.type` = une **variante de design** (jamais un nom de site).
+
 | `footer.type` | Composant | Fichier |
 |---|---|---|
-| `"default"` (défaut) | `DefaultFooter` | `footer/DefaultFooter.tsx` |
-| `"tiers-lieux"` | `FooterTiersLieux` | `footer/FooterTiersLieux.tsx` |
-| `"ssbe"` | `FooterSSBE` | `footer/FooterSSBE.tsx` |
-| `"rezo-la-mer"` ou `"cyber-reunion"` | `FooterRezoLaMer` | `footer/FooterRezoLaMer.tsx` |
+| `"default"` (défaut) | `DefaultFooter` → `FooterRich` | `footer/DefaultFooter.tsx` |
+| `"rich"` | `FooterRich` | `footer/FooterRich.tsx` |
+| `"minimal-centered"` | `FooterMinimalCentered` | `footer/FooterMinimalCentered.tsx` |
+| `"contact-partners"` | `FooterContactPartners` | `footer/FooterContactPartners.tsx` |
+| `"sidebar-columns"` (+ `footer.style`: `"plain"` \| `"card"`) | `FooterSidebarColumns` | `footer/FooterSidebarColumns.tsx` |
 
 Tous les variants sont lazy-loadés via `vite-preload`. Pour un site donné, seul le variant actif est téléchargé côté client. Côté SSR, `preloadAll()` les charge tous en mémoire (pas d'impact réseau).
 

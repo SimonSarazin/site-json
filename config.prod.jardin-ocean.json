@@ -66,7 +66,7 @@
         "path": "/feuillederoute"
       }
     ],
-    "type": "cyber-reunion",
+    "type": "transparent-scroll",
     "path": "/",
     "logoIcon": "leaf",
     "logoTitle": {
@@ -1116,7 +1116,8 @@
         ]
       }
     ],
-    "type": "cyber-reunion",
+    "type": "sidebar-columns",
+    "style": "card",
     "logoIcon": "leafy-green",
     "description": {
       "fr": "La coopérative qui finance l'agriculture locale et la souveraineté alimentaire dans l'océan Indien",

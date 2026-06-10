@@ -31,11 +31,11 @@ import { useReactiveProperty } from "@/hooks/useReactiveProperty";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
 
-interface HeaderTiersLieuxProps {
+interface HeaderMegaMenuProps {
     header: Header;
 }
 
-export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
+export default function HeaderMegaMenu({ header }: HeaderMegaMenuProps) {
     useLoadNamespace("components/layout");
     const t = useT("components/layout");
     const { currentLocale, setLocale, availableLocales } = useLocalization();
@@ -99,9 +99,9 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
 
                                     {hasChildren && item.children && (
                                         <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-screen max-w-2xl bg-popover text-popover-foreground rounded-xl shadow-2xl border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-8 z-60">
-                                            {t(item.label) === "Les lieux" ? (
+                                            {item.featured ? (
                                                 <div className="grid grid-cols-3 gap-8">
-                                                    <Link to="/lieux" className="text-primary font-semibold flex items-center gap-2">
+                                                    <Link to={item.path || "#"} className="text-primary font-semibold flex items-center gap-2">
                                                         <div className="flex flex-col items-center justify-center border-r border-border pr-6">
                                                             <div className="w-20 h-20 bg-accent rounded-full flex items-center justify-center mb-4">
                                                                 <svg className="w-8 h-8 text-accent-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -163,9 +163,11 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                         {header.utilities?.search && <CommandTriggerButton />}
                         {header.utilities?.notifications && <NotificationBell />}
 
-                        <ClientOnly fallback={<div className="w-10 h-10" />}>
-                            {() => <ToggleButtonTheme />}
-                        </ClientOnly>
+                        {header.utilities?.themeSwitch !== false && (
+                            <ClientOnly fallback={<div className="w-10 h-10" />}>
+                                {() => <ToggleButtonTheme />}
+                            </ClientOnly>
+                        )}
 
                         {header.utilities?.langSwitch && availableLocales.length > 1 && (
                             <DropdownMenu>
@@ -254,9 +256,11 @@ export default function HeaderTiersLieux({ header }: HeaderTiersLieuxProps) {
                     <div className="xl:hidden flex items-center gap-1 xs:gap-2 shrink-0 ml-3">
                         {header.utilities?.search && <CommandTriggerButton />}
                         {header.utilities?.notifications && <NotificationBell />}
-                        <ClientOnly fallback={<div className="w-7 h-7 xs:w-8 xs:h-8" />}>
-                            {() => <ToggleButtonTheme />}
-                        </ClientOnly>
+                        {header.utilities?.themeSwitch !== false && (
+                            <ClientOnly fallback={<div className="w-7 h-7 xs:w-8 xs:h-8" />}>
+                                {() => <ToggleButtonTheme />}
+                            </ClientOnly>
+                        )}
                         {header.utilities?.langSwitch && availableLocales.length > 1 && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>

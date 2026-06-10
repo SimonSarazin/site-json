@@ -22,13 +22,13 @@ import { PiggyBankHeaderButton } from "@/modules/cagnotte/components/PiggyBankHe
 import NotificationBell from "@/modules/notification/components/NotificationBell";
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
 
-interface HeaderRezoLaMerProps {
+interface HeaderTransparentScrollProps {
     header: Header;
 }
 
 type HeaderNavItem = Header['nav'][number];
 
-export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
+export default function HeaderTransparentScroll({ header }: HeaderTransparentScrollProps) {
     useLoadNamespace("components/layout");
     const t = useT("components/layout");
     const { currentLocale, setLocale, availableLocales } = useLocalization();
@@ -110,7 +110,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
     };
 
     return (
-        <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-background/90 backdrop-blur-ocean shadow-ocean' : 'bg-transparent'}`}>
+        <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${(isScrolled || header.transparent === false) ? 'bg-background/90 backdrop-blur-ocean shadow-ocean' : 'bg-transparent'}`}>
             <div className="container mx-auto px-4">
                 <div className="flex items-center justify-between h-20">
                     <Link to={header.path || "/"} className="flex items-center gap-3 cursor-pointer group">
@@ -126,8 +126,15 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                                 className="w-8 h-8 text-primary group-hover:scale-110 transition-transform"
                             />
                         ) : null}
-                        {header.logoTitle && (
-                            <span className="text-xl font-bold text-foreground">{t(header.logoTitle)}</span>
+                        {(header.logoTitle || header.logoSubtitle) && (
+                            <span className="flex flex-col leading-tight">
+                                {header.logoTitle && (
+                                    <span className="text-lg font-bold text-foreground">{t(header.logoTitle)}</span>
+                                )}
+                                {header.logoSubtitle && (
+                                    <span className="text-xs font-medium text-muted-foreground">{t(header.logoSubtitle)}</span>
+                                )}
+                            </span>
                         )}
                     </Link>
 
@@ -139,7 +146,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                                 <div key={idx} className="relative group">
                                     <Link
                                         to={item.path || "#"}
-                                        className={`transition-colors font-medium relative group ${isActive ? 'text-primary' : 'text-muted-foreground hover:text-primary'} ${hasChildren ? 'transition flex items-center gap-1' : ''}`}
+                                        className={`transition-colors font-medium relative group ${isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'} ${hasChildren ? 'transition flex items-center gap-1' : ''}`}
                                     >
                                         {t(item.label)}
                                         {hasChildren && <ChevronDown className="w-3 h-3" />}
@@ -213,7 +220,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                         {header.utilities?.langSwitch && availableLocales.length > 1 && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-primary hover:bg-primary/10">
+                                    <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted">
                                         <Globe className="h-4 w-4" />
                                         {currentLocale.toUpperCase()}
                                     </Button>
@@ -223,7 +230,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                                         <DropdownMenuItem
                                             key={loc}
                                             onClick={() => setLocale(loc)}
-                                            className={`text-muted-foreground hover:text-primary hover:bg-secondary/50 ${loc === currentLocale ? 'bg-secondary/30' : ''}`}
+                                            className={`text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted ${loc === currentLocale ? 'bg-secondary/30' : ''}`}
                                         >
                                             {loc.toUpperCase()}
                                         </DropdownMenuItem>
@@ -241,28 +248,35 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                                         {me?.isConnected ? (
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <button className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md font-medium shadow-glow transition-all">
+                                                    <button
+                                                        aria-label={name || email || t('Mon compte')}
+                                                        className="flex items-center gap-1 rounded-full bg-muted/50 p-1 pr-1.5 transition hover:bg-muted"
+                                                    >
                                                         {profilThumbImageUrl ? (
                                                             <img
                                                                 src={profilThumbImageUrl}
                                                                 alt={name || 'Profile'}
-                                                                className="w-6 h-6 rounded-full object-cover"
+                                                                className="h-7 w-7 rounded-full object-cover lg:h-8 lg:w-8"
                                                             />
                                                         ) : (
-                                                            <User className="w-4 h-4" />
+                                                            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-secondary text-xs font-medium text-secondary-foreground lg:h-8 lg:w-8">
+                                                                {name ? name.substring(0, 2).toUpperCase() : <User className="h-4 w-4" />}
+                                                            </div>
                                                         )}
-                                                        <span className="truncate max-w-25">
-                                                            {name || email || t('Mon compte')}
-                                                        </span>
-                                                        <ChevronDown className="w-3 h-3" />
+                                                        <ChevronDown className="h-3 w-3 shrink-0 text-foreground" />
                                                     </button>
                                                 </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="w-56 bg-background border-secondary">
-                                                    <DropdownMenuItem onClick={() => navigate(getProfileUrl())} className="text-muted-foreground hover:text-primary hover:bg-secondary/50">
+                                                <DropdownMenuContent align="end" className="w-56">
+                                                    <div className="px-2 py-1.5">
+                                                        <p className="truncate text-sm font-medium text-foreground">{name || t('Mon compte')}</p>
+                                                        {email && <p className="truncate text-xs text-muted-foreground">{email}</p>}
+                                                    </div>
+                                                    <div className="-mx-1 my-1 h-px bg-muted" />
+                                                    <DropdownMenuItem onClick={() => navigate(getProfileUrl())} className="text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted">
                                                         <User className="mr-2 h-4 w-4" />
                                                         {t('Profil')}
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={handleLogout} className="text-muted-foreground hover:text-primary hover:bg-secondary/50">
+                                                    <DropdownMenuItem onClick={handleLogout} className="text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted">
                                                         <LogOut className="mr-2 h-4 w-4" />
                                                         {t('Se déconnecter')}
                                                     </DropdownMenuItem>
@@ -300,7 +314,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                         )}
                         {navItemsToDisplay.length > 0 && (
                             <button
-                                className="p-2 text-muted-foreground hover:text-primary"
+                                className="p-2 text-muted-foreground hover:text-foreground"
                                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                                 aria-label="Toggle menu"
                             >
@@ -324,7 +338,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                             <Link
                                 key={idx}
                                 to={item.path || "#"}
-                                className={`block py-2 transition-colors ${isActive ? 'text-primary font-medium' : 'text-muted-foreground hover:text-primary'}`}
+                                className={`block py-2 transition-colors ${isActive ? 'text-primary font-medium' : 'text-muted-foreground hover:text-foreground'}`}
                                 onClick={() => setMobileMenuOpen(false)}
                             >
                                 {t(item.label)}
@@ -353,7 +367,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                     {header.utilities?.langSwitch && availableLocales.length > 1 && (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="gap-2 w-full justify-start text-muted-foreground hover:text-primary hover:bg-primary/10">
+                                <Button variant="ghost" size="sm" className="gap-2 w-full justify-start text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted">
                                     <Globe className="h-4 w-4" />
                                     {currentLocale.toUpperCase()}
                                 </Button>
@@ -363,7 +377,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                                     <DropdownMenuItem
                                         key={loc}
                                         onClick={() => setLocale(loc)}
-                                        className={`text-muted-foreground hover:text-primary hover:bg-secondary/50 ${loc === currentLocale ? 'bg-secondary/30' : ''}`}
+                                        className={`text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted ${loc === currentLocale ? 'bg-secondary/30' : ''}`}
                                     >
                                         {loc.toUpperCase()}
                                     </DropdownMenuItem>
@@ -383,7 +397,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                                                     navigate(getProfileUrl());
                                                     setMobileMenuOpen(false);
                                                 }}
-                                                className="w-full text-left py-2 text-muted-foreground hover:text-primary flex items-center gap-2"
+                                                className="w-full text-left py-2 text-muted-foreground hover:text-foreground flex items-center gap-2"
                                             >
                                                 <User className="w-4 h-4" />
                                                 {t('Profil')}
@@ -393,7 +407,7 @@ export default function HeaderRezoLaMer({ header }: HeaderRezoLaMerProps) {
                                                     handleLogout();
                                                     setMobileMenuOpen(false);
                                                 }}
-                                                className="w-full text-left py-2 text-muted-foreground hover:text-primary flex items-center gap-2"
+                                                className="w-full text-left py-2 text-muted-foreground hover:text-foreground flex items-center gap-2"
                                             >
                                                 <LogOut className="w-4 h-4" />
                                                 {t('Se déconnecter')}

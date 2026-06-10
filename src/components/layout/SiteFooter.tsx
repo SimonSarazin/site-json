@@ -6,24 +6,26 @@ import { lazy } from "vite-preload";
  * Cf. `SiteHeader.tsx` pour la rationale.
  */
 const DefaultFooter = lazy(() => import("./footer/DefaultFooter"));
-const FooterTiersLieux = lazy(() => import("./footer/FooterTiersLieux"));
-const FooterRezoLaMer = lazy(() => import("./footer/FooterRezoLaMer"));
-const FooterSSBE = lazy(() => import("./footer/FooterSSBE"));
+const FooterRich = lazy(() => import("./footer/FooterRich"));
+const FooterMinimalCentered = lazy(() => import("./footer/FooterMinimalCentered"));
+const FooterSidebarColumns = lazy(() => import("./footer/FooterSidebarColumns"));
+const FooterContactPartners = lazy(() => import("./footer/FooterContactPartners"));
 
 export function SiteFooter() {
   const { config } = useSite();
   const footer = config.footer;
 
   switch (footer.type) {
-    case "tiers-lieux":
-      return <FooterTiersLieux footer={footer} />;
-    case "ssbe":
-      return <FooterSSBE footer={footer} />;
-    case "rezo-la-mer":
-    case "cyber-reunion":
-      return <FooterRezoLaMer footer={footer} />;
+    case "minimal-centered":
+      return <FooterMinimalCentered footer={footer} />;
+    case "contact-partners":
+      return <FooterContactPartners footer={footer} />;
+    case "sidebar-columns":
+      return <FooterSidebarColumns footer={footer} style={footer.style} />;
+    case "rich":
+      return <FooterRich footer={footer} />;
     case "default":
     default:
-      return <DefaultFooter />;
+      return <DefaultFooter footer={footer} />;
   }
 }

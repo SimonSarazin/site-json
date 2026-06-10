@@ -28,7 +28,7 @@
     ]
   },
   "header": {
-    "type": "rezo-la-mer",
+    "type": "transparent-scroll",
     "path": "/",
     "logo": "images/sportSanteBienetre/logo.png",
     "logoTitle": {
@@ -3935,7 +3935,7 @@
 
   ],
   "footer": {
-    "type": "ssbe",
+    "type": "contact-partners",
     "contactSection": {
       "title": {
         "fr": "Nos coordonnées",

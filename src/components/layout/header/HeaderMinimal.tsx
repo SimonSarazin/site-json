@@ -20,11 +20,11 @@ import { IconOrSvg } from "@/components/ui/icon-or-svg";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
 
-interface HeaderJuliePotVinProps {
+interface HeaderMinimalProps {
     header: Header;
 }
 
-export default function HeaderJuliePotVin({ header }: HeaderJuliePotVinProps) {
+export default function HeaderMinimal({ header }: HeaderMinimalProps) {
     useLoadNamespace("components/layout");
     const t = useT("components/layout");
     const { currentLocale, setLocale, availableLocales } = useLocalization();
@@ -69,9 +69,7 @@ export default function HeaderJuliePotVin({ header }: HeaderJuliePotVinProps) {
                                 <img src={header.logo} alt={header.logoAlt ? t(header.logoAlt) : "Logo"} className="w-8 h-8 object-contain" />
                             ) : header.logoIcon ? (
                                 <IconOrSvg value={header.logoIcon} className="w-8 h-8 text-primary" />
-                            ) : (
-                                <img src="images/juliePotVin/monogramme.svg" alt="Monogramme" className="w-8 h-8" />
-                            )}
+                            ) : null}
                             
                             {header.logoTitle && (
                                 <span className="font-bold uppercase tracking-[0.2em] text-foreground text-xs hidden md:block group-hover:text-primary transition-colors">

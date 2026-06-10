@@ -20,7 +20,7 @@ import { useReactiveProperty } from "@/hooks/useReactiveProperty";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
 
-interface HeaderCommuneTransparenteProps {
+interface HeaderTransparentDarkProps {
     header: Header & {
         logoTitle?: LocalizedString;
         logoIcon?: string;
@@ -31,7 +31,7 @@ interface HeaderCommuneTransparenteProps {
     };
 }
 
-export default function HeaderCommuneTransparente({ header }: HeaderCommuneTransparenteProps) {
+export default function HeaderTransparentDark({ header }: HeaderTransparentDarkProps) {
     useLoadNamespace("components/layout");
     const t = useT("components/layout");
     const { currentLocale, setLocale, availableLocales } = useLocalization();
@@ -86,13 +86,16 @@ export default function HeaderCommuneTransparente({ header }: HeaderCommuneTrans
             : "bg-transparent";
     
     const dataCostum = entity?.serverData?.costum as Record<string, unknown> | undefined;
-    
-    // Créer des variables locales pour logo et logoTitle au lieu de modifier les props
-    const logo = dataCostum?.transparentCommune
+    // Override logo/titre depuis l'entité costum — UNIQUEMENT si la config l'active
+    // (`header.entityLogoOverride`). Sinon, comportement 100% piloté par la config.
+    const useEntityOverride = header.entityLogoOverride && !!dataCostum?.transparentCommune;
+
+    // Variables locales pour logo et logoTitle (sans modifier les props)
+    const logo = useEntityOverride
         ? "https://www.communecter.org" + (dataCostum?.logo as string || dataCostum?.bannerLogoUrl as string) || header.logo || ""
         : header.logo;
-        
-    const logoTitle = dataCostum?.transparentCommune
+
+    const logoTitle = useEntityOverride
         ? { fr: entity?.serverData?.name || "Votre ville", en: entity?.serverData?.name || "Your city" }
         : header.logoTitle;
     return (

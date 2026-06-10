@@ -1464,6 +1464,8 @@ export interface EnhancedNavItemType {
     width?: "sm" | "md" | "lg" | "xl" | "full";  // Make width optional to match the schema
   };
   description?: LocalizedString;
+  /** Affiche le sous-menu en mise en avant (colonne "lien principal" via `path` + grille). */
+  featured?: boolean;
 }
 
 const EnhancedNavItem: z.ZodType<EnhancedNavItemType> = z.lazy(() =>
@@ -1477,17 +1479,29 @@ const EnhancedNavItem: z.ZodType<EnhancedNavItemType> = z.lazy(() =>
     children: z.array(EnhancedNavItem).optional(),
     megaMenu: MegaMenu.optional(),
     description: LocalizedString.optional(),
+    featured: z.boolean().optional(),
   }).refine(d => d.path || d.href || d.children || d.megaMenu, {
     message: "NavItem : path, href, children ou megaMenu obligatoire"
   })
 );
 
 export const Header = z.object({
-  type: z.enum(["tiers-lieux", "rezo-la-mer", "cyber-reunion", "julie-pot-vin", "nos-communes", "commune-transparente", "default"]).default("default"),
+  // Variante de DESIGN (jamais un nom de site) — résolue par `SiteHeader`.
+  // standard = horizontal sticky · mega-menu = méga-menu hover · transparent-scroll =
+  // fixed transparent→opaque · minimal = compact · underline-nav = nav soulignée ·
+  // transparent-dark = transparent sombre.
+  type: z.enum(["standard", "mega-menu", "transparent-scroll", "minimal", "underline-nav", "transparent-dark", "default"]).default("default"),
   logo: z.string().optional(),
   logoAlt: LocalizedString.optional(),
   logoTitle: LocalizedString.optional(),
+  // Sous-titre optionnel affiché sous le titre du logo (plus petit, muted).
+  // Permet un logo "marque sur 2 lignes" (titre + localité/baseline).
+  logoSubtitle: LocalizedString.optional(),
   logoIcon: LucideIconOrSvg.optional(),
+  // Opt-in : remplace logo/titre par ceux de l'entité costum au runtime
+  // (plateforme communecter `transparentCommune`). Désactivé par défaut → le
+  // header ne dépend d'aucune logique de site sans cette option.
+  entityLogoOverride: z.boolean().optional(),
   path: z.string().min(1).optional(),
   nav: z.array(EnhancedNavItem),
   navVisibleOnlyForListedPages: z.boolean().optional(),
@@ -1563,9 +1577,14 @@ const FooterPartnersSection = z.object({
 });
 
 export const Footer = z.object({
-  type: z.enum(["tiers-lieux", "rezo-la-mer", "cyber-reunion", "nos-communes", "commune-transparente", "ssbe", "default"]).default("default"),
-  // Optionnel : un footer minimaliste (logo + copyright + socials sans colonnes
-  // de liens) est légitime sur certains sites (cf. equipementsSportifs974).
+  // Variante de DESIGN (jamais un nom de site) — résolue par `SiteFooter`.
+  // rich = newsletter+colonnes+socials · minimal-centered = logo+nav+légal ·
+  // sidebar-columns = sidebar+colonnes · contact-partners = contacts+partenaires.
+  type: z.enum(["rich", "minimal-centered", "sidebar-columns", "contact-partners", "default"]).default("default"),
+  // Sous-style visuel pour `sidebar-columns` (fond plein vs aspect carte).
+  style: z.enum(["plain", "card"]).optional(),
+  // Optionnel : certains designs de footer (ex. minimal : logo + copyright +
+  // socials sans colonnes de liens) n'utilisent pas `columns` → reste optionnel.
   columns: z.array(FooterColumn).optional(),
   socials: z.array(z.object({ platform: z.string(), url: z.string() })).optional(),
   extra: z.string().optional(),
@@ -1879,7 +1898,7 @@ export function getDefaultSiteConfig(): Partial<SiteConfig> {
       languages: ["en", "fr"],
     },
     header: {
-      type: "tiers-lieux",
+      type: "default",
       logo: "/logo.svg",
       nav: [],
       utilities: {
@@ -1914,7 +1933,7 @@ export const example: SiteConfig = {
     languages: []
   },
   header: {
-    type: "tiers-lieux",
+    type: "default",
     logo: "/logo.svg",
     nav: [
       { path: "/", label: { fr: "Accueil", en: "Home" } },

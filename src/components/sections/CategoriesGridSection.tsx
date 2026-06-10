@@ -51,16 +51,16 @@ export function SportCategoriesSection({
         };
       case "ocean":
         return {
-          sectionBg: "bg-linear-to-b from-background to-background/80",
+          sectionBg: "bg-gradient-to-b from-background to-background/80",
           cardBg: "bg-secondary/30 backdrop-blur-ocean border-primary/20 hover:bg-secondary/50",
           accentColor: "text-primary",
         };
       case "ssbe":
       default:
         return {
-          sectionBg: "bg-linear-to-b from-background to-background/80",
-          cardBg: "bg-secondary/30 backdrop-blur-sm border  border-primary/20 hover:shadow-lg hover:shadow-warm/20",
-          accentColor: "text-earth",
+          sectionBg: "bg-gradient-to-b from-background to-background/80",
+          cardBg: "bg-secondary/30 backdrop-blur-sm border  border-primary/20 hover:shadow-lg hover:shadow-primary/20",
+          accentColor: "text-primary",
         };
     }
   };
@@ -70,8 +70,8 @@ export function SportCategoriesSection({
   return (
     <section id={id} className={`relative overflow-hidden py-20 md:py-28 px-2 md:px-4 ${styles.sectionBg}`}>
       {/* Decorative blobs */}
-      <div className="pointer-events-none absolute -left-32 top-8 h-[420px] w-[420px] rounded-full bg-warm-light opacity-60 blur-3xl" />
-      <div className="pointer-events-none absolute right-0 bottom-0 h-[300px] w-[300px] rounded-full bg-cream-dark opacity-40 blur-3xl" />
+      <div className="pointer-events-none absolute -left-32 top-8 hidden h-[420px] w-[420px] rounded-full bg-accent/40 opacity-60 blur-3xl md:block" />
+      <div className="pointer-events-none absolute right-0 bottom-0 hidden h-[300px] w-[300px] rounded-full bg-card/30 opacity-40 blur-3xl md:block" />
 
       <div className="container relative z-10 mx-auto max-w-5xl">
         {/* Title */}
@@ -88,9 +88,10 @@ export function SportCategoriesSection({
           </div>
         )}
 
-        {/* Categories grid */}
+        {/* Categories grid — 1 colonne sur mobile (cartes pleine largeur,
+            évite l'écrasement des titres), 2+ dès `sm` via getGridColsClass. */}
         <div
-          className={`grid grid-cols-2 gap-6 ${getGridColsClass()}`}
+          className={`grid grid-cols-1 gap-6 ${getGridColsClass()}`}
         >
           {props.cards.map((card, index) => {
             const cardElement = (
@@ -100,7 +101,7 @@ export function SportCategoriesSection({
                 style={{ animationDelay: `${index * 50}ms` }}
               >
                 {card.icon && (
-                  <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-background shadow-sm transition-colors group-hover:bg-warm-light">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-background shadow-sm transition-colors group-hover:bg-accent/30">
                     <DynamicIcon
                       name={card.icon as IconName}
                       className={`h-12 w-12 ${styles.accentColor} transition-transform duration-300 group-hover:scale-110`}

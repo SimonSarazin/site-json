@@ -4,8 +4,10 @@ import { Waves, Shield, Facebook, Twitter, Instagram, Linkedin, Mail, Youtube, E
 import { Link } from "react-router";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";
 
-interface FooterRezoLaMerProps {
+interface FooterSidebarColumnsProps {
     footer: Footer;
+    /** Sous-style visuel : "plain" (fond plein, défaut) ou "card" (aspect carte). */
+    style?: "plain" | "card";
 }
 
 const socialIcons: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -17,23 +19,23 @@ const socialIcons: Record<string, React.ComponentType<{ className?: string }>> =
     youtube: Youtube,
 };
 
-export default function FooterRezoLaMer({ footer }: FooterRezoLaMerProps) {
+export default function FooterSidebarColumns({ footer, style }: FooterSidebarColumnsProps) {
     const { t } = useLocalization();
-    const isCyber = footer.type === "cyber-reunion";
+    const isCard = style === "card";
 
-    const footerClasses = isCyber
+    const footerClasses = isCard
         ? "bg-card border-t border-border/30"
         : "bg-background border-t border-secondary/30";
 
-    const socialClasses = isCyber
+    const socialClasses = isCard
         ? "p-2 rounded-full bg-card hover:bg-primary/20 text-muted-foreground hover:text-primary transition-colors border border-border/50"
         : "p-2 rounded-full bg-secondary/30 hover:bg-primary/20 text-muted-foreground hover:text-primary transition-colors";
 
-    const borderClasses = isCyber
+    const borderClasses = isCard
         ? "border-border/30"
         : "border-secondary/30";
 
-    const DefaultIcon = isCyber ? Shield : Waves;
+    const DefaultIcon = isCard ? Shield : Waves;
 
     return (
         <footer className={footerClasses}>
@@ -63,7 +65,7 @@ export default function FooterRezoLaMer({ footer }: FooterRezoLaMerProps) {
                             </p>
                         )}
 
-                        {isCyber && footer.website && (
+                        {footer.website && (
                             <a
                                 href={footer.website}
                                 target="_blank"
@@ -76,7 +78,7 @@ export default function FooterRezoLaMer({ footer }: FooterRezoLaMerProps) {
                         )}
 
                         {footer.socials && footer.socials.length > 0 && (
-                            <div className={`flex gap-3 ${isCyber ? 'mt-6' : ''}`}>
+                            <div className={`flex gap-3 ${isCard ? 'mt-6' : ''}`}>
                                 {footer.socials.map((social, idx) => {
                                     const IconComponent = socialIcons[social.platform.toLowerCase()];
                                     return (

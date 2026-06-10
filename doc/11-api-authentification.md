@@ -484,7 +484,7 @@ L'application ne gère pas de redirection automatique vers `/login` — c'est la
 L'application utilise `api.logout()` (accessible via `useCocolight()`) pour déconnecter l'utilisateur. Le SDK émet ensuite `sessionReset`, que `CocolightProvider` intercepte pour réinitialiser l'état React. Exemple réel dans les composants header :
 
 ```ts
-// Dans un composant header (ex : DefaultHeader.tsx)
+// Dans un composant header (ex : HeaderStandard.tsx)
 const { api } = useCocolight();
 
 function handleLogout() {

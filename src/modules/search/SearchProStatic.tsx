@@ -567,7 +567,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
             )}
           </div>
         ) : (
-          <div className="p-4 overflow-y-auto">
+          <div className="p-4 overflow-y-auto mx-auto w-full max-w-[1536px]">
             {customHeader && (
               <div className="container flex justify-between items-center mx-auto px-4 sm:px-6 lg:px-8 mb-6">
                 <div>

@@ -21,7 +21,7 @@ import { useReactiveProperty } from "@/hooks/useReactiveProperty";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
 
-interface HeaderNosCommunesProps {
+interface HeaderUnderlineNavProps {
     header: Header & {
         logoTitle?: LocalizedString;
         logoIcon?: string;
@@ -42,7 +42,7 @@ interface HeaderNosCommunesProps {
     };
 }
 
-export default function HeaderNosCommunes({ header }: HeaderNosCommunesProps) {
+export default function HeaderUnderlineNav({ header }: HeaderUnderlineNavProps) {
     useLoadNamespace("components/layout");
     const t = useT("components/layout");
     const { currentLocale, setLocale, availableLocales } = useLocalization();

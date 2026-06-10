@@ -404,7 +404,7 @@ export default function CoFormPage() {
             <SiteFooter />
 
             {/* Modal de login (déclenchée depuis CoFormAccessGuard quand
-                `not_logged_in`). Pattern aligné sur HeaderTiersLieux / RezoLaMer :
+                `not_logged_in`). Pattern aligné sur HeaderMegaMenu / RezoLaMer :
                 - `sm:max-w-md bg-card border-border` : largeur responsive + tokens carte
                 - `DialogTitle sr-only` : pas de double-titre (LoginForm rend déjà son propre header)
                 Après succès, refetch des données coform pour recalculer access. */}

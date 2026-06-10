@@ -25,7 +25,7 @@
     ]
   },
   "header": {
-    "type": "tiers-lieux",
+    "type": "mega-menu",
     "logo": "images/tiersLieux/Logo_Tl_Temp2.png",
     "logoAlt": {
       "fr": "Tiers Lieux",
@@ -39,6 +39,8 @@
           "en": "Places"
         },
         "icon": "map",
+        "path": "/lieux",
+        "featured": true,
         "children": [
           {
             "label": {
@@ -1849,7 +1851,7 @@
     }
   ],
   "footer": {
-    "type": "tiers-lieux",
+    "type": "minimal-centered",
     "logo": "images/tiersLieux/Logo_Tl_Temp2.png",
     "logoAlt": {
       "fr": "Tiers Lieux",

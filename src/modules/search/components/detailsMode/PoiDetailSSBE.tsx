@@ -1,5 +1,4 @@
 import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState } from "react";
 import { format } from "date-fns";
 import type { Poi } from "@communecter/cocolight-api-client";
@@ -314,7 +313,7 @@ export default function PoiDetailSSBE({ openDetails, setOpenDetails, item }: Det
     <>
       <Dialog open={openDetails} onOpenChange={setOpenDetails}>
         <DialogContent
-          className="sm:max-w-5xl max-h-[90vh] p-0 overflow-hidden gap-0"
+          className="sm:max-w-5xl max-h-[90vh] p-0 overflow-hidden gap-0 flex flex-col"
           showCloseButton={false}
         >
           <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
@@ -337,7 +336,7 @@ export default function PoiDetailSSBE({ openDetails, setOpenDetails, item }: Det
               <span className="sr-only">{t("PoiDetailSSBE.close")}</span>
             </DialogClose>
           </div>
-        <div className="px-6 py-5" style={{ background: "var(--card-header-gradient)" }}>
+        <div className="shrink-0 px-6 py-5" style={{ background: "var(--card-header-gradient)" }}>
           <DialogHeader className="text-left space-y-3">
             <div className="flex flex-wrap items-center gap-2">
               {poi.category && (
@@ -389,7 +388,7 @@ export default function PoiDetailSSBE({ openDetails, setOpenDetails, item }: Det
           </DialogHeader>
         </div>
 
-        <ScrollArea className="max-h-[calc(90vh-120px)]">
+        <div className="min-h-0 flex-1 overflow-y-auto">
           <div className="grid gap-6 p-6 pb-12 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div className="space-y-6">
               <section className="rounded-2xl border border-border bg-card/70 p-5 shadow-sm">
@@ -600,7 +599,7 @@ export default function PoiDetailSSBE({ openDetails, setOpenDetails, item }: Det
               </section>
             </aside>
           </div>
-        </ScrollArea>
+        </div>
         </DialogContent>
       </Dialog>
 

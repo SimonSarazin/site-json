@@ -4,7 +4,7 @@ import { useLocalization } from "@/hooks/useLocalization";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { Footer } from "@/types/site-schema";
 
-interface FooterTiersLieuxProps {
+interface FooterMinimalCenteredProps {
   footer: Footer;
 }
 
@@ -22,7 +22,7 @@ function FooterLink({ href, children }: { href: string; children: ReactNode }) {
   );
 }
 
-export default function FooterTiersLieux({ footer }: FooterTiersLieuxProps) {
+export default function FooterMinimalCentered({ footer }: FooterMinimalCenteredProps) {
   const { t } = useLocalization();
 
   return (

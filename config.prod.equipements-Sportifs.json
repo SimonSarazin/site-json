@@ -16,7 +16,7 @@
       "en"
     ],
     "favicon": "images/rezoLaMer/logo.png",
-    "themeColor": "#00e7e3",
+    "themeColor": "#007f5a",
     "keywords": [
         "sports facilities",
         "Réunion region",
@@ -26,12 +26,16 @@
     ]
   },
   "header": {
-    "type": "rezo-la-mer",
+    "type": "transparent-scroll",
     "path": "/",
-    "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-20 h-20\"><rect x=\"2\" y=\"10\" width=\"4\" height=\"4\" rx=\"1\"></rect><rect x=\"18\" y=\"10\" width=\"4\" height=\"4\" rx=\"1\"></rect><rect x=\"4\" y=\"8\" width=\"3\" height=\"8\" rx=\"1\"></rect><rect x=\"17\" y=\"8\" width=\"3\" height=\"8\" rx=\"1\"></rect><line x1=\"7\" y1=\"12\" x2=\"17\" y2=\"12\"></line></svg>",
+    "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 22c4.5-4.5 7-7.6 7-11a7 7 0 1 0-14 0c0 3.4 2.5 6.5 7 11Z\"></path><path d=\"M8 10h1.7l1-2.6 2 5.2 1-2.6H16\"></path></svg>",
     "logoTitle": {
-      "fr": "Equipement sportif - Région Réunion",
-      "en": "Sports Facilities - Réunion Region"
+      "fr": "Équipement sportif",
+      "en": "Sports Facilities"
+    },
+    "logoSubtitle": {
+      "fr": "Région Réunion",
+      "en": "Réunion Region"
     },
     "ctaButton": {
       "label": {
@@ -63,7 +67,7 @@
       "piggyBank": false,
       "themeSwitch": true,
       "langSwitch": true,
-      "search": false,
+      "search": true,
       "auth": true,
       "cart": false,
       "notifications": true
@@ -90,7 +94,7 @@
               "fr": "Équipez et connectez le réseau des passionnés de sport pour construire ensemble une communauté dynamique et résiliente",
               "en": "Equip and connect the network of sports enthusiasts to build together a dynamic and resilient community"
             },
-            "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-20 h-20\"><rect x=\"2\" y=\"10\" width=\"4\" height=\"4\" rx=\"1\"></rect><rect x=\"18\" y=\"10\" width=\"4\" height=\"4\" rx=\"1\"></rect><rect x=\"4\" y=\"8\" width=\"3\" height=\"8\" rx=\"1\"></rect><rect x=\"17\" y=\"8\" width=\"3\" height=\"8\" rx=\"1\"></rect><line x1=\"7\" y1=\"12\" x2=\"17\" y2=\"12\"></line></svg>",
+            "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-20 h-20\"><path d=\"M12 22c4.5-4.5 7-7.6 7-11a7 7 0 1 0-14 0c0 3.4 2.5 6.5 7 11Z\"></path><path d=\"M8 10h1.7l1-2.6 2 5.2 1-2.6H16\"></path></svg>",
             "backgroundImage": "images/equipementsSportifs974/hero2.jpg",
             "backgroundImageAlt": {
               "fr": "Vue panoramique d'un terrain de sport vibrant avec des joueurs en action",
@@ -259,8 +263,10 @@
           "props": {
             "headline": {
               "fr": "Découvrez les équipements sportifs",
-              "en": "Discover sports facilities" 
+              "en": "Discover sports facilities"
             },
+            "headlineClassName": "text-white dark:text-foreground",
+            "filtersClassName": "mx-auto flex w-full max-w-4xl flex-col gap-3 rounded-2xl border border-border/60 bg-card/95 p-3 shadow-2xl backdrop-blur-md",
             "buttons": [
               {
                 "label": {
@@ -1724,7 +1730,8 @@
           "props": {
             "customHeader": {
                 "title": {
-                  "fr": "Tous les équipements sportifs"
+                  "fr": "Tous les équipements sportifs",
+                  "en": "All sports facilities"
                 }
               },
             "useFilter": true,
@@ -1806,7 +1813,7 @@
     }
   ],
   "footer": {
-    "type": "ssbe",
+    "type": "contact-partners",
     "contactSection": {
       "title": {
         "fr": "Nos coordonnées",
@@ -1892,6 +1899,26 @@
       "en": "© 2026 Sports facilities - Réunion. All rights reserved."
     }
   },
+  "commandPalette": {
+    "enabled": true,
+    "triggerVariant": "compact",
+    "placeholder": {
+      "fr": "Rechercher un équipement...",
+      "en": "Search for a facility..."
+    },
+    "entitySearch": {
+      "enabled": true,
+      "searchType": [
+        "poi"
+      ],
+      "limit": 8,
+      "params": {
+        "sourceKey": [
+          "equipementsSportifs974"
+        ]
+      }
+    }
+  },
   "features": [
     {
       "key": "communityFeatures",
@@ -1910,16 +1937,103 @@
     }
   ],
   "theme": {
+    "defaultMode": "light",
+    "colors": {
+      "light": {
+        "background": "oklch(0.990 0.006 160)",
+        "foreground": "oklch(0.240 0.025 175)",
+        "card": "oklch(1.000 0 0)",
+        "cardForeground": "oklch(0.240 0.025 175)",
+        "popover": "oklch(1.000 0 0)",
+        "popoverForeground": "oklch(0.240 0.025 175)",
+        "primary": "oklch(0.520 0.118 166)",
+        "primaryForeground": "oklch(1.000 0 0)",
+        "secondary": "oklch(0.955 0.018 168)",
+        "secondaryForeground": "oklch(0.330 0.045 170)",
+        "muted": "oklch(0.965 0.008 168)",
+        "mutedForeground": "oklch(0.490 0.030 172)",
+        "accent": "oklch(0.640 0.180 34)",
+        "accentForeground": "oklch(0.215 0.060 40)",
+        "destructive": "oklch(0.6368 0.2078 25.3313)",
+        "destructiveForeground": "oklch(1.0000 0 0)",
+        "border": "oklch(0.910 0.012 168)",
+        "input": "oklch(0.910 0.012 168)",
+        "ring": "oklch(0.520 0.118 166)",
+        "warning": "oklch(0.950 0.160 85)",
+        "warningForeground": "oklch(0.200 0.060 85)",
+        "success": "oklch(0.830 0.180 135)",
+        "successForeground": "oklch(0.150 0.030 135)",
+        "info": "oklch(0.941 0.065 260)",
+        "infoForeground": "oklch(0.200 0.030 260)",
+        "error": "oklch(0.680 0.250 30)",
+        "errorForeground": "oklch(1 0 0)",
+        "chart1": "oklch(0.520 0.118 166)",
+        "chart2": "oklch(0.640 0.180 34)",
+        "chart3": "oklch(0.580 0.100 200)",
+        "chart4": "oklch(0.650 0.130 145)",
+        "chart5": "oklch(0.450 0.090 175)",
+        "sidebar": "oklch(0.965 0.008 168)",
+        "sidebarForeground": "oklch(0.240 0.025 175)",
+        "sidebarPrimary": "oklch(0.520 0.118 166)",
+        "sidebarPrimaryForeground": "oklch(1.000 0 0)",
+        "sidebarAccent": "oklch(0.640 0.180 34)",
+        "sidebarAccentForeground": "oklch(0.215 0.060 40)",
+        "sidebarBorder": "oklch(0.910 0.012 168)",
+        "sidebarRing": "oklch(0.520 0.118 166)"
+      },
+      "dark": {
+        "background": "oklch(0.205 0.012 170)",
+        "foreground": "oklch(0.945 0.010 170)",
+        "card": "oklch(0.245 0.014 170)",
+        "cardForeground": "oklch(0.945 0.010 170)",
+        "popover": "oklch(0.230 0.013 170)",
+        "popoverForeground": "oklch(0.945 0.010 170)",
+        "primary": "oklch(0.760 0.150 168)",
+        "primaryForeground": "oklch(0.180 0.040 170)",
+        "secondary": "oklch(0.330 0.030 170)",
+        "secondaryForeground": "oklch(0.945 0.010 170)",
+        "muted": "oklch(0.300 0.020 170)",
+        "mutedForeground": "oklch(0.760 0.020 172)",
+        "accent": "oklch(0.730 0.150 40)",
+        "accentForeground": "oklch(0.180 0.050 40)",
+        "destructive": "oklch(0.6368 0.2078 25.3313)",
+        "destructiveForeground": "oklch(1.0000 0 0)",
+        "border": "oklch(0.370 0.022 170)",
+        "input": "oklch(0.330 0.020 170)",
+        "ring": "oklch(0.760 0.150 168)",
+        "warning": "oklch(0.750 0.180 85)",
+        "warningForeground": "oklch(0.950 0.040 85)",
+        "success": "oklch(0.600 0.180 135)",
+        "successForeground": "oklch(0.950 0.040 135)",
+        "info": "oklch(0.600 0.140 260)",
+        "infoForeground": "oklch(0.950 0.040 260)",
+        "error": "oklch(0.680 0.250 30)",
+        "errorForeground": "oklch(0.990 0.030 100)",
+        "chart1": "oklch(0.760 0.150 168)",
+        "chart2": "oklch(0.730 0.150 40)",
+        "chart3": "oklch(0.700 0.110 200)",
+        "chart4": "oklch(0.720 0.130 145)",
+        "chart5": "oklch(0.600 0.110 175)",
+        "sidebar": "oklch(0.185 0.011 170)",
+        "sidebarForeground": "oklch(0.945 0.010 170)",
+        "sidebarPrimary": "oklch(0.760 0.150 168)",
+        "sidebarPrimaryForeground": "oklch(0.180 0.040 170)",
+        "sidebarAccent": "oklch(0.730 0.150 40)",
+        "sidebarAccentForeground": "oklch(0.180 0.050 40)",
+        "sidebarBorder": "oklch(0.370 0.022 170)",
+        "sidebarRing": "oklch(0.760 0.150 168)"
+      }
+    },
     "typography": {
       "fontFamily": {
         "sans": [
-          "Inter"
+          "Lexend"
         ],
         "serif": [
-          "Roboto Slab"
+          "Sora"
         ],
         "mono": [
-          "Roboto Mono"
+          "JetBrains Mono"
         ]
       },
       "letterSpacing": "0em"
