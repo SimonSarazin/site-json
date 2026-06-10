@@ -3,9 +3,8 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
 import { Header } from "@/types/site-schema";
-import { ChevronDown, User, LogOut, Globe } from "lucide-react";
-import { Link, useNavigate } from "react-router";
-import { useCocolight } from "@/hooks/useCocolight";
+import { ChevronDown, Globe } from "lucide-react";
+import { Link } from "react-router";
 
 function NavLink({ to, className, children }: { to: string; className?: string; children: React.ReactNode }) {
   if (!to || to === "#") {
@@ -24,10 +23,9 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { AuthModalLazy } from "@/modules/auth";
+import { AuthMenu } from "@/modules/auth";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
-import { useReactiveProperty } from "@/hooks/useReactiveProperty";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
 
@@ -39,32 +37,9 @@ export default function HeaderMegaMenu({ header }: HeaderMegaMenuProps) {
     useLoadNamespace("components/layout");
     const t = useT("components/layout");
     const { currentLocale, setLocale, availableLocales } = useLocalization();
-    const navigate = useNavigate();
-    const { me, api } = useCocolight();
-
     const nav = header.nav;
 
-    const profilThumbImageUrl = useReactiveProperty<string>(me?.serverData, 'profilThumbImageUrl') ?? null;
-    const name = useReactiveProperty<string>(me?.serverData, 'name') ?? null;
-    const email = useReactiveProperty<string>(me?.serverData, 'email') ?? null;
-
-    const [loginDialogOpen, setLoginDialogOpen] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-    const handleLogout = () => {
-        if (!api) return;
-        try {
-            api.logout();
-            navigate('/');
-        } catch (err) {
-            console.error('Logout error', err);
-        }
-    };
-
-    const getProfileUrl = () => {
-        if (!me?.serverData?.slug) return '/profile';
-        return `/profil/${me.serverData.slug}`;
-    };
 
     return (
         <header className={`${header.transparent ? "bg-transparent" : "bg-background"} rounded-b-2xl border-b border-border ${header.sticky ? "sticky top-0 z-50" : ""}`}>
@@ -192,64 +167,7 @@ export default function HeaderMegaMenu({ header }: HeaderMegaMenuProps) {
                         )}
 
                         {header.utilities?.auth && (
-                            <ClientOnly fallback={<Button variant="ghost" disabled size="sm">…</Button>}>
-                                {() => (
-                                    <>
-                                        {me?.isConnected ? (
-                                            <>
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <button
-                                                            aria-label={name || email || t('Mon compte')}
-                                                            className="bg-background rounded-full p-1 pr-1.5 flex items-center gap-1 hover:bg-secondary/80 transition"
-                                                        >
-                                                            {profilThumbImageUrl ? (
-                                                                <OptimizedImage
-                                                                    src={profilThumbImageUrl}
-                                                                    alt={name || 'Profile'}
-                                                                    width={32}
-                                                                    className="w-7 h-7 lg:w-8 lg:h-8 rounded-full object-cover"
-                                                                />
-                                                            ) : (
-                                                                <div className="font-medium rounded-full w-7 h-7 lg:w-8 lg:h-8 flex items-center justify-center bg-secondary text-foreground text-xs">
-                                                                    {name ? name.substring(0, 2).toUpperCase() : 'CN'}
-                                                                </div>
-                                                            )}
-                                                            <ChevronDown className="w-3 h-3 text-foreground shrink-0" />
-                                                        </button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end" className="w-56">
-                                                        <div className="px-2 py-1.5">
-                                                            <p className="text-sm font-medium text-foreground truncate">{name || t('Mon compte')}</p>
-                                                            {email && <p className="text-xs text-muted-foreground truncate">{email}</p>}
-                                                        </div>
-                                                        <div className="-mx-1 my-1 h-px bg-muted" />
-                                                        <DropdownMenuItem onClick={() => navigate(getProfileUrl())}>
-                                                            <User className="mr-2 h-4 w-4" />
-                                                            {t('Profil')}
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem onClick={handleLogout}>
-                                                            <LogOut className="mr-2 h-4 w-4" />
-                                                            {t('Se déconnecter')}
-                                                        </DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </>
-                                        ) : (
-                                            <button
-                                                className="bg-secondary rounded-full px-4 py-1.5 flex items-center gap-2 hover:bg-secondary/80 transition font-medium text-foreground"
-                                                onClick={() => setLoginDialogOpen(true)}
-                                            >
-                                                <div className="font-medium rounded-full px-2 py-1 bg-background text-foreground text-xs">
-                                                    CN
-                                                </div>
-                                                <span className="text-muted-foreground">|</span>
-                                                {t('Se connecter')}
-                                            </button>
-                                        )}
-                                    </>
-                                )}
-                            </ClientOnly>
+                            <AuthMenu layout="menu" density="compact" showName={false} showDropdownHeader loginVariant="solid" />
                         )}
                     </div>
 
@@ -338,53 +256,13 @@ export default function HeaderMegaMenu({ header }: HeaderMegaMenuProps) {
                             ))}
 
                             {header.utilities?.auth && (
-                                <ClientOnly fallback={<div className="h-10" />}>
-                                    {() => (
-                                        <div className="pt-4 border-t border-border">
-                                            {me?.isConnected ? (
-                                                <div className="space-y-2">
-                                                    <button
-                                                        onClick={() => {
-                                                            navigate(getProfileUrl());
-                                                            setMobileMenuOpen(false);
-                                                        }}
-                                                        className="w-full text-left px-4 py-2 rounded-lg hover:bg-secondary transition flex items-center gap-2"
-                                                    >
-                                                        <User className="w-4 h-4" />
-                                                        {t('Profil')}
-                                                    </button>
-                                                    <button
-                                                        onClick={() => {
-                                                            handleLogout();
-                                                            setMobileMenuOpen(false);
-                                                        }}
-                                                        className="w-full text-left px-4 py-2 rounded-lg hover:bg-secondary transition flex items-center gap-2"
-                                                    >
-                                                        <LogOut className="w-4 h-4" />
-                                                        {t('Se déconnecter')}
-                                                    </button>
-                                                </div>
-                                            ) : (
-                                                <button
-                                                    onClick={() => {
-                                                        setLoginDialogOpen(true);
-                                                        setMobileMenuOpen(false);
-                                                    }}
-                                                    className="w-full bg-secondary rounded-lg px-4 py-2 flex items-center justify-center gap-2 hover:bg-secondary/80 transition font-medium text-foreground"
-                                                >
-                                                    {t('Se connecter')}
-                                                </button>
-                                            )}
-                                        </div>
-                                    )}
-                                </ClientOnly>
+                                <AuthMenu layout="stack" onAction={() => setMobileMenuOpen(false)} loginVariant="solid" />
                             )}
                         </div>
                     </div>
                 )}
             </nav>
 
-            <AuthModalLazy open={loginDialogOpen} onOpenChange={setLoginDialogOpen} />
         </header>
     );
 }

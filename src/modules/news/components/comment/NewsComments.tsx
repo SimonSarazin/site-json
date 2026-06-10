@@ -3,6 +3,7 @@ import { Loader2 } from "lucide-react";
 import { useT } from "@/hooks/useT";
 import { useNewsCommentsQuery } from "../../hooks/useNewsCommentsQuery";
 import { useCocolight } from "@/hooks/useCocolight";
+import { LoginPrompt } from "@/modules/auth";
 import { CommentInput } from "./CommentInput";
 import { CommentItem } from "./CommentItem";
 import { DeleteCommentDialog } from "./DeleteCommentDialog";
@@ -89,9 +90,10 @@ export function NewsComments({ news, entity }: NewsCommentsProps) {
           disabled={addCommentMutation.isPending}
         />
       ) : (
-        <div className="w-full px-5 py-5 text-center text-sm text-muted-foreground">
-          {t("comments.loginToComment") || "Connectez-vous pour commenter"}
-        </div>
+        <LoginPrompt
+          className="m-4"
+          message={t("comments.loginToComment") || "Connectez-vous pour commenter"}
+        />
       )}
 
       <div className="w-full">

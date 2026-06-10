@@ -33,10 +33,10 @@ import { useZonesQuery, getZoneId, getZoneName } from "./hooks/useZonesQuery";
 import { usePageFiltersOptional } from "./contexts/pageFilters";
 import { searchByFieldsToQuery } from "./lib/searchByFieldsToQuery";
 import { useCocolight } from "@/hooks/useCocolight";
+import { useAuthModal } from "@/modules/auth";
 import { useLocalization } from "@/hooks/useLocalization";
 import { DynamicModal } from "@/modules/profil/components/add/ModalRegistry";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
-import { toast } from "sonner";
 
 /**
  * SearchProStatic: Version statique sans synchronisation URL
@@ -69,6 +69,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   } = props;
 
   const { me, entity, helper } = useCocolight();
+  const { openLogin } = useAuthModal();
   const isConnected = !!me;
   const permissions = useProfilPermissions(entity || null);
 
@@ -185,7 +186,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
 
   const handleAddClick = () => {
     if (!isConnected) {
-      toast.error(t("Vous devez être connecté pour ajouter"));
+      openLogin();
       return;
     }
     if (modalName) {

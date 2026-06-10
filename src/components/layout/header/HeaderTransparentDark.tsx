@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
 import { Header, LocalizedString } from "@/types/site-schema";
-import { User, Globe, LogOut, Menu, X } from "lucide-react";
-import { Link, useNavigate, useLocation } from "react-router";
+import { Globe, Menu, X } from "lucide-react";
+import { Link, useLocation } from "react-router";
 import { useCocolight } from "@/hooks/useCocolight";
-import { ClientOnly } from "../ClientOnly";
+import { useScrollAware, useScrollToTopOnRouteChange, useNavItemActive } from "./useHeaderBehavior";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -15,8 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";
-import { AuthModalLazy } from "@/modules/auth";
-import { useReactiveProperty } from "@/hooks/useReactiveProperty";
+import { AuthMenu } from "@/modules/auth";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
 
@@ -35,49 +34,15 @@ export default function HeaderTransparentDark({ header }: HeaderTransparentDarkP
     useLoadNamespace("components/layout");
     const t = useT("components/layout");
     const { currentLocale, setLocale, availableLocales } = useLocalization();
-    const navigate = useNavigate();
     const location = useLocation();
-    const { me, api, entity } = useCocolight();
+    const { entity } = useCocolight();
 
-    const isNavItemActive = (itemPath?: string) => {
-        if (!itemPath) return false;
-        if (itemPath === "/" && location.pathname === "/") return true;
-        if (itemPath !== "/" && location.pathname.startsWith(itemPath)) return true;
-        return false;
-    };
+    const isNavItemActive = useNavItemActive();
 
-    useEffect(() => {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-    }, [location.pathname]);
+    useScrollToTopOnRouteChange();
 
-    const profilThumbImageUrl = useReactiveProperty<string>(me?.serverData, "profilThumbImageUrl") ?? null;
-    const name = useReactiveProperty<string>(me?.serverData, "name") ?? null;
-
-    const [loginDialogOpen, setLoginDialogOpen] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [isScrolled, setIsScrolled] = useState(false);
-
-    useEffect(() => {
-        const handleScroll = () => setIsScrolled(window.scrollY > 50);
-        window.addEventListener("scroll", handleScroll);
-        handleScroll();
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
-
-    const handleLogout = () => {
-        if (!api) return;
-        try {
-            api.logout();
-            navigate("/");
-        } catch (err) {
-            console.error("Logout error", err);
-        }
-    };
-
-    const getProfileUrl = () => {
-        if (!me?.serverData?.slug) return "/profile";
-        return `/profil/${me.serverData.slug}`;
-    };
+    const isScrolled = useScrollAware();
 
     // Header bg: dark purple, transparent on homepage hero only
     const headerBg =
@@ -185,50 +150,18 @@ export default function HeaderTransparentDark({ header }: HeaderTransparentDarkP
                             </DropdownMenu>
                         )}
 
-                        {/* Auth */}
+                        {/* Auth — widget partagé (avatar/dropdown ou bouton login → modal global) */}
                         {header.utilities?.auth && (
-                            <ClientOnly>
-                                {() => me ? (
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <button className="flex items-center gap-2 focus:outline-none group">
-                                                {profilThumbImageUrl ? (
-                                                    <img
-                                                        src={profilThumbImageUrl}
-                                                        alt={name || "Profile"}
-                                                        className="w-8 h-8 rounded-full object-cover border-2 border-white/40 group-hover:border-white/70 transition-all"
-                                                    />
-                                                ) : (
-                                                    <div className="w-8 h-8 rounded-full bg-primary/80 border-2 border-white/40 flex items-center justify-center group-hover:border-white/70 transition-all">
-                                                        <User className="w-4 h-4 text-white" />
-                                                    </div>
-                                                )}
-                                            </button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end" className="w-48">
-                                            <DropdownMenuItem onClick={() => navigate(getProfileUrl())}>
-                                                <User className="w-4 h-4 mr-2" />
-                                                {name || t({ fr: "Mon profil", en: "My profile" })}
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem onClick={handleLogout} className="text-destructive">
-                                                <LogOut className="w-4 h-4 mr-2" />
-                                                {t({ fr: "Se déconnecter", en: "Sign out" })}
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                ) : (
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        className="text-white border-white/40 hover:bg-white/10 hover:border-white/70 bg-transparent text-xs sm:text-sm"
-                                        onClick={() => setLoginDialogOpen(true)}
-                                    >
-                                        {header.ctaButton?.label
-                                            ? t(header.ctaButton.label)
-                                            : t({ fr: "Se connecter", en: "Sign in" })}
-                                    </Button>
-                                )}
-                            </ClientOnly>
+                            <AuthMenu
+                                layout="menu"
+                                tone="onColor"
+                                density="compact"
+                                showName={false}
+                                showChevron={false}
+                                loginVariant="outline"
+                                loginLabel={header.ctaButton?.label}
+                                loginClassName="text-white border-white/40 hover:bg-white/10 hover:border-white/70 bg-transparent text-xs sm:text-sm"
+                            />
                         )}
 
                         {/* Mobile hamburger */}
@@ -265,9 +198,6 @@ export default function HeaderTransparentDark({ header }: HeaderTransparentDarkP
                     )}
                 </div>
             )}
-
-            {/* Login / inscription / récupération mot de passe */}
-            <AuthModalLazy open={loginDialogOpen} onOpenChange={setLoginDialogOpen} />
         </nav>
     );
 }

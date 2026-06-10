@@ -1,10 +1,8 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link } from "react-router";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
-import { useCocolight } from "@/hooks/useCocolight";
-import { useReactiveProperty } from "@/hooks/useReactiveProperty";
 import type { Header } from "@/types/site-schema";
 import { ClientOnly } from "../ClientOnly";
 import {
@@ -13,9 +11,9 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { AuthModalLazy } from "@/modules/auth";
+import { AuthMenu } from "@/modules/auth";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
-import { ChevronDown, User, LogOut, Globe, Menu, X } from "lucide-react";
+import { Globe, Menu, X } from "lucide-react";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
@@ -28,35 +26,13 @@ export default function HeaderMinimal({ header }: HeaderMinimalProps) {
     useLoadNamespace("components/layout");
     const t = useT("components/layout");
     const { currentLocale, setLocale, availableLocales } = useLocalization();
-    const navigate = useNavigate();
-    const { me, api } = useCocolight();
 
-    const [loginDialogOpen, setLoginDialogOpen] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-    const profilThumbImageUrl = useReactiveProperty<string>(me?.serverData, 'profilThumbImageUrl') ?? null;
-    const name = useReactiveProperty<string>(me?.serverData, 'name') ?? null;
-    const email = useReactiveProperty<string>(me?.serverData, 'email') ?? null;
 
     useEffect(() => {
         const body = document.body;
         body.classList.remove("opacity-0", "translate-y-10");
     }, []);
-
-    const handleLogout = () => {
-        if (!api) return;
-        try {
-            api.logout();
-            navigate('/');
-        } catch (err) {
-            console.error('Logout error', err);
-        }
-    };
-
-    const getProfileUrl = () => {
-        if (!me?.serverData?.slug) return '/profile';
-        return `/profil/${me.serverData.slug}`;
-    };
 
     return (
         <>
@@ -70,7 +46,7 @@ export default function HeaderMinimal({ header }: HeaderMinimalProps) {
                             ) : header.logoIcon ? (
                                 <IconOrSvg value={header.logoIcon} className="w-8 h-8 text-primary" />
                             ) : null}
-                            
+
                             {header.logoTitle && (
                                 <span className="font-bold uppercase tracking-[0.2em] text-foreground text-xs hidden md:block group-hover:text-primary transition-colors">
                                     {t(header.logoTitle)}
@@ -81,9 +57,9 @@ export default function HeaderMinimal({ header }: HeaderMinimalProps) {
 
                     <div className="hidden md:flex items-center gap-8 text-sm font-bold uppercase tracking-[0.15em]">
                         {header.nav?.map((item, idx) => (
-                            <Link 
-                                key={idx} 
-                                to={item.path || "#"} 
+                            <Link
+                                key={idx}
+                                to={item.path || "#"}
                                 className="hover:text-primary transition-colors text-foreground"
                             >
                                 {t(item.label)}
@@ -118,50 +94,13 @@ export default function HeaderMinimal({ header }: HeaderMinimalProps) {
                         )}
 
                         {header.utilities?.auth && (
-                            <ClientOnly fallback={<div className="w-20" />}>
-                                {() => (
-                                    <>
-                                        {me?.isConnected ? (
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <button className="flex items-center gap-2 hover:text-primary transition-colors text-foreground">
-                                                        {profilThumbImageUrl ? (
-                                                            <img
-                                                                src={profilThumbImageUrl}
-                                                                alt={name || 'Profile'}
-                                                                className="w-6 h-6 rounded-full object-cover"
-                                                            />
-                                                        ) : (
-                                                            <User className="w-4 h-4" />
-                                                        )}
-                                                        <span className="truncate max-w-[100px] normal-case tracking-normal">
-                                                            {name || email || t('Mon compte')}
-                                                        </span>
-                                                        <ChevronDown className="w-3 h-3" />
-                                                    </button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem onClick={() => navigate(getProfileUrl())}>
-                                                        <User className="mr-2 h-4 w-4" />
-                                                        {t('Profil')}
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={handleLogout}>
-                                                        <LogOut className="mr-2 h-4 w-4" />
-                                                        {t('Se déconnecter')}
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        ) : (
-                                            <button
-                                                className="hover:text-primary transition-colors text-foreground"
-                                                onClick={() => setLoginDialogOpen(true)}
-                                            >
-                                                {header.ctaButton ? t(header.ctaButton.label) : t('Connexion')}
-                                            </button>
-                                        )}
-                                    </>
-                                )}
-                            </ClientOnly>
+                            <AuthMenu
+                                layout="menu"
+                                density="compact"
+                                showName
+                                loginVariant="ghost"
+                                loginLabel={header.ctaButton?.label}
+                            />
                         )}
                     </div>
 
@@ -182,52 +121,27 @@ export default function HeaderMinimal({ header }: HeaderMinimalProps) {
                 {mobileMenuOpen && (
                     <div className="md:hidden bg-background border-t border-gray-100 px-8 py-4 space-y-4 animate-in slide-in-from-top-5">
                         {header.nav?.map((item, idx) => (
-                            <Link 
-                                key={idx} 
-                                to={item.path || "#"} 
+                            <Link
+                                key={idx}
+                                to={item.path || "#"}
                                 className="block text-sm font-bold uppercase tracking-[0.15em] hover:text-primary transition-colors text-foreground"
                                 onClick={() => setMobileMenuOpen(false)}
                             >
                                 {t(item.label)}
                             </Link>
                         ))}
-                        
+
                         {header.utilities?.auth && (
-                             <ClientOnly fallback={null}>
-                                {() => (
-                                    <>
-                                        {me?.isConnected ? (
-                                            <>
-                                                <button 
-                                                    onClick={() => { navigate(getProfileUrl()); setMobileMenuOpen(false); }}
-                                                    className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.15em] hover:text-primary transition-colors w-full text-left text-foreground"
-                                                >
-                                                    <User className="w-4 h-4" /> {t('Profil')}
-                                                </button>
-                                                <button 
-                                                    onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
-                                                    className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.15em] hover:text-primary transition-colors w-full text-left text-foreground"
-                                                >
-                                                    <LogOut className="w-4 h-4" /> {t('Se déconnecter')}
-                                                </button>
-                                            </>
-                                        ) : (
-                                            <button
-                                                className="block text-sm font-bold uppercase tracking-[0.15em] hover:text-primary transition-colors w-full text-left text-foreground"
-                                                onClick={() => { setLoginDialogOpen(true); setMobileMenuOpen(false); }}
-                                            >
-                                                {header.ctaButton ? t(header.ctaButton.label) : t('Connexion')}
-                                            </button>
-                                        )}
-                                    </>
-                                )}
-                            </ClientOnly>
+                            <AuthMenu
+                                layout="stack"
+                                onAction={() => setMobileMenuOpen(false)}
+                                loginVariant="ghost"
+                                loginLabel={header.ctaButton?.label}
+                            />
                         )}
                     </div>
                 )}
             </nav>
-
-            <AuthModalLazy open={loginDialogOpen} onOpenChange={setLoginDialogOpen} />
         </>
     )
 }

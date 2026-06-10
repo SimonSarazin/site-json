@@ -19,8 +19,6 @@ import {
   Menu,
   Globe,
   ChevronDown,
-  User,
-  LogOut,
   ShoppingCart,
 } from "lucide-react";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
@@ -30,12 +28,12 @@ import "@/components/layout/i18n";
 import { Header } from "@/types/site-schema";
 import { useNavigate } from "react-router";
 import { useCocolight } from "@/hooks/useCocolight";
+import { AuthMenu } from "@/modules/auth";
 import { EnhancedNavItemType } from "@/types/site";
 import { cn } from "@/lib/utils";
 import { AnnouncementBanner } from "../AnnouncementBanner";
 import ToggleButtonTheme from "../ToggleButtonTheme";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
-import { ClientOnly } from "../ClientOnly";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
 
@@ -204,7 +202,6 @@ export function HeaderStandard({ header }: HeaderStandardProps) {
   const t = useT("components/layout");
   const { currentLocale, setLocale, availableLocales } = useLocalization();
   const navigate = useNavigate();
-  const { me, api } = useCocolight();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const headerBg = header.transparent ? 'bg-transparent' : 'bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60';
@@ -217,11 +214,6 @@ export function HeaderStandard({ header }: HeaderStandardProps) {
   const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault();
     navigate('/');
-  };
-  const handleLogout = () => {
-    if (!api) return;
-    try { api.logout(); navigate('/'); }
-    catch (err) { console.error('Logout error', err); }
   };
 
   return (
@@ -262,29 +254,9 @@ export function HeaderStandard({ header }: HeaderStandardProps) {
             {header.utilities.cart && <Button variant="ghost" size="sm"><ShoppingCart className="h-4 w-4" /></Button>}
             {header.utilities.notifications && <NotificationBell />}
             {header.utilities.auth && (
-              <ClientOnly fallback={<div className="hidden md:flex items-center"><Button variant="ghost" disabled size="sm">…</Button></div>}>
-                {() => (
-                  <div className="hidden md:flex items-center">
-                    {me?.isConnected ? (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="gap-2">
-                            <User className="h-4 w-4" />
-                            <span>{me.serverData?.name || me.serverData?.email || t('Mon compte')}</span>
-                            <ChevronDown className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-56">
-                          <DropdownMenuItem onClick={() => navigate('/profile')}><User className="mr-2 h-4 w-4" />{t('Profil')}</DropdownMenuItem>
-                          <DropdownMenuItem onClick={handleLogout}><LogOut className="mr-2 h-4 w-4" />{t('Se déconnecter')}</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    ) : (
-                      <Button variant="ghost" size="sm" onClick={() => navigate('/login')}>{t('Se connecter')}</Button>
-                    )}
-                  </div>
-                )}
-              </ClientOnly>
+              <div className="hidden md:flex items-center">
+                <AuthMenu layout="menu" density="normal" showName loginVariant="ghost" />
+              </div>
             )}
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild><Button variant="ghost" size="sm" className="md:hidden"><Menu className="h-4 w-4" /><span className="sr-only">{t('Toggle menu')}</span></Button></SheetTrigger>
@@ -293,16 +265,7 @@ export function HeaderStandard({ header }: HeaderStandardProps) {
                 <div className="flex flex-col gap-4 py-4">
                   {header.nav.map((item, idx) => (<NavItem key={idx} item={item} mobile onNavigate={() => setMobileMenuOpen(false)} />))}
                   {header.utilities.auth && (
-                    <div className="pt-4 border-t">
-                      {me?.isConnected ? (
-                        <>
-                          <Button variant="ghost" className="w-full justify-start" onClick={() => { navigate('/profile'); setMobileMenuOpen(false); }}><User className="mr-2 h-4 w-4" />{t('Profil')}</Button>
-                          <Button variant="ghost" className="w-full justify-start" onClick={() => { handleLogout(); setMobileMenuOpen(false); }}><LogOut className="mr-2 h-4 w-4" />{t('Se déconnecter')}</Button>
-                        </>
-                      ) : (
-                        <Button variant="ghost" className="w-full justify-start" onClick={() => { navigate('/login'); setMobileMenuOpen(false); }}>{t('Se connecter')}</Button>
-                      )}
-                    </div>
+                    <AuthMenu layout="stack" onAction={() => setMobileMenuOpen(false)} loginVariant="ghost" />
                   )}
                 </div>
               </SheetContent>

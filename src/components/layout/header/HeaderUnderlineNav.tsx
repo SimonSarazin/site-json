@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
 import { Header, LocalizedString } from "@/types/site-schema";
-import { ChevronDown, User, LogOut, Globe, Menu, X } from "lucide-react";
-import { Link, useNavigate, useLocation } from "react-router";
-import { useCocolight } from "@/hooks/useCocolight";
+import { Globe, Menu, X } from "lucide-react";
+import { Link, useLocation } from "react-router";
+import { useScrollAware, useScrollToTopOnRouteChange, useNavItemActive } from "./useHeaderBehavior";
 import { ClientOnly } from "../ClientOnly";
 import {
     DropdownMenu,
@@ -15,9 +15,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";
-import { AuthModalLazy } from "@/modules/auth";
+import { AuthMenu } from "@/modules/auth";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
-import { useReactiveProperty } from "@/hooks/useReactiveProperty";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
 
@@ -46,57 +45,14 @@ export default function HeaderUnderlineNav({ header }: HeaderUnderlineNavProps) 
     useLoadNamespace("components/layout");
     const t = useT("components/layout");
     const { currentLocale, setLocale, availableLocales } = useLocalization();
-    const navigate = useNavigate();
     const location = useLocation();
-    const { me, api } = useCocolight();
-    
-    const isNavItemActive = (itemPath?: string) => {
-        if (!itemPath) return false;
-        if (itemPath === "/" && location.pathname === "/") return true;
-        if (itemPath !== "/" && location.pathname.startsWith(itemPath)) return true;
-        return false;
-    };
 
-    useEffect(() => {
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
-    }, [location.pathname]);
+    const isNavItemActive = useNavItemActive();
 
-    const profilThumbImageUrl = useReactiveProperty<string>(me?.serverData, 'profilThumbImageUrl') ?? null;
-    const name = useReactiveProperty<string>(me?.serverData, 'name') ?? null;
-    const email = useReactiveProperty<string>(me?.serverData, 'email') ?? null;
+    useScrollToTopOnRouteChange();
 
-    const [loginDialogOpen, setLoginDialogOpen] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [isScrolled, setIsScrolled] = useState(false);
-
-    useEffect(() => {
-        const handleScroll = () => {
-            setIsScrolled(window.scrollY > 50);
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        handleScroll();
-
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
-    const handleLogout = () => {
-        if (!api) return;
-        try {
-            api.logout();
-            navigate('/');
-        } catch (err) {
-            console.error('Logout error', err);
-        }
-    };
-
-    const getProfileUrl = () => {
-        if (!me?.serverData?.slug) return '/profile';
-        return `/profil/${me.serverData.slug}`;
-    };
+    const isScrolled = useScrollAware();
 
     return (
         <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${(isScrolled || location.pathname !== '/') ? 'bg-header-green backdrop-blur-ocean shadow-ocean' : 'bg-transparent'}`}>
@@ -201,50 +157,7 @@ export default function HeaderUnderlineNav({ header }: HeaderUnderlineNavProps) 
 
                     <div className="hidden md:block">
                         {header.utilities?.auth && (
-                            <ClientOnly fallback={<Button variant="ghost" disabled size="sm">…</Button>}>
-                                {() => (
-                                    <>
-                                        {me?.isConnected ? (
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <button className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md font-medium shadow-glow transition-all">
-                                                        {profilThumbImageUrl ? (
-                                                            <img
-                                                                src={profilThumbImageUrl}
-                                                                alt={name || 'Profile'}
-                                                                className="w-6 h-6 rounded-full object-cover"
-                                                            />
-                                                        ) : (
-                                                            <User className="w-4 h-4" />
-                                                        )}
-                                                        <span className="truncate max-w-25">
-                                                            {name || email || t('Mon compte')}
-                                                        </span>
-                                                        <ChevronDown className="w-3 h-3" />
-                                                    </button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="w-56 bg-background border-secondary">
-                                                    <DropdownMenuItem onClick={() => navigate(getProfileUrl())} className="text-muted-foreground hover:text-primary hover:bg-secondary/50">
-                                                        <User className="mr-2 h-4 w-4" />
-                                                        {t('Profil')}
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={handleLogout} className="text-muted-foreground hover:text-primary hover:bg-secondary/50">
-                                                        <LogOut className="mr-2 h-4 w-4" />
-                                                        {t('Se déconnecter')}
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        ) : (
-                                            <button
-                                                className="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md font-medium shadow-glow transition-all"
-                                                onClick={() => setLoginDialogOpen(true)}
-                                            >
-                                                {header.ctaButton ? t(header.ctaButton.label) : t('Rejoindre')}
-                                            </button>
-                                        )}
-                                    </>
-                                )}
-                            </ClientOnly>
+                            <AuthMenu layout="menu" density="normal" showName loginVariant="solid" loginClassName="shadow-glow" loginLabel={header.ctaButton?.label} />
                         )}
                         {!header.utilities?.auth && header.ctaButton && (
                             <Link
@@ -337,46 +250,7 @@ export default function HeaderUnderlineNav({ header }: HeaderUnderlineNavProps) 
                     )}
 
                     {header.utilities?.auth && (
-                        <ClientOnly fallback={<div className="h-10" />}>
-                            {() => (
-                                <>
-                                    {me?.isConnected ? (
-                                        <div className="space-y-2 pt-2 border-t border-secondary/30">
-                                            <button
-                                                onClick={() => {
-                                                    navigate(getProfileUrl());
-                                                    setMobileMenuOpen(false);
-                                                }}
-                                                className="w-full text-left py-2 text-muted-foreground hover:text-primary flex items-center gap-2"
-                                            >
-                                                <User className="w-4 h-4" />
-                                                {t('Profil')}
-                                            </button>
-                                            <button
-                                                onClick={() => {
-                                                    handleLogout();
-                                                    setMobileMenuOpen(false);
-                                                }}
-                                                className="w-full text-left py-2 text-muted-foreground hover:text-primary flex items-center gap-2"
-                                            >
-                                                <LogOut className="w-4 h-4" />
-                                                {t('Se déconnecter')}
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <button
-                                            className="w-full mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md font-medium"
-                                            onClick={() => {
-                                                setLoginDialogOpen(true);
-                                                setMobileMenuOpen(false);
-                                            }}
-                                        >
-                                            {header.ctaButton ? t(header.ctaButton.label) : t('Rejoindre')}
-                                        </button>
-                                    )}
-                                </>
-                            )}
-                        </ClientOnly>
+                        <AuthMenu layout="stack" onAction={() => setMobileMenuOpen(false)} loginVariant="solid" loginClassName="shadow-glow" loginLabel={header.ctaButton?.label} />
                     )}
                     {!header.utilities?.auth && header.ctaButton && (
                         <Link
@@ -391,7 +265,6 @@ export default function HeaderUnderlineNav({ header }: HeaderUnderlineNavProps) 
             </div>
             )}
 
-            <AuthModalLazy open={loginDialogOpen} onOpenChange={setLoginDialogOpen} />
         </nav>
     );
 }

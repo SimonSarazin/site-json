@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useT } from "@/hooks/useT";
 import { useCocolight } from "@/hooks/useCocolight";
+import { LoginButton } from "@/modules/auth";
 import { isUser } from "@/lib/getTypedEntity";
 import { useProfileEntity } from "../../hooks/useProfileEntity";
 import { useProfilPermissions } from "../../hooks/useProfilPermissions";
@@ -343,6 +344,7 @@ export function ProfileActions({ email, phone, url }: ProfileActionsProps) {
   return (
     <div className="flex items-center gap-2">
       {showRelationActions && getPrimaryAction()}
+      {!isOwnProfile && !isConnected && <LoginButton size="sm" />}
 
       {(email || phone || url) && (
         <div className="hidden sm:flex items-center gap-1">

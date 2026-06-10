@@ -1,12 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
 import { Header } from "@/types/site-schema";
-import { ChevronDown, User, LogOut, Globe, Menu, X } from "lucide-react";
+import { ChevronDown, Globe, Menu, X } from "lucide-react";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";
-import { Link, useNavigate, useLocation } from "react-router";
-import { useCocolight } from "@/hooks/useCocolight";
+import { Link } from "react-router";
 import { ClientOnly } from "../ClientOnly";
 import {
     DropdownMenu,
@@ -15,12 +14,12 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { AuthModalLazy } from "@/modules/auth";
+import { AuthMenu } from "@/modules/auth";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
-import { useReactiveProperty } from "@/hooks/useReactiveProperty";
 import { PiggyBankHeaderButton } from "@/modules/cagnotte/components/PiggyBankHeaderButton";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
+import { useScrollAware, useScrollToTopOnRouteChange, useNavItemActive } from "./useHeaderBehavior";
 
 interface HeaderTransparentScrollProps {
     header: Header;
@@ -32,16 +31,7 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
     useLoadNamespace("components/layout");
     const t = useT("components/layout");
     const { currentLocale, setLocale, availableLocales } = useLocalization();
-    const navigate = useNavigate();
-    const location = useLocation();
-    const { me, api } = useCocolight();
-
-    const isNavItemActive = (itemPath?: string) => {
-        if (!itemPath) return false;
-        if (itemPath === "/" && location.pathname === "/") return true;
-        if (itemPath !== "/" && location.pathname.startsWith(itemPath)) return true;
-        return false;
-    };
+    const isNavItemActive = useNavItemActive();
 
     const isPathInsideNav = (items: HeaderNavItem[]): boolean => {
         return items.some(item => {
@@ -53,20 +43,10 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
         });
     };
 
-    useEffect(() => {
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
-    }, [location.pathname]);
+    useScrollToTopOnRouteChange();
 
-    const profilThumbImageUrl = useReactiveProperty<string>(me?.serverData, 'profilThumbImageUrl') ?? null;
-    const name = useReactiveProperty<string>(me?.serverData, 'name') ?? null;
-    const email = useReactiveProperty<string>(me?.serverData, 'email') ?? null;
-
-    const [loginDialogOpen, setLoginDialogOpen] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [isScrolled, setIsScrolled] = useState(false);
+    const isScrolled = useScrollAware();
 
     const shouldHideNav = Boolean(
         header.navVisibleOnlyForListedPages && !isPathInsideNav(header.nav)
@@ -82,32 +62,6 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
     const navItemsToDisplay = !shouldHideNav
         ? header.nav
         : (!shouldHideSecondaryNav ? secondaryNavItems : []);
-
-    useEffect(() => {
-        const handleScroll = () => {
-            setIsScrolled(window.scrollY > 50);
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        handleScroll();
-
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
-    const handleLogout = () => {
-        if (!api) return;
-        try {
-            api.logout();
-            navigate('/');
-        } catch (err) {
-            console.error('Logout error', err);
-        }
-    };
-
-    const getProfileUrl = () => {
-        if (!me?.serverData?.slug) return '/profile';
-        return `/profil/${me.serverData.slug}`;
-    };
 
     return (
         <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${(isScrolled || header.transparent === false) ? 'bg-background/90 backdrop-blur-ocean shadow-ocean' : 'bg-transparent'}`}>
@@ -242,57 +196,7 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
 
                     <div className="hidden md:block">
                         {header.utilities?.auth && (
-                            <ClientOnly fallback={<Button variant="ghost" disabled size="sm">…</Button>}>
-                                {() => (
-                                    <>
-                                        {me?.isConnected ? (
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <button
-                                                        aria-label={name || email || t('Mon compte')}
-                                                        className="flex items-center gap-1 rounded-full bg-muted/50 p-1 pr-1.5 transition hover:bg-muted"
-                                                    >
-                                                        {profilThumbImageUrl ? (
-                                                            <img
-                                                                src={profilThumbImageUrl}
-                                                                alt={name || 'Profile'}
-                                                                className="h-7 w-7 rounded-full object-cover lg:h-8 lg:w-8"
-                                                            />
-                                                        ) : (
-                                                            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-secondary text-xs font-medium text-secondary-foreground lg:h-8 lg:w-8">
-                                                                {name ? name.substring(0, 2).toUpperCase() : <User className="h-4 w-4" />}
-                                                            </div>
-                                                        )}
-                                                        <ChevronDown className="h-3 w-3 shrink-0 text-foreground" />
-                                                    </button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="w-56">
-                                                    <div className="px-2 py-1.5">
-                                                        <p className="truncate text-sm font-medium text-foreground">{name || t('Mon compte')}</p>
-                                                        {email && <p className="truncate text-xs text-muted-foreground">{email}</p>}
-                                                    </div>
-                                                    <div className="-mx-1 my-1 h-px bg-muted" />
-                                                    <DropdownMenuItem onClick={() => navigate(getProfileUrl())} className="text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted">
-                                                        <User className="mr-2 h-4 w-4" />
-                                                        {t('Profil')}
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={handleLogout} className="text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted">
-                                                        <LogOut className="mr-2 h-4 w-4" />
-                                                        {t('Se déconnecter')}
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        ) : (
-                                            <button
-                                                className="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md font-medium shadow-glow transition-all"
-                                                onClick={() => setLoginDialogOpen(true)}
-                                            >
-                                                {header.ctaButton ? t(header.ctaButton.label) : t('Rejoindre')}
-                                            </button>
-                                        )}
-                                    </>
-                                )}
-                            </ClientOnly>
+                            <AuthMenu layout="menu" density="compact" showDropdownHeader loginVariant="solid" loginClassName="shadow-glow" loginLabel={header.ctaButton?.label} />
                         )}
                         {!header.utilities?.auth && header.ctaButton && (
                             <Link
@@ -387,46 +291,7 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
                     )}
 
                     {header.utilities?.auth && (
-                        <ClientOnly fallback={<div className="h-10" />}>
-                            {() => (
-                                <>
-                                    {me?.isConnected ? (
-                                        <div className="space-y-2 pt-2 border-t border-secondary/30">
-                                            <button
-                                                onClick={() => {
-                                                    navigate(getProfileUrl());
-                                                    setMobileMenuOpen(false);
-                                                }}
-                                                className="w-full text-left py-2 text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                            >
-                                                <User className="w-4 h-4" />
-                                                {t('Profil')}
-                                            </button>
-                                            <button
-                                                onClick={() => {
-                                                    handleLogout();
-                                                    setMobileMenuOpen(false);
-                                                }}
-                                                className="w-full text-left py-2 text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                            >
-                                                <LogOut className="w-4 h-4" />
-                                                {t('Se déconnecter')}
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <button
-                                            className="w-full mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md font-medium"
-                                            onClick={() => {
-                                                setLoginDialogOpen(true);
-                                                setMobileMenuOpen(false);
-                                            }}
-                                        >
-                                            {header.ctaButton ? t(header.ctaButton.label) : t('Rejoindre')}
-                                        </button>
-                                    )}
-                                </>
-                            )}
-                        </ClientOnly>
+                        <AuthMenu layout="stack" onAction={() => setMobileMenuOpen(false)} loginVariant="solid" loginClassName="shadow-glow" loginLabel={header.ctaButton?.label} />
                     )}
                     {!header.utilities?.auth && header.ctaButton && (
                         <Link
@@ -441,7 +306,6 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
             </div>
             )}
 
-            <AuthModalLazy open={loginDialogOpen} onOpenChange={setLoginDialogOpen} />
         </nav>
     );
 }
