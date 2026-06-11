@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { Header } from "@/types/site-schema";
@@ -7,6 +6,7 @@ import { Link } from "react-router";
 
 import NavLink from "./NavLink";
 import LangSwitch from "./LangSwitch";
+import MobileMenuSheet from "./MobileMenuSheet";
 import { ClientOnly } from "../ClientOnly";
 import { AuthMenu } from "@/modules/auth";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
@@ -22,8 +22,6 @@ export default function HeaderMegaMenu({ header }: HeaderMegaMenuProps) {
     useLoadNamespace("components/layout");
     const t = useT("components/layout");
     const nav = header.nav;
-
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     return (
         <header className={`${header.transparent ? "bg-transparent" : "bg-background"} rounded-b-2xl border-b border-border ${header.sticky ? "sticky top-0 z-50" : ""}`}>
@@ -144,53 +142,37 @@ export default function HeaderMegaMenu({ header }: HeaderMegaMenuProps) {
                             </ClientOnly>
                         )}
                         {header.utilities?.langSwitch && <LangSwitch triggerClassName="gap-0.5 xs:gap-1 px-1.5 xs:px-2 h-8" />}
-                        <button
-                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                            className="text-foreground hover:text-primary transition relative z-50 p-1.5 xs:p-2"
-                            aria-label="Toggle menu"
-                        >
-                            {mobileMenuOpen ? (
-                                <svg className="w-5 h-5 xs:w-6 xs:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            ) : (
-                                <svg className="w-5 h-5 xs:w-6 xs:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                                </svg>
+                        <MobileMenuSheet breakpoint="xl" triggerClassName="text-foreground hover:text-primary">
+                            {(close) => (
+                                <>
+                                    {nav.map((item, idx) => (
+                                        <div key={idx} className="space-y-2">
+                                            <div className="font-semibold text-foreground">{t(item.label)}</div>
+                                            {item.children && (
+                                                <div className="pl-4 space-y-2">
+                                                    {item.children.map((sub, i) => (
+                                                        <NavLink
+                                                            key={i}
+                                                            to={sub.path}
+                                                            className="block text-sm text-muted-foreground hover:text-primary transition"
+                                                            onClick={close}
+                                                        >
+                                                            {t(sub.label)}
+                                                        </NavLink>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+
+                                    {header.utilities?.auth && (
+                                        <AuthMenu layout="stack" onAction={close} loginVariant="solid" />
+                                    )}
+                                </>
                             )}
-                        </button>
+                        </MobileMenuSheet>
                     </div>
                 </div>
-
-                {mobileMenuOpen && (
-                    <div className="xl:hidden absolute left-0 right-0 top-full bg-popover text-popover-foreground border-b border-border shadow-lg max-h-[calc(100vh-4rem)] overflow-y-auto z-55">
-                        <div className="px-4 py-4 space-y-4">
-                            {nav.map((item, idx) => (
-                                <div key={idx} className="space-y-2">
-                                    <div className="font-semibold text-foreground">{t(item.label)}</div>
-                                    {item.children && (
-                                        <div className="pl-4 space-y-2">
-                                            {item.children.map((sub, i) => (
-                                                <NavLink
-                                                    key={i}
-                                                    to={sub.path}
-                                                    className="block text-sm text-muted-foreground hover:text-primary transition"
-                                                    onClick={() => setMobileMenuOpen(false)}
-                                                >
-                                                    {t(sub.label)}
-                                                </NavLink>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
-
-                            {header.utilities?.auth && (
-                                <AuthMenu layout="stack" onAction={() => setMobileMenuOpen(false)} loginVariant="solid" />
-                            )}
-                        </div>
-                    </div>
-                )}
             </nav>
 
         </header>
