@@ -1,13 +1,13 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import type { Header } from "@/types/site-schema";
 import { ClientOnly } from "../ClientOnly";
 import NavLink from "./NavLink";
 import LangSwitch from "./LangSwitch";
+import MobileMenuSheet from "./MobileMenuSheet";
 import { AuthMenu } from "@/modules/auth";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
-import { Menu, X } from "lucide-react";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
@@ -19,8 +19,6 @@ interface HeaderMinimalProps {
 export default function HeaderMinimal({ header }: HeaderMinimalProps) {
     useLoadNamespace("components/layout");
     const t = useT("components/layout");
-
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     useEffect(() => {
         const body = document.body;
@@ -91,35 +89,33 @@ export default function HeaderMinimal({ header }: HeaderMinimalProps) {
                                 {() => <ToggleButtonTheme />}
                             </ClientOnly>
                         )}
-                        <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-foreground">
-                            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                        </button>
+                        <MobileMenuSheet triggerClassName="text-foreground">
+                            {(close) => (
+                                <>
+                                    {header.nav?.map((item, idx) => (
+                                        <NavLink
+                                            key={idx}
+                                            to={item.path}
+                                            className="block text-sm font-bold uppercase tracking-[0.15em] hover:text-primary transition-colors text-foreground"
+                                            onClick={close}
+                                        >
+                                            {t(item.label)}
+                                        </NavLink>
+                                    ))}
+
+                                    {header.utilities?.auth && (
+                                        <AuthMenu
+                                            layout="stack"
+                                            onAction={close}
+                                            loginVariant="ghost"
+                                            loginLabel={header.ctaButton?.label}
+                                        />
+                                    )}
+                                </>
+                            )}
+                        </MobileMenuSheet>
                     </div>
                 </div>
-
-                {mobileMenuOpen && (
-                    <div className="md:hidden bg-background border-t border-gray-100 px-8 py-4 space-y-4 animate-in slide-in-from-top-5">
-                        {header.nav?.map((item, idx) => (
-                            <NavLink
-                                key={idx}
-                                to={item.path}
-                                className="block text-sm font-bold uppercase tracking-[0.15em] hover:text-primary transition-colors text-foreground"
-                                onClick={() => setMobileMenuOpen(false)}
-                            >
-                                {t(item.label)}
-                            </NavLink>
-                        ))}
-
-                        {header.utilities?.auth && (
-                            <AuthMenu
-                                layout="stack"
-                                onAction={() => setMobileMenuOpen(false)}
-                                loginVariant="ghost"
-                                loginLabel={header.ctaButton?.label}
-                            />
-                        )}
-                    </div>
-                )}
             </nav>
         </>
     )

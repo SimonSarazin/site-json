@@ -1,13 +1,12 @@
-import { useState } from "react";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { Header, LocalizedString } from "@/types/site-schema";
-import { Menu, X } from "lucide-react";
 import { useLocation } from "react-router";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useScrollAware, useScrollToTopOnRouteChange, useNavItemActive } from "./useHeaderBehavior";
 import NavLink from "./NavLink";
 import LangSwitch from "./LangSwitch";
+import MobileMenuSheet from "./MobileMenuSheet";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";
 import { AuthMenu } from "@/modules/auth";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
@@ -34,7 +33,6 @@ export default function HeaderTransparentDark({ header }: HeaderTransparentDarkP
 
     useScrollToTopOnRouteChange();
 
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const isScrolled = useScrollAware();
 
     // Header bg: dark purple, transparent on homepage hero only
@@ -131,44 +129,39 @@ export default function HeaderTransparentDark({ header }: HeaderTransparentDarkP
                             />
                         )}
 
-                        {/* Mobile hamburger */}
-                        <button
-                            className="md:hidden p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-md transition-all"
-                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                        {/* Mobile menu */}
+                        <MobileMenuSheet
+                            tone="onColor"
+                            contentClassName="bg-ct-header text-white border-white/10"
                         >
-                            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-                        </button>
+                            {(close) =>
+                                header.nav?.map((item, idx) => {
+                                    const to = item.path ?? item.href;
+                                    if (!to) return null;
+                                    const active = !!item.path && isNavItemActive(item.path);
+                                    return (
+                                        <NavLink
+                                            key={idx}
+                                            to={to}
+                                            onClick={close}
+                                            ariaCurrent={active ? "page" : undefined}
+                                            className={`
+                                                block px-3 py-2 rounded-md text-sm font-medium transition-all
+                                                ${active
+                                                    ? "text-white bg-white/20"
+                                                    : "text-white/80 hover:text-white hover:bg-white/10"
+                                                }
+                                            `}
+                                        >
+                                            {t(item.label)}
+                                        </NavLink>
+                                    );
+                                })
+                            }
+                        </MobileMenuSheet>
                     </div>
                 </div>
             </div>
-
-            {/* Mobile menu */}
-            {mobileMenuOpen && (
-                <div className="md:hidden bg-ct-header border-t border-white/10 px-4 py-3 space-y-1">
-                    {header.nav?.map((item, idx) => {
-                        const to = item.path ?? item.href;
-                        if (!to) return null;
-                        const active = !!item.path && isNavItemActive(item.path);
-                        return (
-                            <NavLink
-                                key={idx}
-                                to={to}
-                                onClick={() => setMobileMenuOpen(false)}
-                                ariaCurrent={active ? "page" : undefined}
-                                className={`
-                                    block px-3 py-2 rounded-md text-sm font-medium transition-all
-                                    ${active
-                                        ? "text-white bg-white/20"
-                                        : "text-white/80 hover:text-white hover:bg-white/10"
-                                    }
-                                `}
-                            >
-                                {t(item.label)}
-                            </NavLink>
-                        );
-                    })}
-                </div>
-            )}
         </nav>
     );
 }

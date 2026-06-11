@@ -1,12 +1,6 @@
 import { useState } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -16,7 +10,6 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { DynamicIcon, IconName } from "lucide-react/dynamic";
 import {
-  Menu,
   ChevronDown,
   ShoppingCart,
 } from "lucide-react";
@@ -26,6 +19,7 @@ import "@/components/layout/i18n";
 import { Header } from "@/types/site-schema";
 import NavLink from "./NavLink";
 import LangSwitch from "./LangSwitch";
+import MobileMenuSheet from "./MobileMenuSheet";
 import { useCocolight } from "@/hooks/useCocolight";
 import { AuthMenu } from "@/modules/auth";
 import { EnhancedNavItemType } from "@/types/site";
@@ -185,7 +179,6 @@ interface HeaderStandardProps {
 export function HeaderStandard({ header }: HeaderStandardProps) {
   useLoadNamespace("components/layout");
   const t = useT("components/layout");
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const headerBg = header.transparent ? 'bg-transparent' : 'bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60';
   const headerHeight = {
@@ -221,18 +214,16 @@ export function HeaderStandard({ header }: HeaderStandardProps) {
                 <AuthMenu layout="menu" density="normal" showName loginVariant="ghost" />
               </div>
             )}
-            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-              <SheetTrigger asChild><Button variant="ghost" size="sm" className="md:hidden"><Menu className="h-4 w-4" /><span className="sr-only">{t('Toggle menu')}</span></Button></SheetTrigger>
-              <SheetContent side="right" className="w-72">
-                <SheetTitle className="sr-only">{t('Mobile Menu')}</SheetTitle>
-                <div className="flex flex-col gap-4 py-4">
-                  {header.nav.map((item, idx) => (<NavItem key={idx} item={item} mobile onNavigate={() => setMobileMenuOpen(false)} />))}
+            <MobileMenuSheet>
+              {(close) => (
+                <>
+                  {header.nav.map((item, idx) => (<NavItem key={idx} item={item} mobile onNavigate={close} />))}
                   {header.utilities.auth && (
-                    <AuthMenu layout="stack" onAction={() => setMobileMenuOpen(false)} loginVariant="ghost" />
+                    <AuthMenu layout="stack" onAction={close} loginVariant="ghost" />
                   )}
-                </div>
-              </SheetContent>
-            </Sheet>
+                </>
+              )}
+            </MobileMenuSheet>
           </div>
         </div>
       </div>

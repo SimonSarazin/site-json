@@ -1,12 +1,12 @@
-import { useState } from "react";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { Header } from "@/types/site-schema";
-import { ChevronDown, Menu, X } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";
 import { ClientOnly } from "../ClientOnly";
 import NavLink from "./NavLink";
 import LangSwitch from "./LangSwitch";
+import MobileMenuSheet from "./MobileMenuSheet";
 import { AuthMenu } from "@/modules/auth";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import { PiggyBankHeaderButton } from "@/modules/cagnotte/components/PiggyBankHeaderButton";
@@ -37,7 +37,6 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
 
     useScrollToTopOnRouteChange();
 
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const isScrolled = useScrollAware();
 
     const shouldHideNav = Boolean(
@@ -192,77 +191,65 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
                             </ClientOnly>
                         )}
                         {navItemsToDisplay.length > 0 && (
-                            <button
-                                className="p-2 text-muted-foreground hover:text-foreground"
-                                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                                aria-label="Toggle menu"
-                            >
-                                {mobileMenuOpen ? (
-                                    <X className="w-6 h-6" />
-                                ) : (
-                                    <Menu className="w-6 h-6" />
+                            <MobileMenuSheet triggerClassName="text-muted-foreground hover:text-foreground">
+                                {(close) => (
+                                    <>
+                                        {navItemsToDisplay.map((item, idx) => {
+                                            const isActive = isNavItemActive(item.path);
+                                            return (
+                                                <NavLink
+                                                    key={idx}
+                                                    to={item.path}
+                                                    ariaCurrent={isActive ? "page" : undefined}
+                                                    className={`block py-2 transition-colors ${isActive ? 'text-primary font-medium' : 'text-muted-foreground hover:text-foreground'}`}
+                                                    onClick={close}
+                                                >
+                                                    {t(item.label)}
+                                                </NavLink>
+                                            );
+                                        })}
+
+                                        {header.urgenceButton && (
+                                            <NavLink
+                                                to={header.urgenceButton.path}
+                                                className="w-full flex items-center justify-between p-3 rounded-lg bg-accent/20 border border-accent/30 text-accent hover:bg-accent/30 transition-colors"
+                                                onClick={close}
+                                            >
+                                                <span className="flex items-center gap-2">
+                                                    {header.urgenceButton.icon ? (
+                                                        <IconOrSvg
+                                                            value={header.urgenceButton.icon}
+                                                            className="w-5 h-5"
+                                                        />
+                                                    ) : null}
+                                                    <span className="font-medium">{t(header.urgenceButton.label)}</span>
+                                                </span>
+                                            </NavLink>
+                                        )}
+
+                                        {header.utilities?.langSwitch && (
+                                            <LangSwitch triggerClassName="w-full justify-start text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted" />
+                                        )}
+
+                                        {header.utilities?.auth && (
+                                            <AuthMenu layout="stack" onAction={close} loginVariant="solid" loginClassName="shadow-glow" loginLabel={header.ctaButton?.label} />
+                                        )}
+                                        {!header.utilities?.auth && header.ctaButton && (
+                                            <NavLink
+                                                to={header.ctaButton.path}
+                                                className="w-full mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md font-medium text-center block"
+                                                onClick={close}
+                                            >
+                                                {t(header.ctaButton.label)}
+                                            </NavLink>
+                                        )}
+                                    </>
                                 )}
-                            </button>
+                            </MobileMenuSheet>
                         )}
                     </div>
                 </div>
             </div>
-
-            {mobileMenuOpen && navItemsToDisplay.length > 0 && (
-            <div className="md:hidden bg-background/95 backdrop-blur-ocean border-t border-secondary/50 animate-fade-in-up">
-                <div className="container mx-auto px-4 py-4 space-y-3">
-                    {navItemsToDisplay.map((item, idx) => {
-                        const isActive = isNavItemActive(item.path);
-                        return (
-                            <NavLink
-                                key={idx}
-                                to={item.path}
-                                ariaCurrent={isActive ? "page" : undefined}
-                                className={`block py-2 transition-colors ${isActive ? 'text-primary font-medium' : 'text-muted-foreground hover:text-foreground'}`}
-                                onClick={() => setMobileMenuOpen(false)}
-                            >
-                                {t(item.label)}
-                            </NavLink>
-                        );
-                    })}
-
-                    {header.urgenceButton && (
-                        <NavLink
-                            to={header.urgenceButton.path}
-                            className="w-full flex items-center justify-between p-3 rounded-lg bg-accent/20 border border-accent/30 text-accent hover:bg-accent/30 transition-colors"
-                            onClick={() => setMobileMenuOpen(false)}
-                        >
-                            <span className="flex items-center gap-2">
-                                {header.urgenceButton.icon ? (
-                                    <IconOrSvg
-                                        value={header.urgenceButton.icon}
-                                        className="w-5 h-5"
-                                    />
-                                ) : null}
-                                <span className="font-medium">{t(header.urgenceButton.label)}</span>
-                            </span>
-                        </NavLink>
-                    )}
-
-                    {header.utilities?.langSwitch && (
-                        <LangSwitch triggerClassName="w-full justify-start text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted" />
-                    )}
-
-                    {header.utilities?.auth && (
-                        <AuthMenu layout="stack" onAction={() => setMobileMenuOpen(false)} loginVariant="solid" loginClassName="shadow-glow" loginLabel={header.ctaButton?.label} />
-                    )}
-                    {!header.utilities?.auth && header.ctaButton && (
-                        <NavLink
-                            to={header.ctaButton.path}
-                            className="w-full mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md font-medium text-center block"
-                            onClick={() => setMobileMenuOpen(false)}
-                        >
-                            {t(header.ctaButton.label)}
-                        </NavLink>
-                    )}
-                </div>
-            </div>
-            )}
 
         </nav>
     );
