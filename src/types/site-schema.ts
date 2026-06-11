@@ -6,7 +6,7 @@
 // Validation : Zod 4.x – le schéma sert à la fois de typings, de runtime‑guard,
 //               et d'autocomplétion dans VS Code.
 // ------------------------------------------------------------
-import { SearchProSectionSchema, SearchProStaticSectionSchema, CardCountCTSectionSchema, ThematicsSectionSchema, FiltersSectionSchema, SearchVariantSchema, SearchBaseParamsSchema, FilterGroupsSchema, FiltersByAnswersSchema, SearchHeaderSectionSchema, TitleWithFiltersRezoLaMerSchema } from "@/modules/search/schema";
+import { SearchProSectionSchema, SearchProStaticSectionSchema, CardCountCTSectionSchema, ThematicsSectionSchema, FiltersSectionSchema, SearchVariantSchema, SearchBaseParamsSchema, FilterGroupsSchema, FiltersByAnswersSchema, SearchHeaderSectionSchema } from "@/modules/search/schema";
 import { NewsSectionSchema } from "@/modules/news/schema";
 import { NotificationsSectionSchema } from "@/modules/notification/schema";
 import { JsonFormModalConfigSchema } from "./form-modal-schema";
@@ -149,8 +149,8 @@ export type HeroWithIconSectionProps = z.infer<typeof HeroWithIconSectionSchema>
 
 
 //──────────────── Hero Tiers-Lieux
-export const HeroTiersLieuxSchema = z.object({
-  type: z.literal("hero-tiers-lieux"),
+export const HeroSearchSchema = z.object({
+  type: z.literal("hero-search"),
   id: z.string().optional(),
   props: z.object({
     headline: LocalizedString,
@@ -177,13 +177,13 @@ export const HeroTiersLieuxSchema = z.object({
   }),
 });
 
-export type HeroTiersLieux = z.infer<typeof HeroTiersLieuxSchema>;
+export type HeroSearch = z.infer<typeof HeroSearchSchema>;
 
-export type HeroTiersLieuxProps = z.infer<typeof HeroTiersLieuxSchema>["props"];
+export type HeroSearchProps = z.infer<typeof HeroSearchSchema>["props"];
 
 //──────────────── Hero Rézo la Mer
-export const HeroRezoLaMerSchema = z.object({
-  type: z.literal("hero-rezo-la-mer"),
+export const HeroParallaxSchema = z.object({
+  type: z.literal("hero-parallax"),
   id: z.string().optional(),
   props: z.object({
     headline: LocalizedString,
@@ -213,12 +213,12 @@ export const HeroRezoLaMerSchema = z.object({
   }),
 });
 
-export type HeroRezoLaMer = z.infer<typeof HeroRezoLaMerSchema>;
+export type HeroParallax = z.infer<typeof HeroParallaxSchema>;
 
-export type HeroRezoLaMerProps = z.infer<typeof HeroRezoLaMerSchema>["props"];
+export type HeroParallaxProps = z.infer<typeof HeroParallaxSchema>["props"];
 
-export const HeroSSBESchema = z.object({
-  type: z.literal("hero-ssbe"),
+export const HeroQuickAccessSchema = z.object({
+  type: z.literal("hero-quick-access"),
   id: z.string().optional(),
   props: z.object({
     headline: LocalizedString,
@@ -258,12 +258,12 @@ export const HeroSSBESchema = z.object({
   }),
 });
 
-export type HeroSSBE = z.infer<typeof HeroSSBESchema>;
-export type HeroSSBEProps = z.infer<typeof HeroSSBESchema>["props"];
+export type HeroQuickAccess = z.infer<typeof HeroQuickAccessSchema>;
+export type HeroQuickAccessProps = z.infer<typeof HeroQuickAccessSchema>["props"];
 
 // Nos-commune
-export const HeroNoCommunesShema = z.object({
-  type: z.literal("hero-nos-communes"),
+export const HeroTintedOverlaySchema = z.object({
+  type: z.literal("hero-tinted-overlay"),
   id: z.string().optional(),
   props: z.object({
     badge: LocalizedString.optional(),
@@ -295,13 +295,13 @@ export const HeroNoCommunesShema = z.object({
   })
 });
 
-export type HeroNosCommunes = z.infer<typeof HeroNoCommunesShema>;
+export type HeroTintedOverlay = z.infer<typeof HeroTintedOverlaySchema>;
 
-export type HeroNosCommunesProps = z.infer<typeof HeroNoCommunesShema>["props"];
+export type HeroTintedOverlayProps = z.infer<typeof HeroTintedOverlaySchema>["props"];
 
 //──────────────── Commune Transparente Hero
-export const HeroCommuneTransparenteSchema = z.object({
-  type: z.literal("hero-commune-transparente"),
+export const HeroEntityBannerSchema = z.object({
+  type: z.literal("hero-entity-banner"),
   id: z.string().optional(),
   props: z.object({
     headline: LocalizedString,
@@ -334,12 +334,12 @@ export const HeroCommuneTransparenteSchema = z.object({
   }),
 });
 
-export type HeroCommuneTransparente = z.infer<typeof HeroCommuneTransparenteSchema>;
-export type HeroCommuneTransparenteProps = z.infer<typeof HeroCommuneTransparenteSchema>["props"];
+export type HeroEntityBanner = z.infer<typeof HeroEntityBannerSchema>;
+export type HeroEntityBannerProps = z.infer<typeof HeroEntityBannerSchema>["props"];
 
 //──────────────── Features Rézo la Mer
-export const FeaturesRezoLaMerSchema = z.object({
-  type: z.literal("features-rezo-la-mer"),
+export const FeaturesGlassSchema = z.object({
+  type: z.literal("features-glass"),
   id: z.string().optional(),
   props: z.object({
     // `headline` rendu optionnel : utilisable en sous-section (rightSection
@@ -362,8 +362,8 @@ export const FeaturesRezoLaMerSchema = z.object({
   }),
 });
 
-export type FeaturesRezoLaMer = z.infer<typeof FeaturesRezoLaMerSchema>;
-export type FeaturesRezoLaMerProps = z.infer<typeof FeaturesRezoLaMerSchema>["props"];
+export type FeaturesGlass = z.infer<typeof FeaturesGlassSchema>;
+export type FeaturesGlassProps = z.infer<typeof FeaturesGlassSchema>["props"];
 
 //──────────────── Categories Grid (Generic)
 export const CategoriesGridSectionSchema = z.object({
@@ -392,8 +392,8 @@ export type CategoriesGridSection = z.infer<typeof CategoriesGridSectionSchema>;
 export type CategoriesGridSectionProps = z.infer<typeof CategoriesGridSectionSchema>["props"];
 
 //──────────────── Action Buttons Rézo la Mer
-export const ActionButtonsRezoLaMerSchema = z.object({
-  type: z.literal("action-buttons-rezo-la-mer"),
+export const ActionTilesSchema = z.object({
+  type: z.literal("action-tiles"),
   id: z.string().optional(),
   props: z.object({
     headline: LocalizedString,
@@ -412,12 +412,12 @@ export const ActionButtonsRezoLaMerSchema = z.object({
   }),
 });
 
-export type ActionButtonsRezoLaMer = z.infer<typeof ActionButtonsRezoLaMerSchema>;
-export type ActionButtonsRezoLaMerProps = z.infer<typeof ActionButtonsRezoLaMerSchema>["props"];
+export type ActionTiles = z.infer<typeof ActionTilesSchema>;
+export type ActionTilesProps = z.infer<typeof ActionTilesSchema>["props"];
 
 //──────────────── Community Rézo la Mer
-export const CommunityRezoLaMerSchema = z.object({
-  type: z.literal("community-rezo-la-mer"),
+export const CtaCardGridSchema = z.object({
+  type: z.literal("cta-card-grid"),
   id: z.string().optional(),
   props: z.object({
     headline: LocalizedString,
@@ -447,12 +447,12 @@ export const CommunityRezoLaMerSchema = z.object({
   }),
 });
 
-export type CommunityRezoLaMer = z.infer<typeof CommunityRezoLaMerSchema>;
-export type CommunityRezoLaMerProps = z.infer<typeof CommunityRezoLaMerSchema>["props"];
+export type CtaCardGrid = z.infer<typeof CtaCardGridSchema>;
+export type CtaCardGridProps = z.infer<typeof CtaCardGridSchema>["props"];
 
 //──────────────── Call To Action Rézo la Mer
-export const CallToActionRezoLaMerSchema = z.object({
-  type: z.literal("cta-rezo-la-mer"),
+export const CtaNewsletterSchema = z.object({
+  type: z.literal("cta-newsletter"),
   id: z.string().optional(),
   props: z.object({
     headline: LocalizedString,
@@ -474,24 +474,22 @@ export const CallToActionRezoLaMerSchema = z.object({
   }),
 });
 
-export type CallToActionRezoLaMer = z.infer<typeof CallToActionRezoLaMerSchema>;
-export type CallToActionRezoLaMerProps = z.infer<typeof CallToActionRezoLaMerSchema>["props"];
+export type CtaNewsletter = z.infer<typeof CtaNewsletterSchema>;
+export type CtaNewsletterProps = z.infer<typeof CtaNewsletterSchema>["props"];
 
 // ─── Schémas déplacés — réexportés ici pour rétro-compat des imports `@/types/site-schema` ───
 // • JsonFormModal*  → `./form-modal-schema` (feuille partagée, sans cycle)
 // • ActionButton*   → `./action-button-schema` (feuille neutre : contrat partagé
 //   searchHeader ↔ profil, cf. `ActionButtonGroup`)
-// • searchHeader / title-with-filters-rezo-la-mer → `@/modules/search/schema`
+// • searchHeader → `@/modules/search/schema`
 //   (vivent avec leur section). Importés ci-dessus pour l'union discriminée et
 //   l'usage local (CommuneTransparente), réexportés ci-dessous.
-export { JsonFormModalConfigSchema, ActionButtonSchema, SearchHeaderSectionSchema, TitleWithFiltersRezoLaMerSchema };
+export { JsonFormModalConfigSchema, ActionButtonSchema, SearchHeaderSectionSchema };
 export type { JsonFormModalConfig, JsonFormModalField, JsonFormModalStep } from "./form-modal-schema";
 export type { ActionButton } from "./action-button-schema";
 export type {
   SearchHeaderSection,
   SearchHeaderSectionProps,
-  TitleWithFiltersRezoLaMer,
-  TitleWithFiltersRezoLaMerProps,
 } from "@/modules/search/schema";
 
 // ──────────────── Meeteem Props
@@ -534,8 +532,8 @@ const CommuneTransparenteActionItemSchema = z.object({
   buttons: z.array(CommuneTransparenteActionButtonSchema).default([]),
 });
 
-export const CommuneTransparenteActionsSectionSchema = z.object({
-  type: z.literal("commune-transparente-actions"),
+export const ExpandableActionsSchema = z.object({
+  type: z.literal("expandable-actions"),
   id: z.string().optional(),
   props: z.object({
     imageSrc: z.string().optional(),
@@ -547,8 +545,8 @@ export const CommuneTransparenteActionsSectionSchema = z.object({
   }),
 });
 
-export type CommuneTransparenteActionsSection = z.infer<typeof CommuneTransparenteActionsSectionSchema>;
-export type CommuneTransparenteActionsSectionProps = z.infer<typeof CommuneTransparenteActionsSectionSchema>["props"];
+export type ExpandableActions = z.infer<typeof ExpandableActionsSchema>;
+export type ExpandableActionsProps = z.infer<typeof ExpandableActionsSchema>["props"];
 
 //──────────────── Markdown / MDX
 const MarkdownSectionSchema = z.object({
@@ -1325,18 +1323,17 @@ export type {
 export const Section = z.discriminatedUnion("type", [
   HeroSectionSchema,
   HeroWithIconSectionSchema,
-  HeroTiersLieuxSchema,
-  HeroRezoLaMerSchema,
-  HeroSSBESchema,
-  HeroNoCommunesShema,
-  HeroCommuneTransparenteSchema,
-  FeaturesRezoLaMerSchema,
-  ActionButtonsRezoLaMerSchema,
-  CommunityRezoLaMerSchema,
-  CallToActionRezoLaMerSchema,
-  TitleWithFiltersRezoLaMerSchema,
+  HeroSearchSchema,
+  HeroParallaxSchema,
+  HeroQuickAccessSchema,
+  HeroTintedOverlaySchema,
+  HeroEntityBannerSchema,
+  FeaturesGlassSchema,
+  ActionTilesSchema,
+  CtaCardGridSchema,
+  CtaNewsletterSchema,
   SearchHeaderSectionSchema,
-  CommuneTransparenteActionsSectionSchema,
+  ExpandableActionsSchema,
   CategoriesGridSectionSchema,
   MarkdownSectionSchema,
   CardsSectionSchema,

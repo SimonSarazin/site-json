@@ -1,15 +1,15 @@
 import { useLocalization } from "@/hooks/useLocalization";
-import { type ActionButtonsRezoLaMerProps } from "@/types/site-schema";
+import { type ActionTilesProps } from "@/types/site-schema";
 import { Button } from "@/components/ui/button";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { Link } from "react-router";
 
-interface ActionButtonsRezoLaMerSectionProps {
+interface ActionTilesSectionProps {
     id?: string;
-    props: ActionButtonsRezoLaMerProps;
+    props: ActionTilesProps;
 }
 
-export function ActionButtonsRezoLaMer({ id, props }: ActionButtonsRezoLaMerSectionProps) {
+export function ActionTiles({ id, props }: ActionTilesSectionProps) {
     const { t } = useLocalization();
     const variant = props.variant || "ocean";
     const isCyber = variant === "cyber";
@@ -153,4 +153,4 @@ export function ActionButtonsRezoLaMer({ id, props }: ActionButtonsRezoLaMerSect
     );
 }
 
-export default ActionButtonsRezoLaMer;
+export default ActionTiles;

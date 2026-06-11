@@ -545,8 +545,7 @@ export type ThematicsSectionProps = z.infer<typeof ThematicsSectionSchema>["prop
 //──────────────── Search Header (titre + filtres + boutons)
 // Header de recherche horizontal (rendu par `sections/SearchHeaderSection`),
 // producteur du PageFiltersContext au même titre que `<FiltersSection>`.
-// Type config canonique `searchHeader` + alias rétro-compat
-// `title-with-filters-rezo-la-mer` (9 configs).
+// Type config canonique `searchHeader`.
 // `ActionButtonSchema` est un contrat partagé (rendu par `modules/profil`) →
 // défini dans la feuille `@/types/action-button-schema` (cf. import ci-dessus).
 
@@ -601,18 +600,8 @@ export const SearchHeaderSectionSchema = z.object({
   props: SearchHeaderProps,
 });
 
-// Alias rétro-compat : même composant/props, ancien littéral de type. À migrer
-// vers `searchHeader` config par config (cf. plan de refactor).
-export const TitleWithFiltersRezoLaMerSchema = z.object({
-  type: z.literal("title-with-filters-rezo-la-mer"),
-  id: z.string().optional(),
-  props: SearchHeaderProps,
-});
-
 export type SearchHeaderSection = z.infer<typeof SearchHeaderSectionSchema>;
 export type SearchHeaderSectionProps = z.infer<typeof SearchHeaderSectionSchema>["props"];
-export type TitleWithFiltersRezoLaMer = z.infer<typeof TitleWithFiltersRezoLaMerSchema>;
-export type TitleWithFiltersRezoLaMerProps = z.infer<typeof TitleWithFiltersRezoLaMerSchema>["props"];
 
 
 export interface SearchListViewProps<T extends SearchEntity = SearchEntity> {

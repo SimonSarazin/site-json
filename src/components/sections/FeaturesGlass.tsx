@@ -1,14 +1,14 @@
 import { useLocalization } from "@/hooks/useLocalization";
-import { type FeaturesRezoLaMerProps } from "@/types/site-schema";
+import { type FeaturesGlassProps } from "@/types/site-schema";
 import { Card } from "@/components/ui/card";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 
-interface FeaturesRezoLaMerSectionProps {
+interface FeaturesGlassSectionProps {
     id?: string;
-    props: FeaturesRezoLaMerProps;
+    props: FeaturesGlassProps;
 }
 
-export function FeaturesRezoLaMer({ id, props }: FeaturesRezoLaMerSectionProps) {
+export function FeaturesGlass({ id, props }: FeaturesGlassSectionProps) {
     const { t } = useLocalization();
     const variant = props.variant || "ocean";
     const isCyber = variant === "cyber";
@@ -105,4 +105,4 @@ export function FeaturesRezoLaMer({ id, props }: FeaturesRezoLaMerSectionProps) 
     );
 }
 
-export default FeaturesRezoLaMer;
+export default FeaturesGlass;

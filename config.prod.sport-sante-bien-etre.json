@@ -133,7 +133,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "hero-ssbe",
+          "type": "hero-quick-access",
           "id": "hero-sport-sante",
           "props": {
             "headline": {
@@ -216,7 +216,7 @@
             "rightColumns": 2,
             "gap": 4,
             "leftSection": {
-              "type": "title-with-filters-rezo-la-mer",
+              "type": "searchHeader",
               "id": "left-showcase-header",
               "props": {
                 "headline": {
@@ -226,7 +226,7 @@
               }
             }, 
             "rightSection": {
-              "type": "title-with-filters-rezo-la-mer",
+              "type": "searchHeader",
               "id": "right-showcase-header",
               "props": {
                 "subhead": {
@@ -256,7 +256,7 @@
           }
         },
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "title-header-webtv",
           "props": {
             "headline": {
@@ -302,7 +302,7 @@
         },
 
         {
-          "type": "community-rezo-la-mer",
+          "type": "cta-card-grid",
           "id": "community-ssbe",
           "props": {
             "variant": "cyber",
@@ -361,7 +361,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "hero-ssbe",
+          "type": "hero-quick-access",
           "id": "hero-sport-sante",
           "props": {
             "headline": {
@@ -396,7 +396,7 @@
           }
         },
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "title-header-strategy",
           "props": {
             "headline": {
@@ -486,7 +486,7 @@
           }
         },
         {
-          "type": "features-rezo-la-mer",
+          "type": "features-glass",
           "id": "features",
           "props": {
             "headline": {
@@ -590,7 +590,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "hero-ssbe",
+          "type": "hero-quick-access",
           "id": "hero-sport-sante",
           "props": {
             "headline": {
@@ -639,7 +639,7 @@
             "rightColumns": 2,
             "gap": 4,
             "leftSection": {
-              "type": "title-with-filters-rezo-la-mer",
+              "type": "searchHeader",
               "id": "left-activity-title",
               "props": {
                 "headline": {
@@ -672,7 +672,7 @@
               }
             }, 
             "rightSection": {
-              "type": "features-rezo-la-mer",
+              "type": "features-glass",
               "id": "features",
               "props": {
                 "features": [
@@ -706,7 +706,7 @@
           }
         },
                 {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "title-header-webtv",
           "props": {
             "headline": {
@@ -817,7 +817,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "projets-sport-sante",
           "props": {
             "headline": {
@@ -904,7 +904,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "communaute-header",
           "props": {
             "headline": {
@@ -1040,7 +1040,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "structure-sport-sante",
           "props": {
             "headline": {
@@ -1169,7 +1169,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "hero-ssbe",
+          "type": "hero-quick-access",
           "id": "hero-mss",
           "props": {
             "headline": {
@@ -1273,7 +1273,7 @@
           }
         },
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "mss-title",
           "props": {
             "subhead": {
@@ -1389,7 +1389,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "mapping-header",
           "props": {
             "headline": {
@@ -1464,7 +1464,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "hero-ssbe",
+          "type": "hero-quick-access",
           "id": "presentation-header",
           "props": {
             "headline": {
@@ -1564,7 +1564,7 @@
           }
         },
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "presentation-Participant",
           "props": {
             "headline": {
@@ -1615,7 +1615,7 @@
           }
         },
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "presentation-Professional",
           "props": {
             "headline": {
@@ -1667,7 +1667,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "hero-ssbe",
+          "type": "hero-quick-access",
           "id": "labellisation-hero",
           "props": {
             "headline": {
@@ -1695,7 +1695,7 @@
             "rightColumns": 2,
             "gap": 4,
             "leftSection": {
-              "type": "title-with-filters-rezo-la-mer",
+              "type": "searchHeader",
               "id": "left-label-header",
               "props": {
                 "headline": {
@@ -1709,7 +1709,7 @@
               }
             }, 
             "rightSection": {
-              "type": "title-with-filters-rezo-la-mer",
+              "type": "searchHeader",
               "id": "right-label-header",
               "props": {
                 "subhead": {
@@ -1767,7 +1767,7 @@
           }
         },
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "labellisation-timeline-header",
           "props": {
             "headline": {
@@ -1826,7 +1826,7 @@
           }
         },
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "labellisation-documents-header",
           "props": {
             "headline": {
@@ -1924,7 +1924,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "search-creneaux-header",
           "props": {
             "headline": {
@@ -2419,7 +2419,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "hero-ssbe",
+          "type": "hero-quick-access",
           "id": "formation-hero",
           "props": {
             "headline": {
@@ -2504,7 +2504,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "listing-formations-header",
           "props": {
             "headline": {
@@ -2570,7 +2570,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "listing-poi-header",
           "props": {
             "headline": {

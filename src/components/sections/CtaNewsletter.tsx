@@ -1,17 +1,17 @@
 import { useState } from "react";
 import { useLocalization } from "@/hooks/useLocalization";
-import { type CallToActionRezoLaMerProps } from "@/types/site-schema";
+import { type CtaNewsletterProps } from "@/types/site-schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowRight, Mail } from "lucide-react";
 import { Link } from "react-router";
 
-interface CallToActionRezoLaMerSectionProps {
+interface CtaNewsletterSectionProps {
     id?: string;
-    props: CallToActionRezoLaMerProps;
+    props: CtaNewsletterProps;
 }
 
-export function CallToActionRezoLaMer({ id, props }: CallToActionRezoLaMerSectionProps) {
+export function CtaNewsletter({ id, props }: CtaNewsletterSectionProps) {
     const { t } = useLocalization();
     const [email, setEmail] = useState("");
     const variant = props.variant || "ocean";
@@ -129,4 +129,4 @@ export function CallToActionRezoLaMer({ id, props }: CallToActionRezoLaMerSectio
     );
 }
 
-export default CallToActionRezoLaMer;
+export default CtaNewsletter;

@@ -93,7 +93,7 @@ src/modules/search/
 │   ├── ThematicsSection.tsx        # Section filières dynamiques
 │   ├── FiltersSection.tsx         # Section sidebar de filtres partagée (PageFilters)
 │   └── SearchHeaderSection.tsx    # Header horizontal : titre + dropdownFilters + types,
-│                                  #   alias rétro-compat "title-with-filters-rezo-la-mer"
+│                                  #   alias rétro-compat "searchHeader"
 │
 ├── components/
 │   ├── SearchTextInput.tsx        # Champ de recherche texte
@@ -350,7 +350,7 @@ Les filtres `scopeList` chargent les zones géographiques via `useSearchZoneQuer
 
 ### `searchHeader` — header de filtres horizontal
 
-Section bandeau de filtres **horizontal** (variante de `FiltersSection` présentée en haut de page). Même `PageFiltersContext` — peut cohabiter avec `SearchProStatic` dans le même provider. Alias rétro-compat : `title-with-filters-rezo-la-mer` (9 configs existantes, même composant `SearchHeaderSection.tsx`).
+Section bandeau de filtres **horizontal** (variante de `FiltersSection` présentée en haut de page). Même `PageFiltersContext` — peut cohabiter avec `SearchProStatic` dans le même provider. Alias rétro-compat : `searchHeader` (9 configs existantes, même composant `SearchHeaderSection.tsx`).
 
 **Schéma** (`SearchHeaderSectionSchema`, type : `searchHeader`) — props :
 

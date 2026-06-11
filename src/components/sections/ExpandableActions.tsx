@@ -7,7 +7,7 @@ import { useT } from "@/hooks/useT";
 import { useCocolight } from "@/hooks/useCocolight";
 import { DynamicModal } from "@/modules/profil/components/add/ModalRegistry";
 import type {
-  CommuneTransparenteActionsSectionProps as CommuneTransparenteActionsProps,
+  ExpandableActionsProps,
   JsonFormModalConfig,
   LocalizedString,
 } from "@/types/site-schema";
@@ -30,9 +30,9 @@ type ActionItem = {
   buttons: ActionButton[];
 };
 
-interface CommuneTransparenteActionsComponentProps {
+interface ExpandableActionsComponentProps {
   id?: string;
-  props: CommuneTransparenteActionsProps;
+  props: ExpandableActionsProps;
 }
 
 function getIconBgClass(iconBg?: ActionItem["iconBg"]) {
@@ -124,7 +124,7 @@ function ActionCardItem({
   onToggle: () => void;
 }) {
   const { t } = useLocalization();
-  const cardKey = `${id || "commune-transparente-actions"}-${index}`;
+  const cardKey = `${id || "expandable-actions"}-${index}`;
 
   return (
     <div
@@ -169,7 +169,7 @@ function ActionCardItem({
   );
 }
 
-export function CommuneTransparenteActionsSection({ id, props }: CommuneTransparenteActionsComponentProps) {
+export function ExpandableActions({ id, props }: ExpandableActionsComponentProps) {
   const { t } = useLocalization();
   const items = (props.items ?? []) as ActionItem[];
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
@@ -196,7 +196,7 @@ export function CommuneTransparenteActionsSection({ id, props }: CommuneTranspar
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
           {items.map((item, index) => (
             <ActionCardItem
-              key={`${id || "commune-transparente-actions"}-${index}`}
+              key={`${id || "expandable-actions"}-${index}`}
               item={item}
               index={index}
               id={id}
@@ -210,4 +210,4 @@ export function CommuneTransparenteActionsSection({ id, props }: CommuneTranspar
   );
 }
 
-export default CommuneTransparenteActionsSection;
+export default ExpandableActions;

@@ -5,7 +5,7 @@ import { createPageActionsState } from "@/lib/pageState";
  * (selectedFilters) + filtres dynamiques (searchByFields pour scopeList/answers).
  *
  * Producteur principal : `<FiltersSection>` (sidebar gauche).
- * Consommateurs : `<SearchProStatic>`, `<HeroTiersLieux>`, et toute section
+ * Consommateurs : `<SearchProStatic>`, `<HeroSearch>`, et toute section
  * qui compose la recherche depuis le PageFiltersContext.
  */
 export interface SearchByFieldValue {
@@ -72,7 +72,7 @@ export const PageFilters = createPageActionsState({
  *
  * Préférer `PageFilters.use()` ({ state, actions }) pour le nouveau code —
  * cette signature à plat est conservée pour ne pas migrer les ~5 call sites
- * existants (FiltersSection, SearchProStatic, HeroTiersLieux, etc.).
+ * existants (FiltersSection, SearchProStatic, HeroSearch, etc.).
  */
 export function usePageFilters() {
   const { state, actions } = PageFilters.use();

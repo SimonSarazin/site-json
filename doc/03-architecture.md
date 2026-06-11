@@ -132,7 +132,7 @@ const SECTION_EXTRACTORS: Record<string, (props: Record<string, unknown>) => unk
 
 **`findSearchSections()` recursive function** : Recherche récursive des sections de recherche (`searchPro`/`searchProStatic`) dans l'arbre des sections, y compris dans les containers imbriqués (`gridLayout`, `tabs`). Utilise `SECTION_EXTRACTORS` pour parcourir les containers.
 
-**`findFiltersSections()` (module search, `src/modules/search/prefetch/prefetchFilters.ts`)** : Homologue générique pour le prefetch SSR des filtres. Au lieu de matcher un `type` en dur, il détecte toute section qui **déclare** des props de filtres (`filterGroups`, `filtersByAnswers`, `filtersByPath`) — ce qui couvre la `FiltersSection` classique ET le `hero-tiers-lieux` (applicateur headless de la home) sans cas particulier.
+**`findFiltersSections()` (module search, `src/modules/search/prefetch/prefetchFilters.ts`)** : Homologue générique pour le prefetch SSR des filtres. Au lieu de matcher un `type` en dur, il détecte toute section qui **déclare** des props de filtres (`filterGroups`, `filtersByAnswers`, `filtersByPath`) — ce qui couvre la `FiltersSection` classique ET le `hero-search` (applicateur headless de la home) sans cas particulier.
 
 ```typescript
 // src/modules/search/prefetch/prefetchFilters.ts
@@ -804,7 +804,7 @@ const { canEditProfile, canAddNews } = useUserPermissions(entity, news?);
 
 ### Autocomplete
 
-`useAutocomplete` vit dans `src/modules/search/hooks/useAutocomplete.ts` (module search, pas dans `src/hooks/`). Il est partagé par les sections de recherche ET par le hero `hero-tiers-lieux` qui l'utilise pour l'autocompletion scopee réseau.
+`useAutocomplete` vit dans `src/modules/search/hooks/useAutocomplete.ts` (module search, pas dans `src/hooks/`). Il est partagé par les sections de recherche ET par le hero `hero-search` qui l'utilise pour l'autocompletion scopee réseau.
 
 ```ts
 // src/modules/search/hooks/useAutocomplete.ts
@@ -1098,7 +1098,7 @@ Composant qui reçoit un objet `Section` (type + props + id) et rend le composan
 | **Sections ampli** | `meeteem` |
 | **Sections coform** | `coform` |
 | **Sections cagnotte** | `actions`, `finance`, `actions-summary`, `finance-summary`, `cagnotte-layout` |
-| **Sections site-spécifiques** | `hero-tiers-lieux`, `hero-rezo-la-mer`, `hero-ssbe`, `features-rezo-la-mer`, `action-buttons-rezo-la-mer`, `community-rezo-la-mer`, `cta-rezo-la-mer`, `title-with-filters-rezo-la-mer`, `commune-transparente-actions`, `hero-nos-communes`, `hero-commune-transparente`, `categories-grid` |
+| **Sections site-spécifiques** | `hero-search`, `hero-parallax`, `hero-quick-access`, `features-glass`, `action-tiles`, `cta-card-grid`, `cta-newsletter`, `searchHeader`, `expandable-actions`, `hero-tinted-overlay`, `hero-entity-banner`, `categories-grid` |
 
 **Sections project-aware** : `actions`, `finance`, `actions-summary`, `finance-summary` reçoivent un `idProjet` injecté par `SectionRenderer` depuis `contextId` ou les props.
 
@@ -1188,7 +1188,7 @@ Fonctions utilitaires internes disponibles dans `src/lib/` — référence rapid
 
 ### Helpers du module search (source unique)
 
-Ces utilitaires dans `src/modules/search/` sont la source de vérité pour la logique de recherche, partagée entre les sections `searchPro`, `searchProStatic`, le hero `hero-tiers-lieux`, et le prefetch SSR.
+Ces utilitaires dans `src/modules/search/` sont la source de vérité pour la logique de recherche, partagée entre les sections `searchPro`, `searchProStatic`, le hero `hero-search`, et le prefetch SSR.
 
 | Utilitaire | Fichier | Description |
 |---|---|---|
@@ -1196,7 +1196,7 @@ Ces utilitaires dans `src/modules/search/` sont la source de vérité pour la lo
 | `searchByFieldsToQuery` | `lib/searchByFieldsToQuery.ts` | Prend `searchByFields: Record<string, SearchByFieldValue>` (filtres dynamiques du `PageFilters`) et retourne `{ filters, locality, sourceKeys }` — dispatch selon le `type` de chaque entrée (`scopeList` → `locality`, `sourceKey` → `sourceKeys`, form-based → `filters` MongoDB). Source unique partagée par `SearchProStatic` et `useAutocomplete`. |
 | `computeFiltersFromUrl` | `lib/computeFiltersFromUrl.ts` | Traduit les query params d'URL en mutations `PageFilters`. Signature : `(searchParams, filterGroups, filterAnswerData)` → `{ applySelected, applySearchFields }`. Itère sur les `groupId` arbitraires issus de `filterGroups` (typologies, entityList, services form-based) ; les params `q`/`tags`/`type`/`map` sont gérés par le loader de `buildRoutes.tsx`, pas ici. |
 | `usePageFiltersUrlSync` | `hooks/usePageFiltersUrlSync.ts` | Applicateur headless **unidirectionnel URL → PageFilters** : lit les query params, appelle `computeFiltersFromUrl` et publie le résultat dans `PageFiltersContext`. Rattaché à `FiltersSection` (page `/lieux`) et à la home via le hero — pas spécifique à `searchPro`. |
-| `useAutocomplete` | `hooks/useAutocomplete.ts` | Autocompletion scopée réseau. Partagee par la barre de recherche et le hero `hero-tiers-lieux`. |
+| `useAutocomplete` | `hooks/useAutocomplete.ts` | Autocompletion scopée réseau. Partagee par la barre de recherche et le hero `hero-search`. |
 | `findFiltersSections` | `prefetch/prefetchFilters.ts` | Recherche récursive de toute section déclarant `filterGroups`/`filtersByAnswers`/`filtersByPath` pour le prefetch SSR (générique — pas de cas en dur par `type`). |
 
 ---

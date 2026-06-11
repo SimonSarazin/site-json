@@ -86,7 +86,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "hero-rezo-la-mer",
+          "type": "hero-parallax",
           "id": "hero-rezo-la-mer",
           "props": {
             "headline": {
@@ -155,7 +155,7 @@
           }
         },
         {
-          "type": "features-rezo-la-mer",
+          "type": "features-glass",
           "id": "features",
           "props": {
             "headline": {
@@ -243,7 +243,7 @@
           }
         },
         {
-          "type": "action-buttons-rezo-la-mer",
+          "type": "action-tiles",
           "id": "actions",
           "props": {
             "headline": {
@@ -311,7 +311,7 @@
           }
         },
         {
-          "type": "community-rezo-la-mer",
+          "type": "cta-card-grid",
           "id": "community",
           "props": {
             "headline": {
@@ -430,7 +430,7 @@
           }
         },
         {
-          "type": "cta-rezo-la-mer",
+          "type": "cta-newsletter",
           "id": "cta",
           "props": {
             "headline": {
@@ -484,7 +484,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "projets-marins",
           "props": {
             "headline": {
@@ -555,7 +555,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "evenements-header",
           "props": {
             "headline": {
@@ -627,7 +627,7 @@
           }
         },
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "events-filter",
           "props": {
             "subhead": {
@@ -688,7 +688,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "communaute-header",
           "props": {
             "headline": {

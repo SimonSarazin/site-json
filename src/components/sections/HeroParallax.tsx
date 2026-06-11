@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { useLocalization } from "@/hooks/useLocalization";
-import { HeroRezoLaMerProps as SchemaHeroRezoLaMerProps } from "@/types/site-schema";
+import { HeroParallaxProps as SchemaHeroParallaxProps } from "@/types/site-schema";
 import { Link } from "react-router";
 
-interface HeroRezoLaMerProps {
+interface HeroParallaxProps {
     id?: string;
-    props: SchemaHeroRezoLaMerProps;
+    props: SchemaHeroParallaxProps;
 }
 
-export function HeroRezoLaMer({ props }: HeroRezoLaMerProps) {
+export function HeroParallax({ props }: HeroParallaxProps) {
     const { t } = useLocalization();
     const [scrollY, setScrollY] = useState(0);
     const variant = props.variant || "ocean";
@@ -130,4 +130,4 @@ export function HeroRezoLaMer({ props }: HeroRezoLaMerProps) {
     );
 }
 
-export default HeroRezoLaMer;
+export default HeroParallax;

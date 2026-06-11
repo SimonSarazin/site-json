@@ -1,12 +1,12 @@
 import { useLocalization } from "@/hooks/useLocalization";
-import { HeroNosCommunesProps } from "@/types/site-schema";
+import { HeroTintedOverlayProps } from "@/types/site-schema";
 
-interface NosCommunesBannerSectionProps {
+interface HeroTintedOverlayComponentProps {
     id?: string;
-    props: HeroNosCommunesProps;
+    props: HeroTintedOverlayProps;
 }
 
-export function NosCommunesBannerSection({ props }: NosCommunesBannerSectionProps) {
+export function HeroTintedOverlay({ props }: HeroTintedOverlayComponentProps) {
     const { t } = useLocalization();
     // Overlay vert et contenu centré
     return (
@@ -77,4 +77,4 @@ export function NosCommunesBannerSection({ props }: NosCommunesBannerSectionProp
     );
 }
 
-export default NosCommunesBannerSection;
+export default HeroTintedOverlay;

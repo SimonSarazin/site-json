@@ -45,17 +45,17 @@
     - [Details de `ListConfSchema`](#details-de-listconfschema)
     - [Details de `MapConfSchema`](#details-de-mapconfschema)
   - [`searchProStatic`](#searchprostatic)
-  - [`hero-tiers-lieux`](#hero-tiers-lieux)
-  - [`hero-rezo-la-mer`](#hero-rezo-la-mer)
-  - [`hero-nos-communes`](#hero-nos-communes)
-  - [`hero-commune-transparente`](#hero-commune-transparente)
-  - [`features-rezo-la-mer`](#features-rezo-la-mer)
-  - [`action-buttons-rezo-la-mer`](#action-buttons-rezo-la-mer)
-  - [`community-rezo-la-mer`](#community-rezo-la-mer)
-  - [`cta-rezo-la-mer`](#cta-rezo-la-mer)
-  - [`title-with-filters-rezo-la-mer`](#title-with-filters-rezo-la-mer)
-  - [`commune-transparente-actions`](#commune-transparente-actions)
-  - [`hero-ssbe`](#hero-ssbe)
+  - [`hero-search`](#hero-search)
+  - [`hero-parallax`](#hero-parallax)
+  - [`hero-tinted-overlay`](#hero-tinted-overlay)
+  - [`hero-entity-banner`](#hero-entity-banner)
+  - [`features-glass`](#features-glass)
+  - [`action-tiles`](#action-tiles)
+  - [`cta-card-grid`](#cta-card-grid)
+  - [`cta-newsletter`](#cta-newsletter)
+  - [`searchHeader`](#searchHeader)
+  - [`expandable-actions`](#expandable-actions)
+  - [`hero-quick-access`](#hero-quick-access)
   - [`categories-grid`](#categories-grid)
   - [`meeteem`](#meeteem)
   - [`cardCountCT`](#cardcountct)
@@ -74,7 +74,7 @@
 > `SearchVariantSchema` et `IconNameSchema` sont définis dans
 > `src/modules/search/schema.ts` et réutilisés par `FiltersSectionSchema`,
 > `SearchProSectionSchema`, `SearchProStaticSectionSchema` et
-> `HeroTiersLieuxSchema` — aucune duplication inline.
+> `HeroSearchSchema` — aucune duplication inline.
 
 Chaque section est un objet :
 
@@ -1244,13 +1244,13 @@ export const SearchProStaticSectionSchema = z.object({
 
 ---
 
-## `hero-tiers-lieux`
+## `hero-search`
 
-Hero specialise pour les sites Tiers-Lieux avec recherche integree. Ce hero peut piloter un **applicateur de filtres headless** (memes schémas de filtres que la `FiltersSection` de `/lieux`) et une **autocompletion scopee réseau** — sans passer par l'URL. Le mode "sous-site" (`/s/`) ainsi que les props `headlineSubsite`/`subheadSubsite` et `header.navSubsite` ont été entièrement supprimés.
+Hero avec recherche intégrée — autocomplete d’entités (ex-`hero-tiers-lieux`). Ce hero peut piloter un **applicateur de filtres headless** (memes schémas de filtres que la `FiltersSection` de `/lieux`) et une **autocompletion scopee réseau** — sans passer par l'URL. Le mode "sous-site" (`/s/`) ainsi que les props `headlineSubsite`/`subheadSubsite` et `header.navSubsite` ont été entièrement supprimés.
 
 ```ts
-export const HeroTiersLieuxSchema = z.object({
-  type: z.literal("hero-tiers-lieux"),
+export const HeroSearchSchema = z.object({
+  type: z.literal("hero-search"),
   id: z.string().optional(),
   props: z.object({
     headline: LocalizedString,
@@ -1296,13 +1296,13 @@ export const HeroTiersLieuxSchema = z.object({
 
 ---
 
-## `hero-rezo-la-mer`
+## `hero-parallax`
 
 Hero specialise pour le site Rezo la Mer.
 
 ```ts
-export const HeroRezoLaMerSchema = z.object({
-  type: z.literal("hero-rezo-la-mer"),
+export const HeroParallaxSchema = z.object({
+  type: z.literal("hero-parallax"),
   id: z.string().optional(),
   props: z.object({
     headline: LocalizedString,
@@ -1347,13 +1347,13 @@ export const HeroRezoLaMerSchema = z.object({
 
 ---
 
-## `hero-nos-communes`
+## `hero-tinted-overlay`
 
-Hero specialise pour le site Nos Communes.
+Hero plein écran à voile teinté de marque et double slogan (ex-`hero-nos-communes`).
 
 ```ts
-export const HeroNoCommunesShema = z.object({
-  type: z.literal("hero-nos-communes"),
+export const HeroTintedOverlaySchema = z.object({
+  type: z.literal("hero-tinted-overlay"),
   id: z.string().optional(),
   props: z.object({
     badge: LocalizedString.optional(),
@@ -1402,13 +1402,13 @@ export const HeroNoCommunesShema = z.object({
 
 ---
 
-## `hero-commune-transparente`
+## `hero-entity-banner`
 
-Hero specialise pour le site Commune Transparente.
+Hero bannière dont le contenu (bannière/logo/titre) est sourcé depuis l’entité Cocolight (ex-`hero-commune-transparente`).
 
 ```ts
-export const HeroCommuneTransparenteSchema = z.object({
-  type: z.literal("hero-commune-transparente"),
+export const HeroEntityBannerSchema = z.object({
+  type: z.literal("hero-entity-banner"),
   id: z.string().optional(),
   props: z.object({
     headline: LocalizedString,
@@ -1457,13 +1457,13 @@ export const HeroCommuneTransparenteSchema = z.object({
 
 ---
 
-## `features-rezo-la-mer`
+## `features-glass`
 
 Section de fonctionnalites pour Rezo la Mer.
 
 ```ts
-export const FeaturesRezoLaMerSchema = z.object({
-  type: z.literal("features-rezo-la-mer"),
+export const FeaturesGlassSchema = z.object({
+  type: z.literal("features-glass"),
   id: z.string().optional(),
   props: z.object({
     headline: LocalizedString,
@@ -1492,13 +1492,13 @@ export const FeaturesRezoLaMerSchema = z.object({
 
 ---
 
-## `action-buttons-rezo-la-mer`
+## `action-tiles`
 
 Section de boutons d'action pour Rezo la Mer.
 
 ```ts
-export const ActionButtonsRezoLaMerSchema = z.object({
-  type: z.literal("action-buttons-rezo-la-mer"),
+export const ActionTilesSchema = z.object({
+  type: z.literal("action-tiles"),
   id: z.string().optional(),
   props: z.object({
     headline: LocalizedString,
@@ -1528,13 +1528,13 @@ export const ActionButtonsRezoLaMerSchema = z.object({
 
 ---
 
-## `community-rezo-la-mer`
+## `cta-card-grid`
 
 Section communaute pour Rezo la Mer.
 
 ```ts
-export const CommunityRezoLaMerSchema = z.object({
-  type: z.literal("community-rezo-la-mer"),
+export const CtaCardGridSchema = z.object({
+  type: z.literal("cta-card-grid"),
   id: z.string().optional(),
   props: z.object({
     headline: LocalizedString,
@@ -1578,13 +1578,13 @@ export const CommunityRezoLaMerSchema = z.object({
 
 ---
 
-## `cta-rezo-la-mer`
+## `cta-newsletter`
 
 Call to action pour Rezo la Mer.
 
 ```ts
-export const CallToActionRezoLaMerSchema = z.object({
-  type: z.literal("cta-rezo-la-mer"),
+export const CtaNewsletterSchema = z.object({
+  type: z.literal("cta-newsletter"),
   id: z.string().optional(),
   props: z.object({
     headline: LocalizedString,
@@ -1620,7 +1620,7 @@ export const CallToActionRezoLaMerSchema = z.object({
 
 ---
 
-## `title-with-filters-rezo-la-mer`
+## `searchHeader`
 
 Section titre avec filtres et boutons d'action pour Rezo la Mer.
 
@@ -1637,7 +1637,7 @@ export const ActionButtonSchema = z.object({
 });
 
 export const TitleWithFiltersRezoLaMerSchema = z.object({
-  type: z.literal("title-with-filters-rezo-la-mer"),
+  type: z.literal("searchHeader"),
   id: z.string().optional(),
   props: z.object({
     headline: LocalizedString.optional(),
@@ -1673,9 +1673,9 @@ export const TitleWithFiltersRezoLaMerSchema = z.object({
 
 ---
 
-## `commune-transparente-actions`
+## `expandable-actions`
 
-Section d'actions pour Commune Transparente.
+Cartes d’action en accordéon exclusif ouvrant des modales de contribution (ex-`commune-transparente-actions`).
 
 ```ts
 const CommuneTransparenteActionButtonSchema = z.object({
@@ -1696,8 +1696,8 @@ const CommuneTransparenteActionItemSchema = z.object({
   buttons: z.array(CommuneTransparenteActionButtonSchema).default([]),
 });
 
-export const CommuneTransparenteActionsSectionSchema = z.object({
-  type: z.literal("commune-transparente-actions"),
+export const ExpandableActionsSchema = z.object({
+  type: z.literal("expandable-actions"),
   id: z.string().optional(),
   props: z.object({
     imageSrc: z.string().optional(),
@@ -1919,7 +1919,7 @@ const ContentSectionSchema = z.object({
 
 Section de filtres avec groupes depliables. Pilote `PageFiltersContext` consomme par `SearchPro`/`SearchProStatic` sur la meme page.
 
-> **Source** : `FiltersSectionSchema` est défini dans `src/modules/search/schema.ts` et réutilise les schémas partagés `FilterGroupSchema`/`FilterGroupsSchema`/`FiltersByAnswersSchema`/`FiltersByPathSchema` — sources uniques pour tous les consommateurs (section `filters`, section `hero-tiers-lieux`, schéma du prefetch SSR).
+> **Source** : `FiltersSectionSchema` est défini dans `src/modules/search/schema.ts` et réutilise les schémas partagés `FilterGroupSchema`/`FilterGroupsSchema`/`FiltersByAnswersSchema`/`FiltersByPathSchema` — sources uniques pour tous les consommateurs (section `filters`, section `hero-search`, schéma du prefetch SSR).
 
 ```ts
 // Depuis src/modules/search/schema.ts
@@ -2073,13 +2073,13 @@ export const NewsSectionSchema = z.object({
 
 ---
 
-## `hero-ssbe`
+## `hero-quick-access`
 
 Section hero spécialisée pour les sites sport-santé-bien-être. Variante avec badges, boutons CTA et cartes d'accès rapide.
 
 ```ts
-const HeroSSBESchema = z.object({
-  type: z.literal("hero-ssbe"),
+const HeroQuickAccessSchema = z.object({
+  type: z.literal("hero-quick-access"),
   id: z.string().optional(),
   props: z.object({
     headline: LocalizedString,

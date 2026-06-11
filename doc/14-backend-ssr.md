@@ -616,8 +616,8 @@ Cette section décrit en détail le fonctionnement des fichiers responsables du 
      "infoText",  // ContentSection (HTML brut)
      "extra",     // FooterRich footer.extra
      "content",   // TabsSection/AccordionSection/BlogPostSection/MarkdownSection
-     "icon",      // HeroSSBE/HeroRezoLaMer/ActionButtonsRezoLaMer (SVG inline ou nom lucide)
-     "logoIcon",  // HeroRezoLaMer props.logoIcon
+     "icon",      // HeroQuickAccess/HeroParallax/ActionTiles (SVG inline ou nom lucide)
+     "logoIcon",  // HeroParallax props.logoIcon
    ]);
 
    export function normalizeSiteConfig(value) {

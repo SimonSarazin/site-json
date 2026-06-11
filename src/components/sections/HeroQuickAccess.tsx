@@ -24,7 +24,7 @@ interface HeroQuickAccessCard {
   icon?: string;
 }
 
-interface HeroSSBESectionProps {
+interface HeroQuickAccessSectionProps {
   headline: LocalizedString;
   subhead?: LocalizedString;
   backgroundImage?: string;
@@ -36,12 +36,12 @@ interface HeroSSBESectionProps {
   quickAccessCards?: HeroQuickAccessCard[];
 }
 
-interface HeroSSBEProps {
+interface HeroQuickAccessProps {
   id?: string;
-  props: HeroSSBESectionProps;
+  props: HeroQuickAccessSectionProps;
 }
 
-export function HeroSSBE({ id, props }: HeroSSBEProps) {
+export function HeroQuickAccess({ id, props }: HeroQuickAccessProps) {
   const { t } = useLocalization();
   const overlayOpacity = props.overlayOpacity;
 
@@ -178,4 +178,4 @@ export function HeroSSBE({ id, props }: HeroSSBEProps) {
   );
 }
 
-export default HeroSSBE;
+export default HeroQuickAccess;

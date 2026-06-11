@@ -1,11 +1,11 @@
 import { useCocolight } from "@/hooks/useCocolight";
 import { useLocalization } from "@/hooks/useLocalization";
-import type { HeroCommuneTransparenteProps } from "@/types/site-schema";
+import type { HeroEntityBannerProps } from "@/types/site-schema";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 
-interface HeroCommuneTransparenteSectionProps {
+interface HeroEntityBannerComponentProps {
     id?: string;
-    props: HeroCommuneTransparenteProps;
+    props: HeroEntityBannerProps;
 }
 
 interface DonneEntity {
@@ -15,7 +15,7 @@ interface DonneEntity {
     bannerText?: string;
 }
 
-export function HeroCommuneTransparenteSection({ id, props }: HeroCommuneTransparenteSectionProps) {
+export function HeroEntityBanner({ id, props }: HeroEntityBannerComponentProps) {
     const { t } = useLocalization();
     const { entity } = useCocolight();
 
@@ -124,4 +124,4 @@ export function HeroCommuneTransparenteSection({ id, props }: HeroCommuneTranspa
     );
 }
 
-export default HeroCommuneTransparenteSection;
+export default HeroEntityBanner;

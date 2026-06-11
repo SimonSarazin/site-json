@@ -4,7 +4,7 @@
  * `PageFiltersContext` (variante horizontale de `<FiltersSection>`).
  *
  * Type config canonique : `searchHeader`. Alias rétro-compat :
- * `title-with-filters-rezo-la-mer` (9 configs, cf. plan de refactor).
+ * (ancien alias `title-with-filters-rezo-la-mer` supprimé — migré vers `searchHeader`).
  */
 import "@/modules/search/i18n";
 import { useState, useEffect, useMemo } from "react";

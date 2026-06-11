@@ -61,7 +61,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "hero-commune-transparente",
+          "type": "hero-entity-banner",
           "id": "hero-commune-transparente",
           "props": {
             "headline": { 
@@ -118,7 +118,7 @@
           }
         },
         {
-          "type": "commune-transparente-actions",
+          "type": "expandable-actions",
           "id": "commune-transparente-actions",
           "props": {
             "imageSrc": "/images/communeTransparente/logo.png",
@@ -242,7 +242,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "actualite-header",
           "props": {
             "headline": { "fr": "Actualité", "en": "News" },
@@ -281,7 +281,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "projets-header",
           "props": {
             "headline": { "fr": "Projets", "en": "Projects" },
@@ -347,7 +347,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "citoyens-header",
           "props": {
             "headline": { "fr": "Citoyens", "en": "Citizens" },
@@ -402,7 +402,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "ressources-header",
           "props": {
             "headline": { "fr": "Ressources", "en": "Resources" },
@@ -457,7 +457,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "agenda-header",
           "props": {
             "headline": { "fr": "Agenda", "en": "Agenda" },
@@ -506,7 +506,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "propositions-header",
           "props": {
             "headline": { "fr": "Propositions", "en": "Proposals" },
@@ -535,7 +535,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "navigation-header",
           "props": {
             "headline": { "fr": "Votre territoire", "en": "Your territory" },

@@ -100,7 +100,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "hero-rezo-la-mer",
+          "type": "hero-parallax",
           "id": "hero-cyber-reunion",
           "props": {
             "variant": "cyber",
@@ -170,7 +170,7 @@
           }
         },
         {
-          "type": "features-rezo-la-mer",
+          "type": "features-glass",
           "id": "features",
           "props": {
             "variant": "cyber",
@@ -259,7 +259,7 @@
           }
         },
         {
-          "type": "action-buttons-rezo-la-mer",
+          "type": "action-tiles",
           "id": "actions",
           "props": {
             "variant": "cyber",
@@ -328,7 +328,7 @@
           }
         },
         {
-          "type": "community-rezo-la-mer",
+          "type": "cta-card-grid",
           "id": "community",
           "props": {
             "variant": "cyber",
@@ -448,7 +448,7 @@
           }
         },
         {
-          "type": "cta-rezo-la-mer",
+          "type": "cta-newsletter",
           "id": "cta",
           "props": {
             "variant": "cyber",
@@ -503,7 +503,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "projets-cyber",
           "props": {
             "headline": {
@@ -590,7 +590,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "communaute-header",
           "props": {
             "headline": {
@@ -746,7 +746,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "annuaire-header",
           "props": {
             "headline": {
@@ -873,7 +873,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "mapping-header",
           "props": {
             "headline": {

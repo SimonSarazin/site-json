@@ -78,7 +78,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "hero-nos-communes",
+          "type": "hero-tinted-overlay",
           "id": "hero-nos-communes",
           "props": {
             "variant": "nos-communes",
@@ -128,7 +128,7 @@
           }
         },
         {
-          "type": "features-rezo-la-mer",
+          "type": "features-glass",
           "id": "features-mouvement",
           "props": {
             "variant": "nos-communes",
@@ -234,7 +234,7 @@
           }
         },
         {
-          "type": "action-buttons-rezo-la-mer",
+          "type": "action-tiles",
           "id": "action-tabs",
           "props": {
             "variant": "nos-communes",
@@ -310,7 +310,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "communes-header",
           "props": {
             "headline": {
@@ -370,7 +370,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "carto-header",
           "props": {
             "headline": {

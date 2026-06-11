@@ -1,16 +1,16 @@
 import { useLocalization } from "@/hooks/useLocalization";
-import { type CommunityRezoLaMerProps } from "@/types/site-schema";
+import { type CtaCardGridProps } from "@/types/site-schema";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { Link } from "react-router";
 
-interface CommunityRezoLaMerSectionProps {
+interface CtaCardGridSectionProps {
     id?: string;
-    props: CommunityRezoLaMerProps;
+    props: CtaCardGridProps;
 }
 
-export function CommunityRezoLaMer({ id, props }: CommunityRezoLaMerSectionProps) {
+export function CtaCardGrid({ id, props }: CtaCardGridSectionProps) {
     const { t } = useLocalization();
     const variant = props.variant || "ocean";
     const isCyber = variant === "cyber";
@@ -135,4 +135,4 @@ export function CommunityRezoLaMer({ id, props }: CommunityRezoLaMerSectionProps
     );
 }
 
-export default CommunityRezoLaMer;
+export default CtaCardGrid;

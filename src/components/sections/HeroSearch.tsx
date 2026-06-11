@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { Loader2 } from "lucide-react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
-import { HeroTiersLieuxProps as SchemaHeroTiersLieuxProps } from "@/types/site-schema";
+import { HeroSearchProps as SchemaHeroSearchProps } from "@/types/site-schema";
 import { useAutocomplete } from "@/modules/search/hooks/useAutocomplete";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { cn } from "@/lib/utils";
@@ -54,9 +54,9 @@ const getEntityId = (entity: SearchEntity, index: number): string => {
   return `entity-${index}`;
 };
 
-interface HeroTiersLieuxProps {
+interface HeroSearchProps {
   id?: string;
-  props: SchemaHeroTiersLieuxProps;
+  props: SchemaHeroSearchProps;
 }
 
 // Catégorie → query param `/lieux` (aligné sur le nav « Les lieux »).
@@ -77,7 +77,7 @@ const CATEGORY_TO_URL: Record<string, { param: "typologies" | "services"; value:
 // au lieu d'être un doublon de « Découvrir » (`all`).
 const TAB_INDEX_TO_CATEGORY = ["all", "meeting", "coworking", "fablab", "food", "learn", "stay", "explore"];
 
-export function HeroTiersLieux({ id, props }: HeroTiersLieuxProps) {
+export function HeroSearch({ id, props }: HeroSearchProps) {
   const { t } = useLocalization();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -534,4 +534,4 @@ export function HeroTiersLieux({ id, props }: HeroTiersLieuxProps) {
     </section>
   );
 }
-export default HeroTiersLieux;
+export default HeroSearch;
