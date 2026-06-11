@@ -44,7 +44,7 @@ function Feature({
 		<div
 			className={`flex items-center gap-1.5 rounded-md border px-2 py-1.5 text-xs transition-colors ${
 				active
-					? "border-primary/20 bg-teal-light text-primary"
+					? "border-primary/20 bg-primary/10 text-primary"
 					: "border-border bg-muted/40 text-muted-foreground/50 line-through decoration-muted-foreground/30"
 			}`}
 		>
@@ -156,7 +156,7 @@ export default function CardPoiAmenities({ item, onClick }: SearchCardProps) {
 			<Separator />
 
 			<CardContent className="flex flex-1 flex-col gap-4">
-				<div className="flex gap-2.5 rounded-md bg-teal-light/60 p-2.5">
+				<div className="flex gap-2.5 rounded-md bg-primary/5 p-2.5">
 					<MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
 					<div className="min-w-0 flex-1 space-y-0.5 text-xs">
 						{streetAddress && <p className="font-medium text-foreground">{streetAddress}</p>}

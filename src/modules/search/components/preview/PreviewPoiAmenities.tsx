@@ -253,7 +253,7 @@ function Feature({
     <div
       className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-medium transition-colors ${
         active
-          ? "border-primary/30 bg-teal-light text-primary"
+          ? "border-primary/30 bg-primary/10 text-primary"
           : "border-border bg-muted/40 text-muted-foreground/60 line-through decoration-muted-foreground/40"
       }`}
     >
@@ -581,7 +581,7 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
                     </div>
                   </div>
                   {poi.enqueteStatut && (
-                    <div className="inline-flex items-center gap-2 rounded-full bg-success-light px-3 py-1 text-xs font-semibold text-success">
+                    <div className="inline-flex items-center gap-2 rounded-full bg-success/10 px-3 py-1 text-xs font-semibold text-success">
                       <CheckCircle2 className="h-3.5 w-3.5" />
                       {poi.enqueteStatut}
                     </div>
