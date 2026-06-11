@@ -336,7 +336,7 @@
               "defaultFilters": { }
             },
             "list": { "columns": { "sm": 1, "md": 3, "lg": 5, "xl": 5 }, 
-            "card": { "type": "card-elts", "variant": "card-elts", "detailsMode": "drawer" } }
+            "card": { "type": "image-panel", "variant": "image-panel", "detailsMode": "drawer" } }
           }
         }
       ]
@@ -442,8 +442,8 @@
                 "xl": 5 
               }, 
               "card": { 
-                "type": "card-elts",
-                "variant": "card-elts", 
+                "type": "image-panel",
+                "variant": "image-panel", 
                 "detailsMode": "drawer" 
               }
             }

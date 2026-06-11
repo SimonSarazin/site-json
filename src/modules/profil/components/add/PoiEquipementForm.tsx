@@ -28,7 +28,7 @@ import {
 	FormFieldUrlList,
 } from "../profile-edit/fields";
 import { useCocolight } from "@/hooks/useCocolight";
-import PoiDetailSSBE from "@/modules/search/components/detailsMode/PoiDetailSSBE";
+import DetailsModeDialog from "@/modules/search/components/detailsMode/DetailsModeDialog";
 import {
 	STEP_ORDER,
 	STEP_TITLE_KEYS,
@@ -672,10 +672,11 @@ export function PoiEquipementForm({
 			</Form>
 
 			{detailItem && (
-				<PoiDetailSSBE
+				<DetailsModeDialog
 					openDetails={detailOpen}
 					setOpenDetails={setDetailOpen}
 					item={detailItem}
+					preview={{ type: "poi-amenities" }}
 				/>
 			)}
 		</>

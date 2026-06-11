@@ -5,7 +5,7 @@ import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { getEntityIconName, getEntityColorClasses } from "@/lib/entityIcons";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
-export default function CardTiersLieux({
+export default function CardImageCover({
   item,
   onClick,
 }: SearchCardProps) {

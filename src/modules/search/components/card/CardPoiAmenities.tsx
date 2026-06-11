@@ -78,7 +78,7 @@ function getPoiImage(seed: string) {
 	return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
-export default function CardPoiSSBE({ item, onClick }: SearchCardProps) {
+export default function CardPoiAmenities({ item, onClick }: SearchCardProps) {
 	useLoadNamespace("modules/search");
 	const t = useT("modules/search");
 

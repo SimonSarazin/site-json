@@ -1,8 +1,6 @@
 import { useCocolight } from "@/hooks/useCocolight";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {Accessibility,Calendar,Clock,Heart,Mail,MapPin,Phone,User,Users,} from "lucide-react";
-import { DetailsModeProps } from "../../schema";
+import { Accessibility, Calendar, Clock, Heart, Mail, MapPin, Phone, User, Users } from "lucide-react";
+import type { PreviewProps } from "../../schema";
 
 type ActivityStatus = "Valide" | "En attente" | "En cours" | "Refuse";
 
@@ -36,7 +34,6 @@ function normalizeStatus(rawStatus: string): ActivityStatus {
   return "Valide";
 }
 
-
 function translateDayToFrench(day: string): string {
   const dayMap: Record<string, string> = {
     monday: "Lundi",
@@ -45,7 +42,7 @@ function translateDayToFrench(day: string): string {
     thursday: "Jeudi",
     friday: "Vendredi",
     saturday: "Samedi",
-    sunday: "Dimanche"
+    sunday: "Dimanche",
   };
 
   return dayMap[day.trim().toLowerCase()] ?? day;
@@ -80,7 +77,16 @@ function InfoCard({
   );
 }
 
-export default function AnswerDetailModeDialog({ openDetails, setOpenDetails, item }: DetailsModeProps) {
+/**
+ * Contenu de détail « réponse CoForm » (activité avec horaires / structure)
+ * — ex-`AnswerDetailModeDialog`. Variante de contenu (`preview.type ===
+ * "coform-answer"`) rendue DANS le conteneur de détail (`detailsMode`).
+ *
+ * NB (couplage à découpler — niveau 2) : les IDs de champs CoForm et le repli
+ * `sportSanteBienetre` restent codés en dur ici ; à externaliser en config
+ * (mapping de champs) dans un chantier dédié.
+ */
+export default function PreviewCoformAnswer({ item }: PreviewProps) {
   const { entity } = useCocolight();
   const serverData = item?.serverData as Record<string, unknown> | undefined;
 
@@ -193,124 +199,122 @@ export default function AnswerDetailModeDialog({ openDetails, setOpenDetails, it
   const schedules: Schedule[] = Object.entries(groupedSchedules).map(([day, times]) => ({ day, times }));
 
   return (
-    <Dialog open={openDetails} onOpenChange={setOpenDetails}>
-      <DialogContent className="sm:max-w-[750px] max-h-[90vh] p-0 overflow-hidden gap-0">
-        <div className="px-6 py-5" style={{ background: "var(--card-header-gradient)" }}>
-          <DialogHeader className="text-left space-y-2">
-            <div className="flex items-center gap-2">
-              {typeRaw && (
-                <span className="rounded-full bg-white/20 px-3 py-0.5 text-xs font-semibold text-primary-foreground">
-                  {typeRaw}
-                </span>
-              )}
-              <span className={`rounded-full px-3 py-0.5 text-xs font-semibold ${getStatusStyle(status)}`}>
-                {stateRaw || "Validé"}
+    <div className="flex max-h-[90vh] flex-col">
+      <div className="shrink-0 px-6 py-5" style={{ background: "var(--card-header-gradient)" }}>
+        <div className="space-y-2 text-left">
+          <div className="flex items-center gap-2">
+            {typeRaw && (
+              <span className="rounded-full bg-white/20 px-3 py-0.5 text-xs font-semibold text-primary-foreground">
+                {typeRaw}
               </span>
-            </div>
-            <DialogTitle className="text-2xl font-bold uppercase text-primary-foreground tracking-wide">
-              {title}
-            </DialogTitle>
-          </DialogHeader>
-          <p className="mt-3 text-sm text-primary-foreground/85 leading-relaxed">{description}</p>
+            )}
+            <span className={`rounded-full px-3 py-0.5 text-xs font-semibold ${getStatusStyle(status)}`}>
+              {stateRaw || "Validé"}
+            </span>
+          </div>
+          <h2 className="text-2xl font-bold uppercase text-primary-foreground tracking-wide">
+            {title}
+          </h2>
         </div>
+        <p className="mt-3 text-sm text-primary-foreground/85 leading-relaxed">{description}</p>
+      </div>
 
-        <ScrollArea className="max-h-[calc(90vh-180px)]">
-          <div className="p-6 space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <InfoCard icon={MapPin} title="Adresse">
-                {addressParts.length > 0 ? (
-                  <div className="text-sm text-muted-foreground space-y-1">
-                    {addressParts.map((line, index) => (
-                      <p key={`${line}-${index}`}>{line}</p>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">(Adresse non renseignée)</p>
-                )}
-              </InfoCard>
-
-              <InfoCard icon={Phone} title="Contact">
-                {structureEmail && (
-                  <p className="text-sm text-foreground font-semibold break-all flex items-center gap-1.5">
-                    <Mail className="w-3.5 h-3.5" />
-                    {structureEmail}
-                  </p>
-                )}
-                {structurePhone && (
-                  <p className="text-sm text-foreground font-semibold">{structurePhone}</p>
-                )}
-                {(instructorFirstName || instructorLastName) && (
-                  <p className="text-xs text-muted-foreground flex items-center gap-1">
-                    <User className="w-3 h-3 shrink-0" />
-                    {instructorFirstName} {instructorLastName}
-                  </p>
-                )}
-              </InfoCard>
-            </div>
-
-            <InfoCard icon={Calendar} title="Créneaux horaires">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[200px] overflow-y-auto pr-1">
-                {schedules.length > 0 ? (
-                  schedules.map((schedule) => (
-                    <div
-                      key={schedule.day}
-                      className="flex items-start gap-2 rounded-lg bg-secondary/50 px-3 py-2 text-xs border border-border"
-                    >
-                      <Clock className="w-3.5 h-3.5 shrink-0 text-primary mt-0.5" />
-                      <div>
-                        <span className="font-semibold text-foreground">{schedule.day}</span>
-                        <p className="text-muted-foreground mt-0.5 leading-relaxed">
-                          {schedule.times.join(" / ")}
-                        </p>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-xs text-muted-foreground">Aucun créneau</p>
-                )}
-              </div>
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="p-6 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <InfoCard icon={MapPin} title="Adresse">
+              {addressParts.length > 0 ? (
+                <div className="text-sm text-muted-foreground space-y-1">
+                  {addressParts.map((line, index) => (
+                    <p key={`${line}-${index}`}>{line}</p>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">(Adresse non renseignée)</p>
+              )}
             </InfoCard>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <InfoCard icon={Heart} title="Activité">
-                <p className="text-sm font-semibold text-foreground">{typeActivity || title}</p>
-                <p className="text-xs text-muted-foreground">{typeGender || typeRaw}</p>
-              </InfoCard>
-
-              <InfoCard icon={Users} title="Bénéficiaires">
-                {beneficiaries.length > 0 ? (
-                  <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
-                    {beneficiaries.map((beneficiary, index) => (
-                      <li key={`${beneficiary}-${index}`}>{beneficiary}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-xs text-muted-foreground">Aucun bénéficiaire renseigné</p>
-                )}
-              </InfoCard>
-
-              <InfoCard icon={Accessibility} title="Accessibilité">
-                <p className="text-sm text-foreground font-semibold">Personne à mobilité réduite</p>
-                <span className="inline-block rounded bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground">
-                  {mobilityReduced || "Non renseigné"}
-                </span>
-              </InfoCard>
-
-              <InfoCard icon={MapPin} title="Installation">
-                {installations.length > 0 ? (
-                  <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
-                    {installations.map((installation) => (
-                      <li key={installation.id}>{installation.name}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-xs text-muted-foreground">Aucune installation renseignée</p>
-                )}
-              </InfoCard>
-            </div>
+            <InfoCard icon={Phone} title="Contact">
+              {structureEmail && (
+                <p className="text-sm text-foreground font-semibold break-all flex items-center gap-1.5">
+                  <Mail className="w-3.5 h-3.5" />
+                  {structureEmail}
+                </p>
+              )}
+              {structurePhone && (
+                <p className="text-sm text-foreground font-semibold">{structurePhone}</p>
+              )}
+              {(instructorFirstName || instructorLastName) && (
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <User className="w-3 h-3 shrink-0" />
+                  {instructorFirstName} {instructorLastName}
+                </p>
+              )}
+            </InfoCard>
           </div>
-        </ScrollArea>
-      </DialogContent>
-    </Dialog>
+
+          <InfoCard icon={Calendar} title="Créneaux horaires">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[200px] overflow-y-auto pr-1">
+              {schedules.length > 0 ? (
+                schedules.map((schedule) => (
+                  <div
+                    key={schedule.day}
+                    className="flex items-start gap-2 rounded-lg bg-secondary/50 px-3 py-2 text-xs border border-border"
+                  >
+                    <Clock className="w-3.5 h-3.5 shrink-0 text-primary mt-0.5" />
+                    <div>
+                      <span className="font-semibold text-foreground">{schedule.day}</span>
+                      <p className="text-muted-foreground mt-0.5 leading-relaxed">
+                        {schedule.times.join(" / ")}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-xs text-muted-foreground">Aucun créneau</p>
+              )}
+            </div>
+          </InfoCard>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <InfoCard icon={Heart} title="Activité">
+              <p className="text-sm font-semibold text-foreground">{typeActivity || title}</p>
+              <p className="text-xs text-muted-foreground">{typeGender || typeRaw}</p>
+            </InfoCard>
+
+            <InfoCard icon={Users} title="Bénéficiaires">
+              {beneficiaries.length > 0 ? (
+                <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
+                  {beneficiaries.map((beneficiary, index) => (
+                    <li key={`${beneficiary}-${index}`}>{beneficiary}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-xs text-muted-foreground">Aucun bénéficiaire renseigné</p>
+              )}
+            </InfoCard>
+
+            <InfoCard icon={Accessibility} title="Accessibilité">
+              <p className="text-sm text-foreground font-semibold">Personne à mobilité réduite</p>
+              <span className="inline-block rounded bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground">
+                {mobilityReduced || "Non renseigné"}
+              </span>
+            </InfoCard>
+
+            <InfoCard icon={MapPin} title="Installation">
+              {installations.length > 0 ? (
+                <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
+                  {installations.map((installation) => (
+                    <li key={installation.id}>{installation.name}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-xs text-muted-foreground">Aucune installation renseignée</p>
+              )}
+            </InfoCard>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

@@ -656,8 +656,8 @@
                 "xl": 5
               },
               "card": {
-                "type": "tiers-lieux",
-                "variant": "tiers-lieux",
+                "type": "image-cover",
+                "variant": "image-cover",
                 "detailsMode": "drawer"
               }
             }
@@ -1509,8 +1509,8 @@
                 "xl": 5
               },
               "card": {
-                "type": "tiers-lieux",
-                "variant": "tiers-lieux",
+                "type": "image-cover",
+                "variant": "image-cover",
                 "detailsMode": "drawer"
               }
             },
@@ -1593,8 +1593,8 @@
                 "xl": 5
               },
               "card": {
-                "type": "tiers-lieux",
-                "variant": "tiers-lieux",
+                "type": "image-cover",
+                "variant": "image-cover",
                 "detailsMode": "drawer"
               }
             },

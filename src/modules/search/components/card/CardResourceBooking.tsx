@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import useItem from "../../hooks/useItem";
 import { Calendar } from "lucide-react";
 
-export default function CardPoiRezoLaMer({
+export default function CardResourceBooking({
   item,
   onClick
 }: SearchCardProps) {

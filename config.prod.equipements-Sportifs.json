@@ -1803,8 +1803,11 @@
                 "xl": 4
               },
               "card": {
-                "type": "poi-ssbe",
+                "type": "poi-amenities",
                 "detailsMode": "dialog"
+              },
+              "preview": {
+                "type": "poi-amenities"
               }
             }
           }

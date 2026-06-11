@@ -537,8 +537,8 @@
                 "xl": 4
               },
               "card": {
-                "type": "rezo-la-mer",
-                "variant": "rezo-la-mer",
+                "type": "funding",
+                "variant": "funding",
                 "detailsMode": "drawer"
               }
             }
@@ -619,8 +619,8 @@
                 "xl": 4
               },
               "card": {
-                "type": "event-rezo-la-mer",
-                "variant": "event-rezo-la-mer",
+                "type": "event-featured",
+                "variant": "event-featured",
                 "detailsMode": "drawer"
               }
             }
@@ -669,8 +669,8 @@
               },
               "card": {
                 "showStar": true,
-                "type": "event-rezo-la-mer",
-                "variant": "event-rezo-la-mer",
+                "type": "event-featured",
+                "variant": "event-featured",
                 "detailsMode": "drawer",
                 "viewDetail": true
               }

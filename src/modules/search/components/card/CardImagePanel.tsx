@@ -1,7 +1,7 @@
 import { SearchCardProps } from "../../schema";
 import useItem from "../../hooks/useItem";
 
-export default function CardElts({
+export default function CardImagePanel({
   item,
   onClick,
   card = {

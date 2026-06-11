@@ -1,4 +1,3 @@
-import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
 import { format } from "date-fns";
 import type { Poi } from "@communecter/cocolight-api-client";
@@ -27,9 +26,8 @@ import {
   Users,
   Lightbulb,
   Unlock,
-  X,
 } from "lucide-react";
-import type { DetailsModeProps } from "../../schema";
+import type { PreviewProps } from "../../schema";
 
 // Édition déléguée au registry config-driven (`config.profiles.poi.editModal`),
 // qui lazy-charge la bonne modale — la vue détail (lecture) n'embarque donc plus
@@ -265,7 +263,13 @@ function Feature({
   );
 }
 
-export default function PoiDetailSSBE({ openDetails, setOpenDetails, item }: DetailsModeProps) {
+/**
+ * Contenu de détail « équipements / accessibilité » d'un POI (ex-`PoiDetailSSBE`).
+ * Variante de contenu (`preview.type === "poi-amenities"`) rendue DANS le conteneur
+ * de détail (`detailsMode` drawer/dialog) — découplée de la carte et du site.
+ * Le composant borne sa propre hauteur (en-tête figé + corps scrollable).
+ */
+export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
   useLoadNamespace("modules/search");
   const t = useT("modules/search");
   const { canEditProfile } = useProfilPermissions(item ?? null);
@@ -278,7 +282,6 @@ export default function PoiDetailSSBE({ openDetails, setOpenDetails, item }: Det
         ? t("PoiDetailSSBE.yes")
         : t("PoiDetailSSBE.no");
 
-  // La variante `poi-ssbe` n'est routée que pour des POI (registry SwitchDetailsMode).
   const poiEntity = item as Poi;
   const sd = poiEntity.serverData;
   const poi = toPoi(poiEntity);
@@ -306,38 +309,26 @@ export default function PoiDetailSSBE({ openDetails, setOpenDetails, item }: Det
 
   const handleEdit = () => {
     setEditModalOpen(true);
-    setOpenDetails(false);
+    onClose?.();
   };
 
   return (
     <>
-      <Dialog open={openDetails} onOpenChange={setOpenDetails}>
-        <DialogContent
-          className="sm:max-w-5xl max-h-[90vh] p-0 overflow-hidden gap-0 flex flex-col"
-          showCloseButton={false}
-        >
-          <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
-            {canEditProfile && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleEdit}
-                className="text-primary-foreground hover:bg-white/15"
-              >
-                <Edit className="h-4 w-4" />
-                {t("PoiDetailSSBE.edit")}
-              </Button>
-            )}
-            <DialogClose
-              className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+      <div className="flex max-h-[90vh] flex-col">
+        <div className="relative shrink-0 px-6 py-5" style={{ background: "var(--card-header-gradient)" }}>
+          {canEditProfile && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleEdit}
+              className="absolute right-14 top-3 text-primary-foreground hover:bg-white/15"
             >
-              <X />
-              <span className="sr-only">{t("PoiDetailSSBE.close")}</span>
-            </DialogClose>
-          </div>
-        <div className="shrink-0 px-6 py-5" style={{ background: "var(--card-header-gradient)" }}>
-          <DialogHeader className="text-left space-y-3">
+              <Edit className="h-4 w-4" />
+              {t("PoiDetailSSBE.edit")}
+            </Button>
+          )}
+          <div className="space-y-3 text-left">
             <div className="flex flex-wrap items-center gap-2">
               {poi.category && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-primary-foreground">
@@ -353,9 +344,9 @@ export default function PoiDetailSSBE({ openDetails, setOpenDetails, item }: Det
               )}
             </div>
 
-            <DialogTitle className="text-2xl font-bold text-primary-foreground">
+            <h2 className="text-2xl font-bold text-primary-foreground">
               {poi.name || t("PoiDetailSSBE.fallbackTitle")}
-            </DialogTitle>
+            </h2>
 
             <div className="flex flex-wrap items-center gap-4 text-sm text-primary-foreground/85">
               <div className="flex items-center gap-2">
@@ -385,7 +376,7 @@ export default function PoiDetailSSBE({ openDetails, setOpenDetails, item }: Det
                 </span>
               </div>
             </div>
-          </DialogHeader>
+          </div>
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto">
@@ -600,8 +591,7 @@ export default function PoiDetailSSBE({ openDetails, setOpenDetails, item }: Det
             </aside>
           </div>
         </div>
-        </DialogContent>
-      </Dialog>
+      </div>
 
       {canEditProfile && item && (
         <DynamicEditModal open={editModalOpen} onOpenChange={setEditModalOpen} entity={item} />

@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Mail, Phone, MapPin, Image } from "lucide-react";
 
-export default function CardSsbe({ item, onClick }: SearchCardProps) {
+export default function CardContact({ item, onClick }: SearchCardProps) {
   const serverData = item?.serverData;
 
   const image = serverData?.profilImageUrl;

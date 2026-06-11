@@ -11,7 +11,7 @@ import { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 
-export default function CardRezoLaMer({
+export default function CardFunding({
   item,
   onClick,
   card,
@@ -21,10 +21,10 @@ export default function CardRezoLaMer({
   const projectId = String(serverData?.id || item?.id || "").trim();
 
   // Le funding est activable via `card.showFunding` (cf. schema). Défaut :
-  // actif pour le variant "rezo-la-mer" (rétrocompat). Pilote à la fois la
+  // actif pour le variant "funding" (rétrocompat). Pilote à la fois la
   // query `useFundingEnvelope` (enabled) et l'affichage de la barre.
   const cardType = card?.variant || card?.type;
-  const showFunding = card?.showFunding ?? (cardType === "rezo-la-mer");
+  const showFunding = card?.showFunding ?? (cardType === "funding");
 
   const { entity } = useCocolight();
   const { data: fundingEnvelope } = useFundingEnvelope(undefined, { enabled: showFunding });

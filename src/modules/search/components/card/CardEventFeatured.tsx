@@ -11,7 +11,7 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { Button } from "@/components/ui/button";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 
-export default function CardEventRezoLaMer({
+export default function CardEventFeatured({
   item,
   onClick
 }: SearchCardProps) {
