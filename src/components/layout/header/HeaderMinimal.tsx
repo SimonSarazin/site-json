@@ -1,19 +1,13 @@
 import { useState, useEffect } from "react";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
-import { useLocalization } from "@/hooks/useLocalization";
 import type { Header } from "@/types/site-schema";
 import { ClientOnly } from "../ClientOnly";
 import NavLink from "./NavLink";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import LangSwitch from "./LangSwitch";
 import { AuthMenu } from "@/modules/auth";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
-import { Globe, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
@@ -25,7 +19,6 @@ interface HeaderMinimalProps {
 export default function HeaderMinimal({ header }: HeaderMinimalProps) {
     useLoadNamespace("components/layout");
     const t = useT("components/layout");
-    const { currentLocale, setLocale, availableLocales } = useLocalization();
 
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -69,22 +62,8 @@ export default function HeaderMinimal({ header }: HeaderMinimalProps) {
                         {header.utilities?.notifications && <NotificationBell />}
                         {header.utilities?.search && <CommandTriggerButton />}
 
-                        {header.utilities?.langSwitch && availableLocales.length > 1 && (
-                             <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <button className="hover:text-primary transition-colors flex items-center gap-1 text-foreground">
-                                        <Globe className="w-4 h-4" />
-                                        {currentLocale.toUpperCase()}
-                                    </button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    {availableLocales.map(loc => (
-                                        <DropdownMenuItem key={loc} onClick={() => setLocale(loc)}>
-                                            {loc.toUpperCase()}
-                                        </DropdownMenuItem>
-                                    ))}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                        {header.utilities?.langSwitch && (
+                            <LangSwitch triggerClassName="text-foreground hover:text-primary transition-colors" />
                         )}
 
                         {header.utilities?.themeSwitch !== false && (

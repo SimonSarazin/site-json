@@ -1,20 +1,13 @@
 import { useState } from "react";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
-import { useLocalization } from "@/hooks/useLocalization";
 import { Header } from "@/types/site-schema";
-import { ChevronDown, Globe } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { Link } from "react-router";
 
 import NavLink from "./NavLink";
+import LangSwitch from "./LangSwitch";
 import { ClientOnly } from "../ClientOnly";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
 import { AuthMenu } from "@/modules/auth";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
@@ -28,7 +21,6 @@ interface HeaderMegaMenuProps {
 export default function HeaderMegaMenu({ header }: HeaderMegaMenuProps) {
     useLoadNamespace("components/layout");
     const t = useT("components/layout");
-    const { currentLocale, setLocale, availableLocales } = useLocalization();
     const nav = header.nav;
 
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -136,27 +128,7 @@ export default function HeaderMegaMenu({ header }: HeaderMegaMenuProps) {
                             </ClientOnly>
                         )}
 
-                        {header.utilities?.langSwitch && availableLocales.length > 1 && (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="gap-2">
-                                        <Globe className="h-4 w-4" />
-                                        {currentLocale.toUpperCase()}
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    {availableLocales.map(loc => (
-                                        <DropdownMenuItem
-                                            key={loc}
-                                            onClick={() => setLocale(loc)}
-                                            className={loc === currentLocale ? 'bg-accent' : ''}
-                                        >
-                                            {loc.toUpperCase()}
-                                        </DropdownMenuItem>
-                                    ))}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        )}
+                        {header.utilities?.langSwitch && <LangSwitch />}
 
                         {header.utilities?.auth && (
                             <AuthMenu layout="menu" density="compact" showName={false} showDropdownHeader loginVariant="solid" />
@@ -171,27 +143,7 @@ export default function HeaderMegaMenu({ header }: HeaderMegaMenuProps) {
                                 {() => <ToggleButtonTheme />}
                             </ClientOnly>
                         )}
-                        {header.utilities?.langSwitch && availableLocales.length > 1 && (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="gap-0.5 xs:gap-1 px-1.5 xs:px-2 h-8">
-                                        <Globe className="h-3.5 w-3.5 xs:h-4 xs:w-4" />
-                                        <span className="text-xs xs:text-sm">{currentLocale.toUpperCase()}</span>
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    {availableLocales.map(loc => (
-                                        <DropdownMenuItem
-                                            key={loc}
-                                            onClick={() => setLocale(loc)}
-                                            className={loc === currentLocale ? 'bg-accent' : ''}
-                                        >
-                                            {loc.toUpperCase()}
-                                        </DropdownMenuItem>
-                                    ))}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        )}
+                        {header.utilities?.langSwitch && <LangSwitch triggerClassName="gap-0.5 xs:gap-1 px-1.5 xs:px-2 h-8" />}
                         <button
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                             className="text-foreground hover:text-primary transition relative z-50 p-1.5 xs:p-2"

@@ -1,19 +1,12 @@
 import { useState } from "react";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
-import { useLocalization } from "@/hooks/useLocalization";
 import { Header } from "@/types/site-schema";
-import { ChevronDown, Globe, Menu, X } from "lucide-react";
+import { ChevronDown, Menu, X } from "lucide-react";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";
 import { ClientOnly } from "../ClientOnly";
 import NavLink from "./NavLink";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
+import LangSwitch from "./LangSwitch";
 import { AuthMenu } from "@/modules/auth";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import { PiggyBankHeaderButton } from "@/modules/cagnotte/components/PiggyBankHeaderButton";
@@ -30,7 +23,6 @@ type HeaderNavItem = Header['nav'][number];
 export default function HeaderTransparentScroll({ header }: HeaderTransparentScrollProps) {
     useLoadNamespace("components/layout");
     const t = useT("components/layout");
-    const { currentLocale, setLocale, availableLocales } = useLocalization();
     const isNavItemActive = useNavItemActive();
 
     const isPathInsideNav = (items: HeaderNavItem[]): boolean => {
@@ -172,26 +164,8 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
                             </ClientOnly>
                         )}
 
-                        {header.utilities?.langSwitch && availableLocales.length > 1 && (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted">
-                                        <Globe className="h-4 w-4" />
-                                        {currentLocale.toUpperCase()}
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent className="bg-background border-secondary">
-                                    {availableLocales.map(loc => (
-                                        <DropdownMenuItem
-                                            key={loc}
-                                            onClick={() => setLocale(loc)}
-                                            className={`text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted ${loc === currentLocale ? 'bg-secondary/30' : ''}`}
-                                        >
-                                            {loc.toUpperCase()}
-                                        </DropdownMenuItem>
-                                    ))}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                        {header.utilities?.langSwitch && (
+                            <LangSwitch triggerClassName="text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted" />
                         )}
                     </div>
 
@@ -270,26 +244,8 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
                         </NavLink>
                     )}
 
-                    {header.utilities?.langSwitch && availableLocales.length > 1 && (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="gap-2 w-full justify-start text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted">
-                                    <Globe className="h-4 w-4" />
-                                    {currentLocale.toUpperCase()}
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent className="bg-background border-secondary">
-                                {availableLocales.map(loc => (
-                                    <DropdownMenuItem
-                                        key={loc}
-                                        onClick={() => setLocale(loc)}
-                                        className={`text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted ${loc === currentLocale ? 'bg-secondary/30' : ''}`}
-                                    >
-                                        {loc.toUpperCase()}
-                                    </DropdownMenuItem>
-                                ))}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                    {header.utilities?.langSwitch && (
+                        <LangSwitch triggerClassName="w-full justify-start text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-muted" />
                     )}
 
                     {header.utilities?.auth && (

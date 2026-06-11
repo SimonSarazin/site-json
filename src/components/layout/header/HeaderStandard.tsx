@@ -17,16 +17,15 @@ import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/c
 import { DynamicIcon, IconName } from "lucide-react/dynamic";
 import {
   Menu,
-  Globe,
   ChevronDown,
   ShoppingCart,
 } from "lucide-react";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
-import { useLocalization } from "@/hooks/useLocalization";
 import "@/components/layout/i18n";
 import { Header } from "@/types/site-schema";
 import NavLink from "./NavLink";
+import LangSwitch from "./LangSwitch";
 import { useCocolight } from "@/hooks/useCocolight";
 import { AuthMenu } from "@/modules/auth";
 import { EnhancedNavItemType } from "@/types/site";
@@ -186,7 +185,6 @@ interface HeaderStandardProps {
 export function HeaderStandard({ header }: HeaderStandardProps) {
   useLoadNamespace("components/layout");
   const t = useT("components/layout");
-  const { currentLocale, setLocale, availableLocales } = useLocalization();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const headerBg = header.transparent ? 'bg-transparent' : 'bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60';
@@ -214,22 +212,7 @@ export function HeaderStandard({ header }: HeaderStandardProps) {
           {/* Utilities & Mobile Trigger */}
           <div className="flex items-center gap-2">
             {header.utilities.themeSwitch && <ToggleButtonTheme />}
-            {header.utilities.langSwitch && availableLocales.length > 1 && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="gap-2">
-                    <Globe className="h-4 w-4" />{currentLocale.toUpperCase()}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  {availableLocales.map(loc => (
-                    <DropdownMenuItem key={loc} onClick={() => setLocale(loc)} className={loc === currentLocale ? 'bg-accent' : ''}>
-                      {loc.toUpperCase()}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+            {header.utilities.langSwitch && <LangSwitch />}
             {header.utilities.search && <CommandTriggerButton />}
             {header.utilities.cart && <Button variant="ghost" size="sm"><ShoppingCart className="h-4 w-4" /></Button>}
             {header.utilities.notifications && <NotificationBell />}

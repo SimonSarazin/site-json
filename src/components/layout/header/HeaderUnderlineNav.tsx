@@ -1,20 +1,13 @@
 import { useState } from "react";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
-import { useLocalization } from "@/hooks/useLocalization";
 import { Header, LocalizedString } from "@/types/site-schema";
-import { Globe, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useLocation } from "react-router";
 import { useScrollAware, useScrollToTopOnRouteChange, useNavItemActive } from "./useHeaderBehavior";
 import NavLink from "./NavLink";
+import LangSwitch from "./LangSwitch";
 import { ClientOnly } from "../ClientOnly";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";
 import { AuthMenu } from "@/modules/auth";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
@@ -45,7 +38,6 @@ interface HeaderUnderlineNavProps {
 export default function HeaderUnderlineNav({ header }: HeaderUnderlineNavProps) {
     useLoadNamespace("components/layout");
     const t = useT("components/layout");
-    const { currentLocale, setLocale, availableLocales } = useLocalization();
     const location = useLocation();
 
     const isNavItemActive = useNavItemActive();
@@ -134,26 +126,8 @@ export default function HeaderUnderlineNav({ header }: HeaderUnderlineNavProps) 
                             </ClientOnly>
                         )}
 
-                        {header.utilities?.langSwitch && availableLocales.length > 1 && (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-primary hover:bg-primary/10">
-                                        <Globe className="h-4 w-4" />
-                                        {currentLocale.toUpperCase()}
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent className="bg-background border-secondary">
-                                    {availableLocales.map(loc => (
-                                        <DropdownMenuItem
-                                            key={loc}
-                                            onClick={() => setLocale(loc)}
-                                            className={`text-muted-foreground hover:text-primary hover:bg-secondary/50 ${loc === currentLocale ? 'bg-secondary/30' : ''}`}
-                                        >
-                                            {loc.toUpperCase()}
-                                        </DropdownMenuItem>
-                                    ))}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                        {header.utilities?.langSwitch && (
+                            <LangSwitch triggerClassName="text-muted-foreground hover:text-primary hover:bg-primary/10" />
                         )}
                     </div>
 
@@ -230,26 +204,8 @@ export default function HeaderUnderlineNav({ header }: HeaderUnderlineNavProps) 
                         </NavLink>
                     )}
 
-                    {header.utilities?.langSwitch && availableLocales.length > 1 && (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="gap-2 w-full justify-start text-muted-foreground hover:text-primary hover:bg-primary/10">
-                                    <Globe className="h-4 w-4" />
-                                    {currentLocale.toUpperCase()}
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent className="bg-background border-secondary">
-                                {availableLocales.map(loc => (
-                                    <DropdownMenuItem
-                                        key={loc}
-                                        onClick={() => setLocale(loc)}
-                                        className={`text-muted-foreground hover:text-primary hover:bg-secondary/50 ${loc === currentLocale ? 'bg-secondary/30' : ''}`}
-                                    >
-                                        {loc.toUpperCase()}
-                                    </DropdownMenuItem>
-                                ))}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                    {header.utilities?.langSwitch && (
+                        <LangSwitch triggerClassName="w-full justify-start text-muted-foreground hover:text-primary hover:bg-primary/10" />
                     )}
 
                     {header.utilities?.auth && (

@@ -1,20 +1,13 @@
 import { useState } from "react";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
-import { useLocalization } from "@/hooks/useLocalization";
 import { Header, LocalizedString } from "@/types/site-schema";
-import { Globe, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useLocation } from "react-router";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useScrollAware, useScrollToTopOnRouteChange, useNavItemActive } from "./useHeaderBehavior";
 import NavLink from "./NavLink";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
+import LangSwitch from "./LangSwitch";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";
 import { AuthMenu } from "@/modules/auth";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
@@ -34,7 +27,6 @@ interface HeaderTransparentDarkProps {
 export default function HeaderTransparentDark({ header }: HeaderTransparentDarkProps) {
     useLoadNamespace("components/layout");
     const t = useT("components/layout");
-    const { currentLocale, setLocale, availableLocales } = useLocalization();
     const location = useLocation();
     const { entity } = useCocolight();
 
@@ -123,27 +115,7 @@ export default function HeaderTransparentDark({ header }: HeaderTransparentDarkP
                         {header.utilities?.search && <CommandTriggerButton />}
 
                         {/* Lang switcher */}
-                        {header.utilities?.langSwitch && availableLocales.length > 1 && (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="text-white/80 hover:text-white hover:bg-white/10 gap-1 px-2">
-                                        <Globe className="h-4 w-4" />
-                                        <span className="text-xs uppercase hidden sm:inline">{currentLocale}</span>
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="min-w-30">
-                                    {availableLocales.map((locale) => (
-                                        <DropdownMenuItem
-                                            key={locale}
-                                            onClick={() => setLocale(locale)}
-                                            className={currentLocale === locale ? "font-semibold bg-primary/10" : ""}
-                                        >
-                                            {locale.toUpperCase()}
-                                        </DropdownMenuItem>
-                                    ))}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        )}
+                        {header.utilities?.langSwitch && <LangSwitch tone="onColor" />}
 
                         {/* Auth — widget partagé (avatar/dropdown ou bouton login → modal global) */}
                         {header.utilities?.auth && (
