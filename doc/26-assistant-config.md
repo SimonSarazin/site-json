@@ -3,6 +3,15 @@
 > **Statut : exploration / design** (branche `feat/config-assistant`). Ce document
 > ancre la réflexion dans l'existant du code ; il deviendra la doc du module quand
 > l'implémentation sera décidée. Rien ici n'est encore implémenté.
+>
+> **Décisions prises** :
+> - **Cible : les devs, avec Claude Code** → architecture **C** retenue (skill
+>   dans le repo). Pas de clé API à gérer, pas de route serveur, pas de dep IA.
+> - **Périmètre v1 : from-scratch ET édition incrémentale** — le from-scratch
+>   n'est qu'une séquence d'éditions incrémentales pilotée par un plan.
+> - Les architectures A (CLI API) et B (onglet AdminPanel) restent documentées
+>   comme évolutions possibles ; l'outillage déterministe (validation, export
+>   de schéma) est conçu pour être **réutilisable par B** plus tard.
 
 ## Objectif
 
@@ -100,14 +109,17 @@ pour montrer ce que l'assistant vient de changer.
 Flux : prompt → propositions → **préversion live (patch en mémoire)** →
 « garder / annuler / affiner » → save.
 
-### C. Skill Claude Code (zéro code dans le repo)
-Une skill/commande qui connaît le schéma et travaille directement sur les
-fichiers config (l'utilisateur = un dev avec Claude Code). Disponible
-immédiatement, rien à maintenir — mais inaccessible aux éditeurs non-devs et
-sans préversion intégrée.
+### C. Skill Claude Code ⭐ retenue
+Une skill versionnée dans le repo (`.claude/skills/`) qui fait de Claude Code
+l'assistant : elle encode le *workflow* (interview → plan → génération par
+morceaux → validation → préversion) et s'appuie sur de petits **scripts
+déterministes** (validation, export de schéma) plutôt que sur une intégration
+API. L'utilisateur = un dev avec Claude Code ; la préversion live vient du
+dev-server déjà en place (watcher + HMR).
 
-**Elles ne s'excluent pas** : C est utilisable dès maintenant pour nous ; B est
-la cible produit ; A devient un sous-produit de B (même backend, front en moins).
+**Elles ne s'excluent pas** : C est retenue pour la v1 ; B (onglet panel pour
+éditeurs finaux) resterait possible plus tard **en réutilisant les mêmes
+scripts** comme backend de validation ; A n'a plus d'intérêt propre.
 
 ---
 
@@ -119,10 +131,12 @@ est volumineux et le contexte se dilue. Découper en étapes outillées :
 1. **Interview** (modèle conversationnel) : type de site, langues, pages
    souhaitées, ton/couleurs → produit un *plan* (liste de pages + sections
    pressenties, choix `header.type`/`footer.type` parmi les noms de DESIGN).
-2. **Génération par morceau**, chaque étape étant un tool dont
-   l'`input_schema` est `z.toJSONSchema(<sous-schéma>)` :
-   `meta` + `theme` → `header`/`footer` → puis **page par page**, chaque page
-   limitée aux schémas des sections retenues par le plan (pas les 68).
+2. **Génération par morceau** : `meta` + `theme` → `header`/`footer` → puis
+   **page par page**, chaque page limitée aux schémas des sections retenues par
+   le plan (pas les 68). La forme exacte de chaque morceau vient de
+   `z.toJSONSchema(<sous-schéma>)` — consultée via `config-schema.mjs` dans
+   l'architecture C (skill), ou fournie comme `input_schema` d'un tool dans
+   l'architecture B (API).
 3. **Validation serveur après chaque morceau** : `parse()` Zod du sous-schéma
    réel (refinements inclus) ; en cas d'échec → erreurs renvoyées à Claude
    (elles sont déjà localisées et précises), max N tours.
@@ -146,40 +160,121 @@ le tool reçoit la config actuelle + l'instruction, et ne retourne qu'un *patch*
 
 ## Risques & garde-fous
 
-| Risque | Garde-fou |
-|---|---|
-| Clé API côté client | Route serveur uniquement ; jamais de `VITE_ANTHROPIC_*` |
-| JSON invalide malgré le tool schema (refinements) | Revalidation Zod systématique + boucle d'erreurs |
-| Hallucination de chemins/images/liens | `audit-config` (liens morts) ; images via l'uploader existant ou banque du site |
-| Schéma trop gros pour le contexte | Découpage par morceau + plan préalable ; sections limitées au plan |
-| Coûts API | Cap de tours de correction ; modèle léger pour l'interview, fort pour la génération |
-| AdminPanel sans contrôle d'accès (auth commentée, L208) | Dev-only aujourd'hui ; **à durcir avant toute exposition** (rôle admin + rate-limit sur `/api/assistant`) |
-| XSS dans `html`/`markdown` générés | `normalizeSiteConfig` (DOMPurify) déjà sur le chemin |
+| Risque | Garde-fou | Concerne |
+|---|---|---|
+| JSON invalide (refinements non représentables en JSON Schema) | Revalidation Zod systématique (`validate-config.mjs`) + boucle d'erreurs | C + B |
+| Hallucination de chemins/images/liens | `audit-config` (liens morts) ; règle « pas d'URL inventée » dans SKILL.md | C + B |
+| Schéma trop gros pour le contexte | Découpage par morceau + plan préalable ; `config-schema.mjs` cible le morceau | C + B |
+| XSS dans `html`/`markdown` générés | `normalizeSiteConfig` (DOMPurify) déjà sur le chemin | C + B |
+| Clé API côté client | Sans objet en C (session Claude Code) ; en B : route serveur uniquement, jamais de `VITE_ANTHROPIC_*` | B |
+| Coûts API | Sans objet en C (compte du dev) ; en B : cap de tours, quotas | B |
+| AdminPanel sans contrôle d'accès (auth commentée, L208) | Dev-only aujourd'hui ; **à durcir avant toute exposition** B | B |
 
 ---
 
-## MVP proposé (phases)
+## Design détaillé — la skill `config-assistant` (architecture C)
 
-- **Phase 0 — spike (1 fichier)** : script `scripts/assistant-spike.mjs` :
-  prompt en argument → appel Claude (tool use avec `z.toJSONSchema(Page)`) →
-  boucle de validation → écrit un config dérivé de `config.dev.json` → on
-  juge la qualité réelle de génération avant d'investir dans l'UI.
-- **Phase 1 — backend** : `POST /api/assistant` dans `dev-server.js`
-  (clé server-side, orchestration interview/génération/validation, streaming
-  des étapes).
-- **Phase 2 — UI panel** : mode `assistant` dans le `View` union de
-  l'AdminPanel : chat, diff lisible des changements proposés, préversion via
-  `patch()`, garder/annuler, `highlightSection()`.
-- **Phase 3 — durcissement** : auth/rôles, quotas, télémétrie de coût,
-  éventuel passage prod (le panel est dev-only aujourd'hui — décision à part).
+### Anatomie
 
-## Questions ouvertes (à trancher)
+```
+.claude/skills/config-assistant/
+├── SKILL.md            # workflow + règles maison + références (commité, partagé)
+└── (références)        # pointeurs vers section-meta.ts, configs exemples, doc/
 
-1. **Cible** : outil interne dev (A/C suffisent) ou éditeurs finaux (B) ?
-2. **Périmètre v1** : génération from-scratch, édition incrémentale, ou les deux ?
-   (l'incrémental est plus simple ET plus utile au quotidien)
-3. **Modèle d'exécution** : API Anthropic directe (SDK `@anthropic-ai/sdk` côté
-   serveur) vs Claude Agent SDK (si on veut des étapes agentiques : lire les
-   configs existants, lancer audit-config lui-même…)
-4. **Prod ou dev-only** : tant que l'AdminPanel est dev-only, l'assistant l'est
-   aussi — l'amener en prod implique auth + facturation des appels.
+scripts/
+├── validate-config.mjs # Zod parse d'UN fichier config → erreurs lisibles, exit code
+└── config-schema.mjs   # imprime le JSON Schema d'un sous-schéma (z.toJSONSchema)
+```
+
+Les deux scripts sont **déterministes, sans IA, sans dépendance nouvelle** —
+c'est l'outillage que la skill appelle, et qu'un futur backend B réutiliserait
+tel quel.
+
+- **`validate-config.mjs <fichier>`** — charge `SiteConfig` (le vrai schéma,
+  refinements inclus) et `parse()` le fichier ; sortie : erreurs Zod formatées
+  par chemin (`pages[2].sections[0].props.title : fr manquant`), exit 1 si
+  invalide. C'est **l'outil de la boucle** : la skill l'exécute après chaque
+  écriture et corrige jusqu'à vert. (Les preflight Vitest font ça mais sur
+  *tous* les configs et via le runner — trop lent pour itérer.)
+- **`config-schema.mjs <sélecteur>`** — ex. `config-schema.mjs section:pricing`
+  ou `header` → imprime le JSON Schema (`z.toJSONSchema`, `unrepresentable:
+  "any"`) du morceau demandé. Évite à la skill de relire les 2 030 lignes de
+  `site-schema.ts` pour connaître la forme exacte d'une section ; la sortie est
+  compacte et exhaustive (enums, champs requis, défauts).
+
+### Le workflow encodé dans SKILL.md
+
+1. **Interview** (si from-scratch) : nom/slug, langues, pages, ton/couleurs,
+   features (recherche ? news ? coform ?) → écrire un **plan** court (pages +
+   sections pressenties + `header.type`/`footer.type` choisis dans les noms de
+   DESIGN).
+2. **Setup** : copier `config.dev.json` (ou le config le plus proche parmi les
+   17 — ex. famille « commune ») comme base ; ajouter l'entrée `sites.json` +
+   CSS (créer `src/index-<slug>.css` ou réutiliser).
+3. **Génération par morceaux** : `meta`+`theme` → `header`/`footer` → page par
+   page. Avant chaque morceau : `config-schema.mjs` pour la forme exacte ;
+   après : `validate-config.mjs` → corriger les erreurs → re-valider.
+4. **Garde-fous qualité** : `npm run audit:config` (liens morts, i18n, thème) ;
+   `npm run test:preflight` en validation finale.
+5. **Préversion live** : `VITE_SLUG=<slug> npm run dev` dans un terminal — le
+   watcher (`fs.watchFile`, 500 ms) pousse chaque écriture au navigateur sans
+   reload. Le dev garde le site ouvert à côté et voit chaque itération.
+6. **Édition incrémentale** : même mécanique sans l'interview — localiser le
+   morceau visé (page/section), `config-schema.mjs` si besoin, patch minimal,
+   valider, l'HMR montre le résultat.
+
+### Règles maison à encoder dans la skill
+
+- `header.type` / `footer.type` / `card.type` / `preview.type` = **noms de
+  design, jamais de site** (doc/03, doc/07).
+- `LocalizedString` : `fr` obligatoire ; toutes les langues de `meta.languages`
+  souhaitées (audit-config le vérifie).
+- Chemins internes : doivent exister dans `pages[].path` ou les routes de
+  modules (`/profil`, `/login`, `/coform`…) — pas de chemin inventé.
+- Images : pas d'URL inventée — assets existants du site, ou laisser vide.
+- Sections : choisir dans le catalogue réel (68 types, descriptions dans
+  `src/components/admin/section-meta.ts`) ; en cas de doute sur les props,
+  `config-schema.mjs section:<type>`.
+- Familles de configs : pour un site « commune », partir de
+  `config.prod.commune-transparente.json` (8 communes le partagent), etc.
+
+### Ce que ce choix simplifie (vs A/B)
+
+| Sujet | Avec la skill |
+|---|---|
+| Clé API | aucune (c'est la session Claude Code du dev) |
+| Serveur | rien à ajouter ; dev-server inchangé |
+| Deps | zéro nouvelle dépendance runtime |
+| Préversion | dev-server existant (watcher + HMR) |
+| Corrections manuelles | l'AdminPanel/ZodAutoForm reste dispo en parallèle |
+| Évolution vers B | `validate-config.mjs`/`config-schema.mjs` deviennent le backend de validation du panel |
+
+## Phases proposées
+
+- **Phase 0 — outillage** : `scripts/validate-config.mjs` +
+  `scripts/config-schema.mjs` (petits, testables unitairement, utiles même sans
+  l'assistant — ex. valider un config à la main).
+- **Phase 1 — la skill** : `.claude/skills/config-assistant/SKILL.md` ;
+  itérer sur des cas réels (1 site from-scratch + 3-4 éditions incrémentales
+  sur les configs existants) et durcir les règles maison au fil des ratés.
+- **Phase 2 — confort** : enrichir `section-meta.ts` de descriptions
+  exploitables (ou `.describe()` dans les schémas — profite aussi au panel) ;
+  éventuel `audit:config --file <x>` pour ne vérifier qu'un config.
+- **Phase 3 (optionnelle, plus tard)** — passerelle vers B : exposer les mêmes
+  scripts derrière `POST /api/assistant` + onglet panel pour éditeurs non-devs.
+
+## Points de design restant à trancher
+
+1. **Skill vs slash command** : une *skill* (`.claude/skills/`, auto-invocable
+   quand le sujet s'y prête) ou une *commande* explicite (`/config-assistant`) ?
+   Reco : skill avec description précise — l'invocation reste naturelle
+   (« ajoute une page contact au site jardin-ocean »).
+2. **Granularité de `config-schema.mjs`** : sélecteurs à supporter
+   (`section:<type>`, `header`, `footer`, `theme`, `meta`, `page`) — et faut-il
+   un mode « liste des types de section + résumé une ligne » pour le plan ?
+3. **`.describe()` dans les schémas** : investissement transversal (profite à
+   la skill, au panel, à la doc) mais ~2 000 lignes à annoter — incrémental ?
+4. **Création du CSS de thème** : la skill peut copier/adapter un
+   `src/index-<site>.css` existant, mais le theming fin (tokens light/dark)
+   mérite ses propres règles dans SKILL.md (cf. les pièges teal-light/dark
+   corrigés en 06baffb).
