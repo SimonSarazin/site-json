@@ -183,7 +183,8 @@ le tool reçoit la config actuelle + l'instruction, et ne retourne qu'un *patch*
 
 scripts/
 ├── validate-config.mjs # Zod parse d'UN fichier config → erreurs lisibles, exit code
-└── config-schema.mjs   # imprime le JSON Schema d'un sous-schéma (z.toJSONSchema)
+├── config-schema.mjs   # imprime le JSON Schema d'un sous-schéma (z.toJSONSchema)
+└── entity-slug.mjs     # recherche/vérifie un slug d'entité Cocolight (cf. § Slug)
 ```
 
 Les deux scripts sont **déterministes, sans IA, sans dépendance nouvelle** —
@@ -204,24 +205,144 @@ tel quel.
 
 ### Le workflow encodé dans SKILL.md
 
-1. **Interview** (si from-scratch) : nom/slug, langues, pages, ton/couleurs,
-   features (recherche ? news ? coform ?) → écrire un **plan** court (pages +
-   sections pressenties + `header.type`/`footer.type` choisis dans les noms de
-   DESIGN).
-2. **Setup** : copier `config.dev.json` (ou le config le plus proche parmi les
-   17 — ex. famille « commune ») comme base ; ajouter l'entrée `sites.json` +
-   CSS (créer `src/index-<slug>.css` ou réutiliser).
-3. **Génération par morceaux** : `meta`+`theme` → `header`/`footer` → page par
+1. **Interview** (si from-scratch) : nom, langues, pages, ton/couleurs,
+   features (recherche ? news ? coform ? cagnotte ?), assets disponibles
+   (logo ? photos ?).
+2. **Conception design** (cf. § Capacités de conception) : à partir de
+   l'intention, proposer **2-3 directions argumentées** — archétype le plus
+   proche parmi les configs existants, `header.type`/`footer.type` (avec leur
+   identité visuelle), composition de pages section par section (via le
+   catalogue), direction de thème. **L'utilisateur tranche avant de générer.**
+3. **Slug** : vérifier/choisir le slug d'entité Cocolight (`entity-slug.mjs` —
+   cf. § Slug) ; c'est un prérequis dur, le site ne boote pas sans entité.
+4. **Setup** : copier `config.dev.json` (ou le config archétype le plus proche)
+   comme base ; entrée `sites.json` + CSS (`src/index-<slug>.css` créé ou
+   réutilisé) ; dossier d'assets `public/images/<slug>/` (cf. § Assets).
+5. **Génération par morceaux** : `meta`+`theme` → `header`/`footer` → page par
    page. Avant chaque morceau : `config-schema.mjs` pour la forme exacte ;
    après : `validate-config.mjs` → corriger les erreurs → re-valider.
-4. **Garde-fous qualité** : `npm run audit:config` (liens morts, i18n, thème) ;
+6. **Garde-fous qualité** : `npm run audit:config` (liens morts, i18n, thème) ;
    `npm run test:preflight` en validation finale.
-5. **Préversion live** : `VITE_SLUG=<slug> npm run dev` dans un terminal — le
+7. **Préversion live** : `VITE_SLUG=<slug> npm run dev` dans un terminal — le
    watcher (`fs.watchFile`, 500 ms) pousse chaque écriture au navigateur sans
    reload. Le dev garde le site ouvert à côté et voit chaque itération.
-6. **Édition incrémentale** : même mécanique sans l'interview — localiser le
+8. **Édition incrémentale** : même mécanique sans l'interview — localiser le
    morceau visé (page/section), `config-schema.mjs` si besoin, patch minimal,
    valider, l'HMR montre le résultat.
+
+### Capacités de conception (au-delà de la génération de JSON)
+
+La skill n'est pas un sérialiseur : elle doit **concevoir**. Quatre capacités,
+chacune adossée à des sources vérifiées dans le repo.
+
+#### a) Réfléchir le design en fonction de la demande
+
+La skill doit raisonner « intention → design » et proposer des directions
+argumentées, pas choisir en silence. Matière à encoder dans SKILL.md :
+
+**Identité visuelle des headers** (vérifiée dans `src/components/layout/header/`) :
+
+| `header.type` | Identité | Champs spécifiques |
+|---|---|---|
+| `standard` | barre horizontale sticky, fond plein, dropdowns | `height` (sm/md/lg), `announcement` |
+| `mega-menu` | méga-menu au survol en colonnes, bord bas arrondi | `nav[].megaMenu.width` |
+| `transparent-scroll` | fixe, transparent sur le hero → opaque au scroll | `transparent`, `urgenceButton`, `ctaButton` |
+| `minimal` | barre compacte, typo uppercase espacée | `logoTitle`, `logoIcon` |
+| `underline-nav` | nav soulignée (indicateur animé), fond marqué | `piggyBank` (+ `utilities.piggyBank`), `urgenceButton`, `ctaButton` |
+| `transparent-dark` | barre sombre fixe, transparente sur le hero seul | `logoTitle`, `entityLogoOverride`, `ctaButton` |
+
+**Identité des footers** (idem `footer/`) :
+
+| `footer.type` | Identité | Champs spécifiques |
+|---|---|---|
+| `rich` | newsletter + colonnes de liens + socials + copyright | `newsletter`, `columns[]`, `socials[]` |
+| `minimal-centered` | logo centré + nav horizontale + légal | `columns[0].links`, `legalLinks` |
+| `sidebar-columns` | sidebar (logo+description+socials) + grille de colonnes | `style: "plain"\|"card"`, `description` |
+| `contact-partners` | bloc contact (icônes) + grille de logos partenaires | `contactSection.items[]`, `partners.logos[]` |
+
+**Archétypes** parmi les 17 configs réels : commune institutionnelle
+(`commune-transparente`, partagé par 8 communes, header `transparent-dark`),
+réseau/annuaire (`tiers-lieux`, `mega-menu` + recherche), sport/santé
+(`sport-sante-bien-etre`, coform + POI), portfolio (`julie-pot-vin`,
+`minimal`), équipements (`equipements-Sportifs`, `transparent-scroll` +
+`contact-partners`). La conception démarre par « quel archétype est le plus
+proche ? » puis ajuste.
+
+**Thème** : `config.theme` (couleurs light/dark, typo) + le CSS de site
+(`src/index-<slug>.css`, mappé par `sites.json`). Règles : tokens
+**light ET dark** systématiques (cf. pièges corrigés en 06baffb), pas de
+couleur en dur dans les sections — les tokens du thème.
+
+#### b) Connaître chaque élément et module, et comment l'utiliser
+
+Deux catalogues à exposer à la skill :
+
+- **Sections** : `src/components/admin/section-meta.ts` — 60 sections avec
+  `label` + description française orientée intention (« Bannière principale
+  avec titre, sous-titre et CTA »). C'est le menu de composition des pages ;
+  `config-schema.mjs section:<type>` donne ensuite la forme exacte des props.
+- **Modules** : chaque module a des sections, des clés de config et des
+  **prérequis backend**. Recette d'activation par module (à encoder, format
+  « pour utiliser X, ajouter Y, prérequis Z ») :
+
+| Module | Sections / surface | Clés JSON | Prérequis backend |
+|---|---|---|---|
+| **search** | `searchPro`, `searchProStatic`, `filters`, `searchHeader`, `cardCountCT`, `thematics` | `baseParams` (`sourceKey[]`, `defaultTypes[]`, `locality`), `list` (card/detailsMode/preview) | entité + données indexées (sourceKey) |
+| **news** | `news` | `props.entitySlug`, `maxItems`, `showComments/Reactions` | entité avec fil d'actus |
+| **coform** | routes `/coform` + sections form | réf. de formulaire | CoForm défini côté Communecter |
+| **cagnotte** | `actions`, `finance`, `*-summary`, `cagnotte-layout` | `idProjet`, layouts | projet + Stripe/HelloAsso (`/api/helloasso/checkout-intent`) |
+| **profil** | `/profil/:slug` + `member`, profile-header/info | `config.profiles` (tabs, editModal, addConfig) | types d'entités du backend |
+| **auth** | `loginForm/registerForm/recoverPasswordForm` + `<AuthMenu>` | `config.auth` (variant, menu, SSO), `header.utilities.auth` | SSO/comptes Communecter |
+| **notification** | cloche header + section `notifications` | `header.utilities.notifications` | notifications backend |
+| **commandPalette** | palette ⌘K | `config.commandPalette`, `header.utilities.search` | — |
+| **ampli** | routes ampli | `config.ampli` | campagne ampli |
+| **interop** | pods Discourse/Mediawiki | clés interop | instances externes |
+
+La skill doit refuser d'activer un module dont le prérequis backend n'est pas
+confirmé par l'utilisateur (ex. pas de `searchPro` sans `sourceKey` réel).
+
+#### c) Slug : rechercher un existant ou en créer un (lib Cocolight)
+
+**Fait vérifié** : le slug de `sites.json`/`VITE_SLUG` sert à la fois à
+résoudre config+CSS **et** à charger l'entité Cocolight au boot
+(`apiClient.ts` L91-130 : `entitySlug(slug)` public ou `me.entityBySlug(slug)`
+connecté). **Sans entité portant ce slug, le site ne démarre pas.** Le choix
+du slug n'est donc pas cosmétique — c'est une liaison backend.
+
+`scripts/entity-slug.mjs` (l'api-client fonctionne côté Node — le SSR le
+prouve ; `VITE_BASE_URL_BACKEND` requis) :
+
+- `entity-slug.mjs search <nom>` → candidats via `globalAutocomplete`
+  (**sans auth**) : slug, type (Organization/Project), nom.
+- `entity-slug.mjs check <slug>` → l'entité existe ? (`entitySlug(slug)`) —
+  utilisé aussi pour vérifier la disponibilité avant création.
+- `entity-slug.mjs create …` → **nécessite une authentification**
+  (`addOrganization`/`addProject` de l'EndpointApi). Deux options : credentials
+  en env local (pattern `.env.test` des e2e), ou guider l'utilisateur vers la
+  création in-app (le module profil a déjà `AddOrganizationModal` /
+  `useAddOrganization`). À trancher en phase d'implémentation.
+
+#### d) Logo, favicon, images
+
+Conventions vérifiées sur les 17 configs + `public/` :
+
+- **Emplacement** : `public/images/<slug>/` (dossier par site — ex.
+  `communeTransparente/logo.png`, `rezoLaMer/hero-ocean.jpg`).
+- **Référencement** : chemin absolu `/images/<slug>/fichier.ext` (6 configs ;
+  5 utilisent le relatif sans `/` — les deux marchent, **normaliser sur
+  l'absolu**). `meta.favicon` : idem, ou `/favicon.ico`.
+- **`logoIcon`** (header/footer) : nom d'icône Lucide (`"leaf"`) **ou** SVG
+  inline — alternative légère quand il n'y a pas de logo bitmap.
+- **Obtention des fichiers** : la skill a accès au filesystem → copier les
+  fichiers fournis par l'utilisateur dans `public/images/<slug>/` (l'endpoint
+  d'upload `POST /api/admin/upload-image` est l'équivalent pour le panel ;
+  MIME acceptés : jpeg/png/gif/webp/svg/avif, 10 Mo max).
+- **Jamais d'URL inventée** : image fournie, asset existant du site, banque du
+  backend, ou rien (les sections tolèrent l'absence). URLs externes : penser à
+  l'allowlist de l'optimiseur `/img` (`IMAGE_OPTIMIZER_ALLOWED_DOMAINS`).
+- **Workflow assets** : demander à l'interview « avez-vous un logo / des
+  photos ? » ; sinon proposer `logoIcon` Lucide + sections sans image, plutôt
+  que des placeholders cassés.
 
 ### Règles maison à encoder dans la skill
 
@@ -252,11 +373,14 @@ tel quel.
 ## Phases proposées
 
 - **Phase 0 — outillage** : `scripts/validate-config.mjs` +
-  `scripts/config-schema.mjs` (petits, testables unitairement, utiles même sans
-  l'assistant — ex. valider un config à la main).
-- **Phase 1 — la skill** : `.claude/skills/config-assistant/SKILL.md` ;
-  itérer sur des cas réels (1 site from-scratch + 3-4 éditions incrémentales
-  sur les configs existants) et durcir les règles maison au fil des ratés.
+  `scripts/config-schema.mjs` + `scripts/entity-slug.mjs` (search/check d'abord ;
+  create si la question d'auth est tranchée). Petits, testables unitairement,
+  utiles même sans l'assistant — ex. valider un config à la main.
+- **Phase 1 — la skill** : `.claude/skills/config-assistant/SKILL.md` —
+  workflow + capacités de conception (tables d'identité design, catalogue
+  modules, règles assets/slug) ; itérer sur des cas réels (1 site from-scratch
+  + 3-4 éditions incrémentales sur les configs existants) et durcir les règles
+  maison au fil des ratés.
 - **Phase 2 — confort** : enrichir `section-meta.ts` de descriptions
   exploitables (ou `.describe()` dans les schémas — profite aussi au panel) ;
   éventuel `audit:config --file <x>` pour ne vérifier qu'un config.
@@ -278,3 +402,11 @@ tel quel.
    `src/index-<site>.css` existant, mais le theming fin (tokens light/dark)
    mérite ses propres règles dans SKILL.md (cf. les pièges teal-light/dark
    corrigés en 06baffb).
+5. **Création d'entité (slug)** : `entity-slug.mjs create` exige une auth —
+   credentials en env local (pattern `.env.test`) ou renvoi vers la création
+   in-app (`AddOrganizationModal`) ? Search/check (sans auth) sont eux
+   tranchés et suffisent à démarrer.
+6. **Sections encore nommées par site** (`hero-rezo-la-mer`,
+   `hero-tiers-lieux`…) : la skill doit-elle les éviter au profit des
+   génériques pour les nouveaux sites (reco : oui), en attendant leur
+   éventuel découplage (même chantier que les cartes search) ?
