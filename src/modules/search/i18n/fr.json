@@ -1,4 +1,13 @@
 {
+    "days": {
+        "monday": "Lundi",
+        "tuesday": "Mardi",
+        "wednesday": "Mercredi",
+        "thursday": "Jeudi",
+        "friday": "Vendredi",
+        "saturday": "Samedi",
+        "sunday": "Dimanche"
+    },
     "CardResourceBooking": {
         "price": "Prix d'usage:",
         "location": "Localisation:",

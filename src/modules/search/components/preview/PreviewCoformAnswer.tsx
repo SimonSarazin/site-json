@@ -3,13 +3,9 @@ import { useT } from "@/hooks/useT";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { Accessibility, Calendar, Clock, Heart, Mail, MapPin, Phone, User, Users } from "lucide-react";
 import type { PreviewProps } from "../../schema";
+import { groupSchedules } from "../../lib/schedules";
 
 type ActivityStatus = "Valide" | "En attente" | "En cours" | "Refuse";
-
-type Schedule = {
-  day: string;
-  times: string[];
-};
 
 /**
  * Mapping rôle → suffixe de champ CoForm (par défaut : formulaire activité SSBE).
@@ -57,20 +53,6 @@ function normalizeStatus(rawStatus: string): ActivityStatus {
     return "Refuse";
   }
   return "Valide";
-}
-
-function translateDayToFrench(day: string): string {
-  const dayMap: Record<string, string> = {
-    monday: "Lundi",
-    tuesday: "Mardi",
-    wednesday: "Mercredi",
-    thursday: "Jeudi",
-    friday: "Vendredi",
-    saturday: "Samedi",
-    sunday: "Dimanche",
-  };
-
-  return dayMap[day.trim().toLowerCase()] ?? day;
 }
 
 function normalizeText(value: unknown): string | undefined {
@@ -204,27 +186,7 @@ export default function PreviewCoformAnswer({ item, preview }: PreviewProps) {
     })
     .filter((entry) => entry.name.trim().length > 0);
 
-  const scheduleRaw = (serverData[fieldKey(fields.schedule)] as unknown[]) ?? [];
-  const groupedSchedules: Record<string, string[]> = {};
-
-  scheduleRaw.forEach((entry) => {
-    const slot = entry as Record<string, unknown>;
-    const day = typeof slot.day === "string" ? translateDayToFrench(slot.day) : "";
-    if (!day) return;
-
-    const startHour = String(slot.startHour ?? "");
-    const startMinute = String(slot.startMinute ?? "");
-    const endHour = String(slot.endHour ?? "");
-    const endMinute = String(slot.endMinute ?? "");
-    const timeRange = `${startHour}H${startMinute} - ${endHour}H${endMinute}`;
-
-    if (!groupedSchedules[day]) {
-      groupedSchedules[day] = [];
-    }
-    groupedSchedules[day].push(timeRange);
-  });
-
-  const schedules: Schedule[] = Object.entries(groupedSchedules).map(([day, times]) => ({ day, times }));
+  const schedules = groupSchedules(serverData[fieldKey(fields.schedule)]);
 
   return (
     <div className="flex max-h-[90vh] flex-col">
@@ -286,12 +248,12 @@ export default function PreviewCoformAnswer({ item, preview }: PreviewProps) {
               {schedules.length > 0 ? (
                 schedules.map((schedule) => (
                   <div
-                    key={schedule.day}
+                    key={schedule.dayKey}
                     className="flex items-start gap-2 rounded-lg bg-secondary/50 px-3 py-2 text-xs border border-border"
                   >
                     <Clock className="w-3.5 h-3.5 shrink-0 text-primary mt-0.5" />
                     <div>
-                      <span className="font-semibold text-foreground">{schedule.day}</span>
+                      <span className="font-semibold text-foreground">{t("days." + schedule.dayKey)}</span>
                       <p className="text-muted-foreground mt-0.5 leading-relaxed">
                         {schedule.times.join(" / ")}
                       </p>

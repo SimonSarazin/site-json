@@ -4,13 +4,11 @@ import { Building2, Calendar, ChevronDown, ChevronUp, FileText, Mail, MapPin, Us
 import { SearchCardProps } from "../../schema";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useNavigate } from "react-router";
+import { useT } from "@/hooks/useT";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
+import { groupSchedules } from "../../lib/schedules";
 
 type ActivityStatus = "Valide" | "En attente" | "En cours" | "Refuse";
-
-type Schedule = {
-	day: string;
-	times: string[];
-};
 
 type StructureData = {
 	name: string;
@@ -55,20 +53,9 @@ function normalizeTypeLabel(rawType: string): string {
 	}
 }
 
-function translateDayToFrench(day: string): string {
-	const dayMap: Record<string, string> = {
-		monday: "Lundi",
-		tuesday: "Mardi",
-		wednesday: "Mercredi",
-		thursday: "Jeudi",
-		friday: "Vendredi",
-		saturday: "Samedi",
-		sunday: "Dimanche"
-	};
-
-	return dayMap[day.trim().toLowerCase()] ?? day;
-}
 export default function CardAnswer({ item, onClick }: SearchCardProps) {
+	useLoadNamespace("modules/search");
+	const t = useT("modules/search");
 	const [showAllSchedules, setShowAllSchedules] = useState(false);
 	const navigate = useNavigate();
 	const serverData = item?.serverData as Record<string, unknown> | undefined;
@@ -111,27 +98,7 @@ export default function CardAnswer({ item, onClick }: SearchCardProps) {
 	const instructorLastName =
 		(serverData?.[fieldKey("2172025_854_0mdmz4qoaelvlcpten8w")] as string | undefined) ?? "";
 
-	const scheduleRaw = (serverData?.[fieldKey("2172025_854_0mdefmehl5baa207uud6")] as unknown[]) ?? [];
-	const groupedSchedules: Record<string, string[]> = {};
-
-	scheduleRaw.forEach((entry) => {
-		const slot = entry as Record<string, unknown>;
-		const day = typeof slot.day === "string" ? translateDayToFrench(slot.day) : "";
-		if (!day) return;
-
-		const startHour = String(slot.startHour ?? "");
-		const startMinute = String(slot.startMinute ?? "");
-		const endHour = String(slot.endHour ?? "");
-		const endMinute = String(slot.endMinute ?? "");
-		const timeRange = `${startHour}H${startMinute} - ${endHour}H${endMinute}`;
-
-		if (!groupedSchedules[day]) {
-			groupedSchedules[day] = [];
-		}
-		groupedSchedules[day].push(timeRange);
-	});
-
-	const schedules: Schedule[] = Object.entries(groupedSchedules).map(([day, times]) => ({ day, times }));
+	const schedules = groupSchedules(serverData?.[fieldKey("2172025_854_0mdefmehl5baa207uud6")]);
 	const MAX_VISIBLE_SCHEDULES = 2;
 	const hasMoreSchedules = schedules.length > MAX_VISIBLE_SCHEDULES;
 	const visibleSchedules = showAllSchedules ? schedules : schedules.slice(0, MAX_VISIBLE_SCHEDULES);
@@ -197,11 +164,11 @@ export default function CardAnswer({ item, onClick }: SearchCardProps) {
 						<div className="flex flex-wrap gap-2">
 							{visibleSchedules.map((schedule) => (
 								<span
-									key={schedule.day}
+									key={schedule.dayKey}
 									className="inline-flex items-center gap-1.5 rounded-full bg-schedule-tag-bg px-3 py-1 text-xs font-medium text-schedule-tag-fg border border-border"
 								>
 									<Calendar className="w-3.5 h-3.5" />
-									{schedule.day} {schedule.times.join(" / ")}
+									{t("days." + schedule.dayKey)} {schedule.times.join(" / ")}
 								</span>
 							))}
 						</div>
