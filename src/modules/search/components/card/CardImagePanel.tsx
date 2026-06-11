@@ -34,7 +34,7 @@ export default function CardImagePanel({
 
   return (
     <div
-      className="group relative overflow-hidden rounded-xl cursor-pointer aspect-4/3 bg-[#0a1628] shadow-lg hover:shadow-2xl transition-all duration-300"
+      className="group relative overflow-hidden rounded-xl cursor-pointer aspect-4/3 bg-muted shadow-lg hover:shadow-2xl transition-all duration-300"
       onClick={onClick}
       title={name}
     >
@@ -48,17 +48,17 @@ export default function CardImagePanel({
         />
       ) : (
         /* Fond dégradé quand pas d'image */
-        <div className="absolute inset-0 bg-linear-to-br from-[#0d1f3c] to-[#1a3a6b]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-muted to-secondary" />
       )}
 
       {/* Panneau blanc flottant avec écart visible sur les bords */}
-      <div className="absolute bottom-2 left-2 right-2 rounded-xl bg-white shadow-md px-3 py-2">
-        <h3 className="font-bold text-sm text-gray-900 leading-tight line-clamp-2">
+      <div className="absolute bottom-2 left-2 right-2 rounded-xl bg-card shadow-md px-3 py-2">
+        <h3 className="font-bold text-sm text-card-foreground leading-tight line-clamp-2">
           {name}
         </h3>
 
         {card.showAddress !== false && displayAddress && (
-          <p className="text-xs text-gray-500 leading-tight line-clamp-2 mt-0.5">
+          <p className="text-xs text-muted-foreground leading-tight line-clamp-2 mt-0.5">
             {displayAddress}
           </p>
         )}

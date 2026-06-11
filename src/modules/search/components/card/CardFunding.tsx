@@ -105,7 +105,7 @@ export default function CardFunding({
         <Badge
           className={cn(
             "absolute top-4 left-4",
-            status === "Financé" ? "bg-green-500" : "bg-primary text-primary-foreground"
+            status === "Financé" ? "bg-success text-success-foreground" : "bg-primary text-primary-foreground"
           )}
         >
           {status}
@@ -164,7 +164,7 @@ export default function CardFunding({
               <Button
                 onClick={handleActivateFundingClick}
                 disabled={isActivatingFunding || !formId}
-                className="w-full bg-amber-500 hover:bg-amber-600 text-white border-0"
+                className="w-full bg-warning text-warning-foreground hover:bg-warning/90 border-0"
               >
                 <Zap className="mr-2 w-4 h-4" />
                 {isActivatingFunding ? "Activation..." : "Activer financement"}

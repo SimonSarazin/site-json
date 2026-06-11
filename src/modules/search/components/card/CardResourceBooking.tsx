@@ -26,22 +26,22 @@ export default function CardResourceBooking({
     const avatarIcon = getEntityIconName(entityType);
     const location = getLocation(item);
     const status = serverData?.status || "Disponible";
-  
-  return ( 
-    <article className="bg-[#0A1E3D] rounded-2xl overflow-hidden border border-[#1A3A5C] hover:border-[#2A4A6C] transition-all duration-300">
+
+  return (
+    <article className="bg-card rounded-2xl overflow-hidden border border-border hover:border-primary/40 transition-all duration-300">
       {/* Header avec icône et badge statut */}
       <div className="p-6 pb-4 flex items-start justify-between">
-        <div className="w-14 h-14 rounded-xl bg-[#1A3A5C]/50 border border-[#2A4A6C] flex items-center justify-center">
-          <DynamicIcon 
-            name={avatarIcon as IconName} 
-            className="w-7 h-7 text-cyan-400" 
+        <div className="w-14 h-14 rounded-xl bg-primary/10 border border-border flex items-center justify-center">
+          <DynamicIcon
+            name={avatarIcon as IconName}
+            className="w-7 h-7 text-primary"
           />
         </div>
-        <Badge 
+        <Badge
           className={cn(
             "rounded-full px-3 py-1 text-xs font-medium border-0",
-            status === "Disponible" && "bg-cyan-500/20 text-cyan-400",
-            status === "Réservé" && "bg-blue-500/20 text-blue-400"
+            status === "Disponible" && "bg-primary/15 text-primary",
+            status === "Réservé" && "bg-muted text-muted-foreground"
           )}
         >
           {String(status)}
@@ -49,7 +49,7 @@ export default function CardResourceBooking({
       </div>
 
       <div className="px-6 pb-3">
-        <h3 className="text-xl font-bold text-white leading-tight">
+        <h3 className="text-xl font-bold text-card-foreground leading-tight">
           {name}
         </h3>
       </div>
@@ -58,10 +58,10 @@ export default function CardResourceBooking({
       {tags && tags.length > 0 && (
         <div className="px-6 pb-4 flex flex-wrap gap-2">
           {tags.map((tag, index) => (
-            <Badge 
+            <Badge
               key={index}
-              variant="outline" 
-              className="rounded-full border-cyan-400/30 bg-cyan-500/10 text-cyan-300 text-xs font-medium px-3 py-1"
+              variant="outline"
+              className="rounded-full border-primary/30 bg-primary/10 text-primary text-xs font-medium px-3 py-1"
             >
               {tag}
             </Badge>
@@ -72,7 +72,7 @@ export default function CardResourceBooking({
       {/* Description */}
       {description && (
         <div className="px-6 pb-5">
-          <p className="text-[#A0B4CC] text-sm leading-relaxed">
+          <p className="text-muted-foreground text-sm leading-relaxed">
             {description}
           </p>
         </div>
@@ -81,30 +81,30 @@ export default function CardResourceBooking({
       {/* Informations en 2 colonnes */}
       <div className="px-6 pb-5 space-y-2 text-sm">
         <div className="flex justify-between">
-          <span className="text-[#708090]">Prix d'usage:</span>
-          <span className="text-white font-semibold">{String(price || "N/A")}</span>
+          <span className="text-muted-foreground">Prix d'usage:</span>
+          <span className="text-card-foreground font-semibold">{String(price || "N/A")}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-[#708090]">Localisation:</span>
-          <span className="text-white font-semibold">{location || "N/A"}</span>
+          <span className="text-muted-foreground">Localisation:</span>
+          <span className="text-card-foreground font-semibold">{location || "N/A"}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-[#708090]">Propriétaire:</span>
-          <span className="text-white font-semibold">{String(proprietaire || "N/A")}</span>
+          <span className="text-muted-foreground">Propriétaire:</span>
+          <span className="text-card-foreground font-semibold">{String(proprietaire || "N/A")}</span>
         </div>
       </div>
 
       {/* Statut de disponibilité avec icône calendrier */}
-      <div className="px-6 pb-5 flex items-center gap-2 text-[#708090] text-sm">
+      <div className="px-6 pb-5 flex items-center gap-2 text-muted-foreground text-sm">
         <Calendar className="w-4 h-4" />
         <span>Disponible</span>
       </div>
 
       {/* Bouton Réserver */}
       <div className="px-6 pb-6">
-        <Button 
+        <Button
           onClick={onClick}
-          className="w-full bg-gradient-to-r from-cyan-400 to-cyan-500 hover:from-cyan-500 hover:to-cyan-600 text-[#0A1E3D] font-semibold rounded-xl h-12 text-base shadow-lg shadow-cyan-500/20 transition-all duration-300"
+          className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-xl h-12 text-base shadow-lg transition-all duration-300"
         >
           Réserver
         </Button>

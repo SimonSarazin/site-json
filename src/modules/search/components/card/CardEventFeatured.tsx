@@ -93,7 +93,7 @@ export default function CardEventFeatured({
             onClick={handleToggleStar}
             disabled={isUpdating}
             className={cn(
-              "absolute top-4 right-4 bg-white/90 hover:bg-white transition-all",
+              "absolute top-4 right-4 bg-background/90 hover:bg-background transition-all",
               isUpdating && "opacity-50 cursor-not-allowed"
             )}
             aria-label={localIsStarred ? "Retirer des favoris" : "Ajouter aux favoris"}
@@ -101,7 +101,7 @@ export default function CardEventFeatured({
             <Star 
               className={cn(
                 "w-5 h-5 transition-all",
-                localIsStarred ? "fill-yellow-400 text-yellow-400" : "text-gray-600"
+                localIsStarred ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"
               )} 
             />
           </Button>
