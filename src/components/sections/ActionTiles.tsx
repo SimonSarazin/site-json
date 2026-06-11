@@ -11,8 +11,8 @@ interface ActionTilesSectionProps {
 
 export function ActionTiles({ id, props }: ActionTilesSectionProps) {
     const { t } = useLocalization();
-    const variant = props.variant || "ocean";
-    const isCyber = variant === "cyber";
+    const variant = props.variant || "primary";
+    const isAccent = variant === "accent";
 
     const DEFAULT_ICON_SIZE = 32;
 
@@ -108,14 +108,14 @@ export function ActionTiles({ id, props }: ActionTilesSectionProps) {
         transparent: "bg-transparent",
     };
 
-    const defaultBg = isCyber
+    const defaultBg = isAccent
         ? "bg-gradient-to-b from-card/20 to-background"
         : "bg-linear-to-b from-background/80 to-background";
 
     const sectionBg = props.bg && props.bg !== "default" ? BG_MAP[props.bg] : defaultBg;
 
     return (
-        <section id={id} className={`px-4 ${sectionBg} ${props.variant !== "ssbe" ? "py-16 " : "py-12 "}`}>
+        <section id={id} className={`px-4 ${sectionBg} py-16 `}>
             <div className="container mx-auto max-w-5xl">
                 <div className="text-center mb-10">
                     {props.headline && (

@@ -81,7 +81,6 @@
           "type": "hero-tinted-overlay",
           "id": "hero-nos-communes",
           "props": {
-            "variant": "nos-communes",
             "badge": {
               "fr": "Le Mouvement national de réappropriation",
               "en": "The National Reappropriation Movement"
@@ -131,7 +130,6 @@
           "type": "features-glass",
           "id": "features-mouvement",
           "props": {
-            "variant": "nos-communes",
             "headline": {
               "fr": "Ce que nous voulons faire ensemble",
               "en": "What we want to do together"
@@ -237,7 +235,6 @@
           "type": "action-tiles",
           "id": "action-tabs",
           "props": {
-            "variant": "nos-communes",
             "headline": {
               "fr": "Nos Slogans",
               "en": "Our Slogans"

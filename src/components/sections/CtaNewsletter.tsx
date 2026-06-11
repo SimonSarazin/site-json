@@ -14,8 +14,8 @@ interface CtaNewsletterSectionProps {
 export function CtaNewsletter({ id, props }: CtaNewsletterSectionProps) {
     const { t } = useLocalization();
     const [email, setEmail] = useState("");
-    const variant = props.variant || "ocean";
-    const isCyber = variant === "cyber";
+    const variant = props.variant || "primary";
+    const isAccent = variant === "accent";
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -42,15 +42,15 @@ export function CtaNewsletter({ id, props }: CtaNewsletterSectionProps) {
         transparent: "bg-transparent",
     };
 
-    const defaultBg = isCyber
+    const defaultBg = isAccent
         ? "bg-gradient-to-br from-card/30 via-background to-card/20"
         : "bg-ocean-gradient";
 
     const sectionBg = props.bg && props.bg !== "default" ? BG_MAP[props.bg] : defaultBg;
 
-    const decorativeColor = isCyber ? "bg-accent" : "bg-chart-2";
+    const decorativeColor = isAccent ? "bg-accent" : "bg-chart-2";
 
-    const inputClasses = isCyber
+    const inputClasses = isAccent
         ? "pl-10 h-12 bg-background/50 backdrop-blur-sm border-border/50 focus:border-primary text-foreground placeholder:text-muted-foreground"
         : "pl-10 h-12 bg-background/50 backdrop-blur-ocean border-primary/30 focus:border-primary text-foreground placeholder:text-muted-foreground";
 

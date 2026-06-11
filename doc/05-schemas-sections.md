@@ -1138,8 +1138,8 @@ const ListConfSchema = z.object({
     showStar:        z.boolean().optional(),
     showFunding:     z.boolean().optional(),
     detailsMode: z.enum(["drawer", "dialog"]).default("drawer"),
-    type: z.enum(["overlay", "default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer", "poi-ssbe", "card-elts","ssbe", "card-answer"]).default("default"),
-    variant: z.enum(["default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer", "poi-ssbe", "card-elts","ssbe", "card-answer"]).optional(),
+    type: z.enum(["overlay", "default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer"]).default("default"),
+    variant: z.enum(["default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer"]).optional(),
   }).partial().optional(),
   preview: z.object({
     type: z.enum(["default"]).default("default"),
@@ -1147,7 +1147,7 @@ const ListConfSchema = z.object({
 }).partial();
 ```
 
-* **`card.type`** : `overlay` (texte sur l'image), `default`, `tiers-lieux`, `event`, `rezo-la-mer`, `profile`, `event-rezo-la-mer`, `poi-rezo-la-mer`, `poi-ssbe`, `card-elts`, `ssbe`, `card-answer`.
+* **`card.type`** : `overlay` (texte sur l'image), `default`, `image-cover`, `image-panel`, `event`, `event-featured`, `funding`, `resource-booking`, `poi-amenities`, `contact-card`, `profile`, `card-answer` (noms de DESIGN — cf. doc/07).
 * **`card.variant`** : variante visuelle de la carte (memes valeurs que `card.type`, sauf `overlay`).
 * **`card.detailsMode`** : affichage des details dans un `drawer` ou un `dialog`.
 * **`card.showStar`** : afficher le bouton favori.
@@ -1328,7 +1328,7 @@ export const HeroParallaxSchema = z.object({
       )
       .optional(),
     showScrollIndicator: z.boolean().optional(),
-    variant: z.enum(["ocean", "cyber"]).optional(),
+    variant: z.enum(["primary", "accent"]).optional(),
   }),
 });
 ```
@@ -1343,7 +1343,7 @@ export const HeroParallaxSchema = z.object({
 | `badges`              | `array?`          | Badges (label, icon)               |
 | `ctaButtons`          | `array?`          | Boutons CTA                        |
 | `showScrollIndicator` | `boolean?`        | Indicateur de scroll               |
-| `variant`             | `"ocean" \| "cyber"` | Variante visuelle               |
+| `variant`             | `"primary" \| "accent"` | Tonalité des décorations (token qui les teinte) |
 
 ---
 
@@ -1468,7 +1468,7 @@ export const FeaturesGlassSchema = z.object({
   props: z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
-    variant: z.enum(["ocean", "cyber"]).optional(),
+    variant: z.enum(["primary", "accent"]).optional(),
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
     features: z.array(
       z.object({
@@ -1486,7 +1486,7 @@ export const FeaturesGlassSchema = z.object({
 | ----------- | --------- | --------------------------------------- |
 | `headline`  | `LocalizedString` | Titre                            |
 | `subhead`   | `LocalizedString?` | Sous-titre                      |
-| `variant`   | `"ocean" \| "cyber"` | Variante visuelle             |
+| `variant`   | `"primary" \| "accent"` | Tonalité des décorations      |
 | `bg`        | `enum`    | Couleur de fond                         |
 | `features`  | `array`   | Liste des fonctionnalites (icon, title, description, color) |
 
@@ -1503,7 +1503,7 @@ export const ActionTilesSchema = z.object({
   props: z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
-    variant: z.enum(["ocean", "cyber"]).optional(),
+    variant: z.enum(["primary", "accent"]).optional(),
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
     actions: z.array(
       z.object({
@@ -1522,7 +1522,7 @@ export const ActionTilesSchema = z.object({
 | ---------- | --------- | ---------------------------------------- |
 | `headline` | `LocalizedString` | Titre                             |
 | `subhead`  | `LocalizedString?` | Sous-titre                       |
-| `variant`  | `"ocean" \| "cyber"` | Variante visuelle              |
+| `variant`  | `"primary" \| "accent"` | Tonalité des décorations       |
 | `bg`       | `enum`    | Couleur de fond                          |
 | `actions`  | `array`   | Boutons d'action (icon, title, subtitle, href, color) |
 
@@ -1539,7 +1539,7 @@ export const CtaCardGridSchema = z.object({
   props: z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
-    variant: z.enum(["ocean", "cyber"]).optional(),
+    variant: z.enum(["primary", "accent"]).optional(),
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
     image: z.string().optional(),
     imageAlt: LocalizedString.optional(),
@@ -1569,7 +1569,7 @@ export const CtaCardGridSchema = z.object({
 | ---------- | --------- | ------------------------------------------ |
 | `headline` | `LocalizedString` | Titre                               |
 | `subhead`  | `LocalizedString?` | Sous-titre                          |
-| `variant`  | `"ocean" \| "cyber"` | Variante visuelle                 |
+| `variant`  | `"primary" \| "accent"` | Tonalité des décorations          |
 | `bg`       | `enum`    | Couleur de fond                            |
 | `image`    | `string?` | Image de la section                        |
 | `imageAlt` | `LocalizedString?` | Alt de l'image                     |
@@ -1589,7 +1589,7 @@ export const CtaNewsletterSchema = z.object({
   props: z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
-    variant: z.enum(["ocean", "cyber"]).optional(),
+    variant: z.enum(["primary", "accent"]).optional(),
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
     newsletterPlaceholder: LocalizedString.optional(),
     newsletterButtonLabel: LocalizedString.optional(),
@@ -1611,7 +1611,7 @@ export const CtaNewsletterSchema = z.object({
 | ----------------------- | ----------------- | --------------------------------- |
 | `headline`              | `LocalizedString` | Titre                             |
 | `subhead`               | `LocalizedString?` | Sous-titre                       |
-| `variant`               | `"ocean" \| "cyber"` | Variante visuelle              |
+| `variant`               | `"primary" \| "accent"` | Tonalité des décorations       |
 | `bg`                    | `enum`            | Couleur de fond                   |
 | `newsletterPlaceholder` | `LocalizedString?` | Placeholder newsletter           |
 | `newsletterButtonLabel` | `LocalizedString?` | Label bouton newsletter          |

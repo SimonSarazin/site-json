@@ -11,8 +11,8 @@ interface HeroParallaxProps {
 export function HeroParallax({ props }: HeroParallaxProps) {
     const { t } = useLocalization();
     const [scrollY, setScrollY] = useState(0);
-    const variant = props.variant || "ocean";
-    const isCyber = variant === "cyber";
+    const variant = props.variant || "primary";
+    const isAccent = variant === "accent";
 
     useEffect(() => {
         const handleScroll = () => setScrollY(window.scrollY);
@@ -64,7 +64,7 @@ export function HeroParallax({ props }: HeroParallaxProps) {
                                     dangerouslySetInnerHTML={{ __html: props.logoIcon }}
                                 />
                                 <span
-                                    className={`absolute inset-0 animate-pulse-glow opacity-50 flex items-center justify-center [&>svg]:w-20 [&>svg]:h-20 ${isCyber ? "text-accent" : "text-chart-2"}`}
+                                    className={`absolute inset-0 animate-pulse-glow opacity-50 flex items-center justify-center [&>svg]:w-20 [&>svg]:h-20 ${isAccent ? "text-accent" : "text-chart-2"}`}
                                     dangerouslySetInnerHTML={{ __html: props.logoIcon }}
                                 />
                             </div>
@@ -89,11 +89,11 @@ export function HeroParallax({ props }: HeroParallaxProps) {
                             {props.badges.map((badge, idx) => (
                                 <div
                                     key={idx}
-                                    className={`flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm border ${isCyber ? "bg-secondary/30 border-accent/30" : "bg-secondary/30 border-primary/20"}`}
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm border ${isAccent ? "bg-secondary/30 border-accent/30" : "bg-secondary/30 border-primary/20"}`}
                                 >
                                     {badge.icon && (
                                         <span
-                                            className={`w-5 h-5 flex items-center justify-center [&>svg]:w-5 [&>svg]:h-5 ${isCyber ? "text-accent" : "text-primary"}`}
+                                            className={`w-5 h-5 flex items-center justify-center [&>svg]:w-5 [&>svg]:h-5 ${isAccent ? "text-accent" : "text-primary"}`}
                                             dangerouslySetInnerHTML={{ __html: badge.icon }}
                                         />
                                     )}

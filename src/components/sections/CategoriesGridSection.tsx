@@ -12,7 +12,7 @@ export interface SportCategoriesCard {
 export interface SportCategoriesSectionProps {
   headline?: LocalizedString;
   subhead?: LocalizedString;
-  variant?: "ocean" | "cyber" | "ssbe";
+  variant?: "primary" | "accent" | "frosted";
   columns?: number;
   cards: SportCategoriesCard[];
 }
@@ -27,7 +27,7 @@ export function SportCategoriesSection({
   props,
 }: SportCategoriesSectionComponentProps) {
   const { t } = useLocalization();
-  const variant = props.variant || "ssbe";
+  const variant = props.variant || "primary";
   const columns = props.columns || 3;
 
   const getGridColsClass = () => {
@@ -43,19 +43,19 @@ export function SportCategoriesSection({
 
   const getVariantStyles = () => {
     switch (variant) {
-      case "cyber":
+      case "accent":
         return {
           sectionBg: "bg-gradient-to-b from-background to-card/20",
           cardBg: "bg-card/40 backdrop-blur-sm border-border/50 hover:bg-card/60",
           accentColor: "text-accent",
         };
-      case "ocean":
+      case "frosted":
         return {
           sectionBg: "bg-gradient-to-b from-background to-background/80",
           cardBg: "bg-secondary/30 backdrop-blur-ocean border-primary/20 hover:bg-secondary/50",
           accentColor: "text-primary",
         };
-      case "ssbe":
+      case "primary":
       default:
         return {
           sectionBg: "bg-gradient-to-b from-background to-background/80",

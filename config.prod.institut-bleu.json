@@ -90,7 +90,7 @@
           "type": "hero-parallax",
           "id": "hero-sport-sante",
           "props": {
-            "variant": "cyber",
+            "variant": "accent",
             "headline": {
               "fr": "Sport Santé Bien-être",
               "en": "Sport Health Wellness"
@@ -160,7 +160,7 @@
           "type": "features-glass",
           "id": "features",
           "props": {
-            "variant": "cyber",
+            "variant": "accent",
             "headline": {
               "fr": "Nos domaines d'action",
               "en": "Our areas of action"
@@ -249,7 +249,7 @@
           "type": "action-tiles",
           "id": "actions",
           "props": {
-            "variant": "cyber",
+            "variant": "accent",
             "headline": {
               "fr": "Passez à l'action",
               "en": "Take action"
@@ -318,7 +318,7 @@
           "type": "cta-card-grid",
           "id": "community",
           "props": {
-            "variant": "cyber",
+            "variant": "accent",
             "headline": {
               "fr": "La communauté Sport Santé",
               "en": "The Sport Health Community"
@@ -438,7 +438,7 @@
           "type": "cta-newsletter",
           "id": "cta",
           "props": {
-            "variant": "cyber",
+            "variant": "accent",
             "headline": {
               "fr": "Prenez soin de votre santé dès aujourd'hui",
               "en": "Take care of your health today"

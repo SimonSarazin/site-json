@@ -179,7 +179,7 @@
           "type": "features-glass",
           "id": "features",
           "props": {
-            "variant": "ocean",
+            "variant": "primary",
             "headline": {
               "fr": "Une plateforme pour l'Indianocéanie",
               "en": "Our areas of expertise"
@@ -269,7 +269,7 @@
           "type": "action-tiles",
           "id": "actions",
           "props": {
-            "variant": "cyber",
+            "variant": "accent",
             "headline": {
               "fr": "Passez à l'action",
               "en": "Take action"
@@ -338,7 +338,7 @@
           "type": "cta-card-grid",
           "id": "community",
           "props": {
-            "variant": "cyber",
+            "variant": "accent",
             "headline": {
               "fr": "Rejoignez la coopérative",
               "en": "The Réunion cyber ecosystem"
@@ -455,7 +455,7 @@
           "type": "cta-newsletter",
           "id": "cta",
           "props": {
-            "variant": "cyber",
+            "variant": "accent",
             "headline": {
               "fr": "Prêt·e à nourrir nos îles ?",
               "en": "Protect your business today"

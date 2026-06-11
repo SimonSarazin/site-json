@@ -305,7 +305,7 @@
           "type": "cta-card-grid",
           "id": "community-ssbe",
           "props": {
-            "variant": "cyber",
+            "variant": "accent",
             "headline": {
               "fr": "Le Sport Santé à La Réunion en chiffres",
               "en": "Sport Health in Réunion in numbers"
@@ -435,7 +435,7 @@
               "fr": "Cette synergie est formalisée par une convention partenariale actant un engagement entre l'ARS et ses 13 partenaires dont la DRAJES.",
               "en": "This synergy is formalized by a partnership agreement establishing a commitment between the ARS and its 13 partners including the DRAJES."
             },
-            "variant": "ssbe",
+            "variant": "primary",
             "columns": 4,
             "cards": [
               {
@@ -758,7 +758,7 @@
               "fr": "Choisissez votre activité sportive",
               "en": "Choose your sports activity"
             },
-            "variant": "ssbe",
+            "variant": "primary",
             "columns": 6,
             "cards": [
               {
@@ -1220,7 +1220,7 @@
               "type": "categories-grid",
               "id": "sport-categories-section",
               "props": {
-                "variant": "ssbe",
+                "variant": "primary",
                 "columns": 2,
                 "cards": [
                   {
@@ -1513,7 +1513,7 @@
               "fr": "égulière et adaptée apporte de nomUne activité physique rbreux bénéfices pour votre santé physique et mentale.",
               "en": "Regular and adapted physical activity brings many benefits for your physical and mental health."
             },
-            "variant": "ssbe",
+            "variant": "primary",
             "columns": 4,
             "cards": [
               {
@@ -1732,7 +1732,7 @@
               "fr": "De nombreuses opportunités pour développer votre activité et contribuer à la santé publique.",
               "en": "Many opportunities to develop your activity and contribute to public health."
             },
-            "variant": "ssbe",
+            "variant": "primary",
             "columns": 2,
             "cards": [
               {
@@ -1850,7 +1850,7 @@
               "type": "categories-grid",
               "id": "documents-categories-section",
               "props": {
-                "variant": "ssbe",
+                "variant": "primary",
                 "columns": 2,
                 "cards": [
                   {

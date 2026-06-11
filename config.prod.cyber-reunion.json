@@ -103,7 +103,7 @@
           "type": "hero-parallax",
           "id": "hero-cyber-reunion",
           "props": {
-            "variant": "cyber",
+            "variant": "accent",
             "headline": {
               "fr": "Cyber Réunion gyugu",
               "en": "Cyber Réunion"
@@ -173,7 +173,7 @@
           "type": "features-glass",
           "id": "features",
           "props": {
-            "variant": "cyber",
+            "variant": "accent",
             "headline": {
               "fr": "Nos domaines d'expertise",
               "en": "Our areas of expertise"
@@ -262,7 +262,7 @@
           "type": "action-tiles",
           "id": "actions",
           "props": {
-            "variant": "cyber",
+            "variant": "accent",
             "headline": {
               "fr": "Passez à l'action",
               "en": "Take action"
@@ -331,7 +331,7 @@
           "type": "cta-card-grid",
           "id": "community",
           "props": {
-            "variant": "cyber",
+            "variant": "accent",
             "headline": {
               "fr": "L'écosystème cyber réunionnais",
               "en": "The Réunion cyber ecosystem"
@@ -451,7 +451,7 @@
           "type": "cta-newsletter",
           "id": "cta",
           "props": {
-            "variant": "cyber",
+            "variant": "accent",
             "headline": {
               "fr": "Protégez votre entreprise dès aujourd'hui",
               "en": "Protect your business today"

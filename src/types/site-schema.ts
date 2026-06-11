@@ -230,7 +230,8 @@ export const HeroParallaxSchema = z.object({
       )
       .optional(),
     showScrollIndicator: z.boolean().optional(),
-    variant: z.enum(["ocean", "cyber"]).optional(),
+    // Tonalité des décorations : token qui les teinte (primary par défaut).
+    variant: z.enum(["primary", "accent"]).optional(),
   }),
 });
 
@@ -312,7 +313,6 @@ export const HeroTintedOverlaySchema = z.object({
       )
       .optional(),
     showScrollIndicator: z.boolean().optional(),
-    variant: z.enum(["nos-communes"]).optional(),
   })
 });
 
@@ -371,7 +371,8 @@ export const FeaturesGlassSchema = z.object({
     // d'un gridLayout) où le titre vit côté `leftSection`.
     headline: LocalizedString.optional(),
     subhead: LocalizedString.optional(),
-    variant: z.enum(["ocean", "cyber", "nos-communes"]).optional(),
+    // Tonalité des décorations (primary par défaut).
+    variant: z.enum(["primary", "accent"]).optional(),
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
     features: z.array(
       z.object({
@@ -397,7 +398,9 @@ export const CategoriesGridSectionSchema = z.object({
   props: z.object({
     headline: LocalizedString.optional(),
     subhead: LocalizedString.optional(),
-    variant: z.enum(["ocean", "cyber", "ssbe"]).optional().default("ssbe"),
+    // primary = teinte primaire + glow au survol · accent = teinte accent ·
+    // frosted = verre dépoli lourd (backdrop-blur-ocean).
+    variant: z.enum(["primary", "accent", "frosted"]).optional().default("primary"),
     columns: z.number().min(2).max(6).optional().default(3),
     cards: z.array(
       z.object({
@@ -423,7 +426,8 @@ export const ActionTilesSchema = z.object({
   props: z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
-    variant: z.enum(["ocean", "cyber", "ssbe", "nos-communes"]).optional(),
+    // Tonalité des décorations (primary par défaut).
+    variant: z.enum(["primary", "accent"]).optional(),
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
     actions: z.array(
       z.object({
@@ -447,7 +451,8 @@ export const CtaCardGridSchema = z.object({
   props: z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
-    variant: z.enum(["ocean", "cyber"]).optional(),
+    // Tonalité des décorations : token qui les teinte (primary par défaut).
+    variant: z.enum(["primary", "accent"]).optional(),
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
     image: z.string().optional(),
     imageAlt: LocalizedString.optional(),
@@ -482,7 +487,8 @@ export const CtaNewsletterSchema = z.object({
   props: z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
-    variant: z.enum(["ocean", "cyber"]).optional(),
+    // Tonalité des décorations : token qui les teinte (primary par défaut).
+    variant: z.enum(["primary", "accent"]).optional(),
     bg: z.enum(["default", "card", "muted", "primary", "secondary", "accent", "transparent"]).optional(),
     newsletterPlaceholder: LocalizedString.optional(),
     newsletterButtonLabel: LocalizedString.optional(),
