@@ -1058,6 +1058,23 @@ Ces hooks ne contiennent aucune logique de site ni d'authentification. La logiqu
 
 ---
 
+**Primitives de lien et de chrome partagées** :
+
+Plusieurs primitives présentationnelles factorisent des patterns auparavant recopiés (et divergents) à travers les headers, puis réutilisés par les footers. Aucune ne contient de logique de site.
+
+| Primitive | Fichier | Rôle |
+|---|---|---|
+| `NavLink` | `src/components/layout/NavLink.tsx` | Lien de navigation partagé **header + footer**. Tranche 4 cas selon `to` : vide ou `"#"` → `<span>` inerte (placeholder) ; `mailto:`/`tel:`/`sms:` → `<a href>` simple (pas de `target`) ; externe (`http(s)://`, ou prop `external`) → `<a target="_blank" rel="noopener noreferrer">` ; sinon → `<Link>` React Router (SPA). `forwardRef` + props résiduelles → composable en `asChild` d'un primitive Radix (ex. `DropdownMenuItem asChild`). **Présentationnel** : l'état actif (couleurs, `<span>` souligné) reste calculé par l'appelant, qui passe la className résolue + un `ariaCurrent`. |
+| `LangSwitch` | `header/LangSwitch.tsx` | Sélecteur de langue (`DropdownMenu` Globe + locales). Self-contained (lit `useLocalization`), rend `null` s'il n'y a qu'une locale. Menu déroulant **normalisé** (locale active = `font-semibold bg-accent`) ; trigger piloté par `tone` (`default`/`onColor`) + `triggerClassName`. |
+| `MobileMenuSheet` | `header/MobileMenuSheet.tsx` | Conteneur de menu mobile — enveloppe le `Sheet` shadcn (Radix Dialog) → focus-trap, verrou de scroll, overlay, fermeture par Échap gratuits. Render-prop `children(close)` pour le contenu par-header ; props `breakpoint` (défaut `md`, `xl` pour le méga-menu), `side`, `tone`, `triggerClassName`. |
+| `SocialLinks` | `footer/SocialLinks.tsx` | Rangée de liens sociaux (footers). Map plateforme→icône lucide **consolidée** (une seule source) ; rend un `NavLink` externe par réseau ; style piloté par `itemClassName`/`iconClassName`. |
+
+`NavLink` vivait initialement dans `header/` ; il a été **déplacé** vers `layout/NavLink.tsx` (emplacement neutre, commit 3907a4d) pour être partagé par les headers **et** les footers — qui rendaient auparavant des URLs externes via `<Link>` (navigation SPA cassée → 404) ou ne gardaient pas les placeholders `#`/vide.
+
+**Typage des props `header`/`footer`** : les 6 headers reçoivent tous `header: Header` (type inféré du schéma, source unique de vérité) ; les anciennes extensions inline `Header & { … }` (UnderlineNav, TransparentDark) étaient redondantes — tous leurs champs (`logoTitle`, `ctaButton`, `urgenceButton`, `piggyBank`…) existent déjà dans `HeaderSchema` — et ont été supprimées (commit 85117ed). Les footers reçoivent de même `footer: Footer`.
+
+---
+
 **Widget d'authentification dans les headers (`AuthMenu`)** :
 
 L'affichage du bouton de connexion / menu utilisateur connecté dans les headers est délégué au composant `<AuthMenu>` exporté par le module auth (`src/modules/auth`). Il remplace l'ancien pattern `ClientOnly` + `useCocolight` + `AuthModalLazy` que chaque header gérait en local.

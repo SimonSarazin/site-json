@@ -19,6 +19,8 @@
   - [searchByFieldsToQuery](#searchbyfieldstoquery)
   - [computeFiltersFromUrl](#computefiltersfromurl)
   - [canonicalBaseParams](#canonicalbaseparams)
+  - [schedules — regroupement des créneaux CoForm](#schedules--regroupement-des-créneaux-coform)
+  - [coformAnswer — parser partagé carte + détail](#coformanswer--parser-partagé-carte--détail)
 - [Hooks](#hooks)
   - [useSearchQuery](#usesearchquery)
   - [useAutocomplete](#useautocomplete)
@@ -36,10 +38,10 @@
   - [SearchPro vs SearchProStatic](#searchpro-vs-searchprostatic)
   - [SearchListView](#searchlistview)
   - [Cartes (card variants)](#cartes-card-variants)
-    - [CardPoiSSBE — refonte SSBE](#cardpoissbe--refonte-ssbe)
+    - [CardPoiAmenities — POI avec aménagements (`card.type: "poi-amenities"`)](#cardpoiamenities--poi-avec-aménagements-cardtype-poi-amenities)
     - [CardProfile — authentification requise](#cardprofile--authentification-requise)
   - [Mode détails (detailsMode)](#mode-détails-detailsmode)
-    - [PoiDetailSSBE — refonte SSBE](#poidetailssbe--refonte-ssbe)
+    - [PreviewPoiAmenities — fiche détail POI (`preview.type: "poi-amenities"`)](#previewpoiamenities--fiche-détail-poi-previewtype-poi-amenities)
   - [SearchMap et vue carte](#searchmap-et-vue-carte)
   - [SearchBubbleChart](#searchbubblechart)
   - [FranceRegionsMap](#franceregionsmap)
@@ -113,32 +115,32 @@ src/modules/search/
 │   ├── renderMapPopup.tsx         # Dispatcher → variante de popup carte
 │   ├── AddEntityModal.tsx         # Modal création entité depuis la recherche
 │   │
-│   ├── card/                      # Variantes de cartes
+│   ├── card/                      # Variantes de cartes (noms DESIGN)
 │   │   ├── CardDefault.tsx        # Carte générique (type: "default")
 │   │   ├── CardOverlay.tsx        # Carte avec image en overlay (type: "overlay")
-│   │   ├── CardTiersLieux.tsx     # Tiers-lieux spécifique (type: "tiers-lieux")
+│   │   ├── CardImageCover.tsx     # Image pleine largeur (type: "image-cover")
+│   │   ├── CardImagePanel.tsx     # Image en panneau latéral (type: "image-panel")
 │   │   ├── CardEvent.tsx          # Événement (type: "event")
-│   │   ├── CardEventRezoLaMer.tsx # Événement RezoLaMer (type: "event-rezo-la-mer")
-│   │   ├── CardPoiRezoLaMer.tsx   # POI RezoLaMer (type: "poi-rezo-la-mer")
-│   │   ├── CardPoiSSBE.tsx        # POI SSBE (type: "poi-ssbe")
+│   │   ├── CardEventFeatured.tsx  # Événement mis en avant (type: "event-featured")
+│   │   ├── CardFunding.tsx        # Financement/cagnotte (type: "funding")
+│   │   ├── CardResourceBooking.tsx # Réservation de ressource (type: "resource-booking")
+│   │   ├── CardPoiAmenities.tsx   # POI avec aménagements (type: "poi-amenities")
+│   │   ├── CardContact.tsx        # Carte contact (type: "contact-card")
 │   │   ├── CardProfile.tsx        # Profil générique (type: "profile")
-│   │   ├── CardRezoLaMer.tsx      # RezoLaMer (type: "rezo-la-mer")
-│   │   ├── CardSsbe.tsx           # SSBE (type: "ssbe")
-│   │   ├── CardElts.tsx           # Éléments (type: "card-elts")
 │   │   ├── CardAnswer.tsx         # Réponse CoForm (type: "card-answer")
 │   │   └── CardCountCT.tsx        # Compteur Commune Transparente
 │   │
-│   ├── detailsMode/               # Variantes d'affichage des détails
+│   ├── detailsMode/               # Variantes de CONTENEUR (card.detailsMode)
 │   │   ├── DetailsModeDialog.tsx  # Dialog centré
-│   │   ├── DetailsModeDrawer.tsx  # Drawer latéral droit
-│   │   ├── AnswerDetailModeDialog.tsx  # Dialog pour réponses CoForm (SSBE)
-│   │   └── PoiDetailSSBE.tsx      # Détail POI SSBE
+│   │   └── DetailsModeDrawer.tsx  # Drawer latéral droit
 │   │
 │   ├── mapPopup/
 │   │   └── MapPopupDefault.tsx    # Popup marqueur carte (défaut)
 │   │
-│   └── preview/
-│       └── PreviewDefault.tsx     # Prévisualisation standard (hover/click)
+│   └── preview/                   # Variantes de CONTENU détail (preview.type)
+│       ├── PreviewDefault.tsx     # Prévisualisation standard (type: "default")
+│       ├── PreviewPoiAmenities.tsx # Fiche détail POI aménagements (type: "poi-amenities")
+│       └── PreviewCoformAnswer.tsx # Fiche détail réponse CoForm (type: "coform-answer")
 │
 ├── contexts/
 │   ├── pageFilters.ts             # PageFilters (createPageActionsState) + usePageFilters
@@ -164,7 +166,10 @@ src/modules/search/
 │   ├── buildSearchPayload.ts      # SOURCE UNIQUE : baseParams → payload searchCostum
 │   ├── searchByFieldsToQuery.ts   # searchByFields → { filters, locality, sourceKeys }
 │   ├── computeFiltersFromUrl.ts   # URL query params → mutations PageFilters
-│   └── canonicalBaseParams.ts     # canonicalSearchProStaticBaseParams()
+│   ├── canonicalBaseParams.ts     # canonicalSearchProStaticBaseParams()
+│   ├── filterToggles.ts           # Logique des toggles de filtres
+│   ├── schedules.ts               # groupSchedules — créneaux CoForm groupés par jour (Lun→Dim)
+│   └── coformAnswer.ts            # parseCoformAnswer / getStatusStyle — partagé Card+Preview
 │
 ├── prefetch/
 │   ├── prefetchSearchResults.ts   # prefetchSearchQuery (SSR)
@@ -532,6 +537,33 @@ export function canonicalSearchProStaticBaseParams(
 ): Record<string, unknown>
 ```
 
+### schedules — regroupement des créneaux CoForm
+
+`src/modules/search/lib/schedules.ts` (commits e293338 / 5d24b6b) — **factorisé** depuis `CardAnswer` et `PreviewCoformAnswer` (logique dupliquée).
+
+`groupSchedules(scheduleRaw)` regroupe les créneaux horaires d'une réponse CoForm (`{ day, startHour, startMinute, endHour, endMinute }`) par **jour**, sur une **clé canonique** (anglais minuscule = clé i18n `days.<key>`) et **triés Lundi → Dimanche** (l'ancienne version regroupait sur le libellé français et affichait les jours dans l'ordre brut de la donnée — bug). Le libellé d'affichage reste à l'i18n via `t("days." + dayKey)`.
+
+```ts
+export const DAY_KEYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const;
+export interface DaySchedule { dayKey: DayKey; times: string[]; }
+export function groupSchedules(scheduleRaw: unknown): DaySchedule[]
+```
+
+### coformAnswer — parser partagé carte + détail
+
+`src/modules/search/lib/coformAnswer.ts` (commits e293338 / 5d24b6b) — **parser partagé** par `CardAnswer` (carte) ET `PreviewCoformAnswer` (détail), qui dupliquaient les types, le statut, les IDs de champs et l'extraction.
+
+`parseCoformAnswer(serverData, { slug?, fields? })` normalise une réponse CoForm `serverData` en objet typé `CoformAnswer` (titre, description, type, statut, structure, adresse, horaires via `groupSchedules`, bénéficiaires, installation…). Le mapping rôle → suffixe de champ CoForm est `DEFAULT_COFORM_FIELDS`, **surchargeable** par appelant via l'option `fields` (ex. `list.preview.fields`). Le repli de slug est centralisé (`slug ?? "sportSanteBienetre"`).
+
+`getStatusStyle(status)` retourne les classes du badge de statut (tokens custom `bg-badge-valid`/`bg-badge-waiting`/`bg-badge-in-progress`/`bg-badge-refused`).
+
+```ts
+export type ActivityStatus = "Valide" | "En attente" | "En cours" | "Refuse";
+export const DEFAULT_COFORM_FIELDS: Record<string, string>; // surchargeable via list.preview.fields
+export function parseCoformAnswer(serverData: Record<string, unknown>, opts?: ParseCoformOptions): CoformAnswer
+export function getStatusStyle(status: ActivityStatus): string
+```
+
 ---
 
 ## Hooks
@@ -704,26 +736,34 @@ Grille responsive des résultats. Propriétés CSS grid pilotées par `list.colu
 
 ### Cartes (card variants)
 
-`<SearchCard>` dispatch vers la bonne variante selon `list.card.type` :
+`<SearchCard>` (`components/SearchCard.tsx`) dispatch vers la bonne variante selon `list.card.variant || list.card.type`. **Les variantes sont nommées par DESIGN / FONCTIONNALITÉ, jamais par site** (découplage commit 8cd4070 — les anciens noms `tiers-lieux`, `rezo-la-mer`, `poi-ssbe`, `ssbe`, `card-elts`, `event-rezo-la-mer`, `poi-rezo-la-mer`… ont été supprimés).
 
-| `type` | Composant | Usage |
+Trois **axes orthogonaux** pilotent le rendu (commit 8cd4070) :
+
+- **`card.type` / `card.variant`** → la carte de liste (`SearchCard`) ;
+- **`card.detailsMode`** → le *conteneur* de détail (`SwitchDetailsMode` : `drawer`/`dialog`) ;
+- **`preview.type`** → le *contenu* du détail rendu DANS ce conteneur (`Preview` : `default`/`poi-amenities`/`coform-answer`).
+
+| `card.type` (ou `variant`) | Composant | Usage |
 |--------|-----------|-------|
 | `default` | `CardDefault` | Carte générique (nom, image, tags, adresse) |
-| `overlay` | `CardOverlay` | Image en fond avec overlay gradient |
-| `tiers-lieux` | `CardTiersLieux` | Tiers-lieu (logo, type, horaires) |
+| `overlay` | `CardOverlay` | Image en fond + overlay gradient |
+| `image-cover` | `CardImageCover` | Image de couverture en haut |
+| `image-panel` | `CardImagePanel` | Image en panneau latéral |
 | `event` | `CardEvent` | Événement (dates, lieu, organisateur) |
-| `event-rezo-la-mer` | `CardEventRezoLaMer` | Événement RezoLaMer (mise en page spécifique) |
-| `poi-rezo-la-mer` | `CardPoiRezoLaMer` | POI RezoLaMer |
-| `poi-ssbe` | `CardPoiSSBE` | POI Sport-Santé Bien-Être (refonte complète, voir ci-dessous) |
-| `profile` | `CardProfile` | Profil (avatar, nom, bio) |
-| `rezo-la-mer` | `CardRezoLaMer` | Organisation RezoLaMer |
-| `ssbe` | `CardSsbe` | Organisation SSBE |
-| `card-elts` | `CardElts` | Éléments (projets/membres) |
-| `card-answer` | `CardAnswer` | Réponse CoForm |
+| `event-featured` | `CardEventFeatured` | Événement mis en avant |
+| `funding` | `CardFunding` | Financement / cagnotte |
+| `resource-booking` | `CardResourceBooking` | Ressource réservable |
+| `poi-amenities` | `CardPoiAmenities` | POI avec aménagements/équipements (voir ci-dessous) |
+| `contact-card` | `CardContact` | Fiche contact |
+| `profile` | `CardProfile` | Profil (avatar, nom, bio) — auth requise pour les actions |
+| `card-answer` | `CardAnswer` | Réponse CoForm (activité avec horaires) |
 
-#### CardPoiSSBE — refonte SSBE
+Toutes les variantes sont lazy-loadées ; à une page donnée, seul le type configuré est téléchargé côté client. Les **couleurs en dur** des cartes ont été remplacées par des **tokens de thème** (commits 4936978 / ad11831 / 06baffb) → chaque carte s'adapte au thème du site et au mode clair/sombre.
 
-`src/modules/search/components/card/CardPoiSSBE.tsx` — carte POI équipement sportif (Sport-Santé Bien-Être). Refonte complète par rapport à la version antérieure.
+#### CardPoiAmenities — POI avec aménagements (`card.type: "poi-amenities"`)
+
+`src/modules/search/components/card/CardPoiAmenities.tsx` (ex-`CardPoiSSBE`, renommé par DESIGN au commit 8cd4070) — carte POI listant les aménagements/équipements (accès PMR, transport, éclairage, douches, libre accès).
 
 **Typage** : le composant caste `item` en `Poi` (type SDK `@communecter/cocolight-api-client`) et lit **uniquement `serverData`** (pas de cast `Record<string, unknown>` global). L'interface locale `Poi` a été supprimée — la lib SDK fournit le type.
 
@@ -750,7 +790,9 @@ Grille responsive des résultats. Propriétés CSS grid pilotées par `list.colu
 
 **`<OptimizedImage>`** remplace `<img>` — srcSet 1x/2x, lazy loading automatique.
 
-**Labels traduits** : la section « Aménagement » et toutes les features utilisent les clés `CardPoiSSBE.*` du namespace `modules/search` (fr/en).
+**Thème** : plus de couleur en dur — la surface « feature active » utilise `bg-primary/10 text-primary`, le bloc adresse `bg-primary/5` (tokens adaptatifs, commit 06baffb).
+
+**Labels traduits** : la section « Aménagement » et toutes les features utilisent les clés `CardPoiAmenities.*` du namespace `modules/search` (fr/en).
 
 **Badge « Validé »** (`enqueteStatut === "Validé"`) : supprimé de la carte (conservé dans la fiche détail). Plus de badge dans le header de la carte.
 
@@ -765,20 +807,30 @@ Grille responsive des résultats. Propriétés CSS grid pilotées par `list.colu
 
 Voir [doc/23-module-auth.md](doc/23-module-auth.md) pour l'API `useAuthModal`.
 
-### Mode détails (detailsMode)
+### Mode détails — conteneur (`detailsMode`) vs contenu (`preview.type`)
 
-Quand `list.card.detailsMode` est configuré, `<SwitchDetailsMode>` ouvre les détails de l'entité sélectionnée :
+Le détail d'une entité sélectionnée est **découplé en deux axes** (commit 8cd4070) :
 
-| Variante | Composant | Description |
+`<SwitchDetailsMode>` choisit le **conteneur** selon `list.card.detailsMode` **uniquement** (il ne lit plus jamais `card.type`) :
+
+| `card.detailsMode` | Composant | Description |
 |----------|-----------|-------------|
-| `drawer` | `DetailsModeDrawer` | Panneau latéral droit |
+| `drawer` (défaut) | `DetailsModeDrawer` | Panneau latéral droit |
 | `dialog` | `DetailsModeDialog` | Dialog centré |
-| `AnswerDetailModeDialog` | — | Dialog spécifique réponses CoForm (SSBE) |
-| `PoiDetailSSBE` | — | Dialog détail POI SSBE (refonte complète, voir ci-dessous) |
 
-#### PoiDetailSSBE — refonte SSBE
+`<Preview>` (`components/Preview.tsx`) choisit le **contenu** rendu DANS ce conteneur selon `list.preview.type` :
 
-`src/modules/search/components/detailsMode/PoiDetailSSBE.tsx` — fiche détail complète d'un POI équipement sportif. Refonte majeure.
+| `preview.type` | Composant | Description |
+|----------|-----------|-------------|
+| `default` (défaut) | `PreviewDefault` | Aperçu générique |
+| `poi-amenities` | `PreviewPoiAmenities` | Fiche détail POI avec aménagements (ex-`PoiDetailSSBE`, voir ci-dessous) |
+| `coform-answer` | `PreviewCoformAnswer` | Fiche détail réponse CoForm (activité + horaires, ex-`AnswerDetailModeDialog`) |
+
+Chaque contenu de `Preview` borne lui-même sa hauteur/scroll (indépendant du conteneur). `list.preview.fields` surcharge le mappage des IDs de champ CoForm (voir « parser CoForm » ci-dessous).
+
+#### PreviewPoiAmenities — fiche détail POI (`preview.type: "poi-amenities"`)
+
+`src/modules/search/components/preview/PreviewPoiAmenities.tsx` (ex-`PoiDetailSSBE`, renommé par DESIGN au commit 8cd4070) — fiche détail complète d'un POI avec aménagements.
 
 **Structure du Dialog** : layout `flex flex-col` avec header fixe (`shrink-0`) et corps défilant (`min-h-0 flex-1 overflow-y-auto`). `ScrollArea` (composant shadcn) remplacé par un `<div>` natif `overflow-y-auto` pour un scroll flex correct sans tronquement. Le bouton de fermeture est rendu comme `DialogClose` custom (icône `X`) positionné en absolu en haut à droite, aux côtés du bouton « Éditer ».
 
@@ -815,7 +867,7 @@ Quand `list.card.detailsMode` est configuré, `<SwitchDetailsMode>` ouvre les d�
 | `equip_acc_libre` | `libreAccess` | Technique + Accessibilité |
 | `inst_part_bool` / `inst_part_type` | `partenariat` / `typePartenariat` | Technique |
 
-**`toDate()`** : même logique que `CardPoiSSBE` — gère `Date` et `string` ISO.
+**`toDate()`** : même logique que `CardPoiAmenities` — gère `Date` et `string` ISO.
 
 **`str()`** : coercion minimale display-only (string brut, tableau → join, number/boolean → String). Ne fait aucune résolution récursive.
 
@@ -833,13 +885,13 @@ Colonne latérale :
 7. **Caractéristiques techniques** — nature, revêtement, surface, longueur, largeur, partenariat
 8. **Suivi** — dates de création, enquête, mise à jour
 
-**Bouton Éditer** : visible uniquement si `canEditProfile` (hook `useProfilPermissions`). Ouvre `DynamicEditModal` (registry config-driven `config.profiles.poi.editModal`) et ferme la fiche (`setOpenDetails(false)`). Le formulaire d'édition est découplé de la vue détail — `PoiDetailSSBE` n'embarque plus le formulaire.
+**Bouton Éditer** : visible uniquement si `canEditProfile` (hook `useProfilPermissions`). Ouvre `DynamicEditModal` (registry config-driven `config.profiles.poi.editModal`) et ferme la fiche (`setOpenDetails(false)`). Le formulaire d'édition est découplé de la vue détail — `PreviewPoiAmenities` n'embarque plus le formulaire.
 
 **Suppression de la section Activités** : l'ancienne section « Activités qui utilisent cette installation » (rechargement dynamique via `globalAutocompleteCostum` + `useEffect`) a été retirée.
 
 **Suppression du champ `subCategory`** (badge `Star`) : retiré de l'interface `PoiDetail` et du rendu.
 
-**Labels traduits** : tous les libellés passent par `t("PoiDetailSSBE.*")` (namespace `modules/search`). La fonction helper `yesNo(value?)` retourne `t("PoiDetailSSBE.yes")` / `t("PoiDetailSSBE.no")` / `"—"` pour les champs booléens des tableaux PMR/PSHS.
+**Labels traduits** : tous les libellés passent par `t("PreviewPoiAmenities.*")` (namespace `modules/search`). La fonction helper `yesNo(value?)` retourne `t("PreviewPoiAmenities.yes")` / `t("PreviewPoiAmenities.no")` / `"—"` pour les champs booléens des tableaux PMR/PSHS.
 
 ### SearchMap et vue carte
 
@@ -943,9 +995,14 @@ Le « Design A » désigne le pattern où le hero de la page d'accueil pose des 
 
 ## Variantes de carte JSON (`list.card.type`)
 
-La variante de carte configure non seulement le composant de rendu mais aussi les informations affichées dans le détail. La valeur de `type` correspond à la prop `type` du schéma `list.card`.
+La carte de liste est pilotée par `list.card.variant` (sinon `list.card.type` — `SearchCard` résout `variant || type`). **Les valeurs sont des noms de DESIGN / FONCTIONNALITÉ, jamais de site** (découplage commit 8cd4070). Variantes actuelles : `default`, `overlay`, `image-cover`, `image-panel`, `event`, `event-featured`, `funding`, `resource-booking`, `poi-amenities`, `contact-card`, `profile`, `card-answer` (cf. la table « Cartes (card variants) » ci-dessus pour le composant correspondant). À noter : `overlay` n'est sélectionnable que via `card.type` (l'enum `card.variant` ne l'inclut pas) ; les autres valeurs sont acceptées par les deux clés.
 
-**Règle d'extension** : pour ajouter une nouvelle variante, créer `components/card/CardMonNom.tsx`, l'enregistrer dans `SearchCard.tsx` (switch), et ajouter l'entrée dans le schéma `ListConfSchema.card.type`.
+`card.type`/`variant` est **orthogonal** à deux autres axes (commit 8cd4070), à configurer indépendamment :
+
+- **`list.card.detailsMode`** (`drawer` / `dialog`) → le *conteneur* de la fiche détail (`SwitchDetailsMode` → `DetailsModeDrawer` / `DetailsModeDialog`) ;
+- **`list.preview.type`** (`default` / `poi-amenities` / `coform-answer`) → le *contenu* rendu DANS ce conteneur (`Preview` → `PreviewDefault` / `PreviewPoiAmenities` / `PreviewCoformAnswer`). `list.preview.fields` surcharge le mappage des IDs de champ CoForm consommés par `parseCoformAnswer` (cf. `lib/coformAnswer.ts`).
+
+**Règle d'extension** : pour ajouter une nouvelle variante, créer `components/card/CardMonDesign.tsx` (nom DESIGN, pas de site), l'enregistrer dans `SearchCard.tsx` (switch), et ajouter l'entrée dans le schéma `ListConfSchema.card.variant` / `card.type`.
 
 ---
 
@@ -963,7 +1020,7 @@ Utilisé pour les sites tiers-lieux qui enrichissent les fiches avec des donnée
 
 Namespace : **`modules/search`**. Enregistré en side-effect par `i18n.ts`.
 
-Structure de `fr.json` / `en.json` : fichiers **mixtes** — clés plates (chaînes françaises littérales) pour les libellés généraux, plus deux blocs **imbriqués** (`CardPoiSSBE` et `PoiDetailSSBE`) ajoutés lors de la refonte SSBE.
+Structure de `fr.json` / `en.json` : fichiers **mixtes** — clés plates (chaînes françaises littérales) pour les libellés généraux, plus des blocs **imbriqués** par composant : `CardPoiAmenities` + `PreviewPoiAmenities` (POI aménagements), `coformAnswer` (carte + fiche détail réponse CoForm) et `days` (jours de la semaine, utilisés par `groupSchedules`).
 
 **Clés plates (exemples représentatifs)** :
 
@@ -984,45 +1041,49 @@ Structure de `fr.json` / `en.json` : fichiers **mixtes** — clés plates (chaî
 | `"type.organizations"` | `"Organizations"` |
 | `"toast.card.starSuccess"` | `"Updated"` |
 
-**Bloc `CardPoiSSBE`** (carte POI SSBE) — clés fr / en en parité :
+**Bloc `CardPoiAmenities`** (carte POI aménagements) — clés fr / en en parité :
 
 | Clé | fr | en |
 |-----|----|----|
-| `CardPoiSSBE.amenities` | `"Aménagement"` | `"Amenities"` |
-| `CardPoiSSBE.pmrAccess` | `"Accès PMR"` | `"PRM access"` |
-| `CardPoiSSBE.publicTransport` | `"Transport en commun"` | `"Public transport"` |
-| `CardPoiSSBE.lighting` | `"Éclairage"` | `"Lighting"` |
-| `CardPoiSSBE.showers` | `"Douches"` | `"Showers"` |
-| `CardPoiSSBE.freeAccess` | `"Libre accès"` | `"Free access"` |
-| `CardPoiSSBE.yearsAgo` | `"Il y a {{count}} ans"` | `"{{count}} years ago"` |
+| `CardPoiAmenities.amenities` | `"Aménagement"` | `"Amenities"` |
+| `CardPoiAmenities.pmrAccess` | `"Accès PMR"` | `"PRM access"` |
+| `CardPoiAmenities.publicTransport` | `"Transport en commun"` | `"Public transport"` |
+| `CardPoiAmenities.lighting` | `"Éclairage"` | `"Lighting"` |
+| `CardPoiAmenities.showers` | `"Douches"` | `"Showers"` |
+| `CardPoiAmenities.freeAccess` | `"Libre accès"` | `"Free access"` |
+| `CardPoiAmenities.yearsAgo` | `"Il y a {{count}} ans"` | `"{{count}} years ago"` |
 
-**Bloc `PoiDetailSSBE`** (fiche détail POI SSBE) — structure imbriquée :
+**Bloc `PreviewPoiAmenities`** (fiche détail POI aménagements) — structure imbriquée :
 
 ```
-PoiDetailSSBE.edit / .close / .validated / .fallbackTitle
-PoiDetailSSBE.createdOn  (interpolation {{date}})
-PoiDetailSSBE.yearsAgo   (interpolation {{count}})
-PoiDetailSSBE.yes / .no
+PreviewPoiAmenities.edit / .close / .validated / .fallbackTitle
+PreviewPoiAmenities.createdOn  (interpolation {{date}})
+PreviewPoiAmenities.yearsAgo   (interpolation {{count}})
+PreviewPoiAmenities.yes / .no
 
-PoiDetailSSBE.sections.general / .management / .accessibility
-PoiDetailSSBE.sections.pmrDetails / .pshsDetails
-PoiDetailSSBE.sections.location / .technical / .tracking
+PreviewPoiAmenities.sections.general / .management / .accessibility
+PreviewPoiAmenities.sections.pmrDetails / .pshsDetails
+PreviewPoiAmenities.sections.location / .technical / .tracking
 
-PoiDetailSSBE.fields.category / .family / .installation / .sport
-PoiDetailSSBE.fields.ownerName / .ownerType / .managementType / .premises / .users
-PoiDetailSSBE.fields.pmrType / .transportType
-PoiDetailSSBE.fields.nature / .floor / .surface / .length / .width / .partnership
+PreviewPoiAmenities.fields.category / .family / .installation / .sport
+PreviewPoiAmenities.fields.ownerName / .ownerType / .managementType / .premises / .users
+PreviewPoiAmenities.fields.pmrType / .transportType
+PreviewPoiAmenities.fields.nature / .floor / .surface / .length / .width / .partnership
 
-PoiDetailSSBE.features.pmr / .transport / .lighting / .freeAccess / .showers
+PreviewPoiAmenities.features.pmr / .transport / .lighting / .freeAccess / .showers
 
-PoiDetailSSBE.pmr.access / .path / .showers / .toilets / .stands / .changing
-PoiDetailSSBE.pshs.playArea / .path / .toilets / .stands / .changing / .signage
+PreviewPoiAmenities.pmr.access / .path / .showers / .toilets / .stands / .changing
+PreviewPoiAmenities.pshs.playArea / .path / .toilets / .stands / .changing / .signage
 
-PoiDetailSSBE.map.unavailable
-PoiDetailSSBE.tracking.created / .lastSurvey / .lastUpdate
+PreviewPoiAmenities.map.unavailable
+PreviewPoiAmenities.tracking.created / .lastSurvey / .lastUpdate
 ```
 
-Aucun des préfixes hiérarchiques génériques (`SearchPro.*`, `SearchFilters.*`, `ActiveFiltersBar.*`, etc.) n'existe dans les fichiers réels — uniquement les blocs SSBE ci-dessus.
+**Bloc `coformAnswer`** (carte `CardAnswer` + fiche détail `PreviewCoformAnswer`) — clés plates : `noTitle`, `noDescription`, `address`, `addressEmpty`, `contact`, `schedule`, `scheduleEmpty`, `activity`, `beneficiaries`, `beneficiariesEmpty`, `accessibility`, `reducedMobility`, `notProvided`, `installation`, `installationEmpty`, `validated`, `noName`, `by`, `showLess`, `moreSlots` (interpolation `{{count}}`), `activitySheet`, `structureSheet`.
+
+**Bloc `days`** (jours de la semaine, utilisés par `groupSchedules` via `t("days." + dayKey)`) : `monday` → `sunday` (fr `"Lundi"`…`"Dimanche"` / en `"Monday"`…`"Sunday"`).
+
+Aucun des préfixes hiérarchiques génériques (`SearchPro.*`, `SearchFilters.*`, `ActiveFiltersBar.*`, etc.) n'existe dans les fichiers réels — uniquement les blocs ci-dessus.
 
 ---
 
@@ -1168,9 +1229,9 @@ Le champ `customHeader.showMapButton` (ancienne config) n'existe plus dans le sc
 
 `CardProfile` et `SearchProStatic` appellent `useAuthModal()` (hook du module `auth`). Ce hook requiert que `AuthModalProvider` soit monté dans l'arbre. Si vous intégrez ces composants dans un contexte sans le module `auth` initialisé, `openLogin()` ne fera rien. Vérifier que `AuthModalProvider` est bien présent (monté via le layout global dans `SiteShell`).
 
-### 10. `PoiDetailSSBE` — `ProfileMapLeaflet` est SSR-incompatible
+### 10. `PreviewPoiAmenities` — `ProfileMapLeaflet` est SSR-incompatible
 
-La carte Leaflet intégrée dans `PoiDetailSSBE` (`ProfileMapLeaflet`) ne s'affiche qu'après hydratation côté client. En SSR, elle rend un `<div>` placeholder. Ce comportement est intentionnel — Leaflet ne supporte pas le SSR.
+La carte Leaflet intégrée dans `PreviewPoiAmenities` (`ProfileMapLeaflet`) ne s'affiche qu'après hydratation côté client. En SSR, elle rend un `<div>` placeholder. Ce comportement est intentionnel — Leaflet ne supporte pas le SSR.
 
 ### 11. `SearchProStatic` — conteneur pleine largeur
 
