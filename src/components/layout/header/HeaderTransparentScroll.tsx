@@ -29,7 +29,7 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
         return items.some(item => {
             if (isNavItemActive(item.path)) return true;
             if (item.children?.length) {
-                return isPathInsideNav(item.children as HeaderNavItem[]);
+                return isPathInsideNav(item.children);
             }
             return false;
         });
@@ -43,7 +43,7 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
         header.navVisibleOnlyForListedPages && !isPathInsideNav(header.nav)
     );
 
-    const secondaryNavItems = (header.secondaryNav ?? []) as HeaderNavItem[];
+    const secondaryNavItems = header.secondaryNav ?? [];
     const shouldHideSecondaryNav = Boolean(
         secondaryNavItems.length > 0
         && header.secondaryNavVisibleOnlyForListedPages
