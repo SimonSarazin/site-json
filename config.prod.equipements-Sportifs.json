@@ -1918,7 +1918,10 @@
       "params": {
         "sourceKey": [
           "equipementsSportifs974"
-        ]
+        ],
+        "filters": {
+            "type":"recoveryCenter"
+        }
       }
     }
   },
