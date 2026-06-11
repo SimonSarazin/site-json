@@ -5,8 +5,8 @@ import { useLocalization } from "@/hooks/useLocalization";
 import { Header } from "@/types/site-schema";
 import { ChevronDown, Globe, Menu, X } from "lucide-react";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";
-import { Link } from "react-router";
 import { ClientOnly } from "../ClientOnly";
+import NavLink from "./NavLink";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -67,7 +67,7 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
         <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${(isScrolled || header.transparent === false) ? 'bg-background/90 backdrop-blur-ocean shadow-ocean' : 'bg-transparent'}`}>
             <div className="container mx-auto px-4">
                 <div className="flex items-center justify-between h-20">
-                    <Link to={header.path || "/"} className="flex items-center gap-3 cursor-pointer group">
+                    <NavLink to={header.path || "/"} className="flex items-center gap-3 cursor-pointer group">
                         {header.logo ? (
                             <img
                                 src={`/${header.logo}`}
@@ -90,7 +90,7 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
                                 )}
                             </span>
                         )}
-                    </Link>
+                    </NavLink>
 
                     <div className="hidden md:flex items-center gap-8">
                         {navItemsToDisplay.map((item, idx) => {
@@ -98,36 +98,37 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
                             const hasChildren = !!item.children?.length;
                             return (
                                 <div key={idx} className="relative group">
-                                    <Link
-                                        to={item.path || "#"}
+                                    <NavLink
+                                        to={item.path}
+                                        ariaCurrent={isActive ? "page" : undefined}
                                         className={`transition-colors font-medium relative group ${isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'} ${hasChildren ? 'transition flex items-center gap-1' : ''}`}
                                     >
                                         {t(item.label)}
                                         {hasChildren && <ChevronDown className="w-3 h-3" />}
                                         <span className={`absolute -bottom-1 left-0 h-0.5 bg-primary transition-all ${isActive ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
-                                    </Link>
+                                    </NavLink>
                                     {hasChildren && item.children && (
                                         <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-screen max-w-2xl bg-popover text-popover-foreground rounded-xl shadow-2xl border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-8 z-60">
                                             {item.children.length > 2 ? (
                                                 <div className="grid grid-cols-2 gap-6">
                                                     {item.children.map((sub, i) => (
-                                                        <Link key={i} to={sub.path || "#"} className="block">
+                                                        <NavLink key={i} to={sub.path} className="block">
                                                             <h4 className="font-bold text-popover-foreground mb-2">{t(sub.label)}</h4>
                                                             <p className="text-muted-foreground text-xs leading-relaxed">
                                                                 {sub.description ? t(sub.description) : ""}
                                                             </p>
-                                                        </Link>
+                                                        </NavLink>
                                                     ))}
                                                 </div>
                                             ) : (
                                                 <div className="space-y-4">
                                                     {item.children.map((sub, i) => (
-                                                        <Link key={i} to={sub.path || "#"} className="block">
+                                                        <NavLink key={i} to={sub.path} className="block">
                                                             <h4 className="font-bold text-popover-foreground mb-2">{t(sub.label)}</h4>
                                                             <p className="text-muted-foreground text-xs leading-relaxed">
                                                                 {sub.description ? t(sub.description) : ""}
                                                             </p>
-                                                        </Link>
+                                                        </NavLink>
                                                     ))}
                                                 </div>
                                             )}
@@ -148,8 +149,8 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
                         )}
 
                         {header.urgenceButton && (
-                            <Link
-                                to={header.urgenceButton.path || "#"}
+                            <NavLink
+                                to={header.urgenceButton.path}
                                 className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 text-primary transition-all group"
                             >
                                 {header.urgenceButton.icon ? (
@@ -159,7 +160,7 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
                                     />
                                 ) : null}
                                 <span className="font-semibold text-sm">{t(header.urgenceButton.label)}</span>
-                            </Link>
+                            </NavLink>
                         )}
 
                         {header.utilities?.notifications && <NotificationBell />}
@@ -199,12 +200,12 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
                             <AuthMenu layout="menu" density="compact" showDropdownHeader loginVariant="solid" loginClassName="shadow-glow" loginLabel={header.ctaButton?.label} />
                         )}
                         {!header.utilities?.auth && header.ctaButton && (
-                            <Link
-                                to={header.ctaButton.path || "#"}
+                            <NavLink
+                                to={header.ctaButton.path}
                                 className="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md font-medium shadow-glow transition-all"
                             >
                                 {t(header.ctaButton.label)}
-                            </Link>
+                            </NavLink>
                         )}
                     </div>
 
@@ -239,20 +240,21 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
                     {navItemsToDisplay.map((item, idx) => {
                         const isActive = isNavItemActive(item.path);
                         return (
-                            <Link
+                            <NavLink
                                 key={idx}
-                                to={item.path || "#"}
+                                to={item.path}
+                                ariaCurrent={isActive ? "page" : undefined}
                                 className={`block py-2 transition-colors ${isActive ? 'text-primary font-medium' : 'text-muted-foreground hover:text-foreground'}`}
                                 onClick={() => setMobileMenuOpen(false)}
                             >
                                 {t(item.label)}
-                            </Link>
+                            </NavLink>
                         );
                     })}
 
                     {header.urgenceButton && (
-                        <Link
-                            to={header.urgenceButton.path || "#"}
+                        <NavLink
+                            to={header.urgenceButton.path}
                             className="w-full flex items-center justify-between p-3 rounded-lg bg-accent/20 border border-accent/30 text-accent hover:bg-accent/30 transition-colors"
                             onClick={() => setMobileMenuOpen(false)}
                         >
@@ -265,7 +267,7 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
                                 ) : null}
                                 <span className="font-medium">{t(header.urgenceButton.label)}</span>
                             </span>
-                        </Link>
+                        </NavLink>
                     )}
 
                     {header.utilities?.langSwitch && availableLocales.length > 1 && (
@@ -294,13 +296,13 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
                         <AuthMenu layout="stack" onAction={() => setMobileMenuOpen(false)} loginVariant="solid" loginClassName="shadow-glow" loginLabel={header.ctaButton?.label} />
                     )}
                     {!header.utilities?.auth && header.ctaButton && (
-                        <Link
-                            to={header.ctaButton.path || "#"}
+                        <NavLink
+                            to={header.ctaButton.path}
                             className="w-full mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md font-medium text-center block"
                             onClick={() => setMobileMenuOpen(false)}
                         >
                             {t(header.ctaButton.label)}
-                        </Link>
+                        </NavLink>
                     )}
                 </div>
             </div>

@@ -4,9 +4,10 @@ import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
 import { Header, LocalizedString } from "@/types/site-schema";
 import { Globe, Menu, X } from "lucide-react";
-import { Link, useLocation } from "react-router";
+import { useLocation } from "react-router";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useScrollAware, useScrollToTopOnRouteChange, useNavItemActive } from "./useHeaderBehavior";
+import NavLink from "./NavLink";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -68,7 +69,7 @@ export default function HeaderTransparentDark({ header }: HeaderTransparentDarkP
             <div className="container mx-auto px-4">
                 <div className="flex items-center justify-between h-16 md:h-20">
                     {/* Logo */}
-                    <Link
+                    <NavLink
                         to={header.path || "/"}
                         className="flex items-center gap-2 cursor-pointer group"
                     >
@@ -89,37 +90,31 @@ export default function HeaderTransparentDark({ header }: HeaderTransparentDarkP
                                 {t(logoTitle)}
                             </span>
                         )}
-                    </Link>
+                    </NavLink>
 
                     {/* Desktop navigation */}
                     <div className="hidden md:flex items-center gap-1">
-                        {header.nav?.map((item, idx) => (
-                            item.path ? (
-                                <Link
+                        {header.nav?.map((item, idx) => {
+                            const to = item.path ?? item.href;
+                            if (!to) return null;
+                            const active = !!item.path && isNavItemActive(item.path);
+                            return (
+                                <NavLink
                                     key={idx}
-                                    to={item.path}
+                                    to={to}
+                                    ariaCurrent={active ? "page" : undefined}
                                     className={`
                                         px-3 py-2 text-base font-medium rounded-md transition-all duration-200
-                                        ${isNavItemActive(item.path)
+                                        ${active
                                             ? "text-white bg-white/20"
                                             : "text-white/80 hover:text-white hover:bg-white/10"
                                         }
                                     `}
                                 >
                                     {t(item.label)}
-                                </Link>
-                            ) : item.href ? (
-                                <a
-                                    key={idx}
-                                    href={item.href}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="px-3 py-2 text-base font-medium text-white/80 hover:text-white hover:bg-white/10 rounded-md transition-all"
-                                >
-                                    {t(item.label)}
-                                </a>
-                            ) : null
-                        ))}
+                                </NavLink>
+                            );
+                        })}
                     </div>
 
                     {/* Right utilities */}
@@ -178,24 +173,28 @@ export default function HeaderTransparentDark({ header }: HeaderTransparentDarkP
             {/* Mobile menu */}
             {mobileMenuOpen && (
                 <div className="md:hidden bg-ct-header border-t border-white/10 px-4 py-3 space-y-1">
-                    {header.nav?.map((item, idx) =>
-                        item.path ? (
-                            <Link
+                    {header.nav?.map((item, idx) => {
+                        const to = item.path ?? item.href;
+                        if (!to) return null;
+                        const active = !!item.path && isNavItemActive(item.path);
+                        return (
+                            <NavLink
                                 key={idx}
-                                to={item.path}
+                                to={to}
                                 onClick={() => setMobileMenuOpen(false)}
+                                ariaCurrent={active ? "page" : undefined}
                                 className={`
                                     block px-3 py-2 rounded-md text-sm font-medium transition-all
-                                    ${isNavItemActive(item.path)
+                                    ${active
                                         ? "text-white bg-white/20"
                                         : "text-white/80 hover:text-white hover:bg-white/10"
                                     }
                                 `}
                             >
                                 {t(item.label)}
-                            </Link>
-                        ) : null
-                    )}
+                            </NavLink>
+                        );
+                    })}
                 </div>
             )}
         </nav>

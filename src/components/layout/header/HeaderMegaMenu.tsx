@@ -6,15 +6,7 @@ import { Header } from "@/types/site-schema";
 import { ChevronDown, Globe } from "lucide-react";
 import { Link } from "react-router";
 
-function NavLink({ to, className, children }: { to: string; className?: string; children: React.ReactNode }) {
-  if (!to || to === "#") {
-    return <span className={className}>{children}</span>;
-  }
-  if (to.startsWith("http")) {
-    return <a href={to} target="_blank" rel="noopener noreferrer" className={className}>{children}</a>;
-  }
-  return <Link to={to} className={className}>{children}</Link>;
-}
+import NavLink from "./NavLink";
 import { ClientOnly } from "../ClientOnly";
 import {
     DropdownMenu,
@@ -76,7 +68,7 @@ export default function HeaderMegaMenu({ header }: HeaderMegaMenuProps) {
                                         <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-screen max-w-2xl bg-popover text-popover-foreground rounded-xl shadow-2xl border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-8 z-60">
                                             {item.featured ? (
                                                 <div className="grid grid-cols-3 gap-8">
-                                                    <Link to={item.path || "#"} className="text-primary font-semibold flex items-center gap-2">
+                                                    <NavLink to={item.path} className="text-primary font-semibold flex items-center gap-2">
                                                         <div className="flex flex-col items-center justify-center border-r border-border pr-6">
                                                             <div className="w-20 h-20 bg-accent rounded-full flex items-center justify-center mb-4">
                                                                 <svg className="w-8 h-8 text-accent-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -90,12 +82,12 @@ export default function HeaderMegaMenu({ header }: HeaderMegaMenuProps) {
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                                                             </svg>
                                                         </div>
-                                                    </Link>
+                                                    </NavLink>
 
 
                                                     <div className="col-span-2 grid grid-cols-2 gap-6">
                                                         {item.children.slice(1).map((sub, i) => (
-                                                            <NavLink key={i} to={sub.path || '#'} className="block hover:bg-accent rounded-lg p-2 -m-2 transition">
+                                                            <NavLink key={i} to={sub.path} className="block hover:bg-accent rounded-lg p-2 -m-2 transition">
                                                                 <h4 className="font-bold text-popover-foreground mb-2">{t(sub.label)}</h4>
                                                                 <p className="text-muted-foreground text-xs leading-relaxed">
                                                                     {sub.description ? t(sub.description) : ""}
@@ -107,7 +99,7 @@ export default function HeaderMegaMenu({ header }: HeaderMegaMenuProps) {
                                             ) : item.children.length > 2 ? (
                                                 <div className="grid grid-cols-2 gap-6">
                                                     {item.children.map((sub, i) => (
-                                                        <NavLink key={i} to={sub.path || '#'} className="block hover:bg-accent rounded-lg p-2 -m-2 transition">
+                                                        <NavLink key={i} to={sub.path} className="block hover:bg-accent rounded-lg p-2 -m-2 transition">
                                                             <h4 className="font-bold text-popover-foreground mb-2">{t(sub.label)}</h4>
                                                             <p className="text-muted-foreground text-xs leading-relaxed">
                                                                 {sub.description ? t(sub.description) : ""}
@@ -118,7 +110,7 @@ export default function HeaderMegaMenu({ header }: HeaderMegaMenuProps) {
                                             ) : (
                                                 <div className="space-y-4">
                                                     {item.children.map((sub, i) => (
-                                                        <NavLink key={i} to={sub.path || '#'} className="block hover:bg-accent rounded-lg p-2 -m-2 transition">
+                                                        <NavLink key={i} to={sub.path} className="block hover:bg-accent rounded-lg p-2 -m-2 transition">
                                                             <h4 className="font-bold text-popover-foreground mb-2">{t(sub.label)}</h4>
                                                             <p className="text-muted-foreground text-xs leading-relaxed">
                                                                 {sub.description ? t(sub.description) : ""}
@@ -226,30 +218,16 @@ export default function HeaderMegaMenu({ header }: HeaderMegaMenuProps) {
                                     <div className="font-semibold text-foreground">{t(item.label)}</div>
                                     {item.children && (
                                         <div className="pl-4 space-y-2">
-                                            {item.children.map((sub, i) => {
-                                                const isExternal = (sub.path || '').startsWith('http');
-                                                return isExternal ? (
-                                                    <a
-                                                        key={i}
-                                                        href={sub.path || '#'}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="block text-sm text-muted-foreground hover:text-primary transition"
-                                                        onClick={() => setMobileMenuOpen(false)}
-                                                    >
-                                                        {t(sub.label)}
-                                                    </a>
-                                                ) : (
-                                                    <Link
-                                                        key={i}
-                                                        to={sub.path || '#'}
-                                                        className="block text-sm text-muted-foreground hover:text-primary transition"
-                                                        onClick={() => setMobileMenuOpen(false)}
-                                                    >
-                                                        {t(sub.label)}
-                                                    </Link>
-                                                );
-                                            })}
+                                            {item.children.map((sub, i) => (
+                                                <NavLink
+                                                    key={i}
+                                                    to={sub.path}
+                                                    className="block text-sm text-muted-foreground hover:text-primary transition"
+                                                    onClick={() => setMobileMenuOpen(false)}
+                                                >
+                                                    {t(sub.label)}
+                                                </NavLink>
+                                            ))}
                                         </div>
                                     )}
                                 </div>

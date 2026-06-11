@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
 import type { Header } from "@/types/site-schema";
 import { ClientOnly } from "../ClientOnly";
+import NavLink from "./NavLink";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -40,7 +40,7 @@ export default function HeaderMinimal({ header }: HeaderMinimalProps) {
                 <div className="max-w-[1900px] mx-auto px-8 md:px-12 lg:px-16 py-5 flex justify-between items-center">
 
                     <div className="flex items-center gap-3">
-                        <Link to={header.path || "/"} className="flex items-center gap-3 group">
+                        <NavLink to={header.path || "/"} className="flex items-center gap-3 group">
                              {header.logo ? (
                                 <img src={header.logo} alt={header.logoAlt ? t(header.logoAlt) : "Logo"} className="w-8 h-8 object-contain" />
                             ) : header.logoIcon ? (
@@ -52,18 +52,18 @@ export default function HeaderMinimal({ header }: HeaderMinimalProps) {
                                     {t(header.logoTitle)}
                                 </span>
                             )}
-                        </Link>
+                        </NavLink>
                     </div>
 
                     <div className="hidden md:flex items-center gap-8 text-sm font-bold uppercase tracking-[0.15em]">
                         {header.nav?.map((item, idx) => (
-                            <Link
+                            <NavLink
                                 key={idx}
-                                to={item.path || "#"}
+                                to={item.path}
                                 className="hover:text-primary transition-colors text-foreground"
                             >
                                 {t(item.label)}
-                            </Link>
+                            </NavLink>
                         ))}
 
                         {header.utilities?.notifications && <NotificationBell />}
@@ -121,14 +121,14 @@ export default function HeaderMinimal({ header }: HeaderMinimalProps) {
                 {mobileMenuOpen && (
                     <div className="md:hidden bg-background border-t border-gray-100 px-8 py-4 space-y-4 animate-in slide-in-from-top-5">
                         {header.nav?.map((item, idx) => (
-                            <Link
+                            <NavLink
                                 key={idx}
-                                to={item.path || "#"}
+                                to={item.path}
                                 className="block text-sm font-bold uppercase tracking-[0.15em] hover:text-primary transition-colors text-foreground"
                                 onClick={() => setMobileMenuOpen(false)}
                             >
                                 {t(item.label)}
-                            </Link>
+                            </NavLink>
                         ))}
 
                         {header.utilities?.auth && (

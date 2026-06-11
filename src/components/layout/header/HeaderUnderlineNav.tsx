@@ -4,8 +4,9 @@ import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
 import { Header, LocalizedString } from "@/types/site-schema";
 import { Globe, Menu, X } from "lucide-react";
-import { Link, useLocation } from "react-router";
+import { useLocation } from "react-router";
 import { useScrollAware, useScrollToTopOnRouteChange, useNavItemActive } from "./useHeaderBehavior";
+import NavLink from "./NavLink";
 import { ClientOnly } from "../ClientOnly";
 import {
     DropdownMenu,
@@ -58,7 +59,7 @@ export default function HeaderUnderlineNav({ header }: HeaderUnderlineNavProps) 
         <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${(isScrolled || location.pathname !== '/') ? 'bg-header-green backdrop-blur-ocean shadow-ocean' : 'bg-transparent'}`}>
             <div className="container mx-auto px-4">
                 <div className="flex items-center justify-between h-20">
-                    <Link to={header.path || "/"} className="flex items-center gap-3 cursor-pointer group">
+                    <NavLink to={header.path || "/"} className="flex items-center gap-3 cursor-pointer group">
                         {header.logo ? (
                             <img
                                 src={`/${header.logo}`}
@@ -74,26 +75,27 @@ export default function HeaderUnderlineNav({ header }: HeaderUnderlineNavProps) 
                         {header.logoTitle && (
                             <span className="text-xl font-bold text-white">{t(header.logoTitle)}</span>
                         )}
-                    </Link>
+                    </NavLink>
 
                     <div className="hidden md:flex items-center gap-8">
                         {header.nav.map((item, idx) => {
                             const isActive = isNavItemActive(item.path);
                             return (
-                                <Link
+                                <NavLink
                                     key={idx}
-                                    to={item.path || "#"}
+                                    to={item.path}
+                                    ariaCurrent={isActive ? "page" : undefined}
                                     className={`text-lg transition-colors font-medium relative group ${isActive ? 'text-primary' : 'text-white hover:text-primary'}`}
                                 >
                                     {t(item.label)}
                                     <span className={`absolute -bottom-1 left-0 h-0.5 bg-primary transition-all ${isActive ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
-                                </Link>
+                                </NavLink>
                             );
                         })}
 
                         {header.piggyBank && (
-                            <Link
-                                to={header.piggyBank.path || "#"}
+                            <NavLink
+                                to={header.piggyBank.path}
                                 className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/20 hover:bg-primary/30 text-primary transition-all group"
                             >
                                 {header.piggyBank.icon ? (
@@ -105,12 +107,12 @@ export default function HeaderUnderlineNav({ header }: HeaderUnderlineNavProps) 
                                 {header.piggyBank.amount && (
                                     <span className="font-semibold text-sm">{header.piggyBank.amount}</span>
                                 )}
-                            </Link>
+                            </NavLink>
                         )}
 
                         {header.urgenceButton && (
-                            <Link
-                                to={header.urgenceButton.path || "#"}
+                            <NavLink
+                                to={header.urgenceButton.path}
                                 className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 text-primary transition-all group"
                             >
                                 {header.urgenceButton.icon ? (
@@ -120,7 +122,7 @@ export default function HeaderUnderlineNav({ header }: HeaderUnderlineNavProps) 
                                     />
                                 ) : null}
                                 <span className="font-semibold text-sm">{t(header.urgenceButton.label)}</span>
-                            </Link>
+                            </NavLink>
                         )}
 
                         {header.utilities?.notifications && <NotificationBell />}
@@ -160,12 +162,12 @@ export default function HeaderUnderlineNav({ header }: HeaderUnderlineNavProps) 
                             <AuthMenu layout="menu" density="normal" showName loginVariant="solid" loginClassName="shadow-glow" loginLabel={header.ctaButton?.label} />
                         )}
                         {!header.utilities?.auth && header.ctaButton && (
-                            <Link
-                                to={header.ctaButton.path || "#"}
+                            <NavLink
+                                to={header.ctaButton.path}
                                 className="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md font-medium shadow-glow transition-all"
                             >
                                 {t(header.ctaButton.label)}
-                            </Link>
+                            </NavLink>
                         )}
                     </div>
 
@@ -198,20 +200,21 @@ export default function HeaderUnderlineNav({ header }: HeaderUnderlineNavProps) 
                     {header.nav.map((item, idx) => {
                         const isActive = isNavItemActive(item.path);
                         return (
-                            <Link
+                            <NavLink
                                 key={idx}
-                                to={item.path || "#"}
+                                to={item.path}
+                                ariaCurrent={isActive ? "page" : undefined}
                                 className={`block py-2 transition-colors ${isActive ? 'text-primary font-medium' : 'text-muted-foreground hover:text-primary'}`}
                                 onClick={() => setMobileMenuOpen(false)}
                             >
                                 {t(item.label)}
-                            </Link>
+                            </NavLink>
                         );
                     })}
 
                     {header.urgenceButton && (
-                        <Link
-                            to={header.urgenceButton.path || "#"}
+                        <NavLink
+                            to={header.urgenceButton.path}
                             className="w-full flex items-center justify-between p-3 rounded-lg bg-accent/20 border border-accent/30 text-accent hover:bg-accent/30 transition-colors"
                             onClick={() => setMobileMenuOpen(false)}
                         >
@@ -224,7 +227,7 @@ export default function HeaderUnderlineNav({ header }: HeaderUnderlineNavProps) 
                                 ) : null}
                                 <span className="font-medium">{t(header.urgenceButton.label)}</span>
                             </span>
-                        </Link>
+                        </NavLink>
                     )}
 
                     {header.utilities?.langSwitch && availableLocales.length > 1 && (
@@ -253,13 +256,13 @@ export default function HeaderUnderlineNav({ header }: HeaderUnderlineNavProps) 
                         <AuthMenu layout="stack" onAction={() => setMobileMenuOpen(false)} loginVariant="solid" loginClassName="shadow-glow" loginLabel={header.ctaButton?.label} />
                     )}
                     {!header.utilities?.auth && header.ctaButton && (
-                        <Link
-                            to={header.ctaButton.path || "#"}
+                        <NavLink
+                            to={header.ctaButton.path}
                             className="w-full mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md font-medium text-center block"
                             onClick={() => setMobileMenuOpen(false)}
                         >
                             {t(header.ctaButton.label)}
-                        </Link>
+                        </NavLink>
                     )}
                 </div>
             </div>
