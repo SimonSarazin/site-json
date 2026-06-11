@@ -279,8 +279,8 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
     value == null || value.trim() === ""
       ? "—"
       : isTrue(value)
-        ? t("PoiDetailSSBE.yes")
-        : t("PoiDetailSSBE.no");
+        ? t("PreviewPoiAmenities.yes")
+        : t("PreviewPoiAmenities.no");
 
   const poiEntity = item as Poi;
   const sd = poiEntity.serverData;
@@ -325,7 +325,7 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
               className="absolute right-14 top-3 text-primary-foreground hover:bg-white/15"
             >
               <Edit className="h-4 w-4" />
-              {t("PoiDetailSSBE.edit")}
+              {t("PreviewPoiAmenities.edit")}
             </Button>
           )}
           <div className="space-y-3 text-left">
@@ -339,13 +339,13 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
               {poi.enqueteStatut === "Validé" && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-primary-foreground">
                   <CheckCircle2 className="h-3.5 w-3.5" />
-                  {t("PoiDetailSSBE.validated")}
+                  {t("PreviewPoiAmenities.validated")}
                 </span>
               )}
             </div>
 
             <h2 className="text-2xl font-bold text-primary-foreground">
-              {poi.name || t("PoiDetailSSBE.fallbackTitle")}
+              {poi.name || t("PreviewPoiAmenities.fallbackTitle")}
             </h2>
 
             <div className="flex flex-wrap items-center gap-4 text-sm text-primary-foreground/85">
@@ -366,11 +366,11 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
                 <span>
-                  {t("PoiDetailSSBE.createdOn", undefined, { date: formatDateFr(poi.dateCreation) })}
+                  {t("PreviewPoiAmenities.createdOn", undefined, { date: formatDateFr(poi.dateCreation) })}
                   {typeof years === "number" && years > 0 ? (
                     <span className="ml-1 opacity-80">
                       {" "}
-                      {t("PoiDetailSSBE.yearsAgo", undefined, { count: years })}
+                      {t("PreviewPoiAmenities.yearsAgo", undefined, { count: years })}
                     </span>
                   ) : null}
                 </span>
@@ -385,14 +385,14 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
               <section className="rounded-2xl border border-border bg-card/70 p-5 shadow-sm">
                 <div className="flex items-center gap-2 text-primary">
                   <Info className="h-5 w-5" />
-                  <h2 className="text-base font-semibold">{t("PoiDetailSSBE.sections.general")}</h2>
+                  <h2 className="text-base font-semibold">{t("PreviewPoiAmenities.sections.general")}</h2>
                 </div>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                  <InfoRow label={t("PoiDetailSSBE.fields.category")} value={poi.category || "—"} />
-                  <InfoRow label={t("PoiDetailSSBE.fields.family")} value={poi.familleEquipement || "—"} />
-                  <InfoRow label={t("PoiDetailSSBE.fields.installation")} value={poi.installation || "—"} />
+                  <InfoRow label={t("PreviewPoiAmenities.fields.category")} value={poi.category || "—"} />
+                  <InfoRow label={t("PreviewPoiAmenities.fields.family")} value={poi.familleEquipement || "—"} />
+                  <InfoRow label={t("PreviewPoiAmenities.fields.installation")} value={poi.installation || "—"} />
                   <div className="sm:col-span-2">
-                    <InfoRow label={t("PoiDetailSSBE.fields.sport")} value={poi.sportPratiquer || "—"} />
+                    <InfoRow label={t("PreviewPoiAmenities.fields.sport")} value={poi.sportPratiquer || "—"} />
                   </div>
                 </div>
               </section>
@@ -400,41 +400,41 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
               <section className="rounded-2xl border border-border bg-card/70 p-5 shadow-sm">
                 <div className="flex items-center gap-2 text-primary">
                   <Users className="h-5 w-5" />
-                  <h2 className="text-base font-semibold">{t("PoiDetailSSBE.sections.management")}</h2>
+                  <h2 className="text-base font-semibold">{t("PreviewPoiAmenities.sections.management")}</h2>
                 </div>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                  <InfoRow label={t("PoiDetailSSBE.fields.ownerName")} value={poi.equipPropNom || "—"} />
-                  <InfoRow label={t("PoiDetailSSBE.fields.ownerType")} value={poi.entrepriseFonciere || "—"} />
-                  <InfoRow label={t("PoiDetailSSBE.fields.managementType")} value={poi.equipGestType || "—"} />
-                  <InfoRow label={t("PoiDetailSSBE.fields.premises")} value={poi.equipLocType || "—"} />
-                  <InfoRow label={t("PoiDetailSSBE.fields.users")} value={poi.equipUtilisateur || "—"} />
+                  <InfoRow label={t("PreviewPoiAmenities.fields.ownerName")} value={poi.equipPropNom || "—"} />
+                  <InfoRow label={t("PreviewPoiAmenities.fields.ownerType")} value={poi.entrepriseFonciere || "—"} />
+                  <InfoRow label={t("PreviewPoiAmenities.fields.managementType")} value={poi.equipGestType || "—"} />
+                  <InfoRow label={t("PreviewPoiAmenities.fields.premises")} value={poi.equipLocType || "—"} />
+                  <InfoRow label={t("PreviewPoiAmenities.fields.users")} value={poi.equipUtilisateur || "—"} />
                 </div>
               </section>
 
               <section className="rounded-2xl border border-border bg-card/70 p-5 shadow-sm">
                 <div className="flex items-center gap-2 text-primary">
                   <Accessibility className="h-5 w-5" />
-                  <h2 className="text-base font-semibold">{t("PoiDetailSSBE.sections.accessibility")}</h2>
+                  <h2 className="text-base font-semibold">{t("PreviewPoiAmenities.sections.accessibility")}</h2>
                 </div>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  <Feature label={t("PoiDetailSSBE.features.pmr")} active={isTrue(poi.handicap)} Icon={Accessibility} />
+                  <Feature label={t("PreviewPoiAmenities.features.pmr")} active={isTrue(poi.handicap)} Icon={Accessibility} />
                   <Feature
-                    label={t("PoiDetailSSBE.features.transport")}
+                    label={t("PreviewPoiAmenities.features.transport")}
                     active={isTrue(poi.transportCommun)}
                     Icon={Bus}
                   />
-                  <Feature label={t("PoiDetailSSBE.features.lighting")} active={isTrue(poi.eclairage)} Icon={Lightbulb} />
-                  <Feature label={t("PoiDetailSSBE.features.freeAccess")} active={isTrue(poi.libreAccess)} Icon={Unlock} />
-                  <Feature label={t("PoiDetailSSBE.features.showers")} active={isTrue(poi.equipDouche)} Icon={Droplet} />
+                  <Feature label={t("PreviewPoiAmenities.features.lighting")} active={isTrue(poi.eclairage)} Icon={Lightbulb} />
+                  <Feature label={t("PreviewPoiAmenities.features.freeAccess")} active={isTrue(poi.libreAccess)} Icon={Unlock} />
+                  <Feature label={t("PreviewPoiAmenities.features.showers")} active={isTrue(poi.equipDouche)} Icon={Droplet} />
                 </div>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   <InfoRow
-                    label={t("PoiDetailSSBE.fields.pmrType")}
+                    label={t("PreviewPoiAmenities.fields.pmrType")}
                     value={poi.typeAccessiblHandicap || "—"}
                     muted
                   />
                   <InfoRow
-                    label={t("PoiDetailSSBE.fields.transportType")}
+                    label={t("PreviewPoiAmenities.fields.transportType")}
                     value={poi.typeTransportCommun || "—"}
                     muted
                   />
@@ -442,27 +442,27 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
                 <div className="mt-6 space-y-4">
                   <div className="h-px bg-border/60" />
                   <div className="font-semibold text-base">
-                    {t("PoiDetailSSBE.sections.pmrDetails")}
+                    {t("PreviewPoiAmenities.sections.pmrDetails")}
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <InfoRow label={t("PoiDetailSSBE.pmr.access")} value={yesNo(poi.equipPmrAcc)} muted />
-                    <InfoRow label={t("PoiDetailSSBE.pmr.path")} value={yesNo(poi.equipPmrChem)} muted />
-                    <InfoRow label={t("PoiDetailSSBE.pmr.showers")} value={yesNo(poi.equipPmrDouche)} muted />
-                    <InfoRow label={t("PoiDetailSSBE.pmr.toilets")} value={yesNo(poi.equipPmrSanit)} muted />
-                    <InfoRow label={t("PoiDetailSSBE.pmr.stands")} value={yesNo(poi.equipPmrTrib)} muted />
-                    <InfoRow label={t("PoiDetailSSBE.pmr.changing")} value={yesNo(poi.equipPmrVest)} muted />
+                    <InfoRow label={t("PreviewPoiAmenities.pmr.access")} value={yesNo(poi.equipPmrAcc)} muted />
+                    <InfoRow label={t("PreviewPoiAmenities.pmr.path")} value={yesNo(poi.equipPmrChem)} muted />
+                    <InfoRow label={t("PreviewPoiAmenities.pmr.showers")} value={yesNo(poi.equipPmrDouche)} muted />
+                    <InfoRow label={t("PreviewPoiAmenities.pmr.toilets")} value={yesNo(poi.equipPmrSanit)} muted />
+                    <InfoRow label={t("PreviewPoiAmenities.pmr.stands")} value={yesNo(poi.equipPmrTrib)} muted />
+                    <InfoRow label={t("PreviewPoiAmenities.pmr.changing")} value={yesNo(poi.equipPmrVest)} muted />
                   </div>
                   <div className="h-px bg-border/60" />
                   <div className="font-semibold text-base">
-                    {t("PoiDetailSSBE.sections.pshsDetails")}
+                    {t("PreviewPoiAmenities.sections.pshsDetails")}
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <InfoRow label={t("PoiDetailSSBE.pshs.playArea")} value={yesNo(poi.equipPshsAire)} muted />
-                    <InfoRow label={t("PoiDetailSSBE.pshs.path")} value={yesNo(poi.equipPshsChem)} muted />
-                    <InfoRow label={t("PoiDetailSSBE.pshs.toilets")} value={yesNo(poi.equipPshsSanit)} muted />
-                    <InfoRow label={t("PoiDetailSSBE.pshs.stands")} value={yesNo(poi.equipPshsTrib)} muted />
-                    <InfoRow label={t("PoiDetailSSBE.pshs.changing")} value={yesNo(poi.equipPshsVest)} muted />
-                    <InfoRow label={t("PoiDetailSSBE.pshs.signage")} value={yesNo(poi.equipPshsSign)} muted />
+                    <InfoRow label={t("PreviewPoiAmenities.pshs.playArea")} value={yesNo(poi.equipPshsAire)} muted />
+                    <InfoRow label={t("PreviewPoiAmenities.pshs.path")} value={yesNo(poi.equipPshsChem)} muted />
+                    <InfoRow label={t("PreviewPoiAmenities.pshs.toilets")} value={yesNo(poi.equipPshsSanit)} muted />
+                    <InfoRow label={t("PreviewPoiAmenities.pshs.stands")} value={yesNo(poi.equipPshsTrib)} muted />
+                    <InfoRow label={t("PreviewPoiAmenities.pshs.changing")} value={yesNo(poi.equipPshsVest)} muted />
+                    <InfoRow label={t("PreviewPoiAmenities.pshs.signage")} value={yesNo(poi.equipPshsSign)} muted />
                   </div>
                 </div>
               </section>
@@ -473,7 +473,7 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
                 <section className="overflow-hidden rounded-2xl">
                   <OptimizedImage
                     src={imageSrc}
-                    alt={poi.name || t("PoiDetailSSBE.fallbackTitle")}
+                    alt={poi.name || t("PreviewPoiAmenities.fallbackTitle")}
                     width={320}
                     height={224}
                     className="h-56 w-full object-cover"
@@ -491,14 +491,14 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
                   />
                 ) : (
                   <div className="flex h-[200px] items-center justify-center text-sm text-muted-foreground">
-                    {t("PoiDetailSSBE.map.unavailable")}
+                    {t("PreviewPoiAmenities.map.unavailable")}
                   </div>
                 )}
               </section>
               <section className="rounded-2xl border border-border bg-card/70 p-5 shadow-sm">
                 <div className="flex items-center gap-2 text-primary">
                   <MapPin className="h-5 w-5" />
-                  <h2 className="text-base font-semibold">{t("PoiDetailSSBE.sections.location")}</h2>
+                  <h2 className="text-base font-semibold">{t("PreviewPoiAmenities.sections.location")}</h2>
                 </div>
                 <div className="mt-4 space-y-2 text-sm text-muted-foreground">
                   <p className="font-semibold text-foreground">{poi.address.streetAddress || "—"}</p>
@@ -515,33 +515,33 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
               <section className="rounded-2xl border border-border bg-card/70 p-5 shadow-sm">
                 <div className="flex items-center gap-2 text-primary">
                   <Settings className="h-5 w-5" />
-                  <h2 className="text-base font-semibold">{t("PoiDetailSSBE.sections.technical")}</h2>
+                  <h2 className="text-base font-semibold">{t("PreviewPoiAmenities.sections.technical")}</h2>
                 </div>
                 <div className="mt-4 divide-y divide-border/60 text-sm">
                   <div className="flex items-center justify-between gap-4 py-2">
-                    <span className="text-muted-foreground">{t("PoiDetailSSBE.fields.nature")}</span>
+                    <span className="text-muted-foreground">{t("PreviewPoiAmenities.fields.nature")}</span>
                     <span className="font-medium text-foreground">{poi.nature || "—"}</span>
                   </div>
                   <div className="flex items-center justify-between gap-4 py-2">
-                    <span className="text-muted-foreground">{t("PoiDetailSSBE.fields.floor")}</span>
+                    <span className="text-muted-foreground">{t("PreviewPoiAmenities.fields.floor")}</span>
                     <span className="font-medium text-foreground">{poi.sol || "—"}</span>
                   </div>
                   <div className="flex items-center justify-between gap-4 py-2">
-                    <span className="text-muted-foreground">{t("PoiDetailSSBE.fields.surface")}</span>
+                    <span className="text-muted-foreground">{t("PreviewPoiAmenities.fields.surface")}</span>
                     <span className="font-medium text-foreground">{surfaceLabel}</span>
                   </div>
                   <div className="flex items-center justify-between gap-4 py-2">
-                    <span className="text-muted-foreground">{t("PoiDetailSSBE.fields.length")}</span>
+                    <span className="text-muted-foreground">{t("PreviewPoiAmenities.fields.length")}</span>
                     <span className="font-medium text-foreground">{longueurLabel}</span>
                   </div>
                   <div className="flex items-center justify-between gap-4 py-2">
-                    <span className="text-muted-foreground">{t("PoiDetailSSBE.fields.width")}</span>
+                    <span className="text-muted-foreground">{t("PreviewPoiAmenities.fields.width")}</span>
                     <span className="font-medium text-foreground">{largeurLabel}</span>
                   </div>
                   <div className="flex items-center justify-between gap-4 py-2">
-                    <span className="text-muted-foreground">{t("PoiDetailSSBE.fields.partnership")}</span>
+                    <span className="text-muted-foreground">{t("PreviewPoiAmenities.fields.partnership")}</span>
                     <span className="font-medium text-foreground">
-                      {isTrue(poi.partenariat) ? poi.typePartenariat || t("PoiDetailSSBE.yes") : t("PoiDetailSSBE.no")}
+                      {isTrue(poi.partenariat) ? poi.typePartenariat || t("PreviewPoiAmenities.yes") : t("PreviewPoiAmenities.no")}
                     </span>
                   </div>
                 </div>
@@ -550,13 +550,13 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
               <section className="rounded-2xl border border-border bg-card/70 p-5 shadow-sm">
                 <div className="flex items-center gap-2 text-primary">
                   <History className="h-5 w-5" />
-                  <h2 className="text-base font-semibold">{t("PoiDetailSSBE.sections.tracking")}</h2>
+                  <h2 className="text-base font-semibold">{t("PreviewPoiAmenities.sections.tracking")}</h2>
                 </div>
                 <div className="mt-4 space-y-3 text-sm">
                   <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/40 px-3 py-2">
                     <div className="h-2 w-2 rounded-full bg-primary" />
                     <div>
-                      <div className="text-xs text-muted-foreground">{t("PoiDetailSSBE.tracking.created")}</div>
+                      <div className="text-xs text-muted-foreground">{t("PreviewPoiAmenities.tracking.created")}</div>
                       <div className="font-semibold text-foreground">
                         {formatDateFr(poi.dateCreation)}
                       </div>
@@ -565,7 +565,7 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
                   <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/40 px-3 py-2">
                     <div className="h-2 w-2 rounded-full bg-primary" />
                     <div>
-                      <div className="text-xs text-muted-foreground">{t("PoiDetailSSBE.tracking.lastSurvey")}</div>
+                      <div className="text-xs text-muted-foreground">{t("PreviewPoiAmenities.tracking.lastSurvey")}</div>
                       <div className="font-semibold text-foreground">
                         {formatDateFr(poi.dateEnquete)}
                       </div>
@@ -574,7 +574,7 @@ export default function PreviewPoiAmenities({ item, onClose }: PreviewProps) {
                   <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/40 px-3 py-2">
                     <div className="h-2 w-2 rounded-full bg-primary" />
                     <div>
-                      <div className="text-xs text-muted-foreground">{t("PoiDetailSSBE.tracking.lastUpdate")}</div>
+                      <div className="text-xs text-muted-foreground">{t("PreviewPoiAmenities.tracking.lastUpdate")}</div>
                       <div className="font-semibold text-foreground">
                         {formatDateFr(poi.lastUpdate)}
                       </div>

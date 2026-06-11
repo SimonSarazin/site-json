@@ -122,9 +122,9 @@ export default function CardCountCT({ count, cards, title, subtitle, isLoading }
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8">
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="flex flex-col items-center gap-3 animate-pulse">
-              <div className="w-8 h-8 rounded-lg bg-white/30" />
-              <div className="w-12 h-6 bg-white/30 rounded" />
-              <div className="w-16 h-4 bg-white/30 rounded" />
+              <div className="w-8 h-8 rounded-lg bg-primary-foreground/30" />
+              <div className="w-12 h-6 bg-primary-foreground/30 rounded" />
+              <div className="w-16 h-4 bg-primary-foreground/30 rounded" />
             </div>
           ))}
         </div>
@@ -141,12 +141,12 @@ export default function CardCountCT({ count, cards, title, subtitle, isLoading }
       {(title || subtitle) && (
         <div className="mb-12 text-center">
           {title && (
-            <h2 className="text-4xl md:text-5xl font-bold mb-10 text-white">
+            <h2 className="text-4xl md:text-5xl font-bold mb-10 text-primary-foreground">
               {t(title)}
             </h2>
           )}
           {subtitle && (
-            <p className="text-lg mb-6 md:text-xl text-white/90">
+            <p className="text-lg mb-6 md:text-xl text-primary-foreground/90">
               {t(subtitle)}
             </p>
           )}
@@ -161,12 +161,12 @@ export default function CardCountCT({ count, cards, title, subtitle, isLoading }
           const content = (
             <div className="flex flex-col items-center text-center">
               {IconComponent && (
-                <IconComponent className="w-8 h-8 text-white mb-3" />
+                <IconComponent className="w-8 h-8 text-primary-foreground mb-3" />
               )}
-              <span className="text-4xl font-bold text-white mb-2">
+              <span className="text-4xl font-bold text-primary-foreground mb-2">
                 {card.value}
               </span>
-              <span className="text-lg text-white/80">
+              <span className="text-lg text-primary-foreground/80">
                 {typeof card.label === "string" ? card.label : t(card.label)}
               </span>
             </div>

@@ -1,5 +1,30 @@
 {
-  "CardPoiSSBE": {
+  "CardResourceBooking": {
+    "price": "Usage price:",
+    "location": "Location:",
+    "owner": "Owner:",
+    "reserve": "Book",
+    "available": "Available"
+  },
+  "PreviewCoformAnswer": {
+    "noTitle": "(No title)",
+    "noDescription": "(No description)",
+    "address": "Address",
+    "addressEmpty": "(No address provided)",
+    "contact": "Contact",
+    "schedule": "Time slots",
+    "scheduleEmpty": "No time slot",
+    "activity": "Activity",
+    "beneficiaries": "Beneficiaries",
+    "beneficiariesEmpty": "No beneficiary provided",
+    "accessibility": "Accessibility",
+    "reducedMobility": "Person with reduced mobility",
+    "notProvided": "Not provided",
+    "installation": "Facility",
+    "installationEmpty": "No facility provided",
+    "validated": "Validated"
+  },
+  "CardPoiAmenities": {
     "amenities": "Amenities",
     "pmrAccess": "PRM access",
     "publicTransport": "Public transport",
@@ -8,7 +33,7 @@
     "freeAccess": "Free access",
     "yearsAgo": "{{count}} years ago"
   },
-  "PoiDetailSSBE": {
+  "PreviewPoiAmenities": {
     "edit": "Edit",
     "close": "Close",
     "validated": "Validated",

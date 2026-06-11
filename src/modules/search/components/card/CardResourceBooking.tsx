@@ -1,6 +1,8 @@
 import { SearchCardProps } from "../../schema";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { cn } from '@/lib/utils';
+import { useT } from "@/hooks/useT";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { getEntityIconName } from "@/lib/entityIcons";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +14,8 @@ export default function CardResourceBooking({
   item,
   onClick
 }: SearchCardProps) {
+  useLoadNamespace("modules/search");
+  const t = useT("modules/search");
   const data = useItem(item);
 
   const {
@@ -81,15 +85,15 @@ export default function CardResourceBooking({
       {/* Informations en 2 colonnes */}
       <div className="px-6 pb-5 space-y-2 text-sm">
         <div className="flex justify-between">
-          <span className="text-muted-foreground">Prix d'usage:</span>
+          <span className="text-muted-foreground">{t("CardResourceBooking.price")}</span>
           <span className="text-card-foreground font-semibold">{String(price || "N/A")}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-muted-foreground">Localisation:</span>
+          <span className="text-muted-foreground">{t("CardResourceBooking.location")}</span>
           <span className="text-card-foreground font-semibold">{location || "N/A"}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-muted-foreground">Propriétaire:</span>
+          <span className="text-muted-foreground">{t("CardResourceBooking.owner")}</span>
           <span className="text-card-foreground font-semibold">{String(proprietaire || "N/A")}</span>
         </div>
       </div>
@@ -97,7 +101,7 @@ export default function CardResourceBooking({
       {/* Statut de disponibilité avec icône calendrier */}
       <div className="px-6 pb-5 flex items-center gap-2 text-muted-foreground text-sm">
         <Calendar className="w-4 h-4" />
-        <span>Disponible</span>
+        <span>{t("CardResourceBooking.available")}</span>
       </div>
 
       {/* Bouton Réserver */}
@@ -106,7 +110,7 @@ export default function CardResourceBooking({
           onClick={onClick}
           className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-xl h-12 text-base shadow-lg transition-all duration-300"
         >
-          Réserver
+          {t("CardResourceBooking.reserve")}
         </Button>
       </div>
     </article>

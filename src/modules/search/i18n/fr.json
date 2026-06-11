@@ -1,5 +1,30 @@
 {
-    "CardPoiSSBE": {
+    "CardResourceBooking": {
+        "price": "Prix d'usage:",
+        "location": "Localisation:",
+        "owner": "Propriétaire:",
+        "reserve": "Réserver",
+        "available": "Disponible"
+    },
+    "PreviewCoformAnswer": {
+        "noTitle": "(Pas de titre)",
+        "noDescription": "(Pas de description)",
+        "address": "Adresse",
+        "addressEmpty": "(Adresse non renseignée)",
+        "contact": "Contact",
+        "schedule": "Créneaux horaires",
+        "scheduleEmpty": "Aucun créneau",
+        "activity": "Activité",
+        "beneficiaries": "Bénéficiaires",
+        "beneficiariesEmpty": "Aucun bénéficiaire renseigné",
+        "accessibility": "Accessibilité",
+        "reducedMobility": "Personne à mobilité réduite",
+        "notProvided": "Non renseigné",
+        "installation": "Installation",
+        "installationEmpty": "Aucune installation renseignée",
+        "validated": "Validé"
+    },
+    "CardPoiAmenities": {
         "amenities": "Aménagement",
         "pmrAccess": "Accès PMR",
         "publicTransport": "Transport en commun",
@@ -8,7 +33,7 @@
         "freeAccess": "Libre accès",
         "yearsAgo": "Il y a {{count}} ans"
     },
-    "PoiDetailSSBE": {
+    "PreviewPoiAmenities": {
         "edit": "Éditer",
         "close": "Fermer",
         "validated": "Validé",

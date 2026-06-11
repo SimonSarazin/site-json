@@ -1,4 +1,6 @@
 import { useCocolight } from "@/hooks/useCocolight";
+import { useT } from "@/hooks/useT";
+import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { Accessibility, Calendar, Clock, Heart, Mail, MapPin, Phone, User, Users } from "lucide-react";
 import type { PreviewProps } from "../../schema";
 
@@ -7,6 +9,29 @@ type ActivityStatus = "Valide" | "En attente" | "En cours" | "Refuse";
 type Schedule = {
   day: string;
   times: string[];
+};
+
+/**
+ * Mapping rôle → suffixe de champ CoForm (par défaut : formulaire activité SSBE).
+ * Surchargeable par config via `preview.fields` → le composant n'est plus
+ * hardwiré à un formulaire précis (niveau 2 : découplage des IDs de champs).
+ */
+const DEFAULT_FIELDS: Record<string, string> = {
+  title: "2172025_854_0mdegc9sgox76p87n27",
+  description: "2172025_854_0mdeggo91owe8t9ovl4p",
+  type: "2172025_854_0mdn1cs8on3yru1p80lq",
+  state: "2172025_854_0mdn1jcq445i0mb9bap7",
+  instructorFirstName: "2172025_854_0mdmz5fbxxtvelsircg9",
+  instructorLastName: "2172025_854_0mdmz4qoaelvlcpten8w",
+  typeActivity: "2172025_854_0mdegdo93f77wi3y186s",
+  typeGender: "2172025_854_0mdmya4gmezjilnyjj5f",
+  beneficiaries: "2172025_854_0mdmyf2gky9capf1vcfl",
+  mobilityReduced: "2172025_854_0mdmy67hlexyn92fh98s",
+  landmark: "2172025_854_0mdmxv88txy6f5z6svg",
+  address: "2172025_854_0mdr0xcsmmpnr6ez17q",
+  places: "2172025_854_0mdmxe3qhkjb9qu74wli",
+  schedule: "2172025_854_0mdefmehl5baa207uud6",
+  installationFinder: "2172025_854_0mocno9muqzznoo0gyx",
 };
 
 function getStatusStyle(status: ActivityStatus) {
@@ -82,11 +107,13 @@ function InfoCard({
  * — ex-`AnswerDetailModeDialog`. Variante de contenu (`preview.type ===
  * "coform-answer"`) rendue DANS le conteneur de détail (`detailsMode`).
  *
- * NB (couplage à découpler — niveau 2) : les IDs de champs CoForm et le repli
- * `sportSanteBienetre` restent codés en dur ici ; à externaliser en config
- * (mapping de champs) dans un chantier dédié.
+ * Découplage : libellés via i18n, IDs de champs via `DEFAULT_FIELDS`
+ * (surchargeables par `preview.fields`). Le repli de slug (entité sans slug)
+ * reste un défaut générique.
  */
-export default function PreviewCoformAnswer({ item }: PreviewProps) {
+export default function PreviewCoformAnswer({ item, preview }: PreviewProps) {
+  useLoadNamespace("modules/search");
+  const t = useT("modules/search");
   const { entity } = useCocolight();
   const serverData = item?.serverData as Record<string, unknown> | undefined;
 
@@ -94,46 +121,47 @@ export default function PreviewCoformAnswer({ item }: PreviewProps) {
     return null;
   }
 
+  const fields: Record<string, string> = { ...DEFAULT_FIELDS, ...(preview?.fields ?? {}) };
   const slug = entity?.serverData?.slug;
   const keyPrefix = slug ?? "sportSanteBienetre";
   const fieldKey = (suffix: string) => `${keyPrefix}${suffix}`;
 
   const title = (serverData.name as string | undefined)
-    ?? (serverData[fieldKey("2172025_854_0mdegc9sgox76p87n27")] as string | undefined)
-    ?? "(Pas de titre)";
+    ?? (serverData[fieldKey(fields.title)] as string | undefined)
+    ?? t("PreviewCoformAnswer.noTitle");
 
-  const description = (serverData[fieldKey("2172025_854_0mdeggo91owe8t9ovl4p")] as string | undefined)
-    ?? "(Pas de description)";
+  const description = (serverData[fieldKey(fields.description)] as string | undefined)
+    ?? t("PreviewCoformAnswer.noDescription");
 
-  const typeRaw = (serverData[fieldKey("2172025_854_0mdn1cs8on3yru1p80lq")] as string | undefined) ?? "";
+  const typeRaw = (serverData[fieldKey(fields.type)] as string | undefined) ?? "";
 
-  const stateRaw = (serverData[fieldKey("2172025_854_0mdn1jcq445i0mb9bap7")] as string | undefined) ?? "";
+  const stateRaw = (serverData[fieldKey(fields.state)] as string | undefined) ?? "";
   const status = normalizeStatus(stateRaw);
 
   const instructorFirstName =
-    (serverData[fieldKey("2172025_854_0mdmz5fbxxtvelsircg9")] as string | undefined) ?? "";
+    (serverData[fieldKey(fields.instructorFirstName)] as string | undefined) ?? "";
   const instructorLastName =
-    (serverData[fieldKey("2172025_854_0mdmz4qoaelvlcpten8w")] as string | undefined) ?? "";
+    (serverData[fieldKey(fields.instructorLastName)] as string | undefined) ?? "";
 
   const typeActivity =
-    (serverData[fieldKey("2172025_854_0mdegdo93f77wi3y186s")] as string | undefined) ?? title;
+    (serverData[fieldKey(fields.typeActivity)] as string | undefined) ?? title;
   const typeGender =
-    (serverData[fieldKey("2172025_854_0mdmya4gmezjilnyjj5f")] as string | undefined) ?? "";
+    (serverData[fieldKey(fields.typeGender)] as string | undefined) ?? "";
 
   const beneficiariesRaw =
-    (serverData[fieldKey("2172025_854_0mdmyf2gky9capf1vcfl")] as unknown[]) ?? [];
+    (serverData[fieldKey(fields.beneficiaries)] as unknown[]) ?? [];
   const beneficiaries = beneficiariesRaw
     .map((value) => (typeof value === "string" ? value : String(value)))
     .filter(Boolean);
 
   const mobilityReduced =
-    (serverData[fieldKey("2172025_854_0mdmy67hlexyn92fh98s")] as string | undefined) ?? "";
+    (serverData[fieldKey(fields.mobilityReduced)] as string | undefined) ?? "";
 
-  const landmark = (serverData[fieldKey("2172025_854_0mdmxv88txy6f5z6svg")] as string | undefined) ?? "";
-  const addressObj = serverData[fieldKey("2172025_854_0mdr0xcsmmpnr6ez17q")] as Record<string, unknown> | undefined;
+  const landmark = (serverData[fieldKey(fields.landmark)] as string | undefined) ?? "";
+  const addressObj = serverData[fieldKey(fields.address)] as Record<string, unknown> | undefined;
   const addressLine = (addressObj?.address as string | undefined) ?? "";
 
-  const placesRaw = (serverData[fieldKey("2172025_854_0mdmxe3qhkjb9qu74wli")] as unknown[]) ?? [];
+  const placesRaw = (serverData[fieldKey(fields.places)] as unknown[]) ?? [];
   const firstPlace = placesRaw[0] as Record<string, unknown> | undefined;
   const placeName = (firstPlace?.placeName as string | undefined) ?? "";
   const postalCode = (firstPlace?.postalCode as string | undefined) ?? "";
@@ -156,7 +184,7 @@ export default function PreviewCoformAnswer({ item }: PreviewProps) {
     ?? (structureRaw?.phone as string | undefined)
     ?? "";
 
-  const installationFinderKey = `finder${fieldKey("2172025_854_0mocno9muqzznoo0gyx")}`;
+  const installationFinderKey = `finder${fieldKey(fields.installationFinder)}`;
   const installationsRaw = serverData[installationFinderKey] as unknown;
   const installations = (
     Array.isArray(installationsRaw)
@@ -176,7 +204,7 @@ export default function PreviewCoformAnswer({ item }: PreviewProps) {
     })
     .filter((entry) => entry.name.trim().length > 0);
 
-  const scheduleRaw = (serverData[fieldKey("2172025_854_0mdefmehl5baa207uud6")] as unknown[]) ?? [];
+  const scheduleRaw = (serverData[fieldKey(fields.schedule)] as unknown[]) ?? [];
   const groupedSchedules: Record<string, string[]> = {};
 
   scheduleRaw.forEach((entry) => {
@@ -209,7 +237,7 @@ export default function PreviewCoformAnswer({ item }: PreviewProps) {
               </span>
             )}
             <span className={`rounded-full px-3 py-0.5 text-xs font-semibold ${getStatusStyle(status)}`}>
-              {stateRaw || "Validé"}
+              {stateRaw || t("PreviewCoformAnswer.validated")}
             </span>
           </div>
           <h2 className="text-2xl font-bold uppercase text-primary-foreground tracking-wide">
@@ -222,7 +250,7 @@ export default function PreviewCoformAnswer({ item }: PreviewProps) {
       <div className="min-h-0 flex-1 overflow-y-auto">
         <div className="p-6 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <InfoCard icon={MapPin} title="Adresse">
+            <InfoCard icon={MapPin} title={t("PreviewCoformAnswer.address")}>
               {addressParts.length > 0 ? (
                 <div className="text-sm text-muted-foreground space-y-1">
                   {addressParts.map((line, index) => (
@@ -230,11 +258,11 @@ export default function PreviewCoformAnswer({ item }: PreviewProps) {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">(Adresse non renseignée)</p>
+                <p className="text-sm text-muted-foreground">{t("PreviewCoformAnswer.addressEmpty")}</p>
               )}
             </InfoCard>
 
-            <InfoCard icon={Phone} title="Contact">
+            <InfoCard icon={Phone} title={t("PreviewCoformAnswer.contact")}>
               {structureEmail && (
                 <p className="text-sm text-foreground font-semibold break-all flex items-center gap-1.5">
                   <Mail className="w-3.5 h-3.5" />
@@ -253,7 +281,7 @@ export default function PreviewCoformAnswer({ item }: PreviewProps) {
             </InfoCard>
           </div>
 
-          <InfoCard icon={Calendar} title="Créneaux horaires">
+          <InfoCard icon={Calendar} title={t("PreviewCoformAnswer.schedule")}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[200px] overflow-y-auto pr-1">
               {schedules.length > 0 ? (
                 schedules.map((schedule) => (
@@ -271,18 +299,18 @@ export default function PreviewCoformAnswer({ item }: PreviewProps) {
                   </div>
                 ))
               ) : (
-                <p className="text-xs text-muted-foreground">Aucun créneau</p>
+                <p className="text-xs text-muted-foreground">{t("PreviewCoformAnswer.scheduleEmpty")}</p>
               )}
             </div>
           </InfoCard>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <InfoCard icon={Heart} title="Activité">
+            <InfoCard icon={Heart} title={t("PreviewCoformAnswer.activity")}>
               <p className="text-sm font-semibold text-foreground">{typeActivity || title}</p>
               <p className="text-xs text-muted-foreground">{typeGender || typeRaw}</p>
             </InfoCard>
 
-            <InfoCard icon={Users} title="Bénéficiaires">
+            <InfoCard icon={Users} title={t("PreviewCoformAnswer.beneficiaries")}>
               {beneficiaries.length > 0 ? (
                 <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
                   {beneficiaries.map((beneficiary, index) => (
@@ -290,18 +318,18 @@ export default function PreviewCoformAnswer({ item }: PreviewProps) {
                   ))}
                 </ul>
               ) : (
-                <p className="text-xs text-muted-foreground">Aucun bénéficiaire renseigné</p>
+                <p className="text-xs text-muted-foreground">{t("PreviewCoformAnswer.beneficiariesEmpty")}</p>
               )}
             </InfoCard>
 
-            <InfoCard icon={Accessibility} title="Accessibilité">
-              <p className="text-sm text-foreground font-semibold">Personne à mobilité réduite</p>
+            <InfoCard icon={Accessibility} title={t("PreviewCoformAnswer.accessibility")}>
+              <p className="text-sm text-foreground font-semibold">{t("PreviewCoformAnswer.reducedMobility")}</p>
               <span className="inline-block rounded bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground">
-                {mobilityReduced || "Non renseigné"}
+                {mobilityReduced || t("PreviewCoformAnswer.notProvided")}
               </span>
             </InfoCard>
 
-            <InfoCard icon={MapPin} title="Installation">
+            <InfoCard icon={MapPin} title={t("PreviewCoformAnswer.installation")}>
               {installations.length > 0 ? (
                 <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
                   {installations.map((installation) => (
@@ -309,7 +337,7 @@ export default function PreviewCoformAnswer({ item }: PreviewProps) {
                   ))}
                 </ul>
               ) : (
-                <p className="text-xs text-muted-foreground">Aucune installation renseignée</p>
+                <p className="text-xs text-muted-foreground">{t("PreviewCoformAnswer.installationEmpty")}</p>
               )}
             </InfoCard>
           </div>

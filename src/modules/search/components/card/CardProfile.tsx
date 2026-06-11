@@ -170,7 +170,7 @@ export default function CardProfile({
           {showBadges && (isAdmin || isContributor || isPending) && (
             <div className="flex flex-wrap gap-1 justify-center">
               {isAdmin && (
-                <Badge variant="outline" className="bg-amber-500/20 text-amber-600 border-amber-500/30">
+                <Badge variant="outline" className="bg-warning/20 text-warning border-warning/30">
                   <Shield className="h-3 w-3 mr-1" />
                   {t("Admin")}
                 </Badge>
@@ -182,7 +182,7 @@ export default function CardProfile({
                 </Badge>
               )}
               {isPending && (
-                <Badge variant="outline" className="bg-orange-500/20 text-orange-600 border-orange-500/30">
+                <Badge variant="outline" className="bg-info/20 text-info border-info/30">
                   {t("En attente")}
                 </Badge>
               )}

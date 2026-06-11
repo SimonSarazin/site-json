@@ -166,14 +166,14 @@ export default function CardPoiAmenities({ item, onClick }: SearchCardProps) {
 
 				<div>
 					<p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-						{t("CardPoiSSBE.amenities")}
+						{t("CardPoiAmenities.amenities")}
 					</p>
 					<div className="grid grid-cols-2 gap-1.5">
-						<Feature label={t("CardPoiSSBE.pmrAccess")} active={isTrue(serverData.inst_acc_handi_bool)} Icon={Accessibility} />
-						<Feature label={t("CardPoiSSBE.publicTransport")} active={isTrue(serverData.inst_trans_bool)} Icon={Bus} />
-						<Feature label={t("CardPoiSSBE.lighting")} active={isTrue(serverData.equip_eclair)} Icon={Lightbulb} />
-						<Feature label={t("CardPoiSSBE.showers")} active={isTrue(serverData.equip_douche)} Icon={Droplet} />
-						<Feature label={t("CardPoiSSBE.freeAccess")} active={isTrue(serverData.equip_acc_libre)} Icon={DoorOpen} />
+						<Feature label={t("CardPoiAmenities.pmrAccess")} active={isTrue(serverData.inst_acc_handi_bool)} Icon={Accessibility} />
+						<Feature label={t("CardPoiAmenities.publicTransport")} active={isTrue(serverData.inst_trans_bool)} Icon={Bus} />
+						<Feature label={t("CardPoiAmenities.lighting")} active={isTrue(serverData.equip_eclair)} Icon={Lightbulb} />
+						<Feature label={t("CardPoiAmenities.showers")} active={isTrue(serverData.equip_douche)} Icon={Droplet} />
+						<Feature label={t("CardPoiAmenities.freeAccess")} active={isTrue(serverData.equip_acc_libre)} Icon={DoorOpen} />
 					</div>
 				</div>
 
@@ -185,7 +185,7 @@ export default function CardPoiAmenities({ item, onClick }: SearchCardProps) {
 						</div>
 						{yearsSinceCreation !== null && yearsSinceCreation > 0 && (
 							<span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium">
-								{t("CardPoiSSBE.yearsAgo", undefined, { count: yearsSinceCreation })}
+								{t("CardPoiAmenities.yearsAgo", undefined, { count: yearsSinceCreation })}
 							</span>
 						)}
 					</div>
