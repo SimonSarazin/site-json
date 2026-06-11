@@ -59,23 +59,18 @@ interface HeroSearchProps {
   props: SchemaHeroSearchProps;
 }
 
-// Catégorie → query param `/lieux` (aligné sur le nav « Les lieux »).
-// Typologies = filtre tag ; services (Salle de Réunion / Hébergement) = form-based.
-// L'applicateur headless (`usePageFiltersUrlSync`) traduit ces params en état
-// `PageFilters` exactement comme la `FiltersSection` de /lieux.
-const CATEGORY_TO_URL: Record<string, { param: "typologies" | "services"; value: string } | null> = {
-  all: null,
-  coworking: { param: "typologies", value: "Bureaux partagés / Coworking" },
-  fablab: { param: "typologies", value: "Fablab / Makerspace / Hackerspace (Espaces du Faire)" },
-  meeting: { param: "services", value: "Salle de Réunion" },
-  food: { param: "typologies", value: "Cuisine partagée / Foodlab" },
-  learn: { param: "typologies", value: "LivingLab / Laboratoire d'innovation sociale" },
-  stay: { param: "services", value: "Hébérgement" },
-};
+type HeroSearchCtaButton = NonNullable<SchemaHeroSearchProps["ctaButtons"]>[number];
 
-// Dernier CTA (« + ») = `explore` → navigue vers /lieux (recherche complète),
-// au lieu d'être un doublon de « Découvrir » (`all`).
-const TAB_INDEX_TO_CATEGORY = ["all", "meeting", "coworking", "fablab", "food", "learn", "stay", "explore"];
+/** `true` si tous les filtres déclarés par le bouton sont présents dans l'URL. */
+const buttonMatchesParams = (btn: HeroSearchCtaButton, searchParams: URLSearchParams): boolean => {
+  if (!btn.filters?.length) return false;
+  return btn.filters.every((f) => {
+    const raw = searchParams.get(f.param);
+    if (!raw) return false;
+    const present = raw.split(",").map((v) => v.trim());
+    return f.values.every((v) => present.includes(v));
+  });
+};
 
 export function HeroSearch({ id, props }: HeroSearchProps) {
   const { t } = useLocalization();
@@ -88,21 +83,29 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
   const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
 
-  // Catégorie active = dérivée des query params (URL = source de vérité, comme /lieux).
-  const selectedCategory = useMemo(() => {
-    const typ = searchParams.get("typologies");
-    const svc = searchParams.get("services");
-    for (const [cat, m] of Object.entries(CATEGORY_TO_URL)) {
-      if (!m) continue;
-      if (m.param === "typologies" && m.value === typ) return cat;
-      if (m.param === "services" && m.value === svc) return cat;
-    }
-    return "all";
-  }, [searchParams]);
+  const ctaButtons = useMemo(() => props.ctaButtons ?? [], [props.ctaButtons]);
+
+  // Params gérés par les boutons de CE hero — seuls ceux-là sont effacés/posés
+  // (les autres query params de la page sont préservés).
+  const managedParams = useMemo(() => {
+    const set = new Set<string>();
+    ctaButtons.forEach((btn) => btn.filters?.forEach((f) => set.add(f.param)));
+    return set;
+  }, [ctaButtons]);
+
+  // Bouton actif = dérivé des query params (URL = source de vérité, comme /lieux).
+  // Sans correspondance, le premier bouton « reset » (sans filters ni href) est actif.
   const activeTabIndex = useMemo(() => {
-    const idx = TAB_INDEX_TO_CATEGORY.indexOf(selectedCategory);
-    return idx >= 0 ? idx : 0;
-  }, [selectedCategory]);
+    const matched = ctaButtons.findIndex((btn) => buttonMatchesParams(btn, searchParams));
+    if (matched >= 0) return matched;
+    return ctaButtons.findIndex((btn) => !btn.filters?.length && !btn.href);
+  }, [ctaButtons, searchParams]);
+
+  // Boutons proposables dans le <select> du mode compact (`href` = navigation, exclus).
+  const selectableButtons = useMemo(
+    () => ctaButtons.map((btn, idx) => ({ btn, idx })).filter(({ btn }) => !btn.href),
+    [ctaButtons],
+  );
 
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -117,25 +120,25 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
     filtersByAnswers: props.filtersByAnswers,
   });
 
-  // Applique une catégorie en posant le query param /lieux correspondant.
-  const applyCategory = (category: string) => {
-    const mapping = CATEGORY_TO_URL[category];
+  // Applique les filtres d'un bouton : efface les params gérés puis pose les
+  // siens (format pluriel `?param=v1,v2` — celui de `computeFiltersFromUrl`).
+  // Bouton sans `filters` = réinitialisation (état « tous »).
+  const applyButtonFilters = (btn: HeroSearchCtaButton | undefined) => {
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
-      next.delete("typologies");
-      next.delete("services");
-      if (mapping) next.set(mapping.param, mapping.value);
+      managedParams.forEach((param) => next.delete(param));
+      btn?.filters?.forEach((f) => next.set(f.param, f.values.join(",")));
       return next;
     });
   };
 
-  // CTA : `explore` (« + ») → page /lieux (recherche complète) ; sinon filtre la home.
+  // CTA : `href` → navigation (ex. recherche complète) ; sinon filtre la page.
   const handleCta = (idx: number) => {
-    const category = TAB_INDEX_TO_CATEGORY[idx] || "all";
-    if (category === "explore") {
-      navigate("/lieux");
+    const btn = ctaButtons[idx];
+    if (btn?.href) {
+      navigate(btn.href);
     } else {
-      applyCategory(category);
+      applyButtonFilters(btn);
     }
   };
 
@@ -204,14 +207,15 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
 
   /**
    * Lance la recherche : pousse le texte saisi dans le contexte `PageFilters`
-   * (→ le `searchProStatic` de la page filtre la liste) puis scrolle vers les
-   * résultats. Déclenché par le bouton « Rechercher » et par Entrée.
+   * (→ le `searchProStatic` de la page filtre la liste) puis scrolle vers
+   * `props.scrollTarget` (id de la section résultats — pas de scroll si absent).
+   * Déclenché par le bouton « Rechercher » et par Entrée.
    */
   const triggerSearch = () => {
     pageFilters?.setSearchQuery(search);
     setIsAutocompleteOpen(false);
-    if (typeof document !== "undefined") {
-      document.getElementById("section-lieux")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (props.scrollTarget && typeof document !== "undefined") {
+      document.getElementById(props.scrollTarget)?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
 
@@ -280,27 +284,29 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
 
                 <div className="relative">
                   <div className="flex flex-col sm:flex-row gap-2 sm:gap-0 shadow-xl rounded-2xl sm:rounded-full overflow-hidden">
-                    <div className="relative w-full sm:w-auto">
-                      <select
-                        value={selectedCategory}
-                        onChange={(e) => applyCategory(e.target.value)}
-                        className="h-full w-full sm:w-auto pl-4 sm:pl-6 pr-10 py-3 sm:py-4 bg-background text-foreground text-sm sm:text-base font-medium focus:outline-none appearance-none cursor-pointer sm:border-r border-border rounded-t-2xl sm:rounded-none"
-                        style={{ minWidth: '0', }}
-                      >
-                        <option value="all">Tous les lieux</option>
-                        <option value="coworking">Coworking</option>
-                        <option value="fablab">Fablab</option>
-                        <option value="meeting">Se réunir</option>
-                        <option value="food">Manger</option>
-                        <option value="learn">S'instruire</option>
-                        <option value="stay">Séjourner</option>
-                      </select>
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                        <svg className="w-4 h-4 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
+                    {selectableButtons.length > 0 && (
+                      <div className="relative w-full sm:w-auto">
+                        {/* Mêmes boutons que le mode complet, en <select> compact
+                            (les boutons `href` — navigation — sont exclus). */}
+                        <select
+                          value={activeTabIndex >= 0 ? String(activeTabIndex) : ""}
+                          onChange={(e) => handleCta(Number(e.target.value))}
+                          className="h-full w-full sm:w-auto pl-4 sm:pl-6 pr-10 py-3 sm:py-4 bg-background text-foreground text-sm sm:text-base font-medium focus:outline-none appearance-none cursor-pointer sm:border-r border-border rounded-t-2xl sm:rounded-none"
+                          style={{ minWidth: '0', }}
+                        >
+                          {selectableButtons.map(({ btn, idx }) => (
+                            <option key={idx} value={String(idx)}>
+                              {t(btn.label)}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                          <svg className="w-4 h-4 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
                       </div>
-                    </div>
+                    )}
 
                     <div className="relative flex-1">
                       <input

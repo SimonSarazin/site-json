@@ -148,7 +148,7 @@ export type HeroWithIconSection = z.infer<typeof HeroWithIconSectionSchema>;
 export type HeroWithIconSectionProps = z.infer<typeof HeroWithIconSectionSchema>["props"];
 
 
-//──────────────── Hero Tiers-Lieux
+//──────────────── Hero recherche (autocomplete + boutons-filtres auto-porteurs)
 export const HeroSearchSchema = z.object({
   type: z.literal("hero-search"),
   id: z.string().optional(),
@@ -156,14 +156,35 @@ export const HeroSearchSchema = z.object({
     headline: LocalizedString,
     subhead: LocalizedString.optional(),
     backgroundImage: z.string().optional(),
+    // Boutons de catégorie AUTO-PORTEURS : chaque bouton déclare son effet —
+    // `filters` pose des query params (?param=v1,v2 — format pluriel de
+    // `computeFiltersFromUrl`, identique à la sidebar /lieux), `href` navigue,
+    // ni l'un ni l'autre = réinitialise les filtres gérés. Remplace l'ancien
+    // mapping positionnel codé en dur (taxonomie tiers-lieux).
     ctaButtons: z
       .array(
         z.object({
           label: LocalizedString,
           variant: z.enum(["default", "secondary", "accent", "primary", "outline"]).optional(),
+          // Filtres posés par ce bouton (multi-params, multi-valeurs).
+          // NB : les valeurs ne doivent pas contenir de virgule (format URL
+          // partagé avec /lieux — `split(",")`).
+          filters: z
+            .array(
+              z.object({
+                param: z.string().min(1),
+                values: z.array(z.string().min(1)).min(1),
+              })
+            )
+            .optional(),
+          // Navigation (ex. « + » → page de recherche complète).
+          href: z.string().optional(),
         })
       )
       .optional(),
+    // Id de la section vers laquelle scroller au lancement d'une recherche
+    // (ex. la liste `searchProStatic` de la page). Pas de scroll si absent.
+    scrollTarget: z.string().optional(),
     placeholder: LocalizedString.optional(),
     searchButtonText: LocalizedString.optional(),
     // Scope de l'autocomplétion du hero — aligner sur le `searchProStatic` de la page

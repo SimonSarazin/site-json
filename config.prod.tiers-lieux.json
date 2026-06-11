@@ -400,45 +400,95 @@
                 "label": {
                   "fr": "Se réunir",
                   "en": "Meet"
-                }
+                },
+                "filters": [
+                  {
+                    "param": "services",
+                    "values": [
+                      "Salle de Réunion"
+                    ]
+                  }
+                ]
               },
               {
                 "label": {
                   "fr": "Coworker",
                   "en": "Cowork"
-                }
+                },
+                "filters": [
+                  {
+                    "param": "typologies",
+                    "values": [
+                      "Bureaux partagés / Coworking"
+                    ]
+                  }
+                ]
               },
               {
                 "label": {
                   "fr": "Fabriquer",
                   "en": "Make"
-                }
+                },
+                "filters": [
+                  {
+                    "param": "typologies",
+                    "values": [
+                      "Fablab / Makerspace / Hackerspace (Espaces du Faire)"
+                    ]
+                  }
+                ]
               },
               {
                 "label": {
                   "fr": "Manger",
                   "en": "Eat"
-                }
+                },
+                "filters": [
+                  {
+                    "param": "typologies",
+                    "values": [
+                      "Cuisine partagée / Foodlab"
+                    ]
+                  }
+                ]
               },
               {
                 "label": {
                   "fr": "S'instruire",
                   "en": "Learn"
-                }
+                },
+                "filters": [
+                  {
+                    "param": "typologies",
+                    "values": [
+                      "LivingLab / Laboratoire d'innovation sociale"
+                    ]
+                  }
+                ]
               },
               {
                 "label": {
                   "fr": "Séjourner",
                   "en": "Stay"
-                }
+                },
+                "filters": [
+                  {
+                    "param": "services",
+                    "values": [
+                      "Hébérgement"
+                    ]
+                  }
+                ]
               },
               {
                 "label": {
                   "fr": "+",
                   "en": "+"
-                }
+                },
+                "href": "/lieux"
               }
             ],
+            "scrollTarget": "section-lieux",
             "placeholder": {
               "fr": "Ville, département, code postal ...",
               "en": "City, ZIP code ..."
