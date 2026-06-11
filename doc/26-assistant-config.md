@@ -370,6 +370,57 @@ Conventions vérifiées sur les 17 configs + `public/` :
 | Corrections manuelles | l'AdminPanel/ZodAutoForm reste dispo en parallèle |
 | Évolution vers B | `validate-config.mjs`/`config-schema.mjs` deviennent le backend de validation du panel |
 
+### Se maintenir à jour (résistance à la dérive)
+
+Le risque n°1 d'une skill riche : **sa connaissance dérive du code** (le repo
+vient d'en faire la démonstration — renommages `CardPoiSSBE→CardPoiAmenities`,
+refactors headers/footers — qui ont périmé doc/07 et CLAUDE.md). Trois couches
+de défense, par ordre de préférence :
+
+**1. Dériver, ne jamais dupliquer (couche volatile).** Tout ce qui est
+dérivable du code n'est PAS écrit dans SKILL.md — il est lu au moment de
+l'usage :
+
+| Connaissance | Source vivante (à l'invocation) |
+|---|---|
+| Types de header/footer/card/preview, enums | `config-schema.mjs` → `z.toJSONSchema` du schéma **courant** |
+| Liste + props des 68 sections | `config-schema.mjs sections` (membres de la discriminatedUnion) + `section-meta.ts` lu en direct |
+| Modules disponibles + leurs sections | `src/modules/*/` (découverte `import.meta.glob` — listable par script) |
+| Archétypes / configs existants | `sites.json` + `config.prod.*.json` lus en direct |
+| Slugs d'entité | `entity-slug.mjs` (backend interrogé en direct) |
+
+→ Par construction, ces faits sont **toujours à jour** : la skill ne connaît
+pas « les 68 sections », elle sait **où les lire**.
+
+**2. Vérifier ce qui doit rester écrit (couche semi-stable).** Les tables de
+jugement (identité visuelle des designs, recettes d'activation des modules)
+gagnent à être rédigées — mais elles doivent être **vérifiables** :
+
+- `scripts/skill-doctor.mjs` (ou un test preflight `skill-integrity.test.ts`,
+  même pattern que `config-integrity`) : croise les mentions de SKILL.md avec
+  le code — chaque `header.type`/`footer.type` cité existe dans l'enum, chaque
+  module cité existe dans `src/modules/`, chaque section citée est dans la
+  discriminatedUnion. **Échec = la skill a dérivé** → le commit qui change le
+  schéma casse le test et force la mise à jour de la skill (même discipline
+  que la parité i18n fr/en déjà en place).
+- Dans SKILL.md, une consigne de défiance : *« en cas de contradiction entre
+  cette skill et le code, le code a raison — vérifie via les scripts, puis
+  propose une mise à jour de la skill »*.
+
+**3. La skill se met à jour elle-même (boucle de maintenance).** C'est Claude
+Code : la skill peut **éditer son propre SKILL.md**. Protocole encodé :
+quand l'assistant détecte une dérive (doctor rouge, enum inconnu, section
+disparue) ou qu'on lui demande (« mets-toi à jour »), il analyse les commits
+récents touchant `site-schema.ts` / `src/modules/` / `section-meta.ts` /
+`sites.json`, met à jour les tables semi-stables de SKILL.md, et committe la
+mise à jour comme n'importe quel changement (relecture humaine au diff). La
+même passe peut proposer la mise à jour de doc/26.
+
+**Règle d'architecture qui en découle** : SKILL.md ne contient que (a) le
+*workflow* et les *règles de jugement* — stables — et (b) les tables
+semi-stables **couvertes par le doctor**. Jamais de liste d'enum, de props ou
+de chemins recopiés à la main.
+
 ## Phases proposées
 
 - **Phase 0 — outillage** : `scripts/validate-config.mjs` +
@@ -378,9 +429,11 @@ Conventions vérifiées sur les 17 configs + `public/` :
   utiles même sans l'assistant — ex. valider un config à la main.
 - **Phase 1 — la skill** : `.claude/skills/config-assistant/SKILL.md` —
   workflow + capacités de conception (tables d'identité design, catalogue
-  modules, règles assets/slug) ; itérer sur des cas réels (1 site from-scratch
-  + 3-4 éditions incrémentales sur les configs existants) et durcir les règles
-  maison au fil des ratés.
+  modules, règles assets/slug) **+ le garde-fou anti-dérive dès le départ**
+  (`skill-doctor.mjs` ou test preflight `skill-integrity` : les mentions de
+  SKILL.md existent dans le code) ; itérer sur des cas réels (1 site
+  from-scratch + 3-4 éditions incrémentales sur les configs existants) et
+  durcir les règles maison au fil des ratés.
 - **Phase 2 — confort** : enrichir `section-meta.ts` de descriptions
   exploitables (ou `.describe()` dans les schémas — profite aussi au panel) ;
   éventuel `audit:config --file <x>` pour ne vérifier qu'un config.
