@@ -17,7 +17,7 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import "@/components/layout/i18n";
 import { Header } from "@/types/site-schema";
-import NavLink from "./NavLink";
+import NavLink from "../NavLink";
 import LangSwitch from "./LangSwitch";
 import MobileMenuSheet from "./MobileMenuSheet";
 import { useCocolight } from "@/hooks/useCocolight";

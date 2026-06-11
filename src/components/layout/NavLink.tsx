@@ -13,11 +13,14 @@ type NavLinkProps = {
 } & Omit<HTMLAttributes<HTMLElement>, "className" | "onClick" | "children">;
 
 /**
- * Lien de navigation d'en-tête — tranche les 3 cas qu'un header doit gérer :
+ * Lien de navigation partagé (en-têtes ET pieds de page) — tranche les cas
+ * qu'un lien de chrome doit gérer :
  * 1. `to` vide ou `"#"` → `<span>` inerte (placeholder, jamais cliquable) ;
- * 2. `to` externe (`http(s)://`, ou `external` forcé) → `<a target="_blank"
+ * 2. `mailto:` / `tel:` / `sms:` → `<a href>` simple (le handler OS intercepte ;
+ *    pas de `target="_blank"`) ;
+ * 3. `to` externe (`http(s)://`, ou `external` forcé) → `<a target="_blank"
  *    rel="noopener noreferrer">` ;
- * 3. sinon → `<Link>` React Router (navigation SPA).
+ * 4. sinon → `<Link>` React Router (navigation SPA).
  *
  * **Présentationnel** : il ne calcule PAS l'état actif. Chaque header garde
  * son `useNavItemActive`/className sur-mesure (couleurs + `<span>` souligné
@@ -47,6 +50,15 @@ const NavLink = forwardRef<HTMLAnchorElement, NavLinkProps>(function NavLink(
       <span ref={ref as Ref<HTMLSpanElement>} className={className} {...rest}>
         {children}
       </span>
+    );
+  }
+
+  // mailto: / tel: / sms: → ancre simple (handler OS), jamais un nouvel onglet.
+  if (/^(mailto:|tel:|sms:)/i.test(to)) {
+    return (
+      <a ref={ref} href={to} className={className} onClick={onClick} {...rest}>
+        {children}
+      </a>
     );
   }
 

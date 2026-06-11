@@ -1,17 +1,9 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Github, Twitter, Linkedin, Facebook, Instagram, Youtube } from 'lucide-react';
 import { useLocalization } from "@/hooks/useLocalization";
 import { Footer } from '@/types/site-schema';
-
-const SocialIcons: Record<string, React.ComponentType<{ className?: string }>> = {
-  github: Github,
-  twitter: Twitter,
-  linkedin: Linkedin,
-  facebook: Facebook,
-  instagram: Instagram,
-  youtube: Youtube,
-};
+import NavLink from '../NavLink';
+import SocialLinks from './SocialLinks';
 
 interface FooterRichProps {
   footer: Footer;
@@ -67,14 +59,13 @@ export function FooterRich({ footer }: FooterRichProps) {
               <ul className="space-y-2">
                 {column.links.map((link, linkIndex) => (
                   <li key={linkIndex}>
-                    <a
-                      href={link.href}
+                    <NavLink
+                      to={link.href}
+                      external={link.external}
                       className="text-muted-foreground dark:text-gray-400 hover:text-foreground dark:hover:text-primary transition-colors"
-                      target={link.external ? '_blank' : '_self'}
-                      rel={link.external ? 'noopener noreferrer' : undefined}
                     >
                       {t(link.label)}
-                    </a>
+                    </NavLink>
                   </li>
                 ))}
               </ul>
@@ -89,30 +80,7 @@ export function FooterRich({ footer }: FooterRichProps) {
           </p>
 
           {/* Social Links */}
-          {footer.socials && footer.socials.length > 0 && (
-            <div className="flex items-center gap-2">
-              {footer.socials.map((social, index) => {
-                const IconComponent = SocialIcons[social.platform.toLowerCase()];
-                return IconComponent ? (
-                  <Button
-                    key={index}
-                    variant="ghost"
-                    size="sm"
-                    asChild
-                  >
-                    <a
-                      href={social.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={social.platform}
-                    >
-                      <IconComponent className="h-4 w-4" />
-                    </a>
-                  </Button>
-                ) : null;
-              })}
-            </div>
-          )}
+          <SocialLinks socials={footer.socials} className="flex items-center gap-2" />
         </div>
 
         {/* Extra Content */}

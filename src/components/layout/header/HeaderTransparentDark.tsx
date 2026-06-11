@@ -4,7 +4,7 @@ import { Header } from "@/types/site-schema";
 import { useLocation } from "react-router";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useScrollAware, useScrollToTopOnRouteChange, useNavItemActive } from "./useHeaderBehavior";
-import NavLink from "./NavLink";
+import NavLink from "../NavLink";
 import LangSwitch from "./LangSwitch";
 import MobileMenuSheet from "./MobileMenuSheet";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";

@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import NavLink from "../NavLink";
 import { MapPin, Phone, Mail, Globe, Building2 } from "lucide-react";
 import { useLocalization } from "@/hooks/useLocalization";
 import { Footer } from "@/types/site-schema";
@@ -67,14 +67,9 @@ export default function FooterContactPartners({ footer }: FooterContactPartnersP
                     <li key={idx} className="flex items-start gap-3">
                       <Icon className="text-primary mt-0.5 shrink-0 h-5 w-5" />
                       {item.href ? (
-                        <a
-                          href={item.href}
-                          className="hover:text-foreground transition-colors"
-                          rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                          target={item.href.startsWith("http") ? "_blank" : undefined}
-                        >
+                        <NavLink to={item.href} className="hover:text-foreground transition-colors">
                           {content}
-                        </a>
+                        </NavLink>
                       ) : (
                         content
                       )}
@@ -94,24 +89,21 @@ export default function FooterContactPartners({ footer }: FooterContactPartnersP
                     src={image}
                     alt={t(logo.alt)}
                     loading="lazy"
+                    width={160}
+                    height={96}
                     className="h-24 md:h-32 w-auto object-contain hover:opacity-85 transition-opacity"
                   />
                 );
 
-                return logo.href ? (
-                  <a
+                return (
+                  <NavLink
                     key={idx}
-                    href={logo.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    to={logo.href}
+                    external
                     className="inline-flex items-center justify-center dark:rounded-lg dark:bg-white dark:p-3 dark:shadow-sm"
                   >
                     {logoContent}
-                  </a>
-                ) : (
-                  <span key={idx} className="inline-flex items-center justify-center dark:rounded-lg dark:bg-white dark:p-3 dark:shadow-sm">
-                    {logoContent}
-                  </span>
+                  </NavLink>
                 );
               })}
             </div>
@@ -125,9 +117,9 @@ export default function FooterContactPartners({ footer }: FooterContactPartnersP
           {footer.legalLinks && footer.legalLinks.length > 0 && (
             <div className="flex flex-wrap items-center gap-4">
               {footer.legalLinks.map((link, idx) => (
-                <Link key={idx} to={link.href} className="hover:text-foreground transition-colors underline">
+                <NavLink key={idx} to={link.href} className="hover:text-foreground transition-colors underline">
                   {t(link.label)}
-                </Link>
+                </NavLink>
               ))}
             </div>
           )}

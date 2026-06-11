@@ -3,7 +3,7 @@ import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
 import type { Header } from "@/types/site-schema";
 import { ClientOnly } from "../ClientOnly";
-import NavLink from "./NavLink";
+import NavLink from "../NavLink";
 import LangSwitch from "./LangSwitch";
 import MobileMenuSheet from "./MobileMenuSheet";
 import { AuthMenu } from "@/modules/auth";

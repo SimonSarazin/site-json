@@ -3,7 +3,7 @@ import { useT } from "@/hooks/useT";
 import { Header } from "@/types/site-schema";
 import { useLocation } from "react-router";
 import { useScrollAware, useScrollToTopOnRouteChange, useNavItemActive } from "./useHeaderBehavior";
-import NavLink from "./NavLink";
+import NavLink from "../NavLink";
 import LangSwitch from "./LangSwitch";
 import MobileMenuSheet from "./MobileMenuSheet";
 import { ClientOnly } from "../ClientOnly";

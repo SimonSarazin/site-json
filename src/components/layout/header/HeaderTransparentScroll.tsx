@@ -4,7 +4,7 @@ import { Header } from "@/types/site-schema";
 import { ChevronDown } from "lucide-react";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";
 import { ClientOnly } from "../ClientOnly";
-import NavLink from "./NavLink";
+import NavLink from "../NavLink";
 import LangSwitch from "./LangSwitch";
 import MobileMenuSheet from "./MobileMenuSheet";
 import { AuthMenu } from "@/modules/auth";
