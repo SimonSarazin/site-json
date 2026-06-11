@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
@@ -26,7 +26,7 @@ import { useT } from "@/hooks/useT";
 import { useLocalization } from "@/hooks/useLocalization";
 import "@/components/layout/i18n";
 import { Header } from "@/types/site-schema";
-import { useNavigate } from "react-router";
+import NavLink from "./NavLink";
 import { useCocolight } from "@/hooks/useCocolight";
 import { AuthMenu } from "@/modules/auth";
 import { EnhancedNavItemType } from "@/types/site";
@@ -46,7 +46,6 @@ interface NavItemProps {
 // Helper to render megamenu columns
 function MegaMenuContent({ megaMenu, onNavigate }: { megaMenu: EnhancedNavItemType['megaMenu']; onNavigate?: () => void; }) {
   const t = useT("components/layout");
-  const navigate = useNavigate();
   if (!megaMenu) return null;
   const gridCols = {
     sm: 'grid-cols-1',
@@ -64,18 +63,14 @@ function MegaMenuContent({ megaMenu, onNavigate }: { megaMenu: EnhancedNavItemTy
           <ul className="space-y-1">
             {col.links.map((link, j) => (
               <li key={j}>
-                <Button
-                  variant="ghost"
-                  className="justify-start w-full"
-                  onClick={() => {
-                    if (link.path) navigate(link.path);
-                    else if (link.href) window.open(link.href, '_blank');
-                    onNavigate?.();
-                  }}
+                <NavLink
+                  to={link.path ?? link.href}
+                  className={cn(buttonVariants({ variant: "ghost" }), "justify-start w-full")}
+                  onClick={() => onNavigate?.()}
                 >
                   {link.icon && <DynamicIcon name={link.icon as IconName} className="w-4 h-4 mr-2" />}
                   {t(link.label)}
-                </Button>
+                </NavLink>
               </li>
             ))}
           </ul>
@@ -85,12 +80,12 @@ function MegaMenuContent({ megaMenu, onNavigate }: { megaMenu: EnhancedNavItemTy
               <CardContent>
                 <CardTitle>{t(col.featured.title)}</CardTitle>
                 <CardDescription>{t(col.featured.description)}</CardDescription>
-                <Button
-                  size="sm"
-                  onClick={() => col.featured?.href && window.open(col.featured.href, '_blank')}
+                <NavLink
+                  to={col.featured?.href}
+                  className={cn(buttonVariants({ size: "sm" }))}
                 >
                   {t('En savoir plus')}
-                </Button>
+                </NavLink>
               </CardContent>
             </Card>
           )}
@@ -103,7 +98,6 @@ function MegaMenuContent({ megaMenu, onNavigate }: { megaMenu: EnhancedNavItemTy
 function NavItem({ item, mobile = false, onNavigate }: NavItemProps) {
   useLoadNamespace("components/layout");
   const t = useT("components/layout");
-  const navigate = useNavigate();
   const { me } = useCocolight();
   const [open, setOpen] = useState(false);
 
@@ -151,13 +145,10 @@ function NavItem({ item, mobile = false, onNavigate }: NavItemProps) {
         <DropdownMenuContent align="start" className="w-56">
           {item.children.map((child, idx) => (
             <DropdownMenuItem key={idx} asChild>
-              <button
+              <NavLink
+                to={child.path ?? child.href}
                 className="flex items-center gap-2 w-full text-left"
-                onClick={() => {
-                  if (child.path) navigate(child.path);
-                  else if (child.href) window.open(child.href, '_blank');
-                  handleNavigate();
-                }}
+                onClick={handleNavigate}
               >
                 {child.icon && <DynamicIcon name={child.icon as IconName} className="w-4 h-4" />}
                 <div className="flex flex-col w-full">
@@ -165,7 +156,7 @@ function NavItem({ item, mobile = false, onNavigate }: NavItemProps) {
                   {child.description && <span className="text-xs text-muted-foreground">{t(child.description)}</span>}
                 </div>
                 {child.badge && <Badge className="text-xs px-2 py-0.5 ml-auto">{t(child.badge.text)}</Badge>}
-              </button>
+              </NavLink>
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>
@@ -175,20 +166,15 @@ function NavItem({ item, mobile = false, onNavigate }: NavItemProps) {
 
   // Simple link
   return (
-    <Button
-      variant="ghost"
-      className={cn("flex items-center gap-2", mobile && "w-full justify-start")}
-      onClick={(e) => {
-        e.preventDefault();
-        if (item.path) navigate(item.path);
-        else if (item.href) window.open(item.href, '_blank');
-        handleNavigate();
-      }}
+    <NavLink
+      to={item.path ?? item.href}
+      className={cn(buttonVariants({ variant: "ghost" }), "flex items-center gap-2", mobile && "w-full justify-start")}
+      onClick={handleNavigate}
     >
       {item.icon && <DynamicIcon name={item.icon as IconName} className="w-4 h-4" />}
       {t(item.label)}
       {item.badge && <Badge className="text-xs px-2 py-0.5">{t(item.badge.text)}</Badge>}
-    </Button>
+    </NavLink>
   );
 }
 
@@ -201,7 +187,6 @@ export function HeaderStandard({ header }: HeaderStandardProps) {
   useLoadNamespace("components/layout");
   const t = useT("components/layout");
   const { currentLocale, setLocale, availableLocales } = useLocalization();
-  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const headerBg = header.transparent ? 'bg-transparent' : 'bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60';
@@ -211,20 +196,15 @@ export function HeaderStandard({ header }: HeaderStandardProps) {
     lg: 'h-20'
   }[header.height];
 
-  const handleLogoClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    navigate('/');
-  };
-
   return (
     <header role="navigation" className={cn('border-b', headerBg, header.sticky && 'sticky top-0 z-50')} style={{}}>
       {header.announcement && <AnnouncementBanner {...header.announcement} />}
       <div className={cn('container mx-auto px-4 sm:px-6 lg:px-8', headerHeight)}>
         <div className="flex items-center justify-between h-full">
           {/* Logo */}
-          <button onClick={handleLogoClick} className="flex items-center gap-2">
+          <NavLink to={header.path || "/"} className="flex items-center gap-2">
             <OptimizedImage src={header.logo ?? ""} alt={header.logoAlt ? t(header.logoAlt) : 'Logo'} height={32} className="h-8 w-auto rounded" />
-          </button>
+          </NavLink>
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-1">
