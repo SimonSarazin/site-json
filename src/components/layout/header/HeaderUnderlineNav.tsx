@@ -1,6 +1,6 @@
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
-import { Header, LocalizedString } from "@/types/site-schema";
+import { Header } from "@/types/site-schema";
 import { useLocation } from "react-router";
 import { useScrollAware, useScrollToTopOnRouteChange, useNavItemActive } from "./useHeaderBehavior";
 import NavLink from "./NavLink";
@@ -14,24 +14,7 @@ import NotificationBell from "@/modules/notification/components/NotificationBell
 import CommandTriggerButton from "@/modules/commandPalette/components/CommandTriggerButton";
 
 interface HeaderUnderlineNavProps {
-    header: Header & {
-        logoTitle?: LocalizedString;
-        logoIcon?: string;
-        ctaButton?: {
-            label: LocalizedString;
-            path?: string;
-        };
-        piggyBank?: {
-            amount?: string;
-            icon?: string;
-            path?: string;
-        };
-        urgenceButton?: {
-            label: LocalizedString;
-            icon?: string;
-            path?: string;
-        };
-    };
+    header: Header;
 }
 
 export default function HeaderUnderlineNav({ header }: HeaderUnderlineNavProps) {
