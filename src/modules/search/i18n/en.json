@@ -15,7 +15,7 @@
     "reserve": "Book",
     "available": "Available"
   },
-  "PreviewCoformAnswer": {
+  "coformAnswer": {
     "noTitle": "(No title)",
     "noDescription": "(No description)",
     "address": "Address",
@@ -31,7 +31,13 @@
     "notProvided": "Not provided",
     "installation": "Facility",
     "installationEmpty": "No facility provided",
-    "validated": "Validated"
+    "validated": "Validated",
+    "noName": "(No name)",
+    "by": "By:",
+    "showLess": "See less",
+    "moreSlots": "+{{count}} slots",
+    "activitySheet": "Activity sheet",
+    "structureSheet": "Organization sheet"
   },
   "CardPoiAmenities": {
     "amenities": "Amenities",

@@ -15,7 +15,7 @@
         "reserve": "Réserver",
         "available": "Disponible"
     },
-    "PreviewCoformAnswer": {
+    "coformAnswer": {
         "noTitle": "(Pas de titre)",
         "noDescription": "(Pas de description)",
         "address": "Adresse",
@@ -31,7 +31,13 @@
         "notProvided": "Non renseigné",
         "installation": "Installation",
         "installationEmpty": "Aucune installation renseignée",
-        "validated": "Validé"
+        "validated": "Validé",
+        "noName": "(Pas de nom)",
+        "by": "Par :",
+        "showLess": "Voir moins",
+        "moreSlots": "+{{count}} créneaux",
+        "activitySheet": "Fiche d'activité",
+        "structureSheet": "Fiche structure"
     },
     "CardPoiAmenities": {
         "amenities": "Aménagement",
