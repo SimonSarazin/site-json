@@ -29,7 +29,7 @@ export default function HeaderUnderlineNav({ header }: HeaderUnderlineNavProps) 
     const isScrolled = useScrollAware();
 
     return (
-        <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${(isScrolled || location.pathname !== '/') ? 'bg-header-green backdrop-blur-ocean shadow-ocean' : 'bg-transparent'}`}>
+        <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${(isScrolled || location.pathname !== '/') ? 'bg-header-bar backdrop-blur-md shadow-deep' : 'bg-transparent'}`}>
             <div className="container mx-auto px-4">
                 <div className="flex items-center justify-between h-20">
                     <NavLink to={header.path || "/"} className="flex items-center gap-3 cursor-pointer group">

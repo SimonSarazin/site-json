@@ -31,7 +31,7 @@ export default function HeaderTransparentDark({ header }: HeaderTransparentDarkP
     // Header bg: dark purple, transparent on homepage hero only
     const headerBg =
         (isScrolled || location.pathname !== "/")
-            ? "bg-ct-header backdrop-blur-sm shadow-lg"
+            ? "bg-header-bar backdrop-blur-sm shadow-lg"
             : "bg-transparent";
     
     const dataCostum = entity?.serverData?.costum as Record<string, unknown> | undefined;
@@ -125,7 +125,7 @@ export default function HeaderTransparentDark({ header }: HeaderTransparentDarkP
                         {/* Mobile menu */}
                         <MobileMenuSheet
                             tone="onColor"
-                            contentClassName="bg-ct-header text-white border-white/10"
+                            contentClassName="bg-header-bar text-white border-white/10"
                         >
                             {(close) =>
                                 header.nav?.map((item, idx) => {

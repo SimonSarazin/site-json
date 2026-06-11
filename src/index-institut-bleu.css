@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import "tw-animate-css";
+@import "./styles/shared.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -281,9 +282,6 @@
   }
 }
 
-.animate-marquee {
-  animation: marquee 25s linear infinite;
-}
 
 /* Smooth scrolling */
 html {
@@ -476,12 +474,5 @@ html {
 }
 
 @layer utilities {
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
 
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
 }

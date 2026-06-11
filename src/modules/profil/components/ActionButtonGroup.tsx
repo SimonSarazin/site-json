@@ -38,7 +38,7 @@ const getButtonClasses = (variant?: string) => {
         case "primary":
             return "bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow";
         case "outline":
-            return "border-2 border-foreground/50 bg-background/20 backdrop-blur-ocean hover:bg-background/40 text-foreground";
+            return "border-2 border-foreground/50 bg-background/20 backdrop-blur-md hover:bg-background/40 text-foreground";
         case "turquoise":
         default:
             return "bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow";

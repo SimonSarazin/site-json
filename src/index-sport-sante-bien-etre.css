@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import "tw-animate-css";
+@import "./styles/shared.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -274,10 +275,6 @@
   --color-sidebar-ring: oklch(0.58 0.12 180);
 
   /* ---- Animations ---- */
-  --animate-float: float 6s ease-in-out infinite;
-  --animate-pulse-soft: pulse-soft 3s ease-in-out infinite;
-  --animate-slide-up: slide-up 0.6s ease-out;
-  --animate-fade-in: fade-in 0.5s ease-out;
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
 
@@ -291,10 +288,6 @@
   --color-btn-activity: var(--btn-activity);
   --color-btn-structure: var(--btn-structure);
 
-  @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
-  }
   @keyframes pulse-soft {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.7; }
@@ -302,10 +295,6 @@
   @keyframes slide-up {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
   }
   @keyframes accordion-down {
     from { height: 0; }
@@ -361,11 +350,6 @@
   .font-sans { font-family: var(--font-sans); }
   .font-serif { font-family: var(--font-serif); }
   .font-mono { font-family: var(--font-mono); }
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  .scrollbar-hide::-webkit-scrollbar { display: none; }
 }
 
 /* Earth gradients */
@@ -410,29 +394,9 @@
 /* Animations */
 html { scroll-behavior: smooth; }
 
-@keyframes marquee {
-  0% { transform: translateX(0%); }
-  100% { transform: translateX(-100%); }
-}
-.animate-marquee { animation: marquee 25s linear infinite; }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-}
-.animate-float { animation: float 3s ease-in-out infinite; }
 
-@keyframes fade-in-up {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.animate-fade-in-up { animation: fade-in-up 0.8s ease-out forwards; }
 
-@keyframes pulse-glow {
-  0%, 100% { opacity: 0.5; transform: scale(1); }
-  50% { opacity: 0.8; transform: scale(1.05); }
-}
-.animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
 
 @keyframes shimmer {
   0% { background-position: -200% 0; }
@@ -483,9 +447,6 @@ html { scroll-behavior: smooth; }
     background-image: var(--gradient-warm);
   }
 
-  .shadow-glow {
-    box-shadow: var(--shadow-glow);
-  }
 
   .card-elevated {
     @apply bg-card rounded-xl;

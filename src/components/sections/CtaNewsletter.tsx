@@ -44,7 +44,7 @@ export function CtaNewsletter({ id, props }: CtaNewsletterSectionProps) {
 
     const defaultBg = isAccent
         ? "bg-gradient-to-br from-card/30 via-background to-card/20"
-        : "bg-ocean-gradient";
+        : "bg-[image:var(--gradient-section)]";
 
     const sectionBg = props.bg && props.bg !== "default" ? BG_MAP[props.bg] : defaultBg;
 
@@ -52,7 +52,7 @@ export function CtaNewsletter({ id, props }: CtaNewsletterSectionProps) {
 
     const inputClasses = isAccent
         ? "pl-10 h-12 bg-background/50 backdrop-blur-sm border-border/50 focus:border-primary text-foreground placeholder:text-muted-foreground"
-        : "pl-10 h-12 bg-background/50 backdrop-blur-ocean border-primary/30 focus:border-primary text-foreground placeholder:text-muted-foreground";
+        : "pl-10 h-12 bg-background/50 backdrop-blur-md border-primary/30 focus:border-primary text-foreground placeholder:text-muted-foreground";
 
     return (
         <section id={id} className={`py-24 px-4 relative overflow-hidden ${sectionBg}`}>

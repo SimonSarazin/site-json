@@ -29,7 +29,7 @@ export function FeaturesGlass({ id, props }: FeaturesGlassSectionProps) {
 
     const cardClasses = isAccent
         ? "p-6 bg-card/40 backdrop-blur-sm border-border/50 hover:bg-card/60 transition-all duration-300 hover:shadow-lg animate-fade-in-up group"
-        : "p-6 bg-secondary/30 backdrop-blur-ocean border-primary/20 hover:bg-secondary/50 transition-all duration-300 hover:shadow-ocean animate-fade-in-up group";
+        : "p-6 bg-secondary/30 backdrop-blur-md border-primary/20 hover:bg-secondary/50 transition-all duration-300 hover:shadow-deep animate-fade-in-up group";
 
     const BG_MAP: Record<string, string> = {
         card: "bg-card",

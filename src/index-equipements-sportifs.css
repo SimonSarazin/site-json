@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import "tw-animate-css";
+@import "./styles/shared.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -91,7 +92,8 @@
   --card-header-gradient: linear-gradient(135deg, var(--primary), var(--accent));
   --card-border-left: var(--primary);
 
-  /* Accents océan (utilisés par .bg-ocean-gradient / .shadow-ocean / .shadow-glow).
+  /* Accents océan (consommés via les tokens partagés --gradient-section /
+     --shadow-deep / --shadow-glow, cf. styles/shared.css).
      Bande TOUJOURS sombre (le texte du bandeau héros est forcé en blanc via la
      config) → on garde la lightness basse même en light pour un contraste AA. */
   --ocean-deep: oklch(0.23 0.060 170);
@@ -174,14 +176,7 @@
     font-family: var(--font-mono);
   }
 
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
 
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
 }
 
 /* Smooth scrolling */
@@ -289,96 +284,20 @@ html {
   background: color-mix(in oklch, var(--muted-foreground) 50%, transparent);
 }
 
-/* ==========================================
-   Accents océan (#00e7e3) — repris de la charte, utilisés par les sections
-   ========================================== */
 
-.backdrop-blur-ocean {
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
 
-.shadow-ocean {
-  box-shadow: var(--shadow-ocean);
-}
 
-.shadow-glow {
-  box-shadow: var(--shadow-glow);
-}
 
-.bg-ocean-gradient {
-  background: linear-gradient(135deg, var(--ocean-deep), var(--ocean-mid), var(--ocean-light));
-}
 
-/* Lisibilité du titre héros : en light, simple ombre neutre douce (pas de halo
-   coloré sur la photo) ; en dark, léger glow teal pour le texte clair. */
-.text-glow {
-  text-shadow: 0 2px 10px oklch(0 0 0 / 0.22);
-}
 
-.dark .text-glow {
-  text-shadow: 0 0 24px oklch(0.760 0.150 168 / 0.40);
-}
 
-/* ==========================================
-   Animations
-   ========================================== */
 
-@keyframes marquee {
-  0% {
-    transform: translateX(0%);
-  }
-  100% {
-    transform: translateX(-100%);
-  }
-}
 
-.animate-marquee {
-  animation: marquee 25s linear infinite;
-}
 
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
 
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
 
-@keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
-.animate-fade-in-up {
-  animation: fade-in-up 0.8s ease-out forwards;
-}
 
-@keyframes pulse-glow {
-  0%, 100% {
-    opacity: 0.5;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.8;
-    transform: scale(1.05);
-  }
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
 
 /* Loading states */
 .loading {
@@ -437,4 +356,11 @@ html {
 
 .delay-400 {
   animation-delay: 400ms;
+}
+
+/* Surcharges des tokens partagés (styles/shared.css) — valeurs historiques. */
+:root {
+  --shadow-deep: var(--shadow-ocean);
+  --gradient-section: linear-gradient(135deg, var(--ocean-deep), var(--ocean-mid), var(--ocean-light));
+  --text-shadow-glow: 0 0 24px oklch(0.760 0.150 168 / 0.40);
 }

@@ -399,7 +399,7 @@ export const CategoriesGridSectionSchema = z.object({
     headline: LocalizedString.optional(),
     subhead: LocalizedString.optional(),
     // primary = teinte primaire + glow au survol · accent = teinte accent ·
-    // frosted = verre dépoli lourd (backdrop-blur-ocean).
+    // frosted = verre dépoli lourd (backdrop-blur-md).
     variant: z.enum(["primary", "accent", "frosted"]).optional().default("primary"),
     columns: z.number().min(2).max(6).optional().default(3),
     cards: z.array(

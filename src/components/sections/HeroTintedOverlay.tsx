@@ -21,7 +21,7 @@ export function HeroTintedOverlay({ props }: HeroTintedOverlayComponentProps) {
                         style={{ minHeight: '100vh', maxHeight: 'none' }}
                     />
                     {/* Overlay vert translucide */}
-                    <div className="absolute inset-0 bg-banner-green z-10" />
+                    <div className="absolute inset-0 bg-hero-tint z-10" />
                 </>
             )}
             {/* Contenu centré */}  

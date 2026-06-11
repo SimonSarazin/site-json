@@ -27,7 +27,7 @@ export default function HeaderMinimal({ header }: HeaderMinimalProps) {
 
     return (
         <>
-            <nav className="fixed top-0 left-0 right-0 z-40 nav-sticky border-b border-gray-100 bg-background/90 backdrop-blur-sm transition-colors duration-300">
+            <nav className="fixed top-0 left-0 right-0 z-40 border-b border-gray-100 bg-background/90 backdrop-blur-md transition-colors duration-300">
                 <div className="max-w-[1900px] mx-auto px-8 md:px-12 lg:px-16 py-5 flex justify-between items-center">
 
                     <div className="flex items-center gap-3">

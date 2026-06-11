@@ -232,7 +232,7 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
     };
 
     return (
-        <section id={id} className="relative pt-10 px-4 bg-ocean-gradient overflow-hidden">
+        <section id={id} className="relative pt-10 px-4 bg-[image:var(--gradient-section)] overflow-hidden">
             <div className="inset-0 opacity-10">
                 <div className="absolute top-10 left-10 w-64 h-64 bg-primary rounded-full blur-3xl animate-float" />
                 <div
@@ -272,7 +272,7 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
                                     onChange={(e) => setLocalSearchQuery(e.target.value)}
                                     className={hasDropdownFilters
                                         ? "h-11 rounded-xl border-border bg-muted/60! pl-12 text-foreground shadow-sm placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/25 dark:bg-muted/50!"
-                                        : "pl-12 h-12 bg-secondary/40 backdrop-blur-ocean border-primary/30 focus:border-primary text-foreground placeholder:text-muted-foreground"
+                                        : "pl-12 h-12 bg-secondary/40 backdrop-blur-md border-primary/30 focus:border-primary text-foreground placeholder:text-muted-foreground"
                                     }
                                 />
                             </div>

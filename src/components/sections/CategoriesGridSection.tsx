@@ -52,7 +52,7 @@ export function SportCategoriesSection({
       case "frosted":
         return {
           sectionBg: "bg-gradient-to-b from-background to-background/80",
-          cardBg: "bg-secondary/30 backdrop-blur-ocean border-primary/20 hover:bg-secondary/50",
+          cardBg: "bg-secondary/30 backdrop-blur-md border-primary/20 hover:bg-secondary/50",
           accentColor: "text-primary",
         };
       case "primary":

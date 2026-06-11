@@ -571,7 +571,7 @@ const SearchHeaderProps = z.object({
   headline: LocalizedString.optional(),
   subhead: LocalizedString.optional(),
   // Override de la classe couleur du titre `h1` (déf. `text-foreground`). Utile
-  // quand le bandeau a un fond fixe sombre (ex. `bg-ocean-gradient`) où le token
+  // quand le bandeau a un fond fixe sombre (ex. `bg-[image:var(--gradient-section)]`) où le token
   // `--foreground` (sombre en light) devient illisible : `text-white dark:text-foreground`.
   headlineClassName: z.string().optional(),
   // Override de la classe couleur du sous-titre (déf. `text-foreground`).

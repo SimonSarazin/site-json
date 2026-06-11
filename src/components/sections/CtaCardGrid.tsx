@@ -29,13 +29,13 @@ export function CtaCardGrid({ id, props }: CtaCardGridSectionProps) {
 
     const cardClasses = isAccent
         ? "p-6 bg-card/40 backdrop-blur-sm border-border/50 hover:bg-card/60 transition-all duration-300 hover:shadow-lg hover:-translate-y-2 animate-fade-in-up group"
-        : "p-6 bg-secondary/30 backdrop-blur-ocean border-primary/20 hover:bg-secondary/50 transition-all duration-300 hover:shadow-ocean hover:-translate-y-2 animate-fade-in-up group";
+        : "p-6 bg-secondary/30 backdrop-blur-md border-primary/20 hover:bg-secondary/50 transition-all duration-300 hover:shadow-deep hover:-translate-y-2 animate-fade-in-up group";
 
     const statClasses = isAccent
         ? "text-center p-6 rounded-lg bg-card/30 backdrop-blur-sm border border-border/30"
-        : "text-center p-6 rounded-lg bg-secondary/30 backdrop-blur-ocean border border-primary/20";
+        : "text-center p-6 rounded-lg bg-secondary/30 backdrop-blur-md border border-primary/20";
 
-    const imageShadow = isAccent ? "shadow-lg" : "shadow-ocean";
+    const imageShadow = isAccent ? "shadow-lg" : "shadow-deep";
 
     const BG_MAP: Record<string, string> = {
         card: "bg-card",
