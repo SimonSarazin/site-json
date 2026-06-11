@@ -360,7 +360,7 @@
     "transparent": false,
     "height": "lg",
     "utilities": {
-      "themeSwitch": false,
+      "themeSwitch": true,
       "langSwitch": true,
       "search": true,
       "auth": true,
