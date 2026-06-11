@@ -351,7 +351,11 @@ export const HeroEntityBannerSchema = z.object({
       )
       .optional(),
     showScrollIndicator: z.boolean().optional(),
-    variant: z.enum(["commune-transparente"]).optional(),
+    // Base des médias sourcés depuis l'entité Cocolight (bannerImageUrl /
+    // bannerLogoUrl du costum sont des chemins relatifs à la plateforme).
+    // Défaut : https://www.communecter.org. Ne s'applique JAMAIS aux assets
+    // locaux passés en fallback (backgroundImage / logoImage).
+    mediaBaseUrl: z.string().optional(),
   }),
 });
 

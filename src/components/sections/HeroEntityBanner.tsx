@@ -15,6 +15,9 @@ interface DonneEntity {
     bannerText?: string;
 }
 
+/** Base par défaut des médias d'entité (chemins relatifs du costum Communecter). */
+const DEFAULT_MEDIA_BASE_URL = "https://www.communecter.org";
+
 export function HeroEntityBanner({ id, props }: HeroEntityBannerComponentProps) {
     const { t } = useLocalization();
     const { entity } = useCocolight();
@@ -22,21 +25,35 @@ export function HeroEntityBanner({ id, props }: HeroEntityBannerComponentProps) 
     const data = entity?.serverData;
     const dataCostum = entity?.serverData?.costum as Record<string, unknown> | undefined;
 
+    const mediaBaseUrl = props.mediaBaseUrl ?? DEFAULT_MEDIA_BASE_URL;
+
+    // Média sourcé de l'entité : chemin relatif plateforme → préfixé par
+    // `mediaBaseUrl` ; URL absolue → telle quelle. Le fallback config
+    // (asset local du site) n'est JAMAIS préfixé.
+    const resolveEntityMedia = (entityUrl: unknown, fallback?: string): string | undefined => {
+        const fromEntity = typeof entityUrl === "string" && entityUrl.length > 0 ? entityUrl : undefined;
+        if (fromEntity) {
+            return /^https?:\/\//.test(fromEntity) ? fromEntity : `${mediaBaseUrl}${fromEntity}`;
+        }
+        return fallback;
+    };
+
     const donneEntity: DonneEntity = {
-        name: data?.name,
-        bannerImageUrl: (dataCostum?.bannerImageUrl || props.backgroundImage) as string | undefined,
-        bannerLogoUrl: (dataCostum?.bannerLogoUrl || props.logoImage) as string | undefined,
-        bannerText: (dataCostum?.bannerText || "Une ville tournée vers l'avenir, entre transformation et solidarité") as string | undefined,
+        // Contenu sourcé de l'entité Cocolight, replis sur les props config.
+        name: data?.name || t(props.headline),
+        bannerImageUrl: resolveEntityMedia(dataCostum?.bannerImageUrl, props.backgroundImage),
+        bannerLogoUrl: resolveEntityMedia(dataCostum?.bannerLogoUrl, props.logoImage),
+        bannerText: (dataCostum?.bannerText as string | undefined) || (props.subhead ? t(props.subhead) : undefined),
     }
-    
+
     return (
         <section id={id} className="relative min-h-screen flex flex-col overflow-hidden">
             {/* ── Image de fond ── */}
             {donneEntity.bannerImageUrl && (
                 <>
                     <img
-                        src={`https://www.communecter.org${donneEntity.bannerImageUrl}`}
-                        alt=""
+                        src={donneEntity.bannerImageUrl}
+                        alt={props.backgroundImageAlt ? t(props.backgroundImageAlt) : ""}
                         className="absolute inset-0 w-full h-full object-cover z-0"
                     />
                     {/* Overlay violet sombre dégradé, fidèle à l'image */}
@@ -50,8 +67,8 @@ export function HeroEntityBanner({ id, props }: HeroEntityBannerComponentProps) 
 
                 {donneEntity.bannerLogoUrl && (
                     <img
-                        src={`https://www.communecter.org${donneEntity.bannerLogoUrl}`}
-                        alt= "logo"
+                        src={donneEntity.bannerLogoUrl}
+                        alt="logo"
                         className="h-24 w-auto mb-16 object-contain ct-animate-in ct-delay-1"
                     />
                 )}
