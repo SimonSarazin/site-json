@@ -21,7 +21,17 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { cn } from "@/lib/utils";
 
 interface BanFeature {
-  properties: { id: string; name: string; postcode?: string; city?: string; context?: string };
+  properties: {
+    id: string;
+    name: string;
+    /** Granularité BAN : `housenumber` | `street` | `locality` | `municipality`. */
+    type?: string;
+    /** Score de pertinence BAN (0–1), décroissant. */
+    score?: number;
+    postcode?: string;
+    city?: string;
+    context?: string;
+  };
   geometry: { coordinates: [number, number] };
 }
 
@@ -53,6 +63,8 @@ interface Street {
   streetAddress: string;
   geo?: [number, number]; // [lon, lat]
   id?: string;
+  /** Granularité BAN du résultat retenu (`housenumber` = numéro précis, `street` = rue, `locality` = lieu-dit). */
+  type?: string;
 }
 
 /**
@@ -76,6 +88,9 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
   const [selectedStreet, setSelectedStreet] = useState<Street | null>(null);
 
   const initializedRef = useRef(false);
+  // Dernière requête tapée dans le champ rue — sert à réinjecter un numéro de
+  // voirie saisi (« 12 ») quand le repli retourne une rue/lieu-dit sans numéro.
+  const lastStreetQueryRef = useRef("");
 
   // Watch form values
   const addressCountry = form.watch("addressCountry");
@@ -116,7 +131,13 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
 
   // Fetch streets from BAN API (France only)
   // Utilise citycode (INSEE) en priorité car plus précis que postcode
-  // pour les villes à arrondissements (Paris, Marseille, Lyon)
+  // pour les villes à arrondissements (Paris, Marseille, Lyon).
+  //
+  // PAS de filtre `type=housenumber` : la BAN n'a pas toujours le numéro
+  // géocodé (fréquent en outre-mer, ex. « 12 Allée des Aubépines, 97410
+  // Saint-Pierre »). On récupère donc numéro + rue + lieu-dit, et on **remonte
+  // les numéros en tête** (priorité à la précision) tout en laissant la rue /
+  // l'allée sélectionnable en repli.
   const fetchStreets = useCallback(async (query: string) => {
     if (!query || !addressCountry || (!postalCode && !codeInsee)) return [];
     if (query.length < 3) return [];
@@ -124,9 +145,11 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
     const isFR = ISO_COUNTRIES_FR.includes(addressCountry);
     if (!isFR) return [];
 
+    lastStreetQueryRef.current = query;
+
     try {
       const baseUrl = "https://data.geopf.fr/geocodage";
-      const params = new URLSearchParams({ q: query, type: "housenumber" });
+      const params = new URLSearchParams({ q: query, limit: "8" });
       if (codeInsee) {
         params.set("citycode", codeInsee);
       } else if (postalCode) {
@@ -136,21 +159,33 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
       const res = await fetch(url);
       const json = await res.json();
 
-      return json?.features?.length
-        ? json.features.map((f: BanFeature) => {
-            const { name, postcode: pc, city } = f.properties;
-            const suffix = pc && city ? `, ${pc} ${city}` : "";
-            return {
+      // Granularités retenues, par ordre de priorité d'affichage. La commune
+      // (`municipality`) est exclue : elle est déjà choisie dans le champ Ville.
+      const rank: Record<string, number> = { housenumber: 0, street: 1, locality: 2 };
+      const features: BanFeature[] = json?.features ?? [];
+
+      return features
+        .filter((f) => (rank[f.properties.type ?? ""] ?? 9) < 9)
+        .sort((a, b) => {
+          const ra = rank[a.properties.type ?? ""] ?? 9;
+          const rb = rank[b.properties.type ?? ""] ?? 9;
+          if (ra !== rb) return ra - rb; // numéro d'abord, puis rue, puis lieu-dit
+          return (b.properties.score ?? 0) - (a.properties.score ?? 0); // à type égal : score BAN décroissant
+        })
+        .map((f) => {
+          const { name, type, postcode: pc, city } = f.properties;
+          const suffix = pc && city ? `, ${pc} ${city}` : "";
+          return {
+            id: f.properties.id,
+            label: `${name}${suffix}`,
+            value: {
+              streetAddress: name,
+              geo: f.geometry.coordinates,
               id: f.properties.id,
-              label: `${name}${suffix}`,
-              value: {
-                streetAddress: name,
-                geo: f.geometry.coordinates,
-                id: f.properties.id,
-              },
-            };
-          })
-        : [];
+              type,
+            },
+          };
+        });
     } catch (error) {
       console.error("Error fetching streets:", error);
       return [];
@@ -310,9 +345,20 @@ export function EditLocationTab({ form }: EditLocationTabProps) {
       return;
     }
 
-    setSelectedStreet(street);
-    form.setValue("streetAddress", street.streetAddress);
-    // Coordonnées précises (niveau numéro, API BAN) : `street.geo` = [lon, lat].
+    // Repli rue/lieu-dit (la BAN n'a pas le numéro géocodé) : on réinjecte le
+    // numéro de voirie saisi pour conserver « 12 Allée des Aubépines » plutôt
+    // que « Allée des Aubépines » seule.
+    let streetAddress = street.streetAddress;
+    if (street.type !== "housenumber" && !/^\d/.test(streetAddress)) {
+      const m = lastStreetQueryRef.current.match(/^(\d+(?:\s?(?:bis|ter|quater|[a-d]))?)\s+/i);
+      if (m) streetAddress = `${m[1].trim()} ${streetAddress}`;
+    }
+
+    const resolved: Street = { ...street, streetAddress };
+    setSelectedStreet(resolved);
+    form.setValue("streetAddress", streetAddress);
+    // Coordonnées (`street.geo` = [lon, lat]) : niveau numéro si `housenumber`,
+    // sinon centre de la rue / du lieu-dit (moins précis, mais exploitable).
     if (street.geo) {
       const [lon, lat] = street.geo;
       form.setValue("geo", { "@type": "GeoCoordinates", latitude: lat, longitude: lon });
