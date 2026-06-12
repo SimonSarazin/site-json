@@ -54,7 +54,7 @@ const ColorTokenSchema = z.enum([
 
 /** KPI déclaratif : une FORME de calcul appliquée à une dimension. */
 export const KpiDefSchema = z.object({
-  kind: z.enum(["count", "distinct", "percentTrue", "valueSplit", "top"]),
+  kind: z.enum(["count", "distinct", "percentTrue", "valueSplit", "top", "sum", "avg"]),
   /** Dimension consommée (requise sauf pour `count`). */
   dimension: z.string().optional(),
   /** `valueSplit` : valeur comptée (affiché « n / total−n »). */
@@ -64,6 +64,8 @@ export const KpiDefSchema = z.object({
   /** Nom d'icône lucide (kebab-case) — rendu via DynamicIcon. */
   icon: z.string().optional(),
   accent: ColorTokenSchema.optional(),
+  /** Unité affichée après la valeur (`sum`/`avg` — ex. "m²"). */
+  unit: z.string().optional(),
 });
 export type KpiDef = z.infer<typeof KpiDefSchema>;
 
@@ -116,6 +118,8 @@ export const TableDefSchema = z.object({
   columns: z.array(TableColumnSchema).min(1),
   /** Dimension du tri initial (défaut : la 1ʳᵉ colonne). */
   defaultSort: z.string().optional(),
+  /** Clic sur une ligne → /profil/<slug> (le slug est dans les champs SDK). */
+  rowLink: z.boolean().optional(),
 });
 export type TableDef = z.infer<typeof TableDefSchema>;
 
@@ -171,6 +175,11 @@ export const DataObservatorySectionSchema = z.object({
         placeholder: LocalizedString.optional(),
       })
       .optional(),
+    // Export CSV du résultat FILTRÉ (présence du bloc = bouton affiché).
+    export: z.object({ filename: z.string().optional() }).optional(),
+    // Clic sur une part/barre de graphe → applique le filtre correspondant
+    // (seulement pour les dimensions présentes dans `filters`).
+    drilldown: z.boolean().optional(),
     // Tableau de bord déclaratif : chaque entrée référence des dimensions.
     kpis: z.array(KpiDefSchema).optional(),
     charts: z.array(ChartDefSchema).optional(),

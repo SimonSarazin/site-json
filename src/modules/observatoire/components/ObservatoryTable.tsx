@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { ChevronDown, ChevronUp, Table as TableIcon } from "lucide-react";
+import { useNavigate } from "react-router";
+import { ChevronDown, ChevronUp, Download, Table as TableIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ import type {
 import { TOKEN_TINT_CLASSES, dimensionLabel } from "../dimensions";
 import {
   PLACEHOLDER,
+  buildCsv,
   buildRow,
   compare,
   type Row,
@@ -62,12 +64,15 @@ function Th({
 interface ObservatoryTableProps {
   data: ObservatoryItem[];
   dimensions: DimensionsConfig;
-  /** Colonnes + tri initial (config ou preset RES). */
+  /** Colonnes + tri initial + rowLink (déclarés en config). */
   table: TableDef;
+  /** Export CSV du résultat filtré (opt-in config : `props.export`). */
+  exportCsv?: { filename?: string } | null;
 }
 
-export function ObservatoryTable({ data, dimensions, table }: ObservatoryTableProps) {
+export function ObservatoryTable({ data, dimensions, table, exportCsv }: ObservatoryTableProps) {
   const t = useT("modules/observatoire");
+  const navigate = useNavigate();
   // Colonnes sans dimension connue : ignorées (warn DEV).
   const columns = useMemo(() => {
     const out = table.columns.filter((c) => {
@@ -108,6 +113,23 @@ export function ObservatoryTable({ data, dimensions, table }: ObservatoryTablePr
         ? { key: k, dir: s.dir === "asc" ? "desc" : "asc" }
         : { key: k, dir: "asc" },
     );
+
+  // Export CSV : le résultat FILTRÉ/TRIÉ complet (pas la page affichée),
+  // BOM UTF-8 pour Excel, booléens via les libellés i18n.
+  const downloadCsv = () => {
+    const headers = columns.map((c) => labelFor(c));
+    const csv = buildCsv(sorted, columns, headers, {
+      yes: t("filters.yes"),
+      no: t("filters.no"),
+    });
+    const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${exportCsv?.filename ?? "export"}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const labelFor = (col: TableColumnDef): string =>
     col.label ? t(col.label) : col.labelKey ? t(col.labelKey) : dimensionLabel(t, dimensions, col.dimension);
@@ -177,9 +199,22 @@ export function ObservatoryTable({ data, dimensions, table }: ObservatoryTablePr
           <TableIcon className="h-4 w-4 text-primary" />
           <h3 className="text-sm font-semibold">{t("table.title")}</h3>
         </div>
-        <span className="text-xs text-muted-foreground">
-          {t("table.itemCount", undefined, { count: data.length })}
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-muted-foreground">
+            {t("table.itemCount", undefined, { count: data.length })}
+          </span>
+          {exportCsv && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={downloadCsv}
+              className="h-7 gap-1.5 px-2 text-xs"
+            >
+              <Download className="h-3 w-3" /> {t("table.exportCsv")}
+            </Button>
+          )}
+        </div>
       </div>
       <Table className="text-sm">
           <TableHeader className="bg-muted/40 border-y border-border">
@@ -199,7 +234,16 @@ export function ObservatoryTable({ data, dimensions, table }: ObservatoryTablePr
             {slice.map((r, i) => (
               <TableRow
                 key={r.id}
-                className={`border-border/40 ${i % 2 ? "bg-muted/10" : ""}`}
+                className={`border-border/40 ${i % 2 ? "bg-muted/10" : ""} ${
+                  table.rowLink && r.slug ? "cursor-pointer" : ""
+                }`}
+                // rowLink (opt-in config) : le slug est déjà chargé (champs
+                // SDK) et la route /profil/:slug existe pour toutes les entités.
+                onClick={
+                  table.rowLink && r.slug
+                    ? () => navigate(`/profil/${r.slug}`)
+                    : undefined
+                }
               >
                 {columns.map((col) => renderCell(r, col))}
               </TableRow>

@@ -62,6 +62,16 @@ export default function DataObservatorySection({
     props.search?.dimensions,
   );
 
+  // Drill-down (opt-in) : clic sur une part/barre → applique le filtre —
+  // seulement pour les dimensions réellement filtrables (retirables par
+  // l'utilisateur). Valeur unique : un clic = un focus.
+  const onDrill = props.drilldown
+    ? (dimensionId: string, value: string) => {
+        if (!filterIds.includes(dimensionId)) return;
+        setFilters({ ...filters, [dimensionId]: value });
+      }
+    : undefined;
+
   const headline = props.headline ? t(props.headline) : null;
   const description = props.description ? t(props.description) : null;
 
@@ -173,11 +183,17 @@ export default function DataObservatorySection({
                     data={filtered}
                     dimensions={dimensions}
                     animate={!stillLoading}
+                    onDrill={onDrill}
                   />
                 )}
 
                 {props.table && (
-                  <ObservatoryTable data={filtered} dimensions={dimensions} table={props.table} />
+                  <ObservatoryTable
+                    data={filtered}
+                    dimensions={dimensions}
+                    table={props.table}
+                    exportCsv={props.export ?? null}
+                  />
                 )}
               </>
             )}

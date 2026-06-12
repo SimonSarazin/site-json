@@ -44,6 +44,16 @@ function ChartCard({ title, children, bodyClassName }: ChartCardProps) {
 /** ChartContainer plein-cadre (le parent fixe la hauteur) — tooltip/axes thémés. */
 const CHART_CONTAINER_CLASS = "h-full w-full aspect-auto";
 
+/** Curseur pointeur sur les secteurs/barres quand le drill-down est actif. */
+const DRILL_CLASS = "[&_.recharts-sector]:cursor-pointer [&_.recharts-bar-rectangle]:cursor-pointer";
+
+/** Extrait la valeur cliquée d'un évènement recharts (Pie sector ou Bar). */
+function clickedName(entry: unknown): string | undefined {
+  const e = entry as { name?: unknown; payload?: { name?: unknown } } | undefined;
+  const name = e?.name ?? e?.payload?.name;
+  return typeof name === "string" ? name : undefined;
+}
+
 interface RendererProps {
   def: ChartDef;
   data: ObservatoryItem[];
@@ -52,15 +62,21 @@ interface RendererProps {
   /** Animations recharts — coupées pendant le chargement progressif (sinon
    *  les 5 graphes re-animent à CHAQUE page de 500 qui arrive). */
   animate: boolean;
+  /** Drill-down (opt-in config) : clic sur une part/barre → applique le
+   *  filtre de la dimension. Non défini = désactivé. */
+  onDrill?: (dimensionId: string, value: string) => void;
 }
 
 /* ── Formes de rendu ─────────────────────────────────────────────────────── */
 
-function DonutChart({ def, data, dims, t, animate }: RendererProps) {
+function DonutChart({ def, data, dims, t, animate, onDrill }: RendererProps) {
   const items = itemsFor(def, data, dims);
+  const drill = onDrill && def.dimension
+    ? (entry: unknown) => { const v = clickedName(entry); if (v) onDrill(def.dimension!, v); }
+    : undefined;
   return (
     <ChartCard title={chartTitle(def, dims, t)} bodyClassName="h-[420px]">
-      <ChartContainer config={{}} className={CHART_CONTAINER_CLASS}>
+      <ChartContainer config={{}} className={`${CHART_CONTAINER_CLASS} ${drill ? DRILL_CLASS : ""}`}>
         <PieChart>
           {/* Rayons en POURCENTAGES (pas en px fixes) : avec la légende
               verticale (jusqu'à 45 % de largeur), un rayon fixe clippe sur
@@ -73,6 +89,7 @@ function DonutChart({ def, data, dims, t, animate }: RendererProps) {
             innerRadius="45%"
             paddingAngle={1}
             isAnimationActive={animate}
+            onClick={drill}
           >
             {items.map((item, i) => (
               <Cell key={item.name} fill={colorFor(def, item.name, i)} />
@@ -91,13 +108,16 @@ function DonutChart({ def, data, dims, t, animate }: RendererProps) {
   );
 }
 
-function SimplePieChart({ def, data, dims, t, animate }: RendererProps) {
+function SimplePieChart({ def, data, dims, t, animate, onDrill }: RendererProps) {
   const items = itemsFor(def, data, dims);
+  const drill = onDrill && def.dimension
+    ? (entry: unknown) => { const v = clickedName(entry); if (v) onDrill(def.dimension!, v); }
+    : undefined;
   return (
     <ChartCard title={chartTitle(def, dims, t)}>
-      <ChartContainer config={{}} className={CHART_CONTAINER_CLASS}>
+      <ChartContainer config={{}} className={`${CHART_CONTAINER_CLASS} ${drill ? DRILL_CLASS : ""}`}>
         <PieChart>
-          <Pie data={items} dataKey="value" nameKey="name" outerRadius="70%" isAnimationActive={animate}>
+          <Pie data={items} dataKey="value" nameKey="name" outerRadius="70%" isAnimationActive={animate} onClick={drill}>
             {items.map((it, i) => (
               <Cell key={it.name} fill={colorFor(def, it.name, i)} />
             ))}
@@ -110,11 +130,14 @@ function SimplePieChart({ def, data, dims, t, animate }: RendererProps) {
   );
 }
 
-function BarsChart({ def, data, dims, t, animate }: RendererProps) {
+function BarsChart({ def, data, dims, t, animate, onDrill }: RendererProps) {
   const items = itemsFor(def, data, dims);
+  const drill = onDrill && def.dimension
+    ? (entry: unknown) => { const v = clickedName(entry); if (v) onDrill(def.dimension!, v); }
+    : undefined;
   return (
     <ChartCard title={chartTitle(def, dims, t)} bodyClassName="h-[420px]">
-      <ChartContainer config={{}} className={CHART_CONTAINER_CLASS}>
+      <ChartContainer config={{}} className={`${CHART_CONTAINER_CLASS} ${drill ? DRILL_CLASS : ""}`}>
         <BarChart data={items} margin={{ left: -10, bottom: 80 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
           <XAxis
@@ -127,18 +150,21 @@ function BarsChart({ def, data, dims, t, animate }: RendererProps) {
           />
           <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
           <ChartTooltip content={<ChartTooltipContent />} cursor={{ fill: "var(--muted)" }} />
-          <Bar dataKey="value" fill="var(--chart-1)" radius={[6, 6, 0, 0]} isAnimationActive={animate} />
+          <Bar dataKey="value" fill="var(--chart-1)" radius={[6, 6, 0, 0]} isAnimationActive={animate} onClick={drill} />
         </BarChart>
       </ChartContainer>
     </ChartCard>
   );
 }
 
-function BarsHorizontalChart({ def, data, dims, t, animate }: RendererProps) {
+function BarsHorizontalChart({ def, data, dims, t, animate, onDrill }: RendererProps) {
   const items = itemsFor(def, data, dims).slice(0, def.top ?? 10);
+  const drill = onDrill && def.dimension
+    ? (entry: unknown) => { const v = clickedName(entry); if (v) onDrill(def.dimension!, v); }
+    : undefined;
   return (
     <ChartCard title={chartTitle(def, dims, t)} bodyClassName="h-[440px]">
-      <ChartContainer config={{}} className={CHART_CONTAINER_CLASS}>
+      <ChartContainer config={{}} className={`${CHART_CONTAINER_CLASS} ${drill ? DRILL_CLASS : ""}`}>
         <BarChart data={items} layout="vertical" margin={{ left: 30, top: 10, bottom: 10 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
           <XAxis type="number" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
@@ -150,7 +176,7 @@ function BarsHorizontalChart({ def, data, dims, t, animate }: RendererProps) {
             interval={0}
           />
           <ChartTooltip content={<ChartTooltipContent />} cursor={{ fill: "var(--muted)" }} />
-          <Bar dataKey="value" fill="var(--chart-1)" radius={[0, 6, 6, 0]} isAnimationActive={animate} />
+          <Bar dataKey="value" fill="var(--chart-1)" radius={[0, 6, 6, 0]} isAnimationActive={animate} onClick={drill} />
         </BarChart>
       </ChartContainer>
     </ChartCard>
@@ -202,13 +228,14 @@ interface ObservatoryChartsProps {
   data: ObservatoryItem[];
   dimensions: DimensionsConfig;
   animate?: boolean;
+  onDrill?: (dimensionId: string, value: string) => void;
 }
 
 /**
  * Compose les graphes déclarés : les `layout: "half"` consécutifs sont
  * appairés en 2 colonnes (lg), les `full` occupent leur rangée.
  */
-export function ObservatoryCharts({ charts, data, dimensions, animate = true }: ObservatoryChartsProps) {
+export function ObservatoryCharts({ charts, data, dimensions, animate = true, onDrill }: ObservatoryChartsProps) {
   const t = useT("modules/observatoire");
   const rows = chartRows(charts);
 
@@ -223,7 +250,7 @@ export function ObservatoryCharts({ charts, data, dimensions, animate = true }: 
             const render = RENDERERS[def.kind];
             return (
               <div key={`${def.kind}-${def.dimension ?? j}`} className="min-w-0">
-                {render({ def, data, dims: dimensions, t, animate })}
+                {render({ def, data, dims: dimensions, t, animate, onDrill })}
               </div>
             );
           })}

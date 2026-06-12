@@ -73,7 +73,14 @@ dates EJSON désérialisées en `Date` par le SDK).
 }
 ```
 
-Formes — KPI : `count`, `distinct`, `percentTrue`, `valueSplit`, `top` ·
+**Features opt-in** (absentes de la config = désactivées) :
+`search` (recherche texte) · `export: {filename?}` (bouton CSV du résultat
+filtré/trié, BOM Excel) · `drilldown: true` (clic sur une part/barre de
+graphe = applique le filtre de la dimension, si elle est filtrable) ·
+`table.rowLink: true` (clic sur une ligne → `/profil/<slug>`).
+
+Formes — KPI : `count`, `distinct`, `percentTrue`, `valueSplit`, `top`,
+`sum`, `avg` (+ `unit`) ·
 graphes : `donut`, `pie`, `bars`, `barsHorizontal`, `booleanGroups` ·
 colonnes : `text`, `title`, `badge`, `boolBadge`, `number`. Couleurs en
 **jetons de thème** uniquement (`chart-1..5`, `primary`, `accent`, `muted`)

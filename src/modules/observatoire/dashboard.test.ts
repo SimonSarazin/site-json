@@ -11,6 +11,7 @@ import { dimensionLabel } from "./dimensions";
 import {
   applyFilters,
   applyTextSearch,
+  buildCsv,
   buildRow,
   chartRows,
   chartTitle,
@@ -95,6 +96,13 @@ describe("computeKpiValue", () => {
     expect(computeKpiValue({ kind: "top", dimension: "absente" }, items, DIMS)).toBe("—");
     expect(computeKpiValue({ kind: "percentTrue", dimension: "access" }, [], DIMS)).toBe("0%");
   });
+
+  it("sum / avg : numériques uniquement, unité, locale fr, absents ignorés", () => {
+    // surfaces présentes : "120" (coercée) et 300 — le 3ᵉ item n'en a pas.
+    expect(computeKpiValue({ kind: "sum", dimension: "surface", unit: "m²" }, items, DIMS)).toBe("420 m²");
+    expect(computeKpiValue({ kind: "avg", dimension: "surface" }, items, DIMS)).toBe("210");
+    expect(computeKpiValue({ kind: "sum", dimension: "surface" }, [], DIMS)).toBe("—");
+  });
 });
 
 /* ── Graphes ─────────────────────────────────────────────────────────────── */
@@ -157,6 +165,27 @@ describe("table (buildRow / compare)", () => {
     expect(bySurface.map((r) => r.cells.surface)).toEqual([undefined, 120, 300]);
     const byAccess = [...rows].sort((a, b) => compare(a, b, columns[2]));
     expect(byAccess[0].cells.access).toBe(true); // true d'abord
+  });
+});
+
+/* ── Export CSV ──────────────────────────────────────────────────────────── */
+
+describe("buildCsv", () => {
+  it("en-têtes, échappement des guillemets, booléens i18n, séparateur ;", () => {
+    const columns = [
+      { dimension: "ville" },
+      { dimension: "surface", kind: "number" as const },
+      { dimension: "access", kind: "boolBadge" as const },
+    ];
+    const rows = [
+      {
+        id: "r0",
+        cells: { ville: 'Saint "Le" Port', surface: 120, access: true },
+        subtitles: {},
+      },
+    ];
+    const csv = buildCsv(rows, columns, ["Ville", "Surface", "Accès"], { yes: "Oui", no: "Non" });
+    expect(csv).toBe('"Ville";"Surface";"Accès"\n"Saint ""Le"" Port";120;"Oui"');
   });
 });
 

@@ -2020,6 +2020,10 @@
                 "en": "Search for a facility, a commune…"
               }
             },
+            "export": {
+              "filename": "equipements-sportifs"
+            },
+            "drilldown": true,
             "kpis": [
               {
                 "kind": "count",
@@ -2080,6 +2084,17 @@
                 },
                 "icon": "trophy",
                 "accent": "chart-5"
+              },
+              {
+                "kind": "sum",
+                "dimension": "surface",
+                "unit": "m²",
+                "label": {
+                  "fr": "Surface totale",
+                  "en": "Total surface"
+                },
+                "icon": "ruler",
+                "accent": "chart-1"
               }
             ],
             "charts": [
@@ -2185,7 +2200,8 @@
                   "dimension": "prop"
                 }
               ],
-              "defaultSort": "commune"
+              "defaultSort": "commune",
+              "rowLink": true
             }
           }
         }

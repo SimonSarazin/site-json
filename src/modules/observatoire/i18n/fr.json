@@ -25,6 +25,7 @@
   "table": {
     "title": "Données détaillées",
     "itemCount": "{{count}} éléments",
+    "exportCsv": "Exporter CSV",
     "empty": "Aucun élément ne correspond aux filtres.",
     "page": "Page {{current}} / {{total}}",
     "prev": "Précédent",

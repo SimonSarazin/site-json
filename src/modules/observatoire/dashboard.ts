@@ -147,6 +147,20 @@ export function computeKpiValue(
       const counts = countBy(data, (d) => dimensionValue(d, dim));
       return counts.sort((a, b) => b.value - a.value)[0]?.name ?? PLACEHOLDER;
     }
+    case "sum":
+    case "avg": {
+      if (!dim) return PLACEHOLDER;
+      const values = data
+        .map((d) => dimensionNumber(d, dim))
+        .filter((n): n is number => n !== undefined);
+      if (values.length === 0) return PLACEHOLDER;
+      const sum = values.reduce((a, b) => a + b, 0);
+      const n = def.kind === "sum" ? sum : sum / values.length;
+      // Arrondi 1 décimale, format locale fr (séparateurs de milliers).
+      const rounded = Math.round(n * 10) / 10;
+      const text = rounded.toLocaleString("fr-FR");
+      return def.unit ? `${text} ${def.unit}` : text;
+    }
   }
 }
 
@@ -223,6 +237,8 @@ export type CellValue = string | number | boolean | undefined;
 
 export interface Row {
   id: string;
+  /** Slug de l'entité (champs SDK) — pour `table.rowLink` → /profil/<slug>. */
+  slug?: string;
   cells: Record<string, CellValue>;
   subtitles: Record<string, string | undefined>;
 }
@@ -246,7 +262,8 @@ export function buildRow(
     }
   }
   // Id de ligne : index d'origine (stable — rows reconstruits depuis data).
-  return { id: `row-${idx}`, cells, subtitles };
+  const slug = typeof e.slug === "string" && e.slug !== "" ? e.slug : undefined;
+  return { id: `row-${idx}`, slug, cells, subtitles };
 }
 
 export function compare(a: Row, b: Row, col: TableColumnDef): number {
@@ -261,4 +278,36 @@ export function compare(a: Row, b: Row, col: TableColumnDef): number {
     return av === bv ? 0 : av ? -1 : 1;
   }
   return String(av ?? "").localeCompare(String(bv ?? ""), "fr");
+}
+
+/*───────────────────────────────────────────────────────────────*/
+/* Export CSV                                                    */
+/*───────────────────────────────────────────────────────────────*/
+
+function csvEscape(value: string): string {
+  return `"${value.replace(/"/g, '""')}"`;
+}
+
+/**
+ * CSV du résultat filtré/trié : en-têtes = libellés de colonnes, booléens
+ * rendus avec les libellés fournis (oui/non i18n), séparateur « ; »
+ * (convention Excel fr) — le BOM UTF-8 est ajouté au téléchargement.
+ */
+export function buildCsv(
+  rows: readonly Row[],
+  columns: readonly TableColumnDef[],
+  headers: readonly string[],
+  boolLabels: { yes: string; no: string },
+): string {
+  const lines: string[] = [headers.map(csvEscape).join(";")];
+  for (const row of rows) {
+    const cells = columns.map((col) => {
+      const v = row.cells[col.dimension];
+      if (col.kind === "boolBadge") return csvEscape(v ? boolLabels.yes : boolLabels.no);
+      if (typeof v === "number") return String(v);
+      return csvEscape(String(v ?? ""));
+    });
+    lines.push(cells.join(";"));
+  }
+  return lines.join("\n");
 }
