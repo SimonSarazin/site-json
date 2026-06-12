@@ -545,23 +545,6 @@ const MeeteemSectionSchema = z.object({
 export type MeeteemSection = z.infer<typeof MeeteemSectionSchema>;
 export type MeeteemSectionProps = z.infer<typeof MeeteemSectionSchema>["props"];
 
-//──────────────── Site List
-const SiteListSectionSchema = z.object({
-  type: z.literal("siteList"),
-  id: z.string().optional(),
-  props: z.object({
-    sites: z.array(z.object({
-      slug: z.string(),
-      title: z.string(),
-      description: z.string().optional(),
-      logo: z.string().optional(),
-    })),
-  }),
-});
-
-export type SiteListSection = z.infer<typeof SiteListSectionSchema>;
-export type SiteListSectionProps = z.infer<typeof SiteListSectionSchema>["props"];
-
 //──────────────── Actions Commune Transparente
 const CommuneTransparenteActionButtonSchema = z.object({
   label: LocalizedString,
@@ -1437,7 +1420,6 @@ export const Section = z.discriminatedUnion("type", [
   CagnotteLayoutSectionSchema,
   CoFormSectionSchema,
   ObservatoryES974SectionSchema,
-  SiteListSectionSchema,
 ]);
 export type Section = z.infer<typeof Section>;
 
