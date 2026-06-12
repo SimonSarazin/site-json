@@ -1482,7 +1482,8 @@
                     "type": "image-cover",
                     "variant": "image-cover",
                     "detailsMode": "drawer",
-                    "detailedMode": "service-pricing"
+                    "detailedMode": "service-pricing",
+                    "overlayStats": "service-pricing"
                   }
                 }
               }

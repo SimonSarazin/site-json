@@ -125,6 +125,10 @@ const ListConfSchema = z.object({
     showFunding:     z.boolean().optional(),
     detailsMode: z.enum(["drawer", "dialog"]).default("drawer"),
     detailedMode: z.enum(["default", "service-pricing"]).default("default"),
+    // Coin haut-droit des cartes à image (`image-cover`) : par défaut les
+    // badges génériques (serverData.badges / tags) ; "service-pricing" les
+    // remplace par les pastilles de capacité (postes/personnes/couverts).
+    overlayStats: z.enum(["service-pricing"]).optional(),
     // Valeurs DESIGN/FONCTIONNALITÉ (jamais de nom de site). `Preview`/détail =
     // axe séparé (`preview.type`/`detailsMode`).
     type: z.enum(["overlay", "default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer"]).default("default"),
