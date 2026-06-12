@@ -521,6 +521,8 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
                   <SearchMapWrapper
                     results={mapAll.results}
                     card={list?.card}
+                    preview={list?.preview}
+                    map={props.map}
                   />
                 )}
               </ClientOnly>

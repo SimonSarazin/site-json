@@ -10,3 +10,13 @@
 .custom-leaflet-popup .leaflet-popup-tip {
   display: none;
 }
+/* Marqueur « vignette d'item » (map.marker.useItemImage) — divIcon rond */
+.search-map-avatar-marker img {
+  width: 36px;
+  height: 36px;
+  border-radius: 9999px;
+  border: 2px solid var(--background);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.4);
+  object-fit: cover;
+  background: var(--background);
+}

@@ -5,7 +5,7 @@ import { SearchMapWrapperProps } from "../schema";
 import MapSkeleton from "./MapSkeleton";
 
 
-export default function SearchMapWrapper({ results, card, preview }: SearchMapWrapperProps) {
+export default function SearchMapWrapper({ results, card, preview, map }: SearchMapWrapperProps) {
   const [mounted, MapModule] = useClientModule(() => import("./SearchMap"));
   const t = useT("modules/search");
 
@@ -16,5 +16,5 @@ export default function SearchMapWrapper({ results, card, preview }: SearchMapWr
   }
 
   const SearchMap = MapModule.default;
-  return <SearchMap results={results} card={card} preview={preview} />;
+  return <SearchMap results={results} card={card} preview={preview} map={map} />;
 }

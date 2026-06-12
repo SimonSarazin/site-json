@@ -1,71 +1,67 @@
-import { MapPin } from "lucide-react";
+import { ArrowRight, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import useItem from "../../hooks/useItem";
 import { MapPopupProps } from "../../schema";
-import { useState } from "react";
+import { getBaseUrl } from "@/lib/constant/common";
 
-export function MapPopupDefault({ item, id, t }: MapPopupProps) {
+/**
+ * Popup de marker — rendue en HTML STATIQUE (`renderToString`, cf.
+ * renderMapPopup) : AUCUN état/effet React ne fonctionne ici (pas
+ * d'hydratation dans une popup Leaflet). Le seul élément interactif est le
+ * bouton `data-id` : SearchMap lui attache un listener natif au `popupopen`
+ * (action selon `map.itemAction` : détail modal ou navigation profil).
+ * Les icônes lucide sont OK (SVG inline, rendues statiquement).
+ */
+export function MapPopupDefault({ item, id, t, actionKind }: MapPopupProps) {
   const data = useItem(item);
 
-  const {
-    name,
-    shortDescription,
-    address,
-    tags = [],
-  } = data;
+  const { name, shortDescription, address, tags = [], image } = data;
 
-  const [expandTags, setExpandTags] = useState(false);     // ← state, pas une variable mutée
-  const visibleTags = expandTags ? tags : tags.slice(0, 5);
+  const visibleTags = tags.slice(0, 4);
   const remaining = tags.length - visibleTags.length;
+  const imgSrc = image ? (image.startsWith("http") ? image : `${getBaseUrl()}${image}`) : "";
+  const addressLine = [address?.streetAddress, address?.postalCode, address?.addressLocality]
+    .filter(Boolean)
+    .join(", ");
 
   return (
-    <Card className="max-w-64 sm:max-w-2xl bg-background hover:shadow-xl" id={id}>
-      <CardHeader className="bg-primary text-primary-foreground rounded-t-xl">
-        <CardTitle className="text-xs sm:text-sm lg:text-lg">{name}</CardTitle>
-      </CardHeader>
-      <CardContent className="p-2">
-        {/* Tags */}
-        <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto mb-2">
-          {visibleTags.map(tag => (
-            <Badge key={tag} variant="secondary" className="text-xs">
-              #{tag}
-            </Badge>
-          ))}
-          {remaining > 0 && (
-            <Badge
-              variant="outline"
-              className="text-xs cursor-pointer"
-              onClick={() => setExpandTags(true)}
-            >
-              +{remaining}
-            </Badge>
-          )}
-        </div>
+    <Card className="max-w-64 gap-0 overflow-hidden border-border bg-background py-0 shadow-xl sm:max-w-72" id={id}>
+      {imgSrc && (
+        <img src={imgSrc} alt="" loading="lazy" className="h-24 w-full object-cover" />
+      )}
+      <CardContent className="space-y-2 p-3">
+        <h3 className="text-sm font-bold leading-tight text-foreground">{name}</h3>
 
-        {/* Adresse */}
-        <p className="flex items-center mb-1 text-xs text-muted-foreground">
-          <MapPin size={16} className="mr-1" /> {address?.streetAddress || "Adresse inconnue"}
-          {address?.postalCode && `, ${address.postalCode}`}
+        <p className="flex items-start gap-1 text-xs text-muted-foreground">
+          <MapPin size={14} className="mt-0.5 shrink-0" />
+          {addressLine || t("Adresse inconnue")}
         </p>
 
-        {/* Description */}
         {shortDescription && (
-          <>
-            <h2 className="font-semibold mb-1">{t("Description")}</h2>
-            <div className="text-sm mb-2 max-h-20 overflow-y-auto">
-              {shortDescription}
-            </div>
-          </>
+          <p className="line-clamp-3 text-xs text-muted-foreground">{shortDescription}</p>
         )}
 
-        <Button
-          variant="outline"
-          className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-          data-id={id}
-        >
-          <i className="fa-solid fa-hand-pointer mr-2" /> {t("En savoir plus")}
+        {visibleTags.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {visibleTags.map((tag) => (
+              <Badge key={tag} variant="secondary" className="text-xs">
+                #{tag}
+              </Badge>
+            ))}
+            {/* Statique : pas d'interaction possible dans la popup — simple compteur. */}
+            {remaining > 0 && (
+              <Badge variant="outline" className="text-xs">
+                +{remaining}
+              </Badge>
+            )}
+          </div>
+        )}
+
+        <Button variant="default" size="sm" className="w-full" data-id={id}>
+          {actionKind === "profil" ? t("Voir le profil") : t("En savoir plus")}
+          <ArrowRight className="h-4 w-4" />
         </Button>
       </CardContent>
     </Card>

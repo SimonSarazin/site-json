@@ -927,6 +927,16 @@ markers sont ajoutés **incrémentalement** (`addLayers` par page,
 viewport de l'utilisateur est préservé pendant le chargement. `MapProgress`
 affiche la progression « X / Y » et l'alerte de plafond.
 
+**Options `map` de la section** (`MapConfSchema`) :
+`map.itemAction: {kind: "profil"|"preview"}` — action du bouton de la popup
+(défaut `preview` : détail `SwitchDetailsMode` avec `list.card`/`list.preview` ;
+`profil` : navigation `/profil/:slug`) · `map.marker.useItemImage: true` —
+marqueur = vignette RONDE de l'item quand elle existe (sinon pin Leaflet).
+La **popup** est du HTML **statique** (`renderToString`) : aucun état React
+n'y fonctionne — seul le bouton `data-id` est interactif (listener natif posé
+au `popupopen`). En dev, `window.__searchMapDebug = {map, markers}` permet de
+piloter la carte depuis la console/les tests navigateur.
+
 ### SearchBubbleChart
 
 Graphique en bulles pour visualiser la distribution des entités par catégorie. Activé via `enableGraph: true`. Rendu via D3 circle-packing (`import * as d3`, `d3.pack`, `<svg>` brut) — aucune dépendance Recharts. Clic sur une bulle → ouvre les détails via `graphDetailsMode`.

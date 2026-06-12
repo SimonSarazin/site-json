@@ -1,5 +1,6 @@
 import { useTheme } from "next-themes";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router";
 import { useIsMounted } from "@/hooks/useIsMounted";
 
 import { renderMapPopup } from "./renderMapPopup";
@@ -10,7 +11,7 @@ import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { SwitchDetailsMode } from "./SwitchDetailsMode";
 import { useMapContainerClass } from "../hooks/useMapContainerClass";
 import { useSite } from "@/hooks/useSite";
-import { getMaptilerApiKey } from "@/lib/constant/common";
+import { getBaseUrl, getMaptilerApiKey } from "@/lib/constant/common";
 import { resolveTileLayers } from "../lib/mapTiles";
 
 
@@ -37,7 +38,7 @@ function isValidGeoPoint(coords: unknown): coords is [number, number] {
  * qu'UNE fois par périmètre (1ʳᵉ page) — le viewport de l'utilisateur est
  * préservé pendant le chargement des pages suivantes.
  */
-export default function SearchMap({ results, card, preview }: SearchMapProps) {
+export default function SearchMap({ results, card, preview, map: mapConf }: SearchMapProps) {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<import('leaflet').Map | null>(null);
   const markersRef = useRef<import('leaflet').MarkerClusterGroup | null>(null);
@@ -54,6 +55,10 @@ export default function SearchMap({ results, card, preview }: SearchMapProps) {
   const [item, setItem] = useState<SearchEntity | null>(null);
   const t = useT("modules/search");
   const { config } = useSite();
+  const navigate = useNavigate();
+  // Action au clic du bouton de popup — déclarée en config (map.itemAction) :
+  // détail modal du module search (défaut) ou navigation /profil/:slug.
+  const actionKind = mapConf?.itemAction?.kind ?? "preview";
 
   // Fond de carte : MapTiler (clé env) avec styles configurables par site
   // (`integrations.map`), sinon repli OSM/Carto — cf. lib/mapTiles.ts.
@@ -66,7 +71,16 @@ export default function SearchMap({ results, card, preview }: SearchMapProps) {
     let cancelled = false;
 
     const handleOpenDetails = (e: CustomEvent) => {
-      setItem(e.detail as SearchEntity);
+      const data = e.detail as SearchEntity;
+      if (actionKind === "profil") {
+        const slug = (data as { slug?: string }).slug ?? data.serverData?.slug;
+        if (slug) {
+          navigate(`/profil/${slug}`);
+          return;
+        }
+        // sans slug, repli sur le détail modal
+      }
+      setItem(data);
       setOpenDetails(true);
     };
 
@@ -98,6 +112,11 @@ export default function SearchMap({ results, card, preview }: SearchMapProps) {
       map.addLayer(markers);
 
       map.whenReady(() => map.invalidateSize());
+      if (import.meta.env.DEV) {
+        // Poignée de debug (dev uniquement) : piloter la carte depuis la
+        // console / les tests navigateur sans dépendre du clustering.
+        (window as unknown as Record<string, unknown>).__searchMapDebug = { map, markers };
+      }
       setMapReady(true);
     })();
 
@@ -116,7 +135,7 @@ export default function SearchMap({ results, card, preview }: SearchMapProps) {
       firstIdRef.current = undefined;
       setMapReady(false);
     };
-  }, [mounted, tiles]);
+  }, [mounted, tiles, actionKind, navigate]);
 
   /* ── Thème : permutation des calques (sans toucher aux markers) ──────── */
   useEffect(() => {
@@ -150,6 +169,7 @@ export default function SearchMap({ results, card, preview }: SearchMapProps) {
     }
     if (results.length === from) return;
 
+    const useItemImage = mapConf?.marker?.useItemImage === true;
     const batch: import('leaflet').Marker[] = [];
     for (const entry of results.slice(from)) {
       const serverDataSafe = entry?.serverData;
@@ -158,9 +178,27 @@ export default function SearchMap({ results, card, preview }: SearchMapProps) {
       const coords = serverDataSafe.geoPosition?.coordinates;
       if (!isValidGeoPoint(coords)) continue;
       const [lng, lat] = coords;
-      const marker = L.marker([lat, lng]) as import('leaflet').Marker & { _customData?: unknown };
 
-      const popupHtml = renderMapPopup({ item: entry, id: markerId, t });
+      // map.marker.useItemImage : vignette RONDE de l'item quand elle existe
+      // (divIcon — styles dans styles.css), sinon pin Leaflet par défaut.
+      let icon: import('leaflet').DivIcon | undefined;
+      if (useItemImage) {
+        const sd = serverDataSafe as { profilThumbImageUrl?: string; profilMediumImageUrl?: string };
+        const img = sd.profilThumbImageUrl || sd.profilMediumImageUrl;
+        if (typeof img === "string" && img) {
+          const src = (img.startsWith("http") ? img : `${getBaseUrl()}${img}`).replace(/"/g, "&quot;");
+          icon = L.divIcon({
+            className: "search-map-avatar-marker",
+            html: `<img src="${src}" alt="" loading="lazy" />`,
+            iconSize: [36, 36],
+            iconAnchor: [18, 18],
+            popupAnchor: [0, -20],
+          });
+        }
+      }
+      const marker = (icon ? L.marker([lat, lng], { icon }) : L.marker([lat, lng])) as import('leaflet').Marker & { _customData?: unknown };
+
+      const popupHtml = renderMapPopup({ item: entry, id: markerId, t, popup: mapConf?.popup, actionKind });
       marker.bindPopup(popupHtml, {
         maxWidth: 300,
         className: "custom-leaflet-popup",
@@ -197,7 +235,7 @@ export default function SearchMap({ results, card, preview }: SearchMapProps) {
 
     renderedCountRef.current = results.length;
     firstIdRef.current = firstId;
-  }, [mapReady, results, t]);
+  }, [mapReady, results, t, mapConf, actionKind]);
 
   // Dimensions du conteneur — logique PARTAGÉE avec MapSkeleton
   // (cf. useMapContainerClass : plein écran sans footer vs min-h-screen).

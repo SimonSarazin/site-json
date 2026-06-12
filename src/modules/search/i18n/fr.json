@@ -172,5 +172,7 @@
     "card.servicePricing.price.room": "{{price}}€ la chambre individuelle",
     "Chargement des points… {{loaded}} / {{total}}": "Chargement des points… {{loaded}} / {{total}}",
     "Carte limitée aux {{loaded}} premiers résultats": "Carte limitée aux {{loaded}} premiers résultats",
-    "Aucun résultat": "Aucun résultat"
+    "Aucun résultat": "Aucun résultat",
+    "Voir le profil": "Voir le profil",
+    "Adresse inconnue": "Adresse inconnue"
 }

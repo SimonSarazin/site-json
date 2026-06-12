@@ -174,6 +174,13 @@ const MapConfSchema = z.object({
   popup: z.object({
     type: z.enum(["default"]).default("default"),
   }).partial().optional(),
+  /** Action du bouton de la popup : détail du module search (défaut
+   *  `preview` — `SwitchDetailsMode` avec `list.card`/`list.preview`) ou
+   *  navigation `/profil/:slug` (pattern rowAction observatoire / palette). */
+  itemAction: z.object({ kind: z.enum(["profil", "preview"]) }).optional(),
+  /** Marqueur = image de l'item (vignette ronde) quand elle existe, sinon
+   *  pin Leaflet par défaut. */
+  marker: z.object({ useItemImage: z.boolean().optional() }).optional(),
 }).partial();
 
 export type MapConf = z.infer<typeof MapConfSchema>;
@@ -670,12 +677,14 @@ export interface SearchMapWrapperProps<T extends SearchEntity = SearchEntity> {
   results: T[];
   card?: ListConf["card"];
   preview?: ListConf["preview"];
+  map?: MapConf;
 }
 
 export interface SearchMapProps<T extends SearchEntity = SearchEntity> {
   results: T[];
   card?: ListConf["card"];
   preview?: ListConf["preview"];
+  map?: MapConf;
 }
 
 export interface MapPopupProps<T extends SearchEntity = SearchEntity> {
@@ -683,4 +692,6 @@ export interface MapPopupProps<T extends SearchEntity = SearchEntity> {
   popup?: MapConf["popup"];
   id: string;
   t: (key: string) => string;
+  /** Libellé/intention du bouton d'action (cf. MapConf.itemAction). */
+  actionKind?: "profil" | "preview";
 }
