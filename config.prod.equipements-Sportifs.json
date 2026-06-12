@@ -137,7 +137,7 @@
                   "fr": "Decouvrir l'observatoire",
                   "en": "Discover the observatory"
                 },
-                "path": "/rejoindre",
+                "path": "/observatoire",
                 "variant": "secondary"
               }
             ],
@@ -289,7 +289,6 @@
               "fr": "Rechercher un équipement...",
               "en": "Search for a facility..."
             },
-            "showFilters": true,
             "showSearch": true,
             "dropdownFilters": [
               {
@@ -2212,6 +2211,77 @@
                   "type": "poi-amenities"
                 }
               }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/rejoindre",
+      "title": {
+        "fr": "Rejoindre - Équipements sportifs - Région Réunion",
+        "en": "Join - Sports Facilities - Réunion Region"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "registerForm",
+          "props": {}
+        }
+      ]
+    },
+    {
+      "path": "/mentions-legales",
+      "title": {
+        "fr": "Mentions légales - Équipements sportifs - Région Réunion",
+        "en": "Legal notice - Sports Facilities - Réunion Region"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "html",
+          "props": {
+            "html": {
+              "fr": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Mentions légales</h1>\n<p class=\"text-muted-foreground mb-8\">Conformément à l'article 6-III de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique (LCEN).</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Éditeur du site</h2>\n<p class=\"text-muted-foreground mb-2\">Région Réunion</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Adresse : 14, allée des Saphirs – CS 61044, 97404 Saint-Denis Cedex</li>\n<li>Téléphone : 0262 48 13 21</li>\n<li>Directeur de la publication : [à compléter]</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Hébergeur</h2>\n<p class=\"text-muted-foreground mb-6\">[Dénomination de l'hébergeur — adresse complète — téléphone]</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Conception et réalisation</h2>\n<p class=\"text-muted-foreground mb-6\">Ce site s'appuie sur la plateforme libre et open source Communecter.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Propriété intellectuelle</h2>\n<p class=\"text-muted-foreground mb-6\">L'ensemble des contenus présents sur ce site (textes, images, logos, structure) est protégé par le droit de la propriété intellectuelle. Toute reproduction ou représentation, totale ou partielle, sans autorisation préalable est interdite. Les données publiques relatives aux équipements sportifs proviennent du Recensement des équipements sportifs (RES) et sont réutilisables dans les conditions de leur licence d'origine.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Données personnelles</h2>\n<p class=\"text-muted-foreground mb-6\">Les modalités de traitement de vos données personnelles sont décrites dans la <a href=\"/confidentialite\" class=\"underline\">politique de confidentialité</a>.</p>\n</div>",
+              "en": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Legal notice</h1>\n<p class=\"text-muted-foreground mb-8\">In accordance with article 6-III of French law no. 2004-575 of 21 June 2004 on confidence in the digital economy (LCEN).</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Site publisher</h2>\n<p class=\"text-muted-foreground mb-2\">Région Réunion</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Address: 14, allée des Saphirs – CS 61044, 97404 Saint-Denis Cedex, France</li>\n<li>Phone: +262 262 48 13 21</li>\n<li>Publication director: [to be completed]</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Hosting provider</h2>\n<p class=\"text-muted-foreground mb-6\">[Hosting provider name — full address — phone]</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Design and development</h2>\n<p class=\"text-muted-foreground mb-6\">This site is built on the free and open source Communecter platform.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Intellectual property</h2>\n<p class=\"text-muted-foreground mb-6\">All content on this site (texts, images, logos, structure) is protected by intellectual property law. Any total or partial reproduction or representation without prior authorisation is prohibited. Public data on sports facilities comes from the national sports facilities census (RES) and may be reused under the terms of its original licence.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Personal data</h2>\n<p class=\"text-muted-foreground mb-6\">The processing of your personal data is described in the <a href=\"/confidentialite\" class=\"underline\">privacy policy</a>.</p>\n</div>"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/confidentialite",
+      "title": {
+        "fr": "Politique de confidentialité - Équipements sportifs - Région Réunion",
+        "en": "Privacy policy - Sports Facilities - Réunion Region"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "html",
+          "props": {
+            "html": {
+              "fr": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Politique de confidentialité</h1>\n<p class=\"text-muted-foreground mb-8\">Cette politique décrit les traitements de données personnelles réalisés sur ce site, conformément au Règlement général sur la protection des données (RGPD) et à la loi Informatique et Libertés.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">1. Responsable du traitement</h2>\n<p class=\"text-muted-foreground mb-6\">Région Réunion — 14, allée des Saphirs – CS 61044, 97404 Saint-Denis Cedex. Contact : [adresse e-mail du délégué à la protection des données ou du contact RGPD].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">2. Données traitées</h2>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Données de compte si vous créez un compte (nom, adresse e-mail) via la plateforme Communecter ;</li>\n<li>Contenus que vous publiez le cas échéant (messages, contributions) ;</li>\n<li>Journaux techniques du serveur (adresse IP, pages consultées) à des fins de sécurité.</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">3. Finalités et bases légales</h2>\n<p class=\"text-muted-foreground mb-6\">Fournir le service de consultation et d'observatoire des équipements sportifs (intérêt légitime), gérer les comptes utilisateurs (exécution du contrat) et assurer la sécurité du site (intérêt légitime).</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">4. Cookies et stockage local</h2>\n<p class=\"text-muted-foreground mb-6\">Ce site n'utilise aucun traceur publicitaire ni outil de mesure d'audience tiers. Le stockage local de votre navigateur conserve uniquement vos préférences (langue, thème d'affichage) ; un cookie de session est utilisé si vous vous connectez à votre compte.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">5. Durées de conservation</h2>\n<p class=\"text-muted-foreground mb-6\">Les données de compte sont conservées tant que le compte est actif. Les journaux techniques sont conservés pour une durée maximale de [à préciser, ex. 12 mois].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">6. Vos droits</h2>\n<p class=\"text-muted-foreground mb-6\">Vous disposez d'un droit d'accès, de rectification, d'effacement, d'opposition, de limitation et de portabilité sur vos données. Pour l'exercer, contactez le responsable du traitement (coordonnées ci-dessus). Vous pouvez également adresser une réclamation à la CNIL (<a href=\"https://www.cnil.fr\" class=\"underline\" rel=\"noopener\" target=\"_blank\">cnil.fr</a>).</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">7. Sécurité</h2>\n<p class=\"text-muted-foreground mb-6\">Des mesures techniques et organisationnelles appropriées sont mises en œuvre pour protéger vos données (chiffrement des échanges, contrôle d'accès).</p>\n</div>",
+              "en": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Privacy policy</h1>\n<p class=\"text-muted-foreground mb-8\">This policy describes the personal data processing carried out on this site, in accordance with the General Data Protection Regulation (GDPR) and the French Data Protection Act.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">1. Data controller</h2>\n<p class=\"text-muted-foreground mb-6\">Région Réunion — 14, allée des Saphirs – CS 61044, 97404 Saint-Denis Cedex, France. Contact: [e-mail address of the data protection officer or GDPR contact].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">2. Data we process</h2>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Account data if you create an account (name, e-mail address) via the Communecter platform;</li>\n<li>Content you may publish (messages, contributions);</li>\n<li>Technical server logs (IP address, pages visited) for security purposes.</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">3. Purposes and legal bases</h2>\n<p class=\"text-muted-foreground mb-6\">Providing the sports facilities directory and observatory service (legitimate interest), managing user accounts (performance of a contract) and ensuring site security (legitimate interest).</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">4. Cookies and local storage</h2>\n<p class=\"text-muted-foreground mb-6\">This site uses no advertising trackers and no third-party audience measurement tools. Your browser's local storage only keeps your preferences (language, display theme); a session cookie is used if you sign in to your account.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">5. Retention periods</h2>\n<p class=\"text-muted-foreground mb-6\">Account data is kept as long as the account is active. Technical logs are kept for a maximum of [to be specified, e.g. 12 months].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">6. Your rights</h2>\n<p class=\"text-muted-foreground mb-6\">You have the right to access, rectify, erase, object to, restrict and port your data. To exercise these rights, contact the data controller (details above). You may also lodge a complaint with the CNIL (<a href=\"https://www.cnil.fr\" class=\"underline\" rel=\"noopener\" target=\"_blank\">cnil.fr</a>).</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">7. Security</h2>\n<p class=\"text-muted-foreground mb-6\">Appropriate technical and organisational measures are implemented to protect your data (encrypted communications, access control).</p>\n</div>"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/accessibilite",
+      "title": {
+        "fr": "Déclaration d'accessibilité - Équipements sportifs - Région Réunion",
+        "en": "Accessibility statement - Sports Facilities - Réunion Region"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "html",
+          "props": {
+            "html": {
+              "fr": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Déclaration d'accessibilité</h1>\n<p class=\"text-muted-foreground mb-8\">Région Réunion s'engage à rendre ce site accessible conformément à l'article 47 de la loi n° 2005-102 du 11 février 2005.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">État de conformité</h2>\n<p class=\"text-muted-foreground mb-6\">Ce site n'est pas encore conforme au Référentiel général d'amélioration de l'accessibilité (RGAA) : l'audit de conformité n'a pas encore été réalisé. Une démarche d'amélioration continue est engagée.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Signaler un problème d'accessibilité</h2>\n<p class=\"text-muted-foreground mb-6\">Si vous rencontrez un défaut d'accessibilité vous empêchant d'accéder à un contenu ou à une fonctionnalité du site, contactez-nous au 0262 48 13 21 ou par courrier : Région Réunion, 14, allée des Saphirs – CS 61044, 97404 Saint-Denis Cedex.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Voies de recours</h2>\n<p class=\"text-muted-foreground mb-6\">Si vous n'obtenez pas de réponse satisfaisante, vous pouvez saisir le Défenseur des droits : <a href=\"https://formulaire.defenseurdesdroits.fr\" class=\"underline\" rel=\"noopener\" target=\"_blank\">formulaire.defenseurdesdroits.fr</a>, ou par courrier gratuit (sans affranchissement) : Défenseur des droits, Libre réponse 71120, 75342 Paris CEDEX 07.</p>\n</div>",
+              "en": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Accessibility statement</h1>\n<p class=\"text-muted-foreground mb-8\">Région Réunion is committed to making this site accessible in accordance with article 47 of French law no. 2005-102 of 11 February 2005.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Compliance status</h2>\n<p class=\"text-muted-foreground mb-6\">This site is not yet compliant with the French general accessibility improvement framework (RGAA): the compliance audit has not yet been carried out. A continuous improvement process is under way.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Report an accessibility issue</h2>\n<p class=\"text-muted-foreground mb-6\">If you encounter an accessibility issue preventing you from accessing content or a feature of this site, contact us on +262 262 48 13 21 or by post: Région Réunion, 14, allée des Saphirs – CS 61044, 97404 Saint-Denis Cedex, France.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Remedies</h2>\n<p class=\"text-muted-foreground mb-6\">If you do not receive a satisfactory response, you may contact the French Defender of Rights (Défenseur des droits): <a href=\"https://formulaire.defenseurdesdroits.fr\" class=\"underline\" rel=\"noopener\" target=\"_blank\">formulaire.defenseurdesdroits.fr</a>, or by free post (no stamp needed): Défenseur des droits, Libre réponse 71120, 75342 Paris CEDEX 07, France.</p>\n</div>"
             }
           }
         }
