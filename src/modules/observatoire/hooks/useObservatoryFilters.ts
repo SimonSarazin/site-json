@@ -1,38 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { useSearchParams } from "react-router";
 import type { DimensionsConfig, ObservatoryItem, FilterValues } from "../schema";
-import {
-  BOOL_FILTER_VALUES,
-  dimensionBool,
-  dimensionList,
-  dimensionValue,
-} from "../dimensions";
-
-/**
- * Filtrage CLIENT générique : ET strict entre dimensions, sémantique par
- * `kind` (value : égalité · list : appartenance · anyTrue : oui/non).
- * Côté client par design : le dashboard agrège tout le dataset en mémoire —
- * filtrer serveur signifierait tout recharger à chaque clic (le module
- * search reste le bon outil pour les LISTES paginées filtrées serveur).
- */
-export function applyFilters(
-  data: ObservatoryItem[],
-  f: FilterValues,
-  dims: DimensionsConfig,
-): ObservatoryItem[] {
-  const active = Object.entries(f).filter(([id, v]) => v && dims[id]);
-  if (active.length === 0) return data;
-  return data.filter((d) =>
-    active.every(([id, v]) => {
-      const def = dims[id];
-      if (def.kind === "anyTrue") {
-        return dimensionBool(d, def) === (v === BOOL_FILTER_VALUES.TRUE);
-      }
-      if (def.kind === "list") return dimensionList(d, def).includes(v);
-      return dimensionValue(d, def) === v;
-    }),
-  );
-}
+import { applyFilters } from "../dashboard";
 
 /**
  * État des filtres + application + SYNCHRONISATION URL (`?<id>=<valeur>`,

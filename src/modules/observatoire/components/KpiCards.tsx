@@ -2,55 +2,14 @@ import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { Card, CardContent } from "@/components/ui/card";
 import { useT } from "@/hooks/useT";
 import type { DimensionsConfig, ObservatoryItem, KpiDef } from "../schema";
-import {
-  TOKEN_TINT_CLASSES,
-  dimensionBool,
-  dimensionLabel,
-  dimensionValue,
-} from "../dimensions";
-import { countBy } from "../utils";
+import { TOKEN_TINT_CLASSES, dimensionLabel } from "../dimensions";
+import { computeKpiValue } from "../dashboard";
 
 /** Taille de police adaptée à la longueur de la valeur. */
 function valueClass(value: string): string {
   if (value.length <= 6) return "text-3xl whitespace-nowrap";
   if (value.length <= 12) return "text-2xl whitespace-nowrap";
   return "text-base leading-snug break-words";
-}
-
-/** Calcule la valeur d'un KPI déclaratif (formes : count/distinct/percentTrue/valueSplit/top). Exporté pur pour test. */
-export function computeKpiValue(
-  def: KpiDef,
-  data: ObservatoryItem[],
-  dims: DimensionsConfig,
-): string {
-  const total = data.length;
-  const dim = def.dimension ? dims[def.dimension] : undefined;
-  switch (def.kind) {
-    case "count":
-      return String(total);
-    case "distinct": {
-      if (!dim) return "—";
-      const set = new Set(
-        data.map((d) => dimensionValue(d, dim)).filter(Boolean),
-      );
-      return String(set.size);
-    }
-    case "percentTrue": {
-      if (!dim) return "—";
-      const n = data.filter((d) => dimensionBool(d, dim)).length;
-      return total ? `${Math.round((n / total) * 100)}%` : "0%";
-    }
-    case "valueSplit": {
-      if (!dim || !def.value) return "—";
-      const n = data.filter((d) => dimensionValue(d, dim) === def.value).length;
-      return `${n} / ${total - n}`;
-    }
-    case "top": {
-      if (!dim) return "—";
-      const counts = countBy(data, (d) => dimensionValue(d, dim));
-      return counts.sort((a, b) => b.value - a.value)[0]?.name ?? "—";
-    }
-  }
 }
 
 interface KpiCardProps {

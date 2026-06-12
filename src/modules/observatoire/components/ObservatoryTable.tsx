@@ -18,60 +18,14 @@ import type {
   TableColumnDef,
   TableDef,
 } from "../schema";
+import { TOKEN_TINT_CLASSES, dimensionLabel } from "../dimensions";
 import {
-  TOKEN_TINT_CLASSES,
-  dimensionBool,
-  dimensionLabel,
-  dimensionNumber,
-  dimensionValue,
-} from "../dimensions";
-
-const PLACEHOLDER = "—";
-
-type SortDir = "asc" | "desc";
-type CellValue = string | number | boolean | undefined;
-
-interface Row {
-  id: string;
-  cells: Record<string, CellValue>;
-  subtitles: Record<string, string | undefined>;
-}
-
-export function buildRow(
-  e: ObservatoryItem,
-  idx: number,
-  columns: readonly TableColumnDef[],
-  dims: DimensionsConfig,
-): Row {
-  const cells: Record<string, CellValue> = {};
-  const subtitles: Record<string, string | undefined> = {};
-  for (const col of columns) {
-    const def = dims[col.dimension];
-    if (!def) continue;
-    if (col.kind === "number") cells[col.dimension] = dimensionNumber(e, def);
-    else if (col.kind === "boolBadge") cells[col.dimension] = dimensionBool(e, def);
-    else cells[col.dimension] = dimensionValue(e, def);
-    if (col.kind === "title" && col.subtitleDimension && dims[col.subtitleDimension]) {
-      subtitles[col.dimension] = dimensionValue(e, dims[col.subtitleDimension]);
-    }
-  }
-  // Id de ligne : index d'origine (stable — rows reconstruits depuis data).
-  return { id: `row-${idx}`, cells, subtitles };
-}
-
-export function compare(a: Row, b: Row, col: TableColumnDef): number {
-  const av = a.cells[col.dimension];
-  const bv = b.cells[col.dimension];
-  if (col.kind === "number") {
-    const an = typeof av === "number" ? av : -Infinity;
-    const bn = typeof bv === "number" ? bv : -Infinity;
-    return an === bn ? 0 : an < bn ? -1 : 1;
-  }
-  if (col.kind === "boolBadge") {
-    return av === bv ? 0 : av ? -1 : 1;
-  }
-  return String(av ?? "").localeCompare(String(bv ?? ""), "fr");
-}
+  PLACEHOLDER,
+  buildRow,
+  compare,
+  type Row,
+  type SortDir,
+} from "../dashboard";
 
 /** En-tête de colonne triable — composant STATIQUE (règle react-hooks/
  *  static-components). L'état de tri arrive par props. */

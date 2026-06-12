@@ -18,56 +18,10 @@ import {
 } from "@/components/ui/chart";
 import { useT } from "@/hooks/useT";
 import type { ChartDef, DimensionsConfig, ObservatoryItem } from "../schema";
-import {
-  TOKEN_CSS_VARS,
-  dimensionBool,
-  dimensionLabel,
-  dimensionList,
-  dimensionValue,
-} from "../dimensions";
-import { countBy } from "../utils";
+import { dimensionBool, dimensionLabel } from "../dimensions";
+import { chartRows, chartTitle, colorFor, itemsFor } from "../dashboard";
 
 type T = ReturnType<typeof useT>;
-
-// Palette catégorielle issue du THÈME du site (config.theme → --chart-1..5),
-// cyclée pour les séries longues — jamais d'hex : les couleurs suivent le
-// thème light/dark de chaque site.
-const CATEGORICAL_COLORS = [
-  "var(--chart-1)",
-  "var(--chart-2)",
-  "var(--chart-3)",
-  "var(--chart-4)",
-  "var(--chart-5)",
-] as const;
-
-/** Couleur d'une valeur : map déclarée (jeton → var) sinon cycle catégoriel. */
-export function colorFor(def: ChartDef, name: string, fallbackIndex: number): string {
-  const token = def.colors?.[name];
-  if (token && TOKEN_CSS_VARS[token]) return TOKEN_CSS_VARS[token];
-  return CATEGORICAL_COLORS[fallbackIndex % CATEGORICAL_COLORS.length];
-}
-
-/** Décomptes {name, value} triés décroissants pour une dimension. Exporté pur pour test. */
-export function itemsFor(
-  def: ChartDef,
-  data: ObservatoryItem[],
-  dims: DimensionsConfig,
-): Array<{ name: string; value: number }> {
-  const dim = def.dimension ? dims[def.dimension] : undefined;
-  if (!dim) return [];
-  const counts =
-    dim.kind === "list"
-      ? countBy(data.flatMap((d) => dimensionList(d, dim)), (v) => v)
-      : countBy(data, (d) => dimensionValue(d, dim));
-  return counts.sort((a, b) => b.value - a.value);
-}
-
-export function chartTitle(def: ChartDef, dims: DimensionsConfig, t: T): string {
-  if (def.label) return t(def.label);
-  if (def.labelKey) return t(def.labelKey);
-  if (def.dimension) return dimensionLabel(t, dims, def.dimension);
-  return "";
-}
 
 interface ChartCardProps {
   title: string;
@@ -249,25 +203,6 @@ interface ObservatoryChartsProps {
  * Compose les graphes déclarés : les `layout: "half"` consécutifs sont
  * appairés en 2 colonnes (lg), les `full` occupent leur rangée.
  */
-/** Appairage par layout : les `half` consécutifs vont par deux, les `full`
- *  occupent leur rangée. Exporté pur pour test. */
-export function chartRows(charts: readonly ChartDef[]): ChartDef[][] {
-  const rows: ChartDef[][] = [];
-  for (const def of charts) {
-    const last = rows[rows.length - 1];
-    if (
-      def.layout === "half" &&
-      last?.length === 1 &&
-      last[0].layout === "half"
-    ) {
-      last.push(def);
-    } else {
-      rows.push([def]);
-    }
-  }
-  return rows;
-}
-
 export function ObservatoryCharts({ charts, data, dimensions }: ObservatoryChartsProps) {
   const t = useT("modules/observatoire");
   const rows = chartRows(charts);

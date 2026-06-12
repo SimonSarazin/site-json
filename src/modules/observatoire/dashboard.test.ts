@@ -8,10 +8,16 @@ import { describe, it, expect } from "vitest";
 import type { ChartDef, DimensionsConfig, ObservatoryItem } from "./schema";
 import { DataObservatorySectionSchema } from "./schema";
 import { dimensionLabel } from "./dimensions";
-import { applyFilters } from "./hooks/useObservatoryFilters";
-import { computeKpiValue } from "./components/KpiCards";
-import { chartRows, chartTitle, colorFor, itemsFor } from "./components/Charts";
-import { buildRow, compare } from "./components/ObservatoryTable";
+import {
+  applyFilters,
+  buildRow,
+  chartRows,
+  chartTitle,
+  colorFor,
+  compare,
+  computeKpiValue,
+  itemsFor,
+} from "./dashboard";
 import { buildObservatoryBaseParams } from "./hooks/useObservatoryItemsQuery";
 import { observatoryPrefetchParams } from "./prefetch";
 
