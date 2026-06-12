@@ -11,6 +11,8 @@ import {
   CartesianGrid,
 } from "recharts";
 import { Card, CardContent } from "@/components/ui/card";
+import { ClientOnly } from "@/components/layout/ClientOnly";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   ChartContainer,
   ChartTooltip,
@@ -29,13 +31,22 @@ interface ChartCardProps {
   bodyClassName?: string;
 }
 
-/** Carte de graphe — shadcn Card + hauteur du corps pilotée par le graphe. */
+/** Carte de graphe — shadcn Card + hauteur du corps pilotée par le graphe.
+ *  Le graphe lui-même est CLIENT-ONLY : recharts ne peut pas s'hydrater
+ *  (ids clipPath issus d'un compteur global serveur≠client, mesure de texte
+ *  des ticks impossible côté serveur, dérives décimales de trigonométrie) —
+ *  le SSR rend un Skeleton identique au 1er rendu client, le graphe monte
+ *  juste après l'hydratation (les données sont déjà là, préchargées). */
 function ChartCard({ title, children, bodyClassName }: ChartCardProps) {
   return (
     <Card className="gap-0 rounded-2xl border-border/50 py-5">
       <CardContent className="px-5">
         <h3 className="text-sm font-semibold text-foreground mb-4">{title}</h3>
-        <div className={bodyClassName ?? "h-72"}>{children}</div>
+        <div className={bodyClassName ?? "h-72"}>
+          <ClientOnly fallback={<Skeleton className="h-full w-full rounded-md" />}>
+            {() => children}
+          </ClientOnly>
+        </div>
       </CardContent>
     </Card>
   );
