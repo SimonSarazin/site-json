@@ -31,6 +31,18 @@ sans backend/entité costum. **Payload configurable** via
 `commandPalette.entitySearch` : `enabled`, `searchType`, `limit`, et un
 passe-plat `params` (fusionné dans le payload `searchCostum` — filters, scope…).
 
+**Action au clic sur un résultat d'entité** (`itemAction` / `itemActionByType`,
+pattern `table.rowAction` de l'observatoire) : défaut = navigation
+`/profil/:slug` ; `{"kind": "preview", "detailsMode": "drawer"|"dialog",
+"preview": {"type": "poi-amenities"…}}` ouvre le **détail du module search**
+(`SwitchDetailsMode`, chargé lazy au premier clic) au lieu de naviguer —
+surchargeable **par type d'entité** (`itemActionByType: {"poi": {…}}` prime sur
+`itemAction`). L'état du détail vit dans `CommandPalette` (qui reste monté) :
+la palette se ferme puis le détail s'ouvre. Sans hôte (`run.openEntityPreview`
+absent), repli sur la navigation profil. Exemple :
+`config.prod.equipements-Sportifs.json` (résultats = équipements POI → dialog
+`poi-amenities`, comme la liste `/equipements-sportifs` et l'observatoire).
+
 **Intégration** : le bouton de header réutilise le flag **existant**
 `header.utilities.search` — qui ouvre désormais la palette (au lieu d'un bouton
 loupe inerte) — câblé dans les **7 variantes de header** (`CommandTriggerButton`

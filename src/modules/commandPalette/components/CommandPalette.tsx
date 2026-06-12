@@ -1,4 +1,7 @@
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { lazy } from "vite-preload";
+import type { SearchEntity } from "@communecter/cocolight-api-client";
+import type { ListConf } from "@/modules/search/schema";
 import {
   Dialog,
   DialogContent,
@@ -41,6 +44,21 @@ import "../sources/bootstrap";
 const CMDK_CLASS =
   "[&_[cmdk-group-heading]]:text-muted-foreground **:data-[slot=command-input-wrapper]:h-12 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group]]:px-2 [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5";
 
+// Détail d'entité (itemAction "preview") — lazy : le chunk du module search
+// n'est chargé qu'au premier clic sur un résultat configuré en preview
+// (pattern AuthModalLazy : lazy() vite-preload + montage conditionnel).
+const SwitchDetailsModeLazy = lazy(() =>
+  import("@/modules/search/components/SwitchDetailsMode").then((m) => ({
+    default: m.SwitchDetailsMode,
+  }))
+);
+
+interface EntityPreviewState {
+  item: SearchEntity;
+  detailsMode: "drawer" | "dialog";
+  preview?: ListConf["preview"];
+}
+
 export function CommandPalette() {
   useLoadNamespace("modules/commandPalette");
   const t = useT("modules/commandPalette");
@@ -50,7 +68,16 @@ export function CommandPalette() {
   const isMobile = useIsMobile();
   const [query, setQuery] = useState("");
   const { groups, loading } = useCommands(query, open);
-  const run = useCommandRunContext();
+  const baseRun = useCommandRunContext();
+
+  // itemAction "preview" : l'état vit ICI (la palette reste montée après
+  // close()) — le détail s'ouvre donc après la fermeture de la palette.
+  const [entityPreview, setEntityPreview] = useState<EntityPreviewState | null>(null);
+  const run = {
+    ...baseRun,
+    openEntityPreview: (item: SearchEntity, opts: { detailsMode?: "drawer" | "dialog"; preview?: ListConf["preview"] }) =>
+      setEntityPreview({ item, detailsMode: opts.detailsMode ?? "dialog", preview: opts.preview }),
+  };
 
   const handleOpenChange = (next: boolean) => {
     setOpen(next);
@@ -89,23 +116,19 @@ export function CommandPalette() {
     </Command>
   );
 
-  // Mobile : feuille plein écran (input en haut, liste qui remplit, clavier en bas).
-  if (isMobile) {
-    return (
-      <Sheet open={open} onOpenChange={handleOpenChange}>
-        <SheetContent side="top" className="h-[100dvh] gap-0 p-0">
-          <SheetHeader className="sr-only">
-            <SheetTitle>{t("dialogTitle")}</SheetTitle>
-            <SheetDescription>{t("dialogDescription")}</SheetDescription>
-          </SheetHeader>
-          {body}
-        </SheetContent>
-      </Sheet>
-    );
-  }
-
-  // Desktop : modale centrée.
-  return (
+  // Mobile : feuille plein écran (input en haut, liste qui remplit, clavier en
+  // bas). Desktop : modale centrée.
+  const palette = isMobile ? (
+    <Sheet open={open} onOpenChange={handleOpenChange}>
+      <SheetContent side="top" className="h-[100dvh] gap-0 p-0">
+        <SheetHeader className="sr-only">
+          <SheetTitle>{t("dialogTitle")}</SheetTitle>
+          <SheetDescription>{t("dialogDescription")}</SheetDescription>
+        </SheetHeader>
+        {body}
+      </SheetContent>
+    </Sheet>
+  ) : (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogHeader className="sr-only">
         <DialogTitle>{t("dialogTitle")}</DialogTitle>
@@ -115,5 +138,26 @@ export function CommandPalette() {
         {body}
       </DialogContent>
     </Dialog>
+  );
+
+  return (
+    <>
+      {palette}
+      {/* Détail d'entité (itemAction "preview") — réutilise le conteneur +
+          preview du module search, comme le rowAction de l'observatoire. */}
+      {entityPreview && (
+        <Suspense fallback={null}>
+          <SwitchDetailsModeLazy
+            openDetails={!!entityPreview}
+            setOpenDetails={(open) => {
+              if (!open) setEntityPreview(null);
+            }}
+            item={entityPreview.item}
+            card={{ detailsMode: entityPreview.detailsMode }}
+            preview={entityPreview.preview}
+          />
+        </Suspense>
+      )}
+    </>
   );
 }

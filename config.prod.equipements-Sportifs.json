@@ -2420,6 +2420,13 @@
         "filters": {
           "type": "recoveryCenter"
         }
+      },
+      "itemAction": {
+        "kind": "preview",
+        "detailsMode": "dialog",
+        "preview": {
+          "type": "poi-amenities"
+        }
       }
     }
   },
