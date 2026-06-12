@@ -17,8 +17,8 @@ function valueClass(value: string): string {
   return "text-base leading-snug break-words";
 }
 
-/** Calcule la valeur d'un KPI déclaratif (formes : count/distinct/percentTrue/valueSplit/top). */
-function computeKpiValue(
+/** Calcule la valeur d'un KPI déclaratif (formes : count/distinct/percentTrue/valueSplit/top). Exporté pur pour test. */
+export function computeKpiValue(
   def: KpiDef,
   data: ObservatoryItem[],
   dims: DimensionsConfig,

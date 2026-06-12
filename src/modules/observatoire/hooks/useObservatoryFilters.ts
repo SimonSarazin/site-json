@@ -15,7 +15,7 @@ import {
  * filtrer serveur signifierait tout recharger à chaque clic (le module
  * search reste le bon outil pour les LISTES paginées filtrées serveur).
  */
-function applyFilters(
+export function applyFilters(
   data: ObservatoryItem[],
   f: FilterValues,
   dims: DimensionsConfig,

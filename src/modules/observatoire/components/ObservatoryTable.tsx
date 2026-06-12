@@ -37,7 +37,7 @@ interface Row {
   subtitles: Record<string, string | undefined>;
 }
 
-function buildRow(
+export function buildRow(
   e: ObservatoryItem,
   idx: number,
   columns: readonly TableColumnDef[],
@@ -59,7 +59,7 @@ function buildRow(
   return { id: `row-${idx}`, cells, subtitles };
 }
 
-function compare(a: Row, b: Row, col: TableColumnDef): number {
+export function compare(a: Row, b: Row, col: TableColumnDef): number {
   const av = a.cells[col.dimension];
   const bv = b.cells[col.dimension];
   if (col.kind === "number") {

@@ -41,14 +41,14 @@ const CATEGORICAL_COLORS = [
 ] as const;
 
 /** Couleur d'une valeur : map déclarée (jeton → var) sinon cycle catégoriel. */
-function colorFor(def: ChartDef, name: string, fallbackIndex: number): string {
+export function colorFor(def: ChartDef, name: string, fallbackIndex: number): string {
   const token = def.colors?.[name];
   if (token && TOKEN_CSS_VARS[token]) return TOKEN_CSS_VARS[token];
   return CATEGORICAL_COLORS[fallbackIndex % CATEGORICAL_COLORS.length];
 }
 
-/** Décomptes {name, value} triés décroissants pour une dimension. */
-function itemsFor(
+/** Décomptes {name, value} triés décroissants pour une dimension. Exporté pur pour test. */
+export function itemsFor(
   def: ChartDef,
   data: ObservatoryItem[],
   dims: DimensionsConfig,
@@ -62,7 +62,7 @@ function itemsFor(
   return counts.sort((a, b) => b.value - a.value);
 }
 
-function chartTitle(def: ChartDef, dims: DimensionsConfig, t: T): string {
+export function chartTitle(def: ChartDef, dims: DimensionsConfig, t: T): string {
   if (def.label) return t(def.label);
   if (def.labelKey) return t(def.labelKey);
   if (def.dimension) return dimensionLabel(t, dims, def.dimension);
@@ -249,9 +249,9 @@ interface ObservatoryChartsProps {
  * Compose les graphes déclarés : les `layout: "half"` consécutifs sont
  * appairés en 2 colonnes (lg), les `full` occupent leur rangée.
  */
-export function ObservatoryCharts({ charts, data, dimensions }: ObservatoryChartsProps) {
-  const t = useT("modules/observatoire");
-
+/** Appairage par layout : les `half` consécutifs vont par deux, les `full`
+ *  occupent leur rangée. Exporté pur pour test. */
+export function chartRows(charts: readonly ChartDef[]): ChartDef[][] {
   const rows: ChartDef[][] = [];
   for (const def of charts) {
     const last = rows[rows.length - 1];
@@ -265,6 +265,12 @@ export function ObservatoryCharts({ charts, data, dimensions }: ObservatoryChart
       rows.push([def]);
     }
   }
+  return rows;
+}
+
+export function ObservatoryCharts({ charts, data, dimensions }: ObservatoryChartsProps) {
+  const t = useT("modules/observatoire");
+  const rows = chartRows(charts);
 
   return (
     <>
