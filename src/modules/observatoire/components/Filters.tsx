@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useForm, Controller } from "react-hook-form";
 import { ChevronDown, Filter, RotateCcw, Search, SlidersHorizontal } from "lucide-react";
@@ -259,7 +259,28 @@ export function Filters({ data, dimensions, filterDefs, values, onChange, search
   const watched = watch();
   const valuesKey = JSON.stringify(watched);
 
+  // Resynchronisation DESCENDANTE : si le parent change les filtres HORS du
+  // formulaire (drill-down sur un graphe, bouton reset de l'état vide), on
+  // aligne RHF — sinon les selects continuent d'afficher l'ancien état.
+  // Le ref évite que le push montant re-déclenche un onChange d'écho.
+  const externalKey = JSON.stringify(
+    Object.fromEntries(fields.map(({ id }) => [id, values[id] ?? ""])),
+  );
+  const syncingDown = useRef(false);
   useEffect(() => {
+    if (externalKey === valuesKey) return;
+    syncingDown.current = true;
+    reset(JSON.parse(externalKey) as FilterValues);
+    // valuesKey est volontairement hors deps : on ne resynchronise que sur
+    // changement EXTERNE (sinon chaque saisie locale déclencherait un reset).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [externalKey, reset]);
+
+  useEffect(() => {
+    if (syncingDown.current) {
+      syncingDown.current = false;
+      return;
+    }
     onChange(watched);
     // onChange est piloté par le parent (souvent recréé à chaque render)
     // — on ne déclenche qu'au changement effectif des valeurs.
