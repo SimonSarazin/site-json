@@ -61,6 +61,39 @@ function compare(a: Row, b: Row, key: SortKey): number {
   return av.localeCompare(bv, "fr");
 }
 
+/** En-tête de colonne triable — composant STATIQUE (règle react-hooks/
+ *  static-components : défini dans le render, il serait recréé/remonté à
+ *  chaque rendu du tableau). L'état de tri arrive par props. */
+function Th({
+  k,
+  label,
+  sort,
+  onToggle,
+}: {
+  k: SortKey;
+  label: string;
+  sort: { key: SortKey; dir: SortDir };
+  onToggle: (k: SortKey) => void;
+}) {
+  return (
+    <th className="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider text-muted-foreground">
+      <button
+        type="button"
+        onClick={() => onToggle(k)}
+        className="inline-flex items-center gap-1 hover:text-foreground"
+      >
+        {label}
+        {sort.key === k &&
+          (sort.dir === "asc" ? (
+            <ChevronUp className="h-3 w-3" />
+          ) : (
+            <ChevronDown className="h-3 w-3" />
+          ))}
+      </button>
+    </th>
+  );
+}
+
 interface EquipmentTableProps {
   data: Equipment[];
 }
@@ -91,24 +124,6 @@ export function EquipmentTable({ data }: EquipmentTableProps) {
         : { key: k, dir: "asc" },
     );
 
-  const Th = ({ k, label }: { k: SortKey; label: string }) => (
-    <th className="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider text-muted-foreground">
-      <button
-        type="button"
-        onClick={() => toggle(k)}
-        className="inline-flex items-center gap-1 hover:text-foreground"
-      >
-        {label}
-        {sort.key === k &&
-          (sort.dir === "asc" ? (
-            <ChevronUp className="h-3 w-3" />
-          ) : (
-            <ChevronDown className="h-3 w-3" />
-          ))}
-      </button>
-    </th>
-  );
-
   return (
     <div className="rounded-2xl bg-card shadow-sm border border-border/50 overflow-hidden">
       <div className="flex items-center justify-between p-5 pb-4">
@@ -124,14 +139,14 @@ export function EquipmentTable({ data }: EquipmentTableProps) {
         <table className="w-full text-sm">
           <thead className="bg-muted/40 border-y border-border">
             <tr>
-              <Th k="name" label={t("table.installation")} />
-              <Th k="type" label={t("table.type")} />
-              <Th k="commune" label={t("table.commune")} />
-              <Th k="epci" label={t("table.epci")} />
-              <Th k="nature" label={t("table.nature")} />
-              <Th k="surface" label={t("table.surface")} />
-              <Th k="pmr" label={t("table.pmr")} />
-              <Th k="prop" label={t("table.owner")} />
+              <Th k="name" label={t("table.installation")} sort={sort} onToggle={toggle} />
+              <Th k="type" label={t("table.type")} sort={sort} onToggle={toggle} />
+              <Th k="commune" label={t("table.commune")} sort={sort} onToggle={toggle} />
+              <Th k="epci" label={t("table.epci")} sort={sort} onToggle={toggle} />
+              <Th k="nature" label={t("table.nature")} sort={sort} onToggle={toggle} />
+              <Th k="surface" label={t("table.surface")} sort={sort} onToggle={toggle} />
+              <Th k="pmr" label={t("table.pmr")} sort={sort} onToggle={toggle} />
+              <Th k="prop" label={t("table.owner")} sort={sort} onToggle={toggle} />
             </tr>
           </thead>
           <tbody>

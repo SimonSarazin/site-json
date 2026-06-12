@@ -71,9 +71,9 @@ export function KpiCards({ data }: KpiCardsProps) {
 
   const typeCounts: Record<string, number> = {};
   for (const d of data) {
-    const t = getType(d);
-    if (!t) continue;
-    typeCounts[t] = (typeCounts[t] ?? 0) + 1;
+    const typeVal = getType(d); // pas `t` : shadowerait le t() d'i18n
+    if (!typeVal) continue;
+    typeCounts[typeVal] = (typeCounts[typeVal] ?? 0) + 1;
   }
   const topType =
     Object.entries(typeCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "—";

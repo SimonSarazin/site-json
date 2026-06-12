@@ -114,8 +114,8 @@ export function TypeChart({ data }: ChartProps) {
             innerRadius={70}
             paddingAngle={1}
           >
-            {items.map((_, i) => (
-              <Cell key={i} fill={CATEGORICAL_COLORS[i % CATEGORICAL_COLORS.length]} />
+            {items.map((item, i) => (
+              <Cell key={item.name} fill={CATEGORICAL_COLORS[i % CATEGORICAL_COLORS.length]} />
             ))}
           </Pie>
           <Tooltip contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipLabelStyle} />
