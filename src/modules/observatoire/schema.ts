@@ -176,29 +176,11 @@ export const DimensionsSchema = z.record(z.string(), DimensionDefSchema);
 export type DimensionsConfig = z.infer<typeof DimensionsSchema>;
 
 /*───────────────────────────────────────────────────────────────*/
-/* 3. Filtres                                                    */
+/* 3. Filtres — valeurs dynamiques (clé = id de dimension)       */
 /*───────────────────────────────────────────────────────────────*/
-export const FilterValuesSchema = z.object({
-  commune: z.string().default(""),
-  type: z.string().default(""),
-  epci: z.string().default(""),
-  nature: z.string().default(""),
-  pmr: z.string().default(""),
-  prop: z.string().default(""),
-  aps: z.string().default(""),
-});
+export type FilterValues = Record<string, string>;
 
-export type FilterValues = z.infer<typeof FilterValuesSchema>;
-
-export const EMPTY_FILTERS: FilterValues = {
-  commune: "",
-  type: "",
-  epci: "",
-  nature: "",
-  pmr: "",
-  prop: "",
-  aps: "",
-};
+export const EMPTY_FILTERS: FilterValues = {};
 
 /*───────────────────────────────────────────────────────────────*/
 /* 4. baseParams (sous-ensemble compatible useSearchQuery)       */
@@ -229,6 +211,13 @@ export const EquipmentObservatorySectionSchema = z.object({
     headline: LocalizedString.optional(),
     description: LocalizedString.optional(),
     baseParams: ObservatoryBaseParamsSchema,
+    // Surcharge PAR DIMENSION du preset RES (cf. dimensions.ts) — permet de
+    // pointer d'autres champs sans toucher au code.
+    dimensions: DimensionsSchema.optional(),
+    // Ids des dimensions filtrables (ordre = ordre d'affichage).
+    // Défaut : RES_FILTER_IDS. Les valeurs sélectionnées sont synchronisées
+    // dans l'URL (?<id>=<valeur>) — permaliens, format maison sans virgule.
+    filters: z.array(z.string()).optional(),
   }),
 });
 

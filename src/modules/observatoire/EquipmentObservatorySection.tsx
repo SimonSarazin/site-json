@@ -1,5 +1,7 @@
 import "./i18n";
+import { useMemo } from "react";
 import { useT } from "@/hooks/useT";
+import { RES_FILTER_IDS, mergedDimensions } from "./dimensions";
 import type { EquipmentObservatorySectionProps } from "./schema";
 import { KpiCards } from "./components/KpiCards";
 import { Filters } from "./components/Filters";
@@ -30,9 +32,20 @@ export default function EquipmentObservatorySection({
   // useLocalization) — un seul hook pour les clés i18n ET les props localisées.
   const t = useT("modules/observatoire");
 
+  // Dimensions : preset RES surchargé par la config ; filtres déclarés (ids).
+  const dimensions = useMemo(
+    () => mergedDimensions(props.dimensions),
+    [props.dimensions],
+  );
+  const filterIds = props.filters ?? RES_FILTER_IDS;
+
   const { equipments, error, stillLoading, progress } =
     useObservatoryEquipmentsQuery(props.baseParams);
-  const { filtered, setFilters } = useObservatoryFilters(equipments);
+  const { filters, filtered, setFilters } = useObservatoryFilters(
+    equipments,
+    dimensions,
+    filterIds,
+  );
 
   // Premier rendu sans aucune donnée (ni SSR-hydratée, ni chargée) : squelette.
   const isEmpty = equipments.length === 0 && stillLoading && !error;
@@ -97,7 +110,13 @@ export default function EquipmentObservatorySection({
           </div>
         ) : (
           <>
-            <Filters data={equipments} onChange={setFilters} />
+            <Filters
+              data={equipments}
+              dimensions={dimensions}
+              filterIds={filterIds}
+              values={filters}
+              onChange={setFilters}
+            />
             <KpiCards data={filtered} />
 
             <div className="grid grid-cols-1">

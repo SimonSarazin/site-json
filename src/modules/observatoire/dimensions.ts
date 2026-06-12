@@ -133,3 +133,20 @@ export const RES_DIMENSIONS: DimensionsConfig = {
 export function mergedDimensions(config?: DimensionsConfig): DimensionsConfig {
   return { ...RES_DIMENSIONS, ...(config ?? {}) };
 }
+
+/** Dimensions filtrables par défaut (preset RES), dans l'ordre d'affichage. */
+export const RES_FILTER_IDS = [
+  "commune",
+  "type",
+  "epci",
+  "nature",
+  "pmr",
+  "prop",
+  "aps",
+] as const;
+
+/** Valeurs des filtres booléens (dimensions anyTrue) — sérialisées en URL. */
+export const BOOL_FILTER_VALUES = {
+  TRUE: "true",
+  FALSE: "false",
+} as const;
