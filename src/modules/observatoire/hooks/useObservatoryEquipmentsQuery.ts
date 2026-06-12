@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from "react";
+import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { useSearchQuery } from "@/modules/search/hooks/useSearchQuery";
 import type { SearchType } from "@/modules/search/schema";
 import type { Equipment, EquipmentObservatorySectionProps } from "../schema";
@@ -75,30 +76,19 @@ const DEFAULT_FILTERS: Record<string, unknown> = {
 /*───────────────────────────────────────────────────────────────────────────*/
 /* Extraction d'un Equipment à partir d'un item retourné par useSearchQuery  */
 /*───────────────────────────────────────────────────────────────────────────*/
-function extractRawEquipment(item: unknown): Record<string, unknown> {
-  if (!item || typeof item !== "object") return {};
-  const entity = item as Record<string, unknown>;
-
-  const dataProxy =
-    typeof entity.data === "object" &&
-    entity.data !== null &&
-    !Array.isArray(entity.data)
-      ? (entity.data as Record<string, unknown>)
-      : null;
-
-  const server =
-    typeof entity.serverData === "object" && entity.serverData !== null
-      ? (entity.serverData as Record<string, unknown>)
-      : {};
-
-  return { ...entity, ...server, ...(dataProxy ?? {}) };
-}
-
-function parseEquipments(items: readonly unknown[]): Equipment[] {
+/**
+ * Les résultats de `searchCostum` sont des entités SDK typées (`Poi`…) : le
+ * document — champs RES inclus — vit dans `serverData` (règle maison, comme
+ * toutes les cartes search). Pas de merge défensif
+ * `{...entity, ...serverData, ...entity.data}` : il injectait la machinerie
+ * interne du SDK (apiClient, endpointApi, _draftData…) dans chaque Equipment
+ * (conservée par le `.passthrough()`), et `entity.data` est le proxy de
+ * BROUILLON — spreadé en dernier, il aurait écrasé la vérité serveur.
+ */
+function parseEquipments(items: readonly SearchEntity[]): Equipment[] {
   const out: Equipment[] = [];
   for (const item of items) {
-    const raw = extractRawEquipment(item);
-    const result = EquipmentSchema.safeParse(raw);
+    const result = EquipmentSchema.safeParse(item?.serverData ?? {});
     if (result.success) {
       out.push(result.data);
     } else if (import.meta.env.DEV) {
