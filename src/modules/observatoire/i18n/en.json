@@ -4,6 +4,8 @@
   },
   "loading": "Loading data…",
   "loadingProgress": "{{loaded}} / {{total}} items loaded",
+  "cappedNotice": "Loading cap reached ({{loaded}} / {{total}}) — displayed data is incomplete.",
+  "emptyFiltered": "No result matches the filters or search.",
   "filters": {
     "title": "Filters",
     "reset": "Reset",
@@ -11,6 +13,7 @@
     "showResults": "Show results",
     "noResult": "No result.",
     "selectedCount": "{{count}} selected",
+    "partialData": "partial data: {{loaded}} / {{total}}",
     "all": "All",
     "yes": "Yes",
     "no": "No"

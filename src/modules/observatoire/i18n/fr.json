@@ -4,6 +4,8 @@
   },
   "loading": "Chargement des données…",
   "loadingProgress": "{{loaded}} / {{total}} éléments chargés",
+  "cappedNotice": "Plafond de chargement atteint ({{loaded}} / {{total}}) — les données affichées sont incomplètes.",
+  "emptyFiltered": "Aucun résultat ne correspond aux filtres ou à la recherche.",
   "filters": {
     "title": "Filtres",
     "reset": "Réinitialiser",
@@ -11,6 +13,7 @@
     "showResults": "Voir les résultats",
     "noResult": "Aucun résultat.",
     "selectedCount": "{{count}} sélectionnés",
+    "partialData": "données partielles : {{loaded}} / {{total}}",
     "all": "Tous",
     "yes": "Oui",
     "no": "Non"

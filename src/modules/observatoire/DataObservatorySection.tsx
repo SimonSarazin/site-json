@@ -1,11 +1,13 @@
 import "./i18n";
 import { useMemo } from "react";
+import { TriangleAlert } from "lucide-react";
 import { useT } from "@/hooks/useT";
 import type { DataObservatorySectionProps, FilterDef } from "./schema";
 import { KpiCards } from "./components/KpiCards";
 import { Filters } from "./components/Filters";
 import { ObservatoryCharts } from "./components/Charts";
 import { ObservatoryTable } from "./components/ObservatoryTable";
+import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
@@ -49,7 +51,7 @@ export default function DataObservatorySection({
   const kpis = props.kpis ?? [];
   const charts = props.charts ?? [];
 
-  const { items, error, stillLoading, progress } = useObservatoryItemsQuery(
+  const { items, error, stillLoading, progress, capped } = useObservatoryItemsQuery(
     props.baseParams,
     dimensions,
   );
@@ -65,6 +67,9 @@ export default function DataObservatorySection({
 
   // Premier rendu sans aucune donnée (ni SSR-hydratée, ni chargée) : squelette.
   const isEmpty = items.length === 0 && stillLoading && !error;
+  // Des données existent mais filtres/recherche excluent tout : état dédié
+  // (sinon : KPI à 0 et graphes vides, muets sur la cause).
+  const noResults = !isEmpty && items.length > 0 && filtered.length === 0;
 
   return (
     <section
@@ -90,9 +95,19 @@ export default function DataObservatorySection({
           </div>
         )}
 
+        {capped && (
+          <div className="flex items-center gap-2 rounded-2xl border border-border bg-muted/60 p-3 text-sm text-muted-foreground">
+            <TriangleAlert className="h-4 w-4 shrink-0" />
+            {t("cappedNotice", undefined, {
+              loaded: progress.loaded,
+              total: progress.total ?? progress.loaded,
+            })}
+          </div>
+        )}
+
         {/* Progression : total connu dès la 1ʳᵉ page — le dashboard se remplit
             au fil des pages, la barre rend l'attente lisible. */}
-        {stillLoading && progress.total !== null && progress.loaded > 0 && (
+        {stillLoading && progress.total !== null && (
           <div className="space-y-1">
             <Progress
               value={Math.round((progress.loaded / Math.max(progress.total, 1)) * 100)}
@@ -135,19 +150,31 @@ export default function DataObservatorySection({
                     ? { q, setQ, placeholder: props.search.placeholder }
                     : null
                 }
+                partial={stillLoading ? progress : null}
               />
             )}
 
-            {kpis.length > 0 && (
-              <KpiCards data={filtered} dimensions={dimensions} kpis={kpis} />
-            )}
+            {noResults ? (
+              <div className="flex flex-col items-center gap-3 rounded-2xl border border-border/50 bg-card p-10 text-center">
+                <p className="text-sm text-muted-foreground">{t("emptyFiltered")}</p>
+                <Button variant="outline" size="sm" onClick={() => setFilters({})}>
+                  {t("filters.reset")}
+                </Button>
+              </div>
+            ) : (
+              <>
+                {kpis.length > 0 && (
+                  <KpiCards data={filtered} dimensions={dimensions} kpis={kpis} />
+                )}
 
-            {charts.length > 0 && (
-              <ObservatoryCharts charts={charts} data={filtered} dimensions={dimensions} />
-            )}
+                {charts.length > 0 && (
+                  <ObservatoryCharts charts={charts} data={filtered} dimensions={dimensions} />
+                )}
 
-            {props.table && (
-              <ObservatoryTable data={filtered} dimensions={dimensions} table={props.table} />
+                {props.table && (
+                  <ObservatoryTable data={filtered} dimensions={dimensions} table={props.table} />
+                )}
+              </>
             )}
           </>
         )}

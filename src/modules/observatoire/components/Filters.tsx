@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { ChevronDown, Filter, RotateCcw, Search, SlidersHorizontal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Spinner } from "@/components/ui/spinner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -180,6 +181,8 @@ interface FiltersProps {
   onChange: (v: FilterValues) => void;
   /** Recherche texte (optionnelle — `props.search` de la section). */
   search?: FiltersSearchProps | null;
+  /** Chargement en cours : {loaded, total} → badge « données partielles ». */
+  partial?: { loaded: number; total: number | null } | null;
 }
 
 /**
@@ -192,7 +195,7 @@ interface FiltersProps {
  * même pattern que le `searchHeader` du module search. La recherche texte
  * (optionnelle) reste visible sur tous les écrans.
  */
-export function Filters({ data, dimensions, filterDefs, values, onChange, search }: FiltersProps) {
+export function Filters({ data, dimensions, filterDefs, values, onChange, search, partial }: FiltersProps) {
   const t = useT("modules/observatoire");
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -305,6 +308,17 @@ export function Filters({ data, dimensions, filterDefs, values, onChange, search
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-primary" />
             <h3 className="text-sm font-semibold">{t("filters.title")}</h3>
+            {/* Filtrer pendant le chargement est PERMIS (la page 1 SSR est là
+                dès le 1er paint) — mais l'état partiel doit être lisible. */}
+            {partial && (
+              <Badge variant="outline" className="gap-1 rounded-full text-xs font-normal text-muted-foreground">
+                <Spinner className="size-2.5" />
+                {t("filters.partialData", undefined, {
+                  loaded: partial.loaded,
+                  total: partial.total ?? "…",
+                })}
+              </Badge>
+            )}
           </div>
           <Button
             type="button"
