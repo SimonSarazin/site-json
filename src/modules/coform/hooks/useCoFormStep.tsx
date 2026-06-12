@@ -26,7 +26,7 @@ interface UseCoFormStepReturn {
   /** L'étape a-t-elle été complétée? */
   isCompleted: boolean;
   hasError: boolean;
-  submitStep: () => Promise<void>;
+  submitStep: () => Promise<boolean>;
   saveStep: () => void;
 }
 
@@ -78,22 +78,28 @@ export function useCoFormStep(options: UseCoFormStepOptions = {}): UseCoFormStep
   const isCompleted = subFormId ? coform.stepState.completedSteps.includes(subFormId) : false;
   const hasError = subFormId ? coform.stepState.errorSteps.includes(subFormId) : false;
 
-  // Soumettre l'étape
-  const submitStep = async () => {
-    if (!subFormId) return;
+  // Soumettre l'étape. Renvoie `true` si la validation Zod a passé ET la
+  // soumission au provider s'est terminée sans throw ; `false` sinon. Le
+  // caller (`MultiStepCoForm.handleSubmit`) lit ce retour pour décider
+  // d'afficher l'`ErrorSummary` + le scroll + le toast, ou pour passer à
+  // l'étape suivante / au submit final.
+  const submitStep = async (): Promise<boolean> => {
+    if (!subFormId) return false;
 
     try {
       const data = form.getValues();
       const isValid = await form.trigger();
 
       if (!isValid) {
-        return;
+        return false;
       }
 
       await coform.submitStepData(subFormId, data);
       onSuccess?.(data);
+      return true;
     } catch (err) {
       onError?.(err instanceof Error ? err : new Error("Erreur de soumission"));
+      return false;
     }
   };
 

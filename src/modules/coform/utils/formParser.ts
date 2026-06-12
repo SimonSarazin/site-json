@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { CoFormData, FormFieldMapping, SubFormFields, MultiCheckboxPlusOptionType, EvaluationConfig, FinderConfig, FinderFilter, SimpleTableConfig, SimpleTableColumn, SimpleTableRow, UploaderConfig, ConditionalDisplay } from "../types";
+import type { CoFormData, FormFieldMapping, SubFormFields, MultiCheckboxPlusOptionType, EvaluationConfig, FinderConfig, FinderFilter, SimpleTableConfig, SimpleTableColumn, SimpleTableRow, UploaderConfig, ConditionalDisplay, CommonTableConfig, CommonTableValue } from "../types";
 
 // ─── Configuration des préfixes de champs ────────────────────────
 // Certains types de champs PHP stockent leurs données avec un préfixe
@@ -15,6 +15,10 @@ const FIELD_PREFIX_MAP: Partial<Record<FormFieldMapping["componentType"], string
   multiCheckboxPlus: "multiCheckboxPlus",
   multiRadio: "multiRadio",
   evaluation: "evaluation",
+  // commonTable est stocké côté legacy sous `yesOrNo{key}` (les scores). Le
+  // catalogue user vit dans la clé jumelle `criterias{key}` — split géré
+  // explicitement par normalize/denormalize.
+  commonTable: "yesOrNo",
 };
 
 /**
@@ -23,6 +27,7 @@ const FIELD_PREFIX_MAP: Partial<Record<FormFieldMapping["componentType"], string
  */
 const ROOT_LEVEL_FIELDS: FormFieldMapping["componentType"][] = [
   "evaluation",
+  "commonTable",
 ];
 
 /**
@@ -132,8 +137,8 @@ function parseBootstrapWidth(bootstrapWidth?: string): string {
  */
 export function mapCoFormTypeToComponentType(
   coFormType: string
-): "text" | "textarea" | "radio" | "checkbox" | "select" | "multiCheckboxPlus" | "multiRadio" | "evaluation" | "finder" | "simpleTable" | "uploader" | "sectionTitle" | "sectionDescription" | "unknown" {
-  const typeMapping: Record<string, "text" | "textarea" | "radio" | "checkbox" | "select" | "multiCheckboxPlus" | "multiRadio" | "evaluation" | "finder" | "simpleTable" | "uploader" | "sectionTitle" | "sectionDescription"> = {
+): FormFieldMapping["componentType"] {
+  const typeMapping: Record<string, FormFieldMapping["componentType"]> = {
     text: "text",
     url: "text",
     email: "text",
@@ -146,8 +151,14 @@ export function mapCoFormTypeToComponentType(
     "tpls.forms.cplx.multiCheckboxPlus": "multiCheckboxPlus",
     "tpls.forms.cplx.evaluation": "evaluation",
     "tpls.forms.evaluation.evaluation": "evaluation",
+    "tpls.forms.evaluation.commonTableV2": "commonTable",
     "tpls.forms.cplx.finder": "finder",
     "tpls.forms.finder.finder": "finder",
+    // Template legacy `emailUser` : input HTML `type="email"`. La logique
+    // d'auto-fill avec l'email du user connecté côté legacy n'est pas
+    // portée pour l'instant — on garde juste la sémantique d'input email
+    // (validation native + clavier mobile adapté).
+    "tpls.forms.emailUser": "text",
     "tpls.forms.cplx.simpleTable": "simpleTable",
     "tpls.forms.uploader": "uploader",
     sectionTitle: "sectionTitle",
@@ -156,7 +167,19 @@ export function mapCoFormTypeToComponentType(
     select: "select",
   };
 
-  return typeMapping[coFormType] ?? "unknown";
+  const direct = typeMapping[coFormType];
+  if (direct) return direct;
+
+  // Fallback finder : en legacy, chaque costum a parfois son propre template
+  // (`tpls.forms.costum.<slug>.finder`, `tpls.forms.adhesion.adherentFinder`,
+  // etc.) qui ajoute des comportements custom à la création d'élément. On
+  // n'a pas encore l'extension par costum côté jdev, donc tout segment final
+  // se terminant par "finder" (case-insensitive) est aplati sur le composant
+  // <FinderField> générique — on perd le côté création custom, on garde au
+  // moins la sélection. À reraffiner si on rajoute un registry par costum.
+  if (/(?:^|\.)\w*finder$/i.test(coFormType)) return "finder";
+
+  return "unknown";
 }
 
 /**
@@ -183,6 +206,7 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
       let nbPerRow: string | undefined;
       let multiCheckboxPlusConfig: FormFieldMapping["multiCheckboxPlusConfig"] | undefined;
       let evaluationConfig: EvaluationConfig | undefined;
+      let commonTableConfig: CommonTableConfig | undefined;
       let uploaderConfig: UploaderConfig | undefined;
       
       if ((componentType === "radio" || componentType === "checkbox") && formData.params) {
@@ -274,6 +298,56 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
             newValuePlaceholder: paramData.global?.newValuePlaceholder || "Nouvelle valeur",
           };
         }
+      }
+
+      // Config spécifique pour commonTable (calculateur de bonheur — commonTableV2)
+      if (componentType === "commonTable" && formData.params) {
+        const params = formData.params as unknown as Record<string, unknown>;
+        const rawConfig = params[`config${fieldKey}`] as Record<string, unknown> | undefined;
+        const rawLabels = params[`columnLabel${fieldKey}`] as Record<string, unknown> | undefined;
+        const rawCriterias = params[`criterias${fieldKey}`] as Record<string, { label?: string; group?: string }> | undefined;
+
+        // Conversion d'un flag PHP (string "true"/"false" ou boolean) — défaut true.
+        const flag = (v: unknown): boolean =>
+          v === undefined || v === null ? true : v === true || v === "true";
+
+        // Variante stricte (défaut false) : la colonne n'apparaît que si la
+        // config admin l'active explicitement. Utilisé pour `yesNo` qui est
+        // caché par défaut côté legacy (cf. typo `yesNoColumnnnnn` ligne 599
+        // de `commonTableV2.php` qui rend la condition d'affichage toujours
+        // fausse — alignement sur l'intention legacy).
+        const strictFlag = (v: unknown): boolean => v === true || v === "true";
+
+        // Le PHP nomme les colonnes de manières variées selon les versions ; on accepte
+        // les alias les plus courants pour rester tolérant.
+        const showColumns = {
+          criteria: flag(rawConfig?.criteriaColumn ?? rawConfig?.criteria),
+          happiness: flag(rawConfig?.humourColumn ?? rawConfig?.happinessColumn ?? rawConfig?.happiness),
+          note: flag(rawConfig?.starColumn ?? rawConfig?.noteColumn ?? rawConfig?.note),
+          yesNo: strictFlag(rawConfig?.yesNoColumn ?? rawConfig?.yesNo),
+          comment: flag(rawConfig?.commentColumn ?? rawConfig?.comment),
+        };
+
+        const labels = {
+          usage: (rawLabels?.usageColumn as string | undefined) ?? (rawLabels?.usage as string | undefined),
+          criteria: (rawLabels?.criteriaColumn as string | undefined) ?? (rawLabels?.criteria as string | undefined),
+          happiness: (rawLabels?.humourColumn as string | undefined) ?? (rawLabels?.happinessColumn as string | undefined),
+          note: (rawLabels?.starColumn as string | undefined) ?? (rawLabels?.noteColumn as string | undefined),
+          yesNo: (rawLabels?.yesNoColumn as string | undefined),
+          comment: (rawLabels?.commentColumn as string | undefined),
+        };
+
+        // criterias est typiquement un Record<usageKey, { label, group? }>
+        const usages: CommonTableConfig["usages"] = [];
+        if (rawCriterias && typeof rawCriterias === "object") {
+          for (const [usageKey, raw] of Object.entries(rawCriterias)) {
+            const label = typeof raw === "string" ? raw : raw?.label || usageKey;
+            const group = typeof raw === "object" ? raw?.group : undefined;
+            usages.push({ usageKey, label, group });
+          }
+        }
+
+        commonTableConfig = { showColumns, labels, usages };
       }
 
       // Config spécifique pour evaluation
@@ -444,10 +518,15 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
         };
       }
 
-      // Déterminer le type HTML pour les inputs texte
-      const inputType = componentType === "text" && ["url", "email", "tel", "number"].includes(fieldData.type)
-        ? fieldData.type
-        : undefined;
+      // Déterminer le type HTML pour les inputs texte. On accepte les
+      // types courts (`email`, `url`, `tel`, `number`) ET les templates
+      // legacy à input typé (`tpls.forms.emailUser` → `email`).
+      const inputType: string | undefined = (() => {
+        if (componentType !== "text") return undefined;
+        if (fieldData.type === "tpls.forms.emailUser") return "email";
+        if (["url", "email", "tel", "number"].includes(fieldData.type)) return fieldData.type;
+        return undefined;
+      })();
 
       // Parser conditionalDisplay si présent
       const conditionalDisplay = fieldData.conditionalDisplay as ConditionalDisplay | undefined;
@@ -471,6 +550,7 @@ export function parseCoFormFields(formData: CoFormData): SubFormFields[] {
         multiCheckboxPlusConfig,
         multiRadioConfig,
         evaluationConfig,
+        commonTableConfig,
         finderConfig,
         simpleTableConfig,
         uploaderConfig,
@@ -622,6 +702,53 @@ export function generateZodSchema(subFormsFields: SubFormFields[]) {
           break;
         }
 
+        case "commonTable": {
+          // Valeur composite : { scores: Record<criteriaId, ...>, myCatalog: Record<criteriaId, ...> }
+          const happinessEnum = z.enum(["", "love", "happySmile", "neutral", "sad", "cry"]);
+          const solutionSchema = z.object({
+            criteriaId: z.string(),
+            criteria: z.string(),
+            usage: z.string(),
+            usageKey: z.string(),
+            note: z.number().min(0).max(5),
+            happiness: happinessEnum,
+            yesOrNo: z.boolean(),
+            comment: z.string(),
+          });
+          const myCatalogEntrySchema = z.object({
+            label: z.string().optional(),
+            usage: z.string(),
+            usageKey: z.string(),
+            coeff: z.number().optional(),
+            // Métadonnées préservées depuis la BDD — posées par le backend au
+            // save (cf. SaveAnswerAction::enrichCommonTableCriteriaEntries).
+            me: z.boolean().optional(),
+            userId: z.string().optional(),
+            fromAnswerId: z.string().optional(),
+          });
+          const commonTableSchema = z.object({
+            scores: z.record(z.string(), solutionSchema),
+            myCatalog: z.record(z.string(), myCatalogEntrySchema),
+          });
+
+          if (field.isRequired) {
+            schemaShape[field.name] = commonTableSchema.refine(
+              (v) =>
+                Object.values(v.scores).some(
+                  (sol) =>
+                    sol.happiness !== "" ||
+                    sol.note > 0 ||
+                    sol.yesOrNo ||
+                    sol.comment.trim() !== ""
+                ),
+              { message: `${field.label} est requis` }
+            );
+          } else {
+            schemaShape[field.name] = commonTableSchema.optional();
+          }
+          break;
+        }
+
         case "finder": {
           // Structure: { [elementId]: { id, name, type, img?, email?, address? } }
           const finderElementSchema = z.object({
@@ -724,6 +851,10 @@ export function generateDefaultValues(subFormsFields: SubFormFields[]): Record<s
           defaultValues[field.name] = {};
           break;
 
+        case "commonTable":
+          defaultValues[field.name] = { scores: {}, myCatalog: {} } satisfies CommonTableValue;
+          break;
+
         case "finder":
           defaultValues[field.name] = null;
           break;
@@ -760,15 +891,229 @@ export function generateDefaultValues(subFormsFields: SubFormFields[]): Record<s
   return defaultValues;
 }
 
+// ============================================================================
+// Helpers de coercion serveur (défense contre la pollution `{}` ↔ `[]`)
+// ============================================================================
+
+/**
+ * Forme attendue par le schéma Zod d'un componentType donné. `"skip"` =
+ * pas de coercion (le call-site est responsable, ex: uploader = union,
+ * sectionTitle = sans valeur, commonTable = composite traité spécialement).
+ */
+type FieldShape = "string" | "array" | "record" | "skip";
+
+function getFieldShape(componentType: FormFieldMapping["componentType"]): FieldShape {
+  switch (componentType) {
+    case "text":
+    case "textarea":
+    case "radio":
+    case "select":
+      return "string";
+    case "checkbox":
+    case "multiCheckboxPlus":
+    case "simpleTable":
+      return "array";
+    case "multiRadio":
+    case "finder":
+    case "evaluation":
+      return "record";
+    // Cas non triviaux : le shape attendu varie (uploader = union, sectionTitle
+    // n'a pas de valeur, commonTable = composite split en deux clés top-level
+    // gérées séparément). On laisse passer.
+    default:
+      return "skip";
+  }
+}
+
+function isPlainObject(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+
+/**
+ * Enrichit une entry de `scores` legacy (commonTable) avec les champs
+ * manquants. Le legacy pré-commonTableV2 stockait souvent uniquement
+ * `{note: N}` par criteriaId — Zod attend les 8 champs. On comble avec
+ * des défauts neutres. Le `criteriaId` est dérivé de la clé du Record
+ * (la clé EST l'id, par convention) si l'entry ne le porte pas.
+ *
+ * `usagesIndex` (optionnel) : index `usageKey → {label}` issu de
+ * `commonTableConfig.usages`. Convention legacy commonTableV2 : la
+ * structure `params.criterias{fieldKey}` mappe criteriaId → row, donc
+ * `usage.usageKey === criteriaId`. Quand un score legacy a un criteriaId
+ * qui matche une row, on ré-ancre `usage`/`usageKey` depuis la config —
+ * sinon le score reste bucketé en "sans usage" et invisible dans l'UI.
+ */
+const VALID_HAPPINESS = new Set(["", "love", "happySmile", "neutral", "sad", "cry"]);
+
+function enrichCommonTableScores(
+  raw: unknown,
+  usagesIndex?: Map<string, { label: string }>,
+): Record<string, unknown> {
+  if (!isPlainObject(raw)) return {};
+  const out: Record<string, unknown> = {};
+  for (const [criteriaId, entryRaw] of Object.entries(raw)) {
+    const entry = isPlainObject(entryRaw) ? entryRaw : {};
+    const happinessRaw = entry.happiness;
+    const rowHit = usagesIndex?.get(criteriaId);
+    const usage = typeof entry.usage === "string" && entry.usage !== ""
+      ? entry.usage
+      : rowHit?.label ?? "";
+    const usageKey = typeof entry.usageKey === "string" && entry.usageKey !== ""
+      ? entry.usageKey
+      : rowHit
+        ? criteriaId
+        : "";
+    out[criteriaId] = {
+      criteriaId: typeof entry.criteriaId === "string" ? entry.criteriaId : criteriaId,
+      criteria: typeof entry.criteria === "string" ? entry.criteria : "",
+      usage,
+      usageKey,
+      note: typeof entry.note === "number" ? entry.note : 0,
+      happiness: typeof happinessRaw === "string" && VALID_HAPPINESS.has(happinessRaw)
+        ? happinessRaw
+        : "",
+      yesOrNo: typeof entry.yesOrNo === "boolean" ? entry.yesOrNo : false,
+      comment: typeof entry.comment === "string" ? entry.comment : "",
+    };
+  }
+  return out;
+}
+
+/**
+ * Enrichit `myCatalog` legacy avec les champs requis par Zod (`usage`,
+ * `usageKey`). Les autres champs sont optionnels côté schema, on les
+ * laisse tels quels.
+ */
+function enrichCommonTableMyCatalog(raw: unknown): Record<string, unknown> {
+  if (!isPlainObject(raw)) return {};
+  const out: Record<string, unknown> = {};
+  for (const [criteriaId, entryRaw] of Object.entries(raw)) {
+    const entry = isPlainObject(entryRaw) ? entryRaw : {};
+    out[criteriaId] = {
+      ...entry,
+      usage: typeof entry.usage === "string" ? entry.usage : "",
+      usageKey: typeof entry.usageKey === "string" ? entry.usageKey : "",
+    };
+  }
+  return out;
+}
+
+/**
+ * Coerce une valeur reçue du serveur vers le shape attendu par le schéma
+ * Zod. Conserve la valeur d'origine si elle est déjà du bon type ;
+ * remplace par une valeur par défaut neutre seulement si la forme est
+ * incompatible.
+ */
+function coerceValueToShape(value: unknown, shape: FieldShape): unknown {
+  switch (shape) {
+    case "string":
+      if (typeof value === "string") return value;
+      if (typeof value === "number" || typeof value === "boolean") return String(value);
+      // `[]`, `{}`, `null`, `undefined` → ""
+      return "";
+    case "array":
+      if (Array.isArray(value)) return value;
+      // `{}` → `[]` ; null/undefined → laisser tel quel (le default form joue)
+      if (isPlainObject(value)) return [];
+      return value;
+    case "record":
+      // null préservé (certains schemas l'acceptent explicitement, ex: finder)
+      if (value === null) return value;
+      if (Array.isArray(value)) return {};
+      if (isPlainObject(value)) return value;
+      return value;
+    default:
+      return value;
+  }
+}
+
+/**
+ * Coerce les valeurs reçues du serveur pour qu'elles correspondent aux types
+ * attendus par les schémas Zod du formulaire. Point unique de défense
+ * contre la pollution de format causée par la sérialisation MongoDB
+ * (`{}` ↔ `[]` ambigus selon les inputs PHP en amont).
+ *
+ * Couvre :
+ * - **Champs nested** (radio, checkbox, select, multiRadio, multiCheckboxPlus,
+ *   finder, simpleTable, text, textarea) sous `rawAnswers[subFormId][fieldName]`
+ * - **Champs root-level** (evaluation, commonTable) sous `rawAnswers[fieldName]`
+ *   et leur clé jumelle pour commonTable (`criteriasXXX`)
+ *
+ * Extensible : ajouter un cas dans `getFieldShape` si un nouveau type est
+ * sensible à cette pollution.
+ */
+function coerceServerAnswerShape(
+  rawAnswers: Record<string, unknown>,
+  subFormsFields: SubFormFields[]
+): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...rawAnswers };
+
+  for (const { subFormId, fields } of subFormsFields) {
+    // Le subForm lui-même peut arriver comme `[]` si jamais aucun champ
+    // n'a été rempli. On le ramène à `{}` pour pouvoir y accéder.
+    let subData: Record<string, unknown>;
+    if (isPlainObject(out[subFormId])) {
+      subData = { ...(out[subFormId] as Record<string, unknown>) };
+    } else if (Array.isArray(out[subFormId])) {
+      subData = {};
+    } else {
+      subData = {};
+    }
+
+    for (const field of fields) {
+      // commonTable : split en deux clés top-level (`yesOrNoXXX` et
+      // `criteriasXXX`), tous deux Records. `field.name` est déjà
+      // `yesOrNoXXX` (cf. FIELD_PREFIX_MAP).
+      if (field.componentType === "commonTable") {
+        const fieldKey = getOriginalFieldKey(field);
+        const myCatalogKey = `criterias${fieldKey}`;
+        if (Array.isArray(out[field.name])) out[field.name] = {};
+        if (Array.isArray(out[myCatalogKey])) out[myCatalogKey] = {};
+        continue;
+      }
+
+      // evaluation : root-level Record (un seul top-level key = field.name).
+      if (field.componentType === "evaluation") {
+        if (Array.isArray(out[field.name])) out[field.name] = {};
+        continue;
+      }
+
+      // Champ nested : applique la coercion selon son shape attendu.
+      const shape = getFieldShape(field.componentType);
+      if (shape === "skip") continue;
+      if (!(field.name in subData)) continue;
+      const coerced = coerceValueToShape(subData[field.name], shape);
+      if (coerced !== subData[field.name]) subData[field.name] = coerced;
+    }
+
+    out[subFormId] = subData;
+  }
+
+  return out;
+}
+
+/**
+ * Indique si un sous-formulaire contient au moins un input multi-eval
+ * (`activeMultieval === true`). Utilisé pour afficher le bouton "Voir les
+ * évaluations" (radar) dans le header d'une step et conditionner le fetch
+ * de `useMultiEvalData`.
+ */
+export function getStepHasMultiEval(subFormFields: SubFormFields): boolean {
+  return subFormFields.fields.some((f) => f.activeMultieval === true);
+}
+
 /**
  * Normalise les données de réponse brutes depuis la DB vers le format attendu par le formulaire
- * 
+ *
  * Le PHP stocke certains champs à la racine de `answers` au lieu de dans leur sous-formulaire :
  * - evaluation: answers["evaluationXXX"] au lieu de answers[subFormId]["evaluationXXX"]
- * 
+ *
  * Cette fonction déplace ces champs dans leur sous-formulaire approprié en se basant
  * sur la structure du formulaire (subFormsFields).
- * 
+ *
+ * Applique d'abord `coerceServerAnswerShape` pour défendre contre les `{}` ↔ `[]`
+ * inconsistants venant de la sérialisation MongoDB.
+ *
  * @param rawAnswers - Données brutes depuis la DB (answers)
  * @param subFormsFields - Structure parsée du formulaire (pour connaître quel champ appartient à quel subform)
  * @returns Données normalisées avec les champs root-level déplacés dans leurs subforms
@@ -780,7 +1125,9 @@ export function normalizeAnswerData(
   if (!rawAnswers) return undefined;
 
   // Copie profonde pour ne pas muter l'original
-  const normalized = JSON.parse(JSON.stringify(rawAnswers)) as Record<string, unknown>;
+  const cloned = JSON.parse(JSON.stringify(rawAnswers)) as Record<string, unknown>;
+  // Défense contre la pollution de format MongoDB (`{}` ↔ `[]`).
+  const normalized = coerceServerAnswerShape(cloned, subFormsFields);
 
   // Debug: collecter les champs root-level attendus
   const rootLevelFieldNames: string[] = [];
@@ -798,6 +1145,47 @@ export function normalizeAnswerData(
     for (const field of fields) {
       if (isRootLevelField(field.componentType)) {
         rootLevelFieldNames.push(field.name);
+
+        // commonTable : valeur composite reconstruite depuis DEUX entrées root-level
+        // (yesOrNo{key} pour les scores, criterias{key} pour le catalogue de l'utilisateur).
+        // La coercion `[]` → `{}` est déjà faite par `coerceServerAnswerShape`
+        // en amont, mais on garde la garde `isPlainObject` par défense en
+        // profondeur (cas où la donnée arrive non normalisée pour une autre raison).
+        if (field.componentType === "commonTable") {
+          const fieldKey = getOriginalFieldKey(field);
+          const scoresKey = `yesOrNo${fieldKey}`;
+          const myCatalogKey = `criterias${fieldKey}`;
+          const scoresRoot = normalized[scoresKey];
+          const myCatalogRoot = normalized[myCatalogKey];
+          // Index des rows pour ré-ancrer les scores legacy `{note}` sur
+          // leur usageKey. Convention legacy : `params.criterias{key}` mappe
+          // criteriaId → row, donc `usage.usageKey === criteriaId`. Sans
+          // cet index, un score legacy `{criteria1688: {note:2}}` (pas
+          // de `usage`/`usageKey` en base) reste bucketé en "sans usage"
+          // et invisible dans l'UI.
+          const usagesIndex = new Map<string, { label: string }>();
+          for (const u of field.commonTableConfig?.usages ?? []) {
+            usagesIndex.set(u.usageKey, { label: u.label });
+          }
+          // Enrichit chaque entry pour matcher le shape Zod strict (8 champs
+          // requis). Les réponses legacy (pré-commonTableV2) ne stockaient
+          // souvent que `{note: N}` par criteriaId — sans cet enrichment,
+          // la validation Zod échoue au submit et empêche l'édition d'une
+          // réponse contenant ces données héritées. Le `criteriaId` est
+          // dérivé de la clé du Record (idiomatique : la clé EST l'id).
+          subFormData[field.name] = {
+            scores: enrichCommonTableScores(scoresRoot, usagesIndex),
+            myCatalog: enrichCommonTableMyCatalog(myCatalogRoot),
+          };
+          // Retire les clés root-level pour éviter qu'un merge en aval (ex:
+          // `{ ...generatedDefaults, ...normalizedDefaults }` dans
+          // DynamicCoForm) écrase le composite par la shape brute serveur
+          // (scores OU myCatalog seul) — Zod attend `{scores, myCatalog}`.
+          delete normalized[scoresKey];
+          delete normalized[myCatalogKey];
+          continue;
+        }
+
         // Le champ est stocké à la racine avec son nom (qui inclut déjà le préfixe)
         // Ex: field.name = "evaluationXXX", on cherche rawAnswers["evaluationXXX"]
         if (field.name in normalized && !(field.name in subFormData)) {
@@ -837,13 +1225,35 @@ export function denormalizeAnswerData(
     if (!subFormData) continue;
 
     for (const field of fields) {
-      if (isRootLevelField(field.componentType) && field.name in subFormData) {
-        // Déplacer le champ du subform vers la racine
-        denormalized[field.name] = subFormData[field.name];
+      if (!isRootLevelField(field.componentType)) continue;
+      if (!(field.name in subFormData)) continue;
+
+      // commonTable : valeur composite { scores, myCatalog } à splitter en
+      // DEUX entrées root-level (yesOrNo{key} et criterias{key}) pour matcher
+      // le format PHP.
+      if (field.componentType === "commonTable") {
+        const composite = subFormData[field.name] as
+          | { scores?: Record<string, unknown>; myCatalog?: Record<string, unknown> }
+          | undefined;
+        const fieldKey = getOriginalFieldKey(field);
+        const scoresKey = `yesOrNo${fieldKey}`;
+        const myCatalogKey = `criterias${fieldKey}`;
+        denormalized[scoresKey] = composite?.scores ?? {};
+        denormalized[myCatalogKey] = composite?.myCatalog ?? {};
         delete subFormData[field.name];
         if (import.meta.env.DEV) {
-          console.log(`[denormalizeAnswerData] Moved ${field.name} from subform ${subFormId} to root`);
+          console.log(
+            `[denormalizeAnswerData] commonTable ${field.name} split → ${scoresKey} + ${myCatalogKey}`
+          );
         }
+        continue;
+      }
+
+      // Cas générique root-level (ex: evaluation) : déplacer du subform vers la racine.
+      denormalized[field.name] = subFormData[field.name];
+      delete subFormData[field.name];
+      if (import.meta.env.DEV) {
+        console.log(`[denormalizeAnswerData] Moved ${field.name} from subform ${subFormId} to root`);
       }
     }
   }
@@ -902,4 +1312,63 @@ export function extractFinderLinks(
   }
 
   return links;
+}
+
+/**
+ * Information consolidée sur le finder partagé d'un formulaire collaboratif
+ * "par lieu". Combine la cible (`sharedQuestionPath` côté serveur) et les
+ * filtres de recherche (`FinderConfig.filters` côté input).
+ */
+export interface SharedFinderInfo {
+  /** ID du sous-formulaire qui contient le finder */
+  subFormId: string;
+  /** Nom complet du champ (avec préfixe `finder`) */
+  fieldName: string;
+  /** Chemin original ("subFormId.fieldName") */
+  fullPath: string;
+  /** Filtres tags / sourceKey / etc. (mêmes que FinderSearchModal) */
+  filters: FinderFilter[];
+  /** Exclure les éléments avec sourceKey */
+  notSourceKey: boolean;
+  /** Type d'élément ciblé (organizations, projects, ...) */
+  type: FinderConfig["type"];
+}
+
+/**
+ * Extrait l'info du finder partagé du formulaire (qui détermine le lieu pour
+ * les forms collaboratifs). Retourne `null` si :
+ * - `sharedQuestionPath` absent ou vide,
+ * - aucun chemin ne pointe vers un input "finder",
+ * - le champ pointé n'a pas de FinderConfig (config malformée).
+ *
+ * Utilisé par `CoFormPlacePage` pour pré-remplir + verrouiller le finder en
+ * vue détail, et pour filtrer la liste des lieux par les mêmes critères que
+ * la recherche du finder.
+ */
+export function getSharedFinderInfo(formData: CoFormData): SharedFinderInfo | null {
+  const paths = formData.sharedQuestionPath ?? [];
+  const finderPath = paths.find((p) => typeof p === "string" && p.includes("finder"));
+  if (!finderPath) return null;
+
+  const dotIdx = finderPath.indexOf(".");
+  if (dotIdx <= 0) return null;
+  const subFormId = finderPath.slice(0, dotIdx);
+  const fieldName = finderPath.slice(dotIdx + 1);
+
+  // Récupère le FinderConfig parsé via la pipeline existante.
+  const subFormsFields = parseCoFormFields(formData);
+  const subForm = subFormsFields.find((sf) => sf.subFormId === subFormId);
+  if (!subForm) return null;
+  const field = subForm.fields.find((f) => f.name === fieldName);
+  if (!field || !field.finderConfig) return null;
+
+  const cfg = field.finderConfig;
+  return {
+    subFormId,
+    fieldName,
+    fullPath: finderPath,
+    filters: cfg.filters ?? [],
+    notSourceKey: !!cfg.notSourceKey,
+    type: cfg.type,
+  };
 }

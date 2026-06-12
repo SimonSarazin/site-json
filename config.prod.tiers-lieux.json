@@ -285,7 +285,7 @@
               "fr": "Un diagnostic dédié aux lieux comme communs de proximité",
               "en": "A diagnostic dedicated to places as local commons"
             },
-            "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=licoop#licoop"
+            "path": "/coform/6876c3e58fa8df3c7f024253/place"
           },
           {
             "label": {
@@ -2621,6 +2621,7 @@
                     "645b300b6d70bb35426fc0e3": {
                       "name": "Diagnostic des usages des équipements proposés en tiers-lieux",
                       "finder": "answers.lesCommunsDesTierslieux1052023_949_0.finderlesCommunsDesTierslieux1052023_949_0lat3sl0xwwg06k856jc",
+                      "openMode": "modal",
                       "linked": true
                     },
                     "6486d24e9cad105cbf29a777": {
@@ -2632,11 +2633,13 @@
                     "64a3fbd77c66a6036a282e8a": {
                       "name": "Satisfaction du tiers-lieu",
                       "finder": "answers.lesCommunsDesTierslieux472023_154_0.finderlesCommunsDesTierslieux472023_154_0ljo6ru90tnrau11hui",
+                      "openMode": "modal",
                       "linked": true
                     },
                     "636cd563e2439b7fc12cd680": {
                       "name": "Usages des outils numériques",
                       "finder": "answers.lesCommunsDesTierslieux10112022_1423_0.finderlesCommunsDesTierslieux10112022_1423_0lmbmy4z4ze9v982h4fh",
+                      "openMode": "modal",
                       "linked": true
                     },
                     "63e0a8abeac0741b506fb4f7": {

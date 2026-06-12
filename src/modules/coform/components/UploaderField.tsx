@@ -7,22 +7,12 @@ import { cn } from "@/lib/utils";
 import { getBaseUrl } from "@/lib/constant/common";
 import { useCocolight } from "@/hooks/useCocolight";
 import { showErrorToast } from "@/lib/toastUtils";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import { useT } from "@/hooks/useT";
 import "../i18n/i18n";
 import type { FormFieldMapping, UploaderValue, UploaderLegacyValue, ImageUploadValue, ExistingUploadFile } from "../types";
 import { useCoFormAnswerFiles } from "../hooks/useCoFormAnswerFiles";
 import { COFORM_QUERY_KEYS } from "../constants";
-import { FieldError } from "./FormFields";
-
-function HintText({ text }: { text: string }) {
-  return (
-    <div className="text-xs text-muted-foreground -mt-1 mb-1 prose prose-xs dark:prose-invert max-w-none [&>p]:m-0 [&>ul]:m-0 [&>ol]:m-0">
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
-    </div>
-  );
-}
+import { FieldError, HintText } from "./FormFields";
 
 // Formats par défaut élargis pour supporter images + documents courants
 const DEFAULT_UPLOAD_FORMATS = [

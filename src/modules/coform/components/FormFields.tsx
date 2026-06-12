@@ -27,9 +27,12 @@ export function ProseContent({ text, className, forceMarkdown = false }: { text:
 }
 
 /**
- * Composant pour afficher un indice/info avec support markdown
+ * Composant pour afficher un indice/info avec support markdown ET HTML brut.
+ * Délègue à `ProseContent` qui auto-détecte HTML (rendu via
+ * `dangerouslySetInnerHTML`) vs markdown (rendu via ReactMarkdown +
+ * `rehypeRaw` pour accepter les inline HTML comme `<br/>`).
  */
-function HintText({ text }: { text: string }) {
+export function HintText({ text }: { text: string }) {
   return (
     <ProseContent
       text={text}
@@ -86,11 +89,14 @@ export function TextField({ field, register, errors }: FormFieldProps) {
       )}
       {field.info && <HintText text={field.info} />}
       <div className={cn(
-        "relative",
-        "after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:rounded-b-md",
+        // `overflow-hidden rounded-md` : clippe la sous-ligne `after:` au
+        // même radius que l'<Input> (rounded-md). Sans ça, le trait rouge
+        // (état erreur) ou bleu (focus) déborde aux deux coins inférieurs.
+        "relative overflow-hidden rounded-md",
+        "after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full",
         "after:origin-left after:scale-x-0 after:transition-transform after:duration-300 after:ease-out",
-        hasError 
-          ? "after:scale-x-100 after:bg-destructive" 
+        hasError
+          ? "after:scale-x-100 after:bg-destructive"
           : "focus-within:after:scale-x-100 after:bg-primary"
       )}>
         <Input
@@ -139,11 +145,14 @@ export function TextAreaField({ field, register, errors, value, onChange }: Form
         />
       ) : (
         <div className={cn(
-          "relative",
-          "after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:rounded-b-md",
+          // Cf. TextField : `overflow-hidden rounded-md` clippe la sous-ligne
+          // `after:` au même radius que le <Textarea>, sinon le trait
+          // rouge/bleu déborde aux coins inférieurs.
+          "relative overflow-hidden rounded-md",
+          "after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full",
           "after:origin-left after:scale-x-0 after:transition-transform after:duration-300 after:ease-out",
-          hasError 
-            ? "after:scale-x-100 after:bg-destructive" 
+          hasError
+            ? "after:scale-x-100 after:bg-destructive"
             : "focus-within:after:scale-x-100 after:bg-primary"
         )}>
           <Textarea

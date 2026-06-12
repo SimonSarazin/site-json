@@ -1,15 +1,18 @@
-import { useMemo } from "react";
+import { useMemo, type ReactNode } from "react";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 import { useCoFormQuery, useCoFormFinalMutation } from "../hooks/useCoFormQuery";
+import { useCoFormCatalogs } from "../hooks/useCoFormCatalogs";
 import { DynamicCoForm } from "./DynamicCoForm";
 import { MultiStepCoForm } from "./MultiStepCoForm";
 import { CoFormReadOnly } from "./CoFormReadOnly";
-import { parseCoFormFields, normalizeAnswerData, denormalizeAnswerData, extractFinderLinks } from "../utils/formParser";
-import type { CoFormData, SubmitMode, AllStepsData, SubFormData, AddedOptionsMap } from "../types";
+import { CommonTableCatalogsProvider } from "../contexts/CommonTableCatalogsProvider";
+import { parseCoFormFields, normalizeAnswerData, denormalizeAnswerData, extractFinderLinks, getOriginalFieldKey } from "../utils/formParser";
+import type { CoFormData, SubmitMode, AllStepsData, SubFormData, AddedOptionsMap, ExistingAnswerMeta } from "../types";
 import type { FinderLinksMap } from "../utils/formParser";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
+import { useCocolight } from "@/hooks/useCocolight";
 
 interface SmartCoFormProps {
   formId?: string;
@@ -62,6 +65,28 @@ interface SmartCoFormProps {
   submitRef?: React.RefObject<(() => void) | null>;
   /** Liste de clés d'inputs verrouillés (lecture seule, non modifiables) */
   lockedFields?: string[];
+  /** updatedAt serveur (édition) — pour détecter les drafts obsolètes. */
+  baseUpdatedAt?: number | null;
+  /**
+   * Le form est rendu dans une modale ; désactive la persistance du draft
+   * (contexte éphémère). Defaut : false.
+   */
+  inModal?: boolean;
+  /**
+   * Métadonnées de la réponse existante (créateur + dernier modifieur).
+   * Quand fournies, un lien "Voir l'activité" apparaît sous le form, qui
+   * ouvre la modale `AnswerActivityDialog` avec l'historique des modifs.
+   */
+  existingAnswerMeta?: ExistingAnswerMeta | null;
+  /**
+   * ID de l'élément lié au form (lieu, projet, événement…). Propagé à
+   * `useCoFormQuery` pour activer le mode "par élément" backend
+   * (`Coform::getFormAccessInfo` calcule alors `access.restrictedFields`).
+   * Requis avec `elementType`.
+   */
+  elementId?: string;
+  /** Type de l'élément (collection MongoDB). Requis si `elementId` fourni. */
+  elementType?: "organizations" | "projects" | "events" | "poi" | "citoyens";
 }
 
 interface LoadingStateProps {
@@ -158,6 +183,11 @@ export function SmartCoForm({
   onDirtyChange,
   submitRef,
   lockedFields,
+  baseUpdatedAt,
+  inModal = false,
+  existingAnswerMeta,
+  elementId,
+  elementType,
 }: SmartCoFormProps) {
   // Charger les données depuis l'API si formId est fourni
   const {
@@ -169,13 +199,22 @@ export function SmartCoForm({
   } = useCoFormQuery({
     formId: formId ?? "",
     enabled: !!formId && !externalFormData,
+    elementId,
+    elementType,
   });
 
   // Utiliser les données externes ou celles de l'API
   const formData = externalFormData ?? apiFormData;
 
+  // Restriction par rôle dans le lieu lié (placeAdminOnlyFields /
+  // placeMemberOnlyFields). Le serveur calcule la liste finale dans
+  // `access.restrictedFields` selon l'user courant ; on la propage telle
+  // quelle à DynamicCoForm / MultiStepCoForm qui skippent le rendu.
+  const restrictedFields = formData?.access?.restrictedFields;
+
   useLoadNamespace("modules/coform");
   const t = useT("modules/coform");
+  const { me } = useCocolight();
 
   const allSubFormsFields = useMemo(
     () => (formData ? parseCoFormFields(formData) : []),
@@ -224,6 +263,33 @@ export function SmartCoForm({
   const subFormsFields = effectiveStandaloneData
     ? parseCoFormFields(effectiveStandaloneData)
     : allSubFormsFields;
+
+  // Identifie les inputs commonTable du form pour fetcher leurs catalogues
+  // collaboratifs en un seul appel batch. Si le form n'en contient aucun,
+  // `inputKeys` est vide → le hook ne fait aucun appel réseau (enabled=false).
+  const commonTableInputKeys = useMemo(() => {
+    const keys: string[] = [];
+    for (const sf of subFormsFields) {
+      for (const f of sf.fields) {
+        if (f.componentType === "commonTable") {
+          keys.push(getOriginalFieldKey(f));
+        }
+      }
+    }
+    return keys;
+  }, [subFormsFields]);
+
+  const { catalogs: commonTableCatalogs } = useCoFormCatalogs({
+    formId: formId ?? "",
+    inputKeys: commonTableInputKeys,
+    enabled: !!formId && commonTableInputKeys.length > 0,
+  });
+
+  // Wrapper qui expose les catalogues commonTable aux fields. Le provider
+  // accepte un objet vide → si pas de commonTable, c'est un no-op pur.
+  const withCatalogs = (node: ReactNode) => (
+    <CommonTableCatalogsProvider catalogs={commonTableCatalogs}>{node}</CommonTableCatalogsProvider>
+  );
 
   // Normaliser les defaultValues pour les champs stockés à la racine (comme evaluation)
   const normalizedDefaults = useMemo(
@@ -299,9 +365,21 @@ export function SmartCoForm({
   const isStandalone = !!standaloneFormData;
   const isInputStandalone = !!inputStandaloneFormData;
 
+  // Persistance du draft : désactivée en lecture seule, standalone (sous-composant
+  // embarqué), modal (contexte éphémère), ou quand on n'a pas d'utilisateur
+  // identifié (clé localStorage user-scopée pour éviter les fuites cross-user).
+  const enableDraft =
+    !readOnly &&
+    !inModal &&
+    !isStandalone &&
+    !isInputStandalone &&
+    !!formId &&
+    !!me?.id;
+  const draftUserId = me?.id ?? null;
+
   // Mode lecture seule : utiliser CoFormReadOnly
   if (readOnly) {
-    return (
+    return withCatalogs(
       <CoFormReadOnly
         formData={effectiveFormData}
         answerData={normalizedDefaults ?? {}}
@@ -315,7 +393,7 @@ export function SmartCoForm({
 
   // Afficher le composant approprié
   if (shouldUseMultiStep) {
-    return (
+    return withCatalogs(
       <MultiStepCoForm
         formData={formData}
         submitMode={submitMode}
@@ -330,12 +408,18 @@ export function SmartCoForm({
         onSuccess={onAfterSubmit}
         onDirtyChange={onDirtyChange}
         lockedFields={lockedFields}
+        restrictedFields={restrictedFields}
         className={className}
         showProgress={showProgress}
         showStepNumbers={showStepNumbers}
         defaultValues={normalizedDefaults}
         answerId={answerId}
         initialStepKey={initialStepKey}
+        formId={formId}
+        userId={draftUserId}
+        baseUpdatedAt={baseUpdatedAt}
+        enableDraft={enableDraft}
+        existingAnswerMeta={existingAnswerMeta}
       />
     );
   }
@@ -347,7 +431,7 @@ export function SmartCoForm({
   // Extraire les valeurs par défaut pour cette étape
   const stepDefaults = normalizedDefaults?.[subFormId];
 
-  return (
+  return withCatalogs(
     <DynamicCoForm
       formData={effectiveFormData}
       submitButtonText={t("coform.navigation.submit")}
@@ -360,6 +444,12 @@ export function SmartCoForm({
       onDirtyChange={onDirtyChange}
       submitRef={submitRef}
       lockedFields={lockedFields}
+      restrictedFields={restrictedFields}
+      formId={formId}
+      userId={draftUserId}
+      baseUpdatedAt={baseUpdatedAt}
+      enableDraft={enableDraft}
+      existingAnswerMeta={existingAnswerMeta}
       onSubmit={async (data, addedOptions) => {
         try {
           // Dénormaliser pour le format PHP (champs root-level à la racine)
@@ -387,5 +477,6 @@ export function SmartCoForm({
     />
   );
 }
+
 
 export default SmartCoForm;

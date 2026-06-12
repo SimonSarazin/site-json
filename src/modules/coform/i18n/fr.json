@@ -32,8 +32,8 @@
     "status": {
       "loading": "Chargement du formulaire...",
       "submitting": "Envoi en cours...",
-      "success": "Formulaire envoyé avec succès\u00A0!",
-      "updateSuccess": "Réponse mise à jour avec succès\u00A0!",
+      "success": "Formulaire envoyé avec succès !",
+      "updateSuccess": "Réponse mise à jour avec succès !",
       "error": "Une erreur est survenue",
       "stepSuccess": "Étape validée",
       "stepError": "Erreur lors de la validation de l'étape"
@@ -41,7 +41,14 @@
     "errors": {
       "formNotFound": "Formulaire introuvable",
       "networkError": "Erreur de connexion",
-      "serverError": "Erreur serveur"
+      "serverError": "Erreur serveur",
+      "summary": {
+        "title_one": "Veuillez corriger {{count}} erreur",
+        "title_other": "Veuillez corriger {{count}} erreurs",
+        "jumpTo": "Aller au champ",
+        "serverError": "Erreur lors de la soumission",
+        "toast": "Le formulaire comporte des erreurs"
+      }
     },
     "banner": {
       "alt": "Bannière du formulaire"
@@ -68,7 +75,7 @@
       "title": "Votre réponse a été enregistrée",
       "message": "Merci d'avoir pris le temps de répondre à ce formulaire. Votre réponse a bien été enregistrée.",
       "updateTitle": "Votre réponse a été mise à jour",
-      "updateMessage": "Vos modifications ont bien été enregistrées. Merci\u00A0!",
+      "updateMessage": "Vos modifications ont bien été enregistrées. Merci !",
       "editAnswer": "Modifier ma réponse",
       "submitAnother": "Soumettre une autre réponse",
       "goHome": "Retour à l'accueil"
@@ -213,6 +220,201 @@
       "gallery": {
         "openPdf": "Ouvrir le PDF",
         "download": "Télécharger"
+      }
+    },
+    "activity": {
+      "link": "Voir l'activité",
+      "title": "Activité de la réponse",
+      "createdBy": "Créée par {{name}} le {{date}}",
+      "lastModifiedBy": "Dernière modification : {{name}} {{relative}}",
+      "historyTitle": "Historique",
+      "entryCreate": "a créé la réponse",
+      "entryUpdate_one": "a modifié l'étape {{steps}}",
+      "entryUpdate_other": "a modifié les étapes {{steps}}",
+      "close": "Fermer",
+      "loading": "Chargement de l'historique…",
+      "empty": "Aucune activité enregistrée.",
+      "errorLoad": "Impossible de charger l'historique.",
+      "unknownUser": "Utilisateur inconnu"
+    },
+    "commonTable": {
+      "headers": {
+        "usage": "Besoins",
+        "criteria": "Solutions utilisées",
+        "happiness": "Satisfaction",
+        "note": "Niveau d'urgence",
+        "yesNo": "Réponse",
+        "comment": "Commentaire"
+      },
+      "filter": {
+        "placeholder": "Filtrer par besoin…"
+      },
+      "addSolution": {
+        "placeholder": "Solution utilisée…",
+        "button": "Ajouter cette solution"
+      },
+      "validation": {
+        "required": "{{label}} est requis",
+        "formatInvalid": "Format de réponse invalide pour {{label}}",
+        "minLength": "{{label}} doit contenir au moins {{min}} caractère(s)",
+        "simpleTableRequired": "{{label}} est requis (au moins une ligne de données)",
+        "multiCheckboxPlusCplxRequired": "Tous les champs complémentaires doivent être remplis"
+      },
+      "contributors": {
+        "title": "Contributions sur ce besoin",
+        "description": "Voir qui a renseigné une solution pour : {{usage}}",
+        "loading": "Chargement des contributions…",
+        "error": "Impossible de charger les contributions.",
+        "empty": "Aucun contributeur n'a encore renseigné de solution sur ce besoin.",
+        "openTooltip_one": "Voir {{count}} contribution",
+        "openTooltip_other": "Voir {{count}} contributions"
+      },
+      "addUsage": {
+        "buttonLabel": "Ajouter {{label}}",
+        "defaultLabel": "un besoin",
+        "dialog": {
+          "title": "Ajouter un nouveau besoin",
+          "description": "Ce besoin apparaîtra comme une nouvelle ligne du tableau. Vous pourrez y ajouter des solutions ensuite.",
+          "usageLabel": "Nom du besoin",
+          "usagePlaceholder": "Ex : Réservation des outils",
+          "submit": "Ajouter",
+          "cancel": "Annuler",
+          "errorEmpty": "Le nom du besoin est requis",
+          "errorDuplicate": "Ce besoin existe déjà dans le tableau"
+        }
+      },
+      "deleteSolution": "Supprimer cette solution",
+      "selectSolutionFirst": "Ajoutez une solution pour évaluer",
+      "happiness": {
+        "love": "Très satisfait",
+        "happySmile": "Satisfait",
+        "neutral": "Neutre",
+        "sad": "Insatisfait",
+        "cry": "Très insatisfait"
+      },
+      "note": {
+        "level": {
+          "0": "Non renseigné",
+          "1": "Acceptable",
+          "2": "Tolérable",
+          "3": "Modéré",
+          "4": "Urgent",
+          "5": "Critique"
+        }
+      },
+      "yesNo": {
+        "yes": "Oui",
+        "no": "Non"
+      },
+      "comment": {
+        "openLabel": "Commenter",
+        "placeholder": {
+          "title": "Fonctionnalité bientôt disponible",
+          "description": "Les commentaires sur les solutions seront intégrés prochainement.",
+          "close": "Compris"
+        }
+      },
+      "emptyUsages": "Aucun besoin défini pour ce formulaire."
+    },
+    "draft": {
+      "restorable": {
+        "title": "Brouillon trouvé",
+        "description": "Vous avez une saisie non sauvegardée datant d'{{relative}}. Voulez-vous la reprendre ?",
+        "restore": "Reprendre",
+        "discard": "Repartir de zéro"
+      },
+      "stale": {
+        "title": "Brouillon plus ancien écarté",
+        "description": "La réponse a été modifiée entre-temps. La version la plus récente est utilisée.",
+        "ok": "OK"
+      },
+      "time": {
+        "justNow": "à l'instant",
+        "minutesAgo_one": "il y a {{count}} minute",
+        "minutesAgo_other": "il y a {{count}} minutes",
+        "hoursAgo_one": "il y a {{count}} heure",
+        "hoursAgo_other": "il y a {{count}} heures",
+        "daysAgo_one": "il y a {{count}} jour",
+        "daysAgo_other": "il y a {{count}} jours",
+        "yearsPart_one": "{{count}} an",
+        "yearsPart_other": "{{count}} ans",
+        "monthsPart_one": "{{count}} mois",
+        "monthsPart_other": "{{count}} mois",
+        "daysPart_one": "{{count}} jour",
+        "daysPart_other": "{{count}} jours",
+        "conjAnd": "et",
+        "agoPrefix": "il y a {{value}}"
+      }
+    },
+    "multiEval": {
+      "viewChart": "Voir les évaluations",
+      "title": "Comparaison des évaluations",
+      "titleWithStep": "Évaluations — {{stepName}}",
+      "usersLegend": "Évalué par",
+      "loading": "Chargement des évaluations…",
+      "empty": "Aucune évaluation enregistrée pour cette étape.",
+      "errorLoad": "Impossible de charger les évaluations.",
+      "close": "Fermer",
+      "show": "Afficher",
+      "hide": "Masquer"
+    },
+    "placeView": {
+      "title": "Choisissez un lieu",
+      "description": "Cliquez sur un lieu pour compléter ou modifier sa réponse au formulaire.",
+      "myPlaces": "Mes lieux",
+      "pendingPlaces": "En attente",
+      "joinSection": {
+        "title": "Rejoindre un autre lieu",
+        "description": "Recherchez un lieu et envoyez une demande pour y participer.",
+        "searchButton": "Rechercher un lieu…",
+        "elementLabel": "lieu"
+      },
+      "openSection": {
+        "title": "Ouvrir un autre lieu",
+        "description": "Recherchez un lieu pour ouvrir directement sa réponse au formulaire.",
+        "searchButton": "Rechercher un lieu…"
+      },
+      "roleBadge": {
+        "admin": "Admin",
+        "member": "Membre"
+      },
+      "pendingBadge": {
+        "toBeValidated": "Demande en attente",
+        "isInviting": "Invitation reçue",
+        "isInvitingAdmin": "Invitation admin reçue",
+        "isAdminPending": "Rôle admin en attente"
+      },
+      "actions": {
+        "open": "Ouvrir",
+        "accept": "Accepter",
+        "reject": "Refuser",
+        "back": "Retour à la liste"
+      },
+      "empty": {
+        "noPlaces": "Vous n'avez pas encore de lieu correspondant à ce formulaire.",
+        "notApplicable": "Ce formulaire n'est pas configuré pour la vue par lieu."
+      },
+      "confirmLeave": {
+        "title": "Quitter sans enregistrer ?",
+        "description": "Vous avez des modifications non enregistrées qui seront perdues si vous quittez maintenant.",
+        "stay": "Rester sur le formulaire",
+        "leave": "Quitter sans enregistrer"
+      },
+      "join": {
+        "alreadyMember": "Vous êtes déjà membre de ce lieu.",
+        "alreadyPending": "Demande déjà envoyée — en attente de validation.",
+        "alreadyInvited": "Une invitation est en attente — accepte-la dans la section En attente.",
+        "confirmTitle": "Rejoindre {{name}}",
+        "confirmDescription": "Comment souhaitez-vous rejoindre ce lieu ?",
+        "requestMember": "Demander à devenir membre",
+        "requestAdmin": "Demander les droits admin",
+        "confirmCancel": "Annuler",
+        "successToastMember": "Demande de membre envoyée. Vous accéderez au formulaire dès validation par un admin.",
+        "successToastAdmin": "Demande d'admin envoyée. En attente de validation."
+      },
+      "guard": {
+        "notAuthorized": "Vous n'êtes ni admin ni membre de ce lieu.",
+        "pendingValidation": "Demande en attente — patientez la validation par un admin."
       }
     }
   }
