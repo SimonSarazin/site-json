@@ -1,53 +1,23 @@
-// Utilitaires partagés du module observatoire.
-import type { Equipment, PmrField, PshsField } from "./schema";
-import { PMR_FIELDS, PSHS_FIELDS } from "./schema";
+// Utilitaires du module observatoire — couche MÉTIER (RES) au-dessus du
+// moteur générique de dimensions (./dimensions.ts). Les accesseurs nommés
+// sont des wrappers du moteur sur le preset RES : ils restent l'API interne
+// lisible des composants, mais une config peut piloter les mêmes mécanismes
+// avec d'autres dimensions.
+import {
+  RES_DIMENSIONS,
+  dimensionBool,
+  dimensionNumber,
+  dimensionValue,
+  toStringList,
+} from "./dimensions";
+import type { Equipment } from "./schema";
 
-/** Coerce une valeur quelconque vers `true` si elle représente l'affirmatif. */
-export function isTrue(value: unknown): boolean {
-  if (value === true) return true;
-  if (typeof value === "number") return value > 0;
-  if (typeof value === "string") {
-    const v = value.trim().toLowerCase();
-    return v === "true" || v === "1" || v === "oui" || v === "yes";
-  }
-  return false;
-}
+// Primitives de coercion — vivent dans le moteur, ré-exportées ici (compat).
+export { isTrue, firstString, toNumber, toStringList } from "./dimensions";
 
 /** `aps_name` peut être string CSV ou string[]. Renvoie toujours un tableau. */
 export function normalizeAps(value: Equipment["aps_name"]): string[] {
-  if (!value) return [];
-  if (Array.isArray(value)) return value.filter(Boolean);
-  return value
-    .split(/[,;]/)
-    .map((s) => s.trim())
-    .filter(Boolean);
-}
-
-/** Renvoie la première chaîne non vide parmi les candidats.
- *  Accepte aussi bien des `string` que des `string[]`. */
-export function firstString(
-  ...candidates: Array<unknown>
-): string | undefined {
-  for (const c of candidates) {
-    if (typeof c === "string" && c.trim() !== "") return c;
-    if (Array.isArray(c)) {
-      const first = c.find(
-        (v): v is string => typeof v === "string" && v.trim() !== "",
-      );
-      if (first !== undefined) return first;
-    }
-  }
-  return undefined;
-}
-
-/** Extrait une valeur scalaire numérique si possible. */
-export function toNumber(value: unknown): number | undefined {
-  if (typeof value === "number" && !Number.isNaN(value)) return value;
-  if (typeof value === "string" && value.trim() !== "") {
-    const n = Number(value);
-    if (!Number.isNaN(n)) return n;
-  }
-  return undefined;
+  return toStringList(value);
 }
 
 /** Comptage générique par clé. */
@@ -91,37 +61,35 @@ export const isIndoor = (e: Equipment): boolean =>
   getNature(e) === NATURE_VALUES.INDOOR;
 
 /** Au moins un des 6 champs PMR est vrai. */
-export function isPmrAccessible(e: Equipment): boolean {
-  return PMR_FIELDS.some((f: PmrField) => isTrue(e[f]));
-}
+export const isPmrAccessible = (e: Equipment): boolean =>
+  dimensionBool(e, RES_DIMENSIONS.pmr);
 
 /** Au moins un des 6 champs PSHS est vrai. */
-export function isPshsAccessible(e: Equipment): boolean {
-  return PSHS_FIELDS.some((f: PshsField) => isTrue(e[f]));
-}
+export const isPshsAccessible = (e: Equipment): boolean =>
+  dimensionBool(e, RES_DIMENSIONS.pshs);
 
-/* Accès uniformes aux dimensions principales -------------------- */
+/* Accès uniformes aux dimensions principales (preset RES) -------- */
 
 export const getCommune = (e: Equipment): string | undefined =>
-  firstString(e.address?.addressLocality);
+  dimensionValue(e, RES_DIMENSIONS.commune);
 
 export const getEpci = (e: Equipment): string | undefined =>
-  firstString(e.address?.level5Name);
+  dimensionValue(e, RES_DIMENSIONS.epci);
 
 export const getType = (e: Equipment): string | undefined =>
-  firstString(e.equip_type_name, e.equip_type_famille, e.type, e.categorie);
+  dimensionValue(e, RES_DIMENSIONS.type);
 
 export const getNature = (e: Equipment): string | undefined =>
-  firstString(e.equip_nature, e.nature);
+  dimensionValue(e, RES_DIMENSIONS.nature);
 
 export const getPropType = (e: Equipment): string | undefined =>
-  firstString(e.equip_prop_type);
+  dimensionValue(e, RES_DIMENSIONS.prop);
 
 export const getSurface = (e: Equipment): number | undefined =>
-  toNumber(e.equip_surf);
+  dimensionNumber(e, RES_DIMENSIONS.surface);
 
 export const getInstName = (e: Equipment): string =>
-  firstString(e.inst_nom, e.equip_nom) ?? "—";
+  dimensionValue(e, RES_DIMENSIONS.name) ?? "—";
 
 export const getEquipId = (e: Equipment, fallback: number): string =>
   e.equip_numero ?? `equip-${fallback}`;

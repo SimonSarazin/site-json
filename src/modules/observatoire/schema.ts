@@ -149,6 +149,33 @@ export const EquipmentSchema = z
 export type Equipment = z.infer<typeof EquipmentSchema>;
 
 /*───────────────────────────────────────────────────────────────*/
+/* 2bis. Dimensions — cœur déclaratif du module                  */
+/*───────────────────────────────────────────────────────────────*/
+// Une « dimension » = une grandeur lisible sur chaque item (commune, type,
+// accessibilité…). Filtres, KPI, graphes et colonnes de table ne font que
+// CONSOMMER des dimensions — c'est ce qui rend le module pilotable par la
+// config (mécanisme dans le composant, données dans la config). Le preset
+// RES (`RES_DIMENSIONS`, dimensions.ts) sert de défaut : un site peut le
+// surcharger dimension par dimension, ou déclarer les siennes.
+export const DimensionDefSchema = z.object({
+  /** Chaînes de priorité : le premier chemin non vide gagne (chemins pointés
+   *  acceptés, ex. "address.addressLocality"). */
+  paths: z.array(z.string()).min(1),
+  /** value (défaut) : 1ʳᵉ chaîne non vide · list : CSV/tableau aplati ·
+   *  anyTrue : au moins un des chemins est vrai · number : 1ʳᵉ valeur numérique. */
+  kind: z.enum(["value", "list", "anyTrue", "number"]).optional(),
+  /** Libellé localisé (prioritaire sur labelKey). */
+  label: LocalizedString.optional(),
+  /** Clé i18n du namespace modules/observatoire (utilisé par le preset RES
+   *  pour pointer les libellés historiques, ex. "filters.owner"). */
+  labelKey: z.string().optional(),
+});
+export type DimensionDef = z.infer<typeof DimensionDefSchema>;
+
+export const DimensionsSchema = z.record(z.string(), DimensionDefSchema);
+export type DimensionsConfig = z.infer<typeof DimensionsSchema>;
+
+/*───────────────────────────────────────────────────────────────*/
 /* 3. Filtres                                                    */
 /*───────────────────────────────────────────────────────────────*/
 export const FilterValuesSchema = z.object({

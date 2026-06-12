@@ -2,6 +2,14 @@ import { describe, it, expect } from "vitest";
 import { EquipmentSchema } from "./schema";
 import type { Equipment } from "./schema";
 import {
+  RES_DIMENSIONS,
+  dimensionBool,
+  dimensionList,
+  dimensionNumber,
+  dimensionValue,
+  mergedDimensions,
+} from "./dimensions";
+import {
   NATURE_VALUES,
   countBy,
   firstString,
@@ -16,6 +24,38 @@ import {
   toNumber,
   uniqSorted,
 } from "./utils";
+
+/* ── Moteur de dimensions (cœur déclaratif) ──────────────────────────────── */
+
+describe("moteur de dimensions", () => {
+  const e = {
+    address: { addressLocality: "Cilaos" },
+    equip_type_famille: "Salle",
+    aps_csv: "Judo, Karaté",
+    flag_a: "false",
+    flag_b: "Oui",
+    surf_txt: "120",
+  } as unknown as Equipment;
+
+  it("value : chaîne de priorité + chemins pointés", () => {
+    expect(dimensionValue(e, { paths: ["address.addressLocality"] })).toBe("Cilaos");
+    expect(dimensionValue(e, { paths: ["equip_type_name", "equip_type_famille"] })).toBe("Salle");
+    expect(dimensionValue(e, { paths: ["absent"] })).toBeUndefined();
+  });
+
+  it("list : CSV aplati ; anyTrue : au moins un chemin affirmatif ; number : coercion", () => {
+    expect(dimensionList(e, { paths: ["aps_csv"], kind: "list" })).toEqual(["Judo", "Karaté"]);
+    expect(dimensionBool(e, { paths: ["flag_a", "flag_b"], kind: "anyTrue" })).toBe(true);
+    expect(dimensionBool(e, { paths: ["flag_a"], kind: "anyTrue" })).toBe(false);
+    expect(dimensionNumber(e, { paths: ["surf_txt"], kind: "number" })).toBe(120);
+  });
+
+  it("mergedDimensions : surcharge ATOMIQUE par dimension, preset conservé ailleurs", () => {
+    const merged = mergedDimensions({ commune: { paths: ["ville"] } });
+    expect(merged.commune.paths).toEqual(["ville"]);
+    expect(merged.type).toBe(RES_DIMENSIONS.type);
+  });
+});
 
 /* ── Schéma Equipment (formats serverData hétérogènes) ──────────────────── */
 
