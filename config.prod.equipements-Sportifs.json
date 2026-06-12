@@ -1830,7 +1830,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type" : "title-with-filters-rezo-la-mer",
+          "type" : "searchHeader",
           "id": "section-equipements-filters",
           "props": {
             "headline": {
@@ -1849,8 +1849,8 @@
               ],
               "defaultFilters": {
                 "$or": {
-                  "source.key": "sportSanteBienetre",
-                  "source.keys": "sportSanteBienetre"
+                  "source.key": "equipementsSportifs974",
+                  "source.keys": "equipementsSportifs974"
                 },
                 "type": "recoveryCenter"
               }

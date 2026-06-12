@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { ChevronDown, ChevronUp, Table as TableIcon } from "lucide-react";
 import type { Equipment } from "../schema";
+import { useT } from "@/hooks/useT";
 import {
   getCommune,
   getEpci,
@@ -65,6 +66,7 @@ interface EquipmentTableProps {
 }
 
 export function EquipmentTable({ data }: EquipmentTableProps) {
+  const t = useT("modules/observatoire");
   const [sort, setSort] = useState<{ key: SortKey; dir: SortDir }>({
     key: "commune",
     dir: "asc",
@@ -112,24 +114,24 @@ export function EquipmentTable({ data }: EquipmentTableProps) {
       <div className="flex items-center justify-between p-5 pb-4">
         <div className="flex items-center gap-2">
           <TableIcon className="h-4 w-4 text-primary" />
-          <h3 className="text-sm font-semibold">Données détaillées</h3>
+          <h3 className="text-sm font-semibold">{t("table.title")}</h3>
         </div>
         <span className="text-xs text-muted-foreground">
-          {data.length} équipements
+          {t("table.equipmentCount", undefined, { count: data.length })}
         </span>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-muted/40 border-y border-border">
             <tr>
-              <Th k="name" label="Installation" />
-              <Th k="type" label="Type" />
-              <Th k="commune" label="Commune" />
-              <Th k="epci" label="EPCI" />
-              <Th k="nature" label="Nature" />
-              <Th k="surface" label="Surface" />
-              <Th k="pmr" label="PMR" />
-              <Th k="prop" label="Propriétaire" />
+              <Th k="name" label={t("table.installation")} />
+              <Th k="type" label={t("table.type")} />
+              <Th k="commune" label={t("table.commune")} />
+              <Th k="epci" label={t("table.epci")} />
+              <Th k="nature" label={t("table.nature")} />
+              <Th k="surface" label={t("table.surface")} />
+              <Th k="pmr" label={t("table.pmr")} />
+              <Th k="prop" label={t("table.owner")} />
             </tr>
           </thead>
           <tbody>
@@ -173,7 +175,7 @@ export function EquipmentTable({ data }: EquipmentTableProps) {
                         : "bg-muted text-muted-foreground"
                     }`}
                   >
-                    {r.pmr ? "Oui" : "Non"}
+                    {r.pmr ? t("table.pmrYes") : t("table.pmrNo")}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-muted-foreground text-xs">
@@ -187,7 +189,7 @@ export function EquipmentTable({ data }: EquipmentTableProps) {
                   colSpan={8}
                   className="px-4 py-12 text-center text-muted-foreground"
                 >
-                  Aucun équipement ne correspond aux filtres.
+                  {t("table.empty")}
                 </td>
               </tr>
             )}
@@ -197,7 +199,7 @@ export function EquipmentTable({ data }: EquipmentTableProps) {
       {pages > 1 && (
         <div className="flex items-center justify-between px-5 py-3 border-t border-border bg-muted/20">
           <span className="text-xs text-muted-foreground">
-            Page {currentPage + 1} / {pages}
+            {t("table.page", undefined, { current: currentPage + 1, total: pages })}
           </span>
           <div className="flex gap-2">
             <button
@@ -206,7 +208,7 @@ export function EquipmentTable({ data }: EquipmentTableProps) {
               disabled={currentPage === 0}
               className="px-3 py-1.5 text-xs rounded-lg border border-border bg-background hover:bg-muted disabled:opacity-40"
             >
-              Précédent
+              {t("table.prev")}
             </button>
             <button
               type="button"
@@ -214,7 +216,7 @@ export function EquipmentTable({ data }: EquipmentTableProps) {
               disabled={currentPage >= pages - 1}
               className="px-3 py-1.5 text-xs rounded-lg border border-border bg-background hover:bg-muted disabled:opacity-40"
             >
-              Suivant
+              {t("table.next")}
             </button>
           </div>
         </div>

@@ -1,8 +1,10 @@
 import { useEffect, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Filter, RotateCcw } from "lucide-react";
+import { useT } from "@/hooks/useT";
 import type { Equipment, FilterValues } from "../schema";
 import { EMPTY_FILTERS } from "../schema";
+import { PMR_FILTER_VALUES } from "../constants/queryKeys";
 import {
   getCommune,
   getEpci,
@@ -18,9 +20,11 @@ interface SelectFieldProps {
   value: string;
   onChange: (v: string) => void;
   options: string[];
+  allLabel?: string;
+  optionLabels?: Record<string, string>;
 }
 
-function SelectField({ label, value, onChange, options }: SelectFieldProps) {
+function SelectField({ label, value, onChange, options, allLabel = "Tous", optionLabels }: SelectFieldProps) {
   return (
     <label className="flex flex-col gap-1.5">
       <span className="text-xs font-medium text-muted-foreground">{label}</span>
@@ -29,10 +33,10 @@ function SelectField({ label, value, onChange, options }: SelectFieldProps) {
         onChange={(e) => onChange(e.target.value)}
         className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
       >
-        <option value="">Tous</option>
+        <option value="">{allLabel}</option>
         {options.map((o) => (
           <option key={o} value={o}>
-            {o}
+            {optionLabels?.[o] ?? o}
           </option>
         ))}
       </select>
@@ -46,6 +50,7 @@ interface FiltersProps {
 }
 
 export function Filters({ data, onChange }: FiltersProps) {
+  const t = useT("modules/observatoire");
   const { control, watch, reset } = useForm<FilterValues>({
     defaultValues: EMPTY_FILTERS,
   });
@@ -76,14 +81,14 @@ export function Filters({ data, onChange }: FiltersProps) {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Filter className="h-4 w-4 text-primary" />
-          <h3 className="text-sm font-semibold">Filtres</h3>
+          <h3 className="text-sm font-semibold">{t("filters.title")}</h3>
         </div>
         <button
           type="button"
           onClick={() => reset(EMPTY_FILTERS)}
           className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
         >
-          <RotateCcw className="h-3 w-3" /> Réinitialiser
+          <RotateCcw className="h-3 w-3" /> {t("filters.reset")}
         </button>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3">
@@ -92,10 +97,11 @@ export function Filters({ data, onChange }: FiltersProps) {
           control={control}
           render={({ field }) => (
             <SelectField
-              label="Commune"
+              label={t("filters.commune")}
               value={field.value}
               onChange={field.onChange}
               options={opts.commune}
+              allLabel={t("filters.all")}
             />
           )}
         />
@@ -104,10 +110,11 @@ export function Filters({ data, onChange }: FiltersProps) {
           control={control}
           render={({ field }) => (
             <SelectField
-              label="Type"
+              label={t("filters.type")}
               value={field.value}
               onChange={field.onChange}
               options={opts.type}
+              allLabel={t("filters.all")}
             />
           )}
         />
@@ -116,10 +123,11 @@ export function Filters({ data, onChange }: FiltersProps) {
           control={control}
           render={({ field }) => (
             <SelectField
-              label="EPCI"
+              label={t("filters.epci")}
               value={field.value}
               onChange={field.onChange}
               options={opts.epci}
+              allLabel={t("filters.all")}
             />
           )}
         />
@@ -128,10 +136,11 @@ export function Filters({ data, onChange }: FiltersProps) {
           control={control}
           render={({ field }) => (
             <SelectField
-              label="Nature"
+              label={t("filters.nature")}
               value={field.value}
               onChange={field.onChange}
               options={opts.nature}
+              allLabel={t("filters.all")}
             />
           )}
         />
@@ -140,10 +149,15 @@ export function Filters({ data, onChange }: FiltersProps) {
           control={control}
           render={({ field }) => (
             <SelectField
-              label="PMR"
+              label={t("filters.pmr")}
               value={field.value}
               onChange={field.onChange}
-              options={["Accessible", "Non accessible"]}
+              options={[PMR_FILTER_VALUES.ACCESSIBLE, PMR_FILTER_VALUES.NOT_ACCESSIBLE]}
+              optionLabels={{
+                [PMR_FILTER_VALUES.ACCESSIBLE]: t("filters.pmrAccessible"),
+                [PMR_FILTER_VALUES.NOT_ACCESSIBLE]: t("filters.pmrNotAccessible"),
+              }}
+              allLabel={t("filters.all")}
             />
           )}
         />
@@ -152,10 +166,11 @@ export function Filters({ data, onChange }: FiltersProps) {
           control={control}
           render={({ field }) => (
             <SelectField
-              label="Propriétaire"
+              label={t("filters.owner")}
               value={field.value}
               onChange={field.onChange}
               options={opts.prop}
+              allLabel={t("filters.all")}
             />
           )}
         />
@@ -164,10 +179,11 @@ export function Filters({ data, onChange }: FiltersProps) {
           control={control}
           render={({ field }) => (
             <SelectField
-              label="Sport pratiqué"
+              label={t("filters.sport")}
               value={field.value}
               onChange={field.onChange}
               options={opts.aps}
+              allLabel={t("filters.all")}
             />
           )}
         />

@@ -13,6 +13,7 @@ import {
 } from "recharts";
 import type { ReactNode } from "react";
 import type { Equipment } from "../schema";
+import { useT } from "@/hooks/useT";
 import {
   countBy,
   getCommune,
@@ -96,10 +97,11 @@ interface ChartProps {
 }
 
 export function TypeChart({ data }: ChartProps) {
+  const t = useT("modules/observatoire");
   const items = countBy(data, getType).sort((a, b) => b.value - a.value);
   return (
     <ChartCard
-      title="Répartition par type d'équipement"
+      title={t("charts.byType")}
       bodyClassName="h-[420px]"
     >
       <ResponsiveContainer>
@@ -130,9 +132,10 @@ export function TypeChart({ data }: ChartProps) {
 }
 
 export function NatureChart({ data }: ChartProps) {
+  const t = useT("modules/observatoire");
   const items = countBy(data, getNature).sort((a, b) => b.value - a.value);
   return (
-    <ChartCard title="Intérieur / Extérieur">
+    <ChartCard title={t("charts.indoorOutdoor")}>
       <ResponsiveContainer>
         <PieChart>
           <Pie data={items} dataKey="value" nameKey="name" outerRadius={100}>
@@ -149,17 +152,20 @@ export function NatureChart({ data }: ChartProps) {
 }
 
 export function AccessibilityChart({ data }: ChartProps) {
+  const t = useT("modules/observatoire");
   const total = data.length;
   const pmrYes = data.filter(isPmrAccessible).length;
   const pshsYes = data.filter(isPshsAccessible).length;
   const handi = data.filter((d) => isTrue(d.inst_acc_handi_bool)).length;
   const items = [
-    { name: "PMR", oui: pmrYes, non: total - pmrYes },
-    { name: "PSHS", oui: pshsYes, non: total - pshsYes },
-    { name: "Handi.", oui: handi, non: total - handi },
+    { name: t("charts.accessibilityPmr"), [t("charts.accessibilityYes")]: pmrYes, [t("charts.accessibilityNo")]: total - pmrYes },
+    { name: t("charts.accessibilityPshs"), [t("charts.accessibilityYes")]: pshsYes, [t("charts.accessibilityNo")]: total - pshsYes },
+    { name: t("charts.accessibilityHandi"), [t("charts.accessibilityYes")]: handi, [t("charts.accessibilityNo")]: total - handi },
   ];
+  const yesKey = t("charts.accessibilityYes");
+  const noKey = t("charts.accessibilityNo");
   return (
-    <ChartCard title="Accessibilité (oui / non)">
+    <ChartCard title={t("charts.accessibility")}>
       <ResponsiveContainer>
         <BarChart data={items}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -170,9 +176,9 @@ export function AccessibilityChart({ data }: ChartProps) {
           <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
           <Tooltip contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipLabelStyle} cursor={{ fill: "var(--muted)" }} />
           <Legend wrapperStyle={{ fontSize: 12 }} />
-          <Bar dataKey="oui" stackId="a" fill="#22c55e" />
+          <Bar dataKey={yesKey} stackId="a" fill="#22c55e" />
           <Bar
-            dataKey="non"
+            dataKey={noKey}
             stackId="a"
             fill="#ef4444"
             radius={[6, 6, 0, 0]}
@@ -184,9 +190,10 @@ export function AccessibilityChart({ data }: ChartProps) {
 }
 
 export function CommuneChart({ data }: ChartProps) {
+  const t = useT("modules/observatoire");
   const items = countBy(data, getCommune).sort((a, b) => b.value - a.value);
   return (
-    <ChartCard title="Équipements par commune" bodyClassName="h-[420px]">
+    <ChartCard title={t("charts.byCommune")} bodyClassName="h-[420px]">
       <ResponsiveContainer>
         <BarChart data={items} margin={{ left: -10, bottom: 80 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -208,6 +215,7 @@ export function CommuneChart({ data }: ChartProps) {
 }
 
 export function ApsChart({ data }: ChartProps) {
+  const t = useT("modules/observatoire");
   const counts: Record<string, number> = {};
   for (const d of data) {
     for (const a of normalizeAps(d.aps_name)) {
@@ -220,7 +228,7 @@ export function ApsChart({ data }: ChartProps) {
     .slice(0, 10);
   return (
     <ChartCard
-      title="Top 10 activités sportives (APS)"
+      title={t("charts.topAps")}
       bodyClassName="h-[440px]"
     >
       <ResponsiveContainer>
@@ -246,9 +254,10 @@ export function ApsChart({ data }: ChartProps) {
 }
 
 export function EpciChart({ data }: ChartProps) {
+  const t = useT("modules/observatoire");
   const items = countBy(data, getEpci).sort((a, b) => b.value - a.value);
   return (
-    <ChartCard title="Répartition par EPCI">
+    <ChartCard title={t("charts.byEpci")}>
       <ResponsiveContainer>
         <BarChart data={items}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />

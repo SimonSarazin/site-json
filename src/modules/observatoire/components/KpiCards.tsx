@@ -8,6 +8,7 @@ import {
   Trophy,
 } from "lucide-react";
 import type { Equipment } from "../schema";
+import { useT } from "@/hooks/useT";
 import {
   getCommune,
   getNature,
@@ -59,6 +60,7 @@ interface KpiCardsProps {
 }
 
 export function KpiCards({ data }: KpiCardsProps) {
+  const t = useT("modules/observatoire");
   const total = data.length;
   const communes = new Set(
     data.map((d) => getCommune(d)).filter((v): v is string => !!v),
@@ -81,34 +83,34 @@ export function KpiCards({ data }: KpiCardsProps) {
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-      <KpiCard icon={Activity} label="Équipements" value={String(total)} />
+      <KpiCard icon={Activity} label={t("kpi.equipments")} value={String(total)} />
       <KpiCard
         icon={MapPin}
-        label="Communes"
+        label={t("kpi.communes")}
         value={String(communes)}
         accent="bg-accent/15 text-accent-foreground"
       />
       <KpiCard
         icon={Accessibility}
-        label="Accessible PMR"
+        label={t("kpi.pmr")}
         value={pct(pmr)}
         accent="bg-chart-2/15 text-chart-2"
       />
       <KpiCard
         icon={Eye}
-        label="Accessible PSHS"
+        label={t("kpi.pshs")}
         value={pct(pshs)}
         accent="bg-chart-4/15 text-chart-4"
       />
       <KpiCard
         icon={Home}
-        label="Intérieur"
+        label={t("kpi.indoor")}
         value={`${interieur} / ${total - interieur}`}
         accent="bg-chart-3/15 text-chart-3"
       />
       <KpiCard
         icon={Trophy}
-        label="Top type"
+        label={t("kpi.topType")}
         value={topType}
         accent="bg-chart-5/15 text-chart-5"
       />
