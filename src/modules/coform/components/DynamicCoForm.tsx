@@ -148,10 +148,14 @@ export function DynamicCoForm({
   const subFormId = subFormsFields[0]?.subFormId ?? "default";
 
   // Persistance du brouillon en localStorage. Désactivée si conditions non réunies.
+  // `answerId` scope la clé par réponse (sinon "new") : sans lui, l'édition de
+  // deux réponses du même formulaire partagerait le même slot de brouillon
+  // (restauration croisée) et écraserait le brouillon de création.
   const { restorableDraft, staleDraftInfo, saveDraft, discardDraft, purgeDraft, acknowledgeStale } =
     useCoFormDraft({
       formId,
       userId,
+      answerId,
       baseUpdatedAt,
       disabled: !enableDraft || autoSubmitOnBlur,
     });
