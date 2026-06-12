@@ -1485,6 +1485,13 @@
                     "detailedMode": "service-pricing",
                     "overlayStats": "service-pricing"
                   }
+                },
+                "map": {
+                  "marker": {
+                    "useItemImage": true,
+                    "style": "pin",
+                    "color": "primary"
+                  }
                 }
               }
             }
@@ -1816,6 +1823,13 @@
                 "type": "event",
                 "variant": "event",
                 "detailsMode": "drawer"
+              }
+            },
+            "map": {
+              "marker": {
+                "useItemImage": true,
+                "style": "pin",
+                "color": "primary"
               }
             }
           }
@@ -3330,14 +3344,19 @@
       }
     }
   ],
-  "commandPalette": { 
-    "enabled": true, 
+  "commandPalette": {
+    "enabled": true,
     "triggerVariant": "compact",
     "entitySearch": {
       "enabled": true,
-      "searchType": ["organizations", "projects", "events", "citoyens"],
+      "searchType": [
+        "organizations",
+        "projects",
+        "events",
+        "citoyens"
+      ],
       "limit": 8,
-      "params": { 
+      "params": {
         "sourceKey": [
           "franceTierslieux",
           "tierslieuxbelgique",
