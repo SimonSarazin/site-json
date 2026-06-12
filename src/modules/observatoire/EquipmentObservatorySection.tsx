@@ -11,6 +11,7 @@ import {
   TypeChart,
 } from "./components/Charts";
 import { EquipmentTable } from "./components/EquipmentTable";
+import { Spinner } from "@/components/ui/spinner";
 import { useObservatoryEquipmentsQuery } from "./hooks/useObservatoryEquipmentsQuery";
 import { useObservatoryFilters } from "./hooks/useObservatoryFilters";
 
@@ -82,8 +83,8 @@ export default function EquipmentObservatorySection({
         <EquipmentTable data={filtered} />
 
         {stillLoading && (
-          <p className="text-center text-xs text-muted-foreground">
-            {t("loading")}
+          <p className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+            <Spinner className="size-3" /> {t("loading")}
           </p>
         )}
       </div>

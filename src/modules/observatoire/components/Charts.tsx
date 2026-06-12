@@ -1,9 +1,8 @@
+import type { ReactNode } from "react";
 import {
   PieChart,
   Pie,
   Cell,
-  ResponsiveContainer,
-  Tooltip,
   Legend,
   BarChart,
   Bar,
@@ -11,9 +10,14 @@ import {
   YAxis,
   CartesianGrid,
 } from "recharts";
-import type { ReactNode } from "react";
-import type { Equipment } from "../schema";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 import { useT } from "@/hooks/useT";
+import type { Equipment } from "../schema";
 import {
   countBy,
   getCommune,
@@ -26,53 +30,30 @@ import {
   normalizeAps,
 } from "../utils";
 
-// Palette catégorielle distincte (qualitative) — assez contrastée sur fond sombre.
+// Palette catégorielle issue du THÈME du site (config.theme → --chart-1..5),
+// cyclée pour les séries longues — jamais d'hex en dur : les couleurs doivent
+// suivre le thème light/dark de chaque site (cf. doc/22 theming).
 const CATEGORICAL_COLORS = [
-  "#22d3ee", // cyan
-  "#f97316", // orange
-  "#a78bfa", // violet
-  "#facc15", // jaune
-  "#34d399", // vert menthe
-  "#f472b6", // rose
-  "#60a5fa", // bleu
-  "#fb7185", // rouge corail
-  "#4ade80", // vert
-  "#fbbf24", // ambre
-  "#c084fc", // mauve
-  "#2dd4bf", // teal
-  "#fda4af", // rose pâle
-  "#818cf8", // indigo
-  "#84cc16", // lime
-  "#f59e0b", // amber foncé
-  "#ec4899", // pink
-  "#10b981", // emerald
-  "#0ea5e9", // sky
-  "#eab308", // gold
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+  "var(--chart-5)",
 ] as const;
 
-// Palette spécifique nature (Intérieur / Extérieur / Site naturel...)
+// Palette spécifique nature (valeurs du référentiel RES) — mappée sur les
+// tokens de thème ; « Donnée non renseignée » reste neutre.
 const NATURE_COLORS: Record<string, string> = {
-  "Découvert": "#f97316",
-  "Intérieur": "#a78bfa",
-  "Site naturel": "#22c55e",
-  "Site naturel aménagé": "#0ea5e9",
-  "Donnée non renseignée": "#64748b",
+  "Découvert": "var(--chart-2)",
+  "Intérieur": "var(--chart-1)",
+  "Site naturel": "var(--chart-3)",
+  "Site naturel aménagé": "var(--chart-4)",
+  "Donnée non renseignée": "var(--muted-foreground)",
 };
 
 function natureColor(name: string, fallbackIndex: number): string {
   return NATURE_COLORS[name] ?? CATEGORICAL_COLORS[fallbackIndex % CATEGORICAL_COLORS.length];
 }
-
-const tooltipStyle = {
-  backgroundColor: "#1e293b",
-  border: "1px solid #334155",
-  borderRadius: 12,
-  fontSize: 12,
-  color: "#f8fafc",
-} as const;
-
-const tooltipItemStyle = { color: "#f8fafc" } as const;
-const tooltipLabelStyle = { color: "#f8fafc" } as const;
 
 interface ChartCardProps {
   title: string;
@@ -81,16 +62,20 @@ interface ChartCardProps {
   bodyClassName?: string;
 }
 
+/** Carte de graphe — shadcn Card + hauteur du corps pilotée par le graphe. */
 function ChartCard({ title, children, className, bodyClassName }: ChartCardProps) {
   return (
-    <div
-      className={`rounded-2xl bg-card p-5 shadow-sm border border-border/50 ${className ?? ""}`}
-    >
-      <h3 className="text-sm font-semibold text-foreground mb-4">{title}</h3>
-      <div className={bodyClassName ?? "h-72"}>{children}</div>
-    </div>
+    <Card className={`gap-0 rounded-2xl border-border/50 py-5 ${className ?? ""}`}>
+      <CardContent className="px-5">
+        <h3 className="text-sm font-semibold text-foreground mb-4">{title}</h3>
+        <div className={bodyClassName ?? "h-72"}>{children}</div>
+      </CardContent>
+    </Card>
   );
 }
+
+/** ChartContainer plein-cadre (le parent fixe la hauteur) — tooltip/axes thémés. */
+const CHART_CONTAINER_CLASS = "h-full w-full aspect-auto";
 
 interface ChartProps {
   data: Equipment[];
@@ -104,7 +89,7 @@ export function TypeChart({ data }: ChartProps) {
       title={t("charts.byType")}
       bodyClassName="h-[420px]"
     >
-      <ResponsiveContainer>
+      <ChartContainer config={{}} className={CHART_CONTAINER_CLASS}>
         <PieChart>
           <Pie
             data={items}
@@ -118,7 +103,7 @@ export function TypeChart({ data }: ChartProps) {
               <Cell key={item.name} fill={CATEGORICAL_COLORS[i % CATEGORICAL_COLORS.length]} />
             ))}
           </Pie>
-          <Tooltip contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipLabelStyle} />
+          <ChartTooltip content={<ChartTooltipContent hideLabel />} />
           <Legend
             layout="vertical"
             align="right"
@@ -126,7 +111,7 @@ export function TypeChart({ data }: ChartProps) {
             wrapperStyle={{ fontSize: 11, maxWidth: "45%", maxHeight: "100%", overflowY: "auto" }}
           />
         </PieChart>
-      </ResponsiveContainer>
+      </ChartContainer>
     </ChartCard>
   );
 }
@@ -136,17 +121,17 @@ export function NatureChart({ data }: ChartProps) {
   const items = countBy(data, getNature).sort((a, b) => b.value - a.value);
   return (
     <ChartCard title={t("charts.indoorOutdoor")}>
-      <ResponsiveContainer>
+      <ChartContainer config={{}} className={CHART_CONTAINER_CLASS}>
         <PieChart>
           <Pie data={items} dataKey="value" nameKey="name" outerRadius={100}>
             {items.map((it, i) => (
-              <Cell key={i} fill={natureColor(it.name, i)} />
+              <Cell key={it.name} fill={natureColor(it.name, i)} />
             ))}
           </Pie>
-          <Tooltip contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipLabelStyle} />
+          <ChartTooltip content={<ChartTooltipContent hideLabel />} />
           <Legend wrapperStyle={{ fontSize: 12 }} />
         </PieChart>
-      </ResponsiveContainer>
+      </ChartContainer>
     </ChartCard>
   );
 }
@@ -166,7 +151,7 @@ export function AccessibilityChart({ data }: ChartProps) {
   const noKey = t("charts.accessibilityNo");
   return (
     <ChartCard title={t("charts.accessibility")}>
-      <ResponsiveContainer>
+      <ChartContainer config={{}} className={CHART_CONTAINER_CLASS}>
         <BarChart data={items}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
           <XAxis
@@ -174,17 +159,17 @@ export function AccessibilityChart({ data }: ChartProps) {
             tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
           />
           <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
-          <Tooltip contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipLabelStyle} cursor={{ fill: "var(--muted)" }} />
+          <ChartTooltip content={<ChartTooltipContent />} cursor={{ fill: "var(--muted)" }} />
           <Legend wrapperStyle={{ fontSize: 12 }} />
-          <Bar dataKey={yesKey} stackId="a" fill="#22c55e" />
+          <Bar dataKey={yesKey} stackId="a" fill="var(--chart-2)" />
           <Bar
             dataKey={noKey}
             stackId="a"
-            fill="#ef4444"
+            fill="var(--destructive)"
             radius={[6, 6, 0, 0]}
           />
         </BarChart>
-      </ResponsiveContainer>
+      </ChartContainer>
     </ChartCard>
   );
 }
@@ -194,7 +179,7 @@ export function CommuneChart({ data }: ChartProps) {
   const items = countBy(data, getCommune).sort((a, b) => b.value - a.value);
   return (
     <ChartCard title={t("charts.byCommune")} bodyClassName="h-[420px]">
-      <ResponsiveContainer>
+      <ChartContainer config={{}} className={CHART_CONTAINER_CLASS}>
         <BarChart data={items} margin={{ left: -10, bottom: 80 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
           <XAxis
@@ -206,10 +191,10 @@ export function CommuneChart({ data }: ChartProps) {
             tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
           />
           <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
-          <Tooltip contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipLabelStyle} cursor={{ fill: "var(--muted)" }} />
-          <Bar dataKey="value" fill="#22d3ee" radius={[6, 6, 0, 0]} />
+          <ChartTooltip content={<ChartTooltipContent />} cursor={{ fill: "var(--muted)" }} />
+          <Bar dataKey="value" fill="var(--chart-1)" radius={[6, 6, 0, 0]} />
         </BarChart>
-      </ResponsiveContainer>
+      </ChartContainer>
     </ChartCard>
   );
 }
@@ -231,7 +216,7 @@ export function ApsChart({ data }: ChartProps) {
       title={t("charts.topAps")}
       bodyClassName="h-[440px]"
     >
-      <ResponsiveContainer>
+      <ChartContainer config={{}} className={CHART_CONTAINER_CLASS}>
         <BarChart data={items} layout="vertical" margin={{ left: 30, top: 10, bottom: 10 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
           <XAxis
@@ -245,10 +230,10 @@ export function ApsChart({ data }: ChartProps) {
             width={160}
             interval={0}
           />
-          <Tooltip contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipLabelStyle} cursor={{ fill: "var(--muted)" }} />
-          <Bar dataKey="value" fill="#22d3ee" radius={[0, 6, 6, 0]} />
+          <ChartTooltip content={<ChartTooltipContent />} cursor={{ fill: "var(--muted)" }} />
+          <Bar dataKey="value" fill="var(--chart-1)" radius={[0, 6, 6, 0]} />
         </BarChart>
-      </ResponsiveContainer>
+      </ChartContainer>
     </ChartCard>
   );
 }
@@ -258,7 +243,7 @@ export function EpciChart({ data }: ChartProps) {
   const items = countBy(data, getEpci).sort((a, b) => b.value - a.value);
   return (
     <ChartCard title={t("charts.byEpci")}>
-      <ResponsiveContainer>
+      <ChartContainer config={{}} className={CHART_CONTAINER_CLASS}>
         <BarChart data={items}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
           <XAxis
@@ -266,10 +251,10 @@ export function EpciChart({ data }: ChartProps) {
             tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
           />
           <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
-          <Tooltip contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipLabelStyle} cursor={{ fill: "var(--muted)" }} />
+          <ChartTooltip content={<ChartTooltipContent />} cursor={{ fill: "var(--muted)" }} />
           <Bar dataKey="value" fill="var(--chart-3)" radius={[6, 6, 0, 0]} />
         </BarChart>
-      </ResponsiveContainer>
+      </ChartContainer>
     </ChartCard>
   );
 }

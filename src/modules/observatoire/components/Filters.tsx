@@ -1,6 +1,16 @@
 import { useEffect, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Filter, RotateCcw } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useT } from "@/hooks/useT";
 import type { Equipment, FilterValues } from "../schema";
 import { EMPTY_FILTERS } from "../schema";
@@ -20,27 +30,36 @@ interface SelectFieldProps {
   value: string;
   onChange: (v: string) => void;
   options: string[];
-  allLabel?: string;
+  /** Libellé « toutes valeurs » — toujours fourni par l'appelant (i18n). */
+  allLabel: string;
   optionLabels?: Record<string, string>;
 }
 
-function SelectField({ label, value, onChange, options, allLabel = "Tous", optionLabels }: SelectFieldProps) {
+/** Radix Select interdit `value=""` sur un item — sentinelle pour « Tous »
+ *  (la valeur de filtre reste `""` côté formulaire/logique). */
+const ALL_SENTINEL = "__all__";
+
+function SelectField({ label, value, onChange, options, allLabel, optionLabels }: SelectFieldProps) {
   return (
-    <label className="flex flex-col gap-1.5">
-      <span className="text-xs font-medium text-muted-foreground">{label}</span>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+    <div className="flex flex-col gap-1.5">
+      <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
+      <Select
+        value={value === "" ? ALL_SENTINEL : value}
+        onValueChange={(v) => onChange(v === ALL_SENTINEL ? "" : v)}
       >
-        <option value="">{allLabel}</option>
-        {options.map((o) => (
-          <option key={o} value={o}>
-            {optionLabels?.[o] ?? o}
-          </option>
-        ))}
-      </select>
-    </label>
+        <SelectTrigger className="w-full" size="sm">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value={ALL_SENTINEL}>{allLabel}</SelectItem>
+          {options.map((o) => (
+            <SelectItem key={o} value={o}>
+              {optionLabels?.[o] ?? o}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 }
 
@@ -77,19 +96,22 @@ export function Filters({ data, onChange }: FiltersProps) {
   );
 
   return (
-    <div className="rounded-2xl bg-card p-5 shadow-sm border border-border/50">
+    <Card className="gap-0 rounded-2xl border-border/50 py-5">
+      <CardContent className="px-5">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Filter className="h-4 w-4 text-primary" />
           <h3 className="text-sm font-semibold">{t("filters.title")}</h3>
         </div>
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="sm"
           onClick={() => reset(EMPTY_FILTERS)}
-          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          className="h-7 gap-1.5 px-2 text-xs text-muted-foreground hover:text-foreground"
         >
           <RotateCcw className="h-3 w-3" /> {t("filters.reset")}
-        </button>
+        </Button>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3">
         <Controller
@@ -188,6 +210,7 @@ export function Filters({ data, onChange }: FiltersProps) {
           )}
         />
       </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

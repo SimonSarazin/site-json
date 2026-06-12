@@ -7,6 +7,7 @@ import {
   Home,
   Trophy,
 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import type { Equipment } from "../schema";
 import { useT } from "@/hooks/useT";
 import {
@@ -33,25 +34,27 @@ function valueClass(value: string): string {
 
 function KpiCard({ icon: Icon, label, value, accent }: KpiCardProps) {
   return (
-    <div className="rounded-2xl bg-card p-5 shadow-sm border border-border/50 hover:shadow-md transition-shadow min-w-0">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
-            {label}
-          </p>
-          <p className={`mt-2 font-bold text-foreground tabular-nums ${valueClass(value)}`}>
-            {value}
-          </p>
+    <Card className="gap-0 rounded-2xl border-border/50 py-5 hover:shadow-md transition-shadow min-w-0">
+      <CardContent className="px-5">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
+              {label}
+            </p>
+            <p className={`mt-2 font-bold text-foreground tabular-nums ${valueClass(value)}`}>
+              {value}
+            </p>
+          </div>
+          <div
+            className={`rounded-xl p-2.5 ${
+              accent ?? "bg-primary/10 text-primary"
+            }`}
+          >
+            <Icon className="h-5 w-5" />
+          </div>
         </div>
-        <div
-          className={`rounded-xl p-2.5 ${
-            accent ?? "bg-primary/10 text-primary"
-          }`}
-        >
-          <Icon className="h-5 w-5" />
-        </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 

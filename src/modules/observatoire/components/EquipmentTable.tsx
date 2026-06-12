@@ -1,5 +1,16 @@
 import { useMemo, useState } from "react";
 import { ChevronDown, ChevronUp, Table as TableIcon } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import type { Equipment } from "../schema";
 import { useT } from "@/hooks/useT";
 import {
@@ -76,7 +87,7 @@ function Th({
   onToggle: (k: SortKey) => void;
 }) {
   return (
-    <th className="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider text-muted-foreground">
+    <TableHead className="px-4 py-3 font-semibold text-xs uppercase tracking-wider text-muted-foreground">
       <button
         type="button"
         onClick={() => onToggle(k)}
@@ -90,7 +101,7 @@ function Th({
             <ChevronDown className="h-3 w-3" />
           ))}
       </button>
-    </th>
+    </TableHead>
   );
 }
 
@@ -125,7 +136,8 @@ export function EquipmentTable({ data }: EquipmentTableProps) {
     );
 
   return (
-    <div className="rounded-2xl bg-card shadow-sm border border-border/50 overflow-hidden">
+    <Card className="gap-0 rounded-2xl border-border/50 py-0 overflow-hidden">
+      <CardContent className="px-0">
       <div className="flex items-center justify-between p-5 pb-4">
         <div className="flex items-center gap-2">
           <TableIcon className="h-4 w-4 text-primary" />
@@ -135,10 +147,9 @@ export function EquipmentTable({ data }: EquipmentTableProps) {
           {t("table.equipmentCount", undefined, { count: data.length })}
         </span>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/40 border-y border-border">
-            <tr>
+      <Table className="text-sm">
+          <TableHeader className="bg-muted/40 border-y border-border">
+            <TableRow>
               <Th k="name" label={t("table.installation")} sort={sort} onToggle={toggle} />
               <Th k="type" label={t("table.type")} sort={sort} onToggle={toggle} />
               <Th k="commune" label={t("table.commune")} sort={sort} onToggle={toggle} />
@@ -147,95 +158,97 @@ export function EquipmentTable({ data }: EquipmentTableProps) {
               <Th k="surface" label={t("table.surface")} sort={sort} onToggle={toggle} />
               <Th k="pmr" label={t("table.pmr")} sort={sort} onToggle={toggle} />
               <Th k="prop" label={t("table.owner")} sort={sort} onToggle={toggle} />
-            </tr>
-          </thead>
-          <tbody>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {slice.map((r, i) => (
-              <tr
+              <TableRow
                 key={r.id}
-                className={`border-b border-border/40 hover:bg-muted/30 transition-colors ${
-                  i % 2 ? "bg-muted/10" : ""
-                }`}
+                className={`border-border/40 ${i % 2 ? "bg-muted/10" : ""}`}
               >
-                <td className="px-4 py-3">
+                <TableCell className="px-4 py-3">
                   <div className="font-medium text-foreground">{r.name}</div>
                   {r.numero && (
                     <div className="text-xs text-muted-foreground">
                       {r.numero}
                     </div>
                   )}
-                </td>
-                <td className="px-4 py-3 text-muted-foreground">{r.type}</td>
-                <td className="px-4 py-3 text-foreground">{r.commune}</td>
-                <td className="px-4 py-3 text-muted-foreground">{r.epci}</td>
-                <td className="px-4 py-3">
-                  <span
-                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                </TableCell>
+                <TableCell className="px-4 py-3 text-muted-foreground">{r.type}</TableCell>
+                <TableCell className="px-4 py-3 text-foreground">{r.commune}</TableCell>
+                <TableCell className="px-4 py-3 text-muted-foreground">{r.epci}</TableCell>
+                <TableCell className="px-4 py-3">
+                  <Badge
+                    className={`rounded-full font-medium border-transparent ${
                       r.nature === "Intérieur"
                         ? "bg-chart-1/15 text-chart-1"
                         : "bg-chart-2/15 text-chart-2"
                     }`}
                   >
                     {r.nature}
-                  </span>
-                </td>
-                <td className="px-4 py-3 tabular-nums text-muted-foreground">
+                  </Badge>
+                </TableCell>
+                <TableCell className="px-4 py-3 tabular-nums text-muted-foreground">
                   {r.surface !== undefined ? `${r.surface} m²` : PLACEHOLDER}
-                </td>
-                <td className="px-4 py-3">
-                  <span
-                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs ${
+                </TableCell>
+                <TableCell className="px-4 py-3">
+                  <Badge
+                    className={`rounded-full border-transparent ${
                       r.pmr
                         ? "bg-chart-2/15 text-chart-2"
                         : "bg-muted text-muted-foreground"
                     }`}
                   >
                     {r.pmr ? t("table.pmrYes") : t("table.pmrNo")}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-muted-foreground text-xs">
+                  </Badge>
+                </TableCell>
+                <TableCell className="px-4 py-3 text-muted-foreground text-xs">
                   {r.prop}
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
             {slice.length === 0 && (
-              <tr>
-                <td
+              <TableRow>
+                <TableCell
                   colSpan={8}
                   className="px-4 py-12 text-center text-muted-foreground"
                 >
                   {t("table.empty")}
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             )}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
       {pages > 1 && (
         <div className="flex items-center justify-between px-5 py-3 border-t border-border bg-muted/20">
           <span className="text-xs text-muted-foreground">
             {t("table.page", undefined, { current: currentPage + 1, total: pages })}
           </span>
           <div className="flex gap-2">
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => setPage((p) => Math.max(0, p - 1))}
               disabled={currentPage === 0}
-              className="px-3 py-1.5 text-xs rounded-lg border border-border bg-background hover:bg-muted disabled:opacity-40"
+              className="h-7 px-3 text-xs"
             >
               {t("table.prev")}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => setPage((p) => Math.min(pages - 1, p + 1))}
               disabled={currentPage >= pages - 1}
-              className="px-3 py-1.5 text-xs rounded-lg border border-border bg-background hover:bg-muted disabled:opacity-40"
+              className="h-7 px-3 text-xs"
             >
               {t("table.next")}
-            </button>
+            </Button>
           </div>
         </div>
       )}
-    </div>
+      </CardContent>
+    </Card>
   );
 }
