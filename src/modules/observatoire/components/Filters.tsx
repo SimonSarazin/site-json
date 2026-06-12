@@ -368,6 +368,11 @@ export function Filters({ data, dimensions, filterDefs, values, onChange, search
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-primary" />
             <h3 className="text-sm font-semibold">{t("filters.title")}</h3>
+            {/* Indicateur de filtres ACTIFS — même signal que le trigger
+                mobile (badge compteur), visible aussi en desktop. */}
+            {activeCount > 0 && (
+              <Badge className="hidden rounded-full px-2 lg:inline-flex">{activeCount}</Badge>
+            )}
             {/* Filtrer pendant le chargement est PERMIS (la page 1 SSR est là
                 dès le 1er paint) — mais l'état partiel doit être lisible. */}
             {partial && (

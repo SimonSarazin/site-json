@@ -1988,8 +1988,7 @@
             "filters": [
               {
                 "dimension": "commune",
-                "multiple": true,
-                "searchable": true
+                "multiple": true
               },
               {
                 "dimension": "type",
@@ -1997,15 +1996,20 @@
               },
               {
                 "dimension": "epci",
-                "searchable": true
+                "multiple": true
               },
-              "nature",
+              {
+                "dimension": "nature",
+                "multiple": true
+              },
               "pmr",
-              "prop",
+              {
+                "dimension": "prop",
+                "multiple": true
+              },
               {
                 "dimension": "aps",
-                "multiple": true,
-                "searchable": true
+                "multiple": true
               }
             ],
             "search": {
