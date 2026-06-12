@@ -168,7 +168,12 @@ export default function DataObservatorySection({
                 )}
 
                 {charts.length > 0 && (
-                  <ObservatoryCharts charts={charts} data={filtered} dimensions={dimensions} />
+                  <ObservatoryCharts
+                    charts={charts}
+                    data={filtered}
+                    dimensions={dimensions}
+                    animate={!stillLoading}
+                  />
                 )}
 
                 {props.table && (

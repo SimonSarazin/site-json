@@ -49,11 +49,14 @@ interface RendererProps {
   data: ObservatoryItem[];
   dims: DimensionsConfig;
   t: T;
+  /** Animations recharts — coupées pendant le chargement progressif (sinon
+   *  les 5 graphes re-animent à CHAQUE page de 500 qui arrive). */
+  animate: boolean;
 }
 
 /* ── Formes de rendu ─────────────────────────────────────────────────────── */
 
-function DonutChart({ def, data, dims, t }: RendererProps) {
+function DonutChart({ def, data, dims, t, animate }: RendererProps) {
   const items = itemsFor(def, data, dims);
   return (
     <ChartCard title={chartTitle(def, dims, t)} bodyClassName="h-[420px]">
@@ -69,6 +72,7 @@ function DonutChart({ def, data, dims, t }: RendererProps) {
             outerRadius="75%"
             innerRadius="45%"
             paddingAngle={1}
+            isAnimationActive={animate}
           >
             {items.map((item, i) => (
               <Cell key={item.name} fill={colorFor(def, item.name, i)} />
@@ -87,13 +91,13 @@ function DonutChart({ def, data, dims, t }: RendererProps) {
   );
 }
 
-function SimplePieChart({ def, data, dims, t }: RendererProps) {
+function SimplePieChart({ def, data, dims, t, animate }: RendererProps) {
   const items = itemsFor(def, data, dims);
   return (
     <ChartCard title={chartTitle(def, dims, t)}>
       <ChartContainer config={{}} className={CHART_CONTAINER_CLASS}>
         <PieChart>
-          <Pie data={items} dataKey="value" nameKey="name" outerRadius="70%">
+          <Pie data={items} dataKey="value" nameKey="name" outerRadius="70%" isAnimationActive={animate}>
             {items.map((it, i) => (
               <Cell key={it.name} fill={colorFor(def, it.name, i)} />
             ))}
@@ -106,7 +110,7 @@ function SimplePieChart({ def, data, dims, t }: RendererProps) {
   );
 }
 
-function BarsChart({ def, data, dims, t }: RendererProps) {
+function BarsChart({ def, data, dims, t, animate }: RendererProps) {
   const items = itemsFor(def, data, dims);
   return (
     <ChartCard title={chartTitle(def, dims, t)} bodyClassName="h-[420px]">
@@ -123,14 +127,14 @@ function BarsChart({ def, data, dims, t }: RendererProps) {
           />
           <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
           <ChartTooltip content={<ChartTooltipContent />} cursor={{ fill: "var(--muted)" }} />
-          <Bar dataKey="value" fill="var(--chart-1)" radius={[6, 6, 0, 0]} />
+          <Bar dataKey="value" fill="var(--chart-1)" radius={[6, 6, 0, 0]} isAnimationActive={animate} />
         </BarChart>
       </ChartContainer>
     </ChartCard>
   );
 }
 
-function BarsHorizontalChart({ def, data, dims, t }: RendererProps) {
+function BarsHorizontalChart({ def, data, dims, t, animate }: RendererProps) {
   const items = itemsFor(def, data, dims).slice(0, def.top ?? 10);
   return (
     <ChartCard title={chartTitle(def, dims, t)} bodyClassName="h-[440px]">
@@ -146,7 +150,7 @@ function BarsHorizontalChart({ def, data, dims, t }: RendererProps) {
             interval={0}
           />
           <ChartTooltip content={<ChartTooltipContent />} cursor={{ fill: "var(--muted)" }} />
-          <Bar dataKey="value" fill="var(--chart-1)" radius={[0, 6, 6, 0]} />
+          <Bar dataKey="value" fill="var(--chart-1)" radius={[0, 6, 6, 0]} isAnimationActive={animate} />
         </BarChart>
       </ChartContainer>
     </ChartCard>
@@ -154,7 +158,7 @@ function BarsHorizontalChart({ def, data, dims, t }: RendererProps) {
 }
 
 /** Oui/non empilés pour N dimensions anyTrue (ex. PMR / PSHS / Handi). */
-function BooleanGroupsChart({ def, data, dims, t }: RendererProps) {
+function BooleanGroupsChart({ def, data, dims, t, animate }: RendererProps) {
   const total = data.length;
   const yesKey = t("charts.yes");
   const noKey = t("charts.no");
@@ -177,8 +181,8 @@ function BooleanGroupsChart({ def, data, dims, t }: RendererProps) {
           <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
           <ChartTooltip content={<ChartTooltipContent />} cursor={{ fill: "var(--muted)" }} />
           <Legend wrapperStyle={{ fontSize: 12 }} />
-          <Bar dataKey={yesKey} stackId="a" fill="var(--chart-2)" />
-          <Bar dataKey={noKey} stackId="a" fill="var(--destructive)" radius={[6, 6, 0, 0]} />
+          <Bar dataKey={yesKey} stackId="a" fill="var(--chart-2)" isAnimationActive={animate} />
+          <Bar dataKey={noKey} stackId="a" fill="var(--destructive)" radius={[6, 6, 0, 0]} isAnimationActive={animate} />
         </BarChart>
       </ChartContainer>
     </ChartCard>
@@ -197,13 +201,14 @@ interface ObservatoryChartsProps {
   charts: readonly ChartDef[];
   data: ObservatoryItem[];
   dimensions: DimensionsConfig;
+  animate?: boolean;
 }
 
 /**
  * Compose les graphes déclarés : les `layout: "half"` consécutifs sont
  * appairés en 2 colonnes (lg), les `full` occupent leur rangée.
  */
-export function ObservatoryCharts({ charts, data, dimensions }: ObservatoryChartsProps) {
+export function ObservatoryCharts({ charts, data, dimensions, animate = true }: ObservatoryChartsProps) {
   const t = useT("modules/observatoire");
   const rows = chartRows(charts);
 
@@ -218,7 +223,7 @@ export function ObservatoryCharts({ charts, data, dimensions }: ObservatoryChart
             const render = RENDERERS[def.kind];
             return (
               <div key={`${def.kind}-${def.dimension ?? j}`} className="min-w-0">
-                {render({ def, data, dims: dimensions, t })}
+                {render({ def, data, dims: dimensions, t, animate })}
               </div>
             );
           })}

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useDebounce } from "@/hooks/useDebounce";
 import { useForm, Controller } from "react-hook-form";
 import { ChevronDown, Filter, RotateCcw, Search, SlidersHorizontal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -158,6 +159,44 @@ function MultiField({ label, value, onChange, options, allLabel, noResult, singl
         // lignes de badges, min-h laisse grandir.
         className="min-h-8 px-3 py-0 [&>div]:min-h-[30px] [&>div]:items-center"
         inputProps={{ className: "px-0 py-0" }}
+      />
+    </div>
+  );
+}
+
+/**
+ * Input de recherche ISOLÉ : la valeur immédiate (chaque frappe) vit ici —
+ * seule cette boîte re-rend pendant la saisie. La valeur DÉBOUNCÉE (250 ms)
+ * remonte au hook (filtrage + URL). Sans cette isolation, chaque frappe
+ * re-rendait toute la section, 5 charts recharts compris.
+ */
+function SearchInput({ q, setQ, placeholder }: { q: string; setQ: (v: string) => void; placeholder: string }) {
+  const [value, setValue] = useState(q);
+  const debounced = useDebounce(value, 250);
+
+  useEffect(() => {
+    if (debounced !== q) setQ(debounced);
+    // setQ vient du hook parent (stable via useCallback) ; q sert de garde
+    // anti-écho, pas de déclencheur.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debounced]);
+
+  // Resynchronisation externe (reset section, navigation) : si le parent
+  // change q hors saisie, l'input suit.
+  useEffect(() => {
+    setValue((current) => (q !== current && q !== debounced ? q : current));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q]);
+
+  return (
+    <div className="relative mb-3">
+      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      <Input
+        type="search"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder={placeholder}
+        className="h-9 pl-9"
       />
     </div>
   );
@@ -333,18 +372,11 @@ export function Filters({ data, dimensions, filterDefs, values, onChange, search
 
         {/* Recherche texte (optionnelle) — visible sur tous les écrans. */}
         {search && (
-          <div className="relative mb-3">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="search"
-              value={search.q}
-              onChange={(e) => search.setQ(e.target.value)}
-              placeholder={
-                search.placeholder ? t(search.placeholder) : t("filters.search")
-              }
-              className="h-9 pl-9"
-            />
-          </div>
+          <SearchInput
+            q={search.q}
+            setQ={search.setQ}
+            placeholder={search.placeholder ? t(search.placeholder) : t("filters.search")}
+          />
         )}
 
         {fields.length > 0 && (

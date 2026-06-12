@@ -56,6 +56,10 @@ export function useSearchAllResults({
     searchType,
     mapUsed: false,
     baseParams,
+    // Cache LONG : recharger ce dashboard = re-chaîner TOUTES les pages
+    // (séquentiel) — un retour sur la page dans la demi-heure doit être
+    // instantané (pages en cache), pas une re-cascade réseau.
+    cache: { staleTime: 30 * 60 * 1000, gcTime: 60 * 60 * 1000 },
   });
 
   const results = transformedResults ?? [];
