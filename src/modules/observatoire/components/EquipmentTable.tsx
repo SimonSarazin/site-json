@@ -14,6 +14,7 @@ import {
 import type { Equipment } from "../schema";
 import { useT } from "@/hooks/useT";
 import {
+  NATURE_VALUES,
   getCommune,
   getEpci,
   getEquipId,
@@ -24,6 +25,16 @@ import {
   getType,
   isPmrAccessible,
 } from "../utils";
+
+// Teinte du badge par nature RES — même correspondance chart-1..4 que la
+// palette NATURE_COLORS des graphes (cohérence sur les 4 natures, plus
+// seulement Intérieur vs « autre »).
+const NATURE_BADGE_CLASSES: Record<string, string> = {
+  [NATURE_VALUES.INDOOR]: "bg-chart-1/15 text-chart-1",
+  [NATURE_VALUES.OUTDOOR]: "bg-chart-2/15 text-chart-2",
+  [NATURE_VALUES.NATURAL]: "bg-chart-3/15 text-chart-3",
+  [NATURE_VALUES.NATURAL_DEVELOPED]: "bg-chart-4/15 text-chart-4",
+};
 
 interface Row {
   id: string;
@@ -180,9 +191,7 @@ export function EquipmentTable({ data }: EquipmentTableProps) {
                 <TableCell className="px-4 py-3">
                   <Badge
                     className={`rounded-full font-medium border-transparent ${
-                      r.nature === "Intérieur"
-                        ? "bg-chart-1/15 text-chart-1"
-                        : "bg-chart-2/15 text-chart-2"
+                      NATURE_BADGE_CLASSES[r.nature] ?? "bg-muted text-muted-foreground"
                     }`}
                   >
                     {r.nature}

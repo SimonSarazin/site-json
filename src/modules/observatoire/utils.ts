@@ -73,6 +73,23 @@ export function uniqSorted(values: Array<string | undefined>): string[] {
   return Array.from(set).sort((a, b) => a.localeCompare(b, "fr"));
 }
 
+/*───────────────────────────────────────────────────────────────*/
+/* Vocabulaire RES — valeurs du champ `nature` (référentiel       */
+/* national, données en français). SOURCE UNIQUE : les composants */
+/* ne comparent jamais ces littéraux directement.                 */
+/*───────────────────────────────────────────────────────────────*/
+export const NATURE_VALUES = {
+  INDOOR: "Intérieur",
+  OUTDOOR: "Découvert",
+  NATURAL: "Site naturel",
+  NATURAL_DEVELOPED: "Site naturel aménagé",
+  UNKNOWN: "Donnée non renseignée",
+} as const;
+
+/** Équipement couvert (nature RES « Intérieur »). */
+export const isIndoor = (e: Equipment): boolean =>
+  getNature(e) === NATURE_VALUES.INDOOR;
+
 /** Au moins un des 6 champs PMR est vrai. */
 export function isPmrAccessible(e: Equipment): boolean {
   return PMR_FIELDS.some((f: PmrField) => isTrue(e[f]));

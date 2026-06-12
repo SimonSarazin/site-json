@@ -12,8 +12,8 @@ import type { Equipment } from "../schema";
 import { useT } from "@/hooks/useT";
 import {
   getCommune,
-  getNature,
   getType,
+  isIndoor,
   isPmrAccessible,
   isPshsAccessible,
 } from "../utils";
@@ -70,7 +70,7 @@ export function KpiCards({ data }: KpiCardsProps) {
   ).size;
   const pmr = data.filter(isPmrAccessible).length;
   const pshs = data.filter(isPshsAccessible).length;
-  const interieur = data.filter((d) => getNature(d) === "Intérieur").length;
+  const interieur = data.filter(isIndoor).length;
 
   const typeCounts: Record<string, number> = {};
   for (const d of data) {

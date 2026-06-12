@@ -19,6 +19,7 @@ import {
 import { useT } from "@/hooks/useT";
 import type { Equipment } from "../schema";
 import {
+  NATURE_VALUES,
   countBy,
   getCommune,
   getEpci,
@@ -41,14 +42,15 @@ const CATEGORICAL_COLORS = [
   "var(--chart-5)",
 ] as const;
 
-// Palette spécifique nature (valeurs du référentiel RES) — mappée sur les
-// tokens de thème ; « Donnée non renseignée » reste neutre.
+// Palette spécifique nature (vocabulaire RES centralisé dans utils) — mappée
+// sur les tokens de thème ; « Donnée non renseignée » reste neutre. Même
+// correspondance chart-1..4 que les badges d'EquipmentTable.
 const NATURE_COLORS: Record<string, string> = {
-  "Découvert": "var(--chart-2)",
-  "Intérieur": "var(--chart-1)",
-  "Site naturel": "var(--chart-3)",
-  "Site naturel aménagé": "var(--chart-4)",
-  "Donnée non renseignée": "var(--muted-foreground)",
+  [NATURE_VALUES.OUTDOOR]: "var(--chart-2)",
+  [NATURE_VALUES.INDOOR]: "var(--chart-1)",
+  [NATURE_VALUES.NATURAL]: "var(--chart-3)",
+  [NATURE_VALUES.NATURAL_DEVELOPED]: "var(--chart-4)",
+  [NATURE_VALUES.UNKNOWN]: "var(--muted-foreground)",
 };
 
 function natureColor(name: string, fallbackIndex: number): string {
