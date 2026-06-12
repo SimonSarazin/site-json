@@ -63,7 +63,7 @@ function findSectionsOfTypes(
 }
 
 const SEARCH_SECTION_TYPES = new Set(['searchPro', 'searchProStatic']);
-const OBSERVATORY_SECTION_TYPES = new Set(['equipment-observatory']);
+const OBSERVATORY_SECTION_TYPES = new Set(['data-observatory']);
 
 function findSearchSections(
   sections: Array<{ type: string; props?: Record<string, unknown> }>
@@ -204,7 +204,7 @@ async function buildRoutesAsync(
       );
 
       // Pré-charger la PREMIÈRE page du dashboard observatoire (section
-      // equipment-observatory) : même queryKey que le client (params construits
+      // data-observatory) : même queryKey que le client (params construits
       // par le module observatoire) → dashboard plein au premier paint, les
       // pages suivantes s'enchaînent côté client après hydratation.
       const observatoryPrefetch = Promise.all(

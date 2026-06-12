@@ -1,7 +1,7 @@
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { Card, CardContent } from "@/components/ui/card";
 import { useT } from "@/hooks/useT";
-import type { DimensionsConfig, Equipment, KpiDef } from "../schema";
+import type { DimensionsConfig, ObservatoryItem, KpiDef } from "../schema";
 import {
   TOKEN_TINT_CLASSES,
   dimensionBool,
@@ -20,7 +20,7 @@ function valueClass(value: string): string {
 /** Calcule la valeur d'un KPI déclaratif (formes : count/distinct/percentTrue/valueSplit/top). */
 function computeKpiValue(
   def: KpiDef,
-  data: Equipment[],
+  data: ObservatoryItem[],
   dims: DimensionsConfig,
 ): string {
   const total = data.length;
@@ -83,9 +83,9 @@ function KpiCard({ icon, label, value, accentClasses }: KpiCardProps) {
 }
 
 interface KpiCardsProps {
-  data: Equipment[];
+  data: ObservatoryItem[];
   dimensions: DimensionsConfig;
-  /** KPI déclarés (config ou preset RES). */
+  /** KPI déclarés par la config de section. */
   kpis: readonly KpiDef[];
 }
 

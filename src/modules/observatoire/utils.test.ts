@@ -1,79 +1,19 @@
 import { describe, it, expect } from "vitest";
-import { EquipmentSchema } from "./schema";
-import type { Equipment } from "./schema";
+import type { ObservatoryItem } from "./schema";
 import {
-  RES_DIMENSIONS,
+  asDisplayString,
   dimensionBool,
   dimensionList,
   dimensionNumber,
   dimensionValue,
-  mergedDimensions,
-} from "./dimensions";
-import {
-  NATURE_VALUES,
-  countBy,
-  firstString,
-  getEpci,
-  getInstName,
-  getType,
-  isIndoor,
-  isPmrAccessible,
-  isPshsAccessible,
+  fieldsFromDimensions,
   isTrue,
-  normalizeAps,
   toNumber,
-  uniqSorted,
-} from "./utils";
+  toStringList,
+} from "./dimensions";
+import { countBy, uniqSorted } from "./utils";
 
-/* ── Moteur de dimensions (cœur déclaratif) ──────────────────────────────── */
-
-describe("moteur de dimensions", () => {
-  const e = {
-    address: { addressLocality: "Cilaos" },
-    equip_type_famille: "Salle",
-    aps_csv: "Judo, Karaté",
-    flag_a: "false",
-    flag_b: "Oui",
-    surf_txt: "120",
-  } as unknown as Equipment;
-
-  it("value : chaîne de priorité + chemins pointés", () => {
-    expect(dimensionValue(e, { paths: ["address.addressLocality"] })).toBe("Cilaos");
-    expect(dimensionValue(e, { paths: ["equip_type_name", "equip_type_famille"] })).toBe("Salle");
-    expect(dimensionValue(e, { paths: ["absent"] })).toBeUndefined();
-  });
-
-  it("list : CSV aplati ; anyTrue : au moins un chemin affirmatif ; number : coercion", () => {
-    expect(dimensionList(e, { paths: ["aps_csv"], kind: "list" })).toEqual(["Judo", "Karaté"]);
-    expect(dimensionBool(e, { paths: ["flag_a", "flag_b"], kind: "anyTrue" })).toBe(true);
-    expect(dimensionBool(e, { paths: ["flag_a"], kind: "anyTrue" })).toBe(false);
-    expect(dimensionNumber(e, { paths: ["surf_txt"], kind: "number" })).toBe(120);
-  });
-
-  it("mergedDimensions : surcharge ATOMIQUE par dimension, preset conservé ailleurs", () => {
-    const merged = mergedDimensions({ commune: { paths: ["ville"] } });
-    expect(merged.commune.paths).toEqual(["ville"]);
-    expect(merged.type).toBe(RES_DIMENSIONS.type);
-  });
-});
-
-/* ── Schéma Equipment (formats serverData hétérogènes) ──────────────────── */
-
-describe("EquipmentSchema", () => {
-  it("RÉGRESSION : accepte les dates normalisées en objets Date par le SDK (EJSON)", () => {
-    // Constaté en réel : 418 équipements silencieusement rejetés quand les
-    // trois champs de date arrivaient en Date au lieu de string.
-    const parsed = EquipmentSchema.safeParse({
-      equip_nom: "Stade de l'Est",
-      inst_date_creation: new Date(0),
-      inst_enqu_date: "2020-01-01",
-      equip_maj_date: new Date(0),
-    });
-    expect(parsed.success).toBe(true);
-  });
-});
-
-/* ── Coercions tolérantes (formats API RES hétérogènes) ─────────────────── */
+/* ── Coercions tolérantes (formats API hétérogènes) ─────────────────────── */
 
 describe("isTrue", () => {
   it("accepte les représentations affirmatives de l'API (bool, nombre, chaînes)", () => {
@@ -95,28 +35,73 @@ describe("isTrue", () => {
   });
 });
 
-describe("normalizeAps", () => {
-  it("string CSV (virgule ou point-virgule) → tableau nettoyé", () => {
-    expect(normalizeAps("Football, Basket ;Natation")).toEqual(["Football", "Basket", "Natation"]);
-  });
-
-  it("tableau → filtré des vides ; absent → []", () => {
-    expect(normalizeAps(["Judo", "", "Karaté"])).toEqual(["Judo", "Karaté"]);
-    expect(normalizeAps(undefined)).toEqual([]);
-  });
-});
-
-describe("firstString / toNumber", () => {
-  it("firstString : première chaîne non vide, y compris dans des tableaux", () => {
-    expect(firstString(undefined, "", ["", "ok"], "après")).toBe("ok");
-    expect(firstString(undefined, "")).toBeUndefined();
+describe("toStringList / toNumber / asDisplayString", () => {
+  it("toStringList : CSV (virgule/point-virgule) et tableaux → liste plate", () => {
+    expect(toStringList("Football, Basket ;Natation")).toEqual(["Football", "Basket", "Natation"]);
+    expect(toStringList(["Judo", "", "Karaté"])).toEqual(["Judo", "Karaté"]);
+    expect(toStringList(undefined)).toEqual([]);
   });
 
   it("toNumber : nombre, chaîne numérique ; sinon undefined", () => {
     expect(toNumber(42)).toBe(42);
     expect(toNumber("3.5")).toBe(3.5);
     expect(toNumber("abc")).toBeUndefined();
-    expect(toNumber("")).toBeUndefined();
+  });
+
+  it("asDisplayString : chaîne, nombre, Date SDK (EJSON→Date), 1ᵉʳ élément de tableau", () => {
+    expect(asDisplayString("ok")).toBe("ok");
+    expect(asDisplayString(2024)).toBe("2024");
+    // Le SDK désérialise les dates EJSON Mongo en Date — affichage ISO court.
+    expect(asDisplayString(new Date("2026-01-15T10:00:00Z"))).toBe("2026-01-15");
+    expect(asDisplayString(["", "premier"])).toBe("premier");
+    expect(asDisplayString("")).toBeUndefined();
+    expect(asDisplayString(null)).toBeUndefined();
+  });
+});
+
+/* ── Moteur de dimensions (cœur déclaratif) ──────────────────────────────── */
+
+describe("moteur de dimensions", () => {
+  const e: ObservatoryItem = {
+    address: { addressLocality: "Cilaos" },
+    equip_type_famille: "Salle",
+    aps_csv: "Judo, Karaté",
+    flag_a: "false",
+    flag_b: "Oui",
+    surf_txt: "120",
+    maj: new Date("2026-02-01T00:00:00Z"),
+  };
+
+  it("value : chaîne de priorité + chemins pointés + dates SDK", () => {
+    expect(dimensionValue(e, { paths: ["address.addressLocality"] })).toBe("Cilaos");
+    expect(dimensionValue(e, { paths: ["equip_type_name", "equip_type_famille"] })).toBe("Salle");
+    expect(dimensionValue(e, { paths: ["maj"] })).toBe("2026-02-01");
+    expect(dimensionValue(e, { paths: ["absent"] })).toBeUndefined();
+  });
+
+  it("list : CSV aplati ; anyTrue : au moins un chemin affirmatif ; number : coercion", () => {
+    expect(dimensionList(e, { paths: ["aps_csv"], kind: "list" })).toEqual(["Judo", "Karaté"]);
+    expect(dimensionBool(e, { paths: ["flag_a", "flag_b"], kind: "anyTrue" })).toBe(true);
+    expect(dimensionBool(e, { paths: ["flag_a"], kind: "anyTrue" })).toBe(false);
+    expect(dimensionNumber(e, { paths: ["surf_txt"], kind: "number" })).toBe(120);
+  });
+});
+
+/* ── Projection dérivée des dimensions ───────────────────────────────────── */
+
+describe("fieldsFromDimensions", () => {
+  it("racines des chemins + champs SDK (_linkEntities), dédupliqués", () => {
+    const fields = fieldsFromDimensions({
+      commune: { paths: ["address.addressLocality"] },
+      epci: { paths: ["address.level5Name"] },
+      type: { paths: ["equip_type_name", "type"] },
+    });
+    expect(fields).toContain("collection");
+    expect(fields).toContain("_id");
+    expect(fields).toContain("slug");
+    expect(fields).toContain("address"); // racine du chemin pointé, UNE fois
+    expect(fields).toContain("equip_type_name");
+    expect(fields.filter((f) => f === "address")).toHaveLength(1);
   });
 });
 
@@ -136,36 +121,5 @@ describe("countBy / uniqSorted", () => {
       "Cilaos",
       "Étang-Salé",
     ]);
-  });
-});
-
-/* ── Accès aux dimensions RES ────────────────────────────────────────────── */
-
-const equipment = (overrides: Record<string, unknown>): Equipment =>
-  overrides as Equipment;
-
-describe("dimensions Equipment", () => {
-  it("getType suit la chaîne de priorité equip_type_name → famille → type → categorie", () => {
-    expect(getType(equipment({ equip_type_name: "Gymnase", type: "x" }))).toBe("Gymnase");
-    expect(getType(equipment({ categorie: "Salle" }))).toBe("Salle");
-  });
-
-  it("getEpci lit address.level5Name ; getInstName retombe sur equip_nom puis —", () => {
-    expect(getEpci(equipment({ address: { level5Name: "CINOR" } }))).toBe("CINOR");
-    expect(getInstName(equipment({ equip_nom: "Stade Est" }))).toBe("Stade Est");
-    expect(getInstName(equipment({}))).toBe("—");
-  });
-
-  it("isIndoor compare au vocabulaire RES centralisé (NATURE_VALUES.INDOOR)", () => {
-    expect(isIndoor(equipment({ equip_nature: NATURE_VALUES.INDOOR }))).toBe(true);
-    expect(isIndoor(equipment({ equip_nature: NATURE_VALUES.OUTDOOR }))).toBe(false);
-    expect(isIndoor(equipment({}))).toBe(false);
-  });
-
-  it("isPmrAccessible / isPshsAccessible : vrai dès qu'UN champ du groupe l'est (formats mixtes)", () => {
-    expect(isPmrAccessible(equipment({ equip_pmr_douche: "Oui" }))).toBe(true);
-    expect(isPmrAccessible(equipment({ equip_pmr_acc: "false" }))).toBe(false);
-    expect(isPshsAccessible(equipment({ equip_pshs_sign: 1 }))).toBe(true);
-    expect(isPshsAccessible(equipment({}))).toBe(false);
   });
 });

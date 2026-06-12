@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useT } from "@/hooks/useT";
-import type { DimensionDef, DimensionsConfig, Equipment, FilterValues } from "../schema";
+import type { DimensionDef, DimensionsConfig, ObservatoryItem, FilterValues } from "../schema";
 import {
   BOOL_FILTER_VALUES,
   dimensionList,
@@ -58,8 +58,8 @@ function SelectField({ label, value, onChange, options, allLabel }: SelectFieldP
 }
 
 interface FiltersProps {
-  data: Equipment[];
-  /** Dimensions fusionnées (preset RES ← config). */
+  data: ObservatoryItem[];
+  /** Dimensions déclarées par la config de section. */
   dimensions: DimensionsConfig;
   /** Ids des dimensions filtrables, dans l'ordre d'affichage. */
   filterIds: readonly string[];

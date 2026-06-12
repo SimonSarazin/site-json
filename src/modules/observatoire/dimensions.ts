@@ -2,21 +2,13 @@
 // dimensions.ts — moteur de dimensions du module observatoire
 // ------------------------------------------------------------
 // Le cœur générique : une dimension ({paths, kind}) décrit COMMENT lire une
-// grandeur sur un item ; le moteur la résout. Filtres, KPI, graphes et table
-// consomment des dimensions — le métier (RES) n'est plus qu'un PRESET de
-// déclarations, surchargeable par la config de section (précédent :
-// DEFAULT_SERVICE_PRICING_PATHS / preview.fields).
+// grandeur sur un item BRUT (serverData) ; le moteur la résout avec des
+// coercions tolérantes (bool affirmatif, nombres en chaîne, dates SDK).
+// Filtres, KPI, graphes et table consomment des dimensions — le code ne
+// connaît AUCUN dataset : toutes les déclarations viennent de la config.
 // ------------------------------------------------------------
 import getValueByPath from "@/helpers/getValueByPath";
-import { PMR_FIELDS, PSHS_FIELDS } from "./schema";
-import type {
-  ChartDef,
-  DimensionDef,
-  DimensionsConfig,
-  Equipment,
-  KpiDef,
-  TableDef,
-} from "./schema";
+import type { DimensionDef, DimensionsConfig, ObservatoryItem } from "./schema";
 
 /*───────────────────────────────────────────────────────────────*/
 /* Primitives de coercion (formats API hétérogènes)              */
@@ -31,23 +23,6 @@ export function isTrue(value: unknown): boolean {
     return v === "true" || v === "1" || v === "oui" || v === "yes";
   }
   return false;
-}
-
-/** Renvoie la première chaîne non vide parmi les candidats.
- *  Accepte aussi bien des `string` que des `string[]`. */
-export function firstString(
-  ...candidates: Array<unknown>
-): string | undefined {
-  for (const c of candidates) {
-    if (typeof c === "string" && c.trim() !== "") return c;
-    if (Array.isArray(c)) {
-      const first = c.find(
-        (v): v is string => typeof v === "string" && v.trim() !== "",
-      );
-      if (first !== undefined) return first;
-    }
-  }
-  return undefined;
 }
 
 /** Extrait une valeur scalaire numérique si possible. */
@@ -75,23 +50,43 @@ export function toStringList(value: unknown): string[] {
   return [];
 }
 
+/**
+ * Représentation AFFICHABLE d'une valeur de champ : chaîne non vide, nombre,
+ * Date (désérialisée par le SDK depuis l'EJSON Mongo → ISO court), 1ᵉʳ
+ * élément affichable d'un tableau. Sinon `undefined` (champ « vide »).
+ */
+export function asDisplayString(value: unknown): string | undefined {
+  if (typeof value === "string") return value.trim() !== "" ? value : undefined;
+  if (typeof value === "number" && !Number.isNaN(value)) return String(value);
+  if (value instanceof Date) return value.toISOString().slice(0, 10);
+  if (Array.isArray(value)) {
+    for (const v of value) {
+      const s = asDisplayString(v);
+      if (s !== undefined) return s;
+    }
+  }
+  return undefined;
+}
+
 /*───────────────────────────────────────────────────────────────*/
 /* Moteur                                                        */
 /*───────────────────────────────────────────────────────────────*/
 
-function resolvePath(e: Equipment, path: string): unknown {
-  return path.includes(".")
-    ? getValueByPath(e as Record<string, unknown>, path)
-    : (e as Record<string, unknown>)[path];
+function resolvePath(e: ObservatoryItem, path: string): unknown {
+  return path.includes(".") ? getValueByPath(e, path) : e[path];
 }
 
-/** kind "value" — première chaîne non vide le long des chemins de priorité. */
-export function dimensionValue(e: Equipment, def: DimensionDef): string | undefined {
-  return firstString(...def.paths.map((p) => resolvePath(e, p)));
+/** kind "value" — première valeur affichable le long des chemins de priorité. */
+export function dimensionValue(e: ObservatoryItem, def: DimensionDef): string | undefined {
+  for (const p of def.paths) {
+    const s = asDisplayString(resolvePath(e, p));
+    if (s !== undefined) return s;
+  }
+  return undefined;
 }
 
 /** kind "list" — premier chemin produisant une liste non vide. */
-export function dimensionList(e: Equipment, def: DimensionDef): string[] {
+export function dimensionList(e: ObservatoryItem, def: DimensionDef): string[] {
   for (const p of def.paths) {
     const list = toStringList(resolvePath(e, p));
     if (list.length > 0) return list;
@@ -100,63 +95,18 @@ export function dimensionList(e: Equipment, def: DimensionDef): string[] {
 }
 
 /** kind "anyTrue" — au moins un des chemins porte une valeur affirmative. */
-export function dimensionBool(e: Equipment, def: DimensionDef): boolean {
+export function dimensionBool(e: ObservatoryItem, def: DimensionDef): boolean {
   return def.paths.some((p) => isTrue(resolvePath(e, p)));
 }
 
 /** kind "number" — première valeur numérique le long des chemins. */
-export function dimensionNumber(e: Equipment, def: DimensionDef): number | undefined {
+export function dimensionNumber(e: ObservatoryItem, def: DimensionDef): number | undefined {
   for (const p of def.paths) {
     const n = toNumber(resolvePath(e, p));
     if (n !== undefined) return n;
   }
   return undefined;
 }
-
-/*───────────────────────────────────────────────────────────────*/
-/* Preset RES (Recensement des Équipements Sportifs)             */
-/*───────────────────────────────────────────────────────────────*/
-// Défaut du module : les dimensions du référentiel national. `labelKey`
-// pointe les libellés i18n historiques du namespace modules/observatoire.
-export const RES_DIMENSIONS: DimensionsConfig = {
-  commune: { paths: ["address.addressLocality"], labelKey: "filters.commune" },
-  type: {
-    paths: ["equip_type_name", "equip_type_famille", "type", "categorie"],
-    labelKey: "filters.type",
-  },
-  epci: { paths: ["address.level5Name"], labelKey: "filters.epci" },
-  nature: { paths: ["equip_nature", "nature"], labelKey: "filters.nature" },
-  prop: { paths: ["equip_prop_type"], labelKey: "filters.owner" },
-  aps: { paths: ["aps_name"], kind: "list", labelKey: "filters.sport" },
-  pmr: { paths: [...PMR_FIELDS], kind: "anyTrue", labelKey: "filters.pmr" },
-  pshs: { paths: [...PSHS_FIELDS], kind: "anyTrue", labelKey: "kpi.pshs" },
-  handi: { paths: ["inst_acc_handi_bool"], kind: "anyTrue", labelKey: "charts.accessibilityHandi" },
-  surface: { paths: ["equip_surf"], kind: "number", labelKey: "table.surface" },
-  name: { paths: ["inst_nom", "equip_nom"], labelKey: "table.installation" },
-  numero: { paths: ["equip_numero"] },
-};
-
-/** Fusion preset ← config : surcharge PAR DIMENSION (atomique). */
-export function mergedDimensions(config?: DimensionsConfig): DimensionsConfig {
-  return { ...RES_DIMENSIONS, ...(config ?? {}) };
-}
-
-/** Dimensions filtrables par défaut (preset RES), dans l'ordre d'affichage. */
-export const RES_FILTER_IDS = [
-  "commune",
-  "type",
-  "epci",
-  "nature",
-  "pmr",
-  "prop",
-  "aps",
-] as const;
-
-/** Valeurs des filtres booléens (dimensions anyTrue) — sérialisées en URL. */
-export const BOOL_FILTER_VALUES = {
-  TRUE: "true",
-  FALSE: "false",
-} as const;
 
 /** Libellé d'une dimension : label (config) > labelKey (i18n) > id. */
 export function dimensionLabel(
@@ -172,60 +122,38 @@ export function dimensionLabel(
 }
 
 /*───────────────────────────────────────────────────────────────*/
-/* Vocabulaire RES — valeurs du champ `nature` (référentiel       */
-/* national, données en français). SOURCE UNIQUE.                 */
+/* Projection API dérivée des dimensions                         */
 /*───────────────────────────────────────────────────────────────*/
-export const NATURE_VALUES = {
-  INDOOR: "Intérieur",
-  OUTDOOR: "Découvert",
-  NATURAL: "Site naturel",
-  NATURAL_DEVELOPED: "Site naturel aménagé",
-  UNKNOWN: "Donnée non renseignée",
+
+/** Champs requis par `_linkEntities` (SDK Cocolight) pour lier les entités. */
+const SDK_BASE_FIELDS = ["collection", "_id", "id", "slug"] as const;
+
+/**
+ * Projection (`fields` de searchCostum) DÉRIVÉE des dimensions déclarées :
+ * la racine de chaque chemin (+ champs SDK). On ne demande au backend que ce
+ * que le dashboard consomme — pas de liste de champs à maintenir en config
+ * (surchargeable malgré tout via `baseParams.defaultFields`).
+ */
+export function fieldsFromDimensions(dims: DimensionsConfig): string[] {
+  const fields = new Set<string>(SDK_BASE_FIELDS);
+  for (const def of Object.values(dims)) {
+    for (const path of def.paths) {
+      const root = path.split(".")[0];
+      if (root) fields.add(root);
+    }
+  }
+  return Array.from(fields);
+}
+
+/*───────────────────────────────────────────────────────────────*/
+/* Filtres booléens                                              */
+/*───────────────────────────────────────────────────────────────*/
+
+/** Valeurs des filtres booléens (dimensions anyTrue) — sérialisées en URL. */
+export const BOOL_FILTER_VALUES = {
+  TRUE: "true",
+  FALSE: "false",
 } as const;
-
-/* Couleurs par nature (jetons de thème) — partagées graphe « pie nature »
-   et badges de la table (cohérence visuelle des 4 natures). */
-const NATURE_COLOR_TOKENS = {
-  [NATURE_VALUES.INDOOR]: "chart-1",
-  [NATURE_VALUES.OUTDOOR]: "chart-2",
-  [NATURE_VALUES.NATURAL]: "chart-3",
-  [NATURE_VALUES.NATURAL_DEVELOPED]: "chart-4",
-  [NATURE_VALUES.UNKNOWN]: "muted",
-} as const;
-
-/*───────────────────────────────────────────────────────────────*/
-/* Presets RES du tableau de bord (KPI / graphes / table)         */
-/*───────────────────────────────────────────────────────────────*/
-export const RES_KPIS: KpiDef[] = [
-  { kind: "count", labelKey: "kpi.equipments", icon: "activity", accent: "primary" },
-  { kind: "distinct", dimension: "commune", labelKey: "kpi.communes", icon: "map-pin", accent: "accent" },
-  { kind: "percentTrue", dimension: "pmr", labelKey: "kpi.pmr", icon: "accessibility", accent: "chart-2" },
-  { kind: "percentTrue", dimension: "pshs", labelKey: "kpi.pshs", icon: "eye", accent: "chart-4" },
-  { kind: "valueSplit", dimension: "nature", value: NATURE_VALUES.INDOOR, labelKey: "kpi.indoor", icon: "home", accent: "chart-3" },
-  { kind: "top", dimension: "type", labelKey: "kpi.topType", icon: "trophy", accent: "chart-5" },
-];
-
-export const RES_CHARTS: ChartDef[] = [
-  { kind: "donut", dimension: "type", labelKey: "charts.byType", layout: "full" },
-  { kind: "pie", dimension: "nature", labelKey: "charts.indoorOutdoor", layout: "half", colors: NATURE_COLOR_TOKENS },
-  { kind: "booleanGroups", dimensions: ["pmr", "pshs", "handi"], labelKey: "charts.accessibility", layout: "half" },
-  { kind: "barsHorizontal", dimension: "aps", top: 10, labelKey: "charts.topAps", layout: "full" },
-  { kind: "bars", dimension: "commune", labelKey: "charts.byCommune", layout: "full" },
-];
-
-export const RES_TABLE: TableDef = {
-  columns: [
-    { dimension: "name", kind: "title", subtitleDimension: "numero", labelKey: "table.installation" },
-    { dimension: "type", labelKey: "table.type" },
-    { dimension: "commune", labelKey: "table.commune" },
-    { dimension: "epci", labelKey: "table.epci" },
-    { dimension: "nature", kind: "badge", colors: NATURE_COLOR_TOKENS, labelKey: "table.nature" },
-    { dimension: "surface", kind: "number", unit: "m²", labelKey: "table.surface" },
-    { dimension: "pmr", kind: "boolBadge", labelKey: "table.pmr" },
-    { dimension: "prop", labelKey: "table.owner" },
-  ],
-  defaultSort: "commune",
-};
 
 /*───────────────────────────────────────────────────────────────*/
 /* Jetons de couleur → classes/variables (statiques pour Tailwind)*/

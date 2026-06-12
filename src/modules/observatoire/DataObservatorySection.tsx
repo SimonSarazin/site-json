@@ -1,67 +1,67 @@
 import "./i18n";
 import { useMemo } from "react";
 import { useT } from "@/hooks/useT";
-import {
-  RES_CHARTS,
-  RES_FILTER_IDS,
-  RES_KPIS,
-  RES_TABLE,
-  mergedDimensions,
-} from "./dimensions";
-import type { EquipmentObservatorySectionProps } from "./schema";
+import type { DataObservatorySectionProps } from "./schema";
 import { KpiCards } from "./components/KpiCards";
 import { Filters } from "./components/Filters";
 import { ObservatoryCharts } from "./components/Charts";
-import { EquipmentTable } from "./components/EquipmentTable";
+import { ObservatoryTable } from "./components/ObservatoryTable";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
-import { useObservatoryEquipmentsQuery } from "./hooks/useObservatoryEquipmentsQuery";
+import { useObservatoryItemsQuery } from "./hooks/useObservatoryItemsQuery";
 import { useObservatoryFilters } from "./hooks/useObservatoryFilters";
 
-interface EquipmentObservatorySectionComponentProps {
+interface DataObservatorySectionComponentProps {
   id?: string;
-  props: EquipmentObservatorySectionProps;
+  props: DataObservatorySectionProps;
 }
 
-export default function EquipmentObservatorySection({
+/**
+ * Tableau de bord ENTIÈREMENT déclaratif : le périmètre (baseParams), les
+ * dimensions et les widgets (filtres, KPI, graphes, table) viennent de la
+ * config de section — le code ne connaît aucun dataset. Cf.
+ * doc/27-module-observatoire.md pour le format complet.
+ */
+export default function DataObservatorySection({
   id,
   props,
-}: EquipmentObservatorySectionComponentProps) {
+}: DataObservatorySectionComponentProps) {
   // useT(namespace) résout AUSSI les LocalizedString du config (il enveloppe
   // useLocalization) — un seul hook pour les clés i18n ET les props localisées.
   const t = useT("modules/observatoire");
 
-  // Tableau de bord DÉCLARATIF : dimensions (preset RES surchargeable) +
-  // filtres/KPI/graphes/table déclarés en config (défauts : presets RES).
-  const dimensions = useMemo(
-    () => mergedDimensions(props.dimensions),
-    [props.dimensions],
-  );
-  const filterIds = props.filters ?? RES_FILTER_IDS;
-  const kpis = props.kpis ?? RES_KPIS;
-  const charts = props.charts ?? RES_CHARTS;
-  const table = props.table ?? RES_TABLE;
+  const dimensions = useMemo(() => props.dimensions ?? {}, [props.dimensions]);
+  if (import.meta.env.DEV && Object.keys(dimensions).length === 0) {
+    console.warn(
+      "[observatoire] props.dimensions absent de la config — le dashboard n'a rien à afficher (déclarer les dimensions du dataset)",
+    );
+  }
+  const filterIds = props.filters ?? [];
+  const kpis = props.kpis ?? [];
+  const charts = props.charts ?? [];
 
-  const { equipments, error, stillLoading, progress } =
-    useObservatoryEquipmentsQuery(props.baseParams);
+  const { items, error, stillLoading, progress } = useObservatoryItemsQuery(
+    props.baseParams,
+    dimensions,
+  );
   const { filters, filtered, setFilters } = useObservatoryFilters(
-    equipments,
+    items,
     dimensions,
     filterIds,
   );
 
-  // Premier rendu sans aucune donnée (ni SSR-hydratée, ni chargée) : squelette.
-  const isEmpty = equipments.length === 0 && stillLoading && !error;
-
   const headline = props.headline ? t(props.headline) : null;
   const description = props.description ? t(props.description) : null;
+
+  // Premier rendu sans aucune donnée (ni SSR-hydratée, ni chargée) : squelette.
+  const isEmpty = items.length === 0 && stillLoading && !error;
 
   return (
     <section
       id={id}
       className="w-full bg-background py-8"
-      data-section="equipment-observatory"
+      data-section="data-observatory"
     >
       <div className="mx-auto w-full max-w-8xl px-4 sm:px-6 lg:px-8 space-y-6">
         {(headline || description) && (
@@ -114,18 +114,27 @@ export default function EquipmentObservatorySection({
           </div>
         ) : (
           <>
-            <Filters
-              data={equipments}
-              dimensions={dimensions}
-              filterIds={filterIds}
-              values={filters}
-              onChange={setFilters}
-            />
-            <KpiCards data={filtered} dimensions={dimensions} kpis={kpis} />
+            {filterIds.length > 0 && (
+              <Filters
+                data={items}
+                dimensions={dimensions}
+                filterIds={filterIds}
+                values={filters}
+                onChange={setFilters}
+              />
+            )}
 
-            <ObservatoryCharts charts={charts} data={filtered} dimensions={dimensions} />
+            {kpis.length > 0 && (
+              <KpiCards data={filtered} dimensions={dimensions} kpis={kpis} />
+            )}
 
-            <EquipmentTable data={filtered} dimensions={dimensions} table={table} />
+            {charts.length > 0 && (
+              <ObservatoryCharts charts={charts} data={filtered} dimensions={dimensions} />
+            )}
+
+            {props.table && (
+              <ObservatoryTable data={filtered} dimensions={dimensions} table={props.table} />
+            )}
           </>
         )}
       </div>

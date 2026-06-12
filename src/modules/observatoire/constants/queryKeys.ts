@@ -7,6 +7,6 @@
  */
 
 export const OBSERVATORY_QUERY_KEYS = {
-  /** Préfixe utilisé par useObservatoryEquipmentsQuery. */
-  EQUIPMENTS_PREFIX: "observatoire",
+  /** Préfixe utilisé par useObservatoryItemsQuery. */
+  ITEMS_PREFIX: "observatoire",
 } as const;

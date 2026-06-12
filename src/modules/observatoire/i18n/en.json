@@ -1,56 +1,24 @@
 {
   "error": {
-    "loadFailed": "An error occurred while loading equipment data."
+    "loadFailed": "An error occurred while loading the data."
   },
   "loading": "Loading data…",
-  "loadingProgress": "{{loaded}} / {{total}} facilities loaded",
-  "kpi": {
-    "equipments": "Equipment",
-    "communes": "Communes",
-    "pmr": "PMR Accessible",
-    "pshs": "PSHS Accessible",
-    "indoor": "Indoor",
-    "topType": "Top type"
-  },
+  "loadingProgress": "{{loaded}} / {{total}} items loaded",
   "filters": {
     "title": "Filters",
     "reset": "Reset",
     "all": "All",
     "yes": "Yes",
-    "no": "No",
-    "commune": "Commune",
-    "type": "Type",
-    "epci": "EPCI",
-    "nature": "Nature",
-    "pmr": "PMR",
-    "owner": "Owner",
-    "sport": "Sport activity"
+    "no": "No"
   },
   "charts": {
-    "byType": "Distribution by equipment type",
-    "indoorOutdoor": "Indoor / Outdoor",
-    "accessibility": "Accessibility (yes / no)",
-    "byCommune": "Equipment by commune",
-    "topAps": "Top 10 sport activities (APS)",
-    "byEpci": "Distribution by EPCI",
-    "accessibilityYes": "yes",
-    "accessibilityNo": "no",
-    "accessibilityPmr": "PMR",
-    "accessibilityPshs": "PSHS",
-    "accessibilityHandi": "Disability"
+    "yes": "yes",
+    "no": "no"
   },
   "table": {
     "title": "Detailed data",
-    "equipmentCount": "{{count}} equipment",
-    "installation": "Installation",
-    "type": "Type",
-    "commune": "Commune",
-    "epci": "EPCI",
-    "nature": "Nature",
-    "surface": "Surface",
-    "pmr": "PMR",
-    "owner": "Owner",
-    "empty": "No equipment matches the selected filters.",
+    "itemCount": "{{count}} items",
+    "empty": "No item matches the selected filters.",
     "page": "Page {{current}} / {{total}}",
     "prev": "Previous",
     "next": "Next"

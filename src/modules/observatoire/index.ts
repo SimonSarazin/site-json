@@ -1,15 +1,29 @@
-export { default as EquipmentObservatorySection } from "./EquipmentObservatorySection";
+export { default as DataObservatorySection } from "./DataObservatorySection";
 
 export type {
-  Equipment,
+  ObservatoryItem,
+  DataObservatorySection as DataObservatorySectionType,
+  DataObservatorySectionProps,
+  DimensionDef,
+  DimensionsConfig,
+  KpiDef,
+  ChartDef,
+  TableDef,
   FilterValues,
-  EquipmentObservatorySection as EquipmentObservatorySectionType,
-  EquipmentObservatorySectionProps,
 } from "./schema";
-export { EquipmentSchema, EquipmentObservatorySectionSchema, EMPTY_FILTERS } from "./schema";
+export { DataObservatorySectionSchema, EMPTY_FILTERS } from "./schema";
 
 export { OBSERVATORY_QUERY_KEYS } from "./constants/queryKeys";
-export { RES_DIMENSIONS, RES_FILTER_IDS, BOOL_FILTER_VALUES, mergedDimensions } from "./dimensions";
+export {
+  BOOL_FILTER_VALUES,
+  dimensionBool,
+  dimensionLabel,
+  dimensionList,
+  dimensionNumber,
+  dimensionValue,
+  fieldsFromDimensions,
+} from "./dimensions";
 
-export { useObservatoryEquipmentsQuery } from "./hooks/useObservatoryEquipmentsQuery";
+export { useObservatoryItemsQuery, buildObservatoryBaseParams } from "./hooks/useObservatoryItemsQuery";
 export { useObservatoryFilters } from "./hooks/useObservatoryFilters";
+export { observatoryPrefetchParams } from "./prefetch";

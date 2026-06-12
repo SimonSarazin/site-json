@@ -14,7 +14,7 @@ import {
 import { useT } from "@/hooks/useT";
 import type {
   DimensionsConfig,
-  Equipment,
+  ObservatoryItem,
   TableColumnDef,
   TableDef,
 } from "../schema";
@@ -25,7 +25,6 @@ import {
   dimensionNumber,
   dimensionValue,
 } from "../dimensions";
-import { getEquipId } from "../utils";
 
 const PLACEHOLDER = "—";
 
@@ -39,7 +38,7 @@ interface Row {
 }
 
 function buildRow(
-  e: Equipment,
+  e: ObservatoryItem,
   idx: number,
   columns: readonly TableColumnDef[],
   dims: DimensionsConfig,
@@ -56,7 +55,8 @@ function buildRow(
       subtitles[col.dimension] = dimensionValue(e, dims[col.subtitleDimension]);
     }
   }
-  return { id: getEquipId(e, idx), cells, subtitles };
+  // Id de ligne : index d'origine (stable — rows reconstruits depuis data).
+  return { id: `row-${idx}`, cells, subtitles };
 }
 
 function compare(a: Row, b: Row, col: TableColumnDef): number {
@@ -105,14 +105,14 @@ function Th({
   );
 }
 
-interface EquipmentTableProps {
-  data: Equipment[];
+interface ObservatoryTableProps {
+  data: ObservatoryItem[];
   dimensions: DimensionsConfig;
   /** Colonnes + tri initial (config ou preset RES). */
   table: TableDef;
 }
 
-export function EquipmentTable({ data, dimensions, table }: EquipmentTableProps) {
+export function ObservatoryTable({ data, dimensions, table }: ObservatoryTableProps) {
   const t = useT("modules/observatoire");
   // Colonnes sans dimension connue : ignorées (warn DEV).
   const columns = useMemo(() => {
@@ -224,7 +224,7 @@ export function EquipmentTable({ data, dimensions, table }: EquipmentTableProps)
           <h3 className="text-sm font-semibold">{t("table.title")}</h3>
         </div>
         <span className="text-xs text-muted-foreground">
-          {t("table.equipmentCount", undefined, { count: data.length })}
+          {t("table.itemCount", undefined, { count: data.length })}
         </span>
       </div>
       <Table className="text-sm">

@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { useSearchParams } from "react-router";
-import type { DimensionsConfig, Equipment, FilterValues } from "../schema";
+import type { DimensionsConfig, ObservatoryItem, FilterValues } from "../schema";
 import {
   BOOL_FILTER_VALUES,
   dimensionBool,
@@ -16,10 +16,10 @@ import {
  * search reste le bon outil pour les LISTES paginées filtrées serveur).
  */
 function applyFilters(
-  data: Equipment[],
+  data: ObservatoryItem[],
   f: FilterValues,
   dims: DimensionsConfig,
-): Equipment[] {
+): ObservatoryItem[] {
   const active = Object.entries(f).filter(([id, v]) => v && dims[id]);
   if (active.length === 0) return data;
   return data.filter((d) =>
@@ -40,7 +40,7 @@ function applyFilters(
  * du module search). L'état initial est restauré depuis l'URL au montage.
  */
 export function useObservatoryFilters(
-  equipments: Equipment[],
+  items: ObservatoryItem[],
   dims: DimensionsConfig,
   filterIds: readonly string[],
 ) {
@@ -77,8 +77,8 @@ export function useObservatoryFilters(
   );
 
   const filtered = useMemo(
-    () => applyFilters(equipments, filters, dims),
-    [equipments, filters, dims],
+    () => applyFilters(items, filters, dims),
+    [items, filters, dims],
   );
 
   return { filters, setFilters, filtered };

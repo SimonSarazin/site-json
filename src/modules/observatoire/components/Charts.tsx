@@ -17,7 +17,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { useT } from "@/hooks/useT";
-import type { ChartDef, DimensionsConfig, Equipment } from "../schema";
+import type { ChartDef, DimensionsConfig, ObservatoryItem } from "../schema";
 import {
   TOKEN_CSS_VARS,
   dimensionBool,
@@ -50,7 +50,7 @@ function colorFor(def: ChartDef, name: string, fallbackIndex: number): string {
 /** Décomptes {name, value} triés décroissants pour une dimension. */
 function itemsFor(
   def: ChartDef,
-  data: Equipment[],
+  data: ObservatoryItem[],
   dims: DimensionsConfig,
 ): Array<{ name: string; value: number }> {
   const dim = def.dimension ? dims[def.dimension] : undefined;
@@ -92,7 +92,7 @@ const CHART_CONTAINER_CLASS = "h-full w-full aspect-auto";
 
 interface RendererProps {
   def: ChartDef;
-  data: Equipment[];
+  data: ObservatoryItem[];
   dims: DimensionsConfig;
   t: T;
 }
@@ -202,8 +202,8 @@ function BarsHorizontalChart({ def, data, dims, t }: RendererProps) {
 /** Oui/non empilés pour N dimensions anyTrue (ex. PMR / PSHS / Handi). */
 function BooleanGroupsChart({ def, data, dims, t }: RendererProps) {
   const total = data.length;
-  const yesKey = t("charts.accessibilityYes");
-  const noKey = t("charts.accessibilityNo");
+  const yesKey = t("charts.yes");
+  const noKey = t("charts.no");
   const items = (def.dimensions ?? [])
     .filter((id) => dims[id])
     .map((id) => {
@@ -241,7 +241,7 @@ const RENDERERS: Record<ChartDef["kind"], (p: RendererProps) => ReactNode> = {
 
 interface ObservatoryChartsProps {
   charts: readonly ChartDef[];
-  data: Equipment[];
+  data: ObservatoryItem[];
   dimensions: DimensionsConfig;
 }
 

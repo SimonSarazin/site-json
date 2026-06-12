@@ -1,17 +1,15 @@
 import type { SearchPrefetchParams } from "@/modules/search/prefetch";
 import { OBSERVATORY_QUERY_KEYS } from "./constants/queryKeys";
-import {
-  buildObservatoryBaseParams,
-} from "./hooks/useObservatoryEquipmentsQuery";
-import type { EquipmentObservatorySectionProps } from "./schema";
+import { buildObservatoryBaseParams } from "./hooks/useObservatoryItemsQuery";
+import type { DataObservatorySectionProps } from "./schema";
 
 /**
- * Params de prefetch SSR de la PREMIÈRE page d'équipements — consommé par le
+ * Params de prefetch SSR de la PREMIÈRE page d'items — consommé par le
  * loader de `buildRoutes` (même mécanique que les sections search). La
  * queryKey doit être STRICTEMENT identique à celle du client
- * (`useObservatoryEquipmentsQuery` → `useSearchAllResults` → `useSearchQuery`) :
- * mêmes baseParams (via `buildObservatoryBaseParams`, fonction partagée),
- * même searchType, mêmes valeurs par défaut.
+ * (`useObservatoryItemsQuery` → `useSearchAllResults` → `useSearchQuery`) :
+ * mêmes baseParams (via `buildObservatoryBaseParams`, fonction partagée —
+ * projection dérivée des dimensions DÉCLARÉES), même searchType.
  *
  * Retourne `null` sans périmètre configuré (même prérequis que le hook :
  * pas de `defaultFilters` → pas de requête).
@@ -19,14 +17,12 @@ import type { EquipmentObservatorySectionProps } from "./schema";
 export function observatoryPrefetchParams(
   props: Record<string, unknown> | undefined,
 ): SearchPrefetchParams | null {
-  const baseParamsProp = props?.baseParams as
-    | EquipmentObservatorySectionProps["baseParams"]
-    | undefined;
-  if (!baseParamsProp?.defaultFilters) return null;
+  const p = props as DataObservatorySectionProps | undefined;
+  if (!p?.baseParams?.defaultFilters) return null;
 
-  const baseParams = buildObservatoryBaseParams(baseParamsProp);
+  const baseParams = buildObservatoryBaseParams(p.baseParams, p.dimensions ?? {});
   return {
-    queryKeyPrefix: OBSERVATORY_QUERY_KEYS.EQUIPMENTS_PREFIX,
+    queryKeyPrefix: OBSERVATORY_QUERY_KEYS.ITEMS_PREFIX,
     searchText: "",
     searchTags: {},
     searchType: { type: baseParams.defaultTypes as unknown as string[] },

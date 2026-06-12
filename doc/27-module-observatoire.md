@@ -1,117 +1,124 @@
-# Module Observatoire (équipements sportifs RES)
+# Module Observatoire (dashboard de données déclaratif)
 
-Tableau de bord d'observatoire des équipements sportifs basé sur les données
-**RES** (Recensement des Équipements Sportifs — référentiel national : champs
-`equip_*`, `inst_*`, `aps_name`). Introduit par la MR !6 (peter-dev), adapté
-sur `peter-dev-adapt` (cf. `commentaire/REVIEW-MR6-observatoire-2026-06-12.md`).
+Section **`data-observatory`** : un tableau de bord (filtres, KPI, graphes,
+table) **entièrement piloté par la config** — le code ne connaît AUCUN
+dataset. Introduit par la MR !6 (peter-dev, observatoire des équipements
+sportifs 974), généralisé sur `peter-dev-adapt`
+(cf. `commentaire/REVIEW-MR6-observatoire-2026-06-12.md` pour le cheminement).
 
-## Surface
+## Principe : tout est dimension
 
-Une seule section JSON : **`equipment-observatory`** (lazy, chunk dédié).
+Une **dimension** décrit COMMENT lire une grandeur sur un item brut
+(`serverData`) : `{paths: [chaîne de priorité], kind, label}`. Les kinds :
+`value` (1ʳᵉ chaîne/nombre/Date affichable), `list` (CSV/tableau aplati),
+`anyTrue` (au moins un champ affirmatif — "Oui"/1/true…), `number`.
+Filtres, KPI, graphes et colonnes **référencent des dimensions** ; le moteur
+(`dimensions.ts`) les résout avec des coercions tolérantes (y compris les
+dates EJSON désérialisées en `Date` par le SDK).
+
+## Format de la section (tout vient de la config)
 
 ```jsonc
 {
-  "type": "equipment-observatory",
+  "type": "data-observatory",
   "props": {
-    "headline": { "fr": "…" },          // LocalizedString, optionnel
-    "description": { "fr": "…" },       // LocalizedString, optionnel
-    "baseParams": {                      // sous-ensemble compatible useSearchQuery
+    "headline": { "fr": "…" },                  // optionnel
+    "baseParams": {                              // PÉRIMÈTRE — requis
       "defaultTypes": ["poi"],
-      "defaultFilters": {                // périmètre des données = CONFIG
-        "$or": { "source.key": "equipementsSportifs974", "source.keys": "equipementsSportifs974" },
-        "type": "recoveryCenter"
-      },
-      "indexStepList": 500
+      "defaultFilters": { "$or": { "source.key": "monDataset" } },
+      "maxResults": 5000                         // plafond (défaut 5000)
+    },
+    "dimensions": {                              // REQUIS — le modèle du dataset
+      "ville":   { "paths": ["address.addressLocality"], "label": { "fr": "Ville" } },
+      "type":    { "paths": ["type_name", "type"], "label": { "fr": "Type" } },
+      "sports":  { "paths": ["aps_name"], "kind": "list", "label": { "fr": "Sports" } },
+      "access":  { "paths": ["acc_a", "acc_b"], "kind": "anyTrue", "label": { "fr": "Accessible" } },
+      "surface": { "paths": ["surf"], "kind": "number", "label": { "fr": "Surface" } }
+    },
+    "filters": ["ville", "type", "access"],      // ids, ordre d'affichage ; sync URL ?id=valeur
+    "kpis": [
+      { "kind": "count", "label": { "fr": "Total" }, "icon": "activity", "accent": "primary" },
+      { "kind": "distinct", "dimension": "ville", "icon": "map-pin" },
+      { "kind": "percentTrue", "dimension": "access", "accent": "chart-2" },
+      { "kind": "valueSplit", "dimension": "type", "value": "Salle" },
+      { "kind": "top", "dimension": "type", "icon": "trophy" }
+    ],
+    "charts": [
+      { "kind": "donut", "dimension": "type", "layout": "full" },
+      { "kind": "pie", "dimension": "ville", "layout": "half",
+        "colors": { "Cilaos": "chart-1" } },     // jetons de thème par VALEUR
+      { "kind": "booleanGroups", "dimensions": ["access"], "layout": "half" },
+      { "kind": "barsHorizontal", "dimension": "sports", "top": 10 },
+      { "kind": "bars", "dimension": "ville" }
+    ],
+    "table": {
+      "columns": [
+        { "dimension": "ville", "kind": "title", "subtitleDimension": "type" },
+        { "dimension": "type", "kind": "badge", "colors": { "Salle": "chart-1" } },
+        { "dimension": "access", "kind": "boolBadge" },
+        { "dimension": "surface", "kind": "number", "unit": "m²" }
+      ],
+      "defaultSort": "ville"
     }
   }
 }
 ```
 
-Consommateur actuel : `config.prod.equipements-Sportifs.json`, page `/observatoire`.
-
-## Modèle déclaratif (généricité)
-
-Tout le dashboard consomme une seule notion : la **dimension**
-(`{paths: [chaîne de priorité], kind: value|list|anyTrue|number, label}`).
-Filtres, KPI, graphes et colonnes de table sont des **déclarations** qui
-référencent des dimensions — défauts : presets RES (`dimensions.ts`),
-surchargeables par la config (précédent `card.servicePricing`) :
-
-```jsonc
-"props": {
-  "baseParams": { … },                      // périmètre (obligatoire)
-  "dimensions": { "ville": { "paths": ["address.addressLocality"] } },
-  "filters": ["ville", "type"],             // ids, ordre d'affichage (+ sync URL ?id=valeur)
-  "kpis":   [{ "kind": "count" }, { "kind": "distinct", "dimension": "ville" }],
-  "charts": [{ "kind": "donut", "dimension": "type", "layout": "full" }],
-  "table":  { "columns": [{ "dimension": "ville" }], "defaultSort": "ville" }
-}
-```
-
-Formes disponibles — KPI : `count`, `distinct`, `percentTrue`, `valueSplit`,
-`top` · graphes : `donut`, `pie`, `bars`, `barsHorizontal`, `booleanGroups`
-· colonnes : `text`, `title`, `badge`, `boolBadge`, `number`. Couleurs par
+Formes — KPI : `count`, `distinct`, `percentTrue`, `valueSplit`, `top` ·
+graphes : `donut`, `pie`, `bars`, `barsHorizontal`, `booleanGroups` ·
+colonnes : `text`, `title`, `badge`, `boolBadge`, `number`. Couleurs en
 **jetons de thème** uniquement (`chart-1..5`, `primary`, `accent`, `muted`)
-— jamais d'hex, le dashboard suit le thème light/dark du site. Un site peut
-donc monter un observatoire d'un AUTRE dataset (lieux, événements…) par pure
-config ; le config equipements-Sportifs actuel n'a pas changé (presets).
+— jamais d'hex : le dashboard suit le thème light/dark du site. Icônes KPI :
+noms lucide kebab-case (DynamicIcon).
+
+L'exemple complet en production : la page `/observatoire` de
+`config.prod.equipements-Sportifs.json` (dataset RES — 12 dimensions,
+7 filtres, 6 KPI, 5 graphes, table 8 colonnes).
 
 ## Architecture
 
 | Pièce | Rôle |
 |---|---|
-| `EquipmentObservatorySection` | composition : Filters → KpiCards → 5 charts → EquipmentTable |
-| `hooks/useObservatoryEquipmentsQuery` | délègue à **`useSearchAllResults`** (module search — hook générique « charger tout » : pages séquentielles auto-régulées, plafond `maxResults` défaut 5000, `progress {loaded, total}`) ; parse chaque `item.serverData` via `EquipmentSchema` (Zod tolérant : `BoolLike`, `StringOrArray`, `DateLike`) |
-| `prefetch.ts` | params de prefetch **SSR de la 1ʳᵉ page** (loader `buildRoutes`) — même queryKey que le client via `buildObservatoryBaseParams` (fonction partagée) → dashboard plein au premier paint, la suite s'enchaîne après hydratation (~118 Ko gzip pour 500×47 champs) |
-| `hooks/useObservatoryFilters` | filtrage client 7 dimensions (commune, type, EPCI, nature, PMR, propriétaire, APS), état dérivé par `useMemo` |
-| `utils.ts` | coercions (`isTrue`, `normalizeAps`, `toNumber`), agrégations (`countBy`, `uniqSorted`), accès dimensions (`getCommune`, `getEpci`…), **vocabulaire RES centralisé** (`NATURE_VALUES`, `isIndoor`) — testé (`utils.test.ts`) |
-| `components/` | `KpiCards`, `Charts` (recharts via `ui/chart.tsx` : `ChartContainer`/`ChartTooltipContent`), `Filters` (Select Radix), `EquipmentTable` (Table + Badge + pagination Button) |
+| `dimensions.ts` | moteur : résolution des dimensions (chemins pointés via le `getValueByPath` du repo), coercions (`isTrue`, `toNumber`, `toStringList`, `asDisplayString` — gère les `Date` SDK), `fieldsFromDimensions` (projection API DÉRIVÉE des déclarations : on ne demande au backend que ce que le dashboard consomme), maps jetons→classes/var(--…) |
+| `hooks/useObservatoryItemsQuery` | délègue à **`useSearchAllResults`** (module search — « charger tout » : pages séquentielles auto-régulées, plafond, progress) ; items = `serverData` BRUT (pas de schéma métier : seuls les champs déclarés sont lus) |
+| `hooks/useObservatoryFilters` | filtrage CLIENT par kind (égalité / appartenance / booléen), ET strict, **sync URL** `?<id>=<valeur>` (permaliens) |
+| `prefetch.ts` | prefetch **SSR de la 1ʳᵉ page** (loader `buildRoutes`) — même queryKey que le client via `buildObservatoryBaseParams` (fonction partagée) |
+| `components/` | rendus déclaratifs : `Filters` (Select Radix, options dérivées des données), `KpiCards` (5 formes de calcul), `Charts` (5 formes via `ui/chart.tsx`, composition full/half), `ObservatoryTable` (colonnes/tri/badges déclarés) |
 
-## Règles tenues (et pourquoi)
+Le filtrage est côté client **par design** : le dashboard agrège tout le
+dataset en mémoire — le module search reste l'outil des listes paginées
+filtrées serveur.
 
-- **Noms de design** : le type est `equipment-observatory` — le territoire (974)
-  vit dans `baseParams` (config), jamais dans le code. Réutilisable pour un
-  autre territoire en changeant `defaultFilters` (ex. `equipementsSportifs75`).
-- **Couleurs = thème** : palettes des charts en `var(--chart-1..5)` (+
-  `--muted-foreground`, `--destructive`), tooltip thémé par `ui/chart.tsx` —
-  aucune couleur hex : les graphes suivent `config.theme` light/dark du site.
-- **SDK** : on parse `item.serverData` (entités typées) — jamais de merge
-  `{...entity, ...entity.data}` (machinerie interne + proxy de brouillon).
-- **Vocabulaire RES** : les valeurs de `nature` sont des valeurs de DONNÉES du
-  référentiel (françaises) — centralisées dans `NATURE_VALUES`, pas traduites.
-- Pas de `module.config.ts` : le module n'a **pas de routes** — la discovery
-  l'ignore, la section se charge par `lazy()` dans `SectionRenderer` (le chunk
-  recharts ne pèse que sur les pages qui utilisent la section).
+## Règles tenues
 
-## Prérequis backend
+- **Aucun métier en dur** : dataset, dimensions, libellés, couleurs, widgets
+  — tout vient de la config. Le module est réutilisable pour n'importe quel
+  périmètre searchCostum (POI, événements, organisations…).
+- **Prérequis config** : sans `baseParams.defaultFilters` → aucune requête
+  (pas de fallback silencieux sur un dataset) ; sans `dimensions` → rien à
+  afficher (warn DEV dans les deux cas).
+- **Couleurs = thème** : jetons uniquement, validés par le schéma Zod.
+- **SDK** : on lit `item.serverData` (entités typées) — jamais de merge
+  défensif `{...entity, ...entity.data}` (machinerie interne + brouillon).
+- Pas de `module.config.ts` : pas de routes — la section se charge par
+  `lazy()` dans `SectionRenderer` (chunk recharts payé uniquement par les
+  pages qui l'utilisent).
 
-Des POI indexés portant les champs RES, ciblés par `defaultFilters`
-(`source.key` + `type`). **`baseParams.defaultFilters` est obligatoire dans la
-config** : sans périmètre configuré, le hook ne requête RIEN (pas de fallback
-silencieux sur le sourceKey d'un autre site — warn en DEV). Périmètre configuré
-mais sans données : section vide (pas d'erreur).
-
-## Chargement (mesuré sur 3035 équipements réels)
+## Chargement (mesuré sur 3035 items réels)
 
 - Le backend honore `indexStep` sans cap (500→500) ; le paginator SDK et
-  `fetchNextPage` sont **séquentiels par contrat** (curseur dérivé de la page
-  précédente) → pas de pages parallèles sans contourner le paginator
-  (`indexMin`/`indexMax` directs — v2 possible, concurrence à borner à 2-3
-  pour ne pas concentrer la charge backend).
-- v1 retenue : séquentiel auto-régulé + **plafond `maxResults`** (défaut 5000,
-  configurable par `baseParams.maxResults`) + **barre de progression**
-  (`total` connu dès la 1ʳᵉ page) + **prefetch SSR de la page 1** + skeleton
-  avant la 1ʳᵉ donnée. L'attente de fond devient invisible : l'utilisateur a
-  500 équipements sous les yeux dès le premier paint.
-- Le mode « map » (`indexStep: 0`, tout en 1 appel) a été écarté comme défaut :
-  all-or-nothing (pas de progressif, réponse énorme, timeout = tout perdu).
+  `fetchNextPage` sont **séquentiels par contrat** → v1 : séquentiel
+  auto-régulé + plafond `maxResults` + **barre de progression** (total connu
+  dès la 1ʳᵉ page) + **prefetch SSR page 1** + skeleton. ~118 Ko gzip pour
+  500 items dans le HTML ; TTFB 13-43 ms (streaming).
+- Le mode « map » (`indexStep: 0`, tout en 1 appel) écarté comme défaut :
+  all-or-nothing (pas de progressif, timeout = tout perdu).
 
 ## Limites connues / backlog
 
-- Chaque rendu SSR de la page paie le fetch backend de la 1ʳᵉ page (QueryClient
-  par requête) — un cache serveur partagé inter-requêtes est une piste si le
-  TTFB devient un sujet.
+- Chaque rendu SSR de la page paie le fetch backend de la 1ʳᵉ page
+  (QueryClient par requête) — cache serveur partagé si le TTFB devient un sujet.
 - v2 éventuelle : tranches parallèles à concurrence bornée après la page 1
-  (latence ~3×RTT au lieu de N×RTT) — seulement si mesuré nécessaire.
-- `EquipmentSchema` en `.passthrough()` (champs RES additionnels tolérés).
-- `defaultTypes: z.array(z.string())` (cast vers `SearchType[]` dans le hook).
+  (`indexMin`/`indexMax` directs), à mesurer avant.
+- Facettes en cascade (options restreintes par les filtres actifs) : choix
+  actuel = options sur le dataset complet (stables sous la souris).
