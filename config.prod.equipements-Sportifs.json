@@ -58,6 +58,13 @@
           "en": "Facilities"
         },
         "path": "/equipements-sportifs"
+      },
+      {
+        "label": {
+          "fr": "Observatoire",
+          "en": "Observatory"
+        },
+        "path": "/observatoire"
       }
     ],
     "sticky": true,
@@ -249,7 +256,7 @@
         }
       ]
     },
-     {
+    {
       "path": "/equipements-sportifs",
       "title": {
         "fr": "Équipements sportifs - Sport Santé Bien-être",
@@ -1812,6 +1819,44 @@
             }
           }
         } 
+      ]
+    },
+    {
+      "path": "/observatoire",
+      "title": {
+        "fr" : "Observatoire - Equipements sportifs à La Réunion",
+        "en" : "Observatory - Sports facilities in Réunion"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type" : "searchHeader",
+          "id": "section-equipements-filters",
+          "props": {
+            "headline": {
+              "fr": "Les équipement sportif en chiffres",
+              "en": "Sports facilities in numbers"
+            }
+          }
+        },
+        {
+          "type": "observatory-es974",
+          "id": "section-equipements-observatory",
+          "props": {
+            "baseParams": {
+              "defaultTypes": [
+                "poi"
+              ],
+              "defaultFilters": {
+                "$or": {
+                  "source.key": "equipementsSportifs974",
+                  "source.keys": "equipementsSportifs974"
+                },
+                "type": "recoveryCenter"
+              }
+            }
+          }
+        }
       ]
     }
   ],

@@ -87,6 +87,8 @@ const LazySections: {
   "actions-summary": lazy(() => import("@/modules/cagnotte/components/sections/ActionsSummarySection")),
   "finance-summary": lazy(() => import("@/modules/cagnotte/components/sections/FinanceSummarySection")),
   "cagnotte-layout": lazy(() => import("@/modules/cagnotte/components/sections/CagnotteLayoutSection")),
+  "observatory-es974": lazy(() => import("@/modules/observatoire/ObservatoryES974Section")),
+  siteList: lazy(() => import("./SiteListSection")),
 };
 
 // Fallback skeleton pour les sections en cours de chargement
