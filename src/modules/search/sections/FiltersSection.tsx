@@ -219,14 +219,11 @@ export function FiltersSection({
         group.options = [];
         const groupByCountry = shouldGroupScopeListByCountry(group.config?.level, group.config?.countryCode);
         // Remplir les options à partir des données de zone
-        // console.log("group by", group.config?.level);
         filterZoneData?.forEach(zone => {
-          // console.log("filterZoneData", group.config, zone.countryCode, group.config?.countryCode?.includes(zone.countryCode as string));
           if (group.config && group.config.level && !zone.level.some(lvl => group.config?.level?.includes(lvl))) {
             return;
           }
           if(group.config?.countryCode && !group.config.countryCode.includes(normalizeCountryCodeForGrouping(zone.countryCode as string | undefined))) {
-            console.log("skip zone", zone.name, "countryCode", zone.countryCode, "normalized", normalizeCountryCodeForGrouping(zone.countryCode as string | undefined), "group config country codes", group.config.countryCode);
             return;
           }
           // Libellés par langue : `zone.name` par défaut, enrichi par les
@@ -255,7 +252,6 @@ export function FiltersSection({
           };
           group.options?.push(data);
         });
-        // console.log("group options", group.options);
         newFilterGroups.push(group);
       } else if (group.type === "entityList") {
         // Options peuplées dynamiquement depuis la recherche d'entités.
