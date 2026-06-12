@@ -12,7 +12,7 @@ import type { CoFormData, SubmitMode, AllStepsData, SubFormData, AddedOptionsMap
 import type { FinderLinksMap } from "../utils/formParser";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
-import { useCocolight } from "@/hooks/useCocolight";
+import { useCocolightOptional } from "@/hooks/useCocolight";
 
 interface SmartCoFormProps {
   formId?: string;
@@ -214,7 +214,9 @@ export function SmartCoForm({
 
   useLoadNamespace("modules/coform");
   const t = useT("modules/coform");
-  const { me } = useCocolight();
+  // Optionnel : `me` ne sert qu'à activer/scoper la persistance du brouillon —
+  // sans provider (tests) ou sans user, les drafts sont simplement désactivés.
+  const me = useCocolightOptional()?.me;
 
   const allSubFormsFields = useMemo(
     () => (formData ? parseCoFormFields(formData) : []),
