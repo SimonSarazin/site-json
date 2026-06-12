@@ -8,6 +8,8 @@ import NavLink from "../NavLink";
 import LangSwitch from "./LangSwitch";
 import MobileMenuSheet from "./MobileMenuSheet";
 import MobileMenuBrand from "./MobileMenuBrand";
+import NavIcon from "./NavIcon";
+import { Badge } from "@/components/ui/badge";
 import { AuthMenu } from "@/modules/auth";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import { PiggyBankHeaderButton } from "@/modules/cagnotte/components/PiggyBankHeaderButton";
@@ -97,9 +99,11 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
                                     <NavLink
                                         to={item.path}
                                         ariaCurrent={isActive ? "page" : undefined}
-                                        className={`transition-colors font-medium relative group ${isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'} ${hasChildren ? 'transition flex items-center gap-1' : ''}`}
+                                        className={`transition-colors font-medium relative group inline-flex items-center gap-1.5 ${isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
                                     >
+                                        <NavIcon icon={item.icon} />
                                         {t(item.label)}
+                                        {item.badge && <Badge className="text-xs px-2 py-0.5">{t(item.badge.text)}</Badge>}
                                         {hasChildren && <ChevronDown className="w-3 h-3" />}
                                         <span className={`absolute -bottom-1 left-0 h-0.5 bg-primary transition-all ${isActive ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
                                     </NavLink>
@@ -109,7 +113,7 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
                                                 <div className="grid grid-cols-2 gap-6">
                                                     {item.children.map((sub, i) => (
                                                         <NavLink key={i} to={sub.path} className="block">
-                                                            <h4 className="font-bold text-popover-foreground mb-2">{t(sub.label)}</h4>
+                                                            <h4 className="flex items-center gap-1.5 font-bold text-popover-foreground mb-2"><NavIcon icon={sub.icon} />{t(sub.label)}</h4>
                                                             <p className="text-muted-foreground text-xs leading-relaxed">
                                                                 {sub.description ? t(sub.description) : ""}
                                                             </p>
@@ -120,7 +124,7 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
                                                 <div className="space-y-4">
                                                     {item.children.map((sub, i) => (
                                                         <NavLink key={i} to={sub.path} className="block">
-                                                            <h4 className="font-bold text-popover-foreground mb-2">{t(sub.label)}</h4>
+                                                            <h4 className="flex items-center gap-1.5 font-bold text-popover-foreground mb-2"><NavIcon icon={sub.icon} />{t(sub.label)}</h4>
                                                             <p className="text-muted-foreground text-xs leading-relaxed">
                                                                 {sub.description ? t(sub.description) : ""}
                                                             </p>
@@ -209,10 +213,12 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
                                                     key={idx}
                                                     to={item.path}
                                                     ariaCurrent={isActive ? "page" : undefined}
-                                                    className={`block py-2 transition-colors ${isActive ? 'text-primary font-medium' : 'text-muted-foreground hover:text-foreground'}`}
+                                                    className={`flex items-center gap-2 py-2 transition-colors ${isActive ? 'text-primary font-medium' : 'text-muted-foreground hover:text-foreground'}`}
                                                     onClick={close}
                                                 >
+                                                    <NavIcon icon={item.icon} />
                                                     {t(item.label)}
+                                                    {item.badge && <Badge className="ml-auto text-xs px-2 py-0.5">{t(item.badge.text)}</Badge>}
                                                 </NavLink>
                                             );
                                         })}

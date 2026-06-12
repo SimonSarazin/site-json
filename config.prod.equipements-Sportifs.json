@@ -51,21 +51,24 @@
           "fr": "Accueil",
           "en": "Home"
         },
-        "path": "/"
+        "path": "/",
+        "icon": "house"
       },
       {
         "label": {
           "fr": "Equipements",
           "en": "Facilities"
         },
-        "path": "/equipements-sportifs"
+        "path": "/equipements-sportifs",
+        "icon": "dumbbell"
       },
       {
         "label": {
           "fr": "Observatoire",
           "en": "Observatory"
         },
-        "path": "/observatoire"
+        "path": "/observatoire",
+        "icon": "chart-column"
       }
     ],
     "sticky": true,

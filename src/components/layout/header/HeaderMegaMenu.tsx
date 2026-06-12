@@ -8,6 +8,8 @@ import NavLink from "../NavLink";
 import LangSwitch from "./LangSwitch";
 import MobileMenuSheet from "./MobileMenuSheet";
 import MobileMenuBrand from "./MobileMenuBrand";
+import NavIcon from "./NavIcon";
+import { Badge } from "@/components/ui/badge";
 import { ClientOnly } from "../ClientOnly";
 import { AuthMenu } from "@/modules/auth";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
@@ -49,8 +51,10 @@ export default function HeaderMegaMenu({ header }: HeaderMegaMenuProps) {
 
                             return (
                                 <div key={idx} className="relative group">
-                                    <button type="button" className="hover:text-primary text-foreground transition flex items-center gap-1 truncate w-auto cursor-pointer">
+                                    <button type="button" className="hover:text-primary text-foreground transition flex items-center gap-1.5 truncate w-auto cursor-pointer">
+                                        <NavIcon icon={item.icon} />
                                         {t(item.label)}
+                                        {item.badge && <Badge className="text-xs px-2 py-0.5">{t(item.badge.text)}</Badge>}
                                         {hasChildren && <ChevronDown className="w-3 h-3" />}
                                     </button>
 
@@ -79,7 +83,7 @@ export default function HeaderMegaMenu({ header }: HeaderMegaMenuProps) {
                                                     <div className="col-span-2 grid grid-cols-2 gap-6">
                                                         {item.children.slice(1).map((sub, i) => (
                                                             <NavLink key={i} to={sub.path} className="block hover:bg-accent rounded-lg p-2 -m-2 transition">
-                                                                <h4 className="font-bold text-popover-foreground mb-2">{t(sub.label)}</h4>
+                                                                <h4 className="flex items-center gap-1.5 font-bold text-popover-foreground mb-2"><NavIcon icon={sub.icon} />{t(sub.label)}</h4>
                                                                 <p className="text-muted-foreground text-xs leading-relaxed">
                                                                     {sub.description ? t(sub.description) : ""}
                                                                 </p>
@@ -91,7 +95,7 @@ export default function HeaderMegaMenu({ header }: HeaderMegaMenuProps) {
                                                 <div className="grid grid-cols-2 gap-6">
                                                     {item.children.map((sub, i) => (
                                                         <NavLink key={i} to={sub.path} className="block hover:bg-accent rounded-lg p-2 -m-2 transition">
-                                                            <h4 className="font-bold text-popover-foreground mb-2">{t(sub.label)}</h4>
+                                                            <h4 className="flex items-center gap-1.5 font-bold text-popover-foreground mb-2"><NavIcon icon={sub.icon} />{t(sub.label)}</h4>
                                                             <p className="text-muted-foreground text-xs leading-relaxed">
                                                                 {sub.description ? t(sub.description) : ""}
                                                             </p>
@@ -102,7 +106,7 @@ export default function HeaderMegaMenu({ header }: HeaderMegaMenuProps) {
                                                 <div className="space-y-4">
                                                     {item.children.map((sub, i) => (
                                                         <NavLink key={i} to={sub.path} className="block hover:bg-accent rounded-lg p-2 -m-2 transition">
-                                                            <h4 className="font-bold text-popover-foreground mb-2">{t(sub.label)}</h4>
+                                                            <h4 className="flex items-center gap-1.5 font-bold text-popover-foreground mb-2"><NavIcon icon={sub.icon} />{t(sub.label)}</h4>
                                                             <p className="text-muted-foreground text-xs leading-relaxed">
                                                                 {sub.description ? t(sub.description) : ""}
                                                             </p>
@@ -152,16 +156,21 @@ export default function HeaderMegaMenu({ header }: HeaderMegaMenuProps) {
                                 <>
                                     {nav.map((item, idx) => (
                                         <div key={idx} className="space-y-2">
-                                            <div className="font-semibold text-foreground">{t(item.label)}</div>
+                                            <div className="flex items-center gap-2 font-semibold text-foreground">
+                                                <NavIcon icon={item.icon} />
+                                                {t(item.label)}
+                                                {item.badge && <Badge className="ml-auto text-xs px-2 py-0.5">{t(item.badge.text)}</Badge>}
+                                            </div>
                                             {item.children && (
                                                 <div className="pl-4 space-y-2">
                                                     {item.children.map((sub, i) => (
                                                         <NavLink
                                                             key={i}
                                                             to={sub.path}
-                                                            className="block text-sm text-muted-foreground hover:text-primary transition"
+                                                            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition"
                                                             onClick={close}
                                                         >
+                                                            <NavIcon icon={sub.icon} />
                                                             {t(sub.label)}
                                                         </NavLink>
                                                     ))}

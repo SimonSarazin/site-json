@@ -8,6 +8,8 @@ import NavLink from "../NavLink";
 import LangSwitch from "./LangSwitch";
 import MobileMenuSheet from "./MobileMenuSheet";
 import MobileMenuBrand from "./MobileMenuBrand";
+import NavIcon from "./NavIcon";
+import { Badge } from "@/components/ui/badge";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";
 import { AuthMenu } from "@/modules/auth";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
@@ -88,14 +90,16 @@ export default function HeaderTransparentDark({ header }: HeaderTransparentDarkP
                                     to={to}
                                     ariaCurrent={active ? "page" : undefined}
                                     className={`
-                                        px-3 py-2 text-base font-medium rounded-md transition-all duration-200
+                                        inline-flex items-center gap-1.5 px-3 py-2 text-base font-medium rounded-md transition-all duration-200
                                         ${active
                                             ? "text-white bg-white/20"
                                             : "text-white/80 hover:text-white hover:bg-white/10"
                                         }
                                     `}
                                 >
+                                    <NavIcon icon={item.icon} />
                                     {t(item.label)}
+                                    {item.badge && <Badge className="text-xs px-2 py-0.5">{t(item.badge.text)}</Badge>}
                                 </NavLink>
                             );
                         })}
@@ -141,14 +145,16 @@ export default function HeaderTransparentDark({ header }: HeaderTransparentDarkP
                                             onClick={close}
                                             ariaCurrent={active ? "page" : undefined}
                                             className={`
-                                                block px-3 py-2 rounded-md text-sm font-medium transition-all
+                                                flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all
                                                 ${active
                                                     ? "text-white bg-white/20"
                                                     : "text-white/80 hover:text-white hover:bg-white/10"
                                                 }
                                             `}
                                         >
+                                            <NavIcon icon={item.icon} />
                                             {t(item.label)}
+                                            {item.badge && <Badge className="ml-auto text-xs px-2 py-0.5">{t(item.badge.text)}</Badge>}
                                         </NavLink>
                                     );
                                 })

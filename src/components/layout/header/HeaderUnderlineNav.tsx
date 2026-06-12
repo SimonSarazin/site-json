@@ -7,6 +7,8 @@ import NavLink from "../NavLink";
 import LangSwitch from "./LangSwitch";
 import MobileMenuSheet from "./MobileMenuSheet";
 import MobileMenuBrand from "./MobileMenuBrand";
+import NavIcon from "./NavIcon";
+import { Badge } from "@/components/ui/badge";
 import { ClientOnly } from "../ClientOnly";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";
 import { AuthMenu } from "@/modules/auth";
@@ -59,9 +61,11 @@ export default function HeaderUnderlineNav({ header }: HeaderUnderlineNavProps) 
                                     key={idx}
                                     to={item.path}
                                     ariaCurrent={isActive ? "page" : undefined}
-                                    className={`text-lg transition-colors font-medium relative group ${isActive ? 'text-primary' : 'text-white hover:text-primary'}`}
+                                    className={`text-lg transition-colors font-medium relative group inline-flex items-center gap-1.5 ${isActive ? 'text-primary' : 'text-white hover:text-primary'}`}
                                 >
+                                    <NavIcon icon={item.icon} />
                                     {t(item.label)}
+                                    {item.badge && <Badge className="text-xs px-2 py-0.5">{t(item.badge.text)}</Badge>}
                                     <span className={`absolute -bottom-1 left-0 h-0.5 bg-primary transition-all ${isActive ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
                                 </NavLink>
                             );
@@ -148,10 +152,12 @@ export default function HeaderUnderlineNav({ header }: HeaderUnderlineNavProps) 
                                                 key={idx}
                                                 to={item.path}
                                                 ariaCurrent={isActive ? "page" : undefined}
-                                                className={`block py-2 transition-colors ${isActive ? 'text-primary font-medium' : 'text-muted-foreground hover:text-primary'}`}
+                                                className={`flex items-center gap-2 py-2 transition-colors ${isActive ? 'text-primary font-medium' : 'text-muted-foreground hover:text-primary'}`}
                                                 onClick={close}
                                             >
+                                                <NavIcon icon={item.icon} />
                                                 {t(item.label)}
+                                                {item.badge && <Badge className="ml-auto text-xs px-2 py-0.5">{t(item.badge.text)}</Badge>}
                                             </NavLink>
                                         );
                                     })}
