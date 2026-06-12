@@ -14,6 +14,7 @@ import { CommentInput } from "./CommentInput";
 import { ReportDialog } from "../ReportDialog";
 import type { Comment, EntityTypes } from "@communecter/cocolight-api-client";
 import { useCocolight } from "@/hooks/useCocolight";
+import { useAuthModal } from "@/modules/auth";
 import { useFormatComment } from "../../hooks/useFormatComment";
 import { useAddCommentVote } from "../../hooks/useCommentMutations";
 
@@ -40,6 +41,7 @@ export function CommentItem({
 }: CommentItemProps) {
   const t = useT("modules/news");
   const { me } = useCocolight();
+  const { openLogin } = useAuthModal();
   const [replyingTo, setReplyingTo] = useState(false);
   const [editingComment, setEditingComment] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -169,9 +171,8 @@ export function CommentItem({
               <Button
                 variant="ghost"
                 size="sm"
-                disabled={!isConnected}
-                onClick={() => handleCommentLike(commentItem)}
-                className="bg-background md:text-xs text-[9px] h-auto py-1 px-2 hover:bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => (isConnected ? handleCommentLike(commentItem) : openLogin())}
+                className="bg-background md:text-xs text-[9px] h-auto py-1 px-2 hover:bg-transparent"
               >
                 {formattedComment.totalVotes > 0 && <span className="mr-1">{formattedComment.totalVotes}</span>}
                 {t("comments.like")}
@@ -180,9 +181,8 @@ export function CommentItem({
                 <Button
                   variant="ghost"
                   size="sm"
-                  disabled={!isConnected}
-                  onClick={() => isConnected && setReplyingTo(!replyingTo)}
-                  className="bg-background md:text-xs text-[9px] h-auto py-1 px-2 hover:bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() => (isConnected ? setReplyingTo(!replyingTo) : openLogin())}
+                  className="bg-background md:text-xs text-[9px] h-auto py-1 px-2 hover:bg-transparent"
                 >
                   {t("comments.reply")}
                 </Button>
@@ -190,10 +190,9 @@ export function CommentItem({
               <Button
                 variant="ghost"
                 size="sm"
-                disabled={!isConnected}
-                onClick={() => isConnected && handleReportComment(commentItem)}
+                onClick={() => (isConnected ? handleReportComment(commentItem) : openLogin())}
                 aria-label="Signaler un abus"
-                className="bg-background md:text-xs text-[9px] h-auto py-1 px-2 hover:bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-background md:text-xs text-[9px] h-auto py-1 px-2 hover:bg-transparent"
               >
                 <Flag className="w-3 h-3 inline" />
               </Button>

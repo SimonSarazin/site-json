@@ -29,16 +29,13 @@ export function useEditTiersLieu(organization: Organization) {
       for (const [key, value] of Object.entries(payload)) {
         target[key] = value;
       }
+      // Logo posé dans le draft : `save()` (→ `_update`) le route vers le bloc
+      // PROFIL_IMAGE (`updateImageProfil`) en un seul aller-retour, comme l'avatar.
+      if (data._logoFile) {
+        target.profil_avatar = data._logoFile;
+      }
 
       await organization.save();
-
-      if (data._logoFile) {
-        try {
-          await organization.updateImageProfil({ profil_avatar: data._logoFile });
-        } catch (err) {
-          console.error("[useEditTiersLieu] Logo upload failed:", err);
-        }
-      }
 
       return { organization };
     },

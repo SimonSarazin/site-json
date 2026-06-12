@@ -22,6 +22,9 @@
   - [Configuration JSON dans site-config.json](#configuration-json-dans-site-configjson)
   - [Flux d'exécution complet](#flux-dexécution-complet)
   - [Hooks principaux](#hooks-principaux)
+  - [Champs de formulaire partagés (`profile-edit/fields/`)](#champs-de-formulaire-partagés-profile-editfields)
+  - [Formulaire POI équipement sportif](#formulaire-poi-équipement-sportif)
+  - [Actions et boutons : comportement non connecté](#actions-et-boutons--comportement-non-connecté)
   - [Récapitulatif](#récapitulatif)
   - [Voir aussi](#voir-aussi)
 
@@ -67,9 +70,12 @@ src/modules/profil/
 │   │   ├── AddEventModal.tsx
 │   │   ├── AddOrganizationModal.tsx
 │   │   ├── AddPoiModal.tsx
+│   │   ├── AddPoiEquipementModal.tsx  // Nouvelle modale POI équipement sportif (add + edit)
 │   │   ├── AddProjectModal.tsx
 │   │   ├── JsonFormModal.tsx
 │   │   ├── ModalRegistry.tsx
+│   │   ├── PoiEquipementForm.tsx      // Wizard 4 étapes (présentationnel, sans mutation)
+│   │   ├── poiEquipement.ts           // Constantes, helpers purs, scope, buildEditDefaults
 │   │   ├── RegisterCyberReunionModal.tsx
 │   │   └── index.ts
 │   ├── members/                    // Gestion des membres
@@ -81,27 +87,31 @@ src/modules/profil/
 │   │   ├── EditBasicInfoTab.tsx
 │   │   ├── EditContactTab.tsx
 │   │   ├── EditEventDatesTab.tsx
-│   │   ├── EditLocationTab.tsx
+│   │   ├── EditLocationTab.tsx     // Coordonnées géo injectées sur sélection code postal/rue
+│   │   ├── EditModalRegistry.tsx   // Registry lazy modales édition (dont edit-poi-equipement)
 │   │   ├── EditProfileModal.tsx
 │   │   ├── EditScheduleTab.tsx
 │   │   ├── EditSocialTab.tsx
 │   │   ├── ProfileEditDropdown.tsx
 │   │   ├── ProfileImageUpload.tsx
-│   │   └── fields/                 // Champs de formulaire
+│   │   └── fields/                 // Champs de formulaire partagés
 │   │       ├── FormFieldDescription.tsx
 │   │       ├── FormFieldName.tsx
 │   │       ├── FormFieldPublic.tsx
 │   │       ├── FormFieldSelect.tsx
 │   │       ├── FormFieldShortDescription.tsx
 │   │       ├── FormFieldSlug.tsx
-│   │       ├── FormFieldTags.tsx
+│   │       ├── FormFieldTags.tsx          // searchable?: boolean (défaut true)
 │   │       ├── FormFieldType.tsx
 │   │       ├── FormFieldUrl.tsx
+│   │       ├── FormFieldUrlList.tsx       // NOUVEAU: liste d'URLs répétable (string[])
 │   │       ├── IconFormField.tsx
+│   │       ├── ImageUploadField.tsx       // NOUVEAU: upload + recadrage (ImageCropDialog)
 │   │       ├── ParentInfoReadonly.tsx
 │   │       ├── SelectParent.tsx
 │   │       ├── TextareaFormField.tsx
 │   │       ├── TranslatedFormMessage.tsx
+│   │       ├── genericFields.tsx          // NOUVEAU: FormFieldText/Number/Switch/SelectObject/Date/CheckboxGroup
 │   │       └── index.ts
 │   ├── sections/
 │   │   ├── ProfileHeader.tsx       // En-tête du profil (hero, simple, cover, minimal)
@@ -171,10 +181,10 @@ src/modules/profil/
 │       └── relationship.ts         // Mutations relations entité↔entité
 ├── hooks/
 │   ├── mutationUtils.ts            // Utilitaires pour mutations
-│   ├── useAddMutations.tsx         // Mutations d'ajout d'entités
+│   ├── useAddMutations.tsx         // Mutations d'ajout/mise à jour d'entités (useAddPoi + useUpdatePoi)
 │   ├── useCommentVotes.tsx         // Votes sur commentaires
 │   ├── useConfirmationDialog.tsx   // Dialog de confirmation
-│   ├── useEditTiersLieu.tsx        // Mutation édition tiers-lieu (entity-oriented)
+│   ├── useEditTiersLieu.tsx        // Mutation édition tiers-lieu (entity-oriented, profil_avatar)
 │   ├── useEntityLabels.tsx         // Labels d'entité
 │   ├── useFormatProfileEntity.tsx  // Hook pour formater les données
 │   ├── useFriendsQuery.tsx         // Query amis
@@ -183,6 +193,7 @@ src/modules/profil/
 │   ├── useMembersQuery.tsx         // Query membres
 │   ├── useNewsDetailUrlGenerator.tsx // Générateur URL détail news
 │   ├── useOrganizationMutations.tsx // Mutations organisation
+│   ├── usePoiEquipementMatches.ts  // NOUVEAU: détection doublons POI (useSearchQuery + debounce)
 │   ├── useProfileEntity.tsx        // Hook pour accéder à l'entité typée
 │   ├── useProfileFormData.tsx      // Données formulaire profil
 │   ├── useProfileMutations.tsx     // Mutations profil
@@ -708,11 +719,17 @@ function ProfilePage() {
 
 Clés i18n ajoutées récemment :
 
-| Clé | fr | en |
+| Clé (namespace `modules/profil`) | fr | en |
 |-----|----|----|
 | `ProfileRelated.empty.organizations` | `"Aucune organisation liée"` | `"No related organizations"` |
+| `ImageUploadField.dropHint` | `"Glisser-déposer ou cliquer pour choisir"` | `"Drag & drop or click to choose"` |
+| `ImageUploadField.remove` | `"Retirer l'image"` | `"Remove image"` |
+| `ImageUploadField.imageOnly` | `"Seules les images sont acceptées."` | `"Only images are accepted."` |
+| `AddPoiEquipement.*` (100+ clés) | Libellés/étapes/champs du wizard équipement | (parité fr/en complète) |
 
-Ces clés sont utilisées par `ProfileRelated.tsx` dans `getEmptyTitle()` pour le cas `relationType === "organizations"`.
+Les clés `AddPoiEquipement` couvrent : titres/descriptions par mode (add/edit), 4 étapes (`general`, `legal`, `structure`, `usage`), indicateur de progression (`stepIndicator`/`stepAria`), section matches (doublons détectés), tous les champs et placeholders des sélecteurs, blocs PMR, PSHS, boutons de navigation. La parité fr/en est complète dans `i18n/fr.json` et `i18n/en.json` (`src/modules/profil/i18n/`).
+
+Ces clés sont utilisées par `ProfileRelated.tsx` (`getEmptyTitle()`) et les nouveaux composants décrits ci-dessous.
 
 ## Configuration JSON dans site-config.json
 
@@ -858,10 +875,13 @@ Le module profil expose de nombreux hooks specialises :
 | `useProfileEntity` | `hooks/useProfileEntity.tsx` | Accès à l'entité typée depuis le contexte |
 | `useFormatProfileEntity` | `hooks/useFormatProfileEntity.tsx` | Formatage des données pour l'affichage |
 | `useProfilPermissions` | `hooks/useProfilPermissions.ts` | Permissions du profil courant |
-| `useAddMutations` | `hooks/useAddMutations.tsx` | Mutations d'ajout d'entités |
+| `useAddPoi` | `hooks/useAddMutations.tsx` | Mutation création POI (extraFields, navigateOnSuccess) |
+| `useUpdatePoi` | `hooks/useAddMutations.tsx` | Mutation édition POI (patch différentiel + profil_avatar) |
+| `usePoiEquipementMatches` | `hooks/usePoiEquipementMatches.ts` | Détection doublons POI par adresse/type (debounce 400 ms) |
 | `useMembershipQuery` | `hooks/useMembershipQuery.tsx` | Query membership |
 | `useMembersQuery` | `hooks/useMembersQuery.tsx` | Query membres |
 | `useProfileMutations` | `hooks/useProfileMutations.tsx` | Mutations profil (edit, upload) |
+| `useEditTiersLieu` | `hooks/useEditTiersLieu.tsx` | Mutation édition tiers-lieu (profil_avatar dans draft) |
 | `useRelatedEntities` | `hooks/useRelatedEntities.tsx` | Entités liées (projets, events, poi, organisations partenaires) |
 | `useRelationshipMutations` | `hooks/useRelationshipMutations.ts` | Mutations relations (follow, friend) |
 | `useProfileSetup` | `hooks/useProfileSetup.ts` | Setup initial du profil |
@@ -907,9 +927,11 @@ La modale `AddTiersLieuxModal` (`src/modules/profil/components/add/AddTiersLieux
 - `TiersLieuxForm` (`src/modules/profil/components/add/TiersLieuxForm.tsx`) — Formulaire react-hook-form + Zod en 5 onglets :
   1. **Identification** (`info`) : nom, description courte, type de structure, mode de gestion
   2. **Contact** (`contact`) : localisation (via `EditLocationTab`) + email + téléphone
-  3. **Médias** (`media`) : logo + URL vidéo. **L'upload de photos est désactivé** (UI, state et handlers commentés via `TODO(photos)`) — non géré côté backend pour l'instant. Seul le logo reste fonctionnel dans cet onglet.
+  3. **Médias** (`media`) : logo (via `<ImageUploadField>` partagé, remplace l'ancien bloc inline) + URL vidéo. **L'upload de photos est désactivé** (UI, state et handlers commentés via `TODO(photos)`) — non géré côté backend pour l'instant. Seul le logo reste fonctionnel dans cet onglet.
   4. **En ligne** (`online`) : site web, liens sociaux
   5. **Détails** (`details`) : horaires d'ouverture par jour de la semaine, description longue (Markdown)
+
+`TiersLieuxForm` accepte désormais une prop `existingLogoUrl?: string` (passée par `EditTiersLieuxModal` depuis `organization.serverData`) pour afficher le logo existant en aperçu lors de l'édition.
 
 ### Schéma Zod (`tiersLieuxSchema`)
 
@@ -990,10 +1012,12 @@ Mutation d'édition d'une organisation tiers-lieu existante. Pattern entity-orie
 2. Calcule `addTags = config.costum?.mainTag ? [config.costum.mainTag] : []` (tag costum à garantir)
 3. Construit le payload via `buildTiersLieuxPayload(data, { existingTags, addTags })` — merge sans dupliquer (Set), n'écrase pas
 4. Assigne les champs directement sur `organization.data` (mutation de l'objet SDK)
-5. Appelle `organization.save()` pour persister (diff/patch géré par le SDK)
-6. Si `data._logoFile` présent → `organization.updateImageProfil({ profil_avatar: file })`
+5. Si `data._logoFile` présent → pose `target.profil_avatar = data._logoFile` dans le draft (avant `save()`)
+6. Appelle **un seul** `organization.save()` : le SDK route `profil_avatar` vers le bloc `PROFIL_IMAGE` (`updateImageProfil`) en un aller-retour — **plus d'appel séparé** à `updateImageProfil`
 
 Invalide `PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(slug)` après succès.
+
+> **Idiome `profil_avatar` (commit `c8ad1e6`)** : Avant, le logo était uploadé en deux étapes (`save()` puis `updateImageProfil()`). Désormais on pose `profil_avatar: File` dans le draft avant `save()` : le SDK route lui-même le champ vers le bloc `PROFIL_IMAGE`, un seul aller-retour. Même idiome utilisé par `useAddTiersLieu`, `useAddPoi` et `useUpdatePoi`.
 
 > **Merge tags (commit `7460856`)** : `organization.save()` écrase `tags` avec la valeur du payload. Sans merge explicite, on perdait les tags existants (notamment le `costum.mainTag`). Les options `existingTags` + `addTags` de `buildTiersLieuxPayload` dédoublonnent via `Set` et préservent l'ordre.
 
@@ -1113,10 +1137,13 @@ Les hooks par type (`useOrgEntityActions`, `useUserEntityActions`, etc.) filtren
 
 ```ts
 const editModalRegistry: Record<string, () => Promise<{ default: ComponentType<EditModalProps> }>> = {
-  "edit-profile":     () => import("./EditProfileModal"),
-  "edit-tiers-lieux": () => import("../edit/EditTiersLieuxModal"),
+  "edit-profile":        () => import("./EditProfileModal"),
+  "edit-tiers-lieux":    () => import("../edit/EditTiersLieuxModal"),
+  "edit-poi-equipement": () => import("../add/AddPoiEquipementModal"), // mode="edit", poi=props.entity
 };
 ```
+
+`"edit-poi-equipement"` réutilise `AddPoiEquipementModal` en mode `edit` : la modale est déclenchée depuis le bouton « Modifier » du profil d'un POI (via `editModalMatch`) ou depuis `PoiDetailSSBE` (module search). Le wrapper `EditModalRegistry` caste `props.entity` en `Poi`.
 
 **`resolveEditModalName(entity, config)`** — Détermine quel modal ouvrir (résolution **config-driven via `editModalMatch`**, cf. section "Édition de Tiers-lieu") :
 1. Lit `config.profiles[kind].editModal` pour le modal customisé déclaré pour ce kind
@@ -1170,6 +1197,323 @@ Il lit le paramètre `component` de la sous-route active et rend dynamiquement l
 ## `ProfileErrorBoundary`
 
 `src/modules/profil/components/ProfileErrorBoundary.tsx` est défini comme `errorElement` sur la route principale `profil/:slug`. Affiche un message d'erreur adapté (profil non trouvé, accès refusé, erreur réseau) sans casser le layout global.
+
+---
+
+---
+
+## Champs de formulaire partagés (`profile-edit/fields/`)
+
+Depuis le commit `c8ad1e6`, plusieurs champs de formulaire ont été extraits/créés dans `src/modules/profil/components/profile-edit/fields/` pour être réutilisés par `PoiEquipementForm`, `TiersLieuxForm` et tout futur formulaire du module.
+
+### `ImageUploadField` (`fields/ImageUploadField.tsx`)
+
+Champ contrôlé d'upload d'image avec recadrage intégré. Réutilise `ImageCropDialog` du module news (même flux que `ProfileImageUpload`).
+
+**Props :**
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `value` | `File \| null` | Fichier choisi (déjà recadré). Contrôlé. |
+| `onChange` | `(file: File \| null) => void` | Callback à chaque changement de fichier. |
+| `existingUrl?` | `string` | URL de l'image actuelle (édition) — affichée en aperçu tant qu'aucune nouvelle n'est choisie. |
+| `aspect?` | `number` | Ratio de recadrage imposé (défaut `1` = carré). |
+| `shape?` | `"square" \| "circle"` | Forme de l'aperçu (coins arrondis ou rond). Défaut `"square"`. |
+| `label?` | `string` | Label affiché au-dessus du champ. |
+| `hint?` | `string` | Texte d'aide sous le label. |
+
+**Comportement :**
+- Sélection via clic ou drag-and-drop. Valide `file.type.startsWith("image/")`.
+- Ouvre `ImageCropDialog` avec le ratio `aspect` configuré.
+- Renvoie un `File` recadré via `onChange`. L'aperçu utilise un `objectURL` révoqué à chaque changement pour éviter les fuites mémoire.
+- Le bouton de suppression (croix) n'est visible que si `value` est non null (image existante `existingUrl` est affichée mais ne constitue pas une valeur du champ — on ne peut pas la "désélectionner" via ce bouton).
+- **Utilisé par** : `TiersLieuxForm` (onglet Médias, logo), `PoiEquipementForm` (étape Général, photo équipement).
+
+Le fichier est transmis au formulaire via un champ `_imageFile` (ou `_logoFile` côté tiers-lieux) puis posé dans le draft SDK sous la clé `profil_avatar` avant `save()`.
+
+### `FormFieldUrlList` (`fields/FormFieldUrlList.tsx`)
+
+Liste d'URLs répétable pour un champ `string[]` : un `<input type="url">` par entrée, boutons d'ajout/suppression.
+
+**Props :**
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `control` | `Control<T>` | Contrôle react-hook-form. |
+| `name` | `FieldPath<T>` | Nom du champ (type `string[]`). |
+| `label` | `string` | Label du groupe. |
+| `addLabel` | `string` | Texte du bouton d'ajout. |
+| `removeLabel` | `string` | `aria-label` du bouton de suppression. |
+| `placeholder?` | `string` | Placeholder des inputs. |
+
+Remplace un `FormFieldTags` inadapté pour les URLs (pas de recherche de tags, validation/format URL natif via `type="url" inputMode="url"`). **Utilisé par** `PoiEquipementForm` (étape Usage, champ `urls`).
+
+### `FormFieldTags` — prop `searchable` (`fields/FormFieldTags.tsx`)
+
+Nouvelle prop `searchable?: boolean` (défaut `true`). Quand `false`, le composant interne `TagInput` est passé en saisie libre (valeurs hors tags existants acceptées, sans autocomplète). **Utilisé par** `PoiEquipementForm` pour le champ `inst_part_type` (types de partenariat).
+
+### Champs génériques (`fields/genericFields.tsx`)
+
+Six composants react-hook-form génériques, i18n-agnostiques (le label déjà traduit est passé en prop) :
+
+| Composant | Description |
+|-----------|-------------|
+| `FormFieldText<T>` | `<input type="text">` (ou `type` personnalisable). String. |
+| `FormFieldNumber<T>` | `<input type="number">`. Convertit `"" → undefined`, sinon `Number`. Valeur form typée `number`. |
+| `FormFieldSwitch<T>` | Switch on/off dans un bloc bordé (`flex + justify-between`). Booléen. |
+| `FormFieldSelectObject<T>` | `SelectObject` avec options `readonly string[]`. Supporte `multiple?: boolean` (valeur `string[]` si `true`, `string` sinon). |
+| `FormFieldDate<T>` | `DatePickerInput`. Valeur form `"YYYY-MM-DD"`. |
+| `FormFieldCheckboxGroup<T>` | Grille de cases à cocher pour `string[]`. Options `readonly string[]`. |
+
+Tous exportent via `fields/index.ts` et sont réutilisés par `PoiEquipementForm` et `TiersLieuxForm` (pour `ImageUploadField`).
+
+---
+
+## Formulaire POI équipement sportif
+
+### Vue d'ensemble
+
+Le formulaire d'ajout/édition d'un POI de type équipement sportif (contexte SSBE / Réunion) est organisé en deux couches :
+
+- **`AddPoiEquipementModal`** (`components/add/AddPoiEquipementModal.tsx`) — wrapper Dialog mince, porte la résolution du scope, les valeurs initiales, les mutations et l'invalidation du cache.
+- **`PoiEquipementForm`** (`components/add/PoiEquipementForm.tsx`) — formulaire wizard présentationnel, monté dans la `DialogContent`. Ne connaît ni la mutation ni le Dialog.
+
+Ce pattern est identique à `AddTiersLieuxModal` / `TiersLieuxForm`.
+
+### `ModalRegistry` : clé `"add-poi-equipement"`
+
+Enregistré dans `ModalRegistry.tsx` (`src/modules/profil/components/add/ModalRegistry.tsx`) :
+
+```ts
+"add-poi-equipement": () => import("./AddPoiEquipementModal").then(m => ({ default: m.AddPoiEquipementModal })),
+```
+
+Déclenchement depuis un bouton d'action config-driven (section `profile-actions` ou `profile-header`) avec `addConfig: [{ modal: "add-poi-equipement" }]`.
+
+### `poiEquipement.ts` — constantes et helpers
+
+`src/modules/profil/components/add/poiEquipement.ts` regroupe tous les éléments purs du domaine équipement sportif :
+
+**Étapes du wizard :**
+
+```ts
+export const STEP_ORDER = ["general", "legal", "structure", "usage"] as const;
+export type StepKey = (typeof STEP_ORDER)[number];
+```
+
+| Étape | Champs requis | Description |
+|-------|--------------|-------------|
+| `general` | `name`, `equip_type_name`, adresse complète | Nom, type d'équipement, image, adresse (via `EditLocationTab`), détection doublons |
+| `legal` | aucun | Propriétaire, dates, institution, type de gestionnaire, partenariat |
+| `structure` | aucun | Dimensions, nature/sol, accessibilité (handicap/transport/PMR), PSHS, locaux |
+| `usage` | `aps_name` (au moins 1) | URLs, utilisateurs, accès libre, sports pratiqués |
+
+**Scope (`PoiEquipementScope`) :**
+
+```ts
+export interface PoiEquipementScope {
+  parentId: string;   // id de l'entité costum (source de vérité : useCocolight().entity.id)
+  sourceKey: string;  // slug de l'entité costum
+  poiType: string;    // type POI SDK (ex: "recoveryCenter")
+  addressCountry: string; // code pays (ex: "RE")
+}
+```
+
+Le scope est résolu dynamiquement par `resolvePoiEquipementScope(entity)` depuis `useCocolight().entity` — les constantes `DEFAULT_POI_EQUIPEMENT_SCOPE` (fallback hardcodé SSBE Réunion : `parentId: "6a04155ed047177b92399685"`, `sourceKey: "equipementsSportifs974"`) ne sont utilisées qu'en cas d'entité absente. Le scope s'adapte automatiquement à chaque déploiement.
+
+**Helpers de coercion `serverData` → formulaire :**
+
+| Fonction | Usage |
+|----------|-------|
+| `isFilled(value)` | Vrai si string non vide ou valeur truthy |
+| `toStringValue(value)` | `unknown → string` |
+| `toNumberValue(value)` | `unknown → number \| undefined` (pour `equip_long`/`equip_larg`/`equip_surf`) |
+| `toBooleanValue(value)` | `unknown → boolean` (reconnaît `"true"`, `"1"`, `"oui"`, `"yes"`) |
+| `toStringArray(value)` | `unknown → string[]` (split virgule si string) |
+| `toDateInput(value)` | `Date \| string ISO → "YYYY-MM-DD"` (pour `DatePickerInput`) |
+| `toggleArrayValue(values, value)` | Toggle d'un élément dans un tableau |
+
+**Valeurs initiales :**
+
+```ts
+createEmptyDefaults(scope): AddPoiFormData   // Pour le mode add
+buildEditDefaults(poi: Poi | null): AddPoiFormData  // Pour le mode edit (lit serverData typé)
+```
+
+`buildEditDefaults` lit `poi.serverData` via une index signature locale (`getField`) et l'objet `address` pour les sous-champs d'adresse. Les valeurs costum non modélisées dans le type SDK sont accédées via l'index signature : c'est la seule coercion légitime dans ce contexte formulaire.
+
+**Projection des champs backend (`POI_DETAIL_FIELDS`) :**
+
+Constante exportée listant les ~50 champs projetés par le backend lors des recherches d'équipements (`usePoiEquipementMatches`). Inclut les champs image (`profilImageUrl`, `profilMediumImageUrl`, `profilThumbImageUrl`) pour que `PoiDetailSSBE`/`CardPoiSSBE` puissent afficher l'image sans re-fetch.
+
+### `PoiEquipementForm` — formulaire wizard
+
+**Signature :**
+
+```ts
+interface PoiEquipementFormProps {
+  mode: "add" | "edit";
+  defaultValues: AddPoiFormData;
+  scope: PoiEquipementScope;
+  parent?: EntityTypes | null;
+  existingImageUrl?: string;            // aperçu image existante en édition
+  onSubmit: (data: PoiEquipementEditPayload) => Promise<void>;
+  isSubmitting: boolean;
+}
+```
+
+**Types de payload :**
+
+```ts
+// Add : payload complet
+export interface PoiEquipementSubmitPayload extends AddPoiFormData {
+  _imageFile?: File | null;
+}
+
+// Edit : patch partiel (seuls les champs modifiés)
+export type PoiEquipementEditPayload = Partial<AddPoiFormData> & { _imageFile?: File | null };
+```
+
+**Navigation entre étapes :**
+- Boutons numérotés cliquables + boutons Précédent/Suivant/Valider
+- Indicateur visuel d'erreur (pastille rouge) sur un onglet même quand il n'est pas actif — évite les erreurs silencieuses sur un onglet non affiché
+- `handleNext()` : déclenche `form.trigger()` + validation des champs adresse avant de passer à l'étape suivante
+- `handleInvalidSubmit()` : saute au premier onglet en erreur + toast
+
+**Auto-calcul de la surface :**
+
+```ts
+// equip_surf = equip_long × equip_larg (auto, useEffect)
+// Si l'un des deux est absent → equip_surf = undefined
+```
+
+**Détection de doublons :**
+
+Pendant l'étape `general`, une zone de résultats affiche les équipements existants à la même adresse (code postal + type) via `usePoiEquipementMatches`. Chaque résultat est cliquable et ouvre `PoiDetailSSBE` en overlay (les données sont déjà complètes grâce à `POI_DETAIL_FIELDS` — pas de re-fetch).
+
+**Mode édition — patch différentiel :**
+
+`buildEditPatch(current)` compare les valeurs courantes aux `defaultValues` initiaux et ne renvoie que les champs réellement modifiés. L'adresse est traitée comme un bloc atomique : si un seul sous-champ change, tous les champs d'adresse + `geo`/`geoPosition` sont inclus dans le patch (sinon `transformFormDataWithAddress` reconstruirait une adresse partielle).
+
+### `AddPoiEquipementModal` — wrapper Dialog
+
+```ts
+interface AddPoiEquipementModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  mode?: "add" | "edit";   // défaut "add"
+  poi?: EntityTypes | null; // requis en mode edit
+  parent?: EntityTypes | null;
+}
+```
+
+**Responsabilités :**
+1. Résolution du scope via `resolvePoiEquipementScope(entity)` (entité = `useCocolight().entity`)
+2. Construction du champ `source` (injecté en `extraFields` à `useAddPoi`) pour scoper le POI au costum
+3. Choix des valeurs initiales (`createEmptyDefaults` ou `buildEditDefaults`)
+4. Appel de `useAddPoi(parent, extraFields, { navigateOnSuccess: false })` (add) ou `useUpdatePoi(poi)` (edit)
+5. Après succès : invalide les clés React Query `SEARCH_QUERY_KEYS.RESULTS_PREFIX("searchCostumStatic")` et `SEARCH_QUERY_KEYS.RESULTS_PREFIX("poi-equipement-matches")` pour rafraîchir la liste de recherche
+
+### `schemaForm.ts` — `addPoiSchema` étendu
+
+Le schéma `addPoiSchema` (`src/modules/profil/schemaForm.ts`) a été étendu avec tous les champs costum équipement sportif (tous optionnels) :
+
+| Groupe | Champs |
+|--------|--------|
+| **Identification** | `equip_type_name`, `equip_type_famille`, `categorie` |
+| **Juridique** | `equip_prop_nom`, `equip_prop_type`, `equip_gest_type`, `inst_nom`, `inst_part_bool`, `inst_part_type`, `inst_date_creation`, `inst_enqu_date`, `equip_maj_date` |
+| **Structure** | `equip_nature`, `equip_sol`, `equip_long`, `equip_larg`, `equip_surf` (number), `equip_eclair`, `equip_douche`, `equip_loc_type` |
+| **Accessibilité** | `inst_acc_handi_bool/type`, `inst_trans_bool/type`, `equip_pmr_acc/chem/douche/sanit/trib/vest` |
+| **PSHS** | `equip_pshs_aire/sanit/trib/sign/vest/chem` |
+| **Usage** | `aps_name` (string[]), `equip_acc_libre`, `equip_utilisateur` (string[]) |
+
+`equip_surf`, `equip_long`, `equip_larg` sont typés `z.number().optional()` (pas `z.string()`) — la coercion string→number est faite dans `FormFieldNumber` et `toNumberValue`.
+
+### `usePoiEquipementMatches` (`hooks/usePoiEquipementMatches.ts`)
+
+Hook de détection de doublons via le hook canonique `useSearchQuery`.
+
+**Signature :**
+
+```ts
+function usePoiEquipementMatches(params: {
+  postalCode: string;
+  equipTypeName: string;
+  streetAddress: string;
+  scope: PoiEquipementScope;
+}): {
+  matches: Poi[];
+  isLoading: boolean;
+  isError: boolean;
+  isSearched: boolean;  // true si postalCode + equipTypeName sont renseignés
+}
+```
+
+- Applique un debounce 400 ms sur les trois paramètres texte pour éviter les requêtes à chaque frappe
+- La recherche n'est déclenchée que si `postalCode` et `equipTypeName` sont remplis (`searchType: null` sinon → `useSearchQuery` court-circuite sans appel réseau)
+- Utilise `buildPoiMatchFilters(scope, params)` : filtre sur `address.postalCode`, `equip_type_name`, `address.streetAddress` (si renseignée), et scope costum (`source.key`, `source.keys`, ou `parent.{parentId}`)
+- Préfixe de clé React Query : `"poi-equipement-matches"` (invalidé par `AddPoiEquipementModal` après save)
+- `transformedResults` de `useSearchQuery` sont déjà des entités `Poi` revifiées — aucun `fromEntityJSON` ni accès brut
+
+### `useAddPoi` et `useUpdatePoi` (`hooks/useAddMutations.tsx`)
+
+**`useAddPoi(entity?, extraFields?, options?)`** — étendu :
+
+| Paramètre | Nouveau |
+|-----------|---------|
+| `extraFields?: Record<string, unknown>` | Injecté dans le payload de création (ex. `source` pour scoper au costum) |
+| `options?.navigateOnSuccess?: boolean` | `false` → rester sur la page courante après ajout (défaut `true`) |
+
+Le hook accepte désormais `PoiEquipementSubmitPayload` (= `AddPoiFormData & { _imageFile?: File }`) : `_imageFile` est extrait du payload avant transformation, puis posé comme `profil_avatar` dans le draft avant `save()`.
+
+**`useUpdatePoi(poi: EntityTypes | null)`** — nouveau hook :
+
+```ts
+export function useUpdatePoi(poi: EntityTypes | null): UseMutationResult<{ poi: EntityTypes }, PoiEquipementEditPayload>
+```
+
+Pattern entity-oriented : assigne le patch différentiel sur `poi.data` + `profil_avatar` si image, puis `poi.save()` en un aller-retour. Invalide `PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(poi.slug)`.
+
+**`logCocolightError(context, err, payload?)`** — fonction utilitaire privée dans `useAddMutations.tsx` :
+
+Logue les erreurs de la lib Cocolight de façon exhaustive (`name`, `message`, `status`, `messages` pour `ApiValidationError`, `details`, `responseData`, `payloadSent`). Utilisé dans les blocs `catch` de `useAddPoi` et `useUpdatePoi`.
+
+### `EditLocationTab` — coordonnées géo automatiques
+
+`src/modules/profil/components/profile-edit/EditLocationTab.tsx` injecte désormais les coordonnées géographiques dans le formulaire à deux moments :
+
+1. **Sélection de la ville** (un seul code postal → auto-sélectionné) : pose `geo` et `geoPosition` depuis `pc.geo`/`pc.geoPosition` comme valeur initiale (coordonnées niveau ville).
+2. **Sélection du code postal** (liste) : met à jour `geo`/`geoPosition` depuis le code postal choisi.
+3. **Sélection de la rue** (API BAN) : affine avec les coordonnées précises du numéro — `street.geo = [lon, lat]` → `{ "@type": "GeoCoordinates", latitude: lat, longitude: lon }` pour `geo`, `{ type: "Point", coordinates: [lon, lat] }` pour `geoPosition`.
+
+---
+
+## Actions et boutons : comportement non connecté
+
+### `ProfileActions` (`components/actions/ProfileActions.tsx`)
+
+Depuis le commit `c8ad1e6`, la barre d'actions du profil affiche un `<LoginButton size="sm" />` (module auth) pour les visiteurs non connectés qui ne sont pas sur leur propre profil :
+
+```tsx
+{!isOwnProfile && !isConnected && <LoginButton size="sm" />}
+```
+
+Ce bouton remplace l'absence de bouton d'action visible pour un utilisateur anonyme. Il déclenche l'`AuthModal` du module auth (voir [doc/23-module-auth.md](23-module-auth.md)).
+
+### `ActionButtonGroup` (`components/ActionButtonGroup.tsx`)
+
+Les deux composants internes `DynamicModalButton` et `JoinDropdownButton` utilisaient `toast.error(t("Vous devez être connecté"))` lorsqu'un utilisateur non connecté cliquait sur un bouton d'action. Ce comportement a été remplacé par `openLogin()` du hook `useAuthModal` (module auth) :
+
+```ts
+// Avant
+toast.error(t("Vous devez être connecté"));
+
+// Maintenant
+const { openLogin } = useAuthModal();
+openLogin();
+```
+
+L'utilisateur voit ainsi le formulaire de connexion au lieu d'un simple toast d'erreur. Le mécanisme `useAuthModal` / `AuthModal` est décrit dans [doc/23-module-auth.md](23-module-auth.md).
 
 ---
 

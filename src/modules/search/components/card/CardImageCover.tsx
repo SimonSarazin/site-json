@@ -20,7 +20,7 @@ const STAT_ICONS: Record<TiersLieuxStatKind, LucideIcon> = {
   accommodation: UtensilsCrossed,
 };
 
-export default function CardTiersLieux({
+export default function CardImageCover({
   item,
   onClick,
 }: SearchCardProps) {

@@ -41,7 +41,6 @@
 
   /* Additional brand colors */
   --teal: oklch(0.55 0.12 185);
-  --teal-light: oklch(0.94 0.03 185);
   --teal-dark: oklch(0.42 0.10 185);
 
   --coral: oklch(0.68 0.18 30);
@@ -53,7 +52,6 @@
   --ocean-dark: oklch(0.42 0.12 245);
 
   --success: oklch(0.55 0.14 155);
-  --success-light: oklch(0.95 0.03 155);
 
   --warning: oklch(0.75 0.18 80);
   --warning-light: oklch(0.96 0.03 80);
@@ -109,8 +107,6 @@
   --badge-in-progress: oklch(0.55 0.18 240);
   --btn-activity: oklch(0.35 0.15 270);
   --btn-structure: oklch(0.55 0.18 240);
-  --schedule-tag-bg: oklch(0.95 0.01 250);
-  --schedule-tag-fg: oklch(0.4 0.05 260);
   --gradient-hero: linear-gradient(135deg,oklch(0.70 0.16 180),oklch(0.65 0.17 230));
 }
 
@@ -144,7 +140,6 @@
   --ring: oklch(0.65 0.13 185);
 
   --teal: oklch(0.65 0.13 185);
-  --teal-light: oklch(0.30 0.05 185);
   --teal-dark: oklch(0.75 0.10 185);
 
   --coral: oklch(0.65 0.17 30);
@@ -249,7 +244,6 @@
 
   /* Teal */
   --color-teal: oklch(0.58 0.12 180);
-  --color-teal-light: oklch(0.94 0.04 180);
   --color-teal-dark: oklch(0.42 0.10 180);
 
   /* Coral */
@@ -264,7 +258,6 @@
 
   /* Success */
   --color-success: oklch(0.58 0.14 160);
-  --color-success-light: oklch(0.95 0.04 160);
 
   /* Warning */
   --color-warning: oklch(0.75 0.17 75);
@@ -297,8 +290,6 @@
   --color-badge-in-progress: var(--badge-in-progress);
   --color-btn-activity: var(--btn-activity);
   --color-btn-structure: var(--btn-structure);
-  --color-schedule-tag-bg: var(--schedule-tag-bg);
-  --color-schedule-tag-fg: var(--schedule-tag-fg);
 
   @keyframes float {
     0%, 100% { transform: translateY(0px); }

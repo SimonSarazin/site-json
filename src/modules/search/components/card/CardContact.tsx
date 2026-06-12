@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Mail, Phone, MapPin, Image } from "lucide-react";
 
-export default function CardSsbe({ item, onClick }: SearchCardProps) {
+export default function CardContact({ item, onClick }: SearchCardProps) {
   const serverData = item?.serverData;
 
   const image = serverData?.profilImageUrl;
@@ -50,7 +50,7 @@ export default function CardSsbe({ item, onClick }: SearchCardProps) {
               {title}
             </h3>
             {isValidated && (
-              <Badge className="shrink-0 bg-green-500/15 hover:bg-green-500/15 text-green-600 dark:text-green-400 border border-green-500/30 text-[10px] px-1.5 py-0 h-5">
+              <Badge className="shrink-0 bg-success/15 hover:bg-success/15 text-success border border-success/30 text-[10px] px-1.5 py-0 h-5">
                 Validé
               </Badge>
             )}

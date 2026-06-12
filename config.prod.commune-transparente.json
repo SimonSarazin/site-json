@@ -24,8 +24,9 @@
     ]
   },
   "header": {
-    "type": "commune-transparente",
+    "type": "transparent-dark",
     "path": "/",
+    "entityLogoOverride": true,
     "logo": "/images/communeTransparente/logo.png",
     "logoTitle": {
       "fr": "Commune Transparente",
@@ -335,7 +336,7 @@
               "defaultFilters": { }
             },
             "list": { "columns": { "sm": 1, "md": 3, "lg": 5, "xl": 5 }, 
-            "card": { "type": "card-elts", "variant": "card-elts", "detailsMode": "drawer" } }
+            "card": { "type": "image-panel", "variant": "image-panel", "detailsMode": "drawer" } }
           }
         }
       ]
@@ -441,8 +442,8 @@
                 "xl": 5 
               }, 
               "card": { 
-                "type": "card-elts",
-                "variant": "card-elts", 
+                "type": "image-panel",
+                "variant": "image-panel", 
                 "detailsMode": "drawer" 
               }
             }
@@ -560,7 +561,7 @@
     }
   ],
   "footer": {
-    "type": "nos-communes",
+    "type": "default",
     "logoImage": "/images/communeTransparente/logo.png",
     "logoTitle": { "fr": "Commune Transparente", "en": "Transparent Commune" },
     "description": { "fr": "Rendre l'action communale lisible pour encourager la participation citoyenne.", "en": "Making communal action legible to encourage civic participation." },

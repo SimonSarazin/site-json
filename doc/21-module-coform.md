@@ -7,6 +7,8 @@
 - [Vue d'ensemble](#vue-densemble)
 - [Architecture interne](#architecture-interne)
 - [Routes](#routes)
+- [Pages](#pages)
+  - [CoFormPage](#coformpage)
 - [Composants principaux](#composants-principaux)
   - [SmartCoForm](#smartcoform)
   - [DynamicCoForm](#dynamiccoform)
@@ -166,6 +168,41 @@ Le loader `coformLoader` extrait et valide `formId` (404 si absent). Le loader `
 
 ---
 
+## Pages
+
+### CoFormPage
+
+`pages/CoFormPage.tsx` — Page principale pour `/coform/:formId`. Gère : contrôle d'accès (`CoFormAccessGuard`), sélection de réponse (`CoFormAnswerPicker`), rendu du formulaire (`SmartCoForm`), page de remerciement (`CoFormThankYou`), et le déclenchement du login.
+
+**Login via le modal global** : depuis le refactor `537a9f3`, `CoFormPage` n'embarque plus de `Dialog` + `LoginForm` local. Le login passe par le **modal d'authentification global** (`useAuthModal` du module auth).
+
+```tsx
+// CoFormPage.tsx — extrait simplifié
+const { openLogin } = useAuthModal();
+
+// Fourni comme prop onLogin à CoFormAccessGuard :
+onLogin={() => openLogin({ onSuccess: refetch })}
+```
+
+Le callback `onSuccess: refetch` permet de recalculer immédiatement les champs `access.canAnswer`, `access.existingAnswerId`, etc. après une connexion réussie, sans quitter ni recharger la page.
+
+**Ce qui a été supprimé** (ancienne implémentation) :
+- `useState(loginDialogOpen)` et le `<Dialog>` local
+- `resolveAuthVariant(config.auth?.variant)` pour charger `LoginForm` en lazy
+- `useSite()` pour lire `config.auth?.variant`
+- `import { Dialog, DialogContent, DialogTitle }` et `import { Suspense }`
+
+**Flux actuel** :
+1. L'utilisateur non connecté accède à `/coform/:formId` → `useCoFormQuery` retourne `access.reason = "not_logged_in"`
+2. `CoFormAccessGuard` affiche la carte de refus "non connecté" avec un bouton "Se connecter"
+3. Le clic appelle `onLogin` → `openLogin({ onSuccess: refetch })`
+4. `AuthModalProvider` (monté en amont dans `RootLayout`) ouvre le modal de connexion global
+5. Après succès : `refetch()` est appelé → `access` est recalculé → `CoFormAccessGuard` laisse passer les enfants
+
+Voir [Module Auth](23-module-auth.md) pour le mécanisme global (`AuthModalProvider`, `useAuthModal`, `AuthModalOptions`).
+
+---
+
 ## Composants principaux
 
 ### SmartCoForm
@@ -289,6 +326,18 @@ Vérifie `access.canAnswer` et affiche soit les enfants (accès autorisé), soit
 Les couleurs utilisent les **tokens sémantiques shadcn/ui** (`bg-warning`, `bg-info`, `bg-destructive`, `bg-primary`, `bg-muted`) pour la compatibilité automatique mode sombre.
 
 Si `access === null`, les enfants sont rendus sans garde.
+
+**Props de `CoFormAccessGuard` :**
+```ts
+interface CoFormAccessGuardProps {
+  access: CoFormAccessInfo | null;
+  onEditExisting?: () => void;   // Cas "already_answered" — bascule en mode édition
+  onLogin?: () => void;          // Cas "not_logged_in" — délégué à l'appelant
+  children: ReactNode;
+}
+```
+
+`onLogin` est une simple callback sans paramètre — `CoFormAccessGuard` ne connaît pas le mécanisme de login utilisé. C'est `CoFormPage` qui fournit l'implémentation concrète (voir [Pages › CoFormPage](#coformpage)).
 
 ---
 
@@ -1053,5 +1102,6 @@ Schema Zod : `CoFormSectionSchema` dans `src/modules/coform/schema.ts`.
 
 - [Architecture](03-architecture.md) — pattern `createPageActionsState`, modules
 - [Module Profil](08-module-profil.md) — CoFormPage accessible depuis les profils
+- [Module Auth](23-module-auth.md) — `useAuthModal`, `AuthModalProvider`, `AuthModalOptions` — mécanisme de login global utilisé par `CoFormPage`
 - [Tests](15-tests.md) — tests CoForm helpers (formParser.test.ts, helpers.test.ts, useConditionalFields.test.ts, coform.test.ts, SmartCoForm.test.tsx, CoFormProvider.test.tsx, useFinderSearchResults.test.tsx, toFinderSearchResult.test.ts, toRelativeImageUrl.test.ts)
 - `src/modules/coform/README.md` — documentation technique complémentaire (backend PHP associé, personnalisation, step-mode status)

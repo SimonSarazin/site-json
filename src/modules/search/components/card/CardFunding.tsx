@@ -11,7 +11,7 @@ import { CAGNOTTE_QUERY_KEYS } from "@/modules/cagnotte/constants/queryKeys";
 import { useCocolight } from "@/hooks/useCocolight";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 
-export default function CardRezoLaMer({
+export default function CardFunding({
   item,
   onClick,
   card,
@@ -21,10 +21,10 @@ export default function CardRezoLaMer({
   const projectId = String(serverData?.id || item?.id || "").trim();
 
   // Le funding est activable via `card.showFunding` (cf. schema). Défaut :
-  // actif pour le variant "rezo-la-mer" (rétrocompat). Pilote à la fois la
+  // actif pour le variant "funding" (rétrocompat). Pilote à la fois la
   // query `useFundingEnvelope` (enabled) et l'affichage de la barre.
   const cardType = card?.variant || card?.type;
-  const showFunding = card?.showFunding ?? (cardType === "rezo-la-mer");
+  const showFunding = card?.showFunding ?? (cardType === "funding");
 
   const { entity } = useCocolight();
   const { data: fundingEnvelope } = useFundingEnvelope(undefined, { enabled: showFunding });
@@ -105,7 +105,7 @@ export default function CardRezoLaMer({
         <Badge
           className={cn(
             "absolute top-4 left-4",
-            status === "Financé" ? "bg-green-500" : "bg-primary text-primary-foreground"
+            status === "Financé" ? "bg-success text-success-foreground" : "bg-primary text-primary-foreground"
           )}
         >
           {status}
@@ -164,7 +164,7 @@ export default function CardRezoLaMer({
               <Button
                 onClick={handleActivateFundingClick}
                 disabled={isActivatingFunding || !formId}
-                className="w-full bg-amber-500 hover:bg-amber-600 text-white border-0"
+                className="w-full bg-warning text-warning-foreground hover:bg-warning/90 border-0"
               >
                 <Zap className="mr-2 w-4 h-4" />
                 {isActivatingFunding ? "Activation..." : "Activer financement"}

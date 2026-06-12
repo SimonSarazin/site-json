@@ -8,30 +8,32 @@ import { lazy } from "vite-preload";
  * (pas d'impact perf SSR).
  */
 const DefaultHeader = lazy(() => import("./header/DefaultHeader"));
-const HeaderTiersLieux = lazy(() => import("./header/HeaderTiersLieux"));
-const HeaderNosCommunes = lazy(() => import("./header/HeaderNosCommunes"));
-const HeaderCommuneTransparente = lazy(() => import("./header/HeaderCommuneTransparente"));
-const HeaderRezoLaMer = lazy(() => import("./header/HeaderRezoLaMer"));
-const HeaderJuliePotVin = lazy(() => import("./header/HeaderJuliePotVin"));
+const HeaderStandard = lazy(() => import("./header/HeaderStandard"));
+const HeaderMegaMenu = lazy(() => import("./header/HeaderMegaMenu"));
+const HeaderUnderlineNav = lazy(() => import("./header/HeaderUnderlineNav"));
+const HeaderTransparentDark = lazy(() => import("./header/HeaderTransparentDark"));
+const HeaderTransparentScroll = lazy(() => import("./header/HeaderTransparentScroll"));
+const HeaderMinimal = lazy(() => import("./header/HeaderMinimal"));
 
 export function SiteHeader() {
   const { config } = useSite();
   const header = config.header;
 
   switch (header?.type) {
-    case "tiers-lieux":
-      return <HeaderTiersLieux header={header} />;
-    case "rezo-la-mer":
-    case "cyber-reunion":
-      return <HeaderRezoLaMer header={header} />;
-    case "julie-pot-vin":
-      return <HeaderJuliePotVin header={header} />;
-    case "nos-communes":
-      return <HeaderNosCommunes header={header} />;
-    case "commune-transparente":
-      return <HeaderCommuneTransparente header={header} />;
+    case "mega-menu":
+      return <HeaderMegaMenu header={header} />;
+    case "transparent-scroll":
+      return <HeaderTransparentScroll header={header} />;
+    case "minimal":
+      return <HeaderMinimal header={header} />;
+    case "underline-nav":
+      return <HeaderUnderlineNav header={header} />;
+    case "transparent-dark":
+      return <HeaderTransparentDark header={header} />;
+    case "standard":
+      return <HeaderStandard header={header} />;
     case "default":
     default:
-      return <DefaultHeader />;
+      return <DefaultHeader header={header} />;
   }
 }

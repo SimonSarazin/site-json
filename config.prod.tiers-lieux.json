@@ -25,7 +25,7 @@
     ]
   },
   "header": {
-    "type": "tiers-lieux",
+    "type": "mega-menu",
     "logo": "images/tiersLieux/Logo_Tl_Temp2.png",
     "logoAlt": {
       "fr": "Tiers Lieux",
@@ -39,6 +39,8 @@
           "en": "Places"
         },
         "icon": "map",
+        "path": "/lieux",
+        "featured": true,
         "children": [
           {
             "label": {
@@ -358,7 +360,7 @@
     "transparent": false,
     "height": "lg",
     "utilities": {
-      "themeSwitch": false,
+      "themeSwitch": true,
       "langSwitch": true,
       "search": true,
       "auth": true,
@@ -654,8 +656,8 @@
                 "xl": 5
               },
               "card": {
-                "type": "tiers-lieux",
-                "variant": "tiers-lieux",
+                "type": "image-cover",
+                "variant": "image-cover",
                 "detailsMode": "drawer"
               }
             }
@@ -1513,8 +1515,8 @@
                 "xl": 5
               },
               "card": {
-                "type": "tiers-lieux",
-                "variant": "tiers-lieux",
+                "type": "image-cover",
+                "variant": "image-cover",
                 "detailsMode": "drawer"
               }
             },
@@ -1597,8 +1599,8 @@
                 "xl": 5
               },
               "card": {
-                "type": "tiers-lieux",
-                "variant": "tiers-lieux",
+                "type": "image-cover",
+                "variant": "image-cover",
                 "detailsMode": "drawer"
               }
             },
@@ -1855,7 +1857,7 @@
     }
   ],
   "footer": {
-    "type": "tiers-lieux",
+    "type": "minimal-centered",
     "logo": "images/tiersLieux/Logo_Tl_Temp2.png",
     "logoAlt": {
       "fr": "Tiers Lieux",

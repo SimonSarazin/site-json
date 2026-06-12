@@ -16,7 +16,7 @@
       "en"
     ],
     "favicon": "images/rezoLaMer/logo.png",
-    "themeColor": "#00e7e3",
+    "themeColor": "#007f5a",
     "keywords": [
         "sports facilities",
         "Réunion region",
@@ -26,12 +26,16 @@
     ]
   },
   "header": {
-    "type": "rezo-la-mer",
+    "type": "transparent-scroll",
     "path": "/",
-    "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path></svg>",
+    "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 22c4.5-4.5 7-7.6 7-11a7 7 0 1 0-14 0c0 3.4 2.5 6.5 7 11Z\"></path><path d=\"M8 10h1.7l1-2.6 2 5.2 1-2.6H16\"></path></svg>",
     "logoTitle": {
-      "fr": "Equipement sportif - Région Réunion",
-      "en": "Sports Facilities - Réunion Region"
+      "fr": "Équipement sportif",
+      "en": "Sports Facilities"
+    },
+    "logoSubtitle": {
+      "fr": "Région Réunion",
+      "en": "Réunion Region"
     },
     "ctaButton": {
       "label": {
@@ -50,8 +54,8 @@
       },
       {
         "label": {
-          "fr": "Liste des équipements",
-          "en": "List of Facilities"
+          "fr": "Equipements",
+          "en": "Facilities"
         },
         "path": "/equipements-sportifs"
       }
@@ -60,10 +64,10 @@
     "transparent": false,
     "height": "lg",
     "utilities": {
-      "piggyBank": true,
+      "piggyBank": false,
       "themeSwitch": true,
       "langSwitch": true,
-      "search": false,
+      "search": true,
       "auth": true,
       "cart": false,
       "notifications": true
@@ -90,7 +94,7 @@
               "fr": "Équipez et connectez le réseau des passionnés de sport pour construire ensemble une communauté dynamique et résiliente",
               "en": "Equip and connect the network of sports enthusiasts to build together a dynamic and resilient community"
             },
-            "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-20 h-20\"><rect x=\"2\" y=\"10\" width=\"4\" height=\"4\" rx=\"1\"></rect><rect x=\"18\" y=\"10\" width=\"4\" height=\"4\" rx=\"1\"></rect><rect x=\"4\" y=\"8\" width=\"3\" height=\"8\" rx=\"1\"></rect><rect x=\"17\" y=\"8\" width=\"3\" height=\"8\" rx=\"1\"></rect><line x1=\"7\" y1=\"12\" x2=\"17\" y2=\"12\"></line></svg>",
+            "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-20 h-20\"><path d=\"M12 22c4.5-4.5 7-7.6 7-11a7 7 0 1 0-14 0c0 3.4 2.5 6.5 7 11Z\"></path><path d=\"M8 10h1.7l1-2.6 2 5.2 1-2.6H16\"></path></svg>",
             "backgroundImage": "images/equipementsSportifs974/hero2.jpg",
             "backgroundImageAlt": {
               "fr": "Vue panoramique d'un terrain de sport vibrant avec des joueurs en action",
@@ -115,14 +119,132 @@
             "ctaButtons": [
               {
                 "label": {
-                  "fr": "Rejoindre le réseau",
-                  "en": "Join the network"
+                  "fr": "Explorer les équipements",
+                  "en": "Explore the facilities"
+                },
+                "path": "/equipements-sportifs",
+                "variant": "default"
+              },
+              {
+                "label": {
+                  "fr": "Decouvrir l'observatoire",
+                  "en": "Discover the observatory"
                 },
                 "path": "/rejoindre",
-                "variant": "default"
+                "variant": "secondary"
               }
             ],
             "showScrollIndicator": true
+          }
+        },
+         {
+          "type": "categories-grid",
+          "id": "Convention-section",
+          "props": {
+            "headline": {
+              "fr": "Quatre piliers, une seule plateforme",
+              "en": "Four pillars, one platform"
+            },
+            "subhead": {
+              "fr": "ES974 réunit les données, le terrain et les gestionnaires pour piloter l'offre sportive de l'île.",
+              "en": "ES974 brings together data, fieldwork, and managers to oversee the island's sports offerings."
+            },
+            "columns": 2,
+            "cards": [
+              {
+                "icon": "database",
+                "title": {
+                  "fr": "Interopérabilité Data ES",
+                  "en": "ES Data Interoperability"
+                },
+                "subtitle": {
+                  "fr": "Imports et flux push standardisés. Vos données équipements connectées aux référentiels nationaux.",
+                  "en": "Standardized imports and push flows. Your equipment data connected to national reference systems."
+                }
+              },
+              {
+                "icon": "map-pin",
+                "title": {
+                  "fr": "Annuaire des équipements",
+                  "en": "Equipment Directory"
+                },
+                "subtitle": {
+                  "fr": "Tous les équipements sportifs de l'île, filtrables par commune, attribut et usage, avec géolocalisation.",
+                  "en": "All sports facilities on the island, filterable by municipality, attribute, and usage, with geolocation."
+                }
+              },
+              {
+                "icon": "bar-chart-2",
+                "title": {
+                  "fr": "Observatoire ARDISS",
+                  "en": "ARDISS Observatory"
+                },
+                "subtitle": {
+                  "fr": "Formulaires pour outiller le Diag ARDISS, par équipement et par gestionnaire. Remontée des indicateurs.",
+                  "en": "Forms to support the ARDISS Diagnosis, by equipment and by manager. Indicator reporting."
+                }
+              },
+              {
+                "icon": "users",
+                "title": {
+                  "fr": "Communauté des gestionnaires",
+                  "en": "Managers' Community"
+                },
+                "subtitle": {
+                  "fr": "Inscriptions, invitations et rôles. Chaque gestionnaire accède à ses équipements et collabore.",
+                  "en": "Registrations, invitations, and roles. Each manager accesses their equipment and collaborates."
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "hero-ssbe",
+          "id": "hero-sport-sante",
+          "props": {
+            "headline": {
+              "fr": "Tous les équipements de l'île, en un coup d'œil",
+              "en": "All the island's equipment at a glance"
+            },
+            "subhead": {
+              "fr": "Recherchez, filtrez et localisez chaque équipement sportif des 974 communes. Ajoutez vos sites en quelques clics.",
+              "en": "Search, filter, and locate every sports facility in the 974 municipalities. Add your sites in a few clicks."
+            },
+            "backgroundImage": "/images/equipementsSportifs974/hero.jpg",
+            "backgroundImageAlt": {
+              "fr": "Équipements sportifs La Réunion",
+              "en": "Sports facilities Réunion"
+            },
+            "badges": [
+              {
+                "label": {
+                  "fr": "Filtres par attributs",
+                  "en": "Attribute filters"
+                },
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><polygon points=\"22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3\"></polygon></svg>"
+              },
+              {
+                "label": {
+                  "fr": "Par commune",
+                  "en": "By municipality"
+                },
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"></path><polyline points=\"9 22 9 12 15 12 15 22\"></polyline></svg>"
+              },
+              {
+                "label": {
+                  "fr": "Carto géolocalisée",
+                  "en": "Geolocated map"
+                },
+                "icon":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z\"></path><circle cx=\"12\" cy=\"10\" r=\"3\"></circle></svg>"
+              },
+              {
+                "label": {
+                  "fr": "Ajout simplifié",
+                  "en": "Easy addition"
+                },
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7\"></path><path d=\"M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z\"></path></svg>"
+              }
+            ]
           }
         }
       ]
@@ -141,8 +263,10 @@
           "props": {
             "headline": {
               "fr": "Découvrez les équipements sportifs",
-              "en": "Discover sports facilities" 
+              "en": "Discover sports facilities"
             },
+            "headlineClassName": "text-white dark:text-foreground",
+            "filtersClassName": "mx-auto flex w-full max-w-4xl flex-col gap-3 rounded-2xl border border-border/60 bg-card/95 p-3 shadow-2xl backdrop-blur-md",
             "buttons": [
               {
                 "label": {
@@ -150,6 +274,7 @@
                   "en": "Add sports facility"
                 },
                 "action": "add-poi",
+                "modal": "add-poi-equipement",
                 "variant": "outline"
               }
             ],
@@ -377,7 +502,7 @@
                   "fr": "Catégorie",
                   "en": "Category"
                 },
-                "field": "category",
+                "field": "equip_type_name",
                 "multiple": true,
                 "options": [
                   {
@@ -1257,7 +1382,7 @@
               {
                 "id": "poi-amenities",
                 "label": {
-                  "fr": "Sur place",
+                  "fr": "Amenagements",
                   "en": "Amenities"
                 },
                 "field": "amenity",
@@ -1266,7 +1391,7 @@
                   {
                     "id": "handicap",
                     "value": "true",
-                    "field": "handicap",
+                    "field": "inst_acc_handi_bool",
                     "icon": "accessibility",
                     "label": {
                       "fr": "Acces PMR",
@@ -1276,7 +1401,7 @@
                   {
                     "id": "transport-commun",
                     "value": "true",
-                    "field": "transportCommun",
+                    "field": "inst_trans_bool",
                     "icon": "bus",
                     "label": {
                       "fr": "Transport en commun",
@@ -1284,38 +1409,318 @@
                     }
                   },
                   {
-                    "id": "restaurant",
+                    "id": "eclairage",
                     "value": "true",
-                    "field": "restaurant",
-                    "icon": "utensils-crossed",
+                    "field": "equip_eclair",
+                    "icon": "lightbulb",
                     "label": {
-                      "fr": "Restaurant",
-                      "en": "Restaurant"
+                      "fr": "Éclairage",
+                      "en": "Lighting"
                     }
                   },
                   {
-                    "id": "hebergement",
+                    "id": "douche",
                     "value": "true",
-                    "field": "hebergement",
-                    "icon": "bed-double",
+                    "field": "equip_douche",
+                    "icon": "droplet",
                     "label": {
-                      "fr": "Hebergement",
-                      "en": "Accommodation"
+                      "fr": "Douche",
+                      "en": "Shower"
                     }
                   },
                   {
-                    "id": "gardiennage",
+                    "id": "libreAcces",
                     "value": "true",
-                    "field": "gardiennage",
-                    "icon": "shield",
+                    "field": "equip_acc_libre",
+                    "icon": "door-open",
                     "label": {
-                      "fr": "Gardiennage",
-                      "en": "Security"
+                      "fr": "Accès libre",
+                      "en": "Free access"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "propertyType",
+                "label": {
+                  "fr": "Type de propriété",
+                  "en": "Property type"
+                },
+                "field": "equip_prop_type",
+                "multiple": true,
+                "options": [
+                  {
+                    "id": "commune",
+                    "value": "Commune",
+                    "label": {
+                      "fr": "Commune",
+                      "en": "Municipality"
+                    }
+                  },
+                  {
+                    "id": "epci",
+                    "value": "EPCI",
+                    "label": {
+                      "fr": "EPCI",
+                      "en": "EPCI"
+                    }
+                  },
+                  {
+                    "id": "departement",
+                    "value": "Département",
+                    "label": {
+                      "fr": "Département",
+                      "en": "Department"
+                    }
+                  },
+                  {
+                    "id": "region",
+                    "value": "Région",
+                    "label": {
+                      "fr": "Région",
+                      "en": "Region"
+                    }
+                  },
+                  {
+                    "id": "etat",
+                    "value": "État",
+                    "label": {
+                      "fr": "État",
+                      "en": "State"
+                    }
+                  },
+                  {
+                    "id": "associations",
+                    "value": "Association(s)",
+                    "label": {
+                      "fr": "Associations",
+                      "en": "Associations"
+                    }
+                  },
+                  {
+                    "id": "prive-non-commercial",
+                    "value": "Privé non commercial",
+                    "label": {
+                      "fr": "Privé non commercial",
+                      "en": "Private non-commercial"
+                    }
+                  },
+                  {
+                    "id": "multi-proprietaire",
+                    "value": "Multi-propriétaire",
+                    "label": {
+                      "fr": "Multi-propriétaire",
+                      "en": "Multi-owner"
+                    }
+                  },
+                  {
+                    "id": "etablissement-public",
+                    "value": "Etablissement Public",
+                    "label": {
+                      "fr": "Etablissement Public",
+                      "en": "Public Establishment"
+                    }
+                  },
+                  {
+                    "id": "etablissement-prive-commercial",
+                    "value": "Etablissement privé commercial",
+                    "label": {
+                      "fr": "Etablissement privé commercial",
+                      "en": "Private commercial establishment"
+                    }
+                  },
+                  {
+                    "id": "etablissement-prive-enseignement",
+                    "value": "Etablissement d'enseignement privé",
+                    "label": {
+                      "fr": "Etablissement d'enseignement privé",
+                      "en": "Private educational establishment"
+                    }
+                  },
+                  {
+                    "id": "autre",
+                    "value": "Autre",
+                    "label": {
+                      "fr": "Autre",
+                      "en": "Other"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "utilisateur",
+                "label": {
+                  "fr": "Type d'utilisateur",
+                  "en": "User type"
+                },
+                "field": "equip_utilisateur",
+                "multiple": true,
+                "options": [
+                  {
+                    "id": "individuels",
+                    "value": "Individuel(s)",
+                    "label": {
+                      "fr": "Individuel",
+                      "en": "Individuals"
+                    }
+                  },
+                  {
+                    "id": "familles",
+                    "value": "famille(s)",
+                    "label": {
+                      "fr": "Famille",
+                      "en": "Familie"
+                    }
+                  },
+                  {
+                    "id": "clubs-sportifs",
+                    "value": "Clubs sportifs",
+                    "label": {
+                      "fr": "Clubs sportifs",
+                      "en": "Sports clubs"
+                    }
+                  },
+                  {
+                    "id": "comites",
+                    "value": "comités",
+                    "label": {
+                      "fr": "Comités",
+                      "en": "Committees"
+                    }
+                  },
+                  {
+                    "id": "ligues",
+                    "value": "ligues",
+                    "label": {
+                      "fr": "Ligues",
+                      "en": "Leagues"
+                    }
+                  },
+                  {
+                    "id": "federations",
+                    "value": "fédérations",
+                    "label": {
+                      "fr": "Fédérations",
+                      "en": "Federations"
+                    }
+                  },
+                  {
+                    "id": "scolaires-universites",
+                    "value": "Scolaires",
+                    "label": {
+                      "fr": "Scolaires",
+                      "en": "Schools"
+                    }
+                  },
+                  {
+                    "id": "universites",
+                    "value": "universités",
+                    "label": {
+                      "fr": "Universités",
+                      "en": "Universities"
+                    }
+                  },
+                  {
+                    "id": "autre-associations-groupes-divers",
+                    "value": "Autre - association(s) et groupes divers",
+                    "label": {
+                      "fr": "Associations et groupes divers",
+                      "en": "Associations and various groups"
+                    }
+                  }
+                ]
+              },
+              {
+                "id":"availableSpaces",
+                "label": {
+                  "fr": "Locaux disponibles",
+                  "en": "Available spaces"
+                },
+                "field": "equip_loc_type",
+                "multiple": true,
+                "options": [
+                  {
+                    "id": "reception-accueil",
+                    "value": "Réception / Accueil",
+                    "label": {
+                      "fr": "Réception / Accueil",
+                      "en": "Reception / Welcome"
+                    }
+                  },
+                  {
+                    "id": "bureau-clubs",
+                    "value": "Bureau(x) Club(s)",
+                    "label": {
+                      "fr": "Bureau(x) Club(s)",
+                      "en": "Club offices"
+                    }
+                  },
+                  {
+                    "id": "buvette",
+                    "value": "Buvette",
+                    "label": {
+                      "fr": "Buvette",
+                      "en": "Snack bar"
+                    }
+                  },
+                  {
+                    "id": "clubs-house",
+                    "value": "Club(s) house",
+                    "label": {
+                      "fr": "Club(s) house",
+                      "en": "Clubhouse"
+                    }
+                  },
+                  {
+                    "id": "infirmerie",
+                    "value": "Infirmerie",
+                    "label": {
+                      "fr": "Infirmerie",
+                      "en": "Infirmary"
+                    }
+                  },
+                  {
+                    "id": "local-rangement",
+                    "value": "Local de rangement",
+                    "label": {
+                      "fr": "Local de rangement",
+                      "en": "Storage room"
+                    }
+                  },
+                  {
+                    "id": "salle-reunion-cours",
+                    "value": "Salle(s) de réunion / cours",
+                    "label": {
+                      "fr": "Salle(s) de réunion / cours",
+                      "en": "Meeting / class rooms"
+                    }
+                  },
+                  {
+                    "id": "centre-medico-sportif",
+                    "value": "Centre médico-sportif",
+                    "label": {
+                      "fr": "Centre médico-sportif",
+                      "en": "Sports medical center"
+                    }
+                  },
+                  {
+                    "id": "local-controle-anti-dopage",
+                    "value": "Local contrôle anti-dopage",
+                    "label": {
+                      "fr": "Local contrôle anti-dopage",
+                      "en": "Anti-doping control room"
+                    }
+                  },
+                  {
+                    "id": "autre",
+                    "value": "Autre",
+                    "label": {
+                      "fr": "Autre",
+                      "en": "Other"
                     }
                   }
                 ]
               }
-
             ]
           }
         },
@@ -1325,7 +1730,8 @@
           "props": {
             "customHeader": {
                 "title": {
-                  "fr": "Tous les équipements sportifs"
+                  "fr": "Tous les équipements sportifs",
+                  "en": "All sports facilities"
                 }
               },
             "useFilter": true,
@@ -1336,48 +1742,56 @@
             "disableInfiniteScroll": false,
             "showDetailedViewToggle": false,
             "baseParams": {
-              "notSourceKey": true,
               "defaultTypes": [
                 "poi"
               ],
               "defaultFields": [
                 "name",
-                "category",
-                "subCategory",
-                "installation",
-                "familleEquipement",
-                "type",
-                "sportPratiquer",
-                "nature",
-                "surface",
-                "sole",
-                "eclairage",
-                "libreAccess",
-                "partenariat",
-                "typePartenariat",
-                "enqueteStatut",
-                "dateCreation",
-                "dateEnquete",
-                "lastUpdate",
-                "created",
-                "updated",
+                "equip_type_name",
+                "equip_type_famille",
+                "categorie",
+                "equip_nature",
+                "equip_sol",
+                "equip_surf",
+                "equip_larg",
+                "equip_long",
+                "aps_name",
+                "inst_nom",
+                "equip_prop_nom",
+                "equip_prop_type",
+                "equip_gest_type",
+                "inst_acc_handi_bool",
+                "inst_acc_handi_type",
+                "equip_pmr_acc",
+                "equip_pmr_chem",
+                "equip_pmr_douche",
+                "equip_pmr_sanit",
+                "equip_pmr_trib",
+                "equip_pmr_vest",
+                "equip_pshs_aire",
+                "equip_pshs_chem",
+                "equip_pshs_sanit",
+                "equip_pshs_trib",
+                "equip_pshs_vest",
+                "equip_pshs_sign",
+                "equip_acc_libre",
+                "inst_trans_bool",
+                "inst_trans_type",
+                "equip_eclair",
+                "equip_douche",
+                "inst_part_bool",
+                "inst_part_type",
+                "equip_loc_type",
+                "equip_utilisateur",
+                "inst_date_creation",
+                "inst_enqu_date",
+                "equip_maj_date",
                 "address",
-                "handicap",
-                "transportCommun",
-                "typeTransportCommun",
-                "typeAccessiblHandicap",
-                "hebergement",
-                "restaurant",
-                "gardiennage",
                 "geo",
                 "geoPosition",
                 "parent"
               ],
               "defaultFilters": {
-                "$or": {
-                  "source.key": "sportSanteBienetre",
-                  "source.keys": "sportSanteBienetre"
-                },
                 "type":"recoveryCenter"
               }
             },
@@ -1389,8 +1803,11 @@
                 "xl": 4
               },
               "card": {
-                "type": "poi-ssbe",
+                "type": "poi-amenities",
                 "detailsMode": "dialog"
+              },
+              "preview": {
+                "type": "poi-amenities"
               }
             }
           }
@@ -1399,7 +1816,7 @@
     }
   ],
   "footer": {
-    "type": "ssbe",
+    "type": "contact-partners",
     "contactSection": {
       "title": {
         "fr": "Nos coordonnées",
@@ -1485,6 +1902,29 @@
       "en": "© 2026 Sports facilities - Réunion. All rights reserved."
     }
   },
+  "commandPalette": {
+    "enabled": true,
+    "triggerVariant": "compact",
+    "placeholder": {
+      "fr": "Rechercher un équipement...",
+      "en": "Search for a facility..."
+    },
+    "entitySearch": {
+      "enabled": true,
+      "searchType": [
+        "poi"
+      ],
+      "limit": 8,
+      "params": {
+        "sourceKey": [
+          "equipementsSportifs974"
+        ],
+        "filters": {
+            "type":"recoveryCenter"
+        }
+      }
+    }
+  },
   "features": [
     {
       "key": "communityFeatures",
@@ -1503,16 +1943,103 @@
     }
   ],
   "theme": {
+    "defaultMode": "light",
+    "colors": {
+      "light": {
+        "background": "oklch(0.990 0.006 160)",
+        "foreground": "oklch(0.240 0.025 175)",
+        "card": "oklch(1.000 0 0)",
+        "cardForeground": "oklch(0.240 0.025 175)",
+        "popover": "oklch(1.000 0 0)",
+        "popoverForeground": "oklch(0.240 0.025 175)",
+        "primary": "oklch(0.520 0.118 166)",
+        "primaryForeground": "oklch(1.000 0 0)",
+        "secondary": "oklch(0.955 0.018 168)",
+        "secondaryForeground": "oklch(0.330 0.045 170)",
+        "muted": "oklch(0.965 0.008 168)",
+        "mutedForeground": "oklch(0.490 0.030 172)",
+        "accent": "oklch(0.640 0.180 34)",
+        "accentForeground": "oklch(0.215 0.060 40)",
+        "destructive": "oklch(0.6368 0.2078 25.3313)",
+        "destructiveForeground": "oklch(1.0000 0 0)",
+        "border": "oklch(0.910 0.012 168)",
+        "input": "oklch(0.910 0.012 168)",
+        "ring": "oklch(0.520 0.118 166)",
+        "warning": "oklch(0.950 0.160 85)",
+        "warningForeground": "oklch(0.200 0.060 85)",
+        "success": "oklch(0.830 0.180 135)",
+        "successForeground": "oklch(0.150 0.030 135)",
+        "info": "oklch(0.941 0.065 260)",
+        "infoForeground": "oklch(0.200 0.030 260)",
+        "error": "oklch(0.680 0.250 30)",
+        "errorForeground": "oklch(1 0 0)",
+        "chart1": "oklch(0.520 0.118 166)",
+        "chart2": "oklch(0.640 0.180 34)",
+        "chart3": "oklch(0.580 0.100 200)",
+        "chart4": "oklch(0.650 0.130 145)",
+        "chart5": "oklch(0.450 0.090 175)",
+        "sidebar": "oklch(0.965 0.008 168)",
+        "sidebarForeground": "oklch(0.240 0.025 175)",
+        "sidebarPrimary": "oklch(0.520 0.118 166)",
+        "sidebarPrimaryForeground": "oklch(1.000 0 0)",
+        "sidebarAccent": "oklch(0.640 0.180 34)",
+        "sidebarAccentForeground": "oklch(0.215 0.060 40)",
+        "sidebarBorder": "oklch(0.910 0.012 168)",
+        "sidebarRing": "oklch(0.520 0.118 166)"
+      },
+      "dark": {
+        "background": "oklch(0.205 0.012 170)",
+        "foreground": "oklch(0.945 0.010 170)",
+        "card": "oklch(0.245 0.014 170)",
+        "cardForeground": "oklch(0.945 0.010 170)",
+        "popover": "oklch(0.230 0.013 170)",
+        "popoverForeground": "oklch(0.945 0.010 170)",
+        "primary": "oklch(0.760 0.150 168)",
+        "primaryForeground": "oklch(0.180 0.040 170)",
+        "secondary": "oklch(0.330 0.030 170)",
+        "secondaryForeground": "oklch(0.945 0.010 170)",
+        "muted": "oklch(0.300 0.020 170)",
+        "mutedForeground": "oklch(0.760 0.020 172)",
+        "accent": "oklch(0.730 0.150 40)",
+        "accentForeground": "oklch(0.180 0.050 40)",
+        "destructive": "oklch(0.6368 0.2078 25.3313)",
+        "destructiveForeground": "oklch(1.0000 0 0)",
+        "border": "oklch(0.370 0.022 170)",
+        "input": "oklch(0.330 0.020 170)",
+        "ring": "oklch(0.760 0.150 168)",
+        "warning": "oklch(0.750 0.180 85)",
+        "warningForeground": "oklch(0.950 0.040 85)",
+        "success": "oklch(0.600 0.180 135)",
+        "successForeground": "oklch(0.950 0.040 135)",
+        "info": "oklch(0.600 0.140 260)",
+        "infoForeground": "oklch(0.950 0.040 260)",
+        "error": "oklch(0.680 0.250 30)",
+        "errorForeground": "oklch(0.990 0.030 100)",
+        "chart1": "oklch(0.760 0.150 168)",
+        "chart2": "oklch(0.730 0.150 40)",
+        "chart3": "oklch(0.700 0.110 200)",
+        "chart4": "oklch(0.720 0.130 145)",
+        "chart5": "oklch(0.600 0.110 175)",
+        "sidebar": "oklch(0.185 0.011 170)",
+        "sidebarForeground": "oklch(0.945 0.010 170)",
+        "sidebarPrimary": "oklch(0.760 0.150 168)",
+        "sidebarPrimaryForeground": "oklch(0.180 0.040 170)",
+        "sidebarAccent": "oklch(0.730 0.150 40)",
+        "sidebarAccentForeground": "oklch(0.180 0.050 40)",
+        "sidebarBorder": "oklch(0.370 0.022 170)",
+        "sidebarRing": "oklch(0.760 0.150 168)"
+      }
+    },
     "typography": {
       "fontFamily": {
         "sans": [
-          "Inter"
+          "Lexend"
         ],
         "serif": [
-          "Roboto Slab"
+          "Sora"
         ],
         "mono": [
-          "Roboto Mono"
+          "JetBrains Mono"
         ]
       },
       "letterSpacing": "0em"
@@ -2439,6 +2966,8 @@
       "layout": "default",
       "hideHeader": false,
       "hideFooter": false,
+      "editModal": "edit-poi-equipement",
+      "editModalMatch": { "type": "recoveryCenter" },
       "sections": [
         {
           "type": "profile-header",

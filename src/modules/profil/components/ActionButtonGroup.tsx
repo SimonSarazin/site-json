@@ -23,7 +23,7 @@ import {
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { ChevronDown, ExternalLink } from "lucide-react";
 import { Link } from "react-router";
-import { toast } from "sonner";
+import { useAuthModal } from "@/modules/auth";
 import type { Organization } from "@communecter/cocolight-api-client";
 import type { ActionButton } from "@/types/action-button-schema";
 import { useCocolight } from "@/hooks/useCocolight";
@@ -58,6 +58,7 @@ function DynamicModalButton({
 }) {
     const t = useT("modules/profil");
     const { me, entity } = useCocolight();
+    const { openLogin } = useAuthModal();
     const isConnected = !!me;
     const permissions = useProfilPermissions(entity || null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -69,7 +70,7 @@ function DynamicModalButton({
 
     const handleClick = () => {
         if (!isConnected) {
-            toast.error(t("Vous devez être connecté"));
+            openLogin();
             return;
         }
         setIsModalOpen(true);
@@ -108,6 +109,7 @@ function JoinDropdownButton({
 }) {
     const t = useT("modules/profil");
     const { me, entity } = useCocolight();
+    const { openLogin } = useAuthModal();
     const isConnected = !!me;
     const [confirmationAction, setConfirmationAction] = useState<EntityAction | null>(null);
 
@@ -123,7 +125,7 @@ function JoinDropdownButton({
                 className={getButtonClasses(button.variant)}
                 onClick={() => {
                     if (!isConnected) {
-                        toast.error(t("Vous devez être connecté pour rejoindre"));
+                        openLogin();
                     }
                 }}
             >

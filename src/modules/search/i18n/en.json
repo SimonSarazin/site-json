@@ -1,4 +1,123 @@
 {
+  "days": {
+    "monday": "Monday",
+    "tuesday": "Tuesday",
+    "wednesday": "Wednesday",
+    "thursday": "Thursday",
+    "friday": "Friday",
+    "saturday": "Saturday",
+    "sunday": "Sunday"
+  },
+  "CardResourceBooking": {
+    "price": "Usage price:",
+    "location": "Location:",
+    "owner": "Owner:",
+    "reserve": "Book",
+    "available": "Available"
+  },
+  "coformAnswer": {
+    "noTitle": "(No title)",
+    "noDescription": "(No description)",
+    "address": "Address",
+    "addressEmpty": "(No address provided)",
+    "contact": "Contact",
+    "schedule": "Time slots",
+    "scheduleEmpty": "No time slot",
+    "activity": "Activity",
+    "beneficiaries": "Beneficiaries",
+    "beneficiariesEmpty": "No beneficiary provided",
+    "accessibility": "Accessibility",
+    "reducedMobility": "Person with reduced mobility",
+    "notProvided": "Not provided",
+    "installation": "Facility",
+    "installationEmpty": "No facility provided",
+    "validated": "Validated",
+    "noName": "(No name)",
+    "by": "By:",
+    "showLess": "See less",
+    "moreSlots": "+{{count}} slots",
+    "activitySheet": "Activity sheet",
+    "structureSheet": "Organization sheet"
+  },
+  "CardPoiAmenities": {
+    "amenities": "Amenities",
+    "pmrAccess": "PRM access",
+    "publicTransport": "Public transport",
+    "lighting": "Lighting",
+    "showers": "Showers",
+    "freeAccess": "Free access",
+    "yearsAgo": "{{count}} years ago"
+  },
+  "PreviewPoiAmenities": {
+    "edit": "Edit",
+    "close": "Close",
+    "validated": "Validated",
+    "fallbackTitle": "Point of interest",
+    "createdOn": "Created on {{date}}",
+    "yearsAgo": "({{count}} years ago)",
+    "yes": "Yes",
+    "no": "No",
+    "sections": {
+      "general": "General information",
+      "management": "Management & uses",
+      "accessibility": "Accessibility & services",
+      "pmrDetails": "PRM details (People with Reduced Mobility)",
+      "pshsDetails": "PSHS details (People with Sensory Disabilities)",
+      "location": "Location",
+      "technical": "Technical specifications",
+      "tracking": "Tracking"
+    },
+    "fields": {
+      "category": "Category",
+      "family": "Equipment family",
+      "installation": "Installation",
+      "sport": "Sport practiced",
+      "ownerName": "Owner name",
+      "ownerType": "Owner type",
+      "managementType": "Management type",
+      "premises": "Available premises",
+      "users": "Users",
+      "pmrType": "PRM accessibility type",
+      "transportType": "Transport type",
+      "nature": "Nature",
+      "floor": "Surfacing",
+      "surface": "Surface",
+      "length": "Length",
+      "width": "Width",
+      "partnership": "Partnership"
+    },
+    "features": {
+      "pmr": "PRM access",
+      "transport": "Public transport",
+      "lighting": "Lighting",
+      "freeAccess": "Free access",
+      "showers": "Showers"
+    },
+    "pmr": {
+      "access": "Access",
+      "path": "Pathway",
+      "showers": "PRM showers",
+      "toilets": "PRM toilets",
+      "stands": "PRM stands",
+      "changing": "PRM changing rooms"
+    },
+    "pshs": {
+      "playArea": "Play area",
+      "path": "PSHS pathway",
+      "toilets": "PSHS toilets",
+      "stands": "PSHS stands",
+      "changing": "PSHS changing rooms",
+      "signage": "PSHS signage"
+    },
+    "map": {
+      "unavailable": "Coordinates unavailable."
+    },
+    "tracking": {
+      "created": "Creation",
+      "lastSurvey": "Last survey",
+      "lastUpdate": "Last update"
+    }
+  },
   "Filtres actifs :": "Active filters:",
   "Description": "Description",
   "Tags": "Tags",
@@ -16,6 +135,8 @@
   "Mode de gestion": "Management mode",
   "Non précisé": "Not specified",
   "Filtres": "Filters",
+  "Réinitialiser": "Reset",
+  "Voir les résultats": "See results",
   "Effacer": "Clear",
   "Rechercher par nom...": "Search by name...",
   "Carte": "Map",

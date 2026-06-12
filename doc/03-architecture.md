@@ -928,16 +928,22 @@ ErrorBoundary (fallback générique)
               I18nBridge            (sync i18next avec locale courante)
                 SiteTheme           (applique les variables CSS de thème)
                 GoogleFontsLoader   (injecte les fonts Google en <link>)
-                <Outlet />          (routes enfants = pages)
-                IntegrationsLoader  (GA4, Intercom, scripts custom)
-                Toaster             (sonner)
-                DiscourseGlobalModal (lazy, module interop)
-                AdminPanel          (lazy, DEV uniquement)
-                FloatingQRCode      (lazy, conditionnel config.floatingQRCode.enabled)
-                FloatingActionButton (lazy, conditionnel config.floatingActionButton.enabled)
+                CommandPaletteProvider
+                  AuthModalProvider   (contexte modal auth global — module auth)
+                    <Outlet />          (routes enfants = pages)
+                    IntegrationsLoader  (GA4, Intercom, scripts custom)
+                    Toaster             (sonner)
+                    DiscourseGlobalModal (lazy, module interop)
+                    AdminPanel          (lazy, DEV uniquement)
+                    FloatingQRCode      (lazy, conditionnel config.floatingQRCode.enabled)
+                    FloatingActionButton (lazy, conditionnel config.floatingActionButton.enabled)
+                  </AuthModalProvider>
+                </CommandPaletteProvider>
 ```
 
 **Composants optionnels** : `FloatingQRCode`, `FloatingActionButton`, `DiscourseGlobalModal` et `AdminPanel` sont tous chargés via `lazy()` de vite-preload. `AdminPanel` est défini à `null` en production (`import.meta.env.DEV ? lazy(...) : null`), donc exclu du bundle prod.
+
+**`AuthModalProvider`** (`src/modules/auth/context/AuthModalProvider.tsx`) — centralise le déclenchement du modal d'authentification. Enveloppé par `CommandPaletteProvider` et enveloppe lui-même l'`<Outlet />` et tous les composants globaux, ce qui permet à n'importe quel composant de l'arbre (y compris les headers) d'ouvrir le modal sans gérer d'état local. Voir [doc/23-module-auth.md](doc/23-module-auth.md) pour les détails.
 
 ---
 
@@ -1001,29 +1007,79 @@ Composant rendu pour chaque route de la config JSON et comme fallback `path="*"`
 
 ### `SiteHeader.tsx` / `SiteFooter.tsx` — variantes de header/footer
 
-Dispatch vers la variante appropriée selon `config.header.type` / `config.footer.type`.
+`SiteHeader` (`src/components/layout/SiteHeader.tsx`) et `SiteFooter` (`src/components/layout/SiteFooter.tsx`) sont les seuls points d'entrée pour le dispatch : ils lisent `config.header.type` / `config.footer.type` via `useSite()` et délèguent au composant de design correspondant.
+
+**Principe de conception :**
+- `header.type` et `footer.type` sont des **noms de design** (ex. `"mega-menu"`, `"rich"`), jamais des noms de site. L'ancien couplage site→header (ex. `"tiers-lieux"`, `"rezo-la-mer"`) a été supprimé lors du commit 7118d18.
+- Tous les composants de header et de footer sont **présentationnels** : ils reçoivent l'objet `header` / `footer` en prop et n'appellent pas `useSite()` directement. Les indirections `DefaultHeader` et `DefaultFooter` reçoivent elles aussi la prop — elles se contentent de déléguer au design retenu comme défaut.
+- `SiteHeader2.tsx` a été **supprimé** (fichier mort, commit 7118d18).
+
+---
 
 **Headers disponibles** (via `lazy()` de vite-preload) :
 
 | `header.type` | Composant | Fichier |
 |---|---|---|
-| `"default"` (défaut) | `DefaultHeader` | `header/DefaultHeader.tsx` |
-| `"tiers-lieux"` | `HeaderTiersLieux` | `header/HeaderTiersLieux.tsx` |
-| `"rezo-la-mer"` ou `"cyber-reunion"` | `HeaderRezoLaMer` | `header/HeaderRezoLaMer.tsx` |
-| `"julie-pot-vin"` | `HeaderJuliePotVin` | `header/HeaderJuliePotVin.tsx` |
-| `"nos-communes"` | `HeaderNosCommunes` | `header/HeaderNosCommunes.tsx` |
-| `"commune-transparente"` | `HeaderCommuneTransparente` | `header/HeaderCommuneTransparente.tsx` |
+| `"standard"` | `HeaderStandard` | `header/HeaderStandard.tsx` |
+| `"mega-menu"` | `HeaderMegaMenu` | `header/HeaderMegaMenu.tsx` |
+| `"transparent-scroll"` | `HeaderTransparentScroll` | `header/HeaderTransparentScroll.tsx` |
+| `"minimal"` | `HeaderMinimal` | `header/HeaderMinimal.tsx` |
+| `"underline-nav"` | `HeaderUnderlineNav` | `header/HeaderUnderlineNav.tsx` |
+| `"transparent-dark"` | `HeaderTransparentDark` | `header/HeaderTransparentDark.tsx` |
+| `"default"` (ou absent) | `DefaultHeader` → délègue à `HeaderStandard` | `header/DefaultHeader.tsx` |
 
 **Footers disponibles** (via `lazy()` de vite-preload) :
 
-| `footer.type` | Composant | Fichier |
-|---|---|---|
-| `"default"` (défaut) | `DefaultFooter` | `footer/DefaultFooter.tsx` |
-| `"tiers-lieux"` | `FooterTiersLieux` | `footer/FooterTiersLieux.tsx` |
-| `"ssbe"` | `FooterSSBE` | `footer/FooterSSBE.tsx` |
-| `"rezo-la-mer"` ou `"cyber-reunion"` | `FooterRezoLaMer` | `footer/FooterRezoLaMer.tsx` |
+| `footer.type` | Composant | Fichier | Remarque |
+|---|---|---|---|
+| `"rich"` | `FooterRich` | `footer/FooterRich.tsx` | |
+| `"minimal-centered"` | `FooterMinimalCentered` | `footer/FooterMinimalCentered.tsx` | |
+| `"sidebar-columns"` | `FooterSidebarColumns` | `footer/FooterSidebarColumns.tsx` | prop `style: "plain" \| "card"` (défaut `"plain"`) |
+| `"contact-partners"` | `FooterContactPartners` | `footer/FooterContactPartners.tsx` | |
+| `"default"` (ou absent) | `DefaultFooter` → délègue à `FooterRich` | `footer/DefaultFooter.tsx` | |
+
+`FooterSidebarColumns` accepte une prop `style?: "plain" | "card"` transmise par `SiteFooter` depuis `footer.style`. La valeur `"card"` bascule le fond en `bg-card` avec bordure.
 
 Tous les variants sont lazy-loadés via `vite-preload`. Pour un site donné, seul le variant actif est téléchargé côté client. Côté SSR, `preloadAll()` les charge tous en mémoire (pas d'impact réseau).
+
+---
+
+**Hooks partagés entre headers (`useHeaderBehavior.ts`)** :
+
+Le fichier `src/components/layout/header/useHeaderBehavior.ts` factorise la logique comportementale commune à plusieurs headers (transparent-scroll, underline-nav, transparent-dark) :
+
+| Hook | Signature | Rôle |
+|---|---|---|
+| `useScrollAware(threshold?)` | `(threshold?: number) => boolean` | `true` dès que la page dépasse `threshold` px (défaut 50). Gère l'ajout/retrait de l'écouteur `scroll`. |
+| `useScrollToTopOnRouteChange()` | `() => void` | Remonte en haut de page (smooth) à chaque changement de route. |
+| `useNavItemActive()` | `() => (itemPath?: string) => boolean` | Renvoie un prédicat indiquant si l'item de nav est actif selon `useLocation().pathname`. |
+
+Ces hooks ne contiennent aucune logique de site ni d'authentification. La logique auth a été extraite dans le module auth (voir ci-dessous).
+
+---
+
+**Primitives de lien et de chrome partagées** :
+
+Plusieurs primitives présentationnelles factorisent des patterns auparavant recopiés (et divergents) à travers les headers, puis réutilisés par les footers. Aucune ne contient de logique de site.
+
+| Primitive | Fichier | Rôle |
+|---|---|---|
+| `NavLink` | `src/components/layout/NavLink.tsx` | Lien de navigation partagé **header + footer**. Tranche 4 cas selon `to` : vide ou `"#"` → `<span>` inerte (placeholder) ; `mailto:`/`tel:`/`sms:` → `<a href>` simple (pas de `target`) ; externe (`http(s)://`, ou prop `external`) → `<a target="_blank" rel="noopener noreferrer">` ; sinon → `<Link>` React Router (SPA). `forwardRef` + props résiduelles → composable en `asChild` d'un primitive Radix (ex. `DropdownMenuItem asChild`). **Présentationnel** : l'état actif (couleurs, `<span>` souligné) reste calculé par l'appelant, qui passe la className résolue + un `ariaCurrent`. |
+| `LangSwitch` | `header/LangSwitch.tsx` | Sélecteur de langue (`DropdownMenu` Globe + locales). Self-contained (lit `useLocalization`), rend `null` s'il n'y a qu'une locale. Menu déroulant **normalisé** (locale active = `font-semibold bg-accent`) ; trigger piloté par `tone` (`default`/`onColor`) + `triggerClassName`. |
+| `MobileMenuSheet` | `header/MobileMenuSheet.tsx` | Conteneur de menu mobile — enveloppe le `Sheet` shadcn (Radix Dialog) → focus-trap, verrou de scroll, overlay, fermeture par Échap gratuits. Render-prop `children(close)` pour le contenu par-header ; props `breakpoint` (défaut `md`, `xl` pour le méga-menu), `side`, `tone`, `triggerClassName`. |
+| `SocialLinks` | `footer/SocialLinks.tsx` | Rangée de liens sociaux (footers). Map plateforme→icône lucide **consolidée** (une seule source) ; rend un `NavLink` externe par réseau ; style piloté par `itemClassName`/`iconClassName`. |
+
+`NavLink` vivait initialement dans `header/` ; il a été **déplacé** vers `layout/NavLink.tsx` (emplacement neutre, commit 3907a4d) pour être partagé par les headers **et** les footers — qui rendaient auparavant des URLs externes via `<Link>` (navigation SPA cassée → 404) ou ne gardaient pas les placeholders `#`/vide.
+
+**Typage des props `header`/`footer`** : les 6 headers reçoivent tous `header: Header` (type inféré du schéma, source unique de vérité) ; les anciennes extensions inline `Header & { … }` (UnderlineNav, TransparentDark) étaient redondantes — tous leurs champs (`logoTitle`, `ctaButton`, `urgenceButton`, `piggyBank`…) existent déjà dans `HeaderSchema` — et ont été supprimées (commit 85117ed). Les footers reçoivent de même `footer: Footer`.
+
+---
+
+**Widget d'authentification dans les headers (`AuthMenu`)** :
+
+L'affichage du bouton de connexion / menu utilisateur connecté dans les headers est délégué au composant `<AuthMenu>` exporté par le module auth (`src/modules/auth`). Il remplace l'ancien pattern `ClientOnly` + `useCocolight` + `AuthModalLazy` que chaque header gérait en local.
+
+`<AuthMenu>` s'appuie sur `AuthModalProvider` (monté dans `SiteShell`) pour ouvrir le modal sans état local. Voir [doc/23-module-auth.md](doc/23-module-auth.md) pour les props disponibles (`layout`, `density`, `showName`, `loginVariant`, `loginLabel`, `onAction`, etc.).
 
 ---
 

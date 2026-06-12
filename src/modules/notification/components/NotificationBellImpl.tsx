@@ -49,7 +49,7 @@ export default function NotificationBellImpl() {
   const close = () => setOpen(false);
 
   const trigger = (
-    <Button variant="ghost" size="sm" className="relative" aria-label={t("bell.ariaLabel")}>
+    <Button variant="ghost" size="sm" className="relative text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:bg-muted" aria-label={t("bell.ariaLabel")}>
       <Bell className="h-4 w-4" />
       {count > 0 && (
         <Badge className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-xs">

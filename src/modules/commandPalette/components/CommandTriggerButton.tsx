@@ -40,7 +40,7 @@ export function CommandTriggerButton() {
       variant="outline"
       size={iconOnly ? "icon" : "sm"}
       onClick={palette.openPalette}
-      className={cn("text-muted-foreground", !iconOnly && "gap-2")}
+      className={cn("text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:bg-muted", !iconOnly && "gap-2")}
       aria-label={t("triggerLabel")}
       title={t("triggerLabel")}
     >

@@ -28,7 +28,7 @@
     ]
   },
   "header": {
-    "type": "rezo-la-mer",
+    "type": "transparent-scroll",
     "path": "/",
     "logo": "images/sportSanteBienetre/logo.png",
     "logoTitle": {
@@ -886,8 +886,8 @@
                 "xl": 4
               },
               "card": {
-                "type": "rezo-la-mer",
-                "variant": "rezo-la-mer",
+                "type": "funding",
+                "variant": "funding",
                 "detailsMode": "drawer"
               }
             }
@@ -1109,8 +1109,8 @@
                     "xl": 1
                   },
                   "card": {
-                    "type": "ssbe",
-                    "variant": "ssbe",
+                    "type": "contact-card",
+                    "variant": "contact-card",
                     "detailsMode": "drawer"
                   }
                 }
@@ -1149,8 +1149,8 @@
                     "xl": 1
                   },
                   "card": {
-                    "type": "rezo-la-mer",
-                    "variant": "rezo-la-mer",
+                    "type": "funding",
+                    "variant": "funding",
                     "detailsMode": "drawer"
                   }
                 }
@@ -1328,8 +1328,8 @@
                     "xl": 1
                   },
                   "card": {
-                    "type": "ssbe",
-                    "variant": "ssbe",
+                    "type": "contact-card",
+                    "variant": "contact-card",
                     "detailsMode": "drawer"
                   }
                 }
@@ -1369,8 +1369,8 @@
                     "xl": 1
                   },
                   "card": {
-                    "type": "rezo-la-mer",
-                    "variant": "rezo-la-mer",
+                    "type": "funding",
+                    "variant": "funding",
                     "detailsMode": "drawer"
                   }
                 }
@@ -2401,6 +2401,9 @@
               "card": {
                 "type": "card-answer",
                 "detailsMode": "dialog"
+              },
+              "preview": {
+                "type": "coform-answer"
               }
             }
           }
@@ -2481,8 +2484,8 @@
                 "xl": 2
               },
               "card": {
-                "type": "rezo-la-mer",
-                "variant": "ssbe",
+                "type": "funding",
+                "variant": "contact-card",
                 "detailsMode": "drawer"
               }
             }
@@ -2549,8 +2552,8 @@
                 "xl": 4
               },
               "card": {
-                "type": "rezo-la-mer",
-                "variant": "rezo-la-mer",
+                "type": "funding",
+                "variant": "funding",
                 "detailsMode": "drawer"
               }
             }
@@ -3819,8 +3822,11 @@
                 "xl": 4
               },
               "card": {
-                "type": "poi-ssbe",
+                "type": "poi-amenities",
                 "detailsMode": "dialog"
+              },
+              "preview": {
+                "type": "poi-amenities"
               }
             }
           }
@@ -3935,7 +3941,7 @@
 
   ],
   "footer": {
-    "type": "ssbe",
+    "type": "contact-partners",
     "contactSection": {
       "title": {
         "fr": "Nos coordonnées",

@@ -125,11 +125,18 @@ const ListConfSchema = z.object({
     showFunding:     z.boolean().optional(),
     detailsMode: z.enum(["drawer", "dialog"]).default("drawer"),
     detailedMode: z.enum(["default", "tiers-lieux"]).default("default"),
-    type: z.enum(["overlay", "default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer", "poi-ssbe", "card-elts","ssbe", "card-answer"]).default("default"),
-    variant: z.enum(["default", "tiers-lieux", "event", "rezo-la-mer","profile","event-rezo-la-mer","poi-rezo-la-mer", "poi-ssbe", "card-elts","ssbe", "card-answer"]).optional(),
+    // Valeurs DESIGN/FONCTIONNALITÉ (jamais de nom de site). `Preview`/détail =
+    // axe séparé (`preview.type`/`detailsMode`).
+    type: z.enum(["overlay", "default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer"]).default("default"),
+    variant: z.enum(["default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer"]).optional(),
   }).partial().optional(),
   preview: z.object({
-    type: z.enum(["default"]).default("default"),
+    // Contenu du détail (rendu DANS le conteneur `detailsMode`). Axe indépendant
+    // de la carte : `Preview.tsx` dispatche dessus. Noms design/fonctionnalité.
+    type: z.enum(["default", "poi-amenities", "coform-answer"]).default("default"),
+    // Mapping rôle→suffixe de champ CoForm (pour `coform-answer`). Surcharge la
+    // table par défaut du composant — découple les IDs de champs du code.
+    fields: z.record(z.string(), z.string()).optional(),
   }).partial().optional(),
 }).partial();
 
@@ -565,10 +572,18 @@ const TitleWithFiltersDropdownSchema = z.object({
 const SearchHeaderProps = z.object({
   headline: LocalizedString.optional(),
   subhead: LocalizedString.optional(),
+  // Override de la classe couleur du titre `h1` (déf. `text-foreground`). Utile
+  // quand le bandeau a un fond fixe sombre (ex. `bg-ocean-gradient`) où le token
+  // `--foreground` (sombre en light) devient illisible : `text-white dark:text-foreground`.
+  headlineClassName: z.string().optional(),
   // Override de la classe couleur du sous-titre (déf. `text-foreground`).
   // Remplace le hack par-slug historique : un site dont le subhead ne doit pas
   // forcer `text-foreground` met `subheadClassName: ""`.
   subheadClassName: z.string().optional(),
+  // Override du conteneur flex de la rangée de filtres (recherche + dropdowns).
+  // Déf. `flex flex-col lg:flex-row lg:items-center`. Permet d'éviter l'étalement
+  // pleine largeur (ex. `flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:justify-center`).
+  filtersClassName: z.string().optional(),
   types: z.array(
     z.object({
       id: z.string(),
@@ -633,6 +648,8 @@ export interface SearchCardProps<T extends SearchEntity = SearchEntity> {
 export interface PreviewProps<T extends SearchEntity = SearchEntity> {
   item: T;
   preview?: ListConf["preview"];
+  /** Ferme le conteneur de détail (drawer/dialog) — fourni par le conteneur. */
+  onClose?: () => void;
 }
 
 export interface SearchMapWrapperProps<T extends SearchEntity = SearchEntity> {

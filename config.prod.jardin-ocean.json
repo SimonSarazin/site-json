@@ -66,7 +66,7 @@
         "path": "/feuillederoute"
       }
     ],
-    "type": "cyber-reunion",
+    "type": "transparent-scroll",
     "path": "/",
     "logoIcon": "leaf",
     "logoTitle": {
@@ -595,8 +595,8 @@
                 "xl": 4
               },
               "card": {
-                "type": "poi-rezo-la-mer",
-                "variant": "rezo-la-mer",
+                "type": "resource-booking",
+                "variant": "funding",
                 "detailsMode": "drawer"
               }
             },
@@ -798,8 +798,8 @@
                 "xl": 4
               },
               "card": {
-                "type": "event-rezo-la-mer",
-                "variant": "event-rezo-la-mer",
+                "type": "event-featured",
+                "variant": "event-featured",
                 "detailsMode": "drawer"
               }
             }
@@ -848,8 +848,8 @@
               },
               "card": {
                 "showStar": true,
-                "type": "event-rezo-la-mer",
-                "variant": "event-rezo-la-mer",
+                "type": "event-featured",
+                "variant": "event-featured",
                 "detailsMode": "drawer",
                 "viewDetail": true
               }
@@ -1116,7 +1116,8 @@
         ]
       }
     ],
-    "type": "cyber-reunion",
+    "type": "sidebar-columns",
+    "style": "card",
     "logoIcon": "leafy-green",
     "description": {
       "fr": "La coopérative qui finance l'agriculture locale et la souveraineté alimentaire dans l'océan Indien",

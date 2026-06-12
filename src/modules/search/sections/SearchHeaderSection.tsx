@@ -23,8 +23,17 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+    Sheet,
+    SheetClose,
+    SheetContent,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from "@/components/ui/sheet";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, SlidersHorizontal } from "lucide-react";
 import { usePageFiltersOptional } from "@/modules/search/contexts/pageFilters";
 import { useCocolight } from "@/hooks/useCocolight";
 import { ActionButtonGroup } from "@/modules/profil/components/ActionButtonGroup";
@@ -68,6 +77,8 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
     // même délai (400 ms) que la sidebar `<FiltersSection>`.
     const [localSearchQuery, setLocalSearchQuery] = useState(pageFilters?.searchQuery ?? "");
     const debouncedSearchQuery = useDebounce(localSearchQuery, 400);
+    // Sheet "Filtres" mobile (les dropdowns sont regroupés derrière un bouton)
+    const [filtersOpen, setFiltersOpen] = useState(false);
 
     useEffect(() => {
         setSearchQuery(debouncedSearchQuery);
@@ -173,6 +184,53 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
         return `${t(filter.label)} (${selectedIds.length})`;
     };
 
+    const activeFilterCount = (props.dropdownFilters ?? []).filter(
+        (filter) => getDropdownSelectedValues(filter).length > 0
+    ).length;
+
+    const resetAllDropdownFilters = () => {
+        (props.dropdownFilters ?? []).forEach((filter) => setDropdownSelection(filter, []));
+    };
+
+    // Rendu d'un dropdown de filtre, réutilisé en barre desktop (inline) ET dans
+    // la Sheet mobile. `w-full` par défaut (Sheet) → `lg:w-auto` en barre desktop.
+    const renderDropdownFilter = (filter: DropdownFilterConfig) => {
+        const selectedValues = getDropdownSelectedValues(filter);
+        return (
+            <DropdownMenu key={filter.id}>
+                <DropdownMenuTrigger asChild>
+                    <Button
+                        variant="outline"
+                        className="h-11 w-full justify-between rounded-xl border-border bg-muted/60! px-3 text-foreground shadow-sm hover:border-primary/50 hover:bg-muted! hover:text-foreground lg:w-auto lg:min-w-[150px] lg:max-w-full dark:bg-muted/50! dark:hover:bg-muted/70!"
+                    >
+                        <span className="truncate">{getDropdownTriggerLabel(filter)}</span>
+                        <ChevronDown className="ml-2 h-4 w-4 shrink-0" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-72 max-h-72 overflow-y-auto">
+                    <DropdownMenuItem onClick={() => setDropdownSelection(filter, [])}>
+                        {filter.allLabel ? t(filter.allLabel) : t("Tous")}
+                    </DropdownMenuItem>
+
+                    {filter.options.length > 0 && <DropdownMenuSeparator />}
+
+                    {filter.options.map((option) => (
+                        <DropdownMenuCheckboxItem
+                            key={option.id}
+                            checked={selectedValues.includes(option.id)}
+                            onCheckedChange={() => toggleDropdownOption(filter, option.id)}
+                        >
+                            {option.icon && (
+                                <DynamicIcon name={option.icon as IconName} className="w-4 h-4 mr-2" />
+                            )}
+                            {t(option.label)}
+                        </DropdownMenuCheckboxItem>
+                    ))}
+                </DropdownMenuContent>
+            </DropdownMenu>
+        );
+    };
+
     return (
         <section id={id} className="relative pt-10 px-4 bg-ocean-gradient overflow-hidden">
             <div className="inset-0 opacity-10">
@@ -185,7 +243,7 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
 
             <div className="relative z-10 container mx-auto max-w-6xl text-center py-12 px-4">
                 {props.headline && (
-                    <h1 className="text-4xl md:text-6xl font-bold mb-6 text-foreground animate-fade-in">
+                    <h1 className={`text-4xl md:text-6xl font-bold mb-6 ${props.headlineClassName ?? "text-foreground"} animate-fade-in`}>
                         {t(props.headline)}
                     </h1>
                 )}
@@ -200,9 +258,9 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
 
             {(props.showSearch || hasDropdownFilters) && (
                 <div className={`container mx-auto px-4 mb-8 ${hasDropdownFilters ? "max-w-6xl" : "max-w-2xl"}`}>
-                    <div className={`gap-3 ${hasDropdownFilters ? "flex flex-col lg:flex-row lg:items-center" : ""}`}>
+                    <div className={`gap-3 ${hasDropdownFilters ? (props.filtersClassName ?? "flex flex-col lg:flex-row lg:items-center") : ""}`}>
                         {props.showSearch && (
-                            <div className={hasDropdownFilters ? "relative flex-1 min-w-[220px]" : "relative"}>
+                            <div className={hasDropdownFilters ? "relative w-full" : "relative"}>
                                 <DynamicIcon
                                     name="search"
                                     className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground"
@@ -213,53 +271,69 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
                                     value={localSearchQuery}
                                     onChange={(e) => setLocalSearchQuery(e.target.value)}
                                     className={hasDropdownFilters
-                                        ? "pl-12 h-12 rounded-full bg-secondary/40 backdrop-blur-ocean border-primary/30 focus:border-primary text-foreground placeholder:text-muted-foreground"
+                                        ? "h-11 rounded-xl border-border bg-muted/60! pl-12 text-foreground shadow-sm placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/25 dark:bg-muted/50!"
                                         : "pl-12 h-12 bg-secondary/40 backdrop-blur-ocean border-primary/30 focus:border-primary text-foreground placeholder:text-muted-foreground"
                                     }
                                 />
                             </div>
                         )}
 
-                        {hasDropdownFilters && props.dropdownFilters?.map((filter) => {
-                            const selectedValues = getDropdownSelectedValues(filter);
+                        {hasDropdownFilters && (
+                            <>
+                                {/* Desktop : filtres inline, regroupés dans la barre */}
+                                <div className="hidden w-full flex-wrap items-center justify-center gap-3 lg:flex">
+                                    {props.dropdownFilters?.map(renderDropdownFilter)}
+                                </div>
 
-                            return (
-                                <DropdownMenu key={filter.id}>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button
-                                            variant="outline"
-                                            className="h-12 min-w-[200px] max-w-full justify-between rounded-full border-primary/40 bg-background/85 px-4 text-foreground hover:bg-primary/10 hover:text-foreground"
-                                        >
-                                            <span className="truncate">{getDropdownTriggerLabel(filter)}</span>
-                                            <ChevronDown className="ml-2 h-4 w-4 shrink-0" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="start" className="w-72 max-h-72 overflow-y-auto">
-                                        <DropdownMenuItem onClick={() => setDropdownSelection(filter, [])}>
-                                            {filter.allLabel ? t(filter.allLabel) : t("Tous")}
-                                        </DropdownMenuItem>
-
-                                        {filter.options.length > 0 && <DropdownMenuSeparator />}
-
-                                        {filter.options.map((option) => (
-                                            <DropdownMenuCheckboxItem
-                                                key={option.id}
-                                                checked={selectedValues.includes(option.id)}
-                                                onCheckedChange={() => toggleDropdownOption(filter, option.id)}
+                                {/* Mobile : un seul bouton "Filtres" (compteur actif) → Sheet bas */}
+                                <div className="w-full lg:hidden">
+                                    <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
+                                        <SheetTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                className="h-11 w-full justify-between rounded-xl border-border bg-muted/60! px-3 text-foreground shadow-sm hover:bg-muted! dark:bg-muted/50!"
                                             >
-                                                {option.icon && (
-                                                    <DynamicIcon
-                                                        name={option.icon as IconName}
-                                                        className="w-4 h-4 mr-2"
-                                                    />
+                                                <span className="flex items-center gap-2">
+                                                    <SlidersHorizontal className="h-4 w-4" />
+                                                    {t("Filtres")}
+                                                </span>
+                                                {activeFilterCount > 0 && (
+                                                    <Badge className="ml-2 rounded-full px-2">{activeFilterCount}</Badge>
                                                 )}
-                                                {t(option.label)}
-                                            </DropdownMenuCheckboxItem>
-                                        ))}
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            );
-                        })}
+                                            </Button>
+                                        </SheetTrigger>
+                                        <SheetContent side="bottom" className="max-h-[85vh] gap-0 rounded-t-2xl p-0">
+                                            <SheetHeader className="border-b border-border">
+                                                <SheetTitle className="flex items-center gap-2">
+                                                    <SlidersHorizontal className="h-5 w-5 text-primary" />
+                                                    {t("Filtres")}
+                                                    {activeFilterCount > 0 && (
+                                                        <Badge className="rounded-full px-2">{activeFilterCount}</Badge>
+                                                    )}
+                                                </SheetTitle>
+                                            </SheetHeader>
+                                            <div className="flex flex-col gap-3 overflow-y-auto p-4">
+                                                {props.dropdownFilters?.map(renderDropdownFilter)}
+                                            </div>
+                                            <SheetFooter className="flex-row gap-2 border-t border-border">
+                                                {activeFilterCount > 0 && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        className="flex-1"
+                                                        onClick={resetAllDropdownFilters}
+                                                    >
+                                                        {t("Réinitialiser")}
+                                                    </Button>
+                                                )}
+                                                <SheetClose asChild>
+                                                    <Button className="flex-1">{t("Voir les résultats")}</Button>
+                                                </SheetClose>
+                                            </SheetFooter>
+                                        </SheetContent>
+                                    </Sheet>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             )}

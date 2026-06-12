@@ -201,7 +201,7 @@ Les items de navigation (`NavItem`, `EnhancedNavItem`) exposent un champ `roles:
 roles: z.array(z.string()).optional(), // visibilité RBAC
 ```
 
-Ce filtrage est appliqué directement dans les composants header (`SiteHeader2.tsx`, `DefaultHeader.tsx`) via :
+Ce filtrage est appliqué directement dans les composants header (`SiteHeader2.tsx`, `HeaderStandard.tsx`) via :
 
 ```ts
 if (item.roles && item.roles.length) {

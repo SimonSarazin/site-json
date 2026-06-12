@@ -1,0 +1,440 @@
+@import 'tailwindcss';
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Tokens de thème (couleurs shadcn + sémantiques, polices, radius, shadows)
+   injectés au runtime par config.theme → SiteTheme.tsx (rendu SSR via
+   RootLayout). On ne les redéfinit PAS ici : ce fichier ne garde que le
+   @theme inline (mapping vars→classes Tailwind), les quelques vars bespoke
+   réellement utilisées (gradients de carte, accents océan) et les
+   utilities/animations/prose custom. */
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Couleurs sémantiques (warning/success/info/error) utilisées par les
+     modules partagés (news, coform, cagnotte, bannières). Valeurs fournies
+     par config.theme.colors. */
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-error: var(--error);
+  --color-error-foreground: var(--error-foreground);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-serif: var(--font-serif);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --shadow-2xs: var(--shadow-2xs);
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow: var(--shadow);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+  --shadow-2xl: var(--shadow-2xl);
+
+  /* Custom breakpoint for extra small screens */
+  --breakpoint-xs: 475px;
+}
+
+/* Safelist responsive grid-cols */
+@source inline("{,sm:,md:,lg:}grid-cols-{1..6}");
+
+/* Vars bespoke (non exprimables via config.theme), réellement utilisées par
+   des composants. Elles dérivent des tokens shadcn quand c'est possible pour
+   s'adapter automatiquement au mode clair/sombre. */
+:root {
+  /* En-tête de carte dégradé + liseré gauche : utilisés en inline-style par
+     CardPoiSSBE / PoiDetailSSBE / ProfileSsbeAbout / AnswerDetailModeDialog /
+     CardAnswer. Dérivés de primary/accent → s'adaptent au dark sans override. */
+  --card-header-gradient: linear-gradient(135deg, var(--primary), var(--accent));
+  --card-border-left: var(--primary);
+
+  /* Accents océan (utilisés par .bg-ocean-gradient / .shadow-ocean / .shadow-glow).
+     Bande TOUJOURS sombre (le texte du bandeau héros est forcé en blanc via la
+     config) → on garde la lightness basse même en light pour un contraste AA. */
+  --ocean-deep: oklch(0.23 0.060 170);
+  --ocean-mid: oklch(0.33 0.090 168);
+  --ocean-light: oklch(0.45 0.110 166);
+
+  --shadow-ocean: 0 10px 40px -10px oklch(0.23 0.060 170 / 0.5);
+  --shadow-glow: 0 0 30px oklch(0.62 0.130 168 / 0.45);
+}
+
+.dark {
+  --ocean-deep: oklch(0.17 0.045 170);
+  --ocean-mid: oklch(0.26 0.070 169);
+  --ocean-light: oklch(0.37 0.090 167);
+
+  --shadow-ocean: 0 10px 40px -10px oklch(0.12 0.040 170 / 0.7);
+  --shadow-glow: 0 0 40px oklch(0.76 0.150 168 / 0.5);
+}
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-border);
+  }
+
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+  }
+
+  :root {
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    font-weight: 400;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    letter-spacing: var(--tracking-normal);
+  }
+
+  /* Police d'affichage (display) sur les titres : config.theme.typography.serif
+     (Sora) — distincte du corps en sans (Lexend). Scopé à ce site. */
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-foreground;
+    font-family: var(--font-serif);
+  }
+
+  p {
+    @apply text-foreground;
+  }
+
+  a {
+    @apply text-primary hover:text-primary/80;
+    text-decoration: inherit;
+  }
+}
+
+@layer utilities {
+  .font-sans {
+    font-family: var(--font-sans);
+  }
+
+  .font-serif {
+    font-family: var(--font-serif);
+  }
+
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Glass morphism effect */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Better hover states */
+.hover-lift {
+  transition: transform 0.2s ease-in-out;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+}
+
+/* Custom prose styles for markdown content */
+.prose {
+  max-width: none;
+}
+
+.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+  color: var(--foreground);
+}
+
+.prose p {
+  color: var(--muted-foreground);
+}
+
+.prose a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.prose a:hover {
+  color: color-mix(in oklch, var(--primary) 80%, transparent);
+}
+
+.prose code {
+  background: var(--muted);
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+}
+
+.prose pre {
+  background: var(--muted);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+}
+
+.prose blockquote {
+  border-left: 4px solid var(--primary);
+  padding-left: 1rem;
+  margin: 1.5rem 0;
+  font-style: italic;
+  color: var(--muted-foreground);
+}
+
+/* Responsive typography */
+@media (max-width: 640px) {
+  .responsive-text {
+    font-size: clamp(1rem, 4vw, 1.5rem);
+  }
+}
+
+/* Better button animations */
+.btn-animate {
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-animate:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-animate:active {
+  transform: translateY(0);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--muted);
+}
+
+::-webkit-scrollbar-thumb {
+  background: color-mix(in oklch, var(--muted-foreground) 30%, transparent);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklch, var(--muted-foreground) 50%, transparent);
+}
+
+/* ==========================================
+   Accents océan (#00e7e3) — repris de la charte, utilisés par les sections
+   ========================================== */
+
+.backdrop-blur-ocean {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.shadow-ocean {
+  box-shadow: var(--shadow-ocean);
+}
+
+.shadow-glow {
+  box-shadow: var(--shadow-glow);
+}
+
+.bg-ocean-gradient {
+  background: linear-gradient(135deg, var(--ocean-deep), var(--ocean-mid), var(--ocean-light));
+}
+
+/* Lisibilité du titre héros : en light, simple ombre neutre douce (pas de halo
+   coloré sur la photo) ; en dark, léger glow teal pour le texte clair. */
+.text-glow {
+  text-shadow: 0 2px 10px oklch(0 0 0 / 0.22);
+}
+
+.dark .text-glow {
+  text-shadow: 0 0 24px oklch(0.760 0.150 168 / 0.40);
+}
+
+/* ==========================================
+   Animations
+   ========================================== */
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 25s linear infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s ease-out forwards;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Loading states */
+.loading {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
+  }
+}
+
+/* Animation utilities */
+.animate-in {
+  animation-fill-mode: both;
+}
+
+.fade-in {
+  animation-name: fadeIn;
+}
+
+.slide-in-from-bottom-4 {
+  animation-name: slideInFromBottom;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.duration-1000 {
+  animation-duration: 1000ms;
+}
+
+.delay-200 {
+  animation-delay: 200ms;
+}
+
+.delay-400 {
+  animation-delay: 400ms;
+}

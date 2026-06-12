@@ -1,4 +1,9 @@
 {
+  "ImageUploadField": {
+    "dropHint": "Glisser-déposer ou cliquer pour choisir",
+    "remove": "Retirer l'image",
+    "imageOnly": "Seules les images sont acceptées."
+  },
   "EntityGridView": {
     "gridView": "Grille",
     "detailedView": "Détails",
@@ -1102,6 +1107,101 @@
         "title": "Ajouter un lieu",
         "description": "Renseignez les informations du lieu"
       }
+    }
+  },
+  "AddPoiEquipement": {
+    "title": {
+      "add": "Ajouter un équipement",
+      "edit": "Éditer un équipement"
+    },
+    "description": {
+      "add": "Compléter les informations de l'équipement.",
+      "edit": "Mettre à jour les informations de l'équipement."
+    },
+    "steps": {
+      "general": "Informations générales",
+      "legal": "Caractéristiques juridiques",
+      "structure": "Caractéristiques structurantes",
+      "usage": "Caractéristiques d'usages"
+    },
+    "stepIndicator": "Étape {{index}} / {{total}}",
+    "stepAria": "Étape {{index}}",
+    "validationFailed": "Veuillez corriger les champs en erreur.",
+    "sections": {
+      "pmr": "Accessibilité PMR",
+      "pshs": "Accessibilité PSHS"
+    },
+    "matches": {
+      "title": "Équipements existants à la même adresse",
+      "loading": "Recherche en cours…",
+      "error": "Erreur lors de la recherche des équipements.",
+      "empty": "Aucun équipement trouvé.",
+      "addressUnknown": "Adresse inconnue",
+      "noName": "Sans nom"
+    },
+    "fields": {
+      "equipTypeName": "Type de l'équipement",
+      "equipTypeFamille": "Famille d'équipement",
+      "address": "Adresse",
+      "proprietaireNom": "Nom du propriétaire",
+      "proprietaireType": "Type de propriétaire",
+      "dateCreation": "Date de création",
+      "dateEnquete": "Date d'enquête",
+      "dateMaj": "Date de mise à jour",
+      "institutionNom": "Nom de l'institution",
+      "categorie": "Catégorie",
+      "gestionnaireType": "Type de gestionnaire",
+      "partenariatDisponible": "Partenariat disponible",
+      "partenariatType": "Type de partenariat",
+      "nature": "Nature de l'équipement",
+      "sol": "Type de sol",
+      "longueur": "Longueur",
+      "largeur": "Largeur",
+      "surface": "Surface (calculée)",
+      "handicapType": "Type de handicap pris en charge",
+      "transportType": "Moyen de transport disponible",
+      "accessibleHandicap": "Accessible aux personnes en situation de handicap",
+      "accessibleTransport": "Accessible en transport en commun",
+      "eclairage": "Éclairage de l'aire",
+      "doucheAccessible": "Douche accessible",
+      "pmrAcces": "Accès PMR disponible",
+      "pmrChem": "Cheminement PMR adapté",
+      "pmrDouche": "Douches accessibles PMR",
+      "pmrTrib": "Tribunes accessibles PMR",
+      "pmrVest": "Vestiaires accessibles PMR",
+      "pmrSanit": "Sanitaires accessibles PMR",
+      "locauxComplementaires": "Locaux complémentaires",
+      "siteInternet": "Site internet",
+      "siteInternetPlaceholder": "https://exemple.fr",
+      "typesUtilisateurs": "Types d'utilisateurs",
+      "accesLibre": "Accès libre",
+      "sportsPratiques": "Sports pratiqués",
+      "image": "Photo de l'équipement",
+      "imageHint": "Format carré recommandé (JPG, PNG)."
+    },
+    "pshs": {
+      "aire": "Aire de jeu",
+      "sanit": "Sanitaires",
+      "trib": "Tribunes",
+      "sign": "Accueil / Signalétique",
+      "vest": "Vestiaires",
+      "chem": "Cheminements"
+    },
+    "placeholders": {
+      "selectType": "Sélectionner un type",
+      "searchType": "Rechercher un type",
+      "selectFamille": "Sélectionner une famille",
+      "searchFamille": "Rechercher une famille",
+      "selectNature": "Sélectionner une nature",
+      "selectSol": "Sélectionner un type de sol",
+      "selectSport": "Sélectionner un sport",
+      "searchSport": "Rechercher un sport"
+    },
+    "buttons": {
+      "previous": "Précédent",
+      "next": "Suivant",
+      "addUrl": "Ajouter une URL",
+      "removeUrl": "Retirer l'URL"
     }
   },
   "AddTiersLieux": {

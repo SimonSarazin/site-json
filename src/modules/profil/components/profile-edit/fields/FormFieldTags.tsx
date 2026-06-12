@@ -34,6 +34,10 @@ interface FormFieldTagsProps<T extends FieldValues> {
    * Placeholder personnalisé
    */
   placeholder?: string;
+  /**
+   * Autocomplétion sur les tags existants. `false` → saisie libre (valeurs hors tags).
+   */
+  searchable?: boolean;
 }
 
 /**
@@ -47,6 +51,7 @@ export function FormFieldTags<T extends FieldValues>({
   extendedTexts = false,
   label,
   placeholder,
+  searchable = true,
 }: FormFieldTagsProps<T>) {
   const t = useT("modules/profil");
 
@@ -74,6 +79,7 @@ export function FormFieldTags<T extends FieldValues>({
               tags={Array.isArray(field.value) ? field.value : []}
               onTagsChange={field.onChange}
               maxTags={maxTags}
+              searchable={searchable}
               texts={texts}
             />
           </FormControl>
