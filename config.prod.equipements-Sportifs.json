@@ -2201,7 +2201,13 @@
                 }
               ],
               "defaultSort": "commune",
-              "rowLink": true
+              "rowAction": {
+                "kind": "preview",
+                "detailsMode": "dialog",
+                "preview": {
+                  "type": "poi-amenities"
+                }
+              }
             }
           }
         }

@@ -180,6 +180,7 @@ describe("buildCsv", () => {
     const rows = [
       {
         id: "r0",
+        index: 0,
         cells: { ville: 'Saint "Le" Port', surface: 120, access: true },
         subtitles: {},
       },

@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
+import type { SearchEntity } from "@communecter/cocolight-api-client";
+import { SwitchDetailsMode } from "@/modules/search/components/SwitchDetailsMode";
 import { ChevronDown, ChevronUp, Download, Table as TableIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -68,11 +70,28 @@ interface ObservatoryTableProps {
   table: TableDef;
   /** Export CSV du résultat filtré (opt-in config : `props.export`). */
   exportCsv?: { filename?: string } | null;
+  /** Entités SDK alignées avec `data` (rowAction "preview"). */
+  entities?: readonly SearchEntity[];
 }
 
-export function ObservatoryTable({ data, dimensions, table, exportCsv }: ObservatoryTableProps) {
+export function ObservatoryTable({ data, dimensions, table, exportCsv, entities }: ObservatoryTableProps) {
   const t = useT("modules/observatoire");
   const navigate = useNavigate();
+  // rowAction "preview" : entité ouverte dans le détail du module search
+  // (drawer/dialog + Preview — le comportement de la liste equipements).
+  const [detailEntity, setDetailEntity] = useState<SearchEntity | null>(null);
+  const rowAction = table.rowAction;
+  const handleRowClick = (r: Row) => {
+    if (!rowAction) return;
+    if (rowAction.kind === "profil") {
+      if (r.slug) navigate(`/profil/${r.slug}`);
+      return;
+    }
+    const entity = entities?.[r.index];
+    if (entity) setDetailEntity(entity);
+  };
+  const rowClickable = (r: Row): boolean =>
+    rowAction?.kind === "profil" ? !!r.slug : rowAction?.kind === "preview" ? !!entities?.[r.index] : false;
   // Colonnes sans dimension connue : ignorées (warn DEV).
   const columns = useMemo(() => {
     const out = table.columns.filter((c) => {
@@ -235,15 +254,9 @@ export function ObservatoryTable({ data, dimensions, table, exportCsv }: Observa
               <TableRow
                 key={r.id}
                 className={`border-border/40 ${i % 2 ? "bg-muted/10" : ""} ${
-                  table.rowLink && r.slug ? "cursor-pointer" : ""
+                  rowClickable(r) ? "cursor-pointer" : ""
                 }`}
-                // rowLink (opt-in config) : le slug est déjà chargé (champs
-                // SDK) et la route /profil/:slug existe pour toutes les entités.
-                onClick={
-                  table.rowLink && r.slug
-                    ? () => navigate(`/profil/${r.slug}`)
-                    : undefined
-                }
+                onClick={rowClickable(r) ? () => handleRowClick(r) : undefined}
               >
                 {columns.map((col) => renderCell(r, col))}
               </TableRow>
@@ -290,6 +303,19 @@ export function ObservatoryTable({ data, dimensions, table, exportCsv }: Observa
         </div>
       )}
       </CardContent>
+      {/* Détail (rowAction preview) — réutilise le conteneur + preview du
+          module search ; monté seulement quand une entité est ouverte. */}
+      {rowAction?.kind === "preview" && detailEntity && (
+        <SwitchDetailsMode
+          openDetails={!!detailEntity}
+          setOpenDetails={(open) => {
+            if (!open) setDetailEntity(null);
+          }}
+          item={detailEntity}
+          card={{ detailsMode: rowAction.detailsMode ?? "drawer" }}
+          preview={rowAction.preview}
+        />
+      )}
     </Card>
   );
 }

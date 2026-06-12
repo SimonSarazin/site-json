@@ -8,6 +8,7 @@
 // ------------------------------------------------------------
 import { z } from "zod";
 import { LocalizedString } from "@/types/locale-schema";
+import { PreviewConfSchema } from "@/modules/search/schema";
 
 /*───────────────────────────────────────────────────────────────*/
 /* 1. Item — document brut                                       */
@@ -118,8 +119,19 @@ export const TableDefSchema = z.object({
   columns: z.array(TableColumnSchema).min(1),
   /** Dimension du tri initial (défaut : la 1ʳᵉ colonne). */
   defaultSort: z.string().optional(),
-  /** Clic sur une ligne → /profil/<slug> (le slug est dans les champs SDK). */
-  rowLink: z.boolean().optional(),
+  /** Action au clic sur une ligne — CHOIX déclaratif :
+   *  - "profil"  : navigation vers /profil/<slug>
+   *  - "preview" : ouvre le détail du module search (drawer/dialog + preview),
+   *    le comportement de la liste /equipements-sportifs au clic sur une carte. */
+  rowAction: z
+    .object({
+      kind: z.enum(["profil", "preview"]),
+      /** preview : conteneur du détail (défaut "drawer"). */
+      detailsMode: z.enum(["drawer", "dialog"]).optional(),
+      /** preview : contenu (schéma du module search — poi-amenities…). */
+      preview: PreviewConfSchema.optional(),
+    })
+    .optional(),
 });
 export type TableDef = z.infer<typeof TableDefSchema>;
 

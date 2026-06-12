@@ -237,7 +237,10 @@ export type CellValue = string | number | boolean | undefined;
 
 export interface Row {
   id: string;
-  /** Slug de l'entité (champs SDK) — pour `table.rowLink` → /profil/<slug>. */
+  /** Index dans le dataset d'origine — aligne la ligne avec son entité SDK
+   *  (rowAction "preview"). */
+  index: number;
+  /** Slug de l'entité (champs SDK) — rowAction "profil" → /profil/<slug>. */
   slug?: string;
   cells: Record<string, CellValue>;
   subtitles: Record<string, string | undefined>;
@@ -263,7 +266,7 @@ export function buildRow(
   }
   // Id de ligne : index d'origine (stable — rows reconstruits depuis data).
   const slug = typeof e.slug === "string" && e.slug !== "" ? e.slug : undefined;
-  return { id: `row-${idx}`, slug, cells, subtitles };
+  return { id: `row-${idx}`, index: idx, slug, cells, subtitles };
 }
 
 export function compare(a: Row, b: Row, col: TableColumnDef): number {

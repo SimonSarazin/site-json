@@ -51,7 +51,7 @@ export default function DataObservatorySection({
   const kpis = props.kpis ?? [];
   const charts = props.charts ?? [];
 
-  const { items, error, stillLoading, progress, capped } = useObservatoryItemsQuery(
+  const { items, entities, error, stillLoading, progress, capped } = useObservatoryItemsQuery(
     props.baseParams,
     dimensions,
   );
@@ -193,6 +193,7 @@ export default function DataObservatorySection({
                     dimensions={dimensions}
                     table={props.table}
                     exportCsv={props.export ?? null}
+                    entities={entities}
                   />
                 )}
               </>

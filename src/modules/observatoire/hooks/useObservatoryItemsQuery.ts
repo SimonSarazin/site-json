@@ -48,13 +48,20 @@ export function buildObservatoryBaseParams(
  * le prend BRUT, sans schéma métier : seuls les champs déclarés en
  * dimensions sont lus (coercions tolérantes au moment de la lecture).
  */
-function toItems(results: readonly SearchEntity[]): ObservatoryItem[] {
-  const out: ObservatoryItem[] = [];
+function toItems(results: readonly SearchEntity[]): {
+  items: ObservatoryItem[];
+  entities: SearchEntity[];
+} {
+  const items: ObservatoryItem[] = [];
+  const entities: SearchEntity[] = [];
   for (const item of results) {
     const sd = item?.serverData;
-    if (sd && typeof sd === "object") out.push(sd as ObservatoryItem);
+    if (sd && typeof sd === "object") {
+      items.push(sd as ObservatoryItem);
+      entities.push(item); // ALIGNÉ index à index avec items (rowAction preview)
+    }
   }
-  return out;
+  return { items, entities };
 }
 
 export function useObservatoryItemsQuery(
@@ -91,10 +98,12 @@ export function useObservatoryItemsQuery(
       maxResults: baseParamsProp?.maxResults,
     });
 
-  const items = useMemo(() => toItems(results), [results]);
+  const { items, entities } = useMemo(() => toItems(results), [results]);
 
   return {
     items,
+    /** Entités SDK alignées avec `items` (preview/détail du module search). */
+    entities,
     isLoading,
     error,
     stillLoading: !isComplete,
