@@ -169,5 +169,7 @@
     "card.servicePricing.price.halfDay": "{{price}}€ / demi-journée",
     "card.servicePricing.price.fullDay": "{{price}}€ / journée",
     "card.servicePricing.price.bed": "{{price}}€ le lit en chambre partagée",
-    "card.servicePricing.price.room": "{{price}}€ la chambre individuelle"
+    "card.servicePricing.price.room": "{{price}}€ la chambre individuelle",
+    "Chargement des points… {{loaded}} / {{total}}": "Chargement des points… {{loaded}} / {{total}}",
+    "Carte limitée aux {{loaded}} premiers résultats": "Carte limitée aux {{loaded}} premiers résultats"
 }

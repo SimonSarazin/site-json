@@ -67,7 +67,12 @@ export function buildSearchPayload(
   const {
     fediverse = false,
     indexStepList = 10,
-    indexStepMap = 0,
+    // Carte : pages de 500 enchaînées par le paginator SDK (chargement
+    // PROGRESSIF — cf. useSearchAllResults). `indexStepMap: 0` en config
+    // restaure l'ancien tout-en-1-appel. Sondé : indexMin manuel est ignoré
+    // par le backend, seul `page.next()` pagine ; le paginator fonctionne
+    // avec `mapUsed: true` (recouvrement 0).
+    indexStepMap = 500,
     defaultTypes,
     defaultTags,
     defaultFilters,

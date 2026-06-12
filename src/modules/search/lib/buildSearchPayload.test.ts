@@ -47,3 +47,20 @@ describe("buildSearchPayload — params de scope (parité SSR/client)", () => {
     expect("sourceKey" in p).toBe(false);
   });
 });
+
+describe("buildSearchPayload — mode carte (chargement progressif)", () => {
+  it("mapUsed : pages de 500 par défaut (paginées par le paginator SDK)", () => {
+    const p = buildSearchPayload({}, { ...overrides, mapUsed: true });
+    expect(p).toMatchObject({ mapUsed: true, indexMin: 0, indexStep: 500 });
+  });
+
+  it("indexStepMap: 0 en config restaure le tout-en-1-appel (legacy)", () => {
+    const p = buildSearchPayload({ indexStepMap: 0 }, { ...overrides, mapUsed: true });
+    expect(p).toMatchObject({ mapUsed: true, indexMin: 0, indexStep: 0 });
+  });
+
+  it("indexStepMap personnalisé respecté", () => {
+    const p = buildSearchPayload({ indexStepMap: 250 }, { ...overrides, mapUsed: true });
+    expect(p).toMatchObject({ indexStep: 250 });
+  });
+});

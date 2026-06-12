@@ -912,6 +912,21 @@ libres historiques (OSM light / Carto Dark Matter) — aucun site ne casse.
 inutilisables avec Leaflet : on consomme l'endpoint raster (une migration
 MapLibre est un chantier séparé, au backlog).
 
+**Chargement de la vue carte** (progressif — même mécanique que
+l'observatoire) : la carte ne fait plus un `indexStep: 0` tout-en-1-appel ;
+elle passe par **`useSearchAllResults`** (hook dédié, queryKey
+`searchCostum[Static]MapAll`) — pages de **500** enchaînées séquentiellement
+par le **paginator SDK** (`page.next()` ; sondé : un `indexMin` manuel est
+IGNORÉ par le backend, avec ou sans `mapUsed`), plafond **5000**
+(`maxResults`), **cache 30 min/1 h** (re-toggle liste↔carte instantané),
+`mapUsed: true` conservé dans le payload (sémantique backend préservée).
+`indexStepMap` en config : taille de page (déf. 500) ; `0` restaure le
+tout-en-1-appel legacy. Côté rendu, `SearchMap` est créé UNE fois et les
+markers sont ajoutés **incrémentalement** (`addLayers` par page,
+`chunkedLoading`) ; `fitBounds` ne joue qu'à la 1ʳᵉ page d'un périmètre — le
+viewport de l'utilisateur est préservé pendant le chargement. `MapProgress`
+affiche la progression « X / Y » et l'alerte de plafond.
+
 ### SearchBubbleChart
 
 Graphique en bulles pour visualiser la distribution des entités par catégorie. Activé via `enableGraph: true`. Rendu via D3 circle-packing (`import * as d3`, `d3.pack`, `<svg>` brut) — aucune dépendance Recharts. Clic sur une bulle → ouvre les détails via `graphDetailsMode`.

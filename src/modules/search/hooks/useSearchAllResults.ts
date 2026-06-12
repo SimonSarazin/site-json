@@ -17,6 +17,14 @@ export interface UseSearchAllResultsParams {
   baseParams: UseSearchQueryParams["baseParams"];
   /** Plafond de résultats chargés. Défaut : {@link SEARCH_ALL_DEFAULT_MAX_RESULTS}. */
   maxResults?: number;
+  /** Texte recherché (vue carte : le périmètre suit les filtres). Défaut "". */
+  searchText?: string;
+  /** Tags cochés (idem). Défaut {}. */
+  searchTags?: Record<string, string[]>;
+  /** Payload map (`mapUsed: true` + `indexStepMap`) — vue carte. Défaut false. */
+  mapUsed?: boolean;
+  /** Variant SDK (parité avec la liste). */
+  variant?: UseSearchQueryParams["variant"];
 }
 
 /**
@@ -40,6 +48,10 @@ export function useSearchAllResults({
   searchType,
   baseParams,
   maxResults = SEARCH_ALL_DEFAULT_MAX_RESULTS,
+  searchText = "",
+  searchTags = {},
+  mapUsed = false,
+  variant,
 }: UseSearchAllResultsParams) {
   const {
     transformedResults,
@@ -51,10 +63,11 @@ export function useSearchAllResults({
     isFetchingNextPage,
   } = useSearchQuery({
     queryKeyPrefix,
-    searchText: "",
-    searchTags: {},
+    searchText,
+    searchTags,
     searchType,
-    mapUsed: false,
+    mapUsed,
+    variant,
     baseParams,
     // Cache LONG : recharger ce dashboard = re-chaîner TOUTES les pages
     // (séquentiel) — un retour sur la page dans la demi-heure doit être
