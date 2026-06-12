@@ -585,7 +585,7 @@ function MultiStepCoFormContent({
                   return (
                     <div key={field.name} role="alert" className="col-span-12 flex flex-col gap-1 rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
                       <p className="font-semibold">{field.label}</p>
-                      <p>Template d'input introuvable — Le type <code className="font-mono bg-destructive/20 px-1 rounded">{field.type}</code> n'a pas de template associé.</p>
+                      <p>{t("coform.errors.unknownFieldType", undefined, { type: field.type })}</p>
                     </div>
                   );
               } })();

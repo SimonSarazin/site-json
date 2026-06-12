@@ -40,6 +40,7 @@
     },
     "errors": {
       "formNotFound": "Formulaire introuvable",
+      "unknownFieldType": "Template d'input introuvable — le type « {{type}} » n'a pas de template associé.",
       "networkError": "Erreur de connexion",
       "serverError": "Erreur serveur",
       "summary": {
