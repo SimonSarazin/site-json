@@ -77,9 +77,15 @@ Pour corriger/améliorer un config existant :
    explicitement.
 6. Re-audit → vert (ou assumés) ; `--strict` comme gate final.
 
-⚠️ Une `cle-strippee` peut aussi révéler un TROU DE SCHÉMA (clé légitime non
-déclarée) : vérifier l'intention avant de supprimer — si la clé est consommée
-par un composant, c'est le schéma qu'il faut compléter.
+⚠️ Une `cle-strippee` a TROIS lectures possibles — vérifier avant de purger :
+1. **config mort** (aucun consommateur) → purge ;
+2. **trou de schéma** (clé lue par un composant — le runtime ne strip pas,
+   seul le schéma l'ignore) → compléter le schéma, pas purger ;
+3. **clé transmise au backend** via un payload pass-through (`filtersByAnswers`
+   → `coformFiltersSearch(searchedData)`, `baseParams`… sont envoyés TELS
+   QUELS) → seul un **appel A/B réel** (avec/sans la clé, comparer les
+   réponses) prouve que le backend l'ignore. Précédent : `domGroup`
+   (héritage costum) — envoyé, ignoré (réponses byte-identiques), purgé.
 
 ## Tables de design (semi-stables — vérifiées par le test `skill-integrity`)
 
