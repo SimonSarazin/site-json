@@ -138,9 +138,15 @@ export const COFORM_QUERY_KEYS = {
    * Producteur : `useMultiEvalData` (fetché à l'ouverture de `MultiEvalChartDialog`)
    * `stepKey` est tolérant à `null` : si omis, le backend retourne toutes les
    *   steps avec multi-eval.
+   * `userId` inclus pour la même raison que `FORM_ANSWER` (fuite de cache
+   *   cross-user : l'accès est contrôlé côté serveur par user, le cache doit
+   *   l'être aussi).
    */
-  MULTIEVAL_DATA: (answerId: string | null, stepKey: string | null = null) =>
-    ["coform", "multiEvalData", answerId, stepKey] as const,
+  MULTIEVAL_DATA: (
+    answerId: string | null,
+    stepKey: string | null = null,
+    userId: string | null = null,
+  ) => ["coform", "multiEvalData", answerId, stepKey, userId] as const,
   MULTIEVAL_DATA_PREFIX: (answerId: string | null = null) =>
     answerId === null
       ? (["coform", "multiEvalData"] as const)
@@ -154,9 +160,11 @@ export const COFORM_QUERY_KEYS = {
    *   `AnswerActivityDialog`)
    * Auth côté serveur : propriétaire OU admin du parent OU admin/membre du
    *   finder selon `membersCanEditSharedAnswer`.
+   * `userId` inclus pour la même raison que `FORM_ANSWER` (fuite de cache
+   *   cross-user).
    */
-  ANSWER_HISTORY: (answerId: string | null) =>
-    ["coform", "answerHistory", answerId] as const,
+  ANSWER_HISTORY: (answerId: string | null, userId: string | null = null) =>
+    ["coform", "answerHistory", answerId, userId] as const,
   ANSWER_HISTORY_PREFIX: (answerId: string | null = null) =>
     answerId === null
       ? (["coform", "answerHistory"] as const)

@@ -32,11 +32,11 @@ export function useMultiEvalData({
   stepKey,
   enabled = true,
 }: UseMultiEvalDataOptions): UseMultiEvalDataReturn {
-  const { api, loading } = useCocolight();
+  const { api, loading, me } = useCocolight();
   const isReady = !loading && !!api && !!answerId;
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: COFORM_QUERY_KEYS.MULTIEVAL_DATA(answerId ?? null, stepKey ?? null),
+    queryKey: COFORM_QUERY_KEYS.MULTIEVAL_DATA(answerId ?? null, stepKey ?? null, me?.id ?? null),
     queryFn: async () => {
       if (!api) throw new Error("API non initialisée");
       if (!answerId) throw new Error("answerId requis");
