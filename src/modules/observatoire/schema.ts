@@ -45,6 +45,13 @@ const StringOrArray = z
   .union([z.string(), z.array(z.string())])
   .optional();
 
+// Dates : le SDK désérialise l'EJSON Mongo ({$date: …}) en objets Date dans
+// serverData (BaseEntity._transformServerData) — c'est son contrat, le schéma
+// doit l'attendre. L'union garde string pour d'éventuelles données legacy
+// stockées en chaîne. Sans ça : 418 équipements silencieusement rejetés au
+// parse (constaté en réel sur ces trois champs).
+const DateLike = z.union([z.string(), z.date()]).optional();
+
 const PoiAddressSchema = z
   .object({
     streetAddress: z.string().optional(),
@@ -128,9 +135,9 @@ export const EquipmentSchema = z
     equip_utilisateur: StringOrArray,
 
     // Dates
-    inst_date_creation: z.string().optional(),
-    inst_enqu_date: z.string().optional(),
-    equip_maj_date: z.string().optional(),
+    inst_date_creation: DateLike,
+    inst_enqu_date: DateLike,
+    equip_maj_date: DateLike,
 
     // Géo
     equip_x: z.union([z.number(), z.string()]).optional(),

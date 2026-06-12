@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { EquipmentSchema } from "./schema";
 import type { Equipment } from "./schema";
 import {
   NATURE_VALUES,
@@ -15,6 +16,22 @@ import {
   toNumber,
   uniqSorted,
 } from "./utils";
+
+/* ── Schéma Equipment (formats serverData hétérogènes) ──────────────────── */
+
+describe("EquipmentSchema", () => {
+  it("RÉGRESSION : accepte les dates normalisées en objets Date par le SDK (EJSON)", () => {
+    // Constaté en réel : 418 équipements silencieusement rejetés quand les
+    // trois champs de date arrivaient en Date au lieu de string.
+    const parsed = EquipmentSchema.safeParse({
+      equip_nom: "Stade de l'Est",
+      inst_date_creation: new Date(0),
+      inst_enqu_date: "2020-01-01",
+      equip_maj_date: new Date(0),
+    });
+    expect(parsed.success).toBe(true);
+  });
+});
 
 /* ── Coercions tolérantes (formats API RES hétérogènes) ─────────────────── */
 
