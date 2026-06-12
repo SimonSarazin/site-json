@@ -60,6 +60,49 @@ export function applyFilters(
 }
 
 /*───────────────────────────────────────────────────────────────*/
+/* Recherche texte                                               */
+/*───────────────────────────────────────────────────────────────*/
+
+/** Normalisation pour le matching : minuscules, sans accents. */
+function normalizeText(s: string): string {
+  return s
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase();
+}
+
+/**
+ * Recherche TEXTE côté client : `contains` insensible casse/accents sur les
+ * dimensions désignées (défaut : toutes les dimensions value/list — les
+ * anyTrue/number n'ont pas de texte pertinent). OU entre dimensions.
+ */
+export function applyTextSearch(
+  data: ObservatoryItem[],
+  q: string,
+  dims: DimensionsConfig,
+  searchDimIds?: readonly string[],
+): ObservatoryItem[] {
+  const needle = normalizeText(q.trim());
+  if (!needle) return data;
+  const ids = (searchDimIds?.length ? searchDimIds : Object.keys(dims)).filter(
+    (id) => {
+      const kind = dims[id]?.kind;
+      return dims[id] && kind !== "anyTrue" && kind !== "number";
+    },
+  );
+  return data.filter((d) =>
+    ids.some((id) => {
+      const def = dims[id];
+      if (def.kind === "list") {
+        return dimensionList(d, def).some((v) => normalizeText(v).includes(needle));
+      }
+      const v = dimensionValue(d, def);
+      return v !== undefined && normalizeText(v).includes(needle);
+    }),
+  );
+}
+
+/*───────────────────────────────────────────────────────────────*/
 /* KPI                                                           */
 /*───────────────────────────────────────────────────────────────*/
 

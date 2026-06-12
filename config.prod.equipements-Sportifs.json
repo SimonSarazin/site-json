@@ -1994,6 +1994,18 @@
               "prop",
               "aps"
             ],
+            "search": {
+              "dimensions": [
+                "name",
+                "commune",
+                "type",
+                "aps"
+              ],
+              "placeholder": {
+                "fr": "Rechercher un équipement, une commune…",
+                "en": "Search for a facility, a commune…"
+              }
+            },
             "kpis": [
               {
                 "kind": "count",

@@ -1,8 +1,10 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { Filter, RotateCcw } from "lucide-react";
+import { Filter, RotateCcw, Search, SlidersHorizontal } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -11,6 +13,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { useT } from "@/hooks/useT";
 import type { DimensionDef, DimensionsConfig, ObservatoryItem, FilterValues } from "../schema";
 import {
@@ -57,6 +68,13 @@ function SelectField({ label, value, onChange, options, allLabel }: SelectFieldP
   );
 }
 
+interface FiltersSearchProps {
+  q: string;
+  setQ: (v: string) => void;
+  /** Placeholder localisé (config) — sinon i18n du module. */
+  placeholder?: Record<string, string>;
+}
+
 interface FiltersProps {
   data: ObservatoryItem[];
   /** Dimensions déclarées par la config de section. */
@@ -66,6 +84,8 @@ interface FiltersProps {
   /** Valeurs initiales (restauration depuis l'URL — permaliens). */
   values: FilterValues;
   onChange: (v: FilterValues) => void;
+  /** Recherche texte (optionnelle — `props.search` de la section). */
+  search?: FiltersSearchProps | null;
 }
 
 /**
@@ -73,9 +93,14 @@ interface FiltersProps {
  * (`filterIds` × `dimensions`), les options sont DÉRIVÉES des données
  * chargées (pas de référentiel) — sauf les dimensions `anyTrue` (oui/non).
  * Libellés : `dimension.label` (config) > `dimension.labelKey` (i18n) > id.
+ *
+ * Mobile : un seul bouton « Filtres » (badge compteur actif) → Sheet bas —
+ * même pattern que le `searchHeader` du module search. La recherche texte
+ * (optionnelle) reste visible sur tous les écrans.
  */
-export function Filters({ data, dimensions, filterIds, values, onChange }: FiltersProps) {
+export function Filters({ data, dimensions, filterIds, values, onChange, search }: FiltersProps) {
   const t = useT("modules/observatoire");
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   // Les filtres déclarés mais sans dimension connue sont ignorés (warn DEV).
   const fields = useMemo(() => {
@@ -131,6 +156,30 @@ export function Filters({ data, dimensions, filterIds, values, onChange }: Filte
   const labelFor = ({ id, def }: { id: string; def: DimensionDef }): string =>
     def.label ? t(def.label) : def.labelKey ? t(def.labelKey) : id;
 
+  const activeCount = fields.filter(({ id }) => (watched[id] ?? "") !== "").length;
+
+  const resetAll = () =>
+    reset(Object.fromEntries(fields.map(({ id }) => [id, ""])));
+
+  // Rendu d'un filtre — partagé entre la grille desktop et la Sheet mobile
+  // (mêmes Controllers / même `control` : les deux restent synchronisés).
+  const renderField = (field: { id: string; def: DimensionDef }) => (
+    <Controller
+      key={field.id}
+      name={field.id}
+      control={control}
+      render={({ field: rhf }) => (
+        <SelectField
+          label={labelFor(field)}
+          value={rhf.value ?? ""}
+          onChange={rhf.onChange}
+          options={optionsById[field.id] ?? []}
+          allLabel={t("filters.all")}
+        />
+      )}
+    />
+  );
+
   return (
     <Card className="gap-0 rounded-2xl border-border/50 py-5">
       <CardContent className="px-5">
@@ -143,32 +192,82 @@ export function Filters({ data, dimensions, filterIds, values, onChange }: Filte
             type="button"
             variant="ghost"
             size="sm"
-            onClick={() =>
-              reset(Object.fromEntries(fields.map(({ id }) => [id, ""])))
-            }
-            className="h-7 gap-1.5 px-2 text-xs text-muted-foreground hover:text-foreground"
+            onClick={resetAll}
+            className="hidden h-7 gap-1.5 px-2 text-xs text-muted-foreground hover:text-foreground lg:inline-flex"
           >
             <RotateCcw className="h-3 w-3" /> {t("filters.reset")}
           </Button>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 lg:grid-cols-[repeat(auto-fit,minmax(150px,1fr))]">
-          {fields.map((field) => (
-            <Controller
-              key={field.id}
-              name={field.id}
-              control={control}
-              render={({ field: rhf }) => (
-                <SelectField
-                  label={labelFor(field)}
-                  value={rhf.value ?? ""}
-                  onChange={rhf.onChange}
-                  options={optionsById[field.id] ?? []}
-                  allLabel={t("filters.all")}
-                />
-              )}
+
+        {/* Recherche texte (optionnelle) — visible sur tous les écrans. */}
+        {search && (
+          <div className="relative mb-3">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="search"
+              value={search.q}
+              onChange={(e) => search.setQ(e.target.value)}
+              placeholder={
+                search.placeholder ? t(search.placeholder) : t("filters.search")
+              }
+              className="h-9 pl-9"
             />
-          ))}
-        </div>
+          </div>
+        )}
+
+        {fields.length > 0 && (
+          <>
+            {/* Desktop : filtres inline en grille auto-fit. */}
+            <div className="hidden gap-3 lg:grid lg:grid-cols-[repeat(auto-fit,minmax(150px,1fr))]">
+              {fields.map(renderField)}
+            </div>
+
+            {/* Mobile : bouton « Filtres » (compteur actif) → Sheet bas —
+                pattern du searchHeader. */}
+            <div className="lg:hidden">
+              <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+                <SheetTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="h-11 w-full justify-between rounded-xl px-3"
+                  >
+                    <span className="flex items-center gap-2">
+                      <SlidersHorizontal className="h-4 w-4" />
+                      {t("filters.title")}
+                    </span>
+                    {activeCount > 0 && (
+                      <Badge className="ml-2 rounded-full px-2">{activeCount}</Badge>
+                    )}
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="bottom" className="max-h-[85vh] gap-0 rounded-t-2xl p-0">
+                  <SheetHeader className="border-b border-border">
+                    <SheetTitle className="flex items-center gap-2">
+                      <SlidersHorizontal className="h-5 w-5 text-primary" />
+                      {t("filters.title")}
+                      {activeCount > 0 && (
+                        <Badge className="rounded-full px-2">{activeCount}</Badge>
+                      )}
+                    </SheetTitle>
+                  </SheetHeader>
+                  <div className="flex flex-col gap-3 overflow-y-auto p-4">
+                    {fields.map(renderField)}
+                  </div>
+                  <SheetFooter className="flex-row gap-2 border-t border-border">
+                    {activeCount > 0 && (
+                      <Button variant="ghost" className="flex-1" onClick={resetAll}>
+                        {t("filters.reset")}
+                      </Button>
+                    )}
+                    <SheetClose asChild>
+                      <Button className="flex-1">{t("filters.showResults")}</Button>
+                    </SheetClose>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   );

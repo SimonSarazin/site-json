@@ -7,6 +7,8 @@
   "filters": {
     "title": "Filters",
     "reset": "Reset",
+    "search": "Search…",
+    "showResults": "Show results",
     "all": "All",
     "yes": "Yes",
     "no": "No"

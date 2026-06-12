@@ -148,6 +148,15 @@ export const DataObservatorySectionSchema = z.object({
     // sélectionnées sont synchronisées dans l'URL (?<id>=<valeur>) —
     // permaliens, format maison sans virgule.
     filters: z.array(z.string()).optional(),
+    // Recherche TEXTE optionnelle (présence du bloc = activée) : matching
+    // client insensible casse/accents sur les dimensions listées (défaut :
+    // toutes les dimensions value/list). Synchronisée dans l'URL (?q=…).
+    search: z
+      .object({
+        dimensions: z.array(z.string()).optional(),
+        placeholder: LocalizedString.optional(),
+      })
+      .optional(),
     // Tableau de bord déclaratif : chaque entrée référence des dimensions.
     kpis: z.array(KpiDefSchema).optional(),
     charts: z.array(ChartDefSchema).optional(),

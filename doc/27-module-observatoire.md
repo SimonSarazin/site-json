@@ -36,6 +36,10 @@ dates EJSON désérialisées en `Date` par le SDK).
       "surface": { "paths": ["surf"], "kind": "number", "label": { "fr": "Surface" } }
     },
     "filters": ["ville", "type", "access"],      // ids, ordre d'affichage ; sync URL ?id=valeur
+    "search": {                                   // recherche TEXTE optionnelle (présence = activée)
+      "dimensions": ["ville", "type"],            // défaut : toutes les dimensions value/list
+      "placeholder": { "fr": "Rechercher…" }      // sync URL ?q=…
+    },
     "kpis": [
       { "kind": "count", "label": { "fr": "Total" }, "icon": "activity", "accent": "primary" },
       { "kind": "distinct", "dimension": "ville", "icon": "map-pin" },
@@ -83,7 +87,8 @@ L'exemple complet en production : la page `/observatoire` de
 | `hooks/useObservatoryItemsQuery` | délègue à **`useSearchAllResults`** (module search — « charger tout » : pages séquentielles auto-régulées, plafond, progress) ; items = `serverData` BRUT (pas de schéma métier : seuls les champs déclarés sont lus) |
 | `hooks/useObservatoryFilters` | filtrage CLIENT par kind (égalité / appartenance / booléen), ET strict, **sync URL** `?<id>=<valeur>` (permaliens) |
 | `prefetch.ts` | prefetch **SSR de la 1ʳᵉ page** (loader `buildRoutes`) — même queryKey que le client via `buildObservatoryBaseParams` (fonction partagée) |
-| `components/` | rendus déclaratifs : `Filters` (Select Radix, options dérivées des données), `KpiCards` (5 formes de calcul), `Charts` (5 formes via `ui/chart.tsx`, composition full/half), `ObservatoryTable` (colonnes/tri/badges déclarés) |
+| `dashboard.ts` | logique PURE (filtrage, recherche texte insensible casse/accents, formes de KPI, décomptes/couleurs/agencement graphes, lignes/tri table) — testée sans rendu (`dashboard.test.ts`) |
+| `components/` | rendus déclaratifs : `Filters` (Select Radix, options dérivées des données, recherche texte optionnelle ; **mobile : bouton « Filtres » + badge compteur → Sheet bas**, pattern du searchHeader), `KpiCards` (5 formes de calcul), `Charts` (5 formes via `ui/chart.tsx`, composition full/half), `ObservatoryTable` (colonnes/tri/badges déclarés) |
 
 Le filtrage est côté client **par design** : le dashboard agrège tout le
 dataset en mémoire — le module search reste l'outil des listes paginées

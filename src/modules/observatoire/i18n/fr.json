@@ -7,6 +7,8 @@
   "filters": {
     "title": "Filtres",
     "reset": "Réinitialiser",
+    "search": "Rechercher…",
+    "showResults": "Voir les résultats",
     "all": "Tous",
     "yes": "Oui",
     "no": "Non"

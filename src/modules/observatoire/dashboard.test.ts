@@ -10,6 +10,7 @@ import { DataObservatorySectionSchema } from "./schema";
 import { dimensionLabel } from "./dimensions";
 import {
   applyFilters,
+  applyTextSearch,
   buildRow,
   chartRows,
   chartTitle,
@@ -51,6 +52,23 @@ describe("applyFilters", () => {
     expect(applyFilters(items, { ville: "Cilaos", sports: "Judo" }, DIMS)).toHaveLength(1);
     expect(applyFilters(items, { ville: "" }, DIMS)).toHaveLength(3);
     expect(applyFilters(items, { inconnue: "x" }, DIMS)).toHaveLength(3);
+  });
+});
+
+/* ── Recherche texte ─────────────────────────────────────────────────────── */
+
+describe("applyTextSearch", () => {
+  it("contains insensible casse/ACCENTS, OU entre dimensions, list incluses", () => {
+    expect(applyTextSearch(items, "cilaos", DIMS)).toHaveLength(2);
+    expect(applyTextSearch(items, "KARATE", DIMS)).toHaveLength(1); // Karaté sans accent
+    expect(applyTextSearch(items, "saint", DIMS)).toHaveLength(1);
+    expect(applyTextSearch(items, "introuvable", DIMS)).toHaveLength(0);
+  });
+
+  it("dimensions ciblées (props.search.dimensions) ; q vide → tout ; anyTrue/number exclus", () => {
+    expect(applyTextSearch(items, "cilaos", DIMS, ["type"])).toHaveLength(0);
+    expect(applyTextSearch(items, "  ", DIMS)).toHaveLength(3);
+    expect(applyTextSearch(items, "120", DIMS)).toHaveLength(0); // surface (number) non cherchée
   });
 });
 

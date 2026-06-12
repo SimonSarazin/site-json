@@ -45,10 +45,11 @@ export default function DataObservatorySection({
     props.baseParams,
     dimensions,
   );
-  const { filters, filtered, setFilters } = useObservatoryFilters(
+  const { filters, filtered, setFilters, q, setQ } = useObservatoryFilters(
     items,
     dimensions,
     filterIds,
+    props.search?.dimensions,
   );
 
   const headline = props.headline ? t(props.headline) : null;
@@ -114,13 +115,18 @@ export default function DataObservatorySection({
           </div>
         ) : (
           <>
-            {filterIds.length > 0 && (
+            {(filterIds.length > 0 || props.search) && (
               <Filters
                 data={items}
                 dimensions={dimensions}
                 filterIds={filterIds}
                 values={filters}
                 onChange={setFilters}
+                search={
+                  props.search
+                    ? { q, setQ, placeholder: props.search.placeholder }
+                    : null
+                }
               />
             )}
 
