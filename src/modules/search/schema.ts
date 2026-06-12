@@ -178,9 +178,14 @@ const MapConfSchema = z.object({
    *  `preview` — `SwitchDetailsMode` avec `list.card`/`list.preview`) ou
    *  navigation `/profil/:slug` (pattern rowAction observatoire / palette). */
   itemAction: z.object({ kind: z.enum(["profil", "preview"]) }).optional(),
-  /** Marqueur = image de l'item (vignette ronde) quand elle existe, sinon
-   *  pin Leaflet par défaut. */
-  marker: z.object({ useItemImage: z.boolean().optional() }).optional(),
+  /** Apparence des marqueurs — chaîne de repli : vignette RONDE de l'item
+   *  (`useItemImage`, si l'item a une image) → pin SVG aux couleurs du thème
+   *  (`style: "pin"` + `color` en jeton, jamais d'hex) → pin Leaflet. */
+  marker: z.object({
+    useItemImage: z.boolean().optional(),
+    style: z.enum(["default", "pin"]).optional(),
+    color: z.enum(["primary", "accent", "chart-1", "chart-2", "chart-3", "chart-4", "chart-5"]).optional(),
+  }).optional(),
 }).partial();
 
 export type MapConf = z.infer<typeof MapConfSchema>;

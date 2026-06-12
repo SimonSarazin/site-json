@@ -10,6 +10,7 @@ import { SearchMapProps } from "../schema";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { SwitchDetailsMode } from "./SwitchDetailsMode";
 import { useMapContainerClass } from "../hooks/useMapContainerClass";
+import { resolveMarkerVisual, pinSvg } from "../lib/markerVisual";
 import { useSite } from "@/hooks/useSite";
 import { getBaseUrl, getMaptilerApiKey } from "@/lib/constant/common";
 import { resolveTileLayers } from "../lib/mapTiles";
@@ -115,7 +116,7 @@ export default function SearchMap({ results, card, preview, map: mapConf }: Sear
       if (import.meta.env.DEV) {
         // Poignée de debug (dev uniquement) : piloter la carte depuis la
         // console / les tests navigateur sans dépendre du clustering.
-        (window as unknown as Record<string, unknown>).__searchMapDebug = { map, markers };
+        (window as unknown as Record<string, unknown>).__searchMapDebug = { map, markers, mapConf };
       }
       setMapReady(true);
     })();
@@ -135,7 +136,7 @@ export default function SearchMap({ results, card, preview, map: mapConf }: Sear
       firstIdRef.current = undefined;
       setMapReady(false);
     };
-  }, [mounted, tiles, actionKind, navigate]);
+  }, [mounted, tiles, actionKind, navigate, mapConf]);
 
   /* ── Thème : permutation des calques (sans toucher aux markers) ──────── */
   useEffect(() => {
@@ -169,7 +170,6 @@ export default function SearchMap({ results, card, preview, map: mapConf }: Sear
     }
     if (results.length === from) return;
 
-    const useItemImage = mapConf?.marker?.useItemImage === true;
     const batch: import('leaflet').Marker[] = [];
     for (const entry of results.slice(from)) {
       const serverDataSafe = entry?.serverData;
@@ -179,22 +179,30 @@ export default function SearchMap({ results, card, preview, map: mapConf }: Sear
       if (!isValidGeoPoint(coords)) continue;
       const [lng, lat] = coords;
 
-      // map.marker.useItemImage : vignette RONDE de l'item quand elle existe
-      // (divIcon — styles dans styles.css), sinon pin Leaflet par défaut.
+      // Apparence du marqueur — chaîne de repli déclarée en config
+      // (cf. lib/markerVisual.ts) : vignette item → pin SVG thème → pin Leaflet.
+      const visual = resolveMarkerVisual(
+        serverDataSafe as Record<string, unknown>,
+        mapConf?.marker,
+        getBaseUrl(),
+      );
       let icon: import('leaflet').DivIcon | undefined;
-      if (useItemImage) {
-        const sd = serverDataSafe as { profilThumbImageUrl?: string; profilMediumImageUrl?: string };
-        const img = sd.profilThumbImageUrl || sd.profilMediumImageUrl;
-        if (typeof img === "string" && img) {
-          const src = (img.startsWith("http") ? img : `${getBaseUrl()}${img}`).replace(/"/g, "&quot;");
-          icon = L.divIcon({
-            className: "search-map-avatar-marker",
-            html: `<img src="${src}" alt="" loading="lazy" />`,
-            iconSize: [36, 36],
-            iconAnchor: [18, 18],
-            popupAnchor: [0, -20],
-          });
-        }
+      if (visual.kind === "image") {
+        icon = L.divIcon({
+          className: "search-map-avatar-marker",
+          html: `<img src="${visual.src.replace(/"/g, "&quot;")}" alt="" loading="lazy" />`,
+          iconSize: [36, 36],
+          iconAnchor: [18, 18],
+          popupAnchor: [0, -20],
+        });
+      } else if (visual.kind === "pin") {
+        icon = L.divIcon({
+          className: "search-map-pin-marker",
+          html: pinSvg(visual.cssColor),
+          iconSize: [34, 34],
+          iconAnchor: [17, 33],
+          popupAnchor: [0, -30],
+        });
       }
       const marker = (icon ? L.marker([lat, lng], { icon }) : L.marker([lat, lng])) as import('leaflet').Marker & { _customData?: unknown };
 
