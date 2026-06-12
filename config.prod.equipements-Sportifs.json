@@ -2582,6 +2582,12 @@
         "fr": "Accédez au réseau des équipements sportifs de La Réunion",
         "en": "Access Réunion's sports facilities network"
       }
+    },
+    "register": {
+      "subtitle": {
+        "fr": "Rejoignez le réseau des équipements sportifs de La Réunion",
+        "en": "Join Réunion's sports facilities network"
+      }
     }
   },
   "profiles": {
