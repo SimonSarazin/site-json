@@ -15,7 +15,7 @@
       "fr",
       "en"
     ],
-    "favicon": "images/rezoLaMer/logo.png",
+    "favicon": "/images/equipementsSportifs974/favicon.svg",
     "themeColor": "#007f5a",
     "keywords": [
       "sports facilities",
@@ -23,7 +23,8 @@
       "public amenities",
       "recreation",
       "community resources"
-    ]
+    ],
+    "ogImage": "/images/equipementsSportifs974/hero.jpg"
   },
   "header": {
     "type": "transparent-scroll",
@@ -254,7 +255,13 @@
             ]
           }
         }
-      ]
+      ],
+      "seo": {
+        "description": {
+          "fr": "Découvrez et localisez les équipements sportifs de La Réunion : recherche par commune, type d'équipement et accessibilité.",
+          "en": "Discover and locate sports facilities in Réunion: search by municipality, facility type and accessibility."
+        }
+      }
     },
     {
       "path": "/equipements-sportifs",
@@ -1818,12 +1825,18 @@
             }
           }
         }
-      ]
+      ],
+      "seo": {
+        "description": {
+          "fr": "Annuaire des équipements sportifs de La Réunion — filtres par commune, type, aménagements et accès PMR.",
+          "en": "Directory of sports facilities in Réunion — filter by municipality, type, amenities and accessibility."
+        }
+      }
     },
     {
       "path": "/observatoire",
       "title": {
-        "fr": "Observatoire - Equipements sportifs à La Réunion",
+        "fr": "Observatoire - Équipements sportifs à La Réunion",
         "en": "Observatory - Sports facilities in Réunion"
       },
       "layout": "fullwidth",
@@ -2214,7 +2227,13 @@
             }
           }
         }
-      ]
+      ],
+      "seo": {
+        "description": {
+          "fr": "Observatoire des équipements sportifs de La Réunion : chiffres clés, répartition par commune et par type, accessibilité.",
+          "en": "Observatory of sports facilities in Réunion: key figures, breakdown by municipality and type, accessibility."
+        }
+      }
     },
     {
       "path": "/rejoindre",
@@ -2228,7 +2247,13 @@
           "type": "registerForm",
           "props": {}
         }
-      ]
+      ],
+      "seo": {
+        "description": {
+          "fr": "Créez votre compte pour rejoindre le réseau des équipements sportifs de La Réunion.",
+          "en": "Create your account to join Réunion's sports facilities network."
+        }
+      }
     },
     {
       "path": "/mentions-legales",

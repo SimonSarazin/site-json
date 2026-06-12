@@ -1832,6 +1832,7 @@ export const SiteConfig = z.object({
     defaultLang: z.enum(LOCALES).default("fr"),
     languages: z.array(z.enum(LOCALES)).default([...LOCALES]),
     favicon: z.string().optional(),
+    ogImage: z.string().optional(), // image Open Graph par défaut du site (les pages surchargent via seo.ogImage)
     themeColor: z.string().optional(),
     author: LocalizedString.optional(),
     keywords: z.array(z.string()).optional(),
