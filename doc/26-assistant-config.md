@@ -461,6 +461,30 @@ de chemins recopiés à la main.
 - **Phase 3 (optionnelle, plus tard)** — passerelle vers B : exposer les mêmes
   scripts derrière `POST /api/assistant` + onglet panel pour éditeurs non-devs.
 
+## Mode réparation : audit → corriger → améliorer (décidé)
+
+L'audit (`scripts/audit-config.ts`, migré en TS) est le point d'entrée de la
+réparation d'un config existant. Décisions prises :
+
+- **Nouvelles catégories** (en plus de trad/liens/locales/theme/orphelines) :
+  `asset-manquant` (fichier absent de public/), `cle-strippee` (clé inconnue du
+  schéma, ignorée par Zod — révélateur de config mort OU de trou de schéma ;
+  44 trouvées au premier passage), `module-prereq` (searchPro/Static sans
+  baseParams ; news.entitySlug et cagnotte.idProjet écartés — replis
+  contextuels légitimes).
+- **Sortie structurée** : chaque constat = `{category, path, message,
+  severity, fixability}` ; `--json` pour l'assistant/CI ; `--file <x>` pour un
+  seul config.
+- **Fixabilité** pilote le flux : `auto` (lot mécanique) · `proposer` (choix
+  humain) · `suggestion` (opt-in). Lots = commits relisibles, ordre schéma →
+  assets/liens → clés mortes → i18n → améliorations, `config:validate` entre
+  chaque.
+- **Constats assumés** : `.audit-baseline.json` versionné à la racine, clé par
+  fichier de config, entrées `{category, path}` — exclus de `--strict`.
+- **Traductions** : écrites directement par l'assistant, en lot séparé relu au
+  diff.
+- Workflow encodé dans la skill (§ « Mode réparation »).
+
 ## Points de design restant à trancher
 
 1. **Skill vs slash command** : une *skill* (`.claude/skills/`, auto-invocable

@@ -20,7 +20,7 @@
     "test:integration": "vitest run -c vitest.config.integration.ts",
     "test:e2e": "playwright test",
     "test:preflight": "vitest run -c vitest.config.unit.ts tests/preflight/",
-    "audit:config": "node scripts/audit-config.mjs",
+    "audit:config": "tsx scripts/audit-config.ts",
     "test:coverage": "vitest run -c vitest.config.unit.ts --coverage",
     "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e",
     "test:watch": "vitest --watch",

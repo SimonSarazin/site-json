@@ -53,6 +53,34 @@ Vérifie via les scripts, puis propose une mise à jour de cette skill (§ Maint
 8. **Édition incrémentale** (cas le plus fréquent) : localiser le morceau
    (page/section), `config:schema` si besoin, patch minimal, valider, HMR.
 
+## Mode réparation : partir d'un audit
+
+Pour corriger/améliorer un config existant :
+
+1. `npm run audit:config -- --file <x.json> --json` — chaque constat porte
+   `{category, path, message, severity, fixability}`.
+2. **Classer par `fixability`** et présenter un PLAN priorisé — l'utilisateur
+   valide avant toute écriture :
+   - `auto` (mécanique, ex. `cle-strippee`, `locale-extra`) → un lot d'un coup ;
+   - `proposer` (jugement, ex. `lien-mort` : typo ? page à créer ? à retirer ?
+     `asset-manquant` : corriger le chemin ou fournir le fichier ? `theme` :
+     playbook migration rezo-la-mer 90b5200) → proposer la correction, choisir ;
+   - `suggestion` → opt-in explicite.
+3. **Corriger par LOTS — un lot = un commit relisible**, ordre : schéma →
+   assets/liens → clés mortes → i18n → améliorations. `config:validate` après
+   chaque lot.
+4. **Traductions** : tu les écris directement, mais TOUJOURS en lot séparé
+   présenté pour relecture au diff — jamais mélangées à du mécanique.
+5. **Constats assumés** (choix délibérés) : `.audit-baseline.json` à la racine
+   (versionné) — `{ "<config>.json": [{ "category", "path" }] }`. Un constat
+   assumé n'échoue pas `--strict`. N'y mettre que ce que l'utilisateur assume
+   explicitement.
+6. Re-audit → vert (ou assumés) ; `--strict` comme gate final.
+
+⚠️ Une `cle-strippee` peut aussi révéler un TROU DE SCHÉMA (clé légitime non
+déclarée) : vérifier l'intention avant de supprimer — si la clé est consommée
+par un composant, c'est le schéma qu'il faut compléter.
+
 ## Tables de design (semi-stables — vérifiées par le test `skill-integrity`)
 
 ### Headers (`header.type`)
