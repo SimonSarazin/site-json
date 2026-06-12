@@ -80,7 +80,11 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
   const headline = props.headline;
   const subhead = props.subhead;
   const [search, setSearch] = useState("");
-  const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false);
+  // L'ouverture du dropdown est DÉRIVÉE (suggestions présentes + saisie ≥ 2),
+  // pas synchronisée par effet (règle set-state-in-effect). `dismissed`
+  // mémorise une fermeture explicite (Échap, clic dehors, sélection,
+  // recherche) et se réarme à la saisie ou au focus.
+  const [dismissed, setDismissed] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
 
   const ctaButtons = useMemo(() => props.ctaButtons ?? [], [props.ctaButtons]);
@@ -178,6 +182,8 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
 
   const { suggestions, isLoading } = useAutocomplete(search, autocompleteOptions);
 
+  const isAutocompleteOpen = !dismissed && suggestions.length > 0 && search.length >= 2;
+
   const isFullStyle = props.ctaButtons && props.ctaButtons.length > 0 && props.subhead;
 
   useEffect(() => {
@@ -188,22 +194,13 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
         inputRef.current &&
         !inputRef.current.contains(event.target as Node)
       ) {
-        setIsAutocompleteOpen(false);
+        setDismissed(true);
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  useEffect(() => {
-    if (suggestions.length > 0 && search.length >= 2) {
-      setIsAutocompleteOpen(true);
-      setHighlightedIndex(0);
-    } else {
-      setIsAutocompleteOpen(false);
-    }
-  }, [suggestions, search]);
 
   /**
    * Lance la recherche : pousse le texte saisi dans le contexte `PageFilters`
@@ -213,7 +210,7 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
    */
   const triggerSearch = () => {
     pageFilters?.setSearchQuery(search);
-    setIsAutocompleteOpen(false);
+    setDismissed(true);
     if (props.scrollTarget && typeof document !== "undefined") {
       document.getElementById(props.scrollTarget)?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
@@ -247,7 +244,7 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
         }
         break;
       case "Escape":
-        setIsAutocompleteOpen(false);
+        setDismissed(true);
         break;
     }
   };
@@ -255,11 +252,15 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
   const handleSelectSuggestion = (item: SearchEntity) => {
     const title = getEntityTitle(item);
     setSearch(title);
-    setIsAutocompleteOpen(false);
+    // `dismissed` reste vrai quand les suggestions du titre sélectionné
+    // arrivent — l'ancien effet rouvrait le dropdown juste après la sélection.
+    setDismissed(true);
   };
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
+    setDismissed(false);
+    setHighlightedIndex(0);
     // Champ vidé → on réinitialise la recherche de la liste (sinon elle reste
     // filtrée sur l'ancien texte tant qu'on ne reclique pas « Rechercher »).
     if (value === "" && pageFilters?.searchQuery) {
@@ -315,11 +316,7 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
                         value={search}
                         onChange={(e) => handleSearchChange(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        onFocus={() => {
-                          if (suggestions.length > 0 && search.length >= 2) {
-                            setIsAutocompleteOpen(true);
-                          }
-                        }}
+                        onFocus={() => setDismissed(false)}
                         placeholder={props.placeholder ? t(props.placeholder) : "Nom, ville, département ..."}
                         className="w-full px-4 sm:px-6 py-3 sm:py-4 bg-card text-foreground text-sm sm:text-base focus:outline-none"
                       />
@@ -449,11 +446,7 @@ export function HeroSearch({ id, props }: HeroSearchProps) {
                       value={search}
                       onChange={(e) => handleSearchChange(e.target.value)}
                       onKeyDown={handleKeyDown}
-                      onFocus={() => {
-                        if (suggestions.length > 0 && search.length >= 2) {
-                          setIsAutocompleteOpen(true);
-                        }
-                      }}
+                      onFocus={() => setDismissed(false)}
                       placeholder={props.placeholder ? t(props.placeholder) : "Ville, département ..."}
                       className="w-full px-4 sm:px-6 py-3 sm:py-4 bg-card text-foreground text-sm sm:text-base focus:outline-none rounded-t-2xl sm:rounded-l-full sm:rounded-r-none"
                     />
