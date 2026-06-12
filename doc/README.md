@@ -23,6 +23,7 @@
 | Module CoForm (formulaires dynamiques) | [Module CoForm](21-module-coform.md) — voir aussi `src/modules/coform/README.md` |
 | Module auth (connexion/inscription/SSO) | [Module Auth](23-module-auth.md) |
 | Module notification (cloche + section) | [Module Notification](25-module-notification.md) |
+| Module observatoire (dashboard RES) | [Module Observatoire](27-module-observatoire.md) |
 | Panneau d'administration (live edit) | [Admin Panel](24-admin-panel.md) |
 | Système de visibilité | [Visibility System](19-visibility-system.md) |
 | Système de permissions | [Permissions](10-permissions.md) |

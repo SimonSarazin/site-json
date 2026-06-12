@@ -123,6 +123,7 @@ Pour corriger/améliorer un config existant :
 | `commandPalette` | palette ⌘K | `config.commandPalette`, `header.utilities.search` | — |
 | `ampli` | routes ampli | `config.ampli` | campagne ampli |
 | `interop` | pods Discourse/Mediawiki | clés interop | instances externes |
+| `observatoire` | section `equipment-observatory` (dashboard RES : KPI, charts, table, filtres) | `props.baseParams` (`defaultFilters` avec `source.key`…) | données RES indexées (sourceKey + type) |
 
 **Refuse d'activer un module dont le prérequis backend n'est pas confirmé**
 (ex. pas de `searchPro` sans `sourceKey` réel).

@@ -58,6 +58,7 @@ const SECTION_META: Record<string, SectionMeta> = {
   "cta-card-grid": { label: "Grille de cartes CTA", desc: "Grille de cartes portant chacune son bouton d'action (+ stats)", image: "https://placehold.co/300x180/e17055/eee?text=CTA+Grid" },
   "cta-newsletter": { label: "CTA newsletter", desc: "Appel à l'action avec capture newsletter intégrée", image: "https://placehold.co/300x180/a29bfe/eee?text=CTA+News" },
   "expandable-actions": { label: "Actions dépliables", desc: "Cartes d'action en accordéon exclusif ouvrant des modales", image: "https://placehold.co/300x180/6c5ce7/eee?text=Expandable" },
+  "equipment-observatory": { label: "Observatoire d'équipements", desc: "Dashboard RES : KPI, graphiques, filtres et table des équipements sportifs", image: "https://placehold.co/300x180/0984e3/eee?text=Observatory" },
 };
 
 export default SECTION_META;
