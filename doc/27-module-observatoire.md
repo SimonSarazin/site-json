@@ -58,7 +58,10 @@ Consommateur actuel : `config.prod.equipements-Sportifs.json`, page `/observatoi
 ## Prérequis backend
 
 Des POI indexés portant les champs RES, ciblés par `defaultFilters`
-(`source.key` + `type`). Sans données : section vide (pas d'erreur).
+(`source.key` + `type`). **`baseParams.defaultFilters` est obligatoire dans la
+config** : sans périmètre configuré, le hook ne requête RIEN (pas de fallback
+silencieux sur le sourceKey d'un autre site — warn en DEV). Périmètre configuré
+mais sans données : section vide (pas d'erreur).
 
 ## Limites connues / backlog
 

@@ -65,13 +65,11 @@ const DEFAULT_FIELDS = [
   "geo",
 ];
 
-const DEFAULT_FILTERS: Record<string, unknown> = {
-  $or: {
-    "source.key": "equipementsSportifs974",
-    "source.keys": "equipementsSportifs974",
-  },
-  type: "recoveryCenter",
-};
+// PAS de DEFAULT_FILTERS : le périmètre des données (source.key, type…) est
+// un prérequis backend qui DOIT venir de la config (baseParams.defaultFilters).
+// Un fallback silencieux sur le sourceKey d'un site donné était un piège :
+// une section posée sans baseParams aurait interrogé les données d'un autre
+// site sans que rien ne le signale. Sans périmètre → on ne requête rien.
 
 /*───────────────────────────────────────────────────────────────────────────*/
 /* Extraction d'un Equipment à partir d'un item retourné par useSearchQuery  */
@@ -109,6 +107,15 @@ type BaseParamsProp = EquipmentObservatorySectionProps["baseParams"];
 export function useObservatoryEquipmentsQuery(
   baseParamsProp?: BaseParamsProp,
 ) {
+  // Prérequis : le périmètre des données vient de la config. Sans lui, la
+  // query est désactivée (searchType null → useSearchQuery ne fetch pas).
+  const hasPerimeter = !!baseParamsProp?.defaultFilters;
+  if (import.meta.env.DEV && !hasPerimeter) {
+    console.warn(
+      "[observatoire] baseParams.defaultFilters absent de la config — aucune donnée ne sera chargée (périmètre source.key/type requis)",
+    );
+  }
+
   const baseParams = useMemo(
     () => ({
       notSourceKey: baseParamsProp?.notSourceKey ?? true,
@@ -116,7 +123,7 @@ export function useObservatoryEquipmentsQuery(
         "poi" as SearchType,
       ],
       defaultFields: baseParamsProp?.defaultFields ?? DEFAULT_FIELDS,
-      defaultFilters: baseParamsProp?.defaultFilters ?? DEFAULT_FILTERS,
+      defaultFilters: baseParamsProp?.defaultFilters,
       defaultSortBy: baseParamsProp?.defaultSortBy,
       indexStepList: baseParamsProp?.indexStepList ?? 500,
     }),
@@ -124,9 +131,9 @@ export function useObservatoryEquipmentsQuery(
     [JSON.stringify(baseParamsProp)],
   );
 
-  const searchType = useMemo<Record<string, string[]>>(
-    () => ({ type: baseParams.defaultTypes as unknown as string[] }),
-    [baseParams.defaultTypes],
+  const searchType = useMemo<Record<string, string[]> | null>(
+    () => (hasPerimeter ? { type: baseParams.defaultTypes as unknown as string[] } : null),
+    [hasPerimeter, baseParams.defaultTypes],
   );
 
   const {
