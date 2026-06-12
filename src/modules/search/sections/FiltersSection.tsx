@@ -5,7 +5,7 @@ import "@/modules/search/i18n";
 import { cn } from "@/lib/utils";
 import type { FiltersSectionProps } from "../schema";
 import { useState, useEffect, useMemo } from "react";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Check, Search, SlidersHorizontal } from "lucide-react";
 import { useFilterToggles } from "../hooks/useFilterToggles";
 import { useFiltersByAnswersQuery } from "../hooks/useFiltersByAnswers";
 import { useSearchZoneQuery } from "../hooks/useSearchZone";
@@ -91,11 +91,31 @@ function FilterOptionRow({
   label,
   selected,
   onToggle,
+  variant = "checkbox",
 }: {
   label: string;
   selected: boolean;
   onToggle: () => void;
+  /** "check" : ligne à coche à DROITE (look SelectItem) — cf. optionStyle. */
+  variant?: "checkbox" | "check";
 }) {
+  if (variant === "check") {
+    return (
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={onToggle}
+        className={cn(
+          "h-8 w-full justify-between px-2 font-normal",
+          selected ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+        )}
+      >
+        <span className="truncate">{label}</span>
+        <Check className={cn("h-4 w-4 shrink-0", selected ? "opacity-100" : "opacity-0")} />
+      </Button>
+    );
+  }
   return (
     <Label className="group flex cursor-pointer items-start gap-2 font-normal">
       <Checkbox checked={selected} onCheckedChange={onToggle} className="mt-0.5" />
@@ -405,6 +425,7 @@ export function FiltersSection({
               <FilterOptionRow
                 key={option.id}
                 label={t(option.label)}
+                variant={group.optionStyle}
                 selected={isFilterSelected(group.id, filterName)}
                 onToggle={() =>
                   group.type === "scopeList"

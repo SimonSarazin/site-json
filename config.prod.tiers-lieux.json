@@ -1220,7 +1220,8 @@
                         },
                         "name": "Autre famille de tiers-lieux"
                       }
-                    ]
+                    ],
+                    "optionStyle": "check"
                   },
                   {
                     "id": "pays",

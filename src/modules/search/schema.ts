@@ -57,6 +57,9 @@ export const FilterGroupSchema = z.object({
     multiple: z.boolean().optional(),
     searchable: z.boolean().optional(),
   }).optional(),
+  /** Style des lignes d'option en mode ACCORDÉON : cases (défaut) ou lignes
+   *  à coche à DROITE (look SelectItem, comme les combobox). */
+  optionStyle: z.enum(["checkbox", "check"]).optional(),
 });
 export const FilterGroupsSchema = z.array(FilterGroupSchema);
 
