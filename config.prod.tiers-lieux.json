@@ -618,7 +618,6 @@
                   "fr": "Service",
                   "en": "Service"
                 },
-                "domGroup": ".domGroupFilters",
                 "type": "form",
                 "value": {
                   "Coworking": {
@@ -1353,7 +1352,6 @@
                       "fr": "Activités",
                       "en": "Activities"
                     },
-                    "domGroup": ".domGroupFilters",
                     "forms": "6486d24e9cad105cbf29a777",
                     "path": "lesCommunsDesTierslieux1262023_1215_0.multiCheckboxPluslesCommunsDesTierslieux1262023_1215_0liu3d5bbs2lwwdpiosq",
                     "finderPath": "answers.lesCommunsDesTierslieux1262023_1215_0.finderlesCommunsDesTierslieux1262023_1215_0lix46h1uhnukfgtzj6s"
@@ -1363,7 +1361,6 @@
                       "fr": "Équipements",
                       "en": "Equipment"
                     },
-                    "domGroup": ".domGroupFilters",
                     "forms": "645b300b6d70bb35426fc0e3",
                     "path": "lesCommunsDesTierslieux1052023_949_0.multiCheckboxPluslesCommunsDesTierslieux1052023_949_0lhi0h2l1gjvac3zpbcw",
                     "finderPath": "answers.lesCommunsDesTierslieux1052023_949_0.finderlesCommunsDesTierslieux1052023_949_0lat3sl0xwwg06k856jc"
@@ -1373,7 +1370,6 @@
                       "fr": "Service",
                       "en": "Service"
                     },
-                    "domGroup": ".domGroupFilters",
                     "type": "form",
                     "value": {
                       "Coworking": {
@@ -1395,7 +1391,6 @@
                       "fr": "Licoop",
                       "en": "Licoop"
                     },
-                    "domGroup": ".domGroupFilters",
                     "forms": "6876c3e58fa8df3c7f024253",
                     "path": "navigatorDesTierslieux1572025_2311_0.findernavigatorDesTierslieux1572025_2311_0md5u4tkmsz33mya3xvb",
                     "finderPath": "answers.navigatorDesTierslieux1572025_2311_0.findernavigatorDesTierslieux1572025_2311_0md5u4tkmsz33mya3xvb"
