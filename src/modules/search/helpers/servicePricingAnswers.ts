@@ -31,7 +31,7 @@ export const ANSWER_PATH = {
   },
 }
 
-export interface TiersLieuxAggregate {
+export interface ServicePricingAggregate {
   meeting: { place: { min: number; max: number }; price: PriceAggregate, count: number };
   coworking: { place: number; price: PriceAggregate, count: number };
   accommodation: { place: number; price: { bed: number; room: number }, count: number };
@@ -58,9 +58,9 @@ export function accumulateMin(current: number, value: number | undefined): numbe
  * capacités (places, min/max de personnes) et tarifs « à partir de ». Porte la
  * logique JS d'origine (Navigator des Tiers-Lieux). Fonction pure et testable.
  */
-export function extractTiersLieuxAnswers(
+export function extractServicePricingAnswers(
   answers: Record<FormId, Answer[]> | undefined,
-): TiersLieuxAggregate {
+): ServicePricingAggregate {
   const meeting = { place: { min: 0, max: 0 }, price: { hourly: 0, halfDay: 0, fullDay: 0 }, count: 0 };
   const coworking = { place: 0, price: { hourly: 0, halfDay: 0, fullDay: 0 }, count: 0 };
   const accommodation = { place: 0, price: { bed: 0, room: 0 }, count: 0 };
@@ -111,30 +111,30 @@ export function extractTiersLieuxAnswers(
   return { meeting, coworking, accommodation };
 }
 
-export type TiersLieuxStatKind = "coworking" | "meeting" | "accommodation";
+export type ServicePricingStatKind = "coworking" | "meeting" | "accommodation";
 
 /**
  * Stat de capacité affichée en pastille (icône + libellé). `count` = nb de
  * postes (coworking) ou de couverts (accommodation) ; `range` = capacité
  * min/max en personnes (meeting uniquement).
  */
-export interface TiersLieuxStat {
-  kind: TiersLieuxStatKind;
+export interface ServicePricingStat {
+  kind: ServicePricingStatKind;
   count: number;
   range?: { min: number; max: number };
 }
 
-export type TiersLieuxPriceUnit = "hour" | "halfDay" | "fullDay" | "bed" | "room";
+export type ServicePricingPriceUnit = "hour" | "halfDay" | "fullDay" | "bed" | "room";
 
 /** Service tarifé affiché « à partir de » : 1ʳᵉ unité de prix disponible. */
-export interface TiersLieuxService {
-  kind: TiersLieuxStatKind;
-  unit: TiersLieuxPriceUnit;
+export interface ServicePricingService {
+  kind: ServicePricingStatKind;
+  unit: ServicePricingPriceUnit;
   price: number;
 }
 
 const hasRentalPrice = (p: PriceAggregate): boolean => p.hourly > 0 || p.halfDay > 0 || p.fullDay > 0;
-const hasMeetingCapacity = (m: TiersLieuxAggregate["meeting"]): boolean => m.place.min > 0 || m.place.max > 0;
+const hasMeetingCapacity = (m: ServicePricingAggregate["meeting"]): boolean => m.place.min > 0 || m.place.max > 0;
 
 /** 1ʳᵉ unité de prix disponible (horaire → demi-journée → journée). */
 function firstRentalPrice(p: PriceAggregate): { unit: "hour" | "halfDay" | "fullDay"; price: number } | null {
@@ -156,12 +156,12 @@ function firstLodgingPrice(p: { bed: number; room: number }): { unit: "bed" | "r
  * si elle a au moins un tarif (vue détaillée) ; sinon la capacité seule suffit
  * (vue grille).
  */
-export function buildTiersLieuxStats(
-  agg: TiersLieuxAggregate,
+export function buildServicePricingStats(
+  agg: ServicePricingAggregate,
   { requirePrice }: { requirePrice: boolean },
-): TiersLieuxStat[] {
+): ServicePricingStat[] {
   const { coworking, meeting, accommodation } = agg;
-  const stats: TiersLieuxStat[] = [];
+  const stats: ServicePricingStat[] = [];
 
   if (coworking.count > 0 && coworking.place > 0 && (!requirePrice || hasRentalPrice(coworking.price))) {
     stats.push({ kind: "coworking", count: coworking.place });
@@ -180,9 +180,9 @@ export function buildTiersLieuxStats(
 }
 
 /** Construit la liste des services tarifés (« à partir de »). */
-export function buildTiersLieuxServices(agg: TiersLieuxAggregate): TiersLieuxService[] {
+export function buildServicePricingServices(agg: ServicePricingAggregate): ServicePricingService[] {
   const { coworking, meeting, accommodation } = agg;
-  const services: TiersLieuxService[] = [];
+  const services: ServicePricingService[] = [];
 
   const coworkingPrice = firstRentalPrice(coworking.price);
   if (coworking.count > 0 && coworking.place > 0 && coworkingPrice) {
@@ -212,14 +212,14 @@ export function formatCapacityRange(range: { min: number; max: number }): string
  * Clé i18n + params d'un stat (partagé entre carte grille et carte détaillée).
  * Le composant appelle `t(key, params)` — i18n reste côté composant.
  */
-export function tiersLieuxStatLabel(
-  stat: TiersLieuxStat,
+export function servicePricingStatLabel(
+  stat: ServicePricingStat,
 ): { key: string; params: Record<string, string | number> } {
   if (stat.kind === "meeting") {
-    return { key: "card.tiersLieux.meetingPersons", params: { value: formatCapacityRange(stat.range ?? { min: 0, max: 0 }) } };
+    return { key: "card.servicePricing.meetingPersons", params: { value: formatCapacityRange(stat.range ?? { min: 0, max: 0 }) } };
   }
   if (stat.kind === "coworking") {
-    return { key: "card.tiersLieux.coworkingPlaces", params: { value: stat.count } };
+    return { key: "card.servicePricing.coworkingPlaces", params: { value: stat.count } };
   }
-  return { key: "card.tiersLieux.accommodationCovers", params: { value: stat.count } };
+  return { key: "card.servicePricing.accommodationCovers", params: { value: stat.count } };
 }

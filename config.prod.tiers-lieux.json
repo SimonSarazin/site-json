@@ -1479,10 +1479,10 @@
                     "xl": 4
                   },
                   "card": {
-                    "type": "tiers-lieux",
-                    "variant": "tiers-lieux",
+                    "type": "image-cover",
+                    "variant": "image-cover",
                     "detailsMode": "drawer",
-                    "detailedMode": "tiers-lieux"
+                    "detailedMode": "service-pricing"
                   }
                 }
               }

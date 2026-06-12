@@ -8,26 +8,26 @@ import { getBaseUrl } from "@/lib/constant/common";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import type { Answer, FormId } from "@communecter/cocolight-api-client";
 import {
-  buildTiersLieuxServices,
-  buildTiersLieuxStats,
-  extractTiersLieuxAnswers,
-  tiersLieuxStatLabel,
-  type TiersLieuxStatKind,
-} from "../../helpers/tiersLieuxAnswers";
+  buildServicePricingServices,
+  buildServicePricingStats,
+  extractServicePricingAnswers,
+  servicePricingStatLabel,
+  type ServicePricingStatKind,
+} from "../../helpers/servicePricingAnswers";
 
-const STAT_ICONS: Record<TiersLieuxStatKind, LucideIcon> = {
+const STAT_ICONS: Record<ServicePricingStatKind, LucideIcon> = {
   coworking: Monitor,
   meeting: Users,
   accommodation: UtensilsCrossed,
 };
 
-const SERVICE_NAME_KEY: Record<TiersLieuxStatKind, string> = {
-  coworking: "card.tiersLieux.service.coworking",
-  meeting: "card.tiersLieux.service.meetingRoom",
-  accommodation: "card.tiersLieux.service.room",
+const SERVICE_NAME_KEY: Record<ServicePricingStatKind, string> = {
+  coworking: "card.servicePricing.service.coworking",
+  meeting: "card.servicePricing.service.meetingRoom",
+  accommodation: "card.servicePricing.service.room",
 };
 
-export default function CardDetailedTiersLieux({
+export default function CardDetailedServicePricing({
   item,
   onClick,
 }: SearchCardProps) {
@@ -44,10 +44,10 @@ export default function CardDetailedTiersLieux({
   // Vue détaillée : on n'affiche stats et services que pour les catégories
   // effectivement tarifées (`requirePrice: true`).
   const { stats, services } = useMemo(() => {
-    const agg = extractTiersLieuxAnswers(answers);
+    const agg = extractServicePricingAnswers(answers);
     return {
-      stats: buildTiersLieuxStats(agg, { requirePrice: true }),
-      services: buildTiersLieuxServices(agg),
+      stats: buildServicePricingStats(agg, { requirePrice: true }),
+      services: buildServicePricingServices(agg),
     };
   }, [answers]);
 
@@ -92,7 +92,7 @@ export default function CardDetailedTiersLieux({
               <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-4">
                 {stats.map((stat) => {
                   const Icon = STAT_ICONS[stat.kind];
-                  const { key, params } = tiersLieuxStatLabel(stat);
+                  const { key, params } = servicePricingStatLabel(stat);
                   const label = t(key, undefined, params);
                   return (
                     <div key={stat.kind} className="flex items-center gap-1.5 text-primary text-sm font-medium">
@@ -114,8 +114,8 @@ export default function CardDetailedTiersLieux({
                     {t(SERVICE_NAME_KEY[service.kind])}
                   </span>
                   <span className="text-sm text-muted-foreground text-right">
-                    {t("card.tiersLieux.priceFrom", undefined, {
-                      price: t(`card.tiersLieux.price.${service.unit}`, undefined, { price: service.price }),
+                    {t("card.servicePricing.priceFrom", undefined, {
+                      price: t(`card.servicePricing.price.${service.unit}`, undefined, { price: service.price }),
                     })}
                   </span>
                 </div>

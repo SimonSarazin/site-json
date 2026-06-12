@@ -8,13 +8,13 @@ import { useT } from "@/hooks/useT";
 import { getEntityIconName, getEntityColorClasses } from "@/lib/entityIcons";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import {
-  buildTiersLieuxStats,
-  extractTiersLieuxAnswers,
-  tiersLieuxStatLabel,
-  type TiersLieuxStatKind,
-} from "../../helpers/tiersLieuxAnswers";
+  buildServicePricingStats,
+  extractServicePricingAnswers,
+  servicePricingStatLabel,
+  type ServicePricingStatKind,
+} from "../../helpers/servicePricingAnswers";
 
-const STAT_ICONS: Record<TiersLieuxStatKind, LucideIcon> = {
+const STAT_ICONS: Record<ServicePricingStatKind, LucideIcon> = {
   coworking: Monitor,
   meeting: Users,
   accommodation: UtensilsCrossed,
@@ -37,7 +37,7 @@ export default function CardImageCover({
   const answers = item?.serverData?.answers as Record<FormId, Answer[]> | undefined;
   // Vue grille : la capacité seule suffit (`requirePrice: false`).
   const stats = useMemo(
-    () => buildTiersLieuxStats(extractTiersLieuxAnswers(answers), { requirePrice: false }),
+    () => buildServicePricingStats(extractServicePricingAnswers(answers), { requirePrice: false }),
     [answers],
   );
 
@@ -61,7 +61,7 @@ export default function CardImageCover({
         <div className="absolute top-3 px-2 w-full flex items-center justify-end gap-2 z-10">
           {stats.map((stat) => {
             const Icon = STAT_ICONS[stat.kind];
-            const { key, params } = tiersLieuxStatLabel(stat);
+            const { key, params } = servicePricingStatLabel(stat);
             const label = t(key, undefined, params);
             return (
               <div
