@@ -185,8 +185,8 @@ const ObservatoryBaseParamsSchema = z
 /*───────────────────────────────────────────────────────────────*/
 /* 5. Section schema                                             */
 /*───────────────────────────────────────────────────────────────*/
-export const ObservatoryES974SectionSchema = z.object({
-  type: z.literal("observatory-es974"),
+export const EquipmentObservatorySectionSchema = z.object({
+  type: z.literal("equipment-observatory"),
   id: z.string().optional(),
   props: z.object({
     headline: LocalizedString.optional(),
@@ -195,9 +195,9 @@ export const ObservatoryES974SectionSchema = z.object({
   }),
 });
 
-export type ObservatoryES974Section = z.infer<
-  typeof ObservatoryES974SectionSchema
+export type EquipmentObservatorySection = z.infer<
+  typeof EquipmentObservatorySectionSchema
 >;
-export type ObservatoryES974SectionProps = z.infer<
-  typeof ObservatoryES974SectionSchema
+export type EquipmentObservatorySectionProps = z.infer<
+  typeof EquipmentObservatorySectionSchema
 >["props"];

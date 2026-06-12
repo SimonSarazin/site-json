@@ -7,7 +7,7 @@
 
 export const OBSERVATORY_QUERY_KEYS = {
   /** Préfixe utilisé par useObservatoryEquipmentsQuery. */
-  EQUIPMENTS_PREFIX: "observatoire-es974",
+  EQUIPMENTS_PREFIX: "observatoire",
 } as const;
 
 export const PMR_FILTER_VALUES = {

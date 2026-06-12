@@ -1840,7 +1840,7 @@
           }
         },
         {
-          "type": "observatory-es974",
+          "type": "equipment-observatory",
           "id": "section-equipements-observatory",
           "props": {
             "baseParams": {

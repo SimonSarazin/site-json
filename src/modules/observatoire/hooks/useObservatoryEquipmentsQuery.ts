@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { useSearchQuery } from "@/modules/search/hooks/useSearchQuery";
 import type { SearchType } from "@/modules/search/schema";
-import type { Equipment, ObservatoryES974SectionProps } from "../schema";
+import type { Equipment, EquipmentObservatorySectionProps } from "../schema";
 import { EquipmentSchema } from "../schema";
 import { OBSERVATORY_QUERY_KEYS } from "../constants/queryKeys";
 
@@ -103,7 +103,7 @@ function parseEquipments(items: readonly unknown[]): Equipment[] {
       out.push(result.data);
     } else if (import.meta.env.DEV) {
       console.warn(
-        "[ObservatoryES974] entrée ignorée (parse Zod)",
+        "[observatoire] entrée ignorée (parse Zod)",
         result.error,
       );
     }
@@ -114,7 +114,7 @@ function parseEquipments(items: readonly unknown[]): Equipment[] {
 /*───────────────────────────────────────────────────────────────────────────*/
 /* Hook                                                                       */
 /*───────────────────────────────────────────────────────────────────────────*/
-type BaseParamsProp = ObservatoryES974SectionProps["baseParams"];
+type BaseParamsProp = EquipmentObservatorySectionProps["baseParams"];
 
 export function useObservatoryEquipmentsQuery(
   baseParamsProp?: BaseParamsProp,

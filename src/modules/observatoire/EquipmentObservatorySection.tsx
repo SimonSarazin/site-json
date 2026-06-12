@@ -1,7 +1,6 @@
 import "./i18n";
-import { useLocalization } from "@/hooks/useLocalization";
 import { useT } from "@/hooks/useT";
-import type { ObservatoryES974SectionProps } from "./schema";
+import type { EquipmentObservatorySectionProps } from "./schema";
 import { KpiCards } from "./components/KpiCards";
 import { Filters } from "./components/Filters";
 import {
@@ -15,16 +14,17 @@ import { EquipmentTable } from "./components/EquipmentTable";
 import { useObservatoryEquipmentsQuery } from "./hooks/useObservatoryEquipmentsQuery";
 import { useObservatoryFilters } from "./hooks/useObservatoryFilters";
 
-interface ObservatoryES974SectionComponentProps {
+interface EquipmentObservatorySectionComponentProps {
   id?: string;
-  props: ObservatoryES974SectionProps;
+  props: EquipmentObservatorySectionProps;
 }
 
-export default function ObservatoryES974Section({
+export default function EquipmentObservatorySection({
   id,
   props,
-}: ObservatoryES974SectionComponentProps) {
-  const { t: tData } = useLocalization();
+}: EquipmentObservatorySectionComponentProps) {
+  // useT(namespace) résout AUSSI les LocalizedString du config (il enveloppe
+  // useLocalization) — un seul hook pour les clés i18n ET les props localisées.
   const t = useT("modules/observatoire");
 
   const { equipments, error, stillLoading } = useObservatoryEquipmentsQuery(
@@ -32,14 +32,14 @@ export default function ObservatoryES974Section({
   );
   const { filtered, setFilters } = useObservatoryFilters(equipments);
 
-  const headline = props.headline ? tData(props.headline) : null;
-  const description = props.description ? tData(props.description) : null;
+  const headline = props.headline ? t(props.headline) : null;
+  const description = props.description ? t(props.description) : null;
 
   return (
     <section
       id={id}
       className="w-full bg-background py-8"
-      data-section="observatory-es974"
+      data-section="equipment-observatory"
     >
       <div className="mx-auto w-full max-w-8xl px-4 sm:px-6 lg:px-8 space-y-6">
         {(headline || description) && (

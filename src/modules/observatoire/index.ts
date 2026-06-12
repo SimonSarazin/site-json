@@ -1,12 +1,12 @@
-export { default as ObservatoryES974Section } from "./ObservatoryES974Section";
+export { default as EquipmentObservatorySection } from "./EquipmentObservatorySection";
 
 export type {
   Equipment,
   FilterValues,
-  ObservatoryES974Section as ObservatoryES974SectionType,
-  ObservatoryES974SectionProps,
+  EquipmentObservatorySection as EquipmentObservatorySectionType,
+  EquipmentObservatorySectionProps,
 } from "./schema";
-export { EquipmentSchema, ObservatoryES974SectionSchema, EMPTY_FILTERS } from "./schema";
+export { EquipmentSchema, EquipmentObservatorySectionSchema, EMPTY_FILTERS } from "./schema";
 
 export { OBSERVATORY_QUERY_KEYS, PMR_FILTER_VALUES } from "./constants/queryKeys";
 export type { PmrFilterValue } from "./constants/queryKeys";
