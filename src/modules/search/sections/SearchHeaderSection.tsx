@@ -15,14 +15,7 @@ import { type SearchHeaderSectionProps } from "@/types/site-schema";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import {
-    Command,
-    CommandGroup,
-    CommandItem,
-    CommandList,
-    CommandSeparator,
-} from "@/components/ui/command";
+import { MultiCombobox } from "@/components/ui/multi-combobox";
 import {
     Sheet,
     SheetClose,
@@ -33,8 +26,7 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
-import { Check, ChevronDown, SlidersHorizontal } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { ChevronDown, SlidersHorizontal } from "lucide-react";
 import { usePageFiltersOptional } from "@/modules/search/contexts/pageFilters";
 import { useCocolight } from "@/hooks/useCocolight";
 import { ActionButtonGroup } from "@/modules/profil/components/ActionButtonGroup";
@@ -198,48 +190,35 @@ export function SearchHeaderSection({ id, props }: SearchHeaderSectionComponentP
     const renderDropdownFilter = (filter: DropdownFilterConfig) => {
         const selectedValues = getDropdownSelectedValues(filter);
         return (
-            // Combobox shadcn (Popover + Command) : items au look SelectItem,
-            // coche à DROITE — reste ouvert pendant la multi-sélection
-            // (même pattern que MultiCheckboxField / filterFields).
-            <Popover key={filter.id}>
-                <PopoverTrigger asChild>
-                    <Button
-                        variant="outline"
-                        className="h-11 w-full justify-between rounded-xl border-border bg-muted/60! px-3 text-foreground shadow-sm hover:border-primary/50 hover:bg-muted! hover:text-foreground lg:w-auto lg:min-w-[150px] lg:max-w-full dark:bg-muted/50! dark:hover:bg-muted/70!"
-                    >
-                        <span className="truncate">{getDropdownTriggerLabel(filter)}</span>
-                        <ChevronDown className="ml-2 h-4 w-4 shrink-0" />
-                    </Button>
-                </PopoverTrigger>
-                <PopoverContent align="start" className="w-72 p-1">
-                    <Command shouldFilter={false}>
-                        <CommandList className="max-h-72">
-                            <CommandGroup>
-                                <CommandItem onSelect={() => setDropdownSelection(filter, [])}>
-                                    {filter.allLabel ? t(filter.allLabel) : t("Tous")}
-                                </CommandItem>
-
-                                {filter.options.length > 0 && <CommandSeparator className="my-1" />}
-
-                                {filter.options.map((option) => (
-                                    <CommandItem
-                                        key={option.id}
-                                        onSelect={() => toggleDropdownOption(filter, option.id)}
-                                    >
-                                        {option.icon && (
-                                            <DynamicIcon name={option.icon as IconName} className="w-4 h-4" />
-                                        )}
-                                        {t(option.label)}
-                                        <Check
-                                            className={cn("ml-auto h-4 w-4", selectedValues.includes(option.id) ? "opacity-100" : "opacity-0")}
-                                        />
-                                    </CommandItem>
-                                ))}
-                            </CommandGroup>
-                        </CommandList>
-                    </Command>
-                </PopoverContent>
-            </Popover>
+            // Combobox multi partagé (ui/multi-combobox) : items au look
+            // SelectItem, coche à DROITE, reste ouvert pendant la sélection.
+            <MultiCombobox
+                key={filter.id}
+                options={filter.options.map((option) => ({
+                    id: option.id,
+                    label: (
+                        <>
+                            {option.icon && (
+                                <DynamicIcon name={option.icon as IconName} className="w-4 h-4" />
+                            )}
+                            {t(option.label)}
+                        </>
+                    ),
+                }))}
+                selected={selectedValues}
+                onToggle={(id) => toggleDropdownOption(filter, id)}
+                allLabel={filter.allLabel ? t(filter.allLabel) : t("Tous")}
+                onClear={() => setDropdownSelection(filter, [])}
+                contentClassName="w-72"
+            >
+                <Button
+                    variant="outline"
+                    className="h-11 w-full justify-between rounded-xl border-border bg-muted/60! px-3 text-foreground shadow-sm hover:border-primary/50 hover:bg-muted! hover:text-foreground lg:w-auto lg:min-w-[150px] lg:max-w-full dark:bg-muted/50! dark:hover:bg-muted/70!"
+                >
+                    <span className="truncate">{getDropdownTriggerLabel(filter)}</span>
+                    <ChevronDown className="ml-2 h-4 w-4 shrink-0" />
+                </Button>
+            </MultiCombobox>
         );
     };
 

@@ -10,18 +10,10 @@
 //     = le nouveau choix REMPLACE le précédent
 // Valeur = chaîne jointe par virgule (format URL maison partagé).
 
-import { Check, ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import {
-  Command,
-  CommandGroup,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
-} from "@/components/ui/command";
+import { MultiCombobox } from "@/components/ui/multi-combobox";
 import {
   Select,
   SelectContent,
@@ -68,10 +60,9 @@ export function SelectField({ label, value, onChange, options, allLabel }: Filte
   );
 }
 
-/** Multi SANS recherche — combobox shadcn canonique (Popover + Command) :
- *  trigger au look SelectTrigger, items au look SelectItem (coche à DROITE),
- *  le « Select normal multi » que Radix Select (2.2.6, pas de prop multiple)
- *  ne sait pas faire nativement. Reste ouvert pendant la multi-sélection. */
+/** Multi SANS recherche — wrapper fin sur le `MultiCombobox` partagé (ui/) :
+ *  trigger au look SelectTrigger, valeur CSV, libellé du trigger (« Tous » /
+ *  valeur / « N sélectionnés »). */
 export function MultiCheckboxField({ label, value, onChange, options, allLabel, selectedCountLabel }: FilterFieldProps & { selectedCountLabel: (n: number) => string }) {
   const selected = value.split(",").map((v) => v.trim()).filter(Boolean);
   const triggerLabel =
@@ -89,39 +80,25 @@ export function MultiCheckboxField({ label, value, onChange, options, allLabel, 
   return (
     <div className="flex flex-col gap-1.5">
       <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
-      <Popover>
-        <PopoverTrigger asChild>
-          {/* Aligné visuellement sur le SelectTrigger (bordure/fond/graisse) ;
-              le survol vient du Button outline standard (muted — neutre quel
-              que soit le thème). */}
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 w-full justify-between border-input bg-transparent font-normal"
-          >
-            <span className="truncate">{triggerLabel}</span>
-            <ChevronDown className="ml-1 h-3.5 w-3.5 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent align="start" className="w-(--radix-popover-trigger-width) min-w-48 p-1">
-          <Command shouldFilter={false}>
-            <CommandList className="max-h-72">
-              <CommandGroup>
-                <CommandItem onSelect={() => onChange("")}>{allLabel}</CommandItem>
-                <CommandSeparator className="my-1" />
-                {options.map((o) => (
-                  <CommandItem key={o.id} onSelect={() => toggle(o.id)}>
-                    {o.label}
-                    <Check
-                      className={cn("ml-auto h-4 w-4", selected.includes(o.id) ? "opacity-100" : "opacity-0")}
-                    />
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
+      <MultiCombobox
+        options={options}
+        selected={selected}
+        onToggle={toggle}
+        allLabel={allLabel}
+        onClear={() => onChange("")}
+      >
+        {/* Aligné visuellement sur le SelectTrigger (bordure/fond/graisse) ;
+            le survol vient du Button outline standard (muted — neutre quel
+            que soit le thème). */}
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 w-full justify-between border-input bg-transparent font-normal"
+        >
+          <span className="truncate">{triggerLabel}</span>
+          <ChevronDown className="ml-1 h-3.5 w-3.5 shrink-0 opacity-50" />
+        </Button>
+      </MultiCombobox>
     </div>
   );
 }
