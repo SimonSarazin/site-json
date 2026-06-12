@@ -7,6 +7,7 @@ import { Link } from "react-router";
 import NavLink from "../NavLink";
 import LangSwitch from "./LangSwitch";
 import MobileMenuSheet from "./MobileMenuSheet";
+import MobileMenuBrand from "./MobileMenuBrand";
 import { ClientOnly } from "../ClientOnly";
 import { AuthMenu } from "@/modules/auth";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
@@ -142,7 +143,11 @@ export default function HeaderMegaMenu({ header }: HeaderMegaMenuProps) {
                             </ClientOnly>
                         )}
                         {header.utilities?.langSwitch && <LangSwitch triggerClassName="gap-0.5 xs:gap-1 px-1.5 xs:px-2 h-8" />}
-                        <MobileMenuSheet breakpoint="xl" triggerClassName="text-foreground hover:text-primary">
+                        <MobileMenuSheet
+                            breakpoint="xl"
+                            triggerClassName="text-foreground hover:text-primary"
+                            brand={(close) => <MobileMenuBrand header={header} onNavigate={close} />}
+                        >
                             {(close) => (
                                 <>
                                     {nav.map((item, idx) => (

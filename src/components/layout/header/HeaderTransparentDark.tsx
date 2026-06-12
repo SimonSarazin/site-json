@@ -7,6 +7,7 @@ import { useScrollAware, useScrollToTopOnRouteChange, useNavItemActive } from ".
 import NavLink from "../NavLink";
 import LangSwitch from "./LangSwitch";
 import MobileMenuSheet from "./MobileMenuSheet";
+import MobileMenuBrand from "./MobileMenuBrand";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";
 import { AuthMenu } from "@/modules/auth";
 import NotificationBell from "@/modules/notification/components/NotificationBell";
@@ -126,6 +127,7 @@ export default function HeaderTransparentDark({ header }: HeaderTransparentDarkP
                         <MobileMenuSheet
                             tone="onColor"
                             contentClassName="bg-header-bar text-white border-white/10"
+                            brand={(close) => <MobileMenuBrand header={header} tone="onColor" onNavigate={close} />}
                         >
                             {(close) =>
                                 header.nav?.map((item, idx) => {

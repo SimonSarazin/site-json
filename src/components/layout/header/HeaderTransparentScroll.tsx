@@ -7,6 +7,7 @@ import { ClientOnly } from "../ClientOnly";
 import NavLink from "../NavLink";
 import LangSwitch from "./LangSwitch";
 import MobileMenuSheet from "./MobileMenuSheet";
+import MobileMenuBrand from "./MobileMenuBrand";
 import { AuthMenu } from "@/modules/auth";
 import ToggleButtonTheme from "@/components/layout/ToggleButtonTheme";
 import { PiggyBankHeaderButton } from "@/modules/cagnotte/components/PiggyBankHeaderButton";
@@ -195,7 +196,10 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
                             </ClientOnly>
                         )}
                         {navItemsToDisplay.length > 0 && (
-                            <MobileMenuSheet triggerClassName="text-muted-foreground hover:text-foreground">
+                            <MobileMenuSheet
+                                triggerClassName="text-muted-foreground hover:text-foreground"
+                                brand={(close) => <MobileMenuBrand header={header} onNavigate={close} />}
+                            >
                                 {(close) => (
                                     <>
                                         {navItemsToDisplay.map((item, idx) => {

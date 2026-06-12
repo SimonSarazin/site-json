@@ -6,6 +6,7 @@ import { useScrollAware, useScrollToTopOnRouteChange, useNavItemActive } from ".
 import NavLink from "../NavLink";
 import LangSwitch from "./LangSwitch";
 import MobileMenuSheet from "./MobileMenuSheet";
+import MobileMenuBrand from "./MobileMenuBrand";
 import { ClientOnly } from "../ClientOnly";
 import { IconOrSvg } from "@/components/ui/icon-or-svg";
 import { AuthMenu } from "@/modules/auth";
@@ -134,7 +135,10 @@ export default function HeaderUnderlineNav({ header }: HeaderUnderlineNavProps) 
                                 {() => <ToggleButtonTheme />}
                             </ClientOnly>
                         )}
-                        <MobileMenuSheet triggerClassName="text-muted-foreground hover:text-primary">
+                        <MobileMenuSheet
+                            triggerClassName="text-muted-foreground hover:text-primary"
+                            brand={(close) => <MobileMenuBrand header={header} onNavigate={close} />}
+                        >
                             {(close) => (
                                 <>
                                     {header.nav.map((item, idx) => {
