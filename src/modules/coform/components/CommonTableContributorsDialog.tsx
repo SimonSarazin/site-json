@@ -78,7 +78,7 @@ function ContributorRow({
                 href={profileLink}
                 className="font-medium text-sm hover:underline"
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
               >
                 {c.userName}
               </a>

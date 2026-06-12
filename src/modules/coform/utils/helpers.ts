@@ -74,7 +74,9 @@ export function mergeStepsData(
  *     par tous les composants de field).
  */
 export function scrollToFieldByName(name: string): void {
-  if (typeof document === "undefined") return;
+  // Garde SSR unique en tête : tout le corps utilise document ET window
+  // (getComputedStyle, matchMedia, setTimeout, Web Animations).
+  if (typeof document === "undefined" || typeof window === "undefined") return;
   let el = document.querySelector<HTMLElement>(`[data-field-name="${CSS.escape(name)}"]`);
 
   if (!el) {
@@ -85,7 +87,7 @@ export function scrollToFieldByName(name: string): void {
   }
   if (!el) return;
 
-  if (typeof window !== "undefined" && window.getComputedStyle(el).display === "contents") {
+  if (window.getComputedStyle(el).display === "contents") {
     const child = el.firstElementChild as HTMLElement | null;
     if (child) el = child;
   }

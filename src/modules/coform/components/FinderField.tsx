@@ -132,7 +132,7 @@ export function FinderField({
    * l'ouverture d'un modal d'édition + en restaurant `canEdit={config.editElement && !readOnly}`.
    */
   const handleEditElement = (element: FinderElement) => {
-    console.log("Edit element:", element);
+    if (import.meta.env.DEV) console.log("Edit element:", element);
     toast.info(`Fonctionnalité à implémenter : éditer l'élément « ${element.name} »`);
   };
 
