@@ -90,7 +90,7 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
                         )}
                     </NavLink>
 
-                    <div className="hidden md:flex items-center gap-8">
+                    <div className="hidden xl:flex items-center gap-8">
                         {navItemsToDisplay.map((item, idx) => {
                             const isActive = isNavItemActive(item.path);
                             const hasChildren = !!item.children?.length;
@@ -177,7 +177,7 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
                         )}
                     </div>
 
-                    <div className="hidden md:block">
+                    <div className="hidden xl:block">
                         {header.utilities?.auth && (
                             <AuthMenu layout="menu" density="compact" showDropdownHeader loginVariant="solid" loginClassName="shadow-glow" loginLabel={header.ctaButton?.label} />
                         )}
@@ -191,7 +191,7 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
                         )}
                     </div>
 
-                    <div className="md:hidden flex items-center gap-2">
+                    <div className="xl:hidden flex items-center gap-2">
                         {header.utilities?.notifications && <NotificationBell />}
                         {header.utilities?.search && <CommandTriggerButton />}
                         {header.utilities?.themeSwitch !== false && (
@@ -201,6 +201,7 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
                         )}
                         {navItemsToDisplay.length > 0 && (
                             <MobileMenuSheet
+                                breakpoint="xl"
                                 triggerClassName="text-muted-foreground hover:text-foreground"
                                 brand={(close) => <MobileMenuBrand header={header} onNavigate={close} />}
                             >
