@@ -34,7 +34,8 @@ Consommateur actuel : `config.prod.equipements-Sportifs.json`, page `/observatoi
 | Pièce | Rôle |
 |---|---|
 | `EquipmentObservatorySection` | composition : Filters → KpiCards → 5 charts → EquipmentTable |
-| `hooks/useObservatoryEquipmentsQuery` | délègue à `useSearchQuery` (module search) et **enchaîne toutes les pages** (`hasNextPage → fetchNextPage`) — dashboard = dataset complet ; parse chaque `item.serverData` via `EquipmentSchema` (Zod tolérant : `BoolLike`, `StringOrArray`) |
+| `hooks/useObservatoryEquipmentsQuery` | délègue à **`useSearchAllResults`** (module search — hook générique « charger tout » : pages séquentielles auto-régulées, plafond `maxResults` défaut 5000, `progress {loaded, total}`) ; parse chaque `item.serverData` via `EquipmentSchema` (Zod tolérant : `BoolLike`, `StringOrArray`, `DateLike`) |
+| `prefetch.ts` | params de prefetch **SSR de la 1ʳᵉ page** (loader `buildRoutes`) — même queryKey que le client via `buildObservatoryBaseParams` (fonction partagée) → dashboard plein au premier paint, la suite s'enchaîne après hydratation (~118 Ko gzip pour 500×47 champs) |
 | `hooks/useObservatoryFilters` | filtrage client 7 dimensions (commune, type, EPCI, nature, PMR, propriétaire, APS), état dérivé par `useMemo` |
 | `utils.ts` | coercions (`isTrue`, `normalizeAps`, `toNumber`), agrégations (`countBy`, `uniqSorted`), accès dimensions (`getCommune`, `getEpci`…), **vocabulaire RES centralisé** (`NATURE_VALUES`, `isIndoor`) — testé (`utils.test.ts`) |
 | `components/` | `KpiCards`, `Charts` (recharts via `ui/chart.tsx` : `ChartContainer`/`ChartTooltipContent`), `Filters` (Select Radix), `EquipmentTable` (Table + Badge + pagination Button) |
@@ -63,10 +64,27 @@ config** : sans périmètre configuré, le hook ne requête RIEN (pas de fallbac
 silencieux sur le sourceKey d'un autre site — warn en DEV). Périmètre configuré
 mais sans données : section vide (pas d'erreur).
 
+## Chargement (mesuré sur 3035 équipements réels)
+
+- Le backend honore `indexStep` sans cap (500→500) ; le paginator SDK et
+  `fetchNextPage` sont **séquentiels par contrat** (curseur dérivé de la page
+  précédente) → pas de pages parallèles sans contourner le paginator
+  (`indexMin`/`indexMax` directs — v2 possible, concurrence à borner à 2-3
+  pour ne pas concentrer la charge backend).
+- v1 retenue : séquentiel auto-régulé + **plafond `maxResults`** (défaut 5000,
+  configurable par `baseParams.maxResults`) + **barre de progression**
+  (`total` connu dès la 1ʳᵉ page) + **prefetch SSR de la page 1** + skeleton
+  avant la 1ʳᵉ donnée. L'attente de fond devient invisible : l'utilisateur a
+  500 équipements sous les yeux dès le premier paint.
+- Le mode « map » (`indexStep: 0`, tout en 1 appel) a été écarté comme défaut :
+  all-or-nothing (pas de progressif, réponse énorme, timeout = tout perdu).
+
 ## Limites connues / backlog
 
-- **Auto-pagination sans plafond** : tout le dataset est chargé (500/page).
-  OK pour ~10³ équipements ; prévoir un cap configurable avant réutilisation
-  sur un gros `sourceKey` (alternative long terme : agrégations serveur).
+- Chaque rendu SSR de la page paie le fetch backend de la 1ʳᵉ page (QueryClient
+  par requête) — un cache serveur partagé inter-requêtes est une piste si le
+  TTFB devient un sujet.
+- v2 éventuelle : tranches parallèles à concurrence bornée après la page 1
+  (latence ~3×RTT au lieu de N×RTT) — seulement si mesuré nécessaire.
 - `EquipmentSchema` en `.passthrough()` (champs RES additionnels tolérés).
 - `defaultTypes: z.array(z.string())` (cast vers `SearchType[]` dans le hook).

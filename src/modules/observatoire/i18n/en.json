@@ -3,6 +3,7 @@
     "loadFailed": "An error occurred while loading equipment data."
   },
   "loading": "Loading data…",
+  "loadingProgress": "{{loaded}} / {{total}} facilities loaded",
   "kpi": {
     "equipments": "Equipment",
     "communes": "Communes",

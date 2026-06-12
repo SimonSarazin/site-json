@@ -3,6 +3,7 @@
     "loadFailed": "Une erreur est survenue lors du chargement des équipements."
   },
   "loading": "Chargement des données en cours…",
+  "loadingProgress": "{{loaded}} / {{total}} équipements chargés",
   "kpi": {
     "equipments": "Équipements",
     "communes": "Communes",

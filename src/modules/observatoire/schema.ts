@@ -186,6 +186,9 @@ const ObservatoryBaseParamsSchema = z
       .record(z.string(), z.union([z.literal(1), z.literal(-1)]))
       .optional(),
     notSourceKey: z.boolean().optional(),
+    // Plafond de résultats chargés (sécurité « charger tout ») — défaut :
+    // SEARCH_ALL_DEFAULT_MAX_RESULTS (5000) du hook générique.
+    maxResults: z.number().int().positive().optional(),
   })
   .optional();
 

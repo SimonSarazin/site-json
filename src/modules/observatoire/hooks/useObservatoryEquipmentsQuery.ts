@@ -1,6 +1,6 @@
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
-import { useSearchQuery } from "@/modules/search/hooks/useSearchQuery";
+import { useSearchAllResults } from "@/modules/search/hooks/useSearchAllResults";
 import type { SearchType } from "@/modules/search/schema";
 import type { Equipment, EquipmentObservatorySectionProps } from "../schema";
 import { EquipmentSchema } from "../schema";
@@ -104,6 +104,25 @@ function parseEquipments(items: readonly SearchEntity[]): Equipment[] {
 /*───────────────────────────────────────────────────────────────────────────*/
 type BaseParamsProp = EquipmentObservatorySectionProps["baseParams"];
 
+/**
+ * Normalisation des baseParams de la section → baseParams de useSearchQuery.
+ * Fonction PURE, partagée avec le prefetch SSR (`../prefetch.ts`) : la
+ * queryKey React Query est structurelle — serveur et client doivent produire
+ * EXACTEMENT le même objet pour que l'hydratation tombe sur le bon cache.
+ */
+export function buildObservatoryBaseParams(baseParamsProp?: BaseParamsProp) {
+  return {
+    notSourceKey: baseParamsProp?.notSourceKey ?? true,
+    defaultTypes: (baseParamsProp?.defaultTypes as SearchType[] | undefined) ?? [
+      "poi" as SearchType,
+    ],
+    defaultFields: baseParamsProp?.defaultFields ?? DEFAULT_FIELDS,
+    defaultFilters: baseParamsProp?.defaultFilters,
+    defaultSortBy: baseParamsProp?.defaultSortBy,
+    indexStepList: baseParamsProp?.indexStepList ?? 500,
+  };
+}
+
 export function useObservatoryEquipmentsQuery(
   baseParamsProp?: BaseParamsProp,
 ) {
@@ -117,16 +136,7 @@ export function useObservatoryEquipmentsQuery(
   }
 
   const baseParams = useMemo(
-    () => ({
-      notSourceKey: baseParamsProp?.notSourceKey ?? true,
-      defaultTypes: (baseParamsProp?.defaultTypes as SearchType[] | undefined) ?? [
-        "poi" as SearchType,
-      ],
-      defaultFields: baseParamsProp?.defaultFields ?? DEFAULT_FIELDS,
-      defaultFilters: baseParamsProp?.defaultFilters,
-      defaultSortBy: baseParamsProp?.defaultSortBy,
-      indexStepList: baseParamsProp?.indexStepList ?? 500,
-    }),
+    () => buildObservatoryBaseParams(baseParamsProp),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [JSON.stringify(baseParamsProp)],
   );
@@ -136,35 +146,25 @@ export function useObservatoryEquipmentsQuery(
     [hasPerimeter, baseParams.defaultTypes],
   );
 
-  const {
-    transformedResults,
+  // Chargement du périmètre COMPLET (pages séquentielles, plafond, progress)
+  // — mécanique générique du module search.
+  const { results, loaded, total, isComplete, capped, isLoading, error } =
+    useSearchAllResults({
+      queryKeyPrefix: OBSERVATORY_QUERY_KEYS.EQUIPMENTS_PREFIX,
+      searchType,
+      baseParams,
+      maxResults: baseParamsProp?.maxResults,
+    });
+
+  const equipments = useMemo(() => parseEquipments(results), [results]);
+
+  return {
+    equipments,
     isLoading,
     error,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useSearchQuery({
-    queryKeyPrefix: OBSERVATORY_QUERY_KEYS.EQUIPMENTS_PREFIX,
-    searchText: "",
-    searchTags: {},
-    searchType,
-    mapUsed: false,
-    baseParams,
-  });
-
-  // Chargement total : tant qu'il reste une page, on l'enchaîne.
-  useEffect(() => {
-    if (hasNextPage && !isFetchingNextPage && !isLoading) {
-      void fetchNextPage();
-    }
-  }, [hasNextPage, isFetchingNextPage, isLoading, fetchNextPage]);
-
-  const equipments = useMemo(
-    () => parseEquipments(transformedResults ?? []),
-    [transformedResults],
-  );
-
-  const stillLoading = isLoading || hasNextPage || isFetchingNextPage;
-
-  return { equipments, isLoading, error, stillLoading };
+    stillLoading: !isComplete,
+    /** Progression du chargement (total connu dès la 1ʳᵉ page). */
+    progress: { loaded, total },
+    capped,
+  };
 }
