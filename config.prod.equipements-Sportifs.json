@@ -3,12 +3,12 @@
   "generated": "2026-05-08T10:30:00.000Z",
   "meta": {
     "title": {
-      "fr": "Equipement sportif - Région Réunion",
+      "fr": "Équipements sportifs - Région Réunion",
       "en": "Sports Facilities - Réunion Region"
     },
     "description": {
-      "fr": "Liste des équipements sportifs disponibles dans la région de Réunion",
-      "en": "List of sports facilities available in the Réunion region"
+      "fr": "Liste des équipements sportifs disponibles à La Réunion",
+      "en": "Directory of sports facilities available in Réunion"
     },
     "defaultLang": "fr",
     "languages": [
@@ -84,7 +84,7 @@
     {
       "path": "/",
       "title": {
-        "fr": "Accueil - Equipement sportif - Région Réunion",
+        "fr": "Accueil - Équipements sportifs - Région Réunion",
         "en": "Home - Sports Facilities - Réunion Region"
       },
       "layout": "fullwidth",
@@ -94,12 +94,12 @@
           "id": "hero-rezo-la-mer",
           "props": {
             "headline": {
-              "fr": "Equipement sportif - Région Réunion",
+              "fr": "Équipements sportifs - Région Réunion",
               "en": "Sports Facilities - Réunion Region"
             },
             "subhead": {
               "fr": "Équipez et connectez le réseau des passionnés de sport pour construire ensemble une communauté dynamique et résiliente",
-              "en": "Equip and connect the network of sports enthusiasts to build together a dynamic and resilient community"
+              "en": "Equipping and connecting the network of sports enthusiasts to build a dynamic and resilient community together"
             },
             "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-20 h-20\"><path d=\"M12 22c4.5-4.5 7-7.6 7-11a7 7 0 1 0-14 0c0 3.4 2.5 6.5 7 11Z\"></path><path d=\"M8 10h1.7l1-2.6 2 5.2 1-2.6H16\"></path></svg>",
             "backgroundImage": "images/equipementsSportifs974/hero2.jpg",
@@ -134,7 +134,7 @@
               },
               {
                 "label": {
-                  "fr": "Decouvrir l'observatoire",
+                  "fr": "Découvrir l'observatoire",
                   "en": "Discover the observatory"
                 },
                 "path": "/observatoire",
@@ -259,8 +259,8 @@
     {
       "path": "/equipements-sportifs",
       "title": {
-        "fr": "Équipements sportifs - Sport Santé Bien-être",
-        "en": "Sports facilities - Sport Health Wellness"
+        "fr": "Équipements sportifs - Région Réunion",
+        "en": "Sports Facilities - Réunion Region"
       },
       "layout": "fullwidth",
       "sections": [
@@ -516,7 +516,7 @@
                     "value": "Multisports/City-stades",
                     "label": {
                       "fr": "Multisports/City-stades",
-                      "en": "Multisports/City-stades"
+                      "en": "Multi-sports / urban sports ground"
                     }
                   },
                   {
@@ -524,7 +524,7 @@
                     "value": "Terrain de basket-ball",
                     "label": {
                       "fr": "Terrain de basket-ball",
-                      "en": "Terrain de basket-ball"
+                      "en": "Basketball court"
                     }
                   },
                   {
@@ -532,7 +532,7 @@
                     "value": "Terrain de football",
                     "label": {
                       "fr": "Terrain de football",
-                      "en": "Terrain de football"
+                      "en": "Football pitch"
                     }
                   },
                   {
@@ -540,7 +540,7 @@
                     "value": "Salles polyvalentes / des fêtes / non spécialisées",
                     "label": {
                       "fr": "Salles polyvalentes / des fêtes / non spécialisées",
-                      "en": "Salles polyvalentes / des fêtes / non spécialisées"
+                      "en": "Multi-purpose / community halls"
                     }
                   },
                   {
@@ -548,7 +548,7 @@
                     "value": "Salle de musculation/cardiotraining",
                     "label": {
                       "fr": "Salle de musculation/cardiotraining",
-                      "en": "Salle de musculation/cardiotraining"
+                      "en": "Weight training / cardio room"
                     }
                   },
                   {
@@ -556,7 +556,7 @@
                     "value": "Salle multisports (gymnase)",
                     "label": {
                       "fr": "Salle multisports (gymnase)",
-                      "en": "Salle multisports (gymnase)"
+                      "en": "Multi-sports hall (gymnasium)"
                     }
                   },
                   {
@@ -564,7 +564,7 @@
                     "value": "Terrain de handball",
                     "label": {
                       "fr": "Terrain de handball",
-                      "en": "Terrain de handball"
+                      "en": "Handball court"
                     }
                   },
                   {
@@ -572,7 +572,7 @@
                     "value": "Terrain de pétanque",
                     "label": {
                       "fr": "Terrain de pétanque",
-                      "en": "Terrain de pétanque"
+                      "en": "Pétanque ground"
                     }
                   },
                   {
@@ -580,7 +580,7 @@
                     "value": "Stade d’athlétisme",
                     "label": {
                       "fr": "Stade d’athlétisme",
-                      "en": "Stade d’athlétisme"
+                      "en": "Athletics stadium"
                     }
                   },
                   {
@@ -588,7 +588,7 @@
                     "value": "Site d'activités aquatiques et nautiques",
                     "label": {
                       "fr": "Site d'activités aquatiques et nautiques",
-                      "en": "Site d'activités aquatiques et nautiques"
+                      "en": "Water and nautical activities site"
                     }
                   },
                   {
@@ -596,7 +596,7 @@
                     "value": "Court de tennis",
                     "label": {
                       "fr": "Court de tennis",
-                      "en": "Court de tennis"
+                      "en": "Tennis court"
                     }
                   },
                   {
@@ -604,7 +604,7 @@
                     "value": "Bassin mixte de natation",
                     "label": {
                       "fr": "Bassin mixte de natation",
-                      "en": "Bassin mixte de natation"
+                      "en": "Multi-use swimming pool"
                     }
                   },
                   {
@@ -612,7 +612,7 @@
                     "value": "Site de plongée",
                     "label": {
                       "fr": "Site de plongée",
-                      "en": "Site de plongée"
+                      "en": "Diving site"
                     }
                   },
                   {
@@ -628,7 +628,7 @@
                     "value": "Dojo / Salle d'arts martiaux",
                     "label": {
                       "fr": "Dojo / Salle d'arts martiaux",
-                      "en": "Dojo / Salle d'arts martiaux"
+                      "en": "Dojo / martial arts hall"
                     }
                   },
                   {
@@ -636,7 +636,7 @@
                     "value": "Parcours sportif/santé",
                     "label": {
                       "fr": "Parcours sportif/santé",
-                      "en": "Parcours sportif/santé"
+                      "en": "Fitness trail"
                     }
                   },
                   {
@@ -644,7 +644,7 @@
                     "value": "Boucle de randonnée",
                     "label": {
                       "fr": "Boucle de randonnée",
-                      "en": "Boucle de randonnée"
+                      "en": "Hiking loop"
                     }
                   },
                   {
@@ -652,7 +652,7 @@
                     "value": "Structure Artificielle d'Escalade",
                     "label": {
                       "fr": "Structure Artificielle d'Escalade",
-                      "en": "Structure Artificielle d'Escalade"
+                      "en": "Artificial climbing structure"
                     }
                   },
                   {
@@ -660,7 +660,7 @@
                     "value": "Site de pêche",
                     "label": {
                       "fr": "Site de pêche",
-                      "en": "Site de pêche"
+                      "en": "Fishing site"
                     }
                   },
                   {
@@ -668,7 +668,7 @@
                     "value": "Parcours d'obstacles",
                     "label": {
                       "fr": "Parcours d'obstacles",
-                      "en": "Parcours d'obstacles"
+                      "en": "Obstacle course"
                     }
                   },
                   {
@@ -676,7 +676,7 @@
                     "value": "Refuge de montagne",
                     "label": {
                       "fr": "Refuge de montagne",
-                      "en": "Refuge de montagne"
+                      "en": "Mountain refuge"
                     }
                   },
                   {
@@ -684,7 +684,7 @@
                     "value": "Salle de danse",
                     "label": {
                       "fr": "Salle de danse",
-                      "en": "Salle de danse"
+                      "en": "Dance studio"
                     }
                   },
                   {
@@ -692,7 +692,7 @@
                     "value": "Carrière",
                     "label": {
                       "fr": "Carrière",
-                      "en": "Carrière"
+                      "en": "Outdoor riding arena"
                     }
                   },
                   {
@@ -700,7 +700,7 @@
                     "value": "Terrain de kayak polo",
                     "label": {
                       "fr": "Terrain de kayak polo",
-                      "en": "Terrain de kayak polo"
+                      "en": "Kayak polo field"
                     }
                   },
                   {
@@ -708,7 +708,7 @@
                     "value": "Aire de saut",
                     "label": {
                       "fr": "Aire de saut",
-                      "en": "Aire de saut"
+                      "en": "Jumping area"
                     }
                   },
                   {
@@ -716,7 +716,7 @@
                     "value": "Mur à gauche",
                     "label": {
                       "fr": "Mur à gauche",
-                      "en": "Mur à gauche"
+                      "en": "Left wall (Basque pelota)"
                     }
                   },
                   {
@@ -724,7 +724,7 @@
                     "value": "Piste d'athlétisme isolée",
                     "label": {
                       "fr": "Piste d'athlétisme isolée",
-                      "en": "Piste d'athlétisme isolée"
+                      "en": "Stand-alone athletics track"
                     }
                   },
                   {
@@ -732,7 +732,7 @@
                     "value": "Bassin sportif de natation",
                     "label": {
                       "fr": "Bassin sportif de natation",
-                      "en": "Bassin sportif de natation"
+                      "en": "Competition swimming pool"
                     }
                   },
                   {
@@ -740,7 +740,7 @@
                     "value": "Trinquet",
                     "label": {
                       "fr": "Trinquet",
-                      "en": "Trinquet"
+                      "en": "Trinquet (Basque pelota court)"
                     }
                   },
                   {
@@ -748,7 +748,7 @@
                     "value": "Aire d'atterrissage",
                     "label": {
                       "fr": "Aire d'atterrissage",
-                      "en": "Aire d'atterrissage"
+                      "en": "Landing area"
                     }
                   },
                   {
@@ -756,7 +756,7 @@
                     "value": "Courses sur piste",
                     "label": {
                       "fr": "Courses sur piste",
-                      "en": "Courses sur piste"
+                      "en": "Horse racing track"
                     }
                   },
                   {
@@ -764,7 +764,7 @@
                     "value": "Salle de boxe",
                     "label": {
                       "fr": "Salle de boxe",
-                      "en": "Salle de boxe"
+                      "en": "Boxing gym"
                     }
                   },
                   {
@@ -772,7 +772,7 @@
                     "value": "Port de plaisance",
                     "label": {
                       "fr": "Port de plaisance",
-                      "en": "Port de plaisance"
+                      "en": "Marina"
                     }
                   },
                   {
@@ -780,7 +780,7 @@
                     "value": "Terrain de boules",
                     "label": {
                       "fr": "Terrain de boules",
-                      "en": "Terrain de boules"
+                      "en": "Boules ground"
                     }
                   },
                   {
@@ -788,15 +788,15 @@
                     "value": "Anneau / piste de cyclisme",
                     "label": {
                       "fr": "Anneau / piste de cyclisme",
-                      "en": "Anneau / piste de cyclisme"
+                      "en": "Cycling track"
                     }
                   },
                   {
                     "id": "aire-mixte-decollage-et-atterissage",
                     "value": "Aire mixte (décollage et atterissage)",
                     "label": {
-                      "fr": "Aire mixte (décollage et atterissage)",
-                      "en": "Aire mixte (décollage et atterissage)"
+                      "fr": "Aire mixte (décollage et atterrissage)",
+                      "en": "Mixed area (take-off and landing)"
                     }
                   },
                   {
@@ -804,7 +804,7 @@
                     "value": "Terrain de soccer",
                     "label": {
                       "fr": "Terrain de soccer",
-                      "en": "Terrain de soccer"
+                      "en": "Soccer pitch"
                     }
                   },
                   {
@@ -812,7 +812,7 @@
                     "value": "Piste de kart",
                     "label": {
                       "fr": "Piste de kart",
-                      "en": "Piste de kart"
+                      "en": "Karting track"
                     }
                   },
                   {
@@ -820,7 +820,7 @@
                     "value": "Bassin ludique de natation",
                     "label": {
                       "fr": "Bassin ludique de natation",
-                      "en": "Bassin ludique de natation"
+                      "en": "Leisure swimming pool"
                     }
                   },
                   {
@@ -828,7 +828,7 @@
                     "value": "Terrain mixte",
                     "label": {
                       "fr": "Terrain mixte",
-                      "en": "Terrain mixte"
+                      "en": "Mixed-use field"
                     }
                   },
                   {
@@ -836,7 +836,7 @@
                     "value": "Salle de cours collectifs",
                     "label": {
                       "fr": "Salle de cours collectifs",
-                      "en": "Salle de cours collectifs"
+                      "en": "Group fitness room"
                     }
                   },
                   {
@@ -844,7 +844,7 @@
                     "value": "Aire de décollage",
                     "label": {
                       "fr": "Aire de décollage",
-                      "en": "Aire de décollage"
+                      "en": "Take-off area"
                     }
                   },
                   {
@@ -852,7 +852,7 @@
                     "value": "Salle d'escrime",
                     "label": {
                       "fr": "Salle d'escrime",
-                      "en": "Salle d'escrime"
+                      "en": "Fencing hall"
                     }
                   },
                   {
@@ -860,7 +860,7 @@
                     "value": "Site d'escalade en falaise",
                     "label": {
                       "fr": "Site d'escalade en falaise",
-                      "en": "Site d'escalade en falaise"
+                      "en": "Cliff climbing site"
                     }
                   },
                   {
@@ -868,7 +868,7 @@
                     "value": "Piste de descente",
                     "label": {
                       "fr": "Piste de descente",
-                      "en": "Piste de descente"
+                      "en": "Downhill track"
                     }
                   },
                   {
@@ -876,7 +876,7 @@
                     "value": "Site de blocs d'escalade",
                     "label": {
                       "fr": "Site de blocs d'escalade",
-                      "en": "Site de blocs d'escalade"
+                      "en": "Bouldering site"
                     }
                   },
                   {
@@ -884,7 +884,7 @@
                     "value": "Parcours Acrobatique en Hauteur/Site d'accrobranche",
                     "label": {
                       "fr": "Parcours Acrobatique en Hauteur/Site d'accrobranche",
-                      "en": "Parcours Acrobatique en Hauteur/Site d'accrobranche"
+                      "en": "High ropes / tree-climbing course"
                     }
                   },
                   {
@@ -892,7 +892,7 @@
                     "value": "Pumptrack",
                     "label": {
                       "fr": "Pumptrack",
-                      "en": "Pumptrack"
+                      "en": "Pump track"
                     }
                   },
                   {
@@ -900,7 +900,7 @@
                     "value": "Terrain de basket-ball 3x3",
                     "label": {
                       "fr": "Terrain de basket-ball 3x3",
-                      "en": "Terrain de basket-ball 3x3"
+                      "en": "3x3 basketball court"
                     }
                   },
                   {
@@ -908,7 +908,7 @@
                     "value": "Piste d’aérodrome / d'aéroport",
                     "label": {
                       "fr": "Piste d’aérodrome / d'aéroport",
-                      "en": "Piste d’aérodrome / d'aéroport"
+                      "en": "Aerodrome / airport runway"
                     }
                   },
                   {
@@ -916,7 +916,7 @@
                     "value": "Salle ou terrain de paintball",
                     "label": {
                       "fr": "Salle ou terrain de paintball",
-                      "en": "Salle ou terrain de paintball"
+                      "en": "Paintball hall or field"
                     }
                   },
                   {
@@ -924,7 +924,7 @@
                     "value": "Baignade aménagée",
                     "label": {
                       "fr": "Baignade aménagée",
-                      "en": "Baignade aménagée"
+                      "en": "Designated bathing area"
                     }
                   },
                   {
@@ -932,7 +932,7 @@
                     "value": "Pas de tir à l'arc",
                     "label": {
                       "fr": "Pas de tir à l'arc",
-                      "en": "Pas de tir à l'arc"
+                      "en": "Archery range"
                     }
                   },
                   {
@@ -940,7 +940,7 @@
                     "value": "Piste de bicross",
                     "label": {
                       "fr": "Piste de bicross",
-                      "en": "Piste de bicross"
+                      "en": "BMX track"
                     }
                   },
                   {
@@ -948,7 +948,7 @@
                     "value": "Aire de fitness/street workout",
                     "label": {
                       "fr": "Aire de fitness/street workout",
-                      "en": "Aire de fitness/street workout"
+                      "en": "Fitness / street workout area"
                     }
                   },
                   {
@@ -956,7 +956,7 @@
                     "value": "Site de modélisme automobile",
                     "label": {
                       "fr": "Site de modélisme automobile",
-                      "en": "Site de modélisme automobile"
+                      "en": "Model car racing site"
                     }
                   },
                   {
@@ -964,7 +964,7 @@
                     "value": "Parcours de cross",
                     "label": {
                       "fr": "Parcours de cross",
-                      "en": "Parcours de cross"
+                      "en": "Cross-country course"
                     }
                   },
                   {
@@ -972,7 +972,7 @@
                     "value": "Circuit de motocross",
                     "label": {
                       "fr": "Circuit de motocross",
-                      "en": "Circuit de motocross"
+                      "en": "Motocross circuit"
                     }
                   },
                   {
@@ -988,7 +988,7 @@
                     "value": "Salle de tennis de table",
                     "label": {
                       "fr": "Salle de tennis de table",
-                      "en": "Salle de tennis de table"
+                      "en": "Table tennis hall"
                     }
                   },
                   {
@@ -996,7 +996,7 @@
                     "value": "Terrain de volley-ball",
                     "label": {
                       "fr": "Terrain de volley-ball",
-                      "en": "Terrain de volley-ball"
+                      "en": "Volleyball court"
                     }
                   },
                   {
@@ -1004,7 +1004,7 @@
                     "value": "Terrain de foot 5x5",
                     "label": {
                       "fr": "Terrain de foot 5x5",
-                      "en": "Terrain de foot 5x5"
+                      "en": "5-a-side football pitch"
                     }
                   },
                   {
@@ -1012,7 +1012,7 @@
                     "value": "Terrain de futsal extérieur",
                     "label": {
                       "fr": "Terrain de futsal extérieur",
-                      "en": "Terrain de futsal extérieur"
+                      "en": "Outdoor futsal pitch"
                     }
                   },
                   {
@@ -1020,7 +1020,7 @@
                     "value": "Salle de blocs artificiels d'escalade",
                     "label": {
                       "fr": "Salle de blocs artificiels d'escalade",
-                      "en": "Salle de blocs artificiels d'escalade"
+                      "en": "Indoor bouldering gym"
                     }
                   },
                   {
@@ -1028,7 +1028,7 @@
                     "value": "Piste d'athlétisme 2 à 4 couloirs",
                     "label": {
                       "fr": "Piste d'athlétisme 2 à 4 couloirs",
-                      "en": "Piste d'athlétisme 2 à 4 couloirs"
+                      "en": "Athletics track (2–4 lanes)"
                     }
                   },
                   {
@@ -1036,7 +1036,7 @@
                     "value": "Aire de lancer",
                     "label": {
                       "fr": "Aire de lancer",
-                      "en": "Aire de lancer"
+                      "en": "Throwing area"
                     }
                   },
                   {
@@ -1044,7 +1044,7 @@
                     "value": "Practice",
                     "label": {
                       "fr": "Practice",
-                      "en": "Practice"
+                      "en": "Driving range"
                     }
                   },
                   {
@@ -1052,7 +1052,7 @@
                     "value": "Bassin de réception de toboggan",
                     "label": {
                       "fr": "Bassin de réception de toboggan",
-                      "en": "Bassin de réception de toboggan"
+                      "en": "Water slide splash pool"
                     }
                   },
                   {
@@ -1060,7 +1060,7 @@
                     "value": "Point d'embarquement et de débarquement isolé",
                     "label": {
                       "fr": "Point d'embarquement et de débarquement isolé",
-                      "en": "Point d'embarquement et de débarquement isolé"
+                      "en": "Stand-alone boarding/landing point"
                     }
                   },
                   {
@@ -1068,7 +1068,7 @@
                     "value": "Mur ou fronton mixte",
                     "label": {
                       "fr": "Mur ou fronton mixte",
-                      "en": "Mur ou fronton mixte"
+                      "en": "Mixed wall or fronton"
                     }
                   },
                   {
@@ -1076,7 +1076,7 @@
                     "value": "Mur de tennis",
                     "label": {
                       "fr": "Mur de tennis",
-                      "en": "Mur de tennis"
+                      "en": "Tennis practice wall"
                     }
                   },
                   {
@@ -1084,7 +1084,7 @@
                     "value": "Terrain de beach-volley",
                     "label": {
                       "fr": "Terrain de beach-volley",
-                      "en": "Terrain de beach-volley"
+                      "en": "Beach volleyball court"
                     }
                   },
                   {
@@ -1092,7 +1092,7 @@
                     "value": "Terrain de beach soccer",
                     "label": {
                       "fr": "Terrain de beach soccer",
-                      "en": "Terrain de beach soccer"
+                      "en": "Beach soccer pitch"
                     }
                   },
                   {
@@ -1100,7 +1100,7 @@
                     "value": "Salle de volley-ball",
                     "label": {
                       "fr": "Salle de volley-ball",
-                      "en": "Salle de volley-ball"
+                      "en": "Volleyball hall"
                     }
                   },
                   {
@@ -1108,7 +1108,7 @@
                     "value": "Salle de gymnastique sportive",
                     "label": {
                       "fr": "Salle de gymnastique sportive",
-                      "en": "Salle de gymnastique sportive"
+                      "en": "Artistic gymnastics hall"
                     }
                   },
                   {
@@ -1116,7 +1116,7 @@
                     "value": "Parcours 9 trous",
                     "label": {
                       "fr": "Parcours 9 trous",
-                      "en": "Parcours 9 trous"
+                      "en": "9-hole golf course"
                     }
                   },
                   {
@@ -1124,7 +1124,7 @@
                     "value": "Salle de culturisme",
                     "label": {
                       "fr": "Salle de culturisme",
-                      "en": "Salle de culturisme"
+                      "en": "Bodybuilding gym"
                     }
                   },
                   {
@@ -1132,7 +1132,7 @@
                     "value": "Vélodrome",
                     "label": {
                       "fr": "Vélodrome",
-                      "en": "Vélodrome"
+                      "en": "Velodrome"
                     }
                   },
                   {
@@ -1140,7 +1140,7 @@
                     "value": "Stade de ski nautique",
                     "label": {
                       "fr": "Stade de ski nautique",
-                      "en": "Stade de ski nautique"
+                      "en": "Water-skiing stadium"
                     }
                   },
                   {
@@ -1148,7 +1148,7 @@
                     "value": "Parcours d'initiation",
                     "label": {
                       "fr": "Parcours d'initiation",
-                      "en": "Parcours d'initiation"
+                      "en": "Beginners' course"
                     }
                   },
                   {
@@ -1156,7 +1156,7 @@
                     "value": "Parcours 18 trous",
                     "label": {
                       "fr": "Parcours 18 trous",
-                      "en": "Parcours 18 trous"
+                      "en": "18-hole golf course"
                     }
                   },
                   {
@@ -1164,7 +1164,7 @@
                     "value": "Terrain de rugby",
                     "label": {
                       "fr": "Terrain de rugby",
-                      "en": "Terrain de rugby"
+                      "en": "Rugby pitch"
                     }
                   },
                   {
@@ -1172,7 +1172,7 @@
                     "value": "Autres équipements divers",
                     "label": {
                       "fr": "Autres équipements divers",
-                      "en": "Autres équipements divers"
+                      "en": "Other miscellaneous facilities"
                     }
                   },
                   {
@@ -1180,7 +1180,7 @@
                     "value": "Stade d’eau vive",
                     "label": {
                       "fr": "Stade d’eau vive",
-                      "en": "Stade d’eau vive"
+                      "en": "Whitewater stadium"
                     }
                   },
                   {
@@ -1188,7 +1188,7 @@
                     "value": "Carrière de dressage/rond de longe",
                     "label": {
                       "fr": "Carrière de dressage/rond de longe",
-                      "en": "Carrière de dressage/rond de longe"
+                      "en": "Dressage arena / lunging ring"
                     }
                   },
                   {
@@ -1196,7 +1196,7 @@
                     "value": "Autres terrains de pratique de tennis",
                     "label": {
                       "fr": "Autres terrains de pratique de tennis",
-                      "en": "Autres terrains de pratique de tennis"
+                      "en": "Other tennis practice courts"
                     }
                   },
                   {
@@ -1204,7 +1204,7 @@
                     "value": "Stade de canoë-kayak de vitesse",
                     "label": {
                       "fr": "Stade de canoë-kayak de vitesse",
-                      "en": "Stade de canoë-kayak de vitesse"
+                      "en": "Sprint canoe-kayak course"
                     }
                   },
                   {
@@ -1212,7 +1212,7 @@
                     "value": "Salle ou terrain de squash",
                     "label": {
                       "fr": "Salle ou terrain de squash",
-                      "en": "Salle ou terrain de squash"
+                      "en": "Squash court"
                     }
                   },
                   {
@@ -1220,7 +1220,7 @@
                     "value": "Salle de basket",
                     "label": {
                       "fr": "Salle de basket",
-                      "en": "Salle de basket"
+                      "en": "Basketball hall"
                     }
                   },
                   {
@@ -1228,7 +1228,7 @@
                     "value": "Bassin d'exercices aquatiques",
                     "label": {
                       "fr": "Bassin d'exercices aquatiques",
-                      "en": "Bassin d'exercices aquatiques"
+                      "en": "Aquatic exercise pool"
                     }
                   },
                   {
@@ -1236,7 +1236,7 @@
                     "value": "Piste de padel",
                     "label": {
                       "fr": "Piste de padel",
-                      "en": "Piste de padel"
+                      "en": "Padel court"
                     }
                   },
                   {
@@ -1244,7 +1244,7 @@
                     "value": "Anneau de Roller",
                     "label": {
                       "fr": "Anneau de Roller",
-                      "en": "Anneau de Roller"
+                      "en": "Roller skating rink"
                     }
                   },
                   {
@@ -1252,7 +1252,7 @@
                     "value": "Structure de tourisme équestre",
                     "label": {
                       "fr": "Structure de tourisme équestre",
-                      "en": "Structure de tourisme équestre"
+                      "en": "Equestrian tourism facility"
                     }
                   },
                   {
@@ -1260,7 +1260,7 @@
                     "value": "Salle ou terrain de badminton",
                     "label": {
                       "fr": "Salle ou terrain de badminton",
-                      "en": "Salle ou terrain de badminton"
+                      "en": "Badminton court"
                     }
                   },
                   {
@@ -1268,7 +1268,7 @@
                     "value": "Salle de trampoline",
                     "label": {
                       "fr": "Salle de trampoline",
-                      "en": "Salle de trampoline"
+                      "en": "Trampoline hall"
                     }
                   },
                   {
@@ -1276,7 +1276,7 @@
                     "value": "Salle de spectacle / Zenith",
                     "label": {
                       "fr": "Salle de spectacle / Zenith",
-                      "en": "Salle de spectacle / Zenith"
+                      "en": "Concert hall / arena"
                     }
                   },
                   {
@@ -1284,7 +1284,7 @@
                     "value": "Manège",
                     "label": {
                       "fr": "Manège",
-                      "en": "Manège"
+                      "en": "Indoor riding arena"
                     }
                   },
                   {
@@ -1292,7 +1292,7 @@
                     "value": "Salle de lutte",
                     "label": {
                       "fr": "Salle de lutte",
-                      "en": "Salle de lutte"
+                      "en": "Wrestling hall"
                     }
                   },
                   {
@@ -1300,7 +1300,7 @@
                     "value": "Salle d'haltérophilie",
                     "label": {
                       "fr": "Salle d'haltérophilie",
-                      "en": "Salle d'haltérophilie"
+                      "en": "Weightlifting hall"
                     }
                   },
                   {
@@ -1308,7 +1308,7 @@
                     "value": "Circuit de vitesse",
                     "label": {
                       "fr": "Circuit de vitesse",
-                      "en": "Circuit de vitesse"
+                      "en": "Racing circuit"
                     }
                   },
                   {
@@ -1316,7 +1316,7 @@
                     "value": "Salle de patinage sur roulette",
                     "label": {
                       "fr": "Salle de patinage sur roulette",
-                      "en": "Salle de patinage sur roulette"
+                      "en": "Roller skating hall"
                     }
                   },
                   {
@@ -1324,7 +1324,7 @@
                     "value": "Bowling",
                     "label": {
                       "fr": "Bowling",
-                      "en": "Bowling"
+                      "en": "Bowling alley"
                     }
                   },
                   {
@@ -1332,7 +1332,7 @@
                     "value": "Terrain de trial",
                     "label": {
                       "fr": "Terrain de trial",
-                      "en": "Terrain de trial"
+                      "en": "Motorcycle trials ground"
                     }
                   },
                   {
@@ -1340,7 +1340,7 @@
                     "value": "Piste ULM",
                     "label": {
                       "fr": "Piste ULM",
-                      "en": "Piste ULM"
+                      "en": "Microlight airstrip"
                     }
                   },
                   {
@@ -1348,7 +1348,7 @@
                     "value": "Pas de tir aux plateaux",
                     "label": {
                       "fr": "Pas de tir aux plateaux",
-                      "en": "Pas de tir aux plateaux"
+                      "en": "Clay pigeon shooting range"
                     }
                   },
                   {
@@ -1356,7 +1356,7 @@
                     "value": "Parkour/blocpark",
                     "label": {
                       "fr": "Parkour/blocpark",
-                      "en": "Parkour/blocpark"
+                      "en": "Parkour / block park"
                     }
                   },
                   {
@@ -1364,7 +1364,7 @@
                     "value": "Piste de course sur le plat",
                     "label": {
                       "fr": "Piste de course sur le plat",
-                      "en": "Piste de course sur le plat"
+                      "en": "Flat racing track"
                     }
                   },
                   {
@@ -1372,7 +1372,7 @@
                     "value": "Salle de beach-volley",
                     "label": {
                       "fr": "Salle de beach-volley",
-                      "en": "Salle de beach-volley"
+                      "en": "Indoor beach volleyball hall"
                     }
                   },
                   {
@@ -1380,7 +1380,7 @@
                     "value": "Terrain de hockey sur gazon",
                     "label": {
                       "fr": "Terrain de hockey sur gazon",
-                      "en": "Terrain de hockey sur gazon"
+                      "en": "Field hockey pitch"
                     }
                   }
                 ]
@@ -1388,7 +1388,7 @@
               {
                 "id": "poi-amenities",
                 "label": {
-                  "fr": "Amenagements",
+                  "fr": "Aménagements",
                   "en": "Amenities"
                 },
                 "field": "amenity",
@@ -1400,7 +1400,7 @@
                     "field": "inst_acc_handi_bool",
                     "icon": "accessibility",
                     "label": {
-                      "fr": "Acces PMR",
+                      "fr": "Accès PMR",
                       "en": "Accessibility"
                     }
                   },
@@ -1575,7 +1575,7 @@
                     "value": "famille(s)",
                     "label": {
                       "fr": "Famille",
-                      "en": "Familie"
+                      "en": "Families"
                     }
                   },
                   {
@@ -1880,7 +1880,7 @@
                 ],
                 "label": {
                   "fr": "Commune",
-                  "en": "Commune"
+                  "en": "Municipality"
                 }
               },
               "epci": {
@@ -1940,7 +1940,7 @@
                 "kind": "number",
                 "label": {
                   "fr": "Surface",
-                  "en": "Surface"
+                  "en": "Area"
                 }
               },
               "pmr": {
@@ -1955,7 +1955,7 @@
                 "kind": "anyTrue",
                 "label": {
                   "fr": "PMR",
-                  "en": "PMR"
+                  "en": "Reduced mobility"
                 }
               },
               "pshs": {
@@ -1970,7 +1970,7 @@
                 "kind": "anyTrue",
                 "label": {
                   "fr": "PSHS",
-                  "en": "PSHS"
+                  "en": "Sensory disability"
                 }
               },
               "handi": {
@@ -2042,7 +2042,7 @@
                 "dimension": "commune",
                 "label": {
                   "fr": "Communes",
-                  "en": "Communes"
+                  "en": "Municipalities"
                 },
                 "icon": "map-pin",
                 "accent": "accent"
@@ -2554,8 +2554,8 @@
         "en": "Sign in"
       },
       "subtitle": {
-        "fr": "Accédez au réseau des passionné·es de la mer",
-        "en": "Access the network for ocean enthusiasts"
+        "fr": "Accédez au réseau des équipements sportifs de La Réunion",
+        "en": "Access Réunion's sports facilities network"
       }
     }
   },
