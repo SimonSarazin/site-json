@@ -7,6 +7,7 @@
 //               et d'autocomplétion dans VS Code.
 // ------------------------------------------------------------
 import { SearchProSectionSchema, SearchProStaticSectionSchema, CardCountCTSectionSchema, ThematicsSectionSchema, FiltersSectionSchema, SearchVariantSchema, SearchBaseParamsSchema, FilterGroupsSchema, FiltersByAnswersSchema, SearchHeaderSectionSchema } from "@/modules/search/schema";
+import { ObservatoryES974SectionSchema } from "@/modules/observatoire/schema";
 import { NewsSectionSchema } from "@/modules/news/schema";
 import { NotificationsSectionSchema } from "@/modules/notification/schema";
 import { JsonFormModalConfigSchema } from "./form-modal-schema";
@@ -543,6 +544,23 @@ const MeeteemSectionSchema = z.object({
 
 export type MeeteemSection = z.infer<typeof MeeteemSectionSchema>;
 export type MeeteemSectionProps = z.infer<typeof MeeteemSectionSchema>["props"];
+
+//──────────────── Site List
+const SiteListSectionSchema = z.object({
+  type: z.literal("siteList"),
+  id: z.string().optional(),
+  props: z.object({
+    sites: z.array(z.object({
+      slug: z.string(),
+      title: z.string(),
+      description: z.string().optional(),
+      logo: z.string().optional(),
+    })),
+  }),
+});
+
+export type SiteListSection = z.infer<typeof SiteListSectionSchema>;
+export type SiteListSectionProps = z.infer<typeof SiteListSectionSchema>["props"];
 
 //──────────────── Actions Commune Transparente
 const CommuneTransparenteActionButtonSchema = z.object({
@@ -1418,6 +1436,8 @@ export const Section = z.discriminatedUnion("type", [
   FinanceSummarySectionSchema,
   CagnotteLayoutSectionSchema,
   CoFormSectionSchema,
+  ObservatoryES974SectionSchema,
+  SiteListSectionSchema,
 ]);
 export type Section = z.infer<typeof Section>;
 
