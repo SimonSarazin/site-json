@@ -151,11 +151,12 @@ function MultiField({ label, value, onChange, options, allLabel, noResult, singl
         placeholder={allLabel}
         hidePlaceholderWhenSelected
         emptyIndicator={<p className="text-center text-sm text-muted-foreground">{noResult}</p>}
-        // min-h-8 + py-1 (racine et input) : aligne la hauteur sur les autres
-        // champs (Select/dropdown h-8) — les défauts du composant (min-h-10,
-        // py-2) le faisaient dépasser.
-        className="min-h-8 py-1"
-        inputProps={{ className: "py-1" }}
+        // Hauteur EXACTE de 32px (h-8, comme Select/dropdown) quel que soit
+        // l'état : padding racine/input neutralisés (ils s'empilaient → 38px),
+        // le wrap interne est centré à 30px (+2px de bordure). Avec plusieurs
+        // lignes de badges, min-h laisse grandir.
+        className="min-h-8 px-3 py-0 [&>div]:min-h-[30px] [&>div]:items-center"
+        inputProps={{ className: "px-0 py-0" }}
       />
     </div>
   );
