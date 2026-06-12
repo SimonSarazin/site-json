@@ -1986,13 +1986,27 @@
               }
             },
             "filters": [
-              "commune",
-              "type",
-              "epci",
+              {
+                "dimension": "commune",
+                "multiple": true,
+                "searchable": true
+              },
+              {
+                "dimension": "type",
+                "multiple": true
+              },
+              {
+                "dimension": "epci",
+                "searchable": true
+              },
               "nature",
               "pmr",
               "prop",
-              "aps"
+              {
+                "dimension": "aps",
+                "multiple": true,
+                "searchable": true
+              }
             ],
             "search": {
               "dimensions": [

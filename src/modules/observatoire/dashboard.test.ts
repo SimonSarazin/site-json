@@ -53,6 +53,13 @@ describe("applyFilters", () => {
     expect(applyFilters(items, { ville: "" }, DIMS)).toHaveLength(3);
     expect(applyFilters(items, { inconnue: "x" }, DIMS)).toHaveLength(3);
   });
+
+  it("MULTI (valeurs jointes par virgule — format URL maison) : OU dans la dimension", () => {
+    expect(applyFilters(items, { ville: "Cilaos,Saint-Denis" }, DIMS)).toHaveLength(3);
+    expect(applyFilters(items, { type: "Salle,Terrain" }, DIMS)).toHaveLength(3);
+    expect(applyFilters(items, { sports: "Karaté,Football" }, DIMS)).toHaveLength(2); // list : intersection
+    expect(applyFilters(items, { ville: "Cilaos,Saint-Denis", sports: "Football" }, DIMS)).toHaveLength(1); // ET entre dims
+  });
 });
 
 /* ── Recherche texte ─────────────────────────────────────────────────────── */

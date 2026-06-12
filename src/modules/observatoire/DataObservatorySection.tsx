@@ -1,7 +1,7 @@
 import "./i18n";
 import { useMemo } from "react";
 import { useT } from "@/hooks/useT";
-import type { DataObservatorySectionProps } from "./schema";
+import type { DataObservatorySectionProps, FilterDef } from "./schema";
 import { KpiCards } from "./components/KpiCards";
 import { Filters } from "./components/Filters";
 import { ObservatoryCharts } from "./components/Charts";
@@ -37,7 +37,15 @@ export default function DataObservatorySection({
       "[observatoire] props.dimensions absent de la config — le dashboard n'a rien à afficher (déclarer les dimensions du dataset)",
     );
   }
-  const filterIds = props.filters ?? [];
+  // Filtres : forme courte (id) ou riche ({dimension, multiple, searchable}).
+  const filterDefs = useMemo<FilterDef[]>(
+    () =>
+      (props.filters ?? []).map((f) =>
+        typeof f === "string" ? { dimension: f } : f,
+      ),
+    [props.filters],
+  );
+  const filterIds = useMemo(() => filterDefs.map((f) => f.dimension), [filterDefs]);
   const kpis = props.kpis ?? [];
   const charts = props.charts ?? [];
 
@@ -115,11 +123,11 @@ export default function DataObservatorySection({
           </div>
         ) : (
           <>
-            {(filterIds.length > 0 || props.search) && (
+            {(filterDefs.length > 0 || props.search) && (
               <Filters
                 data={items}
                 dimensions={dimensions}
-                filterIds={filterIds}
+                filterDefs={filterDefs}
                 values={filters}
                 onChange={setFilters}
                 search={

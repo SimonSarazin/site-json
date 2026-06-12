@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { Filter, RotateCcw, Search, SlidersHorizontal } from "lucide-react";
+import { ChevronDown, Filter, RotateCcw, Search, SlidersHorizontal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import MultipleSelector from "@/components/ui/multiple-selector";
+import {
   Sheet,
   SheetClose,
   SheetContent,
@@ -23,7 +32,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useT } from "@/hooks/useT";
-import type { DimensionDef, DimensionsConfig, ObservatoryItem, FilterValues } from "../schema";
+import type { DimensionDef, DimensionsConfig, FilterDef, ObservatoryItem, FilterValues } from "../schema";
 import {
   BOOL_FILTER_VALUES,
   dimensionList,
@@ -68,6 +77,79 @@ function SelectField({ label, value, onChange, options, allLabel }: SelectFieldP
   );
 }
 
+/** Multi SANS recherche : DropdownMenu + cases à cocher — le pattern du
+ *  searchHeader de la page equipements (listes courtes). */
+function MultiCheckboxField({ label, value, onChange, options, allLabel, selectedCountLabel }: SelectFieldProps & { selectedCountLabel: (n: number) => string }) {
+  const selected = value.split(",").map((v) => v.trim()).filter(Boolean);
+  const triggerLabel =
+    selected.length === 0
+      ? allLabel
+      : selected.length === 1
+        ? (options.find((o) => o.id === selected[0])?.label ?? selected[0])
+        : selectedCountLabel(selected.length);
+  const toggle = (id: string) => {
+    const next = selected.includes(id)
+      ? selected.filter((v) => v !== id)
+      : [...selected, id];
+    onChange(next.join(","));
+  };
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" size="sm" className="h-8 w-full justify-between font-normal">
+            <span className="truncate">{triggerLabel}</span>
+            <ChevronDown className="ml-1 h-3.5 w-3.5 shrink-0 opacity-50" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="max-h-72 w-(--radix-dropdown-menu-trigger-width) min-w-48 overflow-y-auto">
+          <DropdownMenuItem onClick={() => onChange("")}>{allLabel}</DropdownMenuItem>
+          {options.length > 0 && <DropdownMenuSeparator />}
+          {options.map((o) => (
+            <DropdownMenuCheckboxItem
+              key={o.id}
+              checked={selected.includes(o.id)}
+              onCheckedChange={() => toggle(o.id)}
+              onSelect={(e) => e.preventDefault()}
+            >
+              {o.label}
+            </DropdownMenuCheckboxItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+}
+
+/** Sélection avec RECHERCHE (cmdk intégré + badges) — valeur RHF jointe par
+ *  virgule (format URL maison). `single` : le nouveau choix REMPLACE le
+ *  précédent (sélection unique avec recherche). */
+function MultiField({ label, value, onChange, options, allLabel, noResult, single }: SelectFieldProps & { noResult: string; single?: boolean }) {
+  const selected = value
+    .split(",")
+    .map((v) => v.trim())
+    .filter(Boolean)
+    .map((v) => ({ value: v, label: v }));
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
+      <MultipleSelector
+        value={selected}
+        onChange={(opts) => {
+          const kept = single ? opts.slice(-1) : opts;
+          onChange(kept.map((o) => o.value).join(","));
+        }}
+        options={options.map((o) => ({ value: o.id, label: o.label }))}
+        placeholder={allLabel}
+        hidePlaceholderWhenSelected
+        emptyIndicator={<p className="text-center text-sm text-muted-foreground">{noResult}</p>}
+        className="min-h-8"
+      />
+    </div>
+  );
+}
+
 interface FiltersSearchProps {
   q: string;
   setQ: (v: string) => void;
@@ -79,8 +161,8 @@ interface FiltersProps {
   data: ObservatoryItem[];
   /** Dimensions déclarées par la config de section. */
   dimensions: DimensionsConfig;
-  /** Ids des dimensions filtrables, dans l'ordre d'affichage. */
-  filterIds: readonly string[];
+  /** Filtres déclarés (id simple ou {dimension, multiple, searchable}). */
+  filterDefs: readonly FilterDef[];
   /** Valeurs initiales (restauration depuis l'URL — permaliens). */
   values: FilterValues;
   onChange: (v: FilterValues) => void;
@@ -98,22 +180,22 @@ interface FiltersProps {
  * même pattern que le `searchHeader` du module search. La recherche texte
  * (optionnelle) reste visible sur tous les écrans.
  */
-export function Filters({ data, dimensions, filterIds, values, onChange, search }: FiltersProps) {
+export function Filters({ data, dimensions, filterDefs, values, onChange, search }: FiltersProps) {
   const t = useT("modules/observatoire");
   const [sheetOpen, setSheetOpen] = useState(false);
 
   // Les filtres déclarés mais sans dimension connue sont ignorés (warn DEV).
   const fields = useMemo(() => {
-    const out: Array<{ id: string; def: DimensionDef }> = [];
-    for (const id of filterIds) {
-      const def = dimensions[id];
-      if (def) out.push({ id, def });
+    const out: Array<{ id: string; def: DimensionDef; filter: FilterDef }> = [];
+    for (const filter of filterDefs) {
+      const def = dimensions[filter.dimension];
+      if (def) out.push({ id: filter.dimension, def, filter });
       else if (import.meta.env.DEV) {
-        console.warn(`[observatoire] filtre "${id}" sans dimension déclarée — ignoré`);
+        console.warn(`[observatoire] filtre "${filter.dimension}" sans dimension déclarée — ignoré`);
       }
     }
     return out;
-  }, [filterIds, dimensions]);
+  }, [filterDefs, dimensions]);
 
   const { control, watch, reset } = useForm<FilterValues>({
     defaultValues: Object.fromEntries(
@@ -163,22 +245,46 @@ export function Filters({ data, dimensions, filterIds, values, onChange, search 
 
   // Rendu d'un filtre — partagé entre la grille desktop et la Sheet mobile
   // (mêmes Controllers / même `control` : les deux restent synchronisés).
-  const renderField = (field: { id: string; def: DimensionDef }) => (
-    <Controller
-      key={field.id}
-      name={field.id}
-      control={control}
-      render={({ field: rhf }) => (
-        <SelectField
-          label={labelFor(field)}
-          value={rhf.value ?? ""}
-          onChange={rhf.onChange}
-          options={optionsById[field.id] ?? []}
-          allLabel={t("filters.all")}
-        />
-      )}
-    />
-  );
+  // Dispatch (matrice multiple × searchable) :
+  //   multiple+searchable → MultipleSelector · multiple seul → DropdownMenu
+  //   checkboxes (pattern equipements) · searchable seul → MultipleSelector
+  //   limité à 1 (le choix remplace) · sinon Select simple.
+  // Les dimensions anyTrue (oui/non) restent toujours en Select simple.
+  const renderField = (field: { id: string; def: DimensionDef; filter: FilterDef }) => {
+    const isBool = field.def.kind === "anyTrue";
+    const common = {
+      label: labelFor(field),
+      options: optionsById[field.id] ?? [],
+      allLabel: t("filters.all"),
+    };
+    return (
+      <Controller
+        key={field.id}
+        name={field.id}
+        control={control}
+        render={({ field: rhf }) =>
+          !isBool && field.filter.searchable ? (
+            <MultiField
+              {...common}
+              value={rhf.value ?? ""}
+              onChange={rhf.onChange}
+              noResult={t("filters.noResult")}
+              single={!field.filter.multiple}
+            />
+          ) : !isBool && field.filter.multiple ? (
+            <MultiCheckboxField
+              {...common}
+              value={rhf.value ?? ""}
+              onChange={rhf.onChange}
+              selectedCountLabel={(n) => t("filters.selectedCount", undefined, { count: n })}
+            />
+          ) : (
+            <SelectField {...common} value={rhf.value ?? ""} onChange={rhf.onChange} />
+          )
+        }
+      />
+    );
+  };
 
   return (
     <Card className="gap-0 rounded-2xl border-border/50 py-5">

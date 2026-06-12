@@ -9,6 +9,8 @@
     "reset": "Reset",
     "search": "Search…",
     "showResults": "Show results",
+    "noResult": "No result.",
+    "selectedCount": "{{count}} selected",
     "all": "All",
     "yes": "Yes",
     "no": "No"

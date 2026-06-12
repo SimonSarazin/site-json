@@ -9,6 +9,8 @@
     "reset": "Réinitialiser",
     "search": "Rechercher…",
     "showResults": "Voir les résultats",
+    "noResult": "Aucun résultat.",
+    "selectedCount": "{{count}} sélectionnés",
     "all": "Tous",
     "yes": "Oui",
     "no": "Non"

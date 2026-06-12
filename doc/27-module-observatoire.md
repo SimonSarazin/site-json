@@ -35,7 +35,12 @@ dates EJSON désérialisées en `Date` par le SDK).
       "access":  { "paths": ["acc_a", "acc_b"], "kind": "anyTrue", "label": { "fr": "Accessible" } },
       "surface": { "paths": ["surf"], "kind": "number", "label": { "fr": "Surface" } }
     },
-    "filters": ["ville", "type", "access"],      // ids, ordre d'affichage ; sync URL ?id=valeur
+    "filters": [                                 // ordre d'affichage ; sync URL ?id=valeur (multi : v1,v2)
+      "access",                                  // forme courte → Select simple
+      { "dimension": "type", "multiple": true },              // DropdownMenu + checkboxes (pattern equipements)
+      { "dimension": "ville", "searchable": true },           // recherche, sélection unique (remplace)
+      { "dimension": "sports", "multiple": true, "searchable": true }  // recherche + badges (MultipleSelector)
+    ],
     "search": {                                   // recherche TEXTE optionnelle (présence = activée)
       "dimensions": ["ville", "type"],            // défaut : toutes les dimensions value/list
       "placeholder": { "fr": "Rechercher…" }      // sync URL ?q=…

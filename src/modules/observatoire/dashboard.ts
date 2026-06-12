@@ -53,8 +53,16 @@ export function applyFilters(
       if (def.kind === "anyTrue") {
         return dimensionBool(d, def) === (v === BOOL_FILTER_VALUES.TRUE);
       }
-      if (def.kind === "list") return dimensionList(d, def).includes(v);
-      return dimensionValue(d, def) === v;
+      // Multi-sélection : valeurs jointes par virgule (format URL maison —
+      // une virgule signifie TOUJOURS multi, interdite dans une valeur).
+      // OU entre les valeurs d'une dimension, ET entre dimensions.
+      const selected = v.split(",").map((s) => s.trim()).filter(Boolean);
+      if (def.kind === "list") {
+        const own = dimensionList(d, def);
+        return selected.some((s) => own.includes(s));
+      }
+      const value = dimensionValue(d, def);
+      return value !== undefined && selected.includes(value);
     }),
   );
 }

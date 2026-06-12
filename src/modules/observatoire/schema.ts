@@ -98,6 +98,20 @@ export const TableColumnSchema = z.object({
 });
 export type TableColumnDef = z.infer<typeof TableColumnSchema>;
 
+/** Déclaration d'un filtre (forme riche) — la forme courte est l'id seul. */
+export const FilterDefSchema = z.object({
+  dimension: z.string(),
+  /** Sélection MULTIPLE (badges + recherche intégrée). Valeurs jointes par
+   *  virgule dans l'URL (?id=v1,v2 — format maison des sidebars ; d'où la
+   *  règle « pas de virgule dans une valeur »). Ignoré pour les dimensions
+   *  anyTrue (oui/non). */
+  multiple: z.boolean().optional(),
+  /** Select avec recherche dans les options (combobox) — toujours actif en
+   *  multiple (le composant multi-sélection cherche nativement). */
+  searchable: z.boolean().optional(),
+});
+export type FilterDef = z.infer<typeof FilterDefSchema>;
+
 export const TableDefSchema = z.object({
   columns: z.array(TableColumnSchema).min(1),
   /** Dimension du tri initial (défaut : la 1ʳᵉ colonne). */
@@ -144,10 +158,10 @@ export const DataObservatorySectionSchema = z.object({
     // Déclaration des dimensions du dataset — REQUIS pour qu'un dashboard
     // affiche quelque chose : le code ne porte aucun modèle métier.
     dimensions: DimensionsSchema.optional(),
-    // Ids des dimensions filtrables (ordre = ordre d'affichage). Les valeurs
-    // sélectionnées sont synchronisées dans l'URL (?<id>=<valeur>) —
-    // permaliens, format maison sans virgule.
-    filters: z.array(z.string()).optional(),
+    // Dimensions filtrables (ordre = ordre d'affichage) : id simple OU forme
+    // riche {dimension, multiple, searchable}. Les valeurs sélectionnées sont
+    // synchronisées dans l'URL (?<id>=<valeur> ; multi : ?<id>=v1,v2).
+    filters: z.array(z.union([z.string(), FilterDefSchema])).optional(),
     // Recherche TEXTE optionnelle (présence du bloc = activée) : matching
     // client insensible casse/accents sur les dimensions listées (défaut :
     // toutes les dimensions value/list). Synchronisée dans l'URL (?q=…).
