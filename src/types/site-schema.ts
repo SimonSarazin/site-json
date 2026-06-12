@@ -1686,6 +1686,19 @@ const CRMIntegration = z.object({
   config: z.record(z.string(), z.any()),
 });
 
+/**
+ * Fond de carte des cartes Leaflet (module search) — styles raster MapTiler
+ * par thème. La CLÉ d'API vit en ENVIRONNEMENT (`VITE_MAPTILER_API_KEY`),
+ * jamais dans le config versionné ; sans clé, repli sur les tuiles libres
+ * (OSM / Carto) quel que soit ce bloc.
+ */
+const MapIntegration = z.object({
+  /** Id de style MapTiler en thème clair (ex. "streets-v2", "outdoor-v2", "dataviz"). */
+  styleLight: z.string().default("streets-v2"),
+  /** Id de style MapTiler en thème sombre (ex. "streets-v2-dark", "dataviz-dark"). */
+  styleDark: z.string().default("streets-v2-dark"),
+});
+
 export const Integrations = z.object({
   analytics: AnalyticsIntegration.optional(),
   chat: ChatIntegration.optional(),
@@ -1694,6 +1707,7 @@ export const Integrations = z.object({
   ecommerce: EcommerceIntegration.optional(),
   email: EmailIntegration.optional(),
   crm: CRMIntegration.optional(),
+  map: MapIntegration.optional(),
 });
 export type Integrations = z.infer<typeof Integrations>;
 

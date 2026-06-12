@@ -899,6 +899,19 @@ Colonne latérale :
 
 `loadLeaflet.ts` : import dynamique du bundle Leaflet (déclenché uniquement si `showMap: true`, optimisation bundle).
 
+**Fond de carte** (`lib/mapTiles.ts`) : avec la variable d'environnement
+`VITE_MAPTILER_API_KEY` (jamais dans le config versionné — `.env` en dev,
+injectée dans `window.__ENV__` par le prod-server, passthrough
+docker-compose), la carte utilise les **tuiles raster MapTiler** (512 px →
+`tileSize: 512` + `zoomOffset: -1`), avec un style par thème **configurable
+par site** via `integrations.map` : `styleLight` (déf. `streets-v2`) /
+`styleDark` (déf. `streets-v2-dark`) — ids de styles MapTiler (`outdoor-v2`,
+`dataviz`, `satellite`…). **Sans clé : repli automatique** sur les tuiles
+libres historiques (OSM light / Carto Dark Matter) — aucun site ne casse.
+⚠️ Les `style.json` MapTiler sont des styles vectoriels MapLibre GL,
+inutilisables avec Leaflet : on consomme l'endpoint raster (une migration
+MapLibre est un chantier séparé, au backlog).
+
 ### SearchBubbleChart
 
 Graphique en bulles pour visualiser la distribution des entités par catégorie. Activé via `enableGraph: true`. Rendu via D3 circle-packing (`import * as d3`, `d3.pack`, `<svg>` brut) — aucune dépendance Recharts. Clic sur une bulle → ouvre les détails via `graphDetailsMode`.

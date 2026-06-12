@@ -1,5 +1,5 @@
 import { useTheme } from "next-themes";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useIsMounted } from "@/hooks/useIsMounted";
 
 import { renderMapPopup } from "./renderMapPopup";
@@ -11,6 +11,9 @@ import { SwitchDetailsMode } from "./SwitchDetailsMode";
 import { useSearchProps } from "../hooks/useSearchProps";
 import { cn } from "@/lib/utils";
 import { usePage } from "@/hooks/usePage";
+import { useSite } from "@/hooks/useSite";
+import { getMaptilerApiKey } from "@/lib/constant/common";
+import { resolveTileLayers } from "../lib/mapTiles";
 
 
 export default function SearchMap({ results, card, preview }: SearchMapProps) {
@@ -26,6 +29,12 @@ export default function SearchMap({ results, card, preview }: SearchMapProps) {
   const t = useT("modules/search");
   const { inSection } = useSearchProps();
   const { page } = usePage();
+  const { config } = useSite();
+
+  // Fond de carte : MapTiler (clé env) avec styles configurables par site
+  // (`integrations.map`), sinon repli OSM/Carto — cf. lib/mapTiles.ts.
+  const mapStyles = config.integrations?.map;
+  const tiles = useMemo(() => resolveTileLayers(getMaptilerApiKey(), mapStyles), [mapStyles]);
 
   function isValidGeoPoint(coords: unknown): coords is [number, number] {
     if (!Array.isArray(coords) || coords.length !== 2) return false;
@@ -57,25 +66,9 @@ export default function SearchMap({ results, card, preview }: SearchMapProps) {
         });
         mapInstanceRef.current = map;
 
-        // Calque clair
-        lightLayerRef.current = L.tileLayer(
-          "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-          {
-            attribution: "© OpenStreetMap contributors",
-            maxZoom: 19,
-          }
-        );
-
-        // Calque sombre (Carto Dark Matter)
-        darkLayerRef.current = L.tileLayer(
-          "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-          {
-            attribution:
-              "&copy; <a href=\"https://carto.com/attributions\">CARTO</a> &copy; OpenStreetMap contributors",
-            subdomains: "abcd",
-            maxZoom: 19,
-          }
-        );
+        // Calques clair / sombre (résolus en amont : MapTiler ou repli libre)
+        lightLayerRef.current = L.tileLayer(tiles.light.url, tiles.light.options);
+        darkLayerRef.current = L.tileLayer(tiles.dark.url, tiles.dark.options);
 
         // Ajout initial selon le thème
         if (resolvedTheme === "dark") {
@@ -168,7 +161,7 @@ export default function SearchMap({ results, card, preview }: SearchMapProps) {
         mapInstanceRef.current = null;
       }
     };
-  }, [mounted, results, resolvedTheme, t]);
+  }, [mounted, results, resolvedTheme, t, tiles]);
 
   useEffect(() => {
     if (!mapInstanceRef.current) return;
