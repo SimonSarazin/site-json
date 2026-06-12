@@ -23,7 +23,10 @@
     "audit:config": "node scripts/audit-config.mjs",
     "test:coverage": "vitest run -c vitest.config.unit.ts --coverage",
     "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e",
-    "test:watch": "vitest --watch"
+    "test:watch": "vitest --watch",
+    "config:validate": "tsx scripts/validate-config.ts",
+    "config:schema": "tsx scripts/config-schema.ts",
+    "entity:slug": "tsx scripts/entity-slug.ts"
   },
   "resolutions": {
     "react": "19.2.1",

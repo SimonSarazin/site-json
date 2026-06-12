@@ -28,7 +28,8 @@ commentaire/
 tsconfig.app.tsbuildinfo
 tsconfig.node.tsbuildinfo
 CLAUDE.md
-.claude/
+.claude/*
+!.claude/skills/
 src/modules/profil/TODO.md
 ANALYSE_MODULE_PROFIL.md
 

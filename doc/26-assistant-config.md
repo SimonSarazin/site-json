@@ -12,6 +12,27 @@
 > - Les architectures A (CLI API) et B (onglet AdminPanel) restent documentées
 >   comme évolutions possibles ; l'outillage déterministe (validation, export
 >   de schéma) est conçu pour être **réutilisable par B** plus tard.
+>
+> **État d'avancement** :
+> - ✅ **Phase 0 (outillage)** : `scripts/validate-config.ts` (+ erreurs d'union
+>   enrichies de la valeur reçue), `scripts/config-schema.ts` (sélecteurs
+>   `sections`/`section:<type>`/`header`/`footer`/`theme`/`meta`/`auth`/`page`/
+>   `profiles`/`root`), `scripts/entity-slug.ts` (`search`/`check` sans auth,
+>   testés sur le backend réel ; `create` = point ouvert n°5). Exécution :
+>   `tsx` (résout le TS + alias `@/`) ; alias npm `config:validate` /
+>   `config:schema` / `entity:slug`.
+> - ✅ **Phase 1 (skill + anti-dérive)** : `.claude/skills/config-assistant/SKILL.md`
+>   (workflow, tables semi-stables, recettes modules, règles maison, thème,
+>   protocole de maintenance) + test préflight
+>   `tests/preflight/skill-integrity.test.ts` (croise les tables avec les enums
+>   header/footer, `src/modules/`, l'outillage ; interdit les anciens noms).
+> - Le point ouvert n°6 (sections nommées par site) est **résolu** : découplage
+>   fait (renommage 753369a + dé-hardcoding hero-search f581520 /
+>   hero-entity-banner 01909a9 + variants tonals 953db2e).
+> - Le theming s'est simplifié depuis la rédaction : couleurs dans
+>   `config.theme` (modèle prouvé sur equipements + famille rezo-la-mer,
+>   90b5200) et effets génériques par défaut dans `src/styles/shared.css`
+>   (462026a) — la skill encode ces règles.
 
 ## Objectif
 
