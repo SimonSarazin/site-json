@@ -421,10 +421,20 @@ export function FiltersSection({
             const fieldOptions = [...(group.options ?? [])]
               .sort((a, b) => byLabel(t(a.label), t(b.label)))
               .map((o) => ({ id: o.name || o.id, label: t(o.label) }));
-            const value = (selectedFilters[group.id] || []).join(",");
+            // Valeur affichée = MÊME sémantique qu'isFilterSelected : les
+            // groupes scopeList stockent leur sélection dans searchByFields
+            // (pas selectedFilters) — sans cette union, le trigger resterait
+            // sur « Tous » après sélection.
+            const selectedNames = [...new Set([
+              ...(selectedFilters[group.id] || []),
+              ...(group.options ?? [])
+                .map((o) => o.name || o.id)
+                .filter((n) => Object.keys(searchByFields).includes(n)),
+            ])];
+            const value = selectedNames.join(",");
             const applyCsv = (csv: string) => {
               const next = csv.split(",").map((v) => v.trim()).filter(Boolean);
-              const current = selectedFilters[group.id] || [];
+              const current = selectedNames;
               const changed = [
                 ...next.filter((n) => !current.includes(n)),
                 ...current.filter((c) => !next.includes(c)),
