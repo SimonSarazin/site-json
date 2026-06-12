@@ -15,6 +15,85 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { useSearchParams } from "react-router";
 import { computeFiltersFromUrl } from "../lib/computeFiltersFromUrl";
 
+type ScopeLevel = "cities" | "level1" | "level2" | "level3" | "level4" | "level5";
+type FilterGroupOption = NonNullable<FiltersSectionProps["filterGroups"]>[number]["options"] extends infer T
+  ? T extends Array<infer U>
+    ? U
+    : never
+  : never;
+
+const FRENCH_OVERSEAS_COUNTRY_CODES = new Set([
+  "RE", // Reunion
+  "YT", // Mayotte
+  "GF", // Guyane
+  "GP", // Guadeloupe
+  "MQ", // Martinique
+  "PM", // Saint-Pierre-et-Miquelon
+  "BL", // Saint-Barthelemy
+  "MF", // Saint-Martin
+  "NC", // Nouvelle-Caledonie
+  "PF", // Polynesie francaise
+  "WF", // Wallis-et-Futuna
+  "TF" // Terres australes et antarctiques francaises
+]);
+
+const normalizeCountryCodeForGrouping = (countryCode: string | undefined): string => {
+  if (!countryCode) return "ZZ";
+  const normalized = countryCode.toUpperCase();
+  return FRENCH_OVERSEAS_COUNTRY_CODES.has(normalized) ? "FR" : normalized;
+};
+
+const shouldGroupScopeListByCountry = (levels: string[] | undefined, countryCode: string[] | undefined): boolean => {
+  if (!levels || levels.length === 0) return false;
+  if(!countryCode || countryCode.length === 0 || countryCode.length === 1) return false;
+  return !levels.includes("1");
+};
+
+const getOptionCountryCode = (option: FilterGroupOption): string | undefined => {
+  const raw = (option as { countryCode?: unknown }).countryCode;
+  return typeof raw === "string" ? raw : undefined;
+};
+
+/** Ligne d'option de filtre (checkbox + libellé). Présentationnel, partagé par
+ *  le rendu groupé-par-pays et le rendu simple. */
+function FilterOptionRow({
+  label,
+  selected,
+  onToggle,
+}: {
+  label: string;
+  selected: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <label className="flex items-start gap-2 cursor-pointer group">
+      {/* Checkbox */}
+      <div className="relative flex items-center justify-center mt-0.5">
+        <input
+          type="checkbox"
+          checked={selected}
+          onChange={onToggle}
+          className="w-4 h-4 border-2 border-border rounded cursor-pointer appearance-none checked:bg-primary checked:border-primary transition"
+        />
+        {selected && (
+          <svg
+            className="w-3 h-3 text-primary-foreground absolute pointer-events-none"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+          </svg>
+        )}
+      </div>
+
+      <span className="text-sm text-muted-foreground group-hover:text-foreground flex-1">
+        {label}
+      </span>
+    </label>
+  );
+}
+
 export function FiltersSection({
   id,
   props
@@ -46,6 +125,15 @@ export function FiltersSection({
   // On les merge dans un seul `filterAnswerData` → rendu + sélection communs.
   const filtersByAnswersOptions = filtersByAnswers ?? {};
   const filterAnswerResult = useFiltersByAnswersQuery(`filters-answers-${id}`, filtersByAnswersOptions as Parameters<typeof useFiltersByAnswersQuery>[1]);
+  const countryDisplayNames = useMemo(() => {
+    if (typeof Intl === "undefined" || typeof Intl.DisplayNames === "undefined") {
+      return null;
+    }
+
+    const supportedLocales = Intl.DisplayNames.supportedLocalesOf([currentLocale, "fr", "en"]);
+    const localeToUse = supportedLocales[0] ?? "fr";
+    return new Intl.DisplayNames([localeToUse], { type: "region" });
+  }, [currentLocale]);
 
   const filtersByPathOptions = filtersByPath ?? {};
   const filterByPathResult = useFiltersByPathQuery(`filters-by-path-${id}`, filtersByPathOptions as Parameters<typeof useFiltersByPathQuery>[1]);
@@ -129,31 +217,45 @@ export function FiltersSection({
       if (!group.options) group.options = [];
       if (group.type === "scopeList") {
         group.options = [];
+        const groupByCountry = shouldGroupScopeListByCountry(group.config?.level, group.config?.countryCode);
         // Remplir les options à partir des données de zone
+        // console.log("group by", group.config?.level);
         filterZoneData?.forEach(zone => {
+          // console.log("filterZoneData", group.config, zone.countryCode, group.config?.countryCode?.includes(zone.countryCode as string));
           if (group.config && group.config.level && !zone.level.some(lvl => group.config?.level?.includes(lvl))) {
             return;
           }
-          const data: {
-            id: string;
-            label: Record<string, string>,
-            level: ("cities" | "level1" | "level2" | "level3" | "level4" | "level5")
-          } = {
+          if(group.config?.countryCode && !group.config.countryCode.includes(normalizeCountryCodeForGrouping(zone.countryCode as string | undefined))) {
+            console.log("skip zone", zone.name, "countryCode", zone.countryCode, "normalized", normalizeCountryCodeForGrouping(zone.countryCode as string | undefined), "group config country codes", group.config.countryCode);
+            return;
+          }
+          // Libellés par langue : `zone.name` par défaut, enrichi par les
+          // traductions réelles de la zone si présentes (`zone.translate.translates`).
+          const label: Record<string, string> = {
+            fr: zone.name,
+            en: zone.name,
+            es: zone.name,
+          };
+          if (
+            zone.translate &&
+            typeof zone.translate === "object" &&
+            typeof (zone.translate as Record<string, unknown>).translates === "object"
+          ) {
+            const translates = (zone.translate as Record<string, Record<string, string>>).translates;
+            Object.keys(translates).forEach((lang) => {
+              label[lang.toLowerCase()] = translates[lang];
+            });
+          }
+          const data = {
             id: zone.id as string,
-            label: {
-              "fr": zone.name,
-              "en": zone.name,
-              "es": zone.name
-            },
-            level: (zone.level.length === 1 ? `level${zone.level[0]}` : `level${group.config?.level ? Math.min(...group.config.level.map(lvl => parseInt(lvl, 10))) : zone.level[0]}`) as ("cities" | "level1" | "level2" | "level3" | "level4" | "level5")
-          }
-          if (zone.translate && typeof zone.translate === "object" && typeof (zone.translate as Record<string, unknown>).translates === "object") {
-            Object.keys((zone.translate as Record<string, Record<string, string>>).translates).forEach((lang) => {
-              data.label[lang.toLowerCase()] = (zone.translate as Record<string, Record<string, string>>).translates[lang];
-            })
-          }
-          group.options!.push(data);
+            label,
+            level: (zone.level.length === 1 ? `level${zone.level[0]}` : `level${group.config?.level ? Math.min(...group.config.level.map(lvl => parseInt(lvl, 10))) : zone.level[0]}`) as ScopeLevel,
+            // Keep the source country to allow grouped rendering by country for levels > 1.
+            ...(groupByCountry ? { countryCode: normalizeCountryCodeForGrouping(zone.countryCode as string | undefined) } : {})
+          };
+          group.options?.push(data);
         });
+        // console.log("group options", group.options);
         newFilterGroups.push(group);
       } else if (group.type === "entityList") {
         // Options peuplées dynamiquement depuis la recherche d'entités.
@@ -284,6 +386,24 @@ export function FiltersSection({
           const groupOptionNames = (group.options ?? []).map(o => o.name || o.id);
           const activeCount = getGroupActiveCount(group.id, groupOptionNames);
           const isActive = activeCount > 0;
+          const groupByCountry = group.type === "scopeList" && shouldGroupScopeListByCountry(group.config?.level, group.config?.countryCode);
+          const groupedOptions = groupByCountry
+            ? (group.options ?? []).reduce<Record<string, FilterGroupOption[]>>((acc, option) => {
+                const countryCode = normalizeCountryCodeForGrouping(getOptionCountryCode(option));
+                if (!acc[countryCode]) {
+                  acc[countryCode] = [];
+                }
+                acc[countryCode].push(option);
+                return acc;
+              }, {})
+            : null;
+          const configuredCountryOrder = [...new Set((group.config?.countryCode ?? []).map(normalizeCountryCodeForGrouping))];
+          const remainingCountryCodes = groupedOptions
+            ? Object.keys(groupedOptions).filter(code => !configuredCountryOrder.includes(code)).sort()
+            : [];
+          const countryOrder = groupedOptions
+            ? [...configuredCountryOrder, ...remainingCountryCodes].filter(code => groupedOptions[code]?.length > 0)
+            : [];
           return (
           <div key={group.id} className="border-b border-border last:border-b-0">
             {/* Group Header */}
@@ -314,50 +434,52 @@ export function FiltersSection({
             {/* Group Content */}
             {isGroupOpen(group.id) && (
               <div className="pb-3 px-2 space-y-2">
-                {[...(group.options ?? [])]
+                {groupByCountry && groupedOptions ? (
+                  countryOrder.map(countryCode => {
+                    const countryOptions = groupedOptions[countryCode] ?? [];
+                    const countryLabel = countryDisplayNames?.of(countryCode) ?? countryCode;
+                    return (
+                      <div key={`${group.id}-${countryCode}`} className="space-y-2">
+                        <p className="pt-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground/70">
+                          {countryLabel}
+                        </p>
+                        {countryOptions.sort((a, b) => byLabel(t(a.label), t(b.label))).map((option) => {
+                          const filterName = option.name || option.id;
+                          return (
+                            <FilterOptionRow
+                              key={option.id}
+                              label={t(option.label)}
+                              selected={isFilterSelected(group.id, filterName)}
+                              onToggle={() =>
+                                group.type === "scopeList"
+                                  ? toggleFilter(group.id, filterName, group.field ?? `${option.id}${option.level}`, filterName, option.level as ScopeLevel)
+                                  : toggleFilter(group.id, filterName)
+                              }
+                            />
+                          );
+                        })}
+
+                      </div>
+                    );
+                  })
+                ) : (
+                  [...(group.options ?? [])]
                   .sort((a, b) => byLabel(t(a.label), t(b.label)))
                   .map((option) => {
-                  const filterName = option.name || option.id;
-                  return (
-                    <label
-                      key={option.id}
-                      className="flex items-start gap-2 cursor-pointer group"
-                    >
-                      {/* Checkbox */}
-                      <div className="relative flex items-center justify-center mt-0.5">
-                        <input
-                          type="checkbox"
-                          checked={isFilterSelected(group.id, filterName)}
-                          onChange={() => {
-                            if (group.type === "scopeList") {
-                              toggleFilter(group.id, filterName, group.field ?? `${option.id}${option.level}`, filterName, option.level as "cities" | "level1" | "level2" | "level3" | "level4" | "level5");
-                            } else if (group.type === "entityList") {
-                              const fType = group.filterType ?? "sourceKey";
-                              toggleFilter(group.id, filterName, fType, filterName, null, fType);
-                            } else {
-                              toggleFilter(group.id, filterName);
-                            }
-                          }}
-                          className="w-4 h-4 border-2 border-border rounded cursor-pointer appearance-none checked:bg-primary checked:border-primary transition"
-                        />
-                        {isFilterSelected(group.id, filterName) && (
-                          <svg
-                            className="w-3 h-3 text-primary-foreground absolute pointer-events-none"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                          </svg>
-                        )}
-                      </div>
-
-                      <span className="text-sm text-muted-foreground group-hover:text-foreground flex-1">
-                        {t(option.label)}
-                      </span>
-                    </label>
-                  );
-                })}
+                    const filterName = option.name || option.id;
+                    return (
+                      <FilterOptionRow
+                        key={option.id}
+                        label={t(option.label)}
+                        selected={isFilterSelected(group.id, filterName)}
+                        onToggle={() =>
+                          group.type === "scopeList"
+                            ? toggleFilter(group.id, filterName, group.field ?? `${option.id}${option.level}`, filterName, option.level as ScopeLevel)
+                            : toggleFilter(group.id, filterName)
+                        }
+                      />
+                    );
+                  }))}
               </div>
             )}
           </div>

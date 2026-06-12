@@ -124,6 +124,7 @@ const ListConfSchema = z.object({
     // de carte. Défaut : actif uniquement pour le variant "rezo-la-mer" (rétrocompat).
     showFunding:     z.boolean().optional(),
     detailsMode: z.enum(["drawer", "dialog"]).default("drawer"),
+    detailedMode: z.enum(["default", "tiers-lieux"]).default("default"),
     // Valeurs DESIGN/FONCTIONNALITÉ (jamais de nom de site). `Preview`/détail =
     // axe séparé (`preview.type`/`detailsMode`).
     type: z.enum(["overlay", "default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer"]).default("default"),
