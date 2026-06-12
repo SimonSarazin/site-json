@@ -154,5 +154,20 @@
   "toast.card.starSuccess": "Updated",
   "toast.card.starError": "Could not update favorites",
   "toast.card.activateFundingSuccess": "Funding activated",
-  "toast.card.activateFundingError": "Could not activate funding"
+  "toast.card.activateFundingError": "Could not activate funding",
+  "card.detailed.seeMore": "See more",
+  "card.detailed.addFavorite": "Add to favorites",
+  "card.detailed.removeFavorite": "Remove from favorites",
+  "card.servicePricing.coworkingPlaces": "{{value}} desks",
+  "card.servicePricing.meetingPersons": "{{value}} ppl",
+  "card.servicePricing.accommodationCovers": "{{value}} covers",
+  "card.servicePricing.service.coworking": "Coworking",
+  "card.servicePricing.service.meetingRoom": "Meeting room",
+  "card.servicePricing.service.room": "Room",
+  "card.servicePricing.priceFrom": "From {{price}}",
+  "card.servicePricing.price.hour": "{{price}}€ / hour",
+  "card.servicePricing.price.halfDay": "{{price}}€ / half-day",
+  "card.servicePricing.price.fullDay": "{{price}}€ / day",
+  "card.servicePricing.price.bed": "{{price}}€ per bed in shared room",
+  "card.servicePricing.price.room": "{{price}}€ per private room"
 }

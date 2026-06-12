@@ -180,7 +180,6 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
       lockedFields,
     });
   };
-
   /**
    * Crée une nouvelle réponse (avec finder pre-pop) puis ouvre le CoFormModal.
    */
@@ -791,7 +790,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                                   hourly: Number(hourly) || 0,
                                   halfday: Number(halfday) || 0,
                                   fullday: Number(fullday) || 0,
-                                  images: (images as string[]).map(src => `${getServerUrl()}${src}`),
+                                  images: (typeof images === "string" ? [] : (images as string[]).map(src => `${getServerUrl()}${src}`)),
                                   reserveUrl: linkValue ?? externalLink ?? null,
                                 });
                               }}
@@ -1350,7 +1349,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
             {modalItem?.images && modalItem.images.length > 0 ? (
               <Carousel opts={{ align: "start", loop: modalItem.images.length > 1 }} className="w-full h-full">
                 <CarouselContent className="h-56 ml-0">
-                  {modalItem.images.map((src, idx) => (
+                  {modalItem.images?.map((src, idx) => (
                     <CarouselItem key={idx} className="pl-0 h-56">
                       <img src={src} alt={`${modalItem.name} – ${idx + 1}`} className="w-full h-full object-cover" />
                     </CarouselItem>
@@ -1374,7 +1373,7 @@ export default function ProfileTiersLieuxAbout({ section }: ProfileAboutProps) {
                   ? modalItem.capacity
                   : modalItem?.minPers && modalItem?.maxPers
                     ? `${modalItem.minPers} – ${modalItem.maxPers}`
-                    : (modalItem?.minPers ?? modalItem?.maxPers ?? 0)
+                    : ((modalItem?.minPers || 0) > 0 ? modalItem?.minPers : modalItem?.maxPers ?? 0)
                 }{" "}{t("ProfilTiersLieuxAbout.capacity")}
               </span>
             )}

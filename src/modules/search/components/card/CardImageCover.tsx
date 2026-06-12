@@ -1,15 +1,31 @@
+import { useMemo } from "react";
+import { Monitor, Users, UtensilsCrossed, type LucideIcon } from "lucide-react";
 import { SearchCardProps } from "../../schema";
-import type { SearchEntity } from "@communecter/cocolight-api-client";
+import type { Answer, FormId, SearchEntity } from "@communecter/cocolight-api-client";
 import { cn } from "@/lib/utils";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
+import { useT } from "@/hooks/useT";
 import { getEntityIconName, getEntityColorClasses } from "@/lib/entityIcons";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import {
+  buildServicePricingStats,
+  extractServicePricingAnswers,
+  servicePricingStatLabel,
+  type ServicePricingStatKind,
+} from "../../helpers/servicePricingAnswers";
+
+const STAT_ICONS: Record<ServicePricingStatKind, LucideIcon> = {
+  coworking: Monitor,
+  meeting: Users,
+  accommodation: UtensilsCrossed,
+};
 
 export default function CardImageCover({
   item,
   onClick,
+  card,
 }: SearchCardProps) {
-  
+  const t = useT("modules/search");
   const serverData = item?.serverData;
   const entityType = item?.getEntityType?.() || "";
 
@@ -19,10 +35,25 @@ export default function CardImageCover({
   const location = getLocation(item);
   const avatarIcon = getEntityIconName(entityType);
   const avatarColorClasses = getEntityColorClasses(entityType);
-  const badges = getBadges(item);
+
+  // Coin haut-droit : badges génériques (défaut historique — serverData.badges
+  // ou dérivés des tags) OU pastilles de stats service-pricing quand la config
+  // l'opte (`card.overlayStats: "service-pricing"`).
+  const showServicePricingStats = card?.overlayStats === "service-pricing";
+  const answers = serverData?.answers as Record<FormId, Answer[]> | undefined;
+  const servicePricingPaths = card?.servicePricing;
+  // Vue grille : la capacité seule suffit (`requirePrice: false`).
+  const stats = useMemo(
+    () =>
+      showServicePricingStats
+        ? buildServicePricingStats(extractServicePricingAnswers(answers, servicePricingPaths), { requirePrice: false })
+        : [],
+    [showServicePricingStats, answers, servicePricingPaths],
+  );
+  const badges = showServicePricingStats ? [] : getBadges(item);
 
   return (
-    <div 
+    <div
       onClick={onClick}
       className="relative w-full h-96 rounded-xl overflow-hidden shadow-lg group cursor-pointer"
     >
@@ -36,8 +67,29 @@ export default function CardImageCover({
         />
       )}
 
-      {/* Badges en haut à droite */}
-      {badges && badges.length > 0 && (
+      {/* Pastilles de stats (opt-in `card.overlayStats`) en haut à droite */}
+      {stats.length > 0 && (
+        <div className="absolute top-3 px-2 w-full flex items-center justify-end gap-2 z-10">
+          {stats.map((stat) => {
+            const Icon = STAT_ICONS[stat.kind];
+            const { key, params } = servicePricingStatLabel(stat);
+            const label = t(key, undefined, params);
+            return (
+              <div
+                key={stat.kind}
+                className="bg-background p-1 rounded-md shadow gap-1 flex items-center justify-center hover:bg-muted transition"
+                aria-label={label}
+              >
+                <Icon className="w-3 h-3 text-primary" />
+                <span className="text-xs text-primary">{label}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Badges génériques (défaut) en haut à droite */}
+      {badges.length > 0 && (
         <div className="absolute top-3 right-3 flex gap-2 z-10">
           {badges.map((badge, idx) => (
             <button

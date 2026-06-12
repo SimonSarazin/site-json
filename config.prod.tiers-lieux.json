@@ -375,7 +375,7 @@
         "fr": "Le réseau social des tiers-lieux",
         "en": "The social network for third places"
       },
-      "layout": "default",
+      "layout": "fullwidth",
       "sections": [
         {
           "type": "hero-search",
@@ -1100,7 +1100,7 @@
         "fr": "Les tiers-lieux - Le réseau social des tiers-lieux",
         "en": "Third places - The third places social network"
       },
-      "layout": "default",
+      "layout": "fullwidth",
       "sections": [
         {
           "type": "gridLayout",
@@ -1256,7 +1256,12 @@
                       "countryCode": [
                         "FR",
                         "BE",
-                        "CH"
+                        "CH",
+                        "GP",
+                        "GF",
+                        "MQ",
+                        "YT",
+                        "RE"
                       ],
                       "level": [
                         "3"
@@ -1474,9 +1479,11 @@
                     "xl": 4
                   },
                   "card": {
-                    "type": "event",
-                    "variant": "event",
-                    "detailsMode": "drawer"
+                    "type": "image-cover",
+                    "variant": "image-cover",
+                    "detailsMode": "drawer",
+                    "detailedMode": "service-pricing",
+                    "overlayStats": "service-pricing"
                   }
                 }
               }
@@ -1499,7 +1506,7 @@
         "ogType": "website",
         "twitterCard": "summary_large_image"
       },
-      "layout": "default",
+      "layout": "fullwidth",
       "sections": [
         {
           "type": "searchProStatic",
@@ -1583,7 +1590,7 @@
         "ogType": "website",
         "twitterCard": "summary_large_image"
       },
-      "layout": "default",
+      "layout": "fullwidth",
       "sections": [
         {
           "type": "searchProStatic",
@@ -1667,7 +1674,7 @@
         "fr": "Communauté - Le réseau social des tiers-lieux",
         "en": "Community - The third places social network"
       },
-      "layout": "default",
+      "layout": "fullwidth",
       "sections": [
         {
           "type": "searchProStatic",
@@ -1751,7 +1758,7 @@
         "fr": "Événements - Le réseau social des tiers-lieux",
         "en": "Events - The third places social network"
       },
-      "layout": "default",
+      "layout": "fullwidth",
       "sections": [
         {
           "type": "searchProStatic",
@@ -1840,7 +1847,7 @@
         "fr": "Mentions légales - Le réseau social des tiers-lieux",
         "en": "Legal notice - The third places social network"
       },
-      "layout": "default",
+      "layout": "fullwidth",
       "sections": [
         {
           "type": "html",
@@ -1860,7 +1867,7 @@
         "fr": "Politique de confidentialité - Le réseau social des tiers-lieux",
         "en": "Privacy policy - The third places social network"
       },
-      "layout": "default",
+      "layout": "fullwidth",
       "sections": [
         {
           "type": "html",
@@ -1880,7 +1887,7 @@
         "fr": "Conditions générales d'utilisation - Le réseau social des tiers-lieux",
         "en": "Terms of use - The third places social network"
       },
-      "layout": "default",
+      "layout": "fullwidth",
       "sections": [
         {
           "type": "html",
@@ -2179,7 +2186,7 @@
   },
   "profiles": {
     "default": {
-      "layout": "default",
+      "layout": "full-width",
       "hideHeader": false,
       "hideFooter": false,
       "sections": [
@@ -2296,7 +2303,7 @@
       ]
     },
     "citoyens": {
-      "layout": "default",
+      "layout": "full-width",
       "hideHeader": false,
       "hideFooter": false,
       "sections": [
@@ -2435,7 +2442,7 @@
       ]
     },
     "organizations": {
-      "layout": "default",
+      "layout": "full-width",
       "hideHeader": false,
       "hideFooter": false,
       "editModal": "edit-tiers-lieux",
@@ -2834,7 +2841,7 @@
       ]
     },
     "projects": {
-      "layout": "default",
+      "layout": "full-width",
       "hideHeader": false,
       "hideFooter": false,
       "sections": [
@@ -2986,7 +2993,7 @@
       ]
     },
     "events": {
-      "layout": "default",
+      "layout": "full-width",
       "hideHeader": false,
       "hideFooter": false,
       "sections": [
@@ -3165,7 +3172,7 @@
       ]
     },
     "poi": {
-      "layout": "default",
+      "layout": "full-width",
       "hideHeader": false,
       "hideFooter": false,
       "sections": [

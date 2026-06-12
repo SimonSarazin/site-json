@@ -331,9 +331,9 @@ export default function DiscoursePod() {
         <div className="flex items-center gap-2">
           {isOwnProfile && (
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
-              className="text-primary-foreground border-primary-foreground/40 hover:bg-primary-foreground/10 hover:text-primary-foreground h-7 text-xs"
+              className="border border-primary-foreground/40 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground h-7 text-xs"
               onClick={() => unlinkMutation.mutate()}
               disabled={unlinkMutation.isPending}
           >
