@@ -8,9 +8,7 @@ import { useT } from "@/hooks/useT";
 import { SearchMapProps } from "../schema";
 import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { SwitchDetailsMode } from "./SwitchDetailsMode";
-import { useSearchProps } from "../hooks/useSearchProps";
-import { cn } from "@/lib/utils";
-import { usePage } from "@/hooks/usePage";
+import { useMapContainerClass } from "../hooks/useMapContainerClass";
 import { useSite } from "@/hooks/useSite";
 import { getMaptilerApiKey } from "@/lib/constant/common";
 import { resolveTileLayers } from "../lib/mapTiles";
@@ -55,8 +53,6 @@ export default function SearchMap({ results, card, preview }: SearchMapProps) {
   const [openDetails, setOpenDetails] = useState(false);
   const [item, setItem] = useState<SearchEntity | null>(null);
   const t = useT("modules/search");
-  const { inSection } = useSearchProps();
-  const { page } = usePage();
   const { config } = useSite();
 
   // Fond de carte : MapTiler (clé env) avec styles configurables par site
@@ -203,17 +199,9 @@ export default function SearchMap({ results, card, preview }: SearchMapProps) {
     firstIdRef.current = firstId;
   }, [mapReady, results, t]);
 
-    /**
-   * Gestion des dimensions du conteneur de carte:
-   * - Plein écran (absolute) si le footer est masqué et que l’on n’est pas déjà dans une section.
-   * - Hauteur mini de l’écran (min-h-screen) sinon – cela couvre les deux autres cas :
-   *   • Footer visible.
-   *   • Carte affichée dans une section.
-   */
-  const mapContainerClass = cn("z-10 rounded shadow", {
-    "absolute inset-0": page.hideFooter && !inSection,
-    "min-h-screen": !page.hideFooter || inSection,
-  });
+  // Dimensions du conteneur — logique PARTAGÉE avec MapSkeleton
+  // (cf. useMapContainerClass : plein écran sans footer vs min-h-screen).
+  const mapContainerClass = useMapContainerClass("z-10 rounded shadow");
 
 
   if (!mounted) return <div>{t("Chargement de la carte…")}</div>;
