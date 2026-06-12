@@ -144,7 +144,11 @@ function MultiField({ label, value, onChange, options, allLabel, noResult, singl
         placeholder={allLabel}
         hidePlaceholderWhenSelected
         emptyIndicator={<p className="text-center text-sm text-muted-foreground">{noResult}</p>}
-        className="min-h-8"
+        // min-h-8 + py-1 (racine et input) : aligne la hauteur sur les autres
+        // champs (Select/dropdown h-8) — les défauts du composant (min-h-10,
+        // py-2) le faisaient dépasser.
+        className="min-h-8 py-1"
+        inputProps={{ className: "py-1" }}
       />
     </div>
   );
