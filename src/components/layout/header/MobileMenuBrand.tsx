@@ -30,10 +30,12 @@ export default function MobileMenuBrand({ header, tone = "default", onNavigate }
       className="flex min-w-0 items-center gap-3"
     >
       {header.logo ? (
+        // Hauteur fixe, largeur LIBRE (max-w-40) : les logos horizontaux
+        // (ex. tiers-lieux) seraient écrasés par un carré h-8 w-8.
         <img
           src={`/${header.logo}`}
           alt={header.logoAlt ? t(header.logoAlt) : ""}
-          className="h-8 w-8 shrink-0 object-contain"
+          className="h-9 w-auto max-w-40 shrink-0 object-contain"
         />
       ) : header.logoIcon ? (
         <IconOrSvg
