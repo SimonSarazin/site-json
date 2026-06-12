@@ -1,5 +1,7 @@
-import { Fragment, useRef, useEffect, useMemo } from "react";
-import { Controller } from "react-hook-form";
+import { Fragment, useCallback, useRef, useEffect, useMemo, useState } from "react";
+import { Controller, type FieldErrors } from "react-hook-form";
+import { toast } from "sonner";
+import { Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -16,12 +18,20 @@ import { TextField, TextAreaField, RadioField, CheckboxField, ProseContent, Sect
 import { MultiCheckboxPlusField } from "./MultiCheckboxPlusField";
 import { MultiRadioField } from "./MultiRadioField";
 import { EvaluationField } from "./EvaluationField";
+import { CommonTableField } from "./CommonTableField";
+import { MultiEvalChartDialog } from "./MultiEvalChartDialog";
+import { DraftRecoveryBanner } from "./DraftRecoveryBanner";
+import { ErrorSummary } from "./ErrorSummary";
+import { AnswerActivityDialog } from "./AnswerActivityDialog";
 import { FinderField } from "./FinderField";
 import { SimpleTableField } from "./SimpleTableField";
 import { UploaderField } from "./UploaderField";
 import { CoFormBanner } from "./CoFormBanner";
 import { useConditionalFields } from "../hooks/useConditionalFields";
-import type { CoFormData, SubFormData, AllStepsData, MultiCheckboxPlusValue, MultiRadioValue, EvaluationValue, FinderValue, SimpleTableValue } from "../types";
+import { useUnsavedChangesWarning } from "../hooks/useUnsavedChangesWarning";
+import { getStepHasMultiEval, getOriginalFieldKey } from "../utils/formParser";
+import { scrollToFieldByName } from "../utils/helpers";
+import type { CoFormData, SubFormData, AllStepsData, MultiCheckboxPlusValue, MultiRadioValue, EvaluationValue, CommonTableValue, FinderValue, SimpleTableValue, ExistingAnswerMeta } from "../types";
 import type { CoFormSubmitMode, CoFormVariant } from "../schema";
 
 interface MultiStepCoFormProps {
@@ -45,6 +55,28 @@ interface MultiStepCoFormProps {
   onDirtyChange?: (isDirty: boolean) => void;
   /** Liste de clés d'inputs verrouillés (lecture seule, non modifiables) */
   lockedFields?: string[];
+  /**
+   * Liste de clés d'inputs **complètement masqués** (skip total du rendu).
+   * Calculée serveur-side dans `access.restrictedFields` à partir de
+   * `placeAdminOnlyFields` / `placeMemberOnlyFields` croisés avec le rôle
+   * de l'user sur le lieu. Aligné sur le legacy `isAdminOnly` qui hide
+   * entirely (pas de readonly cosmétique).
+   */
+  restrictedFields?: string[];
+  /** ID du formulaire — clé de draft localStorage. */
+  formId?: string;
+  /** ID utilisateur connecté — clé de draft localStorage. */
+  userId?: string | null;
+  /** updatedAt serveur (édition) — pour détecter les drafts obsolètes. */
+  baseUpdatedAt?: number | null;
+  /** Active la persistance du draft. Défaut : true. */
+  enableDraft?: boolean;
+  /**
+   * Métadonnées de la réponse existante (créateur + dernier modifieur).
+   * Quand fournies, un lien "Voir l'activité" apparaît sous le form qui
+   * ouvre la modale AnswerActivityDialog avec l'historique des modifs.
+   */
+  existingAnswerMeta?: ExistingAnswerMeta | null;
 }
 
 /**
@@ -68,6 +100,12 @@ export function MultiStepCoForm({
   initialStepKey,
   onDirtyChange,
   lockedFields,
+  restrictedFields,
+  formId,
+  userId,
+  baseUpdatedAt,
+  enableDraft = true,
+  existingAnswerMeta,
 }: MultiStepCoFormProps) {
   return (
     <CoFormProvider
@@ -78,6 +116,10 @@ export function MultiStepCoForm({
       defaultValues={defaultValues}
       answerId={answerId}
       initialStepKey={initialStepKey}
+      formId={formId}
+      userId={userId}
+      baseUpdatedAt={baseUpdatedAt}
+      enableDraft={enableDraft}
     >
       <MultiStepCoFormContent
         variant={variant}
@@ -87,7 +129,9 @@ export function MultiStepCoForm({
         onSuccess={onSuccess}
         onDirtyChange={onDirtyChange}
         lockedFields={lockedFields}
+        restrictedFields={restrictedFields}
         className={className}
+        existingAnswerMeta={existingAnswerMeta}
       />
     </CoFormProvider>
   );
@@ -104,7 +148,9 @@ function MultiStepCoFormContent({
   onSuccess,
   onDirtyChange,
   lockedFields,
+  restrictedFields,
   className,
+  existingAnswerMeta,
 }: {
   variant: CoFormVariant;
   showProgress: boolean;
@@ -113,7 +159,9 @@ function MultiStepCoFormContent({
   onSuccess?: () => void;
   onDirtyChange?: (isDirty: boolean) => void;
   lockedFields?: string[];
+  restrictedFields?: string[];
   className?: string;
+  existingAnswerMeta?: ExistingAnswerMeta | null;
 }) {
   useLoadNamespace("modules/coform");
   const t = useT("modules/coform");
@@ -124,10 +172,21 @@ function MultiStepCoFormContent({
   });
   const { form, fields, stepName, isSubmitting, submitStep } = useCoFormStep();
 
+  // Multi-eval radar : on affiche un bouton "Voir les évaluations" dans le
+  // header de la step si elle contient au moins un input avec
+  // `activeMultieval=true` ET qu'on est en mode édition (answerId présent).
+  const [multiEvalOpen, setMultiEvalOpen] = useState(false);
+  const stepHasMultiEval = useMemo(
+    () => (fields ? getStepHasMultiEval(fields) : false),
+    [fields]
+  );
+  const showMultiEvalButton = stepHasMultiEval && !!coform.answerId;
+
   // Logique conditionnelle pour l'étape courante
   const { isFieldVisible } = useConditionalFields(fields?.fields ?? [], form.control);
 
   const lockedSet = useMemo(() => new Set(lockedFields ?? []), [lockedFields]);
+  const restrictedSet = useMemo(() => new Set(restrictedFields ?? []), [restrictedFields]);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -154,16 +213,59 @@ function MultiStepCoFormContent({
     onDirtyChange?.(isDirty);
   }, [isDirty, onDirtyChange]);
 
-  // Gérer la soumission de l'étape ou la soumission finale
+  // Warning navigateur avant fermeture/refresh si modifications non sauvegardées.
+  useUnsavedChangesWarning(isDirty);
+
+  // Affiche le récap d'erreurs (ErrorSummary) uniquement après une tentative
+  // de soumission échouée — évite de polluer la lecture initiale.
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
+
+  // Activity dialog (historique de modifications de la réponse).
+  const [activityDialogOpen, setActivityDialogOpen] = useState(false);
+
+  // Map subFormId → display name pour rendre l'historique d'activité lisible
+  // (sinon on affiche les clés brutes type `navigatorDesTierslieux1572025_2311_0`).
+  const formInputs = coform.formData?.inputs;
+  const stepNames = useMemo(() => {
+    const map: Record<string, string> = {};
+    if (formInputs) {
+      for (const [stepId, stepData] of Object.entries(formInputs)) {
+        const name = (stepData as { name?: unknown })?.name;
+        if (typeof name === "string" && name.trim() !== "") {
+          map[stepId] = name;
+        }
+      }
+    }
+    return map;
+  }, [formInputs]);
+
+  // Gérer la soumission de l'étape ou la soumission finale.
+  // Note : la validation Zod est interceptée en amont par RHF via le
+  // 2e arg de `form.handleSubmit(handleSubmit, handleInvalid)`. Ce bloc
+  // ne tourne donc QUE si Zod a passé. On lit quand même le retour de
+  // `submitStep` pour bail sur une erreur runtime (catch interne du hook,
+  // mutation backend qui throw) — sinon on enchaînerait `submitAll()` sur
+  // un état d'étape incohérent.
   const handleSubmit = async () => {
-    await submitStep();
-    
-    // Si dernière étape, soumettre toutes les données
-    // stepsDataRef dans CoFormProvider garantit que les données sont à jour
+    setHasAttemptedSubmit(false);
+    const ok = await submitStep();
+    if (!ok) return;
+
     if (navigation.isLastStep) {
       await submitAll();
     }
   };
+
+  const handleInvalid = useCallback((invalidErrors: FieldErrors) => {
+    setHasAttemptedSubmit(true);
+    const firstErrorName = Object.keys(invalidErrors)[0];
+    if (firstErrorName) scrollToFieldByName(firstErrorName);
+    toast.error(t("coform.errors.summary.toast"));
+  }, [t]);
+
+  const handleErrorFieldClick = useCallback((name: string) => {
+    scrollToFieldByName(name);
+  }, []);
 
   if (!fields || !coform.formData) {
     return <div>{t("coform.status.loading")}</div>;
@@ -197,6 +299,24 @@ function MultiStepCoFormContent({
         </div>
       )}
 
+      {/* Banner de récupération de draft (s'il y en a un en localStorage).
+          Mount conditionnel — pas de surface si rien à restaurer. */}
+      {coform.restorableDraft && (
+        <DraftRecoveryBanner
+          mode="restorable"
+          timestamp={coform.restorableDraft.timestamp}
+          onRestore={coform.restoreDraft}
+          onDiscard={coform.discardDraft}
+        />
+      )}
+      {coform.staleDraftInfo && !coform.restorableDraft && (
+        <DraftRecoveryBanner
+          mode="stale"
+          timestamp={coform.staleDraftInfo.timestamp}
+          onAcknowledge={coform.acknowledgeStaleDraft}
+        />
+      )}
+
       {/* Indicateurs d'étapes */}
       {variant === "stepper" && (
         <StepIndicator
@@ -213,7 +333,21 @@ function MultiStepCoFormContent({
       {/* Formulaire de l'étape actuelle */}
       <Card className="shadow-sm">
         <CardHeader className="space-y-3">
-          <CardTitle className="text-2xl">{stepName}</CardTitle>
+          <div className="flex items-start justify-between gap-3">
+            <CardTitle className="text-2xl">{stepName}</CardTitle>
+            {showMultiEvalButton && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setMultiEvalOpen(true)}
+                className="shrink-0 gap-2"
+              >
+                <Activity className="h-4 w-4" />
+                <span className="hidden sm:inline">{t("coform.multiEval.viewChart")}</span>
+              </Button>
+            )}
+          </div>
           {coform.formData?.inputs?.[fields.subFormId]?.info && (
             <CardDescription className="text-base">
               <ProseContent
@@ -225,10 +359,15 @@ function MultiStepCoFormContent({
         </CardHeader>
 
         <CardContent className="space-y-6">
-          <form id="step-form" onSubmit={form.handleSubmit(handleSubmit)}>
+          <form id="step-form" onSubmit={form.handleSubmit(handleSubmit, handleInvalid)}>
             <div className="grid grid-cols-12 gap-6">
               {fields.fields.map((field) => {
                 if (!isFieldVisible(field.name)) return null;
+                // Skip total : l'user n'a pas le droit selon les listes
+                // place(Admin|Member)OnlyFields. Calculé serveur-side dans
+                // `access.restrictedFields`. Aligné sur le legacy isAdminOnly
+                // qui hide entirely (pas de readonly cosmétique).
+                if (restrictedSet.has(getOriginalFieldKey(field))) return null;
                 const isLocked = lockedSet.has(field.name);
                 const fieldElement = (() => { switch (field.componentType) {
                 case "text":
@@ -355,6 +494,26 @@ function MultiStepCoFormContent({
                           errors={form.formState.errors}
                           value={controllerField.value as EvaluationValue}
                           onChange={controllerField.onChange}
+                          readOnly={isLocked}
+                        />
+                      )}
+                    />
+                  );
+
+                case "commonTable":
+                  return (
+                    <Controller
+                      key={field.name}
+                      name={field.name}
+                      control={form.control}
+                      render={({ field: controllerField }) => (
+                        <CommonTableField
+                          field={field}
+                          errors={form.formState.errors}
+                          value={controllerField.value as CommonTableValue}
+                          onChange={controllerField.onChange}
+                          formId={formId}
+                          readOnly={isLocked}
                         />
                       )}
                     />
@@ -372,6 +531,7 @@ function MultiStepCoFormContent({
                           errors={form.formState.errors}
                           value={controllerField.value as FinderValue}
                           onChange={controllerField.onChange}
+                          readOnly={isLocked}
                         />
                       )}
                     />
@@ -389,6 +549,7 @@ function MultiStepCoFormContent({
                           errors={form.formState.errors}
                           value={controllerField.value as SimpleTableValue}
                           onChange={controllerField.onChange}
+                          readOnly={isLocked}
                         />
                       )}
                     />
@@ -424,23 +585,48 @@ function MultiStepCoFormContent({
                   return (
                     <div key={field.name} role="alert" className="col-span-12 flex flex-col gap-1 rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
                       <p className="font-semibold">{field.label}</p>
-                      <p>Template d'input introuvable — Le type <code className="font-mono bg-destructive/20 px-1 rounded">{field.type}</code> n'a pas de template associé.</p>
+                      <p>{t("coform.errors.unknownFieldType", undefined, { type: field.type })}</p>
                     </div>
                   );
               } })();
 
-                // Wrapper verrouillé pour les champs non modifiables
-                if (isLocked && fieldElement && field.componentType !== "sectionTitle" && field.componentType !== "sectionDescription") {
-                  return (
-                    <div key={field.name} className="contents pointer-events-none opacity-60 *:cursor-not-allowed">
-                      {fieldElement}
-                    </div>
-                  );
+                // Wrapper avec `data-field-name` pour permettre au récap
+                // d'erreurs (`ErrorSummary`) de scroller + highlight via
+                // `scrollToFieldByName`. `display: contents` → ne casse pas
+                // le grid (les enfants restent items du grid parent). Les
+                // composants de field qui ont déjà leur propre attribut (ex.
+                // `CommonTableField`) restent prioritaires côté querySelector.
+                if (!fieldElement) return null;
+                if (
+                  field.componentType === "sectionTitle" ||
+                  field.componentType === "sectionDescription"
+                ) {
+                  return fieldElement;
                 }
-                return fieldElement;
+                return (
+                  <div
+                    key={field.name}
+                    data-field-name={field.name}
+                    className={cn(
+                      "contents",
+                      isLocked && "pointer-events-none opacity-60 *:cursor-not-allowed",
+                    )}
+                  >
+                    {fieldElement}
+                  </div>
+                );
             })}
             </div>
           </form>
+
+          {/* Récap d'erreurs : affiché seulement après une tentative de submit
+              échouée, listant tous les champs invalides avec leur message,
+              cliquables pour scroller au champ. */}
+          <ErrorSummary
+            errors={hasAttemptedSubmit ? form.formState.errors : {}}
+            fields={fields?.fields ?? []}
+            onFieldClick={handleErrorFieldClick}
+          />
         </CardContent>
 
         <CardFooter className="flex justify-between gap-3 border-t pt-6">
@@ -515,6 +701,43 @@ function MultiStepCoFormContent({
         <div className="p-4 bg-destructive/10 text-destructive rounded-lg">
           {coform.error.message}
         </div>
+      )}
+
+      {/* Lien discret "Voir l'activité" — visible uniquement en mode édition
+          d'une réponse existante. Aligné sur DynamicCoForm pour parité de
+          features entre single-step et multi-step. */}
+      {existingAnswerMeta && coform.answerId && (
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={() => setActivityDialogOpen(true)}
+            className="text-xs text-muted-foreground hover:text-foreground underline-offset-2 hover:underline transition-colors"
+          >
+            {t("coform.activity.link")}
+          </button>
+        </div>
+      )}
+      {activityDialogOpen && (
+        <AnswerActivityDialog
+          open
+          onOpenChange={setActivityDialogOpen}
+          answerId={coform.answerId ?? null}
+          meta={existingAnswerMeta}
+          stepNames={stepNames}
+        />
+      )}
+
+      {/* Dialog multi-eval : mount conditionnel — évite de payer le fetch
+          `useMultiEvalData` + le lazy-import recharts tant que l'utilisateur
+          n'a pas cliqué sur "Voir les évaluations". */}
+      {multiEvalOpen && (
+        <MultiEvalChartDialog
+          open
+          onOpenChange={setMultiEvalOpen}
+          answerId={coform.answerId ?? null}
+          stepKey={fields?.subFormId ?? null}
+          stepName={stepName}
+        />
       )}
     </div>
   );

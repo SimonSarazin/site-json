@@ -38,6 +38,15 @@ interface UseCoFormQueryOptions {
   formId: string;
   /** Activer/désactiver la requête */
   enabled?: boolean;
+  /**
+   * ID Mongo d'une entité cible (mode collaboratif "par élément") : la
+   * réponse partagée portant sur cette entité est calculée côté serveur, et
+   * `access` reflète les droits sur cette réponse plutôt que sur la réponse
+   * personnelle du user. Requis avec `elementType`.
+   */
+  elementId?: string;
+  /** Type de l'élément (collection MongoDB). Requis si `elementId` fourni. */
+  elementType?: "organizations" | "projects" | "events" | "poi" | "citoyens";
 }
 
 interface UseCoFormQueryReturn {
@@ -54,14 +63,37 @@ interface UseCoFormQueryReturn {
  * Hook pour charger un formulaire CoForm depuis l'API.
  * Utilise la façade `api.form({ id })` (cf. `Api.d.ts:66`).
  */
-export function useCoFormQuery({ formId, enabled = true }: UseCoFormQueryOptions): UseCoFormQueryReturn {
+export function useCoFormQuery({
+  formId,
+  enabled = true,
+  elementId,
+  elementType,
+}: UseCoFormQueryOptions): UseCoFormQueryReturn {
   const { api, loading } = useCocolight();
   const isReady = !loading && !!api;
+  const hasElement = !!elementId && !!elementType;
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: COFORM_QUERY_KEYS.FORM(formId),
+    queryKey: hasElement
+      ? ([...COFORM_QUERY_KEYS.FORM(formId), "element", elementType, elementId] as const)
+      : COFORM_QUERY_KEYS.FORM(formId),
     queryFn: async () => {
       if (!api) throw new Error("API non initialisée");
+
+      // Mode "par élément" → endpointApi direct (le wrapper entity.form ne
+      // propage pas les params elementId/elementType). Sinon, garde le
+      // wrapper pour ne pas casser l'usage existant.
+      if (hasElement) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const response = await (api.endpointApi as any).getCoformById({
+          parentFormId: formId,
+          elementId,
+          elementType,
+        });
+        const raw = (response?.serverData?.data ?? response?.data) as CoFormData | undefined;
+        return raw ?? null;
+      }
+
       const form = await api.form({ id: formId });
       // `Form.serverData` est typé `FormItemNormalized` côté lib ; le type local
       // `CoFormData` diffère (sous-ensemble enrichi). Cast structurel maintenu.

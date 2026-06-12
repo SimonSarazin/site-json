@@ -79,6 +79,96 @@ export const COFORM_QUERY_KEYS = {
   ) => ["coform", "answerFiles", answerId, subKey, userId] as const,
   ANSWER_FILES_PREFIX: (answerId: string | null) =>
     ["coform", "answerFiles", answerId] as const,
+
+  /**
+   * Catalogues collaboratifs (lecture seule) des inputs `commonTable` d'un
+   * formulaire — fetch batch agrégeant criterias + comptages cross-réponses.
+   *
+   * Producteur : `useCoFormCatalogs` (appelé par `SmartCoForm`)
+   * Consommateurs invalidants : `useCoFormFinalMutation` (la save peut créer
+   *   de nouveaux usages via `addUsageToCatalog`) — invalidation via le PREFIX.
+   *
+   * `inputKeys` est inclus dans la clé pour qu'un changement de form (avec un
+   * autre set d'inputs commonTable) ne ré-utilise pas un cache obsolète. Le
+   * tableau est trié pour stabilité de la clé.
+   */
+  COMMONTABLE_CATALOG: (formId: string | null, inputKeys: readonly string[]) =>
+    ["coform", "commonTableCatalog", formId, [...inputKeys].sort()] as const,
+  /** Invalide tous les catalogues d'un form donné (ou tous les forms si omis). */
+  COMMONTABLE_CATALOG_PREFIX: (formId: string | null = null) =>
+    formId === null
+      ? (["coform", "commonTableCatalog"] as const)
+      : (["coform", "commonTableCatalog", formId] as const),
+
+  /**
+   * Liste des contributeurs (users + leur happiness/note/comment) pour une
+   * ligne d'un commonTable — fetch lazy au clic du compteur dans la colonne
+   * solution.
+   *
+   * Producteur : `useCommonTableContributors`
+   * `criteriaIds` est trié pour stabilité ; une ligne peut agréger plusieurs
+   *   criteriaId (voir groupKeyResolver côté React).
+   */
+  COMMONTABLE_CONTRIBUTORS: (
+    formId: string | null,
+    inputKey: string | null,
+    criteriaIds: readonly string[],
+  ) =>
+    [
+      "coform",
+      "commonTableContributors",
+      formId,
+      inputKey,
+      [...criteriaIds].sort(),
+    ] as const,
+  /** Invalide tous les contributeurs d'un (formId, inputKey) ou plus large. */
+  COMMONTABLE_CONTRIBUTORS_PREFIX: (
+    formId: string | null = null,
+    inputKey: string | null = null,
+  ) => {
+    if (formId === null) return ["coform", "commonTableContributors"] as const;
+    if (inputKey === null)
+      return ["coform", "commonTableContributors", formId] as const;
+    return ["coform", "commonTableContributors", formId, inputKey] as const;
+  },
+
+  /**
+   * Datasets agrégés des évaluations multiples (radar) pour une réponse coform.
+   *
+   * Producteur : `useMultiEvalData` (fetché à l'ouverture de `MultiEvalChartDialog`)
+   * `stepKey` est tolérant à `null` : si omis, le backend retourne toutes les
+   *   steps avec multi-eval.
+   * `userId` inclus pour la même raison que `FORM_ANSWER` (fuite de cache
+   *   cross-user : l'accès est contrôlé côté serveur par user, le cache doit
+   *   l'être aussi).
+   */
+  MULTIEVAL_DATA: (
+    answerId: string | null,
+    stepKey: string | null = null,
+    userId: string | null = null,
+  ) => ["coform", "multiEvalData", answerId, stepKey, userId] as const,
+  MULTIEVAL_DATA_PREFIX: (answerId: string | null = null) =>
+    answerId === null
+      ? (["coform", "multiEvalData"] as const)
+      : (["coform", "multiEvalData", answerId] as const),
+
+  /**
+   * Historique d'audit d'une réponse coform (au plus 200 entrées, du plus
+   * récent au plus ancien).
+   *
+   * Producteur : `useCoFormAnswerHistory` (fetché à l'ouverture de
+   *   `AnswerActivityDialog`)
+   * Auth côté serveur : propriétaire OU admin du parent OU admin/membre du
+   *   finder selon `membersCanEditSharedAnswer`.
+   * `userId` inclus pour la même raison que `FORM_ANSWER` (fuite de cache
+   *   cross-user).
+   */
+  ANSWER_HISTORY: (answerId: string | null, userId: string | null = null) =>
+    ["coform", "answerHistory", answerId, userId] as const,
+  ANSWER_HISTORY_PREFIX: (answerId: string | null = null) =>
+    answerId === null
+      ? (["coform", "answerHistory"] as const)
+      : (["coform", "answerHistory", answerId] as const),
 } as const;
 
 export type CoformQueryKeyType = ReturnType<
