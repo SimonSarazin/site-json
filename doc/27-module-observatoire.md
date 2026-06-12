@@ -40,7 +40,7 @@ dates EJSON désérialisées en `Date` par le SDK).
       { "dimension": "type", "multiple": true },              // DropdownMenu + checkboxes (pattern equipements)
       { "dimension": "ville", "searchable": true },           // recherche, sélection unique (remplace)
       { "dimension": "sports", "multiple": true, "searchable": true }  // recherche + badges (MultipleSelector)
-    ],
+    ],                                           // (les anyTrue restent toujours en Select simple oui/non)
     "search": {                                   // recherche TEXTE optionnelle (présence = activée)
       "dimensions": ["ville", "type"],            // défaut : toutes les dimensions value/list
       "placeholder": { "fr": "Rechercher…" }      // sync URL ?q=…
@@ -60,6 +60,8 @@ dates EJSON désérialisées en `Date` par le SDK).
       { "kind": "barsHorizontal", "dimension": "sports", "top": 10 },
       { "kind": "bars", "dimension": "ville" }
     ],
+    "export": { "filename": "mon-export" },     // opt-in : bouton CSV (filtré/trié)
+    "drilldown": true,                           // opt-in : clic part/barre = filtre
     "table": {
       "columns": [
         { "dimension": "ville", "kind": "title", "subtitleDimension": "type" },
@@ -67,7 +69,9 @@ dates EJSON désérialisées en `Date` par le SDK).
         { "dimension": "access", "kind": "boolBadge" },
         { "dimension": "surface", "kind": "number", "unit": "m²" }
       ],
-      "defaultSort": "ville"
+      "defaultSort": "ville",
+      "rowAction": { "kind": "preview", "detailsMode": "dialog",
+                     "preview": { "type": "poi-amenities" } }   // ou {"kind": "profil"}
     }
   }
 }
@@ -93,18 +97,19 @@ noms lucide kebab-case (DynamicIcon).
 
 L'exemple complet en production : la page `/observatoire` de
 `config.prod.equipements-Sportifs.json` (dataset RES — 12 dimensions,
-7 filtres, 6 KPI, 5 graphes, table 8 colonnes).
+7 filtres multi, recherche, 7 KPI, 5 graphes avec drill-down, table 8 colonnes
+avec export CSV et détail au clic).
 
 ## Architecture
 
 | Pièce | Rôle |
 |---|---|
 | `dimensions.ts` | moteur : résolution des dimensions (chemins pointés via le `getValueByPath` du repo), coercions (`isTrue`, `toNumber`, `toStringList`, `asDisplayString` — gère les `Date` SDK), `fieldsFromDimensions` (projection API DÉRIVÉE des déclarations : on ne demande au backend que ce que le dashboard consomme), maps jetons→classes/var(--…) |
-| `hooks/useObservatoryItemsQuery` | délègue à **`useSearchAllResults`** (module search — « charger tout » : pages séquentielles auto-régulées, plafond, progress) ; items = `serverData` BRUT (pas de schéma métier : seuls les champs déclarés sont lus) |
-| `hooks/useObservatoryFilters` | filtrage CLIENT par kind (égalité / appartenance / booléen), ET strict, **sync URL** `?<id>=<valeur>` (permaliens) |
+| `hooks/useObservatoryItemsQuery` | délègue à **`useSearchAllResults`** (module search — « charger tout » : pages séquentielles auto-régulées, plafond, progress, **cache 30 min/1 h** : revenir sur la page ne re-chaîne pas les appels) ; retourne `items` = `serverData` BRUT (seuls les champs déclarés sont lus) + `entities` SDK **alignées** (rowAction preview) |
+| `hooks/useObservatoryFilters` | filtrage CLIENT par kind (égalité / appartenance / booléen, multi par virgule), ET strict, **sync URL** `?<id>=<valeur>` et `?q=…` (permaliens) — la saisie immédiate et son debounce (250 ms) vivent dans `<Filters>` (isolation d'état : la frappe ne re-rend que l'input) |
 | `prefetch.ts` | prefetch **SSR de la 1ʳᵉ page** (loader `buildRoutes`) — même queryKey que le client via `buildObservatoryBaseParams` (fonction partagée) |
-| `dashboard.ts` | logique PURE (filtrage, recherche texte insensible casse/accents, formes de KPI, décomptes/couleurs/agencement graphes, lignes/tri table) — testée sans rendu (`dashboard.test.ts`) |
-| `components/` | rendus déclaratifs : `Filters` (Select Radix, options dérivées des données, recherche texte optionnelle ; **mobile : bouton « Filtres » + badge compteur → Sheet bas**, pattern du searchHeader), `KpiCards` (5 formes de calcul), `Charts` (5 formes via `ui/chart.tsx`, composition full/half), `ObservatoryTable` (colonnes/tri/badges déclarés) |
+| `dashboard.ts` | logique PURE (filtrage, recherche texte insensible casse/accents, formes de KPI, décomptes/couleurs/agencement graphes, lignes/tri table, `buildCsv`) — testée sans rendu (`dashboard.test.ts`) |
+| `components/` | rendus déclaratifs : `Filters` (matrice Select/dropdown-checkbox/MultipleSelector, options dérivées des données, recherche texte, badge filtres actifs, badge « données partielles » ; **mobile : bouton « Filtres » + compteur → Sheet bas**, pattern du searchHeader), `KpiCards` (7 formes de calcul, icônes DynamicIcon), `Charts` (5 formes via `ui/chart.tsx`, composition full/half, drill-down ; **client-only** : recharts ne s'hydrate pas — Skeleton SSR identique au 1er rendu, animations coupées pendant le chargement progressif), `ObservatoryTable` (colonnes/tri/badges déclarés, export CSV, rowAction) |
 
 Le filtrage est côté client **par design** : le dashboard agrège tout le
 dataset en mémoire — le module search reste l'outil des listes paginées
@@ -134,6 +139,22 @@ filtrées serveur.
   500 items dans le HTML ; TTFB 13-43 ms (streaming).
 - Le mode « map » (`indexStep: 0`, tout en 1 appel) écarté comme défaut :
   all-or-nothing (pas de progressif, timeout = tout perdu).
+- Les graphes sont **client-only** (hydratation recharts impossible : ids
+  clipPath à compteur global, mesure de texte serveur impossible) — le HTML
+  SSR porte KPI/filtres/table + skeletons de graphes ; les animations ne
+  jouent qu'une fois le dataset complet (sinon re-animation à chaque page).
+
+## États UX
+
+- **Pendant le chargement** : filtres/recherche restent UTILISABLES (page 1
+  SSR dès le 1er paint) — badge « données partielles : X / Y » sur la barre
+  de filtres + barre de progression.
+- **Vide filtré** : des données existent mais filtres/recherche excluent
+  tout → message dédié + bouton réinitialiser (au lieu de KPI à 0 muets).
+- **Plafond atteint** (`maxResults`) : bannière « données incomplètes ».
+- **Drill-down** : les selects se resynchronisent (le filtre appliqué par un
+  clic de graphe est visible et retirable) ; compteur de filtres actifs
+  visible desktop ET mobile.
 
 ## Limites connues / backlog
 
@@ -143,3 +164,9 @@ filtrées serveur.
   (`indexMin`/`indexMax` directs), à mesurer avant.
 - Facettes en cascade (options restreintes par les filtres actifs) : choix
   actuel = options sur le dataset complet (stables sous la souris).
+- Features candidates (brainstorm 2026-06-12, à activer par config le jour
+  venu) : carte leaflet des items filtrés, kind `date` + graphes de séries
+  temporelles, filtres range pour les `number` (slider), tableau pivot 2D,
+  heatmap, annotations/seuils sur graphes.
+- Optimisations différées : options de filtres calculées incrémentalement
+  par page, rows de table incrémentaux.
