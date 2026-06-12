@@ -7,6 +7,7 @@
 //               et d'autocomplétion dans VS Code.
 // ------------------------------------------------------------
 import { SearchProSectionSchema, SearchProStaticSectionSchema, CardCountCTSectionSchema, ThematicsSectionSchema, FiltersSectionSchema, SearchVariantSchema, SearchBaseParamsSchema, FilterGroupsSchema, FiltersByAnswersSchema, SearchHeaderSectionSchema } from "@/modules/search/schema";
+import { DataObservatorySectionSchema } from "@/modules/observatoire/schema";
 import { NewsSectionSchema } from "@/modules/news/schema";
 import { NotificationsSectionSchema } from "@/modules/notification/schema";
 import { JsonFormModalConfigSchema } from "./form-modal-schema";
@@ -1418,6 +1419,7 @@ export const Section = z.discriminatedUnion("type", [
   FinanceSummarySectionSchema,
   CagnotteLayoutSectionSchema,
   CoFormSectionSchema,
+  DataObservatorySectionSchema,
 ]);
 export type Section = z.infer<typeof Section>;
 

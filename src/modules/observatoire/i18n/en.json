@@ -1,0 +1,34 @@
+{
+  "error": {
+    "loadFailed": "An error occurred while loading the data."
+  },
+  "loading": "Loading data…",
+  "loadingProgress": "{{loaded}} / {{total}} items loaded",
+  "cappedNotice": "Loading cap reached ({{loaded}} / {{total}}) — displayed data is incomplete.",
+  "emptyFiltered": "No result matches the filters or search.",
+  "filters": {
+    "title": "Filters",
+    "reset": "Reset",
+    "search": "Search…",
+    "showResults": "Show results",
+    "noResult": "No result.",
+    "selectedCount": "{{count}} selected",
+    "partialData": "partial data: {{loaded}} / {{total}}",
+    "all": "All",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "charts": {
+    "yes": "yes",
+    "no": "no"
+  },
+  "table": {
+    "title": "Detailed data",
+    "itemCount": "{{count}} items",
+    "exportCsv": "Export CSV",
+    "empty": "No item matches the selected filters.",
+    "page": "Page {{current}} / {{total}}",
+    "prev": "Previous",
+    "next": "Next"
+  }
+}

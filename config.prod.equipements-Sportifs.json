@@ -18,11 +18,11 @@
     "favicon": "images/rezoLaMer/logo.png",
     "themeColor": "#007f5a",
     "keywords": [
-        "sports facilities",
-        "Réunion region",
-        "public amenities",
-        "recreation",
-        "community resources"
+      "sports facilities",
+      "Réunion region",
+      "public amenities",
+      "recreation",
+      "community resources"
     ]
   },
   "header": {
@@ -58,6 +58,13 @@
           "en": "Facilities"
         },
         "path": "/equipements-sportifs"
+      },
+      {
+        "label": {
+          "fr": "Observatoire",
+          "en": "Observatory"
+        },
+        "path": "/observatoire"
       }
     ],
     "sticky": true,
@@ -137,7 +144,7 @@
             "showScrollIndicator": true
           }
         },
-         {
+        {
           "type": "categories-grid",
           "id": "Convention-section",
           "props": {
@@ -235,7 +242,7 @@
                   "fr": "Carto géolocalisée",
                   "en": "Geolocated map"
                 },
-                "icon":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z\"></path><circle cx=\"12\" cy=\"10\" r=\"3\"></circle></svg>"
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z\"></path><circle cx=\"12\" cy=\"10\" r=\"3\"></circle></svg>"
               },
               {
                 "label": {
@@ -249,7 +256,7 @@
         }
       ]
     },
-     {
+    {
       "path": "/equipements-sportifs",
       "title": {
         "fr": "Équipements sportifs - Sport Santé Bien-être",
@@ -1631,7 +1638,7 @@
                 ]
               },
               {
-                "id":"availableSpaces",
+                "id": "availableSpaces",
                 "label": {
                   "fr": "Locaux disponibles",
                   "en": "Available spaces"
@@ -1729,11 +1736,11 @@
           "id": "section-equipements-cards",
           "props": {
             "customHeader": {
-                "title": {
-                  "fr": "Tous les équipements sportifs",
-                  "en": "All sports facilities"
-                }
-              },
+              "title": {
+                "fr": "Tous les équipements sportifs",
+                "en": "All sports facilities"
+              }
+            },
             "useFilter": true,
             "showMap": false,
             "enableMap": true,
@@ -1792,7 +1799,7 @@
                 "parent"
               ],
               "defaultFilters": {
-                "type":"recoveryCenter"
+                "type": "recoveryCenter"
               }
             },
             "list": {
@@ -1811,7 +1818,403 @@
               }
             }
           }
-        } 
+        }
+      ]
+    },
+    {
+      "path": "/observatoire",
+      "title": {
+        "fr": "Observatoire - Equipements sportifs à La Réunion",
+        "en": "Observatory - Sports facilities in Réunion"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "section-equipements-filters",
+          "props": {
+            "headline": {
+              "fr": "Les équipements sportifs en chiffres",
+              "en": "Sports facilities in numbers"
+            }
+          }
+        },
+        {
+          "type": "data-observatory",
+          "id": "section-equipements-observatory",
+          "props": {
+            "baseParams": {
+              "defaultTypes": [
+                "poi"
+              ],
+              "defaultFilters": {
+                "$or": {
+                  "source.key": "equipementsSportifs974",
+                  "source.keys": "equipementsSportifs974"
+                },
+                "type": "recoveryCenter"
+              }
+            },
+            "dimensions": {
+              "name": {
+                "paths": [
+                  "inst_nom",
+                  "equip_nom"
+                ],
+                "label": {
+                  "fr": "Installation",
+                  "en": "Facility"
+                }
+              },
+              "numero": {
+                "paths": [
+                  "equip_numero"
+                ],
+                "label": {
+                  "fr": "Numéro",
+                  "en": "Number"
+                }
+              },
+              "commune": {
+                "paths": [
+                  "address.addressLocality"
+                ],
+                "label": {
+                  "fr": "Commune",
+                  "en": "Commune"
+                }
+              },
+              "epci": {
+                "paths": [
+                  "address.level5Name"
+                ],
+                "label": {
+                  "fr": "EPCI",
+                  "en": "EPCI"
+                }
+              },
+              "type": {
+                "paths": [
+                  "equip_type_name",
+                  "equip_type_famille",
+                  "type",
+                  "categorie"
+                ],
+                "label": {
+                  "fr": "Type",
+                  "en": "Type"
+                }
+              },
+              "nature": {
+                "paths": [
+                  "equip_nature",
+                  "nature"
+                ],
+                "label": {
+                  "fr": "Nature",
+                  "en": "Nature"
+                }
+              },
+              "prop": {
+                "paths": [
+                  "equip_prop_type"
+                ],
+                "label": {
+                  "fr": "Propriétaire",
+                  "en": "Owner"
+                }
+              },
+              "aps": {
+                "paths": [
+                  "aps_name"
+                ],
+                "kind": "list",
+                "label": {
+                  "fr": "Sport pratiqué",
+                  "en": "Sport activity"
+                }
+              },
+              "surface": {
+                "paths": [
+                  "equip_surf"
+                ],
+                "kind": "number",
+                "label": {
+                  "fr": "Surface",
+                  "en": "Surface"
+                }
+              },
+              "pmr": {
+                "paths": [
+                  "equip_pmr_acc",
+                  "equip_pmr_chem",
+                  "equip_pmr_douche",
+                  "equip_pmr_sanit",
+                  "equip_pmr_vest",
+                  "equip_pmr_trib"
+                ],
+                "kind": "anyTrue",
+                "label": {
+                  "fr": "PMR",
+                  "en": "PMR"
+                }
+              },
+              "pshs": {
+                "paths": [
+                  "equip_pshs_aire",
+                  "equip_pshs_chem",
+                  "equip_pshs_sanit",
+                  "equip_pshs_vest",
+                  "equip_pshs_trib",
+                  "equip_pshs_sign"
+                ],
+                "kind": "anyTrue",
+                "label": {
+                  "fr": "PSHS",
+                  "en": "PSHS"
+                }
+              },
+              "handi": {
+                "paths": [
+                  "inst_acc_handi_bool"
+                ],
+                "kind": "anyTrue",
+                "label": {
+                  "fr": "Handi.",
+                  "en": "Disability"
+                }
+              }
+            },
+            "filters": [
+              {
+                "dimension": "commune",
+                "multiple": true
+              },
+              {
+                "dimension": "type",
+                "multiple": true
+              },
+              {
+                "dimension": "epci",
+                "multiple": true
+              },
+              {
+                "dimension": "nature",
+                "multiple": true
+              },
+              "pmr",
+              {
+                "dimension": "prop",
+                "multiple": true
+              },
+              {
+                "dimension": "aps",
+                "multiple": true
+              }
+            ],
+            "search": {
+              "dimensions": [
+                "name",
+                "commune",
+                "type",
+                "aps"
+              ],
+              "placeholder": {
+                "fr": "Rechercher un équipement, une commune…",
+                "en": "Search for a facility, a commune…"
+              }
+            },
+            "export": {
+              "filename": "equipements-sportifs"
+            },
+            "drilldown": true,
+            "kpis": [
+              {
+                "kind": "count",
+                "label": {
+                  "fr": "Équipements",
+                  "en": "Equipment"
+                },
+                "icon": "activity",
+                "accent": "primary"
+              },
+              {
+                "kind": "distinct",
+                "dimension": "commune",
+                "label": {
+                  "fr": "Communes",
+                  "en": "Communes"
+                },
+                "icon": "map-pin",
+                "accent": "accent"
+              },
+              {
+                "kind": "percentTrue",
+                "dimension": "pmr",
+                "label": {
+                  "fr": "Accessible PMR",
+                  "en": "PMR Accessible"
+                },
+                "icon": "accessibility",
+                "accent": "chart-2"
+              },
+              {
+                "kind": "percentTrue",
+                "dimension": "pshs",
+                "label": {
+                  "fr": "Accessible PSHS",
+                  "en": "PSHS Accessible"
+                },
+                "icon": "eye",
+                "accent": "chart-4"
+              },
+              {
+                "kind": "valueSplit",
+                "dimension": "nature",
+                "value": "Intérieur",
+                "label": {
+                  "fr": "Intérieur",
+                  "en": "Indoor"
+                },
+                "icon": "home",
+                "accent": "chart-3"
+              },
+              {
+                "kind": "top",
+                "dimension": "type",
+                "label": {
+                  "fr": "Type principal",
+                  "en": "Top type"
+                },
+                "icon": "trophy",
+                "accent": "chart-5"
+              },
+              {
+                "kind": "sum",
+                "dimension": "surface",
+                "unit": "m²",
+                "label": {
+                  "fr": "Surface totale",
+                  "en": "Total surface"
+                },
+                "icon": "ruler",
+                "accent": "chart-1"
+              }
+            ],
+            "charts": [
+              {
+                "kind": "donut",
+                "dimension": "type",
+                "label": {
+                  "fr": "Répartition par type d'équipement",
+                  "en": "Distribution by equipment type"
+                },
+                "layout": "full"
+              },
+              {
+                "kind": "pie",
+                "dimension": "nature",
+                "label": {
+                  "fr": "Intérieur / Extérieur",
+                  "en": "Indoor / Outdoor"
+                },
+                "layout": "half",
+                "colors": {
+                  "Intérieur": "chart-1",
+                  "Découvert": "chart-2",
+                  "Site naturel": "chart-3",
+                  "Site naturel aménagé": "chart-4",
+                  "Donnée non renseignée": "muted"
+                }
+              },
+              {
+                "kind": "booleanGroups",
+                "dimensions": [
+                  "pmr",
+                  "pshs",
+                  "handi"
+                ],
+                "label": {
+                  "fr": "Accessibilité (oui / non)",
+                  "en": "Accessibility (yes / no)"
+                },
+                "layout": "half"
+              },
+              {
+                "kind": "barsHorizontal",
+                "dimension": "aps",
+                "top": 10,
+                "label": {
+                  "fr": "Top 10 activités sportives (APS)",
+                  "en": "Top 10 sport activities (APS)"
+                },
+                "layout": "full"
+              },
+              {
+                "kind": "bars",
+                "dimension": "commune",
+                "label": {
+                  "fr": "Équipements par commune",
+                  "en": "Equipment by commune"
+                },
+                "layout": "full"
+              }
+            ],
+            "table": {
+              "columns": [
+                {
+                  "dimension": "name",
+                  "kind": "title",
+                  "subtitleDimension": "numero",
+                  "label": {
+                    "fr": "Installation",
+                    "en": "Facility"
+                  }
+                },
+                {
+                  "dimension": "type"
+                },
+                {
+                  "dimension": "commune"
+                },
+                {
+                  "dimension": "epci"
+                },
+                {
+                  "dimension": "nature",
+                  "kind": "badge",
+                  "colors": {
+                    "Intérieur": "chart-1",
+                    "Découvert": "chart-2",
+                    "Site naturel": "chart-3",
+                    "Site naturel aménagé": "chart-4",
+                    "Donnée non renseignée": "muted"
+                  }
+                },
+                {
+                  "dimension": "surface",
+                  "kind": "number",
+                  "unit": "m²"
+                },
+                {
+                  "dimension": "pmr",
+                  "kind": "boolBadge"
+                },
+                {
+                  "dimension": "prop"
+                }
+              ],
+              "defaultSort": "commune",
+              "rowAction": {
+                "kind": "preview",
+                "detailsMode": "dialog",
+                "preview": {
+                  "type": "poi-amenities"
+                }
+              }
+            }
+          }
+        }
       ]
     }
   ],
@@ -1920,7 +2323,7 @@
           "equipementsSportifs974"
         ],
         "filters": {
-            "type":"recoveryCenter"
+          "type": "recoveryCenter"
         }
       }
     }
@@ -2967,7 +3370,9 @@
       "hideHeader": false,
       "hideFooter": false,
       "editModal": "edit-poi-equipement",
-      "editModalMatch": { "type": "recoveryCenter" },
+      "editModalMatch": {
+        "type": "recoveryCenter"
+      },
       "sections": [
         {
           "type": "profile-header",
