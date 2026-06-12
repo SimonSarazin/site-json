@@ -527,13 +527,14 @@ export function FiltersSection({
             const singleKey = answerOptionNames[0];
             const singleValue = groupData.values[singleKey];
             return (
-              <button
+              <Button
                 key={group}
+                variant="ghost"
                 onClick={() => toggleFilter(group, group, "_id", singleValue.orgaNameArray)}
-                className="flex w-full items-center justify-between border-b border-border py-3 text-left text-sm transition hover:bg-muted"
+                className="h-auto w-full justify-between rounded-none border-b border-border py-3 text-sm font-normal hover:bg-muted"
               >
                 {headerLabel}
-              </button>
+              </Button>
             );
           }
           return (
