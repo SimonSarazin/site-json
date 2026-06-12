@@ -7,7 +7,33 @@ interface PriceAggregate {
   fullDay: number;
 }
 
-export const ANSWER_PATH = {
+/** Chemins CoForm d'une catégorie service-pricing (id de formulaire + champs). */
+export interface ServicePricingPaths {
+  meeting: { id: string; room: string };
+  coworking: {
+    id: string;
+    place: string;
+    price: { hourly: string; halfDay: string; fullDay: string };
+  };
+  accommodation: {
+    id: string;
+    place: string;
+    price: { bed: string; room: string };
+  };
+}
+
+/** Surcharge config par CATÉGORIE (atomique) — cf. `card.servicePricing` (schema). */
+export type ServicePricingPathsOverride = Partial<ServicePricingPaths>;
+
+/**
+ * Table par défaut : formulaires du Navigator des Tiers-Lieux (1ᵉʳ
+ * consommateur). Surchargée par catégorie via `card.servicePricing` dans la
+ * config — même précédent que `preview.fields` (découpler les IDs de
+ * formulaires/champs du code). `meeting.room` pointe une commonTable dont la
+ * ligne 0 est l'en-tête et les colonnes [2..6] : capacité min, capacité max,
+ * prix horaire, demi-journée, journée.
+ */
+export const DEFAULT_SERVICE_PRICING_PATHS: ServicePricingPaths = {
   "meeting": {
     id: "6925869ad76aaf6c5a2b2f8a",
     room: "answers.navigatorDesTierslieux25112025_1436_0.navigatorDesTierslieux25112025_1436_0miokvr9ezvu0064fk",
@@ -44,28 +70,34 @@ export function toInt(value: unknown): number | undefined {
 }
 
 /**
- * Agrégation « à partir de » (cf. JS d'origine) : tant que `current` vaut 0 on
- * prend la 1ʳᵉ valeur positive, ensuite on garde le minimum positif. Une valeur
- * absente ne modifie pas le courant.
+ * Agrégation « à partir de » : minimum des valeurs strictement positives.
+ * 0 ou absent = « non renseigné / non tarifé » → ignoré, le minimum courant
+ * est conservé. (Corrige le JS d'origine où un 0 explicite réinitialisait
+ * l'accumulateur : [5, 0, 8] donnait 8 au lieu de 5.)
  */
 export function accumulateMin(current: number, value: number | undefined): number {
-  if (current === 0) return Math.max(current, value ?? 0);
-  return Math.min(current, value ?? current);
+  if (value === undefined || value <= 0) return current;
+  if (current === 0) return value;
+  return Math.min(current, value);
 }
 
 /**
- * Agrège, par catégorie de `ANSWER_PATH`, les réponses coform de `answers` :
- * capacités (places, min/max de personnes) et tarifs « à partir de ». Porte la
- * logique JS d'origine (Navigator des Tiers-Lieux). Fonction pure et testable.
+ * Agrège, par catégorie de chemins, les réponses coform de `answers` :
+ * capacités (places, min/max de personnes) et tarifs « à partir de ».
+ * `pathsOverride` (depuis `card.servicePricing`) remplace les catégories
+ * fournies, les autres gardent les chemins par défaut. Fonction pure et
+ * testable.
  */
 export function extractServicePricingAnswers(
   answers: Record<FormId, Answer[]> | undefined,
+  pathsOverride?: ServicePricingPathsOverride,
 ): ServicePricingAggregate {
+  const paths: ServicePricingPaths = { ...DEFAULT_SERVICE_PRICING_PATHS, ...pathsOverride };
   const meeting = { place: { min: 0, max: 0 }, price: { hourly: 0, halfDay: 0, fullDay: 0 }, count: 0 };
   const coworking = { place: 0, price: { hourly: 0, halfDay: 0, fullDay: 0 }, count: 0 };
   const accommodation = { place: 0, price: { bed: 0, room: 0 }, count: 0 };
 
-  Object.entries(ANSWER_PATH).forEach(([category, { id, ...fields }]) => {
+  Object.entries(paths).forEach(([category, { id, ...fields }]) => {
     const raw: Answer[] | undefined = answers?.[id];
     if (!raw || !Array.isArray(raw) || raw.length === 0) return;
 

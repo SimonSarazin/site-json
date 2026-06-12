@@ -129,6 +129,24 @@ const ListConfSchema = z.object({
     // badges génériques (serverData.badges / tags) ; "service-pricing" les
     // remplace par les pastilles de capacité (postes/personnes/couverts).
     overlayStats: z.enum(["service-pricing"]).optional(),
+    // Chemins CoForm des données service-pricing (cartes `detailedMode` /
+    // `overlayStats`). Surcharge PAR CATÉGORIE la table par défaut du code
+    // (précédent : `preview.fields`) — découple les IDs de formulaires/champs.
+    // `meeting.room` pointe une commonTable : ligne 0 = en-têtes, colonnes
+    // [2..6] = capacité min, capacité max, prix horaire, demi-journée, journée.
+    servicePricing: z.object({
+      meeting: z.object({ id: z.string(), room: z.string() }).optional(),
+      coworking: z.object({
+        id: z.string(),
+        place: z.string(),
+        price: z.object({ hourly: z.string(), halfDay: z.string(), fullDay: z.string() }),
+      }).optional(),
+      accommodation: z.object({
+        id: z.string(),
+        place: z.string(),
+        price: z.object({ bed: z.string(), room: z.string() }),
+      }).optional(),
+    }).optional(),
     // Valeurs DESIGN/FONCTIONNALITÉ (jamais de nom de site). `Preview`/détail =
     // axe séparé (`preview.type`/`detailsMode`).
     type: z.enum(["overlay", "default", "image-cover", "event", "funding", "profile", "event-featured", "resource-booking", "poi-amenities", "image-panel", "contact-card", "card-answer"]).default("default"),

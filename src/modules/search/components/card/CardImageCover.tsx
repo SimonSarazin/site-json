@@ -41,13 +41,14 @@ export default function CardImageCover({
   // l'opte (`card.overlayStats: "service-pricing"`).
   const showServicePricingStats = card?.overlayStats === "service-pricing";
   const answers = serverData?.answers as Record<FormId, Answer[]> | undefined;
+  const servicePricingPaths = card?.servicePricing;
   // Vue grille : la capacité seule suffit (`requirePrice: false`).
   const stats = useMemo(
     () =>
       showServicePricingStats
-        ? buildServicePricingStats(extractServicePricingAnswers(answers), { requirePrice: false })
+        ? buildServicePricingStats(extractServicePricingAnswers(answers, servicePricingPaths), { requirePrice: false })
         : [],
-    [showServicePricingStats, answers],
+    [showServicePricingStats, answers, servicePricingPaths],
   );
   const badges = showServicePricingStats ? [] : getBadges(item);
 

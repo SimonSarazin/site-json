@@ -30,6 +30,7 @@ const SERVICE_NAME_KEY: Record<ServicePricingStatKind, string> = {
 export default function CardDetailedServicePricing({
   item,
   onClick,
+  card,
 }: SearchCardProps) {
   const t = useT("modules/search");
   const data = useItem(item);
@@ -40,16 +41,17 @@ export default function CardDetailedServicePricing({
   const region = address?.level3Name ?? "";
   const fullDescription = shortDescription || description;
   const answers = item?.serverData?.answers as Record<FormId, Answer[]> | undefined;
+  const servicePricingPaths = card?.servicePricing;
 
   // Vue détaillée : on n'affiche stats et services que pour les catégories
   // effectivement tarifées (`requirePrice: true`).
   const { stats, services } = useMemo(() => {
-    const agg = extractServicePricingAnswers(answers);
+    const agg = extractServicePricingAnswers(answers, servicePricingPaths);
     return {
       stats: buildServicePricingStats(agg, { requirePrice: true }),
       services: buildServicePricingServices(agg),
     };
-  }, [answers]);
+  }, [answers, servicePricingPaths]);
 
   return (
     <Card
