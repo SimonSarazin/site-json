@@ -29,6 +29,33 @@ Une seule section JSON : **`equipment-observatory`** (lazy, chunk dédié).
 
 Consommateur actuel : `config.prod.equipements-Sportifs.json`, page `/observatoire`.
 
+## Modèle déclaratif (généricité)
+
+Tout le dashboard consomme une seule notion : la **dimension**
+(`{paths: [chaîne de priorité], kind: value|list|anyTrue|number, label}`).
+Filtres, KPI, graphes et colonnes de table sont des **déclarations** qui
+référencent des dimensions — défauts : presets RES (`dimensions.ts`),
+surchargeables par la config (précédent `card.servicePricing`) :
+
+```jsonc
+"props": {
+  "baseParams": { … },                      // périmètre (obligatoire)
+  "dimensions": { "ville": { "paths": ["address.addressLocality"] } },
+  "filters": ["ville", "type"],             // ids, ordre d'affichage (+ sync URL ?id=valeur)
+  "kpis":   [{ "kind": "count" }, { "kind": "distinct", "dimension": "ville" }],
+  "charts": [{ "kind": "donut", "dimension": "type", "layout": "full" }],
+  "table":  { "columns": [{ "dimension": "ville" }], "defaultSort": "ville" }
+}
+```
+
+Formes disponibles — KPI : `count`, `distinct`, `percentTrue`, `valueSplit`,
+`top` · graphes : `donut`, `pie`, `bars`, `barsHorizontal`, `booleanGroups`
+· colonnes : `text`, `title`, `badge`, `boolBadge`, `number`. Couleurs par
+**jetons de thème** uniquement (`chart-1..5`, `primary`, `accent`, `muted`)
+— jamais d'hex, le dashboard suit le thème light/dark du site. Un site peut
+donc monter un observatoire d'un AUTRE dataset (lieux, événements…) par pure
+config ; le config equipements-Sportifs actuel n'a pas changé (presets).
+
 ## Architecture
 
 | Pièce | Rôle |

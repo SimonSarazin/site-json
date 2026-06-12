@@ -9,7 +9,14 @@
 // ------------------------------------------------------------
 import getValueByPath from "@/helpers/getValueByPath";
 import { PMR_FIELDS, PSHS_FIELDS } from "./schema";
-import type { DimensionDef, DimensionsConfig, Equipment } from "./schema";
+import type {
+  ChartDef,
+  DimensionDef,
+  DimensionsConfig,
+  Equipment,
+  KpiDef,
+  TableDef,
+} from "./schema";
 
 /*───────────────────────────────────────────────────────────────*/
 /* Primitives de coercion (formats API hétérogènes)              */
@@ -150,3 +157,99 @@ export const BOOL_FILTER_VALUES = {
   TRUE: "true",
   FALSE: "false",
 } as const;
+
+/** Libellé d'une dimension : label (config) > labelKey (i18n) > id. */
+export function dimensionLabel(
+  t: (key: string | Record<string, string>, fallback?: string) => string,
+  dims: DimensionsConfig,
+  id: string,
+): string {
+  const def = dims[id];
+  if (!def) return id;
+  if (def.label) return t(def.label);
+  if (def.labelKey) return t(def.labelKey);
+  return id;
+}
+
+/*───────────────────────────────────────────────────────────────*/
+/* Vocabulaire RES — valeurs du champ `nature` (référentiel       */
+/* national, données en français). SOURCE UNIQUE.                 */
+/*───────────────────────────────────────────────────────────────*/
+export const NATURE_VALUES = {
+  INDOOR: "Intérieur",
+  OUTDOOR: "Découvert",
+  NATURAL: "Site naturel",
+  NATURAL_DEVELOPED: "Site naturel aménagé",
+  UNKNOWN: "Donnée non renseignée",
+} as const;
+
+/* Couleurs par nature (jetons de thème) — partagées graphe « pie nature »
+   et badges de la table (cohérence visuelle des 4 natures). */
+const NATURE_COLOR_TOKENS = {
+  [NATURE_VALUES.INDOOR]: "chart-1",
+  [NATURE_VALUES.OUTDOOR]: "chart-2",
+  [NATURE_VALUES.NATURAL]: "chart-3",
+  [NATURE_VALUES.NATURAL_DEVELOPED]: "chart-4",
+  [NATURE_VALUES.UNKNOWN]: "muted",
+} as const;
+
+/*───────────────────────────────────────────────────────────────*/
+/* Presets RES du tableau de bord (KPI / graphes / table)         */
+/*───────────────────────────────────────────────────────────────*/
+export const RES_KPIS: KpiDef[] = [
+  { kind: "count", labelKey: "kpi.equipments", icon: "activity", accent: "primary" },
+  { kind: "distinct", dimension: "commune", labelKey: "kpi.communes", icon: "map-pin", accent: "accent" },
+  { kind: "percentTrue", dimension: "pmr", labelKey: "kpi.pmr", icon: "accessibility", accent: "chart-2" },
+  { kind: "percentTrue", dimension: "pshs", labelKey: "kpi.pshs", icon: "eye", accent: "chart-4" },
+  { kind: "valueSplit", dimension: "nature", value: NATURE_VALUES.INDOOR, labelKey: "kpi.indoor", icon: "home", accent: "chart-3" },
+  { kind: "top", dimension: "type", labelKey: "kpi.topType", icon: "trophy", accent: "chart-5" },
+];
+
+export const RES_CHARTS: ChartDef[] = [
+  { kind: "donut", dimension: "type", labelKey: "charts.byType", layout: "full" },
+  { kind: "pie", dimension: "nature", labelKey: "charts.indoorOutdoor", layout: "half", colors: NATURE_COLOR_TOKENS },
+  { kind: "booleanGroups", dimensions: ["pmr", "pshs", "handi"], labelKey: "charts.accessibility", layout: "half" },
+  { kind: "barsHorizontal", dimension: "aps", top: 10, labelKey: "charts.topAps", layout: "full" },
+  { kind: "bars", dimension: "commune", labelKey: "charts.byCommune", layout: "full" },
+];
+
+export const RES_TABLE: TableDef = {
+  columns: [
+    { dimension: "name", kind: "title", subtitleDimension: "numero", labelKey: "table.installation" },
+    { dimension: "type", labelKey: "table.type" },
+    { dimension: "commune", labelKey: "table.commune" },
+    { dimension: "epci", labelKey: "table.epci" },
+    { dimension: "nature", kind: "badge", colors: NATURE_COLOR_TOKENS, labelKey: "table.nature" },
+    { dimension: "surface", kind: "number", unit: "m²", labelKey: "table.surface" },
+    { dimension: "pmr", kind: "boolBadge", labelKey: "table.pmr" },
+    { dimension: "prop", labelKey: "table.owner" },
+  ],
+  defaultSort: "commune",
+};
+
+/*───────────────────────────────────────────────────────────────*/
+/* Jetons de couleur → classes/variables (statiques pour Tailwind)*/
+/*───────────────────────────────────────────────────────────────*/
+/** Jeton → classes de pastille teintée (KPI, badges). */
+export const TOKEN_TINT_CLASSES: Record<string, string> = {
+  primary: "bg-primary/10 text-primary",
+  accent: "bg-accent/15 text-accent",
+  "chart-1": "bg-chart-1/15 text-chart-1",
+  "chart-2": "bg-chart-2/15 text-chart-2",
+  "chart-3": "bg-chart-3/15 text-chart-3",
+  "chart-4": "bg-chart-4/15 text-chart-4",
+  "chart-5": "bg-chart-5/15 text-chart-5",
+  muted: "bg-muted text-muted-foreground",
+};
+
+/** Jeton → variable CSS (fills SVG recharts — suivent le thème au paint). */
+export const TOKEN_CSS_VARS: Record<string, string> = {
+  primary: "var(--primary)",
+  accent: "var(--accent)",
+  "chart-1": "var(--chart-1)",
+  "chart-2": "var(--chart-2)",
+  "chart-3": "var(--chart-3)",
+  "chart-4": "var(--chart-4)",
+  "chart-5": "var(--chart-5)",
+  muted: "var(--muted-foreground)",
+};

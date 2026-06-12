@@ -1,29 +1,14 @@
-import type { LucideIcon } from "lucide-react";
-import {
-  Activity,
-  MapPin,
-  Accessibility,
-  Eye,
-  Home,
-  Trophy,
-} from "lucide-react";
+import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { Card, CardContent } from "@/components/ui/card";
-import type { Equipment } from "../schema";
 import { useT } from "@/hooks/useT";
+import type { DimensionsConfig, Equipment, KpiDef } from "../schema";
 import {
-  getCommune,
-  getType,
-  isIndoor,
-  isPmrAccessible,
-  isPshsAccessible,
-} from "../utils";
-
-interface KpiCardProps {
-  icon: LucideIcon;
-  label: string;
-  value: string;
-  accent?: string;
-}
+  TOKEN_TINT_CLASSES,
+  dimensionBool,
+  dimensionLabel,
+  dimensionValue,
+} from "../dimensions";
+import { countBy } from "../utils";
 
 /** Taille de police adaptée à la longueur de la valeur. */
 function valueClass(value: string): string {
@@ -32,7 +17,50 @@ function valueClass(value: string): string {
   return "text-base leading-snug break-words";
 }
 
-function KpiCard({ icon: Icon, label, value, accent }: KpiCardProps) {
+/** Calcule la valeur d'un KPI déclaratif (formes : count/distinct/percentTrue/valueSplit/top). */
+function computeKpiValue(
+  def: KpiDef,
+  data: Equipment[],
+  dims: DimensionsConfig,
+): string {
+  const total = data.length;
+  const dim = def.dimension ? dims[def.dimension] : undefined;
+  switch (def.kind) {
+    case "count":
+      return String(total);
+    case "distinct": {
+      if (!dim) return "—";
+      const set = new Set(
+        data.map((d) => dimensionValue(d, dim)).filter(Boolean),
+      );
+      return String(set.size);
+    }
+    case "percentTrue": {
+      if (!dim) return "—";
+      const n = data.filter((d) => dimensionBool(d, dim)).length;
+      return total ? `${Math.round((n / total) * 100)}%` : "0%";
+    }
+    case "valueSplit": {
+      if (!dim || !def.value) return "—";
+      const n = data.filter((d) => dimensionValue(d, dim) === def.value).length;
+      return `${n} / ${total - n}`;
+    }
+    case "top": {
+      if (!dim) return "—";
+      const counts = countBy(data, (d) => dimensionValue(d, dim));
+      return counts.sort((a, b) => b.value - a.value)[0]?.name ?? "—";
+    }
+  }
+}
+
+interface KpiCardProps {
+  icon: string;
+  label: string;
+  value: string;
+  accentClasses: string;
+}
+
+function KpiCard({ icon, label, value, accentClasses }: KpiCardProps) {
   return (
     <Card className="gap-0 rounded-2xl border-border/50 py-5 hover:shadow-md transition-shadow min-w-0">
       <CardContent className="px-5">
@@ -45,12 +73,8 @@ function KpiCard({ icon: Icon, label, value, accent }: KpiCardProps) {
               {value}
             </p>
           </div>
-          <div
-            className={`rounded-xl p-2.5 ${
-              accent ?? "bg-primary/10 text-primary"
-            }`}
-          >
-            <Icon className="h-5 w-5" />
+          <div className={`rounded-xl p-2.5 ${accentClasses}`}>
+            <DynamicIcon name={icon as IconName} className="h-5 w-5" />
           </div>
         </div>
       </CardContent>
@@ -60,65 +84,34 @@ function KpiCard({ icon: Icon, label, value, accent }: KpiCardProps) {
 
 interface KpiCardsProps {
   data: Equipment[];
+  dimensions: DimensionsConfig;
+  /** KPI déclarés (config ou preset RES). */
+  kpis: readonly KpiDef[];
 }
 
-export function KpiCards({ data }: KpiCardsProps) {
+export function KpiCards({ data, dimensions, kpis }: KpiCardsProps) {
   const t = useT("modules/observatoire");
-  const total = data.length;
-  const communes = new Set(
-    data.map((d) => getCommune(d)).filter((v): v is string => !!v),
-  ).size;
-  const pmr = data.filter(isPmrAccessible).length;
-  const pshs = data.filter(isPshsAccessible).length;
-  const interieur = data.filter(isIndoor).length;
-
-  const typeCounts: Record<string, number> = {};
-  for (const d of data) {
-    const typeVal = getType(d); // pas `t` : shadowerait le t() d'i18n
-    if (!typeVal) continue;
-    typeCounts[typeVal] = (typeCounts[typeVal] ?? 0) + 1;
-  }
-  const topType =
-    Object.entries(typeCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "—";
-
-  const pct = (n: number) =>
-    total ? `${Math.round((n / total) * 100)}%` : "0%";
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-      <KpiCard icon={Activity} label={t("kpi.equipments")} value={String(total)} />
-      <KpiCard
-        icon={MapPin}
-        label={t("kpi.communes")}
-        value={String(communes)}
-        // `text-accent` (pas `accent-foreground` : celui-ci est calibré pour un
-        // bg-accent PLEIN — sur une teinte /15 il devient illisible en dark).
-        accent="bg-accent/15 text-accent"
-      />
-      <KpiCard
-        icon={Accessibility}
-        label={t("kpi.pmr")}
-        value={pct(pmr)}
-        accent="bg-chart-2/15 text-chart-2"
-      />
-      <KpiCard
-        icon={Eye}
-        label={t("kpi.pshs")}
-        value={pct(pshs)}
-        accent="bg-chart-4/15 text-chart-4"
-      />
-      <KpiCard
-        icon={Home}
-        label={t("kpi.indoor")}
-        value={`${interieur} / ${total - interieur}`}
-        accent="bg-chart-3/15 text-chart-3"
-      />
-      <KpiCard
-        icon={Trophy}
-        label={t("kpi.topType")}
-        value={topType}
-        accent="bg-chart-5/15 text-chart-5"
-      />
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 lg:grid-cols-[repeat(auto-fit,minmax(150px,1fr))]">
+      {kpis.map((def, i) => {
+        const label = def.label
+          ? t(def.label)
+          : def.labelKey
+            ? t(def.labelKey)
+            : def.dimension
+              ? dimensionLabel(t, dimensions, def.dimension)
+              : "";
+        return (
+          <KpiCard
+            key={`${def.kind}-${def.dimension ?? i}`}
+            icon={def.icon ?? "activity"}
+            label={label}
+            value={computeKpiValue(def, data, dimensions)}
+            accentClasses={TOKEN_TINT_CLASSES[def.accent ?? "primary"]}
+          />
+        );
+      })}
     </div>
   );
 }

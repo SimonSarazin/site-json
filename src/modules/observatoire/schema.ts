@@ -175,6 +175,65 @@ export type DimensionDef = z.infer<typeof DimensionDefSchema>;
 export const DimensionsSchema = z.record(z.string(), DimensionDefSchema);
 export type DimensionsConfig = z.infer<typeof DimensionsSchema>;
 
+// Jeton de couleur de thème (jamais d'hex : les rendus mappent vers les
+// classes/var(--…) correspondantes — les graphes suivent le thème du site).
+const ColorTokenSchema = z.enum([
+  "primary", "accent", "chart-1", "chart-2", "chart-3", "chart-4", "chart-5", "muted",
+]);
+
+/** KPI déclaratif : une FORME de calcul appliquée à une dimension. */
+export const KpiDefSchema = z.object({
+  kind: z.enum(["count", "distinct", "percentTrue", "valueSplit", "top"]),
+  /** Dimension consommée (requise sauf pour `count`). */
+  dimension: z.string().optional(),
+  /** `valueSplit` : valeur comptée (affiché « n / total−n »). */
+  value: z.string().optional(),
+  label: LocalizedString.optional(),
+  labelKey: z.string().optional(),
+  /** Nom d'icône lucide (kebab-case) — rendu via DynamicIcon. */
+  icon: z.string().optional(),
+  accent: ColorTokenSchema.optional(),
+});
+export type KpiDef = z.infer<typeof KpiDefSchema>;
+
+/** Graphe déclaratif : une FORME de visualisation d'une dimension. */
+export const ChartDefSchema = z.object({
+  kind: z.enum(["donut", "pie", "bars", "barsHorizontal", "booleanGroups"]),
+  dimension: z.string().optional(),
+  /** `booleanGroups` : dimensions anyTrue comparées (oui/non empilés). */
+  dimensions: z.array(z.string()).optional(),
+  /** `barsHorizontal` : nombre de valeurs retenues (tri décroissant). */
+  top: z.number().int().positive().optional(),
+  label: LocalizedString.optional(),
+  labelKey: z.string().optional(),
+  /** Couleur par VALEUR de dimension (jeton de thème) — ex. natures RES. */
+  colors: z.record(z.string(), ColorTokenSchema).optional(),
+  /** Largeur dans la grille : `full` (défaut) ou `half` (appairé 2 colonnes). */
+  layout: z.enum(["full", "half"]).optional(),
+});
+export type ChartDef = z.infer<typeof ChartDefSchema>;
+
+/** Colonne de table déclarative. */
+export const TableColumnSchema = z.object({
+  dimension: z.string(),
+  /** text (défaut) · title (+ sous-titre) · badge (teinté par valeur) ·
+   *  boolBadge (oui/non) · number (+ unité). */
+  kind: z.enum(["text", "title", "badge", "boolBadge", "number"]).optional(),
+  unit: z.string().optional(),
+  subtitleDimension: z.string().optional(),
+  colors: z.record(z.string(), ColorTokenSchema).optional(),
+  label: LocalizedString.optional(),
+  labelKey: z.string().optional(),
+});
+export type TableColumnDef = z.infer<typeof TableColumnSchema>;
+
+export const TableDefSchema = z.object({
+  columns: z.array(TableColumnSchema).min(1),
+  /** Dimension du tri initial (défaut : la 1ʳᵉ colonne). */
+  defaultSort: z.string().optional(),
+});
+export type TableDef = z.infer<typeof TableDefSchema>;
+
 /*───────────────────────────────────────────────────────────────*/
 /* 3. Filtres — valeurs dynamiques (clé = id de dimension)       */
 /*───────────────────────────────────────────────────────────────*/
@@ -218,6 +277,10 @@ export const EquipmentObservatorySectionSchema = z.object({
     // Défaut : RES_FILTER_IDS. Les valeurs sélectionnées sont synchronisées
     // dans l'URL (?<id>=<valeur>) — permaliens, format maison sans virgule.
     filters: z.array(z.string()).optional(),
+    // Tableau de bord déclaratif — défauts : presets RES (dimensions.ts).
+    kpis: z.array(KpiDefSchema).optional(),
+    charts: z.array(ChartDefSchema).optional(),
+    table: TableDefSchema.optional(),
   }),
 });
 

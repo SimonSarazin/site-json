@@ -50,8 +50,6 @@
     "surface": "Surface",
     "pmr": "PMR",
     "owner": "Owner",
-    "pmrYes": "Yes",
-    "pmrNo": "No",
     "empty": "No equipment matches the selected filters.",
     "page": "Page {{current}} / {{total}}",
     "prev": "Previous",

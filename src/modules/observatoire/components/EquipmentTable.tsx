@@ -11,91 +11,80 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { Equipment } from "../schema";
 import { useT } from "@/hooks/useT";
+import type {
+  DimensionsConfig,
+  Equipment,
+  TableColumnDef,
+  TableDef,
+} from "../schema";
 import {
-  NATURE_VALUES,
-  getCommune,
-  getEpci,
-  getEquipId,
-  getInstName,
-  getNature,
-  getPropType,
-  getSurface,
-  getType,
-  isPmrAccessible,
-} from "../utils";
-
-// Teinte du badge par nature RES — même correspondance chart-1..4 que la
-// palette NATURE_COLORS des graphes (cohérence sur les 4 natures, plus
-// seulement Intérieur vs « autre »).
-const NATURE_BADGE_CLASSES: Record<string, string> = {
-  [NATURE_VALUES.INDOOR]: "bg-chart-1/15 text-chart-1",
-  [NATURE_VALUES.OUTDOOR]: "bg-chart-2/15 text-chart-2",
-  [NATURE_VALUES.NATURAL]: "bg-chart-3/15 text-chart-3",
-  [NATURE_VALUES.NATURAL_DEVELOPED]: "bg-chart-4/15 text-chart-4",
-};
-
-interface Row {
-  id: string;
-  name: string;
-  numero: string;
-  type: string;
-  commune: string;
-  epci: string;
-  nature: string;
-  surface: number | undefined;
-  pmr: boolean;
-  prop: string;
-}
-
-type SortKey = keyof Omit<Row, "id" | "pmr" | "surface"> | "surface" | "pmr";
-type SortDir = "asc" | "desc";
+  TOKEN_TINT_CLASSES,
+  dimensionBool,
+  dimensionLabel,
+  dimensionNumber,
+  dimensionValue,
+} from "../dimensions";
+import { getEquipId } from "../utils";
 
 const PLACEHOLDER = "—";
 
-function buildRow(e: Equipment, idx: number): Row {
-  return {
-    id: getEquipId(e, idx),
-    name: getInstName(e),
-    numero: e.equip_numero ?? "",
-    type: getType(e) ?? PLACEHOLDER,
-    commune: getCommune(e) ?? PLACEHOLDER,
-    epci: getEpci(e) ?? PLACEHOLDER,
-    nature: getNature(e) ?? PLACEHOLDER,
-    surface: getSurface(e),
-    pmr: isPmrAccessible(e),
-    prop: getPropType(e) ?? PLACEHOLDER,
-  };
+type SortDir = "asc" | "desc";
+type CellValue = string | number | boolean | undefined;
+
+interface Row {
+  id: string;
+  cells: Record<string, CellValue>;
+  subtitles: Record<string, string | undefined>;
 }
 
-function compare(a: Row, b: Row, key: SortKey): number {
-  if (key === "surface") {
-    const av = a.surface ?? -Infinity;
-    const bv = b.surface ?? -Infinity;
-    return av === bv ? 0 : av < bv ? -1 : 1;
+function buildRow(
+  e: Equipment,
+  idx: number,
+  columns: readonly TableColumnDef[],
+  dims: DimensionsConfig,
+): Row {
+  const cells: Record<string, CellValue> = {};
+  const subtitles: Record<string, string | undefined> = {};
+  for (const col of columns) {
+    const def = dims[col.dimension];
+    if (!def) continue;
+    if (col.kind === "number") cells[col.dimension] = dimensionNumber(e, def);
+    else if (col.kind === "boolBadge") cells[col.dimension] = dimensionBool(e, def);
+    else cells[col.dimension] = dimensionValue(e, def);
+    if (col.kind === "title" && col.subtitleDimension && dims[col.subtitleDimension]) {
+      subtitles[col.dimension] = dimensionValue(e, dims[col.subtitleDimension]);
+    }
   }
-  if (key === "pmr") {
-    return a.pmr === b.pmr ? 0 : a.pmr ? -1 : 1;
+  return { id: getEquipId(e, idx), cells, subtitles };
+}
+
+function compare(a: Row, b: Row, col: TableColumnDef): number {
+  const av = a.cells[col.dimension];
+  const bv = b.cells[col.dimension];
+  if (col.kind === "number") {
+    const an = typeof av === "number" ? av : -Infinity;
+    const bn = typeof bv === "number" ? bv : -Infinity;
+    return an === bn ? 0 : an < bn ? -1 : 1;
   }
-  const av = (a[key] ?? "") as string;
-  const bv = (b[key] ?? "") as string;
-  return av.localeCompare(bv, "fr");
+  if (col.kind === "boolBadge") {
+    return av === bv ? 0 : av ? -1 : 1;
+  }
+  return String(av ?? "").localeCompare(String(bv ?? ""), "fr");
 }
 
 /** En-tête de colonne triable — composant STATIQUE (règle react-hooks/
- *  static-components : défini dans le render, il serait recréé/remonté à
- *  chaque rendu du tableau). L'état de tri arrive par props. */
+ *  static-components). L'état de tri arrive par props. */
 function Th({
   k,
   label,
   sort,
   onToggle,
 }: {
-  k: SortKey;
+  k: string;
   label: string;
-  sort: { key: SortKey; dir: SortDir };
-  onToggle: (k: SortKey) => void;
+  sort: { key: string; dir: SortDir };
+  onToggle: (k: string) => void;
 }) {
   return (
     <TableHead className="px-4 py-3 font-semibold text-xs uppercase tracking-wider text-muted-foreground">
@@ -118,33 +107,113 @@ function Th({
 
 interface EquipmentTableProps {
   data: Equipment[];
+  dimensions: DimensionsConfig;
+  /** Colonnes + tri initial (config ou preset RES). */
+  table: TableDef;
 }
 
-export function EquipmentTable({ data }: EquipmentTableProps) {
+export function EquipmentTable({ data, dimensions, table }: EquipmentTableProps) {
   const t = useT("modules/observatoire");
-  const [sort, setSort] = useState<{ key: SortKey; dir: SortDir }>({
-    key: "commune",
+  // Colonnes sans dimension connue : ignorées (warn DEV).
+  const columns = useMemo(() => {
+    const out = table.columns.filter((c) => {
+      const ok = !!dimensions[c.dimension];
+      if (!ok && import.meta.env.DEV) {
+        console.warn(`[observatoire] colonne "${c.dimension}" sans dimension déclarée — ignorée`);
+      }
+      return ok;
+    });
+    return out;
+  }, [table.columns, dimensions]);
+
+  const [sort, setSort] = useState<{ key: string; dir: SortDir }>({
+    key: table.defaultSort ?? columns[0]?.dimension ?? "",
     dir: "asc",
   });
   const [page, setPage] = useState(0);
   const perPage = 10;
 
-  const rows = useMemo(() => data.map(buildRow), [data]);
+  const rows = useMemo(
+    () => data.map((e, i) => buildRow(e, i, columns, dimensions)),
+    [data, columns, dimensions],
+  );
   const sorted = useMemo(() => {
+    const col = columns.find((c) => c.dimension === sort.key);
+    if (!col) return rows;
     const factor = sort.dir === "asc" ? 1 : -1;
-    return [...rows].sort((a, b) => compare(a, b, sort.key) * factor);
-  }, [rows, sort]);
+    return [...rows].sort((a, b) => compare(a, b, col) * factor);
+  }, [rows, sort, columns]);
 
   const pages = Math.max(1, Math.ceil(sorted.length / perPage));
   const currentPage = Math.min(page, pages - 1);
   const slice = sorted.slice(currentPage * perPage, (currentPage + 1) * perPage);
 
-  const toggle = (k: SortKey) =>
+  const toggle = (k: string) =>
     setSort((s) =>
       s.key === k
         ? { key: k, dir: s.dir === "asc" ? "desc" : "asc" }
         : { key: k, dir: "asc" },
     );
+
+  const labelFor = (col: TableColumnDef): string =>
+    col.label ? t(col.label) : col.labelKey ? t(col.labelKey) : dimensionLabel(t, dimensions, col.dimension);
+
+  const renderCell = (row: Row, col: TableColumnDef) => {
+    const value = row.cells[col.dimension];
+    switch (col.kind) {
+      case "title":
+        return (
+          <TableCell key={col.dimension} className="px-4 py-3">
+            <div className="font-medium text-foreground">{String(value ?? PLACEHOLDER)}</div>
+            {row.subtitles[col.dimension] && (
+              <div className="text-xs text-muted-foreground">
+                {row.subtitles[col.dimension]}
+              </div>
+            )}
+          </TableCell>
+        );
+      case "badge": {
+        const token = value !== undefined ? col.colors?.[String(value)] : undefined;
+        return (
+          <TableCell key={col.dimension} className="px-4 py-3">
+            <Badge
+              className={`rounded-full font-medium border-transparent ${
+                TOKEN_TINT_CLASSES[token ?? "muted"]
+              }`}
+            >
+              {String(value ?? PLACEHOLDER)}
+            </Badge>
+          </TableCell>
+        );
+      }
+      case "boolBadge":
+        return (
+          <TableCell key={col.dimension} className="px-4 py-3">
+            <Badge
+              className={`rounded-full border-transparent ${
+                value ? TOKEN_TINT_CLASSES["chart-2"] : TOKEN_TINT_CLASSES.muted
+              }`}
+            >
+              {value ? t("filters.yes") : t("filters.no")}
+            </Badge>
+          </TableCell>
+        );
+      case "number":
+        return (
+          <TableCell key={col.dimension} className="px-4 py-3 tabular-nums text-muted-foreground">
+            {typeof value === "number"
+              ? `${value}${col.unit ? ` ${col.unit}` : ""}`
+              : PLACEHOLDER}
+          </TableCell>
+        );
+      default:
+        return (
+          <TableCell key={col.dimension} className="px-4 py-3 text-muted-foreground">
+            {String(value ?? PLACEHOLDER)}
+          </TableCell>
+        );
+    }
+  };
 
   return (
     <Card className="gap-0 rounded-2xl border-border/50 py-0 overflow-hidden">
@@ -161,14 +230,15 @@ export function EquipmentTable({ data }: EquipmentTableProps) {
       <Table className="text-sm">
           <TableHeader className="bg-muted/40 border-y border-border">
             <TableRow>
-              <Th k="name" label={t("table.installation")} sort={sort} onToggle={toggle} />
-              <Th k="type" label={t("table.type")} sort={sort} onToggle={toggle} />
-              <Th k="commune" label={t("table.commune")} sort={sort} onToggle={toggle} />
-              <Th k="epci" label={t("table.epci")} sort={sort} onToggle={toggle} />
-              <Th k="nature" label={t("table.nature")} sort={sort} onToggle={toggle} />
-              <Th k="surface" label={t("table.surface")} sort={sort} onToggle={toggle} />
-              <Th k="pmr" label={t("table.pmr")} sort={sort} onToggle={toggle} />
-              <Th k="prop" label={t("table.owner")} sort={sort} onToggle={toggle} />
+              {columns.map((col) => (
+                <Th
+                  key={col.dimension}
+                  k={col.dimension}
+                  label={labelFor(col)}
+                  sort={sort}
+                  onToggle={toggle}
+                />
+              ))}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -177,49 +247,13 @@ export function EquipmentTable({ data }: EquipmentTableProps) {
                 key={r.id}
                 className={`border-border/40 ${i % 2 ? "bg-muted/10" : ""}`}
               >
-                <TableCell className="px-4 py-3">
-                  <div className="font-medium text-foreground">{r.name}</div>
-                  {r.numero && (
-                    <div className="text-xs text-muted-foreground">
-                      {r.numero}
-                    </div>
-                  )}
-                </TableCell>
-                <TableCell className="px-4 py-3 text-muted-foreground">{r.type}</TableCell>
-                <TableCell className="px-4 py-3 text-foreground">{r.commune}</TableCell>
-                <TableCell className="px-4 py-3 text-muted-foreground">{r.epci}</TableCell>
-                <TableCell className="px-4 py-3">
-                  <Badge
-                    className={`rounded-full font-medium border-transparent ${
-                      NATURE_BADGE_CLASSES[r.nature] ?? "bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    {r.nature}
-                  </Badge>
-                </TableCell>
-                <TableCell className="px-4 py-3 tabular-nums text-muted-foreground">
-                  {r.surface !== undefined ? `${r.surface} m²` : PLACEHOLDER}
-                </TableCell>
-                <TableCell className="px-4 py-3">
-                  <Badge
-                    className={`rounded-full border-transparent ${
-                      r.pmr
-                        ? "bg-chart-2/15 text-chart-2"
-                        : "bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    {r.pmr ? t("table.pmrYes") : t("table.pmrNo")}
-                  </Badge>
-                </TableCell>
-                <TableCell className="px-4 py-3 text-muted-foreground text-xs">
-                  {r.prop}
-                </TableCell>
+                {columns.map((col) => renderCell(r, col))}
               </TableRow>
             ))}
             {slice.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={8}
+                  colSpan={columns.length}
                   className="px-4 py-12 text-center text-muted-foreground"
                 >
                   {t("table.empty")}

@@ -1,17 +1,17 @@
 import "./i18n";
 import { useMemo } from "react";
 import { useT } from "@/hooks/useT";
-import { RES_FILTER_IDS, mergedDimensions } from "./dimensions";
+import {
+  RES_CHARTS,
+  RES_FILTER_IDS,
+  RES_KPIS,
+  RES_TABLE,
+  mergedDimensions,
+} from "./dimensions";
 import type { EquipmentObservatorySectionProps } from "./schema";
 import { KpiCards } from "./components/KpiCards";
 import { Filters } from "./components/Filters";
-import {
-  AccessibilityChart,
-  ApsChart,
-  CommuneChart,
-  NatureChart,
-  TypeChart,
-} from "./components/Charts";
+import { ObservatoryCharts } from "./components/Charts";
 import { EquipmentTable } from "./components/EquipmentTable";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -32,12 +32,16 @@ export default function EquipmentObservatorySection({
   // useLocalization) — un seul hook pour les clés i18n ET les props localisées.
   const t = useT("modules/observatoire");
 
-  // Dimensions : preset RES surchargé par la config ; filtres déclarés (ids).
+  // Tableau de bord DÉCLARATIF : dimensions (preset RES surchargeable) +
+  // filtres/KPI/graphes/table déclarés en config (défauts : presets RES).
   const dimensions = useMemo(
     () => mergedDimensions(props.dimensions),
     [props.dimensions],
   );
   const filterIds = props.filters ?? RES_FILTER_IDS;
+  const kpis = props.kpis ?? RES_KPIS;
+  const charts = props.charts ?? RES_CHARTS;
+  const table = props.table ?? RES_TABLE;
 
   const { equipments, error, stillLoading, progress } =
     useObservatoryEquipmentsQuery(props.baseParams);
@@ -117,26 +121,11 @@ export default function EquipmentObservatorySection({
               values={filters}
               onChange={setFilters}
             />
-            <KpiCards data={filtered} />
+            <KpiCards data={filtered} dimensions={dimensions} kpis={kpis} />
 
-            <div className="grid grid-cols-1">
-              <TypeChart data={filtered} />
-            </div>
+            <ObservatoryCharts charts={charts} data={filtered} dimensions={dimensions} />
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <NatureChart data={filtered} />
-              <AccessibilityChart data={filtered} />
-            </div>
-
-            <div className="grid grid-cols-1">
-              <ApsChart data={filtered} />
-            </div>
-
-            <div className="grid grid-cols-1">
-              <CommuneChart data={filtered} />
-            </div>
-
-            <EquipmentTable data={filtered} />
+            <EquipmentTable data={filtered} dimensions={dimensions} table={table} />
           </>
         )}
       </div>
