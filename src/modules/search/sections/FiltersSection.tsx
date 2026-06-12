@@ -14,6 +14,17 @@ import { useFiltersByPathQuery } from "../hooks/useFiltersByPath";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useSearchParams } from "react-router";
 import { computeFiltersFromUrl } from "../lib/computeFiltersFromUrl";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetFooter,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 type ScopeLevel = "cities" | "level1" | "level2" | "level3" | "level4" | "level5";
 type FilterGroupOption = NonNullable<FiltersSectionProps["filterGroups"]>[number]["options"] extends infer T
@@ -104,6 +115,8 @@ export function FiltersSection({
   useLoadNamespace("modules/search");
   const t = useT("modules/search");
   const { currentLocale } = useLocalization();
+  const isMobile = useIsMobile();
+  const [sheetOpen, setSheetOpen] = useState(false);
   // Tri alphabétique des options de filtre par libellé localisé (tous les groupes).
   // `.trim()` neutralise les espaces/caractères invisibles en tête de certaines
   // valeurs backend (sinon elles remontent en haut de liste).
@@ -330,8 +343,14 @@ export function FiltersSection({
 
   const hasActiveFilters = Object.values(selectedFilters).some(arr => arr.length > 0) || searchQuery.length > 0 || Object.keys(searchByFields).length > 0;
 
-  return (
-    <aside id={id} className={cn("bg-card border border-border rounded-lg p-4", className)}>
+  // Compteur global (badge du bouton mobile) : sélections + champs recherchés.
+  const totalActiveCount =
+    Object.values(selectedFilters).reduce((n, arr) => n + arr.length, 0) +
+    Object.keys(searchByFields).length +
+    (searchQuery.length > 0 ? 1 : 0);
+
+  const content = (
+    <>
       {/* Header */}
       <div className="flex items-center justify-between mb-4 pb-4 border-b border-border">
         <div className="flex items-center gap-2">
@@ -587,6 +606,44 @@ export function FiltersSection({
           )
         })}
       </div>
+    </>
+  );
+
+  /* Mobile : la sidebar empilée poussait les résultats sous un mur de
+     filtres — bouton « Filtres » + compteur ouvrant un Sheet bas (pattern
+     searchHeader / observatoire). Desktop : sidebar inchangée. */
+  if (isMobile) {
+    return (
+      <div id={id} className={className}>
+        <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+          <SheetTrigger asChild>
+            <Button variant="outline" className="h-11 w-full justify-between rounded-xl px-3">
+              <span className="flex items-center gap-2">
+                <SlidersHorizontal className="h-4 w-4" />
+                {title ? t(title) : t("Filtres")}
+              </span>
+              {totalActiveCount > 0 && (
+                <Badge className="ml-2 rounded-full px-2">{totalActiveCount}</Badge>
+              )}
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="bottom" className="max-h-[85vh] gap-0 rounded-t-2xl p-0">
+            <SheetTitle className="sr-only">{title ? t(title) : t("Filtres")}</SheetTitle>
+            <div className="overflow-y-auto p-4">{content}</div>
+            <SheetFooter className="flex-row gap-2 border-t border-border">
+              <SheetClose asChild>
+                <Button className="flex-1">{t("Voir les résultats")}</Button>
+              </SheetClose>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
+      </div>
+    );
+  }
+
+  return (
+    <aside id={id} className={cn("bg-card border border-border rounded-lg p-4", className)}>
+      {content}
     </aside>
   );
 }
