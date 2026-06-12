@@ -11,12 +11,12 @@ import SearchListView from "./components/SearchListView";
 import SearchListSkeleton from "./components/SearchListSkeleton";
 // Vue map en lazy : téléchargée uniquement quand l'user clique sur "Map".
 const SearchMapWrapper = lazy(() => import("./components/SearchMapWrapper"));
-import { Skeleton } from "@/components/ui/skeleton";
 
 import useSearchFilters from "@/modules/search/hooks/useSearchFilters";
 import { useSearchQuery } from "@/modules/search/hooks/useSearchQuery";
 import { useSearchAllResults } from "@/modules/search/hooks/useSearchAllResults";
 import MapProgress from "./components/MapProgress";
+import MapSkeleton from "./components/MapSkeleton";
 import { ClientOnly } from "@/components/layout/ClientOnly";
 import { useLoadNamespace } from "@/hooks/useLoadNamespace";
 import { useT } from "@/hooks/useT";
@@ -285,13 +285,6 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
         {/* Map or list */}
         {enableMap && mapUsed ? (
           <div className="relative flex-1 h-full w-full overflow-hidden">
-            {mapAll.isLoading && (
-              <div className="absolute inset-0 z-10 bg-background/80 flex flex-col items-center justify-center">
-                <Loader2 className="animate-spin h-10 w-10 text-primary-foreground" />
-                <p className="text-sm text-secondary-foreground mt-2">{t("Chargement de la carte…")}</p>
-              </div>
-            )}
-
             {/* Progression du chargement par pages + alerte plafond. */}
             <MapProgress
               loaded={mapAll.loaded}
@@ -319,17 +312,20 @@ const SearchPro: React.FC<{ props: SearchProSectionProps }> = ({ props }) => {
 
 
 
-            {mapAll.results.length > 0 && (
-              <ClientOnly
-                fallback={
-                  <div className="absolute inset-0 z-10 bg-white/80 flex flex-col items-center justify-center">
-                    <Skeleton className="w-3/4 h-1/2" />
-                    <p className="text-sm text-secondary-foreground mt-2">{t("Chargement de la carte…")}</p>
-                  </div>
-                }
-              >
+            {/* MapSkeleton AVANT la 1ʳᵉ page et pendant le chunk Leaflet :
+                le conteneur n'a aucune hauteur tant que SearchMap n'est pas
+                monté — sans squelette dimensionné, le clic « Carte » donne un
+                blanc total jusqu'à la 1ʳᵉ page. */}
+            {mapAll.results.length > 0 ? (
+              <ClientOnly fallback={<MapSkeleton label={t("Chargement de la carte…")} />}>
                 {() => <SearchMapWrapper results={mapAll.results} card={list?.card} />}
               </ClientOnly>
+            ) : mapAll.isComplete ? (
+              <div className="flex min-h-[40vh] items-center justify-center text-sm text-muted-foreground">
+                {t("Aucun résultat")}
+              </div>
+            ) : (
+              <MapSkeleton label={t("Chargement de la carte…")} />
             )}
           </div>
         ) : (

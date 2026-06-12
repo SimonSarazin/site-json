@@ -171,5 +171,6 @@
   "card.servicePricing.price.bed": "{{price}}€ per bed in shared room",
   "card.servicePricing.price.room": "{{price}}€ per private room",
   "Chargement des points… {{loaded}} / {{total}}": "Loading points… {{loaded}} / {{total}}",
-  "Carte limitée aux {{loaded}} premiers résultats": "Map limited to the first {{loaded}} results"
+  "Carte limitée aux {{loaded}} premiers résultats": "Map limited to the first {{loaded}} results",
+  "Aucun résultat": "No results"
 }

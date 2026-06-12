@@ -29,6 +29,7 @@ import { SearchProStaticSectionProps } from "./schema";
 import { useSearchQuery } from "./hooks/useSearchQuery";
 import { useSearchAllResults } from "./hooks/useSearchAllResults";
 import MapProgress from "./components/MapProgress";
+import MapSkeleton from "./components/MapSkeleton";
 import { useCsvExport } from "./hooks/useCsvExport";
 import { canonicalSearchProStaticBaseParams } from "./lib/canonicalBaseParams";
 import { useZonesQuery, getZoneId, getZoneName } from "./hooks/useZonesQuery";
@@ -492,15 +493,6 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
 
         {viewMode === "map" && enableMap ? (
           <div className="relative flex-1 h-full w-full overflow-hidden">
-            {mapAll.isLoading && (
-              <div className="absolute inset-0 z-10 bg-background/80 flex flex-col items-center justify-center">
-                <Loader2 className="animate-spin h-10 w-10 text-primary-foreground" />
-                <p className="text-sm text-secondary-foreground mt-2">
-                  {t("Chargement de la carte…")}
-                </p>
-              </div>
-            )}
-
             <Button
               variant="secondary"
               size="icon"
@@ -519,25 +511,26 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
               capped={mapAll.capped}
             />
 
-            {mapAll.results.length > 0 && (
-                <ClientOnly
-                  fallback={
-                    <div className="absolute inset-0 z-10 bg-white/80 flex flex-col items-center justify-center">
-                      <Skeleton className="w-3/4 h-1/2" />
-                      <p className="text-sm text-secondary-foreground mt-2">
-                        {t("Chargement de la carte…")}
-                      </p>
-                    </div>
-                  }
-                >
-                  {() => (
-                    <SearchMapWrapper
-                      results={mapAll.results}
-                      card={list?.card}
-                    />
-                  )}
-                </ClientOnly>
-              )}
+            {/* MapSkeleton AVANT la 1ʳᵉ page et pendant le chunk Leaflet :
+                le conteneur n'a aucune hauteur tant que SearchMap n'est pas
+                monté — sans squelette dimensionné, le clic « Carte » donne un
+                blanc total jusqu'à la 1ʳᵉ page. */}
+            {mapAll.results.length > 0 ? (
+              <ClientOnly fallback={<MapSkeleton label={t("Chargement de la carte…")} />}>
+                {() => (
+                  <SearchMapWrapper
+                    results={mapAll.results}
+                    card={list?.card}
+                  />
+                )}
+              </ClientOnly>
+            ) : mapAll.isComplete ? (
+              <div className="flex min-h-[40vh] items-center justify-center text-sm text-muted-foreground">
+                {t("Aucun résultat")}
+              </div>
+            ) : (
+              <MapSkeleton label={t("Chargement de la carte…")} />
+            )}
           </div>
         ) : viewMode === "graph" && enableGraph ? (
           <div className="relative flex-1 h-full w-full overflow-hidden p-4">
