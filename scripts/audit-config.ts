@@ -142,7 +142,10 @@ for (const cf of configs) {
         if (!ASSET_KEYS.has(k) || typeof v !== "string" || v.length === 0) continue;
         if (/^(https?:|data:|blob:)/.test(v) || v.trim().startsWith("<svg")) continue;
         const rel = v.startsWith("/") ? v.slice(1) : v;
-        if (!rel.includes("/") && !rel.includes(".")) continue; // nom d'icône lucide, pas un fichier
+        // Ne juger que les valeurs qui RESSEMBLENT à des fichiers (extension
+        // d'asset) — exclut les noms d'icône lucide ET les chemins de champ
+        // CoForm (ex. ampli.props.path.image = "formKey.fieldId", pas un fichier).
+        if (!/\.(png|jpe?g|gif|webp|svg|avif|ico)$/i.test(rel)) continue;
         if (!fs.existsSync(path.join(ROOT, "public", rel)))
           findings.push({ category: "asset-manquant", path: `${p.join(".")}.${k}`, message: `fichier absent de public/ : ${v}`, severity: "warn", fixability: "proposer" });
       }
