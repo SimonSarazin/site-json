@@ -292,6 +292,26 @@ Affiche les filières de l'entité courante sous forme de liens de navigation. L
 
 Section sidebar qui pilote le `PageFiltersContext` partagé. Doit être montée dans le même `PageFiltersProvider` que les `SearchProStatic` consommateurs (via `gridLayout` ou `profile-tab-layout`).
 
+**Rendu PAR GROUPE configurable** (`filterGroups[]`) — du plus déployé au
+plus compact :
+
+| Config du groupe | Widget rendu |
+|---|---|
+| *(rien)* | accordéon + cases à cocher (défaut) |
+| `"optionStyle": "check"` | accordéon + lignes à coche à DROITE (look SelectItem) |
+| `"select": {}` | Select simple (Radix) |
+| `"select": {"multiple": true}` | combobox multi coche-à-droite (`ui/multi-combobox`) |
+| `"select": {"searchable": true}` | recherche + sélection unique (MultipleSelector, remplace) |
+| `"select": {"multiple": true, "searchable": true}` | recherche + badges multi (MultipleSelector) |
+
+Mobile (< `lg`, le breakpoint d'empilement du gridLayout) : champ de
+recherche AU-DESSUS d'un bouton « Filtres » + compteur ouvrant un Sheet bas —
+bascule pur CSS (pas de flash). Desktop : sidebar. Les champs compacts
+(`SelectField`/`MultiCheckboxField`/`MultiField`) vivent dans
+`components/filterFields.tsx`, partagés avec l'observatoire ; le multi
+coche-à-droite est le composant générique `src/components/ui/multi-combobox.tsx`
+(consommé aussi par le searchHeader et FilterDropdown).
+
 Les schémas de filtres (`FilterGroupSchema`, `FilterGroupsSchema`, `FiltersByAnswersSchema`, `FiltersByPathSchema`) sont extraits dans `schema.ts` comme exports partagés — réutilisés par `FiltersSectionSchema` ET par les sections hero qui déclarent des filtres (ex. section hero de la home avec `filterGroups`/`filtersByAnswers`).
 
 ```json
