@@ -91,7 +91,9 @@ export function KpiCards({ data }: KpiCardsProps) {
         icon={MapPin}
         label={t("kpi.communes")}
         value={String(communes)}
-        accent="bg-accent/15 text-accent-foreground"
+        // `text-accent` (pas `accent-foreground` : celui-ci est calibré pour un
+        // bg-accent PLEIN — sur une teinte /15 il devient illisible en dark).
+        accent="bg-accent/15 text-accent"
       />
       <KpiCard
         icon={Accessibility}

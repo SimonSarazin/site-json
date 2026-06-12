@@ -93,12 +93,15 @@ export function TypeChart({ data }: ChartProps) {
     >
       <ChartContainer config={{}} className={CHART_CONTAINER_CLASS}>
         <PieChart>
+          {/* Rayons en POURCENTAGES (pas en px fixes) : avec la légende
+              verticale qui prend jusqu'à 45 % de la largeur, un rayon fixe
+              de 140px débordait/clippait le camembert sur mobile. */}
           <Pie
             data={items}
             dataKey="value"
             nameKey="name"
-            outerRadius={140}
-            innerRadius={70}
+            outerRadius="75%"
+            innerRadius="45%"
             paddingAngle={1}
           >
             {items.map((item, i) => (
@@ -125,7 +128,7 @@ export function NatureChart({ data }: ChartProps) {
     <ChartCard title={t("charts.indoorOutdoor")}>
       <ChartContainer config={{}} className={CHART_CONTAINER_CLASS}>
         <PieChart>
-          <Pie data={items} dataKey="value" nameKey="name" outerRadius={100}>
+          <Pie data={items} dataKey="value" nameKey="name" outerRadius="70%">
             {items.map((it, i) => (
               <Cell key={it.name} fill={natureColor(it.name, i)} />
             ))}

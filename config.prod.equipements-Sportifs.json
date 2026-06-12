@@ -18,11 +18,11 @@
     "favicon": "images/rezoLaMer/logo.png",
     "themeColor": "#007f5a",
     "keywords": [
-        "sports facilities",
-        "Réunion region",
-        "public amenities",
-        "recreation",
-        "community resources"
+      "sports facilities",
+      "Réunion region",
+      "public amenities",
+      "recreation",
+      "community resources"
     ]
   },
   "header": {
@@ -144,7 +144,7 @@
             "showScrollIndicator": true
           }
         },
-         {
+        {
           "type": "categories-grid",
           "id": "Convention-section",
           "props": {
@@ -242,7 +242,7 @@
                   "fr": "Carto géolocalisée",
                   "en": "Geolocated map"
                 },
-                "icon":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z\"></path><circle cx=\"12\" cy=\"10\" r=\"3\"></circle></svg>"
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z\"></path><circle cx=\"12\" cy=\"10\" r=\"3\"></circle></svg>"
               },
               {
                 "label": {
@@ -1638,7 +1638,7 @@
                 ]
               },
               {
-                "id":"availableSpaces",
+                "id": "availableSpaces",
                 "label": {
                   "fr": "Locaux disponibles",
                   "en": "Available spaces"
@@ -1736,11 +1736,11 @@
           "id": "section-equipements-cards",
           "props": {
             "customHeader": {
-                "title": {
-                  "fr": "Tous les équipements sportifs",
-                  "en": "All sports facilities"
-                }
-              },
+              "title": {
+                "fr": "Tous les équipements sportifs",
+                "en": "All sports facilities"
+              }
+            },
             "useFilter": true,
             "showMap": false,
             "enableMap": true,
@@ -1799,7 +1799,7 @@
                 "parent"
               ],
               "defaultFilters": {
-                "type":"recoveryCenter"
+                "type": "recoveryCenter"
               }
             },
             "list": {
@@ -1818,23 +1818,23 @@
               }
             }
           }
-        } 
+        }
       ]
     },
     {
       "path": "/observatoire",
       "title": {
-        "fr" : "Observatoire - Equipements sportifs à La Réunion",
-        "en" : "Observatory - Sports facilities in Réunion"
+        "fr": "Observatoire - Equipements sportifs à La Réunion",
+        "en": "Observatory - Sports facilities in Réunion"
       },
       "layout": "fullwidth",
       "sections": [
         {
-          "type" : "searchHeader",
+          "type": "searchHeader",
           "id": "section-equipements-filters",
           "props": {
             "headline": {
-              "fr": "Les équipement sportif en chiffres",
+              "fr": "Les équipements sportifs en chiffres",
               "en": "Sports facilities in numbers"
             }
           }
@@ -1848,10 +1848,6 @@
                 "poi"
               ],
               "defaultFilters": {
-                "$or": {
-                  "source.key": "equipementsSportifs974",
-                  "source.keys": "equipementsSportifs974"
-                },
                 "type": "recoveryCenter"
               }
             }
@@ -1965,7 +1961,7 @@
           "equipementsSportifs974"
         ],
         "filters": {
-            "type":"recoveryCenter"
+          "type": "recoveryCenter"
         }
       }
     }
@@ -3012,7 +3008,9 @@
       "hideHeader": false,
       "hideFooter": false,
       "editModal": "edit-poi-equipement",
-      "editModalMatch": { "type": "recoveryCenter" },
+      "editModalMatch": {
+        "type": "recoveryCenter"
+      },
       "sections": [
         {
           "type": "profile-header",
