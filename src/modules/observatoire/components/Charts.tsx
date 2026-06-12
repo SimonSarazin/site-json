@@ -44,6 +44,13 @@ function ChartCard({ title, children, bodyClassName }: ChartCardProps) {
 /** ChartContainer plein-cadre (le parent fixe la hauteur) — tooltip/axes thémés. */
 const CHART_CONTAINER_CLASS = "h-full w-full aspect-auto";
 
+/* Dimensions AVANT la 1ʳᵉ mesure (et pour le rendu SSR) — alignées sur les
+   hauteurs des corps de cartes ; la largeur est recalée par le
+   ResizeObserver dès la mise en page. */
+const DIM_DEFAULT = { width: 600, height: 288 };   // h-72
+const DIM_TALL = { width: 600, height: 420 };      // h-[420px]
+const DIM_TALLER = { width: 600, height: 440 };    // h-[440px]
+
 /** Curseur pointeur sur les secteurs/barres quand le drill-down est actif. */
 const DRILL_CLASS = "[&_.recharts-sector]:cursor-pointer [&_.recharts-bar-rectangle]:cursor-pointer";
 
@@ -76,7 +83,7 @@ function DonutChart({ def, data, dims, t, animate, onDrill }: RendererProps) {
     : undefined;
   return (
     <ChartCard title={chartTitle(def, dims, t)} bodyClassName="h-[420px]">
-      <ChartContainer config={{}} className={`${CHART_CONTAINER_CLASS} ${drill ? DRILL_CLASS : ""}`}>
+      <ChartContainer config={{}} className={`${CHART_CONTAINER_CLASS} ${drill ? DRILL_CLASS : ""}`} initialDimension={DIM_TALL}>
         <PieChart>
           {/* Rayons en POURCENTAGES (pas en px fixes) : avec la légende
               verticale (jusqu'à 45 % de largeur), un rayon fixe clippe sur
@@ -115,7 +122,7 @@ function SimplePieChart({ def, data, dims, t, animate, onDrill }: RendererProps)
     : undefined;
   return (
     <ChartCard title={chartTitle(def, dims, t)}>
-      <ChartContainer config={{}} className={`${CHART_CONTAINER_CLASS} ${drill ? DRILL_CLASS : ""}`}>
+      <ChartContainer config={{}} className={`${CHART_CONTAINER_CLASS} ${drill ? DRILL_CLASS : ""}`} initialDimension={DIM_DEFAULT}>
         <PieChart>
           <Pie data={items} dataKey="value" nameKey="name" outerRadius="70%" isAnimationActive={animate} onClick={drill}>
             {items.map((it, i) => (
@@ -137,7 +144,7 @@ function BarsChart({ def, data, dims, t, animate, onDrill }: RendererProps) {
     : undefined;
   return (
     <ChartCard title={chartTitle(def, dims, t)} bodyClassName="h-[420px]">
-      <ChartContainer config={{}} className={`${CHART_CONTAINER_CLASS} ${drill ? DRILL_CLASS : ""}`}>
+      <ChartContainer config={{}} className={`${CHART_CONTAINER_CLASS} ${drill ? DRILL_CLASS : ""}`} initialDimension={DIM_TALL}>
         <BarChart data={items} margin={{ left: -10, bottom: 80 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
           <XAxis
@@ -164,7 +171,7 @@ function BarsHorizontalChart({ def, data, dims, t, animate, onDrill }: RendererP
     : undefined;
   return (
     <ChartCard title={chartTitle(def, dims, t)} bodyClassName="h-[440px]">
-      <ChartContainer config={{}} className={`${CHART_CONTAINER_CLASS} ${drill ? DRILL_CLASS : ""}`}>
+      <ChartContainer config={{}} className={`${CHART_CONTAINER_CLASS} ${drill ? DRILL_CLASS : ""}`} initialDimension={DIM_TALLER}>
         <BarChart data={items} layout="vertical" margin={{ left: 30, top: 10, bottom: 10 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
           <XAxis type="number" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
@@ -200,7 +207,7 @@ function BooleanGroupsChart({ def, data, dims, t, animate }: RendererProps) {
     });
   return (
     <ChartCard title={chartTitle(def, dims, t)}>
-      <ChartContainer config={{}} className={CHART_CONTAINER_CLASS}>
+      <ChartContainer config={{}} className={CHART_CONTAINER_CLASS} initialDimension={DIM_DEFAULT}>
         <BarChart data={items}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
           <XAxis dataKey="name" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} />
