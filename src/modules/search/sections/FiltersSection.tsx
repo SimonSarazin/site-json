@@ -5,7 +5,7 @@ import "@/modules/search/i18n";
 import { cn } from "@/lib/utils";
 import type { FiltersSectionProps } from "../schema";
 import { useState, useEffect, useMemo } from "react";
-import { ChevronDown, SlidersHorizontal } from "lucide-react";
+import { Search, SlidersHorizontal } from "lucide-react";
 import { useFilterToggles } from "../hooks/useFilterToggles";
 import { useFiltersByAnswersQuery } from "../hooks/useFiltersByAnswers";
 import { useSearchZoneQuery } from "../hooks/useSearchZone";
@@ -14,19 +14,38 @@ import { useFiltersByPathQuery } from "../hooks/useFiltersByPath";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useSearchParams } from "react-router";
 import { computeFiltersFromUrl } from "../lib/computeFiltersFromUrl";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { SelectField, MultiCheckboxField, MultiField } from "../components/filterFields";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import {
   Sheet,
   SheetClose,
   SheetContent,
   SheetFooter,
+  SheetHeader,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
 
 type ScopeLevel = "cities" | "level1" | "level2" | "level3" | "level4" | "level5";
+
+/** Matrice de sélection du widget compact (pattern observatoire) :
+ *  simple → Select · multiple → DropdownMenu+cases · searchable →
+ *  MultipleSelector (remplace) · les deux → MultipleSelector multi. */
+function pickFilterField(conf: { multiple?: boolean; searchable?: boolean } | undefined) {
+  if (!conf) return null;
+  if (conf.searchable) return conf.multiple ? "multi" : "multi-single";
+  return conf.multiple ? "multi-checkbox" : "select";
+}
 type FilterGroupOption = NonNullable<FiltersSectionProps["filterGroups"]>[number]["options"] extends infer T
   ? T extends Array<infer U>
     ? U
@@ -65,8 +84,9 @@ const getOptionCountryCode = (option: FilterGroupOption): string | undefined => 
   return typeof raw === "string" ? raw : undefined;
 };
 
-/** Ligne d'option de filtre (checkbox + libellé). Présentationnel, partagé par
- *  le rendu groupé-par-pays et le rendu simple. */
+/** Ligne d'option de filtre (Checkbox + Label shadcn). Présentationnel,
+ *  partagé par le rendu groupé-par-pays, le rendu simple et les groupes
+ *  « par réponses ». */
 function FilterOptionRow({
   label,
   selected,
@@ -77,31 +97,12 @@ function FilterOptionRow({
   onToggle: () => void;
 }) {
   return (
-    <label className="flex items-start gap-2 cursor-pointer group">
-      {/* Checkbox */}
-      <div className="relative flex items-center justify-center mt-0.5">
-        <input
-          type="checkbox"
-          checked={selected}
-          onChange={onToggle}
-          className="w-4 h-4 border-2 border-border rounded cursor-pointer appearance-none checked:bg-primary checked:border-primary transition"
-        />
-        {selected && (
-          <svg
-            className="w-3 h-3 text-primary-foreground absolute pointer-events-none"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-          </svg>
-        )}
-      </div>
-
-      <span className="text-sm text-muted-foreground group-hover:text-foreground flex-1">
+    <Label className="group flex cursor-pointer items-start gap-2 font-normal">
+      <Checkbox checked={selected} onCheckedChange={onToggle} className="mt-0.5" />
+      <span className="flex-1 text-sm text-muted-foreground group-hover:text-foreground">
         {label}
       </span>
-    </label>
+    </Label>
   );
 }
 
@@ -115,7 +116,6 @@ export function FiltersSection({
   useLoadNamespace("modules/search");
   const t = useT("modules/search");
   const { currentLocale } = useLocalization();
-  const isMobile = useIsMobile();
   const [sheetOpen, setSheetOpen] = useState(false);
   // Tri alphabétique des options de filtre par libellé localisé (tous les groupes).
   // `.trim()` neutralise les espaces/caractères invisibles en tête de certaines
@@ -318,19 +318,10 @@ export function FiltersSection({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, filterGroups, filterAnswerData]);
 
-  const toggleGroup = (groupId: string) => {
-    setOpenGroups(prev =>
-      prev.includes(groupId)
-        ? prev.filter(id => id !== groupId)
-        : [...prev, groupId]
-    );
-  };
-
   const clearFilters = () => {
     clearFiltersContext();
   };
 
-  const isGroupOpen = (groupId: string) => openGroups.includes(groupId);
   const isFilterSelected = (groupId: string, filterName: string) =>
     (selectedFilters[groupId] || []).includes(filterName) || Object.keys(searchByFields).includes(filterName);
 
@@ -349,54 +340,43 @@ export function FiltersSection({
     Object.keys(searchByFields).length +
     (searchQuery.length > 0 ? 1 : 0);
 
-  const content = (
+  /* Bouton Effacer — partagé desktop / Sheet mobile. */
+  const clearButton = (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={clearFilters}
+      disabled={!hasActiveFilters}
+      className={cn(
+        "h-7 px-2 text-xs",
+        hasActiveFilters ? "text-primary hover:text-primary" : "text-muted-foreground/50",
+      )}
+    >
+      {t("Effacer")}
+    </Button>
+  );
+
+  /* Corps (recherche + groupes) — UN SEUL rendu, affiché dans la sidebar
+     desktop ET dans le Sheet mobile. Groupes en Accordion shadcn contrôlé
+     (openGroups reste la source de vérité — defaultOpenGroups respecté). */
+  /* Champ de recherche — séparé du corps : sur mobile il vit AU-DESSUS du
+     bouton « Filtres » (directement accessible, sans ouvrir le Sheet). */
+  const searchField = (
+    <div className="relative">
+      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      <Input
+        type="text"
+        placeholder={t("Rechercher par nom...")}
+        value={searchInput}
+        onChange={(e) => setSearchInput(e.target.value)}
+        className="pl-9"
+      />
+    </div>
+  );
+
+  const body = (
     <>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4 pb-4 border-b border-border">
-        <div className="flex items-center gap-2">
-          <SlidersHorizontal className="w-4 h-4 text-muted-foreground" />
-          <h3 className="font-semibold text-foreground">
-            {title ? t(title) : t("Filtres")}
-          </h3>
-        </div>
-
-        {/* Clear Button */}
-        <button
-          onClick={clearFilters}
-          className={cn(
-            "text-xs font-medium transition-colors",
-            hasActiveFilters
-              ? "text-primary hover:text-primary/80"
-              : "text-muted-foreground/50 cursor-not-allowed"
-          )}
-          disabled={!hasActiveFilters}
-        >
-          {t("Effacer")}
-        </button>
-      </div>
-
-      <div className="pb-4 border-b border-border">
-        <div className="relative">
-          <input
-            type="text"
-            placeholder={t("Rechercher par nom...")}
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            className="w-full px-4 py-2 pl-10 border border-input bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
-          />
-          <svg
-            className="w-5 h-5 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </div>
-      </div>
-
-      {/* Filter Groups */}
-      <div className="space-y-1">
+      <Accordion type="multiple" value={openGroups} onValueChange={setOpenGroups} className="w-full">
         {filterGroups?.map((group) => {
           const groupOptionNames = (group.options ?? []).map(o => o.name || o.id);
           const activeCount = getGroupActiveCount(group.id, groupOptionNames);
@@ -419,36 +399,85 @@ export function FiltersSection({
           const countryOrder = groupedOptions
             ? [...configuredCountryOrder, ...remainingCountryCodes].filter(code => groupedOptions[code]?.length > 0)
             : [];
-          return (
-          <div key={group.id} className="border-b border-border last:border-b-0">
-            {/* Group Header */}
-            <button
-              onClick={() => toggleGroup(group.id)}
-              className="w-full flex items-center justify-between py-3 text-left hover:bg-muted transition px-2 rounded"
-            >
-              <span className={cn(
-                "font-medium text-sm flex items-center gap-2",
-                isActive ? "text-primary" : "text-foreground"
-              )}>
-                {t(group.label)}
-                {isActive && (
-                  <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold">
-                    {activeCount}
-                  </span>
-                )}
-              </span>
-              <ChevronDown
-                className={cn(
-                  "w-4 h-4 transition-transform",
-                  isActive ? "text-primary" : "text-muted-foreground",
-                  isGroupOpen(group.id) && "rotate-180"
-                )}
+          const renderOption = (option: FilterGroupOption) => {
+            const filterName = option.name || option.id;
+            return (
+              <FilterOptionRow
+                key={option.id}
+                label={t(option.label)}
+                selected={isFilterSelected(group.id, filterName)}
+                onToggle={() =>
+                  group.type === "scopeList"
+                    ? toggleFilter(group.id, filterName, group.field ?? `${option.id}${option.level}`, filterName, option.level as ScopeLevel)
+                    : toggleFilter(group.id, filterName)
+                }
               />
-            </button>
-
-            {/* Group Content */}
-            {isGroupOpen(group.id) && (
-              <div className="pb-3 px-2 space-y-2">
+            );
+          };
+          // Widget COMPACT déclaré en config (matrice observatoire) : le champ
+          // remplace l'accordéon. onChange reçoit la CSV complète → diff puis
+          // toggleFilter par changement (la logique de sélection est inchangée).
+          if (group.select) {
+            const fieldOptions = [...(group.options ?? [])]
+              .sort((a, b) => byLabel(t(a.label), t(b.label)))
+              .map((o) => ({ id: o.name || o.id, label: t(o.label) }));
+            const value = (selectedFilters[group.id] || []).join(",");
+            const applyCsv = (csv: string) => {
+              const next = csv.split(",").map((v) => v.trim()).filter(Boolean);
+              const current = selectedFilters[group.id] || [];
+              const changed = [
+                ...next.filter((n) => !current.includes(n)),
+                ...current.filter((c) => !next.includes(c)),
+              ];
+              for (const name of changed) {
+                const option = (group.options ?? []).find((o) => (o.name || o.id) === name);
+                if (group.type === "scopeList" && option) {
+                  toggleFilter(group.id, name, group.field ?? `${option.id}${option.level}`, name, option.level as ScopeLevel);
+                } else {
+                  toggleFilter(group.id, name);
+                }
+              }
+            };
+            const kind = pickFilterField(group.select);
+            const fieldLabel = t(group.label);
+            return (
+              <div key={group.id} className="py-2">
+                {kind === "select" && (
+                  <SelectField label={fieldLabel} value={value} onChange={applyCsv} options={fieldOptions} allLabel={t("Tous")} />
+                )}
+                {kind === "multi-checkbox" && (
+                  <MultiCheckboxField
+                    label={fieldLabel}
+                    value={value}
+                    onChange={applyCsv}
+                    options={fieldOptions}
+                    allLabel={t("Tous")}
+                    selectedCountLabel={(n) => t("{{count}} sélectionnés", undefined, { count: n })}
+                  />
+                )}
+                {(kind === "multi" || kind === "multi-single") && (
+                  <MultiField
+                    label={fieldLabel}
+                    value={value}
+                    onChange={applyCsv}
+                    options={fieldOptions}
+                    allLabel={t("Tous")}
+                    noResult={t("Aucun résultat")}
+                    single={kind === "multi-single"}
+                  />
+                )}
+              </div>
+            );
+          }
+          return (
+            <AccordionItem key={group.id} value={group.id}>
+              <AccordionTrigger className="py-3 text-sm hover:no-underline">
+                <span className={cn("flex items-center gap-2 font-medium", isActive ? "text-primary" : "text-foreground")}>
+                  {t(group.label)}
+                  {isActive && <Badge className="rounded-full px-1.5">{activeCount}</Badge>}
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="space-y-2 pb-3">
                 {groupByCountry && groupedOptions ? (
                   countryOrder.map(countryCode => {
                     const countryOptions = groupedOptions[countryCode] ?? [];
@@ -458,163 +487,77 @@ export function FiltersSection({
                         <p className="pt-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground/70">
                           {countryLabel}
                         </p>
-                        {countryOptions.sort((a, b) => byLabel(t(a.label), t(b.label))).map((option) => {
-                          const filterName = option.name || option.id;
-                          return (
-                            <FilterOptionRow
-                              key={option.id}
-                              label={t(option.label)}
-                              selected={isFilterSelected(group.id, filterName)}
-                              onToggle={() =>
-                                group.type === "scopeList"
-                                  ? toggleFilter(group.id, filterName, group.field ?? `${option.id}${option.level}`, filterName, option.level as ScopeLevel)
-                                  : toggleFilter(group.id, filterName)
-                              }
-                            />
-                          );
-                        })}
-
+                        {countryOptions.sort((a, b) => byLabel(t(a.label), t(b.label))).map(renderOption)}
                       </div>
                     );
                   })
                 ) : (
-                  [...(group.options ?? [])]
-                  .sort((a, b) => byLabel(t(a.label), t(b.label)))
-                  .map((option) => {
-                    const filterName = option.name || option.id;
-                    return (
-                      <FilterOptionRow
-                        key={option.id}
-                        label={t(option.label)}
-                        selected={isFilterSelected(group.id, filterName)}
-                        onToggle={() =>
-                          group.type === "scopeList"
-                            ? toggleFilter(group.id, filterName, group.field ?? `${option.id}${option.level}`, filterName, option.level as ScopeLevel)
-                            : toggleFilter(group.id, filterName)
-                        }
-                      />
-                    );
-                  }))}
-              </div>
-            )}
-          </div>
+                  [...(group.options ?? [])].sort((a, b) => byLabel(t(a.label), t(b.label))).map(renderOption)
+                )}
+              </AccordionContent>
+            </AccordionItem>
           );
         })}
+
         {Object.keys(filterAnswerData ?? {}).map((group) => {
           const groupData = filterAnswerData?.[group];
           if (!groupData) return null;
           const answerOptionNames = Object.keys(groupData.values);
+          if (answerOptionNames.length === 0) return null;
           const answerActiveCount = getGroupActiveCount(group, answerOptionNames);
           const answerIsActive = answerActiveCount > 0;
+          const headerLabel = (
+            <span className={cn("flex items-center gap-2 font-medium", answerIsActive ? "text-primary" : "text-foreground")}>
+              {t(groupData.label)}
+              {answerIsActive && <Badge className="rounded-full px-1.5">{answerActiveCount}</Badge>}
+            </span>
+          );
+          // Groupe à valeur UNIQUE : pas d'accordéon — le titre EST le toggle.
+          if (answerOptionNames.length === 1) {
+            const singleKey = answerOptionNames[0];
+            const singleValue = groupData.values[singleKey];
+            return (
+              <button
+                key={group}
+                onClick={() => toggleFilter(group, group, "_id", singleValue.orgaNameArray)}
+                className="flex w-full items-center justify-between border-b border-border py-3 text-left text-sm transition hover:bg-muted"
+              >
+                {headerLabel}
+              </button>
+            );
+          }
           return (
-            <div key={group} className="border-b border-border last:border-b-0">
-              {/* Group Header */}
-              {
-                Object.keys(groupData.values).length > 0 ? (Object.keys(groupData.values).length === 1 ?
-                  (
-                    <button
-                      onClick={() => {
-                        const singleKey = Object.keys(groupData.values)[0];
-                        const singleValue = groupData.values[singleKey];
-                        toggleFilter(group, group, "_id", singleValue.orgaNameArray);
-                      }}
-                      className="w-full flex items-center justify-between py-3 text-left hover:bg-muted transition px-2 rounded"
-                    >
-                      <span className={cn(
-                        "font-medium text-sm flex items-center gap-2",
-                        answerIsActive ? "text-primary" : "text-foreground"
-                      )}>
-                        {t(groupData.label)}
-                        {answerIsActive && (
-                          <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold">
-                            {answerActiveCount}
-                          </span>
-                        )}
-                      </span>
-                    </button>
-                  ) :
-                  (
-                    <button
-                      onClick={() => toggleGroup(group)}
-                      className="w-full flex items-center justify-between py-3 text-left hover:bg-muted transition px-2 rounded"
-                    >
-                      <span className={cn(
-                        "font-medium text-sm flex items-center gap-2",
-                        answerIsActive ? "text-primary" : "text-foreground"
-                      )}>
-                        {t(groupData.label)}
-                        {answerIsActive && (
-                          <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold">
-                            {answerActiveCount}
-                          </span>
-                        )}
-                      </span>
-                      <ChevronDown
-                        className={cn(
-                          "w-4 h-4 transition-transform",
-                          answerIsActive ? "text-primary" : "text-muted-foreground",
-                          isGroupOpen(group) && "rotate-180"
-                        )}
-                      />
-                    </button>
-                  )
-                ) : null
-              }
-
-              {/* Group Content */}
-              {isGroupOpen(group) && (
-                <div className="pb-3 px-2 space-y-2">
-                  {Object.keys(groupData.values)
-                    .sort((a, b) => byLabel(groupData.values[a].name, groupData.values[b].name))
-                    .map((optionKey) => {
+            <AccordionItem key={group} value={group}>
+              <AccordionTrigger className="py-3 text-sm hover:no-underline">{headerLabel}</AccordionTrigger>
+              <AccordionContent className="space-y-2 pb-3">
+                {answerOptionNames
+                  .sort((a, b) => byLabel(groupData.values[a].name, groupData.values[b].name))
+                  .map((optionKey) => {
                     const option = groupData.values[optionKey];
-                    const filterName = optionKey;
                     return (
-                      <label
+                      <FilterOptionRow
                         key={optionKey}
-                        className="flex items-start gap-2 cursor-pointer group"
-                      >
-                        {/* Checkbox */}
-                        <div className="relative flex items-center justify-center mt-0.5">
-                          <input
-                            type="checkbox"
-                            checked={isFilterSelected(group, filterName)}
-                            onChange={() => toggleFilter(group, filterName, "_id", option.orgaNameArray)}
-                            className="w-4 h-4 border-2 border-input rounded cursor-pointer appearance-none checked:bg-primary checked:border-primary transition"
-                          />
-                          {isFilterSelected(group, filterName) && (
-                            <svg
-                              className="w-3 h-3 text-white absolute pointer-events-none"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                            </svg>
-                          )}
-                        </div>
-
-                        <span className="text-sm text-muted-foreground group-hover:text-foreground flex-1">
-                          {capitalizeFirst(option.name)}
-                        </span>
-                      </label>
+                        label={capitalizeFirst(option.name)}
+                        selected={isFilterSelected(group, optionKey)}
+                        onToggle={() => toggleFilter(group, optionKey, "_id", option.orgaNameArray)}
+                      />
                     );
                   })}
-                </div>
-              )}
-            </div>
-          )
+              </AccordionContent>
+            </AccordionItem>
+          );
         })}
-      </div>
+      </Accordion>
     </>
   );
 
-  /* Mobile : la sidebar empilée poussait les résultats sous un mur de
-     filtres — bouton « Filtres » + compteur ouvrant un Sheet bas (pattern
-     searchHeader / observatoire). Desktop : sidebar inchangée. */
-  if (isMobile) {
-    return (
-      <div id={id} className={className}>
+  return (
+    <div id={id} className={className}>
+      {/* Mobile (< lg — le breakpoint d'empilement du gridLayout) : bouton +
+          Sheet bas. Bascule PUR CSS (pas de useIsMobile) : le SSR et le 1ᵉʳ
+          rendu client sont déjà corrects — aucun flash desktop→mobile. */}
+      <div className="space-y-2 lg:hidden">
+        {searchField}
         <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
           <SheetTrigger asChild>
             <Button variant="outline" className="h-11 w-full justify-between rounded-xl px-3">
@@ -628,8 +571,19 @@ export function FiltersSection({
             </Button>
           </SheetTrigger>
           <SheetContent side="bottom" className="max-h-[85vh] gap-0 rounded-t-2xl p-0">
-            <SheetTitle className="sr-only">{title ? t(title) : t("Filtres")}</SheetTitle>
-            <div className="overflow-y-auto p-4">{content}</div>
+            {/* pr-12 : la croix de fermeture (top-4 right-4) a SA place — elle
+                ne chevauche plus le bouton Effacer. */}
+            <SheetHeader className="flex-row items-center justify-between space-y-0 border-b border-border py-3 pl-4 pr-12">
+              <SheetTitle className="flex items-center gap-2 text-base">
+                <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+                {title ? t(title) : t("Filtres")}
+                {totalActiveCount > 0 && (
+                  <Badge className="rounded-full px-2">{totalActiveCount}</Badge>
+                )}
+              </SheetTitle>
+              {clearButton}
+            </SheetHeader>
+            <div className="overflow-y-auto px-4 pt-1">{body}</div>
             <SheetFooter className="flex-row gap-2 border-t border-border">
               <SheetClose asChild>
                 <Button className="flex-1">{t("Voir les résultats")}</Button>
@@ -638,13 +592,20 @@ export function FiltersSection({
           </SheetContent>
         </Sheet>
       </div>
-    );
-  }
 
-  return (
-    <aside id={id} className={cn("bg-card border border-border rounded-lg p-4", className)}>
-      {content}
-    </aside>
+      {/* Desktop : sidebar. */}
+      <aside className="hidden rounded-lg border border-border bg-card p-4 lg:block">
+        <div className="mb-4 flex items-center justify-between border-b border-border pb-4">
+          <div className="flex items-center gap-2">
+            <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+            <h3 className="font-semibold text-foreground">{title ? t(title) : t("Filtres")}</h3>
+          </div>
+          {clearButton}
+        </div>
+        <div className="border-b border-border pb-4">{searchField}</div>
+        {body}
+      </aside>
+    </div>
   );
 }
 export default FiltersSection;

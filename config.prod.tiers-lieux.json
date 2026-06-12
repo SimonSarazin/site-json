@@ -1244,6 +1244,9 @@
                         "1"
                       ],
                       "sortBy": "name"
+                    },
+                    "select": {
+                      "multiple": true
                     }
                   },
                   {
@@ -1268,6 +1271,10 @@
                         "3"
                       ],
                       "sortBy": "name"
+                    },
+                    "select": {
+                      "multiple": true,
+                      "searchable": true
                     }
                   },
                   {

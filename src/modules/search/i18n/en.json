@@ -174,5 +174,7 @@
   "Carte limitée aux {{loaded}} premiers résultats": "Map limited to the first {{loaded}} results",
   "Aucun résultat": "No results",
   "Voir le profil": "View profile",
-  "Adresse inconnue": "Address unknown"
+  "Adresse inconnue": "Address unknown",
+  "Tous": "All",
+  "{{count}} sélectionnés": "{{count}} selected"
 }

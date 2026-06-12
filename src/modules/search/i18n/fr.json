@@ -174,5 +174,7 @@
     "Carte limitée aux {{loaded}} premiers résultats": "Carte limitée aux {{loaded}} premiers résultats",
     "Aucun résultat": "Aucun résultat",
     "Voir le profil": "Voir le profil",
-    "Adresse inconnue": "Adresse inconnue"
+    "Adresse inconnue": "Adresse inconnue",
+    "Tous": "Tous",
+    "{{count}} sélectionnés": "{{count}} sélectionnés"
 }

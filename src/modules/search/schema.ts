@@ -49,6 +49,14 @@ export const FilterGroupSchema = z.object({
   filterType: z.enum(["sourceKey"]).optional(),
   // Champ de l'entité utilisé comme valeur de filtre (défaut: "slug").
   filterBy: z.string().optional(),
+  /** Widget COMPACT au lieu de l'accordéon à cases (matrice observatoire) :
+   *  {} → Select simple · {multiple} → DropdownMenu+cases · {searchable} →
+   *  MultipleSelector (sélection unique) · {multiple, searchable} →
+   *  MultipleSelector multi. Absent → accordéon (défaut). */
+  select: z.object({
+    multiple: z.boolean().optional(),
+    searchable: z.boolean().optional(),
+  }).optional(),
 });
 export const FilterGroupsSchema = z.array(FilterGroupSchema);
 
