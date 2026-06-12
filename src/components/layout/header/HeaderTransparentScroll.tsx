@@ -55,29 +55,33 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
         : (!shouldHideSecondaryNav ? secondaryNavItems : []);
 
     return (
+        <>
         <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${(isScrolled || header.transparent === false) ? 'bg-background/90 backdrop-blur-md shadow-deep' : 'bg-transparent'}`}>
             <div className="container mx-auto px-4">
                 <div className="flex items-center justify-between h-20">
-                    <NavLink to={header.path || "/"} className="flex items-center gap-3 cursor-pointer group">
+                    {/* min-w-0 + truncate : le titre ne wrappe JAMAIS (un titre
+                        long déborderait de la barre h-20 sur mobile et
+                        recouvrirait le contenu) — il s'ellipse. */}
+                    <NavLink to={header.path || "/"} className="flex min-w-0 items-center gap-3 cursor-pointer group">
                         {header.logo ? (
                             <img
                                 src={`/${header.logo}`}
                                 alt={header.logoAlt ? t(header.logoAlt) : ""}
-                                className="h-8 w-8 object-contain group-hover:scale-110 transition-transform"
+                                className="h-8 w-8 shrink-0 object-contain group-hover:scale-110 transition-transform"
                             />
                         ) : header.logoIcon ? (
                             <IconOrSvg
                                 value={header.logoIcon}
-                                className="w-8 h-8 text-primary group-hover:scale-110 transition-transform"
+                                className="w-8 h-8 shrink-0 text-primary group-hover:scale-110 transition-transform"
                             />
                         ) : null}
                         {(header.logoTitle || header.logoSubtitle) && (
-                            <span className="flex flex-col leading-tight">
+                            <span className="flex min-w-0 flex-col leading-tight">
                                 {header.logoTitle && (
-                                    <span className="text-lg font-bold text-foreground">{t(header.logoTitle)}</span>
+                                    <span className="truncate text-base font-bold text-foreground sm:text-lg">{t(header.logoTitle)}</span>
                                 )}
                                 {header.logoSubtitle && (
-                                    <span className="text-xs font-medium text-muted-foreground">{t(header.logoSubtitle)}</span>
+                                    <span className="truncate text-xs font-medium text-muted-foreground">{t(header.logoSubtitle)}</span>
                                 )}
                             </span>
                         )}
@@ -252,5 +256,11 @@ export default function HeaderTransparentScroll({ header }: HeaderTransparentScr
             </div>
 
         </nav>
+        {/* transparent: false = barre TOUJOURS opaque → l'overlay n'a aucun
+            sens : on pousse le contenu sous la barre (sinon le haut de chaque
+            page sans héro — légales, auth, searchHeader — passe dessous).
+            transparent: true/absent garde l'overlay (design héro plein écran). */}
+        {header.transparent === false && <div aria-hidden className="h-20" />}
+        </>
     );
 }

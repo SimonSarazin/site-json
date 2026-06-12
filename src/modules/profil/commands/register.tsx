@@ -8,13 +8,18 @@
  * d'erreur — la palette continue de fonctionner avec les autres sources.
  *
  * Payload configurable via `commandPalette.entitySearch` :
- *   { enabled?, searchType?, limit?, params? }
+ *   { enabled?, searchType?, limit?, params?, itemAction?, itemActionByType? }
  * - `enabled: false` désactive complètement la source.
  * - `searchType` : types d'entités cherchés (défaut : les 5 types).
  * - `limit` : nombre max de résultats (défaut 8 ; passé en `indexStep`).
  * - `params` : champs additionnels fusionnés dans le payload `searchCostum`
  *   (avancé : `filters`, `notSourceKey`, scope costum, …).
+ * - `itemAction` / `itemActionByType` : action au clic — `{kind: "profil"}`
+ *   (défaut, navigation `/profil/:slug`) ou `{kind: "preview", detailsMode?,
+ *   preview?}` (détail du module search, pattern rowAction observatoire) ;
+ *   surchargeable par type d'entité (clé ex. `"poi"`).
  */
+import type { SearchEntity } from "@communecter/cocolight-api-client";
 import { registerCommandSource } from "@/modules/commandPalette";
 import type { Command, CommandReadContext } from "@/modules/commandPalette";
 import { getEntityIcon } from "@/lib/entityIcons";
@@ -64,6 +69,8 @@ registerCommandSource({
       const type = e.getEntityType?.() ?? "poi";
       const slug = e.slug ?? e.serverData?.slug;
       const name = e.serverData?.name ?? slug ?? "—";
+      // Action au clic : surcharge par type > défaut global > navigation profil.
+      const itemAction = cfg?.itemActionByType?.[type] ?? cfg?.itemAction;
       return {
         id: `profil:${e.id ?? slug ?? name}`,
         label: name,
@@ -71,6 +78,16 @@ registerCommandSource({
         icon: getEntityIcon(type, { className: "h-5 w-5", withColor: true }),
         group: "profil:entities",
         perform: (run) => {
+          if (itemAction?.kind === "preview" && run.openEntityPreview) {
+            run.close();
+            // Le résultat searchCostum EST une entité SDK vivante — l'interface
+            // locale SearchResultEntity n'en lit qu'une vue étroite.
+            run.openEntityPreview(e as unknown as SearchEntity, {
+              detailsMode: itemAction.detailsMode,
+              preview: itemAction.preview,
+            });
+            return;
+          }
           if (slug) run.navigate(`/profil/${slug}`);
           run.close();
         },

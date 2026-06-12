@@ -337,7 +337,7 @@ function Calendar({
                   props.onMonthChange?.(newDate);
                 }}
               >
-                <SelectTrigger className="focus:bg-accent focus:text-accent-foreground w-fit gap-1 border-none p-0">
+                <SelectTrigger className="focus:bg-muted focus:text-foreground w-fit gap-1 border-none p-0">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -358,7 +358,7 @@ function Calendar({
                   props.onMonthChange?.(newDate);
                 }}
               >
-                <SelectTrigger className="focus:bg-accent focus:text-accent-foreground w-fit gap-1 border-none p-0">
+                <SelectTrigger className="focus:bg-muted focus:text-foreground w-fit gap-1 border-none p-0">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -420,7 +420,7 @@ function TimePeriodSelect({
       <Select defaultValue={period} onValueChange={handleValueChange}>
         <SelectTrigger
           ref={buttonRef}
-          className="focus:bg-accent focus:text-accent-foreground w-[65px]"
+          className="focus:bg-muted focus:text-foreground w-[65px]"
           onKeyDown={handleKeyDown}
         >
           <SelectValue />
@@ -546,7 +546,7 @@ function TimePickerInput({
       id={id || picker}
       name={name || picker}
       className={cn(
-        "focus:bg-accent focus:text-accent-foreground w-[48px] text-center font-mono text-base tabular-nums caret-transparent [&::-webkit-inner-spin-button]:appearance-none",
+        "focus:bg-muted focus:text-foreground w-[48px] text-center font-mono text-base tabular-nums caret-transparent [&::-webkit-inner-spin-button]:appearance-none",
         className
       )}
       value={value || calculatedValue}

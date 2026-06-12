@@ -61,8 +61,8 @@ export function NotificationRow({ item, onNavigate }: NotificationRowProps) {
       onClick={handleClick}
       disabled={navigating}
       className={cn(
-        "flex w-full items-start gap-3 px-3 py-2.5 text-left transition-colors hover:bg-accent",
-        isUnread && "bg-accent/40",
+        "flex w-full items-start gap-3 px-3 py-2.5 text-left transition-colors hover:bg-muted",
+        isUnread && "bg-primary/5",
         target ? "cursor-pointer" : "cursor-default",
       )}
     >

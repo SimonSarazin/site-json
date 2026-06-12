@@ -100,13 +100,13 @@ function MultiCheckboxField({ label, value, onChange, options, allLabel, selecte
       <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          {/* Survol aligné sur le SelectTrigger (neutre en light, input/50 en
-              dark) — le hover:bg-accent du Button outline détonnait à côté
-              des Select normaux. */}
+          {/* Aligné visuellement sur le SelectTrigger (bordure/fond/graisse) ;
+              le survol vient du Button outline standard (muted — neutre quel
+              que soit le thème). */}
           <Button
             variant="outline"
             size="sm"
-            className="h-8 w-full justify-between border-input bg-transparent font-normal hover:bg-transparent hover:text-foreground dark:hover:bg-input/50"
+            className="h-8 w-full justify-between border-input bg-transparent font-normal"
           >
             <span className="truncate">{triggerLabel}</span>
             <ChevronDown className="ml-1 h-3.5 w-3.5 shrink-0 opacity-50" />
