@@ -1701,6 +1701,16 @@
                   "fr": "Compagnon France Tiers-Lieux",
                   "en": "France Tiers-Lieux Companion"
                 }
+              },
+              "equipements": {
+                "paths": [
+                  "answers.6925869ad76aaf6c5a2b2f8a.serverData.answers.navigatorDesTierslieux25112025_1436_0.navigatorDesTierslieux25112025_1436_0miok91fh1gta2sneeu5"
+                ],
+                "kind": "list",
+                "label": {
+                  "fr": "Équipements (réponses CoForm)",
+                  "en": "Equipment (CoForm answers)"
+                }
               }
             },
             "filters": [
@@ -1838,6 +1848,16 @@
                 "label": {
                   "fr": "Par pays",
                   "en": "By country"
+                },
+                "layout": "half"
+              },
+              {
+                "kind": "barsHorizontal",
+                "dimension": "equipements",
+                "top": 10,
+                "label": {
+                  "fr": "Équipements déclarés (PoC réponses CoForm)",
+                  "en": "Declared equipment (CoForm PoC)"
                 },
                 "layout": "half"
               }

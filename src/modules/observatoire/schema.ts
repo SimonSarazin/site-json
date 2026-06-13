@@ -30,8 +30,12 @@ export type ObservatoryItem = Record<string, unknown>;
 // pilotable par la config (mécanisme dans le composant, données dans la
 // config) : le code ne connaît AUCUN dataset particulier.
 export const DimensionDefSchema = z.object({
-  /** Chaînes de priorité : le premier chemin non vide gagne (chemins pointés
-   *  acceptés, ex. "address.addressLocality"). */
+  /** Chaînes de priorité : le premier chemin non vide gagne. Chemins pointés
+   *  acceptés (ex. "address.addressLocality") et ARRAY-AWARE : un segment
+   *  tombant sur un tableau (sans index numérique) mappe le reste du chemin sur
+   *  chaque élément puis aplatit — une réponse CoForm embarquée se lit ainsi
+   *  par un simple chemin `answers.<form>.serverData.answers.<section>.<field>`
+   *  (cf. resolveSegments, dimensions.ts), sans accesseur métier dédié. */
   paths: z.array(z.string()).min(1),
   /** value (défaut) : 1ʳᵉ chaîne non vide · list : CSV/tableau aplati ·
    *  anyTrue : au moins un des chemins est vrai · number : 1ʳᵉ valeur numérique ·

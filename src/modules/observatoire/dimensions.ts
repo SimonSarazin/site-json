@@ -7,7 +7,6 @@
 // Filtres, KPI, graphes et table consomment des dimensions — le code ne
 // connaît AUCUN dataset : toutes les déclarations viennent de la config.
 // ------------------------------------------------------------
-import getValueByPath from "@/helpers/getValueByPath";
 import type { DimensionDef, DimensionsConfig, ObservatoryItem } from "./schema";
 
 /*───────────────────────────────────────────────────────────────*/
@@ -72,8 +71,40 @@ export function asDisplayString(value: unknown): string | undefined {
 /* Moteur                                                        */
 /*───────────────────────────────────────────────────────────────*/
 
+/**
+ * Résolution de chemin GÉNÉRIQUE et ARRAY-AWARE : descend segment par segment
+ * et, quand un segment tombe sur un TABLEAU (sans index numérique explicite),
+ * mappe le reste du chemin sur CHAQUE élément puis aplatit (un niveau). Une
+ * structure imbriquée arbitraire devient ainsi lisible par un simple `paths` —
+ * y compris les réponses CoForm embarquées (`answers.<form>.serverData.answers
+ * .<section>.<field>` : `answers.<form>` est un tableau d'entités Answer, le
+ * reste du chemin est appliqué à chacune). Aucun accesseur métier.
+ */
+function resolveSegments(value: unknown, segments: string[]): unknown {
+  if (segments.length === 0) return value;
+  if (value == null) return undefined;
+  const [head, ...rest] = segments;
+  if (Array.isArray(value)) {
+    // index numérique explicite → élément ; sinon → map + flatten.
+    if (/^\d+$/.test(head)) return resolveSegments(value[Number(head)], rest);
+    const collected = value
+      .map((item) => resolveSegments(item, segments))
+      .filter((v) => v != null);
+    return collected.flat();
+  }
+  return resolveSegments((value as Record<string, unknown>)[head], rest);
+}
+
 function resolvePath(e: ObservatoryItem, path: string): unknown {
-  return path.includes(".") ? getValueByPath(e, path) : e[path];
+  // Chemin simple sans tableau intermédiaire : le reducer rapide du repo.
+  // Sinon (tableau à traverser) : la résolution array-aware ci-dessus.
+  return path.includes(".") ? resolveSegments(e, path.split(".")) : e[path];
+}
+
+/** Valeurs candidates d'une dimension : ses chemins (`paths`), résolus en
+ *  mode array-aware. Source unique des résolveurs. */
+function sourceValues(e: ObservatoryItem, def: DimensionDef): unknown[] {
+  return (def.paths ?? []).map((p) => resolvePath(e, p));
 }
 
 /** Normalise une valeur via `def.valueMap` (variantes backend → canonique). */
@@ -81,53 +112,53 @@ function normalizeValue(def: DimensionDef, v: string): string {
   return def.valueMap?.[v] ?? v;
 }
 
-/** kind "value" — première valeur affichable le long des chemins de priorité
- *  (normalisée via `valueMap` si déclaré). */
+/** kind "value" — première valeur affichable (chemin array-aware, y compris une
+ *  réponse CoForm imbriquée), normalisée via `valueMap` si déclaré. */
 export function dimensionValue(e: ObservatoryItem, def: DimensionDef): string | undefined {
-  for (const p of def.paths) {
-    const s = asDisplayString(resolvePath(e, p));
+  for (const raw of sourceValues(e, def)) {
+    const s = asDisplayString(raw);
     if (s !== undefined) return normalizeValue(def, s);
   }
   return undefined;
 }
 
-/** kind "list" — premier chemin produisant une liste non vide. `values`
+/** kind "list" — première source produisant une liste non vide. `values`
  *  (allowlist) restreint et ORDONNE la sortie : décompose un champ fourre-tout
  *  (ex. `tags`) en axes distincts (typologie, portage, surface…) — ordre
  *  déclaré = ordre stable des parts/barres. */
 export function dimensionList(e: ObservatoryItem, def: DimensionDef): string[] {
-  for (const p of def.paths) {
-    const raw = toStringList(resolvePath(e, p));
-    if (raw.length > 0) {
+  for (const raw of sourceValues(e, def)) {
+    const rawList = toStringList(raw);
+    if (rawList.length > 0) {
       // valueMap AVANT allowlist (les variantes fusionnent vers la canonique),
       // puis dédup (deux variantes du même item → une seule valeur).
-      const list = def.valueMap ? [...new Set(raw.map((v) => normalizeValue(def, v)))] : raw;
+      const list = def.valueMap ? [...new Set(rawList.map((v) => normalizeValue(def, v)))] : rawList;
       return def.values?.length ? def.values.filter((v) => list.includes(v)) : list;
     }
   }
   return [];
 }
 
-/** Kinds booléens : "anyTrue" (un chemin affirmatif) et "contains" (un chemin
- *  dont la liste contient `value`). Centralisé pour le dispatch (filtres/KPI). */
+/** Kinds booléens : "anyTrue" (une source affirmative) et "contains" (une
+ *  source-liste contient `value`). Centralisé pour le dispatch (filtres/KPI). */
 export function isBoolKind(kind: DimensionDef["kind"]): boolean {
   return kind === "anyTrue" || kind === "contains";
 }
 
-/** kind "anyTrue" — au moins un chemin affirmatif ; kind "contains" — au moins
- *  un chemin dont la liste contient `def.value` (appartenance, ex. label). */
+/** kind "anyTrue" — au moins une source affirmative ; kind "contains" — au
+ *  moins une source-liste contenant `def.value` (appartenance, ex. label). */
 export function dimensionBool(e: ObservatoryItem, def: DimensionDef): boolean {
   if (def.kind === "contains") {
     const target = def.value;
-    return target ? def.paths.some((p) => toStringList(resolvePath(e, p)).includes(target)) : false;
+    return target ? sourceValues(e, def).some((raw) => toStringList(raw).includes(target)) : false;
   }
-  return def.paths.some((p) => isTrue(resolvePath(e, p)));
+  return sourceValues(e, def).some((raw) => isTrue(raw));
 }
 
-/** kind "number" — première valeur numérique le long des chemins. */
+/** kind "number" — première valeur numérique (chemin array-aware). */
 export function dimensionNumber(e: ObservatoryItem, def: DimensionDef): number | undefined {
-  for (const p of def.paths) {
-    const n = toNumber(resolvePath(e, p));
+  for (const raw of sourceValues(e, def)) {
+    const n = toNumber(raw);
     if (n !== undefined) return n;
   }
   return undefined;
@@ -157,12 +188,14 @@ const SDK_BASE_FIELDS = ["collection", "_id", "id", "slug"] as const;
  * Projection (`fields` de searchCostum) DÉRIVÉE des dimensions déclarées :
  * la racine de chaque chemin (+ champs SDK). On ne demande au backend que ce
  * que le dashboard consomme — pas de liste de champs à maintenir en config
- * (surchargeable malgré tout via `baseParams.defaultFields`).
+ * (surchargeable malgré tout via `baseParams.defaultFields`). La racine suffit,
+ * y compris pour un chemin array-aware imbriqué (ex. `answers.<form>…` →
+ * `answers` : tout le sous-document embarqué est ramené).
  */
 export function fieldsFromDimensions(dims: DimensionsConfig): string[] {
   const fields = new Set<string>(SDK_BASE_FIELDS);
   for (const def of Object.values(dims)) {
-    for (const path of def.paths) {
+    for (const path of def.paths ?? []) {
       const root = path.split(".")[0];
       if (root) fields.add(root);
     }

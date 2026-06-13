@@ -36,6 +36,23 @@ orthographes (`surface valueMap:{"Plus de 200m2":"Plus de 200m²","Entre 60m² e
 200m²":"Entre 60 et 200m²"}`). Sur un `list`, les variantes d'un même item
 dédoublonnent vers la canonique.
 
+**Réponses CoForm comme dimensions** (chemin array-aware) : avec un variant qui
+embarque les réponses (`serverData.answers`, ex. `navigator-tl`), une dimension
+les lit par un **simple `paths`** — aucun accesseur métier dédié. `paths`
+résout segment par segment et, quand un segment tombe sur un TABLEAU sans index
+numérique, mappe le reste du chemin sur chaque élément puis aplatit ; comme
+`answers.<form>` est un tableau d'entités Answer, le chemin
+`answers.<form>.serverData.answers.<section>.<field>` ramène la (les) valeur(s)
+de ce champ — `{paths:["answers.<form>.serverData.answers.<section>.<field>"],
+kind:"list"}`. La valeur (chaîne ou liste) est ensuite traitée par `kind` comme
+une source normale — `values`, `valueMap`, `contains` compris ; un index
+explicite (`…answers.<form>.0.serverData…`) cible une entité précise.
+`fieldsFromDimensions` ramène la racine `answers` à la projection. Débloque les
+axes « équipements / services / activités » que les filtres `filtersByAnswers`
+exposent. ⚠️ Couverture = part des items ayant RÉPONDU au CoForm (souvent faible
+au départ, croît avec les saisies) ; les champs `table` (array-of-arrays, ex.
+salles/tarifs) ne sont pas encore lus.
+
 ## Format de la section (tout vient de la config)
 
 ```jsonc

@@ -121,6 +121,44 @@ describe("moteur de dimensions", () => {
     expect(dimensionValue({ p: "Switzerland" }, { paths: ["p"], valueMap: { Switzerland: "Suisse" } })).toBe("Suisse");
   });
 
+  it("chemin array-aware : lit une RÉPONSE CoForm imbriquée (answers[form][N].serverData.answers)", () => {
+    // Structure réelle navigator-tl : answers[form] est un TABLEAU d'entités
+    // Answer ; chacune porte serverData.answers.<section>.<field>. Le résolveur
+    // array-aware mappe le reste du chemin sur chaque entité puis aplatit — une
+    // réponse CoForm se lit par un simple `paths`, sans accesseur dédié.
+    const PATH = "answers.formA.serverData.answers.sectionX.eq_field";
+    const tl: ObservatoryItem = {
+      answers: {
+        formA: [
+          {
+            serverData: {
+              answers: {
+                sectionX: { eq_field: ["Wifi", "Vidéoprojecteur", "PMR"] },
+              },
+            },
+          },
+        ],
+      },
+    };
+    // list : la réponse traversée est traitée comme une dimension list normale
+    expect(dimensionList(tl, { paths: [PATH], kind: "list" })).toEqual([
+      "Wifi",
+      "Vidéoprojecteur",
+      "PMR",
+    ]);
+    // contains : appartenance dans la réponse
+    expect(dimensionBool(tl, { paths: [PATH], kind: "contains", value: "Wifi" })).toBe(true);
+    expect(dimensionBool(tl, { paths: [PATH], kind: "contains", value: "Bar" })).toBe(false);
+    // index numérique explicite → cible une entité précise du tableau (pas de map)
+    expect(
+      dimensionList(tl, { paths: ["answers.formA.0.serverData.answers.sectionX.eq_field"], kind: "list" }),
+    ).toEqual(["Wifi", "Vidéoprojecteur", "PMR"]);
+    // champ absent → vide (item non répondu)
+    expect(dimensionList({}, { paths: [PATH], kind: "list" })).toEqual([]);
+    // fieldsFromDimensions ramène la racine `answers` (sous-document embarqué)
+    expect(fieldsFromDimensions({ eq: { paths: [PATH], kind: "list" } })).toContain("answers");
+  });
+
   it("contains : booléen d'appartenance à une liste (ex. label)", () => {
     const tl: ObservatoryItem = { tags: ["TiersLieux", "Compagnon France Tiers-Lieux"] };
     const def = { paths: ["tags"], kind: "contains" as const, value: "Compagnon France Tiers-Lieux" };
