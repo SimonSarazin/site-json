@@ -95,6 +95,9 @@ export function useObservatoryItemsQuery(
       queryKeyPrefix: OBSERVATORY_QUERY_KEYS.ITEMS_PREFIX,
       searchType,
       baseParams,
+      // Variant SDK (ex. "navigator-tl") — aligné sur les sections search du
+      // costum ; inclus dans la queryKey (cf. prefetch SSR pour l'hydratation).
+      variant: baseParamsProp?.variant,
       maxResults: baseParamsProp?.maxResults,
     });
 

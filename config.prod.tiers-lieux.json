@@ -130,6 +130,14 @@
         "children": [
           {
             "label": {
+              "fr": "Tableau de bord",
+              "en": "Dashboard"
+            },
+            "path": "/observatoire",
+            "icon": "chart-column"
+          },
+          {
+            "label": {
               "fr": "Réseaux régionaux",
               "en": "Regional networks"
             },
@@ -1514,6 +1522,259 @@
                     "color": "primary"
                   }
                 }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/observatoire",
+      "title": {
+        "fr": "Observatoire des tiers-lieux",
+        "en": "Third places observatory"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "data-observatory",
+          "props": {
+            "headline": {
+              "fr": "Observatoire des tiers-lieux",
+              "en": "Third places observatory"
+            },
+            "baseParams": {
+              "defaultTypes": [
+                "organizations"
+              ],
+              "defaultFilters": {
+                "tags": [
+                  "TiersLieux"
+                ],
+                "address.addressCountry": {
+                  "$in": [
+                    "BE",
+                    "FR",
+                    "GP",
+                    "GF",
+                    "IT",
+                    "RE",
+                    "MQ",
+                    "YT",
+                    "NC",
+                    "CH"
+                  ]
+                }
+              },
+              "notSourceKey": true,
+              "maxResults": 6000,
+              "variant": "navigator-tl"
+            },
+            "dimensions": {
+              "name": {
+                "paths": [
+                  "name"
+                ],
+                "label": {
+                  "fr": "Nom",
+                  "en": "Name"
+                }
+              },
+              "commune": {
+                "paths": [
+                  "address.addressLocality"
+                ],
+                "label": {
+                  "fr": "Commune",
+                  "en": "Municipality"
+                }
+              },
+              "departement": {
+                "paths": [
+                  "address.level4Name"
+                ],
+                "label": {
+                  "fr": "Département",
+                  "en": "Department"
+                }
+              },
+              "region": {
+                "paths": [
+                  "address.level3Name"
+                ],
+                "label": {
+                  "fr": "Région",
+                  "en": "Region"
+                }
+              },
+              "pays": {
+                "paths": [
+                  "address.level1Name"
+                ],
+                "label": {
+                  "fr": "Pays",
+                  "en": "Country"
+                }
+              },
+              "tags": {
+                "paths": [
+                  "tags"
+                ],
+                "kind": "list",
+                "label": {
+                  "fr": "Caractéristiques",
+                  "en": "Features"
+                }
+              }
+            },
+            "filters": [
+              {
+                "dimension": "region",
+                "multiple": true
+              },
+              {
+                "dimension": "pays",
+                "multiple": true
+              },
+              {
+                "dimension": "departement",
+                "searchable": true
+              }
+            ],
+            "search": {
+              "dimensions": [
+                "name",
+                "commune"
+              ],
+              "placeholder": {
+                "fr": "Rechercher un tiers-lieu…",
+                "en": "Search a third place…"
+              }
+            },
+            "export": {
+              "filename": "observatoire-tiers-lieux"
+            },
+            "drilldown": true,
+            "kpis": [
+              {
+                "kind": "count",
+                "label": {
+                  "fr": "Tiers-lieux",
+                  "en": "Third places"
+                },
+                "icon": "building-2",
+                "accent": "primary"
+              },
+              {
+                "kind": "distinct",
+                "dimension": "region",
+                "label": {
+                  "fr": "Régions",
+                  "en": "Regions"
+                },
+                "icon": "map",
+                "accent": "chart-2"
+              },
+              {
+                "kind": "distinct",
+                "dimension": "departement",
+                "label": {
+                  "fr": "Départements",
+                  "en": "Departments"
+                },
+                "icon": "map-pin",
+                "accent": "chart-3"
+              },
+              {
+                "kind": "distinct",
+                "dimension": "commune",
+                "label": {
+                  "fr": "Communes",
+                  "en": "Municipalities"
+                },
+                "icon": "map-pinned",
+                "accent": "chart-4"
+              },
+              {
+                "kind": "top",
+                "dimension": "region",
+                "label": {
+                  "fr": "Région la plus dense",
+                  "en": "Densest region"
+                },
+                "icon": "trophy",
+                "accent": "chart-1"
+              }
+            ],
+            "charts": [
+              {
+                "kind": "bars",
+                "dimension": "region",
+                "label": {
+                  "fr": "Répartition par région",
+                  "en": "By region"
+                },
+                "layout": "full"
+              },
+              {
+                "kind": "donut",
+                "dimension": "pays",
+                "label": {
+                  "fr": "Répartition par pays",
+                  "en": "By country"
+                },
+                "layout": "half"
+              },
+              {
+                "kind": "barsHorizontal",
+                "dimension": "tags",
+                "top": 12,
+                "label": {
+                  "fr": "Caractéristiques les plus fréquentes",
+                  "en": "Most common features"
+                },
+                "layout": "half"
+              }
+            ],
+            "table": {
+              "columns": [
+                {
+                  "dimension": "name",
+                  "kind": "title",
+                  "subtitleDimension": "commune",
+                  "label": {
+                    "fr": "Tiers-lieu",
+                    "en": "Third place"
+                  }
+                },
+                {
+                  "dimension": "region",
+                  "kind": "badge",
+                  "label": {
+                    "fr": "Région",
+                    "en": "Region"
+                  }
+                },
+                {
+                  "dimension": "departement",
+                  "kind": "text",
+                  "label": {
+                    "fr": "Département",
+                    "en": "Department"
+                  }
+                },
+                {
+                  "dimension": "pays",
+                  "kind": "text",
+                  "label": {
+                    "fr": "Pays",
+                    "en": "Country"
+                  }
+                }
+              ],
+              "defaultSort": "name",
+              "rowAction": {
+                "kind": "profil"
               }
             }
           }

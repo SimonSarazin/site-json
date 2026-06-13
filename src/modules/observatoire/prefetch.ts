@@ -27,6 +27,8 @@ export function observatoryPrefetchParams(
     searchTags: {},
     searchType: { type: baseParams.defaultTypes as unknown as string[] },
     mapUsed: false,
+    // Variant SDK aligné sur le client (queryKey + endpoint SSR identiques).
+    variant: p.baseParams?.variant,
     baseParams,
   };
 }

@@ -26,6 +26,8 @@ dates EJSON désérialisées en `Date` par le SDK).
     "baseParams": {                              // PÉRIMÈTRE — requis
       "defaultTypes": ["poi"],
       "defaultFilters": { "$or": { "source.key": "monDataset" } },
+      "notSourceKey": true,                      // cherche tout le réseau (cf. /lieux)
+      "variant": "navigator-tl",                 // variant SDK — ALIGNER sur les sections search du costum
       "maxResults": 5000                         // plafond (défaut 5000)
     },
     "dimensions": {                              // REQUIS — le modèle du dataset

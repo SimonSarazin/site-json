@@ -8,7 +8,7 @@
 // ------------------------------------------------------------
 import { z } from "zod";
 import { LocalizedString } from "@/types/locale-schema";
-import { PreviewConfSchema } from "@/modules/search/schema";
+import { PreviewConfSchema, SearchVariantSchema } from "@/modules/search/schema";
 
 /*───────────────────────────────────────────────────────────────*/
 /* 1. Item — document brut                                       */
@@ -155,6 +155,11 @@ const ObservatoryBaseParamsSchema = z
       .record(z.string(), z.union([z.literal(1), z.literal(-1)]))
       .optional(),
     notSourceKey: z.boolean().optional(),
+    // Variant SDK de `searchCostum` (ex. "navigator-tl") — DOIT correspondre à
+    // celui des sections search du même costum, sinon l'observatoire interroge
+    // un endpoint/projection différents. Inclus dans la queryKey (isole le
+    // cache) et propagé au prefetch SSR. Même enum que les sections search.
+    variant: SearchVariantSchema.optional(),
     // Plafond de résultats chargés (sécurité « charger tout ») — défaut :
     // SEARCH_ALL_DEFAULT_MAX_RESULTS (5000) du hook générique.
     maxResults: z.number().int().positive().optional(),
