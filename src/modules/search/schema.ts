@@ -20,6 +20,17 @@ export const IconNameSchema = z.custom<IconName>();
 // ─── Schémas de filtres (partagés) ───────────────────────────────────────────
 // Source unique réutilisée par `FiltersSectionSchema` (UI /lieux) ET par le hero
 // (applicateur headless de la home) — évite la duplication inline.
+
+/** Widget COMPACT au lieu de l'accordéon à cases (matrice observatoire) :
+ *  {} → Select simple · {multiple} → combobox multi coche-à-droite ·
+ *  {searchable} → MultipleSelector (sélection unique) · {multiple, searchable}
+ *  → MultipleSelector multi. Absent → accordéon (défaut). Disponible sur les
+ *  groupes statiques, scopeList ET les groupes « par réponses ». */
+export const FilterSelectConfigSchema = z.object({
+  multiple: z.boolean().optional(),
+  searchable: z.boolean().optional(),
+});
+
 export const FilterGroupSchema = z.object({
   id: z.string(),
   label: LocalizedString,
@@ -49,14 +60,8 @@ export const FilterGroupSchema = z.object({
   filterType: z.enum(["sourceKey"]).optional(),
   // Champ de l'entité utilisé comme valeur de filtre (défaut: "slug").
   filterBy: z.string().optional(),
-  /** Widget COMPACT au lieu de l'accordéon à cases (matrice observatoire) :
-   *  {} → Select simple · {multiple} → DropdownMenu+cases · {searchable} →
-   *  MultipleSelector (sélection unique) · {multiple, searchable} →
-   *  MultipleSelector multi. Absent → accordéon (défaut). */
-  select: z.object({
-    multiple: z.boolean().optional(),
-    searchable: z.boolean().optional(),
-  }).optional(),
+  /** Widget compact (cf. {@link FilterSelectConfigSchema}). Absent → accordéon. */
+  select: FilterSelectConfigSchema.optional(),
   /** Style des lignes d'option en mode ACCORDÉON : cases (défaut) ou lignes
    *  à coche à DROITE (look SelectItem, comme les combobox). */
   optionStyle: z.enum(["checkbox", "check"]).optional(),
@@ -70,6 +75,8 @@ export const FiltersByAnswersSchema = z.record(z.string(), z.object({
   path: z.string().optional(),
   forms: z.string().optional(),
   finderPath: z.string().optional(),
+  /** Widget compact (cf. {@link FilterSelectConfigSchema}). Absent → accordéon. */
+  select: FilterSelectConfigSchema.optional(),
   value: z.record(z.string(), z.object({
     id: z.string(),
     finder: z.string(),
@@ -86,6 +93,8 @@ export const FiltersByPathSchema = z.record(z.string(), z.object({
   finderPath: z.string().optional(),
   // notSourceKey: true → cherche dans tout le réseau (cf. coformFilterByPath).
   notSourceKey: z.boolean().optional(),
+  /** Widget compact (cf. {@link FilterSelectConfigSchema}). Absent → accordéon. */
+  select: FilterSelectConfigSchema.optional(),
 }));
 
 export const FiltersSectionSchema = z.object({

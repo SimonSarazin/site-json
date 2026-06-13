@@ -376,6 +376,47 @@ export function FiltersSection({
     </Button>
   );
 
+  /* Widget compact (matrice observatoire) — partagé par les groupes statiques
+     ET « par réponses ». `value`/`onChange` parlent la CSV (format URL maison) ;
+     la sélection réelle reste pilotée par toggleFilter (logique inchangée). */
+  const renderCompactField = (
+    selectConf: { multiple?: boolean; searchable?: boolean },
+    fieldLabel: string,
+    value: string,
+    fieldOptions: Array<{ id: string; label: string }>,
+    onChange: (csv: string) => void,
+  ) => {
+    const kind = pickFilterField(selectConf);
+    return (
+      <>
+        {kind === "select" && (
+          <SelectField label={fieldLabel} value={value} onChange={onChange} options={fieldOptions} allLabel={t("Tous")} />
+        )}
+        {kind === "multi-checkbox" && (
+          <MultiCheckboxField
+            label={fieldLabel}
+            value={value}
+            onChange={onChange}
+            options={fieldOptions}
+            allLabel={t("Tous")}
+            selectedCountLabel={(n) => t("{{count}} sélectionnés", undefined, { count: n })}
+          />
+        )}
+        {(kind === "multi" || kind === "multi-single") && (
+          <MultiField
+            label={fieldLabel}
+            value={value}
+            onChange={onChange}
+            options={fieldOptions}
+            allLabel={t("Tous")}
+            noResult={t("Aucun résultat")}
+            single={kind === "multi-single"}
+          />
+        )}
+      </>
+    );
+  };
+
   /* Corps (recherche + groupes) — UN SEUL rendu, affiché dans la sidebar
      desktop ET dans le Sheet mobile. Groupes en Accordion shadcn contrôlé
      (openGroups reste la source de vérité — defaultOpenGroups respecté). */
@@ -469,34 +510,9 @@ export function FiltersSection({
                 }
               }
             };
-            const kind = pickFilterField(group.select);
-            const fieldLabel = t(group.label);
             return (
               <div key={group.id} className="py-2">
-                {kind === "select" && (
-                  <SelectField label={fieldLabel} value={value} onChange={applyCsv} options={fieldOptions} allLabel={t("Tous")} />
-                )}
-                {kind === "multi-checkbox" && (
-                  <MultiCheckboxField
-                    label={fieldLabel}
-                    value={value}
-                    onChange={applyCsv}
-                    options={fieldOptions}
-                    allLabel={t("Tous")}
-                    selectedCountLabel={(n) => t("{{count}} sélectionnés", undefined, { count: n })}
-                  />
-                )}
-                {(kind === "multi" || kind === "multi-single") && (
-                  <MultiField
-                    label={fieldLabel}
-                    value={value}
-                    onChange={applyCsv}
-                    options={fieldOptions}
-                    allLabel={t("Tous")}
-                    noResult={t("Aucun résultat")}
-                    single={kind === "multi-single"}
-                  />
-                )}
+                {renderCompactField(group.select, t(group.label), value, fieldOptions, applyCsv)}
               </div>
             );
           }
@@ -543,6 +559,32 @@ export function FiltersSection({
               {answerIsActive && <Badge className="rounded-full px-1.5">{answerActiveCount}</Badge>}
             </span>
           );
+          // Widget COMPACT déclaré en config (filtersByAnswers/Path[group].select) :
+          // remplace l'accordéon. La sélection des groupes « par réponses » vit
+          // dans searchByPath/_id (orgaNameArray) — isFilterSelected en tient compte.
+          const answerSelectConf = filtersByAnswersOptions[group]?.select ?? filtersByPathOptions[group]?.select;
+          if (answerSelectConf) {
+            const fieldOptions = [...answerOptionNames]
+              .sort((a, b) => byLabel(groupData.values[a].name, groupData.values[b].name))
+              .map((k) => ({ id: k, label: capitalizeFirst(groupData.values[k].name) }));
+            const selectedNames = answerOptionNames.filter((k) => isFilterSelected(group, k));
+            const value = selectedNames.join(",");
+            const applyCsv = (csv: string) => {
+              const next = csv.split(",").map((v) => v.trim()).filter(Boolean);
+              const changed = [
+                ...next.filter((n) => !selectedNames.includes(n)),
+                ...selectedNames.filter((c) => !next.includes(c)),
+              ];
+              for (const name of changed) {
+                toggleFilter(group, name, "_id", groupData.values[name].orgaNameArray);
+              }
+            };
+            return (
+              <div key={group} className="py-2">
+                {renderCompactField(answerSelectConf, t(groupData.label), value, fieldOptions, applyCsv)}
+              </div>
+            );
+          }
           // Groupe à valeur UNIQUE : pas d'accordéon — le titre EST le toggle.
           if (answerOptionNames.length === 1) {
             const singleKey = answerOptionNames[0];

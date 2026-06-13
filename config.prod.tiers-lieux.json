@@ -1147,6 +1147,9 @@
                       ],
                       "notSourceKey": true,
                       "indexStepList": 100
+                    },
+                    "select": {
+                      "multiple": true
                     }
                   },
                   {
@@ -1221,7 +1224,9 @@
                         "name": "Autre famille de tiers-lieux"
                       }
                     ],
-                    "optionStyle": "check"
+                    "select": {
+                      "multiple": true
+                    }
                   },
                   {
                     "id": "pays",
@@ -1274,8 +1279,7 @@
                       "sortBy": "name"
                     },
                     "select": {
-                      "multiple": true,
-                      "searchable": true
+                      "multiple": true
                     }
                   },
                   {
@@ -1357,7 +1361,10 @@
                         },
                         "name": "Autre mode de gestion"
                       }
-                    ]
+                    ],
+                    "select": {
+                      "multiple": true
+                    }
                   }
                 ],
                 "filtersByAnswers": {
@@ -1368,7 +1375,10 @@
                     },
                     "forms": "6486d24e9cad105cbf29a777",
                     "path": "lesCommunsDesTierslieux1262023_1215_0.multiCheckboxPluslesCommunsDesTierslieux1262023_1215_0liu3d5bbs2lwwdpiosq",
-                    "finderPath": "answers.lesCommunsDesTierslieux1262023_1215_0.finderlesCommunsDesTierslieux1262023_1215_0lix46h1uhnukfgtzj6s"
+                    "finderPath": "answers.lesCommunsDesTierslieux1262023_1215_0.finderlesCommunsDesTierslieux1262023_1215_0lix46h1uhnukfgtzj6s",
+                    "select": {
+                      "multiple": true
+                    }
                   },
                   "équipement": {
                     "label": {
@@ -1377,7 +1387,10 @@
                     },
                     "forms": "645b300b6d70bb35426fc0e3",
                     "path": "lesCommunsDesTierslieux1052023_949_0.multiCheckboxPluslesCommunsDesTierslieux1052023_949_0lhi0h2l1gjvac3zpbcw",
-                    "finderPath": "answers.lesCommunsDesTierslieux1052023_949_0.finderlesCommunsDesTierslieux1052023_949_0lat3sl0xwwg06k856jc"
+                    "finderPath": "answers.lesCommunsDesTierslieux1052023_949_0.finderlesCommunsDesTierslieux1052023_949_0lat3sl0xwwg06k856jc",
+                    "select": {
+                      "multiple": true
+                    }
                   },
                   "services": {
                     "label": {
@@ -1398,6 +1411,9 @@
                         "id": "6925ee8ac537f8056114aec7",
                         "finder": "answers.navigatorDesTierslieux25112025_2059_0.findernavigatorDesTierslieux25112025_2059_0miem3epsztzcm9dgim"
                       }
+                    },
+                    "select": {
+                      "multiple": true
                     }
                   },
                   "licoop": {
@@ -1407,7 +1423,10 @@
                     },
                     "forms": "6876c3e58fa8df3c7f024253",
                     "path": "navigatorDesTierslieux1572025_2311_0.findernavigatorDesTierslieux1572025_2311_0md5u4tkmsz33mya3xvb",
-                    "finderPath": "answers.navigatorDesTierslieux1572025_2311_0.findernavigatorDesTierslieux1572025_2311_0md5u4tkmsz33mya3xvb"
+                    "finderPath": "answers.navigatorDesTierslieux1572025_2311_0.findernavigatorDesTierslieux1572025_2311_0md5u4tkmsz33mya3xvb",
+                    "select": {
+                      "multiple": true
+                    }
                   }
                 },
                 "filtersByPath": {
@@ -1418,7 +1437,10 @@
                     },
                     "thematicPath": "lesCommunsDesTierslieux17102023_108_0.multiCheckboxPluslesCommunsDesTierslieux17102023_108_0lntzgckrxocls9xuwxo",
                     "finderPath": "answers.lesCommunsDesTierslieux17102023_108_0.finderlesCommunsDesTierslieux17102023_108_0lo5zvgqitv0b2mx2rl",
-                    "notSourceKey": true
+                    "notSourceKey": true,
+                    "select": {
+                      "multiple": true
+                    }
                   }
                 },
                 "className": "sticky top-20"
