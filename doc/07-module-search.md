@@ -314,6 +314,19 @@ bascule pur CSS (pas de flash). Desktop : sidebar. Les champs compacts
 coche-à-droite est le composant générique `src/components/ui/multi-combobox.tsx`
 (consommé aussi par le searchHeader et FilterDropdown).
 
+**Chargement par groupe** : les groupes `scopeList` (zones), `entityList`
+(réseaux) et « par réponses » (CoForm) alimentent leurs options par une query.
+Tant qu'elle est en vol et sans options, le groupe **garde sa place et son
+libellé** — squelette de champ (mode compact) ou en-tête + spinner (mode
+accordéon) — au lieu de disparaître puis surgir. La boucle « par réponses »
+itère sur les **clés de config** (et non sur le résultat) pour ça. En
+chargement direct, les filtres sont **préchargés en SSR** (`prefetchFilters`)
+→ cache React Query rempli, pas de flash ; le squelette ne s'observe que sur
+navigation client-side / cache expiré. Chaque `Collapsible` est **par groupe**
+(et non un `Accordion` partagé) pour interleaver librement champs compacts,
+accordéons et boutons valeur-unique sans casser Radix. Les groupes statiques
+(`type: "filters"` avec options en config) rendent immédiatement.
+
 Les schémas de filtres (`FilterGroupSchema`, `FilterGroupsSchema`, `FiltersByAnswersSchema`, `FiltersByPathSchema`) sont extraits dans `schema.ts` comme exports partagés — réutilisés par `FiltersSectionSchema` ET par les sections hero qui déclarent des filtres (ex. section hero de la home avec `filterGroups`/`filtersByAnswers`).
 
 ```json

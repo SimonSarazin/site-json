@@ -21,6 +21,8 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Collapsible,
   CollapsibleContent,
@@ -441,6 +443,23 @@ export function FiltersSection({
     </Collapsible>
   );
 
+  /* État de CHARGEMENT d'un groupe dont les options viennent d'une query
+     (zones, entités, réponses CoForm) : le groupe garde sa PLACE et son
+     libellé — squelette de champ (compact) ou en-tête + spinner (accordéon) —
+     au lieu de disparaître/apparaître brusquement. */
+  const renderGroupLoading = (key: string, label: string, compact: boolean) =>
+    compact ? (
+      <div key={key} className="flex flex-col gap-1.5 py-2">
+        <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
+        <Skeleton className="h-8 w-full rounded-md" />
+      </div>
+    ) : (
+      <div key={key} className="flex items-center justify-between border-b border-border py-3 last:border-b-0">
+        <span className="text-sm font-medium text-muted-foreground">{label}</span>
+        <Spinner className="size-4 text-muted-foreground" />
+      </div>
+    );
+
   /* Corps (recherche + groupes) — UN SEUL rendu, affiché dans la sidebar
      desktop ET dans le Sheet mobile. */
   /* Champ de recherche — séparé du corps : sur mobile il vit AU-DESSUS du
@@ -462,6 +481,15 @@ export function FiltersSection({
     <>
       <div className="w-full">
         {filterGroups?.map((group) => {
+          // Groupe alimenté par une query (zones / entités) encore en vol et
+          // sans options : squelette en place (garde l'ordre, pas de pop-in).
+          const queryEmpty = (group.options ?? []).length === 0;
+          if (queryEmpty && group.type === "scopeList" && zoneResult.isLoading) {
+            return renderGroupLoading(group.id, t(group.label), !!group.select);
+          }
+          if (queryEmpty && group.type === "entityList" && entityResult.isLoading) {
+            return renderGroupLoading(group.id, t(group.label), !!group.select);
+          }
           const groupOptionNames = (group.options ?? []).map(o => o.name || o.id);
           const activeCount = getGroupActiveCount(group.id, groupOptionNames);
           const isActive = activeCount > 0;
@@ -565,11 +593,23 @@ export function FiltersSection({
           );
         })}
 
-        {Object.keys(filterAnswerData ?? {}).map((group) => {
+        {/* On itère sur les clés de CONFIG (et non sur les données du résultat) :
+            les groupes par-réponses gardent leur place et leur libellé pendant
+            le chargement CoForm (squelette) au lieu de surgir une fois la query
+            résolue. */}
+        {[...new Set([...Object.keys(filtersByAnswersOptions), ...Object.keys(filtersByPathOptions)])].map((group) => {
           const groupData = filterAnswerData?.[group];
-          if (!groupData) return null;
-          const answerOptionNames = Object.keys(groupData.values);
-          if (answerOptionNames.length === 0) return null;
+          const isPathGroup = group in filtersByPathOptions;
+          const answerConf = isPathGroup ? filtersByPathOptions[group] : filtersByAnswersOptions[group];
+          const answerLoading = isPathGroup ? filterByPathResult.isLoading : filterAnswerResult.isLoading;
+          const answerOptionNames = groupData ? Object.keys(groupData.values) : [];
+          if (answerOptionNames.length === 0) {
+            // pas (encore) d'options : squelette si la query tourne, sinon rien.
+            return answerLoading
+              ? renderGroupLoading(group, answerConf?.label ? t(answerConf.label) : group, !!answerConf?.select)
+              : null;
+          }
+          if (!groupData) return null; // narrowing TS (options non vides ⇒ data présente)
           const answerActiveCount = getGroupActiveCount(group, answerOptionNames);
           const answerIsActive = answerActiveCount > 0;
           const headerLabel = (
