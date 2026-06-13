@@ -728,10 +728,16 @@ export function FiltersSection({
                   <Badge className={COUNT_BADGE_CLASS}>{totalActiveCount}</Badge>
                 )}
               </SheetTitle>
-              {clearButton}
             </SheetHeader>
             <div className="overflow-y-auto px-4 pt-1">{body}</div>
+            {/* Réinitialiser ancré en bas (zone pouce) — n'apparaît que s'il y a
+                des filtres actifs ; pattern de la liste équipements. */}
             <SheetFooter className="flex-row gap-2 border-t border-border">
+              {hasActiveFilters && (
+                <Button variant="outline" className="flex-1" onClick={clearFilters}>
+                  {t("Réinitialiser")}
+                </Button>
+              )}
               <SheetClose asChild>
                 <Button className="flex-1">{t("Voir les résultats")}</Button>
               </SheetClose>
