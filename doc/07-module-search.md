@@ -292,8 +292,10 @@ Affiche les filières de l'entité courante sous forme de liens de navigation. L
 
 Section sidebar qui pilote le `PageFiltersContext` partagé. Doit être montée dans le même `PageFiltersProvider` que les `SearchProStatic` consommateurs (via `gridLayout` ou `profile-tab-layout`).
 
-**Rendu PAR GROUPE configurable** (`filterGroups[]`) — du plus déployé au
-plus compact :
+**Rendu PAR GROUPE configurable** — du plus déployé au plus compact. `select`
+s'applique aux **trois familles** de groupes (`filterGroups[]` statiques /
+scopeList / entityList, `filtersByAnswers`, `filtersByPath`) ; `optionStyle`
+ne joue qu'en mode accordéon (`filterGroups[]`) :
 
 | Config du groupe | Widget rendu |
 |---|---|
