@@ -15,6 +15,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { useSearchParams } from "react-router";
 import { computeFiltersFromUrl } from "../lib/computeFiltersFromUrl";
 import { SelectField, MultiCheckboxField, MultiField } from "../components/filterFields";
+import { pickFilterField } from "../lib/pickFilterField";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -38,14 +39,6 @@ import {
 
 type ScopeLevel = "cities" | "level1" | "level2" | "level3" | "level4" | "level5";
 
-/** Matrice de sélection du widget compact (pattern observatoire) :
- *  simple → Select · multiple → DropdownMenu+cases · searchable →
- *  MultipleSelector (remplace) · les deux → MultipleSelector multi. */
-function pickFilterField(conf: { multiple?: boolean; searchable?: boolean } | undefined) {
-  if (!conf) return null;
-  if (conf.searchable) return conf.multiple ? "multi" : "multi-single";
-  return conf.multiple ? "multi-checkbox" : "select";
-}
 type FilterGroupOption = NonNullable<FiltersSectionProps["filterGroups"]>[number]["options"] extends infer T
   ? T extends Array<infer U>
     ? U
