@@ -22,18 +22,16 @@ const LazySections: {
   [K in keyof SectionPropsMap]: LazySectionComponent<K>;
 } = {
   hero: lazy(() => import("./HeroSection")),
-  "hero-tiers-lieux": lazy(() => import("./HeroTiersLieux")),
-  "hero-rezo-la-mer": lazy(() => import("./HeroRezoLaMer")),
-  "hero-ssbe": lazy(() => import("./HeroSSBE")),
-  "features-rezo-la-mer": lazy(() => import("./FeaturesRezoLaMer")),
-  "action-buttons-rezo-la-mer": lazy(() => import("./ActionButtonsRezoLaMer")),
-  "community-rezo-la-mer": lazy(() => import("./CommunityRezoLaMer")),
-  "cta-rezo-la-mer": lazy(() => import("./CallToActionRezoLaMer")),
-  // Alias rétro-compat → composant relocalisé dans le module search (cf. searchHeader).
-  "title-with-filters-rezo-la-mer": lazy(() => import("@/modules/search/sections/SearchHeaderSection")),
-  "commune-transparente-actions": lazy(() => import("./CommuneTransparenteActionsSection")),
-  "hero-nos-communes": lazy(() => import("./NosCommunesBannerSection")),
-  "hero-commune-transparente": lazy(() => import("./HeroCommuneTransparenteSection")),
+  "hero-search": lazy(() => import("./HeroSearch")),
+  "hero-parallax": lazy(() => import("./HeroParallax")),
+  "hero-quick-access": lazy(() => import("./HeroQuickAccess")),
+  "features-glass": lazy(() => import("./FeaturesGlass")),
+  "action-tiles": lazy(() => import("./ActionTiles")),
+  "cta-card-grid": lazy(() => import("./CtaCardGrid")),
+  "cta-newsletter": lazy(() => import("./CtaNewsletter")),
+  "expandable-actions": lazy(() => import("./ExpandableActions")),
+  "hero-tinted-overlay": lazy(() => import("./HeroTintedOverlay")),
+  "hero-entity-banner": lazy(() => import("./HeroEntityBanner")),
   "categories-grid": lazy(() => import("./CategoriesGridSection")),
   markdown: lazy(() => import("./MarkdownSection")),
   cards: lazy(() => import("./CardsSection")),
@@ -89,6 +87,7 @@ const LazySections: {
   "actions-summary": lazy(() => import("@/modules/cagnotte/components/sections/ActionsSummarySection")),
   "finance-summary": lazy(() => import("@/modules/cagnotte/components/sections/FinanceSummarySection")),
   "cagnotte-layout": lazy(() => import("@/modules/cagnotte/components/sections/CagnotteLayoutSection")),
+  "data-observatory": lazy(() => import("@/modules/observatoire/DataObservatorySection")),
 };
 
 // Fallback skeleton pour les sections en cours de chargement

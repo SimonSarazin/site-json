@@ -8,6 +8,7 @@ import type { User, Organization } from "@communecter/cocolight-api-client";
 import { Link } from "react-router";
 import { useMemo, useState } from "react";
 import { useCocolight } from "@/hooks/useCocolight";
+import { useAuthModal } from "@/modules/auth";
 import { toast } from "sonner";
 import { useFollowEntity, useUnfollowEntity } from "@/modules/profil/actions/mutations/relationship";
 import { useT } from "@/hooks/useT";
@@ -48,6 +49,7 @@ export default function CardProfile({
 }: CardProfileProps) {
   const t = useT("modules/search");
   const { me } = useCocolight();
+  const { openLogin } = useAuthModal();
   const serverData = item?.serverData;
 
   const name = serverData?.name || String(t("Anonyme"));
@@ -98,7 +100,7 @@ export default function CardProfile({
     e.preventDefault();
     e.stopPropagation();
     if (!isConnected) {
-      toast.error(t("Vous devez être connecté pour suivre"));
+      openLogin();
       return;
     }
     if (isFollowingState) {
@@ -116,7 +118,7 @@ export default function CardProfile({
     e.preventDefault();
     e.stopPropagation();
     if (!isConnected) {
-      toast.error(t("Vous devez être connecté pour contacter"));
+      openLogin();
       return;
     }
     toast.info(t("Fonctionnalité de contact à venir"));
@@ -168,7 +170,7 @@ export default function CardProfile({
           {showBadges && (isAdmin || isContributor || isPending) && (
             <div className="flex flex-wrap gap-1 justify-center">
               {isAdmin && (
-                <Badge variant="outline" className="bg-amber-500/20 text-amber-600 border-amber-500/30">
+                <Badge variant="outline" className="bg-warning/20 text-warning border-warning/30">
                   <Shield className="h-3 w-3 mr-1" />
                   {t("Admin")}
                 </Badge>
@@ -180,7 +182,7 @@ export default function CardProfile({
                 </Badge>
               )}
               {isPending && (
-                <Badge variant="outline" className="bg-orange-500/20 text-orange-600 border-orange-500/30">
+                <Badge variant="outline" className="bg-info/20 text-info border-info/30">
                   {t("En attente")}
                 </Badge>
               )}
@@ -223,7 +225,6 @@ export default function CardProfile({
                 variant="outline"
                 size="sm"
                 className="flex-1 h-8 sm:h-9 text-xs sm:text-sm"
-                disabled={!isConnected}
                 onClick={handleContact}
               >
                 <MessageCircle className="h-3.5 w-3.5 mr-1 sm:h-4 sm:w-4" />
@@ -233,7 +234,7 @@ export default function CardProfile({
                 variant={isFollowingState ? "default" : "outline"}
                 size="sm"
                 className="flex-1 h-8 sm:h-9 text-xs sm:text-sm"
-                disabled={!isConnected || isLoadingFollow}
+                disabled={isLoadingFollow}
                 onClick={handleFollow}
               >
                 {isLoadingFollow ? (

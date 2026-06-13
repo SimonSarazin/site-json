@@ -1,9 +1,9 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useForm, useFieldArray, type Resolver, type FieldValues, type UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Loader2, Plus, Trash2, Building2, MapPin, Image as ImageIcon, Share2,
-  Globe, Clock, Phone, Video, FileText, X, Upload, AlertCircle,
+  Globe, Clock, Phone, Video, FileText, AlertCircle,
 } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { EditLocationTab } from "../profile-edit/EditLocationTab";
+import { ImageUploadField } from "../profile-edit/fields";
 
 const dayHoursSchema = z.object({
   enabled: z.boolean().default(false),
@@ -166,6 +167,8 @@ export function getDefaultTiersLieuxValues(): TiersLieuxFormData {
 interface TiersLieuxFormProps {
   mode: "add" | "edit";
   defaultValues: TiersLieuxFormData;
+  /** Logo existant (édition) — affiché en aperçu tant qu'aucun nouveau n'est choisi. */
+  existingLogoUrl?: string;
   onSubmit: (data: TiersLieuxSubmitPayload) => Promise<void>;
   onCancel: () => void;
   isSubmitting: boolean;
@@ -174,6 +177,7 @@ interface TiersLieuxFormProps {
 export function TiersLieuxForm({
   mode,
   defaultValues,
+  existingLogoUrl,
   onSubmit,
   onCancel,
   isSubmitting,
@@ -191,11 +195,8 @@ export function TiersLieuxForm({
     name: "socialLinks",
   });
 
+  // Logo : recadrage 1:1 façon avatar, posé dans le draft au submit (`profil_avatar`).
   const [logoFile, setLogoFile] = useState<File | null>(null);
-  const [logoUploading] = useState(false);
-  const logoInputRef = useRef<HTMLInputElement>(null);
-
-  const logoPreview = logoFile ? URL.createObjectURL(logoFile) : null;
 
   // TODO(photos) — Upload de photos désactivé tant que non géré côté backend.
   // Réactiver : ce state + les handlers + le bloc UI « Photos » de l'onglet Médias,
@@ -204,14 +205,6 @@ export function TiersLieuxForm({
   // const [photosUploading] = useState(false);
   // const photosInputRef = useRef<HTMLInputElement>(null);
   // const photoPreviews = photoFiles.map((f) => URL.createObjectURL(f));
-
-  const handleLogoUpload = (file: File) => {
-    if (!file.type.startsWith("image/")) {
-      toast.error(t("AddTiersLieux.errors.imageOnly"));
-      return;
-    }
-    setLogoFile(file);
-  };
 
   // TODO(photos) — handlers désactivés (cf. state commenté ci-dessus) :
   /*
@@ -234,8 +227,6 @@ export function TiersLieuxForm({
     });
   };
   */
-
-  const removeLogo = () => setLogoFile(null);
 
   const handleCancel = () => {
     form.reset();
@@ -594,69 +585,15 @@ export function TiersLieuxForm({
               </TabsContent>
 
               <TabsContent value="media" className="space-y-8 max-w-2xl mx-auto pb-2">
-                <div className="space-y-3">
-                  <div className="text-center">
-                    <FormLabel className="text-base font-semibold">{t("AddTiersLieux.fields.logo")}</FormLabel>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {t("AddTiersLieux.fields.logoHint")}
-                    </p>
-                  </div>
-
-                  <div className="flex justify-center">
-                    {logoPreview ? (
-                      <div className="relative group">
-                        <div className="w-40 h-40 rounded-xl border-2 border-border overflow-hidden bg-muted shadow-sm">
-                          <img
-                            src={logoPreview}
-                            alt="Logo"
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <button
-                          type="button"
-                          onClick={removeLogo}
-                          className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1.5 shadow-lg hover:scale-110 transition"
-                          aria-label={t("AddTiersLieux.buttons.removeLogo")}
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <div
-                        className="w-40 h-40 border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center text-center bg-muted/30 hover:bg-muted/50 hover:border-primary/50 transition cursor-pointer"
-                        onClick={() => logoInputRef.current?.click()}
-                        onDragOver={(e) => e.preventDefault()}
-                        onDrop={(e) => {
-                          e.preventDefault();
-                          const file = e.dataTransfer.files?.[0];
-                          if (file) handleLogoUpload(file);
-                        }}
-                      >
-                        {logoUploading ? (
-                          <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                        ) : (
-                          <>
-                            <Upload className="w-8 h-8 text-muted-foreground mb-2" />
-                            <p className="text-xs text-muted-foreground px-2">
-                              {t("AddTiersLieux.fields.logoDropHint")}
-                            </p>
-                          </>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <input
-                    ref={logoInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) handleLogoUpload(file);
-                      e.target.value = "";
-                    }}
-                  />
-                </div>
+                <ImageUploadField
+                  value={logoFile}
+                  onChange={setLogoFile}
+                  existingUrl={existingLogoUrl}
+                  aspect={1}
+                  shape="square"
+                  label={t("AddTiersLieux.fields.logo")}
+                  hint={t("AddTiersLieux.fields.logoHint")}
+                />
 
                 {/* TODO(photos) — bloc upload photos désactivé tant que non géré côté backend.
                     Réactiver avec le state + les handlers commentés plus haut.

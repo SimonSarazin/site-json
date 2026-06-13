@@ -40,8 +40,16 @@
     },
     "errors": {
       "formNotFound": "Form not found",
+      "unknownFieldType": "Input template not found — type “{{type}}” has no associated template.",
       "networkError": "Network error",
-      "serverError": "Server error"
+      "serverError": "Server error",
+      "summary": {
+        "title_one": "Please fix {{count}} error",
+        "title_other": "Please fix {{count}} errors",
+        "jumpTo": "Jump to field",
+        "serverError": "Submission error",
+        "toast": "The form contains errors"
+      }
     },
     "banner": {
       "alt": "Form banner"
@@ -213,6 +221,201 @@
       "gallery": {
         "openPdf": "Open PDF",
         "download": "Download"
+      }
+    },
+    "activity": {
+      "link": "View activity",
+      "title": "Answer activity",
+      "createdBy": "Created by {{name}} on {{date}}",
+      "lastModifiedBy": "Last modified: {{name}} {{relative}}",
+      "historyTitle": "History",
+      "entryCreate": "created the answer",
+      "entryUpdate_one": "modified step {{steps}}",
+      "entryUpdate_other": "modified steps {{steps}}",
+      "close": "Close",
+      "loading": "Loading history…",
+      "empty": "No activity recorded.",
+      "errorLoad": "Could not load history.",
+      "unknownUser": "Unknown user"
+    },
+    "commonTable": {
+      "headers": {
+        "usage": "Needs",
+        "criteria": "Solutions used",
+        "happiness": "Satisfaction",
+        "note": "Urgency",
+        "yesNo": "Answer",
+        "comment": "Comment"
+      },
+      "filter": {
+        "placeholder": "Filter by need…"
+      },
+      "addSolution": {
+        "placeholder": "Solution used…",
+        "button": "Add this solution"
+      },
+      "validation": {
+        "required": "{{label}} is required",
+        "formatInvalid": "Invalid response format for {{label}}",
+        "minLength": "{{label}} must be at least {{min}} character(s)",
+        "simpleTableRequired": "{{label}} is required (at least one data row)",
+        "multiCheckboxPlusCplxRequired": "All complementary fields must be filled"
+      },
+      "contributors": {
+        "title": "Contributions for this need",
+        "description": "See who has filled a solution for: {{usage}}",
+        "loading": "Loading contributions…",
+        "error": "Unable to load contributions.",
+        "empty": "No contributor has filled a solution for this need yet.",
+        "openTooltip_one": "View {{count}} contribution",
+        "openTooltip_other": "View {{count}} contributions"
+      },
+      "addUsage": {
+        "buttonLabel": "Add {{label}}",
+        "defaultLabel": "a need",
+        "dialog": {
+          "title": "Add a new need",
+          "description": "This need will appear as a new row of the table. You can add solutions to it afterwards.",
+          "usageLabel": "Need name",
+          "usagePlaceholder": "Ex: Tool booking",
+          "submit": "Add",
+          "cancel": "Cancel",
+          "errorEmpty": "Need name is required",
+          "errorDuplicate": "This need already exists in the table"
+        }
+      },
+      "deleteSolution": "Delete this solution",
+      "selectSolutionFirst": "Add a solution to rate",
+      "happiness": {
+        "love": "Very satisfied",
+        "happySmile": "Satisfied",
+        "neutral": "Neutral",
+        "sad": "Unsatisfied",
+        "cry": "Very unsatisfied"
+      },
+      "note": {
+        "level": {
+          "0": "Not set",
+          "1": "Acceptable",
+          "2": "Tolerable",
+          "3": "Moderate",
+          "4": "Urgent",
+          "5": "Critical"
+        }
+      },
+      "yesNo": {
+        "yes": "Yes",
+        "no": "No"
+      },
+      "comment": {
+        "openLabel": "Comment",
+        "placeholder": {
+          "title": "Feature coming soon",
+          "description": "Comments on solutions will be available in a future release.",
+          "close": "Got it"
+        }
+      },
+      "emptyUsages": "No need defined for this form."
+    },
+    "draft": {
+      "restorable": {
+        "title": "Draft found",
+        "description": "You have unsaved changes from {{relative}}. Do you want to restore them?",
+        "restore": "Restore",
+        "discard": "Start over"
+      },
+      "stale": {
+        "title": "Older draft discarded",
+        "description": "The answer has been modified in the meantime. The latest version is being used.",
+        "ok": "OK"
+      },
+      "time": {
+        "justNow": "just now",
+        "minutesAgo_one": "{{count}} minute ago",
+        "minutesAgo_other": "{{count}} minutes ago",
+        "hoursAgo_one": "{{count}} hour ago",
+        "hoursAgo_other": "{{count}} hours ago",
+        "daysAgo_one": "{{count}} day ago",
+        "daysAgo_other": "{{count}} days ago",
+        "yearsPart_one": "{{count}} year",
+        "yearsPart_other": "{{count}} years",
+        "monthsPart_one": "{{count}} month",
+        "monthsPart_other": "{{count}} months",
+        "daysPart_one": "{{count}} day",
+        "daysPart_other": "{{count}} days",
+        "conjAnd": "and",
+        "agoPrefix": "{{value}} ago"
+      }
+    },
+    "multiEval": {
+      "viewChart": "View evaluations",
+      "title": "Evaluations comparison",
+      "titleWithStep": "Evaluations — {{stepName}}",
+      "usersLegend": "Evaluated by",
+      "loading": "Loading evaluations…",
+      "empty": "No evaluation recorded for this step.",
+      "errorLoad": "Could not load evaluations.",
+      "close": "Close",
+      "show": "Show",
+      "hide": "Hide"
+    },
+    "placeView": {
+      "title": "Choose a place",
+      "description": "Click on a place to fill in or edit its answer to this form.",
+      "myPlaces": "My places",
+      "pendingPlaces": "Pending",
+      "joinSection": {
+        "title": "Join another place",
+        "description": "Search for a place and send a request to join it.",
+        "searchButton": "Search a place…",
+        "elementLabel": "place"
+      },
+      "openSection": {
+        "title": "Open another place",
+        "description": "Search for a place to open its form response directly.",
+        "searchButton": "Search a place…"
+      },
+      "roleBadge": {
+        "admin": "Admin",
+        "member": "Member"
+      },
+      "pendingBadge": {
+        "toBeValidated": "Pending request",
+        "isInviting": "Invitation received",
+        "isInvitingAdmin": "Admin invitation received",
+        "isAdminPending": "Admin role pending"
+      },
+      "actions": {
+        "open": "Open",
+        "accept": "Accept",
+        "reject": "Decline",
+        "back": "Back to list"
+      },
+      "empty": {
+        "noPlaces": "You don't have any place matching this form yet.",
+        "notApplicable": "This form is not configured for the place view."
+      },
+      "confirmLeave": {
+        "title": "Leave without saving?",
+        "description": "You have unsaved changes that will be lost if you leave now.",
+        "stay": "Stay on form",
+        "leave": "Leave without saving"
+      },
+      "join": {
+        "alreadyMember": "You are already a member of this place.",
+        "alreadyPending": "Request already sent — waiting for validation.",
+        "alreadyInvited": "An invitation is pending — accept it in the Pending section.",
+        "confirmTitle": "Join {{name}}",
+        "confirmDescription": "How would you like to join this place?",
+        "requestMember": "Request to become a member",
+        "requestAdmin": "Request admin rights",
+        "confirmCancel": "Cancel",
+        "successToastMember": "Member request sent. You'll access the form once an admin validates it.",
+        "successToastAdmin": "Admin request sent. Waiting for validation."
+      },
+      "guard": {
+        "notAuthorized": "You are neither admin nor member of this place.",
+        "pendingValidation": "Request pending — waiting for admin validation."
       }
     }
   }

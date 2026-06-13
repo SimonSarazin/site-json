@@ -467,7 +467,7 @@ Sans state interne, callbacks remontés au parent :
 
 ### `PiggyBankHeaderButton`
 
-Composant header (`components/PiggyBankHeaderButton.tsx`) affiché dans les headers de site (ex. `HeaderRezoLaMer`) :
+Composant header (`components/PiggyBankHeaderButton.tsx`) affiché dans les headers de site (ex. `HeaderTransparentScroll`) :
 
 - Lit `entity.serverData.preferences.projectModalId` via `useReactiveProperty` (réactif aux mutations live)
 - Consomme `useFundingEnvelope(projectModalId)` — partage le cache React Query avec `CagnotteDialog` (0 fetch supplémentaire à l'ouverture)

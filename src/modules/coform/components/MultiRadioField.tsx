@@ -4,18 +4,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { FieldError } from "./FormFields";
+import { FieldError, HintText } from "./FormFields";
 import type { FormFieldMapping, MultiRadioValue } from "../types";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-
-function HintText({ text }: { text: string }) {
-  return (
-    <div className="text-xs text-muted-foreground -mt-1 mb-1 prose prose-xs dark:prose-invert max-w-none [&>p]:m-0 [&>ul]:m-0 [&>ol]:m-0">
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
-    </div>
-  );
-}
 
 interface MultiRadioFieldProps {
   field: FormFieldMapping;

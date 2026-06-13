@@ -13,7 +13,7 @@ import { lazy } from "vite-preload";
  * `default` retombe sur `CardDetailedDefault` (comportement actuel préservé).
  */
 const CardDetailedDefault = lazy(() => import("./card/CardDetailedDefault"));
-const CardDetailedTiersLieux = lazy(() => import("./card/CardDetailedTiersLieux"));
+const CardDetailedServicePricing = lazy(() => import("./card/CardDetailedServicePricing"));
 
 export default function SearchCardDetailed({
   item,
@@ -23,8 +23,8 @@ export default function SearchCardDetailed({
   // Switch sur le variant (prioritaire) ou le type de carte.
   const cardType = card?.detailedMode || card?.variant || card?.type;
   switch (cardType) {
-    case "tiers-lieux":
-      return <CardDetailedTiersLieux item={item} onClick={onClick} card={card} />;
+    case "service-pricing":
+      return <CardDetailedServicePricing item={item} onClick={onClick} card={card} />;
     default:
       return <CardDetailedDefault item={item} onClick={onClick} card={card} />;
   }

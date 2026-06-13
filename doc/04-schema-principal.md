@@ -130,13 +130,24 @@ meta: z.object({
 
 ```ts
 export const Header = z.object({
-  type: z.enum(["tiers-lieux", "rezo-la-mer", "cyber-reunion", "julie-pot-vin", "nos-communes", "commune-transparente", "default"]).default("default"),
+  // Variante de DESIGN (jamais un nom de site) — résolue par `SiteHeader`.
+  // standard = horizontal sticky · mega-menu = méga-menu hover · transparent-scroll =
+  // fixed transparent→opaque · minimal = compact · underline-nav = nav soulignée ·
+  // transparent-dark = transparent sombre.
+  type: z.enum(["standard", "mega-menu", "transparent-scroll", "minimal", "underline-nav", "transparent-dark", "default"]).default("default"),
   logo: z.string().optional(),
   logoAlt: LocalizedString.optional(),
   logoTitle: LocalizedString.optional(),
-  logoIcon: z.string().optional(),
+  // Sous-titre optionnel affiché sous le titre du logo (plus petit, muted).
+  logoSubtitle: LocalizedString.optional(),
+  logoIcon: LucideIconOrSvg.optional(),
+  // Opt-in : remplace logo/titre par ceux de l'entité costum au runtime.
+  entityLogoOverride: z.boolean().optional(),
   path: z.string().min(1).optional(),
   nav: z.array(EnhancedNavItem),
+  navVisibleOnlyForListedPages: z.boolean().optional(),
+  secondaryNav: z.array(EnhancedNavItem).optional(),
+  secondaryNavVisibleOnlyForListedPages: z.boolean().optional(),
   sticky: z.boolean().default(true),
   transparent: z.boolean().default(false),
   height: z.enum(["sm", "md", "lg"]).default("md"),
@@ -147,6 +158,7 @@ export const Header = z.object({
     auth: z.boolean().default(false),
     cart: z.boolean().default(false),
     notifications: z.boolean().default(false),
+    piggyBank: z.boolean().default(false),
   }),
   ctaButton: z.object({
     label: LocalizedString,
@@ -171,23 +183,40 @@ export const Header = z.object({
 });
 ```
 
-| Cle              | Type                     | Defaut      | Description                                       |
-| ---------------- | ------------------------ | ----------- | ------------------------------------------------- |
-| `type`           | `enum`                   | `"default"` | Variante du header                                |
-| `logo`           | `string`                 | -           | URL ou chemin du logo                             |
-| `logoAlt`        | `LocalizedString`        | -           | Texte alternatif du logo                          |
-| `logoTitle`      | `LocalizedString`        | -           | Titre affiche a cote du logo                      |
-| `logoIcon`       | `string`                 | -           | Nom d'icone (lucide) pour le logo                 |
-| `path`           | `string`                 | -           | Chemin de redirection du logo (lien accueil)      |
-| `nav`            | `EnhancedNavItem[]`      | -           | Elements de navigation                            |
-| `sticky`         | `boolean`                | `true`      | Header fixe en haut de page                       |
-| `transparent`    | `boolean`                | `false`     | Header transparent                                |
-| `height`         | `"sm" \| "md" \| "lg"`  | `"md"`      | Hauteur du header                                 |
-| `utilities`      | `object`                 | -           | Utilitaires (voir ci-dessous)                     |
-| `ctaButton`      | `object`                 | -           | Bouton d'appel a l'action dans le header          |
-| `piggyBank`      | `object`                 | -           | Tirelire (montant, icone, lien)                   |
-| `urgenceButton`  | `object`                 | -           | Bouton d'urgence dans le header                   |
-| `announcement`   | `object`                 | -           | Bandeau d'annonce au-dessus du header             |
+Les valeurs de `type` sont des **noms de design** (pas des noms de sites) :
+
+| Valeur                | Comportement                                            |
+| --------------------- | ------------------------------------------------------- |
+| `standard`            | Header horizontal sticky classique                      |
+| `mega-menu`           | Mega-menu déployé au survol                             |
+| `transparent-scroll`  | Fixe transparent qui devient opaque au scroll           |
+| `minimal`             | Version compacte (logo + hamburger)                     |
+| `underline-nav`       | Navigation avec soulignement actif                      |
+| `transparent-dark`    | Transparent sombre (sur hero image sombre)              |
+| `default`             | Alias fallback (comportement identique à `standard`)    |
+
+| Cle                                | Type                     | Defaut      | Description                                                     |
+| ---------------------------------- | ------------------------ | ----------- | --------------------------------------------------------------- |
+| `type`                             | `enum`                   | `"default"` | Variante de design du header (voir tableau ci-dessus)           |
+| `logo`                             | `string`                 | -           | URL ou chemin du logo                                           |
+| `logoAlt`                          | `LocalizedString`        | -           | Texte alternatif du logo                                        |
+| `logoTitle`                        | `LocalizedString`        | -           | Titre affiché à côté du logo                                    |
+| `logoSubtitle`                     | `LocalizedString`        | -           | Sous-titre affiché sous `logoTitle` (plus petit, muted)         |
+| `logoIcon`                         | `LucideIconOrSvg`        | -           | Icône lucide ou SVG inline pour le logo                         |
+| `entityLogoOverride`               | `boolean`                | -           | Opt-in : remplace logo/titre par ceux de l'entité costum        |
+| `path`                             | `string`                 | -           | Chemin de redirection du logo (lien accueil)                    |
+| `nav`                              | `EnhancedNavItem[]`      | -           | Navigation principale                                           |
+| `navVisibleOnlyForListedPages`     | `boolean`                | -           | Cache la nav principale sur les pages non listées               |
+| `secondaryNav`                     | `EnhancedNavItem[]`      | -           | Navigation secondaire (barre du dessus ou sous-menu)            |
+| `secondaryNavVisibleOnlyForListedPages` | `boolean`           | -           | Cache la nav secondaire sur les pages non listées               |
+| `sticky`                           | `boolean`                | `true`      | Header fixé en haut de page                                     |
+| `transparent`                      | `boolean`                | `false`     | Header transparent                                              |
+| `height`                           | `"sm" \| "md" \| "lg"`  | `"md"`      | Hauteur du header                                               |
+| `utilities`                        | `object`                 | -           | Utilitaires (voir ci-dessous)                                   |
+| `ctaButton`                        | `object`                 | -           | Bouton d'appel à l'action dans le header                        |
+| `piggyBank`                        | `object`                 | -           | Tirelire (montant, icône, lien)                                 |
+| `urgenceButton`                    | `object`                 | -           | Bouton d'urgence dans le header                                 |
+| `announcement`                     | `object`                 | -           | Bandeau d'annonce au-dessus du header                           |
 
 ### `EnhancedNavItem`
 
@@ -203,23 +232,25 @@ const EnhancedNavItem: z.ZodType<EnhancedNavItemType> = z.lazy(() =>
     children: z.array(EnhancedNavItem).optional(),
     megaMenu: MegaMenu.optional(),
     description: LocalizedString.optional(),
+    featured: z.boolean().optional(),
   }).refine(d => d.path || d.href || d.children || d.megaMenu, {
     message: "NavItem : path, href, children ou megaMenu obligatoire"
   })
 );
 ```
 
-| Cle           | Type                  | Requis ? | Description                              |
-| ------------- | --------------------- | -------- | ---------------------------------------- |
-| `label`       | `LocalizedString`     | Oui      | Texte du menu multi-langues              |
-| `path`        | `string`              | Non      | Route interne (`"/about"`)               |
-| `href`        | `string (URL)`        | Non      | Lien absolu externe                      |
-| `icon`        | `string`              | Non      | Nom d'icone (lucide, etc.)               |
-| `badge`       | `NavBadge`            | Non      | Badge associe (ex. "Nouveau")            |
-| `roles`       | `string[]`            | Non      | Visibilite RBAC                          |
-| `children`    | `EnhancedNavItem[]`   | Non      | Sous-menus recursifs                     |
-| `megaMenu`    | `MegaMenu`            | Non      | Mega menu a colonnes                     |
-| `description` | `LocalizedString`     | Non      | Description de l'element de navigation   |
+| Cle           | Type                  | Requis ? | Description                                                              |
+| ------------- | --------------------- | -------- | ------------------------------------------------------------------------ |
+| `label`       | `LocalizedString`     | Oui      | Texte du menu multi-langues                                              |
+| `path`        | `string`              | Non      | Route interne (`"/about"`)                                               |
+| `href`        | `string (URL)`        | Non      | Lien absolu externe                                                      |
+| `icon`        | `string`              | Non      | Nom d'icone (lucide, etc.)                                               |
+| `badge`       | `NavBadge`            | Non      | Badge associe (ex. "Nouveau")                                            |
+| `roles`       | `string[]`            | Non      | Visibilite RBAC                                                          |
+| `children`    | `EnhancedNavItem[]`   | Non      | Sous-menus recursifs                                                     |
+| `megaMenu`    | `MegaMenu`            | Non      | Mega menu a colonnes                                                     |
+| `description` | `LocalizedString`     | Non      | Description de l'element de navigation                                   |
+| `featured`    | `boolean`             | Non      | Affiche le sous-menu en mise en avant (colonne "lien principal" + grille)|
 
 ### `NavBadge`
 
@@ -253,14 +284,15 @@ const MegaMenuColumn = z.object({
 
 ### Utilitaires
 
-| Cle             | Type      | Defaut  | Description                    |
-| --------------- | --------- | ------- | ------------------------------ |
-| `themeSwitch`   | `boolean` | `true`  | Affiche le switch dark/light   |
-| `langSwitch`    | `boolean` | `true`  | Affiche le selecteur de langue |
-| `search`        | `boolean` | `false` | Affiche l'icone recherche      |
-| `auth`          | `boolean` | `false` | Affiche l'authentification     |
-| `cart`          | `boolean` | `false` | Affiche le panier              |
-| `notifications` | `boolean` | `false` | Affiche les notifications      |
+| Cle             | Type      | Defaut  | Description                              |
+| --------------- | --------- | ------- | ---------------------------------------- |
+| `themeSwitch`   | `boolean` | `true`  | Affiche le switch dark/light             |
+| `langSwitch`    | `boolean` | `true`  | Affiche le selecteur de langue           |
+| `search`        | `boolean` | `false` | Affiche l'icone recherche                |
+| `auth`          | `boolean` | `false` | Affiche le widget d'authentification     |
+| `cart`          | `boolean` | `false` | Affiche le panier                        |
+| `notifications` | `boolean` | `false` | Affiche la cloche de notifications       |
+| `piggyBank`     | `boolean` | `false` | Affiche le bouton tirelire (cagnotte)    |
 
 ---
 
@@ -338,14 +370,19 @@ const PageMeta = z.object({
 
 ```ts
 export const Footer = z.object({
-  type: z.enum(["tiers-lieux", "rezo-la-mer", "cyber-reunion", "nos-communes", "commune-transparente", "default"]).default("default"),
-  columns: z.array(FooterColumn),
+  // Variante de DESIGN (jamais un nom de site) — résolue par `SiteFooter`.
+  // rich = newsletter+colonnes+socials · minimal-centered = logo+nav+légal ·
+  // sidebar-columns = sidebar+colonnes · contact-partners = contacts+partenaires.
+  type: z.enum(["rich", "minimal-centered", "sidebar-columns", "contact-partners", "default"]).default("default"),
+  // Sous-style visuel pour `sidebar-columns` (fond plein vs aspect carte).
+  style: z.enum(["plain", "card"]).optional(),
+  columns: z.array(FooterColumn).optional(),
   socials: z.array(z.object({ platform: z.string(), url: z.string() })).optional(),
   extra: z.string().optional(),
   newsletter: NewsletterSectionSchema.optional(),
   copyright: LocalizedString,
   logo: z.string().optional(),
-  logoIcon: z.string().optional(),
+  logoIcon: LucideIconOrSvg.optional(),
   logoTitle: LocalizedString.optional(),
   logoAlt: LocalizedString.optional(),
   description: LocalizedString.optional(),
@@ -359,26 +396,41 @@ export const Footer = z.object({
   })).optional(),
   paymentMethods: z.array(z.string()).optional(),
   website: z.string().optional(),
+  contactSection: FooterContactSection.optional(),
+  partners: FooterPartnersSection.optional(),
 });
 ```
 
-| Cle              | Type                          | Requis ? | Description                                  |
-| ---------------- | ----------------------------- | -------- | -------------------------------------------- |
-| `type`           | `enum`                        | Non      | Variante du footer (defaut: `"default"`)     |
-| `columns`        | `FooterColumn[]`              | Oui      | Colonnes de liens du footer                  |
-| `socials`        | `{ platform, url }[]`         | Non      | Liens reseaux sociaux                        |
-| `extra`          | `string`                      | Non      | HTML ou texte complementaire                 |
-| `newsletter`     | `NewsletterSectionSchema`     | Non      | Formulaire d'abonnement newsletter           |
-| `copyright`      | `LocalizedString`             | Oui      | Texte de copyright                           |
-| `logo`           | `string`                      | Non      | URL ou chemin du logo                        |
-| `logoIcon`       | `string`                      | Non      | Nom d'icone (lucide) pour le logo            |
-| `logoTitle`      | `LocalizedString`             | Non      | Titre affiche a cote du logo                 |
-| `logoAlt`        | `LocalizedString`             | Non      | Texte alternatif du logo                     |
-| `description`    | `LocalizedString`             | Non      | Texte descriptif du footer                   |
-| `legalLinks`     | `{ href, label }[]`           | Non      | Liens legaux                                 |
-| `bottomLinks`    | `{ href, label }[]`           | Non      | Liens en bas du footer                       |
-| `paymentMethods` | `string[]`                    | Non      | Icones de moyens de paiement                 |
-| `website`        | `string`                      | Non      | URL du site web                              |
+Les valeurs de `type` sont des **noms de design** (pas des noms de sites) :
+
+| Valeur              | Comportement                                                     |
+| ------------------- | ---------------------------------------------------------------- |
+| `rich`              | Footer complet : newsletter + colonnes de liens + réseaux sociaux |
+| `minimal-centered`  | Logo + liens de navigation + mentions légales centrés            |
+| `sidebar-columns`   | Sidebar latérale + colonnes de liens (sous-style `plain`/`card`) |
+| `contact-partners`  | Bloc contacts + logos partenaires                                |
+| `default`           | Fallback (comportement identique à `rich`)                       |
+
+| Cle                | Type                          | Requis ? | Description                                                          |
+| ------------------ | ----------------------------- | -------- | -------------------------------------------------------------------- |
+| `type`             | `enum`                        | Non      | Variante de design du footer (voir tableau ci-dessus)                |
+| `style`            | `"plain" \| "card"`           | Non      | Sous-style visuel (utilisé par `sidebar-columns`)                    |
+| `columns`          | `FooterColumn[]`              | Non      | Colonnes de liens du footer                                          |
+| `socials`          | `{ platform, url }[]`         | Non      | Liens réseaux sociaux                                                |
+| `extra`            | `string`                      | Non      | HTML ou texte complémentaire                                         |
+| `newsletter`       | `NewsletterSectionSchema`     | Non      | Formulaire d'abonnement newsletter                                   |
+| `copyright`        | `LocalizedString`             | Oui      | Texte de copyright                                                   |
+| `logo`             | `string`                      | Non      | URL ou chemin du logo                                                |
+| `logoIcon`         | `LucideIconOrSvg`             | Non      | Icône lucide ou SVG inline pour le logo                              |
+| `logoTitle`        | `LocalizedString`             | Non      | Titre affiché à côté du logo                                         |
+| `logoAlt`          | `LocalizedString`             | Non      | Texte alternatif du logo                                             |
+| `description`      | `LocalizedString`             | Non      | Texte descriptif du footer                                           |
+| `legalLinks`       | `{ href, label }[]`           | Non      | Liens légaux (CGU, politique de confidentialité, etc.)               |
+| `bottomLinks`      | `{ href, label }[]`           | Non      | Liens en bas du footer                                               |
+| `paymentMethods`   | `string[]`                    | Non      | Icônes de moyens de paiement                                         |
+| `website`          | `string`                      | Non      | URL du site web                                                      |
+| `contactSection`   | `FooterContactSection`        | Non      | Bloc contacts (utilisé par `contact-partners`)                       |
+| `partners`         | `FooterPartnersSection`       | Non      | Bloc logos partenaires (utilisé par `contact-partners`)              |
 
 `FooterColumn` :
 
@@ -391,6 +443,38 @@ const FooterColumn = z.object({
     external: z.boolean().optional(),
     icon: z.string().optional(),
   })),
+});
+```
+
+`FooterContactSection` (utilisée par `contact-partners`) :
+
+```ts
+const FooterContactItem = z.object({
+  icon: z.string().optional(),
+  label: LocalizedString.optional(),
+  lines: z.array(LocalizedString).optional(),
+  value: LocalizedString.optional(),
+  href: z.string().optional(),
+});
+
+const FooterContactSection = z.object({
+  title: LocalizedString.optional(),
+  items: z.array(FooterContactItem),
+});
+```
+
+`FooterPartnersSection` (utilisée par `contact-partners`) :
+
+```ts
+const FooterPartnerLogo = z.object({
+  image: z.string(),
+  alt: LocalizedString,
+  href: z.string().optional(),
+});
+
+const FooterPartnersSection = z.object({
+  title: LocalizedString.optional(),
+  logos: z.array(FooterPartnerLogo),
 });
 ```
 
@@ -674,27 +758,67 @@ const AuthPageTextSchema = z.object({
   subtitle: LocalizedString.optional(),
 });
 
+// Présentation du widget de compte dans les headers (`AuthMenu`). Pilote la
+// densité « selon les besoins » côté config ; le tone/variant restent couplés
+// au design du header (props), pas ici.
+const AuthMenuConfigSchema = z.object({
+  density: z.enum(["compact", "normal"]).optional(),
+  showName: z.boolean().optional(),
+  showDropdownHeader: z.boolean().optional(),
+  loginLabel: LocalizedString.optional(),
+});
+export type AuthMenuConfig = z.infer<typeof AuthMenuConfigSchema>;
+
 export const AuthConfigSchema = z.object({
-  variant: z.string().optional(),       // discriminant du registry de variants
-  hideHeader: z.boolean().optional(),    // masquer le SiteHeader sur les pages auth
-  hideFooter: z.boolean().optional(),    // masquer le SiteFooter sur les pages auth
+  variant: z.string().optional(),          // discriminant du registry de variants
+  menu: AuthMenuConfigSchema.optional(),   // présentation du widget de compte
+  hideHeader: z.boolean().optional(),      // masquer le SiteHeader sur les pages auth
+  hideFooter: z.boolean().optional(),      // masquer le SiteFooter sur les pages auth
   login: AuthPageTextSchema.optional(),
   register: AuthPageTextSchema.optional(),
   recover: AuthPageTextSchema.optional(),
 });
 ```
 
-| Cle                  | Type              | Description                                              |
-| -------------------- | ----------------- | ------------------------------------------------------- |
-| `variant`            | `string`          | Variant de design résolu par `resolveAuthVariant` (absent → `default`) |
-| `hideHeader`         | `boolean`         | Masquer le `SiteHeader` sur les pages auth              |
-| `hideFooter`         | `boolean`         | Masquer le `SiteFooter` sur les pages auth              |
-| `login.title`        | `LocalizedString` | Titre du formulaire de connexion                        |
-| `login.subtitle`     | `LocalizedString` | Sous-titre (sert aussi de description SEO)              |
-| `register.title`     | `LocalizedString` | Titre du formulaire d'inscription                       |
-| `register.subtitle`  | `LocalizedString` | Sous-titre (sert aussi de description SEO)              |
-| `recover.title`      | `LocalizedString` | Titre du formulaire de récupération                     |
-| `recover.subtitle`   | `LocalizedString` | Sous-titre (sert aussi de description SEO)              |
+| Cle                        | Type              | Description                                                             |
+| -------------------------- | ----------------- | ----------------------------------------------------------------------- |
+| `variant`                  | `string`          | Variant de design résolu par `resolveAuthVariant` (absent → `default`)  |
+| `menu`                     | `AuthMenuConfig`  | Présentation du widget de compte dans le header (voir ci-dessous)       |
+| `hideHeader`               | `boolean`         | Masquer le `SiteHeader` sur les pages auth                              |
+| `hideFooter`               | `boolean`         | Masquer le `SiteFooter` sur les pages auth                              |
+| `login.title`              | `LocalizedString` | Titre du formulaire de connexion                                        |
+| `login.subtitle`           | `LocalizedString` | Sous-titre (sert aussi de description SEO)                              |
+| `register.title`           | `LocalizedString` | Titre du formulaire d'inscription                                       |
+| `register.subtitle`        | `LocalizedString` | Sous-titre (sert aussi de description SEO)                              |
+| `recover.title`            | `LocalizedString` | Titre du formulaire de récupération                                     |
+| `recover.subtitle`         | `LocalizedString` | Sous-titre (sert aussi de description SEO)                              |
+
+#### `AuthMenuConfig` — widget de compte (`auth.menu`)
+
+Pilote la présentation du composant `AuthMenu` dans les headers, indépendamment du `variant` de design.
+
+| Cle                   | Type                         | Description                                                                  |
+| --------------------- | ---------------------------- | ---------------------------------------------------------------------------- |
+| `density`             | `"compact" \| "normal"`      | Densité du widget : `compact` = icône seule, `normal` = icône + nom/label    |
+| `showName`            | `boolean`                    | Affiche le nom de l'utilisateur connecté dans le header                      |
+| `showDropdownHeader`  | `boolean`                    | Affiche un en-tête (avatar + nom) dans le dropdown du menu de compte         |
+| `loginLabel`          | `LocalizedString`            | Texte du bouton "Se connecter" (remplace le libellé par défaut)              |
+
+**Exemple :**
+
+```json
+{
+  "auth": {
+    "variant": "default",
+    "menu": {
+      "density": "compact",
+      "showName": false,
+      "showDropdownHeader": true,
+      "loginLabel": { "fr": "Connexion", "en": "Sign in" }
+    }
+  }
+}
+```
 
 ---
 

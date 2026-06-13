@@ -32,6 +32,7 @@
   - [Hooks d'accès au client](#hooks-daccès-au-client)
     - [`useCocolight`](#usecocolight)
     - [`useCocolightInit`](#usecocolightinit)
+  - [Ouvrir la connexion depuis n'importe où](#ouvrir-la-connexion-depuis-nimporte-où)
   - [Flux d'authentification](#flux-dauthentification)
   - [Exemple d'intégration](#exemple-dintégration)
   - [Sécurité et validation](#sécurité-et-validation)
@@ -481,16 +482,20 @@ L'application ne gère pas de redirection automatique vers `/login` — c'est la
 
 ### Clear tokens (logout)
 
-L'application utilise `api.logout()` (accessible via `useCocolight()`) pour déconnecter l'utilisateur. Le SDK émet ensuite `sessionReset`, que `CocolightProvider` intercepte pour réinitialiser l'état React. Exemple réel dans les composants header :
+L'application utilise `api.logout()` pour déconnecter l'utilisateur. Le SDK
+émet ensuite `sessionReset`, que `CocolightProvider` intercepte pour
+réinitialiser l'état React.
+
+Depuis le commit `537a9f3`, la déconnexion est centralisée dans
+`useAuthActions()` (module auth) — les headers ne gèrent plus leur propre
+logout :
 
 ```ts
-// Dans un composant header (ex : DefaultHeader.tsx)
-const { api } = useCocolight();
+// Dans un composant utilisant useAuthActions (ex. AuthMenu)
+import { useAuthActions } from "@/modules/auth";
 
-function handleLogout() {
-  api.logout();
-  navigate("/");
-}
+const { logout } = useAuthActions();
+// logout() appelle api?.logout() puis navigate("/")
 ```
 
 Pour un reset bas niveau du storage des tokens (cas avancé) :
@@ -764,6 +769,80 @@ export function useCocolightInit(opts: InitApiOptions = {}) {
 
 ---
 
+## Ouvrir la connexion depuis n'importe où
+
+SiteForge expose un **modal de connexion global** via `AuthModalProvider` (module
+auth, voir [doc/23-module-auth.md](23-module-auth.md)). Tout composant monté sous
+`SiteShell` peut déclencher l'ouverture sans déclarer son propre état local ni
+monter son propre `<AuthModalLazy>`.
+
+### `useAuthModal()` — le hook de déclenchement
+
+```ts
+import { useAuthModal } from "@/modules/auth";
+
+// Dans un composant React :
+const { openLogin, close, isOpen } = useAuthModal();
+
+// Ouvrir la connexion :
+openLogin();
+
+// Ouvrir avec callback (ex. recharger les données après connexion) :
+openLogin({ onSuccess: () => refetch() });
+
+// Ouvrir directement sur l'inscription :
+openLogin({ initialMode: "register" });
+```
+
+`openLogin` accepte un objet `AuthModalOptions` optionnel :
+- `onSuccess?: () => void` — appelé juste avant la fermeture si la connexion
+  réussit. Utile pour rejouer une action (ex. CoForm `refetch`, ajout au panier).
+- `initialMode?: "login" | "register" | "recover"` — mode affiché à l'ouverture
+  (défaut : `"login"`).
+
+### Frontière « auth = utilisateur courant »
+
+L'état de connexion (`me`, `isConnected`) est la source de vérité du module auth,
+répliqué par `CocolightProvider` :
+
+```
+CocolightProvider (src/contexts/CocolightProvider.tsx)
+  └─ me: User | null               → état global React Query + listeners SDK
+  └─ api: Api | null               → instance API haut niveau
+  └─ isConnected via me?.isConnected
+
+useAuthActions() (src/modules/auth/hooks/useAuthActions.ts)
+  └─ consomme useCocolight()
+  └─ expose isConnected, name, avatarUrl, email, profileUrl, logout
+  → source de vérité UI : headers, AuthMenu, AuthGate, CurrentUserAvatar
+```
+
+**Règle** : ne jamais lire `me` directement dans un composant UI pour décider
+d'afficher ou non un contenu protégé — utiliser `<AuthGate>` (sous `ClientOnly`)
+ou `useAuthActions().isConnected`. Les éléments conditionnels à l'auth sont cachés
+en SSR (cf. gotcha #10 dans CLAUDE.md) et apparaissent post-hydration.
+
+### Patterns courants
+
+```tsx
+// 1. Bouton qui ouvre la connexion
+import { LoginButton } from "@/modules/auth";
+<LoginButton label="Rejoindre" openOptions={{ onSuccess: handleJoin }} />
+
+// 2. Garde inline (affiche children si connecté, LoginPrompt sinon)
+import { AuthGate } from "@/modules/auth";
+<AuthGate message="Connectez-vous pour commenter">
+  <CommentForm />
+</AuthGate>
+
+// 3. Déclenchement programmatique depuis une action
+import { useAuthModal } from "@/modules/auth";
+const { openLogin } = useAuthModal();
+<button onClick={() => { if (!isConnected) openLogin(); else doAction(); }}>
+  Réagir
+</button>
+```
+
 ## Flux d'authentification
 
 1. **Login**
@@ -778,8 +857,8 @@ export function useCocolightInit(opts: InitApiOptions = {}) {
 
 3. **Logout**
 
-   * L'application appelle `api.logout()` (récupéré via `useCocolight()`). Le SDK émet l'événement `sessionReset` que `CocolightProvider` écoute pour remettre `me` à `null` et recréer une `Api` non connectée.
-   * Redirection ou mise à jour du state d'authentification.
+   * L'application appelle `api.logout()` (via `useAuthActions().logout()`). Le SDK émet l'événement `sessionReset` que `CocolightProvider` écoute pour remettre `me` à `null` et recréer une `Api` non connectée.
+   * `useAuthActions().logout()` appelle ensuite `navigate("/")` automatiquement.
 
 ---
 
@@ -1023,3 +1102,4 @@ Implémenté dans le commit `7835da0 SSO login`.
 - [Architecture](03-architecture.md)
 - [Permissions](10-permissions.md)
 - [Backend & SSR](14-backend-ssr.md)
+- [Module Auth](23-module-auth.md) — `AuthModalProvider`, `useAuthModal`, `AuthMenu`, composants UI auth

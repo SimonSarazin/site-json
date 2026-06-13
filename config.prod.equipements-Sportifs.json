@@ -3,35 +3,40 @@
   "generated": "2026-05-08T10:30:00.000Z",
   "meta": {
     "title": {
-      "fr": "Equipement sportif - Région Réunion",
+      "fr": "Équipements sportifs - Région Réunion",
       "en": "Sports Facilities - Réunion Region"
     },
     "description": {
-      "fr": "Liste des équipements sportifs disponibles dans la région de Réunion",
-      "en": "List of sports facilities available in the Réunion region"
+      "fr": "Liste des équipements sportifs disponibles à La Réunion",
+      "en": "Directory of sports facilities available in Réunion"
     },
     "defaultLang": "fr",
     "languages": [
       "fr",
       "en"
     ],
-    "favicon": "images/rezoLaMer/logo.png",
-    "themeColor": "#00e7e3",
+    "favicon": "/images/equipementsSportifs974/favicon.svg",
+    "themeColor": "#007f5a",
     "keywords": [
-        "sports facilities",
-        "Réunion region",
-        "public amenities",
-        "recreation",
-        "community resources"
-    ]
+      "sports facilities",
+      "Réunion region",
+      "public amenities",
+      "recreation",
+      "community resources"
+    ],
+    "ogImage": "/images/equipementsSportifs974/hero.jpg"
   },
   "header": {
-    "type": "rezo-la-mer",
+    "type": "transparent-scroll",
     "path": "/",
-    "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path></svg>",
+    "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 22c4.5-4.5 7-7.6 7-11a7 7 0 1 0-14 0c0 3.4 2.5 6.5 7 11Z\"></path><path d=\"M8 10h1.7l1-2.6 2 5.2 1-2.6H16\"></path></svg>",
     "logoTitle": {
-      "fr": "Equipement sportif - Région Réunion",
-      "en": "Sports Facilities - Réunion Region"
+      "fr": "Équipement sportif",
+      "en": "Sports Facilities"
+    },
+    "logoSubtitle": {
+      "fr": "Région Réunion",
+      "en": "Réunion Region"
     },
     "ctaButton": {
       "label": {
@@ -46,24 +51,34 @@
           "fr": "Accueil",
           "en": "Home"
         },
-        "path": "/"
+        "path": "/",
+        "icon": "house"
       },
       {
         "label": {
-          "fr": "Liste des équipements",
-          "en": "List of Facilities"
+          "fr": "Equipements",
+          "en": "Facilities"
         },
-        "path": "/equipements-sportifs"
+        "path": "/equipements-sportifs",
+        "icon": "dumbbell"
+      },
+      {
+        "label": {
+          "fr": "Observatoire",
+          "en": "Observatory"
+        },
+        "path": "/observatoire",
+        "icon": "chart-column"
       }
     ],
     "sticky": true,
     "transparent": false,
     "height": "lg",
     "utilities": {
-      "piggyBank": true,
+      "piggyBank": false,
       "themeSwitch": true,
       "langSwitch": true,
-      "search": false,
+      "search": true,
       "auth": true,
       "cart": false,
       "notifications": true
@@ -73,24 +88,24 @@
     {
       "path": "/",
       "title": {
-        "fr": "Accueil - Equipement sportif - Région Réunion",
+        "fr": "Accueil - Équipements sportifs - Région Réunion",
         "en": "Home - Sports Facilities - Réunion Region"
       },
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "hero-rezo-la-mer",
+          "type": "hero-parallax",
           "id": "hero-rezo-la-mer",
           "props": {
             "headline": {
-              "fr": "Equipement sportif - Région Réunion",
+              "fr": "Équipements sportifs - Région Réunion",
               "en": "Sports Facilities - Réunion Region"
             },
             "subhead": {
               "fr": "Équipez et connectez le réseau des passionnés de sport pour construire ensemble une communauté dynamique et résiliente",
-              "en": "Equip and connect the network of sports enthusiasts to build together a dynamic and resilient community"
+              "en": "Equipping and connecting the network of sports enthusiasts to build a dynamic and resilient community together"
             },
-            "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-20 h-20\"><rect x=\"2\" y=\"10\" width=\"4\" height=\"4\" rx=\"1\"></rect><rect x=\"18\" y=\"10\" width=\"4\" height=\"4\" rx=\"1\"></rect><rect x=\"4\" y=\"8\" width=\"3\" height=\"8\" rx=\"1\"></rect><rect x=\"17\" y=\"8\" width=\"3\" height=\"8\" rx=\"1\"></rect><line x1=\"7\" y1=\"12\" x2=\"17\" y2=\"12\"></line></svg>",
+            "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"w-20 h-20\"><path d=\"M12 22c4.5-4.5 7-7.6 7-11a7 7 0 1 0-14 0c0 3.4 2.5 6.5 7 11Z\"></path><path d=\"M8 10h1.7l1-2.6 2 5.2 1-2.6H16\"></path></svg>",
             "backgroundImage": "images/equipementsSportifs974/hero2.jpg",
             "backgroundImageAlt": {
               "fr": "Vue panoramique d'un terrain de sport vibrant avec des joueurs en action",
@@ -115,34 +130,160 @@
             "ctaButtons": [
               {
                 "label": {
-                  "fr": "Rejoindre le réseau",
-                  "en": "Join the network"
+                  "fr": "Explorer les équipements",
+                  "en": "Explore the facilities"
                 },
-                "path": "/rejoindre",
+                "path": "/equipements-sportifs",
                 "variant": "default"
+              },
+              {
+                "label": {
+                  "fr": "Découvrir l'observatoire",
+                  "en": "Discover the observatory"
+                },
+                "path": "/observatoire",
+                "variant": "secondary"
               }
             ],
             "showScrollIndicator": true
           }
+        },
+        {
+          "type": "categories-grid",
+          "id": "Convention-section",
+          "props": {
+            "headline": {
+              "fr": "Quatre piliers, une seule plateforme",
+              "en": "Four pillars, one platform"
+            },
+            "subhead": {
+              "fr": "ES974 réunit les données, le terrain et les gestionnaires pour piloter l'offre sportive de l'île.",
+              "en": "ES974 brings together data, fieldwork, and managers to oversee the island's sports offerings."
+            },
+            "columns": 2,
+            "cards": [
+              {
+                "icon": "database",
+                "title": {
+                  "fr": "Interopérabilité Data ES",
+                  "en": "ES Data Interoperability"
+                },
+                "subtitle": {
+                  "fr": "Imports et flux push standardisés. Vos données équipements connectées aux référentiels nationaux.",
+                  "en": "Standardized imports and push flows. Your equipment data connected to national reference systems."
+                }
+              },
+              {
+                "icon": "map-pin",
+                "title": {
+                  "fr": "Annuaire des équipements",
+                  "en": "Equipment Directory"
+                },
+                "subtitle": {
+                  "fr": "Tous les équipements sportifs de l'île, filtrables par commune, attribut et usage, avec géolocalisation.",
+                  "en": "All sports facilities on the island, filterable by municipality, attribute, and usage, with geolocation."
+                }
+              },
+              {
+                "icon": "bar-chart-2",
+                "title": {
+                  "fr": "Observatoire ARDISS",
+                  "en": "ARDISS Observatory"
+                },
+                "subtitle": {
+                  "fr": "Formulaires pour outiller le Diag ARDISS, par équipement et par gestionnaire. Remontée des indicateurs.",
+                  "en": "Forms to support the ARDISS Diagnosis, by equipment and by manager. Indicator reporting."
+                }
+              },
+              {
+                "icon": "users",
+                "title": {
+                  "fr": "Communauté des gestionnaires",
+                  "en": "Managers' Community"
+                },
+                "subtitle": {
+                  "fr": "Inscriptions, invitations et rôles. Chaque gestionnaire accède à ses équipements et collabore.",
+                  "en": "Registrations, invitations, and roles. Each manager accesses their equipment and collaborates."
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "hero-quick-access",
+          "id": "hero-sport-sante",
+          "props": {
+            "headline": {
+              "fr": "Tous les équipements de l'île, en un coup d'œil",
+              "en": "All the island's equipment at a glance"
+            },
+            "subhead": {
+              "fr": "Recherchez, filtrez et localisez chaque équipement sportif des 974 communes. Ajoutez vos sites en quelques clics.",
+              "en": "Search, filter, and locate every sports facility in the 974 municipalities. Add your sites in a few clicks."
+            },
+            "backgroundImage": "/images/equipementsSportifs974/hero.jpg",
+            "backgroundImageAlt": {
+              "fr": "Équipements sportifs La Réunion",
+              "en": "Sports facilities Réunion"
+            },
+            "badges": [
+              {
+                "label": {
+                  "fr": "Filtres par attributs",
+                  "en": "Attribute filters"
+                },
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><polygon points=\"22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3\"></polygon></svg>"
+              },
+              {
+                "label": {
+                  "fr": "Par commune",
+                  "en": "By municipality"
+                },
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"></path><polyline points=\"9 22 9 12 15 12 15 22\"></polyline></svg>"
+              },
+              {
+                "label": {
+                  "fr": "Carto géolocalisée",
+                  "en": "Geolocated map"
+                },
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z\"></path><circle cx=\"12\" cy=\"10\" r=\"3\"></circle></svg>"
+              },
+              {
+                "label": {
+                  "fr": "Ajout simplifié",
+                  "en": "Easy addition"
+                },
+                "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7\"></path><path d=\"M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z\"></path></svg>"
+              }
+            ]
+          }
         }
-      ]
+      ],
+      "seo": {
+        "description": {
+          "fr": "Découvrez et localisez les équipements sportifs de La Réunion : recherche par commune, type d'équipement et accessibilité.",
+          "en": "Discover and locate sports facilities in Réunion: search by municipality, facility type and accessibility."
+        }
+      }
     },
-     {
+    {
       "path": "/equipements-sportifs",
       "title": {
-        "fr": "Équipements sportifs - Sport Santé Bien-être",
-        "en": "Sports facilities - Sport Health Wellness"
+        "fr": "Équipements sportifs - Région Réunion",
+        "en": "Sports Facilities - Réunion Region"
       },
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "listing-equipements-header",
           "props": {
             "headline": {
               "fr": "Découvrez les équipements sportifs",
-              "en": "Discover sports facilities" 
+              "en": "Discover sports facilities"
             },
+            "headlineClassName": "text-white dark:text-foreground",
+            "filtersClassName": "mx-auto flex w-full max-w-4xl flex-col gap-3 rounded-2xl border border-border/60 bg-card/95 p-3 shadow-2xl backdrop-blur-md",
             "buttons": [
               {
                 "label": {
@@ -150,6 +291,7 @@
                   "en": "Add sports facility"
                 },
                 "action": "add-poi",
+                "modal": "add-poi-equipement",
                 "variant": "outline"
               }
             ],
@@ -157,7 +299,6 @@
               "fr": "Rechercher un équipement...",
               "en": "Search for a facility..."
             },
-            "showFilters": true,
             "showSearch": true,
             "dropdownFilters": [
               {
@@ -377,7 +518,7 @@
                   "fr": "Catégorie",
                   "en": "Category"
                 },
-                "field": "category",
+                "field": "equip_type_name",
                 "multiple": true,
                 "options": [
                   {
@@ -385,7 +526,7 @@
                     "value": "Multisports/City-stades",
                     "label": {
                       "fr": "Multisports/City-stades",
-                      "en": "Multisports/City-stades"
+                      "en": "Multi-sports / urban sports ground"
                     }
                   },
                   {
@@ -393,7 +534,7 @@
                     "value": "Terrain de basket-ball",
                     "label": {
                       "fr": "Terrain de basket-ball",
-                      "en": "Terrain de basket-ball"
+                      "en": "Basketball court"
                     }
                   },
                   {
@@ -401,7 +542,7 @@
                     "value": "Terrain de football",
                     "label": {
                       "fr": "Terrain de football",
-                      "en": "Terrain de football"
+                      "en": "Football pitch"
                     }
                   },
                   {
@@ -409,7 +550,7 @@
                     "value": "Salles polyvalentes / des fêtes / non spécialisées",
                     "label": {
                       "fr": "Salles polyvalentes / des fêtes / non spécialisées",
-                      "en": "Salles polyvalentes / des fêtes / non spécialisées"
+                      "en": "Multi-purpose / community halls"
                     }
                   },
                   {
@@ -417,7 +558,7 @@
                     "value": "Salle de musculation/cardiotraining",
                     "label": {
                       "fr": "Salle de musculation/cardiotraining",
-                      "en": "Salle de musculation/cardiotraining"
+                      "en": "Weight training / cardio room"
                     }
                   },
                   {
@@ -425,7 +566,7 @@
                     "value": "Salle multisports (gymnase)",
                     "label": {
                       "fr": "Salle multisports (gymnase)",
-                      "en": "Salle multisports (gymnase)"
+                      "en": "Multi-sports hall (gymnasium)"
                     }
                   },
                   {
@@ -433,7 +574,7 @@
                     "value": "Terrain de handball",
                     "label": {
                       "fr": "Terrain de handball",
-                      "en": "Terrain de handball"
+                      "en": "Handball court"
                     }
                   },
                   {
@@ -441,7 +582,7 @@
                     "value": "Terrain de pétanque",
                     "label": {
                       "fr": "Terrain de pétanque",
-                      "en": "Terrain de pétanque"
+                      "en": "Pétanque ground"
                     }
                   },
                   {
@@ -449,7 +590,7 @@
                     "value": "Stade d’athlétisme",
                     "label": {
                       "fr": "Stade d’athlétisme",
-                      "en": "Stade d’athlétisme"
+                      "en": "Athletics stadium"
                     }
                   },
                   {
@@ -457,7 +598,7 @@
                     "value": "Site d'activités aquatiques et nautiques",
                     "label": {
                       "fr": "Site d'activités aquatiques et nautiques",
-                      "en": "Site d'activités aquatiques et nautiques"
+                      "en": "Water and nautical activities site"
                     }
                   },
                   {
@@ -465,7 +606,7 @@
                     "value": "Court de tennis",
                     "label": {
                       "fr": "Court de tennis",
-                      "en": "Court de tennis"
+                      "en": "Tennis court"
                     }
                   },
                   {
@@ -473,7 +614,7 @@
                     "value": "Bassin mixte de natation",
                     "label": {
                       "fr": "Bassin mixte de natation",
-                      "en": "Bassin mixte de natation"
+                      "en": "Multi-use swimming pool"
                     }
                   },
                   {
@@ -481,7 +622,7 @@
                     "value": "Site de plongée",
                     "label": {
                       "fr": "Site de plongée",
-                      "en": "Site de plongée"
+                      "en": "Diving site"
                     }
                   },
                   {
@@ -497,7 +638,7 @@
                     "value": "Dojo / Salle d'arts martiaux",
                     "label": {
                       "fr": "Dojo / Salle d'arts martiaux",
-                      "en": "Dojo / Salle d'arts martiaux"
+                      "en": "Dojo / martial arts hall"
                     }
                   },
                   {
@@ -505,7 +646,7 @@
                     "value": "Parcours sportif/santé",
                     "label": {
                       "fr": "Parcours sportif/santé",
-                      "en": "Parcours sportif/santé"
+                      "en": "Fitness trail"
                     }
                   },
                   {
@@ -513,7 +654,7 @@
                     "value": "Boucle de randonnée",
                     "label": {
                       "fr": "Boucle de randonnée",
-                      "en": "Boucle de randonnée"
+                      "en": "Hiking loop"
                     }
                   },
                   {
@@ -521,7 +662,7 @@
                     "value": "Structure Artificielle d'Escalade",
                     "label": {
                       "fr": "Structure Artificielle d'Escalade",
-                      "en": "Structure Artificielle d'Escalade"
+                      "en": "Artificial climbing structure"
                     }
                   },
                   {
@@ -529,7 +670,7 @@
                     "value": "Site de pêche",
                     "label": {
                       "fr": "Site de pêche",
-                      "en": "Site de pêche"
+                      "en": "Fishing site"
                     }
                   },
                   {
@@ -537,7 +678,7 @@
                     "value": "Parcours d'obstacles",
                     "label": {
                       "fr": "Parcours d'obstacles",
-                      "en": "Parcours d'obstacles"
+                      "en": "Obstacle course"
                     }
                   },
                   {
@@ -545,7 +686,7 @@
                     "value": "Refuge de montagne",
                     "label": {
                       "fr": "Refuge de montagne",
-                      "en": "Refuge de montagne"
+                      "en": "Mountain refuge"
                     }
                   },
                   {
@@ -553,7 +694,7 @@
                     "value": "Salle de danse",
                     "label": {
                       "fr": "Salle de danse",
-                      "en": "Salle de danse"
+                      "en": "Dance studio"
                     }
                   },
                   {
@@ -561,7 +702,7 @@
                     "value": "Carrière",
                     "label": {
                       "fr": "Carrière",
-                      "en": "Carrière"
+                      "en": "Outdoor riding arena"
                     }
                   },
                   {
@@ -569,7 +710,7 @@
                     "value": "Terrain de kayak polo",
                     "label": {
                       "fr": "Terrain de kayak polo",
-                      "en": "Terrain de kayak polo"
+                      "en": "Kayak polo field"
                     }
                   },
                   {
@@ -577,7 +718,7 @@
                     "value": "Aire de saut",
                     "label": {
                       "fr": "Aire de saut",
-                      "en": "Aire de saut"
+                      "en": "Jumping area"
                     }
                   },
                   {
@@ -585,7 +726,7 @@
                     "value": "Mur à gauche",
                     "label": {
                       "fr": "Mur à gauche",
-                      "en": "Mur à gauche"
+                      "en": "Left wall (Basque pelota)"
                     }
                   },
                   {
@@ -593,7 +734,7 @@
                     "value": "Piste d'athlétisme isolée",
                     "label": {
                       "fr": "Piste d'athlétisme isolée",
-                      "en": "Piste d'athlétisme isolée"
+                      "en": "Stand-alone athletics track"
                     }
                   },
                   {
@@ -601,7 +742,7 @@
                     "value": "Bassin sportif de natation",
                     "label": {
                       "fr": "Bassin sportif de natation",
-                      "en": "Bassin sportif de natation"
+                      "en": "Competition swimming pool"
                     }
                   },
                   {
@@ -609,7 +750,7 @@
                     "value": "Trinquet",
                     "label": {
                       "fr": "Trinquet",
-                      "en": "Trinquet"
+                      "en": "Trinquet (Basque pelota court)"
                     }
                   },
                   {
@@ -617,7 +758,7 @@
                     "value": "Aire d'atterrissage",
                     "label": {
                       "fr": "Aire d'atterrissage",
-                      "en": "Aire d'atterrissage"
+                      "en": "Landing area"
                     }
                   },
                   {
@@ -625,7 +766,7 @@
                     "value": "Courses sur piste",
                     "label": {
                       "fr": "Courses sur piste",
-                      "en": "Courses sur piste"
+                      "en": "Horse racing track"
                     }
                   },
                   {
@@ -633,7 +774,7 @@
                     "value": "Salle de boxe",
                     "label": {
                       "fr": "Salle de boxe",
-                      "en": "Salle de boxe"
+                      "en": "Boxing gym"
                     }
                   },
                   {
@@ -641,7 +782,7 @@
                     "value": "Port de plaisance",
                     "label": {
                       "fr": "Port de plaisance",
-                      "en": "Port de plaisance"
+                      "en": "Marina"
                     }
                   },
                   {
@@ -649,7 +790,7 @@
                     "value": "Terrain de boules",
                     "label": {
                       "fr": "Terrain de boules",
-                      "en": "Terrain de boules"
+                      "en": "Boules ground"
                     }
                   },
                   {
@@ -657,15 +798,15 @@
                     "value": "Anneau / piste de cyclisme",
                     "label": {
                       "fr": "Anneau / piste de cyclisme",
-                      "en": "Anneau / piste de cyclisme"
+                      "en": "Cycling track"
                     }
                   },
                   {
                     "id": "aire-mixte-decollage-et-atterissage",
                     "value": "Aire mixte (décollage et atterissage)",
                     "label": {
-                      "fr": "Aire mixte (décollage et atterissage)",
-                      "en": "Aire mixte (décollage et atterissage)"
+                      "fr": "Aire mixte (décollage et atterrissage)",
+                      "en": "Mixed area (take-off and landing)"
                     }
                   },
                   {
@@ -673,7 +814,7 @@
                     "value": "Terrain de soccer",
                     "label": {
                       "fr": "Terrain de soccer",
-                      "en": "Terrain de soccer"
+                      "en": "Soccer pitch"
                     }
                   },
                   {
@@ -681,7 +822,7 @@
                     "value": "Piste de kart",
                     "label": {
                       "fr": "Piste de kart",
-                      "en": "Piste de kart"
+                      "en": "Karting track"
                     }
                   },
                   {
@@ -689,7 +830,7 @@
                     "value": "Bassin ludique de natation",
                     "label": {
                       "fr": "Bassin ludique de natation",
-                      "en": "Bassin ludique de natation"
+                      "en": "Leisure swimming pool"
                     }
                   },
                   {
@@ -697,7 +838,7 @@
                     "value": "Terrain mixte",
                     "label": {
                       "fr": "Terrain mixte",
-                      "en": "Terrain mixte"
+                      "en": "Mixed-use field"
                     }
                   },
                   {
@@ -705,7 +846,7 @@
                     "value": "Salle de cours collectifs",
                     "label": {
                       "fr": "Salle de cours collectifs",
-                      "en": "Salle de cours collectifs"
+                      "en": "Group fitness room"
                     }
                   },
                   {
@@ -713,7 +854,7 @@
                     "value": "Aire de décollage",
                     "label": {
                       "fr": "Aire de décollage",
-                      "en": "Aire de décollage"
+                      "en": "Take-off area"
                     }
                   },
                   {
@@ -721,7 +862,7 @@
                     "value": "Salle d'escrime",
                     "label": {
                       "fr": "Salle d'escrime",
-                      "en": "Salle d'escrime"
+                      "en": "Fencing hall"
                     }
                   },
                   {
@@ -729,7 +870,7 @@
                     "value": "Site d'escalade en falaise",
                     "label": {
                       "fr": "Site d'escalade en falaise",
-                      "en": "Site d'escalade en falaise"
+                      "en": "Cliff climbing site"
                     }
                   },
                   {
@@ -737,7 +878,7 @@
                     "value": "Piste de descente",
                     "label": {
                       "fr": "Piste de descente",
-                      "en": "Piste de descente"
+                      "en": "Downhill track"
                     }
                   },
                   {
@@ -745,7 +886,7 @@
                     "value": "Site de blocs d'escalade",
                     "label": {
                       "fr": "Site de blocs d'escalade",
-                      "en": "Site de blocs d'escalade"
+                      "en": "Bouldering site"
                     }
                   },
                   {
@@ -753,7 +894,7 @@
                     "value": "Parcours Acrobatique en Hauteur/Site d'accrobranche",
                     "label": {
                       "fr": "Parcours Acrobatique en Hauteur/Site d'accrobranche",
-                      "en": "Parcours Acrobatique en Hauteur/Site d'accrobranche"
+                      "en": "High ropes / tree-climbing course"
                     }
                   },
                   {
@@ -761,7 +902,7 @@
                     "value": "Pumptrack",
                     "label": {
                       "fr": "Pumptrack",
-                      "en": "Pumptrack"
+                      "en": "Pump track"
                     }
                   },
                   {
@@ -769,7 +910,7 @@
                     "value": "Terrain de basket-ball 3x3",
                     "label": {
                       "fr": "Terrain de basket-ball 3x3",
-                      "en": "Terrain de basket-ball 3x3"
+                      "en": "3x3 basketball court"
                     }
                   },
                   {
@@ -777,7 +918,7 @@
                     "value": "Piste d’aérodrome / d'aéroport",
                     "label": {
                       "fr": "Piste d’aérodrome / d'aéroport",
-                      "en": "Piste d’aérodrome / d'aéroport"
+                      "en": "Aerodrome / airport runway"
                     }
                   },
                   {
@@ -785,7 +926,7 @@
                     "value": "Salle ou terrain de paintball",
                     "label": {
                       "fr": "Salle ou terrain de paintball",
-                      "en": "Salle ou terrain de paintball"
+                      "en": "Paintball hall or field"
                     }
                   },
                   {
@@ -793,7 +934,7 @@
                     "value": "Baignade aménagée",
                     "label": {
                       "fr": "Baignade aménagée",
-                      "en": "Baignade aménagée"
+                      "en": "Designated bathing area"
                     }
                   },
                   {
@@ -801,7 +942,7 @@
                     "value": "Pas de tir à l'arc",
                     "label": {
                       "fr": "Pas de tir à l'arc",
-                      "en": "Pas de tir à l'arc"
+                      "en": "Archery range"
                     }
                   },
                   {
@@ -809,7 +950,7 @@
                     "value": "Piste de bicross",
                     "label": {
                       "fr": "Piste de bicross",
-                      "en": "Piste de bicross"
+                      "en": "BMX track"
                     }
                   },
                   {
@@ -817,7 +958,7 @@
                     "value": "Aire de fitness/street workout",
                     "label": {
                       "fr": "Aire de fitness/street workout",
-                      "en": "Aire de fitness/street workout"
+                      "en": "Fitness / street workout area"
                     }
                   },
                   {
@@ -825,7 +966,7 @@
                     "value": "Site de modélisme automobile",
                     "label": {
                       "fr": "Site de modélisme automobile",
-                      "en": "Site de modélisme automobile"
+                      "en": "Model car racing site"
                     }
                   },
                   {
@@ -833,7 +974,7 @@
                     "value": "Parcours de cross",
                     "label": {
                       "fr": "Parcours de cross",
-                      "en": "Parcours de cross"
+                      "en": "Cross-country course"
                     }
                   },
                   {
@@ -841,7 +982,7 @@
                     "value": "Circuit de motocross",
                     "label": {
                       "fr": "Circuit de motocross",
-                      "en": "Circuit de motocross"
+                      "en": "Motocross circuit"
                     }
                   },
                   {
@@ -857,7 +998,7 @@
                     "value": "Salle de tennis de table",
                     "label": {
                       "fr": "Salle de tennis de table",
-                      "en": "Salle de tennis de table"
+                      "en": "Table tennis hall"
                     }
                   },
                   {
@@ -865,7 +1006,7 @@
                     "value": "Terrain de volley-ball",
                     "label": {
                       "fr": "Terrain de volley-ball",
-                      "en": "Terrain de volley-ball"
+                      "en": "Volleyball court"
                     }
                   },
                   {
@@ -873,7 +1014,7 @@
                     "value": "Terrain de foot 5x5",
                     "label": {
                       "fr": "Terrain de foot 5x5",
-                      "en": "Terrain de foot 5x5"
+                      "en": "5-a-side football pitch"
                     }
                   },
                   {
@@ -881,7 +1022,7 @@
                     "value": "Terrain de futsal extérieur",
                     "label": {
                       "fr": "Terrain de futsal extérieur",
-                      "en": "Terrain de futsal extérieur"
+                      "en": "Outdoor futsal pitch"
                     }
                   },
                   {
@@ -889,7 +1030,7 @@
                     "value": "Salle de blocs artificiels d'escalade",
                     "label": {
                       "fr": "Salle de blocs artificiels d'escalade",
-                      "en": "Salle de blocs artificiels d'escalade"
+                      "en": "Indoor bouldering gym"
                     }
                   },
                   {
@@ -897,7 +1038,7 @@
                     "value": "Piste d'athlétisme 2 à 4 couloirs",
                     "label": {
                       "fr": "Piste d'athlétisme 2 à 4 couloirs",
-                      "en": "Piste d'athlétisme 2 à 4 couloirs"
+                      "en": "Athletics track (2–4 lanes)"
                     }
                   },
                   {
@@ -905,7 +1046,7 @@
                     "value": "Aire de lancer",
                     "label": {
                       "fr": "Aire de lancer",
-                      "en": "Aire de lancer"
+                      "en": "Throwing area"
                     }
                   },
                   {
@@ -913,7 +1054,7 @@
                     "value": "Practice",
                     "label": {
                       "fr": "Practice",
-                      "en": "Practice"
+                      "en": "Driving range"
                     }
                   },
                   {
@@ -921,7 +1062,7 @@
                     "value": "Bassin de réception de toboggan",
                     "label": {
                       "fr": "Bassin de réception de toboggan",
-                      "en": "Bassin de réception de toboggan"
+                      "en": "Water slide splash pool"
                     }
                   },
                   {
@@ -929,7 +1070,7 @@
                     "value": "Point d'embarquement et de débarquement isolé",
                     "label": {
                       "fr": "Point d'embarquement et de débarquement isolé",
-                      "en": "Point d'embarquement et de débarquement isolé"
+                      "en": "Stand-alone boarding/landing point"
                     }
                   },
                   {
@@ -937,7 +1078,7 @@
                     "value": "Mur ou fronton mixte",
                     "label": {
                       "fr": "Mur ou fronton mixte",
-                      "en": "Mur ou fronton mixte"
+                      "en": "Mixed wall or fronton"
                     }
                   },
                   {
@@ -945,7 +1086,7 @@
                     "value": "Mur de tennis",
                     "label": {
                       "fr": "Mur de tennis",
-                      "en": "Mur de tennis"
+                      "en": "Tennis practice wall"
                     }
                   },
                   {
@@ -953,7 +1094,7 @@
                     "value": "Terrain de beach-volley",
                     "label": {
                       "fr": "Terrain de beach-volley",
-                      "en": "Terrain de beach-volley"
+                      "en": "Beach volleyball court"
                     }
                   },
                   {
@@ -961,7 +1102,7 @@
                     "value": "Terrain de beach soccer",
                     "label": {
                       "fr": "Terrain de beach soccer",
-                      "en": "Terrain de beach soccer"
+                      "en": "Beach soccer pitch"
                     }
                   },
                   {
@@ -969,7 +1110,7 @@
                     "value": "Salle de volley-ball",
                     "label": {
                       "fr": "Salle de volley-ball",
-                      "en": "Salle de volley-ball"
+                      "en": "Volleyball hall"
                     }
                   },
                   {
@@ -977,7 +1118,7 @@
                     "value": "Salle de gymnastique sportive",
                     "label": {
                       "fr": "Salle de gymnastique sportive",
-                      "en": "Salle de gymnastique sportive"
+                      "en": "Artistic gymnastics hall"
                     }
                   },
                   {
@@ -985,7 +1126,7 @@
                     "value": "Parcours 9 trous",
                     "label": {
                       "fr": "Parcours 9 trous",
-                      "en": "Parcours 9 trous"
+                      "en": "9-hole golf course"
                     }
                   },
                   {
@@ -993,7 +1134,7 @@
                     "value": "Salle de culturisme",
                     "label": {
                       "fr": "Salle de culturisme",
-                      "en": "Salle de culturisme"
+                      "en": "Bodybuilding gym"
                     }
                   },
                   {
@@ -1001,7 +1142,7 @@
                     "value": "Vélodrome",
                     "label": {
                       "fr": "Vélodrome",
-                      "en": "Vélodrome"
+                      "en": "Velodrome"
                     }
                   },
                   {
@@ -1009,7 +1150,7 @@
                     "value": "Stade de ski nautique",
                     "label": {
                       "fr": "Stade de ski nautique",
-                      "en": "Stade de ski nautique"
+                      "en": "Water-skiing stadium"
                     }
                   },
                   {
@@ -1017,7 +1158,7 @@
                     "value": "Parcours d'initiation",
                     "label": {
                       "fr": "Parcours d'initiation",
-                      "en": "Parcours d'initiation"
+                      "en": "Beginners' course"
                     }
                   },
                   {
@@ -1025,7 +1166,7 @@
                     "value": "Parcours 18 trous",
                     "label": {
                       "fr": "Parcours 18 trous",
-                      "en": "Parcours 18 trous"
+                      "en": "18-hole golf course"
                     }
                   },
                   {
@@ -1033,7 +1174,7 @@
                     "value": "Terrain de rugby",
                     "label": {
                       "fr": "Terrain de rugby",
-                      "en": "Terrain de rugby"
+                      "en": "Rugby pitch"
                     }
                   },
                   {
@@ -1041,7 +1182,7 @@
                     "value": "Autres équipements divers",
                     "label": {
                       "fr": "Autres équipements divers",
-                      "en": "Autres équipements divers"
+                      "en": "Other miscellaneous facilities"
                     }
                   },
                   {
@@ -1049,7 +1190,7 @@
                     "value": "Stade d’eau vive",
                     "label": {
                       "fr": "Stade d’eau vive",
-                      "en": "Stade d’eau vive"
+                      "en": "Whitewater stadium"
                     }
                   },
                   {
@@ -1057,7 +1198,7 @@
                     "value": "Carrière de dressage/rond de longe",
                     "label": {
                       "fr": "Carrière de dressage/rond de longe",
-                      "en": "Carrière de dressage/rond de longe"
+                      "en": "Dressage arena / lunging ring"
                     }
                   },
                   {
@@ -1065,7 +1206,7 @@
                     "value": "Autres terrains de pratique de tennis",
                     "label": {
                       "fr": "Autres terrains de pratique de tennis",
-                      "en": "Autres terrains de pratique de tennis"
+                      "en": "Other tennis practice courts"
                     }
                   },
                   {
@@ -1073,7 +1214,7 @@
                     "value": "Stade de canoë-kayak de vitesse",
                     "label": {
                       "fr": "Stade de canoë-kayak de vitesse",
-                      "en": "Stade de canoë-kayak de vitesse"
+                      "en": "Sprint canoe-kayak course"
                     }
                   },
                   {
@@ -1081,7 +1222,7 @@
                     "value": "Salle ou terrain de squash",
                     "label": {
                       "fr": "Salle ou terrain de squash",
-                      "en": "Salle ou terrain de squash"
+                      "en": "Squash court"
                     }
                   },
                   {
@@ -1089,7 +1230,7 @@
                     "value": "Salle de basket",
                     "label": {
                       "fr": "Salle de basket",
-                      "en": "Salle de basket"
+                      "en": "Basketball hall"
                     }
                   },
                   {
@@ -1097,7 +1238,7 @@
                     "value": "Bassin d'exercices aquatiques",
                     "label": {
                       "fr": "Bassin d'exercices aquatiques",
-                      "en": "Bassin d'exercices aquatiques"
+                      "en": "Aquatic exercise pool"
                     }
                   },
                   {
@@ -1105,7 +1246,7 @@
                     "value": "Piste de padel",
                     "label": {
                       "fr": "Piste de padel",
-                      "en": "Piste de padel"
+                      "en": "Padel court"
                     }
                   },
                   {
@@ -1113,7 +1254,7 @@
                     "value": "Anneau de Roller",
                     "label": {
                       "fr": "Anneau de Roller",
-                      "en": "Anneau de Roller"
+                      "en": "Roller skating rink"
                     }
                   },
                   {
@@ -1121,7 +1262,7 @@
                     "value": "Structure de tourisme équestre",
                     "label": {
                       "fr": "Structure de tourisme équestre",
-                      "en": "Structure de tourisme équestre"
+                      "en": "Equestrian tourism facility"
                     }
                   },
                   {
@@ -1129,7 +1270,7 @@
                     "value": "Salle ou terrain de badminton",
                     "label": {
                       "fr": "Salle ou terrain de badminton",
-                      "en": "Salle ou terrain de badminton"
+                      "en": "Badminton court"
                     }
                   },
                   {
@@ -1137,7 +1278,7 @@
                     "value": "Salle de trampoline",
                     "label": {
                       "fr": "Salle de trampoline",
-                      "en": "Salle de trampoline"
+                      "en": "Trampoline hall"
                     }
                   },
                   {
@@ -1145,7 +1286,7 @@
                     "value": "Salle de spectacle / Zenith",
                     "label": {
                       "fr": "Salle de spectacle / Zenith",
-                      "en": "Salle de spectacle / Zenith"
+                      "en": "Concert hall / arena"
                     }
                   },
                   {
@@ -1153,7 +1294,7 @@
                     "value": "Manège",
                     "label": {
                       "fr": "Manège",
-                      "en": "Manège"
+                      "en": "Indoor riding arena"
                     }
                   },
                   {
@@ -1161,7 +1302,7 @@
                     "value": "Salle de lutte",
                     "label": {
                       "fr": "Salle de lutte",
-                      "en": "Salle de lutte"
+                      "en": "Wrestling hall"
                     }
                   },
                   {
@@ -1169,7 +1310,7 @@
                     "value": "Salle d'haltérophilie",
                     "label": {
                       "fr": "Salle d'haltérophilie",
-                      "en": "Salle d'haltérophilie"
+                      "en": "Weightlifting hall"
                     }
                   },
                   {
@@ -1177,7 +1318,7 @@
                     "value": "Circuit de vitesse",
                     "label": {
                       "fr": "Circuit de vitesse",
-                      "en": "Circuit de vitesse"
+                      "en": "Racing circuit"
                     }
                   },
                   {
@@ -1185,7 +1326,7 @@
                     "value": "Salle de patinage sur roulette",
                     "label": {
                       "fr": "Salle de patinage sur roulette",
-                      "en": "Salle de patinage sur roulette"
+                      "en": "Roller skating hall"
                     }
                   },
                   {
@@ -1193,7 +1334,7 @@
                     "value": "Bowling",
                     "label": {
                       "fr": "Bowling",
-                      "en": "Bowling"
+                      "en": "Bowling alley"
                     }
                   },
                   {
@@ -1201,7 +1342,7 @@
                     "value": "Terrain de trial",
                     "label": {
                       "fr": "Terrain de trial",
-                      "en": "Terrain de trial"
+                      "en": "Motorcycle trials ground"
                     }
                   },
                   {
@@ -1209,7 +1350,7 @@
                     "value": "Piste ULM",
                     "label": {
                       "fr": "Piste ULM",
-                      "en": "Piste ULM"
+                      "en": "Microlight airstrip"
                     }
                   },
                   {
@@ -1217,7 +1358,7 @@
                     "value": "Pas de tir aux plateaux",
                     "label": {
                       "fr": "Pas de tir aux plateaux",
-                      "en": "Pas de tir aux plateaux"
+                      "en": "Clay pigeon shooting range"
                     }
                   },
                   {
@@ -1225,7 +1366,7 @@
                     "value": "Parkour/blocpark",
                     "label": {
                       "fr": "Parkour/blocpark",
-                      "en": "Parkour/blocpark"
+                      "en": "Parkour / block park"
                     }
                   },
                   {
@@ -1233,7 +1374,7 @@
                     "value": "Piste de course sur le plat",
                     "label": {
                       "fr": "Piste de course sur le plat",
-                      "en": "Piste de course sur le plat"
+                      "en": "Flat racing track"
                     }
                   },
                   {
@@ -1241,7 +1382,7 @@
                     "value": "Salle de beach-volley",
                     "label": {
                       "fr": "Salle de beach-volley",
-                      "en": "Salle de beach-volley"
+                      "en": "Indoor beach volleyball hall"
                     }
                   },
                   {
@@ -1249,7 +1390,7 @@
                     "value": "Terrain de hockey sur gazon",
                     "label": {
                       "fr": "Terrain de hockey sur gazon",
-                      "en": "Terrain de hockey sur gazon"
+                      "en": "Field hockey pitch"
                     }
                   }
                 ]
@@ -1257,7 +1398,7 @@
               {
                 "id": "poi-amenities",
                 "label": {
-                  "fr": "Sur place",
+                  "fr": "Aménagements",
                   "en": "Amenities"
                 },
                 "field": "amenity",
@@ -1266,17 +1407,17 @@
                   {
                     "id": "handicap",
                     "value": "true",
-                    "field": "handicap",
+                    "field": "inst_acc_handi_bool",
                     "icon": "accessibility",
                     "label": {
-                      "fr": "Acces PMR",
+                      "fr": "Accès PMR",
                       "en": "Accessibility"
                     }
                   },
                   {
                     "id": "transport-commun",
                     "value": "true",
-                    "field": "transportCommun",
+                    "field": "inst_trans_bool",
                     "icon": "bus",
                     "label": {
                       "fr": "Transport en commun",
@@ -1284,38 +1425,318 @@
                     }
                   },
                   {
-                    "id": "restaurant",
+                    "id": "eclairage",
                     "value": "true",
-                    "field": "restaurant",
-                    "icon": "utensils-crossed",
+                    "field": "equip_eclair",
+                    "icon": "lightbulb",
                     "label": {
-                      "fr": "Restaurant",
-                      "en": "Restaurant"
+                      "fr": "Éclairage",
+                      "en": "Lighting"
                     }
                   },
                   {
-                    "id": "hebergement",
+                    "id": "douche",
                     "value": "true",
-                    "field": "hebergement",
-                    "icon": "bed-double",
+                    "field": "equip_douche",
+                    "icon": "droplet",
                     "label": {
-                      "fr": "Hebergement",
-                      "en": "Accommodation"
+                      "fr": "Douche",
+                      "en": "Shower"
                     }
                   },
                   {
-                    "id": "gardiennage",
+                    "id": "libreAcces",
                     "value": "true",
-                    "field": "gardiennage",
-                    "icon": "shield",
+                    "field": "equip_acc_libre",
+                    "icon": "door-open",
                     "label": {
-                      "fr": "Gardiennage",
-                      "en": "Security"
+                      "fr": "Accès libre",
+                      "en": "Free access"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "propertyType",
+                "label": {
+                  "fr": "Type de propriété",
+                  "en": "Property type"
+                },
+                "field": "equip_prop_type",
+                "multiple": true,
+                "options": [
+                  {
+                    "id": "commune",
+                    "value": "Commune",
+                    "label": {
+                      "fr": "Commune",
+                      "en": "Municipality"
+                    }
+                  },
+                  {
+                    "id": "epci",
+                    "value": "EPCI",
+                    "label": {
+                      "fr": "EPCI",
+                      "en": "EPCI"
+                    }
+                  },
+                  {
+                    "id": "departement",
+                    "value": "Département",
+                    "label": {
+                      "fr": "Département",
+                      "en": "Department"
+                    }
+                  },
+                  {
+                    "id": "region",
+                    "value": "Région",
+                    "label": {
+                      "fr": "Région",
+                      "en": "Region"
+                    }
+                  },
+                  {
+                    "id": "etat",
+                    "value": "État",
+                    "label": {
+                      "fr": "État",
+                      "en": "State"
+                    }
+                  },
+                  {
+                    "id": "associations",
+                    "value": "Association(s)",
+                    "label": {
+                      "fr": "Associations",
+                      "en": "Associations"
+                    }
+                  },
+                  {
+                    "id": "prive-non-commercial",
+                    "value": "Privé non commercial",
+                    "label": {
+                      "fr": "Privé non commercial",
+                      "en": "Private non-commercial"
+                    }
+                  },
+                  {
+                    "id": "multi-proprietaire",
+                    "value": "Multi-propriétaire",
+                    "label": {
+                      "fr": "Multi-propriétaire",
+                      "en": "Multi-owner"
+                    }
+                  },
+                  {
+                    "id": "etablissement-public",
+                    "value": "Etablissement Public",
+                    "label": {
+                      "fr": "Etablissement Public",
+                      "en": "Public Establishment"
+                    }
+                  },
+                  {
+                    "id": "etablissement-prive-commercial",
+                    "value": "Etablissement privé commercial",
+                    "label": {
+                      "fr": "Etablissement privé commercial",
+                      "en": "Private commercial establishment"
+                    }
+                  },
+                  {
+                    "id": "etablissement-prive-enseignement",
+                    "value": "Etablissement d'enseignement privé",
+                    "label": {
+                      "fr": "Etablissement d'enseignement privé",
+                      "en": "Private educational establishment"
+                    }
+                  },
+                  {
+                    "id": "autre",
+                    "value": "Autre",
+                    "label": {
+                      "fr": "Autre",
+                      "en": "Other"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "utilisateur",
+                "label": {
+                  "fr": "Type d'utilisateur",
+                  "en": "User type"
+                },
+                "field": "equip_utilisateur",
+                "multiple": true,
+                "options": [
+                  {
+                    "id": "individuels",
+                    "value": "Individuel(s)",
+                    "label": {
+                      "fr": "Individuel",
+                      "en": "Individuals"
+                    }
+                  },
+                  {
+                    "id": "familles",
+                    "value": "famille(s)",
+                    "label": {
+                      "fr": "Famille",
+                      "en": "Families"
+                    }
+                  },
+                  {
+                    "id": "clubs-sportifs",
+                    "value": "Clubs sportifs",
+                    "label": {
+                      "fr": "Clubs sportifs",
+                      "en": "Sports clubs"
+                    }
+                  },
+                  {
+                    "id": "comites",
+                    "value": "comités",
+                    "label": {
+                      "fr": "Comités",
+                      "en": "Committees"
+                    }
+                  },
+                  {
+                    "id": "ligues",
+                    "value": "ligues",
+                    "label": {
+                      "fr": "Ligues",
+                      "en": "Leagues"
+                    }
+                  },
+                  {
+                    "id": "federations",
+                    "value": "fédérations",
+                    "label": {
+                      "fr": "Fédérations",
+                      "en": "Federations"
+                    }
+                  },
+                  {
+                    "id": "scolaires-universites",
+                    "value": "Scolaires",
+                    "label": {
+                      "fr": "Scolaires",
+                      "en": "Schools"
+                    }
+                  },
+                  {
+                    "id": "universites",
+                    "value": "universités",
+                    "label": {
+                      "fr": "Universités",
+                      "en": "Universities"
+                    }
+                  },
+                  {
+                    "id": "autre-associations-groupes-divers",
+                    "value": "Autre - association(s) et groupes divers",
+                    "label": {
+                      "fr": "Associations et groupes divers",
+                      "en": "Associations and various groups"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "availableSpaces",
+                "label": {
+                  "fr": "Locaux disponibles",
+                  "en": "Available spaces"
+                },
+                "field": "equip_loc_type",
+                "multiple": true,
+                "options": [
+                  {
+                    "id": "reception-accueil",
+                    "value": "Réception / Accueil",
+                    "label": {
+                      "fr": "Réception / Accueil",
+                      "en": "Reception / Welcome"
+                    }
+                  },
+                  {
+                    "id": "bureau-clubs",
+                    "value": "Bureau(x) Club(s)",
+                    "label": {
+                      "fr": "Bureau(x) Club(s)",
+                      "en": "Club offices"
+                    }
+                  },
+                  {
+                    "id": "buvette",
+                    "value": "Buvette",
+                    "label": {
+                      "fr": "Buvette",
+                      "en": "Snack bar"
+                    }
+                  },
+                  {
+                    "id": "clubs-house",
+                    "value": "Club(s) house",
+                    "label": {
+                      "fr": "Club(s) house",
+                      "en": "Clubhouse"
+                    }
+                  },
+                  {
+                    "id": "infirmerie",
+                    "value": "Infirmerie",
+                    "label": {
+                      "fr": "Infirmerie",
+                      "en": "Infirmary"
+                    }
+                  },
+                  {
+                    "id": "local-rangement",
+                    "value": "Local de rangement",
+                    "label": {
+                      "fr": "Local de rangement",
+                      "en": "Storage room"
+                    }
+                  },
+                  {
+                    "id": "salle-reunion-cours",
+                    "value": "Salle(s) de réunion / cours",
+                    "label": {
+                      "fr": "Salle(s) de réunion / cours",
+                      "en": "Meeting / class rooms"
+                    }
+                  },
+                  {
+                    "id": "centre-medico-sportif",
+                    "value": "Centre médico-sportif",
+                    "label": {
+                      "fr": "Centre médico-sportif",
+                      "en": "Sports medical center"
+                    }
+                  },
+                  {
+                    "id": "local-controle-anti-dopage",
+                    "value": "Local contrôle anti-dopage",
+                    "label": {
+                      "fr": "Local contrôle anti-dopage",
+                      "en": "Anti-doping control room"
+                    }
+                  },
+                  {
+                    "id": "autre",
+                    "value": "Autre",
+                    "label": {
+                      "fr": "Autre",
+                      "en": "Other"
                     }
                   }
                 ]
               }
-
             ]
           }
         },
@@ -1324,10 +1745,11 @@
           "id": "section-equipements-cards",
           "props": {
             "customHeader": {
-                "title": {
-                  "fr": "Tous les équipements sportifs"
-                }
-              },
+              "title": {
+                "fr": "Tous les équipements sportifs",
+                "en": "All sports facilities"
+              }
+            },
             "useFilter": true,
             "showMap": false,
             "enableMap": true,
@@ -1336,49 +1758,57 @@
             "disableInfiniteScroll": false,
             "showDetailedViewToggle": false,
             "baseParams": {
-              "notSourceKey": true,
               "defaultTypes": [
                 "poi"
               ],
               "defaultFields": [
                 "name",
-                "category",
-                "subCategory",
-                "installation",
-                "familleEquipement",
-                "type",
-                "sportPratiquer",
-                "nature",
-                "surface",
-                "sole",
-                "eclairage",
-                "libreAccess",
-                "partenariat",
-                "typePartenariat",
-                "enqueteStatut",
-                "dateCreation",
-                "dateEnquete",
-                "lastUpdate",
-                "created",
-                "updated",
+                "equip_type_name",
+                "equip_type_famille",
+                "categorie",
+                "equip_nature",
+                "equip_sol",
+                "equip_surf",
+                "equip_larg",
+                "equip_long",
+                "aps_name",
+                "inst_nom",
+                "equip_prop_nom",
+                "equip_prop_type",
+                "equip_gest_type",
+                "inst_acc_handi_bool",
+                "inst_acc_handi_type",
+                "equip_pmr_acc",
+                "equip_pmr_chem",
+                "equip_pmr_douche",
+                "equip_pmr_sanit",
+                "equip_pmr_trib",
+                "equip_pmr_vest",
+                "equip_pshs_aire",
+                "equip_pshs_chem",
+                "equip_pshs_sanit",
+                "equip_pshs_trib",
+                "equip_pshs_vest",
+                "equip_pshs_sign",
+                "equip_acc_libre",
+                "inst_trans_bool",
+                "inst_trans_type",
+                "equip_eclair",
+                "equip_douche",
+                "inst_part_bool",
+                "inst_part_type",
+                "equip_loc_type",
+                "equip_utilisateur",
+                "inst_date_creation",
+                "inst_enqu_date",
+                "equip_maj_date",
                 "address",
-                "handicap",
-                "transportCommun",
-                "typeTransportCommun",
-                "typeAccessiblHandicap",
-                "hebergement",
-                "restaurant",
-                "gardiennage",
                 "geo",
                 "geoPosition",
                 "parent"
               ],
               "defaultFilters": {
-                "$or": {
-                  "source.key": "sportSanteBienetre",
-                  "source.keys": "sportSanteBienetre"
-                },
-                "type":"recoveryCenter"
+                "type": "recoveryCenter"
               }
             },
             "list": {
@@ -1389,17 +1819,511 @@
                 "xl": 4
               },
               "card": {
-                "type": "poi-ssbe",
+                "type": "poi-amenities",
                 "detailsMode": "dialog"
+              },
+              "preview": {
+                "type": "poi-amenities"
+              }
+            },
+            "map": {
+              "marker": {
+                "style": "pin",
+                "color": "primary"
               }
             }
           }
-        } 
+        }
+      ],
+      "seo": {
+        "description": {
+          "fr": "Annuaire des équipements sportifs de La Réunion — filtres par commune, type, aménagements et accès PMR.",
+          "en": "Directory of sports facilities in Réunion — filter by municipality, type, amenities and accessibility."
+        }
+      }
+    },
+    {
+      "path": "/observatoire",
+      "title": {
+        "fr": "Observatoire - Équipements sportifs à La Réunion",
+        "en": "Observatory - Sports facilities in Réunion"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "searchHeader",
+          "id": "section-equipements-filters",
+          "props": {
+            "headline": {
+              "fr": "Les équipements sportifs en chiffres",
+              "en": "Sports facilities in numbers"
+            }
+          }
+        },
+        {
+          "type": "data-observatory",
+          "id": "section-equipements-observatory",
+          "props": {
+            "baseParams": {
+              "defaultTypes": [
+                "poi"
+              ],
+              "defaultFilters": {
+                "$or": {
+                  "source.key": "equipementsSportifs974",
+                  "source.keys": "equipementsSportifs974"
+                },
+                "type": "recoveryCenter"
+              }
+            },
+            "dimensions": {
+              "name": {
+                "paths": [
+                  "inst_nom",
+                  "equip_nom"
+                ],
+                "label": {
+                  "fr": "Installation",
+                  "en": "Facility"
+                }
+              },
+              "numero": {
+                "paths": [
+                  "equip_numero"
+                ],
+                "label": {
+                  "fr": "Numéro",
+                  "en": "Number"
+                }
+              },
+              "commune": {
+                "paths": [
+                  "address.addressLocality"
+                ],
+                "label": {
+                  "fr": "Commune",
+                  "en": "Municipality"
+                }
+              },
+              "epci": {
+                "paths": [
+                  "address.level5Name"
+                ],
+                "label": {
+                  "fr": "EPCI",
+                  "en": "EPCI"
+                }
+              },
+              "type": {
+                "paths": [
+                  "equip_type_name",
+                  "equip_type_famille",
+                  "type",
+                  "categorie"
+                ],
+                "label": {
+                  "fr": "Type",
+                  "en": "Type"
+                }
+              },
+              "nature": {
+                "paths": [
+                  "equip_nature",
+                  "nature"
+                ],
+                "label": {
+                  "fr": "Nature",
+                  "en": "Nature"
+                }
+              },
+              "prop": {
+                "paths": [
+                  "equip_prop_type"
+                ],
+                "label": {
+                  "fr": "Propriétaire",
+                  "en": "Owner"
+                }
+              },
+              "aps": {
+                "paths": [
+                  "aps_name"
+                ],
+                "kind": "list",
+                "label": {
+                  "fr": "Sport pratiqué",
+                  "en": "Sport activity"
+                }
+              },
+              "surface": {
+                "paths": [
+                  "equip_surf"
+                ],
+                "kind": "number",
+                "label": {
+                  "fr": "Surface",
+                  "en": "Area"
+                }
+              },
+              "pmr": {
+                "paths": [
+                  "equip_pmr_acc",
+                  "equip_pmr_chem",
+                  "equip_pmr_douche",
+                  "equip_pmr_sanit",
+                  "equip_pmr_vest",
+                  "equip_pmr_trib"
+                ],
+                "kind": "anyTrue",
+                "label": {
+                  "fr": "PMR",
+                  "en": "Reduced mobility"
+                }
+              },
+              "pshs": {
+                "paths": [
+                  "equip_pshs_aire",
+                  "equip_pshs_chem",
+                  "equip_pshs_sanit",
+                  "equip_pshs_vest",
+                  "equip_pshs_trib",
+                  "equip_pshs_sign"
+                ],
+                "kind": "anyTrue",
+                "label": {
+                  "fr": "PSHS",
+                  "en": "Sensory disability"
+                }
+              },
+              "handi": {
+                "paths": [
+                  "inst_acc_handi_bool"
+                ],
+                "kind": "anyTrue",
+                "label": {
+                  "fr": "Handi.",
+                  "en": "Disability"
+                }
+              }
+            },
+            "filters": [
+              {
+                "dimension": "commune",
+                "multiple": true
+              },
+              {
+                "dimension": "type",
+                "multiple": true
+              },
+              {
+                "dimension": "epci",
+                "multiple": true
+              },
+              {
+                "dimension": "nature",
+                "multiple": true
+              },
+              "pmr",
+              {
+                "dimension": "prop",
+                "multiple": true
+              },
+              {
+                "dimension": "aps",
+                "multiple": true
+              }
+            ],
+            "search": {
+              "dimensions": [
+                "name",
+                "commune",
+                "type",
+                "aps"
+              ],
+              "placeholder": {
+                "fr": "Rechercher un équipement, une commune…",
+                "en": "Search for a facility, a commune…"
+              }
+            },
+            "export": {
+              "filename": "equipements-sportifs"
+            },
+            "drilldown": true,
+            "kpis": [
+              {
+                "kind": "count",
+                "label": {
+                  "fr": "Équipements",
+                  "en": "Equipment"
+                },
+                "icon": "activity",
+                "accent": "primary"
+              },
+              {
+                "kind": "distinct",
+                "dimension": "commune",
+                "label": {
+                  "fr": "Communes",
+                  "en": "Municipalities"
+                },
+                "icon": "map-pin",
+                "accent": "accent"
+              },
+              {
+                "kind": "percentTrue",
+                "dimension": "pmr",
+                "label": {
+                  "fr": "Accessible PMR",
+                  "en": "PMR Accessible"
+                },
+                "icon": "accessibility",
+                "accent": "chart-2"
+              },
+              {
+                "kind": "percentTrue",
+                "dimension": "pshs",
+                "label": {
+                  "fr": "Accessible PSHS",
+                  "en": "PSHS Accessible"
+                },
+                "icon": "eye",
+                "accent": "chart-4"
+              },
+              {
+                "kind": "valueSplit",
+                "dimension": "nature",
+                "value": "Intérieur",
+                "label": {
+                  "fr": "Intérieur",
+                  "en": "Indoor"
+                },
+                "icon": "home",
+                "accent": "chart-3"
+              },
+              {
+                "kind": "top",
+                "dimension": "type",
+                "label": {
+                  "fr": "Type principal",
+                  "en": "Top type"
+                },
+                "icon": "trophy",
+                "accent": "chart-5"
+              },
+              {
+                "kind": "sum",
+                "dimension": "surface",
+                "unit": "m²",
+                "label": {
+                  "fr": "Surface totale",
+                  "en": "Total surface"
+                },
+                "icon": "ruler",
+                "accent": "chart-1"
+              }
+            ],
+            "charts": [
+              {
+                "kind": "donut",
+                "dimension": "type",
+                "label": {
+                  "fr": "Répartition par type d'équipement",
+                  "en": "Distribution by equipment type"
+                },
+                "layout": "full"
+              },
+              {
+                "kind": "pie",
+                "dimension": "nature",
+                "label": {
+                  "fr": "Intérieur / Extérieur",
+                  "en": "Indoor / Outdoor"
+                },
+                "layout": "half",
+                "colors": {
+                  "Intérieur": "chart-1",
+                  "Découvert": "chart-2",
+                  "Site naturel": "chart-3",
+                  "Site naturel aménagé": "chart-4",
+                  "Donnée non renseignée": "muted"
+                }
+              },
+              {
+                "kind": "booleanGroups",
+                "dimensions": [
+                  "pmr",
+                  "pshs",
+                  "handi"
+                ],
+                "label": {
+                  "fr": "Accessibilité (oui / non)",
+                  "en": "Accessibility (yes / no)"
+                },
+                "layout": "half"
+              },
+              {
+                "kind": "barsHorizontal",
+                "dimension": "aps",
+                "top": 10,
+                "label": {
+                  "fr": "Top 10 activités sportives (APS)",
+                  "en": "Top 10 sport activities (APS)"
+                },
+                "layout": "full"
+              },
+              {
+                "kind": "bars",
+                "dimension": "commune",
+                "label": {
+                  "fr": "Équipements par commune",
+                  "en": "Equipment by commune"
+                },
+                "layout": "full"
+              }
+            ],
+            "table": {
+              "columns": [
+                {
+                  "dimension": "name",
+                  "kind": "title",
+                  "subtitleDimension": "numero",
+                  "label": {
+                    "fr": "Installation",
+                    "en": "Facility"
+                  }
+                },
+                {
+                  "dimension": "type"
+                },
+                {
+                  "dimension": "commune"
+                },
+                {
+                  "dimension": "epci"
+                },
+                {
+                  "dimension": "nature",
+                  "kind": "badge",
+                  "colors": {
+                    "Intérieur": "chart-1",
+                    "Découvert": "chart-2",
+                    "Site naturel": "chart-3",
+                    "Site naturel aménagé": "chart-4",
+                    "Donnée non renseignée": "muted"
+                  }
+                },
+                {
+                  "dimension": "surface",
+                  "kind": "number",
+                  "unit": "m²"
+                },
+                {
+                  "dimension": "pmr",
+                  "kind": "boolBadge"
+                },
+                {
+                  "dimension": "prop"
+                }
+              ],
+              "defaultSort": "commune",
+              "rowAction": {
+                "kind": "preview",
+                "detailsMode": "dialog",
+                "preview": {
+                  "type": "poi-amenities"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "seo": {
+        "description": {
+          "fr": "Observatoire des équipements sportifs de La Réunion : chiffres clés, répartition par commune et par type, accessibilité.",
+          "en": "Observatory of sports facilities in Réunion: key figures, breakdown by municipality and type, accessibility."
+        }
+      }
+    },
+    {
+      "path": "/rejoindre",
+      "title": {
+        "fr": "Rejoindre - Équipements sportifs - Région Réunion",
+        "en": "Join - Sports Facilities - Réunion Region"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "registerForm",
+          "props": {}
+        }
+      ],
+      "seo": {
+        "description": {
+          "fr": "Créez votre compte pour rejoindre le réseau des équipements sportifs de La Réunion.",
+          "en": "Create your account to join Réunion's sports facilities network."
+        }
+      }
+    },
+    {
+      "path": "/mentions-legales",
+      "title": {
+        "fr": "Mentions légales - Équipements sportifs - Région Réunion",
+        "en": "Legal notice - Sports Facilities - Réunion Region"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "html",
+          "props": {
+            "html": {
+              "fr": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Mentions légales</h1>\n<p class=\"text-muted-foreground mb-8\">Conformément à l'article 6-III de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique (LCEN).</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Éditeur du site</h2>\n<p class=\"text-muted-foreground mb-2\">Région Réunion</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Adresse : 14, allée des Saphirs – CS 61044, 97404 Saint-Denis Cedex</li>\n<li>Téléphone : 0262 48 13 21</li>\n<li>Directeur de la publication : [à compléter]</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Hébergeur</h2>\n<p class=\"text-muted-foreground mb-6\">[Dénomination de l'hébergeur — adresse complète — téléphone]</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Conception et réalisation</h2>\n<p class=\"text-muted-foreground mb-6\">Ce site s'appuie sur la plateforme libre et open source Communecter.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Propriété intellectuelle</h2>\n<p class=\"text-muted-foreground mb-6\">L'ensemble des contenus présents sur ce site (textes, images, logos, structure) est protégé par le droit de la propriété intellectuelle. Toute reproduction ou représentation, totale ou partielle, sans autorisation préalable est interdite. Les données publiques relatives aux équipements sportifs proviennent du Recensement des équipements sportifs (RES) et sont réutilisables dans les conditions de leur licence d'origine.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Données personnelles</h2>\n<p class=\"text-muted-foreground mb-6\">Les modalités de traitement de vos données personnelles sont décrites dans la <a href=\"/confidentialite\" class=\"underline\">politique de confidentialité</a>.</p>\n</div>",
+              "en": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Legal notice</h1>\n<p class=\"text-muted-foreground mb-8\">In accordance with article 6-III of French law no. 2004-575 of 21 June 2004 on confidence in the digital economy (LCEN).</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Site publisher</h2>\n<p class=\"text-muted-foreground mb-2\">Région Réunion</p>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Address: 14, allée des Saphirs – CS 61044, 97404 Saint-Denis Cedex, France</li>\n<li>Phone: +262 262 48 13 21</li>\n<li>Publication director: [to be completed]</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Hosting provider</h2>\n<p class=\"text-muted-foreground mb-6\">[Hosting provider name — full address — phone]</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Design and development</h2>\n<p class=\"text-muted-foreground mb-6\">This site is built on the free and open source Communecter platform.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Intellectual property</h2>\n<p class=\"text-muted-foreground mb-6\">All content on this site (texts, images, logos, structure) is protected by intellectual property law. Any total or partial reproduction or representation without prior authorisation is prohibited. Public data on sports facilities comes from the national sports facilities census (RES) and may be reused under the terms of its original licence.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Personal data</h2>\n<p class=\"text-muted-foreground mb-6\">The processing of your personal data is described in the <a href=\"/confidentialite\" class=\"underline\">privacy policy</a>.</p>\n</div>"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/confidentialite",
+      "title": {
+        "fr": "Politique de confidentialité - Équipements sportifs - Région Réunion",
+        "en": "Privacy policy - Sports Facilities - Réunion Region"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "html",
+          "props": {
+            "html": {
+              "fr": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Politique de confidentialité</h1>\n<p class=\"text-muted-foreground mb-8\">Cette politique décrit les traitements de données personnelles réalisés sur ce site, conformément au Règlement général sur la protection des données (RGPD) et à la loi Informatique et Libertés.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">1. Responsable du traitement</h2>\n<p class=\"text-muted-foreground mb-6\">Région Réunion — 14, allée des Saphirs – CS 61044, 97404 Saint-Denis Cedex. Contact : [adresse e-mail du délégué à la protection des données ou du contact RGPD].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">2. Données traitées</h2>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Données de compte si vous créez un compte (nom, adresse e-mail) via la plateforme Communecter ;</li>\n<li>Contenus que vous publiez le cas échéant (messages, contributions) ;</li>\n<li>Journaux techniques du serveur (adresse IP, pages consultées) à des fins de sécurité.</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">3. Finalités et bases légales</h2>\n<p class=\"text-muted-foreground mb-6\">Fournir le service de consultation et d'observatoire des équipements sportifs (intérêt légitime), gérer les comptes utilisateurs (exécution du contrat) et assurer la sécurité du site (intérêt légitime).</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">4. Cookies et stockage local</h2>\n<p class=\"text-muted-foreground mb-6\">Ce site n'utilise aucun traceur publicitaire ni outil de mesure d'audience tiers. Le stockage local de votre navigateur conserve uniquement vos préférences (langue, thème d'affichage) ; un cookie de session est utilisé si vous vous connectez à votre compte.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">5. Durées de conservation</h2>\n<p class=\"text-muted-foreground mb-6\">Les données de compte sont conservées tant que le compte est actif. Les journaux techniques sont conservés pour une durée maximale de [à préciser, ex. 12 mois].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">6. Vos droits</h2>\n<p class=\"text-muted-foreground mb-6\">Vous disposez d'un droit d'accès, de rectification, d'effacement, d'opposition, de limitation et de portabilité sur vos données. Pour l'exercer, contactez le responsable du traitement (coordonnées ci-dessus). Vous pouvez également adresser une réclamation à la CNIL (<a href=\"https://www.cnil.fr\" class=\"underline\" rel=\"noopener\" target=\"_blank\">cnil.fr</a>).</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">7. Sécurité</h2>\n<p class=\"text-muted-foreground mb-6\">Des mesures techniques et organisationnelles appropriées sont mises en œuvre pour protéger vos données (chiffrement des échanges, contrôle d'accès).</p>\n</div>",
+              "en": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Privacy policy</h1>\n<p class=\"text-muted-foreground mb-8\">This policy describes the personal data processing carried out on this site, in accordance with the General Data Protection Regulation (GDPR) and the French Data Protection Act.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">1. Data controller</h2>\n<p class=\"text-muted-foreground mb-6\">Région Réunion — 14, allée des Saphirs – CS 61044, 97404 Saint-Denis Cedex, France. Contact: [e-mail address of the data protection officer or GDPR contact].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">2. Data we process</h2>\n<ul class=\"text-muted-foreground mb-6 space-y-1 list-disc pl-5\"><li>Account data if you create an account (name, e-mail address) via the Communecter platform;</li>\n<li>Content you may publish (messages, contributions);</li>\n<li>Technical server logs (IP address, pages visited) for security purposes.</li></ul>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">3. Purposes and legal bases</h2>\n<p class=\"text-muted-foreground mb-6\">Providing the sports facilities directory and observatory service (legitimate interest), managing user accounts (performance of a contract) and ensuring site security (legitimate interest).</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">4. Cookies and local storage</h2>\n<p class=\"text-muted-foreground mb-6\">This site uses no advertising trackers and no third-party audience measurement tools. Your browser's local storage only keeps your preferences (language, display theme); a session cookie is used if you sign in to your account.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">5. Retention periods</h2>\n<p class=\"text-muted-foreground mb-6\">Account data is kept as long as the account is active. Technical logs are kept for a maximum of [to be specified, e.g. 12 months].</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">6. Your rights</h2>\n<p class=\"text-muted-foreground mb-6\">You have the right to access, rectify, erase, object to, restrict and port your data. To exercise these rights, contact the data controller (details above). You may also lodge a complaint with the CNIL (<a href=\"https://www.cnil.fr\" class=\"underline\" rel=\"noopener\" target=\"_blank\">cnil.fr</a>).</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">7. Security</h2>\n<p class=\"text-muted-foreground mb-6\">Appropriate technical and organisational measures are implemented to protect your data (encrypted communications, access control).</p>\n</div>"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/accessibilite",
+      "title": {
+        "fr": "Déclaration d'accessibilité - Équipements sportifs - Région Réunion",
+        "en": "Accessibility statement - Sports Facilities - Réunion Region"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "html",
+          "props": {
+            "html": {
+              "fr": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Déclaration d'accessibilité</h1>\n<p class=\"text-muted-foreground mb-8\">Région Réunion s'engage à rendre ce site accessible conformément à l'article 47 de la loi n° 2005-102 du 11 février 2005.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">État de conformité</h2>\n<p class=\"text-muted-foreground mb-6\">Ce site n'est pas encore conforme au Référentiel général d'amélioration de l'accessibilité (RGAA) : l'audit de conformité n'a pas encore été réalisé. Une démarche d'amélioration continue est engagée.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Signaler un problème d'accessibilité</h2>\n<p class=\"text-muted-foreground mb-6\">Si vous rencontrez un défaut d'accessibilité vous empêchant d'accéder à un contenu ou à une fonctionnalité du site, contactez-nous au 0262 48 13 21 ou par courrier : Région Réunion, 14, allée des Saphirs – CS 61044, 97404 Saint-Denis Cedex.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Voies de recours</h2>\n<p class=\"text-muted-foreground mb-6\">Si vous n'obtenez pas de réponse satisfaisante, vous pouvez saisir le Défenseur des droits : <a href=\"https://formulaire.defenseurdesdroits.fr\" class=\"underline\" rel=\"noopener\" target=\"_blank\">formulaire.defenseurdesdroits.fr</a>, ou par courrier gratuit (sans affranchissement) : Défenseur des droits, Libre réponse 71120, 75342 Paris CEDEX 07.</p>\n</div>",
+              "en": "<div class=\"container mx-auto max-w-4xl py-16 px-4\">\n<h1 class=\"text-3xl font-bold mb-6\">Accessibility statement</h1>\n<p class=\"text-muted-foreground mb-8\">Région Réunion is committed to making this site accessible in accordance with article 47 of French law no. 2005-102 of 11 February 2005.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Compliance status</h2>\n<p class=\"text-muted-foreground mb-6\">This site is not yet compliant with the French general accessibility improvement framework (RGAA): the compliance audit has not yet been carried out. A continuous improvement process is under way.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Report an accessibility issue</h2>\n<p class=\"text-muted-foreground mb-6\">If you encounter an accessibility issue preventing you from accessing content or a feature of this site, contact us on +262 262 48 13 21 or by post: Région Réunion, 14, allée des Saphirs – CS 61044, 97404 Saint-Denis Cedex, France.</p>\n<h2 class=\"text-xl font-bold mb-3 mt-8\">Remedies</h2>\n<p class=\"text-muted-foreground mb-6\">If you do not receive a satisfactory response, you may contact the French Defender of Rights (Défenseur des droits): <a href=\"https://formulaire.defenseurdesdroits.fr\" class=\"underline\" rel=\"noopener\" target=\"_blank\">formulaire.defenseurdesdroits.fr</a>, or by free post (no stamp needed): Défenseur des droits, Libre réponse 71120, 75342 Paris CEDEX 07, France.</p>\n</div>"
+            }
+          }
+        }
       ]
     }
   ],
   "footer": {
-    "type": "ssbe",
+    "type": "contact-partners",
     "contactSection": {
       "title": {
         "fr": "Nos coordonnées",
@@ -1485,6 +2409,36 @@
       "en": "© 2026 Sports facilities - Réunion. All rights reserved."
     }
   },
+  "commandPalette": {
+    "enabled": true,
+    "triggerVariant": "compact",
+    "placeholder": {
+      "fr": "Rechercher un équipement...",
+      "en": "Search for a facility..."
+    },
+    "entitySearch": {
+      "enabled": true,
+      "searchType": [
+        "poi"
+      ],
+      "limit": 8,
+      "params": {
+        "sourceKey": [
+          "equipementsSportifs974"
+        ],
+        "filters": {
+          "type": "recoveryCenter"
+        }
+      },
+      "itemAction": {
+        "kind": "preview",
+        "detailsMode": "dialog",
+        "preview": {
+          "type": "poi-amenities"
+        }
+      }
+    }
+  },
   "features": [
     {
       "key": "communityFeatures",
@@ -1503,16 +2457,103 @@
     }
   ],
   "theme": {
+    "defaultMode": "light",
+    "colors": {
+      "light": {
+        "background": "oklch(0.990 0.006 160)",
+        "foreground": "oklch(0.240 0.025 175)",
+        "card": "oklch(1.000 0 0)",
+        "cardForeground": "oklch(0.240 0.025 175)",
+        "popover": "oklch(1.000 0 0)",
+        "popoverForeground": "oklch(0.240 0.025 175)",
+        "primary": "oklch(0.520 0.118 166)",
+        "primaryForeground": "oklch(1.000 0 0)",
+        "secondary": "oklch(0.955 0.018 168)",
+        "secondaryForeground": "oklch(0.330 0.045 170)",
+        "muted": "oklch(0.965 0.008 168)",
+        "mutedForeground": "oklch(0.490 0.030 172)",
+        "accent": "oklch(0.640 0.180 34)",
+        "accentForeground": "oklch(0.215 0.060 40)",
+        "destructive": "oklch(0.6368 0.2078 25.3313)",
+        "destructiveForeground": "oklch(1.0000 0 0)",
+        "border": "oklch(0.910 0.012 168)",
+        "input": "oklch(0.910 0.012 168)",
+        "ring": "oklch(0.520 0.118 166)",
+        "warning": "oklch(0.950 0.160 85)",
+        "warningForeground": "oklch(0.200 0.060 85)",
+        "success": "oklch(0.830 0.180 135)",
+        "successForeground": "oklch(0.150 0.030 135)",
+        "info": "oklch(0.941 0.065 260)",
+        "infoForeground": "oklch(0.200 0.030 260)",
+        "error": "oklch(0.680 0.250 30)",
+        "errorForeground": "oklch(1 0 0)",
+        "chart1": "oklch(0.520 0.118 166)",
+        "chart2": "oklch(0.640 0.180 34)",
+        "chart3": "oklch(0.580 0.100 200)",
+        "chart4": "oklch(0.650 0.130 145)",
+        "chart5": "oklch(0.450 0.090 175)",
+        "sidebar": "oklch(0.965 0.008 168)",
+        "sidebarForeground": "oklch(0.240 0.025 175)",
+        "sidebarPrimary": "oklch(0.520 0.118 166)",
+        "sidebarPrimaryForeground": "oklch(1.000 0 0)",
+        "sidebarAccent": "oklch(0.640 0.180 34)",
+        "sidebarAccentForeground": "oklch(0.215 0.060 40)",
+        "sidebarBorder": "oklch(0.910 0.012 168)",
+        "sidebarRing": "oklch(0.520 0.118 166)"
+      },
+      "dark": {
+        "background": "oklch(0.205 0.012 170)",
+        "foreground": "oklch(0.945 0.010 170)",
+        "card": "oklch(0.245 0.014 170)",
+        "cardForeground": "oklch(0.945 0.010 170)",
+        "popover": "oklch(0.230 0.013 170)",
+        "popoverForeground": "oklch(0.945 0.010 170)",
+        "primary": "oklch(0.760 0.150 168)",
+        "primaryForeground": "oklch(0.180 0.040 170)",
+        "secondary": "oklch(0.330 0.030 170)",
+        "secondaryForeground": "oklch(0.945 0.010 170)",
+        "muted": "oklch(0.300 0.020 170)",
+        "mutedForeground": "oklch(0.760 0.020 172)",
+        "accent": "oklch(0.730 0.150 40)",
+        "accentForeground": "oklch(0.180 0.050 40)",
+        "destructive": "oklch(0.6368 0.2078 25.3313)",
+        "destructiveForeground": "oklch(1.0000 0 0)",
+        "border": "oklch(0.370 0.022 170)",
+        "input": "oklch(0.330 0.020 170)",
+        "ring": "oklch(0.760 0.150 168)",
+        "warning": "oklch(0.750 0.180 85)",
+        "warningForeground": "oklch(0.950 0.040 85)",
+        "success": "oklch(0.600 0.180 135)",
+        "successForeground": "oklch(0.950 0.040 135)",
+        "info": "oklch(0.600 0.140 260)",
+        "infoForeground": "oklch(0.950 0.040 260)",
+        "error": "oklch(0.680 0.250 30)",
+        "errorForeground": "oklch(0.990 0.030 100)",
+        "chart1": "oklch(0.760 0.150 168)",
+        "chart2": "oklch(0.730 0.150 40)",
+        "chart3": "oklch(0.700 0.110 200)",
+        "chart4": "oklch(0.720 0.130 145)",
+        "chart5": "oklch(0.600 0.110 175)",
+        "sidebar": "oklch(0.185 0.011 170)",
+        "sidebarForeground": "oklch(0.945 0.010 170)",
+        "sidebarPrimary": "oklch(0.760 0.150 168)",
+        "sidebarPrimaryForeground": "oklch(0.180 0.040 170)",
+        "sidebarAccent": "oklch(0.730 0.150 40)",
+        "sidebarAccentForeground": "oklch(0.180 0.050 40)",
+        "sidebarBorder": "oklch(0.370 0.022 170)",
+        "sidebarRing": "oklch(0.760 0.150 168)"
+      }
+    },
     "typography": {
       "fontFamily": {
         "sans": [
-          "Inter"
+          "Lexend"
         ],
         "serif": [
-          "Roboto Slab"
+          "Sora"
         ],
         "mono": [
-          "Roboto Mono"
+          "JetBrains Mono"
         ]
       },
       "letterSpacing": "0em"
@@ -1554,8 +2595,14 @@
         "en": "Sign in"
       },
       "subtitle": {
-        "fr": "Accédez au réseau des passionné·es de la mer",
-        "en": "Access the network for ocean enthusiasts"
+        "fr": "Accédez au réseau des équipements sportifs de La Réunion",
+        "en": "Access Réunion's sports facilities network"
+      }
+    },
+    "register": {
+      "subtitle": {
+        "fr": "Rejoignez le réseau des équipements sportifs de La Réunion",
+        "en": "Join Réunion's sports facilities network"
       }
     }
   },
@@ -2439,6 +3486,10 @@
       "layout": "default",
       "hideHeader": false,
       "hideFooter": false,
+      "editModal": "edit-poi-equipement",
+      "editModalMatch": {
+        "type": "recoveryCenter"
+      },
       "sections": [
         {
           "type": "profile-header",

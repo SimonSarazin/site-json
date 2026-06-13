@@ -1,12 +1,10 @@
-import { Suspense, useState } from "react";
+import { useState } from "react";
 import { Link, useLoaderData, useNavigate, useParams, useSearchParams } from "react-router";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { AlertCircle, Home, Info, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { resolveAuthVariant } from "@/modules/auth";
-import { useSite } from "@/hooks/useSite";
+import { useAuthModal } from "@/modules/auth";
 import { SmartCoForm } from "../components/SmartCoForm";
 import { CoFormAccessGuard } from "../components/CoFormAccessGuard";
 import { CoFormAnswerPicker } from "../components/CoFormAnswerPicker";
@@ -38,12 +36,8 @@ export default function CoFormPage() {
     useLoadNamespace("modules/coform");
     const t = useT("modules/coform");
     const navigate = useNavigate();
+    const { openLogin } = useAuthModal();
     const [searchParams, setSearchParams] = useSearchParams();
-
-    // LoginForm résolu en lazy via le registry de variants (chunk chargé à
-    // l'ouverture du dialog, pas dans le bundle de la page).
-    const { config } = useSite();
-    const { LoginForm } = resolveAuthVariant(config.auth?.variant);
 
     // Paramètres URL standalone
     const stepKeyFromUrl = searchParams.get("step") || undefined;
@@ -69,11 +63,6 @@ export default function CoFormPage() {
         formId: formId || "",
         enabled: !!formId,
     });
-
-    // Modal de login — affichée quand l'utilisateur clique "Se connecter" depuis
-    // le CoFormAccessGuard (cas `not_logged_in`). Après succès, on refetch les
-    // données du form pour recalculer l'access (canAnswer, existingAnswerId, ...).
-    const [loginDialogOpen, setLoginDialogOpen] = useState(false);
 
     const effectiveAnswerId = answerIdFromUrl
         ?? (isEditMode ? (access?.existingAnswerId ?? undefined) : undefined);
@@ -375,7 +364,7 @@ export default function CoFormPage() {
                     <CoFormAccessGuard
                         access={(isEditMode || answerIdFromUrl) ? null : access}
                         onEditExisting={handleEditExisting}
-                        onLogin={() => setLoginDialogOpen(true)}
+                        onLogin={() => openLogin({ onSuccess: refetch })}
                     >
                         {/* Bandeau mode édition */}
                         {(!!effectiveAnswerId && !isStandalone) && (
@@ -402,36 +391,9 @@ export default function CoFormPage() {
                 </div>
             </main>
             <SiteFooter />
-
-            {/* Modal de login (déclenchée depuis CoFormAccessGuard quand
-                `not_logged_in`). Pattern aligné sur HeaderTiersLieux / RezoLaMer :
-                - `sm:max-w-md bg-card border-border` : largeur responsive + tokens carte
-                - `DialogTitle sr-only` : pas de double-titre (LoginForm rend déjà son propre header)
-                Après succès, refetch des données coform pour recalculer access. */}
-            <Dialog open={loginDialogOpen} onOpenChange={setLoginDialogOpen}>
-                <DialogContent className="sm:max-w-md bg-card border-border">
-                    <DialogTitle className="sr-only">
-                        {String(t("coform.access.notLoggedIn.loginButton"))}
-                    </DialogTitle>
-                    {loginDialogOpen && (
-                        <Suspense
-                            fallback={
-                                <div className="flex items-center justify-center py-10 text-muted-foreground">
-                                    <Loader2 className="w-5 h-5 animate-spin" />
-                                </div>
-                            }
-                        >
-                            <LoginForm
-                                hideBackButton
-                                onSuccess={() => {
-                                    setLoginDialogOpen(false);
-                                    refetch();
-                                }}
-                            />
-                        </Suspense>
-                    )}
-                </DialogContent>
-            </Dialog>
+            {/* Le login passe par le modal global (`useAuthModal().openLogin`),
+                déclenché depuis CoFormAccessGuard. `onSuccess: refetch` recalcule
+                l'accès (canAnswer, existingAnswerId…) sans quitter la page. */}
         </div>
     );
 }

@@ -40,7 +40,14 @@ export function CommandTriggerButton() {
       variant="outline"
       size={iconOnly ? "icon" : "sm"}
       onClick={palette.openPalette}
-      className={cn("text-muted-foreground", !iconOnly && "gap-2")}
+      className={cn(
+        "text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:bg-muted",
+        // Mobile : icône seule → ghost (sans contour), comme le toggle thème
+        // et le burger voisins. Le contour « champ de recherche » ne se
+        // justifie qu'avec le libellé/raccourci visibles (≥ md).
+        "max-md:border-0 max-md:bg-transparent max-md:shadow-none dark:max-md:bg-transparent",
+        !iconOnly && "gap-2",
+      )}
       aria-label={t("triggerLabel")}
       title={t("triggerLabel")}
     >

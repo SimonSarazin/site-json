@@ -13,6 +13,7 @@ import {
 } from "@/modules/search/prefetch";
 import type { FiltersByPathOptions } from "@/modules/search/hooks/useFiltersByPath";
 import { canonicalSearchProStaticBaseParams } from "@/modules/search/lib/canonicalBaseParams";
+import { observatoryPrefetchParams } from "@/modules/observatoire/prefetch";
 
 /**
  * Helper pour parser les paramètres JSON depuis l'URL
@@ -39,25 +40,35 @@ const SECTION_EXTRACTORS: Record<string, (props: Record<string, unknown>) => unk
  * Recherche récursive des sections de recherche (searchPro/searchProStatic)
  * Utilise SECTION_EXTRACTORS pour gérer les containers
  */
-function findSearchSections(
-  sections: Array<{ type: string; props?: Record<string, unknown> }>
+function findSectionsOfTypes(
+  sections: Array<{ type: string; props?: Record<string, unknown> }>,
+  types: ReadonlySet<string>
 ): Array<{ type: string; props?: Record<string, unknown> }> {
   const result: Array<{ type: string; props?: Record<string, unknown> }> = [];
 
   for (const section of sections) {
-    // Section de recherche directe
-    if (section.type === 'searchPro' || section.type === 'searchProStatic') {
+    // Section ciblée directe
+    if (types.has(section.type)) {
       result.push(section);
     }
     // Container avec sections imbriquées
     else if (SECTION_EXTRACTORS[section.type] && section.props) {
       const nested = SECTION_EXTRACTORS[section.type](section.props)
         .filter(Boolean) as Array<{ type: string; props?: Record<string, unknown> }>;
-      result.push(...findSearchSections(nested));
+      result.push(...findSectionsOfTypes(nested, types));
     }
   }
 
   return result;
+}
+
+const SEARCH_SECTION_TYPES = new Set(['searchPro', 'searchProStatic']);
+const OBSERVATORY_SECTION_TYPES = new Set(['data-observatory']);
+
+function findSearchSections(
+  sections: Array<{ type: string; props?: Record<string, unknown> }>
+): Array<{ type: string; props?: Record<string, unknown> }> {
+  return findSectionsOfTypes(sections, SEARCH_SECTION_TYPES);
 }
 
 /**
@@ -192,6 +203,17 @@ async function buildRoutesAsync(
         })
       );
 
+      // Pré-charger la PREMIÈRE page du dashboard observatoire (section
+      // data-observatory) : même queryKey que le client (params construits
+      // par le module observatoire) → dashboard plein au premier paint, les
+      // pages suivantes s'enchaînent côté client après hydratation.
+      const observatoryPrefetch = Promise.all(
+        findSectionsOfTypes(p.sections, OBSERVATORY_SECTION_TYPES)
+          .map((section) => observatoryPrefetchParams(section.props))
+          .filter((params): params is NonNullable<typeof params> => params !== null)
+          .map((params) => prefetchSearchResults(queryClient, params))
+      );
+
       // Pré-charger les filtres thématiques (vue "thematics" de searchProStatic,
       // page réseaux thématiques) : même queryKey/options que `ThematicCards`
       // (`useFiltersByPathQuery`) pour un cache RQ hydraté dès le SSR.
@@ -207,7 +229,7 @@ async function buildRoutesAsync(
 
       // Attendre filtres + résultats en parallèle. Si l'un échoue, on n'empêche
       // pas l'autre — chaque prefetch a son propre try/catch interne.
-      await Promise.all([filterPrefetch, searchPrefetch, thematicPrefetch]);
+      await Promise.all([filterPrefetch, searchPrefetch, thematicPrefetch, observatoryPrefetch]);
       return null;
     },
   }));

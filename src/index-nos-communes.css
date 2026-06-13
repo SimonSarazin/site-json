@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import "tw-animate-css";
+@import "./styles/shared.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -87,13 +88,7 @@
   --color-bg-header: #1d7b4df2;
 }
 
-.bg-banner-green {
-  background-color: var(--color-background-banner);
-}
 
-.bg-header-green {
-  background-color: var(--color-bg-header);
-}
 
 .dark {
   /* Mode sombre : fond ardoise foncée, vert lumineux */
@@ -263,28 +258,10 @@
     font-family: var(--font-mono);
   }
 
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
 
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
 }
 
-/* ==========================================
-   Animations communes
-   ========================================== */
 
-@keyframes marquee {
-  0%   { transform: translateX(0%); }
-  100% { transform: translateX(-100%); }
-}
-
-.animate-marquee {
-  animation: marquee 25s linear infinite;
-}
 
 html {
   scroll-behavior: smooth;
@@ -740,14 +717,6 @@ html {
   color: var(--commune-green);
 }
 
-/* ==========================================
-   Animations spécifiques Nos Communes
-   ========================================== */
-
-@keyframes fade-in-up {
-  from { opacity: 0; transform: translateY(24px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
 
 @keyframes grow-in {
   from { opacity: 0; transform: scale(0.94); }
@@ -759,9 +728,6 @@ html {
   50%       { transform: rotate(2deg);  }
 }
 
-.animate-fade-in-up {
-  animation: fade-in-up 0.7s ease-out forwards;
-}
 
 .animate-grow-in {
   animation: grow-in 0.5s ease-out forwards;
@@ -835,4 +801,10 @@ html {
   --commune-gray-700:     oklch(0.9000 0.0100 220.00);
   --commune-gray-900:     oklch(0.9600 0.0100 200.00);
   --shadow-commune:       0 10px 40px -10px oklch(0.1200 0.0250 250.00 / 0.60);
+}
+
+/* Surcharges des tokens partagés (styles/shared.css) — valeurs historiques. */
+:root {
+  --header-bar: var(--color-bg-header);
+  --hero-tint: var(--color-background-banner);
 }

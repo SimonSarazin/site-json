@@ -15,7 +15,9 @@ export default function DetailsModeDrawer({ openDetails, setOpenDetails, item, p
           overflowType="overflow-hidden"
           link={`/profil/${item?.slug}`}
         >
-          {item && <Preview item={item} preview={preview} />}
+          {item && (
+            <Preview item={item} preview={preview} onClose={() => setOpenDetails(false)} />
+          )}
         </CustomDrawer>
     );
 }   

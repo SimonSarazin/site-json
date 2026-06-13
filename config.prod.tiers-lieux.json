@@ -25,7 +25,7 @@
     ]
   },
   "header": {
-    "type": "tiers-lieux",
+    "type": "mega-menu",
     "logo": "images/tiersLieux/Logo_Tl_Temp2.png",
     "logoAlt": {
       "fr": "Tiers Lieux",
@@ -39,6 +39,8 @@
           "en": "Places"
         },
         "icon": "map",
+        "path": "/lieux",
+        "featured": true,
         "children": [
           {
             "label": {
@@ -121,10 +123,178 @@
       },
       {
         "label": {
+          "fr": "Observatoire",
+          "en": "Observatory"
+        },
+        "icon": "eye",
+        "children": [
+          {
+            "label": {
+              "fr": "Tableau de bord",
+              "en": "Dashboard"
+            },
+            "path": "/observatoire",
+            "icon": "chart-column"
+          },
+          {
+            "label": {
+              "fr": "Réseaux régionaux",
+              "en": "Regional networks"
+            },
+            "description": {
+              "fr": "Découvrez l'observatoire des réseaux régionaux",
+              "en": "Explore the regional networks observatory"
+            },
+            "path": "/reseaux-regionaux"
+          },
+          {
+            "label": {
+              "fr": "Réseaux thématiques",
+              "en": "Thematic networks"
+            },
+            "description": {
+              "fr": "Découvrez l'observatoire des réseaux thématiques",
+              "en": "Explore the thematic networks observatory"
+            },
+            "path": "/reseaux-thematiques"
+          }
+        ]
+      },
+      {
+        "label": {
+          "fr": "S'entraider",
+          "en": "Help Each Other"
+        },
+        "icon": "handshake",
+        "children": [
+          {
+            "label": {
+              "fr": "Appel à communs",
+              "en": "Call for commons"
+            },
+            "description": {
+              "fr": "La plateforme de cofinancement des ressources communes",
+              "en": "The co-funding platform for shared resources"
+            },
+            "path": "https://lescommuns.tiers-lieux.org/#les-communs"
+          },
+          {
+            "label": {
+              "fr": "Usages",
+              "en": "Uses"
+            },
+            "description": {
+              "fr": "Le recensement des usages et outils utilisés dans les tiers-lieux, pour faciliter les pratiques de mutualisation",
+              "en": "A catalogue of the uses and tools found in third places, to ease resource-sharing practices"
+            },
+            "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=list-tools#list-tools"
+          },
+          {
+            "label": {
+              "fr": "La plateforme d'aiguillage",
+              "en": "The guidance platform"
+            },
+            "description": {
+              "fr": "Une plateforme qui facilite les demandes d'aides et les réponses par un réseau d'acteurs",
+              "en": "A platform that streamlines support requests and responses through a network of stakeholders"
+            },
+            "path": "https://aiguillage.tiers-lieux.org/"
+          }
+        ]
+      },
+      {
+        "label": {
+          "fr": "Se gouverner",
+          "en": "Govern"
+        },
+        "path": "#",
+        "children": [
+          {
+            "label": {
+              "fr": "Diagnostic Licoop",
+              "en": "Licoop diagnostic"
+            },
+            "description": {
+              "fr": "Un diagnostic dédié aux lieux comme communs de proximité",
+              "en": "A diagnostic dedicated to places as local commons"
+            },
+            "path": "/coform/6876c3e58fa8df3c7f024253/place"
+          },
+          {
+            "label": {
+              "fr": "Décider ensemble",
+              "en": "Decide together"
+            },
+            "description": {
+              "fr": "Apprendre à gouverner collectivement notre infrastructure commune et le sujet tiers-lieu",
+              "en": "Learning to collectively govern our shared infrastructure and the third-place topic"
+            },
+            "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=decider#decider"
+          },
+          {
+            "label": {
+              "fr": "Votre diagnostic ?",
+              "en": "Your diagnostic?"
+            },
+            "description": {
+              "fr": "Construisez votre propre diagnostic ici",
+              "en": "Build your own diagnostic here"
+            },
+            "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=diagnostic#diagnostic"
+          },
+          {
+            "label": {
+              "fr": "La version 2 en test",
+              "en": "Version 2 in testing"
+            },
+            "description": {
+              "fr": "Découvrir la version 2 en cours de développement, plus rapide, et plus interopérable",
+              "en": "Discover version 2 under development — faster and more interoperable"
+            },
+            "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=version#version"
+          },
+          {
+            "label": {
+              "fr": "Mes lieux",
+              "en": "My places"
+            },
+            "description": {
+              "fr": "Gérez vos tiers-lieux",
+              "en": "Manage your third places"
+            },
+            "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=favoris#favoris"
+          },
+          {
+            "label": {
+              "fr": "Événements",
+              "en": "Events"
+            },
+            "description": {
+              "fr": "Les événements autour de tiers-lieux.org à venir",
+              "en": "Upcoming events around tiers-lieux.org"
+            },
+            "path": "/evenements"
+          },
+          {
+            "label": {
+              "fr": "Communauté",
+              "en": "Community"
+            },
+            "description": {
+              "fr": "La communauté qui anime cette plateforme",
+              "en": "The community that drives this platform"
+            },
+            "path": "/communaute"
+          }
+        ],
+        "icon": "scale"
+      },
+      {
+        "label": {
           "fr": "Outils et ressources",
           "en": "Tools & Resources"
         },
-        "icon": "tool",
+        "icon": "wrench",
         "children": [
           {
             "label": {
@@ -193,172 +363,13 @@
             "path": "https://visio.tiers-lieux.org/"
           }
         ]
-      },
-      {
-        "label": {
-          "fr": "S'entraider",
-          "en": "Help Each Other"
-        },
-        "icon": "handshake",
-        "children": [
-          {
-            "label": {
-              "fr": "Appel à communs",
-              "en": "Call for commons"
-            },
-            "description": {
-              "fr": "La plateforme de cofinancement des ressources communes",
-              "en": "The co-funding platform for shared resources"
-            },
-            "path": "https://lescommuns.tiers-lieux.org/#les-communs"
-          },
-          {
-            "label": {
-              "fr": "Usages",
-              "en": "Uses"
-            },
-            "description": {
-              "fr": "Le recensement des usages et outils utilisés dans les tiers-lieux, pour faciliter les pratiques de mutualisation",
-              "en": "A catalogue of the uses and tools found in third places, to ease resource-sharing practices"
-            },
-            "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=list-tools#list-tools"
-          },
-          {
-            "label": {
-              "fr": "La plateforme d'aiguillage",
-              "en": "The guidance platform"
-            },
-            "description": {
-              "fr": "Une plateforme qui facilite les demandes d'aides et les réponses par un réseau d'acteurs",
-              "en": "A platform that streamlines support requests and responses through a network of stakeholders"
-            },
-            "path": "https://aiguillage.tiers-lieux.org/"
-          }
-        ]
-      },
-      {
-        "label": {
-          "fr": "Observatoire",
-          "en": "Observatory"
-        },
-        "icon": "eye",
-        "children": [
-          {
-            "label": {
-              "fr": "Réseaux régionaux",
-              "en": "Regional networks"
-            },
-            "description": {
-              "fr": "Découvrez l'observatoire des réseaux régionaux",
-              "en": "Explore the regional networks observatory"
-            },
-            "path": "/reseaux-regionaux"
-          },
-          {
-            "label": {
-              "fr": "Réseaux thématiques",
-              "en": "Thematic networks"
-            },
-            "description": {
-              "fr": "Découvrez l'observatoire des réseaux thématiques",
-              "en": "Explore the thematic networks observatory"
-            },
-            "path": "/reseaux-thematiques"
-          }
-        ]
-      },
-      {
-        "label": {
-          "fr": "Se gouverner",
-          "en": "Govern"
-        },
-        "path": "#",
-        "children": [
-          {
-            "label": {
-              "fr": "Diagnostic Licoop",
-              "en": "Licoop diagnostic"
-            },
-            "description": {
-              "fr": "Un diagnostic dédié aux lieux comme communs de proximité",
-              "en": "A diagnostic dedicated to places as local commons"
-            },
-            "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=licoop#licoop"
-          },
-          {
-            "label": {
-              "fr": "Décider ensemble",
-              "en": "Decide together"
-            },
-            "description": {
-              "fr": "Apprendre à gouverner collectivement notre infrastructure commune et le sujet tiers-lieu",
-              "en": "Learning to collectively govern our shared infrastructure and the third-place topic"
-            },
-            "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=decider#decider"
-          },
-          {
-            "label": {
-              "fr": "Votre diagnostic ?",
-              "en": "Your diagnostic?"
-            },
-            "description": {
-              "fr": "Construisez votre propre diagnostic ici",
-              "en": "Build your own diagnostic here"
-            },
-            "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=diagnostic#diagnostic"
-          },
-          {
-            "label": {
-              "fr": "La version 2 en test",
-              "en": "Version 2 in testing"
-            },
-            "description": {
-              "fr": "Découvrir la version 2 en cours de développement, plus rapide, et plus interopérable",
-              "en": "Discover version 2 under development — faster and more interoperable"
-            },
-            "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=version#version"
-          },
-          {
-            "label": {
-              "fr": "Mes lieux",
-              "en": "My places"
-            },
-            "description": {
-              "fr": "Gérez vos tiers-lieux",
-              "en": "Manage your third places"
-            },
-            "path": "https://www.tiers-lieux.org/?r=%2Fcostum%2Fco%2Findex&host=www.tiers-lieux.org&h=favoris#favoris"
-          },
-          {
-            "label": {
-              "fr": "Événements",
-              "en": "Events"
-            },
-            "description": {
-              "fr": "Les événements autour de tiers-lieux.org à venir",
-              "en": "Upcoming events around tiers-lieux.org"
-            },
-            "path": "/evenements"
-          },
-          {
-            "label": {
-              "fr": "Communauté",
-              "en": "Community"
-            },
-            "description": {
-              "fr": "La communauté qui anime cette plateforme",
-              "en": "The community that drives this platform"
-            },
-            "path": "/communaute"
-          }
-        ]
       }
     ],
     "sticky": true,
     "transparent": false,
     "height": "lg",
     "utilities": {
-      "themeSwitch": false,
+      "themeSwitch": true,
       "langSwitch": true,
       "search": true,
       "auth": true,
@@ -376,7 +387,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "hero-tiers-lieux",
+          "type": "hero-search",
           "id": "hero-complet",
           "props": {
             "headline": {
@@ -398,45 +409,95 @@
                 "label": {
                   "fr": "Se réunir",
                   "en": "Meet"
-                }
+                },
+                "filters": [
+                  {
+                    "param": "services",
+                    "values": [
+                      "Salle de Réunion"
+                    ]
+                  }
+                ]
               },
               {
                 "label": {
                   "fr": "Coworker",
                   "en": "Cowork"
-                }
+                },
+                "filters": [
+                  {
+                    "param": "typologies",
+                    "values": [
+                      "Bureaux partagés / Coworking"
+                    ]
+                  }
+                ]
               },
               {
                 "label": {
                   "fr": "Fabriquer",
                   "en": "Make"
-                }
+                },
+                "filters": [
+                  {
+                    "param": "typologies",
+                    "values": [
+                      "Fablab / Makerspace / Hackerspace (Espaces du Faire)"
+                    ]
+                  }
+                ]
               },
               {
                 "label": {
                   "fr": "Manger",
                   "en": "Eat"
-                }
+                },
+                "filters": [
+                  {
+                    "param": "typologies",
+                    "values": [
+                      "Cuisine partagée / Foodlab"
+                    ]
+                  }
+                ]
               },
               {
                 "label": {
                   "fr": "S'instruire",
                   "en": "Learn"
-                }
+                },
+                "filters": [
+                  {
+                    "param": "typologies",
+                    "values": [
+                      "LivingLab / Laboratoire d'innovation sociale"
+                    ]
+                  }
+                ]
               },
               {
                 "label": {
                   "fr": "Séjourner",
                   "en": "Stay"
-                }
+                },
+                "filters": [
+                  {
+                    "param": "services",
+                    "values": [
+                      "Hébérgement"
+                    ]
+                  }
+                ]
               },
               {
                 "label": {
                   "fr": "+",
                   "en": "+"
-                }
+                },
+                "href": "/lieux"
               }
             ],
+            "scrollTarget": "section-lieux",
             "placeholder": {
               "fr": "Ville, département, code postal ...",
               "en": "City, ZIP code ..."
@@ -566,7 +627,6 @@
                   "fr": "Service",
                   "en": "Service"
                 },
-                "domGroup": ".domGroupFilters",
                 "type": "form",
                 "value": {
                   "Coworking": {
@@ -654,8 +714,8 @@
                 "xl": 5
               },
               "card": {
-                "type": "tiers-lieux",
-                "variant": "tiers-lieux",
+                "type": "image-cover",
+                "variant": "image-cover",
                 "detailsMode": "drawer"
               }
             }
@@ -1095,7 +1155,9 @@
                       ],
                       "notSourceKey": true,
                       "indexStepList": 100
-                    }
+                    },
+                    "optionStyle": "check",
+                    "order": 0
                   },
                   {
                     "id": "typologies",
@@ -1168,7 +1230,9 @@
                         },
                         "name": "Autre famille de tiers-lieux"
                       }
-                    ]
+                    ],
+                    "optionStyle": "check",
+                    "order": 2
                   },
                   {
                     "id": "pays",
@@ -1192,7 +1256,9 @@
                         "1"
                       ],
                       "sortBy": "name"
-                    }
+                    },
+                    "optionStyle": "check",
+                    "order": 3
                   },
                   {
                     "id": "regions",
@@ -1216,7 +1282,9 @@
                         "3"
                       ],
                       "sortBy": "name"
-                    }
+                    },
+                    "optionStyle": "check",
+                    "order": 4
                   },
                   {
                     "id": "portage",
@@ -1297,7 +1365,9 @@
                         },
                         "name": "Autre mode de gestion"
                       }
-                    ]
+                    ],
+                    "optionStyle": "check",
+                    "order": 5
                   }
                 ],
                 "filtersByAnswers": {
@@ -1306,27 +1376,28 @@
                       "fr": "Activités",
                       "en": "Activities"
                     },
-                    "domGroup": ".domGroupFilters",
                     "forms": "6486d24e9cad105cbf29a777",
                     "path": "lesCommunsDesTierslieux1262023_1215_0.multiCheckboxPluslesCommunsDesTierslieux1262023_1215_0liu3d5bbs2lwwdpiosq",
-                    "finderPath": "answers.lesCommunsDesTierslieux1262023_1215_0.finderlesCommunsDesTierslieux1262023_1215_0lix46h1uhnukfgtzj6s"
+                    "finderPath": "answers.lesCommunsDesTierslieux1262023_1215_0.finderlesCommunsDesTierslieux1262023_1215_0lix46h1uhnukfgtzj6s",
+                    "optionStyle": "check",
+                    "order": 6
                   },
                   "équipement": {
                     "label": {
                       "fr": "Équipements",
                       "en": "Equipment"
                     },
-                    "domGroup": ".domGroupFilters",
                     "forms": "645b300b6d70bb35426fc0e3",
                     "path": "lesCommunsDesTierslieux1052023_949_0.multiCheckboxPluslesCommunsDesTierslieux1052023_949_0lhi0h2l1gjvac3zpbcw",
-                    "finderPath": "answers.lesCommunsDesTierslieux1052023_949_0.finderlesCommunsDesTierslieux1052023_949_0lat3sl0xwwg06k856jc"
+                    "finderPath": "answers.lesCommunsDesTierslieux1052023_949_0.finderlesCommunsDesTierslieux1052023_949_0lat3sl0xwwg06k856jc",
+                    "optionStyle": "check",
+                    "order": 7
                   },
                   "services": {
                     "label": {
                       "fr": "Service",
                       "en": "Service"
                     },
-                    "domGroup": ".domGroupFilters",
                     "type": "form",
                     "value": {
                       "Coworking": {
@@ -1341,17 +1412,20 @@
                         "id": "6925ee8ac537f8056114aec7",
                         "finder": "answers.navigatorDesTierslieux25112025_2059_0.findernavigatorDesTierslieux25112025_2059_0miem3epsztzcm9dgim"
                       }
-                    }
+                    },
+                    "optionStyle": "check",
+                    "order": 8
                   },
                   "licoop": {
                     "label": {
                       "fr": "Licoop",
                       "en": "Licoop"
                     },
-                    "domGroup": ".domGroupFilters",
                     "forms": "6876c3e58fa8df3c7f024253",
                     "path": "navigatorDesTierslieux1572025_2311_0.findernavigatorDesTierslieux1572025_2311_0md5u4tkmsz33mya3xvb",
-                    "finderPath": "answers.navigatorDesTierslieux1572025_2311_0.findernavigatorDesTierslieux1572025_2311_0md5u4tkmsz33mya3xvb"
+                    "finderPath": "answers.navigatorDesTierslieux1572025_2311_0.findernavigatorDesTierslieux1572025_2311_0md5u4tkmsz33mya3xvb",
+                    "optionStyle": "check",
+                    "order": 9
                   }
                 },
                 "filtersByPath": {
@@ -1362,7 +1436,9 @@
                     },
                     "thematicPath": "lesCommunsDesTierslieux17102023_108_0.multiCheckboxPluslesCommunsDesTierslieux17102023_108_0lntzgckrxocls9xuwxo",
                     "finderPath": "answers.lesCommunsDesTierslieux17102023_108_0.finderlesCommunsDesTierslieux17102023_108_0lo5zvgqitv0b2mx2rl",
-                    "notSourceKey": true
+                    "notSourceKey": true,
+                    "optionStyle": "check",
+                    "order": 1
                   }
                 },
                 "className": "sticky top-20"
@@ -1432,12 +1508,423 @@
                     "xl": 4
                   },
                   "card": {
-                    "type": "tiers-lieux",
-                    "variant": "tiers-lieux",
+                    "type": "image-cover",
+                    "variant": "image-cover",
                     "detailsMode": "drawer",
-                    "detailedMode": "tiers-lieux"
+                    "detailedMode": "service-pricing",
+                    "overlayStats": "service-pricing"
+                  }
+                },
+                "map": {
+                  "marker": {
+                    "useItemImage": true,
+                    "style": "pin",
+                    "color": "primary"
                   }
                 }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "/observatoire",
+      "title": {
+        "fr": "Observatoire des tiers-lieux",
+        "en": "Third places observatory"
+      },
+      "layout": "fullwidth",
+      "sections": [
+        {
+          "type": "data-observatory",
+          "props": {
+            "headline": {
+              "fr": "Observatoire des tiers-lieux",
+              "en": "Third places observatory"
+            },
+            "baseParams": {
+              "defaultTypes": [
+                "organizations"
+              ],
+              "defaultFilters": {
+                "tags": [
+                  "TiersLieux"
+                ],
+                "address.addressCountry": {
+                  "$in": [
+                    "BE",
+                    "FR",
+                    "GP",
+                    "GF",
+                    "IT",
+                    "RE",
+                    "MQ",
+                    "YT",
+                    "NC",
+                    "CH"
+                  ]
+                }
+              },
+              "notSourceKey": true,
+              "maxResults": 6000,
+              "variant": "navigator-tl"
+            },
+            "dimensions": {
+              "name": {
+                "paths": [
+                  "name"
+                ],
+                "label": {
+                  "fr": "Nom",
+                  "en": "Name"
+                }
+              },
+              "commune": {
+                "paths": [
+                  "address.addressLocality"
+                ],
+                "label": {
+                  "fr": "Commune",
+                  "en": "Municipality"
+                }
+              },
+              "departement": {
+                "paths": [
+                  "address.level4Name"
+                ],
+                "label": {
+                  "fr": "Département",
+                  "en": "Department"
+                }
+              },
+              "region": {
+                "paths": [
+                  "address.level3Name"
+                ],
+                "label": {
+                  "fr": "Région",
+                  "en": "Region"
+                }
+              },
+              "pays": {
+                "paths": [
+                  "address.addressCountry"
+                ],
+                "valueMap": {
+                  "FR": "France",
+                  "RE": "Réunion",
+                  "BE": "Belgique",
+                  "GP": "Guadeloupe",
+                  "MQ": "Martinique",
+                  "YT": "Mayotte",
+                  "NC": "Nouvelle-Calédonie",
+                  "GF": "Guyane",
+                  "CH": "Suisse",
+                  "IT": "Italie",
+                  "PT": "Portugal"
+                },
+                "label": {
+                  "fr": "Pays / territoire",
+                  "en": "Country / territory"
+                }
+              },
+              "typologie": {
+                "paths": [
+                  "tags"
+                ],
+                "kind": "list",
+                "values": [
+                  "Bureaux partagés / Coworking",
+                  "Tiers-lieu culturel / Lieux intermédiaires et indépendants",
+                  "Fablab / Makerspace / Hackerspace (Espaces du Faire)",
+                  "Ateliers artisanaux partagés",
+                  "LivingLab / Laboratoire d'innovation sociale",
+                  "Tiers-lieu nourricier",
+                  "Cuisine partagée / Foodlab",
+                  "Autre famille de tiers-lieux"
+                ],
+                "label": {
+                  "fr": "Typologie",
+                  "en": "Type"
+                }
+              },
+              "portage": {
+                "paths": [
+                  "tags"
+                ],
+                "kind": "list",
+                "values": [
+                  "Association",
+                  "SARL-SA-SAS",
+                  "Collectivités (Département, Intercommunalité, Région, etc)",
+                  "SCIC",
+                  "SCOP",
+                  "Collectif citoyen",
+                  "Universités / Écoles d'ingénieurs ou de commerce / EPST",
+                  "Établissements scolaires (Lycée, Collège, Ecole)",
+                  "Autre mode de gestion"
+                ],
+                "label": {
+                  "fr": "Portage / statut",
+                  "en": "Legal status"
+                }
+              },
+              "surface": {
+                "paths": [
+                  "tags"
+                ],
+                "kind": "list",
+                "values": [
+                  "Plus de 200m²",
+                  "Entre 60 et 200m²",
+                  "Moins de 60m²"
+                ],
+                "label": {
+                  "fr": "Surface",
+                  "en": "Floor area"
+                },
+                "valueMap": {
+                  "Plus de 200m2": "Plus de 200m²",
+                  "Entre 60 et 200m2": "Entre 60 et 200m²",
+                  "Entre 60m² et 200m²": "Entre 60 et 200m²",
+                  "Moins de 60m2": "Moins de 60m²"
+                }
+              },
+              "compagnon": {
+                "paths": [
+                  "tags"
+                ],
+                "kind": "contains",
+                "value": "Compagnon France Tiers-Lieux",
+                "label": {
+                  "fr": "Compagnon France Tiers-Lieux",
+                  "en": "France Tiers-Lieux Companion"
+                }
+              },
+              "equipements": {
+                "paths": [
+                  "answers.6925869ad76aaf6c5a2b2f8a.serverData.answers.navigatorDesTierslieux25112025_1436_0.navigatorDesTierslieux25112025_1436_0miok91fh1gta2sneeu5"
+                ],
+                "kind": "list",
+                "label": {
+                  "fr": "Équipements (réponses CoForm)",
+                  "en": "Equipment (CoForm answers)"
+                }
+              }
+            },
+            "filters": [
+              {
+                "dimension": "region",
+                "multiple": true
+              },
+              {
+                "dimension": "typologie",
+                "multiple": true
+              },
+              {
+                "dimension": "portage",
+                "multiple": true
+              },
+              {
+                "dimension": "surface",
+                "multiple": true
+              },
+              {
+                "dimension": "pays",
+                "multiple": true
+              },
+              {
+                "dimension": "departement",
+                "searchable": true
+              },
+              "compagnon"
+            ],
+            "search": {
+              "dimensions": [
+                "name",
+                "commune"
+              ],
+              "placeholder": {
+                "fr": "Rechercher un tiers-lieu…",
+                "en": "Search a third place…"
+              }
+            },
+            "export": {
+              "filename": "observatoire-tiers-lieux"
+            },
+            "drilldown": true,
+            "kpis": [
+              {
+                "kind": "count",
+                "label": {
+                  "fr": "Tiers-lieux",
+                  "en": "Third places"
+                },
+                "icon": "building-2",
+                "accent": "primary"
+              },
+              {
+                "kind": "distinct",
+                "dimension": "region",
+                "label": {
+                  "fr": "Régions",
+                  "en": "Regions"
+                },
+                "icon": "map",
+                "accent": "chart-2"
+              },
+              {
+                "kind": "distinct",
+                "dimension": "commune",
+                "label": {
+                  "fr": "Communes",
+                  "en": "Municipalities"
+                },
+                "icon": "map-pinned",
+                "accent": "chart-4"
+              },
+              {
+                "kind": "percentTrue",
+                "dimension": "compagnon",
+                "label": {
+                  "fr": "Compagnons FTL",
+                  "en": "FTL Companions"
+                },
+                "icon": "award",
+                "accent": "chart-1"
+              },
+              {
+                "kind": "top",
+                "dimension": "typologie",
+                "label": {
+                  "fr": "Typologie dominante",
+                  "en": "Top type"
+                },
+                "icon": "trophy",
+                "accent": "chart-3"
+              }
+            ],
+            "charts": [
+              {
+                "kind": "bars",
+                "dimension": "region",
+                "label": {
+                  "fr": "Répartition par région",
+                  "en": "By region"
+                },
+                "layout": "full"
+              },
+              {
+                "kind": "barsHorizontal",
+                "dimension": "typologie",
+                "label": {
+                  "fr": "Par typologie",
+                  "en": "By type"
+                },
+                "layout": "half"
+              },
+              {
+                "kind": "donut",
+                "dimension": "surface",
+                "label": {
+                  "fr": "Par surface",
+                  "en": "By floor area"
+                },
+                "layout": "half"
+              },
+              {
+                "kind": "barsHorizontal",
+                "dimension": "portage",
+                "label": {
+                  "fr": "Par portage / statut juridique",
+                  "en": "By legal status"
+                },
+                "layout": "half"
+              },
+              {
+                "kind": "donut",
+                "dimension": "pays",
+                "label": {
+                  "fr": "Par pays",
+                  "en": "By country"
+                },
+                "layout": "half"
+              },
+              {
+                "kind": "barsHorizontal",
+                "dimension": "equipements",
+                "top": 10,
+                "label": {
+                  "fr": "Équipements déclarés (PoC réponses CoForm)",
+                  "en": "Declared equipment (CoForm PoC)"
+                },
+                "layout": "half"
+              }
+            ],
+            "table": {
+              "columns": [
+                {
+                  "dimension": "name",
+                  "kind": "title",
+                  "subtitleDimension": "commune",
+                  "label": {
+                    "fr": "Tiers-lieu",
+                    "en": "Third place"
+                  }
+                },
+                {
+                  "dimension": "typologie",
+                  "kind": "badge",
+                  "label": {
+                    "fr": "Typologie",
+                    "en": "Type"
+                  }
+                },
+                {
+                  "dimension": "portage",
+                  "kind": "badge",
+                  "label": {
+                    "fr": "Portage",
+                    "en": "Status"
+                  }
+                },
+                {
+                  "dimension": "surface",
+                  "kind": "badge",
+                  "label": {
+                    "fr": "Surface",
+                    "en": "Area"
+                  }
+                },
+                {
+                  "dimension": "region",
+                  "kind": "badge",
+                  "label": {
+                    "fr": "Région",
+                    "en": "Region"
+                  }
+                },
+                {
+                  "dimension": "pays",
+                  "kind": "text",
+                  "label": {
+                    "fr": "Pays",
+                    "en": "Country"
+                  }
+                },
+                {
+                  "dimension": "compagnon",
+                  "kind": "boolBadge",
+                  "label": {
+                    "fr": "Compagnon FTL",
+                    "en": "FTL Companion"
+                  }
+                }
+              ],
+              "defaultSort": "name",
+              "rowAction": {
+                "kind": "profil"
               }
             }
           }
@@ -1513,8 +2000,8 @@
                 "xl": 5
               },
               "card": {
-                "type": "tiers-lieux",
-                "variant": "tiers-lieux",
+                "type": "image-cover",
+                "variant": "image-cover",
                 "detailsMode": "drawer"
               }
             },
@@ -1597,8 +2084,8 @@
                 "xl": 5
               },
               "card": {
-                "type": "tiers-lieux",
-                "variant": "tiers-lieux",
+                "type": "image-cover",
+                "variant": "image-cover",
                 "detailsMode": "drawer"
               }
             },
@@ -1769,6 +2256,13 @@
                 "variant": "event",
                 "detailsMode": "drawer"
               }
+            },
+            "map": {
+              "marker": {
+                "useItemImage": true,
+                "style": "pin",
+                "color": "primary"
+              }
             }
           }
         }
@@ -1855,7 +2349,7 @@
     }
   ],
   "footer": {
-    "type": "tiers-lieux",
+    "type": "minimal-centered",
     "logo": "images/tiersLieux/Logo_Tl_Temp2.png",
     "logoAlt": {
       "fr": "Tiers Lieux",
@@ -2573,6 +3067,7 @@
                     "645b300b6d70bb35426fc0e3": {
                       "name": "Diagnostic des usages des équipements proposés en tiers-lieux",
                       "finder": "answers.lesCommunsDesTierslieux1052023_949_0.finderlesCommunsDesTierslieux1052023_949_0lat3sl0xwwg06k856jc",
+                      "openMode": "modal",
                       "linked": true
                     },
                     "6486d24e9cad105cbf29a777": {
@@ -2584,11 +3079,13 @@
                     "64a3fbd77c66a6036a282e8a": {
                       "name": "Satisfaction du tiers-lieu",
                       "finder": "answers.lesCommunsDesTierslieux472023_154_0.finderlesCommunsDesTierslieux472023_154_0ljo6ru90tnrau11hui",
+                      "openMode": "modal",
                       "linked": true
                     },
                     "636cd563e2439b7fc12cd680": {
                       "name": "Usages des outils numériques",
                       "finder": "answers.lesCommunsDesTierslieux10112022_1423_0.finderlesCommunsDesTierslieux10112022_1423_0lmbmy4z4ze9v982h4fh",
+                      "openMode": "modal",
                       "linked": true
                     },
                     "63e0a8abeac0741b506fb4f7": {
@@ -3279,14 +3776,19 @@
       }
     }
   ],
-  "commandPalette": { 
-    "enabled": true, 
+  "commandPalette": {
+    "enabled": true,
     "triggerVariant": "compact",
     "entitySearch": {
       "enabled": true,
-      "searchType": ["organizations", "projects", "events", "citoyens"],
+      "searchType": [
+        "organizations",
+        "projects",
+        "events",
+        "citoyens"
+      ],
       "limit": 8,
-      "params": { 
+      "params": {
         "sourceKey": [
           "franceTierslieux",
           "tierslieuxbelgique",

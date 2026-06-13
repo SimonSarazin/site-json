@@ -176,7 +176,7 @@ Pour ajouter une nouvelle section au panneau admin :
 2. Ajouter son entrée dans `SECTION_META` (`src/components/admin/section-meta.ts`)
 3. La section apparaît automatiquement dans `ADDABLE_SECTIONS`
 
-**Sections documentées dans SECTION_META** : hero, cards, gallery, video, cta, faq, testimonials, team, stats, pricing, steps, timeline, accordion, tabs, table, map, newsletter, contactForm, html, markdown, banner, chart, logoCloud, comparison, featureComparison, title, content, blogList, blogPost, loginForm, registerForm, recoverPasswordForm, filters, gridLayout, searchPro, searchProStatic, news, member, socialFeed, eventList, productShowcase, breadcrumb, cookieConsent, hero-tiers-lieux, hero-rezo-la-mer, features-rezo-la-mer, action-buttons-rezo-la-mer, community-rezo-la-mer, cta-rezo-la-mer, title-with-filters-rezo-la-mer, hero-nos-communes, commune-transparente-actions.
+**Sections documentées dans SECTION_META** : hero, cards, gallery, video, cta, faq, testimonials, team, stats, pricing, steps, timeline, accordion, tabs, table, map, newsletter, contactForm, html, markdown, banner, chart, logoCloud, comparison, featureComparison, title, content, blogList, blogPost, loginForm, registerForm, recoverPasswordForm, filters, gridLayout, searchPro, searchProStatic, news, member, socialFeed, eventList, productShowcase, breadcrumb, cookieConsent, hero-search, hero-parallax, features-glass, action-tiles, cta-card-grid, cta-newsletter, searchHeader, hero-tinted-overlay, expandable-actions.
 
 ---
 

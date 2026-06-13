@@ -22,6 +22,7 @@ export default function ToggleButtonTheme() {
               <Button
                 variant="ghost"
                 size="sm"
+                className="text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:bg-muted"
                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               >
                 <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />

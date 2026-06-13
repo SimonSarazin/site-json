@@ -26,7 +26,7 @@
     ]
   },
   "header": {
-    "type": "rezo-la-mer",
+    "type": "transparent-scroll",
     "path": "/",
     "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path></svg>",
     "logoTitle": {
@@ -100,7 +100,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "hero-rezo-la-mer",
+          "type": "hero-parallax",
           "id": "hero-rezo-la-mer",
           "props": {
             "headline": {
@@ -165,11 +165,11 @@
           "type": "html",
           "id": "mission",
           "props": {
-            "html": "<section class=\"relative py-32 px-4 overflow-hidden\"><div class=\"absolute inset-0 z-0\"><img src=\"/images/rezoLaMer/whale-ocean.jpg\" alt=\"Baleine nageant paisiblement dans l'océan\" class=\"w-full h-full object-cover\" /><div class=\"absolute inset-0 bg-linear-to-r from-background via-background/80 to-background/60\"></div></div><div class=\"relative z-10 container mx-auto max-w-4xl\"><div class=\"space-y-8\"><h2 class=\"text-4xl md:text-5xl font-bold mb-6 text-foreground\">Notre mission</h2><div class=\"space-y-6 text-lg md:text-xl leading-relaxed\"><p class=\"text-muted-foreground\"><span class=\"text-primary font-semibold\">Rézo la mer</span> est bien plus qu'une plateforme : c'est un <span class=\"text-primary font-medium\">mouvement collectif</span> pour reconnecter l'humanité avec l'océan.</p><p class=\"text-muted-foreground\">Nous créons un <span class=\"text-chart-2 font-medium\">espace numérique ouvert</span> où citoyens, associations, scientifiques et passionné·es peuvent se rencontrer, collaborer et agir ensemble pour la protection et la valorisation de nos océans.</p><div class=\"grid md:grid-cols-2 gap-6 pt-8\"><div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-ocean border border-primary/20\"><h3 class=\"text-2xl font-semibold mb-3 text-primary\">Approche collaborative</h3><p class=\"text-muted-foreground\">Construire ensemble les solutions de demain à travers le partage, la mutualisation et l'intelligence collective</p></div><div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-ocean border border-primary/20\"><h3 class=\"text-2xl font-semibold mb-3 text-chart-2\">Démocratie participative</h3><p class=\"text-muted-foreground\">Une gouvernance transparente et ouverte où chaque voix compte dans les décisions importantes</p></div></div></div></div></div></section>"
+            "html": "<section class=\"relative py-32 px-4 overflow-hidden\"><div class=\"absolute inset-0 z-0\"><img src=\"/images/rezoLaMer/whale-ocean.jpg\" alt=\"Baleine nageant paisiblement dans l'océan\" class=\"w-full h-full object-cover\" /><div class=\"absolute inset-0 bg-linear-to-r from-background via-background/80 to-background/60\"></div></div><div class=\"relative z-10 container mx-auto max-w-4xl\"><div class=\"space-y-8\"><h2 class=\"text-4xl md:text-5xl font-bold mb-6 text-foreground\">Notre mission</h2><div class=\"space-y-6 text-lg md:text-xl leading-relaxed\"><p class=\"text-muted-foreground\"><span class=\"text-primary font-semibold\">Rézo la mer</span> est bien plus qu'une plateforme : c'est un <span class=\"text-primary font-medium\">mouvement collectif</span> pour reconnecter l'humanité avec l'océan.</p><p class=\"text-muted-foreground\">Nous créons un <span class=\"text-chart-2 font-medium\">espace numérique ouvert</span> où citoyens, associations, scientifiques et passionné·es peuvent se rencontrer, collaborer et agir ensemble pour la protection et la valorisation de nos océans.</p><div class=\"grid md:grid-cols-2 gap-6 pt-8\"><div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-md border border-primary/20\"><h3 class=\"text-2xl font-semibold mb-3 text-primary\">Approche collaborative</h3><p class=\"text-muted-foreground\">Construire ensemble les solutions de demain à travers le partage, la mutualisation et l'intelligence collective</p></div><div class=\"p-6 rounded-lg bg-secondary/30 backdrop-blur-md border border-primary/20\"><h3 class=\"text-2xl font-semibold mb-3 text-chart-2\">Démocratie participative</h3><p class=\"text-muted-foreground\">Une gouvernance transparente et ouverte où chaque voix compte dans les décisions importantes</p></div></div></div></div></div></section>"
           }
         },
         {
-          "type": "features-rezo-la-mer",
+          "type": "features-glass",
           "id": "features",
           "props": {
             "headline": {
@@ -257,7 +257,7 @@
           }
         },
         {
-          "type": "action-buttons-rezo-la-mer",
+          "type": "action-tiles",
           "id": "actions",
           "props": {
             "headline": {
@@ -325,7 +325,7 @@
           }
         },
         {
-          "type": "community-rezo-la-mer",
+          "type": "cta-card-grid",
           "id": "community",
           "props": {
             "headline": {
@@ -444,7 +444,7 @@
           }
         },
         {
-          "type": "cta-rezo-la-mer",
+          "type": "cta-newsletter",
           "id": "cta",
           "props": {
             "headline": {
@@ -498,7 +498,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "projets-marins",
           "props": {
             "headline": {
@@ -551,8 +551,8 @@
                 "xl": 4
               },
               "card": {
-                "type": "rezo-la-mer",
-                "variant": "rezo-la-mer",
+                "type": "funding",
+                "variant": "funding",
                 "detailsMode": "drawer"
               }
             }
@@ -569,7 +569,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "evenements-header",
           "props": {
             "headline": {
@@ -633,15 +633,15 @@
                 "xl": 4
               },
               "card": {
-                "type": "event-rezo-la-mer",
-                "variant": "event-rezo-la-mer",
+                "type": "event-featured",
+                "variant": "event-featured",
                 "detailsMode": "drawer"
               }
             }
           }
         },
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "events-filter",
           "props": {
             "subhead": {
@@ -683,8 +683,8 @@
               },
               "card": {
                 "showStar": true,
-                "type": "event-rezo-la-mer",
-                "variant": "event-rezo-la-mer",
+                "type": "event-featured",
+                "variant": "event-featured",
                 "detailsMode": "drawer",
                 "viewDetail": true 
               }
@@ -702,7 +702,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "communaute-header",
           "props": {
             "headline": {
@@ -847,7 +847,7 @@
       "layout": "fullwidth",
       "sections": [
         {
-          "type": "title-with-filters-rezo-la-mer",
+          "type": "searchHeader",
           "id": "ressources-header",
           "props": {
             "headline": {
@@ -923,8 +923,8 @@
                 "xl": 4
               },
               "card": {
-                "type": "poi-rezo-la-mer",
-                "variant": "poi-rezo-la-mer",
+                "type": "resource-booking",
+                "variant": "resource-booking",
                 "detailsMode": "drawer"
               }
             }
@@ -934,7 +934,7 @@
     }
   ],
   "footer": {
-    "type": "rezo-la-mer",
+    "type": "sidebar-columns",
     "logoIcon": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path><path d=\"M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1\"></path></svg>",
     "logoTitle": {
       "fr": "Rézo la mer",
@@ -1186,6 +1186,76 @@
     }
   ],
   "theme": {
+    "colors": {
+      "light": {
+        "background": "oklch(1.0000 0 0)",
+        "foreground": "oklch(0.2686 0 0)",
+        "card": "oklch(1.0000 0 0)",
+        "cardForeground": "oklch(0.2686 0 0)",
+        "popover": "oklch(1.0000 0 0)",
+        "popoverForeground": "oklch(0.2686 0 0)",
+        "primary": "oklch(0.8456 0.1546 194.769)",
+        "primaryForeground": "oklch(0 0 0)",
+        "secondary": "oklch(0.9670 0.0029 264.5419)",
+        "secondaryForeground": "oklch(0.4461 0.0263 256.8018)",
+        "muted": "oklch(0.9846 0.0017 247.8389)",
+        "mutedForeground": "oklch(0.5510 0.0234 264.3637)",
+        "accent": "oklch(0.9869 0.0214 95.2774)",
+        "accentForeground": "oklch(0.4732 0.1247 46.2007)",
+        "destructive": "oklch(0.6368 0.2078 25.3313)",
+        "destructiveForeground": "oklch(1.0000 0 0)",
+        "border": "oklch(0.9276 0.0058 264.5313)",
+        "input": "oklch(0.9276 0.0058 264.5313)",
+        "ring": "oklch(0.8456 0.1546 194.769)",
+        "chart1": "oklch(0.8456 0.1546 194.769)",
+        "chart2": "oklch(0.6658 0.1574 58.3183)",
+        "chart3": "oklch(0.5553 0.1455 48.9975)",
+        "chart4": "oklch(0.4732 0.1247 46.2007)",
+        "chart5": "oklch(0.4137 0.1054 45.9038)",
+        "sidebar": "oklch(0.9846 0.0017 247.8389)",
+        "sidebarForeground": "oklch(0.2686 0 0)",
+        "sidebarPrimary": "oklch(0.8456 0.1546 194.769)",
+        "sidebarPrimaryForeground": "oklch(1.0000 0 0)",
+        "sidebarAccent": "oklch(0.9869 0.0214 95.2774)",
+        "sidebarAccentForeground": "oklch(0.4732 0.1247 46.2007)",
+        "sidebarBorder": "oklch(0.9276 0.0058 264.5313)",
+        "sidebarRing": "oklch(0.8456 0.1546 194.769)"
+      },
+      "dark": {
+        "background": "oklch(0.25 0.08 230)",
+        "foreground": "oklch(0.95 0.02 200)",
+        "card": "oklch(0.28 0.07 230)",
+        "cardForeground": "oklch(0.95 0.02 200)",
+        "popover": "oklch(0.22 0.07 230)",
+        "popoverForeground": "oklch(0.95 0.02 200)",
+        "primary": "oklch(0.8456 0.1546 194.769)",
+        "primaryForeground": "oklch(0.25 0.08 230)",
+        "secondary": "oklch(0.40 0.12 220)",
+        "secondaryForeground": "oklch(0.95 0.02 200)",
+        "muted": "oklch(0.35 0.10 225)",
+        "mutedForeground": "oklch(0.82 0.03 210)",
+        "accent": "oklch(0.55 0.14 210)",
+        "accentForeground": "oklch(0.95 0.02 200)",
+        "destructive": "oklch(0.6368 0.2078 25.3313)",
+        "destructiveForeground": "oklch(1.0000 0 0)",
+        "border": "oklch(0.45 0.10 220)",
+        "input": "oklch(0.35 0.08 225)",
+        "ring": "oklch(0.8456 0.1546 194.769)",
+        "chart1": "oklch(0.8456 0.1546 194.769)",
+        "chart2": "oklch(0.82 0.16 192)",
+        "chart3": "oklch(0.70 0.15 195)",
+        "chart4": "oklch(0.55 0.14 210)",
+        "chart5": "oklch(0.40 0.12 220)",
+        "sidebar": "oklch(0.20 0.06 230)",
+        "sidebarForeground": "oklch(0.95 0.02 200)",
+        "sidebarPrimary": "oklch(0.8456 0.1546 194.769)",
+        "sidebarPrimaryForeground": "oklch(0.25 0.08 230)",
+        "sidebarAccent": "oklch(0.55 0.14 210)",
+        "sidebarAccentForeground": "oklch(0.95 0.02 200)",
+        "sidebarBorder": "oklch(0.40 0.10 220)",
+        "sidebarRing": "oklch(0.8456 0.1546 194.769)"
+      }
+    },
     "typography": {
       "fontFamily": {
         "sans": [

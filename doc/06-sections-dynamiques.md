@@ -15,7 +15,7 @@
     - [Sections de formulaires](#sections-de-formulaires)
     - [Sections de liste \& événements](#sections-de-liste--événements)
     - [Sections de recherche \& carte (depuis modules)](#sections-de-recherche--carte-depuis-modules)
-    - [Sections RezoLaMer \& Commune Transparente](#sections-rezolamer--commune-transparente)
+    - [Sections design spécialisées (ex-variantes de site)](#sections-design-spécialisées-ex-variantes-de-site)
     - [Section news (depuis module news)](#section-news-depuis-module-news)
     - [Autres](#autres)
   - [Comment ajouter ou personnaliser une nouvelle section](#comment-ajouter-ou-personnaliser-une-nouvelle-section)
@@ -60,17 +60,17 @@ const LazySections: {
   [K in keyof SectionPropsMap]: LazySectionComponent<K>;
 } = {
   hero: lazy(() => import("./HeroSection")),
-  "hero-tiers-lieux": lazy(() => import("./HeroTiersLieux")),
-  "hero-rezo-la-mer": lazy(() => import("./HeroRezoLaMer")),
-  "hero-ssbe": lazy(() => import("./HeroSSBE")),
-  "features-rezo-la-mer": lazy(() => import("./FeaturesRezoLaMer")),
-  "action-buttons-rezo-la-mer": lazy(() => import("./ActionButtonsRezoLaMer")),
-  "community-rezo-la-mer": lazy(() => import("./CommunityRezoLaMer")),
-  "cta-rezo-la-mer": lazy(() => import("./CallToActionRezoLaMer")),
-  "title-with-filters-rezo-la-mer": lazy(() => import("./TitleWithFiltersRezoLaMer")),
-  "commune-transparente-actions": lazy(() => import("./CommuneTransparenteActionsSection")),
-  "hero-nos-communes": lazy(() => import("./NosCommunesBannerSection")),
-  "hero-commune-transparente": lazy(() => import("./HeroCommuneTransparenteSection")),
+  "hero-search": lazy(() => import("./HeroSearch")),
+  "hero-parallax": lazy(() => import("./HeroParallax")),
+  "hero-quick-access": lazy(() => import("./HeroQuickAccess")),
+  "features-glass": lazy(() => import("./FeaturesGlass")),
+  "action-tiles": lazy(() => import("./ActionTiles")),
+  "cta-card-grid": lazy(() => import("./CtaCardGrid")),
+  "cta-newsletter": lazy(() => import("./CtaNewsletter")),
+  "searchHeader": lazy(() => import("./TitleWithFiltersRezoLaMer")),
+  "expandable-actions": lazy(() => import("./ExpandableActions")),
+  "hero-tinted-overlay": lazy(() => import("./HeroTintedOverlay")),
+  "hero-entity-banner": lazy(() => import("./HeroEntityBanner")),
   "categories-grid": lazy(() => import("./CategoriesGridSection")),
   markdown: lazy(() => import("./MarkdownSection")),
   cards: lazy(() => import("./CardsSection")),
@@ -207,8 +207,8 @@ Le système supporte actuellement **66 types de sections** :
 | Type               | Composant                | Usage principal                                                        |
 | ------------------ | ------------------------ | ---------------------------------------------------------------------- |
 | **hero**           | `HeroSection`            | Bandeau d'accueil avec titre, sous-titre, image de fond et boutons CTA |
-| **hero-tiers-lieux** | `HeroTiersLieux`       | Hero spécialisé pour Tiers-Lieux avec recherche intégrée, applicateur de filtres headless (`filterGroups`/`filtersByAnswers`) et autocompletion scopée réseau (`searchVariant`/`baseParams`). Le mode sous-site (`/s/`) et ses props (`headlineSubsite`, `subheadSubsite`) ont été supprimés. |
-| **hero-ssbe**      | `HeroSSBE`               | Variante hero pour le site Sport-Santé-Bien-Être (SSBE)               |
+| **hero-search** | `HeroSearch`       | Hero avec recherche intégrée (autocomplete d’entités), applicateur de filtres headless (`filterGroups`/`filtersByAnswers`) et autocompletion scopée réseau (`searchVariant`/`baseParams`). Le mode sous-site (`/s/`) et ses props (`headlineSubsite`, `subheadSubsite`) ont été supprimés. |
+| **hero-quick-access**      | `HeroQuickAccess`               | Variante hero pour le site Sport-Santé-Bien-Être (SSBE)               |
 | **categories-grid**| `CategoriesGridSection`  | Grille de catégories cliquables avec icônes et liens                   |
 | **cards**          | `CardsSection`           | Grille de cartes (grid/masonry/carousel/list)                          |
 | **content**        | `ContentSection`         | Bloc de contenu riche avec image, texte, tags et liens                 |
@@ -278,19 +278,19 @@ Le système supporte actuellement **66 types de sections** :
 | **map**           | `MapSection`               | Carte interactive (Leaflet/Google/Mapbox)               |
 | **filters**       | `FiltersSection`           | Groupes de filtres dépliables                           |
 
-### Sections RezoLaMer & Commune Transparente
+### Sections design spécialisées (ex-variantes de site)
 
 | Type                              | Composant                              | Usage principal                                    |
 | --------------------------------- | -------------------------------------- | -------------------------------------------------- |
-| **hero-rezo-la-mer**              | `HeroRezoLaMer`                        | Hero spécialisé RezoLaMer                          |
-| **features-rezo-la-mer**          | `FeaturesRezoLaMer`                    | Features spécialisées RezoLaMer                    |
-| **action-buttons-rezo-la-mer**    | `ActionButtonsRezoLaMer`               | Boutons d'action RezoLaMer                         |
-| **community-rezo-la-mer**         | `CommunityRezoLaMer`                   | Section communauté RezoLaMer                       |
-| **cta-rezo-la-mer**               | `CallToActionRezoLaMer`                | Appel à l'action RezoLaMer                         |
-| **title-with-filters-rezo-la-mer**| `TitleWithFiltersRezoLaMer`            | Titre avec filtres RezoLaMer                       |
-| **commune-transparente-actions**  | `CommuneTransparenteActionsSection`    | Actions Commune Transparente                       |
-| **hero-nos-communes**             | `NosCommunesBannerSection`             | Bannière Nos Communes                              |
-| **hero-commune-transparente**     | `HeroCommuneTransparenteSection`       | Hero Commune Transparente                          |
+| **hero-parallax**              | `HeroParallax`                        | Hero spécialisé RezoLaMer                          |
+| **features-glass**          | `FeaturesGlass`                    | Features spécialisées RezoLaMer                    |
+| **action-tiles**    | `ActionTiles`               | Boutons d'action RezoLaMer                         |
+| **cta-card-grid**         | `CtaCardGrid`                   | Section communauté RezoLaMer                       |
+| **cta-newsletter**               | `CtaNewsletter`                | Appel à l'action RezoLaMer                         |
+| **searchHeader**| `TitleWithFiltersRezoLaMer`            | Titre avec filtres RezoLaMer                       |
+| **expandable-actions**  | `ExpandableActions`    | Cartes d’action en accordéon exclusif (modales)    |
+| **hero-tinted-overlay**             | `HeroTintedOverlay`             | Hero plein écran à voile teinté + double slogan    |
+| **hero-entity-banner**     | `HeroEntityBanner`       | Hero bannière sourcée depuis l’entité Cocolight    |
 
 ### Sections news & notifications (depuis modules)
 

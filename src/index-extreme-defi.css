@@ -1,115 +1,14 @@
 @import 'tailwindcss';
 @import "tw-animate-css";
+@import "./styles/shared.css";
 
 @custom-variant dark (&:is(.dark *));
 
-:root {
-  --background: oklch(1.0000 0 0);
-  --foreground: oklch(0.2686 0 0);
-  --card: oklch(1.0000 0 0);
-  --card-foreground: oklch(0.2686 0 0);
-  --popover: oklch(1.0000 0 0);
-  --popover-foreground: oklch(0.2686 0 0);
-  --primary: oklch(0.2367 0.0816 275.30);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.9670 0.0029 264.5419);
-  --secondary-foreground: oklch(0.4461 0.0263 256.8018);
-  --muted: oklch(0.9846 0.0017 247.8389);
-  --muted-foreground: oklch(0.5510 0.0234 264.3637);
-  --accent: oklch(0.962 0.032 55);
-  --accent-foreground: oklch(0.55 0.18 40);
-  --destructive: oklch(0.6368 0.2078 25.3313);
-  --destructive-foreground: oklch(1.0000 0 0);
-  --border: oklch(0.9276 0.0058 264.5313);
-  --input: oklch(0.9276 0.0058 264.5313);
-  --ring: oklch(0.488 0.243 264.376);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.685 0.17 42);
-  --chart-3: oklch(0.707 0.165 254.624);
-  --chart-4: oklch(0.80 0.15 75);
-  --chart-5: oklch(0.585 0.233 277.117);
-  --sidebar: oklch(0.9846 0.0017 247.8389);
-  --sidebar-foreground: oklch(0.2686 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(1.0000 0 0);
-  --sidebar-accent: oklch(0.962 0.032 55);
-  --sidebar-accent-foreground: oklch(0.55 0.18 40);
-  --sidebar-border: oklch(0.9276 0.0058 264.5313);
-  --sidebar-ring: oklch(0.488 0.243 264.376);
-  --font-sans: Inter, sans-serif;
-  --font-serif: Source Serif 4, serif;
-  --font-mono: JetBrains Mono, monospace;
-  --radius: 0.375rem;
-  --shadow-x: 0px;
-  --shadow-y: 4px;
-  --shadow-blur: 8px;
-  --shadow-spread: -1px;
-  --shadow-opacity: 0.1;
-  --shadow-color: hsl(0 0% 0%);
-  --shadow-2xs: 0px 4px 8px -1px hsl(0 0% 0% / 0.05);
-  --shadow-xs: 0px 4px 8px -1px hsl(0 0% 0% / 0.05);
-  --shadow-sm: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 1px 2px -2px hsl(0 0% 0% / 0.10);
-  --shadow: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 1px 2px -2px hsl(0 0% 0% / 0.10);
-  --shadow-md: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 2px 4px -2px hsl(0 0% 0% / 0.10);
-  --shadow-lg: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 4px 6px -2px hsl(0 0% 0% / 0.10);
-  --shadow-xl: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 8px 10px -2px hsl(0 0% 0% / 0.10);
-  --shadow-2xl: 0px 4px 8px -1px hsl(0 0% 0% / 0.25);
-  --tracking-normal: 0em;
-  --spacing: 0.25rem;
-}
-
-.dark {
-  --background: oklch(0.25 0.08 230);
-  --foreground: oklch(0.95 0.02 200);
-  --card: oklch(0.28 0.07 230);
-  --card-foreground: oklch(0.95 0.02 200);
-  --popover: oklch(0.22 0.07 230);
-  --popover-foreground: oklch(0.95 0.02 200);
-  --primary: oklch(0.2367 0.0816 275.30);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.40 0.12 220);
-  --secondary-foreground: oklch(0.95 0.02 200);
-  --muted: oklch(0.35 0.10 225);
-  --muted-foreground: oklch(0.82 0.03 210);
-  --accent: oklch(0.62 0.16 42);
-  --accent-foreground: oklch(0.95 0.02 200);
-  --destructive: oklch(0.6368 0.2078 25.3313);
-  --destructive-foreground: oklch(1.0000 0 0);
-  --border: oklch(0.45 0.10 220);
-  --input: oklch(0.35 0.08 225);
-  --ring: oklch(0.488 0.243 264.376);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.72 0.16 45);
-  --chart-3: oklch(0.70 0.14 256);
-  --chart-4: oklch(0.55 0.14 210);
-  --chart-5: oklch(0.40 0.12 220);
-  --sidebar: oklch(0.20 0.06 230);
-  --sidebar-foreground: oklch(0.95 0.02 200);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.62 0.16 42);
-  --sidebar-accent-foreground: oklch(0.95 0.02 200);
-  --sidebar-border: oklch(0.40 0.10 220);
-  --sidebar-ring: oklch(0.488 0.243 264.376);
-  --font-sans: Inter, sans-serif;
-  --font-serif: Source Serif 4, serif;
-  --font-mono: JetBrains Mono, monospace;
-  --radius: 0.375rem;
-  --shadow-x: 0px;
-  --shadow-y: 4px;
-  --shadow-blur: 8px;
-  --shadow-spread: -1px;
-  --shadow-opacity: 0.1;
-  --shadow-color: oklch(0.15 0.06 230);
-  --shadow-2xs: 0px 4px 8px -1px oklch(0.15 0.06 230 / 0.2);
-  --shadow-xs: 0px 4px 8px -1px oklch(0.15 0.06 230 / 0.2);
-  --shadow-sm: 0px 4px 8px -1px oklch(0.15 0.06 230 / 0.3), 0px 1px 2px -2px oklch(0.15 0.06 230 / 0.2);
-  --shadow: 0px 4px 8px -1px oklch(0.15 0.06 230 / 0.3), 0px 1px 2px -2px oklch(0.15 0.06 230 / 0.2);
-  --shadow-md: 0px 4px 8px -1px oklch(0.15 0.06 230 / 0.4), 0px 2px 4px -2px oklch(0.15 0.06 230 / 0.3);
-  --shadow-lg: 0px 4px 8px -1px oklch(0.15 0.06 230 / 0.4), 0px 4px 6px -2px oklch(0.15 0.06 230 / 0.3);
-  --shadow-xl: 0px 4px 8px -1px oklch(0.15 0.06 230 / 0.5), 0px 8px 10px -2px oklch(0.15 0.06 230 / 0.4);
-  --shadow-2xl: 0px 4px 8px -1px oklch(0.15 0.06 230 / 0.6);
-}
+/* Tokens de thème (couleurs shadcn light/dark, polices, radius, shadows)
+   injectés au RUNTIME par config.theme → SiteTheme.tsx (rendu SSR via
+   RootLayout) — même modèle qu'index-rezo-la-mer. On ne les redéfinit PAS
+   ici : ce fichier garde le @theme inline (mapping vars→classes Tailwind),
+   les vars bespoke océan (palette bleue ADEME) et les utilities custom. */
 
 @theme inline {
   --color-background: var(--background);
@@ -229,29 +128,6 @@
   .font-mono {
     font-family: var(--font-mono);
   }
-
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-}
-
-/* Custom animations */
-@keyframes marquee {
-  0% {
-    transform: translateX(0%);
-  }
-  100% {
-    transform: translateX(-100%);
-  }
-}
-
-.animate-marquee {
-  animation: marquee 25s linear infinite;
 }
 
 /* Smooth scrolling */
@@ -433,22 +309,23 @@ html {
    Extreme Defi (ADEME) - Theme bleu clair
    ========================================== */
 
-/* Palette bleue - primaire #1d4ed8 (bleu vif) sur fond clair */
+/* Palette bleue - primaire #1d4ed8 (bleu vif) sur fond clair.
+   Vars « ocean » héritées du modèle rezo-la-mer, réglées en bleu. */
 :root {
   /* Deep ocean blues */
   --ocean-deep: oklch(0.25 0.08 230);
   --ocean-mid: oklch(0.40 0.12 220);
   --ocean-light: oklch(0.55 0.14 210);
 
-  /* Surface and foam - lighter cyans */
+  /* Surface and foam - lighter blues */
   --ocean-surface: oklch(0.70 0.14 256);
   --ocean-foam: oklch(0.90 0.06 254);
 
-  /* Text colors for Rézo la mer */
-  --ocean-text-light: oklch(0.95 0.02 200); /* #e7f7fc - très clair pour titres */
-  --ocean-text-muted: oklch(0.82 0.03 210); /* #bbced8 - pour sous-textes */
+  /* Text colors */
+  --ocean-text-light: oklch(0.95 0.02 200);
+  --ocean-text-muted: oklch(0.82 0.03 210);
 
-  /* Turquoise/Cyan accents - based on #00e7e3 */
+  /* Blue accents */
   --turquoise: oklch(0.488 0.243 264.376);
   --turquoise-light: oklch(0.80 0.12 258);
   --cyan-bright: oklch(0.70 0.17 262);
@@ -460,7 +337,6 @@ html {
   /* Ocean shadows and effects */
   --shadow-ocean: 0 10px 40px -10px oklch(0.25 0.08 230 / 0.5);
   --shadow-glow: 0 0 30px oklch(0.488 0.243 264.376 / 0.4);
-  --shadow-deep: 0 25px 50px -12px oklch(0.25 0.08 230 / 0.6);
 }
 
 @theme inline {
@@ -476,24 +352,6 @@ html {
   --color-cyan-bright: var(--cyan-bright);
   --color-coral: var(--coral);
   --color-sand: var(--sand);
-}
-
-/* Ocean utility classes */
-.backdrop-blur-ocean {
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
-.shadow-ocean {
-  box-shadow: var(--shadow-ocean);
-}
-
-.shadow-glow {
-  box-shadow: var(--shadow-glow);
-}
-
-.bg-ocean-gradient {
-  background: linear-gradient(135deg, var(--ocean-deep), var(--ocean-mid), var(--ocean-light));
 }
 
 .bg-wave-gradient {
@@ -526,15 +384,6 @@ html {
 }
 
 /* Ocean animations */
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
 @keyframes wave {
   0% {
     transform: translateX(0) translateZ(0) scaleY(1);
@@ -547,42 +396,8 @@ html {
   }
 }
 
-@keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes pulse-glow {
-  0%, 100% {
-    opacity: 0.5;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.8;
-    transform: scale(1.05);
-  }
-}
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-
 .animate-wave {
   animation: wave 7s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite;
-}
-
-.animate-fade-in-up {
-  animation: fade-in-up 0.8s ease-out forwards;
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
 }
 
 /* Pulse animation for badges */
@@ -663,12 +478,6 @@ html {
   background: linear-gradient(90deg, transparent, var(--turquoise), transparent);
 }
 
-/* Glow text effect */
-.text-glow {
-  text-shadow: 0 0 20px oklch(0.488 0.243 264.376 / 0.5),
-               0 0 40px oklch(0.488 0.243 264.376 / 0.3);
-}
-
 /* Ocean dark mode overrides */
 .dark {
   --ocean-deep: oklch(0.15 0.06 230);
@@ -678,4 +487,11 @@ html {
   --ocean-foam: oklch(0.75 0.10 254);
   --shadow-ocean: 0 10px 40px -10px oklch(0.10 0.06 230 / 0.7);
   --shadow-glow: 0 0 40px oklch(0.488 0.243 264.376 / 0.5);
+}
+
+/* Surcharges des tokens partagés (styles/shared.css) — valeurs du thème. */
+:root {
+  --shadow-deep: 0 25px 50px -12px oklch(0.25 0.08 230 / 0.6);
+  --gradient-section: linear-gradient(135deg, var(--ocean-deep), var(--ocean-mid), var(--ocean-light));
+  --text-shadow-glow: 0 0 20px oklch(0.488 0.243 264.376 / 0.5), 0 0 40px oklch(0.488 0.243 264.376 / 0.3);
 }

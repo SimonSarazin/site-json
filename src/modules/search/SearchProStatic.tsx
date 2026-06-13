@@ -27,16 +27,19 @@ import "@/modules/search/i18n"; // Required: registers i18n resources
 import "@/modules/search/styles.css";
 import { SearchProStaticSectionProps } from "./schema";
 import { useSearchQuery } from "./hooks/useSearchQuery";
+import { useSearchAllResults } from "./hooks/useSearchAllResults";
+import MapProgress from "./components/MapProgress";
+import MapSkeleton from "./components/MapSkeleton";
 import { useCsvExport } from "./hooks/useCsvExport";
 import { canonicalSearchProStaticBaseParams } from "./lib/canonicalBaseParams";
 import { useZonesQuery, getZoneId, getZoneName } from "./hooks/useZonesQuery";
 import { usePageFiltersOptional } from "./contexts/pageFilters";
 import { searchByFieldsToQuery } from "./lib/searchByFieldsToQuery";
 import { useCocolight } from "@/hooks/useCocolight";
+import { useAuthModal } from "@/modules/auth";
 import { useLocalization } from "@/hooks/useLocalization";
 import { DynamicModal } from "@/modules/profil/components/add/ModalRegistry";
 import { useProfilPermissions } from "@/modules/profil/hooks/useProfilPermissions";
-import { toast } from "sonner";
 
 /**
  * SearchProStatic: Version statique sans synchronisation URL
@@ -69,6 +72,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
   } = props;
 
   const { me, entity, helper } = useCocolight();
+  const { openLogin } = useAuthModal();
   const isConnected = !!me;
   const permissions = useProfilPermissions(entity || null);
 
@@ -185,7 +189,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
 
   const handleAddClick = () => {
     if (!isConnected) {
-      toast.error(t("Vous devez être connecté pour ajouter"));
+      openLogin();
       return;
     }
     if (modalName) {
@@ -283,8 +287,23 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
     searchText,
     searchTags,
     searchType,
-    mapUsed: viewMode === "map",
+    // La vue carte ne passe plus par cette query (cf. mapAll ci-dessous).
+    mapUsed: false,
     graphUsed: viewMode === "graph",
+    baseParams: mergedBaseParams,
+    variant: searchVariant,
+  });
+
+  // Vue carte : périmètre COMPLET chargé PROGRESSIVEMENT — pages de 500
+  // enchaînées par le paginator SDK (indexMin manuel ignoré par le backend),
+  // plafond 5000, cache 30 min (re-toggle liste↔carte instantané). Désactivée
+  // (searchType: null → aucun appel) hors vue carte.
+  const mapAll = useSearchAllResults({
+    queryKeyPrefix: "searchCostumStaticMapAll",
+    searchType: viewMode === "map" && enableMap ? searchType : null,
+    searchText,
+    searchTags,
+    mapUsed: true,
     baseParams: mergedBaseParams,
     variant: searchVariant,
   });
@@ -474,15 +493,6 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
 
         {viewMode === "map" && enableMap ? (
           <div className="relative flex-1 h-full w-full overflow-hidden">
-            {loadingMap && (
-              <div className="absolute inset-0 z-10 bg-background/80 flex flex-col items-center justify-center">
-                <Loader2 className="animate-spin h-10 w-10 text-primary-foreground" />
-                <p className="text-sm text-secondary-foreground mt-2">
-                  {t("Chargement de la carte…")}
-                </p>
-              </div>
-            )}
-
             <Button
               variant="secondary"
               size="icon"
@@ -493,26 +503,36 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
               <Map className="h-5 w-5 text-primary" />
             </Button>
 
-            {Array.isArray(transformedResults) &&
-              transformedResults.length > 0 && (
-                <ClientOnly
-                  fallback={
-                    <div className="absolute inset-0 z-10 bg-white/80 flex flex-col items-center justify-center">
-                      <Skeleton className="w-3/4 h-1/2" />
-                      <p className="text-sm text-secondary-foreground mt-2">
-                        {t("Chargement de la carte…")}
-                      </p>
-                    </div>
-                  }
-                >
-                  {() => (
-                    <SearchMapWrapper
-                      results={transformedResults}
-                      card={list?.card}
-                    />
-                  )}
-                </ClientOnly>
-              )}
+            {/* Progression du chargement par pages + alerte plafond. */}
+            <MapProgress
+              loaded={mapAll.loaded}
+              total={mapAll.total}
+              isComplete={mapAll.isComplete}
+              capped={mapAll.capped}
+            />
+
+            {/* MapSkeleton AVANT la 1ʳᵉ page et pendant le chunk Leaflet :
+                le conteneur n'a aucune hauteur tant que SearchMap n'est pas
+                monté — sans squelette dimensionné, le clic « Carte » donne un
+                blanc total jusqu'à la 1ʳᵉ page. */}
+            {mapAll.results.length > 0 ? (
+              <ClientOnly fallback={<MapSkeleton label={t("Chargement de la carte…")} />}>
+                {() => (
+                  <SearchMapWrapper
+                    results={mapAll.results}
+                    card={list?.card}
+                    preview={list?.preview}
+                    map={props.map}
+                  />
+                )}
+              </ClientOnly>
+            ) : mapAll.isComplete ? (
+              <div className="flex min-h-[40vh] items-center justify-center text-sm text-muted-foreground">
+                {t("Aucun résultat")}
+              </div>
+            ) : (
+              <MapSkeleton label={t("Chargement de la carte…")} />
+            )}
           </div>
         ) : viewMode === "graph" && enableGraph ? (
           <div className="relative flex-1 h-full w-full overflow-hidden p-4">
@@ -567,7 +587,7 @@ const SearchProStatic: React.FC<{ props: SearchProStaticSectionProps }> = ({ pro
             )}
           </div>
         ) : (
-          <div className="p-4 overflow-y-auto">
+          <div className="p-4 overflow-y-auto mx-auto w-full max-w-[1536px]">
             {customHeader && (
               <div className="container flex justify-between items-center mx-auto px-4 sm:px-6 lg:px-8 mb-6">
                 <div>

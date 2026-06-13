@@ -5,7 +5,7 @@ import { useCocolight } from "@/hooks/useCocolight";
 import { useReactiveProperty } from "@/hooks/useReactiveProperty";
 
 /**
- * Bouton "piggy-bank" affiché dans le header d'un site (ex. `HeaderRezoLaMer`).
+ * Bouton "piggy-bank" affiché dans le header d'un site (ex. `HeaderTransparentScroll`).
  *
  * Le composant lit lui-même sa config depuis `entity.preferences.projectModalId`
  * (source de vérité définie par l'admin orga via la dialog cagnotte) — le header

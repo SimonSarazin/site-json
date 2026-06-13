@@ -9,7 +9,6 @@ import { Seo } from "./layout/Seo";
 import { usePageGuards } from "@/hooks/usePageGuards";
 import { PageProvider } from "@/contexts/PageProvider";
 import { discoverModules, getPageProviders } from "@/lib/modules";
-// import { SiteHeader2 } from "./layout/SiteHeader2";
 
 /**
  * Compose la liste des `PageProvider` des modules autour de `children`.

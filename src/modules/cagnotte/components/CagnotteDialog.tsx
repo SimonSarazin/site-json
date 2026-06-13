@@ -178,7 +178,7 @@ const CagnotteDialogContent = ({ totalAmount, defaultProjectId, onRefresh, openC
 
     // Permissions cagnotte calculées sur l'ORGA (entity Cocolight), pas sur le
     // projet visité. La modale CagnotteDialog est rendue dans 2 contextes :
-    //  - Header (HeaderRezoLaMer) : indépendant du projet de la page courante.
+    //  - Header (HeaderTransparentScroll) : indépendant du projet de la page courante.
     //  - Sidebar profil projet (FinanceSummary "Soutenir") : l'action `canContribute`
     //    ne dépend pas du statut admin, et le bouton 💾 "Cagnotte principale" agit
     //    sur `entity.preferences.projectModalId` de l'ORGA — donc admin orga requis.
@@ -189,7 +189,7 @@ const CagnotteDialogContent = ({ totalAmount, defaultProjectId, onRefresh, openC
     });
 
     // Context cagnotte (null si CagnotteDialog est rendu hors d'un <CagnotteLayout>,
-    // ex: depuis HeaderRezoLaMer). Permet aux features futures d'émettre des events
+    // ex: depuis HeaderTransparentScroll). Permet aux features futures d'émettre des events
     // vers les sections cagnotte en dessous (scroll vers milestone financé, etc.).
     const cagnotteCtx = useCagnotteContextSafe();
     void cagnotteCtx; // unused pour l'instant — placeholder pour usage futur

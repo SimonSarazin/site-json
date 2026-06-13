@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import "tw-animate-css";
+@import "./styles/shared.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -200,10 +201,6 @@
     transition: transform 0.3s ease;
   }
 
-  .nav-sticky {
-    backdrop-filter: blur(10px);
-    background-color: rgba(255, 255, 255, 0.9);
-  }
 
   .serif-italic {
     font-family: 'Georgia', serif;
@@ -256,14 +253,7 @@
     font-family: var(--font-mono);
   }
 
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
 
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
 }
 
 /* Custom animations */
@@ -277,9 +267,6 @@
   }
 }
 
-.animate-marquee {
-  animation: marquee 25s linear infinite;
-}
 
 /* Smooth scrolling */
 html {
@@ -505,23 +492,9 @@ html {
   --color-sand: var(--sand);
 }
 
-/* Ocean utility classes */
-.backdrop-blur-ocean {
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
 
-.shadow-ocean {
-  box-shadow: var(--shadow-ocean);
-}
 
-.shadow-glow {
-  box-shadow: var(--shadow-glow);
-}
 
-.bg-ocean-gradient {
-  background: linear-gradient(135deg, var(--ocean-deep), var(--ocean-mid), var(--ocean-light));
-}
 
 .bg-wave-gradient {
   background: linear-gradient(180deg, oklch(0.55 0.14 210 / 0.1), oklch(0.8456 0.1546 194.769 / 0.2));
@@ -579,47 +552,14 @@ html {
   }
 }
 
-@keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
 
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
-@keyframes pulse-glow {
-
-  0%,
-  100% {
-    opacity: 0.5;
-    transform: scale(1);
-  }
-
-  50% {
-    opacity: 0.8;
-    transform: scale(1.05);
-  }
-}
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
 
 .animate-wave {
   animation: wave 7s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite;
 }
 
-.animate-fade-in-up {
-  animation: fade-in-up 0.8s ease-out forwards;
-}
 
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
 
 /* Pulse animation for badges */
 .pulse {
@@ -702,11 +642,6 @@ html {
   background: linear-gradient(90deg, transparent, var(--turquoise), transparent);
 }
 
-/* Glow text effect */
-.text-glow {
-  text-shadow: 0 0 20px oklch(0.8456 0.1546 194.769 / 0.5),
-    0 0 40px oklch(0.8456 0.1546 194.769 / 0.3);
-}
 
 /* Ocean dark mode overrides */
 .dark {
@@ -717,4 +652,11 @@ html {
   --ocean-foam: oklch(0.75 0.10 195);
   --shadow-ocean: 0 10px 40px -10px oklch(0.10 0.06 230 / 0.7);
   --shadow-glow: 0 0 40px oklch(0.8456 0.1546 194.769 / 0.5);
+}
+
+/* Surcharges des tokens partagés (styles/shared.css) — valeurs historiques. */
+:root {
+  --shadow-deep: var(--shadow-ocean);
+  --gradient-section: linear-gradient(135deg, var(--ocean-deep), var(--ocean-mid), var(--ocean-light));
+  --text-shadow-glow: 0 2px 10px oklch(0 0 0 / 0.22);
 }

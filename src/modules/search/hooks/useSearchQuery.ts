@@ -20,6 +20,9 @@ export interface UseSearchQueryParams {
    * (comportement préservé). Sinon on passe `{ variant }` → endpoint alternatif.
    */
   variant?: "default" | "navigator-tl";
+  /** Overrides du cache React Query (ex. dashboards « charger tout » : un
+   *  staleTime long évite de re-chaîner toutes les pages au retour). */
+  cache?: { staleTime?: number; gcTime?: number };
   baseParams?: {
     fediverse?: boolean;
     indexStepList?: number;
@@ -60,6 +63,7 @@ export function useSearchQuery({
   graphUsed = false,
   variant,
   baseParams = {},
+  cache,
 }: UseSearchQueryParams) {
   const { entity, helper } = useCocolight();
 
@@ -79,6 +83,8 @@ export function useSearchQuery({
     data,
     error,
     lastItemRef,
+    fetchNextPage,
+    hasNextPage,
     isFetchingNextPage,
     isLoading,
     isPending,
@@ -143,7 +149,8 @@ export function useSearchQuery({
     },
     options: {
       enabled: !!entity,
-      staleTime: 60 * 1000,
+      staleTime: cache?.staleTime ?? 60 * 1000,
+      ...(cache?.gcTime !== undefined && { gcTime: cache.gcTime }),
       initialPageParam: undefined,
     },
     // Transformation SSR automatique via le hook
@@ -159,6 +166,8 @@ export function useSearchQuery({
     data,
     error,
     lastItemRef,
+    fetchNextPage,
+    hasNextPage,
     isFetchingNextPage,
     isLoading,
     isPending,

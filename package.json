@@ -20,10 +20,13 @@
     "test:integration": "vitest run -c vitest.config.integration.ts",
     "test:e2e": "playwright test",
     "test:preflight": "vitest run -c vitest.config.unit.ts tests/preflight/",
-    "audit:config": "node scripts/audit-config.mjs",
+    "audit:config": "tsx scripts/audit-config.ts",
     "test:coverage": "vitest run -c vitest.config.unit.ts --coverage",
     "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e",
-    "test:watch": "vitest --watch"
+    "test:watch": "vitest --watch",
+    "config:validate": "tsx scripts/validate-config.ts",
+    "config:schema": "tsx scripts/config-schema.ts",
+    "entity:slug": "tsx scripts/entity-slug.ts"
   },
   "resolutions": {
     "react": "19.2.1",
@@ -37,7 +40,7 @@
     "@codemirror/lang-html": "^6.4.11",
     "@codemirror/lang-javascript": "^6.2.4",
     "@codemirror/theme-one-dark": "^6.1.3",
-    "@communecter/cocolight-api-client": "^1.0.142",
+    "@communecter/cocolight-api-client": "^1.0.146",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",

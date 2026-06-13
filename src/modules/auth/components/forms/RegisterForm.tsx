@@ -49,7 +49,9 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps = {}
   const { config }                   = useSite();
 
   const registerTitle = config.auth?.register?.title || { fr: "Créer un compte", en: "Create an account" };
-  const registerSubtitle = config.auth?.register?.subtitle || { fr: "Rejoignez SiteForge dès aujourd'hui", en: "Join SiteForge today" };
+  // Défaut NEUTRE : « SiteForge » est le nom du générateur, il ne doit jamais
+  // fuiter sur un site — chaque site personnalise via config.auth.register.
+  const registerSubtitle = config.auth?.register?.subtitle || { fr: "Rejoignez-nous dès aujourd'hui", en: "Join us today" };
 
   /* Redirige l’utilisateur déjà connecté ------------------------------- */
   useEffect(() => {

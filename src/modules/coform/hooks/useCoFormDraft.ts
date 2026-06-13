@@ -1,0 +1,276 @@
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import type { AllStepsData, AddedOptionsMap } from "../types";
+
+const KEY_PREFIX = "coform-draft:v1";
+const DRAFT_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 jours
+const WRITE_DEBOUNCE_MS = 500;
+
+export interface CoFormDraft {
+  version: 1;
+  data: AllStepsData;
+  currentStepIndex: number;
+  completedSteps: string[];
+  addedOptions: Record<string, AddedOptionsMap>;
+  timestamp: number;
+  baseUpdatedAt: number | null;
+}
+
+type SaveDraftPayload = Omit<CoFormDraft, "version" | "timestamp" | "baseUpdatedAt">;
+
+export interface UseCoFormDraftOptions {
+  formId: string | null | undefined;
+  userId: string | null | undefined;
+  answerId?: string;
+  baseUpdatedAt?: number | null;
+  disabled?: boolean;
+}
+
+export interface UseCoFormDraftReturn {
+  restorableDraft: CoFormDraft | null;
+  staleDraftInfo: { timestamp: number } | null;
+  saveDraft: (payload: SaveDraftPayload) => void;
+  discardDraft: () => void;
+  purgeDraft: () => void;
+  acknowledgeStale: () => void;
+}
+
+interface DraftSnapshot {
+  restorable: CoFormDraft | null;
+  stale: { timestamp: number } | null;
+}
+const EMPTY_SNAPSHOT: DraftSnapshot = { restorable: null, stale: null };
+
+function buildKey(formId: string, userId: string, answerId: string | undefined): string {
+  return `${KEY_PREFIX}:${formId}:${userId}:${answerId ?? "new"}`;
+}
+
+function isPlainObject(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+
+function readDraft(key: string): CoFormDraft | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as unknown;
+
+    // Validation structurelle : un draft corrompu (ou injecté par une extension) ne doit
+    // pas planter le restore. On exige la forme attendue, sinon on supprime et ignore.
+    if (
+      !isPlainObject(parsed) ||
+      parsed.version !== 1 ||
+      typeof parsed.timestamp !== "number" ||
+      !isPlainObject(parsed.data) ||
+      typeof parsed.currentStepIndex !== "number" ||
+      !Array.isArray(parsed.completedSteps) ||
+      !(parsed.completedSteps as unknown[]).every((s) => typeof s === "string") ||
+      !isPlainObject(parsed.addedOptions) ||
+      (parsed.baseUpdatedAt !== null && typeof parsed.baseUpdatedAt !== "number")
+    ) {
+      window.localStorage.removeItem(key);
+      return null;
+    }
+
+    const draft = parsed as unknown as CoFormDraft;
+    if (Date.now() - draft.timestamp > DRAFT_TTL_MS) {
+      window.localStorage.removeItem(key);
+      return null;
+    }
+    return draft;
+  } catch {
+    try { window.localStorage.removeItem(key); } catch { /* noop */ }
+    return null;
+  }
+}
+
+function removeKey(key: string): void {
+  if (typeof window === "undefined") return;
+  try { window.localStorage.removeItem(key); } catch { /* noop */ }
+}
+
+/**
+ * Lit le draft associé à `key` et détermine s'il doit être proposé à la restauration,
+ * ou s'il est obsolète (serveur plus récent). Pur : ne dépend que de ses arguments.
+ * Effet de bord : supprime l'entrée localStorage si obsolète.
+ */
+function computeDraftState(
+  k: string | null,
+  srvUpdatedAt: number | null | undefined
+): DraftSnapshot {
+  if (!k) return EMPTY_SNAPSHOT;
+  const draft = readDraft(k);
+  if (!draft) return EMPTY_SNAPSHOT;
+  const serverNewer =
+    srvUpdatedAt != null &&
+    draft.baseUpdatedAt != null &&
+    srvUpdatedAt > draft.baseUpdatedAt;
+  if (serverNewer) {
+    removeKey(k);
+    return { restorable: null, stale: { timestamp: draft.timestamp } };
+  }
+  return { restorable: draft, stale: null };
+}
+
+// ─── Bus d'événements pour useSyncExternalStore ────────────────────────────────
+// localStorage n'émet pas d'événement sur l'onglet courant lors d'un setItem local.
+// On maintient donc un bus en mémoire pour notifier nos abonnés, en plus du
+// natif `storage` event qui couvre les autres onglets.
+const draftListeners = new Set<() => void>();
+function subscribeDrafts(callback: () => void): () => void {
+  draftListeners.add(callback);
+  if (typeof window !== "undefined") {
+    window.addEventListener("storage", callback);
+  }
+  return () => {
+    draftListeners.delete(callback);
+    if (typeof window !== "undefined") {
+      window.removeEventListener("storage", callback);
+    }
+  };
+}
+function notifyDraftsChanged(): void {
+  draftListeners.forEach((l) => l());
+}
+
+// Cache par clé : `getSnapshot` doit retourner la MÊME référence tant que le
+// contenu n'a pas changé, sinon React considère que le state a changé et
+// re-render en boucle.
+const snapshotCache = new Map<string, { raw: string | null; srv: number | null; snap: DraftSnapshot }>();
+function getSnapshotFor(key: string | null, srv: number | null): DraftSnapshot {
+  if (!key || typeof window === "undefined") return EMPTY_SNAPSHOT;
+  const raw = window.localStorage.getItem(key);
+  const cached = snapshotCache.get(key);
+  if (cached && cached.raw === raw && cached.srv === srv) {
+    return cached.snap;
+  }
+  const snap = computeDraftState(key, srv);
+  snapshotCache.set(key, { raw, srv, snap });
+  return snap;
+}
+
+/**
+ * Hook de persistance du brouillon d'un CoForm dans localStorage.
+ * - Désactivé si utilisateur anonyme, formId manquant, ou `disabled=true`.
+ * - Écritures debouncées (500ms) pour limiter l'impact synchrone.
+ * - Détecte les brouillons obsolètes (server.updatedAt > draft.baseUpdatedAt) et les supprime
+ *   tout en exposant `staleDraftInfo` pour informer l'utilisateur.
+ * - SSR-safe via `useSyncExternalStore` : `getServerSnapshot` retourne `EMPTY_SNAPSHOT` pour
+ *   que l'hydratation ne diffère pas entre serveur et client.
+ */
+export function useCoFormDraft({
+  formId,
+  userId,
+  answerId,
+  baseUpdatedAt,
+  disabled,
+}: UseCoFormDraftOptions): UseCoFormDraftReturn {
+  const isActive = !disabled && !!formId && !!userId;
+  const key = isActive ? buildKey(formId!, userId!, answerId) : null;
+  const normalizedBaseUpdatedAt = baseUpdatedAt ?? null;
+
+  // Timestamp de début de session (= montage du hook). Utilisé pour FILTRER les
+  // brouillons écrits par l'utilisateur lui-même pendant cette session : on ne
+  // veut pas que la bannière "Brouillon trouvé" réapparaisse à chaque save.
+  // Seuls les brouillons antérieurs (timestamp < sessionStart) sont éligibles.
+  // Lazy init via useState pour que `Date.now()` ne soit appelé qu'une fois.
+  const [sessionStart] = useState(() => Date.now());
+
+  // `getSnapshotFor` cache déjà par (key, contenu localStorage) : sa sortie est
+  // une référence stable. Notre filtre ne fait que retourner soit ce ref, soit
+  // EMPTY_SNAPSHOT (constante) — pas d'allocation, références stables, pas de
+  // re-render en boucle.
+  const getSnapshot = useCallback(() => {
+    const raw = getSnapshotFor(key, normalizedBaseUpdatedAt);
+    if (raw.restorable && raw.restorable.timestamp >= sessionStart) {
+      // Brouillon écrit pendant CETTE session → masqué côté UI (évite la boucle).
+      return EMPTY_SNAPSHOT;
+    }
+    return raw;
+  }, [key, normalizedBaseUpdatedAt, sessionStart]);
+  const snapshot = useSyncExternalStore(subscribeDrafts, getSnapshot, () => EMPTY_SNAPSHOT);
+
+  // `acknowledgeStale` ferme seulement la bannière (info UI) sans modifier localStorage.
+  // On le garde en state local ; combiné au snapshot pour produire la valeur finale.
+  const [staleDismissed, setStaleDismissed] = useState(false);
+  const staleDraftInfo = staleDismissed ? null : snapshot.stale;
+
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const keyRef = useRef<string | null>(key);
+  useEffect(() => {
+    keyRef.current = key;
+  }, [key]);
+
+  // Flush debounce au démontage
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+        debounceRef.current = null;
+      }
+    };
+  }, []);
+
+  const saveDraft = useCallback(
+    (payload: SaveDraftPayload) => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        const currentKey = keyRef.current;
+        if (!currentKey) return;
+        const draft: CoFormDraft = {
+          version: 1,
+          ...payload,
+          timestamp: Date.now(),
+          baseUpdatedAt: baseUpdatedAt ?? null,
+        };
+        try {
+          window.localStorage.setItem(currentKey, JSON.stringify(draft));
+          notifyDraftsChanged();
+        } catch (err) {
+          console.warn("[useCoFormDraft] saveDraft failed", err);
+        }
+      }, WRITE_DEBOUNCE_MS);
+    },
+    [baseUpdatedAt]
+  );
+
+  const discardDraft = useCallback(() => {
+    const currentKey = keyRef.current;
+    if (currentKey) removeKey(currentKey);
+    // Annule un éventuel save debouncé pour qu'il n'écrive pas APRÈS le discard.
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+      debounceRef.current = null;
+    }
+    notifyDraftsChanged();
+  }, []);
+
+  const purgeDraft = useCallback(() => {
+    const currentKey = keyRef.current;
+    if (currentKey) removeKey(currentKey);
+    // Purge aussi la clé "new" pour ce (formId, userId) si on vient de soumettre une
+    // création avec answerId existant : l'éventuel draft "new" laissé en route est obsolète.
+    if (formId && userId && answerId && answerId !== "new") {
+      removeKey(buildKey(formId, userId, undefined));
+    }
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+      debounceRef.current = null;
+    }
+    setStaleDismissed(false);
+    notifyDraftsChanged();
+  }, [formId, userId, answerId]);
+
+  const acknowledgeStale = useCallback(() => {
+    setStaleDismissed(true);
+  }, []);
+
+  return {
+    restorableDraft: snapshot.restorable,
+    staleDraftInfo,
+    saveDraft,
+    discardDraft,
+    purgeDraft,
+    acknowledgeStale,
+  };
+}

@@ -2,9 +2,15 @@ import { Suspense } from "react";
 import { useSite } from "@/hooks/useSite";
 import { resolveAuthVariant } from "./variants/registry";
 
+type AuthMode = "login" | "register" | "recover";
+
 interface AuthModalLazyProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Joué quand la connexion réussit, avant fermeture (routé vers `LoginForm`). */
+  onSuccess?: () => void;
+  /** Mode affiché à l'ouverture (défaut : `"login"`). */
+  initialMode?: AuthMode;
 }
 
 /**
@@ -18,7 +24,12 @@ interface AuthModalLazyProps {
  * Pattern : lazy() vite-preload + montage conditionnel (cf. CagnotteDialog) +
  * Suspense (cf. RootLayout).
  */
-export function AuthModalLazy({ open, onOpenChange }: AuthModalLazyProps) {
+export function AuthModalLazy({
+  open,
+  onOpenChange,
+  onSuccess,
+  initialMode,
+}: AuthModalLazyProps) {
   const { config } = useSite();
   const { AuthModal } = resolveAuthVariant(config.auth?.variant);
 
@@ -26,7 +37,12 @@ export function AuthModalLazy({ open, onOpenChange }: AuthModalLazyProps) {
 
   return (
     <Suspense fallback={null}>
-      <AuthModal open={open} onOpenChange={onOpenChange} />
+      <AuthModal
+        open={open}
+        onOpenChange={onOpenChange}
+        onSuccess={onSuccess}
+        initialMode={initialMode}
+      />
     </Suspense>
   );
 }

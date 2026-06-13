@@ -6,7 +6,6 @@ import type {
   AddOrganizationFormData,
   AddProjectFormData,
   AddEventFormData,
-  AddPoiFormData,
 } from "../schemaForm";
 import { useNavigate } from "react-router";
 import {
@@ -16,7 +15,35 @@ import {
 } from "./mutationUtils";
 import { buildTiersLieuxPayload } from "../utils/tiersLieuxMapping";
 import type { TiersLieuxSubmitPayload } from "../components/add/TiersLieuxForm";
+import type { PoiEquipementSubmitPayload, PoiEquipementEditPayload } from "../components/add/PoiEquipementForm";
 import { useSite } from "@/hooks/useSite";
+
+/**
+ * Log détaillé d'une erreur de la lib Cocolight. Les échecs de validation backend
+ * remontent en `ApiValidationError` (→ `messages: string[]` AJV champ par champ +
+ * `details`) ou `ApiResponseError` (→ `responseData`). `console.error(err)` masque
+ * ces props custom : on les extrait explicitement, avec le payload envoyé pour
+ * comparer aux champs rejetés (ex. `ADD_POI - Request validation failed`).
+ */
+function logCocolightError(context: string, err: unknown, payload?: unknown) {
+  const e = err as {
+    name?: string;
+    message?: string;
+    status?: number;
+    messages?: unknown;
+    details?: unknown;
+    responseData?: unknown;
+  };
+  console.error(`[${context}] échec lib`, {
+    name: e?.name,
+    message: e?.message,
+    status: e?.status,
+    messages: e?.messages, // ApiValidationError → erreurs AJV champ par champ
+    details: e?.details,
+    responseData: e?.responseData, // ApiResponseError
+    payloadSent: payload,
+  });
+}
 
 /**
  * Hook pour créer une nouvelle organisation
@@ -194,32 +221,56 @@ export function useAddEvent(entity?: EntityTypes | null) {
  * const { mutate, isPending } = useAddPoi(organization);
  * mutate({ name: "Mon POI", type: "place" });
  */
-export function useAddPoi(entity?: EntityTypes | null) {
+export function useAddPoi(
+  entity?: EntityTypes | null,
+  // Champs supplémentaires injectés dans le payload de création (ex. `source`
+  // pour scoper un POI au costum — cf. AddPoiEquipementModal, à l'image de
+  // `buildTiersLieuxPayload` qui pose `source.key/keys` pour les tiers-lieux).
+  extraFields?: Record<string, unknown>,
+  // `navigateOnSuccess: false` → rester sur la page courante au lieu de rediriger
+  // vers `/profil/{slug}` (ex. ajout depuis la liste des équipements).
+  options?: { navigateOnSuccess?: boolean }
+) {
   const { me } = useCocolight();
   const navigate = useNavigate();
+  const navigateOnSuccess = options?.navigateOnSuccess ?? true;
 
   // Utiliser l'entité fournie ou me par défaut
   const targetEntity = entity || me;
 
-  return useMutationWithToast<{ poi: Poi }, AddPoiFormData>({
+  return useMutationWithToast<{ poi: Poi }, PoiEquipementSubmitPayload>({
     mutationFn: async (data) => {
       if (!targetEntity) {
         throw new Error("No entity provided");
       }
 
-      // Transformer les données avec l'objet address
-      const transformedData = transformFormDataWithAddress(data);
+      // `_imageFile` n'est pas un champ du document : on l'extrait avant de
+      // transformer/envoyer les données au SDK (cf. `_logoFile` côté tiers-lieux).
+      const { _imageFile, ...formData } = data;
 
-      // Ajouter le parent si on crée depuis une entité parente
+      // Transformer les données avec l'objet address
+      const transformedData = transformFormDataWithAddress(formData);
+
+      // Ajouter le parent si on crée depuis une entité parente. L'image est posée
+      // dans le draft (`profil_avatar`) : `save()` la route vers le bloc PROFIL_IMAGE
+      // (→ `updateImageProfil`) après création (`Poi.ADD_BLOCKS` : ADD_POI fixe l'id
+      // avant le bloc image) — même idiome que l'avatar du header, un seul aller-retour.
       const parent = buildParentReference(entity);
       const poiData = {
         ...transformedData,
         ...(parent ? { parent } : {}),
+        ...(extraFields ?? {}),
+        ...(_imageFile ? { profil_avatar: _imageFile } : {}),
       };
 
       // Créer le POI via le SDK
       const poi = await targetEntity.poi(poiData);
-      await poi.save();
+      try {
+        await poi.save();
+      } catch (err) {
+        logCocolightError("useAddPoi · ADD_POI", err, poiData);
+        throw err;
+      }
 
       return { poi };
     },
@@ -231,11 +282,56 @@ export function useAddPoi(entity?: EntityTypes | null) {
       ...(entity ? [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(entity.slug)] : []),
     ],
     onSuccessCallback: (data) => {
-      // Rediriger vers le profil du nouveau POI
-      if (data.poi.slug) {
+      // Rediriger vers le profil du nouveau POI (sauf si on veut rester sur place).
+      if (navigateOnSuccess && data.poi.slug) {
         navigate(`/profil/${data.poi.slug}`);
       }
     },
+  });
+}
+
+/**
+ * Hook pour éditer un POI existant.
+ *
+ * Suit le pattern canonique d'édition du projet (cf. `useUpdateProfile`) :
+ * on mute le draft réactif `poi.data` puis on appelle **un seul** `save()`
+ * (atomique, un aller-retour). Contrairement à une boucle `updateField`,
+ * assigner `""`/`[]` efface réellement le champ — l'édition peut donc vider
+ * une valeur. `transformFormDataWithAddress` reconstruit l'objet `address`
+ * à partir des champs aplatis du formulaire.
+ *
+ * @param poi - L'entité POI à mettre à jour
+ */
+export function useUpdatePoi(poi: EntityTypes | null) {
+  return useMutationWithToast<{ poi: EntityTypes }, PoiEquipementEditPayload>({
+    mutationFn: async (data) => {
+      if (!poi) {
+        throw new Error("No entity provided");
+      }
+
+      const { _imageFile, ...formData } = data;
+
+      // `profil_avatar` est posé dans le draft : le `save()` (→ `_update`) route le
+      // champ vers le bloc PROFIL_IMAGE (`updateImageProfil`) en un seul aller-retour,
+      // comme l'avatar du header.
+      // `buildEditPatch` (côté form) ne renvoie que les champs réellement modifiés :
+      // on n'assigne donc que ceux-là (le baseline de diff de l'entité est réconcilié
+      // à la revification depuis ≥ 1.0.145 — `fromServerData` → `forceInitialDraftReset`).
+      const transformedData = transformFormDataWithAddress(formData);
+      Object.assign(poi.data, transformedData, _imageFile ? { profil_avatar: _imageFile } : {});
+      try {
+        await poi.save();
+      } catch (err) {
+        logCocolightError("useUpdatePoi · UPDATE_POI", err, poi.data);
+        throw err;
+      }
+
+      return { poi };
+    },
+    namespace: "modules/profil",
+    successKey: "toast.profile.updateSuccess",
+    errorKey: "toast.profile.updateError",
+    invalidateQueries: poi ? [PROFIL_QUERY_KEYS.ELEMENT_ABOUT_PREFIX(poi.slug)] : [],
   });
 }
 
@@ -258,21 +354,17 @@ export function useAddTiersLieu(entity?: EntityTypes | null) {
       }
 
       const payload = buildTiersLieuxPayload(data, { costum });
+      // Logo posé dans le payload : `save()` le route vers le bloc PROFIL_IMAGE
+      // (`updateImageProfil`) après création — même idiome que l'avatar du header.
+      if (data._logoFile) {
+        payload.profil_avatar = data._logoFile;
+      }
 
-      // Pattern uniforme avec `useAddOrganization` :
-      //  1. Façade `targetEntity.organization(payload)` crée l'instance et génère un id.
-      //  2. `.save()` persiste les champs custom (mainTag, compagnon, costumSlug, etc.).
-      //  3. `.updateImageProfil()` gère l'upload sur la même instance.
+      // Pattern uniforme avec `useAddOrganization` : `organization(payload)` crée
+      // l'instance, `.save()` persiste les champs custom (mainTag, compagnon,
+      // costumSlug, etc.) ET l'image, en un seul aller-retour.
       const organization = await targetEntity.organization(payload);
       await organization.save();
-
-      if (data._logoFile) {
-        try {
-          await organization.updateImageProfil({ profil_avatar: data._logoFile });
-        } catch (err) {
-          console.error("[useAddTiersLieu] Logo upload failed:", err);
-        }
-      }
 
       return { organization };
     },
