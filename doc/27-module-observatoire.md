@@ -11,10 +11,20 @@ sportifs 974), généralisé sur `peter-dev-adapt`
 Une **dimension** décrit COMMENT lire une grandeur sur un item brut
 (`serverData`) : `{paths: [chaîne de priorité], kind, label}`. Les kinds :
 `value` (1ʳᵉ chaîne/nombre/Date affichable), `list` (CSV/tableau aplati),
-`anyTrue` (au moins un champ affirmatif — "Oui"/1/true…), `number`.
+`anyTrue` (au moins un champ affirmatif — "Oui"/1/true…), `number`,
+`contains` (booléen : un chemin-liste contient `value`).
 Filtres, KPI, graphes et colonnes **référencent des dimensions** ; le moteur
 (`dimensions.ts`) les résout avec des coercions tolérantes (y compris les
 dates EJSON désérialisées en `Date` par le SDK).
+
+**Décomposer un champ fourre-tout** : `list` + `values` (allowlist) restreint
+ET ordonne la sortie à des valeurs déclarées — un même champ multivalué qui
+mêle plusieurs axes (ex. `tags` = typologie + statut juridique + surface +
+label) devient autant de dimensions ORTHOGONALES. Ex. :
+`typologie {paths:["tags"], kind:"list", values:["Coworking","Fablab",…]}`,
+`surface {paths:["tags"], kind:"list", values:["Plus de 200m²",…]}`,
+`compagnon {paths:["tags"], kind:"contains", value:"Compagnon France Tiers-Lieux"}`
+(→ KPI `percentTrue`). L'ordre de `values` = ordre stable des parts/barres.
 
 ## Format de la section (tout vient de la config)
 

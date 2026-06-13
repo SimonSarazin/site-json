@@ -34,8 +34,16 @@ export const DimensionDefSchema = z.object({
    *  acceptés, ex. "address.addressLocality"). */
   paths: z.array(z.string()).min(1),
   /** value (défaut) : 1ʳᵉ chaîne non vide · list : CSV/tableau aplati ·
-   *  anyTrue : au moins un des chemins est vrai · number : 1ʳᵉ valeur numérique. */
-  kind: z.enum(["value", "list", "anyTrue", "number"]).optional(),
+   *  anyTrue : au moins un des chemins est vrai · number : 1ʳᵉ valeur numérique ·
+   *  contains : un chemin (liste) contient `value` (booléen d'appartenance). */
+  kind: z.enum(["value", "list", "anyTrue", "number", "contains"]).optional(),
+  /** `list` : restreint ET ordonne la sortie à cet ALLOWLIST — décompose un
+   *  champ fourre-tout (ex. `tags` qui mêle typologie/portage/surface) en axes
+   *  orthogonaux distincts. */
+  values: z.array(z.string()).optional(),
+  /** `contains` : valeur dont l'appartenance à la liste fait le booléen
+   *  (ex. label "Compagnon France Tiers-Lieux"). */
+  value: z.string().optional(),
   /** Libellé localisé (prioritaire sur labelKey). */
   label: LocalizedString.optional(),
   /** Clé i18n du namespace modules/observatoire (réservé au chrome interne

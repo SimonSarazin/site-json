@@ -85,17 +85,33 @@ export function dimensionValue(e: ObservatoryItem, def: DimensionDef): string | 
   return undefined;
 }
 
-/** kind "list" — premier chemin produisant une liste non vide. */
+/** kind "list" — premier chemin produisant une liste non vide. `values`
+ *  (allowlist) restreint et ORDONNE la sortie : décompose un champ fourre-tout
+ *  (ex. `tags`) en axes distincts (typologie, portage, surface…) — ordre
+ *  déclaré = ordre stable des parts/barres. */
 export function dimensionList(e: ObservatoryItem, def: DimensionDef): string[] {
   for (const p of def.paths) {
     const list = toStringList(resolvePath(e, p));
-    if (list.length > 0) return list;
+    if (list.length > 0) {
+      return def.values?.length ? def.values.filter((v) => list.includes(v)) : list;
+    }
   }
   return [];
 }
 
-/** kind "anyTrue" — au moins un des chemins porte une valeur affirmative. */
+/** Kinds booléens : "anyTrue" (un chemin affirmatif) et "contains" (un chemin
+ *  dont la liste contient `value`). Centralisé pour le dispatch (filtres/KPI). */
+export function isBoolKind(kind: DimensionDef["kind"]): boolean {
+  return kind === "anyTrue" || kind === "contains";
+}
+
+/** kind "anyTrue" — au moins un chemin affirmatif ; kind "contains" — au moins
+ *  un chemin dont la liste contient `def.value` (appartenance, ex. label). */
 export function dimensionBool(e: ObservatoryItem, def: DimensionDef): boolean {
+  if (def.kind === "contains") {
+    const target = def.value;
+    return target ? def.paths.some((p) => toStringList(resolvePath(e, p)).includes(target)) : false;
+  }
   return def.paths.some((p) => isTrue(resolvePath(e, p)));
 }
 

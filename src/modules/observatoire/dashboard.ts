@@ -18,6 +18,7 @@ import {
   BOOL_FILTER_VALUES,
   TOKEN_CSS_VARS,
   dimensionBool,
+  isBoolKind,
   dimensionLabel,
   dimensionList,
   dimensionNumber,
@@ -50,7 +51,7 @@ export function applyFilters(
   return data.filter((d) =>
     active.every(([id, v]) => {
       const def = dims[id];
-      if (def.kind === "anyTrue") {
+      if (isBoolKind(def.kind)) {
         return dimensionBool(d, def) === (v === BOOL_FILTER_VALUES.TRUE);
       }
       // Multi-sélection : valeurs jointes par virgule (format URL maison —
@@ -95,7 +96,7 @@ export function applyTextSearch(
   const ids = (searchDimIds?.length ? searchDimIds : Object.keys(dims)).filter(
     (id) => {
       const kind = dims[id]?.kind;
-      return dims[id] && kind !== "anyTrue" && kind !== "number";
+      return dims[id] && !isBoolKind(kind) && kind !== "number";
     },
   );
   return data.filter((d) =>

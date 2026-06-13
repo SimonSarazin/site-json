@@ -8,6 +8,7 @@ import {
   dimensionValue,
   fieldsFromDimensions,
   isTrue,
+  isBoolKind,
   toNumber,
   toStringList,
 } from "./dimensions";
@@ -84,6 +85,33 @@ describe("moteur de dimensions", () => {
     expect(dimensionBool(e, { paths: ["flag_a", "flag_b"], kind: "anyTrue" })).toBe(true);
     expect(dimensionBool(e, { paths: ["flag_a"], kind: "anyTrue" })).toBe(false);
     expect(dimensionNumber(e, { paths: ["surf_txt"], kind: "number" })).toBe(120);
+  });
+
+  it("list + values : décompose un champ fourre-tout en axe orthogonal (ordre déclaré)", () => {
+    const tl: ObservatoryItem = {
+      tags: ["TiersLieux", "Bureaux partagés / Coworking", "Association", "Plus de 200m²"],
+    };
+    const TYPO = ["Bureaux partagés / Coworking", "Fablab", "Tiers-lieu culturel"];
+    // ne garde que les valeurs de l'allowlist présentes — pas les tags hors-axe
+    expect(dimensionList(tl, { paths: ["tags"], kind: "list", values: TYPO })).toEqual([
+      "Bureaux partagés / Coworking",
+    ]);
+    // ordre = ordre DÉCLARÉ (stable pour les charts), pas l'ordre du tableau source
+    const multi: ObservatoryItem = { tags: ["Fablab", "Bureaux partagés / Coworking"] };
+    expect(dimensionList(multi, { paths: ["tags"], kind: "list", values: TYPO })).toEqual([
+      "Bureaux partagés / Coworking",
+      "Fablab",
+    ]);
+  });
+
+  it("contains : booléen d'appartenance à une liste (ex. label)", () => {
+    const tl: ObservatoryItem = { tags: ["TiersLieux", "Compagnon France Tiers-Lieux"] };
+    const def = { paths: ["tags"], kind: "contains" as const, value: "Compagnon France Tiers-Lieux" };
+    expect(dimensionBool(tl, def)).toBe(true);
+    expect(dimensionBool({ tags: ["TiersLieux"] }, def)).toBe(false);
+    expect(isBoolKind("contains")).toBe(true);
+    expect(isBoolKind("anyTrue")).toBe(true);
+    expect(isBoolKind("list")).toBe(false);
   });
 });
 

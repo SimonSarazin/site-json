@@ -1616,14 +1616,71 @@
                   "en": "Country"
                 }
               },
-              "tags": {
+              "typologie": {
                 "paths": [
                   "tags"
                 ],
                 "kind": "list",
+                "values": [
+                  "Bureaux partagés / Coworking",
+                  "Tiers-lieu culturel / Lieux intermédiaires et indépendants",
+                  "Fablab / Makerspace / Hackerspace (Espaces du Faire)",
+                  "Ateliers artisanaux partagés",
+                  "LivingLab / Laboratoire d'innovation sociale",
+                  "Tiers-lieu nourricier",
+                  "Cuisine partagée / Foodlab",
+                  "Autre famille de tiers-lieux"
+                ],
                 "label": {
-                  "fr": "Caractéristiques",
-                  "en": "Features"
+                  "fr": "Typologie",
+                  "en": "Type"
+                }
+              },
+              "portage": {
+                "paths": [
+                  "tags"
+                ],
+                "kind": "list",
+                "values": [
+                  "Association",
+                  "SARL-SA-SAS",
+                  "Collectivités (Département, Intercommunalité, Région, etc)",
+                  "SCIC",
+                  "SCOP",
+                  "Collectif citoyen",
+                  "Universités / Écoles d'ingénieurs ou de commerce / EPST",
+                  "Établissements scolaires (Lycée, Collège, Ecole)",
+                  "Autre mode de gestion"
+                ],
+                "label": {
+                  "fr": "Portage / statut",
+                  "en": "Legal status"
+                }
+              },
+              "surface": {
+                "paths": [
+                  "tags"
+                ],
+                "kind": "list",
+                "values": [
+                  "Plus de 200m²",
+                  "Entre 60 et 200m²",
+                  "Moins de 60m²"
+                ],
+                "label": {
+                  "fr": "Surface",
+                  "en": "Floor area"
+                }
+              },
+              "compagnon": {
+                "paths": [
+                  "tags"
+                ],
+                "kind": "contains",
+                "value": "Compagnon France Tiers-Lieux",
+                "label": {
+                  "fr": "Compagnon France Tiers-Lieux",
+                  "en": "France Tiers-Lieux Companion"
                 }
               }
             },
@@ -1633,13 +1690,26 @@
                 "multiple": true
               },
               {
+                "dimension": "typologie",
+                "multiple": true
+              },
+              {
+                "dimension": "portage",
+                "multiple": true
+              },
+              {
+                "dimension": "surface",
+                "multiple": true
+              },
+              {
                 "dimension": "pays",
                 "multiple": true
               },
               {
                 "dimension": "departement",
                 "searchable": true
-              }
+              },
+              "compagnon"
             ],
             "search": {
               "dimensions": [
@@ -1677,16 +1747,6 @@
               },
               {
                 "kind": "distinct",
-                "dimension": "departement",
-                "label": {
-                  "fr": "Départements",
-                  "en": "Departments"
-                },
-                "icon": "map-pin",
-                "accent": "chart-3"
-              },
-              {
-                "kind": "distinct",
                 "dimension": "commune",
                 "label": {
                   "fr": "Communes",
@@ -1696,14 +1756,24 @@
                 "accent": "chart-4"
               },
               {
-                "kind": "top",
-                "dimension": "region",
+                "kind": "percentTrue",
+                "dimension": "compagnon",
                 "label": {
-                  "fr": "Région la plus dense",
-                  "en": "Densest region"
+                  "fr": "Compagnons FTL",
+                  "en": "FTL Companions"
+                },
+                "icon": "award",
+                "accent": "chart-1"
+              },
+              {
+                "kind": "top",
+                "dimension": "typologie",
+                "label": {
+                  "fr": "Typologie dominante",
+                  "en": "Top type"
                 },
                 "icon": "trophy",
-                "accent": "chart-1"
+                "accent": "chart-3"
               }
             ],
             "charts": [
@@ -1717,21 +1787,38 @@
                 "layout": "full"
               },
               {
-                "kind": "donut",
-                "dimension": "pays",
+                "kind": "barsHorizontal",
+                "dimension": "typologie",
                 "label": {
-                  "fr": "Répartition par pays",
-                  "en": "By country"
+                  "fr": "Par typologie",
+                  "en": "By type"
+                },
+                "layout": "half"
+              },
+              {
+                "kind": "donut",
+                "dimension": "surface",
+                "label": {
+                  "fr": "Par surface",
+                  "en": "By floor area"
                 },
                 "layout": "half"
               },
               {
                 "kind": "barsHorizontal",
-                "dimension": "tags",
-                "top": 12,
+                "dimension": "portage",
                 "label": {
-                  "fr": "Caractéristiques les plus fréquentes",
-                  "en": "Most common features"
+                  "fr": "Par portage / statut juridique",
+                  "en": "By legal status"
+                },
+                "layout": "half"
+              },
+              {
+                "kind": "donut",
+                "dimension": "pays",
+                "label": {
+                  "fr": "Par pays",
+                  "en": "By country"
                 },
                 "layout": "half"
               }
@@ -1748,6 +1835,14 @@
                   }
                 },
                 {
+                  "dimension": "typologie",
+                  "kind": "badge",
+                  "label": {
+                    "fr": "Typologie",
+                    "en": "Type"
+                  }
+                },
+                {
                   "dimension": "region",
                   "kind": "badge",
                   "label": {
@@ -1761,14 +1856,6 @@
                   "label": {
                     "fr": "Département",
                     "en": "Department"
-                  }
-                },
-                {
-                  "dimension": "pays",
-                  "kind": "text",
-                  "label": {
-                    "fr": "Pays",
-                    "en": "Country"
                   }
                 }
               ],

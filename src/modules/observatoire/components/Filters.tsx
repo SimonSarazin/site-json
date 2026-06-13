@@ -22,6 +22,7 @@ import {
   BOOL_FILTER_VALUES,
   dimensionList,
   dimensionValue,
+  isBoolKind,
 } from "../dimensions";
 import { uniqSorted } from "../utils";
 import {
@@ -158,7 +159,7 @@ export function Filters({ data, dimensions, filterDefs, values, onChange, search
   const optionsById = useMemo(() => {
     const out: Record<string, Array<{ id: string; label: string }>> = {};
     for (const { id, def } of fields) {
-      if (def.kind === "anyTrue") {
+      if (isBoolKind(def.kind)) {
         out[id] = [
           { id: BOOL_FILTER_VALUES.TRUE, label: t("filters.yes") },
           { id: BOOL_FILTER_VALUES.FALSE, label: t("filters.no") },
@@ -192,7 +193,7 @@ export function Filters({ data, dimensions, filterDefs, values, onChange, search
   //   limité à 1 (le choix remplace) · sinon Select simple.
   // Les dimensions anyTrue (oui/non) restent toujours en Select simple.
   const renderField = (field: { id: string; def: DimensionDef; filter: FilterDef }) => {
-    const isBool = field.def.kind === "anyTrue";
+    const isBool = isBoolKind(field.def.kind);
     const common = {
       label: labelFor(field),
       options: optionsById[field.id] ?? [],
