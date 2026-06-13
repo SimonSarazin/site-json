@@ -31,6 +31,11 @@ export const FilterSelectConfigSchema = z.object({
   searchable: z.boolean().optional(),
 });
 
+/** Style des lignes d'option en mode ACCORDÉON : cases à cocher (défaut) ou
+ *  lignes à coche à DROITE (look SelectItem). Disponible sur les trois familles
+ *  de groupes. Sans effet si un widget `select` est déclaré. */
+export const FilterOptionStyleSchema = z.enum(["checkbox", "check"]);
+
 export const FilterGroupSchema = z.object({
   id: z.string(),
   label: LocalizedString,
@@ -62,9 +67,8 @@ export const FilterGroupSchema = z.object({
   filterBy: z.string().optional(),
   /** Widget compact (cf. {@link FilterSelectConfigSchema}). Absent → accordéon. */
   select: FilterSelectConfigSchema.optional(),
-  /** Style des lignes d'option en mode ACCORDÉON : cases (défaut) ou lignes
-   *  à coche à DROITE (look SelectItem, comme les combobox). */
-  optionStyle: z.enum(["checkbox", "check"]).optional(),
+  /** Style des lignes en accordéon (cf. {@link FilterOptionStyleSchema}). */
+  optionStyle: FilterOptionStyleSchema.optional(),
 });
 export const FilterGroupsSchema = z.array(FilterGroupSchema);
 
@@ -77,6 +81,8 @@ export const FiltersByAnswersSchema = z.record(z.string(), z.object({
   finderPath: z.string().optional(),
   /** Widget compact (cf. {@link FilterSelectConfigSchema}). Absent → accordéon. */
   select: FilterSelectConfigSchema.optional(),
+  /** Style des lignes en accordéon (cf. {@link FilterOptionStyleSchema}). */
+  optionStyle: FilterOptionStyleSchema.optional(),
   value: z.record(z.string(), z.object({
     id: z.string(),
     finder: z.string(),
@@ -95,6 +101,8 @@ export const FiltersByPathSchema = z.record(z.string(), z.object({
   notSourceKey: z.boolean().optional(),
   /** Widget compact (cf. {@link FilterSelectConfigSchema}). Absent → accordéon. */
   select: FilterSelectConfigSchema.optional(),
+  /** Style des lignes en accordéon (cf. {@link FilterOptionStyleSchema}). */
+  optionStyle: FilterOptionStyleSchema.optional(),
 }));
 
 export const FiltersSectionSchema = z.object({

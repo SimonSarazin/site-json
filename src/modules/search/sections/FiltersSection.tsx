@@ -605,6 +605,7 @@ export function FiltersSection({
                       <FilterOptionRow
                         key={optionKey}
                         label={capitalizeFirst(option.name)}
+                        variant={filtersByAnswersOptions[group]?.optionStyle ?? filtersByPathOptions[group]?.optionStyle}
                         selected={isFilterSelected(group, optionKey)}
                         onToggle={() => toggleFilter(group, optionKey, "_id", option.orgaNameArray)}
                       />
