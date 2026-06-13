@@ -104,6 +104,23 @@ describe("moteur de dimensions", () => {
     ]);
   });
 
+  it("valueMap : normalise les variantes backend → canonique (value ET list)", () => {
+    const SURF = ["Plus de 200m²", "Entre 60 et 200m²"];
+    const MAP = { "Plus de 200m2": "Plus de 200m²", "Entre 60m² et 200m²": "Entre 60 et 200m²" };
+    // list : les 2 variantes d'un même item fusionnent en UNE valeur canonique
+    const it1: ObservatoryItem = { tags: ["Plus de 200m2", "TiersLieux"] };
+    expect(dimensionList(it1, { paths: ["tags"], kind: "list", values: SURF, valueMap: MAP })).toEqual([
+      "Plus de 200m²",
+    ]);
+    // dédoublonne si l'item porte la variante ET la canonique
+    const it2: ObservatoryItem = { tags: ["Plus de 200m2", "Plus de 200m²"] };
+    expect(dimensionList(it2, { paths: ["tags"], kind: "list", values: SURF, valueMap: MAP })).toEqual([
+      "Plus de 200m²",
+    ]);
+    // value : normalisation aussi
+    expect(dimensionValue({ p: "Switzerland" }, { paths: ["p"], valueMap: { Switzerland: "Suisse" } })).toBe("Suisse");
+  });
+
   it("contains : booléen d'appartenance à une liste (ex. label)", () => {
     const tl: ObservatoryItem = { tags: ["TiersLieux", "Compagnon France Tiers-Lieux"] };
     const def = { paths: ["tags"], kind: "contains" as const, value: "Compagnon France Tiers-Lieux" };

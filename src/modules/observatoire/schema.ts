@@ -44,6 +44,11 @@ export const DimensionDefSchema = z.object({
   /** `contains` : valeur dont l'appartenance à la liste fait le booléen
    *  (ex. label "Compagnon France Tiers-Lieux"). */
   value: z.string().optional(),
+  /** Normalisation des valeurs brutes → valeur canonique (avant allowlist) :
+   *  fusionne les variantes saisies à la main du backend (ex.
+   *  "Plus de 200m2" → "Plus de 200m²", "Switzerland" → "Suisse"). S'applique
+   *  aux kinds `value` et `list`. */
+  valueMap: z.record(z.string(), z.string()).optional(),
   /** Libellé localisé (prioritaire sur labelKey). */
   label: LocalizedString.optional(),
   /** Clé i18n du namespace modules/observatoire (réservé au chrome interne

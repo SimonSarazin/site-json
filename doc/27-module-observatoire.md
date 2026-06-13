@@ -26,6 +26,16 @@ label) devient autant de dimensions ORTHOGONALES. Ex. :
 `compagnon {paths:["tags"], kind:"contains", value:"Compagnon France Tiers-Lieux"}`
 (→ KPI `percentTrue`). L'ordre de `values` = ordre stable des parts/barres.
 
+**Normaliser des valeurs sales** : `valueMap` (raw → canonique, AVANT
+l'allowlist) fusionne les variantes saisies à la main du backend. Deux usages
+typiques : nettoyer un champ libre (`pays {paths:["address.addressCountry"],
+valueMap:{"FR":"France","RE":"Réunion",…}}` — on lit le CODE ISO propre et on
+mappe vers le nom, comme le filtre `scopeList` de la liste s'appuie sur le
+référentiel de zones plutôt que sur le `level1Name` libre) ; ou fusionner des
+orthographes (`surface valueMap:{"Plus de 200m2":"Plus de 200m²","Entre 60m² et
+200m²":"Entre 60 et 200m²"}`). Sur un `list`, les variantes d'un même item
+dédoublonnent vers la canonique.
+
 ## Format de la section (tout vient de la config)
 
 ```jsonc

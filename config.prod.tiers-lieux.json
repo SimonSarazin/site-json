@@ -1609,11 +1609,24 @@
               },
               "pays": {
                 "paths": [
-                  "address.level1Name"
+                  "address.addressCountry"
                 ],
+                "valueMap": {
+                  "FR": "France",
+                  "RE": "Réunion",
+                  "BE": "Belgique",
+                  "GP": "Guadeloupe",
+                  "MQ": "Martinique",
+                  "YT": "Mayotte",
+                  "NC": "Nouvelle-Calédonie",
+                  "GF": "Guyane",
+                  "CH": "Suisse",
+                  "IT": "Italie",
+                  "PT": "Portugal"
+                },
                 "label": {
-                  "fr": "Pays",
-                  "en": "Country"
+                  "fr": "Pays / territoire",
+                  "en": "Country / territory"
                 }
               },
               "typologie": {
@@ -1670,6 +1683,12 @@
                 "label": {
                   "fr": "Surface",
                   "en": "Floor area"
+                },
+                "valueMap": {
+                  "Plus de 200m2": "Plus de 200m²",
+                  "Entre 60 et 200m2": "Entre 60 et 200m²",
+                  "Entre 60m² et 200m²": "Entre 60 et 200m²",
+                  "Moins de 60m2": "Moins de 60m²"
                 }
               },
               "compagnon": {

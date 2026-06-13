@@ -76,11 +76,17 @@ function resolvePath(e: ObservatoryItem, path: string): unknown {
   return path.includes(".") ? getValueByPath(e, path) : e[path];
 }
 
-/** kind "value" — première valeur affichable le long des chemins de priorité. */
+/** Normalise une valeur via `def.valueMap` (variantes backend → canonique). */
+function normalizeValue(def: DimensionDef, v: string): string {
+  return def.valueMap?.[v] ?? v;
+}
+
+/** kind "value" — première valeur affichable le long des chemins de priorité
+ *  (normalisée via `valueMap` si déclaré). */
 export function dimensionValue(e: ObservatoryItem, def: DimensionDef): string | undefined {
   for (const p of def.paths) {
     const s = asDisplayString(resolvePath(e, p));
-    if (s !== undefined) return s;
+    if (s !== undefined) return normalizeValue(def, s);
   }
   return undefined;
 }
@@ -91,8 +97,11 @@ export function dimensionValue(e: ObservatoryItem, def: DimensionDef): string | 
  *  déclaré = ordre stable des parts/barres. */
 export function dimensionList(e: ObservatoryItem, def: DimensionDef): string[] {
   for (const p of def.paths) {
-    const list = toStringList(resolvePath(e, p));
-    if (list.length > 0) {
+    const raw = toStringList(resolvePath(e, p));
+    if (raw.length > 0) {
+      // valueMap AVANT allowlist (les variantes fusionnent vers la canonique),
+      // puis dédup (deux variantes du même item → une seule valeur).
+      const list = def.valueMap ? [...new Set(raw.map((v) => normalizeValue(def, v)))] : raw;
       return def.values?.length ? def.values.filter((v) => list.includes(v)) : list;
     }
   }
