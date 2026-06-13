@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import type { ObservatoryItem } from "./schema";
 import {
   asDisplayString,
+  buildLabelMaps,
   dimensionBool,
   dimensionList,
   dimensionNumber,
@@ -9,6 +10,7 @@ import {
   fieldsFromDimensions,
   isTrue,
   isBoolKind,
+  pickCanonicalLabel,
   toNumber,
   toStringList,
 } from "./dimensions";
@@ -171,6 +173,54 @@ describe("moteur de dimensions", () => {
     expect(dimensionList({}, { paths: [PATH], kind: "list" })).toEqual([]);
     // fieldsFromDimensions ramène la racine `answers` (sous-document embarqué)
     expect(fieldsFromDimensions({ eq: { paths: [PATH], kind: "list" } })).toContain("answers");
+  });
+
+  it("keyPaths : regroupe sur clé canonique propre, libellé canonique dérivé du dataset", () => {
+    // Données SALES : level4Name varie en casse/accents pour un MÊME département
+    // (clé propre = level4, l'id de zone stable).
+    const data: ObservatoryItem[] = [
+      { address: { level4: "id-nord", level4Name: "NORD" } },
+      { address: { level4: "id-nord", level4Name: "Nord" } },
+      { address: { level4: "id-isere", level4Name: "ISERE" } },
+      { address: { level4: "id-isere", level4Name: "Isère" } },
+      { address: { level4: "id-isere", level4Name: "ISèRE" } },
+      { address: { level4: "id-reunion", level4Name: "RÉUNION" } },
+      { address: { level4: "id-reunion", level4Name: "La Réunion" } },
+      { address: { level4: "id-paris", level4Name: "PARIS" } }, // que du MAJUSCULE → Title Case
+    ];
+    const dep = { paths: ["address.level4Name"], keyPaths: ["address.level4"] };
+    const maps = buildLabelMaps(data, { departement: dep });
+    const m = maps.departement;
+    // libellé canonique = variante la plus « riche » (casse mixte + accents)
+    expect(m.get("id-nord")).toBe("Nord");
+    expect(m.get("id-isere")).toBe("Isère");
+    // "La Réunion" (mixte+accent) gagne sur "RÉUNION"
+    expect(m.get("id-reunion")).toBe("La Réunion");
+    // tout-majuscule → repli Title Case
+    expect(m.get("id-paris")).toBe("Paris");
+    // dimensionValue REGROUPE : deux items du même dept → MÊME valeur canonique
+    expect(dimensionValue(data[0], dep, m)).toBe("Nord");
+    expect(dimensionValue(data[1], dep, m)).toBe("Nord");
+    expect(dimensionValue(data[2], dep, m)).toBe("Isère");
+    // sans la map (legacy/back-compat) : repli sur le chemin brut (sale)
+    expect(dimensionValue(data[0], dep)).toBe("NORD");
+    // fieldsFromDimensions projette la racine de keyPaths (address) ET de paths
+    expect(fieldsFromDimensions({ departement: dep })).toContain("address");
+  });
+
+  it("pickCanonicalLabel : variante propre préférée, sinon Title Case fr (particules)", () => {
+    expect(pickCanonicalLabel(["RÉUNION", "RéUNION", "Réunion", "reunion"])).toBe("Réunion");
+    expect(pickCanonicalLabel(["ISERE", "ISèRE", "Isère"])).toBe("Isère");
+    expect(pickCanonicalLabel(["NORD", "Nord"])).toBe("Nord");
+    // aucune variante propre → Title Case fr (particules en minuscule)
+    expect(pickCanonicalLabel(["LOIRE-ATLANTIQUE"])).toBe("Loire-Atlantique");
+    expect(pickCanonicalLabel(["CORSE-DU-SUD"])).toBe("Corse-du-Sud");
+    expect(pickCanonicalLabel(["VAL-D'OISE"])).toBe("Val-d'Oise");
+    // casse interne sale sans variante propre → réparée par Title Case
+    expect(pickCanonicalLabel(["ARIèGE", "ARIEGE"])).toBe("Ariège");
+    // variante DÉJÀ propre (casse) → gardée telle quelle, pas de re-Title-Case
+    expect(pickCanonicalLabel(["CÔTES-D'ARMOR", "Côtes-d'Armor"])).toBe("Côtes-d'Armor");
+    expect(pickCanonicalLabel([])).toBe("");
   });
 
   it("contains : booléen d'appartenance à une liste (ex. label)", () => {

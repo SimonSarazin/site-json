@@ -38,6 +38,22 @@ orthographes (`surface valueMap:{"Plus de 200m2":"Plus de 200m²","Entre 60m² e
 200m²":"Entre 60 et 200m²"}`). Sur un `list`, les variantes d'un même item
 dédoublonnent vers la canonique.
 
+**Regrouper sur une clé propre, libellé dérivé** (`keyPaths`, kind `value`) :
+quand le libellé affiché (`paths`, ex. `address.level4Name`) est du texte libre
+SALE — variantes de casse/accents pour un même item (`NORD`/`Nord`,
+`ISERE`/`Isère`/`ISèRE`), voire une valeur d'un autre niveau qui s'y glisse —
+`keyPaths` désigne une clé propre et stable (ex. `address.level4`, l'id de zone).
+Le moteur regroupe les items par cette clé et, **comme TOUT le dataset est
+chargé**, DÉRIVE un libellé canonique par groupe : il préfère une variante déjà
+proprement casée (la plus accentuée), sinon Title-Case fr la plus riche
+(particules en minuscule : `Corse-du-Sud`, `Côtes-d'Armor`). Filtre/KPI/graphe/
+table voient alors UNE valeur par groupe — fini les doublons (sur les tiers-lieux
+FR : `address.level4Name` brut = 225 valeurs → regroupé par `address.level4` =
+104 départements propres). La map clé→libellé est construite une fois sur le
+dataset complet (`buildLabelMaps`, libellés stables indépendants du filtrage) ;
+sans `keyPaths` : comportement normal (la valeur affichée EST la clé).
+Ex. : `departement {paths:["address.level4Name"], keyPaths:["address.level4"]}`.
+
 **Réponses CoForm comme dimensions** (chemin array-aware) : avec un variant qui
 embarque les réponses (`serverData.answers`, ex. `navigator-tl`), une dimension
 les lit par un **simple `paths`** — aucun accesseur métier dédié. `paths`

@@ -37,6 +37,16 @@ export const DimensionDefSchema = z.object({
    *  par un simple chemin `answers.<form>.serverData.answers.<section>.<field>`
    *  (cf. resolveSegments, dimensions.ts), sans accesseur métier dédié. */
   paths: z.array(z.string()).min(1),
+  /** REGROUPEMENT sur clé canonique (kind `value`) : quand un libellé affiché
+   *  (`paths`, ex. `address.level4Name`) est du texte libre SALE (variantes de
+   *  casse/accents : "NORD"/"Nord", "ISERE"/"Isère"…), `keyPaths` désigne une
+   *  clé propre et stable (ex. `address.level4`, l'id de zone). Le moteur
+   *  regroupe les items par cette clé et, comme TOUTES les données sont chargées,
+   *  DÉRIVE un libellé canonique par groupe (la variante la plus « riche » :
+   *  casse mixte + accents). Filtre/KPI/graphe/table voient alors une valeur
+   *  unique par groupe — fini les doublons. Sans `keyPaths` : comportement
+   *  normal (la valeur affichée EST la clé). */
+  keyPaths: z.array(z.string()).min(1).optional(),
   /** value (défaut) : 1ʳᵉ chaîne non vide · list : CSV/tableau aplati ·
    *  anyTrue : au moins un des chemins est vrai · number : 1ʳᵉ valeur numérique ·
    *  contains : un chemin (liste) contient `value` (booléen d'appartenance). */

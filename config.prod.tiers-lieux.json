@@ -1593,6 +1593,9 @@
                 "paths": [
                   "address.level4Name"
                 ],
+                "keyPaths": [
+                  "address.level4"
+                ],
                 "label": {
                   "fr": "Département",
                   "en": "Department"
@@ -1736,7 +1739,7 @@
               },
               {
                 "dimension": "departement",
-                "searchable": true
+                "multiple": true
               },
               "compagnon"
             ],

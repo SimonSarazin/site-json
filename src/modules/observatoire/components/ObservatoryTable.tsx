@@ -21,7 +21,7 @@ import type {
   TableColumnDef,
   TableDef,
 } from "../schema";
-import { TOKEN_TINT_CLASSES, dimensionLabel } from "../dimensions";
+import { TOKEN_TINT_CLASSES, dimensionLabel, type LabelMaps } from "../dimensions";
 import {
   PLACEHOLDER,
   buildCsv,
@@ -72,9 +72,11 @@ interface ObservatoryTableProps {
   exportCsv?: { filename?: string } | null;
   /** Entités SDK alignées avec `data` (rowAction "preview"). */
   entities?: readonly SearchEntity[];
+  /** Libellés canoniques (dimensions à `keyPaths`). */
+  labels?: LabelMaps;
 }
 
-export function ObservatoryTable({ data, dimensions, table, exportCsv, entities }: ObservatoryTableProps) {
+export function ObservatoryTable({ data, dimensions, table, exportCsv, entities, labels }: ObservatoryTableProps) {
   const t = useT("modules/observatoire");
   const navigate = useNavigate();
   // rowAction "preview" : entité ouverte dans le détail du module search
@@ -112,8 +114,8 @@ export function ObservatoryTable({ data, dimensions, table, exportCsv, entities 
   const perPage = 10;
 
   const rows = useMemo(
-    () => data.map((e, i) => buildRow(e, i, columns, dimensions)),
-    [data, columns, dimensions],
+    () => data.map((e, i) => buildRow(e, i, columns, dimensions, labels)),
+    [data, columns, dimensions, labels],
   );
   const sorted = useMemo(() => {
     const col = columns.find((c) => c.dimension === sort.key);

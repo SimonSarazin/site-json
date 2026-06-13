@@ -23,6 +23,7 @@ import {
   dimensionList,
   dimensionValue,
   isBoolKind,
+  type LabelMaps,
 } from "../dimensions";
 import { uniqSorted } from "../utils";
 import {
@@ -89,6 +90,8 @@ interface FiltersProps {
   search?: FiltersSearchProps | null;
   /** Chargement en cours : {loaded, total} → badge « données partielles ». */
   partial?: { loaded: number; total: number | null } | null;
+  /** Libellés canoniques (dimensions à `keyPaths`) — options de filtre regroupées. */
+  labels?: LabelMaps;
 }
 
 /**
@@ -101,7 +104,7 @@ interface FiltersProps {
  * même pattern que le `searchHeader` du module search. La recherche texte
  * (optionnelle) reste visible sur tous les écrans.
  */
-export function Filters({ data, dimensions, filterDefs, values, onChange, search, partial }: FiltersProps) {
+export function Filters({ data, dimensions, filterDefs, values, onChange, search, partial, labels }: FiltersProps) {
   const t = useT("modules/observatoire");
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -169,13 +172,13 @@ export function Filters({ data, dimensions, filterDefs, values, onChange, search
           (v) => ({ id: v, label: v }),
         );
       } else {
-        out[id] = uniqSorted(data.map((d) => dimensionValue(d, def))).map(
+        out[id] = uniqSorted(data.map((d) => dimensionValue(d, def, labels?.[id]))).map(
           (v) => ({ id: v, label: v }),
         );
       }
     }
     return out;
-  }, [fields, data, t]);
+  }, [fields, data, t, labels]);
 
   const labelFor = ({ id, def }: { id: string; def: DimensionDef }): string =>
     def.label ? t(def.label) : def.labelKey ? t(def.labelKey) : id;

@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { useSearchParams } from "react-router";
 import type { DimensionsConfig, ObservatoryItem, FilterValues } from "../schema";
+import type { LabelMaps } from "../dimensions";
 import { applyFilters, applyTextSearch } from "../dashboard";
 
 /** Paramètre URL de la recherche texte (même nom que le module search). */
@@ -18,6 +19,8 @@ export function useObservatoryFilters(
   filterIds: readonly string[],
   /** Dimensions ciblées par la recherche texte (cf. `props.search.dimensions`). */
   searchDimIds?: readonly string[],
+  /** Libellés canoniques (dimensions à `keyPaths`) — regroupement filtre/recherche. */
+  labels?: LabelMaps,
 ) {
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -78,8 +81,8 @@ export function useObservatoryFilters(
   );
 
   const filtered = useMemo(
-    () => applyTextSearch(applyFilters(items, filters, dims), q, dims, searchDimIds),
-    [items, filters, dims, q, searchDimIds],
+    () => applyTextSearch(applyFilters(items, filters, dims, labels), q, dims, searchDimIds, labels),
+    [items, filters, dims, q, searchDimIds, labels],
   );
 
   return { filters, setFilters, q, setQ: setQAndSync, filtered };

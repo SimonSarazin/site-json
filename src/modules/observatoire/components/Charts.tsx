@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/chart";
 import { useT } from "@/hooks/useT";
 import type { ChartDef, DimensionsConfig, ObservatoryItem } from "../schema";
-import { dimensionBool, dimensionLabel } from "../dimensions";
+import { dimensionBool, dimensionLabel, type LabelMaps } from "../dimensions";
 import { chartRows, chartTitle, colorFor, itemsFor } from "../dashboard";
 
 type T = ReturnType<typeof useT>;
@@ -76,6 +76,8 @@ interface RendererProps {
   def: ChartDef;
   data: ObservatoryItem[];
   dims: DimensionsConfig;
+  /** Libellés canoniques (dimensions à `keyPaths`) — regroupement des décomptes. */
+  labels?: LabelMaps;
   t: T;
   /** Animations recharts — coupées pendant le chargement progressif (sinon
    *  les 5 graphes re-animent à CHAQUE page de 500 qui arrive). */
@@ -87,8 +89,8 @@ interface RendererProps {
 
 /* ── Formes de rendu ─────────────────────────────────────────────────────── */
 
-function DonutChart({ def, data, dims, t, animate, onDrill }: RendererProps) {
-  const items = itemsFor(def, data, dims);
+function DonutChart({ def, data, dims, labels, t, animate, onDrill }: RendererProps) {
+  const items = itemsFor(def, data, dims, labels);
   const drill = onDrill && def.dimension
     ? (entry: unknown) => { const v = clickedName(entry); if (v) onDrill(def.dimension!, v); }
     : undefined;
@@ -126,8 +128,8 @@ function DonutChart({ def, data, dims, t, animate, onDrill }: RendererProps) {
   );
 }
 
-function SimplePieChart({ def, data, dims, t, animate, onDrill }: RendererProps) {
-  const items = itemsFor(def, data, dims);
+function SimplePieChart({ def, data, dims, labels, t, animate, onDrill }: RendererProps) {
+  const items = itemsFor(def, data, dims, labels);
   const drill = onDrill && def.dimension
     ? (entry: unknown) => { const v = clickedName(entry); if (v) onDrill(def.dimension!, v); }
     : undefined;
@@ -148,8 +150,8 @@ function SimplePieChart({ def, data, dims, t, animate, onDrill }: RendererProps)
   );
 }
 
-function BarsChart({ def, data, dims, t, animate, onDrill }: RendererProps) {
-  const items = itemsFor(def, data, dims);
+function BarsChart({ def, data, dims, labels, t, animate, onDrill }: RendererProps) {
+  const items = itemsFor(def, data, dims, labels);
   const drill = onDrill && def.dimension
     ? (entry: unknown) => { const v = clickedName(entry); if (v) onDrill(def.dimension!, v); }
     : undefined;
@@ -175,8 +177,8 @@ function BarsChart({ def, data, dims, t, animate, onDrill }: RendererProps) {
   );
 }
 
-function BarsHorizontalChart({ def, data, dims, t, animate, onDrill }: RendererProps) {
-  const items = itemsFor(def, data, dims).slice(0, def.top ?? 10);
+function BarsHorizontalChart({ def, data, dims, labels, t, animate, onDrill }: RendererProps) {
+  const items = itemsFor(def, data, dims, labels).slice(0, def.top ?? 10);
   const drill = onDrill && def.dimension
     ? (entry: unknown) => { const v = clickedName(entry); if (v) onDrill(def.dimension!, v); }
     : undefined;
@@ -245,6 +247,8 @@ interface ObservatoryChartsProps {
   charts: readonly ChartDef[];
   data: ObservatoryItem[];
   dimensions: DimensionsConfig;
+  /** Libellés canoniques (dimensions à `keyPaths`). */
+  labels?: LabelMaps;
   animate?: boolean;
   onDrill?: (dimensionId: string, value: string) => void;
 }
@@ -253,7 +257,7 @@ interface ObservatoryChartsProps {
  * Compose les graphes déclarés : les `layout: "half"` consécutifs sont
  * appairés en 2 colonnes (lg), les `full` occupent leur rangée.
  */
-export function ObservatoryCharts({ charts, data, dimensions, animate = true, onDrill }: ObservatoryChartsProps) {
+export function ObservatoryCharts({ charts, data, dimensions, labels, animate = true, onDrill }: ObservatoryChartsProps) {
   const t = useT("modules/observatoire");
   const rows = chartRows(charts);
 
@@ -268,7 +272,7 @@ export function ObservatoryCharts({ charts, data, dimensions, animate = true, on
             const render = RENDERERS[def.kind];
             return (
               <div key={`${def.kind}-${def.dimension ?? j}`} className="min-w-0">
-                {render({ def, data, dims: dimensions, t, animate, onDrill })}
+                {render({ def, data, dims: dimensions, labels, t, animate, onDrill })}
               </div>
             );
           })}
