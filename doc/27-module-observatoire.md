@@ -10,7 +10,9 @@ sportifs 974), généralisé sur `peter-dev-adapt`
 
 Une **dimension** décrit COMMENT lire une grandeur sur un item brut
 (`serverData`) : `{paths: [chaîne de priorité], kind, label}`. Les kinds :
-`value` (1ʳᵉ chaîne/nombre/Date affichable), `list` (CSV/tableau aplati),
+`value` (1ʳᵉ chaîne/nombre/Date affichable), `list` (CSV/tableau aplati puis
+**dédupliqué** — un item pèse 1 par valeur distincte, pas de sur-comptage dans
+les graphes/cellules même s'il a plusieurs sources/réponses),
 `anyTrue` (au moins un champ affirmatif — "Oui"/1/true…), `number`,
 `contains` (booléen : un chemin-liste contient `value`).
 Filtres, KPI, graphes et colonnes **référencent des dimensions** ; le moteur

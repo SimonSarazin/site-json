@@ -82,6 +82,8 @@ describe("moteur de dimensions", () => {
 
   it("list : CSV aplati ; anyTrue : au moins un chemin affirmatif ; number : coercion", () => {
     expect(dimensionList(e, { paths: ["aps_csv"], kind: "list" })).toEqual(["Judo", "Karaté"]);
+    // dédup : un item pèse 1 par valeur distincte (pas de sur-comptage)
+    expect(dimensionList({ t: ["Wifi", "PMR", "Wifi"] }, { paths: ["t"], kind: "list" })).toEqual(["Wifi", "PMR"]);
     expect(dimensionBool(e, { paths: ["flag_a", "flag_b"], kind: "anyTrue" })).toBe(true);
     expect(dimensionBool(e, { paths: ["flag_a"], kind: "anyTrue" })).toBe(false);
     expect(dimensionNumber(e, { paths: ["surf_txt"], kind: "number" })).toBe(120);
@@ -153,6 +155,18 @@ describe("moteur de dimensions", () => {
     expect(
       dimensionList(tl, { paths: ["answers.formA.0.serverData.answers.sectionX.eq_field"], kind: "list" }),
     ).toEqual(["Wifi", "Vidéoprojecteur", "PMR"]);
+    // multi-soumissions : answers[form] a PLUSIEURS entités → les valeurs
+    // concaténées sont DÉDUPLIQUÉES (un item pèse 1 par valeur distincte, pas de
+    // sur-comptage dans les graphes), ordre d'apparition préservé.
+    const multi: ObservatoryItem = {
+      answers: {
+        formA: [
+          { serverData: { answers: { sectionX: { eq_field: ["Wifi", "PMR"] } } } },
+          { serverData: { answers: { sectionX: { eq_field: ["PMR", "Bar"] } } } },
+        ],
+      },
+    };
+    expect(dimensionList(multi, { paths: [PATH], kind: "list" })).toEqual(["Wifi", "PMR", "Bar"]);
     // champ absent → vide (item non répondu)
     expect(dimensionList({}, { paths: [PATH], kind: "list" })).toEqual([]);
     // fieldsFromDimensions ramène la racine `answers` (sous-document embarqué)

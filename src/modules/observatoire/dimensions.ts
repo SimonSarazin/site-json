@@ -122,17 +122,23 @@ export function dimensionValue(e: ObservatoryItem, def: DimensionDef): string | 
   return undefined;
 }
 
-/** kind "list" — première source produisant une liste non vide. `values`
- *  (allowlist) restreint et ORDONNE la sortie : décompose un champ fourre-tout
- *  (ex. `tags`) en axes distincts (typologie, portage, surface…) — ordre
- *  déclaré = ordre stable des parts/barres. */
+/** kind "list" — première source produisant une liste non vide, DÉDUPLIQUÉE :
+ *  une dimension list = l'ENSEMBLE des valeurs DISTINCTES de l'item sur cet axe.
+ *  Plusieurs occurrences d'une même valeur (item à plusieurs réponses CoForm via
+ *  un chemin array-aware, CSV répété, variantes fusionnées par `valueMap`) ne
+ *  sur-comptent donc pas dans les graphes/cellules — un item pèse 1 par valeur
+ *  distincte. `values` (allowlist) restreint et ORDONNE la sortie : décompose un
+ *  champ fourre-tout (ex. `tags`) en axes distincts (typologie, portage,
+ *  surface…) — ordre déclaré = ordre stable des parts/barres ; sinon l'ordre
+ *  d'apparition est préservé (`Set`). */
 export function dimensionList(e: ObservatoryItem, def: DimensionDef): string[] {
   for (const raw of sourceValues(e, def)) {
     const rawList = toStringList(raw);
     if (rawList.length > 0) {
-      // valueMap AVANT allowlist (les variantes fusionnent vers la canonique),
-      // puis dédup (deux variantes du même item → une seule valeur).
-      const list = def.valueMap ? [...new Set(rawList.map((v) => normalizeValue(def, v)))] : rawList;
+      // valueMap AVANT dédup (les variantes fusionnent vers la canonique, donc
+      // se dédupliquent), puis dédup TOUJOURS (Set ⇒ ordre d'apparition).
+      const mapped = def.valueMap ? rawList.map((v) => normalizeValue(def, v)) : rawList;
+      const list = [...new Set(mapped)];
       return def.values?.length ? def.values.filter((v) => list.includes(v)) : list;
     }
   }
