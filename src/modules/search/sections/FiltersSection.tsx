@@ -5,7 +5,7 @@ import "@/modules/search/i18n";
 import { cn } from "@/lib/utils";
 import type { FiltersSectionProps } from "../schema";
 import { useState, useEffect, useMemo } from "react";
-import { Check, Search, SlidersHorizontal } from "lucide-react";
+import { Check, ChevronDown, Search, SlidersHorizontal } from "lucide-react";
 import { useFilterToggles } from "../hooks/useFilterToggles";
 import { useFiltersByAnswersQuery } from "../hooks/useFiltersByAnswers";
 import { useSearchZoneQuery } from "../hooks/useSearchZone";
@@ -22,11 +22,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   Sheet,
   SheetClose,
@@ -76,6 +75,11 @@ const getOptionCountryCode = (option: FilterGroupOption): string | undefined => 
   const raw = (option as { countryCode?: unknown }).countryCode;
   return typeof raw === "string" ? raw : undefined;
 };
+
+/** Compteur de filtres actifs : pastille RONDE pour un chiffre (min-w = h),
+ *  s'allonge en pilule pour 2+ chiffres. Le `Badge` par défaut (px-2, w-fit)
+ *  donne un ovale sur un seul chiffre. */
+const COUNT_BADGE_CLASS = "h-5 min-w-5 justify-center rounded-full px-1 tabular-nums";
 
 /** Ligne d'option de filtre (Checkbox + Label shadcn). Présentationnel,
  *  partagé par le rendu groupé-par-pays, le rendu simple et les groupes
@@ -410,9 +414,35 @@ export function FiltersSection({
     );
   };
 
+  /* Groupe repliable — UN `Collapsible` shadcn PAR groupe (et non un `Accordion`
+     partagé) : les champs compacts (`select`) et boutons valeur-unique sont
+     interleavés librement avec les groupes accordéon sans casser Radix (qui
+     n'accepte que des `AccordionItem` comme enfants de `Accordion.Root`).
+     `openGroups` reste la source de vérité (defaultOpenGroups respecté). */
+  const toggleGroupOpen = (key: string) =>
+    setOpenGroups((prev) => (prev.includes(key) ? prev.filter((g) => g !== key) : [...prev, key]));
+  const renderGroupCollapsible = (
+    key: string,
+    header: React.ReactNode,
+    contentClass: string,
+    children: React.ReactNode,
+  ) => (
+    <Collapsible
+      key={key}
+      open={openGroups.includes(key)}
+      onOpenChange={() => toggleGroupOpen(key)}
+      className="border-b border-border last:border-b-0"
+    >
+      <CollapsibleTrigger className="group/trig flex w-full items-center justify-between py-3 text-sm outline-none">
+        {header}
+        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]/trig:rotate-180" />
+      </CollapsibleTrigger>
+      <CollapsibleContent className={cn("pb-3", contentClass)}>{children}</CollapsibleContent>
+    </Collapsible>
+  );
+
   /* Corps (recherche + groupes) — UN SEUL rendu, affiché dans la sidebar
-     desktop ET dans le Sheet mobile. Groupes en Accordion shadcn contrôlé
-     (openGroups reste la source de vérité — defaultOpenGroups respecté). */
+     desktop ET dans le Sheet mobile. */
   /* Champ de recherche — séparé du corps : sur mobile il vit AU-DESSUS du
      bouton « Filtres » (directement accessible, sans ouvrir le Sheet). */
   const searchField = (
@@ -430,7 +460,7 @@ export function FiltersSection({
 
   const body = (
     <>
-      <Accordion type="multiple" value={openGroups} onValueChange={setOpenGroups} className="w-full">
+      <div className="w-full">
         {filterGroups?.map((group) => {
           const groupOptionNames = (group.options ?? []).map(o => o.name || o.id);
           const activeCount = getGroupActiveCount(group.id, groupOptionNames);
@@ -509,33 +539,29 @@ export function FiltersSection({
               </div>
             );
           }
-          return (
-            <AccordionItem key={group.id} value={group.id}>
-              <AccordionTrigger className="py-3 text-sm hover:no-underline">
-                <span className={cn("flex items-center gap-2 font-medium", isActive ? "text-primary" : "text-foreground")}>
-                  {t(group.label)}
-                  {isActive && <Badge className="rounded-full px-1.5">{activeCount}</Badge>}
-                </span>
-              </AccordionTrigger>
-              <AccordionContent className="space-y-2 pb-3">
-                {groupByCountry && groupedOptions ? (
-                  countryOrder.map(countryCode => {
-                    const countryOptions = groupedOptions[countryCode] ?? [];
-                    const countryLabel = countryDisplayNames?.of(countryCode) ?? countryCode;
-                    return (
-                      <div key={`${group.id}-${countryCode}`} className="space-y-2">
-                        <p className="pt-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground/70">
-                          {countryLabel}
-                        </p>
-                        {countryOptions.sort((a, b) => byLabel(t(a.label), t(b.label))).map(renderOption)}
-                      </div>
-                    );
-                  })
-                ) : (
-                  [...(group.options ?? [])].sort((a, b) => byLabel(t(a.label), t(b.label))).map(renderOption)
-                )}
-              </AccordionContent>
-            </AccordionItem>
+          return renderGroupCollapsible(
+            group.id,
+            <span className={cn("flex items-center gap-2 font-medium", isActive ? "text-primary" : "text-foreground")}>
+              {t(group.label)}
+              {isActive && <Badge className={COUNT_BADGE_CLASS}>{activeCount}</Badge>}
+            </span>,
+            group.optionStyle === "check" ? "space-y-0.5" : "space-y-2",
+            groupByCountry && groupedOptions ? (
+              countryOrder.map(countryCode => {
+                const countryOptions = groupedOptions[countryCode] ?? [];
+                const countryLabel = countryDisplayNames?.of(countryCode) ?? countryCode;
+                return (
+                  <div key={`${group.id}-${countryCode}`} className="space-y-2">
+                    <p className="pt-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground/70">
+                      {countryLabel}
+                    </p>
+                    {countryOptions.sort((a, b) => byLabel(t(a.label), t(b.label))).map(renderOption)}
+                  </div>
+                );
+              })
+            ) : (
+              [...(group.options ?? [])].sort((a, b) => byLabel(t(a.label), t(b.label))).map(renderOption)
+            ),
           );
         })}
 
@@ -549,7 +575,7 @@ export function FiltersSection({
           const headerLabel = (
             <span className={cn("flex items-center gap-2 font-medium", answerIsActive ? "text-primary" : "text-foreground")}>
               {t(groupData.label)}
-              {answerIsActive && <Badge className="rounded-full px-1.5">{answerActiveCount}</Badge>}
+              {answerIsActive && <Badge className={COUNT_BADGE_CLASS}>{answerActiveCount}</Badge>}
             </span>
           );
           // Widget COMPACT déclaré en config (filtersByAnswers/Path[group].select) :
@@ -593,29 +619,27 @@ export function FiltersSection({
               </Button>
             );
           }
-          return (
-            <AccordionItem key={group} value={group}>
-              <AccordionTrigger className="py-3 text-sm hover:no-underline">{headerLabel}</AccordionTrigger>
-              <AccordionContent className="space-y-2 pb-3">
-                {answerOptionNames
-                  .sort((a, b) => byLabel(groupData.values[a].name, groupData.values[b].name))
-                  .map((optionKey) => {
-                    const option = groupData.values[optionKey];
-                    return (
-                      <FilterOptionRow
-                        key={optionKey}
-                        label={capitalizeFirst(option.name)}
-                        variant={filtersByAnswersOptions[group]?.optionStyle ?? filtersByPathOptions[group]?.optionStyle}
-                        selected={isFilterSelected(group, optionKey)}
-                        onToggle={() => toggleFilter(group, optionKey, "_id", option.orgaNameArray)}
-                      />
-                    );
-                  })}
-              </AccordionContent>
-            </AccordionItem>
+          return renderGroupCollapsible(
+            group,
+            headerLabel,
+            (filtersByAnswersOptions[group]?.optionStyle ?? filtersByPathOptions[group]?.optionStyle) === "check" ? "space-y-0.5" : "space-y-2",
+            [...answerOptionNames]
+              .sort((a, b) => byLabel(groupData.values[a].name, groupData.values[b].name))
+              .map((optionKey) => {
+                const option = groupData.values[optionKey];
+                return (
+                  <FilterOptionRow
+                    key={optionKey}
+                    label={capitalizeFirst(option.name)}
+                    variant={filtersByAnswersOptions[group]?.optionStyle ?? filtersByPathOptions[group]?.optionStyle}
+                    selected={isFilterSelected(group, optionKey)}
+                    onToggle={() => toggleFilter(group, optionKey, "_id", option.orgaNameArray)}
+                  />
+                );
+              }),
           );
         })}
-      </Accordion>
+      </div>
     </>
   );
 
@@ -634,7 +658,7 @@ export function FiltersSection({
                 {title ? t(title) : t("Filtres")}
               </span>
               {totalActiveCount > 0 && (
-                <Badge className="ml-2 rounded-full px-2">{totalActiveCount}</Badge>
+                <Badge className={cn("ml-2", COUNT_BADGE_CLASS)}>{totalActiveCount}</Badge>
               )}
             </Button>
           </SheetTrigger>
@@ -646,7 +670,7 @@ export function FiltersSection({
                 <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
                 {title ? t(title) : t("Filtres")}
                 {totalActiveCount > 0 && (
-                  <Badge className="rounded-full px-2">{totalActiveCount}</Badge>
+                  <Badge className={COUNT_BADGE_CLASS}>{totalActiveCount}</Badge>
                 )}
               </SheetTitle>
               {clearButton}
