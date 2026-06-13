@@ -1862,6 +1862,22 @@
                   }
                 },
                 {
+                  "dimension": "portage",
+                  "kind": "badge",
+                  "label": {
+                    "fr": "Portage",
+                    "en": "Status"
+                  }
+                },
+                {
+                  "dimension": "surface",
+                  "kind": "badge",
+                  "label": {
+                    "fr": "Surface",
+                    "en": "Area"
+                  }
+                },
+                {
                   "dimension": "region",
                   "kind": "badge",
                   "label": {
@@ -1870,11 +1886,19 @@
                   }
                 },
                 {
-                  "dimension": "departement",
+                  "dimension": "pays",
                   "kind": "text",
                   "label": {
-                    "fr": "Département",
-                    "en": "Department"
+                    "fr": "Pays",
+                    "en": "Country"
+                  }
+                },
+                {
+                  "dimension": "compagnon",
+                  "kind": "boolBadge",
+                  "label": {
+                    "fr": "Compagnon FTL",
+                    "en": "FTL Companion"
                   }
                 }
               ],

@@ -260,6 +260,10 @@ export function buildRow(
     if (!def) continue;
     if (col.kind === "number") cells[col.dimension] = dimensionNumber(e, def);
     else if (col.kind === "boolBadge") cells[col.dimension] = dimensionBool(e, def);
+    // Dimension `list` (allowlist) : la cellule montre la/les valeur(s) de
+    // l'axe (typologie, surface…) — PAS `dimensionValue` qui renverrait le 1ᵉʳ
+    // élément BRUT du tableau (ex. "TiersLieux").
+    else if (def.kind === "list") cells[col.dimension] = dimensionList(e, def).join(", ");
     else cells[col.dimension] = dimensionValue(e, def);
     if (col.kind === "title" && col.subtitleDimension && dims[col.subtitleDimension]) {
       subtitles[col.dimension] = dimensionValue(e, dims[col.subtitleDimension]);

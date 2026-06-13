@@ -159,6 +159,14 @@ describe("table (buildRow / compare)", () => {
     expect(row.cells.access).toBe(true);
   });
 
+  it("buildRow : cellule d'une dimension `list` = valeurs de l'axe (PAS le 1ᵉʳ tag brut)", () => {
+    // sports = list sur "aps" : la cellule joint les valeurs de la liste, et
+    // n'utilise PAS dimensionValue (qui prendrait le 1ᵉʳ élément brut seul).
+    const cols = [{ dimension: "sports", kind: "badge" as const }];
+    expect(buildRow(items[0], 0, cols, DIMS).cells.sports).toBe("Judo, Karaté");
+    expect(buildRow(items[1], 1, cols, DIMS).cells.sports).toBe("Football");
+  });
+
   it("compare : numérique (absent → en dernier en asc), booléen, chaîne locale fr", () => {
     const rows = items.map((e, i) => buildRow(e, i, columns, DIMS));
     const bySurface = [...rows].sort((a, b) => compare(a, b, columns[1]));
