@@ -69,6 +69,10 @@ export const FilterGroupSchema = z.object({
   select: FilterSelectConfigSchema.optional(),
   /** Style des lignes en accordéon (cf. {@link FilterOptionStyleSchema}). */
   optionStyle: FilterOptionStyleSchema.optional(),
+  /** Position d'affichage (tri croissant) — permet d'intercaler un groupe
+   *  d'une famille (statique/scope/entity) parmi les groupes « par réponses »
+   *  et inversement. Défaut : ordre naturel (filterGroups puis par-réponses). */
+  order: z.number().optional(),
 });
 export const FilterGroupsSchema = z.array(FilterGroupSchema);
 
@@ -83,6 +87,8 @@ export const FiltersByAnswersSchema = z.record(z.string(), z.object({
   select: FilterSelectConfigSchema.optional(),
   /** Style des lignes en accordéon (cf. {@link FilterOptionStyleSchema}). */
   optionStyle: FilterOptionStyleSchema.optional(),
+  /** Position d'affichage (tri croissant) — cf. FilterGroupSchema.order. */
+  order: z.number().optional(),
   value: z.record(z.string(), z.object({
     id: z.string(),
     finder: z.string(),
@@ -103,6 +109,8 @@ export const FiltersByPathSchema = z.record(z.string(), z.object({
   select: FilterSelectConfigSchema.optional(),
   /** Style des lignes en accordéon (cf. {@link FilterOptionStyleSchema}). */
   optionStyle: FilterOptionStyleSchema.optional(),
+  /** Position d'affichage (tri croissant) — cf. FilterGroupSchema.order. */
+  order: z.number().optional(),
 }));
 
 export const FiltersSectionSchema = z.object({

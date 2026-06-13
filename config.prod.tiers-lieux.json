@@ -1148,7 +1148,8 @@
                       "notSourceKey": true,
                       "indexStepList": 100
                     },
-                    "optionStyle": "check"
+                    "optionStyle": "check",
+                    "order": 0
                   },
                   {
                     "id": "typologies",
@@ -1222,7 +1223,8 @@
                         "name": "Autre famille de tiers-lieux"
                       }
                     ],
-                    "optionStyle": "check"
+                    "optionStyle": "check",
+                    "order": 2
                   },
                   {
                     "id": "pays",
@@ -1247,7 +1249,8 @@
                       ],
                       "sortBy": "name"
                     },
-                    "optionStyle": "check"
+                    "optionStyle": "check",
+                    "order": 3
                   },
                   {
                     "id": "regions",
@@ -1272,7 +1275,8 @@
                       ],
                       "sortBy": "name"
                     },
-                    "optionStyle": "check"
+                    "optionStyle": "check",
+                    "order": 4
                   },
                   {
                     "id": "portage",
@@ -1354,7 +1358,8 @@
                         "name": "Autre mode de gestion"
                       }
                     ],
-                    "optionStyle": "check"
+                    "optionStyle": "check",
+                    "order": 5
                   }
                 ],
                 "filtersByAnswers": {
@@ -1366,7 +1371,8 @@
                     "forms": "6486d24e9cad105cbf29a777",
                     "path": "lesCommunsDesTierslieux1262023_1215_0.multiCheckboxPluslesCommunsDesTierslieux1262023_1215_0liu3d5bbs2lwwdpiosq",
                     "finderPath": "answers.lesCommunsDesTierslieux1262023_1215_0.finderlesCommunsDesTierslieux1262023_1215_0lix46h1uhnukfgtzj6s",
-                    "optionStyle": "check"
+                    "optionStyle": "check",
+                    "order": 6
                   },
                   "équipement": {
                     "label": {
@@ -1376,7 +1382,8 @@
                     "forms": "645b300b6d70bb35426fc0e3",
                     "path": "lesCommunsDesTierslieux1052023_949_0.multiCheckboxPluslesCommunsDesTierslieux1052023_949_0lhi0h2l1gjvac3zpbcw",
                     "finderPath": "answers.lesCommunsDesTierslieux1052023_949_0.finderlesCommunsDesTierslieux1052023_949_0lat3sl0xwwg06k856jc",
-                    "optionStyle": "check"
+                    "optionStyle": "check",
+                    "order": 7
                   },
                   "services": {
                     "label": {
@@ -1398,7 +1405,8 @@
                         "finder": "answers.navigatorDesTierslieux25112025_2059_0.findernavigatorDesTierslieux25112025_2059_0miem3epsztzcm9dgim"
                       }
                     },
-                    "optionStyle": "check"
+                    "optionStyle": "check",
+                    "order": 8
                   },
                   "licoop": {
                     "label": {
@@ -1408,7 +1416,8 @@
                     "forms": "6876c3e58fa8df3c7f024253",
                     "path": "navigatorDesTierslieux1572025_2311_0.findernavigatorDesTierslieux1572025_2311_0md5u4tkmsz33mya3xvb",
                     "finderPath": "answers.navigatorDesTierslieux1572025_2311_0.findernavigatorDesTierslieux1572025_2311_0md5u4tkmsz33mya3xvb",
-                    "optionStyle": "check"
+                    "optionStyle": "check",
+                    "order": 9
                   }
                 },
                 "filtersByPath": {
@@ -1420,7 +1429,8 @@
                     "thematicPath": "lesCommunsDesTierslieux17102023_108_0.multiCheckboxPluslesCommunsDesTierslieux17102023_108_0lntzgckrxocls9xuwxo",
                     "finderPath": "answers.lesCommunsDesTierslieux17102023_108_0.finderlesCommunsDesTierslieux17102023_108_0lo5zvgqitv0b2mx2rl",
                     "notSourceKey": true,
-                    "optionStyle": "check"
+                    "optionStyle": "check",
+                    "order": 1
                   }
                 },
                 "className": "sticky top-20"

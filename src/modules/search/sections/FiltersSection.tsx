@@ -4,7 +4,7 @@ import { useLocalization } from "@/hooks/useLocalization";
 import "@/modules/search/i18n";
 import { cn } from "@/lib/utils";
 import type { FiltersSectionProps } from "../schema";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, type ReactElement, type ReactNode } from "react";
 import { Check, ChevronDown, Search, SlidersHorizontal } from "lucide-react";
 import { useFilterToggles } from "../hooks/useFilterToggles";
 import { useFiltersByAnswersQuery } from "../hooks/useFiltersByAnswers";
@@ -460,6 +460,21 @@ export function FiltersSection({
       </div>
     );
 
+  /* Ordre d'affichage UNIFIÉ : un groupe d'une famille (statique/scope/entity)
+     peut s'intercaler parmi les groupes « par réponses » (et inversement) via
+     `order`. Défaut : filterGroups (index) puis par-réponses (1000+index). Les
+     éléments rendus sont triés par leur `key` (= id de groupe). */
+  const groupOrder = new Map<string, number>();
+  (filterGroups ?? []).forEach((g, i) => groupOrder.set(g.id, g.order ?? i));
+  const answerGroupKeys = [...new Set([...Object.keys(filtersByAnswersOptions), ...Object.keys(filtersByPathOptions)])];
+  answerGroupKeys.forEach((k, i) =>
+    groupOrder.set(k, (filtersByPathOptions[k] ?? filtersByAnswersOptions[k])?.order ?? 1000 + i),
+  );
+  const sortByGroupOrder = (nodes: ReactNode[]) =>
+    nodes
+      .filter((n): n is ReactElement => !!n && typeof n === "object" && "key" in n)
+      .sort((a, b) => (groupOrder.get(String(a.key)) ?? 999) - (groupOrder.get(String(b.key)) ?? 999));
+
   /* Corps (recherche + groupes) — UN SEUL rendu, affiché dans la sidebar
      desktop ET dans le Sheet mobile. */
   /* Champ de recherche — séparé du corps : sur mobile il vit AU-DESSUS du
@@ -480,7 +495,8 @@ export function FiltersSection({
   const body = (
     <>
       <div className="w-full">
-        {filterGroups?.map((group) => {
+        {sortByGroupOrder([
+        ...(filterGroups ?? []).map((group) => {
           // Groupe alimenté par une query (zones / entités) encore en vol et
           // sans options : squelette en place (garde l'ordre, pas de pop-in).
           const queryEmpty = (group.options ?? []).length === 0;
@@ -591,13 +607,11 @@ export function FiltersSection({
               [...(group.options ?? [])].sort((a, b) => byLabel(t(a.label), t(b.label))).map(renderOption)
             ),
           );
-        })}
-
-        {/* On itère sur les clés de CONFIG (et non sur les données du résultat) :
-            les groupes par-réponses gardent leur place et leur libellé pendant
-            le chargement CoForm (squelette) au lieu de surgir une fois la query
-            résolue. */}
-        {[...new Set([...Object.keys(filtersByAnswersOptions), ...Object.keys(filtersByPathOptions)])].map((group) => {
+        }),
+        // Groupes « par réponses » : on itère sur les clés de CONFIG (et non sur
+        // les données du résultat) → ils gardent leur place et leur libellé
+        // pendant le chargement CoForm (squelette) au lieu de surgir.
+        ...answerGroupKeys.map((group) => {
           const groupData = filterAnswerData?.[group];
           const isPathGroup = group in filtersByPathOptions;
           const answerConf = isPathGroup ? filtersByPathOptions[group] : filtersByAnswersOptions[group];
@@ -678,7 +692,8 @@ export function FiltersSection({
                 );
               }),
           );
-        })}
+        }),
+        ])}
       </div>
     </>
   );
