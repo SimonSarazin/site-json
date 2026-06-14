@@ -1,8 +1,8 @@
 # Cartographie des fonctions — RAPPORT
 
-> Généré par `npm run map:functions` · scope `src` · base `97b70b2`. NE PAS éditer à la main (régénérer).
+> Généré par `npm run map:functions` · scope `src` · base `bd8b729`. NE PAS éditer à la main (régénérer).
 
-**Inventaire** : 2125 fonctions sur 864 fichiers. Doublons (corps) : 34 clusters · Clusters de nom : 124 · Génériques à mutualiser : 101 · Code mort : 191 exports + 60 fichiers · Chevauchements de couches : 1.
+**Inventaire** : 2119 fonctions sur 865 fichiers. Doublons (corps) : 30 clusters · Clusters de nom : 123 · Génériques à mutualiser : 93 · Code mort : 190 exports + 60 fichiers · Chevauchements de couches : 1.
 
 ## 1. À fusionner — corps identiques (≥2 fichiers)
 Même corps normalisé à plusieurs endroits → candidat fusion direct vers une source unique.
@@ -17,18 +17,6 @@ Même corps normalisé à plusieurs endroits → candidat fusion direct vers une
   - `src/modules/profil/components/add/AddOrganizationModal.tsx:101` _(module:profil)_
   - `src/modules/profil/components/add/AddPoiModal.tsx:108` _(module:profil)_
   - `src/modules/profil/components/add/AddProjectModal.tsx:88` _(module:profil)_
-- **formatFileSize** ×3 (92 tokens) :
-  - `src/utils/imageUtils.ts:87` _(shared:utils)_
-  - `src/modules/news/components/forms/NewsFormDocumentUpload.tsx:26` _(module:news)_
-  - `src/modules/news/components/forms/NewsFormImageUpload.tsx:27` _(module:news)_
-- **formatDate** ×3 (36 tokens) :
-  - `src/components/sections/BlogListSection.tsx:25` _(feature:components)_
-  - `src/components/sections/BlogPostSection.tsx:12` _(feature:components)_
-  - `src/components/sections/TimelineSection.tsx:9` _(feature:components)_
-- **getLocation** ×3 (30 tokens) :
-  - `src/modules/search/components/card/CardEventFeatured.tsx:135` _(module:search)_
-  - `src/modules/search/components/card/CardImageCover.tsx:135` _(module:search)_
-  - `src/modules/search/components/card/CardResourceBooking.tsx:120` _(module:search)_
 - **getButtonClasses** ×2 (164 tokens) :
   - `src/components/sections/HeroParallax.tsx:23` _(feature:components)_
   - `src/components/sections/HeroQuickAccess.tsx:51` _(feature:components)_
@@ -41,9 +29,6 @@ Même corps normalisé à plusieurs endroits → candidat fusion direct vers une
 - **handleFileSelect** ×2 (85 tokens) :
   - `src/modules/profil/components/profile-edit/ProfileEditDropdown.tsx:60` _(module:profil)_
   - `src/modules/profil/components/profile-edit/ProfileImageUpload.tsx:51` _(module:profil)_
-- **getProfileSlugFromLocation** ×2 (80 tokens) :
-  - `src/lib/fundingProjectUtils.ts:5` _(shared:lib)_
-  - `src/modules/cagnotte/hooks/useFundingEnvelope.ts:520` _(module:cagnotte)_
 - **toDate** ×2 (78 tokens) :
   - `src/modules/search/components/card/CardPoiAmenities.tsx:62` _(module:search)_
   - `src/modules/search/components/preview/PreviewPoiAmenities.tsx:107` _(module:search)_
@@ -66,20 +51,20 @@ Même corps normalisé à plusieurs endroits → candidat fusion direct vers une
   - `src/modules/profil/actions/hooks/useEntityActions.tsx:20` _(module:profil)_
   - `src/modules/profil/actions/mutations/core.ts:16` _(module:profil)_
 - **handleFileSelect** ×2 (38 tokens) :
-  - `src/modules/news/components/forms/NewsFormDocumentUpload.tsx:117` _(module:news)_
-  - `src/modules/news/components/forms/NewsFormImageUpload.tsx:217` _(module:news)_
+  - `src/modules/news/components/forms/NewsFormDocumentUpload.tsx:110` _(module:news)_
+  - `src/modules/news/components/forms/NewsFormImageUpload.tsx:210` _(module:news)_
 - **normalizeIdOrNull / toText** ×2 (34 tokens) :
   - `src/modules/cagnotte/utils/dataTransform.ts:73` _(module:cagnotte)_
   - `src/modules/profil/components/sections/custom/ProfileSsbeAbout.tsx:11` _(module:profil)_
 - **handleDrop** ×2 (30 tokens) :
-  - `src/modules/news/components/forms/NewsFormDocumentUpload.tsx:133` _(module:news)_
-  - `src/modules/news/components/forms/NewsFormImageUpload.tsx:233` _(module:news)_
+  - `src/modules/news/components/forms/NewsFormDocumentUpload.tsx:126` _(module:news)_
+  - `src/modules/news/components/forms/NewsFormImageUpload.tsx:226` _(module:news)_
 - **handleScrollTo** ×2 (29 tokens) :
   - `src/components/sections/HeroSection.tsx:11` _(feature:components)_
   - `src/components/sections/HeroWithIconSection.tsx:23` _(feature:components)_
 - **canCompressImage** ×2 (28 tokens) :
   - `src/utils/imageUtils.ts:31` _(shared:utils)_
-  - `src/modules/news/components/forms/NewsFormImageUpload.tsx:35` _(module:news)_
+  - `src/modules/news/components/forms/NewsFormImageUpload.tsx:28` _(module:news)_
 - **handleClickOutside** ×2 (28 tokens) :
   - `src/modules/news/components/forms/AddNewsModal.tsx:71` _(module:news)_
   - `src/modules/news/components/forms/EditNewsModal.tsx:136` _(module:news)_
@@ -111,18 +96,15 @@ Même corps normalisé à plusieurs endroits → candidat fusion direct vers une
   - `src/modules/cagnotte/utils/dataTransform.ts:64` _(module:cagnotte)_
   - `src/modules/profil/utils/tiersLieuxMapping.ts:128` _(module:profil)_
 - **handleDragOver** ×2 (11 tokens) :
-  - `src/modules/news/components/forms/NewsFormDocumentUpload.tsx:123` _(module:news)_
-  - `src/modules/news/components/forms/NewsFormImageUpload.tsx:223` _(module:news)_
+  - `src/modules/news/components/forms/NewsFormDocumentUpload.tsx:116` _(module:news)_
+  - `src/modules/news/components/forms/NewsFormImageUpload.tsx:216` _(module:news)_
 - **handleDragLeave** ×2 (11 tokens) :
-  - `src/modules/news/components/forms/NewsFormDocumentUpload.tsx:128` _(module:news)_
-  - `src/modules/news/components/forms/NewsFormImageUpload.tsx:228` _(module:news)_
+  - `src/modules/news/components/forms/NewsFormDocumentUpload.tsx:121` _(module:news)_
+  - `src/modules/news/components/forms/NewsFormImageUpload.tsx:221` _(module:news)_
 
 ## 2. Clusters de NOM (même identifiant utilitaire, ≥2 fichiers) — classés
 `identical` = fusionner · `quasi` = vérifier les différences (signature/défaut/retour) avant fusion · `different` = même nom, corps divergents → décider au cas par cas. Les noms INCIDENTS (handlers `handle*`/`on*`, `render*`) sont exclus (convention UI, pas des doublons).
 
-- **getProfileSlugFromLocation** ×2 — `identical`
-  - `src/lib/fundingProjectUtils.ts:5` _(shared:lib, exporté)_
-  - `src/modules/cagnotte/hooks/useFundingEnvelope.ts:520` _(module:cagnotte)_
 - **NEVER** ×2 — `identical`
   - `src/modules/cagnotte/permissions/defaults.ts:7` _(module:cagnotte)_
   - `src/modules/coform/permissions/defaults.ts:7` _(module:coform)_
@@ -147,12 +129,9 @@ Même corps normalisé à plusieurs endroits → candidat fusion direct vers une
 - **getNestedValue** ×2 — `identical`
   - `src/modules/profil/components/sections/custom/ProfileTiersLieuxInfo.tsx:95` _(module:profil)_
   - `src/modules/profil/components/sections/custom/ProfilTiersLieuxAbout.tsx:123` _(module:profil)_
-- **formatDate** ×10 — `quasi`
-  - `src/helpers/formatDate.ts:2` _(shared:helpers, exporté)_
-  - `src/components/sections/BlogListSection.tsx:25` _(feature:components)_
-  - `src/components/sections/BlogPostSection.tsx:12` _(feature:components)_
+- **formatDate** ×7 — `quasi`
+  - `src/helpers/formatDate.ts:7` _(shared:helpers, exporté)_
   - `src/components/sections/EventListSection.tsx:28` _(feature:components)_
-  - `src/components/sections/TimelineSection.tsx:9` _(feature:components)_
   - `src/modules/cagnotte/utils/format.ts:49` _(module:cagnotte, exporté)_
   - `src/modules/coform/components/CoFormAccessGuard.tsx:141` _(module:coform)_
   - `src/modules/coform/components/CoFormAccessGuard.tsx:184` _(module:coform)_
@@ -170,13 +149,13 @@ Même corps normalisé à plusieurs endroits → candidat fusion direct vers une
   - `src/modules/profil/components/add/AddPoiModal.tsx:44` _(module:profil)_
   - `src/modules/profil/components/add/AddProjectModal.tsx:38` _(module:profil)_
   - `src/modules/profil/components/profile-edit/EditProfileModal.tsx:64` _(module:profil)_
-- **formatFileSize** ×4 — `quasi`
-  - `src/utils/imageUtils.ts:87` _(shared:utils, exporté)_
-  - `src/modules/profil/utils/fileValidation.ts:92` _(module:profil, exporté)_
-  - `src/modules/news/components/forms/NewsFormDocumentUpload.tsx:26` _(module:news)_
-  - `src/modules/news/components/forms/NewsFormImageUpload.tsx:27` _(module:news)_
+- **toDate** ×4 — `quasi`
+  - `src/helpers/formatDate.ts:3` _(shared:helpers)_
+  - `src/modules/search/hooks/useItem.tsx:12` _(module:search)_
+  - `src/modules/search/components/card/CardPoiAmenities.tsx:62` _(module:search)_
+  - `src/modules/search/components/preview/PreviewPoiAmenities.tsx:107` _(module:search)_
 - **getGridCols** ×4 — `quasi`
-  - `src/components/sections/BlogListSection.tsx:33` _(feature:components)_
+  - `src/components/sections/BlogListSection.tsx:26` _(feature:components)_
   - `src/components/sections/CardsSection.tsx:85` _(feature:components)_
   - `src/components/sections/TeamSection.tsx:15` _(feature:components)_
   - `src/modules/profil/components/shared/EntityGrid.tsx:47` _(module:profil)_
@@ -185,19 +164,14 @@ Même corps normalisé à plusieurs endroits → candidat fusion direct vers une
   - `src/modules/auth/routes.tsx:16` _(module:auth, exporté)_
   - `src/modules/coform/routes.tsx:55` _(module:coform, exporté)_
   - `src/modules/profil/routes.tsx:179` _(module:profil, exporté)_
-- **getLocation** ×4 — `quasi`
-  - `src/modules/search/components/card/CardEventFeatured.tsx:135` _(module:search)_
-  - `src/modules/search/components/card/CardFunding.tsx:188` _(module:search)_
-  - `src/modules/search/components/card/CardImageCover.tsx:135` _(module:search)_
-  - `src/modules/search/components/card/CardResourceBooking.tsx:120` _(module:search)_
 - **canCompressImage** ×3 — `quasi`
   - `src/utils/imageUtils.ts:31` _(shared:utils, exporté)_
   - `src/modules/profil/utils/imageCompression.ts:141` _(module:profil, exporté)_
-  - `src/modules/news/components/forms/NewsFormImageUpload.tsx:35` _(module:news)_
+  - `src/modules/news/components/forms/NewsFormImageUpload.tsx:28` _(module:news)_
 - **compressImage** ×3 — `quasi`
   - `src/utils/imageUtils.ts:35` _(shared:utils, exporté)_
   - `src/modules/profil/utils/imageCompression.ts:20` _(module:profil, exporté)_
-  - `src/modules/news/components/forms/NewsFormImageUpload.tsx:39` _(module:news)_
+  - `src/modules/news/components/forms/NewsFormImageUpload.tsx:32` _(module:news)_
 - **StepIndicator** ×3 — `quasi`
   - `src/components/sections/StepsSection.tsx:14` _(feature:components)_
   - `src/modules/coform/components/MultiStepCoForm.tsx:749` _(module:coform)_
@@ -216,12 +190,8 @@ Même corps normalisé à plusieurs endroits → candidat fusion direct vers une
   - `src/modules/profil/components/profile-edit/fields/genericFields.tsx:237` _(module:profil)_
 - **validateFile** ×3 — `quasi`
   - `src/modules/profil/utils/fileValidation.ts:20` _(module:profil, exporté)_
-  - `src/modules/news/components/forms/NewsFormDocumentUpload.tsx:15` _(module:news)_
-  - `src/modules/news/components/forms/NewsFormImageUpload.tsx:17` _(module:news)_
-- **toDate** ×3 — `quasi`
-  - `src/modules/search/hooks/useItem.tsx:12` _(module:search)_
-  - `src/modules/search/components/card/CardPoiAmenities.tsx:62` _(module:search)_
-  - `src/modules/search/components/preview/PreviewPoiAmenities.tsx:107` _(module:search)_
+  - `src/modules/news/components/forms/NewsFormDocumentUpload.tsx:16` _(module:news)_
+  - `src/modules/news/components/forms/NewsFormImageUpload.tsx:18` _(module:news)_
 - **resolveContextOrThrow** ×3 — `quasi`
   - `src/modules/cagnotte/actions/mutations/action.ts:78` _(module:cagnotte)_
   - `src/modules/cagnotte/actions/mutations/milestone.ts:86` _(module:cagnotte)_
@@ -248,10 +218,10 @@ Même corps normalisé à plusieurs endroits → candidat fusion direct vers une
   - `src/modules/auth/components/CurrentUserAvatar.tsx:18` _(module:auth)_
   - `src/modules/search/components/ThematicCards.tsx:35` _(module:search)_
 - **normalizeEntityType** ×2 — `quasi`
-  - `src/modules/cagnotte/hooks/useFundingEnvelope.ts:61` _(module:cagnotte)_
+  - `src/modules/cagnotte/hooks/useFundingEnvelope.ts:62` _(module:cagnotte)_
   - `src/modules/cagnotte/prefetch/prefetchFundingEnvelope.ts:51` _(module:cagnotte)_
 - **extractFormIdFromEnvelope** ×2 — `quasi`
-  - `src/modules/cagnotte/hooks/useFundingEnvelope.ts:482` _(module:cagnotte, exporté)_
+  - `src/modules/cagnotte/hooks/useFundingEnvelope.ts:483` _(module:cagnotte, exporté)_
   - `src/modules/search/components/card/CardFunding.tsx:231` _(module:search)_
 - **toArray** ×2 — `quasi`
   - `src/modules/cagnotte/hooks/useProjectModalCagnotte.ts:44` _(module:cagnotte)_
@@ -279,7 +249,10 @@ Même corps normalisé à plusieurs endroits → candidat fusion direct vers une
   - `src/modules/observatoire/components/ObservatoryTable.tsx:155` _(module:observatoire)_
 - **getCompressionRatio** ×2 — `quasi`
   - `src/modules/profil/utils/imageCompression.ts:134` _(module:profil, exporté)_
-  - `src/modules/news/components/forms/NewsFormImageUpload.tsx:88` _(module:news)_
+  - `src/modules/news/components/forms/NewsFormImageUpload.tsx:81` _(module:news)_
+- **getLocation** ×2 — `quasi`
+  - `src/modules/search/helpers/getLocation.ts:11` _(module:search, exporté)_
+  - `src/modules/search/components/card/CardFunding.tsx:188` _(module:search)_
 - **str** ×2 — `quasi`
   - `src/modules/search/lib/coformAnswer.ts:97` _(module:search)_
   - `src/modules/search/components/preview/PreviewPoiAmenities.tsx:145` _(module:search)_
@@ -336,6 +309,9 @@ Même corps normalisé à plusieurs endroits → candidat fusion direct vers une
 - **getServerSnapshot** ×2 — `different`
   - `src/hooks/useIsMounted.ts:5` _(shared:hooks)_
   - `src/hooks/useReactiveProperty.tsx:49` _(shared:hooks)_
+- **formatFileSize** ×2 — `different`
+  - `src/utils/imageUtils.ts:87` _(shared:utils, exporté)_
+  - `src/modules/profil/utils/fileValidation.ts:92` _(module:profil, exporté)_
 - **update** ×2 — `different`
   - `src/components/admin/AdminPanel.tsx:700` _(feature:components)_
   - `src/modules/profil/components/profile-edit/fields/FormFieldUrlList.tsx:38` _(module:profil)_
@@ -393,23 +369,14 @@ _(47 clusters de noms incidents handlers/render exclus de cette section.)_
 ## 3. À mutualiser — génériques enfouis (pures, en module/feature)
 Fonctions sans JSX ni hook vivant hors des couches partagées → candidates à promouvoir. (relancer `--refs` pour l'usage cross-module réel.)
 
-- **getLocation** `src/modules/search/components/card/CardImageCover.tsx:135` _(module:search, 10 loc)_ → src/helpers/ — dupliquée
 - **getButtonClasses** `src/components/sections/HeroParallax.tsx:23` _(feature:components, 9 loc)_ → src/helpers/ — dupliquée
 - **getButtonClasses** `src/components/sections/HeroQuickAccess.tsx:51` _(feature:components, 9 loc)_ → src/helpers/ — dupliquée
-- **getProfileSlugFromLocation** `src/modules/cagnotte/hooks/useFundingEnvelope.ts:520` _(module:cagnotte, 9 loc)_ → src/helpers/ — dupliquée
-- **getLocation** `src/modules/search/components/card/CardEventFeatured.tsx:135` _(module:search, 9 loc)_ → src/helpers/ — dupliquée
-- **getLocation** `src/modules/search/components/card/CardResourceBooking.tsx:120` _(module:search, 9 loc)_ → src/helpers/ — dupliquée
 - **toDate** `src/modules/search/components/card/CardPoiAmenities.tsx:62` _(module:search, 8 loc)_ → src/helpers/ — dupliquée
 - **toDate** `src/modules/search/components/preview/PreviewPoiAmenities.tsx:107` _(module:search, 8 loc)_ → src/helpers/ — dupliquée
-- **formatDate** `src/components/sections/BlogListSection.tsx:25` _(feature:components, 7 loc)_ → src/helpers/ — dupliquée
-- **formatDate** `src/components/sections/BlogPostSection.tsx:12` _(feature:components, 7 loc)_ → src/helpers/ — dupliquée
-- **formatDate** `src/components/sections/TimelineSection.tsx:9` _(feature:components, 7 loc)_ → src/helpers/ — dupliquée
 - **normalizeFundingContextType** `src/modules/cagnotte/components/PaymentConfigPage.tsx:87` _(module:cagnotte, 7 loc)_ → src/helpers/ — dupliquée
 - **normalizeEntityType** `src/modules/cagnotte/prefetch/prefetchFundingEnvelope.ts:51` _(module:cagnotte, 7 loc)_ → src/helpers/ — dupliquée
 - **highlightAndScroll** `src/modules/cagnotte/components/sections/ActionsSection.tsx:55` _(module:cagnotte, 7 loc)_ → src/helpers/ — dupliquée
 - **highlightAndScroll** `src/modules/cagnotte/components/sections/FinanceSection.tsx:143` _(module:cagnotte, 7 loc)_ → src/helpers/ — dupliquée
-- **formatFileSize** `src/modules/news/components/forms/NewsFormDocumentUpload.tsx:26` _(module:news, 7 loc)_ → src/helpers/ — dupliquée
-- **formatFileSize** `src/modules/news/components/forms/NewsFormImageUpload.tsx:27` _(module:news, 7 loc)_ → src/helpers/ — dupliquée
 - **getEntityType** `src/modules/profil/actions/hooks/useEntityActions.tsx:20` _(module:profil, 7 loc)_ → src/helpers/ — dupliquée
 - **getEntityType** `src/modules/profil/actions/mutations/core.ts:16` _(module:profil, 7 loc)_ → src/helpers/ — dupliquée
 - **normalizeIdOrNull** `src/modules/cagnotte/utils/dataTransform.ts:73` _(module:cagnotte, 5 loc)_ → src/helpers/ — dupliquée, dans utils/helpers
@@ -422,7 +389,7 @@ Fonctions sans JSX ni hook vivant hors des couches partagées → candidates à 
 - **isPlainObject** `src/modules/coform/hooks/useCoFormDraft.ts:47` _(module:coform, 3 loc)_ → src/helpers/ — dupliquée
 - **isPlainObject** `src/modules/coform/utils/formParser.ts:928` _(module:coform, 3 loc)_ → src/helpers/ — dupliquée, dans utils/helpers
 - **pickString** `src/modules/profil/utils/tiersLieuxMapping.ts:128` _(module:profil, 3 loc)_ → src/helpers/ — dupliquée, dans utils/helpers
-- **canCompressImage** `src/modules/news/components/forms/NewsFormImageUpload.tsx:35` _(module:news, 3 loc)_ → src/helpers/ — dupliquée
+- **canCompressImage** `src/modules/news/components/forms/NewsFormImageUpload.tsx:28` _(module:news, 3 loc)_ → src/helpers/ — dupliquée
 - **hasTabErrors** `src/modules/profil/components/add/AddEventModal.tsx:44` _(module:profil, 3 loc)_ → src/helpers/ — dupliquée
 - **hasTabErrors** `src/modules/profil/components/add/AddOrganizationModal.tsx:47` _(module:profil, 3 loc)_ → src/helpers/ — dupliquée
 - **hasTabErrors** `src/modules/profil/components/add/AddPoiModal.tsx:44` _(module:profil, 3 loc)_ → src/helpers/ — dupliquée
@@ -473,6 +440,15 @@ Fonctions sans JSX ni hook vivant hors des couches partagées → candidates à 
 - **mergeStepsData** `src/modules/coform/utils/helpers.ts:51` _(module:coform, 8 loc)_ → src/helpers/ — dans utils/helpers
 - **frenchDateToPickerValue** `src/modules/cagnotte/utils/actionDateHelpers.ts:32` _(module:cagnotte, 7 loc)_ → src/helpers/ — dans utils/helpers
 - **pickerValueToFrenchDate** `src/modules/cagnotte/utils/actionDateHelpers.ts:44` _(module:cagnotte, 7 loc)_ → src/helpers/ — dans utils/helpers
+- **formatDate** `src/modules/cagnotte/utils/format.ts:49` _(module:cagnotte, 7 loc)_ → src/helpers/ — dans utils/helpers
+- **getFieldNameWithPrefix** `src/modules/coform/utils/formParser.ts:46` _(module:coform, 7 loc)_ → src/helpers/ — dans utils/helpers
+- **getOriginalFieldKey** `src/modules/coform/utils/formParser.ts:59` _(module:coform, 7 loc)_ → src/helpers/ — dans utils/helpers
+- **getLocation** `src/modules/search/helpers/getLocation.ts:11` _(module:search, 7 loc)_ → src/helpers/ — dans utils/helpers
+- **formatCapacityRange** `src/modules/search/helpers/servicePricingAnswers.ts:235` _(module:search, 7 loc)_ → src/helpers/ — dans utils/helpers
+- **formatFileSize** `src/modules/profil/utils/fileValidation.ts:92` _(module:profil, 6 loc)_ → src/helpers/ — dans utils/helpers
+- **timestampToFrenchDate** `src/modules/cagnotte/utils/actionDateHelpers.ts:56` _(module:cagnotte, 5 loc)_ → src/helpers/ — dans utils/helpers
+- **getNonEmptyRecord** `src/modules/cagnotte/utils/dataTransform.ts:26` _(module:cagnotte, 5 loc)_ → src/helpers/ — dans utils/helpers
+- **toArrayOrValues** `src/modules/cagnotte/utils/dataTransform.ts:36` _(module:cagnotte, 5 loc)_ → src/helpers/ — dans utils/helpers
 
 ## 4. Code mort / sur-exporté (knip — à VÉRIFIER)
 Signal heuristique : exports/fichiers sans référence statique. Vérifier les usages dynamiques (glob, lazy, inférence de type) avant suppression.
@@ -539,7 +515,7 @@ Signal heuristique : exports/fichiers sans référence statique. Vérifier les u
 - `src/modules/search/index.ts`
 - `src/pages/TestPaymentPage.tsx`
 
-### Exports non référencés (191)
+### Exports non référencés (190)
 - `src/components/form/CheckboxInput.tsx:70` — `default`
 - `src/components/form/FileInput.tsx:91` — `default`
 - `src/components/form/RadioInput.tsx:92` — `default`
@@ -660,7 +636,7 @@ Signal heuristique : exports/fichiers sans référence statique. Vérifier les u
 - `src/modules/profil/components/profile-edit/fields/TextareaFormField.tsx:61` — `TextareaFormField`
 - `src/modules/profil/components/TabDetailRenderer.tsx:96` — `default`
 - `src/modules/profil/constants/queryKeys.ts:164` — `ProfilQueryKeyType`
-- … (+71)
+- … (+70)
 
 ## 5. Chevauchements de couches partagées
 Même nom de fichier dans plusieurs dossiers partagés (helpers/utils/lib…) → vérifier l'intention (faux doublon vs vraie duplication).

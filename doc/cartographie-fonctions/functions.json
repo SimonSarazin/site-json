@@ -1,13 +1,13 @@
 {
-  "generatedFrom": "97b70b2",
+  "generatedFrom": "bd8b729",
   "scope": "src",
   "summary": {
-    "functions": 2125,
-    "files": 864,
-    "duplicateBodyClusters": 34,
-    "nameClusters": 124,
-    "sharingCandidates": 101,
-    "deadExports": 191,
+    "functions": 2119,
+    "files": 865,
+    "duplicateBodyClusters": 30,
+    "nameClusters": 123,
+    "sharingCandidates": 93,
+    "deadExports": 190,
     "deadFiles": 60,
     "layerOverlaps": 1
   },
@@ -68,78 +68,6 @@
             "name": "handleClose",
             "at": "src/modules/profil/components/add/AddProjectModal.tsx:88",
             "layer": "module:profil"
-          }
-        ]
-      },
-      {
-        "names": [
-          "formatFileSize"
-        ],
-        "count": 3,
-        "tokens": 92,
-        "defs": [
-          {
-            "name": "formatFileSize",
-            "at": "src/utils/imageUtils.ts:87",
-            "layer": "shared:utils"
-          },
-          {
-            "name": "formatFileSize",
-            "at": "src/modules/news/components/forms/NewsFormDocumentUpload.tsx:26",
-            "layer": "module:news"
-          },
-          {
-            "name": "formatFileSize",
-            "at": "src/modules/news/components/forms/NewsFormImageUpload.tsx:27",
-            "layer": "module:news"
-          }
-        ]
-      },
-      {
-        "names": [
-          "formatDate"
-        ],
-        "count": 3,
-        "tokens": 36,
-        "defs": [
-          {
-            "name": "formatDate",
-            "at": "src/components/sections/BlogListSection.tsx:25",
-            "layer": "feature:components"
-          },
-          {
-            "name": "formatDate",
-            "at": "src/components/sections/BlogPostSection.tsx:12",
-            "layer": "feature:components"
-          },
-          {
-            "name": "formatDate",
-            "at": "src/components/sections/TimelineSection.tsx:9",
-            "layer": "feature:components"
-          }
-        ]
-      },
-      {
-        "names": [
-          "getLocation"
-        ],
-        "count": 3,
-        "tokens": 30,
-        "defs": [
-          {
-            "name": "getLocation",
-            "at": "src/modules/search/components/card/CardEventFeatured.tsx:135",
-            "layer": "module:search"
-          },
-          {
-            "name": "getLocation",
-            "at": "src/modules/search/components/card/CardImageCover.tsx:135",
-            "layer": "module:search"
-          },
-          {
-            "name": "getLocation",
-            "at": "src/modules/search/components/card/CardResourceBooking.tsx:120",
-            "layer": "module:search"
           }
         ]
       },
@@ -216,25 +144,6 @@
             "name": "handleFileSelect",
             "at": "src/modules/profil/components/profile-edit/ProfileImageUpload.tsx:51",
             "layer": "module:profil"
-          }
-        ]
-      },
-      {
-        "names": [
-          "getProfileSlugFromLocation"
-        ],
-        "count": 2,
-        "tokens": 80,
-        "defs": [
-          {
-            "name": "getProfileSlugFromLocation",
-            "at": "src/lib/fundingProjectUtils.ts:5",
-            "layer": "shared:lib"
-          },
-          {
-            "name": "getProfileSlugFromLocation",
-            "at": "src/modules/cagnotte/hooks/useFundingEnvelope.ts:520",
-            "layer": "module:cagnotte"
           }
         ]
       },
@@ -381,12 +290,12 @@
         "defs": [
           {
             "name": "handleFileSelect",
-            "at": "src/modules/news/components/forms/NewsFormDocumentUpload.tsx:117",
+            "at": "src/modules/news/components/forms/NewsFormDocumentUpload.tsx:110",
             "layer": "module:news"
           },
           {
             "name": "handleFileSelect",
-            "at": "src/modules/news/components/forms/NewsFormImageUpload.tsx:217",
+            "at": "src/modules/news/components/forms/NewsFormImageUpload.tsx:210",
             "layer": "module:news"
           }
         ]
@@ -420,12 +329,12 @@
         "defs": [
           {
             "name": "handleDrop",
-            "at": "src/modules/news/components/forms/NewsFormDocumentUpload.tsx:133",
+            "at": "src/modules/news/components/forms/NewsFormDocumentUpload.tsx:126",
             "layer": "module:news"
           },
           {
             "name": "handleDrop",
-            "at": "src/modules/news/components/forms/NewsFormImageUpload.tsx:233",
+            "at": "src/modules/news/components/forms/NewsFormImageUpload.tsx:226",
             "layer": "module:news"
           }
         ]
@@ -463,7 +372,7 @@
           },
           {
             "name": "canCompressImage",
-            "at": "src/modules/news/components/forms/NewsFormImageUpload.tsx:35",
+            "at": "src/modules/news/components/forms/NewsFormImageUpload.tsx:28",
             "layer": "module:news"
           }
         ]
@@ -668,12 +577,12 @@
         "defs": [
           {
             "name": "handleDragOver",
-            "at": "src/modules/news/components/forms/NewsFormDocumentUpload.tsx:123",
+            "at": "src/modules/news/components/forms/NewsFormDocumentUpload.tsx:116",
             "layer": "module:news"
           },
           {
             "name": "handleDragOver",
-            "at": "src/modules/news/components/forms/NewsFormImageUpload.tsx:223",
+            "at": "src/modules/news/components/forms/NewsFormImageUpload.tsx:216",
             "layer": "module:news"
           }
         ]
@@ -687,35 +596,18 @@
         "defs": [
           {
             "name": "handleDragLeave",
-            "at": "src/modules/news/components/forms/NewsFormDocumentUpload.tsx:128",
+            "at": "src/modules/news/components/forms/NewsFormDocumentUpload.tsx:121",
             "layer": "module:news"
           },
           {
             "name": "handleDragLeave",
-            "at": "src/modules/news/components/forms/NewsFormImageUpload.tsx:228",
+            "at": "src/modules/news/components/forms/NewsFormImageUpload.tsx:221",
             "layer": "module:news"
           }
         ]
       }
     ],
     "nameClusters": [
-      {
-        "name": "getProfileSlugFromLocation",
-        "count": 2,
-        "classe": "identical",
-        "defs": [
-          {
-            "at": "src/lib/fundingProjectUtils.ts:5",
-            "layer": "shared:lib",
-            "exported": true
-          },
-          {
-            "at": "src/modules/cagnotte/hooks/useFundingEnvelope.ts:520",
-            "layer": "module:cagnotte",
-            "exported": false
-          }
-        ]
-      },
       {
         "name": "handleScrollTo",
         "count": 2,
@@ -909,12 +801,12 @@
         "classe": "identical",
         "defs": [
           {
-            "at": "src/modules/news/components/forms/NewsFormDocumentUpload.tsx:123",
+            "at": "src/modules/news/components/forms/NewsFormDocumentUpload.tsx:116",
             "layer": "module:news",
             "exported": false
           },
           {
-            "at": "src/modules/news/components/forms/NewsFormImageUpload.tsx:223",
+            "at": "src/modules/news/components/forms/NewsFormImageUpload.tsx:216",
             "layer": "module:news",
             "exported": false
           }
@@ -926,12 +818,12 @@
         "classe": "identical",
         "defs": [
           {
-            "at": "src/modules/news/components/forms/NewsFormDocumentUpload.tsx:128",
+            "at": "src/modules/news/components/forms/NewsFormDocumentUpload.tsx:121",
             "layer": "module:news",
             "exported": false
           },
           {
-            "at": "src/modules/news/components/forms/NewsFormImageUpload.tsx:228",
+            "at": "src/modules/news/components/forms/NewsFormImageUpload.tsx:221",
             "layer": "module:news",
             "exported": false
           }
@@ -1095,63 +987,6 @@
         ]
       },
       {
-        "name": "formatDate",
-        "count": 10,
-        "classe": "quasi",
-        "defs": [
-          {
-            "at": "src/helpers/formatDate.ts:2",
-            "layer": "shared:helpers",
-            "exported": true
-          },
-          {
-            "at": "src/components/sections/BlogListSection.tsx:25",
-            "layer": "feature:components",
-            "exported": false
-          },
-          {
-            "at": "src/components/sections/BlogPostSection.tsx:12",
-            "layer": "feature:components",
-            "exported": false
-          },
-          {
-            "at": "src/components/sections/EventListSection.tsx:28",
-            "layer": "feature:components",
-            "exported": false
-          },
-          {
-            "at": "src/components/sections/TimelineSection.tsx:9",
-            "layer": "feature:components",
-            "exported": false
-          },
-          {
-            "at": "src/modules/cagnotte/utils/format.ts:49",
-            "layer": "module:cagnotte",
-            "exported": true
-          },
-          {
-            "at": "src/modules/coform/components/CoFormAccessGuard.tsx:141",
-            "layer": "module:coform",
-            "exported": false
-          },
-          {
-            "at": "src/modules/coform/components/CoFormAccessGuard.tsx:184",
-            "layer": "module:coform",
-            "exported": false
-          },
-          {
-            "at": "src/modules/coform/components/CoFormAnswerPicker.tsx:32",
-            "layer": "module:coform",
-            "exported": false
-          },
-          {
-            "at": "src/modules/coform/components/CoFormReadOnly.tsx:68",
-            "layer": "module:coform",
-            "exported": false
-          }
-        ]
-      },
-      {
         "name": "handleClose",
         "count": 9,
         "classe": "quasi",
@@ -1199,6 +1034,48 @@
           {
             "at": "src/modules/profil/components/members/InviteMemberDialog.tsx:108",
             "layer": "module:profil",
+            "exported": false
+          }
+        ]
+      },
+      {
+        "name": "formatDate",
+        "count": 7,
+        "classe": "quasi",
+        "defs": [
+          {
+            "at": "src/helpers/formatDate.ts:7",
+            "layer": "shared:helpers",
+            "exported": true
+          },
+          {
+            "at": "src/components/sections/EventListSection.tsx:28",
+            "layer": "feature:components",
+            "exported": false
+          },
+          {
+            "at": "src/modules/cagnotte/utils/format.ts:49",
+            "layer": "module:cagnotte",
+            "exported": true
+          },
+          {
+            "at": "src/modules/coform/components/CoFormAccessGuard.tsx:141",
+            "layer": "module:coform",
+            "exported": false
+          },
+          {
+            "at": "src/modules/coform/components/CoFormAccessGuard.tsx:184",
+            "layer": "module:coform",
+            "exported": false
+          },
+          {
+            "at": "src/modules/coform/components/CoFormAnswerPicker.tsx:32",
+            "layer": "module:coform",
+            "exported": false
+          },
+          {
+            "at": "src/modules/coform/components/CoFormReadOnly.tsx:68",
+            "layer": "module:coform",
             "exported": false
           }
         ]
@@ -1347,28 +1224,28 @@
         ]
       },
       {
-        "name": "formatFileSize",
+        "name": "toDate",
         "count": 4,
         "classe": "quasi",
         "defs": [
           {
-            "at": "src/utils/imageUtils.ts:87",
-            "layer": "shared:utils",
-            "exported": true
-          },
-          {
-            "at": "src/modules/profil/utils/fileValidation.ts:92",
-            "layer": "module:profil",
-            "exported": true
-          },
-          {
-            "at": "src/modules/news/components/forms/NewsFormDocumentUpload.tsx:26",
-            "layer": "module:news",
+            "at": "src/helpers/formatDate.ts:3",
+            "layer": "shared:helpers",
             "exported": false
           },
           {
-            "at": "src/modules/news/components/forms/NewsFormImageUpload.tsx:27",
-            "layer": "module:news",
+            "at": "src/modules/search/hooks/useItem.tsx:12",
+            "layer": "module:search",
+            "exported": false
+          },
+          {
+            "at": "src/modules/search/components/card/CardPoiAmenities.tsx:62",
+            "layer": "module:search",
+            "exported": false
+          },
+          {
+            "at": "src/modules/search/components/preview/PreviewPoiAmenities.tsx:107",
+            "layer": "module:search",
             "exported": false
           }
         ]
@@ -1379,7 +1256,7 @@
         "classe": "quasi",
         "defs": [
           {
-            "at": "src/components/sections/BlogListSection.tsx:33",
+            "at": "src/components/sections/BlogListSection.tsx:26",
             "layer": "feature:components",
             "exported": false
           },
@@ -1487,12 +1364,12 @@
         "classe": "quasi",
         "defs": [
           {
-            "at": "src/modules/news/components/forms/NewsFormDocumentUpload.tsx:117",
+            "at": "src/modules/news/components/forms/NewsFormDocumentUpload.tsx:110",
             "layer": "module:news",
             "exported": false
           },
           {
-            "at": "src/modules/news/components/forms/NewsFormImageUpload.tsx:217",
+            "at": "src/modules/news/components/forms/NewsFormImageUpload.tsx:210",
             "layer": "module:news",
             "exported": false
           },
@@ -1504,33 +1381,6 @@
           {
             "at": "src/modules/profil/components/profile-edit/ProfileImageUpload.tsx:51",
             "layer": "module:profil",
-            "exported": false
-          }
-        ]
-      },
-      {
-        "name": "getLocation",
-        "count": 4,
-        "classe": "quasi",
-        "defs": [
-          {
-            "at": "src/modules/search/components/card/CardEventFeatured.tsx:135",
-            "layer": "module:search",
-            "exported": false
-          },
-          {
-            "at": "src/modules/search/components/card/CardFunding.tsx:188",
-            "layer": "module:search",
-            "exported": false
-          },
-          {
-            "at": "src/modules/search/components/card/CardImageCover.tsx:135",
-            "layer": "module:search",
-            "exported": false
-          },
-          {
-            "at": "src/modules/search/components/card/CardResourceBooking.tsx:120",
-            "layer": "module:search",
             "exported": false
           }
         ]
@@ -1551,7 +1401,7 @@
             "exported": true
           },
           {
-            "at": "src/modules/news/components/forms/NewsFormImageUpload.tsx:35",
+            "at": "src/modules/news/components/forms/NewsFormImageUpload.tsx:28",
             "layer": "module:news",
             "exported": false
           }
@@ -1573,7 +1423,7 @@
             "exported": true
           },
           {
-            "at": "src/modules/news/components/forms/NewsFormImageUpload.tsx:39",
+            "at": "src/modules/news/components/forms/NewsFormImageUpload.tsx:32",
             "layer": "module:news",
             "exported": false
           }
@@ -1766,35 +1616,13 @@
             "exported": true
           },
           {
-            "at": "src/modules/news/components/forms/NewsFormDocumentUpload.tsx:15",
+            "at": "src/modules/news/components/forms/NewsFormDocumentUpload.tsx:16",
             "layer": "module:news",
             "exported": false
           },
           {
-            "at": "src/modules/news/components/forms/NewsFormImageUpload.tsx:17",
+            "at": "src/modules/news/components/forms/NewsFormImageUpload.tsx:18",
             "layer": "module:news",
-            "exported": false
-          }
-        ]
-      },
-      {
-        "name": "toDate",
-        "count": 3,
-        "classe": "quasi",
-        "defs": [
-          {
-            "at": "src/modules/search/hooks/useItem.tsx:12",
-            "layer": "module:search",
-            "exported": false
-          },
-          {
-            "at": "src/modules/search/components/card/CardPoiAmenities.tsx:62",
-            "layer": "module:search",
-            "exported": false
-          },
-          {
-            "at": "src/modules/search/components/preview/PreviewPoiAmenities.tsx:107",
-            "layer": "module:search",
             "exported": false
           }
         ]
@@ -1810,12 +1638,12 @@
             "exported": false
           },
           {
-            "at": "src/modules/news/components/forms/NewsFormDocumentUpload.tsx:133",
+            "at": "src/modules/news/components/forms/NewsFormDocumentUpload.tsx:126",
             "layer": "module:news",
             "exported": false
           },
           {
-            "at": "src/modules/news/components/forms/NewsFormImageUpload.tsx:233",
+            "at": "src/modules/news/components/forms/NewsFormImageUpload.tsx:226",
             "layer": "module:news",
             "exported": false
           }
@@ -1871,7 +1699,7 @@
         "classe": "quasi",
         "defs": [
           {
-            "at": "src/modules/news/components/forms/NewsFormImageUpload.tsx:256",
+            "at": "src/modules/news/components/forms/NewsFormImageUpload.tsx:249",
             "layer": "module:news",
             "exported": false
           },
@@ -2051,7 +1879,7 @@
         "classe": "quasi",
         "defs": [
           {
-            "at": "src/modules/cagnotte/hooks/useFundingEnvelope.ts:61",
+            "at": "src/modules/cagnotte/hooks/useFundingEnvelope.ts:62",
             "layer": "module:cagnotte",
             "exported": false
           },
@@ -2068,7 +1896,7 @@
         "classe": "quasi",
         "defs": [
           {
-            "at": "src/modules/cagnotte/hooks/useFundingEnvelope.ts:482",
+            "at": "src/modules/cagnotte/hooks/useFundingEnvelope.ts:483",
             "layer": "module:cagnotte",
             "exported": true
           },
@@ -2243,8 +2071,25 @@
             "exported": true
           },
           {
-            "at": "src/modules/news/components/forms/NewsFormImageUpload.tsx:88",
+            "at": "src/modules/news/components/forms/NewsFormImageUpload.tsx:81",
             "layer": "module:news",
+            "exported": false
+          }
+        ]
+      },
+      {
+        "name": "getLocation",
+        "count": 2,
+        "classe": "quasi",
+        "defs": [
+          {
+            "at": "src/modules/search/helpers/getLocation.ts:11",
+            "layer": "module:search",
+            "exported": true
+          },
+          {
+            "at": "src/modules/search/components/card/CardFunding.tsx:188",
+            "layer": "module:search",
             "exported": false
           }
         ]
@@ -2794,6 +2639,23 @@
         ]
       },
       {
+        "name": "formatFileSize",
+        "count": 2,
+        "classe": "different",
+        "defs": [
+          {
+            "at": "src/utils/imageUtils.ts:87",
+            "layer": "shared:utils",
+            "exported": true
+          },
+          {
+            "at": "src/modules/profil/utils/fileValidation.ts:92",
+            "layer": "module:profil",
+            "exported": true
+          }
+        ]
+      },
+      {
         "name": "renderContent",
         "count": 2,
         "classe": "different",
@@ -3255,16 +3117,6 @@
     ],
     "sharingCandidates": [
       {
-        "name": "getLocation",
-        "at": "src/modules/search/components/card/CardImageCover.tsx:135",
-        "layer": "module:search",
-        "loc": 10,
-        "exported": false,
-        "duplicated": true,
-        "inUtilDir": false,
-        "suggestedHome": "src/helpers/"
-      },
-      {
         "name": "getButtonClasses",
         "at": "src/components/sections/HeroParallax.tsx:23",
         "layer": "feature:components",
@@ -3278,36 +3130,6 @@
         "name": "getButtonClasses",
         "at": "src/components/sections/HeroQuickAccess.tsx:51",
         "layer": "feature:components",
-        "loc": 9,
-        "exported": false,
-        "duplicated": true,
-        "inUtilDir": false,
-        "suggestedHome": "src/helpers/"
-      },
-      {
-        "name": "getProfileSlugFromLocation",
-        "at": "src/modules/cagnotte/hooks/useFundingEnvelope.ts:520",
-        "layer": "module:cagnotte",
-        "loc": 9,
-        "exported": false,
-        "duplicated": true,
-        "inUtilDir": false,
-        "suggestedHome": "src/helpers/"
-      },
-      {
-        "name": "getLocation",
-        "at": "src/modules/search/components/card/CardEventFeatured.tsx:135",
-        "layer": "module:search",
-        "loc": 9,
-        "exported": false,
-        "duplicated": true,
-        "inUtilDir": false,
-        "suggestedHome": "src/helpers/"
-      },
-      {
-        "name": "getLocation",
-        "at": "src/modules/search/components/card/CardResourceBooking.tsx:120",
-        "layer": "module:search",
         "loc": 9,
         "exported": false,
         "duplicated": true,
@@ -3329,36 +3151,6 @@
         "at": "src/modules/search/components/preview/PreviewPoiAmenities.tsx:107",
         "layer": "module:search",
         "loc": 8,
-        "exported": false,
-        "duplicated": true,
-        "inUtilDir": false,
-        "suggestedHome": "src/helpers/"
-      },
-      {
-        "name": "formatDate",
-        "at": "src/components/sections/BlogListSection.tsx:25",
-        "layer": "feature:components",
-        "loc": 7,
-        "exported": false,
-        "duplicated": true,
-        "inUtilDir": false,
-        "suggestedHome": "src/helpers/"
-      },
-      {
-        "name": "formatDate",
-        "at": "src/components/sections/BlogPostSection.tsx:12",
-        "layer": "feature:components",
-        "loc": 7,
-        "exported": false,
-        "duplicated": true,
-        "inUtilDir": false,
-        "suggestedHome": "src/helpers/"
-      },
-      {
-        "name": "formatDate",
-        "at": "src/components/sections/TimelineSection.tsx:9",
-        "layer": "feature:components",
-        "loc": 7,
         "exported": false,
         "duplicated": true,
         "inUtilDir": false,
@@ -3398,26 +3190,6 @@
         "name": "highlightAndScroll",
         "at": "src/modules/cagnotte/components/sections/FinanceSection.tsx:143",
         "layer": "module:cagnotte",
-        "loc": 7,
-        "exported": false,
-        "duplicated": true,
-        "inUtilDir": false,
-        "suggestedHome": "src/helpers/"
-      },
-      {
-        "name": "formatFileSize",
-        "at": "src/modules/news/components/forms/NewsFormDocumentUpload.tsx:26",
-        "layer": "module:news",
-        "loc": 7,
-        "exported": false,
-        "duplicated": true,
-        "inUtilDir": false,
-        "suggestedHome": "src/helpers/"
-      },
-      {
-        "name": "formatFileSize",
-        "at": "src/modules/news/components/forms/NewsFormImageUpload.tsx:27",
-        "layer": "module:news",
         "loc": 7,
         "exported": false,
         "duplicated": true,
@@ -3546,7 +3318,7 @@
       },
       {
         "name": "canCompressImage",
-        "at": "src/modules/news/components/forms/NewsFormImageUpload.tsx:35",
+        "at": "src/modules/news/components/forms/NewsFormImageUpload.tsx:28",
         "layer": "module:news",
         "loc": 3,
         "exported": false,
@@ -4078,6 +3850,16 @@
         "name": "getOriginalFieldKey",
         "at": "src/modules/coform/utils/formParser.ts:59",
         "layer": "module:coform",
+        "loc": 7,
+        "exported": true,
+        "duplicated": false,
+        "inUtilDir": true,
+        "suggestedHome": "src/helpers/"
+      },
+      {
+        "name": "getLocation",
+        "at": "src/modules/search/helpers/getLocation.ts:11",
+        "layer": "module:search",
         "loc": 7,
         "exported": true,
         "duplicated": false,
@@ -5215,11 +4997,6 @@
         "file": "src/types/site.ts",
         "name": "HeaderConfig",
         "line": 6
-      },
-      {
-        "file": "src/utils/imageUtils.ts",
-        "name": "formatFileSize",
-        "line": 87
       }
     ],
     "deadFiles": [
@@ -5538,15 +5315,37 @@
       "hash": "0068160525fb"
     },
     {
+      "name": "toDate",
+      "file": "src/helpers/formatDate.ts",
+      "line": 3,
+      "layer": "shared:helpers",
+      "kind": "arrow",
+      "exported": false,
+      "loc": 2,
+      "generic": true,
+      "hash": "acdf9a9d3961"
+    },
+    {
       "name": "formatDate",
       "file": "src/helpers/formatDate.ts",
-      "line": 2,
+      "line": 7,
       "layer": "shared:helpers",
       "kind": "arrow",
       "exported": true,
-      "loc": 14,
+      "loc": 13,
       "generic": true,
-      "hash": "a0b53c571249"
+      "hash": "158763dec359"
+    },
+    {
+      "name": "formatDateLong",
+      "file": "src/helpers/formatDate.ts",
+      "line": 23,
+      "layer": "shared:helpers",
+      "kind": "arrow",
+      "exported": true,
+      "loc": 11,
+      "generic": true,
+      "hash": "b4b5c7de6b86"
     },
     {
       "name": "getMultipleValuesByPaths",
@@ -7905,29 +7704,18 @@
     {
       "name": "BlogListSection",
       "file": "src/components/sections/BlogListSection.tsx",
-      "line": 13,
+      "line": 14,
       "layer": "feature:components",
       "kind": "function",
       "exported": true,
-      "loc": 159,
+      "loc": 151,
       "generic": false,
-      "hash": "b7334760f8d7"
-    },
-    {
-      "name": "formatDate",
-      "file": "src/components/sections/BlogListSection.tsx",
-      "line": 25,
-      "layer": "feature:components",
-      "kind": "arrow",
-      "exported": false,
-      "loc": 7,
-      "generic": true,
-      "hash": "1736adf42774"
+      "hash": "5700f1397736"
     },
     {
       "name": "getGridCols",
       "file": "src/components/sections/BlogListSection.tsx",
-      "line": 33,
+      "line": 26,
       "layer": "feature:components",
       "kind": "arrow",
       "exported": false,
@@ -7938,35 +7726,24 @@
     {
       "name": "PostCard",
       "file": "src/components/sections/BlogListSection.tsx",
-      "line": 45,
+      "line": 38,
       "layer": "feature:components",
       "kind": "arrow",
       "exported": false,
       "loc": 72,
       "generic": false,
-      "hash": "730580f4eb2e"
+      "hash": "ec37812d49fe"
     },
     {
       "name": "BlogPostSection",
       "file": "src/components/sections/BlogPostSection.tsx",
-      "line": 8,
+      "line": 9,
       "layer": "feature:components",
       "kind": "function",
       "exported": true,
-      "loc": 97,
+      "loc": 89,
       "generic": false,
-      "hash": "aeb1a6ae6f96"
-    },
-    {
-      "name": "formatDate",
-      "file": "src/components/sections/BlogPostSection.tsx",
-      "line": 12,
-      "layer": "feature:components",
-      "kind": "arrow",
-      "exported": false,
-      "loc": 7,
-      "generic": true,
-      "hash": "1736adf42774"
+      "hash": "c27ec87084f8"
     },
     {
       "name": "BreadcrumbSection",
@@ -9203,24 +8980,13 @@
     {
       "name": "TimelineSection",
       "file": "src/components/sections/TimelineSection.tsx",
-      "line": 6,
+      "line": 7,
       "layer": "feature:components",
       "kind": "function",
       "exported": true,
-      "loc": 54,
+      "loc": 46,
       "generic": false,
-      "hash": "6ccc78eb352d"
-    },
-    {
-      "name": "formatDate",
-      "file": "src/components/sections/TimelineSection.tsx",
-      "line": 9,
-      "layer": "feature:components",
-      "kind": "arrow",
-      "exported": false,
-      "loc": 7,
-      "generic": true,
-      "hash": "1736adf42774"
+      "hash": "89e0bd9faac4"
     },
     {
       "name": "TitleSection",
@@ -14923,7 +14689,7 @@
     {
       "name": "normalizeEntityType",
       "file": "src/modules/cagnotte/hooks/useFundingEnvelope.ts",
-      "line": 61,
+      "line": 62,
       "layer": "module:cagnotte",
       "kind": "function",
       "exported": false,
@@ -14934,7 +14700,7 @@
     {
       "name": "extractPaymentMethods",
       "file": "src/modules/cagnotte/hooks/useFundingEnvelope.ts",
-      "line": 69,
+      "line": 70,
       "layer": "module:cagnotte",
       "kind": "function",
       "exported": false,
@@ -14945,7 +14711,7 @@
     {
       "name": "getTimestamp",
       "file": "src/modules/cagnotte/hooks/useFundingEnvelope.ts",
-      "line": 86,
+      "line": 87,
       "layer": "module:cagnotte",
       "kind": "function",
       "exported": false,
@@ -14956,7 +14722,7 @@
     {
       "name": "normalizeActionStatus",
       "file": "src/modules/cagnotte/hooks/useFundingEnvelope.ts",
-      "line": 114,
+      "line": 115,
       "layer": "module:cagnotte",
       "kind": "function",
       "exported": false,
@@ -14967,7 +14733,7 @@
     {
       "name": "normalizePaymentStatus",
       "file": "src/modules/cagnotte/hooks/useFundingEnvelope.ts",
-      "line": 121,
+      "line": 122,
       "layer": "module:cagnotte",
       "kind": "function",
       "exported": false,
@@ -14978,7 +14744,7 @@
     {
       "name": "getNameFromLinks",
       "file": "src/modules/cagnotte/hooks/useFundingEnvelope.ts",
-      "line": 129,
+      "line": 130,
       "layer": "module:cagnotte",
       "kind": "function",
       "exported": false,
@@ -14989,7 +14755,7 @@
     {
       "name": "getAvatarFromLinks",
       "file": "src/modules/cagnotte/hooks/useFundingEnvelope.ts",
-      "line": 145,
+      "line": 146,
       "layer": "module:cagnotte",
       "kind": "function",
       "exported": false,
@@ -15000,7 +14766,7 @@
     {
       "name": "extractActionContributors",
       "file": "src/modules/cagnotte/hooks/useFundingEnvelope.ts",
-      "line": 170,
+      "line": 171,
       "layer": "module:cagnotte",
       "kind": "function",
       "exported": false,
@@ -15011,7 +14777,7 @@
     {
       "name": "normalizeFundingEnvelope",
       "file": "src/modules/cagnotte/hooks/useFundingEnvelope.ts",
-      "line": 208,
+      "line": 209,
       "layer": "module:cagnotte",
       "kind": "function",
       "exported": true,
@@ -15022,7 +14788,7 @@
     {
       "name": "extractFormIdFromEnvelope",
       "file": "src/modules/cagnotte/hooks/useFundingEnvelope.ts",
-      "line": 482,
+      "line": 483,
       "layer": "module:cagnotte",
       "kind": "function",
       "exported": true,
@@ -15033,7 +14799,7 @@
     {
       "name": "mergeEnvelopePayloads",
       "file": "src/modules/cagnotte/hooks/useFundingEnvelope.ts",
-      "line": 507,
+      "line": 508,
       "layer": "module:cagnotte",
       "kind": "function",
       "exported": true,
@@ -15042,20 +14808,9 @@
       "hash": "97bdc786773b"
     },
     {
-      "name": "getProfileSlugFromLocation",
-      "file": "src/modules/cagnotte/hooks/useFundingEnvelope.ts",
-      "line": 520,
-      "layer": "module:cagnotte",
-      "kind": "function",
-      "exported": false,
-      "loc": 9,
-      "generic": true,
-      "hash": "a0a7e70c364f"
-    },
-    {
       "name": "useFundingEnvelope",
       "file": "src/modules/cagnotte/hooks/useFundingEnvelope.ts",
-      "line": 530,
+      "line": 521,
       "layer": "module:cagnotte",
       "kind": "function",
       "exported": true,
@@ -21510,6 +21265,17 @@
       "hash": "8538d756a4b5"
     },
     {
+      "name": "getLocation",
+      "file": "src/modules/search/helpers/getLocation.ts",
+      "line": 11,
+      "layer": "module:search",
+      "kind": "function",
+      "exported": true,
+      "loc": 7,
+      "generic": true,
+      "hash": "895faca6394a"
+    },
+    {
       "name": "toInt",
       "file": "src/modules/search/helpers/servicePricingAnswers.ts",
       "line": 67,
@@ -24207,7 +23973,7 @@
     {
       "name": "NewsFormDocumentUpload",
       "file": "src/modules/news/components/forms/NewsFormDocumentUpload.tsx",
-      "line": 40,
+      "line": 33,
       "layer": "module:news",
       "kind": "function",
       "exported": true,
@@ -24218,7 +23984,7 @@
     {
       "name": "validateFile",
       "file": "src/modules/news/components/forms/NewsFormDocumentUpload.tsx",
-      "line": 15,
+      "line": 16,
       "layer": "module:news",
       "kind": "arrow",
       "exported": false,
@@ -24227,20 +23993,9 @@
       "hash": "ca42da09ffa4"
     },
     {
-      "name": "formatFileSize",
-      "file": "src/modules/news/components/forms/NewsFormDocumentUpload.tsx",
-      "line": 26,
-      "layer": "module:news",
-      "kind": "arrow",
-      "exported": false,
-      "loc": 7,
-      "generic": true,
-      "hash": "4332f0d1b501"
-    },
-    {
       "name": "handleFileSelect",
       "file": "src/modules/news/components/forms/NewsFormDocumentUpload.tsx",
-      "line": 117,
+      "line": 110,
       "layer": "module:news",
       "kind": "arrow",
       "exported": false,
@@ -24251,7 +24006,7 @@
     {
       "name": "handleDragOver",
       "file": "src/modules/news/components/forms/NewsFormDocumentUpload.tsx",
-      "line": 123,
+      "line": 116,
       "layer": "module:news",
       "kind": "arrow",
       "exported": false,
@@ -24262,7 +24017,7 @@
     {
       "name": "handleDragLeave",
       "file": "src/modules/news/components/forms/NewsFormDocumentUpload.tsx",
-      "line": 128,
+      "line": 121,
       "layer": "module:news",
       "kind": "arrow",
       "exported": false,
@@ -24273,7 +24028,7 @@
     {
       "name": "handleDrop",
       "file": "src/modules/news/components/forms/NewsFormDocumentUpload.tsx",
-      "line": 133,
+      "line": 126,
       "layer": "module:news",
       "kind": "arrow",
       "exported": false,
@@ -24284,7 +24039,7 @@
     {
       "name": "handleRemoveDocument",
       "file": "src/modules/news/components/forms/NewsFormDocumentUpload.tsx",
-      "line": 140,
+      "line": 133,
       "layer": "module:news",
       "kind": "arrow",
       "exported": false,
@@ -24295,7 +24050,7 @@
     {
       "name": "getFileIcon",
       "file": "src/modules/news/components/forms/NewsFormDocumentUpload.tsx",
-      "line": 145,
+      "line": 138,
       "layer": "module:news",
       "kind": "arrow",
       "exported": false,
@@ -24306,7 +24061,7 @@
     {
       "name": "NewsFormImageUpload",
       "file": "src/modules/news/components/forms/NewsFormImageUpload.tsx",
-      "line": 98,
+      "line": 91,
       "layer": "module:news",
       "kind": "function",
       "exported": true,
@@ -24317,7 +24072,7 @@
     {
       "name": "validateFile",
       "file": "src/modules/news/components/forms/NewsFormImageUpload.tsx",
-      "line": 17,
+      "line": 18,
       "layer": "module:news",
       "kind": "arrow",
       "exported": false,
@@ -24326,20 +24081,9 @@
       "hash": "cc58722ce463"
     },
     {
-      "name": "formatFileSize",
-      "file": "src/modules/news/components/forms/NewsFormImageUpload.tsx",
-      "line": 27,
-      "layer": "module:news",
-      "kind": "arrow",
-      "exported": false,
-      "loc": 7,
-      "generic": true,
-      "hash": "4332f0d1b501"
-    },
-    {
       "name": "canCompressImage",
       "file": "src/modules/news/components/forms/NewsFormImageUpload.tsx",
-      "line": 35,
+      "line": 28,
       "layer": "module:news",
       "kind": "arrow",
       "exported": false,
@@ -24350,7 +24094,7 @@
     {
       "name": "compressImage",
       "file": "src/modules/news/components/forms/NewsFormImageUpload.tsx",
-      "line": 39,
+      "line": 32,
       "layer": "module:news",
       "kind": "arrow",
       "exported": false,
@@ -24361,7 +24105,7 @@
     {
       "name": "getCompressionRatio",
       "file": "src/modules/news/components/forms/NewsFormImageUpload.tsx",
-      "line": 88,
+      "line": 81,
       "layer": "module:news",
       "kind": "arrow",
       "exported": false,
@@ -24372,7 +24116,7 @@
     {
       "name": "handleFileSelect",
       "file": "src/modules/news/components/forms/NewsFormImageUpload.tsx",
-      "line": 217,
+      "line": 210,
       "layer": "module:news",
       "kind": "arrow",
       "exported": false,
@@ -24383,7 +24127,7 @@
     {
       "name": "handleDragOver",
       "file": "src/modules/news/components/forms/NewsFormImageUpload.tsx",
-      "line": 223,
+      "line": 216,
       "layer": "module:news",
       "kind": "arrow",
       "exported": false,
@@ -24394,7 +24138,7 @@
     {
       "name": "handleDragLeave",
       "file": "src/modules/news/components/forms/NewsFormImageUpload.tsx",
-      "line": 228,
+      "line": 221,
       "layer": "module:news",
       "kind": "arrow",
       "exported": false,
@@ -24405,7 +24149,7 @@
     {
       "name": "handleDrop",
       "file": "src/modules/news/components/forms/NewsFormImageUpload.tsx",
-      "line": 233,
+      "line": 226,
       "layer": "module:news",
       "kind": "arrow",
       "exported": false,
@@ -24416,7 +24160,7 @@
     {
       "name": "handleRemoveImage",
       "file": "src/modules/news/components/forms/NewsFormImageUpload.tsx",
-      "line": 240,
+      "line": 233,
       "layer": "module:news",
       "kind": "arrow",
       "exported": false,
@@ -24427,7 +24171,7 @@
     {
       "name": "handleCropImage",
       "file": "src/modules/news/components/forms/NewsFormImageUpload.tsx",
-      "line": 247,
+      "line": 240,
       "layer": "module:news",
       "kind": "arrow",
       "exported": false,
@@ -24438,7 +24182,7 @@
     {
       "name": "handleCropComplete",
       "file": "src/modules/news/components/forms/NewsFormImageUpload.tsx",
-      "line": 256,
+      "line": 249,
       "layer": "module:news",
       "kind": "arrow",
       "exported": false,
@@ -27384,17 +27128,6 @@
       "hash": "4529ff407b1a"
     },
     {
-      "name": "getLocation",
-      "file": "src/modules/search/components/card/CardEventFeatured.tsx",
-      "line": 135,
-      "layer": "module:search",
-      "kind": "function",
-      "exported": false,
-      "loc": 9,
-      "generic": true,
-      "hash": "895faca6394a"
-    },
-    {
       "name": "handleToggleStar",
       "file": "src/modules/search/components/card/CardEventFeatured.tsx",
       "line": 53,
@@ -27507,7 +27240,7 @@
     {
       "name": "CardImageCover",
       "file": "src/modules/search/components/card/CardImageCover.tsx",
-      "line": 23,
+      "line": 24,
       "layer": "module:search",
       "kind": "function",
       "exported": true,
@@ -27516,20 +27249,9 @@
       "hash": "5048a3b7b520"
     },
     {
-      "name": "getLocation",
-      "file": "src/modules/search/components/card/CardImageCover.tsx",
-      "line": 135,
-      "layer": "module:search",
-      "kind": "function",
-      "exported": false,
-      "loc": 10,
-      "generic": true,
-      "hash": "895faca6394a"
-    },
-    {
       "name": "findTagIcon",
       "file": "src/modules/search/components/card/CardImageCover.tsx",
-      "line": 155,
+      "line": 144,
       "layer": "module:search",
       "kind": "function",
       "exported": false,
@@ -27540,7 +27262,7 @@
     {
       "name": "getBadges",
       "file": "src/modules/search/components/card/CardImageCover.tsx",
-      "line": 165,
+      "line": 154,
       "layer": "module:search",
       "kind": "function",
       "exported": false,
@@ -27679,17 +27401,6 @@
       "loc": 106,
       "generic": false,
       "hash": "f83f2b6d45ce"
-    },
-    {
-      "name": "getLocation",
-      "file": "src/modules/search/components/card/CardResourceBooking.tsx",
-      "line": 120,
-      "layer": "module:search",
-      "kind": "function",
-      "exported": false,
-      "loc": 9,
-      "generic": true,
-      "hash": "895faca6394a"
     },
     {
       "name": "DetailsModeDialog",
