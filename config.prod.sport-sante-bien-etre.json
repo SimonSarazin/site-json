@@ -53,72 +53,209 @@
     "nav": [
       {
         "label": {
-          "fr": "Le réseau Sport Santé",
-          "en": "The Sport Health Network"
+          "fr": "Découvrir",
+          "en": "Discover"
         },
-        "path": "/espace-professionnels"
+        "path": "/public",
+        "icon": "compass",
+        "children": [
+          {
+            "label": {
+              "fr": "Espace Public",
+              "en": "Public Space"
+            },
+            "path": "/public",
+            "icon": "users",
+            "description": {
+              "fr": "Le sport santé pour tous les Réunionnais.",
+              "en": "Sport health for everyone in Réunion."
+            }
+          },
+          {
+            "label": {
+              "fr": "Qu'est-ce que le Sport Santé",
+              "en": "What is Sport Health"
+            },
+            "path": "/presentation",
+            "icon": "heart-pulse",
+            "description": {
+              "fr": "Comprendre la démarche et ses bénéfices.",
+              "en": "Understand the approach and its benefits."
+            }
+          },
+          {
+            "label": {
+              "fr": "Maisons Sport Santé",
+              "en": "Sport Health Houses"
+            },
+            "path": "/mss",
+            "icon": "house",
+            "description": {
+              "fr": "Les structures labellisées qui vous orientent.",
+              "en": "Labeled facilities that guide you."
+            }
+          }
+        ]
       },
       {
         "label": {
-          "fr": "Labelliser",
-          "en": "Label"
+          "fr": "Trouver",
+          "en": "Find"
         },
-        "path": "/labellisation"
+        "path": "/equipements-sportifs",
+        "icon": "search",
+        "children": [
+          {
+            "label": {
+              "fr": "Équipements sportifs",
+              "en": "Sports Facilities"
+            },
+            "path": "/equipements-sportifs",
+            "icon": "dumbbell",
+            "description": {
+              "fr": "Tous les équipements de l'île, géolocalisés.",
+              "en": "All the island's facilities, geolocated."
+            }
+          },
+          {
+            "label": {
+              "fr": "Créneaux",
+              "en": "Activity Slots"
+            },
+            "path": "/creneaux",
+            "icon": "calendar",
+            "description": {
+              "fr": "Les activités labellisées près de chez vous.",
+              "en": "Labeled activities near you."
+            }
+          },
+          {
+            "label": {
+              "fr": "Cartographie",
+              "en": "Map"
+            },
+            "path": "/mapping",
+            "icon": "map",
+            "description": {
+              "fr": "Explorer l'offre sport santé sur la carte.",
+              "en": "Explore the sport-health offer on the map."
+            }
+          }
+        ]
       },
       {
         "label": {
-          "fr": "Prescrire & Orienter",
-          "en": "Prescribe & Guide"
+          "fr": "Le réseau",
+          "en": "The Network"
         },
-        "path": "/prescription"
+        "path": "/espace-professionnels",
+        "icon": "network",
+        "children": [
+          {
+            "label": {
+              "fr": "Espace professionnels",
+              "en": "Professionals"
+            },
+            "path": "/espace-professionnels",
+            "icon": "briefcase",
+            "description": {
+              "fr": "Ressources et outils pour les pros.",
+              "en": "Resources and tools for professionals."
+            }
+          },
+          {
+            "label": {
+              "fr": "Labelliser",
+              "en": "Get Labeled"
+            },
+            "path": "/labellisation",
+            "icon": "award",
+            "description": {
+              "fr": "Obtenir le label sport santé.",
+              "en": "Get the sport-health label."
+            }
+          },
+          {
+            "label": {
+              "fr": "Formation",
+              "en": "Training"
+            },
+            "path": "/formation",
+            "icon": "graduation-cap",
+            "description": {
+              "fr": "Se former au sport santé.",
+              "en": "Train in sport health."
+            }
+          },
+          {
+            "label": {
+              "fr": "Organismes de formation",
+              "en": "Training Organizations"
+            },
+            "path": "/listing-formations",
+            "icon": "school",
+            "description": {
+              "fr": "Les organismes de formation labellisés.",
+              "en": "The labeled training organizations."
+            }
+          }
+        ]
       },
       {
         "label": {
-          "fr": "Formation",
-          "en": "Training"
+          "fr": "Communauté",
+          "en": "Community"
         },
-        "path": "/formation"
+        "path": "/communaute",
+        "icon": "users",
+        "children": [
+          {
+            "label": {
+              "fr": "Projets",
+              "en": "Projects"
+            },
+            "path": "/projets",
+            "icon": "rocket",
+            "description": {
+              "fr": "Les projets sport santé du territoire.",
+              "en": "Sport-health projects across the territory."
+            }
+          },
+          {
+            "label": {
+              "fr": "Structures",
+              "en": "Structures"
+            },
+            "path": "/structure",
+            "icon": "building",
+            "description": {
+              "fr": "Les acteurs et structures du réseau.",
+              "en": "The network's actors and facilities."
+            }
+          },
+          {
+            "label": {
+              "fr": "Communauté",
+              "en": "Community"
+            },
+            "path": "/communaute",
+            "icon": "users",
+            "description": {
+              "fr": "Rejoindre et échanger avec le réseau.",
+              "en": "Join and connect with the network."
+            }
+          }
+        ]
       },
       {
         "label": {
           "fr": "Contact",
           "en": "Contact"
         },
-        "path": "/contact"
+        "path": "/contact",
+        "icon": "mail"
       }
     ],
-    "navVisibleOnlyForListedPages": true,
-    "secondaryNav": [
-      {
-        "label": {
-          "fr": "Espace Public",
-          "en": "Public Space"
-        },
-        "path": "/public"
-      },
-      {
-        "label": {
-          "fr": "Qu'est-ce que le Sport Santé",
-          "en": "What is Sport Health"
-        },
-        "path": "/presentation"
-      },
-      {
-        "label": {
-          "fr": "Maisons Sport Santé",
-          "en": "Sport Health Houses"
-        },
-        "path": "/mss"
-      },
-      {
-        "label": {
-          "fr": "Actualité",
-          "en": "News"
-        },
-        "path": "/actions"
-      }
-    ],
-    "secondaryNavVisibleOnlyForListedPages": true,
     "sticky": true,
     "transparent": true,
     "height": "lg",
